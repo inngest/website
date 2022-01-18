@@ -105,7 +105,7 @@ export default function Pricing() {
                 <Workflow size="18" /> <b>5</b> &nbsp;workflows
               </li>
               <li>
-                <Language size="18" /> <b>1,000</b> &nbsp;function runs/month
+                <Language size="18" /> <b>100,000</b> &nbsp;function calls/month
               </li>
               <li>
                 <Lightning size="18" /> <b>Limited</b> &nbsp;resources &
@@ -139,10 +139,10 @@ export default function Pricing() {
             </PlanHeader>
             <ul>
               <li>
-                <Workflow size="18" /> <b>50</b>&nbsp;workflows
+                <Workflow size="18" /> <b>20</b>&nbsp;workflows
               </li>
               <li>
-                <Language size="18" /> <b>10,000</b>&nbsp;function runs/month
+                <Language size="18" /> <b>1,000,000</b>&nbsp;function calls/month
               </li>
               <li>
                 <Lightning size="18" /> <b>Normal</b>&nbsp;resources &
@@ -171,7 +171,7 @@ export default function Pricing() {
                 <Workflow size="18" /> <b>Unlimited</b>&nbsp;workflows
               </li>
               <li>
-                <Language size="18" /> <b>Unlimited</b>&nbsp;function runs/month
+                <Language size="18" /> <b>Unlimited</b>&nbsp;function calls/month
               </li>
               <li>
                 <Lightning size="18" /> <b>Custom</b>&nbsp;resources &
@@ -250,7 +250,7 @@ export default function Pricing() {
               specify payment caps (coming soon). We dislike surprise costs as
               much as you.
             </p>
-            <p>You can buy an extra 20,000 runs for $10.</p>
+            <p>You can buy an extra 200,000 calls for $10.</p>
           </div>
 
           <div onClick={toggleFAQ}>
