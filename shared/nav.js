@@ -1,98 +1,74 @@
 import React from "react";
 import styled from "@emotion/styled";
+import Button from "../shared/Button";
 
 const Nav = () => {
   return (
-    <div>
-      <Container>
+    <div className="grid">
+      <Container className="grid-center-8">
         <div>
           <a href="/">
             <img src="/logo-white.svg" alt="Inngest logo" className="logo" />
           </a>
-          {/*
-          <Hoverable>
-            <StyledLink href="/product">Product</StyledLink>
-            <div>
-              <a href="/product">
-                How it works
-                <span>An overview to the platform</span>
-              </a>
-              <a href="/product#features">
-                Features
-                <span>An in-depth look at the platform</span>
-              </a>
-              {/*
-              <a href="/product/use-cases">
-                Use cases
-                <span>Examples from our customers</span>
-              </a>
+        </div>
 
-              <p>Inngest for...</p>
-              <a href="/product/for-product">
-                Product
-                <span>Rapid development and iteration</span>
-              </a>
-              <a href="/product/for-operations">
-                Operations
-                <span>Simple management and full visibility</span>
-              </a>
-              <a href="/product/for-engineering">
-                Engineering
-                <span>Serverless event hub and functions</span>
-              </a>
-            </div>
-          </Hoverable>
-          */}
+        <div>
           <StyledLink href="/library">Library</StyledLink>
           <StyledLink href="/docs">Docs</StyledLink>
           <StyledLink href="/blog">Blog</StyledLink>
-
-          {/*
-          <Hoverable>
-            <StyledLink href="/company">Company</StyledLink>
-            <div>
-              <a href="/company">
-                Careers
-                <span>We're hiring!</span>
-              </a>
-              <a href="/company">About us</a>
-              <a href="/company/contact">Contact us</a>
-            </div>
-          </Hoverable>
-
-          */}
           <StyledLink href="/pricing">Pricing</StyledLink>
         </div>
 
         <div>
           <StyledLink href="https://app.inngest.com/login">Log in</StyledLink>
-
-          <a
-            href="https://app.inngest.com/register"
+          <Button
+            link="/register"
             className="button"
-            rel="nofollow"
-            target="_blank"
+            kind="primary"
           >
-            Sign up for free →
-          </a>
+            Start building →
+          </Button>
         </div>
       </Container>
     </div>
   );
 };
 
-const Content = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
+const Container = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 2rem 0;
 
-  .logo {
-    max-height: 30px;
+  font-size: 14px;
+
+  > div {
+    display: flex;
+    align-items: center;
+  }
+
+  img {
+    max-height: 60px;
+    margin: 5px 40px 0 .25rem;
+  }
+
+  a + a {
+    margin-left: 5px;
+  }
+
+  a + a.button {
+    margin-left: 20px;
   }
 
   @media only screen and (max-width: 800px) {
-    padding: 0 20px;
+    div:last-of-type {
+      display: none;
+    }
   }
 `;
+
 
 const StyledLink = styled.a`
   display: inline-block;
@@ -183,42 +159,6 @@ const Hoverable = styled.div`
     }
 
     a +
-  }
-`;
-
-const Container = styled(Content)`
-  height: 70px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 20px;
-  font-size: 0.9rem;
-  font-weight: 600;
-
-  font-size: 14px;
-
-  > div {
-    display: flex;
-    align-items: center;
-  }
-
-  img {
-    max-height: 60px;
-    margin: 5px 40px 0 0;
-  }
-
-  a + a {
-    margin-left: 5px;
-  }
-
-  a + a.button {
-    margin-left: 20px;
-  }
-
-  @media only screen and (max-width: 800px) {
-    div:last-of-type {
-      display: none;
-    }
   }
 `;
 

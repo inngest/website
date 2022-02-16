@@ -1,28 +1,28 @@
-@import url('https://rsms.me/inter/inter.css');
+@import url("./reset.css");
 
-html, body, button, input, textarea {
-  font-family: 'Inter', sans-serif;
-  color: #fff;
-  font-size: 16px;
-}
+/** Standard **/
 
 @supports (font-variation-settings: normal) {
   html { font-family: 'Inter var', sans-serif; }
 }
 
 :root {
-  --font: 'Inter', sans-serif;
-  --font-mono: 'Roboto Mono', monospace;
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
+  Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;;
+  --font-mono: 'Roboto Mono', 'Fira Mono', monospace;
 
   --bg-color: #121327;
   --primary-color: #4636F5;
   --primary-color-rgb: 70, 54, 245;
-
   --stroke-color: #525661;
+  --black: #040408;
+  --black-rgb: 4, 4, 8;
 
   --button-padding: 1rem 2rem;
   --border-radius: .35rem;
 
+  font-family: var(--font);
+  color: #fff;
 }
 
 html, body {
@@ -34,149 +34,33 @@ body, button {
   margin: 0;
 }
 
-input, textarea {
-  height: 40px;
-  width: 300px;
-  padding: 5px 12px;
-  box-sizing: border-box;
-  color: var(--bg-dark);
-
-  background: #fff;
-  border-radius: 3px;
-  border: 1px solid #eee;
-  transition: all .3s;
-  box-shadow: 0 1px 0px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.03);
-}
-
-input:focus, textarea:focus {
-  outline: none;
-  border-color: gray;
-}
-
-a[href]:not([href='']) {
-  color: #fff;
-}
-
-.text-center {
-  text-align: center;
-}
-
-.justify-right {
-  display: flex;
-  justify-content: flex-end;
-}
-
-p, li {
-  line-height: 1.7;
-}
-
-p + p {
-  margin-top: 1.4rem;
-}
+/** Typography **/
 
 h1 {
-  font-size: 54px;
-  line-height: 1.07;
-  letter-spacing: -0.5px;
-  margin: 20px 0;
+  font-size: 6rem;
+  line-height: 1.05;
+  padding: 0 0 2rem;
 }
 
-h2 {
-  font-size: 36px;
-  font-weight: 800;
+h2, .subheading {
+  font-size: 2rem;
 }
 
-header {
-  position: relative;
-  z-index: 1;
+.monospace {
+  font-family: var(--font-mono);
 }
 
-header h2 + p {
-  font-size: 18px;
-  opacity: .9;
+/** New grid **/
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  grid-gap: .5rem;
 }
 
-h3 {
-  font-size: 18px;
-  font-weight: 600;
-  margin-top: 3rem;
+.grid-center-8 {
+  /* Skip first and last column */
+  grid-column: 2 / -2;
 }
 
-h3 + .subtitle {
-  margin: -15px 0 60px;
-}
-
-strong {
-  font-weight: 700;
-}
-
-h5 {
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  opacity: .6;
-  letter-spacing: 1px;
-}
-
-.intro-tag {
-  color: #184115bb;
-  font-size: 12px;
-  letter-spacing: 2px;
-  font-weight: 700;
-  text-transform: uppercase;
-  background: #CEECCE;
-  border-radius: 3px;
-  display: inline-block;
-  padding: 3px 7px;
-}
-
-h5 {
-  margin: 20px 0 18px;
-}
-
-h5 + h2 {
-  margin-top: .25rem;
-}
-
-.nav-dark {
-  background: linear-gradient(90deg, var(--blue-left), var(--blue-right));
-  color: #fff;
-}
-
-h2, .text--blue {
-  background: #fff;
-  background-clip: text;
-  color: transparent;
-}
-
-.nav-dark a {
-  color: #fff !important;
-}
-
-@media only screen and (max-width: 800px) {
-  .hero-dark { box-shadow: none }
-  .nav-dark { border: 0 none }
-}
-
-ul { margin: 2rem 0; }
-ol li, ul li {
-  margin: 0 0 .6rem;
-}
-
-ul.check {
-  list-style-type: none;
-  padding: 0;
-  margin: 0;
-}
-ul.check li {
-  background: url(/icons/check.svg) no-repeat left center;
-  padding-left: 1.75rem;
-  margin-left: .75rem;
-}
-
-hr {
-  border: 0;
-  border-bottom: 1px solid #fff;
-  opacity: .2;
-  margin: 8vh 0;
-}
+/** UNSURE **/

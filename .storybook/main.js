@@ -13,6 +13,7 @@ module.exports = {
     "@storybook/addon-interactions"
   ],
   "framework": "@storybook/react",
+  staticDirs: ["../public"],
   babel: async (options) => {
     options.presets.push('@emotion/babel-preset-css-prop')
     return options

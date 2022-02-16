@@ -65,9 +65,10 @@ export const buttonCSS = css`
   background: transparent;
   cursor: pointer;
   display: inline-block;
+  text-decoration: none;
 
   & + .button {
-    margin-left: .5rem;
+    margin-left: 1rem;
   }
 `;
 
