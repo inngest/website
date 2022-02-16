@@ -5,6 +5,10 @@ import Footer from "../shared/footer";
 import Nav from "../shared/nav";
 import Button from "../shared/Button";
 
+import Hub from "../shared/Icons/Hub";
+import Functions from "../shared/Icons/Functions";
+import History from "../shared/Icons/History";
+
 import { CheckBanner } from "../shared/Banner";
 
 
@@ -85,8 +89,35 @@ export default function Home() {
           <span className="section-label">Introducing our</span>
           <h2>Event mesh</h2>
           <h3>Everything you need to build production ready event driven apps.</h3>
+
+          <img src="/assets/graphic.svg" alt="Event driven serverless function example" className="full-width img-shadow" />
         </div>
       </Section>
+
+      <div className="grid">
+        <div className="grid-center-6">
+          <h2>How it works</h2>
+          <h3>Our Event Mesh makes it easy to build event-driven apps.</h3>
+        </div>
+      </div>
+
+      <HIW className="grid">
+        <div className="grid-2-offset-2">
+          <Hub />
+          <h4>One event hub</h4>
+          <p>We ingest all your events via our one-click integrations, SDKs, or webhooks.</p>
+        </div>
+        <div className="grid-2">
+          <Functions />
+          <h4>Serverless Functions</h4>
+          <p>Your code is executed instantly against the events you specify. Automatic retries built-in.</p>
+        </div>
+        <div className="grid-2">
+          <History />
+          <h4>Unified History</h4>
+          <p>View logging, payload data, and audit-trails for your events and functions together in one place.</p>
+        </div>
+      </HIW>
 
       <div style={{ marginTop: 100 }}>
         <Footer />
@@ -96,7 +127,7 @@ export default function Home() {
 }
 
 const Hero = styled.div`
-  padding: 15vh 0;
+  padding: 12vh 0;
   > div {
     grid-column: 2 / -5;
   }
@@ -113,4 +144,19 @@ const Hero = styled.div`
 
 const Section = styled.div`
   padding: 10rem 0;
+
+  img {
+    margin: 5rem 0 2rem;
+    box-shadow: 0 10px 100px rgba(var(--black-rgb), 0.3);
+    width: 100%;
+    border: 1px solid rgba(var(--black-rgb), 0.2);
+    pointer-events: none;
+  }
 `;
+
+const HIW = styled.div`
+  margin: 3rem 0;
+  svg {
+    margin: 0 0 1rem;
+  }
+`

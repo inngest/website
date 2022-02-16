@@ -50,9 +50,15 @@ h2 {
   font-size: 3rem;
 }
 
-h3 {
+h3, .h3 {
   font-size: 1.5rem;
   font-weight: normal;
+}
+
+h4 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin: .5rem 0;
 }
 
 .section-label {
@@ -70,7 +76,7 @@ h3 {
 .grid {
   display: grid;
   grid-template-columns: repeat(10, 1fr);
-  grid-gap: .5rem;
+  grid-gap: 1rem;
 }
 
 .grid-center-8 {
@@ -81,6 +87,15 @@ h3 {
 .grid-center-6 {
   /* Skip first and last two columns */
   grid-column: 3 / -3;
+}
+
+.grid-2-offset-2 {
+  grid-column: 3 / span 2;
+}
+
+
+.grid-2 {
+  grid-column: span 2;
 }
 
 /** UNSURE **/
