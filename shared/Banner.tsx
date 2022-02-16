@@ -22,7 +22,7 @@ export const CheckBanner: React.FC<{ list: Array<String> } & Props> = (props) =>
 
 const Wrapper = styled.div`
   background: var(--black);
-  padding: 1.5rem 0;
+  padding: 2rem 0;
   margin: 1.5rem 0;
   display: flex;
   justify-content: center;

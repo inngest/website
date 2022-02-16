@@ -4,13 +4,47 @@ import Head from "next/head";
 import Footer from "../shared/footer";
 import Nav from "../shared/nav";
 import Button from "../shared/Button";
-
+import Code from "../shared/Code";
+// Icons
 import Hub from "../shared/Icons/Hub";
 import Functions from "../shared/Icons/Functions";
 import History from "../shared/Icons/History";
-
 import { CheckBanner } from "../shared/Banner";
 
+// Send event preformatted code
+const events = {
+  cURL: `curl -X POST ”https://inn.gs/e/test-key-goes-here-bjm8xj6nji0vzzu0l1k” \\
+  -d '{"name": "test.event", "data": { "email": “gob@bluth-dev.com” } }'}`,
+  go: `package main
+
+import (
+	"context"
+	"os"
+
+	"github.com/inngest/inngestgo"
+)
+
+func SendEvent(ctx context.Context) {
+	// Create a new client
+	client := inngestgo.NewClient(os.Getenv("INGEST_KEY"))
+	// Send an event
+	client.Send(ctx, inngestgo.Event{
+		Name: "user.created",
+		Data: map[string]interface{}{
+			"plan": "pro",
+			"ip":   "10.0.0.10",
+		},
+		User: map[string]interface{}{
+			// Use the external_id field within User so that we can add context
+			// for audit trails.
+			inngestgo.ExternalID: user.ID,
+			inngestgo.Email:      user.Email,
+		},
+		Version:   "2022-01-01.01",
+		Timestamp: inngestgo.Now(),
+	})
+}`
+};
 
 // TODO: move these into env vars
 // prod key
@@ -42,7 +76,7 @@ export default function Home() {
   };
 
   return (
-    <>
+    <Wrapper>
       <Head>
         <title>
           Inngest → build serverless event-driven functions in minutes
@@ -119,12 +153,32 @@ export default function Home() {
         </div>
       </HIW>
 
+      <Section className="grid">
+        <div className="grid-center-6">
+          <span className="section-label">Events</span>
+          <h2>Send your events from anywhere</h2>
+          <h3>Use our SDKs or webhooks to send events from your app</h3>
+        </div>
+
+        <div className="code grid-center-6">
+          <Code code={events} />
+        </div>
+      </Section>
+
+
       <div style={{ marginTop: 100 }}>
         <Footer />
       </div>
-    </>
+    </Wrapper>
   );
 }
+
+// Wrapper defines a top-level scope for nesting home-specific CSS classes within.
+const Wrapper = styled.div`
+.code {
+  padding: 2rem 0;
+}
+`;
 
 const Hero = styled.div`
   padding: 12vh 0;
