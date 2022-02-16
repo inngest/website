@@ -4,7 +4,7 @@ import Head from "next/head";
 import Footer from "../shared/footer";
 import Nav from "../shared/nav";
 import Content from "../shared/content";
-import { FinisherHeader } from "../shared/HeaderBG";
+import Button from "../shared/Button";
 
 import Airplane from "../shared/Icons/Airplane";
 import Audit from "../shared/Icons/Audit";
@@ -12,43 +12,6 @@ import Language from "../shared/Icons/Language";
 import Alert from "../shared/Icons/Alert";
 import Users from "../shared/Icons/Users";
 import VCS from "../shared/Icons/VCS";
-
-const gradient = (
-  el,
-  colors = ["#18435c", "#18435c", "#2f622f", "#2f622f", "#893eb5"]
-) => {
-  new FinisherHeader(
-    {
-      count: 6,
-      size: {
-        min: 700,
-        max: 900,
-        pulse: 0,
-      },
-      speed: {
-        x: {
-          min: 0.1,
-          max: 1.1,
-        },
-        y: {
-          min: 0.1,
-          max: 1,
-        },
-      },
-      colors: {
-        background: "#0f111e",
-        particles: colors,
-      },
-      blending: "lighten",
-      opacity: {
-        center: 0.5,
-        edge: 0,
-      },
-      shapes: ["c"],
-    },
-    el
-  );
-};
 
 // TODO: move these into env vars
 // prod key
@@ -79,18 +42,15 @@ export default function Home() {
     setSubmitted(true);
   };
 
-  useEffect(() => {
-    gradient(document.querySelector(".hero"));
-  }, []);
-
   return (
     <>
       <Head>
         <title>
-          Inngest → build serverless event-driven systems in seconds
+          Inngest → build serverless event-driven functions in minutes
         </title>
         <link rel="icon" href="/favicon.png" />
-        <meta property="og:title" content="Inngest" />
+        <meta property="og:title" content="Inngest - build serverless event-driven functions in minutes" />
+        <meta property="og:description" content="Create, deploy, and monitor event-driven serverless functions with confidence." />
         <meta property="og:url" content="https://www.inngest.com" />
         <meta property="og:image" content="/logo.svg" />
         <meta
@@ -107,31 +67,16 @@ export default function Home() {
 
       <Nav />
 
-      <Hero className="hero">
-        <Content className="grid">
-          <div>
-            <h1>
-              Build serverless event&nbsp;driven systems, <i>in seconds</i>
-            </h1>
-            <p>
-              A flexible platform which manages all of your events and runs
-              serverless workloads in real time &mdash; automating anything you
-              need, with zero&nbsp;config&nbsp;or&nbsp;infra.
-            </p>
+    <div>
+      <h1>Make event-driven apps fun to build</h1>
+      <p>
+        Deploy serverless functions in minutes.<br />
+        No infra.  No servers.  No YAML.
+      </p>
 
-            <div className="cta">
-              <a href="https://app.inngest.com/register">Sign up for free →</a>
-              <span>
-                or <a href="/contact">speak with us</a>
-              </span>
-            </div>
-          </div>
-
-          <div>
-            <img src="/assets/scrn.png" />
-          </div>
-        </Content>
-      </Hero>
+      <Button kind="primary" href="/sign-up">Start building</Button>
+      <Button kind="outline" href="/sign-up">Explore docs →</Button>
+    </div>
 
       <div>
         <Content>
@@ -419,105 +364,6 @@ export default function Home() {
     </>
   );
 }
-
-const Hero = styled.div`
-  border-bottom: 4px solid #ffffff55;
-  position: relative;
-  z-index: 2;
-  overflow: hidden;
-
-  &:after {
-    content: "";
-    display: block;
-    background: #040834 url(/assets/bg.jpg) no-repeat bottom right;
-    opacity: 0.6;
-    position: absolute;
-    z-index: 0;
-    height: 100%;
-    width: 100%;
-    top: 0;
-    left: 0;
-    pointer-events: none;
-  }
-
-  .grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-
-    > div:first-of-type {
-      z-index: 2;
-      padding: 13vh 0;
-    }
-
-    > div:last-of-type {
-      padding: 4vh 0 0;
-      z-index: 1;
-      position: relative;
-      opacity: 0.825;
-      transition: all 0.3s;
-
-      &:hover {
-        opacity: 1;
-      }
-
-      img {
-        pointer-events: none;
-        position: absolute;
-        max-height: 130%;
-        box-shadow: 0 0 80px rgba(0, 0, 0, 0.7);
-      }
-    }
-  }
-
-  h1 {
-    width: 130%;
-  }
-
-  h1 + p {
-    font-size: 22px;
-    line-height: 1.45;
-  }
-
-  .cta {
-    margin: 60px 0 0;
-
-    > a:first-of-type {
-      display: inline-block;
-      border: 1px solid #fff;
-      border-radius: 3px;
-      color: #fff;
-      line-height: 1;
-      text-decoration: none;
-      padding: 12px 22px 14px;
-      margin: 0 20px 0 0;
-    }
-
-    a:last-of-type {
-      display: inline-block;
-      margin-left: 12px;
-    }
-  }
-
-  @media (max-width: 800px) {
-    .grid {
-      grid-template-columns: 1fr;
-    }
-
-    h1 {
-      width: 100%;
-    }
-
-    .cta {
-      a:first-of-type {
-        margin-bottom: 30px;
-      }
-      span {
-        display: block;
-        margin-left: 12px;
-      }
-    }
-  }
-`;
 
 const FeatureGrid = styled.div`
   display: grid;

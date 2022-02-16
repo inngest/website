@@ -11,25 +11,23 @@ html, body, button, input, textarea {
 }
 
 :root {
-  --bg-dark: #030624;
-  --bg-dark: #0f111e;
+  --font: 'Inter', sans-serif;
+  --font-mono: 'Roboto Mono', monospace;
 
-  --light-grey: #86909a;
-  --dark-grey: #565e66;
+  --bg-color: #121327;
+  --primary-color: #4636F5;
+  --primary-color-rgb: 70, 54, 245;
 
-  --blue-left: #17273b;
-  --blue-right: #18435c;
+  --stroke-color: #525661;
 
-  --cream: #f9f9f1;
+  --button-padding: 1rem 2rem;
+  --border-radius: .35rem;
 
-  --green: #94D09A;
-  --button-bg-color: var(--green);
-  --button-text-color: var(--bg-dark);
 }
 
 html, body {
   overflow-x: hidden;
-  background: var(--bg-dark);
+  background: var(--bg-color);
 }
 
 body, button {
@@ -54,38 +52,6 @@ input:focus, textarea:focus {
   outline: none;
   border-color: gray;
 }
-
-button, .button {
-  padding: 12px 22px 11px;
-  background-color: var(--button-bg-color);
-  text-decoration: none;
-  color: var(--button-text-color) !important;
-  font-weight: 600;
-  border: 1px solid transparent;
-  border-radius: 3px;
-  transition: all .3s;
-}
-button:hover, .button:hover {
-  cursor: pointer;
-  background-color: gray;
-  background-color: #2F6D9Dff;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
-  color: #fff !important;
-}
-button:focus, .button:focus {
-  outline: none;
-  background-color: #2F6D9Dff;
-}
-
-.button--outline {
-  background-color: transparent;
-  border: 1px solid #fff;
-  color: #fff !important;
-}
-.button--outline:hover {
-  background: #ffffff33;
-}
-
 
 a[href]:not([href='']) {
   color: #fff;
@@ -187,23 +153,9 @@ h2, .text--blue {
   color: #fff !important;
 }
 
-.hero-dark {
-  padding: 100px 0 0;
-  background: linear-gradient(90deg, var(--blue-left), var(--blue-right));
-  position: relative;
-  color: #fff;
-}
-
 @media only screen and (max-width: 800px) {
   .hero-dark { box-shadow: none }
   .nav-dark { border: 0 none }
-}
-
-.hero-dark h1 {
-  color: transparent;
-  background: linear-gradient(90deg, #fff, #f5f5f5);
-  color: #fff;
-  background-clip: text;
 }
 
 ul { margin: 2rem 0; }
