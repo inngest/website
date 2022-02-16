@@ -71,7 +71,7 @@ export default function Home() {
           <h1>Make event-driven apps fun to build</h1>
           <p className="subheading">
             Deploy serverless functions in minutes.<br />
-            No infra.  No servers.  No YAML.
+            No infra.  No servers.  Zero YAML.
           </p>
 
           <Button kind="primary" href="/sign-up">Start building</Button>
