@@ -80,35 +80,13 @@ export default function Home() {
         list={["Developer CLI", "Auto-gen'd types & schemas", "Retries & replays built in"]}
       />
 
-      <Newsletter>
-        <p>
-          <b>Bonus: sign up to our newsletter?</b> You’ve scrolled pretty far,
-          and we didn’t really want to nag you earlier. No pressure, and we’ll
-          only send you fun & interesting things. Like, say, news about open
-          sourcing our execution platform!
-        </p>
-
-        {!submitted && (
-          <form onSubmit={onSubmit} className={submitted ? "submitted" : ""}>
-            <input
-              type="email"
-              onChange={(e) => setEmail(e.target.value)}
-              value={email}
-              placeholder="Your work email"
-              required
-            />
-            <button type="submit" disabled={submitted}>
-              Subscribe
-            </button>
-          </form>
-        )}
-        {submitted && (
-          <p style={{ textAlign: "center", fontSize: 12, marginTop: "2rem" }}>
-            You're added! Only top-shelf stuff. If not, yoink us from your
-            inbox.
-          </p>
-        )}
-      </Newsletter>
+      <Section className="grid">
+        <div className="grid-center-6">
+          <span className="section-label">Introducing our</span>
+          <h2>Event mesh</h2>
+          <h3>Everything you need to build production ready event driven apps.</h3>
+        </div>
+      </Section>
 
       <div style={{ marginTop: 100 }}>
         <Footer />
@@ -133,42 +111,6 @@ const Hero = styled.div`
   }
 `;
 
-const Newsletter = styled.div`
-  width: min(90vw, 650px);
-  margin: 0 auto 18vh;
-  border: 1px solid #ffffff19;
-  border-radius: 20px;
-  padding: 30px;
-  background: #00000233;
-  box-shadow: 0 20px 80px rgba(0, 0, 0, 0.7);
-  box-sizing: border-box;
-
-  @media (max-width: 800px) {
-    grid-template-columns: 1fr;
-  }
-
-  p {
-    opacity: 0.6;
-    font-size: 14px;
-  }
-
-  form {
-    display: flex;
-    flex-direction: row;
-    align-items: stretch;
-    justify-content: center;
-    margin: 2rem 0 0;
-  }
-
-  input {
-    height: auto;
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
-    font-size: 14px;
-  }
-  button {
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
-    font-size: 14px;
-  }
+const Section = styled.div`
+  padding: 10rem 0;
 `;

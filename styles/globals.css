@@ -42,8 +42,23 @@ h1 {
   padding: 0 0 2rem;
 }
 
-h2, .subheading {
+h1 + .subheading {
   font-size: 2rem;
+}
+
+h2 {
+  font-size: 3rem;
+}
+
+h3 {
+  font-size: 1.5rem;
+  font-weight: normal;
+}
+
+.section-label {
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .monospace {
@@ -61,6 +76,11 @@ h2, .subheading {
 .grid-center-8 {
   /* Skip first and last column */
   grid-column: 2 / -2;
+}
+
+.grid-center-6 {
+  /* Skip first and last two columns */
+  grid-column: 3 / -3;
 }
 
 /** UNSURE **/
