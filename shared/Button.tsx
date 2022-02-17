@@ -63,6 +63,7 @@ export const buttonCSS = css`
   cursor: pointer;
   display: inline-block;
   text-decoration: none;
+  text-align: center;
 
   & + .button {
     margin-left: 1rem;
@@ -89,16 +90,21 @@ const outlineCSS = css`
   color: #fff;
 `;
 
-const disabledCSS = `
+const blackCSS = css`
+  border: 1px solid var(--black);
+  background: var(--black);
+  color: #fff;
 `;
 
 const Kinds = {
   PRIMARY: "primary",
   OUTLINE: "outline",
+    BLACK: "black",
 };
 export type Kinds = typeof Kinds[keyof typeof Kinds];
 
 const kindCSS: { [item in Kinds]: SerializedStyles } = {
   primary: primaryCSS,
   outline: outlineCSS,
+  black: blackCSS,
 };

@@ -5,6 +5,7 @@ import Footer from "../shared/footer";
 import Nav from "../shared/nav";
 import Button from "../shared/Button";
 import Code from "../shared/Code";
+import Callout from "../shared/Callout";
 import Integration, { IntegrationType } from "../shared/Integration";
 // Icons
 import Hub from "../shared/Icons/Hub";
@@ -101,7 +102,7 @@ const SectionHeader: React.FC<{
       <div className="grid-center-6">
         <span className="section-label">{label}</span>
         <h2>{title}</h2>
-        <h3>{subtitle}</h3>
+        <h4>{subtitle}</h4>
       </div>
       <div className="grid-line">{counter && <span>{counter}</span>}</div>
     </div>
@@ -308,6 +309,9 @@ export default function Home() {
           <img src="/assets/history.svg" alt="Deployed function history" />
         </div>
       </div>
+
+      <Callout />
+
       <div style={{ marginTop: 100 }}>
         <Footer />
       </div>
@@ -349,6 +353,7 @@ const Wrapper = styled.div`
   .dx {
     align-items: center;
     grid-gap: 5vh var(--grid-gap);
+    padding-bottom: 20vh;
 
     svg {
       margin: 0 0 .85rem;
@@ -361,6 +366,7 @@ const Wrapper = styled.div`
       border: 1px solid rgba(var(--black-rgb), 0.5);
       box-shadow: 0 10px 5rem rgba(var(--black-rgb), 0.7);
       pointer-events: none;
+      width: 100%;
     }
   }
 `;
