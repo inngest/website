@@ -112,7 +112,7 @@ export const connect = () => {
 }
 ```
 
-There's a little more to reliable connections, but in essence it's about 4 lines of work.  Pretty amazing!
+There's more to websockets than this, but in essence state management is about 4 lines of work, with zero context or component relationships to manage.
 
 ### Comparisons to react
 
