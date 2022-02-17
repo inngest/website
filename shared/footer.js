@@ -49,8 +49,8 @@ export default Footer;
 
 const Wrapper = styled.div`
   overflow: hidden;
-  padding: 50vh 0 0;
-  margin-top: -50vh;
+  padding: 40vh 0 0;
+  margin-top: -40vh;
 
   background: url(/assets/footer-grid.svg) no-repeat right 10%;
   background-size: cover;

@@ -424,7 +424,7 @@ const Wrapper = styled.div`
 
   /* Apply spacing prior to each header */
   .section-header > div {
-    padding-top: 20vh;
+    padding-top: var(--section-padding);
   }
 
   /* Automatically apply spacing to the section's content after the header */
@@ -450,8 +450,8 @@ const Wrapper = styled.div`
 
   .dx {
     align-items: center;
-    grid-gap: 10vh var(--grid-gap);
-    padding-bottom: 20vh;
+    grid-gap: var(--header-trailing-padding) var(--grid-gap);
+    padding-bottom: var(--section-padding);
 
     svg {
       margin: 0 0 .85rem;
@@ -469,7 +469,7 @@ const Wrapper = styled.div`
   }
 
   .batteries {
-    padding-bottom: 20vh;
+    padding-bottom: var(--section-padding);
 
     > div {
       background: var(--black);

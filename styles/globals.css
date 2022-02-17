@@ -31,7 +31,8 @@
   --button-padding: 1rem 2rem;
   --border-radius: .35rem;
 
-  --header-trailing-padding: 8vh;
+  --header-trailing-padding: 4vh;
+  --section-padding: 10vh;
 
   --nav-height: 120px;
 
