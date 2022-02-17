@@ -44,10 +44,7 @@ export default React.forwardRef<HTMLButtonElement, Props>(
       <C
         {...cProps}
         ref={ref}
-        css={[
-          kind && kindCSS[kind],
-          props.disabled && disabledCSS,
-        ]}
+        css={[kind && kindCSS[kind], props.disabled && disabledCSS]}
         {...rest}
         onClick={onClick}
         className={`button ${props.className || ""}`}

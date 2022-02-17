@@ -15,9 +15,13 @@
   --primary-color: #4636F5;
   --primary-color-rgb: 70, 54, 245;
   --stroke-color: #525661;
+
   --black: #040408;
   --black-rgb: 4, 4, 8;
+  --gray: #212121;
+
   --grid-line-color: #41465299;
+  --grid-gap: 1.5rem;
 
   --button-padding: 1rem 2rem;
   --border-radius: .35rem;
@@ -62,6 +66,10 @@ h4 {
   margin: .5rem 0;
 }
 
+.text-center {
+  text-align: center;
+}
+
 .section-label {
   font-size: 0.875rem;
   text-transform: uppercase;
@@ -81,7 +89,7 @@ h4 {
 .grid {
   display: grid;
   grid-template-columns: repeat(10, 1fr);
-  grid-gap: 1rem;
+  grid-gap: var(--grid-gap);
 }
 
 .grid-center-8 {

@@ -31,7 +31,7 @@ export default function DocLayout(props: any) {
   return (
     <DocsLayout categories={scope.categories}>
       <Head>
-        <title>{scope.title } → Inngest docs</title>
+        <title>{scope.title} → Inngest docs</title>
       </Head>
       <DocsContent>
         <div>

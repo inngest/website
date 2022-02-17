@@ -4,7 +4,7 @@ import Button from "../shared/Button";
 
 type Props = {
   grid?: boolean;
-}
+};
 
 const Nav: React.FC<Props> = ({ grid = true }) => {
   if (grid) {
@@ -15,38 +15,34 @@ const Nav: React.FC<Props> = ({ grid = true }) => {
       </div>
     );
   }
-  return <NavContent />
+  return <NavContent />;
 };
 
 const NavContent = () => {
   return (
-      <Container className="grid-center-8">
-        <div>
-          <a href="/">
-            <img src="/logo-white.svg" alt="Inngest logo" className="logo" />
-          </a>
-        </div>
+    <Container className="grid-center-8">
+      <div>
+        <a href="/">
+          <img src="/logo-white.svg" alt="Inngest logo" className="logo" />
+        </a>
+      </div>
 
-        <div>
-          <StyledLink href="/library">Library</StyledLink>
-          <StyledLink href="/docs">Docs</StyledLink>
-          <StyledLink href="/blog">Blog</StyledLink>
-          <StyledLink href="/pricing">Pricing</StyledLink>
-        </div>
+      <div>
+        <StyledLink href="/library">Library</StyledLink>
+        <StyledLink href="/docs">Docs</StyledLink>
+        <StyledLink href="/blog">Blog</StyledLink>
+        <StyledLink href="/pricing">Pricing</StyledLink>
+      </div>
 
-        <div>
-          <StyledLink href="https://app.inngest.com/login">Log in</StyledLink>
-          <Button
-            link="/register"
-            className="button"
-            kind="primary"
-          >
-            Start building →
-          </Button>
-        </div>
-      </Container>
+      <div>
+        <StyledLink href="https://app.inngest.com/login">Log in</StyledLink>
+        <Button link="/register" className="button" kind="primary">
+          Start building →
+        </Button>
+      </div>
+    </Container>
   );
-}
+};
 
 const Container = styled.div`
   display: flex;
@@ -65,7 +61,7 @@ const Container = styled.div`
 
   img {
     max-height: 60px;
-    margin: 5px 40px 0 .25rem;
+    margin: 5px 40px 0 0.25rem;
   }
 
   a + a {
@@ -82,7 +78,6 @@ const Container = styled.div`
     }
   }
 `;
-
 
 const StyledLink = styled.a`
   display: inline-block;

@@ -1,24 +1,24 @@
 import styled from "@emotion/styled";
 
-type Props = { className?: string }
+type Props = { className?: string };
 
 const Banner: React.FC<Props> = (props) => {
-  return (
-    <Wrapper className={props.className}>
-      {props.children}
-    </Wrapper>
-  );
-}
+  return <Wrapper className={props.className}>{props.children}</Wrapper>;
+};
 
-export const CheckBanner: React.FC<{ list: Array<String> } & Props> = (props) => {
+export const CheckBanner: React.FC<{ list: Array<String> } & Props> = (
+  props
+) => {
   return (
     <Banner className={props.className}>
       <CheckList>
-        {props.list.map((elem, n) => <li key={n}>{elem}</li>)}
+        {props.list.map((elem, n) => (
+          <li key={n}>{elem}</li>
+        ))}
       </CheckList>
     </Banner>
   );
-}
+};
 
 const Wrapper = styled.div`
   background: var(--black);
@@ -28,7 +28,7 @@ const Wrapper = styled.div`
   box-shadow: 0 5px 40px rgba(var(--black-rgb), 0.5);
 `;
 
-const CheckList = styled.ul`  
+const CheckList = styled.ul`
   list-style: none;
   display: flex;
 
@@ -41,6 +41,6 @@ const CheckList = styled.ul`
   li + li {
     margin-left: 3rem;
   }
-`
+`;
 
 export default Banner;

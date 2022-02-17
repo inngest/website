@@ -21,9 +21,7 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>
-          Inngest: About Us
-        </title>
+        <title>Inngest: About Us</title>
         <link rel="icon" href="/favicon.png" />
         <meta property="og:title" content="Inngest" />
         <meta property="og:url" content="https://www.inngest.com" />
@@ -45,18 +43,17 @@ export default function Home() {
       <Hero className="hero">
         <Content className="grid">
           <div>
-            <h1>
-              About
-            </h1>
+            <h1>About</h1>
             <p>
-              We're creating a new way of deploying serverless functions for developers that's faster, more reliable, and easier to grow&nbsp;and&nbsp;scale.
+              We're creating a new way of deploying serverless functions for
+              developers that's faster, more reliable, and easier to
+              grow&nbsp;and&nbsp;scale.
             </p>
           </div>
         </Content>
       </Hero>
 
-      <Content>
-      </Content>
+      <Content></Content>
 
       <div style={{ marginTop: 100 }}>
         <Footer />
@@ -65,10 +62,7 @@ export default function Home() {
   );
 }
 
-const gradient = (
-  el,
-  colors = ["#18435c", "#18435c", "#2f622f"]
-) => {
+const gradient = (el, colors = ["#18435c", "#18435c", "#2f622f"]) => {
   new FinisherHeader(
     {
       count: 6,

@@ -40,7 +40,11 @@ export default function BlogLayout(props) {
                   <Date>{focus.humanDate}</Date>
                   <p>{focus.subtitle}</p>
                 </div>
-                {focus.img && <div className="img"><img src={focus.img} /></div>}
+                {focus.img && (
+                  <div className="img">
+                    <img src={focus.img} />
+                  </div>
+                )}
               </a>
             </Focus>
           )}
@@ -142,7 +146,7 @@ const Focus = styled.div`
     margin: 0 0 10px;
   }
 
-  .img { 
+  .img {
     display: flex;
     justify-content: center;
   }

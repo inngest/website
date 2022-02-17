@@ -3,9 +3,9 @@ import styled from "@emotion/styled";
 import { highlight } from "../utils/code";
 
 type Props = {
-  code: { [language: string]: string }
+  code: { [language: string]: string };
   selected?: string;
-}
+};
 
 const Code: React.FC<Props> = (props) => {
   const langs = Object.keys(props.code);
@@ -21,11 +21,13 @@ const Code: React.FC<Props> = (props) => {
             </li>
           ))}
         </ul>
-        )}
-      <pre><code>{props.code[selected]}</code></pre>
+      )}
+      <pre>
+        <code>{props.code[selected]}</code>
+      </pre>
     </Wrapper>
   );
-}
+};
 
 export default Code;
 
@@ -42,7 +44,7 @@ const Wrapper = styled.div`
   }
 
   li button {
-    padding: .5rem .75rem;
+    padding: 0.5rem 0.75rem;
     border: 0;
     background: transparent;
     color: #fff;
@@ -50,14 +52,15 @@ const Wrapper = styled.div`
   }
 
   li + li {
-  margin-left: 1rem;
+    margin-left: 1rem;
   }
 
   li.selected button {
     background: var(--primary-color);
   }
 
-  pre, code {
+  pre,
+  code {
     font-size: 1rem;
   }
 `;
