@@ -121,9 +121,8 @@ const Intro = styled.div`
 
 const Focus = styled.div`
   margin: -10vh 0 8vh;
-  border: 1px solid #ffffff19;
+  background: var(--bg-color);
   z-index: 1;
-  background: var(--bg-dark);
   box-shadow: 0 20px 80px rgba(0, 0, 0, 0.5);
   border-radius: 3px;
 
@@ -160,7 +159,7 @@ const Date = styled.div`
 
 const List = styled.div`
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr;
   grid-gap: 2rem;
   padding: 0 0 20vh 0;
 

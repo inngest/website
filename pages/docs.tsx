@@ -105,7 +105,7 @@ export const DocsLayout: React.FC<{ categories: Categories }> = ({
 
             <ul>
               <li>
-                <a href="/docs" className="category">
+                <a href="/docs" className="category" style={{ paddingBottom: 0 }}>
                   <Home fill="#fff" size={20} /> Home
                 </a>
               </li>
@@ -228,7 +228,7 @@ const ContentWrapper = styled.div`
 
 export const DocsContent = styled.div`
   display: grid;
-  max-width: 800px;
+  max-width: 1000px;
   grid-template-columns: 3fr 1fr;
 
   h2 {
@@ -254,7 +254,6 @@ export const InnerDocsContent = styled.div`
 
   h2 {
     padding-top: 2rem;
-    font-size: 28px;
   }
 
   h4 {
@@ -273,10 +272,11 @@ export const InnerDocsContent = styled.div`
   .tldr {
     border: 1px solid #ffffff33;
     border-radius: 3px;
-    padding: 3rem 2rem 1rem;
+    padding: 3rem 2rem 2rem;
     margin: 0 0 4rem;
-    font-size: 12px;
+    font-size: .9rem;
     position: relative;
+    box-shadow: 0 5px 20px rgba(var(--black-rgb), 0.3);
 
     p,
     li {
@@ -297,10 +297,9 @@ export const InnerDocsContent = styled.div`
       position: absolute;
       top: 1.3rem;
       left: 2rem;
-      font-size: 0.8rem;
+      font-size: 0.9rem;
       opacity: 0.5;
 
-      font-size: 11px;
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 1px;
@@ -619,7 +618,6 @@ const Menu = styled.div`
   justify-content: flex-end;
   padding: 3rem 4rem 3rem 3rem;
   background: rgba(0, 0, 0, 0.4);
-  font-size: 14px;
 
   > div {
     max-width: 300px;
@@ -707,7 +705,6 @@ const Menu = styled.div`
     margin-top: 3px;
     opacity: 0.4;
     transition: all 0.3s;
-    font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 1px;
     &:hover {

@@ -24,13 +24,6 @@ export const Inner = styled.div`
     margin: 2rem 0 0;
   }
 
-  p,
-  ul,
-  li {
-    font-size: 18px;
-    line-height: 1.7;
-  }
-
   h1 {
     margin: 0 0 2rem;
   }
@@ -42,10 +35,10 @@ export const Inner = styled.div`
   }
 
   .blog--date {
-    font-size: 14px;
+    font-size: .85rem;
     opacity: 0.6;
-    margin: 1rem 0 3rem;
-    padding: 0 0 0 1rem;
+    margin: -3.5rem 0 5rem;
+    padding: 0;
     border-left: 2px solid var(--light-grey);
   }
 

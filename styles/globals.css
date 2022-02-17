@@ -39,10 +39,17 @@
   font-size: 22px;
 
   font-family: var(--font);
-  color: #fff;
+  color: #dfe2e9;
 }
 
-p { color: var(--font-color); }
+.home p { color: var(--font-color); }
+
+p + p { margin-top: 1.5rem }
+li + li { margin-top: .5rem }
+
+a {
+  color: #dfe2e9;
+}
 
 .nav-grid {
   position: relative;
@@ -76,6 +83,7 @@ h1 + .subheading {
 
 h2 {
   font-size: 1.6rem;
+  line-height: 1.15;
 }
 
 h3, .h3 {
@@ -87,6 +95,26 @@ h4 {
   font-size: 1.2rem;
   font-weight: normal;
 }
+
+h5 {
+  font-size: .8rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/** Copy relationship: everything but home. **/
+
+:not(.home) h2 + p {
+  margin-top: 2rem;
+}
+
+:not(.home) h3 + p {
+  margin-top: 1rem;
+}
+
+p + ul { margin: 1rem 0 }
+
+/** Classes **/
 
 .text-center {
   text-align: center;

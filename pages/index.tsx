@@ -149,7 +149,7 @@ export default function Home() {
   };
 
   return (
-    <Wrapper>
+    <Wrapper className="home">
       <Head>
         <title>
           Inngest → build serverless event-driven functions in minutes
