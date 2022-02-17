@@ -475,7 +475,7 @@ const Wrapper = styled.div`
       background: var(--black);
       border-radius: var(--border-radius);
       padding: 1rem;
-      font-size: 1.5rem;
+      font-size: 1.2rem;
     }
     p { color: #fff }
     .icon { 

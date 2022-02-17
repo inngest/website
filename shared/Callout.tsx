@@ -12,7 +12,7 @@ const Callout: React.FC<Props> = ({ small, heading }) => {
       <Content className="bg-primary">
         <div>
           <span>{small || "Now with zero yaml ;-)"}</span>
-          <h3>{heading || "Deploy a serverless function in minutes."}</h3>
+          <h2>{heading || "Deploy a serverless function in minutes."}</h2>
         </div>
         <Button kind="black" href="/sign-up">{'>'}_ Start building</Button>
       </Content>

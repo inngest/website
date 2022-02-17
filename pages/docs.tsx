@@ -789,11 +789,6 @@ const Discover = styled.div`
     grid-gap: 2rem;
   }
 
-  p,
-  ul {
-    font-size: 14px;
-  }
-
   ul {
     margin-top: 3.5rem;
   }
