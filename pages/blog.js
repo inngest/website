@@ -112,10 +112,11 @@ const Intro = styled.div`
 
   header {
     max-width: 100% !important;
-    padding: 0 2rem !important;
+    padding: 2rem !important;
     h1 {
       opacity: 0.8;
     }
+    h3 + p { margin-top: .5rem }
   }
 `;
 

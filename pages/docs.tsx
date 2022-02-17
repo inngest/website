@@ -660,7 +660,6 @@ const Menu = styled.div`
     opacity: 0.9 !important;
 
     align-items: center;
-    line-height: 1;
 
     svg {
       margin-right: 15px;

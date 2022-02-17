@@ -51,8 +51,10 @@ const Container = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 2rem 0;
-
   height: 120px;
+
+  font-family: var(--font);
+  font-size: 22px;
 
   .button {
     font-weight: 600;
@@ -65,7 +67,7 @@ const Container = styled.div`
 
   img {
     max-height: 60px;
-    margin: 5px 40px 0 0.25rem;
+    margin: 5px 40px 0 4px;
   }
 
   a + a {

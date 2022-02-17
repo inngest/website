@@ -65,7 +65,7 @@ export const buttonCSS = css`
   text-align: center;
 
   & + .button {
-    margin-left: 1rem;
+    margin-left: 16px;
   }
 `;
 

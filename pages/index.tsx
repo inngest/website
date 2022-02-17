@@ -128,25 +128,19 @@ export const INGEST_KEY =
 // export const INGEST_KEY = 'MnzaTCk7Se8i74hA141bZGS-NY9P39RSzYFbxanIHyV2VDNu1fwrns2xBQCEGdIb9XRPtzbp0zdRPjtnA1APTQ';
 
 export default function Home() {
-  const [submitted, setSubmitted] = useState(false);
-  const [email, setEmail] = useState("");
 
-  const onSubmit = (e) => {
-    e.preventDefault();
-    const Inngest = globalThis.Inngest;
-    if (!Inngest) {
-      console.warn("Inngest not found");
-      return;
+  useEffect(() => {
+    // Roboto Condensed has an... awkward base size.  We change the :root font size
+    // for this page that uses this font.  TODO: Should we keep this font?
+    const style = document.createElement("style");
+    style.innerText = ":root { font-size: 22px; }";
+    style.id = "root-condensed";
+    document.body.appendChild(style);
+    return () => {
+      // Remove this node when the page is changed so that we go back to standards.
+      document.querySelector("#root-condensed").remove();
     }
-    Inngest.init(INGEST_KEY);
-    Inngest.event({
-      name: "marketing.signup",
-      data: { email },
-      user: { email },
-    });
-    setEmail("");
-    setSubmitted(true);
-  };
+  }, []);
 
   return (
     <Wrapper className="home">
