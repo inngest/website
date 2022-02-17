@@ -160,7 +160,7 @@ export default function Home() {
         <div className="grid-line" />
       </HIW>
 
-      <Section className="grid">
+      <div className="code-grid grid">
         <div className="grid-center-6">
           <span className="section-label">Events</span>
           <h2>Send your events from anywhere</h2>
@@ -170,7 +170,9 @@ export default function Home() {
         <div className="code grid-center-6">
           <Code code={events} />
         </div>
-      </Section>
+
+        <div className="grid-line" />
+      </div>
 
 
       <div style={{ marginTop: 100 }}>
@@ -182,11 +184,19 @@ export default function Home() {
 
 // Wrapper defines a top-level scope for nesting home-specific CSS classes within.
 const Wrapper = styled.div`
-.code {
-  padding: 2rem 0;
-}
+  .code {
+    padding: 2rem 0 10vh;
+  }
 
-.hero-grid .grid-line {
+  .code-grid {
+    > div:first-of-type {
+      padding: 15vh 0 0;
+    }
+    .code {
+    }
+  }
+
+.hero-grid .grid-line, .code-grid .grid-line {
   grid-row-end: 3;
 }
 `;
@@ -220,7 +230,7 @@ const Section = styled.div`
 
 const HIW = styled.div`
   > div { 
-    padding: 3rem 0;
+    padding: 3rem 1rem 3rem 0;
   }
   svg {
     margin: 0 0 1rem;
