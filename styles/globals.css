@@ -172,6 +172,11 @@ li > ol, li > ul  { margin: 1rem 0 }
   grid-gap: var(--grid-gap);
 }
 
+.grid-center-4, .col-4-center {
+  /* Skip first and last two columns */
+  grid-column: 4 / -4;
+}
+
 .grid-center-6, .col-6-center {
   /* Skip first and last two columns */
   grid-column: 3 / -3;
