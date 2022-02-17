@@ -110,7 +110,7 @@ const SectionHeader: React.FC<{
 }> = ({ label, title, subtitle, counter }) => {
   return (
     <div className="grid section-header">
-      <div className="grid-center-6">
+      <div className="grid-center-4">
         <span className="section-label">{label}</span>
         <h2>{title}</h2>
         <h4>{subtitle}</h4>
