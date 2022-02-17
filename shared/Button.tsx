@@ -8,7 +8,7 @@ type Props = React.HTMLAttributes<any> & {
   type?: "button" | "reset" | "submit" | undefined;
   onClick?: (() => void) | ((e: React.SyntheticEvent) => any);
   disabled?: boolean;
-  link?: string;
+  href?: string;
   target?: string;
   style?: object;
   className?: string;
@@ -17,26 +17,25 @@ type Props = React.HTMLAttributes<any> & {
 
 export default React.forwardRef<HTMLButtonElement, Props>(
   (props: Props, ref) => {
-    const { kind, link, children, ...rest } = props;
+    const { kind, href, children, ...rest } = props;
     let { onClick } = props;
 
     let C: any = Button;
     // lets us smartly apply "href" to link components
     let cProps = {};
 
-    if (link) {
+    if (href) {
       C = Link;
-      cProps = { href: link };
+      cProps = { href: href };
       onClick = (e: React.SyntheticEvent) => {
         if (props.target !== undefined) {
           // use a normal handler to open a tab if there's target="_blank" etc.
           return;
         }
-        if (link.indexOf("://") !== -1) {
-          window.location.href = link;
+        if (href.indexOf("://") !== -1) {
+          window.location.href = href;
           return;
         }
-        e.preventDefault();
       };
     }
 

@@ -189,10 +189,10 @@ export default function Home() {
               No infra. No servers. Zero YAML.
             </p>
 
-            <Button kind="primary" link="/sign-up">
+            <Button kind="primary" href="/sign-up">
               >_ Start building
             </Button>
-            <Button kind="outline" link="/docs">
+            <Button kind="outline" href="/docs">
               Explore docs →
             </Button>
           </div>
@@ -458,7 +458,7 @@ const Wrapper = styled.div`
 
     img {
       border: 1px solid rgba(var(--black-rgb), 0.5);
-      box-shadow: 0 10px 5rem rgba(var(--black-rgb), 0.7);
+      box-shadow: 0 10px 5rem rgba(var(--black-rgb), 0.5);
       pointer-events: none;
       width: 100%;
     }

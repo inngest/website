@@ -14,7 +14,7 @@ const Callout: React.FC<Props> = ({ small, heading }) => {
           <span>{small || "Now with zero yaml ;-)"}</span>
           <h3>{heading || "Deploy a serverless function in minutes."}</h3>
         </div>
-        <Button kind="black" link="/signup">>_ Start building</Button>
+        <Button kind="black" href="/sign-up">>_ Start building</Button>
       </Content>
     </div>
   );
