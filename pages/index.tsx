@@ -235,7 +235,7 @@ export default function Home() {
       <HIW className="grid">
         <div className="grid-2-offset-2">
           <Hub />
-          <h4>One event hub</h4>
+          <h3>One event hub</h3>
           <p>
             We ingest all your events via our one-click integrations, SDKs, or
             webhooks.
@@ -243,7 +243,7 @@ export default function Home() {
         </div>
         <div className="grid-2">
           <Functions />
-          <h4>Serverless Functions</h4>
+          <h3>Serverless Functions</h3>
           <p>
             Your code is executed instantly against the events you specify.
             Automatic retries built-in.
@@ -251,7 +251,7 @@ export default function Home() {
         </div>
         <div className="grid-2">
           <History />
-          <h4>Unified History</h4>
+          <h3>Unified History</h3>
           <p>
             View logging, payload data, and audit-trails for your events and
             functions together in one place.
