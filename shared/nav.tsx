@@ -36,7 +36,7 @@ const NavContent = () => {
 
       <div>
         <StyledLink href="https://app.inngest.com/login">Log in</StyledLink>
-        <Button link="/register" className="button" kind="primary">
+        <Button link="/sign-up" className="button" kind="primary">
           Start building →
         </Button>
       </div>

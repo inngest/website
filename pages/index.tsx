@@ -190,9 +190,9 @@ export default function Home() {
             </p>
 
             <Button kind="primary" link="/sign-up">
-              Start building
+              >_ Start building
             </Button>
-            <Button kind="outline" link="/sign-up">
+            <Button kind="outline" link="/docs">
               Explore docs →
             </Button>
           </div>
