@@ -50,12 +50,13 @@ const Container = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 0.9rem;
-  font-weight: 600;
   padding: 2rem 0;
-  font-size: 14px;
 
   height: 120px;
+
+  .button {
+    font-weight: 600;
+  }
 
   > div {
     display: flex;
@@ -87,8 +88,6 @@ const StyledLink = styled.a`
   padding: 12px 20px 11px;
   transition: all 0.2s;
   text-decoration: none;
-
-  font-size: 14px;
 
   &[href]:not([href=""]) {
     color: #fff;
@@ -169,8 +168,6 @@ const Hoverable = styled.div`
       margin: 5px 0;
       transition: all .2s;
     }
-
-    a +
   }
 `;
 

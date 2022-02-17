@@ -71,5 +71,7 @@ const Wrapper = styled.div`
     padding: 0.5rem;
     display: inline-block;
     font-family: var(--font-mono);
+    border-radius: var(--border-radius);
+    font-size: 14px;
   }
 `;

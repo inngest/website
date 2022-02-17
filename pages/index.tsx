@@ -437,6 +437,7 @@ const Wrapper = styled.div`
     margin-top: calc(var(--nav-height) * -1);
     background: url(/assets/hero-grid.svg) no-repeat right 10%;
     align-items: center;
+    p { color: #fff }
   }
 
   .integrations {
@@ -444,6 +445,7 @@ const Wrapper = styled.div`
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-gap: var(--grid-gap);
+    p { color: #fff }
   }
 
   .dx {
@@ -475,9 +477,7 @@ const Wrapper = styled.div`
       padding: 1rem;
       font-size: 1.5rem;
     }
-    p {
-      max-width: 70%;
-    }
+    p { color: #fff }
     .icon { 
       height: 4rem;
       width: 4rem;
@@ -509,10 +509,11 @@ const Hero = styled.div`
 
   p {
     padding: 0 0 4rem;
+    font-family: var(--font);
   }
 
   .button {
-    font-size: 1.375rem;
+    /*font-size: 1.375rem;*/
     font-family: var(--font-mono);
   }
 `;

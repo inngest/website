@@ -38,9 +38,11 @@ const Content = styled.div`
   span, button, a {
     font-family: var(--font-mono);
   }
-
+  span {
+    font-size: 16px;
+  }
   button, a {
-    font-size: 1.3rem;
+    font-size: 20px;
   }
 
   &:before {
