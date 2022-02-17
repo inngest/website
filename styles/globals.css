@@ -20,7 +20,7 @@
   --black-rgb: 4, 4, 8;
   --gray: #212121;
 
-  --grid-line-color: #41465299;
+  --grid-line-color: #414652cc;
   --grid-gap: 1.5rem;
 
   --button-padding: 1rem 2rem;
@@ -129,6 +129,7 @@ h4 {
   justify-content: flex-end;
   color: var(--grid-line-color);
   font-size: .875rem;
+  height: 100%;
 }
 
 .grid-line span {

@@ -180,22 +180,24 @@ export default function Home() {
       <Nav />
 
       <div className="grid hero-grid">
-        <Hero>
-          <h1>Make event-driven apps fun to build</h1>
-          <p className="subheading">
-            Deploy serverless functions in minutes.
-            <br />
-            No infra. No servers. Zero YAML.
-          </p>
+        <Hero className="grid-center-8">
+          <div>
+            <h1>Make event-driven apps fun to build</h1>
+            <p className="subheading">
+              Deploy serverless functions in minutes.
+              <br />
+              No infra. No servers. Zero YAML.
+            </p>
 
-          <Button kind="primary" link="/sign-up">
-            Start building
-          </Button>
-          <Button kind="outline" link="/sign-up">
-            Explore docs →
-          </Button>
+            <Button kind="primary" link="/sign-up">
+              Start building
+            </Button>
+            <Button kind="outline" link="/sign-up">
+              Explore docs →
+            </Button>
+          </div>
+          <img src="/assets/preview.svg" alt="Inngest visualization" />
         </Hero>
-        <img src="/assets/preview.svg" alt="Inngest visualization" />
         <div className="grid-line" />
       </div>
       <CheckBanner
@@ -435,16 +437,6 @@ const Wrapper = styled.div`
     align-items: center;
   }
 
-  .hero-grid .grid-line,
-  .code-grid .grid-line {
-    grid-row-end: 3;
-  }
-
-  .hero-grid img {
-    grid-column: 7 / -2;
-    width: 100%;
-  }
-
   .integrations {
     padding: 2rem 0;
     display: grid;
@@ -499,8 +491,19 @@ const Wrapper = styled.div`
 
 const Hero = styled.div`
   padding: 12vh 0;
-  grid-column: 2 / -5;
 
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  grid-gap: var(--grid-gap);
+
+  > div:first-of-type {
+  grid-column:  span 5;
+  }
+
+  img {
+    grid-column: span 3;
+    width: 100%;
+  }
 
   p {
     padding: 0 0 4rem;
