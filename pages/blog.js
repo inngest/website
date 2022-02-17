@@ -183,7 +183,7 @@ const List = styled.div`
     border: 1px solid rgba(var(--black-rgb), 0.5);
     padding: 3rem 3rem 2rem;
     text-decoration: none;
-    border-radius: 3px;
+    border-radius: var(--border-radius);
   }
 
   h2 {
