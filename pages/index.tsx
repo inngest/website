@@ -198,11 +198,11 @@ export default function Home() {
       />
 
       <div className="grid">
-        <div className="grid-center-6 relative">
+        <div className="grid-center-6">
           <img
             src="/assets/graphic.svg"
             alt="Event driven serverless function example"
-            className="full-width img-shadow"
+            className="full-width img-shadow img-mesh"
           />
         </div>
         <div className="grid-line" />
@@ -256,9 +256,7 @@ export default function Home() {
           <p className="text-center">Get started with an SDK: </p>
         </div>
 
-        <div className="grid-line">
-          <span>/03</span>
-        </div>
+        <div className="grid-line" />
       </div>
 
       <div className="section grid">
@@ -303,13 +301,13 @@ const Wrapper = styled.div`
     padding-top: 20vh;
   }
 
+  .img-mesh {
+    margin-top: var(--header-trailing-padding);
+  }
+
   .code-grid {
     > div:first-of-type {
-      padding-top: 15vh;
-    }
-
-    .grid-line span {
-      padding-top: calc(15vh + 1rem);
+      padding-top: var(--header-trailing-padding);
     }
   }
 
@@ -355,7 +353,7 @@ const Section = styled.div`
 
 const HIW = styled.div`
   > div {
-    padding: 3rem 1rem 3rem 0;
+    padding: var(--header-trailing-padding) 1rem 3rem 0;
   }
   svg {
     margin: 0 0 1rem;

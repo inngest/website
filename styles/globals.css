@@ -26,6 +26,8 @@
   --button-padding: 1rem 2rem;
   --border-radius: .35rem;
 
+  --header-trailing-padding: 8vh;
+
   font-family: var(--font);
   color: #fff;
 }
