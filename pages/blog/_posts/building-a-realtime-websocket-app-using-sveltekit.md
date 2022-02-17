@@ -17,8 +17,8 @@ While there are things you can use to see webhook payloads, most of the time you
 
 1. What is Svelte?
 2. Why did we choose Svelte (over React)?
-    1. Svelte vs SvelteKit
-    2. Scope of the project
+    1. Scope of the project
+    2. Svelte vs SvelteKit
 3. Impressions
 4. Comparison to React
 5. Conclusion
@@ -37,28 +37,17 @@ In short, it’s made for performant webapps, developer efficiency, and develope
 
 We’re *really* familiar with React.  We’ve all shipped many apps using it - whether it’s web apps or React Native.  So why take the productivity loss of using a new framework for building a UI?
 
-Well, we like learning, but that’s not all. Yes, Svelte makes tiny JS bundles and is fast. If you dive deeper into Svelte, you’ll see that:
+Well, we like learning, but that’s not all. Svelte has a few features that made it a good fit for the project.  As we mentioned, we were making a tool that allows you to create free, unique URLs you can use as webhook endpoints for testing.  We ingest the webhook requests, store the headers & body for 60 minutes, then show you the data.
+
+The novel part: we also auto-generate typescript types, cue types, and JSON schemas for every JSON payload we see so that you can work with the data easily ✨.  Cue is amazing.  We’ll be writing about that later.
+
+So here's why we chose SvelteKit:
 
 - Using Vite, it builds *fast* in dev.  And it has HMR with state persistence out of the box.  Somehow this is *consistently* broken in every react app, no matter what kit you use.
 - It has SSR out of the box.  It’s built for progressive enhancement, and [configuring pre-rendering is the easiest I’ve seen](https://kit.svelte.dev/docs/page-options#prerender).  Next has this — we use next for our site and built our own Next.JS documentation plugin for our docs — but dealing with state in NextJS is a little harder.  We’ve found Next is perfect for static sites, or sites with minor interactivity.  Which brings us to...
 - State management is *easy.*  [It’s easy to work with stores](https://svelte.dev/tutorial/writable-stores).  You can (broadly speaking) use the stores from anywhere:  no top-level context necessary.  It’s out of the box, and it works everywhere.  It’s also reactive, and it’s easy to integrate with things that don’t live in components (ahem, websockets).
 
-And, because SvelteKit comes with a standard way of doing things (CSS, JS, forms, state, routing), it’s easy to work with and it’s easy to share amongst devs.  This is why we chose SvelteKit over pure Svelte.  It’s easy to get set up and running with your entire framework — think create-react-app for Svelte.
-
-### Wait, what are we building?
-
-Okay, so high level:  it’s a tool that allows you to create free, unique URLs you can use as webhook endpoints for testing.  We ingest the webhook requests, store the headers & body for 60 minutes, then show you the data.
-
-The novel part: we also auto-generate typescript types, cue types, and JSON schemas for every JSON payload we see so that you can work with the data easily ✨.  Cue is amazing.  We’ll be writing about that later.
-
-So, what do we need?
-
-- Websockets, to connect to our backend & display incoming requests in real time
-- A reactive state store, to make updating the UI easy
-- Some decent CSS tooling.  We like function over form, but we also like form.  Function and form please?
-- SSR.  We don’t want you to wait 3 seconds to see the first page paint.
-
-Svelte hits all of these.
+And, because SvelteKit comes with a standard way of doing things (CSS, JS, forms, state, routing), it’s easy to work with and it’s easy to share amongst devs.  This is why we chose SvelteKit over pure Svelte.  It’s easy to get set up and running with your entire framework — think a mixture of NextJS and reate-react-app for Svelte.
 
 ### Impressions
 
