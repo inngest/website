@@ -94,6 +94,12 @@ h4 {
   grid-gap: var(--grid-gap);
 }
 
+.two-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-gap: var(--grid-gap);
+}
+
 .grid-center-8 {
   /* Skip first and last column */
   grid-column: 2 / -2;

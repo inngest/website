@@ -10,6 +10,9 @@ import Integration, { IntegrationType } from "../shared/Integration";
 import Hub from "../shared/Icons/Hub";
 import Functions from "../shared/Icons/Functions";
 import History from "../shared/Icons/History";
+import Create from "../shared/Icons/Create";
+import Deploy from "../shared/Icons/Deploy";
+import Monitor from "../shared/Icons/Monitor";
 import { CheckBanner } from "../shared/Banner";
 
 // Send event preformatted code
@@ -162,7 +165,7 @@ export default function Home() {
         ></script>
       </Head>
 
-      <Nav border />
+      <Nav />
       <div className="grid hero-grid">
         <Hero>
           <h1>Make event-driven apps fun to build</h1>
@@ -202,7 +205,7 @@ export default function Home() {
           <img
             src="/assets/graphic.svg"
             alt="Event driven serverless function example"
-            className="full-width img-shadow img-mesh"
+            className="full-width img-mesh"
           />
         </div>
         <div className="grid-line" />
@@ -281,6 +284,30 @@ export default function Home() {
         counter="/04"
       />
 
+      <div className="grid">
+        <div className="grid-center-6 two-cols dx">
+          <div>
+            <Create />
+            <h3>Create and test with real data</h3>
+            <p>Start building functions with our auto-typed example payloads or use historical event data. Easily run fuzz testing and handle type changes without issues.</p>
+          </div>
+          <img src="/assets/payload.svg" alt="Event payload" />
+
+          <div>
+            <Deploy />
+            <h3>Deploy with confidence</h3>
+            <p>Get realtime insights into which payloads are causing errors. Instantly rollback to any previous version. And replay failed payloads when an issue is resolved. </p>
+          </div>
+          <img src="/assets/deploy.svg" alt="Deployed functions and events" />
+
+          <div>
+            <Monitor />
+            <h3>Monitor your serverless functions</h3>
+            <p>Get granular visibility into event → function pathways including conditional execution, function chains, and how often each function runs.</p>
+          </div>
+          <img src="/assets/history.svg" alt="Deployed function history" />
+        </div>
+      </div>
       <div style={{ marginTop: 100 }}>
         <Footer />
       </div>
@@ -297,18 +324,14 @@ const Wrapper = styled.div`
     }
   }
 
+  /* Apply spacing prior to each header */
   .section-header > div {
     padding-top: 20vh;
   }
 
-  .img-mesh {
-    margin-top: var(--header-trailing-padding);
-  }
-
-  .code-grid {
-    > div:first-of-type {
-      padding-top: var(--header-trailing-padding);
-    }
+  /* Automatically apply spacing to the section's content after the header */
+  .section-header + .grid > div:first-of-type {
+    padding-top: var(--header-trailing-padding)
   }
 
   .hero-grid .grid-line,
@@ -321,6 +344,24 @@ const Wrapper = styled.div`
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-gap: var(--grid-gap);
+  }
+
+  .dx {
+    align-items: center;
+    grid-gap: 5vh var(--grid-gap);
+
+    svg {
+      margin: 0 0 .85rem;
+    }
+    h3 {
+      margin: 0 0 .75rem;
+    }
+
+    img {
+      border: 1px solid rgba(var(--black-rgb), 0.5);
+      box-shadow: 0 10px 5rem rgba(var(--black-rgb), 0.7);
+      pointer-events: none;
+    }
   }
 `;
 
@@ -335,19 +376,6 @@ const Hero = styled.div`
   .button {
     font-size: 1.375rem;
     font-family: var(--font-mono);
-  }
-`;
-
-const Section = styled.div`
-  > div {
-    padding: 10rem 0;
-  }
-  img {
-    margin: 5rem 0 2rem;
-    box-shadow: 0 10px 100px rgba(var(--black-rgb), 0.3);
-    width: 100%;
-    border: 1px solid rgba(var(--black-rgb), 0.2);
-    pointer-events: none;
   }
 `;
 
