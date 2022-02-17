@@ -26,7 +26,7 @@
   --gray: #212121;
 
   --grid-line-color: #414652cc;
-  --grid-gap: 1.5rem;
+  --grid-gap: 30px;
 
   --button-padding: 16px 32px;
   --border-radius: .35rem;
@@ -128,7 +128,13 @@ h5 {
   margin-top: 1rem;
 }
 
-p + ul { margin: 1rem 0 }
+
+:not(.home) p + h3, ol + h3, ul + h3 {
+  margin-top: 3rem;
+}
+
+p + ul, p + ol, ol + p, ul + p { margin: 1.5rem 0 }
+li > ol, li > ul  { margin: 1rem 0 }
 
 /** Classes **/
 
@@ -166,14 +172,27 @@ p + ul { margin: 1rem 0 }
   grid-gap: var(--grid-gap);
 }
 
-.grid-center-8 {
+.grid-center-4, .col-4-center {
+  /* Skip first and last two columns */
+  grid-column: 4 / -4;
+}
+
+.grid-center-6, .col-6-center {
+  /* Skip first and last two columns */
+  grid-column: 3 / -3;
+}
+
+.grid-center-7, .col-7-center {
+  grid-column: 3 / -2;
+}
+
+.grid-center-8, .col-8-center {
   /* Skip first and last column */
   grid-column: 2 / -2;
 }
 
-.grid-center-6 {
-  /* Skip first and last two columns */
-  grid-column: 3 / -3;
+.col-4-center {
+  grid-column: 4 / -4;
 }
 
 .grid-2-offset-2 {
