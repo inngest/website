@@ -45,7 +45,7 @@
 .home p { color: var(--font-color); }
 
 p + p { margin-top: 1.5rem }
-li + li { margin-top: .5rem }
+li + li { margin-top: .75rem }
 
 a {
   color: #dfe2e9;
