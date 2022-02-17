@@ -52,6 +52,9 @@ const Wrapper = styled.div`
   padding: 40vh 0 0;
   margin-top: -40vh;
 
+  font-family: var(--font);
+  font-size: 22px;
+
   background: url(/assets/footer-grid.svg) no-repeat right 10%;
   background-size: cover;
 
