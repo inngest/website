@@ -135,7 +135,7 @@ const Actions = ({ visible }: { visible: boolean }) => {
     <ActionWrapper css={[showEdges && showEdgesCSS]}>
       <div>
         <DefaultActions>
-          <ButtonGroup right>
+          <div right>
             <Button
               size="small"
               onClick={(e: React.SyntheticEvent) => {
@@ -145,7 +145,7 @@ const Actions = ({ visible }: { visible: boolean }) => {
             >
               Add child
             </Button>
-          </ButtonGroup>
+          </div>
         </DefaultActions>
       </div>
     </ActionWrapper>
