@@ -178,6 +178,7 @@ export default function Home() {
       </Head>
 
       <Nav />
+
       <div className="grid hero-grid">
         <Hero>
           <h1>Make event-driven apps fun to build</h1>
@@ -187,10 +188,10 @@ export default function Home() {
             No infra. No servers. Zero YAML.
           </p>
 
-          <Button kind="primary" href="/sign-up">
+          <Button kind="primary" link="/sign-up">
             Start building
           </Button>
-          <Button kind="outline" href="/sign-up">
+          <Button kind="outline" link="/sign-up">
             Explore docs →
           </Button>
         </Hero>
