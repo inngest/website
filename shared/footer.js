@@ -41,7 +41,6 @@ const Footer = () => {
           </div>
         </div>
         <div className="grid-line" />
-        <img src="/assets/footer-grid.svg" role="presentation" aria-hidden="true" className="footer-grid" alt="" />
       </Wrapper>
   );
 };
@@ -49,8 +48,12 @@ const Footer = () => {
 export default Footer;
 
 const Wrapper = styled.div`
-  position: relative;
   overflow: hidden;
+  padding: 50vh 0 0;
+  margin-top: -50vh;
+
+  background: url(/assets/footer-grid.svg) no-repeat right 10%;
+  background-size: cover;
 
   > div {
     padding: 20vh 0 5vh;
