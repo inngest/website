@@ -446,7 +446,7 @@ const Wrapper = styled.div`
 
   .dx {
     align-items: center;
-    grid-gap: 5vh var(--grid-gap);
+    grid-gap: 10vh var(--grid-gap);
     padding-bottom: 20vh;
 
     svg {
