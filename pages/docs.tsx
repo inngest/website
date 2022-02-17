@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import styled from "@emotion/styled";
 
 import Nav from "../shared/nav";
+import Footer from "../shared/footer";
 import { getAllDocs, Categories, Category, DocScope } from "../utils/docs";
 import { categoryMeta } from "../utils/docsCategories";
 import Home from "../shared/Icons/Home";
@@ -143,6 +144,7 @@ export const DocsLayout: React.FC<{ categories: Categories }> = ({
         </Menu>
         <Inner>{children}</Inner>
       </ContentWrapper>
+      <Footer />
     </>
   );
 };
@@ -751,10 +753,9 @@ const Menu = styled.div`
 `;
 
 const Inner = styled.div`
-  box-shadow: 0 0 40px rgba(0, 0, 0, 0.4);
 
   > div {
-    padding: 1rem 4rem;
+    padding: 1rem 4rem 25vh;
   }
 
   @media (max-width: 800px) {

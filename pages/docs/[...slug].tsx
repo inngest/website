@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import Head from "next/head";
+import Footer from "../shared/footer";
 import styled from "@emotion/styled";
 import { serialize } from "next-mdx-remote/serialize";
 import { MDXRemote } from "next-mdx-remote";
