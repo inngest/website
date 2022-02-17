@@ -1,13 +1,18 @@
 import styled from "@emotion/styled";
 import Button from "./Button";
 
-const Callout = () => {
+type Props = {
+  small?: string;
+  heading?: string;
+}
+
+const Callout: React.FC<Props> = ({ small, heading }) => {
   return (
     <div className="grid">
       <Content className="bg-primary">
         <div>
-          <span>Now with zero yaml ;-)</span>
-          <h3>Deploy a serverless function in minutes.</h3>
+          <span>{small || "Now with zero yaml ;-)"}</span>
+          <h3>{heading || "Deploy a serverless function in minutes."}</h3>
         </div>
         <Button kind="black" link="/signup">Start building</Button>
       </Content>

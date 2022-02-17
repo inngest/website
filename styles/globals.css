@@ -97,12 +97,6 @@ h4 {
   grid-gap: var(--grid-gap);
 }
 
-.two-cols {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-gap: var(--grid-gap);
-}
-
 .grid-center-8 {
   /* Skip first and last column */
   grid-column: 2 / -2;
@@ -144,4 +138,16 @@ h4 {
   border-bottom: 1px dashed var(--grid-line-color);
 }
 
-/** UNSURE **/
+/* Specialized grids */
+
+.two-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-gap: var(--grid-gap);
+}
+
+.four-cols {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-gap: var(--grid-gap);
+}

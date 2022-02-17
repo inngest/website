@@ -14,6 +14,17 @@ import History from "../shared/Icons/History";
 import Create from "../shared/Icons/Create";
 import Deploy from "../shared/Icons/Deploy";
 import Monitor from "../shared/Icons/Monitor";
+import CLI from "../shared/Icons/CLI";
+import Retries from "../shared/Icons/Retries";
+import Replays from "../shared/Icons/Replays";
+import Transforms from "../shared/Icons/Transforms";
+import Versions from "../shared/Icons/Versions";
+import Rollback from "../shared/Icons/Rollback";
+import Audit from "../shared/Icons/Audit";
+import Logging from "../shared/Icons/Logging";
+import Historical from "../shared/Icons/Historical";
+import Observability from "../shared/Icons/Observability";
+import Alerting from "../shared/Icons/Alerting";
 import { CheckBanner } from "../shared/Banner";
 
 // Send event preformatted code
@@ -308,9 +319,86 @@ export default function Home() {
           </div>
           <img src="/assets/history.svg" alt="Deployed function history" />
         </div>
+
+        <div className="grid-line" />
       </div>
 
       <Callout />
+
+      <SectionHeader
+        title="Batteries included"
+        subtitle="Everything you need to build event-driven apps including:"
+        counter="/05"
+      />
+
+      <div className="grid">
+        <div className="grid-center-6 four-cols batteries">
+
+          <div>
+            <div className="icon"><CLI /></div>
+            <p>Developer CLI</p>
+          </div>
+
+          <div>
+            <div className="icon"><Retries /></div>
+            <p>Automatic Retries</p>
+          </div>
+
+          <div>
+            <div className="icon"><Replays /></div>
+            <p>Manual Replays</p>
+          </div>
+
+          <div>
+            <div className="icon"><Transforms /></div>
+            <p>Payload Transforms</p>
+          </div>
+
+          <div>
+            <div className="icon"><Versions /></div>
+            <p>Version History</p>
+          </div>
+
+          <div>
+            <div className="icon"><Rollback /></div>
+            <p>Instant Rollbacks</p>
+          </div>
+
+          <div>
+            <div className="icon"><Audit /></div>
+            <p>Audit Trails</p>
+          </div>
+
+          <div>
+            <div className="icon"><Logging /></div>
+            <p>Full Logging</p>
+          </div>
+
+          <div>
+            <div className="icon"><Historical /></div>
+            <p>Historical Testing</p>
+          </div>
+
+          <div>
+            <div className="icon"><Observability /></div>
+            <p>End-to-end Observability</p>
+          </div>
+
+          <div>
+            <div className="icon"><Alerting /></div>
+            <p>Alerting</p>
+          </div>
+
+          <div>
+            <div className="icon"><CLI /></div>
+            <p>Developer CLI</p>
+          </div>
+
+        </div>
+        <div className="grid-line" />
+      </div>
+
+      <Callout small="Still reading?" />
 
       <div style={{ marginTop: 100 }}>
         <Footer />
@@ -367,6 +455,30 @@ const Wrapper = styled.div`
       box-shadow: 0 10px 5rem rgba(var(--black-rgb), 0.7);
       pointer-events: none;
       width: 100%;
+    }
+  }
+
+  .batteries {
+    padding-bottom: 20vh;
+
+    > div {
+      background: var(--black);
+      border-radius: var(--border-radius);
+      padding: 1rem;
+      font-size: 1.5rem;
+    }
+    p {
+      max-width: 70%;
+    }
+    .icon { 
+      height: 4rem;
+      width: 4rem;
+      margin: 0 0 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--border-radius);
+      background: var(--primary-color);
     }
   }
 `;
