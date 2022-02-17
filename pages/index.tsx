@@ -130,22 +130,19 @@ export const INGEST_KEY =
 export default function Home() {
 
   useEffect(() => {
-    // Roboto Condensed has an... awkward base size.  We change the :root font size
-    // for this page that uses this font.  TODO: Should we keep this font?
+    // Defer loading of background textures.
     const style = document.createElement("style");
     style.innerText = `
-      :root { font-size: 22px; }
       .home { 
         /* This defers loading of a large image */
         background: url(/assets/texture.webp) repeat-y;
         background-size: cover;
       }
     `;
-    style.id = "root-condensed";
+    style.id = "bg-texture";
     document.body.appendChild(style);
     return () => {
-      // Remove this node when the page is changed so that we go back to standards.
-      document.querySelector("#root-condensed").remove();
+      document.querySelector("#bg-texture").remove();
     }
   }, []);
 
@@ -406,6 +403,9 @@ export default function Home() {
       <Callout small="Still reading?" />
 
       <Footer />
+      {/* Roboto Condensed is a weird font - way smaller than others -
+      so we adjust the root size for this page only :/ */} 
+      <style>{`:root { font-size: 22px; }`} </style>
     </Wrapper>
   );
 }
