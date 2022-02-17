@@ -45,14 +45,17 @@ const NavContent = () => {
 };
 
 const Container = styled.div`
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
   font-size: 0.9rem;
   font-weight: 600;
   padding: 2rem 0;
-
   font-size: 14px;
+
+  height: 120px;
 
   > div {
     display: flex;

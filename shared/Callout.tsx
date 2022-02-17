@@ -14,7 +14,7 @@ const Callout: React.FC<Props> = ({ small, heading }) => {
           <span>{small || "Now with zero yaml ;-)"}</span>
           <h3>{heading || "Deploy a serverless function in minutes."}</h3>
         </div>
-        <Button kind="black" href="/sign-up">>_ Start building</Button>
+        <Button kind="black" href="/sign-up">{'>'}_ Start building</Button>
       </Content>
     </div>
   );
@@ -32,6 +32,8 @@ const Content = styled.div`
 
   padding: var(--header-trailing-padding) 0;
   padding-right: var(--header-trailing-padding);
+
+  box-shadow: 0 0 4rem rgba(var(--black-rgb), 0.5);
 
   span, button, a {
     font-family: var(--font-mono);

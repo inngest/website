@@ -28,8 +28,15 @@
 
   --header-trailing-padding: 8vh;
 
+  --nav-height: 120px;
+
   font-family: var(--font);
   color: #fff;
+}
+
+.nav-grid {
+  position: relative;
+  z-index: 1;
 }
 
 html, body {

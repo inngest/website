@@ -177,7 +177,7 @@ export default function Home() {
         ></script>
       </Head>
 
-      <Nav />
+      <Nav grid />
 
       <div className="grid hero-grid">
         <Hero className="grid-center-8">
@@ -190,7 +190,7 @@ export default function Home() {
             </p>
 
             <Button kind="primary" href="/sign-up">
-              >_ Start building
+              {'>'}_ Start building
             </Button>
             <Button kind="outline" href="/docs">
               Explore docs →
@@ -433,7 +433,9 @@ const Wrapper = styled.div`
   }
 
   .hero-grid {
-    background: url(/assets/hero-grid.svg) no-repeat right 50%;
+    padding-top: var(--nav-height);
+    margin-top: calc(var(--nav-height) * -1);
+    background: url(/assets/hero-grid.svg) no-repeat right 10%;
     align-items: center;
   }
 
