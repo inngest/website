@@ -401,9 +401,7 @@ export default function Home() {
 
       <Callout small="Still reading?" />
 
-      <div style={{ marginTop: 100 }}>
-        <Footer />
-      </div>
+      <Footer />
     </Wrapper>
   );
 }
