@@ -7,7 +7,7 @@ const Footer = () => {
         <div className="grid-center-6">
           <div className="four-cols">
             <a href="https://www.inngest.com">
-              <img src="/logo-white.svg" alt="Inngest logo" height="30" />
+              <img src="/logo-white.svg" alt="Inngest logo" height="30" className="logo" />
             </a>
           </div>
           <div className="four-cols">
@@ -41,6 +41,7 @@ const Footer = () => {
           </div>
         </div>
         <div className="grid-line" />
+        <img src="/assets/footer-grid.svg" role="presentation" aria-hidden="true" className="footer-grid" alt="" />
       </Wrapper>
   );
 };
@@ -48,6 +49,9 @@ const Footer = () => {
 export default Footer;
 
 const Wrapper = styled.div`
+  position: relative;
+  overflow: hidden;
+
   > div {
     padding: 20vh 0 5vh;
   }
@@ -62,7 +66,7 @@ const Wrapper = styled.div`
     margin: 3vh 0 0;
   }
 
-  img {
+  .logo {
     margin: 0 0 3vh;
   }
 
@@ -71,5 +75,13 @@ const Wrapper = styled.div`
     color: #fff !important;
     text-decoration: none;
     margin: 1rem 0;
+  }
+
+  .footer-grid {
+    position: absolute;
+    width: 100%;
+    bottom: 0;
+    opacity: .5;
+    z-index: 0;
   }
 `;

@@ -195,6 +195,7 @@ export default function Home() {
             Explore docs →
           </Button>
         </Hero>
+        <img src="/assets/preview.svg" alt="Inngest visualization" />
         <div className="grid-line" />
       </div>
       <CheckBanner
@@ -408,6 +409,10 @@ export default function Home() {
 
 // Wrapper defines a top-level scope for nesting home-specific CSS classes within.
 const Wrapper = styled.div`
+
+  background: url(/assets/texture.png) repeat-y;
+  background-size: cover;
+
   .code {
     padding: 2rem 0 10vh;
     p {
@@ -425,9 +430,19 @@ const Wrapper = styled.div`
     padding-top: var(--header-trailing-padding)
   }
 
+  .hero-grid {
+    background: url(/assets/hero-grid.svg) no-repeat right 50%;
+    align-items: center;
+  }
+
   .hero-grid .grid-line,
   .code-grid .grid-line {
     grid-row-end: 3;
+  }
+
+  .hero-grid img {
+    grid-column: 7 / -2;
+    width: 100%;
   }
 
   .integrations {
@@ -485,6 +500,7 @@ const Wrapper = styled.div`
 const Hero = styled.div`
   padding: 12vh 0;
   grid-column: 2 / -5;
+
 
   p {
     padding: 0 0 4rem;
