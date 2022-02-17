@@ -96,6 +96,8 @@ const blackCSS = css`
   color: #fff;
 `;
 
+const disabledCSS = css``;
+
 const Kinds = {
   PRIMARY: "primary",
   OUTLINE: "outline",
