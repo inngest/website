@@ -17,6 +17,7 @@
   --stroke-color: #525661;
   --black: #040408;
   --black-rgb: 4, 4, 8;
+  --grid-line-color: #41465299;
 
   --button-padding: 1rem 2rem;
   --border-radius: .35rem;
@@ -65,7 +66,11 @@ h4 {
   font-size: 0.875rem;
   text-transform: uppercase;
   letter-spacing: 1px;
+  position: absolute;
+  margin: -1.5rem 0 0 3px;
 }
+
+.relative { position: relative; }
 
 .monospace {
   font-family: var(--font-mono);
@@ -96,6 +101,28 @@ h4 {
 
 .grid-2 {
   grid-column: span 2;
+}
+
+.grid-line {
+  grid-column-start: 1;
+  grid-column-end: 1;
+  border-right: 1px dashed var(--grid-line-color);
+  grid-row-start: 1;
+  display: flex;
+  justify-content: flex-end;
+  color: var(--grid-line-color);
+  font-size: .875rem;
+}
+
+.grid-line span {
+  margin-right: -1.75rem;
+  padding: 1rem 0 0;
+  display: block;
+  font: var(--font-mono);
+}
+
+.nav-grid {
+  border-bottom: 1px dashed var(--grid-line-color);
 }
 
 /** UNSURE **/

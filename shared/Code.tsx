@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import styled from "@emotion/styled";
+import { highlight } from "../utils/code";
 
 type Props = {
   code: { [language: string]: string }
@@ -9,7 +10,6 @@ type Props = {
 const Code: React.FC<Props> = (props) => {
   const langs = Object.keys(props.code);
   const [selected, setSelected] = useState(props.selected || langs[0]);
-
 
   return (
     <Wrapper>

@@ -98,10 +98,9 @@ export default function Home() {
         ></script>
       </Head>
 
-      <Nav />
-
-      <Hero className="grid">
-        <div className="grid-center-8">
+      <Nav border />
+      <div className="grid hero-grid">
+        <Hero>
           <h1>Make event-driven apps fun to build</h1>
           <p className="subheading">
             Deploy serverless functions in minutes.<br />
@@ -110,28 +109,35 @@ export default function Home() {
 
           <Button kind="primary" href="/sign-up">Start building</Button>
           <Button kind="outline" href="/sign-up">Explore docs →</Button>
-        </div>
-      </Hero>
-
+        </Hero>
+        <div className="grid-line" />
+      </div>
       <CheckBanner
         className="monospace"
         list={["Developer CLI", "Auto-gen'd types & schemas", "Retries & replays built in"]}
       />
 
       <Section className="grid">
-        <div className="grid-center-6">
+        <div className="grid-center-6 relative">
           <span className="section-label">Introducing our</span>
           <h2>Event mesh</h2>
           <h3>Everything you need to build production ready event driven apps.</h3>
 
           <img src="/assets/graphic.svg" alt="Event driven serverless function example" className="full-width img-shadow" />
         </div>
+        <div className="grid-line">
+          <span>/01</span>
+        </div>
       </Section>
 
       <div className="grid">
         <div className="grid-center-6">
+          <span className="section-label" />
           <h2>How it works</h2>
           <h3>Our Event Mesh makes it easy to build event-driven apps.</h3>
+        </div>
+        <div className="grid-line">
+          <span>/02</span>
         </div>
       </div>
 
@@ -151,6 +157,7 @@ export default function Home() {
           <h4>Unified History</h4>
           <p>View logging, payload data, and audit-trails for your events and functions together in one place.</p>
         </div>
+        <div className="grid-line" />
       </HIW>
 
       <Section className="grid">
@@ -178,13 +185,15 @@ const Wrapper = styled.div`
 .code {
   padding: 2rem 0;
 }
+
+.hero-grid .grid-line {
+  grid-row-end: 3;
+}
 `;
 
 const Hero = styled.div`
   padding: 12vh 0;
-  > div {
-    grid-column: 2 / -5;
-  }
+  grid-column: 2 / -5;
 
   p {
     padding: 0 0 4rem;
@@ -197,8 +206,9 @@ const Hero = styled.div`
 `;
 
 const Section = styled.div`
-  padding: 10rem 0;
-
+  > div {
+    padding: 10rem 0;
+  }
   img {
     margin: 5rem 0 2rem;
     box-shadow: 0 10px 100px rgba(var(--black-rgb), 0.3);
@@ -209,7 +219,9 @@ const Section = styled.div`
 `;
 
 const HIW = styled.div`
-  margin: 3rem 0;
+  > div { 
+    padding: 3rem 0;
+  }
   svg {
     margin: 0 0 1rem;
   }

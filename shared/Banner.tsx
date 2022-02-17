@@ -23,7 +23,6 @@ export const CheckBanner: React.FC<{ list: Array<String> } & Props> = (props) =>
 const Wrapper = styled.div`
   background: var(--black);
   padding: 2rem 0;
-  margin: 1.5rem 0;
   display: flex;
   justify-content: center;
   box-shadow: 0 5px 40px rgba(var(--black-rgb), 0.5);

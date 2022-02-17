@@ -2,9 +2,24 @@ import React from "react";
 import styled from "@emotion/styled";
 import Button from "../shared/Button";
 
-const Nav = () => {
+type Props = {
+  grid?: boolean;
+}
+
+const Nav: React.FC<Props> = ({ grid = true }) => {
+  if (grid) {
+    return (
+      <div className="grid nav-grid">
+        <NavContent />
+        <div className="grid-line" />
+      </div>
+    );
+  }
+  return <NavContent />
+};
+
+const NavContent = () => {
   return (
-    <div className="grid">
       <Container className="grid-center-8">
         <div>
           <a href="/">
@@ -30,9 +45,8 @@ const Nav = () => {
           </Button>
         </div>
       </Container>
-    </div>
   );
-};
+}
 
 const Container = styled.div`
   display: flex;
