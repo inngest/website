@@ -51,7 +51,7 @@ Okay, so high level:  it’s a tool that allows you to create free, unique URLs 
 
 The novel part: we also auto-generate typescript types, cue types, and JSON schemas for every JSON payload we see so that you can work with the data easily ✨.  Cue is amazing.  We’ll be writing about that later.
 
-So, what do wee need?
+So, what do we need?
 
 - Websockets, to connect to our backend & display incoming requests in real time
 - A reactive state store, to make updating the UI easy
