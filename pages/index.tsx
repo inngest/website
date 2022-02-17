@@ -280,10 +280,10 @@ export default function Home() {
 
       <div className="section grid">
         <div className="grid-center-6">
-          <h3>
+          <h4>
             Automatically stream events from 3rd party apps with our
             integrations
-          </h3>
+          </h4>
           <div className="integrations">
             {integrations.map((i) => (
               <Integration {...i} key={i.name} />
