@@ -133,7 +133,14 @@ export default function Home() {
     // Roboto Condensed has an... awkward base size.  We change the :root font size
     // for this page that uses this font.  TODO: Should we keep this font?
     const style = document.createElement("style");
-    style.innerText = ":root { font-size: 22px; }";
+    style.innerText = `
+      :root { font-size: 22px; }
+      .home { 
+        /* This defers loading of a large image */
+        background: url(/assets/texture.webp) repeat-y;
+        background-size: cover;
+      }
+    `;
     style.id = "root-condensed";
     document.body.appendChild(style);
     return () => {
@@ -163,7 +170,7 @@ export default function Home() {
           property="og:description"
           content="Build event serverless event-driven systems in seconds"
         />
-        <script src="/inngest-sdk.js"></script>
+        <script src="/inngest-sdk.js" defer async></script>
         <script
           defer
           src="https://static.cloudflareinsights.com/beacon.min.js"
@@ -406,8 +413,6 @@ export default function Home() {
 // Wrapper defines a top-level scope for nesting home-specific CSS classes within.
 const Wrapper = styled.div`
 
-  background: url(/assets/texture.png) repeat-y;
-  background-size: cover;
 
   .code {
     padding: 2rem 0 10vh;
