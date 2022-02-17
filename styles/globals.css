@@ -128,7 +128,13 @@ h5 {
   margin-top: 1rem;
 }
 
-p + ul { margin: 1rem 0 }
+
+:not(.home) p + h3, ol + h3, ul + h3 {
+  margin-top: 3rem;
+}
+
+p + ul, p + ol, ol + p, ul + p { margin: 1.5rem 0 }
+li > ol, li > ul  { margin: 1rem 0 }
 
 /** Classes **/
 
