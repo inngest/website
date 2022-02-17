@@ -82,9 +82,9 @@ export const DocsLayout: React.FC<{ categories: Categories }> = ({
   return (
     <>
       <Nav />
-      <ContentWrapper>
-        <Menu>
-          <div>
+
+      <div className="grid">
+        <Menu className="col-3">
             <h5>
               <span>Contents</span>
               <span
@@ -140,10 +140,9 @@ export const DocsLayout: React.FC<{ categories: Categories }> = ({
                 );
               })}
             </ul>
-          </div>
         </Menu>
-        <Inner>{children}</Inner>
-      </ContentWrapper>
+        <Content className="col-6">{children}</Content>
+      </div>
       <Footer />
     </>
   );
@@ -213,24 +212,8 @@ const renderDocLink = (s: DocScope, c: Category, currentRoute?: string) => {
   );
 };
 
-const ContentWrapper = styled.div`
-  border-top: 1px solid #ffffff19;
-  display: grid;
-  grid-template-columns: 2fr 4fr;
-  min-height: calc(100vh - 70px);
-
-  @media (max-width: 980px) {
-    grid-template-columns: 2fr 5fr;
-  }
-
-  @media (max-width: 800px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
 export const DocsContent = styled.div`
   display: grid;
-  max-width: 1000px;
   grid-template-columns: 3fr 1fr;
 
   h2 {
@@ -616,23 +599,10 @@ export const InnerDocsContent = styled.div`
 
 const Menu = styled.div`
   border-right: 1px solid #ffffff19;
-  display: flex;
-  justify-content: flex-end;
-  padding: 3rem 4rem 3rem 3rem;
+  padding: 3rem;
   background: rgba(0, 0, 0, 0.4);
 
-  > div {
-    max-width: 300px;
-    min-width: 300px;
-  }
-
   @media (max-width: 980px) {
-    font-size: 13px;
-    padding: 2rem 4rem 2rem 2rem;
-
-    > div {
-      min-width: 240px;
-    }
   }
 
   h5 {
@@ -643,7 +613,6 @@ const Menu = styled.div`
       cursor: pointer;
       opacity: 0.6;
       transition: all 0.3s;
-      margin-right: -2.5rem;
       &:hover {
         opacity: 1;
       }
@@ -700,14 +669,19 @@ const Menu = styled.div`
     display: block;
   }
 
+  .items a {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
   .toggle-subcategory {
-    position: absolute;
-    right: -2.5rem;
     margin-top: 3px;
     opacity: 0.4;
     transition: all 0.3s;
     text-transform: uppercase;
     letter-spacing: 1px;
+    font-size: .7rem;
     &:hover {
       opacity: 1;
     }
@@ -746,13 +720,11 @@ const Menu = styled.div`
     .toggle,
     .toggle-subcategory {
       margin-right: 0 !important;
-      right: 0 !important;
     }
   }
 `;
 
-const Inner = styled.div`
-
+const Content = styled.div`
   > div {
     padding: 1rem 4rem 25vh;
   }
@@ -766,7 +738,6 @@ const Inner = styled.div`
 
 const Hero = styled.div`
   padding: 8vh 4rem 7vh !important;
-  background: rgba(255, 255, 255, 0.03);
 
   @media (max-width: 800px) {
     box-sizing: border-box;
