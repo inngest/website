@@ -598,7 +598,9 @@ export const InnerDocsContent = styled.div`
 `;
 
 const Menu = styled.div`
-  border-right: 1px solid #ffffff19;
+  border-right: 1px dashed var(--grid-line-color);
+  border-bottom: 1px dashed var(--grid-line-color);
+
   padding: 3rem;
   background: rgba(0, 0, 0, 0.4);
 
@@ -728,6 +730,7 @@ const Content = styled.div`
   > div {
     padding: 1rem 4rem 25vh;
   }
+
 
   @media (max-width: 800px) {
     > div {
