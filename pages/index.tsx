@@ -31,7 +31,11 @@ import { CheckBanner } from "../shared/Banner";
 const events = {
   cURL: `curl -X POST "https://inn.gs/e/test-key-goes-here-bjm8xj6nji0vzzu0l1k" \\
   -d '{"name": "test.event", "data": { "email": "gob@bluth-dev.com" } }'`,
-  JavaScript: ``,
+  JavaScript: `Inngest.event({
+  name: "test.event",
+  data: { email: "gob@bluth-dev.com" },
+  user: { email: "gob@bluth-dev.com" },
+});`,
   Go: `package main
 
 import (
