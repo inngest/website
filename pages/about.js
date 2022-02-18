@@ -14,31 +14,35 @@ const TEAM = [
     name: "Tony Holdstock-Brown",
     role: "CEO & Founder",
     bio: "Former Head of Engineering at Uniform Teeth",
-    avatar: "/team/tony-2022-02-18.jpg",
+    avatar: "/assets/team/tony-2022-02-18.jpg",
   },
   {
     name: "Dan Ramich",
     role: "Founding Engineer",
     bio: "Former Staff Engineer at Rancher (SUSE)",
-    avatar: "/team/dan-r-2022-02-18.jpg",
+    avatar: "/assets/team/dan-r-2022-02-18.jpg",
   },
   {
     name: "Dan Farrelly",
     role: "Founding Engineer",
     bio: "Former CTO at Buffer",
-    avatar: "/team/dan-f-2022-02-18.jpg",
+    avatar: "/assets/team/dan-f-2022-02-18.jpg",
   },
 ]
 
 const INVESTORS = [
   {
     name: "Afore.vc",
+    logo: "/assets/about/afore-capital.png",
+    maxWidth: "200px",
   },
   {
     name: "Kleiner Perkins",
+    logo: "/assets/about/kleiner-perkins.png",
   },
   {
     name: "Banana Capital",
+    logo: "/assets/about/banana-capital.png",
   },
 ]
 
@@ -92,11 +96,15 @@ export default function Home() {
 
         <h2>Investors</h2>
         <Grid>
-          {INVESTORS.map((person) => {
+          {INVESTORS.map((investor) => {
             return (
-              <Block>
-                <h3>{person.name}</h3>
-              </Block>
+              <InvestorBlock>
+                <img
+                  src={investor.logo}
+                  alt={investor.name}
+                  style={{ maxWidth: investor.maxWidth || "" }}
+                />
+              </InvestorBlock>
             )
           })}
         </Grid>
@@ -118,6 +126,12 @@ const Avatar = styled.img`
   width: 5rem;
   height: 5rem;
   margin-bottom: 1rem;
+`
+
+const InvestorBlock = styled(Block)`
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `
 
 const Grid = styled.div`
