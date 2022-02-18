@@ -22,7 +22,7 @@ export default function BlogLayout(props) {
         <Nav />
 
         <div className="header-grid grid">
-          <div className="col-4-center">
+          <div className="col-4-center sm-col-8-center">
             <header>
               <h2>Inngest Blog</h2>
               <p>
@@ -37,7 +37,7 @@ export default function BlogLayout(props) {
         </div>
 
         <div className="grid">
-          <div className="col-6-center">
+          <div className="col-6-center sm-col-8-center">
             {/* Blog posts */}
 
             {focus && (
@@ -183,5 +183,9 @@ const List = styled.div`
 
   > div:last-of-type {
     opacity: 0.6;
+  }
+
+  @media (max-width: 800px) {
+    grid-template-columns: 1fr;
   }
 `;
