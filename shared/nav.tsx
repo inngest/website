@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import styled from "@emotion/styled";
 import Button from "../shared/Button";
+import Hamburger from "../shared/Icons/Hamburger";
 
 type Props = {
   nolinks?: boolean;
@@ -16,8 +17,9 @@ const Nav: React.FC<Props> = (props) => {
 };
 
 const NavContent: React.FC<Props> = (props: Props) => {
+  const [show, setShow] = useState(false);
   return (
-    <Container className="grid-center-8">
+    <Container className={["grid-center-8", show ? "show" : ""].join(" ")}>
       <div>
         <a href="/">
           <img src="/logo-white.svg" alt="Inngest logo" className="logo" />
@@ -26,7 +28,7 @@ const NavContent: React.FC<Props> = (props: Props) => {
 
       {!props.nolinks && (
         <>
-          <div>
+          <div className="links">
             <StyledLink href="/library">Library</StyledLink>
             <StyledLink href="/docs">Docs</StyledLink>
             <StyledLink href="/blog">Blog</StyledLink>
@@ -41,12 +43,13 @@ const NavContent: React.FC<Props> = (props: Props) => {
           Start building →
         </Button>
       </div>
+
+      <a href="#" className="toggle" onClick={() => setShow(!show)}><Hamburger /></a>
     </Container>
   );
 };
 
 const Container = styled.div`
-  position: relative;
   z-index: 1;
   display: flex;
   align-items: center;
@@ -59,6 +62,12 @@ const Container = styled.div`
 
   .button {
     font-weight: 600;
+  }
+
+  > div, > a {
+    /* Stack hamburger menu beneath the logo & toggle */
+    position: relative;
+    z-index: 2;
   }
 
   > div {
@@ -79,11 +88,65 @@ const Container = styled.div`
     margin-left: 20px;
   }
 
-  @media only screen and (max-width: 800px) {
+  .toggle { display: none; }
+
+  @media only screen and (max-width: 950px) {
     div:last-of-type {
       display: none;
     }
+
+    .links {
+      /* Hide in a way that enables transitions */
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .3s;
+
+      /**
+       * When shown, add a background to the entire menu by pos absolute
+       * so that it sticks to the top of the page beneath the logo and hamburger
+       * icon
+       */
+      position: absolute;
+      background: var(--bg-color);
+      padding-top: var(--nav-height);
+      padding-bottom: 1rem;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 0;
+      box-shadow: 0 0 40px rgba(var(--black-rgb), 0.8);
+
+      /**
+       * In order to maintain the same left-align as the logo, we need to transform
+       * the link container into a grid with the same columns.
+       */
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      align-items: stretch;
+
+      a {
+        grid-column: 2 / -2;
+        margin: 0;
+        padding: .5rem 4px;
+      }
+    }
+
+
+    align-items: center;
+
+    .toggle {
+      display: block;
+      padding: 1rem;
+      margin-right: -1rem;
+    }
+
+    &.show .links {
+      opacity: 1;
+      pointer-events: inherit;
+    }
+
   }
+
 `;
 
 const StyledLink = styled.a`
