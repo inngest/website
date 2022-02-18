@@ -3,20 +3,16 @@ import styled from "@emotion/styled";
 import Button from "../shared/Button";
 
 type Props = {
-  grid?: boolean;
   nolinks?: boolean;
 };
 
 const Nav: React.FC<Props> = (props) => {
-  if (props.grid) {
-    return (
-      <div className="grid nav-grid">
-        <NavContent {...props} />
-        <div className="grid-line" />
-      </div>
-    );
-  }
-  return <NavContent />;
+  return (
+    <div className="grid nav-grid">
+      <NavContent {...props} />
+      <div className="grid-line" />
+    </div>
+  );
 };
 
 const NavContent: React.FC<Props> = (props: Props) => {

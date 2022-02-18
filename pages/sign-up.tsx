@@ -53,7 +53,7 @@ const SignUp = () => {
 
   return (
     <>
-      <Nav grid nolinks />
+      <Nav nolinks />
 
       <Header className="header grid section-header">
         <header className="grid-center-6 text-center">
@@ -163,6 +163,10 @@ const Content = styled.div`
     a img {
       margin: 0 1rem 0 0;
     }
+  }
+
+  form, .signup > a {
+    box-shadow: 0 0 80px rgba(255, 255, 255, 0.03)
   }
 
   form {

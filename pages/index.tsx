@@ -174,7 +174,7 @@ export default function Home() {
         ></script>
       </Head>
 
-      <Nav grid />
+      <Nav />
 
       <div className="grid hero-grid">
         <Hero className="grid-center-8">
