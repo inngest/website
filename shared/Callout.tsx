@@ -26,7 +26,7 @@ export default Callout;
 
 const Content = styled.div`
   position: relative;
-  grid-column: 3 / -3;
+  grid-column: 3 / -2;
 
   display: grid;
   grid-template-columns: 4fr 2fr;
@@ -34,6 +34,9 @@ const Content = styled.div`
 
   padding: var(--header-trailing-padding) 0;
   padding-right: var(--header-trailing-padding);
+
+  border-top-right-radius: var(--border-radius);
+  border-bottom-right-radius: var(--border-radius);
 
   box-shadow: 0 0 4rem rgba(var(--black-rgb), 0.5);
 
@@ -48,6 +51,12 @@ const Content = styled.div`
   button,
   a {
     font-size: 20px;
+  }
+
+  button:hover, a:hover {
+    background: var(--black);
+    border-color: var(--black);
+    box-shadow: 0 5px 25px rgba(var(--black-rgb), 0.6) !important;
   }
 
   &:before {
