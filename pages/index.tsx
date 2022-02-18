@@ -549,8 +549,8 @@ const Hero = styled.div`
   }
 
   .button {
-    /*font-size: 1.375rem;*/
     font-family: var(--font-mono);
+    display: inline-block;
   }
 `;
 
