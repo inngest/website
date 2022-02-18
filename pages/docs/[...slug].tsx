@@ -123,7 +123,7 @@ export async function getStaticProps({ params }) {
 const TOC = styled.ol`
   margin: 1.5rem 0 4rem;
   padding: 0;
-  font-size: .9rem;
+  font-size: 0.9rem;
 
   li a {
     display: block;
@@ -148,7 +148,7 @@ const TOCSide = styled.ol`
   opacity: 0;
   pointer-events: none;
   transition: all 0.3s;
-  font-size: .9rem;
+  font-size: 0.9rem;
 
   z-index: 0;
 

@@ -4,7 +4,7 @@ import Button from "./Button";
 type Props = {
   small?: string;
   heading?: string;
-}
+};
 
 const Callout: React.FC<Props> = ({ small, heading }) => {
   return (
@@ -14,17 +14,19 @@ const Callout: React.FC<Props> = ({ small, heading }) => {
           <span>{small || "Now with zero yaml ;-)"}</span>
           <h2>{heading || "Deploy a serverless function in minutes."}</h2>
         </div>
-        <Button kind="black" href="/sign-up">{'>'}_ Start building</Button>
+        <Button kind="black" href="/sign-up">
+          {">"}_ Start building
+        </Button>
       </Content>
     </div>
   );
-}
+};
 
 export default Callout;
 
 const Content = styled.div`
   position: relative;
-  grid-column: 3 / -3;
+  grid-column: 3 / -2;
 
   display: grid;
   grid-template-columns: 4fr 2fr;
@@ -33,16 +35,28 @@ const Content = styled.div`
   padding: var(--header-trailing-padding) 0;
   padding-right: var(--header-trailing-padding);
 
+  border-top-right-radius: var(--border-radius);
+  border-bottom-right-radius: var(--border-radius);
+
   box-shadow: 0 0 4rem rgba(var(--black-rgb), 0.5);
 
-  span, button, a {
+  span,
+  button,
+  a {
     font-family: var(--font-mono);
   }
   span {
     font-size: 16px;
   }
-  button, a {
+  button,
+  a {
     font-size: 20px;
+  }
+
+  button:hover, a:hover {
+    background: var(--black);
+    border-color: var(--black);
+    box-shadow: 0 5px 25px rgba(var(--black-rgb), 0.6) !important;
   }
 
   &:before {
@@ -55,5 +69,4 @@ const Content = styled.div`
     width: 100%;
     top: 0;
   }
-
 `;

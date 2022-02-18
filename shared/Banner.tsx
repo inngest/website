@@ -39,7 +39,7 @@ const CheckList = styled.ul`
     padding: 0 0 0 2.5rem;
   }
   li + li {
-    margin-left: 3rem;
+    margin: 0 0 0 3rem;
   }
 `;
 

@@ -2,6 +2,13 @@ import React from "react";
 import styled from "@emotion/styled";
 import { css, SerializedStyles } from "@emotion/react";
 
+const Kinds = {
+  PRIMARY: "primary",
+  OUTLINE: "outline",
+  BLACK: "black",
+};
+export type Kinds = typeof Kinds[keyof typeof Kinds];
+
 // Button props
 type Props = React.HTMLAttributes<any> & {
   kind?: Kinds;
@@ -60,9 +67,12 @@ export const buttonCSS = css`
   padding: var(--button-padding);
   background: transparent;
   cursor: pointer;
-  display: inline-block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-decoration: none;
   text-align: center;
+  transition: all 0.3s;
 
   & + .button {
     margin-left: 16px;
@@ -82,6 +92,12 @@ const primaryCSS = css`
   border-color: var(--primary-color);
   color: #fff;
   box-shadow: 0 5px 25px rgba(var(--primary-color-rgb), 0.6);
+
+  &:hover {
+    box-shadow: 0 5px 45px rgba(var(--primary-color-rgb), 0.8);
+    font-weight: bold;
+    transform: translateY(-2px);
+  }
 `;
 
 const outlineCSS = css`
@@ -93,16 +109,13 @@ const blackCSS = css`
   border: 1px solid var(--black);
   background: var(--black);
   color: #fff;
+
+  &:hover {
+    ${primaryCSS};
+  }
 `;
 
 const disabledCSS = css``;
-
-const Kinds = {
-  PRIMARY: "primary",
-  OUTLINE: "outline",
-    BLACK: "black",
-};
-export type Kinds = typeof Kinds[keyof typeof Kinds];
 
 const kindCSS: { [item in Kinds]: SerializedStyles } = {
   primary: primaryCSS,

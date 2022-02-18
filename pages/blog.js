@@ -18,7 +18,6 @@ export default function BlogLayout(props) {
         <title>Inngest → Product & engineering blog</title>
       </Head>
 
-
       <Wrapper>
         <Nav />
 
@@ -32,29 +31,31 @@ export default function BlogLayout(props) {
               </p>
             </header>
           </div>
-          <div className="grid-line"><span>/01</span></div>
+          <div className="grid-line">
+            <span>/01</span>
+          </div>
         </div>
 
         <div className="grid">
           <div className="col-6-center">
-              {/* Blog posts */}
+            {/* Blog posts */}
 
-              {focus && (
-                <Focus>
-                  <a href={`/blog/${focus.slug}`}>
-                    <div>
-                      <h2>{focus.heading}</h2>
-                      <Date>{focus.humanDate}</Date>
-                      <p>{focus.subtitle}</p>
+            {focus && (
+              <Focus>
+                <a href={`/blog/${focus.slug}`}>
+                  <div>
+                    <h2>{focus.heading}</h2>
+                    <Date>{focus.humanDate}</Date>
+                    <p>{focus.subtitle}</p>
+                  </div>
+                  {focus.img && (
+                    <div className="img">
+                      <img src={focus.img} />
                     </div>
-                    {focus.img && (
-                      <div className="img">
-                        <img src={focus.img} />
-                      </div>
-                    )}
-                  </a>
-                </Focus>
-              )}
+                  )}
+                </a>
+              </Focus>
+            )}
 
             <List>
               {rest.map((item) => (
@@ -72,14 +73,15 @@ export default function BlogLayout(props) {
               <div>
                 <h2>More to come...</h2>
                 <p>
-                  We'll be posting engineering articles, product releases and case
-                  studies consistently.
+                  We'll be posting engineering articles, product releases and
+                  case studies consistently.
                 </p>
               </div>
             </List>
-
           </div>
-          <div className="grid-line"><span>/02</span></div>
+          <div className="grid-line">
+            <span>/02</span>
+          </div>
         </div>
         <Footer />
       </Wrapper>
@@ -126,7 +128,9 @@ const Intro = styled.div`
     h1 {
       opacity: 0.8;
     }
-    h3 + p { margin-top: .5rem }
+    h3 + p {
+      margin-top: 0.5rem;
+    }
   }
 `;
 

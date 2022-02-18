@@ -18,35 +18,41 @@ export default function BlogLayout(props) {
       <Wrapper>
         <Nav />
 
-    {scope.img && (
+        {scope.img && (
           <div className="image grid">
             <div className="header col-6-center">
               <Image>
                 {scope.img && <img src={scope.img} alt="" className="hero" />}
               </Image>
             </div>
-            <div className="grid-line"><span>/01</span></div>
+            <div className="grid-line">
+              <span>/01</span>
+            </div>
           </div>
-    )}
+        )}
 
-          <Header className="grid">
-            <header className="header col-6-center">
-                <h1>{scope.heading}</h1>
-                <p className="blog--date">
-                  {scope.humanDate} &middot; {scope.reading.text}
-                </p>
-            </header>
-            <div className="grid-line"><span>{scope.img ? "/02" : "/01"}</span></div>
-          </Header>
-          <Main className="grid">
-            <main className="col-6-center">
-              <MDXRemote
-                compiledSource={props.post.compiledSource}
-                scope={scope}
-              />
-            </main>
-            <div className="grid-line"><span>{scope.img ? "/03" : "/02" }</span></div>
-          </Main>
+        <Header className="grid">
+          <header className="header col-6-center">
+            <h1>{scope.heading}</h1>
+            <p className="blog--date">
+              {scope.humanDate} &middot; {scope.reading.text}
+            </p>
+          </header>
+          <div className="grid-line">
+            <span>{scope.img ? "/02" : "/01"}</span>
+          </div>
+        </Header>
+        <Main className="grid">
+          <main className="col-6-center">
+            <MDXRemote
+              compiledSource={props.post.compiledSource}
+              scope={scope}
+            />
+          </main>
+          <div className="grid-line">
+            <span>{scope.img ? "/03" : "/02"}</span>
+          </div>
+        </Main>
         <Footer />
       </Wrapper>
     </>
@@ -60,11 +66,11 @@ const Header = styled.div`
   .grid-line {
     padding: var(--section-padding) 0 0;
   }
-
 `;
 
 const Main = styled.div`
-  > main, .grid-line span {
+  > main,
+  .grid-line span {
     padding: var(--section-padding) 0 0;
   }
 
@@ -91,7 +97,7 @@ const Main = styled.div`
   }
 
   .blog--date {
-    font-size: .85rem;
+    font-size: 0.85rem;
     opacity: 0.6;
     margin: -3.5rem 0 5rem;
     padding: 0;
@@ -129,7 +135,6 @@ const Main = styled.div`
   img.hero {
     padding: 0 0 50px;
   }
-
 
   pre {
     margin: 3rem 0;
