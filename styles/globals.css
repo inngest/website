@@ -107,6 +107,12 @@ h5 {
   letter-spacing: 1px;
 }
 
+input, textarea, select {
+  border: 0;
+  padding: .5rem .5rem;
+  border-radius: var(--border-radius);
+}
+
 /* Home versions, as REM is changed cuz roboto mono */
 
 .home h2, .h2 {
@@ -199,6 +205,11 @@ li > ol, li > ul  { margin: 1rem 0 }
   grid-column: 3 / span 2;
 }
 
+
+.grid-1, .col-1 {
+  grid-column: span 1;
+}
+
 .grid-2, .col-2 {
   grid-column: span 2;
 }
@@ -254,4 +265,15 @@ li > ol, li > ul  { margin: 1rem 0 }
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   grid-gap: var(--grid-gap);
+}
+
+ul.check {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+ul.check li {
+  background: url(/icons/check.svg) no-repeat left center;
+  padding-left: 1.75rem;
+  margin-left: .75rem;
 }

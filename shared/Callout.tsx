@@ -4,7 +4,7 @@ import Button from "./Button";
 type Props = {
   small?: string;
   heading?: string;
-}
+};
 
 const Callout: React.FC<Props> = ({ small, heading }) => {
   return (
@@ -14,11 +14,13 @@ const Callout: React.FC<Props> = ({ small, heading }) => {
           <span>{small || "Now with zero yaml ;-)"}</span>
           <h2>{heading || "Deploy a serverless function in minutes."}</h2>
         </div>
-        <Button kind="black" href="/sign-up">{'>'}_ Start building</Button>
+        <Button kind="black" href="/sign-up">
+          {">"}_ Start building
+        </Button>
       </Content>
     </div>
   );
-}
+};
 
 export default Callout;
 
@@ -35,13 +37,16 @@ const Content = styled.div`
 
   box-shadow: 0 0 4rem rgba(var(--black-rgb), 0.5);
 
-  span, button, a {
+  span,
+  button,
+  a {
     font-family: var(--font-mono);
   }
   span {
     font-size: 16px;
   }
-  button, a {
+  button,
+  a {
     font-size: 20px;
   }
 
@@ -55,5 +60,4 @@ const Content = styled.div`
     width: 100%;
     top: 0;
   }
-
 `;

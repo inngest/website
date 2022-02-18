@@ -128,7 +128,6 @@ export const INGEST_KEY =
 // export const INGEST_KEY = 'MnzaTCk7Se8i74hA141bZGS-NY9P39RSzYFbxanIHyV2VDNu1fwrns2xBQCEGdIb9XRPtzbp0zdRPjtnA1APTQ';
 
 export default function Home() {
-
   useEffect(() => {
     // Defer loading of background textures.
     const style = document.createElement("style");
@@ -143,7 +142,7 @@ export default function Home() {
     document.body.appendChild(style);
     return () => {
       document.querySelector("#bg-texture").remove();
-    }
+    };
   }, []);
 
   return (
@@ -188,7 +187,7 @@ export default function Home() {
             </p>
 
             <Button kind="primary" href="/sign-up">
-              {'>'}_ Start building
+              {">"}_ Start building
             </Button>
             <Button kind="outline" href="/docs">
               Explore docs →
@@ -303,21 +302,33 @@ export default function Home() {
           <div>
             <Create />
             <h3>Create and test with real data</h3>
-            <p>Start building functions with our auto-typed example payloads or use historical event data. Easily run fuzz testing and handle type changes without issues.</p>
+            <p>
+              Start building functions with our auto-typed example payloads or
+              use historical event data. Easily run fuzz testing and handle type
+              changes without issues.
+            </p>
           </div>
           <img src="/assets/payload.svg" alt="Event payload" />
 
           <div>
             <Deploy />
             <h3>Deploy with confidence</h3>
-            <p>Get realtime insights into which payloads are causing errors. Instantly rollback to any previous version. And replay failed payloads when an issue is resolved. </p>
+            <p>
+              Get realtime insights into which payloads are causing errors.
+              Instantly rollback to any previous version. And replay failed
+              payloads when an issue is resolved.{" "}
+            </p>
           </div>
           <img src="/assets/deploy.svg" alt="Deployed functions and events" />
 
           <div>
             <Monitor />
             <h3>Monitor your serverless functions</h3>
-            <p>Get granular visibility into event → function pathways including conditional execution, function chains, and how often each function runs.</p>
+            <p>
+              Get granular visibility into event → function pathways including
+              conditional execution, function chains, and how often each
+              function runs.
+            </p>
           </div>
           <img src="/assets/history.svg" alt="Deployed function history" />
         </div>
@@ -335,67 +346,89 @@ export default function Home() {
 
       <div className="grid">
         <div className="grid-center-6 four-cols batteries">
-
           <div>
-            <div className="icon"><CLI /></div>
+            <div className="icon">
+              <CLI />
+            </div>
             <p>Developer CLI</p>
           </div>
 
           <div>
-            <div className="icon"><Retries /></div>
+            <div className="icon">
+              <Retries />
+            </div>
             <p>Automatic Retries</p>
           </div>
 
           <div>
-            <div className="icon"><Replays /></div>
+            <div className="icon">
+              <Replays />
+            </div>
             <p>Manual Replays</p>
           </div>
 
           <div>
-            <div className="icon"><Transforms /></div>
+            <div className="icon">
+              <Transforms />
+            </div>
             <p>Payload Transforms</p>
           </div>
 
           <div>
-            <div className="icon"><Versions /></div>
+            <div className="icon">
+              <Versions />
+            </div>
             <p>Version History</p>
           </div>
 
           <div>
-            <div className="icon"><Rollback /></div>
+            <div className="icon">
+              <Rollback />
+            </div>
             <p>Instant Rollbacks</p>
           </div>
 
           <div>
-            <div className="icon"><Audit /></div>
+            <div className="icon">
+              <Audit />
+            </div>
             <p>Audit Trails</p>
           </div>
 
           <div>
-            <div className="icon"><Logging /></div>
+            <div className="icon">
+              <Logging />
+            </div>
             <p>Full Logging</p>
           </div>
 
           <div>
-            <div className="icon"><Historical /></div>
+            <div className="icon">
+              <Historical />
+            </div>
             <p>Historical Testing</p>
           </div>
 
           <div>
-            <div className="icon"><Observability /></div>
+            <div className="icon">
+              <Observability />
+            </div>
             <p>End-to-end Observability</p>
           </div>
 
           <div>
-            <div className="icon"><Alerting /></div>
+            <div className="icon">
+              <Alerting />
+            </div>
             <p>Alerting</p>
           </div>
 
           <div>
-            <div className="icon"><CLI /></div>
+            <div className="icon">
+              <CLI />
+            </div>
             <p>Developer CLI</p>
           </div>
-
         </div>
         <div className="grid-line" />
       </div>
@@ -404,7 +437,7 @@ export default function Home() {
 
       <Footer />
       {/* Roboto Condensed is a weird font - way smaller than others -
-      so we adjust the root size for this page only :/ */} 
+      so we adjust the root size for this page only :/ */}
       <style>{`:root { font-size: 22px; }`} </style>
     </Wrapper>
   );
@@ -412,8 +445,6 @@ export default function Home() {
 
 // Wrapper defines a top-level scope for nesting home-specific CSS classes within.
 const Wrapper = styled.div`
-
-
   .code {
     padding: 2rem 0 10vh;
     p {
@@ -428,7 +459,7 @@ const Wrapper = styled.div`
 
   /* Automatically apply spacing to the section's content after the header */
   .section-header + .grid > div:first-of-type {
-    padding-top: var(--header-trailing-padding)
+    padding-top: var(--header-trailing-padding);
   }
 
   .hero-grid {
@@ -436,7 +467,9 @@ const Wrapper = styled.div`
     margin-top: calc(var(--nav-height) * -1);
     background: url(/assets/hero-grid.svg) no-repeat right 10%;
     align-items: center;
-    p { color: #fff }
+    p {
+      color: #fff;
+    }
   }
 
   .integrations {
@@ -444,7 +477,9 @@ const Wrapper = styled.div`
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-gap: var(--grid-gap);
-    p { color: #fff }
+    p {
+      color: #fff;
+    }
   }
 
   .dx {
@@ -453,10 +488,10 @@ const Wrapper = styled.div`
     padding-bottom: var(--section-padding);
 
     svg {
-      margin: 0 0 .85rem;
+      margin: 0 0 0.85rem;
     }
     h3 {
-      margin: 0 0 .75rem;
+      margin: 0 0 0.75rem;
     }
 
     img {
@@ -476,8 +511,10 @@ const Wrapper = styled.div`
       padding: 1rem;
       font-size: 1.2rem;
     }
-    p { color: #fff }
-    .icon { 
+    p {
+      color: #fff;
+    }
+    .icon {
       height: 4rem;
       width: 4rem;
       margin: 0 0 1rem;
@@ -498,7 +535,7 @@ const Hero = styled.div`
   grid-gap: var(--grid-gap);
 
   > div:first-of-type {
-  grid-column:  span 5;
+    grid-column: span 5;
   }
 
   img {

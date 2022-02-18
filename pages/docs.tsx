@@ -85,61 +85,59 @@ export const DocsLayout: React.FC<{ categories: Categories }> = ({
 
       <div className="grid">
         <Menu className="col-3">
-            <h5>
-              <span>Contents</span>
-              <span
-                className="toggle off"
-                onClick={(e) => {
-                  const span = e.target as HTMLSpanElement;
-                  const on = !span.classList.contains("off");
-                  document.querySelectorAll(".category").forEach((a) => {
-                    on
-                      ? a.classList.remove("expanded")
-                      : a.classList.add("expanded");
-                  });
-                  span.classList.toggle("off");
-                }}
-              >
-                Toggle categories
-              </span>
-            </h5>
+          <h5>
+            <span>Contents</span>
+            <span
+              className="toggle off"
+              onClick={(e) => {
+                const span = e.target as HTMLSpanElement;
+                const on = !span.classList.contains("off");
+                document.querySelectorAll(".category").forEach((a) => {
+                  on
+                    ? a.classList.remove("expanded")
+                    : a.classList.add("expanded");
+                });
+                span.classList.toggle("off");
+              }}
+            >
+              Toggle categories
+            </span>
+          </h5>
 
-            <ul>
-              <li>
-                <a href="/docs" className="category" style={{ paddingBottom: 0 }}>
-                  <Home fill="#fff" size={20} /> Home
-                </a>
-              </li>
-              {Object.values(categories).map((c) => {
-                const meta = categoryMeta[c.title.toLowerCase()] || {};
+          <ul>
+            <li>
+              <a href="/docs" className="category" style={{ paddingBottom: 0 }}>
+                <Home fill="#fff" size={20} /> Home
+              </a>
+            </li>
+            {Object.values(categories).map((c) => {
+              const meta = categoryMeta[c.title.toLowerCase()] || {};
 
-                const isCurrent = !!c.pages.find(
-                  (p) => p.slug === router.asPath.replace("/docs/", "")
-                );
+              const isCurrent = !!c.pages.find(
+                (p) => p.slug === router.asPath.replace("/docs/", "")
+              );
 
-                return (
-                  <li key={c.title}>
-                    <span
-                      className={["category", isCurrent && "expanded"]
-                        .filter(Boolean)
-                        .join(" ")}
-                      onClick={(e) =>
-                        (e.target as HTMLSpanElement).classList.toggle(
-                          "expanded"
-                        )
-                      }
-                    >
-                      {meta.icon} {c.title}
-                    </span>
-                    <ul className="items">
-                      {c.pages
-                        .sort((a, b) => a.order - b.order)
-                        .map((d) => renderDocLink(d, c, router.asPath))}
-                    </ul>
-                  </li>
-                );
-              })}
-            </ul>
+              return (
+                <li key={c.title}>
+                  <span
+                    className={["category", isCurrent && "expanded"]
+                      .filter(Boolean)
+                      .join(" ")}
+                    onClick={(e) =>
+                      (e.target as HTMLSpanElement).classList.toggle("expanded")
+                    }
+                  >
+                    {meta.icon} {c.title}
+                  </span>
+                  <ul className="items">
+                    {c.pages
+                      .sort((a, b) => a.order - b.order)
+                      .map((d) => renderDocLink(d, c, router.asPath))}
+                  </ul>
+                </li>
+              );
+            })}
+          </ul>
         </Menu>
         <Content className="col-6">{children}</Content>
       </div>
@@ -259,7 +257,7 @@ export const InnerDocsContent = styled.div`
     border-radius: 3px;
     padding: 3rem 2rem 2rem;
     margin: 0 0 4rem;
-    font-size: .9rem;
+    font-size: 0.9rem;
     position: relative;
     box-shadow: 0 5px 20px rgba(var(--black-rgb), 0.3);
 
@@ -683,7 +681,7 @@ const Menu = styled.div`
     transition: all 0.3s;
     text-transform: uppercase;
     letter-spacing: 1px;
-    font-size: .7rem;
+    font-size: 0.7rem;
     &:hover {
       opacity: 1;
     }
@@ -730,7 +728,6 @@ const Content = styled.div`
   > div {
     padding: 1rem 4rem 25vh;
   }
-
 
   @media (max-width: 800px) {
     > div {

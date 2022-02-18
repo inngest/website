@@ -4,13 +4,14 @@ import Button from "../shared/Button";
 
 type Props = {
   grid?: boolean;
+  nolinks?: boolean;
 };
 
-const Nav: React.FC<Props> = ({ grid = true }) => {
-  if (grid) {
+const Nav: React.FC<Props> = (props) => {
+  if (props.grid) {
     return (
       <div className="grid nav-grid">
-        <NavContent />
+        <NavContent {...props} />
         <div className="grid-line" />
       </div>
     );
@@ -18,7 +19,7 @@ const Nav: React.FC<Props> = ({ grid = true }) => {
   return <NavContent />;
 };
 
-const NavContent = () => {
+const NavContent: React.FC<Props> = (props: Props) => {
   return (
     <Container className="grid-center-8">
       <div>
@@ -27,12 +28,16 @@ const NavContent = () => {
         </a>
       </div>
 
-      <div>
-        <StyledLink href="/library">Library</StyledLink>
-        <StyledLink href="/docs">Docs</StyledLink>
-        <StyledLink href="/blog">Blog</StyledLink>
-        <StyledLink href="/pricing">Pricing</StyledLink>
-      </div>
+      {!props.nolinks && (
+        <>
+          <div>
+            <StyledLink href="/library">Library</StyledLink>
+            <StyledLink href="/docs">Docs</StyledLink>
+            <StyledLink href="/blog">Blog</StyledLink>
+            <StyledLink href="/pricing">Pricing</StyledLink>
+          </div>
+        </>
+      )}
 
       <div>
         <StyledLink href="https://app.inngest.com/login">Log in</StyledLink>
@@ -107,11 +112,10 @@ const Hoverable = styled.div`
     opacity: 1;
     pointer-events: all;
     transform: translateY(0);
-    transition: all .3s;
+    transition: all 0.3s;
   }
 
   > div {
-
     /* This keeps the hover focus in between the original button and this menu */
     &:before {
       content: "";
@@ -127,7 +131,7 @@ const Hoverable = styled.div`
     opacity: 0;
     pointer-events: none;
     transform: translateY(20px);
-    transition: all .3s;
+    transition: all 0.3s;
 
     position: absolute;
     width: 350px;
@@ -143,7 +147,7 @@ const Hoverable = styled.div`
     p {
       color: var(--light-grey);
       text-transform: uppercase;
-      font-size: .8rem;
+      font-size: 0.8rem;
       margin: 2.5rem 0 1rem;
     }
 
@@ -152,9 +156,10 @@ const Hoverable = styled.div`
       display: block;
       color: var(--blue-right) !important;
       text-decoration: none;
-      transition: all .2s;
+      transition: all 0.2s;
 
-      &:hover, &:hover span {
+      &:hover,
+      &:hover span {
         color: #fff;
       }
     }
@@ -168,7 +173,7 @@ const Hoverable = styled.div`
       display: block;
       font-weight: 400;
       margin: 5px 0;
-      transition: all .2s;
+      transition: all 0.2s;
     }
   }
 `;
