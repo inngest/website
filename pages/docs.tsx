@@ -84,7 +84,7 @@ export const DocsLayout: React.FC<{ categories: Categories }> = ({
       <Nav />
 
       <div className="grid">
-        <Menu className="col-3">
+        <Menu className="col-3 sm-col-10">
           <h5>
             <span>Contents</span>
             <span
@@ -139,7 +139,7 @@ export const DocsLayout: React.FC<{ categories: Categories }> = ({
             })}
           </ul>
         </Menu>
-        <Content className="col-6">{children}</Content>
+        <Content className="col-6 sm-col-10">{children}</Content>
       </div>
       <Footer />
     </>
@@ -214,9 +214,7 @@ export const DocsContent = styled.div`
   display: grid;
   grid-template-columns: 3fr 1fr;
 
-  h2 {
-    margin-top: 4rem;
-  }
+  h2 { margin-top: 4rem; }
 
   h3 {
     margin-top: 3rem;
@@ -229,6 +227,8 @@ export const DocsContent = styled.div`
 
   @media (max-width: 800px) {
     grid-template-columns: 1fr;
+
+    h2 { margin-top: 2.5rem; }
   }
 `;
 
@@ -602,17 +602,17 @@ const Menu = styled.div`
   padding: 3rem;
   background: rgba(0, 0, 0, 0.4);
 
-  @media (max-width: 980px) {
-  }
-
   h5 {
     display: flex;
     justify-content: space-between;
+    align-items: center;
 
     .toggle {
       cursor: pointer;
-      opacity: 0.6;
+      font-size: .7rem;
+      opacity: 0.4;
       transition: all 0.3s;
+      text-align: right;
       &:hover {
         opacity: 1;
       }
@@ -722,6 +722,13 @@ const Menu = styled.div`
       margin-right: 0 !important;
     }
   }
+
+  @media (max-width: 800px) {
+    .category, a.category {
+      margin: 1rem 0 0.65rem;
+    }
+    font-size: .85rem;
+  }
 `;
 
 const Content = styled.div`
@@ -742,10 +749,11 @@ const Hero = styled.div`
   @media (max-width: 800px) {
     box-sizing: border-box;
     width: 100%;
-    padding: 8vh 2rem !important;
+    padding: 4vh 2rem 0 !important;
 
     h1 {
       font-size: 42px;
+      padding: 0;
     }
   }
 `;

@@ -33,17 +33,33 @@ const CheckList = styled.ul`
   padding: 0;
   list-style: none;
   display: flex;
+
+  @media (max-width: 800px) {
+    flex-direction: column;
+  }
 `
 
 const ChecklistItem = styled.li`
+  display: flex;
+  justify-content: center;
+
   background: url(/assets/check.svg) no-repeat left center;
   height: 2rem;
-  line-height: 2rem;
   margin: 0;
   padding: 0 0 0 2rem;
 
   & + & {
     margin: 0 0 0 3rem;
+  }
+
+  @media (max-width: 800px) {
+    margin: 0 1rem;
+    line-height: 1.2;
+
+    & + & {
+      margin: .75rem 1rem;
+    }
+    flex-direction: column;
   }
 `
 

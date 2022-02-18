@@ -74,4 +74,11 @@ const Wrapper = styled.div`
     border-radius: var(--border-radius);
     font-size: 14px;
   }
+
+  @media (max-width: 800px) {
+    grid-template-columns: 3.5rem minmax(10rem, 1fr);
+
+    .name { font-size: 1.2rem; }
+    span { font-size: 1rem; line-height: 1.2; }
+  }
 `;

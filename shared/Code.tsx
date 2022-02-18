@@ -51,9 +51,7 @@ const Wrapper = styled.div`
     border-radius: var(--border-radius);
   }
 
-  li + li {
-    margin-left: 1rem;
-  }
+  li + li { margin: 0 0 0 1rem; }
 
   li.selected button {
     background: var(--primary-color);
@@ -61,6 +59,20 @@ const Wrapper = styled.div`
 
   pre,
   code {
-    font-size: 1rem;
+    font-size: 18px;
+  }
+
+  @media (max-width: 800px) {
+    padding: 1rem;
+    li button {
+      font-size: .9rem;
+      padding: .25rem .5rem;
+    }
+    li + li { margin: 0 0 0 .5rem; }
+
+    pre,
+    code {
+      font-size: 14px;
+    }
   }
 `;

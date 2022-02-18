@@ -110,7 +110,7 @@ const SectionHeader: React.FC<{
 }> = ({ label, title, subtitle, counter }) => {
   return (
     <div className="grid section-header">
-      <div className="grid-center-6">
+      <div className="grid-center-6 sm-col-8-center">
         <span className="section-label">{label}</span>
         <h2>{title}</h2>
         <h4>{subtitle}</h4>
@@ -133,7 +133,6 @@ export default function Home() {
     const style = document.createElement("style");
     style.innerText = `
       .home { 
-        /* This defers loading of a large image */
         background: url(/assets/texture.webp) repeat-y;
         background-size: cover;
       }
@@ -214,7 +213,7 @@ export default function Home() {
       />
 
       <div className="grid">
-        <div className="grid-center-6">
+        <div className="grid-center-6 sm-col-8-center">
           <img
             src="/assets/graphic.svg"
             alt="Event driven serverless function example"
@@ -232,7 +231,7 @@ export default function Home() {
       />
 
       <HIW className="grid">
-        <div className="grid-2-offset-2">
+        <div className="grid-2-offset-2 sm-col-8-center">
           <Hub />
           <h3>One event hub</h3>
           <p>
@@ -240,7 +239,7 @@ export default function Home() {
             webhooks.
           </p>
         </div>
-        <div className="grid-2">
+        <div className="grid-2 sm-col-8-center">
           <Functions />
           <h3>Serverless Functions</h3>
           <p>
@@ -248,7 +247,7 @@ export default function Home() {
             Automatic retries built-in.
           </p>
         </div>
-        <div className="grid-2">
+        <div className="grid-2 sm-col-8-center">
           <History />
           <h3>Unified History</h3>
           <p>
@@ -267,7 +266,7 @@ export default function Home() {
       />
 
       <div className="section code-grid grid">
-        <div className="code grid-center-6">
+        <div className="code grid-center-6 sm-col-8-center">
           <Code code={events} />
           <p className="text-center">Get started with an SDK: </p>
         </div>
@@ -276,7 +275,7 @@ export default function Home() {
       </div>
 
       <div className="section grid">
-        <div className="grid-center-6">
+        <div className="grid-center-6 sm-col-8-center">
           <h4>
             Automatically stream events from 3rd party apps with our
             integrations
@@ -298,7 +297,7 @@ export default function Home() {
       />
 
       <div className="grid">
-        <div className="grid-center-6 two-cols dx">
+        <div className="grid-center-6 sm-col-8-center two-cols dx">
           <div>
             <Create />
             <h3>Create and test with real data</h3>
@@ -345,7 +344,7 @@ export default function Home() {
       />
 
       <div className="grid">
-        <div className="grid-center-6 four-cols batteries">
+        <div className="grid-center-6 four-cols batteries sm-col-8-center">
           <div>
             <div className="icon">
               <CLI />
@@ -490,6 +489,7 @@ const Wrapper = styled.div`
     svg {
       margin: 0 0 0.85rem;
     }
+
     h3 {
       margin: 0 0 0.75rem;
     }
@@ -525,6 +525,21 @@ const Wrapper = styled.div`
       background: var(--primary-color);
     }
   }
+
+  @media (max-width: 800px) {
+    .code p { margin: 1rem 0 0; }
+
+    .integrations {
+      grid-template-columns: 1fr;
+    }
+
+    .dx > div {
+      margin-top: 1rem;
+    }
+    .dx img {
+      margin-bottom: 2rem;
+    }
+  }
 `;
 
 const Hero = styled.div`
@@ -552,6 +567,29 @@ const Hero = styled.div`
     font-family: var(--font-mono);
     display: inline-block;
   }
+
+  @media (max-width: 800px) {
+    grid-template-columns: 1fr;
+    padding: 8vh 0;
+
+    > div:first-of-type {
+      grid-column: 1;
+    }
+
+    img {
+      grid-column: 1;
+      grid-row-start: 1;
+      margin: 0 0 1rem;
+    }
+
+    p { padding: 0 0 2rem }
+
+    .button {
+      display: flex;
+      align-self: stretch;
+      margin: 0.5rem 0 0 0;
+    }
+  }
 `;
 
 const HIW = styled.div`
@@ -560,5 +598,15 @@ const HIW = styled.div`
   }
   svg {
     margin: 0 0 1rem;
+  }
+
+  @media (max-width: 800px) {
+    > div { padding: 2vh 0 0 0 };
+  }
+
+  .grid-line {
+    grid-row-start: 1;
+    grid-row-end: 4;
+
   }
 `;

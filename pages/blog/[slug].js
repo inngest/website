@@ -20,7 +20,7 @@ export default function BlogLayout(props) {
 
         {scope.img && (
           <div className="image grid">
-            <div className="header col-6-center">
+            <div className="header col-6-center sm-col-8-center">
               <Image>
                 {scope.img && <img src={scope.img} alt="" className="hero" />}
               </Image>
@@ -32,7 +32,7 @@ export default function BlogLayout(props) {
         )}
 
         <Header className="grid">
-          <header className="header col-6-center">
+          <header className="header col-6-center sm-col-8-center">
             <h1>{scope.heading}</h1>
             <p className="blog--date">
               {scope.humanDate} &middot; {scope.reading.text}
@@ -43,7 +43,7 @@ export default function BlogLayout(props) {
           </div>
         </Header>
         <Main className="grid">
-          <main className="col-6-center">
+          <main className="col-6-center sm-col-8-center">
             <MDXRemote
               compiledSource={props.post.compiledSource}
               scope={scope}
@@ -61,17 +61,23 @@ export default function BlogLayout(props) {
 
 const Header = styled.div`
   header {
-    padding: var(--section-padding) 0 0;
+    padding: var(--section-padding) 0;
   }
   .grid-line {
     padding: var(--section-padding) 0 0;
   }
+
+  @media (max-width: 800px) {
+    header {
+      padding: 6vh 0;
+    }
+  }
+
 `;
 
 const Main = styled.div`
-  > main,
-  .grid-line span {
-    padding: var(--section-padding) 0 0;
+  > main {
+    margin: var(--section-padding) 0 0;
   }
 
   main {
@@ -435,6 +441,14 @@ const Main = styled.div`
     margin-left: 6px;
     margin-right: 9px;
     height: 10px;
+  }
+
+  @media (max-width: 800px) {
+    .blog--callout {
+      padding: 1.5rem;
+      width: calc(100% - 1rem);
+      margin-left: -1rem;
+    }
   }
 `;
 

@@ -69,4 +69,11 @@ const Content = styled.div`
     width: 100%;
     top: 0;
   }
+
+  @media (max-width: 800px) {
+    grid-column: 2 / -2;
+    grid-template-columns: 1fr;
+    grid-gap: 1rem;
+  }
+
 `;
