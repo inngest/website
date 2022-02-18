@@ -577,9 +577,7 @@ const Hero = styled.div`
     }
 
     img {
-      grid-column: 1;
-      grid-row-start: 1;
-      margin: 0 0 1rem;
+      display: none;
     }
 
     p { padding: 0 0 2rem }
