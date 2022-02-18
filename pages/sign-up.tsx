@@ -76,7 +76,7 @@ const SignUp = () => {
               width="20"
             />
             <span>
-              Register with <b>GitHub</b>
+              Sign up with <b>GitHub</b>
             </span>
           </Button>
 
@@ -87,7 +87,7 @@ const SignUp = () => {
               width="20"
             />
             <span>
-              Register with <b>Google</b>
+              Sign up with <b>Google</b>
             </span>
           </Button>
 
@@ -166,7 +166,7 @@ const Content = styled.div`
   }
 
   form, .signup > a {
-    box-shadow: 0 0 80px rgba(255, 255, 255, 0.03)
+    box-shadow: 0 0 80px rgba(255, 255, 255, 0.06)
   }
 
   form {
