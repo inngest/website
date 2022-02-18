@@ -41,7 +41,7 @@ export default function BlogLayout(props) {
             {/* Blog posts */}
 
             {focus && (
-              <Focus>
+              <Focus className={focus.img ? "" : "no-img"}>
                 <a href={`/blog/${focus.slug}`}>
                   <div>
                     <h2>{focus.heading}</h2>
@@ -117,32 +117,18 @@ export async function getStaticProps() {
   return { props: { content } };
 }
 
-const Intro = styled.div`
-  padding: 6vh 18px 15vh;
-  z-index: 0;
-  background: rgba(255, 255, 255, 0.03);
-
-  header {
-    max-width: 100% !important;
-    padding: 2rem !important;
-    h1 {
-      opacity: 0.8;
-    }
-    h3 + p {
-      margin-top: 0.5rem;
-    }
-  }
-`;
-
 const Focus = styled.div`
   margin: 1rem 0 2rem -2rem;
   width: calc(100% + 4rem);
-  background: var(--bg-color);
   z-index: 1;
   box-shadow: 0 20px 80px rgba(var(--black-rgb), 0.5);
   border-radius: var(--border-radius);
   border: 1px solid rgba(var(--black-rgb), 0.5);
-  background: #00000077;
+  background: var(--black);
+
+  &.no-img a {
+    display: block;
+  }
 
   a {
     text-decoration: none;
