@@ -1,65 +1,122 @@
-import { useEffect } from "react";
-import styled from "@emotion/styled";
-import Head from "next/head";
-import Footer from "../shared/footer";
-import Nav from "../shared/nav";
-import Content from "../shared/content";
-import { FinisherHeader } from "../shared/HeaderBG";
+import { useEffect } from "react"
+import styled from "@emotion/styled"
+import Head from "next/head"
+import Footer from "../shared/footer"
+import Nav from "../shared/nav"
+import Content from "../shared/content"
+import Callout from "../shared/Callout"
 
-import Workflow from "../shared/Icons/Workflow";
-import Language from "../shared/Icons/Language";
-import Lightning from "../shared/Icons/Lightning";
-import Plus from "../shared/Icons/Plus";
-import Support from "../shared/Icons/Support";
-import Audit from "../shared/Icons/Audit";
+import Block from "../shared/Block"
+import IconList from "../shared/IconList"
+import Button from "../shared/Button"
 
-const gradient = (el, colors = ["#18435c", "#18435c", "#2f622f"]) => {
-  new FinisherHeader(
-    {
-      count: 6,
-      size: {
-        min: 700,
-        max: 900,
-        pulse: 0,
+import Workflow from "../shared/Icons/Workflow"
+import Language from "../shared/Icons/Language"
+import Lightning from "../shared/Icons/Lightning"
+import Plus from "../shared/Icons/Plus"
+import Support from "../shared/Icons/Support"
+import Audit from "../shared/Icons/Audit"
+
+const PLANS = {
+  free: {
+    name: "Community",
+    description: (
+      <>
+        Powerful enough to be useful, and <strong>always free</strong>. Perfect
+        for getting started.
+      </>
+    ),
+    features: [
+      {
+        icon: Workflow,
+        quantity: "5",
+        text: "workflows",
       },
-      speed: {
-        x: {
-          min: 0.1,
-          max: 0.8,
-        },
-        y: {
-          min: 0.1,
-          max: 0.6,
-        },
+      {
+        icon: Language,
+        quantity: "1,000",
+        text: "function runs/month",
       },
-      colors: {
-        background: "#0f111e",
-        particles: colors,
+      {
+        icon: Lightning,
+        quantity: "Limited",
+        text: "resources & throughput",
       },
-      blending: "lighten",
-      opacity: {
-        center: 0.3,
-        edge: 0,
+    ],
+  },
+  pro: {
+    name: "Early Adopter",
+    description: (
+      <>
+        <strong>$20/mo</strong> &nbsp;
+        <small>discounted for being an early supporting member</small>
+      </>
+    ),
+    features: [
+      {
+        icon: Workflow,
+        quantity: "50",
+        text: "workflows",
       },
-      shapes: ["c"],
-    },
-    el
-  );
-};
+      {
+        icon: Language,
+        quantity: "10,000",
+        text: "function runs/month",
+      },
+      {
+        icon: Lightning,
+        quantity: "Generous",
+        text: "resources & throughput",
+      },
+      {
+        icon: Audit,
+        quantity: "1 week",
+        text: "audit & log history",
+      },
+    ],
+  },
+  advanced: {
+    name: "Advanced",
+    description: <>Powerful access for any scale.</>,
+    features: [
+      {
+        icon: Workflow,
+        quantity: "Unlimited",
+        text: "workflows",
+      },
+      {
+        icon: Language,
+        quantity: "Unlimited",
+        text: "function runs/month",
+      },
+      {
+        icon: Lightning,
+        quantity: "Custom",
+        text: "resources & throughput",
+      },
+      {
+        icon: Audit,
+        quantity: "1 month",
+        text: "or more audit & log history",
+      },
+      {
+        icon: Plus,
+        quantity: "Add-ons",
+        text: "available",
+      },
+      {
+        icon: Support,
+        quantity: "Add-ons",
+        text: "available",
+      },
+    ],
+  },
+}
 
 export default function Pricing() {
-  useEffect(() => {
-    gradient(document.querySelector(".pro"));
-    gradient(document.querySelector(".advanced"), [
-      "#893eb5",
-      "#893eb5",
-      "#b7672c",
-    ]);
-  }, []);
-
   const toggleFAQ = (e) => {
-    e.currentTarget.classList.toggle("active");
-  };
+    e.currentTarget.classList.toggle("active")
+  }
 
   return (
     <>
@@ -84,7 +141,11 @@ export default function Pricing() {
       <Nav />
 
       <Hero>
-        <h1>Simple pricing. Powerful functionality.</h1>
+        <h1>
+          Simple pricing.
+          <br />
+          Powerful functionality.
+        </h1>
         <p>
           Save weeks of development with our event-driven platform.
           <br />
@@ -93,115 +154,56 @@ export default function Pricing() {
       </Hero>
 
       <Content>
-        <Free>
-          <div>
-            <h3>Community</h3>
-            <p>
-              Powerful enough to be useful, and <b>always free</b>. Perfect for
-              getting started.
-            </p>
-            <ul>
-              <li>
-                <Workflow size="18" /> <b>5</b> &nbsp;workflows
-              </li>
-              <li>
-                <Language size="18" /> <b>1,000</b> &nbsp;function runs/month
-              </li>
-              <li>
-                <Lightning size="18" /> <b>Limited</b> &nbsp;resources &
-                throughput
-              </li>
-            </ul>
-          </div>
-          <div>
-            <a
-              href="https://app.inngest.com/register"
-              className="button button--outline"
-            >
-              Sign up for free →
-            </a>
-          </div>
-        </Free>
+        <Block color="primary">
+          <PlanHeader flexDirection="row">
+            <div>
+              <h3>{PLANS.free.name}</h3>
+              <p>{PLANS.free.description}</p>
+            </div>
+            <div>
+              <Button kind="outlineHighContrast" href="/sign-up">
+                Sign up for free →
+              </Button>
+            </div>
+          </PlanHeader>
+          <IconList collapseWidth={800} items={PLANS.free.features} />
+        </Block>
 
         <Grid>
-          <Plan>
-            <PlanHeader className="pro">
-              <div>
-                <h3>Early adopter</h3>
-                <p>
-                  <b>$20/mo</b> &nbsp;
-                  <small>discounted for being an early supporting member</small>
-                </p>
-                <a href="https://app.inngest.com/register" className="button">
-                  Sign up as an early adopter →
-                </a>
-              </div>
+          <Block>
+            <PlanHeader flexDirection="column">
+              <h3>{PLANS.pro.name}</h3>
+              <p>{PLANS.pro.description}</p>
             </PlanHeader>
-            <ul>
-              <li>
-                <Workflow size="18" /> <b>50</b>&nbsp;workflows
-              </li>
-              <li>
-                <Language size="18" /> <b>10,000</b>&nbsp;function runs/month
-              </li>
-              <li>
-                <Lightning size="18" /> <b>Normal</b>&nbsp;resources &
-                throughput
-              </li>
-              <li>
-                <Audit size="18" /> <b>1 week</b>&nbsp;audit & log history
-              </li>
-            </ul>
-          </Plan>
+            <div style={{ marginBottom: "2rem" }}>
+              <Button kind="primary" href="/sign-up">
+                Sign up as an early adopter →
+              </Button>
+            </div>
+            <IconList direction="vertical" items={PLANS.pro.features} />
+          </Block>
 
-          <Plan>
-            <PlanHeader className="advanced">
-              <div>
-                <h3>Advanced</h3>
-                <p>
-                  Powerful access for any scale. Contact us for more information
-                </p>
-                <a href="/contact" className="button">
-                  Contact us →
-                </a>
-              </div>
+          <Block>
+            <PlanHeader flexDirection="column">
+              <h3>{PLANS.advanced.name}</h3>
+              <p>{PLANS.advanced.description}</p>
             </PlanHeader>
-            <ul>
-              <li>
-                <Workflow size="18" /> <b>Unlimited</b>&nbsp;workflows
-              </li>
-              <li>
-                <Language size="18" /> <b>Unlimited</b>&nbsp;function runs/month
-              </li>
-              <li>
-                <Lightning size="18" /> <b>Custom</b>&nbsp;resources &
-                throughput
-              </li>
-              <li>
-                <Audit size="18" /> <b>1 month</b>&nbsp;or more audit & log
-                history
-              </li>
-              <li>
-                <Plus size="18" /> <b>Add-ons</b>&nbsp;available
-              </li>
-              <li>
-                <Support size="18" /> <b>Dedicated</b>&nbsp;support
-              </li>
-            </ul>
-          </Plan>
+            <div style={{ marginBottom: "2rem" }}>
+              <Button kind="primary" href="/contact">
+                Contact us →
+              </Button>
+            </div>
+            <IconList direction="vertical" items={PLANS.advanced.features} />
+          </Block>
         </Grid>
 
-        <All>
-          <p class="text-center">
-            All plans include unlimited team members, uncapped events, scheduled
-            worfklows, audit trails, API access, CD via our CLI, and first-class
-            debugging.
-          </p>
-        </All>
+        <AllPlansInfo>
+          All plans include unlimited team members, uncapped events, scheduled
+          workflows, audit trails, API access, CD via our CLI, and first-class
+          debugging.
+        </AllPlansInfo>
 
-        <hr />
-
-        <h2 className="text-center">FAQs</h2>
+        <h2 style={{ margin: "2rem 0" }}>FAQs</h2>
 
         <FAQGrid>
           <div onClick={toggleFAQ}>
@@ -308,13 +310,15 @@ export default function Pricing() {
             </p>
           </div>
         </FAQGrid>
+
+        <Callout />
       </Content>
 
       <div style={{ marginTop: 100 }}>
         <Footer />
       </div>
     </>
-  );
+  )
 }
 
 const Hero = styled.div`
@@ -330,95 +334,33 @@ const Hero = styled.div`
     line-height: 1.45;
     opacity: 0.8;
   }
-`;
-
-const Plan = styled.div`
-  border: 1px solid #ffffff19;
-  border-radius: 7px;
-  overflow: hidden;
-  background: rgba(255, 255, 255, 0.03);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-
-  ul {
-    list-style: none;
+  p {
+    font-family: var(--font);
   }
+`
 
-  ul li {
-    display: flex;
-    align-items: center;
-    margin: 1rem 0 0;
-  }
-
-  svg {
-    margin: 0 0.75rem 0 0;
-  }
-
-  h3 {
-    margin: 0;
-    font-size: 1.5rem;
-  }
-`;
-
-const Free = styled(Plan)`
-  margin: 0 0 30px;
-  display: grid;
-  grid-template-columns: auto 200px;
-  align-items: center;
-  padding: 2rem;
-
-  h3 + p {
-    margin: 0.25rem 0 2rem;
-  }
-
-  ul {
-    margin: 0;
-    padding: 0;
-    display: flex;
-  }
-
-  li {
-    display: flex;
-    align-items: center;
-    margin: 0 3rem 0 0 !important;
-  }
+const PlanHeader = styled.div<{
+  flexDirection: "row" | "column"
+}>`
+  display: flex;
+  flex-direction: ${(props) => props.flexDirection || "row"};
+  justify-content: space-between;
+  margin-bottom: 2rem;
 
   @media (max-width: 800px) {
-    grid-template-columns: 1fr;
-    grid-gap: 60px;
-    padding-bottom: 3rem;
-
-    ul {
-      flex-direction: column;
-    }
-    li {
-      margin: 0 !important;
-    }
-  }
-`;
-
-const PlanHeader = styled.div`
-  padding: 3rem 2rem 3.5rem;
-  margin: 0 0 ?rem;
-  overflow: hidden;
-
-  b {
-    font-size: 1.1rem;
+    flex-direction: column;
   }
 
-  > div {
-    z-index: 1;
-    position: relative;
+  p {
+    margin: 1rem 0;
   }
-`;
+`
 
 const Grid = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-gap: 30px 30px;
-
-  h3 + p {
-    margin: 0.25rem 0 3.5rem;
-  }
+  grid-gap: 2rem 2rem;
+  margin: 2rem 0;
 
   small {
     opacity: 0.5;
@@ -428,22 +370,25 @@ const Grid = styled.div`
   @media (max-width: 800px) {
     grid-template-columns: 1fr;
   }
-`;
+`
 
-const All = styled.div`
-  margin: 4vh 0;
-  opacity: 0.8;
-`;
+const AllPlansInfo = styled.p`
+  margin: 2rem auto 4rem;
+  max-width: 40rem;
+  line-height: 1.5rem;
+  text-align: center;
+`
 
 const FAQGrid = styled.div`
   display: grid;
+  margin-bottom: 3rem;
 
   div {
     cursor: pointer;
 
     h3 {
-      font-size: 1.5rem;
-      margin: 2rem 0;
+      margin: 1rem 0;
+      font-family: var(--font);
     }
     p:last-of-type {
       margin: 0 0 3rem;
@@ -460,4 +405,4 @@ const FAQGrid = styled.div`
       display: block;
     }
   }
-`;
+`
