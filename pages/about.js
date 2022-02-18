@@ -4,19 +4,10 @@ import Head from "next/head"
 import Footer from "../shared/footer"
 import Nav from "../shared/nav"
 import Content from "../shared/content"
-// import { FinisherHeader } from "../shared/HeaderBG"
 
 import Block from "../shared/Block"
 
-import Airplane from "../shared/Icons/Airplane"
-import Audit from "../shared/Icons/Audit"
-import Language from "../shared/Icons/Language"
-import Alert from "../shared/Icons/Alert"
-import Users from "../shared/Icons/Users"
-import VCS from "../shared/Icons/VCS"
-
-const MISSION = "Accelerate the adoption of event based architecture."
-const VISION = "World class architecture accessible to everyone."
+const MISSION = "To accelerate the adoption of event based architecture."
 
 const TEAM = [
   {
@@ -33,7 +24,7 @@ const TEAM = [
   },
   {
     name: "Dan Farrelly",
-    role: "Foudning Engineer",
+    role: "Founding Engineer",
     bio: "Former CTO at Buffer",
     avatar: "/team/dan-f-2022-02-18.jpg",
   },
