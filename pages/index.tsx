@@ -610,6 +610,7 @@ const Hero = styled.div`
   p {
     padding: 0 0 1.5rem;
     font-family: var(--font);
+    font-weight: normal;
   }
 
   .button {
