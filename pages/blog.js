@@ -10,8 +10,9 @@ export default function BlogLayout(props) {
   const content = props.content.map(JSON.parse);
 
   const focus = content.find((c) => c.focus);
-  const rest = content.filter((c) => !focus || c.slug !== focus.slug).
-    sort((a, z) => z.date.localeCompare(a.date));
+  const rest = content
+    .filter((c) => !focus || c.slug !== focus.slug)
+    .sort((a, z) => z.date.localeCompare(a.date));
 
   return (
     <>

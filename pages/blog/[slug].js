@@ -161,7 +161,7 @@ const Main = styled.div`
 
   pre {
     margin: 3rem 0;
-    padding: .25rem 1em;
+    padding: 0.25rem 1em;
     border-radius: 3px;
   }
 
