@@ -15,18 +15,18 @@ export type LibraryItem = {
 export type LibraryData = LibraryItem[];
 
 class LibraryManager {
-  #library: LibraryData;
+  _library: LibraryData;
 
   constructor(data: LibraryData) {
-    this.#library = data;
+    this._library = data;
   }
 
   get library() {
-    return this.#library;
+    return this._library;
   }
 
   forCategory = (c: string): LibraryData => {
-    return this.#library.filter(l => l.config.categories.includes(c));
+    return this._library.filter(l => l.config.categories.includes(c));
   }
 }
 
