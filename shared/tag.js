@@ -4,7 +4,7 @@ import { css } from "@emotion/react";
 const Tag = styled.span`
   display: inline-block;
   border-radius: 4px;
-  padding: 5px .75rem 4px;
+  padding: 5px 0.75rem 4px;
 
   font-size: 11px !important;
   font-weight: 400 !important;

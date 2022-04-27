@@ -48,6 +48,7 @@ const Hero = styled.div`
 
   p {
     margin-bottom: var(--section-padding);
+    font-size: 1.1rem;
   }
 
   > div {
