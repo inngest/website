@@ -9,6 +9,7 @@ export type LibraryItem = {
     description: string;
     why: string;
     when: string;
+    run: string;
     categories: string[];
     features: string[];
     template: string;
@@ -17,6 +18,7 @@ export type LibraryItem = {
       description: MDXRemoteSerializeResult;
       when: MDXRemoteSerializeResult;
       why: MDXRemoteSerializeResult;
+      run: MDXRemoteSerializeResult;
     }
   };
 };
@@ -43,6 +45,7 @@ class LibraryManager {
         description: await serialize(item.config.description),
         why: await serialize(item.config.description),
         when: await serialize(item.config.when),
+        run: await serialize(item.config.run),
       };
       this._library[i].config.md = md;
     }

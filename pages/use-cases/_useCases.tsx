@@ -36,12 +36,12 @@ const Example = ({ item }: { item: LibraryItem }) => {
       { config?.md?.when && <MDXRemote {...config.md.when} /> }
 
       <p><b>Run</b></p>
-      { config?.md?.description && <MDXRemote {...config.md.description} /> }
+      { config?.md?.run && <MDXRemote {...config.md.run} /> }
       </div>
 
       <Details>
         <p><b>Why</b></p>
-        <p>{config.why}</p>
+        { config?.md?.why && <MDXRemote {...config.md.why} /> }
 
         <Button kind="outline" href={`/sign-up?ref=${item.dir}-explore`}>Explore this use case</Button>
       </Details>

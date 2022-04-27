@@ -5,7 +5,7 @@
         "webhooks",
         "integrations"
       ],
-      "description": "Whenever a subscription payment fails, run two functions:\n 1. Notify the account manager \u0026 billing team via Slack\n 2. Update the user’s account to read only",
+      "description": "",
       "features": [
         "idempotency",
         "audit trails"
@@ -17,7 +17,9 @@
         }
       ],
       "name": "Stripe dunning flow: handling missed subscription payments",
+      "run": "1. Notify the account manager \u0026 billing team via Slack\n 2. Update the user’s account to read only",
       "template": "typescript/typescript-node-lts",
+      "when": "Whenever a subscription payment fails",
       "why": "Idempotency is critical:  you don’t want to handle billing events twice.  Building itempotency takes time, but you get it for free with Inngest.\nIt’s also important to keep this flow well audited in case of issues or customer support requests, which is built in to the Inngest UI."
     },
     "dir": "stripe-dunning-charge-failed"
