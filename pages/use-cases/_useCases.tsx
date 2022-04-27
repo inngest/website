@@ -35,7 +35,7 @@ const Example = ({ item }: { item: LibraryItem }) => {
       <p><b>When</b></p>
       { config?.md?.when && <MDXRemote {...config.md.when} /> }
 
-      <p><b>Run</b></p>
+      <p className="run"><b>Run</b></p>
       { config?.md?.run && <MDXRemote {...config.md.run} /> }
       </div>
 
@@ -83,8 +83,12 @@ const ItemWrapper = styled.div`
     span { margin-left: 5px }
   }
 
-  p + p {
-    margin-top: 0.5rem;
+  p + p, p + ol, p + ul {
+    margin-top: 0.4rem;
+  }
+
+  p + p.run {
+    margin-top: 1rem;
   }
 
   a {

@@ -43,7 +43,7 @@ class LibraryManager {
       const item = this._library[i];
       const md = {
         description: await serialize(item.config.description),
-        why: await serialize(item.config.description),
+        why: await serialize(item.config.why),
         when: await serialize(item.config.when),
         run: await serialize(item.config.run),
       };
