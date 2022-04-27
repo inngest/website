@@ -1,4 +1,6 @@
 import getLibrary, { LibraryData } from "../../utils/library";
+import Footer from "../../shared/footer";
+import Callout from "../../shared/Callout";
 import Header from "./_header";
 import UseCases from "./_useCases";
 import styled from "@emotion/styled";
@@ -20,6 +22,13 @@ export default function Webhooks(props: { useCases: LibraryData }) {
         <UseCases items={props.useCases || []} category={CATEGORY} />
       </Content>
 
+      <Callout
+        small="Looking for a fast and easy way to manage webhook endpoints?"
+        ctaRef="webhook-callout"
+        style={{ margin: "10vh 0" }}
+      />
+
+      <Footer />
     </div>
   );
 }
