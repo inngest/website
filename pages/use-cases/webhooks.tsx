@@ -17,7 +17,7 @@ export default function Webhooks(props: { useCases: LibraryData }) {
       <Content>
         <h2>What you can build using webhooks</h2>
         <p>A non-exhaustive list :)</p>
-        <UseCases items={props.useCases} category={CATEGORY} />
+        <UseCases items={props.useCases || []} category={CATEGORY} />
       </Content>
 
     </div>

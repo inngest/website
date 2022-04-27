@@ -13,7 +13,7 @@ const Examples = ({ items }: Props) => {
   return (
     <Wrapper>
       <div>
-        {items.map(i => <Example key={i.dir} item={i} />)}
+        {(items || []).map(i => <Example key={i.dir} item={i} />)}
       </div>
 
       <p>There’s plenty more you can do with inngest :)</p>
