@@ -4,7 +4,7 @@ import { css } from "@emotion/react";
 const Tag = styled.span`
   display: inline-block;
   border-radius: 4px;
-  padding: 5px 9px 4px;
+  padding: 5px .75rem 4px;
 
   font-size: 11px !important;
   font-weight: 400 !important;
@@ -15,8 +15,8 @@ const Tag = styled.span`
     margin-left: 0.3em;
   }
 
-  background: #ceecce;
-  color: #4e754d;
+  background: var(--color-iris-60);
+  color: var(--black);
 `;
 
 export default function (props) {

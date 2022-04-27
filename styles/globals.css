@@ -22,6 +22,7 @@
   --black-rgb: 4, 4, 8;
   --gray: #212121;
   --green: #16a973;
+  --color-black: var(--black);
   --color-white: #fff;
   --color-iris-60: #A5A6F6;
   --color-iris-100: #5D5FEF;
@@ -52,7 +53,7 @@
   --border-radius: 0.35em;
 
   --max-page-width: 60em; /* 1200px */
-  --header-trailing-padding: 4vh;
+  --header-trailing-padding: 5vh;
   --section-padding: 10vh;
 
   --nav-height: 120px;
@@ -154,7 +155,7 @@ h5 {
 }
 
 p, ol, ul, li {
-  font-size: 0.9rem;
+  font-size: 0.8rem;
 }
 
 input,

@@ -37,16 +37,17 @@ export default Header;
 const Wrapper = styled.div`
   background: url(/assets/hero-grid.svg) no-repeat right 10%;
   border-bottom: 1px dashed var(--grid-line-color);
+  margin: 0 0 var(--section-padding);
 `;
 
 const Hero = styled.div`
   text-align: center;
-  padding: 11vh 0 8vh;
+  padding: calc(var(--section-padding) + 2vh) 0 var(--section-padding);
   display: flex;
   flex-direction: column;
 
   p {
-    margin-bottom: 7vh;
+    margin-bottom: var(--section-padding);
   }
 
   > div {

@@ -1,4 +1,6 @@
 import cachedData from "../public/json/library.json";
+import { serialize } from "next-mdx-remote/serialize";
+import { MDXRemoteSerializeResult } from "next-mdx-remote";
 
 export type LibraryItem = {
   dir: string;
@@ -6,9 +8,16 @@ export type LibraryItem = {
     name: string;
     description: string;
     why: string;
+    when: string;
     categories: string[];
     features: string[];
     template: string;
+
+    md?: {
+      description: MDXRemoteSerializeResult;
+      when: MDXRemoteSerializeResult;
+      why: MDXRemoteSerializeResult;
+    }
   };
 };
 
@@ -19,6 +28,24 @@ class LibraryManager {
 
   constructor(data: LibraryData) {
     this._library = data;
+  }
+
+  async process(): Promise<any> {
+    const results = await this.markdownify();
+    console.log(results);
+  }
+
+  async markdownify(): Promise<any> {
+    // Markdowi-ify the content.
+    for (let i = 0; i < this._library.length; i++) {
+      const item = this._library[i];
+      const md = {
+        description: await serialize(item.config.description),
+        why: await serialize(item.config.description),
+        when: await serialize(item.config.when),
+      };
+      this._library[i].config.md = md;
+    }
   }
 
   get library() {
@@ -38,5 +65,7 @@ export default async (): Promise<LibraryManager> => {
   // Fetch the library JSON file
   const results = await fetch("https://github.com/inngest/library/releases/latest/download/library.json")
   const data = await results.json();
-  return new LibraryManager(data);
+  const lm = new LibraryManager(data);
+  await lm.markdownify();
+  return lm
 };

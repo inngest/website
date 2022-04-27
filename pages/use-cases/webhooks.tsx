@@ -1,6 +1,7 @@
 import getLibrary, { LibraryData } from "../../utils/library";
 import Header from "./_header";
 import UseCases from "./_useCases";
+import styled from "@emotion/styled";
 
 const CATEGORY="webhooks"
 
@@ -13,7 +14,12 @@ export default function Webhooks(props: { useCases: LibraryData }) {
         subheader="Using Inngest, you can create a production-ready environment to receive webhooks and trigger serverless functions automatically — zero downtime, zero configuration, zero infra."
       />
 
-      <UseCases items={props.useCases} category={CATEGORY} />
+      <Content>
+        <h2>What you can build using webhooks</h2>
+        <p>A non-exhaustive list :)</p>
+        <UseCases items={props.useCases} category={CATEGORY} />
+      </Content>
+
     </div>
   );
 }
@@ -29,3 +35,8 @@ export async function getStaticProps(_context: any) {
     },
   };
 }
+
+const Content = styled.div`
+  max-width: var(--max-page-width);
+  margin: 0 auto;
+`
