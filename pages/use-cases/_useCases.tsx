@@ -12,7 +12,11 @@ type Props = {
 const Examples = ({ items }: Props) => {
   return (
     <Wrapper>
-      {items.map(i => <Example key={i.dir} item={i} />)}
+      <div>
+        {items.map(i => <Example key={i.dir} item={i} />)}
+      </div>
+
+      <p>There’s plenty more you can do with inngest :)</p>
     </Wrapper>
   );
 };
@@ -21,7 +25,7 @@ export default Examples;
 
 const Example = ({ item }: { item: LibraryItem }) => {
   const { config } = item;
-  console.log(config);
+
   return (
     <ItemWrapper className="col-3">
       <div>
@@ -49,9 +53,14 @@ const Wrapper = styled.div`
   max-width: var(--max-page-width);
   margin: var(--header-trailing-padding) auto;
 
-  display: grid;
-  grid-template-columns: repeat(9, 1fr);
-  grid-gap: var(--grid-gap);
+  > div {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    grid-gap: var(--grid-gap);
+    margin: 0 0 2rem;
+  }
+
+  > p { opacity: .2; text-align: center }
 `;
 
 const ItemWrapper = styled.div`
