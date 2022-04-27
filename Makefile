@@ -1,24 +1,13 @@
 .PHONY: build
-build: #get-library generate-library
+build: library
 	yarn build
 
 .PHONY: dirty
 dirty:
-	go run ./library.go
 	yarn prettier
 	git diff --exit-code
 
 
-.PHONY: get-library
-get-library:
-	echo "generating library json"
-	go run ./getlibrary.go || ./getlibrary
-	rm -rf ./library/
-	echo "library json generated"
-
-.PHONY: generate-library
-generate-library:
-	./generate-library.js
-
 .PHONY: library
-library: get-library generate-library
+library:
+	curl -L https://github.com/inngest/library/releases/latest/download/library.json  > ./public/json/library.json
