@@ -61,10 +61,6 @@ class LibraryManager {
 }
 
 export default async (): Promise<LibraryManager> => {
-  if (process.env.NODE_ENV === "production") {
-    return new LibraryManager(cachedData);
-  }
-
   // Fetch the library JSON file
   const results = await fetch("https://github.com/inngest/library/releases/latest/download/library.json")
   const data = await results.json();
