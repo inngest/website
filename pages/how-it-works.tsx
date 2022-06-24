@@ -67,7 +67,7 @@ export default function HowItWorks() {
             heading="Distributed execution"
             text={
               <>
-                <p>We designed our execution engine to have swappable drivers.  It allows
+                <p>We designed our execution engine to support multiple drivers.  It allows
                 you to run functions however they're packaged — Docker containers, Lambda
                 functions, Netlify and Vercel API endpoints, Nomad and Kubernetes
                 clusters or, coming soon, internal functions in your monorepo via RPC.</p>
@@ -103,6 +103,8 @@ export default function HowItWorks() {
         </div>
       </Section>
 
+      <Section theme="dark">
+      </Section>
     </Wrapper>
   );
 }
@@ -112,7 +114,6 @@ export default function HowItWorks() {
 What would you want to know here?
 
 - A high-level architecture and how you actually use it.
-
 
 Serverless: no infra required (unless you want to self host).
 
@@ -130,7 +131,7 @@ Serverless: no infra required (unless you want to self host).
 const Wrapper = styled.div``;
 
 const Hero = styled.div`
-  margin: 9rem 0 0;
+  margin: 6rem 0 0;
   padding: 0 1rem;
   text-align: center;
   p {
