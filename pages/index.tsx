@@ -210,6 +210,7 @@ export default function Home() {
           <Button href="/product?ref=home-start-building" kind="primary">
             Start Building Today
           </Button>
+          <p>Or <a href="/how-it-works">learn more about how it works</a></p>
         </div>
       </Section>
 

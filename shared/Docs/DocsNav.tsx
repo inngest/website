@@ -200,7 +200,7 @@ const Sidebar = styled.div`
   position: sticky;
   top: 0px;
   height: 100vh;
-  overflow: scroll;
+  overflow-y: auto;
   border-right: 1px solid var(--border-color);
   background-color: var(--bg-color);
 
