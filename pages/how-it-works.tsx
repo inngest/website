@@ -64,7 +64,7 @@ export default function HowItWorks() {
                 handled for you, except for your business logic.</p>
               </>
             }
-            image=""
+            image="/assets/serverless-scalability.png"
           />
 
           <ContentBlock
@@ -84,7 +84,7 @@ export default function HowItWorks() {
                 and allows you to write your own drivers.</p>
               </>
             }
-            image=""
+            image="/assets/execution.png"
           />
 
           <ContentBlock
@@ -104,7 +104,7 @@ export default function HowItWorks() {
                 function independently from the triggering event.</p>
               </>
             }
-            image=""
+            image="/assets/state.png"
           />
         </div>
       </Section>
