@@ -46,22 +46,29 @@ export default function HowItWorks() {
       </Hero>
 
       <Section>
-
         <div>
           <ContentBlock
             heading="Serverless scalability"
             text={
               <>
-                <p>We separated workers from queues to make background jobs declarative
-                and serverless - no infrastructure required.  Here's how it works:</p>
+                <p>
+                  We separated workers from queues to make background jobs
+                  declarative and serverless - no infrastructure required.
+                  Here's how it works:
+                </p>
 
-                <p>The events API ingests events via HTTP - which works in every language
-                - and pushes them into an event stream.</p>
+                <p>
+                  The events API ingests events via HTTP - which works in every
+                  language - and pushes them into an event stream.
+                </p>
 
-                <p>Our execution engine watches the incoming event stream and matches 
-                events to functions.  We then schedule your functions in our serverless
-                queue, where our drivers run each step of your function.  Everything is
-                handled for you, except for your business logic.</p>
+                <p>
+                  Our execution engine watches the incoming event stream and
+                  matches events to functions. We then schedule your functions
+                  in our serverless queue, where our drivers run each step of
+                  your function. Everything is handled for you, except for your
+                  business logic.
+                </p>
               </>
             }
             image="/assets/serverless-scalability.png"
@@ -72,16 +79,27 @@ export default function HowItWorks() {
             heading="Distributed execution"
             text={
               <>
-                <p>We designed our execution engine to support multiple drivers.  You can
-                run functions however they're packaged — Docker containers, Lambda
-                functions, Netlify and Vercel API endpoints, Nomad and Kubernetes
-                clusters or, coming soon, internal functions in your monorepo via RPC.</p>
+                <p>
+                  We designed our execution engine to support multiple drivers.
+                  You can run functions however they're packaged — Docker
+                  containers, Lambda functions, Netlify and Vercel API
+                  endpoints, Nomad and Kubernetes clusters or, coming soon,
+                  internal functions in your monorepo via RPC.
+                </p>
 
-                <p>This allows you to create and publish functions however they fit into
-                your stack, and test them locally with no extra steps.</p>
+                <p>
+                  This allows you to create and publish functions however they
+                  fit into your stack, and test them locally with no extra
+                  steps.
+                </p>
 
-                <p>Our execution engine is {" "}<a href="https://www.github.com/inngest/inngest-cli">open source</a>{" "}
-                and allows you to write your own drivers.</p>
+                <p>
+                  Our execution engine is{" "}
+                  <a href="https://www.github.com/inngest/inngest-cli">
+                    open source
+                  </a>{" "}
+                  and allows you to write your own drivers.
+                </p>
               </>
             }
             image="/assets/execution.png"
@@ -91,17 +109,25 @@ export default function HowItWorks() {
             heading="State and visibility"
             text={
               <>
-                <p>We store every event you send, and record all of the state that
-                each step of your function creates — using swappable state interfaces
-                that you can choose to self host.</p>
+                <p>
+                  We store every event you send, and record all of the state
+                  that each step of your function creates — using swappable
+                  state interfaces that you can choose to self host.
+                </p>
 
-                <p>This allows you to gain full visibility into how your functions run,
-                the data produced within each step of the function, to trigger manual retries
-                with modified data and to test new versions of a function historcally.</p>
+                <p>
+                  This allows you to gain full visibility into how your
+                  functions run, the data produced within each step of the
+                  function, to trigger manual retries with modified data and to
+                  test new versions of a function historcally.
+                </p>
 
-                <p>And, because functions are decoupled from their triggers, you can deploy
-                new functions instantly, without changes to your stack, and version each
-                function independently from the triggering event.</p>
+                <p>
+                  And, because functions are decoupled from their triggers, you
+                  can deploy new functions instantly, without changes to your
+                  stack, and version each function independently from the
+                  triggering event.
+                </p>
               </>
             }
             image="/assets/state.png"
@@ -111,31 +137,49 @@ export default function HowItWorks() {
 
       <Section theme="dark">
         <header>
-          <h2>The benefits of events<br />with the flexibility of queues.</h2>
+          <h2>
+            The benefits of events
+            <br />
+            with the flexibility of queues.
+          </h2>
         </header>
         <Grid>
           <div>
             <h4>Event-driven</h4>
-            <p>Leverage the power of event driven architectures to build and ship functionality faster, with zero extra effort. Events already power customer platforms, BI, ML, and microservices.</p>   
+            <p>
+              Leverage the power of event driven architectures to build and ship
+              functionality faster, with zero extra effort. Events already power
+              customer platforms, BI, ML, and microservices.
+            </p>
           </div>
           <div>
             <h4>Proven architecture</h4>
-            <p>Inngest's platform sits on top of proven message brokers that power the largest companies, scaling from zero to billions of messages per day.</p>   
+            <p>
+              Inngest's platform sits on top of proven message brokers that
+              power the largest companies, scaling from zero to billions of
+              messages per day.
+            </p>
           </div>
           <div>
             <h4>Standards based</h4>
-            <p>Embrace standards to ship faster, in every language, without worrying about compatibolity or support.  Every developer can jump in.</p>   
+            <p>
+              Embrace standards to ship faster, in every language, without
+              worrying about compatibolity or support. Every developer can jump
+              in.
+            </p>
           </div>
         </Grid>
 
         <div className="cta-container">
           <p>Learn more about the architecture in our docs:</p>
           <Button
-              size="medium"
-              kind="primary"
-              href="/docs/high-level-architecture"
-          >Read the docs</Button>
-          </div>
+            size="medium"
+            kind="primary"
+            href="/docs/high-level-architecture"
+          >
+            Read the docs
+          </Button>
+        </div>
       </Section>
 
       <Footer />

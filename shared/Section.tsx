@@ -8,8 +8,10 @@ const Section = styled.section<{ theme?: "dark" | "light" }>`
   color: ${({ theme }) =>
     theme === "dark" ? "var(--color-white)" : "inherit"};
 
-  p a, li a {
-    color: ${({ theme }) => theme === "dark" ? "var(--color-white)" : "inherit"};
+  p a,
+  li a {
+    color: ${({ theme }) =>
+      theme === "dark" ? "var(--color-white)" : "inherit"};
   }
 
   header {
@@ -43,8 +45,8 @@ const Section = styled.section<{ theme?: "dark" | "light" }>`
     }
 
     .button + p {
-      margin: .8rem 0 0;
-      font-size: .8rem;
+      margin: 0.8rem 0 0;
+      font-size: 0.8rem;
     }
   }
 
