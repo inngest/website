@@ -14,4 +14,4 @@ jobs:
           project: 'website'
           commitHash: ${{ github.sha }}
       - if: steps.deployment.outputs.success == 'true'
-        run: npx broken-link-checker ${{ steps.deployment.outputs.url }} --recursive --ordered --host-requests 10
+        run: npx broken-link-checker ${{ steps.deployment.outputs.url }} --recursive --host-requests 10 --requests 10 --follow
