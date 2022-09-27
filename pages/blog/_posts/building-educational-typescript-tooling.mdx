@@ -16,9 +16,9 @@ There are many reasons to explore as to why TypeScript has been growing so consi
 
 When developing any code, it's easy to get stuck in the detail and not realise how much a new user might have to understand just to get started. Providing organised source code, guides, and external documentation are all fantastic supporting resources, but the perfect experience is one where they can learn by using.
 
-Let's pin down two key points that we'll need to achieve this.
+Let's pin down two key points we'll need to achieve this.
 
-**Discoverability.** Our developer should be able to easily discover the capabilities of the code and how to use it, without referring to external sources or having to read it directly.
+**Discoverability.** Our developer should be able to effortlessly discover the capabilities of the code and how to use it without referring to external sources or having to read it directly.
 
 **Feedback.** Our developer should be able to understand input/output data and errors such that they can remedy them on their own.
 
@@ -28,7 +28,7 @@ Keep these two points in mind as we start looking at some examples.
 
 Without much effort, TypeScript affords us a tonne of protection, inferring types to protect against runtime errors and ease discoverability. We can go even further, though; TypeScript has so much it can offer if you know how to bend it.
 
-Let's dive in to an example to show how we can adapt TypeScript to protect our code far and beyond the usual inference. We'll start simple - I want to create an object that contains a list of hobbies and whether or not it's my hobby.
+Let's dive into an example to show how we can adapt TypeScript to protect our code far beyond the usual inference. We'll start simple - I want to create an object containing a list of hobbies and whether or not they are my hobbies.
 
 ```ts twoslash
 const myHobbies = {
@@ -69,11 +69,11 @@ const myHobbies: Record<Hobby, boolean> = {
 } as const;
 ```
 
-As you can see above, we declare a union type called `Hobby`, then use it when declaring `myHobbies` as `Record<Hobby, boolean>`. The TypeScript compiler can see that we're not specifying all of the hobbies we have listed and will fail to compile, protecting us from missing any options.
+As you can see above, we declare a union type called `Hobby`, then use it when declaring `myHobbies` as `Record<Hobby, boolean>`. The TypeScript compiler can see that we're not specifying all listed hobbies and will fail to compile, protecting us from missing any options.
 
-This is a huge boon - if I have multiple objects around my codebase using this pattern, updating the `Hobby` union will show me every other place I then need to account for the new hobby.
+This is a huge boon - if I have multiple objects around my codebase using this pattern, updating the `Hobby` union will show me every other place I need to account for the new hobby.
 
-We still have a problem though. Can you spot it? You can hover over the types to see what's what.
+We still have a problem, though. Can you spot it? You can hover over the types to see what's what.
 
 ```ts twoslash
 type Hobby = "dancing" | "romancing" | "typescript";
@@ -89,7 +89,7 @@ const likeDancing = myHobbies.dancing;
 
 `likeDancing` is once again a `boolean`. The problem we're seeing is that const assertions can only be applied to [simple literal expressions](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-4.html#caveats-1) that they can then infer the values of - our typed object now overrides that and widens the types back to `boolean` instead of `true` or `false`.
 
-Removing the `Record<Hobby, boolean>` type would mean we could then add any key to the object which isn't ideal; we want to enforce the correct keys and values.
+Removing the `Record<Hobby, boolean>` type would mean we could add any key to the object, which isn't ideal; we want to enforce the correct keys and values.
 
 If we wanted to go all out in this example, we could create a Hobby Factory™ which would enforce the correct type as input, then infer the specific output types afterwards.
 
@@ -114,18 +114,18 @@ const likeDancing = myHobbies.dancing;
 
 This feels a bit overkill, but we achieved some pretty cool things for when anyone else comes to use our code:
 
-1. We have a safe `createHobbies` function which will enforce users to account for every hobby
+1. We have a safe `createHobbies` function which will enforce users are accounting for every hobby
 2. We infer the _literal types_ of our output object, so users can know _in their IDE_ what the values are going to be
 
 What we've seen here is that - even in this small example - TypeScript can provide some really cool inference above and beyond its basic form, but **you have to give it a push**.
 
 ## Building a guided experience
 
-Now we know that the TypeScript compiler can do really cool inference when prompted, let's look at how that might translate to writing a new function in your codebase to provide your developers with a guided, first-class, type-safe, and enjoyable experience
+Now we know that the TypeScript compiler can perform really cool inference when prompted, let's look at how that might translate to writing a new function in your codebase to provide your developers with a guided, first-class, type-safe, and enjoyable experience.
 
 We want to create a function which mimics Node's `EventEmitter`. To ensure all of the supported events are discoverable, we want a readable function definition to ensure we can write something like `on(event, doFn)`.
 
-To start with, we could write this with nice generic types.
+To start with, we could write this with simple types.
 
 ```ts twoslash
 const on = (event: string, fn: (...args: any[]) => any) => {
@@ -154,7 +154,7 @@ on("event", () => console.log("Something happened"));
 
 Awesome! Not only are we now protected from making mistakes, but we also get to _discover_ events we can listen to via autocomplete in our IDE.
 
-In our case, we also want the event to send some specific data, which changes based on the event.
+In our case, we also want the event to send specific data, which changes based on the event.
 
 - `server.start` sends a `success` boolean
 - `server.stop` sends a `stoppedAt` timestamp
@@ -196,9 +196,9 @@ on("server.start", (success) => {
 //                     ^?
 ```
 
-Much better. We've made `on` a generic function that will infer its generic argument from the input. The compiler understands that `"server.start"` is the event, so can appropriately infer what the input of our function will be.
+Much better. We've made `on` a generic function that will infer its generic argument from the input. The compiler understands that `"server.start"` is the event, so it can appropriately infer what the input of our function will be.
 
-The user is still manually naming their `success` argument, though. Even though they can see it's a boolean, it might not be clear what it's representing. Finally, let's make our incoming arguments an object so that we can name them explicitly for the user.
+The user is still manually naming their `success` argument, though. Even though they can see it's a boolean, it might not be clear what it's representing. Finally, let's make our incoming arguments an object so we can name them explicitly for the user.
 
 ```ts twoslash
 // @noErrors
@@ -218,28 +218,26 @@ on("server.start", ({ success }) => {
 //                     ^?
 ```
 
-Fantastic! By defining an object and encouraging destructing, it's now super easy for the user to see exactly what they're dealing with. The compiler holds their hand to push them back on track should they stray from our guided path and our explicitly naming ensures the user can discover what they have access to without leaving their editor.
+Fantastic! By defining an object and encouraging destructing, it's now super easy for users to see the data they're dealing with. The compiler holds their hand to push them back on track should they stray from our guided path, and our explicit naming ensures the user can discover what they have access to without leaving their editor.
 
 Remember - these are just types - the functionality is exactly the same, but the experience for the user here is vastly different. Let's look at two examples - one with looser typing and our final example here.
 
 ![A bad user experience](/assets/blog/building-educational-typescript-tooling/on_bad.gif)
 
-Our user here has no idea what to type. The best case scenario is that there's some helpful JSDoc comments for the function to give them some idea of where to go, but it's highly likely that anyone writing this code (or reading it) will have to head to your docs to understand what to do.
+Our user here has no idea what to type. The best case scenario is that there's some helpful JSDoc comments for the function to give them some idea of where to go, but anyone writing this code (or reading it) will likely have to head to your docs to understand what to do.
 
-In addition, the user is running a huge risk of runtime errors because the compiler can't tell what the data should be.
+In addition, the user runs a considerable risk of runtime errors because the compiler can't tell what the data should be.
 
 ![Better user experience](/assets/blog/building-educational-typescript-tooling/on_good.gif)
 
-Worlds apart! With our better types, our user is guided through the process without having to read anything at all! Autocomplete kicks in and shows them exactly what they can do every step of the way.
+Worlds apart! With our better types, our user is guided through the process without having to read anything! Autocomplete kicks in and shows them exactly what they can do at every step.
 
-Not only is this code producing fewer errors - it's also faster to write, more enjoyable to write, and easier to read and parse further down the line.
+This code produces fewer errors and is faster to write, more enjoyable to write, and easier to read and parse further down the line.
 
 ## Conclusion
 
-Many practices go in to making any piece of code easy to use, but baking the discovery process in to the tooling itself is often overlooked.
+Many practices contribute to making a piece of code easy to use, but baking the discovery process into the tooling itself is often overlooked.
 
 Ecosystems such as C# with tools like [ReSharper](https://www.jetbrains.com/resharper/) have been benefitting from this in-editor luxury for decades, with tooling that teaches devs about new language features and styles without them needing to keep up with the latest release notes.
 
 We can bring some of that joy to TypeScript, even if we have to make a little extra effort to give the compiler the confidence to do so.
-
-
