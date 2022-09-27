@@ -85,7 +85,7 @@ const myHobbies: Record<Hobby, boolean> = {
 const likeDancing = myHobbies.dancing;
 ```
 
-`likeDancing` is once again a `boolean`. The problem we're seeing is that const assertions can only be applied to [simple literal expressions](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-4.html#caveats-1) that they can then infer the values of - our typed object now overrides that and widens the types back to `boolean` instead of `true` or `false`.
+`likeDancing` is once again a `boolean`. Our typed object now overrides TypeScript's inference and widens the understood types back to `boolean` instead of `true` or `false`.
 
 Removing the `Record<Hobby, boolean>` type would mean we could add any key to the object, which isn't ideal; we want to enforce the correct keys and values.
 
