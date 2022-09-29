@@ -458,6 +458,29 @@ export const DocsContent = styled.article<{ hasTOC: boolean }>`
     }
   }
 
+  kbd {
+    background-color: #eee;
+    border-radius: 3px;
+    border: 1px solid #b4b4b4;
+    box-shadow: 0 1px 1px rgb(0 0 0 / 20%),
+      0 2px 0 0 rgb(255 255 255 / 70%) inset;
+    color: #333;
+    display: inline-block;
+    font-size: 0.85em;
+    font-weight: 700;
+    line-height: 1;
+    padding: 2px 4px;
+    white-space: nowrap;
+  }
+
+  .error-text {
+    text-decoration-style: wavy;
+    text-underline-offset: 2px;
+    text-decoration-thickness: from-font;
+    text-decoration-line: underline;
+    text-decoration-color: red;
+  }
+
   // We export this to keep this file smaller and simpler
   ${docsSyntaxHighlightingCSS}
 `;
