@@ -505,7 +505,7 @@ export const Hero = ({
             {worksWithBrands.map((b) => (
               <a
                 href={`${b.docs}?ref=features-sdk-hero`}
-                className="h-8 flex items-center"
+                className="h-8 flex items-center bulge"
               >
                 <img
                   key={b.brand}
