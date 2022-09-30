@@ -13,6 +13,10 @@ The Inngest SDK leverages the full power of TypeScript, providing you with some 
 - **Painless type generation**<br/>
   Add a simple `"predev"` script and never miss a change.
 
+All of this comes together to provide some awesome type inference based on your actual production data.
+
+![Type inference](/assets/docs/typescript/send_welcome_email.gif)
+
 ## Generating types
 
 Using the Inngest CLI, you can generate TS types for your entire Inngest Cloud workspace with a single command:
@@ -86,8 +90,3 @@ TypeScript will also enforce your custom events being the right shape - see [Eve
 
 By design, these custom types are silently overidden as the events pass through Inngest and become generated types. This helps to ensure you're accounting for the _actual_ data found in the payloads as opposed to what you _hope_ is present when you first define the type.
 
-## Inference
-
-All of this comes together to provide some awesome type inference based on your actual production data.
-
-![Type inference](/assets/docs/typescript/send_welcome_email.gif)
