@@ -311,22 +311,32 @@ export default function FeaturesSDK() {
             <div className="lg:col-span-5 grid grid-cols-1 gap-8 justify-center">
               {[
                 {
+                  title: (
+                    <img
+                      className="w-6 h-6 inline mr-1"
+                      src="/assets/brand-logos/typescript.svg"
+                    />
+                  ),
+                  subtitle: "Painless type generation",
+                  description:
+                    "One command generates TS types for your entire ecosystem, based on your actual production data.",
+                },
+                {
                   title: "🛡️",
-                  subtitle: "Always protected",
+                  subtitle: "Automatic typesafety",
                   description:
                     "Keep in sync with your production data; strict TS types guard you every step of the way.",
                 },
+
                 {
-                  title: "🧙‍♂️",
-                  subtitle: "Painless type generation",
-                  description:
-                    "One command generates types for your entire ecosystem, based on your actual production data.",
-                },
-                {
-                  title: <kbd>Tab ↹</kbd>,
-                  subtitle: "your way to victory",
-                  description:
-                    "This is the SDK for your data - autocomplete your way to creating new functions.",
+                  title: "🧙",
+                  subtitle: "Smart autocomplete",
+                  description: (
+                    <>
+                      Leverage TypeScript inference and easily discover events
+                      and their data using autocomplete.
+                    </>
+                  ),
                 },
               ].map((i) => (
                 <div className="w-full flex flex-col space-y-4">
