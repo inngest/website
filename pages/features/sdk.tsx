@@ -308,7 +308,7 @@ export default function FeaturesSDK() {
           </header>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
-            <div className="lg:col-span-5 grid grid-cols-1 2xl:grid-cols-3 gap-8 justify-center">
+            <div className="lg:col-span-5 grid grid-cols-1 gap-8 justify-center">
               {[
                 {
                   title: "🛡️",
