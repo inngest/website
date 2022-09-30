@@ -294,9 +294,9 @@ export default function FeaturesSDK() {
       </div>
 
       {/* Background styles */}
-      <div className="bg-[#272f45] background-grid-texture text-white">
+      <div className="bg-[#070707] background-grid-texture text-white">
         {/* Content layout */}
-        <div className="mx-auto mb-14 py-24 px-10 lg:px-4 max-w-screen-2xl">
+        <div className="mx-auto mb-14 py-24 px-10 lg:px-4 max-w-4xl">
           <header className="mb-12 text-center">
             <h2 className="text-4xl">
               Deep{" "}
@@ -307,44 +307,48 @@ export default function FeaturesSDK() {
             </h2>
           </header>
 
-          <div className="grid grid-cols-1 2xl:grid-cols-3 gap-8 justify-center">
-            {[
-              {
-                title: "🛡️",
-                subtitle: "Always protected",
-                description:
-                  "Keep in sync with your production data; strict TS types guard you every step of the way.",
-              },
-              {
-                title: "🧙‍♂️",
-                subtitle: "Painless type generation",
-                description:
-                  "One command generates types for your entire ecosystem, based on your actual production data.",
-              },
-              {
-                title: <kbd>Tab ↹</kbd>,
-                subtitle: "your way to victory",
-                description:
-                  "This is the SDK for your data - autocomplete your way to creating new functions.",
-              },
-            ].map((i) => (
-              <div className="w-full shadow-xl bg-black/25 rounded-lg p-4 flex flex-col space-y-4">
-                <h3 className="flex flex-row items-center space-x-2">
-                  <span className="text-3xl">{i.title}</span>
-                  <span className="text-lg font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-cyan-500 to-cyan-200">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+            <div className="lg:col-span-5 grid grid-cols-1 2xl:grid-cols-3 gap-8 justify-center">
+              {[
+                {
+                  title: "🛡️",
+                  subtitle: "Always protected",
+                  description:
+                    "Keep in sync with your production data; strict TS types guard you every step of the way.",
+                },
+                {
+                  title: "🧙‍♂️",
+                  subtitle: "Painless type generation",
+                  description:
+                    "One command generates types for your entire ecosystem, based on your actual production data.",
+                },
+                {
+                  title: <kbd>Tab ↹</kbd>,
+                  subtitle: "your way to victory",
+                  description:
+                    "This is the SDK for your data - autocomplete your way to creating new functions.",
+                },
+              ].map((i) => (
+                <div className="w-full flex flex-col space-y-4">
+                  <h3 className="text-xl font-bold text-white">
+                    <span className="text-2xl mr-2">{i.title}</span>
                     {i.subtitle}
-                  </span>
-                </h3>
-                <div className="text-sm">{i.description}</div>
-              </div>
-            ))}
+                  </h3>
+                  <div className="text-sm">{i.description}</div>
+                </div>
+              ))}
+            </div>
+
+            <div className="lg:col-span-7 flex items-center justify-center">
+              <img
+                src="/assets/next-test.gif"
+                className="shadow-xl rounded"
+                alt="A screencast of the Inngest SDK's TypeScript features"
+              />
+            </div>
           </div>
 
-          <div className="flex items-center justify-center mt-8">
-            <img src="/assets/next-test.gif" className="shadow-xl rounded" />
-          </div>
-
-          <div className="flex items-center justify-center mt-8">
+          <div className="flex items-center justify-center mt-16">
             <Button kind="primary" href="/docs/typescript">
               Learn more →
             </Button>
@@ -504,7 +508,7 @@ export default function FeaturesSDK() {
               feedback and have a direct line to shaping the future of the SDK!
             </p>
           </header>
-          <div className="my-10 flex flex-col sm:flex-row gap-6 justify-center items-center">
+          <div className="my-10 flex flex-col sm:flex-row flex-wrap gap-6 justify-center items-center">
             <Button href="/docs?ref=features-sdk" kind="primary">
               Read the docs
             </Button>
