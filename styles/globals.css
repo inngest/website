@@ -292,6 +292,10 @@ kbd {
   background: var(--green);
 }
 
+.bulge {
+  @apply transition-transform hover:scale-105;
+}
+
 /** Gradients */
 .gradient-text {
   --from-color: #5d5fef;
