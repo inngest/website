@@ -1,12 +1,12 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
-import Footer from "src/shared/footer";
-import Nav from "src/shared/nav";
 import Button from "src/shared/Button";
 import CodeWindow from "src/shared/CodeWindow";
-import Discord from "src/shared/Icons/Discord";
-import CheckRounded from "src/shared/Icons/CheckRounded";
+import Footer from "src/shared/footer";
 import CheckboxUnchecked from "src/shared/Icons/CheckboxUnchecked";
+import CheckRounded from "src/shared/Icons/CheckRounded";
+import Discord from "src/shared/Icons/Discord";
+import Nav from "src/shared/nav";
 
 export async function getStaticProps() {
   return {
@@ -209,7 +209,7 @@ export default function FeaturesSDK() {
       {/* Background styles */}
       <div className="bg-light-gray background-grid-texture">
         {/* Content layout */}
-        <div className="mx-auto my-14 py-24 px-10 lg:px-4 max-w-4xl">
+        <div className="mx-auto mt-14 py-24 px-10 lg:px-4 max-w-4xl">
           <header className="mb-12 text-center">
             <h2 className="text-4xl">Simple, yet powerful</h2>
           </header>
@@ -289,6 +289,65 @@ export default function FeaturesSDK() {
                 <a href="/docs/deploy?ref=features-sdk">Get more info →</a>
               </p>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Background styles */}
+      <div className="bg-[#272f45] background-grid-texture text-white">
+        {/* Content layout */}
+        <div className="mx-auto mb-14 py-24 px-10 lg:px-4 max-w-screen-2xl">
+          <header className="mb-12 text-center">
+            <h2 className="text-4xl">
+              Deep{" "}
+              <span className="gradient-text gradient-text-ltr gradient-from-blue gradient-to-cyan">
+                TypeScript
+              </span>{" "}
+              support
+            </h2>
+          </header>
+
+          <div className="grid grid-cols-1 2xl:grid-cols-3 gap-8 justify-center">
+            {[
+              {
+                title: "🛡️",
+                subtitle: "Always protected",
+                description:
+                  "Keep in sync with your production data; strict TS types guard you every step of the way.",
+              },
+              {
+                title: "🧙‍♂️",
+                subtitle: "Painless type generation",
+                description:
+                  "One command generates types for your entire ecosystem, based on your actual production data.",
+              },
+              {
+                title: <kbd>Tab ↹</kbd>,
+                subtitle: "your way to victory",
+                description:
+                  "This is the SDK for your data - autocomplete your way to creating new functions.",
+              },
+            ].map((i) => (
+              <div className="w-full shadow-xl bg-black/25 rounded-lg p-4 flex flex-col space-y-4">
+                <h3 className="flex flex-row items-center space-x-2">
+                  <span className="text-3xl">{i.title}</span>
+                  <span className="text-lg font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-cyan-500 to-cyan-200">
+                    {i.subtitle}
+                  </span>
+                </h3>
+                <div className="text-sm">{i.description}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex items-center justify-center mt-8">
+            <img src="/assets/next-test.gif" className="shadow-xl rounded" />
+          </div>
+
+          <div className="flex items-center justify-center mt-8">
+            <Button kind="primary" href="/docs/typescript">
+              Learn more →
+            </Button>
           </div>
         </div>
       </div>
