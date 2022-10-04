@@ -78,6 +78,23 @@ type Options = {
   signingKey?: string;
 
   /**
+   * Controls whether a landing page with introspection capabilities is shown
+   * when a `GET` request is performed to this handler.
+   *
+   * Defaults to true if NODE_ENV !== production or serve is ran with a TTY
+   *
+   * This page is highly recommended when getting started in development,
+   * testing, or staging environments.
+   */
+  landingPage?: boolean;
+
+  /**
+   * The URL used to register functions with Inngest.
+   * Defaults to https://api.inngest.com/fn/register
+   */
+  inngestRegisterUrl?: string;
+
+  /**
    * If provided, will override the used `fetch` implementation. Useful for
    * giving the library a particular implementation if accessing it is not done
    * via globals.
@@ -86,18 +103,6 @@ type Options = {
    * back to a Node implementation if no global fetch can be found.
    */
   fetch?: typeof fetch;
-
-  /**
-   * Controls whether a landing page with introspection capabilities is shown
-   * when a `GET` request is performed to this handler.
-   *
-   * Defaults to using the boolean value of `process.env.INNGEST_LANDING_PAGE`
-   * (e.g. `"true"`), and `true` if that env var is not defined.
-   *
-   * This page is highly recommended when getting started in development,
-   * testing, or staging environments.
-   */
-  landingPage?: boolean;
 }
 ```
 
