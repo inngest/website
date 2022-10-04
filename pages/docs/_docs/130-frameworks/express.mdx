@@ -28,8 +28,12 @@ const exampleFn = createFunction(
   ({ event }) => { return { body: "hello!" }; }
 );
 
-// Create an endpoint for Inngest functions
-const inngestMiddleware = serve("My app/service name", process.env.INNGEST_SIGNING_KEY || "", [exampleFn]);
+// Create an endpoint for Inngest functions by calling serve() with
+// an app name and the given functions to put live.
+//
+// This reads a process.env.INNGEST_SIGNING_KEY variable during setup,
+// which is available within your account. 
+const inngestMiddleware = serve("My app/service name", [exampleFn]);
 
 // Use the middleware from Inngest to host at /api/inngest.
 app.use("/api/inngest", inngestMiddleware);
@@ -43,14 +47,59 @@ functions.
 **`serve` syntax**
 
 ```
-serve(appName, signingKey, [functions]);
+serve(appName, [functions]);
+serve(appName, [functions], options);
 ```
 
 **`serve` arguments**
 
 - **`appName`**:  The name of your app or microservice, used to group all functions together
-- **`signingKey`**: The signing key for your workspace, [available in your account](https://app.inngest.com/secrets)
 - **`[functions]`**: An array of all functions to enable
+- **`options`**: An optional object of options, with the type:
+
+```ts
+type Options = {
+  /**
+   * A key used to sign requests to and from Inngest in order to prove that the
+   * source is legitimate.
+   *
+   * You must provide a signing key to communicate securely with Inngest. If
+   * your key is not provided here, we'll try to retrieve it from the
+   * `INNGEST_SIGNING_KEY` environment variable.
+   *
+   * You can retrieve your signing key from the Inngest UI inside the "Secrets"
+   * section at {@link https://app.inngest.com/secrets}. We highly recommend
+   * that you add this to your platform's available environment variables as
+   * `INNGEST_SIGNING_KEY`.
+   *
+   * If no key can be found, you will not be able to register your functions or
+   * receive events from Inngest.
+   */
+  signingKey?: string;
+
+  /**
+   * If provided, will override the used `fetch` implementation. Useful for
+   * giving the library a particular implementation if accessing it is not done
+   * via globals.
+   *
+   * By default the library will try to use the native Web API fetch, falling
+   * back to a Node implementation if no global fetch can be found.
+   */
+  fetch?: typeof fetch;
+
+  /**
+   * Controls whether a landing page with introspection capabilities is shown
+   * when a `GET` request is performed to this handler.
+   *
+   * Defaults to using the boolean value of `process.env.INNGEST_LANDING_PAGE`
+   * (e.g. `"true"`), and `true` if that env var is not defined.
+   *
+   * This page is highly recommended when getting started in development,
+   * testing, or staging environments.
+   */
+  landingPage?: boolean;
+}
+```
 
 ## Registering your functions with Inngest
 
