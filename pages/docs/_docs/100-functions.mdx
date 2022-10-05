@@ -121,6 +121,28 @@ const inngest = new Inngest<
 
 You can learn more about the Inngest SDK's TypeScript support on our [Using with TypeScript](/docs/typescript) page.
 
+## Serving
+
+For Inngest to access your functions, you need to serve them.
+
+Every `serve()` function is the same, for example serving on Next.js looks like:
+
+```typescript
+// Import the Next.js serve function
+import { serve } from "inngest/next";
+
+// Create or import your function(s)
+const fn = createFunction<DemoEvent>("Demo function", "demo/demo.event", job);
+
+// Serve them
+export default serve("My App", [fn, anotherFn]);
+```
+
+We provide a number of handlers for easily doing so, along with guides for each.
+
+- [Express](https://expressjs.com/) ([Guide](/docs/frameworks/express)) - `"inngest/express"`
+- [Next.js](https://nextjs.org/) ([Guide](/docs/frameworks/nextjs)) - `"inngest/next"`
+
 ## Next up
 
 **Triggering functions**: next, you’ll run through how you can trigger these functions by sending events.
