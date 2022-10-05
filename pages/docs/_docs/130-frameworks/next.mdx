@@ -642,6 +642,14 @@ type Options = {
 }
 ```
 
+## Checking function configuration
+
+To make sure everything is set up as you expect it to be, Inngest provides a local dashboard to introspect your served handler, show any found functions, and raise any errors before you get to production.
+
+Visit `${your-url}/api/inngest` (usually [http://localhost:3000/api/inngest](http://localhost:3000/api/inngest)) to see the dashboard. If there are any problems detected, they'll show up here.
+
+![The SDK's local dashboard showing success](/assets/docs/sdk/landing.png)
+
 ## Registering your functions with Inngest
 
 By default, Inngest doesn't know which functions you're serving or the URL of your app. Once you
