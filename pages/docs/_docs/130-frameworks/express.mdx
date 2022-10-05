@@ -17,7 +17,8 @@ Import `serve` from the `inngest` package to create middleware for Express:
 ```ts twoslash
 import express from "express";
 // Import serve from inngest
-import { serve, createFunction } from "inngest";
+import { createFunction } from "inngest";
+import { serve } from "inngest/express";
 
 const app = express();
 
@@ -32,7 +33,7 @@ const exampleFn = createFunction(
 // an app name and the given functions to put live.
 //
 // This reads a process.env.INNGEST_SIGNING_KEY variable during setup,
-// which is available within your account. 
+// which is available within your account.
 const inngestMiddleware = serve("My app/service name", [exampleFn]);
 
 // Use the middleware from Inngest to host at /api/inngest.
