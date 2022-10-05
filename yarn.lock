@@ -7019,10 +7019,10 @@ inngest-sdk@^1.0.1:
   resolved "https://registry.npmjs.org/inngest-sdk/-/inngest-sdk-1.0.2.tgz"
   integrity sha512-Pk+Wqs/bSRPe9NIyKk8Rvmp08mcQNtST9MscruIe/CQKFbEy0Hs0zw573ZMMuiQucsooyPlOkWrkJ5UqSNHCfQ==
 
-inngest@^0.4.16-cfp.12:
-  version "0.4.16-cfp.12"
-  resolved "https://registry.yarnpkg.com/inngest/-/inngest-0.4.16-cfp.12.tgz#a8945d63954dc4ddad4db6e6a546c2e7e5e20b99"
-  integrity sha512-p7TuljbDWrWrib9xN9XEMa1fwfroj0o+fl76Qt6Y8xObtw9CtuUMS6eE4uk9yGmhDt0XS2mvwv048q14VYxmEg==
+inngest@^0.5.0:
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/inngest/-/inngest-0.5.0.tgz#1383a8b00f908cbfdab7ee1303a2f83267ea9c4f"
+  integrity sha512-VRozk5TVpbzy2NUzdgltfP+tX/15SvHpeXpH+3LM/R/1bLysxwk9WyX6VDSKqNuYq2JsCI/0BYtwU567owgJAQ==
   dependencies:
     buffer "^6.0.3"
     cross-fetch "^3.1.5"
