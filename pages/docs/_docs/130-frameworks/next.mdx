@@ -574,7 +574,7 @@ import { newPR } from "../../inngest/new_pr";
 
 // You must export the serve handler, which hosts all of the provided functions
 // under one API endpoint.
-export default serve("My app/service name", process.env.INNGEST_SIGNING_KEY, [newPR]);
+export default serve("My app/service name", [newPR]);
 ```
 
 This hosts an API endpoint at `${your-url}/api/inngest`, which we'll use to call your
