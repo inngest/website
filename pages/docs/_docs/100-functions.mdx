@@ -148,6 +148,63 @@ Now that your functions are being served via HTTP, open the route in your browse
 
 ![The SDK's local dashboard showing success](/assets/docs/sdk/landing.png)
 
+## Testing
+
+Before reaching production, we can test our functions using the Inngest CLI's dev server. This will create a local, in-memory version of Inngest Cloud, allowing you to send events to your functions and see the results.
+
+Getting started with the dev server is easy - the top of your SDK debug page shows the status of dev server connectivity, as well as a copiable command to get started.
+
+![The top bar of the SDK's local dashboard, showing a command to start the dev server](/assets/docs/sdk/top_bar_disconnected.png)
+
+We'll click to copy that command, then paste it into our terminal. It'll look something like this:
+
+```sh
+npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
+```
+
+The <code>-u</code> flag tells the dev server where to find your functions. The dev server will also always scan common ports (<code>:3000</code>, <code>:5000</code>, <code>:8000</code>, etc) for an <code>/api/inngest</code> route, so you can omit the <code>-u</code> flag if you're using a common framework.
+
+Once you've started the dev server, you should see your functions registered and ready to go in the output! In addition, our SDK debug page will now show that we're connected to the dev server.
+
+<details>
+  <summary><strong>Check dev server logs</strong></summary>
+
+  ```sh
+  12:10PM INF overriding config to log step output within dev server
+  12:10PM INF executor > starting queue backend=inmemory
+  12:10PM INF runner > starting event stream backend=inmemory
+  12:10PM INF runner > starting queue backend=inmemory
+  12:10PM INF runner > initializing scheduled messages len=0
+  12:10PM INF executor > service starting
+  12:10PM INF devserver > service starting
+  12:10PM INF executor > subscribing to function queue
+  12:10PM INF api > starting server addr=0.0.0.0:8288
+  12:10PM INF runner > service starting
+  12:10PM INF runner > subscribing to events topic=events
+  12:11PM INF devserver > registered functions app="My Next.js App" framework=nextjs len=1 sdk=js:v0.6.0 url=http://localhost:3001/api/inngest
+  ```
+</details>
+
+![The top bar of the SDK's local dashboard, showing that we're connected to the dev server](/assets/docs/sdk/top_bar_connected.png)
+
+Great! From here, we can now use the event sender in the SDK UI to send events to our functions. In our example, I have one function that responds to a `"demo/event.sent"` event. I can send that event to my function by opening the test event sender, entering the name and data, and clicing "_Send event_".
+
+![The SDK's local dashboard, showing a test event being sent to a registered function](/assets/docs/sdk/event_sent.png)
+
+<details>
+  <summary><strong>Check dev server logs</strong></summary>
+
+  ```sh
+  12:18PM INF api > publishing event event={"data":{"name":"Inngest"},"id":"01GFX481B6482Y32VSQFB6BJJY","name":"demo/event.sent"} event_name=demo/event.sent id=01GFX481B6482Y32VSQFB6BJJY
+  12:18PM INF runner > received message event=demo/event.sent id=01GFX481B6482Y32VSQFB6BJJY
+  12:18PM INF runner > initializing fn event=demo/event.sent function=my-next-js-app-hello-world id=01GFX481B6482Y32VSQFB6BJJY
+  12:18PM INF executor > executing action dsn=inngest.com/my-next-js-app-hello-world-step-step-test run_id=01GFX481H2KSDE7JNHR1Y0XT1J scopes=null step=step version=null
+  12:18PM INF output > step output attempt=0 fn_id=my-next-js-app-hello-world fn_name="Hello World" output={"body":{"message":"Hello, Inngest!"},"status":200} run_id=01GFX481H2KSDE7JNHR1Y0XT1J step=step
+  ```
+</details>
+
+If we check the dev server logs, we can see that the event was received, it successfully triggered our function, and our function correctly responded with `"Hello, Inngest!"` using the event data we provided.
+
 ## Next up
 
 **Triggering functions**: next, you’ll run through how you can trigger these functions by sending events.
