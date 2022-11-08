@@ -141,15 +141,28 @@ export const getAllDocs = (() => {
       }
 
       const source = fs.readFileSync(fullpath);
-      const { content, data: scope } = matter(source);
+      let { content, data: scope } = matter(source);
+
+      if (type === Sections.reference && !Object.keys(scope).length) {
+        content = content.replaceAll("&", "&amp;");
+
+        scope = {
+          category: "Reference",
+          title: fname.replace(".md", ""),
+          slug: `reference/${fname.replace(".md", "")}`,
+          description: "",
+        };
+      }
 
       const prefix = Object.keys(Sections).find((k) => Sections[k] === type);
       try {
-        if (type !== Sections.default && scope.slug.indexOf(prefix) !== 0) {
+        if (type !== Sections.default && scope.slug?.indexOf(prefix) !== 0) {
           // Prefix for the section
           scope.slug = `${prefix}/${scope.slug}`;
         }
       } catch (err) {
+        console.error(err);
+
         throw new Error(
           `Failed to read slug from file: ${fullpath}. Check the front-matter, it may be missing or incorrect.`
         );
