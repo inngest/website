@@ -43,7 +43,7 @@ export const SECTIONS: Section[] = [
         title: "Reliably run critical workflows",
         subtitle: "Break complex code into reliable, independently ran steps",
         tags: ["Reliability"],
-        slug: "#TODO", //"reliably-run-critical-workflows",
+        slug: "reliably-run-critical-workflows",
       },
     ],
   },
@@ -75,12 +75,11 @@ export const SECTIONS: Section[] = [
         slug: "#TODO",
       },*/
       {
-        // NOTE - Cron to n-Events
         title: "Reliable scheduling systems",
         subtitle:
           "Combine cron-jobs with event fan-out for auditable scheduling",
-        tags: ["Architecture"],
-        slug: "#TODO",
+        tags: ["Architecture", "Scheduling"],
+        slug: "reliable-scheduling-systems",
       },
     ],
   },
