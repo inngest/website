@@ -1,4 +1,4 @@
-import remarkShikiTwoslash from 'remark-shiki-twoslash';
+import remarkShikiTwoslash from "remark-shiki-twoslash";
 
 // Usage:
 //
@@ -8,9 +8,14 @@ import remarkShikiTwoslash from 'remark-shiki-twoslash';
 //   },
 // });
 
-export const highlight: any = [remarkShikiTwoslash, {
-  // See: https://github.com/shikijs/twoslash/blob/main/packages/shiki-twoslash/README.md#user-settings
-  defaultOptions: {
-    showEmit: false
-  }
-}]
+export const highlight: any = [
+  remarkShikiTwoslash,
+  {
+    // theme: "min-light",
+    theme: "css-variables",
+    // See: https://github.com/shikijs/twoslash/blob/main/packages/shiki-twoslash/README.md#user-settings
+    defaultOptions: {
+      showEmit: false,
+    },
+  },
+];
