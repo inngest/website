@@ -3,7 +3,70 @@ category: "SDK"
 title: "`createScheduledFunction()`"
 slug: "sdk/createScheduledFunction"
 order: 40
-hide: true
 ---
 
-Placeholder
+The `createScheduledFunction` helper function or the `Inngest#createScheduledFunction` method can be used to define some code to run on a schedule. Coupled with a [`serve()` handler](/docs/reference/sdk/serve), this enables you to host scheduled functions on any platform and have Inngest trigger them via HTTP.
+
+## Signature
+
+```ts
+(Inngest#)createScheduledFunction(nameOrOpts: string | FunctionOptions, cron: string, fn: Function): InngestFunction
+```
+
+## Parameters
+
+Both signatures take the same set of parameters.
+
+_A ? indicates an optional property._
+
+- `nameOrOpts: string | FunctionOptions`<br/>If a `string`, will be the name of the function as it will appear in the Inngest Cloud UI. An object of options for the function can also be specified, seen below as [`FunctionOptions`](#functionoptions).
+- `cron: string`<br/>The cron definition to schedule your function, e.g. `"0 0 * * *"` for the beginning of every day, or `"0 * * * *"` for every hour.
+- `fn: Function`<br/>The sync or async code to run on the given schedule.
+
+### `FunctionOptions`
+
+A set of options for configuring the identity and behaviour of an Inngest function.
+
+- `name: string`<br/>A name for the function as it will appear in the Inngest Cloud UI.<br/><br/>This is used to create a slugified ID for the function too, e.g. `"My FN :)"` would create a slugified ID of `"my-fn"`.<br/><br/>If you are not specifying an ID and get a warning about duplicate functions, make sure to explicitly set an ID for the duplicate or change the name.
+- `id?: string`<br/>An optional unique ID used to identify the function. This is used internally for versioning and referring to your function, so should not change between deployments.<br/><br/>By default, this is a slugified version of the given `name`, e.g. `"My FN :)"` would be slugified to `"my-fn"`.<br/><br/>If you are not specifying an ID and get a warning about duplicate functions, make sure to explicitly set an ID for the duplicate or change the name.
+- `idempotency?: string`<br/>Allow the specification of an idempotency key using event data. If specified, this overrides the `throttle` object.
+- `throttle?: object`<br/>Throttle functions, only running them a given number of times (`count`) per `period`. This can optionally include a throttle `key`, which is used to further constraint throttling, similar to idempotency.
+  - `key?: string`<br/>An optional key to use for throttling, similar to idempotency.
+  - `count: number`<br/>The number of times to allow the function to run per the given `period`.
+  - `period: string`<br/>The period of time to allow the function to run `count` times. Must be in the format of a "time string", e.g. `"1h30m"`.
+
+## Returns
+
+Every method to create a function will return an `InngestFunction` instance, which can be passed to any [`serve()` handler](/docs/reference/sdk/serve) to register the function with Inngest.
+
+## Examples
+
+Create a scheduled function that will log a message every hour.
+
+```js
+import { createScheduledFunction } from "inngest";
+
+export default createScheduledFunction(
+  "My Function",
+  "0 * * * *",
+  ({ event }) => {
+    console.log("My scheduled function ran.");
+  }
+);
+```
+
+Create a function using an `Inngest` client.
+
+```ts
+import { Inngest } from "inngest";
+
+const inngest = new Inngest({ name: "My App" });
+
+export default inngest.createScheduledFunction(
+  "My Function",
+  "0 * * * *",
+  ({ event }) => {
+    console.log("My scheduled function ran.");
+  }
+);
+```

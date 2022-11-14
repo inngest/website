@@ -1,16 +1,20 @@
 ---
 category: "SDK"
-title: "`createFunction()`"
-slug: "sdk/createFunction"
-order: 30
+title: "`createStepFunction()`"
+slug: "sdk/createStepFunction"
+order: 45
 ---
 
-The `createFunction` helper function or the `Inngest#createFunction` method can be used to define some code to run in response to an event. Coupled with a [`serve()` handler](/docs/reference/sdk/serve), this enables you to host event-driven functions on any platform and have Inngest trigger them via HTTP.
+The `createStepFunction` helper function or the `Inngest#createStepFunction` method can be used to define a multi-step function to safely coordinate between events, delay execution for hours or _days_, and conditionally run code based on the result of previous steps and incoming events.
+
+Coupled with a [`serve()` handler](/docs/reference/sdk/serve), this enables you to host complex step functions on any platform and have Inngest trigger them via HTTP.
+
+See [Writing multi-step functions](/docs/functions/multi-step) for in-depth discussions and examples on multi-step functions.
 
 ## Signature
 
 ```ts
-(Inngest#)createFunction(nameOrOpts: string | FunctionOptions, event: string, fn: Function): InngestFunction
+(Inngest#)createStepFunction(nameOrOpts: string | FunctionOptions, event: string, fn: Function): InngestFunction
 ```
 
 ## Parameters
@@ -20,8 +24,8 @@ Both signatures take the same set of parameters.
 _A ? indicates an optional property._
 
 - `nameOrOpts: string | FunctionOptions`<br/>If a `string`, will be the name of the function as it will appear in the Inngest Cloud UI. An object of options for the function can also be specified, seen below as [`FunctionOptions`](#functionoptions).
-- `event: string`<br/>The name of the event to listen for, most commonly in the format `scope/subject.verb`, e.g. `app/user.created`. If using the `Inngest#createFunction` method - or passing an event payload to `createFunction` - this will be strictly typed to the available known events names.
-- `fn: Function`<br/>The sync or async code to run when the event is received. Is passed typed event data as an argument, seen below in [Function arguments](#function-arguments).
+- `event: string`<br/>The name of the event to listen for to trigger the step function, most commonly in the format `scope/subject.verb`, e.g. `app/user.created`. If using the `Inngest#createStepFunction` method - or passing an event payload to `createStepFunction` - this will be strictly typed to the available known events names.
+- `fn: Function`<br/>The definition of the step function to run when the event is received. See [Writing multi-step functions](/docs/functions/multi-step) for more information.
 
 ### `FunctionOptions`
 
@@ -35,49 +39,36 @@ A set of options for configuring the identity and behaviour of an Inngest functi
   - `count: number`<br/>The number of times to allow the function to run per the given `period`.
   - `period: string`<br/>The period of time to allow the function to run `count` times. Must be in the format of a "time string", e.g. `"1h30m"`.
 
-### Function arguments
-
-Inngest passes a single object argument to your function so that you can act on the incoming event data.
-
-- `event: EventPayload`<br/>The data of the event that triggered this function.
-
 ## Returns
 
 Every method to create a function will return an `InngestFunction` instance, which can be passed to any [`serve()` handler](/docs/reference/sdk/serve) to register the function with Inngest.
 
 ## Examples
 
-Create a function that will log a message when an event is received.
-
-```js
-import { createFunction } from "inngest";
-
-export default createFunction(
-  "My Function",
-  "app/user.created",
-  ({ event }) => {
-    console.log("Received event data:", event);
-  }
-);
-```
-
-Create a function with typed event data by passing in an event type.
+Create a step function using the helper that, on user creation, will prompt a user to post if they don't within 2 days.
 
 ```ts
-import { createFunction } from "inngest";
-// Generated via `npx inngest-cli@latest types ts`
-import { App__User_Updated } from "./__generated__/inngest";
+import { createStepFunction } from "inngest";
 
-export default createFunction<App__User_Updated>(
-  "My Function",
-  "app/user.updated",
-  ({ event }) => {
-    console.log("Received event data:", event);
+export default createStepFunction(
+  "My Step Function",
+  "app/user.created",
+  ({ event, tools: { run, waitForEvent } }) => {
+    const postCreated = waitForEvent("app/post.created", {
+      timeout: "2 days",
+      match: "user.id",
+    });
+
+    if (!postCreated) {
+      run("Send reminder", () =>
+        sendEmail(event.user.email, "Remember to post")
+      );
+    }
   }
 );
 ```
 
-Create a function using an `Inngest` client with pre-typed event data.
+Using the Inngest client, create a step function that schedules a post to be sent out when a timer is created.
 
 ```ts
 import { Inngest } from "inngest";
@@ -86,11 +77,12 @@ import { Events } from "./__generated__/inngest";
 
 const inngest = new Inngest<Events>({ name: "My App" });
 
-export default inngest.createFunction(
-  "My Function",
-  "app/user.created",
-  ({ event }) => {
-    console.log("Received event data:", event);
+export default inngest.createStepFunction(
+  "My Step Function",
+  "app/post.timer.created",
+  ({ event, tools: { run, sleepUntil } }) => {
+    sleepUntil(new Date(event.data.postAt));
+    run("Send post", () => sendPost(event.data.postData));
   }
 );
 ```
