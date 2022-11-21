@@ -3,7 +3,7 @@ import Head from "next/head";
 import rehypeSlug from "rehype-slug";
 import { serialize } from "next-mdx-remote/serialize";
 import { MDXRemote } from "next-mdx-remote";
-import Footer from "../../shared/footer";
+import Footer from "../../shared/Footer";
 import Nav from "../../shared/nav";
 import Callout from "../../shared/Callout";
 import syntaxHighlightingCSS from "../../shared/syntaxHighlightingCSS";
@@ -18,14 +18,53 @@ const components = {
   DiscordCTA,
 };
 
+type Props = {
+  post: {
+    compiledSource: string;
+    scope: {
+      json: string;
+    };
+  };
+  meta: {
+    disabled: true;
+  };
+};
+
+const authorURLs = {
+  "Dan Farrelly": "https://twitter.com/djfarrelly",
+  "Tony Holdstock-Brown": "https://twitter.com/itstonyhb",
+  "Jack Williams": "https://twitter.com/atticjack",
+};
+
 export default function BlogLayout(props) {
-  const scope = JSON.parse(props.post.scope);
+  const scope = JSON.parse(props.post.scope.json);
+
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: scope.heading,
+    description: scope.subtitle,
+    image: [`${process.env.NEXT_PUBLIC_HOST}${scope.image}`],
+    datePublished: scope.date,
+    dateModified: scope.date,
+    author: [
+      {
+        "@type": scope.author ? "Person" : "Organization",
+        name: scope.author || "Inngest",
+        url:
+          scope.author && authorURLs.hasOwnProperty(scope.author)
+            ? authorURLs[scope.author]
+            : process.env.NEXT_PUBLIC_HOST,
+      },
+    ],
+  };
+
   return (
     <>
       <Head>
         <title>{scope.heading} → Inngest Blog</title>
         <meta name="description" content={scope.subtitle}></meta>
-        <meta name="title" content={scope.subtitle}></meta>
+        <meta name="title" content={scope.heading}></meta>
         <meta property="og:title" content={`${scope.heading} → Inngest Blog`} />
         <meta property="og:description" content={scope.subtitle} />
         <meta property="og:type" content="article" />
@@ -52,6 +91,12 @@ export default function BlogLayout(props) {
             content={`${process.env.NEXT_PUBLIC_HOST}${scope.image}`}
           />
         )}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(structuredData),
+          }}
+        ></script>
       </Head>
 
       <ThemeToggleButton isFloating={true} />
@@ -60,7 +105,17 @@ export default function BlogLayout(props) {
         <Nav sticky={true} />
 
         <Article>
-          {scope.image && <Image src={scope.image} />}
+          {scope.image && (
+            <FeaturedImageFigure>
+              <Image src={scope.image} />
+              {scope.imageCredits && (
+                <figcaption
+                  className="text-xs"
+                  dangerouslySetInnerHTML={{ __html: scope.imageCredits }}
+                ></figcaption>
+              )}
+            </FeaturedImageFigure>
+          )}
 
           <Header>
             <h1>{scope.heading}</h1>
@@ -120,8 +175,18 @@ const Article = styled.article`
   }
 `;
 
-const Image = styled.img`
+const FeaturedImageFigure = styled.figure`
   margin: 1rem auto;
+
+  figcaption {
+    margin-top: 0.3rem;
+    text-align: right;
+    font-size: 0.7rem;
+    color: var(--font-color-secondary);
+    font-style: italic;
+  }
+`;
+const Image = styled.img`
   max-width: 100%;
   border-radius: var(--border-radius);
 `;
@@ -217,18 +282,6 @@ const Body = styled.main`
     padding: 0 1.5rem;
     border-left: 4px solid var(--primary-color);
     font-style: italic;
-  }
-
-  p code,
-  li code {
-    background: rgb(46, 52, 64);
-    padding: 0.1em 0.3em 0.15em;
-    border-radius: 3px;
-    color: rgb(216, 222, 233);
-  }
-
-  a:not(.button) {
-    color: var(--color-iris-60);
   }
 
   pre {
@@ -330,7 +383,7 @@ export async function getStaticProps({ params }) {
   //   scope: string,
   // }
   const post = await serialize(content, {
-    scope: JSON.stringify(data),
+    scope: { json: JSON.stringify(data) },
     mdxOptions: {
       remarkPlugins: [highlight],
       rehypePlugins: [rehypeSlug],
