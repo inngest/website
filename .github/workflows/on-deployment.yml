@@ -10,7 +10,7 @@ jobs:
         uses: patrickedqvist/wait-for-vercel-preview@v1.2.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          max_timeout: 240
+          max_timeout: 480
 
       - name: Display deployment URL
         run: "echo Preview URL: ${{steps.deployment.outputs.url}}"
