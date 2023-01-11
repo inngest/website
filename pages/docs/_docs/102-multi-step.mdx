@@ -176,14 +176,22 @@ To wait until a particular date, use `tools.sleepUntil()` instead.
 Use `tools.sleepUntil()` to wait until a particular date before continuing by
 passing a `Date`.
 
-```ts
-const tomorrow = new Date();
-tomorrow.setDate(tomorrow.getDate() + 1);
+<aside>
+⚠️ Don't use this for sleeping based on now. For example, to sleep until tomorrow, use `tools.sleep("1 day")` instead.
+</aside>
 
-tools.sleepUntil(tomorrow);
+Any dates passed to `sleepUntil()` must be static for every call to your function. This is best achieved by calculating dates within `tools.run()` instead of in the main function body.
+
+```ts
+const userBirthday = tools.run("Get user birthday", async () => {
+  const user = await getUser(1);
+  return user.birthday;
+});
+
+tools.sleepUntil(userBirthday);
 ```
 
-To wait a particular amount of time, use `tools.sleep()` instead.
+**To wait a particular amount of time from now, always use `tools.sleep()` instead.**
 
 ## Gotchas
 
@@ -246,4 +254,30 @@ Instead, make sure that any variables needed for the overall function are _retur
 const userId = tools.run("Get user", () => getRandomUserId());
 
 console.log(userId); // 123
+```
+
+### `sleepUntil()` isn't working as expected
+
+Make sure to only to use `sleepUntil()` with dates that will be static across the various calls to your function.
+
+Always use `sleep()` if you'd like to wait a particular time from _now_.
+
+```ts
+// ❌ Bad
+const tomorrow = new Date();
+tomorrow.setDate(tomorrow.getDate() + 1);
+tools.sleepUntil(tomorrow);
+
+// ✅ Good
+tools.sleep("1 day");
+```
+
+```ts
+// ✅ Good
+const userBirthday = tools.run("Get user birthday", async () => {
+  const user = await getUser();
+  return user.birthday; // Date
+});
+
+sleepUntil(userBirthday);
 ```
