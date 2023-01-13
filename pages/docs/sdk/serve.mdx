@@ -5,7 +5,7 @@ The first thing you'll need to do is to add and serve the Inngest API in your pr
 
 ## Setting up the API
 
-Inngest provides a `serve()` handler which adds an API endpoint to your router.  **You should always 
+Inngest provides a `serve()` handler which adds an API endpoint to your router.  **You should always
 serve our API at `/api/inngest`**, as this makes automated deploys much easier.  If you need to
 change the API URL skip to [configuring the API Path](#configuring-the-api-path).
 
@@ -19,9 +19,8 @@ We provide framework-specific bindings to make this easy for common platforms:
 - [Redwood](#framework-redwood)
 - [Remix](#framework-remix)
 
-Each of these bindings wrap our base API which implemnts the core logic, so adding support for new
-frameworks is easy.  [Want us to add support for another platform?  Come say hi in our discord](/discord)
-or [drop us a note](/contact).
+Each of these bindings wrap our base API which implements the core logic, so adding support for new
+frameworks is easy.  [Want us to add support for another platform?  Come say hi in our discord](/discord), [drop us a note](/contact), or check out the [Creating your own handler](#) page.
 
 ## Signing key
 
@@ -169,6 +168,12 @@ const handler = serve(
 export { handler as loader, handler as action };
 ```
 
+## Framework: Custom
+
+Handlers can be built for any framework, and the frameworks above are just those that ship with the Inngest SDK.
+
+To build a handler for a framework not listed here, check out the [Creating your own handler](#) page.
+
 ## Configuring the API path
 
 If you can't serve the API at `/inngest/api`, you can configure the path via the serve handler:
@@ -193,5 +198,5 @@ The API works by exposing a single endpoint at `/api/inngest` which handles thre
 
 - `GET`:  Returns a getting started UI and metadata about your functions **in development only**
 - `POST`:  Runs a function, using the request's post data as incoming function state.
-- `PUT`:  Triggers a deploy, which makes the SDK push functions to Inngest using the signing key. 
+- `PUT`:  Triggers a deploy, which makes the SDK push functions to Inngest using the signing key.
 
