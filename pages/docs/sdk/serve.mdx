@@ -5,7 +5,7 @@ The first thing you'll need to do is to add and serve the Inngest API in your pr
 
 ## Setting up the API
 
-Inngest provides a `serve()` handler which adds an API endpoint to your router.  **You should always 
+Inngest provides a `serve()` handler which adds an API endpoint to your router.  **You should always
 serve our API at `/api/inngest`**, as this makes automated deploys much easier.  If you need to
 change the API URL skip to [configuring the API Path](#configuring-the-api-path).
 
@@ -133,6 +133,21 @@ export default serve(
 );
 ```
 
+## Framework: Nuxt
+
+Inngest has first class support for Nuxt server routes, allowing you to easily create the Inngest API.
+Add the following within `./server/api/inngest.ts`:
+
+```typescript
+import { serve } from "inngest/nuxt";
+import fnA from "~~/inngest/fnA"; // Your own function
+
+export default serve(
+  "My next app", // Your app name
+  [fnA],    // A list of functions to expose.  This can be empty to start.
+);
+```
+
 ## Framework: Redwood
 
 You can add Inngest to [Redwood](https://redwoodjs.com/) easily.  Add the following to
@@ -193,5 +208,5 @@ The API works by exposing a single endpoint at `/api/inngest` which handles thre
 
 - `GET`:  Returns a getting started UI and metadata about your functions **in development only**
 - `POST`:  Runs a function, using the request's post data as incoming function state.
-- `PUT`:  Triggers a deploy, which makes the SDK push functions to Inngest using the signing key. 
+- `PUT`:  Triggers a deploy, which makes the SDK push functions to Inngest using the signing key.
 
