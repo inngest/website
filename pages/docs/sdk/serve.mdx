@@ -15,7 +15,7 @@ We provide framework-specific bindings to make this easy for common platforms:
 - [DigitalOcean functions](#framework-digital-ocean-functions)
 - [Express](#framework-express)
 - [Fresh (Deno)](#framework-fresh-deno)
-- [NextJS](#framework-next-js)
+- [Next.js](#framework-next-js)
 - [Redwood](#framework-redwood)
 - [Remix](#framework-remix)
 
@@ -118,9 +118,9 @@ const fn = inngest.createFunction(
 export const handler = serve(inngest, [fn]);
 ```
 
-## Framework: NextJS
+## Framework: Next.js
 
-Inngest has first class support for NextJS API routes, allowing you to easily create the Inngest API.
+Inngest has first class support for Next.js API routes, allowing you to easily create the Inngest API.
 Add the following within `./pages/api/inngest.ts`:
 
 ```typescript
@@ -135,17 +135,18 @@ export default serve(
 
 ## Framework: Nuxt
 
-Inngest has first class support for Nuxt server routes, allowing you to easily create the Inngest API.
+Inngest has first class support for [Nuxt server routes](https://nuxt.com/docs/guide/directory-structure/server#server-routes), allowing you to easily create the Inngest API.
 Add the following within `./server/api/inngest.ts`:
 
 ```typescript
 import { serve } from "inngest/nuxt";
 import fnA from "~~/inngest/fnA"; // Your own function
+import { inngest } from "~~/inngest/client";
 
-export default serve(
-  "My next app", // Your app name
-  [fnA],    // A list of functions to expose.  This can be empty to start.
-);
+export default defineEventHandler(serve(
+  "My Nuxt App", // Your app name
+  [fnA],         // A list of functions to expose.  This can be empty to start.
+));
 ```
 
 ## Framework: Redwood
