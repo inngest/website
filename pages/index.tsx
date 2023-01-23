@@ -17,10 +17,9 @@ export async function getStaticProps() {
     props: {
       designVersion: "2",
       meta: {
-        // TODO
-        title: "Write functions, Send Events",
+        title: "Reliable serverless background functions on any platform",
         description:
-          "Inngest is a developer platform for building, testing and deploying code that runs in response to events or on a schedule — without spending any time on infrastructure.",
+          "Inngest is an open source platform that enables developers to build amazing products by ensuring serverless functions are reliable, schedulable and event-driven.",
       },
     },
   };
@@ -28,7 +27,7 @@ export async function getStaticProps() {
 
 export default function Home() {
   return (
-    <div className="home bg-slate-1000 font-sans">
+    <div className="home font-sans">
       <Header />
 
       <Hero />

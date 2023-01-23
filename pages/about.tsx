@@ -6,7 +6,7 @@ import Header from "src/shared/Header";
 import Container from "src/shared/layout/Container";
 import Footer from "src/shared/Footer";
 import Block from "../shared/legacy/Block";
-import Button from "src/shared/Button";
+import { Button } from "src/shared/Button";
 
 const MISSION = "To accelerate the adoption of event-based architecture.";
 
@@ -111,13 +111,7 @@ export async function getStaticProps() {
 
 export default function About() {
   return (
-    <div className="bg-slate-1000 font-sans">
-      <div
-        style={{
-          background: "radial-gradient(circle at center, #13123B, #08090d)",
-        }}
-        className="absolute w-[200vw] -translate-x-1/2 -translate-y-1/2 h-[200vw] rounded-full blur-lg opacity-90"
-      ></div>
+    <div className="font-sans">
       <Header />
       <Container>
         <article>
@@ -211,7 +205,7 @@ export default function About() {
                   that want to contribute highly to an early-stage startup
                   focused on solving developer problems.
                 </p>
-                <Button href="/careers?ref=about" arrow>
+                <Button href="/careers?ref=about" arrow="right">
                   View the open roles
                 </Button>
               </aside>

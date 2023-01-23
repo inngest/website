@@ -3,6 +3,24 @@ import { remarkPlugins } from "./mdx/remark.mjs";
 import { rehypePlugins } from "./mdx/rehype.mjs";
 import { recmaPlugins } from "./mdx/recma.mjs";
 
+// All permanent redirects (source -> destination)
+const legacyDocsUrls = [
+  ["/docs/functions/testing-functions", "/docs/local-development"],
+  ["/docs/what-is-inngest", "/docs"],
+  ["/docs/reference/functions/retries", "/docs/functions/retries"],
+  ["/docs/creating-an-event-key", "/docs/events/creating-an-event-key"],
+  [
+    "/docs/event-format-and-structure",
+    "/docs/events/event-format-and-structure",
+  ],
+  ["/docs/writing-and-running-fuctions", "/docs/functions"], //typo
+  ["/docs/cli/steps/", "/docs/functions/multi-step"],
+  ["/docs/events/sources/sdks", "/docs/events"],
+  ["/docs/deploying-fuctions", "/docs/deploy"],
+  ["/docs/functions/introduction", "/docs/functions"],
+  ["/docs/how-inngest-works", "/docs"], // TODO/DOCS redirect this to new concepts page
+];
+
 async function redirects() {
   return [
     {
@@ -15,17 +33,21 @@ async function redirects() {
       destination: "http://eepurl.com/hI3dCr",
       permanent: true,
     },
-    // Legacy docs pages - These should be able to be removed after we
-    // remove all legacy CLI + Cloud docs
     {
-      source: "/docs/function-ide-guide",
-      destination: "/docs/cloud/function-ide-guide",
-      permanent: false,
+      // From the UI's source editing page:
+      source: "/docs/event-webhooks",
+      destination: "/docs/events/webhooks",
+      permanent: true,
     },
+    ...legacyDocsUrls.map(([source, destination]) => ({
+      source,
+      destination,
+      permanent: true,
+    })),
     {
-      source: "/docs/using-the-inngest-cli",
-      destination: "/docs/cloud/using-the-inngest-cli",
-      permanent: false,
+      source: "/library/:path*",
+      destination: "/patterns",
+      permanent: true,
     },
   ];
 }

@@ -4,7 +4,7 @@ import { MDXRemote } from "next-mdx-remote";
 import Header from "src/shared/Header";
 import Container from "src/shared/layout/Container";
 import Footer from "src/shared/Footer";
-import Button from "src/shared/Button";
+import { Button } from "src/shared/Button";
 import {
   loadMarkdownFile,
   loadMarkdownFilesMetadata,
@@ -87,17 +87,11 @@ export default function Careers(props) {
           }}
         ></script>
       </Head>
-      <div className="bg-slate-1000 font-sans">
-        <div
-          style={{
-            background: "radial-gradient(circle at center, #13123B, #08090d)",
-          }}
-          className="absolute w-[200vw] -translate-x-1/2 -translate-y-1/2 h-[200vw] rounded-full blur-lg opacity-90"
-        ></div>
+      <div className="font-sans">
         <Header />
         <Container>
           <article>
-            <main className="m-auto max-w-3xl pt-16">
+            <main className="m-auto max-w-[65ch] pt-16">
               <header className="pt-12 lg:pt-24 max-w-[65ch] m-auto">
                 <h1 className="text-white font-medium text-2xl md:text-4xl xl:text-5xl mb-2 md:mb-4 tracking-tighter lg:leading-loose">
                   {role.metadata.title}
@@ -137,7 +131,7 @@ export default function Careers(props) {
                 <p className="text-sm lg:text-base">
                   Have any questions about a role?
                 </p>
-                <Button href="mailto:careers@inngest.com" arrow>
+                <Button href="mailto:careers@inngest.com" arrow="right">
                   Email us
                 </Button>
               </aside>

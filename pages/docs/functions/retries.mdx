@@ -1,0 +1,117 @@
+# Handling Errors & Retries
+
+When functions fail, Inngest can retry them automatically. Whether Inngest retries your function is determined by _how_ it fails.
+
+## Types of failures
+
+There are two ways that functions are determined to have failed:
+
+* A function throws an error. ✅ This **_will_** be retried ([see retry policies](#retry-policies))
+
+```ts
+export default inngest.createFunction("Import item data", "import.requested", ({ event }) => {
+  throw new Error("Failed to fetch item from ecommerce API");
+});
+```
+
+* A function throws a non-retriable error. ❌ This **_will not_** be retried.
+
+```ts
+import { NonRetriableError } from "inngest";
+
+export default inngest.createFunction("Mark store as imported", "import.completed", ({ event }) => {
+  try {
+    const result = await database.updateStore({ id: event.data.storeId }, { imported: true });
+    return result.ok === true;
+  } catch (err) {
+    // Passing the original error via `cause` enables you to view the error in function logs
+    throw new NonRetriableError("Store not found", { cause: err });
+  }
+});
+```
+
+## Errors within steps
+
+Steps are individually retried. That means Inngest will handle the type of error, just as above, but on the per-step basis.
+
+```ts
+import { NonRetriableError } from "inngest";
+
+export default inngest.createStepFunction(
+  "Import store items",
+  "ecommerce/import.required",
+  ({ event, tools }) => {
+
+    const items = tools.run("Get items from API", async () => {
+      // Third party APIs can often fail (e.g. because of a network or rate limit issue),
+      // if this call fails, Inngest will attempt to retry this step
+      return await ecommerceAPI.getItems(event.data.itemIds);
+    });
+
+    const store = tools.run("Get store in database", async () => {
+      try {
+        return await database.getStore(event.data.storeId);
+      } catch (err) {
+        // Store was not found - the step and function should not be retried
+        throw new NonRetriableError("Could not find store in database", { cause: err });
+      }
+    });
+
+    // If either of the above steps
+    tools.run("Import items for store", () => { /* ... */})
+  }
+);
+```
+
+To illustrate how this logic might work, let's use the above code and explain how the two types of errors will be handled across the life of an entire function run:
+
+**Scenario**: The API has a major outage and all 3 attempts of the first step fail:
+
+```plaintext
+┌ Function: "Import store items" triggered by new "ecommerce/import.required" event
+├─┬ Step: "Get items from API" started
+│ ├ Attempt 1: ❌ Error thrown
+│ ├ Attempt 2: ❌ Error thrown
+│ └ Attempt 3: ❌ Error thrown
+├── Step: "Get store in database" skipped
+├── Step: "Import items for store" skipped
+└ ❌ Function run failed
+```
+
+**Scenario**: The API responds perfectly, but somehow the user has since deleted the "store" from the database:
+
+```plaintext
+┌ Function: "Import store items" triggered by new "ecommerce/import.required" event
+├─┬ Step: "Get items from API" started
+│ └ Attempt 1: ✅ Successful
+├─┬ Step: "Get store in database" started
+│ └ Attempt 1: ❌ NonRetriableError thrown
+├── Step: "Import items for store" skipped
+└ ❌ Function run failed
+```
+
+**Scenario**: The API has a minor blip, but it's retried and everything else runs smoothly:
+
+```plaintext
+┌ Function: "Import store items" triggered by new "ecommerce/import.required" event
+├─┬ Step: "Get items from API" started
+│ ├ Attempt 1: ❌ Error thrown
+│ ├ Attempt 2: ✅ Successful
+├─┬ Step: "Get store in database" started
+│ └ Attempt 1: ✅ Successful
+├─┬ Step: "Import items for store" skipped
+│ └ Attempt 1: ✅ Successful
+└ ✅ Function run successful
+```
+
+
+
+## Retry policies
+
+By default, each function is retried 3 times using [exponential backoff](https://github.com/inngest/inngest/blob/main/pkg/backoff/backoff.go) with jitter.
+
+* **Successful** - No error thrown. This will not be retried.
+* **Non-retriable error** - A `NonRetriableError` was thrown (think: `404`). This will not be retried.
+* **Error** - Any error was thrown indicating a potentially temporary failure (think: `500`). **This will be retried according to the retry policy (3 times, by default)**.
+
+_Note - We're planning to enable customization of the retry policy and timing in a future release._

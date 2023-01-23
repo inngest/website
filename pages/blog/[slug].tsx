@@ -14,7 +14,7 @@ import Tags from "../../shared/Blog/Tags";
 import DiscordCTA from "../../shared/Blog/DiscordCTA";
 import Header from "src/shared/Header";
 import Container from "src/shared/layout/Container";
-import Button from "src/shared/Button";
+import { Button } from "src/shared/Button";
 import IconCalendar from "src/shared/Icons/Calendar";
 const components = {
   DiscordCTA,
@@ -104,13 +104,7 @@ export default function BlogLayout(props) {
 
       {/* <ThemeToggleButton isFloating={true} /> */}
 
-      <div className="bg-slate-1000 font-sans">
-        <div
-          style={{
-            background: "radial-gradient(circle at center, #13123B, #08090d)",
-          }}
-          className="absolute w-[200vw] -translate-x-1/2 -translate-y-1/2 h-[200vw] rounded-full blur-lg opacity-90"
-        ></div>
+      <div className="font-sans">
         <Header />
         <Container>
           <article>
@@ -157,11 +151,14 @@ export default function BlogLayout(props) {
                   platform lets you build serverless background tasks and
                   scheduled jobs using events - zero infrastructure required.{" "}
                 </p>
-                <Button href="https://www.inngest.com?ref=blog-post" arrow>
+                <Button
+                  href="https://www.inngest.com?ref=blog-post"
+                  arrow="right"
+                >
                   Give it a try
                 </Button>
               </aside>
-              <div className="m-auto mb-20 prose prose-img:rounded-lg prose-code:bg-slate-800 prose-code:tracking-tight text-slate-300 prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline hover:prose-a:text-white prose-a:font-medium prose-a:transition-all prose-invert">
+              <div className="max-w-[65ch] prose m-auto mb-20 prose-img:rounded-lg prose-code:bg-slate-800 prose-code:tracking-tight text-slate-300 prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline hover:prose-a:text-white prose-a:font-medium prose-a:transition-all prose-invert">
                 <MDXRemote
                   compiledSource={props.post.compiledSource}
                   scope={scope}

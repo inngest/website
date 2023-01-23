@@ -2,17 +2,39 @@ import React, { useEffect } from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import Script from "next/script";
+
 import { trackPageView } from "../utils/tracking";
 import { getOpenGraphImageURL } from "../utils/social";
 import { useAnonId } from "../shared/legacy/trackingHooks";
 import "../styles/globals.css";
 import * as fullstory from "@fullstory/browser";
 
+import { Layout as DocsLayout } from "../shared/Docs/Layout";
+
 import PageBanner from "../shared/legacy/PageBanner";
+
+function DefaultLayout({ children }) {
+  const router = useRouter();
+  return (
+    <>
+      {router.pathname !== "/sign-up" && (
+        <PageBanner href="/blog/vercel-integration?ref=page-banner">
+          Announcing our new Vercel integration
+        </PageBanner>
+      )}
+      <div className="bg-slate-1000 gradient h-screen w-full absolute top-0 right-0 -z-10 "></div>
+      {children}
+    </>
+  );
+}
 
 function MyApp({ Component, pageProps }) {
   const router = useRouter();
   const { anonId, existing } = useAnonId();
+
+  // Temp Layout swapping before we move to "app" dir
+  const isDocs = !!router.asPath.match(/^\/docs/);
+  const Layout = isDocs ? DocsLayout : DefaultLayout;
 
   useEffect(() => {
     fullstory.init({ orgId: "o-1CVB8R-na1" });
@@ -23,8 +45,13 @@ function MyApp({ Component, pageProps }) {
     }
     if (pageProps.designVersion) {
       htmlEl.classList.add(`v${pageProps.designVersion}`);
+    } else if (isDocs) {
+      htmlEl.classList.add(`v2`);
     } else {
       htmlEl.classList.add(`v1`);
+    }
+    if (isDocs) {
+      htmlEl.classList.add(`docs`);
     }
   });
   useEffect(() => {
@@ -38,11 +65,15 @@ function MyApp({ Component, pageProps }) {
     };
   }, [router.events]);
 
-  const title = pageProps?.meta?.title || "You Send Events. We Run Your Code.";
+  const title =
+    pageProps?.meta?.title ||
+    "Reliable serverless background functions on any platform";
   const metaTitle = `Inngest - ${title}`;
+  const disableMetadata =
+    pageProps?.meta?.disabled === true || router.asPath.match(/^\/docs/);
   // Warn during local dev
   if (
-    !pageProps.disabled &&
+    !disableMetadata &&
     !pageProps?.meta?.title &&
     process.env.NODE_ENV !== "production"
   ) {
@@ -59,7 +90,6 @@ function MyApp({ Component, pageProps }) {
       );
     }
   }
-  const disableMetadata = pageProps?.meta?.disabled === true;
 
   const canonicalUrl = `https://www.inngest.com${
     router.asPath === "/" ? "" : router.asPath
@@ -70,6 +100,9 @@ function MyApp({ Component, pageProps }) {
   return (
     <>
       <Head>
+        {/* Set this for all pages */}
+        <meta property="og:url" content={canonicalUrl} />
+
         {/* Sections of the site like the blog and docs set these using different data */}
         {!disableMetadata && (
           <>
@@ -87,7 +120,6 @@ function MyApp({ Component, pageProps }) {
               </>
             )}
             <meta property="og:image" content={ogImage} />
-            <meta property="og:url" content={canonicalUrl} />
             <meta property="og:title" content={metaTitle} />
             <meta name="twitter:card" content="summary_large_image" />
             <meta name="twitter:site" content="@inngest" />
@@ -103,13 +135,11 @@ function MyApp({ Component, pageProps }) {
         )}
         <link rel="canonical" href={canonicalUrl} />
       </Head>
-      {router.pathname !== "/sign-up" && (
-        <PageBanner href="/blog/vercel-integration?ref=page-banner">
-          Announcing our new Vercel integration
-        </PageBanner>
-      )}
 
-      <Component {...pageProps} />
+      <Layout {...pageProps}>
+        <Component {...pageProps} />
+      </Layout>
+
       <Script
         id="js-inngest-sdk-script"
         strategy="afterInteractive"

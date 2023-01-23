@@ -1,0 +1,170 @@
+# Writing Functions
+
+Follow along to learn how to:
+
+- Write a background function triggered by an event
+- Write a scheduled function
+
+Writing functions is the same no matter what platform you deploy to — so this example can be used for any TypeScript or JavaScript project (such as Next.js, Netlify, or RedwoodJS).
+
+## Install the SDK
+
+Firstly, you need to install the SDK via npm or yarn:
+
+```bash
+npm install inngest  # or yarn add inngest
+```
+
+## Writing a background function
+
+Copy the following code into a new file in your project, for example within `./inngest/myFunction.ts`
+
+```typescript
+import { Inngest } from "inngest";
+
+const inngest = new Inngest({ name: "My app" });
+
+export default inngest.createFunction(
+  "Import product images",   // The name of your function, used for observability.
+  "product.imported", // The event that triggers this function.
+  // This code will be called every time an event payload is received
+  async ({ event }) => {
+    return copyAllImagesToS3(event.data.imageURLs); // You can write whatever you want here.
+  }
+)
+```
+
+This defines a new background job which runs any code that you pass it.  This function is automatically triggered in the background whenever the demo/test.event event is received.  You can test this function using standard tooling such as Jest or Mocha by exporting the job code and running standard unit tests.
+
+💁 **Why event-driven?**
+
+Using events to trigger functions has many benefits:
+
+1. It’s simple:  there’s no config to define, and no queues to configure
+2. You can run many functions with a single event (fan-out)
+3. Each event has its own type, so that your data is always correct
+4. Inngest stores each event you receive, making testing and debugging simple
+
+## Writing a scheduled function
+
+The following code defines a scheduled function, which runs automatically using the specified cron schedule:
+
+```typescript
+import { Inngest } from "inngest";
+
+const inngest = new Inngest({ name: "My app" });
+
+export default inngest.createScheduledFunction(
+  "Weekly digest email", // The name of your function, used for observability.
+  "TZ=America/New_York 0 9 * * MON",         // The cron syntax for the function.  TZ= is optional.
+  // This code will be called on the schedule above
+  async () => {
+    return await sendDigestToAllUsers(); // You can write whatever you want here.
+  }
+)
+```
+
+This is very similar to defining an event-driven function, except it uses the `createScheduledFunction` call and a cron schedule to run your function at the specified interval.  This code can be deployed to any platform and will run automatically, without any HTTP calls.
+
+## Writing a multi-step function
+
+The following code defines a multi-step function, which you can use to coordinate between events, work with delays, and safely handle multiple asynchronous steps.
+
+Check out the <a href="/docs/functions/multi-step">Multi-step functions</a> page for more!
+
+```typescript
+export default inngest.createStepFunction(
+  "Activation email",
+  "app/user.created",
+  ({ event, tools }) => {
+    // Send the user a welcome email
+    tools.run("Send welcome email", () =>
+      sendEmail({ email: event.data.email, template: "welcome" })
+    );
+
+    // Wait for the user to create an order, by waiting and
+    // matching on another event
+    const order = tools.waitForEvent("app/order.created", {
+      match: "data.user.id",
+      timeout: "24h",
+    });
+
+    if (!order) {
+      // User didn't create an order within 24 hours; send
+      // them an activation email
+      tools.run("Send activation email", async () => {
+        // Some code here
+      });
+    }
+  }
+);
+```
+
+Use a multi-step function to create a logical flow of actions triggered from an initial event. It's just like writing a regular synchronous function, but Inngest will step in to help coordinate between events, wait for long periods, or retry failed steps.
+
+In this example, we send the user a welcome email when they are created, then send an activation email after 24 hours if they haven't created an order in that time. Each call to `run()` can be retried independently, meaning a failure in one step won't affect any others.
+
+Coordinating between events like this often requires a lot of code and infrastructure to handle retries, timeouts, state, queues, and many edge cases. Inngest handles all of this for you, so you can focus on writing the code that matters in a clean, readable format.
+
+You can learn more about the Inngest SDK's multi-step functions on our [Multi-step functions](/docs/functions/multi-step) page.
+
+## TypeScript
+
+The Inngest SDK lets you strictly type all of your code against your real production data. This powerful feature helps to:
+
+- Protect you from making breaking changes
+- Encourage discoverability of your events via autocomplete
+- Give you instant feedback as to whether your code will run as intended
+
+```typescript
+// file: inngest/client.ts
+import { Inngest } from "inngest";
+
+type AppUserCreated = {
+  name: "app/user.created";
+  data: {
+    email: string;
+  }
+  user: {
+    id: string;
+  }
+}
+
+type Events = {
+  "app/user.created": AppUserCreated;
+}
+
+export const inngest = new Inngest<Events>({ name: "My App" });
+```
+
+You can then import this `inngest` client into where you're creating functions or sending events:
+
+```typescript
+import { inngest } from "./client";
+
+export default inngest.createFunction("Add to Intercom", "app/user.created", ({ event }) => ...);
+```
+
+You can learn more about the Inngest SDK's TypeScript support on our [Using with TypeScript](/docs/typescript) page.
+
+## Serving
+
+For Inngest to be able to call your functions, you need to serve them through an API endpoint. There is [a more in-depth and pre-framework documentation in here](/docs/sdk/serve), but after that is set up, you need add all of your functions to your `serve` handler. For example, in a [Next.js](/docs/sdk/serve#framework-next-js) project:
+
+```typescript
+// File: ./pages/api/inngest.ts
+import { serve } from "inngest/next";
+import addToIntercom from "../../inngest/addToIntercom";
+import sendWeeklyDigestCron from "../../inngest/sendWeeklyDigestCron";
+
+// You need to serve all functions, event driven or scheduled:
+export default serve("My App", [addToIntercom, sendWeeklyDigestCron]);
+```
+
+The `serve` handler enables Inngest to remotely and securely call your functions running on _any platform_. Check out [those docs for a deeper dive](/docs/sdk/serve).
+
+## Show all served functions
+
+Now that your functions are being served via HTTP, open the route in your browser to view the SDK debug page. It will show you whether your functions are set up correctly, prompt you with what to change if not, and show you any next steps needed along the way!
+
+![The SDK's local dashboard showing success](/assets/docs/sdk/landing.png)
