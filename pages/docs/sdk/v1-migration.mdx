@@ -1,0 +1,213 @@
+export const description = "Migrate to v1 of the Inngest TS SDK."
+
+# Migrating to Inngest SDK v1
+
+This guide walks through migrating to the Inngest TS SDK v1 from previous versions.
+
+## What's new in v1
+
+- Step functions are now async, meaning you can create your flow however you'd express yourself with JavaScript Promises.
+- Unified client instantiation and handling of schemas via `new Inngest()`, removing legacy helpers that required manual types.
+- A foundation for continuous improvement:
+  - Better type inference and schemas
+  - Better error handling
+  - Clearer patterns and tooling
+  - More and better function configuration
+
+## Replacing function creation helpers
+
+To ensure a consistent experience across the tooling, we've removed the various function creation helpers that were exported.
+
+```ts
+// ❌ Removed in v1
+import {
+  createFunction,
+  createScheduledFunction,
+  createStepFunction,
+} from "inngest";
+```
+
+This helps ensure that important pieces such as type inference of events has a central place to reside.
+
+As such, each of the following examples requries an Inngest Client (`new Inngest()`) is used to create the function.
+
+```ts
+import { Inngest } from "inngest";
+
+const inngest = new Inngest({ name: "My App" });
+```
+
+See the specific examples below of how to transition from a helper to the new signatures.
+
+<details>
+<summary>`createFunction()`</summary>
+```ts
+// ❌ Removed in v1
+const singleStepFn = createFunction(
+  "Single step",
+  "example/single.step",
+  async ({ event }) => "..."
+);
+```
+```ts
+// ✅ Valid in v1
+const singleStepFn = inngest.createFunction(
+  { name: "Single step" },
+  { event: "example/single.step" },
+  async ({ event, step }) => "..."
+);
+```
+</details>
+
+<details>
+<summary>`createScheduledFunction()` or `inngest.createScheduledFunction()`</summary>
+```ts
+// ❌ Removed in v1
+const scheduledFn = createScheduledFunction( // or inngest.createScheduledFunction
+  "Scheduled",
+  "0 9 * * MON",
+  async ({ event }) => "..."
+);
+```
+```ts
+// ✅ Valid in v1
+const scheduledFn = inngest.createFunction(
+  { name: "Scheduled" },
+  { cron: "0 9 * * MON" },
+  async ({ event, step }) => "..."
+);
+```
+</details>
+
+<details>
+<summary>`createStepFunction` or `inngest.createStepFunction`</summary>
+```ts
+// ❌ Removed in v1
+const stepFn = createStepFunction(
+  "Step function",
+  "example/step.function",
+  ({ event, tools }) => "..."
+);
+```
+```ts
+// ✅ Valid in v1
+const stepFn = inngest.createFunction(
+  { name: "Step function" },
+  { event: "example/step.function" },
+  async ({ event, step }) => "..."
+);
+```
+</details>
+
+Broadly, the following is how we would always create functions without the v0 helpers.
+
+```ts
+// ✅ Valid in v1
+import { Inngest } from "inngest";
+
+const inngest = new Inngest({ name: "My App" });
+
+const singleStepFn = inngest.createFunction(
+  { name: "Single step" },
+  { event: "example/single.step" },
+  async ({ event, step }) => "..."
+);
+
+const scheduledFn = inngest.createFunction(
+  { name: "Scheduled" },
+  { cron: "0 9 * * MON" },
+  async ({ event, step }) => "..."
+);
+
+const stepFn = inngest.createFunction(
+  { name: "Step function" },
+  { event: "example/step.function" },
+  async ({ event, step }) => "..."
+);
+```
+
+## Updating to async step functions
+
+Step functions in v0 were synchronous, meaning steps had to run sequentially, one after the other.
+
+v1 brings the full power of asynchronous JavaScript to those functions, meaning you can use any and all async tooling at your disposal; `Promise.all()`, `Promise.race()`, loops, etc.
+
+Because of this change, the signature of a step function is changing.
+
+- Any type of function can now be a step function, simply by using one of the `step` tools and returning a promise (e.g. prefixing your function with `async`).
+- Step tooling located at `tools` is now located at `step` instead to make it easier to reason about billing and make the code more readable (e.g. `tools.run` becomes `step.run`).
+- All step tooling now returns a `Promise<>`.
+
+Here we look at an example of a step function in v0 and compare it with the new v1.
+
+```ts
+// ⚠️ v0 step function
+import { createStepFunction } from "inngest";
+import { getUser } from "./db";
+import { sendAlert, sendEmail } from "./email";
+
+export default createStepFunction(
+  "Example",
+  "app/user.created",
+  ({ event, tools }) => {
+    const user = tools.run("Get user email", () => getUser(event.userId));
+
+    tools.run("Send email", () => sendEmail(user.email, "Welcome!"));
+    tools.run("Send alert to staff", () => sendAlert("New user created!"));
+  }
+);
+
+```
+```ts
+// ✅ v1 step function
+import { inngest } from "./client";
+import { getUser } from "./db";
+import { sendAlert, sendEmail } from "./email";
+
+export default inngest.createFunction(
+  { name: "Example" },
+  { event: "app/user.created" },
+  async ({ event, step }) => {
+    const user = await step.run("Get user email", () => getUser(event.userId));
+
+    await step.run("Send email", () => sendEmail(user.email, "Welcome!"));
+    await step.run("Send alert to staff", () => sendAlert("New user created!"));
+  }
+);
+```
+
+These two examples have the exact same functionality. As above, there are a few key changes that were required.
+
+- Using `createFunction()` on the client to create the step function
+- Awaiting step tooling to ensure they run in order
+- Using `step` instead of `tools`
+
+Now that we're using async, though, we could run the last two items in parallel by wrapping them in a `Promise.all()`.
+
+```ts
+await Promise.all([
+  step.run("Send email", () => sendEmail(user.email, "Welcome!")),
+  step.run("Send alert to staff", () => sendAlert("New user created!")),
+]);
+```
+
+<Callout>
+When translating code to v1, be aware that not awaiting a step tool will mean it happens in the background, in parallel to the tools that follow. Just like a regular JavaScript async function, `await` halts progress, which is sometimes just what you want!
+</Callout>
+
+Async step functions with v1 of the Inngest TS SDK unlocks a huge `Array<Possibility>`. To explore these further, check out the [multi-step functions](/docs/functions/multi-step) docs.
+
+## Updating custom framework serve handlers
+
+If you're using a custom serve handler and are creating your own `InngestCommHandler` instance, a `stepId` must be provided when returning arguments for the `run` command.
+
+This can be accessed via the query string using the exported `queryKeys.StepId` enum.
+
+```ts
+run: async () => {
+  if (req.method === "POST") {
+    return {
+      fnId: url.searchParams.get(queryKeys.FnId) as string,
+      // 🆕 stepId is now required
+      stepId: url.searchParams.get(queryKeys.StepId) as string,
+```
