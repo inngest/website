@@ -757,3 +757,12 @@ li code {
   border-radius: 3px;
   color: var(--color-dark-purple);
 }
+
+
+/* Cookie consent banner customization */
+.iubenda-uspr-btn {
+  visibility: hidden;
+}
+.iubenda-uspr-btn.show {
+  visibility: visible;
+}

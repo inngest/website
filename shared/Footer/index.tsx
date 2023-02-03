@@ -126,6 +126,18 @@ export default function Footer() {
             </a>
           </li>
           <li className="text-sm text-center">
+            <span
+              className="text-slate-400 py-1.5 block hover:text-indigo-400 transition-colors cursor-pointer"
+              onClick={() => {
+                const settingsWidget =
+                  document.querySelector(".iubenda-uspr-btn");
+                settingsWidget.classList.toggle("show");
+              }}
+            >
+              Cookie Settings
+            </span>
+          </li>
+          <li className="text-sm text-center">
             <a
               className="text-slate-400 py-1.5 block hover:text-indigo-400 transition-colors"
               href="/security?ref=footer"
