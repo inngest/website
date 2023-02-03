@@ -54,7 +54,7 @@ export const SECTIONS: Section[] = [
     articles: [
       {
         title: "Running functions in parallel",
-        subtitle: "Fan-out work to multiple functions using a single event",
+        subtitle: "Trigger multiple functions from a single event",
         tags: ["Architecture"],
         slug: "running-functions-in-parallel",
       },
@@ -81,7 +81,7 @@ export const SECTIONS: Section[] = [
       {
         title: "Reliable scheduling systems",
         subtitle:
-          "Combine cron-jobs with event fan-out for auditable scheduling",
+          "Reliably manage thousands of jobs triggered by a single event or cton",
         tags: ["Architecture", "Scheduling"],
         slug: "reliable-scheduling-systems",
       },
