@@ -187,6 +187,25 @@ function MyApp({ Component, pageProps }) {
       `,
         }}
       />
+      {/* Iubenda cookie consent banner */}
+      <script
+        type="text/javascript"
+        dangerouslySetInnerHTML={{
+          __html: `
+          var _iub = _iub || [];
+          _iub.csConfiguration = {"askConsentAtCookiePolicyUpdate":true,"countryDetection":true,"enableLgpd":true,"enableUspr":true,"gdprAppliesGlobally":false,"lang":"en","lgpdAppliesGlobally":false,"perPurposeConsent":true,"siteId":2268311,"cookiePolicyId":26885259, "banner":{ "acceptButtonColor":"#818CF8","acceptButtonDisplay":true,"backgroundColor":"#080D19","closeButtonDisplay":false,"customizeButtonColor":"#1E293B","customizeButtonDisplay":true,"explicitWithdrawal":true,"fontSizeBody":"12px","listPurposes":true,"position":"float-bottom-right","rejectButtonColor":"#1E293B","rejectButtonDisplay":true }};
+      `,
+        }}
+      ></script>
+      <script
+        type="text/javascript"
+        src="//cdn.iubenda.com/cs/gpp/stub.js"
+      ></script>
+      <script
+        type="text/javascript"
+        src="//cdn.iubenda.com/cs/iubenda_cs.js"
+        async
+      ></script>
     </>
   );
 }
