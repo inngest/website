@@ -79,9 +79,9 @@ export const SECTIONS: Section[] = [
         slug: "#TODO",
       },*/
       {
-        title: "Reliable scheduling systems",
+        title: "Batching jobs via fan-out",
         subtitle:
-          "Reliably manage thousands of jobs triggered by a single event or cton",
+          "Reliably manage thousands of jobs triggered by a single event or cron",
         tags: ["Architecture", "Scheduling"],
         slug: "reliable-scheduling-systems",
       },
