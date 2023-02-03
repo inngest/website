@@ -5,8 +5,8 @@ export function getStaticProps() {
     props: {
       designVersion: "2",
       meta: {
-        title: "Terms",
-        description: "Inngest's terms and conditions",
+        title: "Cookie Policy",
+        description: "Inngest's Cookie Policy",
       },
     },
   };
@@ -14,6 +14,6 @@ export function getStaticProps() {
 
 export default function Terms() {
   return (
-    <LegalPage iframeURL="https://www.iubenda.com/terms-and-conditions/26885259" />
+    <LegalPage iframeURL="https://www.iubenda.com/privacy-policy/26885259/cookie-policy" />
   );
 }

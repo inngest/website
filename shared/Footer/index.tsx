@@ -13,7 +13,7 @@ export default function Footer() {
       <div className="bg-indigo-600 backdrop-blur text-white">
         {/* <div className="bg-slate-950/40 backdrop-blur text-white"> */}
         <Container className="py-20 lg:py-32">
-          <h4 className=" text-2xl lg:text-4xl tracking-tight mb-4 font-medium">
+          <h4 className="text-2xl lg:text-4xl tracking-tight mb-4 font-medium">
             Ready to start building?
           </h4>
           <p className="text-sm lg:text-base max-w-xl text-indigo-100">
@@ -101,7 +101,7 @@ export default function Footer() {
             &copy;
             {new Date().getFullYear()} Inngest Inc.
           </li>
-          <li className=" text-sm text-center">
+          <li className="text-sm text-center">
             <a
               className="text-slate-400 py-1.5 block hover:text-indigo-400 transition-colors"
               href="/privacy?ref=footer"
@@ -109,7 +109,7 @@ export default function Footer() {
               Privacy
             </a>
           </li>
-          <li className=" text-sm text-center">
+          <li className="text-sm text-center">
             <a
               className="text-slate-400 py-1.5 block hover:text-indigo-400 transition-colors"
               href="/terms?ref=footer"
@@ -117,7 +117,15 @@ export default function Footer() {
               Terms and Conditions
             </a>
           </li>
-          <li className=" text-sm text-center">
+          <li className="text-sm text-center">
+            <a
+              className="text-slate-400 py-1.5 block hover:text-indigo-400 transition-colors"
+              href="/cookie-policy?ref=footer"
+            >
+              Cookie Policy
+            </a>
+          </li>
+          <li className="text-sm text-center">
             <a
               className="text-slate-400 py-1.5 block hover:text-indigo-400 transition-colors"
               href="/security?ref=footer"
