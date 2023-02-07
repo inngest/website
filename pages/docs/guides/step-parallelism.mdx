@@ -85,7 +85,7 @@ Currently, the total data returned from ******all****** steps must be under 4MB 
 
 ## Parallelism vs fan-out
 
-Another technique similar to parallelism is fan-out (read the guide here):  when one function sends events to trigger other functions.  Here are the key differences:
+Another technique similar to parallelism is fan-out ([read the guide here](/docs/guides/fan-out-jobs)):  when one function sends events to trigger other functions.  Here are the key differences:
 
 - Both patterns run jobs in parallel
 - You can access the output of steps ran in parallel within your function, whereas with fan-out you cannot
