@@ -263,6 +263,14 @@ export const navigation = [
         title: "Scheduled functions",
         href: `${baseDir}/guides/scheduled-functions`,
       },
+      {
+        title: "Step parallelism",
+        href: `${baseDir}/guides/step-parallelism`,
+      },
+      {
+        title: "Fan-out jobs",
+        href: `${baseDir}/guides/fan-out-jobs`,
+      },
       // {
       //   title: "Overview",
       //   href: `${baseDir}/guides`,
