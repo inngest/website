@@ -1,6 +1,6 @@
 # Step parallelism
 
-It’s easy to run steps in parallel within a single Inngest function.  You can keep track of of each step’s output and wait for all parallel stops to complete.  There are some benefits to using parallelism within Inngest:
+It’s easy to run steps in parallel within a single Inngest function.  You can keep track of of each step’s output and wait for all parallel steps to complete.  This means that parallelism is ideal for situations where you have code that can run concurrently, and you also need to process or combine the results of each step.  There are some benefits to using parallelism within Inngest:
 
 - It uses the standard library.  You don't have to learn another SDK or use platform-specific code.
 - You don’t have to keep track of output from parallel steps;  we do that for you
@@ -44,7 +44,12 @@ export const fn = inngest.createFunction(
 
     // Run both steps in parallel.  Once complete, Promise.all will return all
     // parallelised state here.
+		//
+		// This ensures that all steps complete as fast as possible, and we still have
+		// access to each step's data once they're compelte.
     const [emailID, updates] = await Promise.all([sendEmail, updateUser]);
+
+		return { emailID, updates };
   }
 );
 ```
@@ -81,7 +86,7 @@ This allows you to run many independent steps, wait until they’re all finished
 
 ## Limitations
 
-Currently, the total data returned from ******all****** steps must be under 4MB (eg. a single step can return a max of. 4MB, or 4 steps can return a max of 1MB).  Functions are also limited to a maximum of 1,000 steps.
+Currently, the total data returned from **all** steps must be under 4MB (eg. a single step can return a max of. 4MB, or 4 steps can return a max of 1MB each).  Functions are also limited to a maximum of 1,000 steps.
 
 ## Parallelism vs fan-out
 
@@ -92,3 +97,4 @@ Another technique similar to parallelism is fan-out ([read the guide here](/docs
 - Parallelism has a limit of 1,000 steps, though you can create as many functions as you’d like using fan-out
 - You can replay events via fan-out, eg. to test functions locally
 - You can retry individual functions easily if they permanently fail, whereas if a step permanently fails (after retrying) the function itself will fail and terminate.
+- Fan-out splits functionality into different functions, using step functions keeps all related logic in a single, easy to read function

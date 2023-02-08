@@ -15,14 +15,14 @@ import { Inngest } from "inngest";
 
 const inngest = new Inngest({ name: "Signup flow" });
 
-export const fn = inngest.createStepFunction(
-  { name: "Weekly activity" },
+export const loadCron = inngest.createFunction(
+  { name: "Weekly activity: load users" },
   { cron: "0 12 * * 5" },
-  ({ event, step }) => {
+  async ({ event, step }) => {
 
     // Fetch all users
     const users = await step.run("Fetch users", async () => {
-      fetchUsers();
+      return fetchUsers();
     });
 
     // For each user, send us an event.  Inngest supports batches of events
@@ -33,7 +33,7 @@ export const fn = inngest.createStepFunction(
         data: {
           ...user,
         },
-				user,
+        user,
       };
     });
 
@@ -45,11 +45,23 @@ export const fn = inngest.createStepFunction(
     return { count: users.length };
   }
 );
+
+const sendReminder = inngest.createFunction(
+  { name: "Weekly activity: send email" },
+  { event: "app/weekly-email-activity.send" },
+  async ({ event, step }) => {
+	  const data = await step.run("Load user data", async () => {
+		  return loadUserData(event.data.user.id);
+		});
+
+    await step.run("Email user", async () => {
+		  sendEmail(event.data.user, data);
+		});
+  }
+);
 ```
 
-In the above example, we fetch all users within a single step.  This step will retry on error.  Once that’s complete (via `await`), we create an *array of events* which are sent to Inngest via `step.sendEvent`.
-
-Each event received will trigger a new function run for any function listening to those events, just like regular events do.
+In the above example, we fetch all users within a single step.  This step will retry on error.  Once that’s complete (via `await`), we create an *array of events* which are sent to Inngest via `step.sendEvent`.  Each of these events trigger new functions for specific users.
 
 ### Why `step.sendEvent` vs `inngest.send`?
 
@@ -61,6 +73,6 @@ Another technique similar to fan-out is step parallelism ([read the guide here](
 
 - Both patterns run jobs in parallel
 - You can access the output of steps ran in parallel within your function, whereas with fan-out you cannot
-- Parallelism has a limit of 1,000 steps, though you can create as many functions as you’d like using fan-out
+- Parallelism has a limit of 1,000 steps, though you can trigger as many functions as you’d like using fan-out
 - You can replay events via fan-out, eg. to test functions locally
 - You can retry individual functions easily if they permanently fail, whereas if a step permanently fails (after retrying) the function itself will fail and terminate.
