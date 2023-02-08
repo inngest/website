@@ -1,4 +1,4 @@
-Sometimes you need to reliably trigger hundreds or thousands of jobs at once, making sure that every job succeeds independently.  For example, you might have a cron which triggers importing thousands of products, or a user might require 100 different OpenAPI calls at once.
+Sometimes you need to reliably trigger hundreds or thousands of jobs at once, making sure that every job succeeds independently.  For example, you might have a cron which triggers importing thousands of products, or a user might require 100 different API calls at once.
 
 You might start by running everything in a single function, or within steps.  However, as the number of jobs grows this becomes slower, more difficult to observe, and more prone to temporary failures.  Instead of doing everything in a single job you should **fan-out** by sending events to trigger new jobs.
 
