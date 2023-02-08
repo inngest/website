@@ -8,7 +8,7 @@ In order to manage thousands of jobs at once you'll need to **fan-out to run fun
 
 - The job trigger runs as a single function (eg. a cron for triggering product imports)
 - The function loads the data needed for all future jobs (eg. loading all product IDs)
-- It sends new events to trigger jobs in parallel for each job needed.
+- The function sends multiple events which each trigger it's own job
 
 When you schedule each job independently by sending events, each job gets its own retries and runs in parallel.  This makes your system faster, more observable, and  more resilient to temporary failures.
 
