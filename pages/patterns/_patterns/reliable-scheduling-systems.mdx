@@ -46,7 +46,7 @@ const postSlackNotification = createFunction("Send Slack Notification",
   async ({ event }) => {
     const reportData = getAccountReportData(event.data.notification.accountId);
 
-    await app.client.chat.postMessage({
+    return await app.client.chat.postMessage({
       channel: event.data.notification.slackChannelId,
       blocks: generateReportSlackBlocks(reportData),
       // ...
