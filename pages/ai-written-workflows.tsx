@@ -85,6 +85,16 @@ export default function InngestGPT() {
         "ai-sdk-history",
         JSON.stringify(newHistory)
       );
+      // Scroll to output
+      try {
+        const el = document.getElementById("js-output");
+        const pos = el.getBoundingClientRect();
+        const scrollMargin = 84 + 24; // nav height + some extra
+        const scrollTo = window.scrollY + pos.top - scrollMargin;
+        window.scroll({ top: scrollTo, behavior: "smooth" });
+      } catch (err) {
+        // noop - failed to find el or browser didn't have scroll API
+      }
     } catch (e) {
       setLoading(false);
       console.warn(e);
@@ -283,7 +293,7 @@ const PromptUI = ({
 
 const Output = ({ selected }: { selected: Selected }) => {
   return (
-    <div className="col-span-3 col-start-3">
+    <div id="js-output" className="col-span-3 col-start-3">
       <div className="bg-white rounded-lg shadow-lg overflow-hidden mt-8 lg:mt-auto">
         <p className="text-sm text-slate-600 font-medium bg-slate-100 py-3 px-6">
           Prompt
