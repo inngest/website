@@ -6,6 +6,7 @@ date: 2023-02-09
 author: Jack Williams
 focus: true
 ---
+
 OpenAI Codex is the model that powers GitHub Copilot, an “AI pair programmer” that suggests code in your IDE based on your codebase and billions of lines of open-source repositories.
 
 Today, we’re leveraging that power to release an AI workflow builder, so you can instantly understand how your problem might be solved with Inngest by simply explaining what you’d like to achieve.
@@ -23,6 +24,8 @@ These written examples, like most documentation, are static; one key example mus
 
 When communicating vocally, it’s much easier to give somebody an understanding of a concept by relating it to the one piece of the puzzle they already know. Similarly, by generating code upfront, the reader can apply their specific context to the platform straight away without that second hop.
 
+![Example prompts to create Inngest durable functions and workflows](/assets/blog/openai-durable-functions-with-inngest/prompt-examples.png)
+
 ## How it’s built
 
 The OpenAI piece of the bot is wonderfully simple, hosted on Deno Deploy.
@@ -39,8 +42,9 @@ In addition to being available on the website, the bot is available for work on 
 
 You can ask it to create a function by simply tagging it in a message, like so:
 
-> ***@inngestabot Send a welcome email to a new user.***
->
+> **_@inngestabot Send a welcome email to a new user._**
+
+![Example prompt to Inngest discord bot to generate durable workflow that sends a welcome email to a new user](/assets/blog/openai-durable-functions-with-inngest/discord-example.png)
 
 Throughout releasing features such as serverless slash commands for Discord bots, much of their functionality still relies on long-lived, serverful connections, for example to listen to incoming messages as we want to here.
 
