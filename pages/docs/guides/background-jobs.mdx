@@ -31,7 +31,7 @@ export const fn = inngest.createFunction(
     // Whatever event data you send is accessible within `event`.
 
     await step.run("send the user a signup email", async () => {
-      // Reliably send an email.  Anything in `tools.run` automatically retries
+      // Reliably send an email.  Anything in `step.run` automatically retries
       await sesclient.clientsendEmail({
         to: event.data.user_email,
         subject: "Welcome to Inngest!"
