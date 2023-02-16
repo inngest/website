@@ -55,7 +55,7 @@ export default function EventDriven() {
               backgroundPosition: "right -60px top -160px",
               backgroundRepeat: "no-repeat",
             }}
-            className=" flex flex-col justify-between text-center bg-blue-500/90 rounded-xl relative w-full h-full"
+            className=" flex flex-col justify-between text-center bg-blue-500/90 rounded-xl relative w-full h-full overflow-hidden"
           >
             <div className=" pt-6 lg:pt-11 px-4 xl:px-16">
               <h4 className="text-white text-xl lg:text-2xl font-medium tracking-tight mb-2">
@@ -119,7 +119,7 @@ export default function EventDriven() {
               backgroundPosition: "right -60px top -160px",
               backgroundRepeat: "no-repeat",
             }}
-            className=" flex flex-col justify-between text-center bg-purple-500/90 rounded-xl relative w-full h-full"
+            className=" flex flex-col justify-between text-center bg-purple-500/90 rounded-xl relative w-full h-full overflow-hidden"
           >
             <div className=" pt-6 lg:pt-11 px-4 xl:px-16">
               <h4 className="text-white text-xl lg:text-2xl font-medium tracking-tight mb-2">

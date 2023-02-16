@@ -29,17 +29,14 @@ export default function Header() {
     <header
       className={classNames(
         scroll ? `bg-slate-1000/80 ` : "",
-        `sticky backdrop-blur top-0 left-0 right-0 z-50 transition-colors duration-200`
+        `sticky backdrop-blur top-0 left-0 right-0 z-50 transition-colors duration-200 ${
+          menuState ? "fixed" : ""
+        }`
       )}
     >
-      <Container className="flex justify-between items-center px-8 md:px-0">
+      <Container className="flex justify-between items-center px-0">
         <div className="flex  items-center w-full">
-          <div
-            className={classNames(
-              menuState ? `bg-slate-900` : ``,
-              `lg:bg-transparent flex items-center py-5 lg:py-0 w-full lg:w-auto lg:px-0 justify-between`
-            )}
-          >
+          <div className="lg:bg-transparent flex items-center py-5 lg:py-0 w-full px-6 lg:w-auto md:px-0 justify-between">
             <a href="/" className="mr-4">
               <Logo className="text-white w-20 relative top-[2px]" />
             </a>
@@ -51,11 +48,21 @@ export default function Header() {
             </button>
           </div>
           <nav
-            className={classNames(
-              menuState ? `block` : `hidden`,
-              `overflow-y-scroll lg:overflow-visible w-full fixed bottom-0 lg:bottom-auto -z-10 lg:z-0 pt-[76px] lg:pt-0 h-screen lg:h-auto max-h-screen top-[0] left-0  right-0  bg-slate-900 lg:bg-transparent lg:static lg:flex`
-            )}
+            className={`overflow-y-scroll lg:overflow-visible w-full fixed bottom-0 lg:bottom-auto -z-10 lg:z-0  pt-0 h-screen lg:h-auto max-h-screen left-0  right-0  bg-slate-900 lg:bg-transparent lg:static lg:flex ${
+              menuState ? "z-[100] fixed top-0 block" : "hidden"
+            }`}
           >
+            <div className="lg:bg-transparent flex items-center py-5 lg:py-0 w-full px-6 md:px-10 lg:w-auto justify-between lg:hidden">
+              <a href="/" className="mr-4">
+                <Logo className="text-white w-20 relative top-[2px]" />
+              </a>
+              <button
+                className="text-slate-400 xl:m lg:hidden"
+                onClick={() => toggleMenu()}
+              >
+                {menuState ? <CloseMenu /> : <BurgerMenu />}
+              </button>
+            </div>
             <div className="flex flex-col lg:flex-row items-start lg:items-center w-full">
               <ul className="flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-0">
                 <li className="relative flex items-center group text-white font-medium lg:px-5 lg:py-8 text-sm">
