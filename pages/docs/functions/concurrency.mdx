@@ -1,0 +1,24 @@
+# Concurrency
+
+```ts
+inngest.createFunction(
+  { name: "Sync contacts", concurrency: 5 },
+  // ...
+);
+```
+
+Inngest can run many functions simultaneously; you can control the maxmimum concurrency with which they execute using the `concurrency` option when defining a function.
+
+A value of `0`, `undefined`, or not providing the option means the maximum concurrency for your account will be used.
+
+<Callout>
+The current concurrency option controls the number of concurrent _steps_ that can be running at any one time.
+
+Because a single function run can contain multiple steps, it's possible that more functions than the concurrency limit are triggered, but only the set number of steps will ever be running.
+</Callout>
+
+The maximum possible concurrency that can be set is based on your plan.
+
+- Hobby (free): 1
+- Team: 100
+- Enterprise: [contact us](https://www.inngest.com/contact?ref=pricing-advanced)

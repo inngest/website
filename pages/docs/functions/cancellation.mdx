@@ -1,0 +1,40 @@
+# Cancellation
+
+```ts
+inngest.createFunction(
+  { name: "Sync contacts", cancelOn: [{ event: "app/user.deleted" }] }
+  // ...
+);
+```
+
+Provide an event that, upon receipt, will cancel the execution of a given function.
+
+The API for this is similar to the [`step.waitForEvent()`](/docs/functions/multi-step#wait-for-event) tool, allowing you to specify the incoming event and different methods for matching pieces of data within.
+
+## With timeout
+
+Cancel a function's execution if a matching event is received within a given amount of time from the function being triggered.
+
+```ts
+inngest.createFunction(
+  {
+    name: "Sync contacts",
+    cancelOn: [{ event: "app/user.deleted", timeout: "1h" }],
+  }
+  // ...
+);
+```
+
+## Matching fields
+
+Cancel a function's execution if value of the `data.userId` field on the incoming event matches the same field on the triggering event.
+
+```ts
+inngest.createFunction(
+  {
+    name: "Sync contacts",
+    cancelOn: [{ event: "app/user.deleted", match: "data.userId" }],
+  }
+  // ...
+);
+```
