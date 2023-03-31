@@ -36,7 +36,7 @@ the reference for more information](/docs/sdk/reference/serve#reference).
 
 We recommend using [Lambda function URLs](https://docs.aws.amazon.com/lambda/latest/dg/lambda-urls.html) to trigger your functions, as these require no other configuration or cost.
 
-If you want to use an API Gateway instead, the handler currently supports [API Gateway V1](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-lambda.html) and [API Gateway V2](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-lambda.html) triggers. If using a different trigger, or perhaps an API Gateway behind a proxy, you may have to specify the `serveHost` and `servePath` options when calling `serve()` to ensure Inngest knows how to contact your functions. See [Configuring the API path](#configuring-the-api-path) for more details.
+Alternatively, you can use an API Gateway to route requests to your Lambda. The handler supports [API Gateway V1](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-lambda.html) and [API Gateway V2](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-lambda.html). If you are running API Gateway behind a proxy or have some other configuration, you may have to specify the `serveHost` and `servePath` options when calling `serve()` to ensure Inngest knows the URL where you are serving your functions. See [Configuring the API path](#configuring-the-api-path) for more details.
 
 ```typescript
 import { serve } from "inngest/lambda";
