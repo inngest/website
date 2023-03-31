@@ -64,7 +64,7 @@ pre.twoslash data-lsp:hover::before {
   content: attr(lsp);
   position: absolute;
   transform: translate(0, 1rem);
-  
+
 
   background-color: #1E293B;
   color: #fff;

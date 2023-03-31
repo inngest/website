@@ -18,8 +18,8 @@ function DefaultLayout({ children }) {
   return (
     <>
       {router.pathname !== "/sign-up" && (
-        <PageBanner href="/blog/vercel-integration?ref=page-banner">
-          Announcing our new Vercel integration
+        <PageBanner href="/ai-personalized-documentation?ref=page-banner">
+          ✨ Try Our AI-Personalized Documentation for Inngest
         </PageBanner>
       )}
       <div className="bg-slate-1000 gradient h-screen w-full absolute top-0 right-0 -z-10 "></div>
@@ -46,9 +46,12 @@ function MyApp({ Component, pageProps }) {
     if (pageProps.designVersion) {
       htmlEl.classList.add(`v${pageProps.designVersion}`);
     } else if (isDocs) {
-      htmlEl.classList.add(`v2`, `docs`);
+      htmlEl.classList.add(`v2`);
     } else {
       htmlEl.classList.add(`v1`);
+    }
+    if (isDocs) {
+      htmlEl.classList.add(`docs`);
     }
   });
   useEffect(() => {

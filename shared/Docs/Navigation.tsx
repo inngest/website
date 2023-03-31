@@ -208,6 +208,7 @@ export const navigation = [
     title: "Using the SDK",
     links: [
       { title: "SDK Overview", href: `${baseDir}/sdk/overview` },
+      { title: "Migrating to v1", href: `${baseDir}/sdk/v1-migration` },
       { title: "Serving the API & Frameworks", href: `${baseDir}/sdk/serve` },
       { title: "Writing Functions", href: `${baseDir}/functions` },
       { title: "Sending Events", href: `${baseDir}/events` },
@@ -217,13 +218,15 @@ export const navigation = [
       },
       {
         title: "Local Development",
-        href: `${baseDir}/functions/testing-functions`,
+        href: `${baseDir}/local-development`,
       },
       { title: "Using TypeScript", href: `${baseDir}/typescript` },
       {
         title: "Handling Errors & Retries",
         href: `${baseDir}/functions/retries`,
       },
+      { title: "Concurrency", href: `${baseDir}/functions/concurrency` },
+      { title: "Cancellation", href: `${baseDir}/functions/cancellation` },
     ],
   },
   {
@@ -251,6 +254,26 @@ export const navigation = [
   {
     title: "Guides",
     links: [
+      {
+        title: "Background jobs",
+        href: `${baseDir}/guides/background-jobs`,
+      },
+      {
+        title: "Enqueueing future jobs",
+        href: `${baseDir}/guides/enqueueing-future-jobs`,
+      },
+      {
+        title: "Scheduled functions",
+        href: `${baseDir}/guides/scheduled-functions`,
+      },
+      {
+        title: "Step parallelism",
+        href: `${baseDir}/guides/step-parallelism`,
+      },
+      {
+        title: "Fan-out jobs",
+        href: `${baseDir}/guides/fan-out-jobs`,
+      },
       // {
       //   title: "Overview",
       //   href: `${baseDir}/guides`,
@@ -282,6 +305,15 @@ export function Navigation(props) {
   return (
     <nav {...props}>
       <ul role="list">
+        <li>
+          <Button
+            href="/ai-personalized-documentation?ref=docs"
+            variant="secondary"
+            className="w-full mb-6 xl:hidden"
+          >
+            ✨ Create AI-Personalized Docs
+          </Button>
+        </li>
         {headerLinks.map((link) => (
           <TopLevelNavItem key={link.title} href={link.href}>
             {link.title}

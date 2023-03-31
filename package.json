@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3001",
     "build": "next build && next-sitemap",
     "start": "next start",
     "broken-link-checker": "npx ts-node ./scripts/brokenLinkChecker.ts",
@@ -24,7 +24,7 @@
     "@emotion/react": "^11.4.0",
     "@emotion/styled": "^11.3.0",
     "@fullstory/browser": "^1.6.2",
-    "@headlessui/react": "^1.7.7",
+    "@headlessui/react": "1.7.13",
     "@mdx-js/loader": "^2.2.1",
     "@mdx-js/react": "^2.2.1",
     "@monaco-editor/react": "^4.4.6",

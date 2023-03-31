@@ -3,7 +3,7 @@ import classNames from "src/utils/classNames";
 import ArrowRight from "./Icons/ArrowRight";
 
 type ButtonProps = {
-  variant?: "primary" | "secondary";
+  variant?: "primary" | "secondary" | "tertiary";
   size?: "sm" | "md" | "lg";
   className?: string;
   arrow?: "left" | "right";
@@ -17,6 +17,7 @@ export function Button({
   size = "md",
   arrow,
   full = false,
+  target = "",
   ...props
 }: ButtonProps) {
   const sizes = {
@@ -27,7 +28,8 @@ export function Button({
 
   const variants = {
     primary: "text-white bg-indigo-500 hover:bg-indigo-400",
-    secondary:
+    secondary: "bg-slate-800/80 hover:bg-slate-700/80 text-white",
+    tertiary:
       "bg-slate-100 hover:bg-slate-300 text-slate-800 dark:bg-slate-800  dark:hover:bg-slate-700 dark:text-slate-100",
   };
 
@@ -35,8 +37,9 @@ export function Button({
 
   return (
     <a
+      target={target}
       href={props.href}
-      className={`group inline-flex items-center justify-center gap-0.5 rounded-full font-medium tracking-tight transition-all ${variants[variant]} ${sizes[size]} ${props.className} ${width}`}
+      className={`button group inline-flex items-center justify-center gap-0.5 rounded-full font-medium tracking-tight transition-all ${variants[variant]} ${sizes[size]} ${props.className} ${width}`}
     >
       {arrow && arrow === "left" ? (
         <ArrowRight className="group-hover:-translate-x-1 transition-transform rotate-180 duration-150 -ml-1.5" />

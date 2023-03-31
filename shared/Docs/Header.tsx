@@ -19,12 +19,12 @@ import { headerLinks } from "./Navigation";
 function TopLevelNavItem({ href, children }) {
   return (
     <li>
-      <Link
+      <a
         href={href}
         className="text-sm leading-5 text-slate-600 transition hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
       >
         {children}
-      </Link>
+      </a>
     </li>
   );
 }
@@ -45,7 +45,8 @@ export const Header = forwardRef<HTMLDivElement>(function Header(
       ref={ref}
       className={clsx(
         className,
-        "fixed inset-x-0 top-0 z-50 flex h-14 items-center justify-between lg:justify-end gap-12 px-4 transition sm:px-6 lg:z-30 lg:px-8",
+        // NOTE - if we remove the AI button we may have to add "lg:justify-end"
+        "fixed inset-x-0 top-0 z-50 flex h-14 items-center justify-between gap-12 px-4 transition sm:px-6 lg:z-30 lg:px-8",
         !isInsideMobileNavigation &&
           "backdrop-blur-sm dark:backdrop-blur lg:left-72 xl:left-80",
         isInsideMobileNavigation
@@ -66,7 +67,7 @@ export const Header = forwardRef<HTMLDivElement>(function Header(
             "bg-slate-900/7.5 dark:bg-white/7.5"
         )}
       />
-      {/* <Search /> */}
+      <Search />
       <div className="flex items-center gap-5 lg:hidden">
         <MobileNavigation />
         <a href="/" className="flex gap-1.5 group/logo items-center pt-1">

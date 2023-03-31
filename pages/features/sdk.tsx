@@ -26,33 +26,32 @@ export const BETA_TYPEFORM_URL = "https://8qe8m10yfz6.typeform.com/to/F1aj8vLl";
 export const codesnippets = {
   javascript: {
     function: `
-      import { createFunction } from "inngest"
+      import { inngest } from "./client";
 
-      export default createFunction(
-        "My Great Function",
-        "demo/event.name",
+      export default inngest.createFunction(
+        { name: "My Great Function" },
+        { event: "demo/event.name" },
         async ({ event }) => {
           return { message: "success" }
         }
       )
     `,
     scheduledFunction: `
-      import { createScheduledFunction } from "inngest"
+      import { inngest } from "./client";
 
-      const scheduledTask = () => {
-        return { message: "success" }
-      }
-
-      export default createScheduledFunction(
-        "A scheduled function",
-        "0 9 * * MON", // any cron expression
-        scheduledTask
+      export default inngest.createFunction(
+        { name: "A scheduled function" },
+        { cron: "0 9 * * MON" }, // any cron expression
+        async () => {
+          // Do work regulary at 9AM monday...
+          return { message: "success" };
+        }
       )
     `,
     sendEventShort: `
       import { Inngest } from "inngest"
       const inngest = new Inngest({ name: "My App" })
-      inngest.send({
+      await inngest.send({
         name: "demo/event.name",
         data: { something: req.body.something }
       })
@@ -64,7 +63,7 @@ export const codesnippets = {
 
       export default function apiEndpoint(req, res) {
         const success = yourExistingCode(req.body)
-        inngest.send({
+        await inngest.send({
           name: "demo/event.name",
           data: { something: req.body.something }
         })
@@ -85,35 +84,34 @@ export const codesnippets = {
   },
   typescript: {
     function: `
-      import { createFunction } from "inngest"
+      import { inngest } from "./client";
       import { DemoEventTrigger } from "./types"
 
-      export default createFunction<DemoEventTrigger>(
-        "My Great Function",
-        "demo/event.trigger",
+      export default inngest.createFunction<DemoEventTrigger>(
+        { name: "My Great Function" },
+        { event: "demo/event.trigger" },
         async ({ event }) => {
           return { message: "success" }
         }
       )
     `,
     scheduledFunction: `
-      import { createScheduledFunction } from "inngest"
+      import { inngest } from "./client";
 
-      const scheduledTask = () => {
-        return { message: "success" }
-      }
-
-      export default createScheduledFunction(
-        "A scheduled function",
-        "0 9 * * MON", // any cron expression
-        scheduledTask
+      export default inngest.createFunction(
+        { name: "A scheduled function" },
+        { cron: "0 9 * * MON" }, // any cron expression
+        async () => {
+          // Do work regulary at 9AM monday...
+          return { message: "success" };
+        }
       )
     `,
     sendEventShort: `
       import { Inngest } from "inngest"
       import { Events } from "../../__generated__/inngest"
       const inngest = new Inngest<Events>({ name: "My App" })
-      inngest.send({
+      await inngest.send({
         name: "demo/event.name",
         data: { something: req.body.something }
       })
@@ -124,7 +122,7 @@ export const codesnippets = {
 
       const inngest = new Inngest<Events>({ name: "My App" })
 
-      inngest.send({
+      await inngest.send({
         name: "demo/event.name",
         data: { something: req.body.something }
       })
@@ -149,7 +147,7 @@ export const codesnippets = {
 
 export const worksWithBrands = [
   {
-    docs: "/docs/frameworks/nextjs",
+    docs: "/docs/sdk/serve#framework-next-js",
     logo: "/assets/brand-logos/next-js-dark.svg",
     brand: "Next.js",
     height: "50%",
@@ -170,21 +168,21 @@ export const worksWithBrands = [
     type: "platform",
   },
   {
-    docs: "/docs/frameworks/express", // TODO - change to guide when launched
+    docs: "/docs/sdk/serve#framework-express",
     logo: "/assets/brand-logos/express-js-dark.svg",
     brand: "Express.js",
     height: "80%",
     type: "framework",
   },
   {
-    docs: "/docs/frameworks/cloudflare-pages",
+    docs: "/docs/sdk/serve#framework-cloudflare",
     logo: "/assets/brand-logos/cloudflare-dark.svg",
     brand: "Cloudflare Pages",
     height: "80%",
     type: "platform",
   },
   {
-    docs: "/docs/frameworks/redwoodjs",
+    docs: "/docs/sdk/serve#framework-redwood",
     logo: "/assets/brand-logos/redwoodjs-dark.svg",
     brand: "RedwoodJS",
     height: "80%",
@@ -397,10 +395,9 @@ export default function FeaturesSDK() {
                 done: true,
                 text: (
                   <>
-                    <a href="/docs/frameworks/nextjs?ref=features-sdk">
-                      Next.js
-                    </a>{" "}
-                    & <a href="/docs/frameworks/express">Express.js</a> support
+                    <a href="/docs/sdk/serve#framework-next-js">Next.js</a> &{" "}
+                    <a href="/docs/sdk/serve#framework-express">Express.js</a>{" "}
+                    support
                   </>
                 ),
               },
@@ -471,7 +468,7 @@ export default function FeaturesSDK() {
                 .height,
               description:
                 "Trigger background and scheduled functions using our Next.js adapter",
-              href: "/docs/frameworks/nextjs",
+              href: "/docs/sdk/serve?ref=features-sdk-guides#framework-next-js",
             },
             {
               type: "Framework Guide",
@@ -481,7 +478,7 @@ export default function FeaturesSDK() {
                 .height,
               description:
                 "Run background jobs without workers or setting up a queue",
-              href: "/docs/frameworks/express",
+              href: "/docs/sdk/serve?ref=features-sdk-guides#framework-express",
             },
             {
               type: "Platform Guide",
@@ -491,11 +488,11 @@ export default function FeaturesSDK() {
                 .height,
               description:
                 "Use our Netlify plugin to automate deployments of your functions",
-              href: "/docs/deploy/netlify",
+              href: "/docs/deploy/netlify?ref=features-sdk-guides",
             },
           ].map((i) => (
             <a
-              href={`${i.href}?ref=features-sdk-guides`}
+              href={i.href}
               className="text-color-primary flex transition-all	hover:-translate-y-1"
             >
               <div className="p-6 h-full w-full flex flex-col rounded-md border-2 border-slate-800">
