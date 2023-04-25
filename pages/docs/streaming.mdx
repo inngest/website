@@ -1,0 +1,25 @@
+# Streaming
+
+In select environments, the SDK allows streaming responses back to Inngest, hugely increasing maximum timeouts on many serverless platforms up to 15 minutes.
+
+While we add wider support for streaming to other platforms, we currently support the following:
+
+- [Next.js on Vercel Edge Functions](/docs/sdk/serve#framework-next-js)
+
+## Enabling streaming
+
+Select your platform above and follow the relevant "Streaming" section to enable streaming for your application.
+
+Every Inngest serve handler provides a `streaming` option, for example:
+
+```typescript
+serve(inngest, [...fns], {
+  streaming: "allow"
+});
+```
+
+This can be one of the following values:
+
+- `false` - Streaming will never be used. This is the default.
+- `"allow"` - Streaming will be used if we can confidently detect support for it by verifying that the platform, environment, and serve handler support streaming.
+- `"force"` - Streaming will be used if the serve handler supports it. This is dangerous as we are not confirming that the platform supports streaming, but this sometimes needs to be used in more restrictive environments where it's difficult for the SDK to understand where it is.
