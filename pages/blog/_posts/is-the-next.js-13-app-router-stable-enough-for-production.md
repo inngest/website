@@ -3,7 +3,7 @@ focus: true
 heading: "Is the Next.js 13 App Router Stable Enough for Production?"
 subtitle: What have we learned from building our new production app with the still in beta Next.js 13 App Router?
 image: "/assets/blog/is-the-next.js-13-app-router-stable-enough-for-production/featured-image.webp"
-date: 2023-04-28
+date: 2023-05-04
 author: Igor Gassmann
 ---
 
