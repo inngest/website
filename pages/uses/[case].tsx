@@ -220,7 +220,7 @@ export default function useCase({ stringData }) {
           ))}
         </div>
       </Container>
-      <Footer />
+      <Footer ctaRef={`use-case-${data.slug}`} />
     </PageContainer>
   );
 }
