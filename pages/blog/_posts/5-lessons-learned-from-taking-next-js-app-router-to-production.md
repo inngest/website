@@ -54,7 +54,7 @@ We can understand our app's structure and see at which levels the suspense and e
 
 Additionally, we can now [colocate](https://nextjs.org/docs/app/building-your-application/routing#colocation) our files with our routes, such as components, tests, and styles. This is especially useful for files that are only used by one route.
 
-## 5. **Learning Curve and Limited Learning Resources**
+## 5. Learning Curve and Limited Learning Resources
 
 The steep learning curve was one of the biggest challenges we faced with the App Router. There's a lot to learn between the new routing, React Server Components, and caches. React Server Components also requires us to update our existing mental models for how to structure components which can be challenging when you’ve been building react apps for years only on the client. This learning curve undoubtedly slowed down our development process, and we’re still learning.
 
@@ -69,16 +69,16 @@ With time, we believe these challenges will be resolved, and we’ll see more le
 
 Considering those challenges, we recommend falling back to a client component when you get stuck trying to implement something with a React Server Component. In Next.js, client components still benefit from being [pre-rendered](https://nextjs.org/docs/app/building-your-application/rendering#static-and-dynamic-rendering-on-the-server) on the server, like in the [Pages Directory](https://nextjs.org/docs/pages/building-your-application/rendering#pre-rendering).
 
-## **Conclusion**
+## Conclusion
 
-The App Router provides a lot of benefits that can enhance both app and developer experience. However, it is still a relatively new technology with a learning curve and some unexplored areas.
+The Next.js App Router can provide a lot of benefits that enhance both end user and developer experience. If you choose to adopt it, you should consider that it's still a relatively new technology that has a learning curve and aspects that are still in development.
 
-Overall, we’re happy with our decision to use the App Router for our new Inngest Dashboard. We’re excited to see how the App Router will evolve and how we can use it to improve our app.
+We started building our app when the App Router was considered "_not ready for production,_" but with our experience and the Next.js team now blessing it as _stable_, we encourage you to try it out in your project! We do recommend taking the time to read through the [official docs](https://nextjs.org/docs) thoroughly. There are enough changes from the Pages Directory that can cause some considerable headaches if you don't spend the time to understand it.
 
-If you’re considering using the App Router for your project, we would recommend taking the time to read through the [official docs](https://nextjs.org/docs) thoroughly. If you neglect this step, you may cause yourself problems. With the right approach and mindset, the App Router can be a powerful tool for building complex and flexible web applications.
+Overall, we're happy with our decision to be one of the early production apps adopting the App Router. With a major re-write, it was our chance to use the cutting-edge to avoid another re-write or upgrade again in the near future.
 
-In a future post, we’ll discuss how debugging has changed with the introduction of React Server Components, how to handle cold boots, and more.
+In an upcoming post, we’ll discuss how debugging has changed with the introduction of React Server Components, how to handle cold boots, and more.
 
-If you’re curious to see the App Router in action, check out our new Inngest Dashboard by signing up [here](/sign-up?ref=blog-5-lessons-learned-from-taking-next-js-app-router-to-production).
+If you’re curious to see our new app in action, check out our new Inngest Dashboard by signing up [here](/sign-up?ref=blog-5-lessons-learned-from-taking-next-js-app-router-to-production).
 
 ![The Inngest Dashboard](/assets/blog/5-lessons-learned-from-taking-next-js-app-router-to-production/inngest-dashboard.png)
