@@ -16,6 +16,7 @@ We provide framework-specific bindings to make this easy for common platforms:
 - [DigitalOcean functions](#framework-digital-ocean-functions)
 - [Express](#framework-express)
 - [Fresh (Deno)](#framework-fresh-deno)
+- [Google Cloud Functions](#framework-google-cloud-functions)
 - [Next.js](#framework-next-js)
 - [Redwood](#framework-redwood)
 - [Remix](#framework-remix)
@@ -129,6 +130,21 @@ const fn = inngest.createFunction(
 // Serve the Inngest API.
 export const handler = serve(inngest, [fn]);
 ```
+
+## Framework: Google Cloud Functions
+
+Google's [Functions Framework](https://github.com/GoogleCloudPlatform/functions-framework-nodejs) has an Express-compatible API which enables you to use the Express serve handler to deploy your functions to Google's Cloud Functions or Cloud Run. This is an example of a function
+
+```typescript
+import * as ff from "@google-cloud/functions-framework";
+import { serve } from "inngest/express";
+import fnA from "./inngest/fnA"; // Your own function
+import { inngest } from "./inngest/client";
+
+ff.http('inngest', serve(inngest, [helloInngest]));
+```
+
+You can run this locally with `npx @google-cloud/functions-framework --target=inngest` which will serve your Inngest functions on port `8080`.
 
 ## Framework: Next.js
 
