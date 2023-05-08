@@ -44,16 +44,20 @@ export type UseCase = {
   }[];
   codeSection: {
     title: string;
-    steps: string[];
-    description?: string;
-    code: string;
+    examples: {
+      title?: string;
+      steps: string[];
+      description?: string;
+      code: string;
+    }[];
   };
+  featureOverflowTitle?: string;
   featureOverflow: {
     title: string;
     description: string;
     icon: IconType;
   }[];
-  quote: {
+  quote?: {
     text: string;
     author: string;
   };
@@ -151,40 +155,49 @@ export default function useCase({ stringData }) {
 
       <Container className=" my-40">
         <SectionHeader title={data.codeSection.title} />
-        <div className="flex mt-16 flex-col lg:flex-row flex-start ">
-          <div className="text-slate-200 mb-10 lg:mb-0 lg:pr-20 max-w-[400px] justify-center flex flex-col gap-3">
-            {data.codeSection.steps.map((step, idx) => (
-              <p className="flex items-start gap-3">
-                <span className="bg-slate-800 rounded flex items-center justify-center w-6 h-6 text-xs font-bold shrink-0">
-                  {idx + 1}
-                </span>{" "}
-                {step}
+        {data.codeSection.examples.map((example) => (
+          <div className="flex mt-16 flex-col lg:flex-row flex-start ">
+            <div className="text-slate-200 mb-10 lg:mb-0 lg:pr-20 max-w-[400px] justify-center flex flex-col gap-3">
+              {!!example.title && (
+                <h3 className="mb-12 text-xl md:text-3xl font-semibold">
+                  {example.title}
+                </h3>
+              )}
+              {example.steps.map((step, idx) => (
+                <p className="flex items-start gap-3">
+                  <span className="bg-slate-800 rounded flex items-center justify-center w-6 h-6 text-xs font-bold shrink-0">
+                    {idx + 1}
+                  </span>{" "}
+                  {step}
+                </p>
+              ))}
+              <p className="text-sm text-slate-300 mt-4">
+                {example.description}
               </p>
-            ))}
-            <p className="text-sm text-slate-300 mt-4">
-              {data.codeSection.description}
-            </p>
+            </div>
+            <SyntaxHighlighter
+              language="typescript"
+              showLineNumbers={false}
+              style={syntaxThemeDark}
+              codeTagProps={{ className: "code-window" }}
+              // className="hello"
+              customStyle={{
+                fontSize: "0.8rem",
+                padding: "1.5rem",
+                backgroundColor: "#0C1323",
+                display: "inline-flex",
+              }}
+            >
+              {example.code}
+            </SyntaxHighlighter>
           </div>
-          <SyntaxHighlighter
-            language="typescript"
-            showLineNumbers={false}
-            style={syntaxThemeDark}
-            codeTagProps={{ className: "code-window" }}
-            // className="hello"
-            customStyle={{
-              fontSize: "0.8rem",
-              padding: "1.5rem",
-              backgroundColor: "#0C1323",
-              display: "inline-flex",
-            }}
-          >
-            {data.codeSection.code}
-          </SyntaxHighlighter>
-        </div>
+        ))}
       </Container>
 
       <Container className="my-40">
-        <SectionHeader title="Everything you need to build" />
+        <SectionHeader
+          title={data.featureOverflowTitle || "Everything you need to build"}
+        />
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 xl:gap-16 mt-20">
           {data.featureOverflow.map((feature, i) => (
             <div key={i}>
@@ -202,12 +215,14 @@ export default function useCase({ stringData }) {
         </div>
       </Container>
 
-      <Container className="flex flex-col items-center gap-4 my-48">
-        <h3 className="text-white text-center text-xl max-w-xl">
-          "{data.quote.text}"
-        </h3>
-        <p className="text-indigo-200">{data.quote.author}</p>
-      </Container>
+      {!!data.quote && (
+        <Container className="flex flex-col items-center gap-4 my-48">
+          <h3 className="text-white text-center text-xl max-w-xl">
+            "{data.quote.text}"
+          </h3>
+          <p className="text-indigo-200">{data.quote.author}</p>
+        </Container>
+      )}
 
       <Container>
         <SectionHeader title="Learn more" lede={data.learnMore.description} />
