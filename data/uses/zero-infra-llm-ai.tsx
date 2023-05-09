@@ -31,7 +31,7 @@ export const data: UseCase = {
         steps: [
           "Define an event to trigger your chain function",
           "Use step.run for reliable API calls",
-          "Return state from each steps",
+          "Return state from each step",
           "Use state in following steps in your chain",
         ],
         description:
