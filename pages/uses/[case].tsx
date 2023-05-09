@@ -19,6 +19,9 @@ import {
   IconProps,
   IconSDK,
   IconScheduled,
+  IconSteps,
+  IconFiles,
+  IconCompiling,
 } from "../../shared/Icons/duotone";
 
 const Icons: { [key: string]: React.FC<IconProps> } = {
@@ -29,6 +32,9 @@ const Icons: { [key: string]: React.FC<IconProps> } = {
   WritingFns: IconWritingFns,
   SDK: IconSDK,
   Scheduled: IconScheduled,
+  Steps: IconSteps,
+  Files: IconFiles,
+  Compiling: IconCompiling,
 };
 
 type IconType = keyof typeof Icons;

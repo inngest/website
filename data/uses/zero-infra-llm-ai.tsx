@@ -74,13 +74,13 @@ inngest.createFunction(
       title: "Cancellation",
       description:
         "Cancel long running functions automatically or via an API call, keeping your resources free.",
-      icon: "WritingFns",
+      icon: "Compiling",
     },
     {
       title: "Concurrency",
       description:
         "Set custom concurrency limits on functions or specific API calls, and only run when there's capacity.",
-      icon: "Tools",
+      icon: "Steps",
     },
     {
       title: "Per-User Rate-Limiting",
@@ -107,7 +107,7 @@ inngest.createFunction(
   // },
   learnMore: {
     description:
-      "Dive into our resources and learn how Inngest is the best solution for serverless queues for TypeScript.",
+      "Dive into our resources and learn how Inngest is the best solution for building reliable LLM + AI products in production.",
     resources: [
       {
         title: "Running chained LLMs with TypeScript in production",
