@@ -41,7 +41,7 @@ The App Router introduces two new caches:
 - A [**client-side cache**](https://nextjs.org/docs/app/building-your-application/routing/linking-and-navigating#client-side-caching-of-rendered-server-components) that stores the payload of previously navigated or prefetched routes to help make navigation feel near-instant.
 - A [**server-side cache**](https://nextjs.org/docs/app/building-your-application/data-fetching#caching-data) that improves the performance of server-side data fetching
 
-Understanding these caches is key including which cache invalidation rules they follow and how they interact with each other. Since we adopted the App Router when it was still considered experimental, we sometimes found answers in Github (open source!) for questions like how long the client-side cache is preserved (_it's [30 seconds](https://github.com/vercel/next.js/pull/48383) if you're curious!_)
+Understanding these caches is key including which cache invalidation rules they follow and how they interact with each other. Since we adopted the App Router when it was still considered experimental, we sometimes found answers in Github (open source FTW!) for questions like how long the client-side cache is preserved (_it's [30 seconds](https://github.com/vercel/next.js/pull/48383) if you're curious!_)
 
 If you aren’t making `GET` requests with the `fetch()` function when fetching on the server, the returned data will be considered static by Next.js unless you remember to use the [`cache()` function](https://nextjs.org/docs/app/building-your-application/data-fetching/caching#per-request-caching). This means the returned data will be fetched at build time, cached, and reused on each request. This is important to understand so your application doesn't end up with stale date when dealing with actual dynamic data.
 
@@ -65,7 +65,9 @@ We wanted to implement an optional global filter for our app that would persist 
 
 Our first idea was to add an `env` search parameter to the URL, like this: `https://app.inngest.com/functions?env=staging`. During testing, we learned that since layouts are not re-rendered based on search parameters, it would lead to stale data in our UI. We either needed to remove this data from our layouts _or_ find another solution.
 
-To solve this issue, we converted the search parameter into an URL parameter: `https://app.inngest.com/env/staging/functions`. Layout components can receive [dynamic route parameters](https://nextjs.org/docs/app/api-reference/file-conventions/layout#params-optional), which resolved our problems. Since the App Router primarily uses paths for routing, we found that it works best when putting parameters like this into the URL path.
+To solve this issue, we converted the search parameter into an route parameter: `https://app.inngest.com/env/staging/functions`. Layout components can receive [dynamic route parameters](https://nextjs.org/docs/app/api-reference/file-conventions/layout#params-optional), which resolved our problems. Since the App Router primarily uses paths for routing, we found that it works best when putting parameters like this into the URL path.
+
+Alternatively, you might be able to use middleware and parallel routes with search params depending on your use case: [check out this thread from Dan Abramov](https://twitter.com/dan_abramov/status/1655269078741786629?s=20).
 
 ## 4. The Opinionated File Structure Brings Many Benefits
 
@@ -79,7 +81,7 @@ Additionally, we can now [colocate](https://nextjs.org/docs/app/building-your-ap
 
 ## 5. Learning New Technologies & Limited Resources
 
-Adopting new technology, which was still considered "experimental" at the time, is always a challenge for a team. With the App Router, it opens up many technologies that we could adopt: new routing, React Server Components, and new caches. For long-time React devs, React Server Components might require you to update your existing mental models for how to structure components. A benefit is with App Router is that you can choose whether to use a server or client component. Since we chose to adopt all of this new tech at once, we probably slowed our development process, but that was our own choice and you can choose what to adopt and how.
+Adopting a new technology, especially before something is considered _stable_, is always a challenge for a team. With the App Router, it opened up many technologies that we could adopt: new routing, React Server Components, and new caches. For long-time React developers, React Server Components might require you to update your existing mental models for how to structure components. A benefit with App Router is that you can choose whether to use a server or client component. Since we chose to adopt all of this new tech at once, we probably slowed our development process a bit, but that was our own choice and you can choose what to adopt and when.
 
 The official Next.js team did excellent work with their [docs](https://nextjs.org/docs), and it is immensely helpful to learn the basics. Since the App Router is so new, there may not be as many resources such as blog posts, Stack Overflow questions or similar to help you out. If you get stuck, we recommend checking out [GitHub issues](https://github.com/vercel/next.js/issues) and Twitter conversations.
 
