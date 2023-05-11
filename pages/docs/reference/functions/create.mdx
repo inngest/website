@@ -1,0 +1,74 @@
+# Create Function
+
+Define your functions using the `createFunction` method on the [Inngest client](/docs/reference/client/create).
+
+```ts
+import { inngest } from "./client";
+
+export default inngest.createFunction(
+  { name: "Import product images" },
+  { event: "shop/product.imported" },
+  async ({ event, step, runId }) => {
+    // Your function code
+  }
+);
+```
+
+## `inngest.createFunction(Options, Trigger, Handler)`
+
+The `createFunction` method accepts a series of arguments to define your function.
+
+### Options
+
+<Properties>
+  <Property name="name" type="string" required>
+    A unique name for your function. This will be used to create a unique slug identifier.
+  </Property>
+  <Property name="concurrency" type="number">
+    Limit the number of concurrently running functions ([reference](/docs/functions/concurrency))
+  </Property>
+  <Property name="retried" type="number">
+    Configure the number of times the function will be retried. Default: `3`
+  </Property>
+  <Property name="onFailure" type="function">
+    A function that will be called only when this Inngest function permanently fails after all retries have been attempted.
+    {/* TODO - Link to improved error handling docs */}
+  </Property>
+  <Property name="cancelOn" type="string">
+    Define an event that can be used to cancel a running or sleeping function ([reference](/docs/functions/cancellation))
+    <Properties nested={true}>
+      <Property name="event" type="string" required>
+        The event name which will be used to cancel
+      </Property>
+      <Property name="match" type="string">
+        The property to match the event trigger and the cancelling event, using dot-notation, e.g. `data.userId`
+      </Property>
+      <Property name="timeout" type="string">
+        The amount of time to wait to receive the cancelling event, e.g. `1h`, `3d`
+      </Property>
+    </Properties>
+  </Property>
+</Properties>
+
+### Trigger
+
+One of the following function triggers is **Required**.
+
+<Properties>
+  <Property name="event" type="string">
+    The name of the event that will trigger this event to run
+  </Property>
+  <Property name="cron" type="string">
+    A [unix-cron](https://crontab.guru/) compatible schedule string. <br/>Optional timezone prefix, e.g. `TZ=Europe/Paris 0 12 * * 5`.
+  </Property>
+</Properties>
+
+### Handler
+
+The handler is your code that runs whenever the trigger occurs. Every
+
+```ts
+function handler({ event, step, runId }) {/* ... */}
+```
+
+

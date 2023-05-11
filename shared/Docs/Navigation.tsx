@@ -9,6 +9,7 @@ import { useIsInsideMobileNavigation } from "./MobileNavigation";
 import { useSectionStore } from "./SectionProvider";
 import { Tag } from "./Tag";
 import { remToPx } from "../../utils/remToPx";
+import { IconDocs } from "../Icons/duotone";
 
 function useInitialValue(value, condition = true) {
   let initialValue = useRef(value).current;
@@ -293,9 +294,88 @@ export const navigation = [
       },
     ],
   },
+];
+
+const referenceNavigation = [
   {
-    title: "SDK Reference",
-    links: [{ title: "Serve", href: `${baseDir}/sdk/reference/serve` }],
+    title: "Inngest Client",
+    links: [
+      {
+        title: "Create the client",
+        href: `${baseDir}/reference/client/create`,
+      },
+    ],
+  },
+  {
+    title: "Functions",
+    links: [
+      {
+        title: "Create function",
+        href: `${baseDir}/reference/functions/create`,
+      },
+      {
+        title: "Define steps",
+        href: `${baseDir}/functions/create`,
+      },
+      {
+        title: "Sleep",
+        href: `${baseDir}/functions/create`,
+      },
+      {
+        title: "Sleep until a time",
+        href: `${baseDir}/functions/create`,
+      },
+      {
+        title: "Wait for additional events",
+        href: `${baseDir}/functions/create`,
+      },
+      {
+        title: "Error handling",
+        href: `${baseDir}/functions/create`,
+      },
+      {
+        title: "Cancel running functions",
+        href: `${baseDir}/functions/create`,
+      },
+      {
+        title: "Concurrency",
+        href: `${baseDir}/functions/create`,
+      },
+      {
+        title: "Logging",
+        href: `${baseDir}/functions/create`,
+      },
+      {
+        title: "Sending events from functions",
+        href: `${baseDir}/functions/create`,
+      },
+    ],
+  },
+  {
+    title: "Events",
+    links: [
+      {
+        title: "Send",
+        href: `${baseDir}/events/send`,
+      },
+      {
+        title: "Payload format",
+        href: `${baseDir}/events/event-format-and-structure`,
+      },
+    ],
+  },
+  {
+    title: "Serve",
+    links: [
+      {
+        title: "Framework handlers",
+        href: `${baseDir}/sdk/serve`,
+      },
+      {
+        title: "Configuration",
+        href: `${baseDir}/sdk/reference/serve`,
+      },
+    ],
   },
 ];
 
@@ -329,6 +409,19 @@ export function Navigation(props) {
           </TopLevelNavItem>
         ))}
         {navigation.map((group, groupIndex) => (
+          <NavigationGroup
+            key={group.title}
+            group={group}
+            className={groupIndex === 0 && "lg:mt-0"}
+          />
+        ))}
+        <li className="mt-6 mb-4 flex gap-2 items-center text-base font-semibold text-slate-900 dark:text-white">
+          <span className="p-0.5 bg-indigo-300 rounded-sm">
+            <IconDocs />
+          </span>
+          Reference
+        </li>
+        {referenceNavigation.map((group, groupIndex) => (
           <NavigationGroup
             key={group.title}
             group={group}
