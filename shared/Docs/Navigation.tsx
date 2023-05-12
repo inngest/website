@@ -9,7 +9,7 @@ import { useIsInsideMobileNavigation } from "./MobileNavigation";
 import { useSectionStore } from "./SectionProvider";
 import { Tag } from "./Tag";
 import { remToPx } from "../../utils/remToPx";
-import { IconDocs } from "../Icons/duotone";
+import { IconDocs, IconGuide } from "../Icons/duotone";
 
 function useInitialValue(value, condition = true) {
   let initialValue = useRef(value).current;
@@ -223,7 +223,7 @@ export const navigation = [
     ],
   },
   {
-    title: "Use Case Guides",
+    title: "Use Cases",
     links: [
       {
         title: "Background jobs",
@@ -256,7 +256,7 @@ export const navigation = [
     ],
   },
   {
-    title: "Platform Guides",
+    title: "Platform",
     links: [
       {
         title: "Working With Environments",
@@ -385,6 +385,12 @@ export function Navigation(props) {
   return (
     <nav {...props}>
       <ul role="list">
+        <li className="mt-6 mb-4 flex gap-2 items-center text-base font-semibold text-slate-900 dark:text-white">
+          <span className="p-0.5 bg-indigo-500 rounded-sm">
+            <IconGuide />
+          </span>
+          Guides
+        </li>
         {/* <li>
           <Button
             href="/ai-personalized-documentation?ref=docs"
@@ -407,7 +413,7 @@ export function Navigation(props) {
           />
         ))}
         <li className="mt-6 mb-4 flex gap-2 items-center text-base font-semibold text-slate-900 dark:text-white">
-          <span className="p-0.5 bg-indigo-300 rounded-sm">
+          <span className="p-0.5 bg-blue-500 rounded-sm">
             <IconDocs />
           </span>
           Reference
