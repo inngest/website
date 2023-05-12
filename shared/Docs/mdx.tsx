@@ -92,7 +92,7 @@ export function Note({ children }) {
 
 export function Callout({ children }) {
   return (
-    <div className="border border-transparent dark:border-indigo-600/20 text-indigo-600 dark:text-indigo-200 bg-indigo-600/10 rounded-lg p-6  [&>:first-child]:mt-0 [&>:last-child]:mb-0">
+    <div className="my-6 border border-transparent dark:border-indigo-600/20 text-indigo-600 dark:text-indigo-200 bg-indigo-600/10 rounded-lg p-6 mt- [&>:first-child]:mt-0 [&>:last-child]:mb-0">
       {children}
     </div>
   );
@@ -136,7 +136,7 @@ export function ButtonDeploy({ label, type, href }) {
 
 export function Row({ children }) {
   return (
-    <div className="grid grid-cols-1 items-start gap-x-16 gap-y-10 xl:max-w-none xl:grid-cols-2">
+    <div className="grid grid-cols-1 items-start gap-x-16 gap-y-10 xl:max-w-none xl:grid-cols-2 my-6 [&>:first-child]:mt-0 [&>:last-child]:mb-0">
       {children}
     </div>
   );
@@ -178,7 +178,7 @@ export function Properties({
       <ul
         role="list"
         className={clsx(
-          "m-0 max-w-[80%] list-none divide-y divide-slate-900/5 p-0 dark:divide-white/5",
+          "m-0 max-w-[calc(theme(maxWidth.3xl)-theme(spacing.8))] list-none divide-y divide-slate-900/5 p-0 dark:divide-white/5",
           nested && "px-3"
         )}
       >

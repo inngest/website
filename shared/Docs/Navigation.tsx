@@ -226,22 +226,18 @@ export const navigation = [
         href: `${baseDir}/local-development`,
       },
       { title: "Using TypeScript", href: `${baseDir}/typescript` },
-      {
-        title: "Handling Errors & Retries",
-        href: `${baseDir}/functions/retries`,
-      },
-      { title: "Concurrency", href: `${baseDir}/functions/concurrency` },
-      { title: "Cancellation", href: `${baseDir}/functions/cancellation` },
+      // {
+      //   title: "Handling Errors & Retries",
+      //   href: `${baseDir}/functions/retries`,
+      // },
+      // { title: "Concurrency", href: `${baseDir}/functions/concurrency` },
+      // { title: "Cancellation", href: `${baseDir}/functions/cancellation` },
       { title: "Streaming", href: `${baseDir}/streaming` },
     ],
   },
   {
     title: "Events",
     links: [
-      {
-        title: "Event Format",
-        href: `${baseDir}/events/event-format-and-structure`,
-      },
       {
         title: "Creating an Event Key",
         href: `${baseDir}/events/creating-an-event-key`,
@@ -314,41 +310,44 @@ const referenceNavigation = [
         href: `${baseDir}/reference/functions/create`,
       },
       {
-        title: "Define steps",
-        href: `${baseDir}/functions/create`,
+        title: "Define steps (step.run)",
+        href: `${baseDir}/reference/functions/step-run`,
       },
       {
         title: "Sleep",
-        href: `${baseDir}/functions/create`,
+        href: `${baseDir}/reference/functions/step-sleep`,
       },
       {
         title: "Sleep until a time",
-        href: `${baseDir}/functions/create`,
+        href: `${baseDir}/reference/functions/step-sleep-until`,
       },
       {
         title: "Wait for additional events",
-        href: `${baseDir}/functions/create`,
-      },
-      {
-        title: "Error handling",
-        href: `${baseDir}/functions/create`,
-      },
-      {
-        title: "Cancel running functions",
-        href: `${baseDir}/functions/create`,
-      },
-      {
-        title: "Concurrency",
-        href: `${baseDir}/functions/create`,
-      },
-      {
-        title: "Logging",
-        href: `${baseDir}/functions/create`,
+        href: `${baseDir}/reference/functions/step-wait-for-event`,
       },
       {
         title: "Sending events from functions",
-        href: `${baseDir}/functions/create`,
+        href: `${baseDir}/reference/functions/step-send-event`,
       },
+      {
+        title: "Error handling",
+        href: `${baseDir}/functions/retries`,
+        // href: `${baseDir}/reference/functions/error-handling`,
+      },
+      {
+        title: "Cancel running functions",
+        href: `${baseDir}/functions/cancellation`,
+        // href: `${baseDir}/reference/functions/cancel-running-functions`,
+      },
+      {
+        title: "Concurrency",
+        href: `${baseDir}/functions/concurrency`,
+        // href: `${baseDir}/reference/functions/concurrency`,
+      },
+      // {
+      //   title: "Logging",
+      //   href: `${baseDir}/reference/functions/logging`,
+      // },
     ],
   },
   {
@@ -356,27 +355,23 @@ const referenceNavigation = [
     links: [
       {
         title: "Send",
-        href: `${baseDir}/events/send`,
-      },
-      {
-        title: "Payload format",
-        href: `${baseDir}/events/event-format-and-structure`,
+        href: `${baseDir}/reference/events/send`,
       },
     ],
   },
-  {
-    title: "Serve",
-    links: [
-      {
-        title: "Framework handlers",
-        href: `${baseDir}/sdk/serve`,
-      },
-      {
-        title: "Configuration",
-        href: `${baseDir}/sdk/reference/serve`,
-      },
-    ],
-  },
+  // {
+  //   title: "Serve",
+  //   links: [
+  //     {
+  //       title: "Framework handlers",
+  //       href: `${baseDir}/sdk/serve`,
+  //     },
+  //     {
+  //       title: "Configuration",
+  //       href: `${baseDir}/sdk/reference/serve`,
+  //     },
+  //   ],
+  // },
 ];
 
 export const headerLinks = [

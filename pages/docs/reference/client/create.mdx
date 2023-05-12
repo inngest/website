@@ -10,6 +10,8 @@ const inngest = new Inngest({
 });
 ```
 
+---
+
 ## Configuration
 
 <Properties>
@@ -29,6 +31,10 @@ const inngest = new Inngest({
     Override the default (`https://inn.gs/`) base URL for sending events.
   </Property>
 </Properties>
+
+<Callout>
+We recommend setting the `INNGEST_EVENT_KEY` as an environment variable over setting the `eventKey` option. As with any secret, it's not a good practice to hard-code the event key in your codebase.
+</Callout>
 
 ## Defining Event Payload Types
 
@@ -57,10 +63,6 @@ export const inngest = new Inngest<Events>({ name: "My App" });
 </CodeGroup>
 
 ## Best Practices
-
-### Set the `INNGEST_EVENT_KEY` environment variable
-
-As with any secret, it is not a good practice to hard code your Event Key. We recommend setting the `INNGEST_EVENT_KEY` over passing the `eventKey` option to the Inngest client.
 
 ### Share your client across your codebase
 
