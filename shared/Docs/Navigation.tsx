@@ -203,17 +203,12 @@ export const navigation = [
     links: [
       { title: "Overview", href: `${baseDir}` },
       { title: "Quick Start Tutorial", href: `${baseDir}/quick-start` },
-      {
-        title: "Working With Environments",
-        href: `${baseDir}/platform/environments`,
-      },
     ],
   },
   {
-    title: "Using the SDK",
+    title: "Getting Started",
     links: [
       { title: "SDK Overview", href: `${baseDir}/sdk/overview` },
-      { title: "Migrating to v1", href: `${baseDir}/sdk/v1-migration` },
       { title: "Serving the API & Frameworks", href: `${baseDir}/sdk/serve` },
       { title: "Writing Functions", href: `${baseDir}/functions` },
       { title: "Sending Events", href: `${baseDir}/events` },
@@ -225,36 +220,10 @@ export const navigation = [
         title: "Local Development",
         href: `${baseDir}/local-development`,
       },
-      { title: "Using TypeScript", href: `${baseDir}/typescript` },
-      // {
-      //   title: "Handling Errors & Retries",
-      //   href: `${baseDir}/functions/retries`,
-      // },
-      // { title: "Concurrency", href: `${baseDir}/functions/concurrency` },
-      // { title: "Cancellation", href: `${baseDir}/functions/cancellation` },
-      { title: "Streaming", href: `${baseDir}/streaming` },
     ],
   },
   {
-    title: "Events",
-    links: [
-      {
-        title: "Creating an Event Key",
-        href: `${baseDir}/events/creating-an-event-key`,
-      },
-    ],
-  },
-  {
-    title: "Deploying",
-    links: [
-      { title: "How to Deploy", href: `${baseDir}/deploy` },
-      { title: "Vercel", href: `${baseDir}/deploy/vercel` },
-      { title: "Netlify", href: `${baseDir}/deploy/netlify` },
-      { title: "Cloudflare Pages", href: `${baseDir}/deploy/cloudflare` },
-    ],
-  },
-  {
-    title: "Guides",
+    title: "Use Case Guides",
     links: [
       {
         title: "Background jobs",
@@ -276,10 +245,6 @@ export const navigation = [
         title: "Fan-out jobs",
         href: `${baseDir}/guides/fan-out-jobs`,
       },
-      // {
-      //   title: "Overview",
-      //   href: `${baseDir}/guides`,
-      // },
       {
         title: "Trigger code from Retool",
         href: `${baseDir}/guides/trigger-your-code-from-retool`,
@@ -287,6 +252,26 @@ export const navigation = [
       {
         title: "Instrumenting GraphQL",
         href: `${baseDir}/guides/instrumenting-graphql`,
+      },
+    ],
+  },
+  {
+    title: "Platform Guides",
+    links: [
+      {
+        title: "Working With Environments",
+        href: `${baseDir}/platform/environments`,
+      },
+      {
+        title: "Creating an Event Key",
+        href: `${baseDir}/events/creating-an-event-key`,
+      },
+      { title: "How to Deploy", href: `${baseDir}/deploy` },
+      { title: "Deploy: Vercel", href: `${baseDir}/deploy/vercel` },
+      { title: "Deploy: Netlify", href: `${baseDir}/deploy/netlify` },
+      {
+        title: "Deploy: Cloudflare Pages",
+        href: `${baseDir}/deploy/cloudflare`,
       },
     ],
   },
@@ -359,19 +344,30 @@ const referenceNavigation = [
       },
     ],
   },
-  // {
-  //   title: "Serve",
-  //   links: [
-  //     {
-  //       title: "Framework handlers",
-  //       href: `${baseDir}/sdk/serve`,
-  //     },
-  //     {
-  //       title: "Configuration",
-  //       href: `${baseDir}/sdk/reference/serve`,
-  //     },
-  //   ],
-  // },
+  {
+    title: "Serve",
+    links: [
+      // {
+      //   title: "Framework handlers",
+      //   href: `${baseDir}/sdk/serve`,
+      // },
+      {
+        title: "Configuration",
+        href: `${baseDir}/reference/serve`,
+      },
+      { title: "Streaming", href: `${baseDir}/streaming` },
+    ],
+  },
+  {
+    title: "Using the SDK",
+    links: [
+      {
+        title: "Using TypeScript",
+        href: `${baseDir}/typescript`,
+      },
+      { title: "Migrating to v1", href: `${baseDir}/sdk/v1-migration` },
+    ],
+  },
 ];
 
 export const headerLinks = [
