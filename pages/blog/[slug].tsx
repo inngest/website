@@ -173,7 +173,7 @@ export default function BlogLayout(props) {
                   }}
                 />
               )}
-              <div className="max-w-[70ch] prose m-auto mt-12 mb-20 prose-img:rounded-lg prose-code:bg-slate-800 prose-code:tracking-tight text-slate-300 prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline hover:prose-a:text-white prose-a:font-medium prose-a:transition-all prose-invert">
+              <div className="max-w-[70ch] prose m-auto mt-12 mb-20 prose-img:rounded-lg prose-code:bg-slate-800 prose-code:tracking-tight text-slate-300 prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline hover:prose-a:text-white prose-a:font-medium prose-a:transition-all prose-invert blog-content">
                 <MDXRemote
                   compiledSource={props.post.compiledSource}
                   scope={scope}
