@@ -83,13 +83,6 @@ which introduces the report in under 100 words`;
       });
     });
 
-    // You can also parallelise steps by using `await` to resolve steps:
-    //
-    //     const [a, b] = await Promise.all([stepA, stepB]);
-    //
-    // This creates two HTTP calls to your function in parallel, bringing
-    // *actual* parallelisation to your chain.
-
     // Save the generated content to the database, and return it to be captured
     // as the final function state.
     await step.run("Save to DB", async () => {
@@ -127,6 +120,7 @@ You can then start to chain LLMs without building out complex queues, state, or 
 
 Beyond this simple case, you can extend your functions to:
 
+- [Automatically parallelize calls](/docs/guides/step-parallelism) using *actual parallelism* to speed up your chain
 - [Automatically cancel](https://www.inngest.com/docs/functions/cancellation) if desired, eg. on window close, to save on model costs
 - [Manage concurrency](https://www.inngest.com/docs/functions/concurrency), ensuring that you automatically enqueue functions if they exceed rate limits
 - [Handle failures](https://www.inngest.com/docs/functions/retries), allowing you to create cleanup code or notify users on error.
