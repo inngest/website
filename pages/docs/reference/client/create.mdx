@@ -40,25 +40,80 @@ We recommend setting the `INNGEST_EVENT_KEY` as an environment variable over usi
 
 You can leverage TypeScript to define your event payload types. When you pass types to the Inngest client, events are fully typed when using them with `inngest.send()` and `inngest.createFunction()`. This can more easily alert you to issues with your code during compile time.
 
+<Callout>
+Click the toggles on the top right of the code block to see the different methods available!
+</Callout>
+
 <CodeGroup title="Defining Types" forceTabs={true}>
-```ts
+```ts {{ title: "Record "}}
+import { Inngest, EventSchemas } from "inngest";
+
 type Events = {
   "app/account.created": {
-    name: "app/account.created",
     data: {
       userId: string;
-    }
-  },
+    };
+  };
   "app/subscription.started": {
-    name: "app/subscription.started",
     data: {
       userId: string;
       planId: string;
-    }
-  }
-}
+    };
+  };
+};
 
-export const inngest = new Inngest<Events>({ name: "My App" });
+export const inngest = new Inngest({
+  name: "My App",
+  schemas: new EventSchemas().fromRecord<Events>(),
+});
+```
+```ts {{ title: "Union" }}
+import { Inngest, EventSchemas } from "inngest";
+
+type AppAccountCreated = {
+  name: "app/account.created";
+  data: {
+    userId: string;
+  };
+};
+
+type AppSubscriptionStarted = {
+  name: "app/subscription.started";
+  data: {
+    userId: string;
+    planId: string;
+  };
+};
+
+type Events = AppAccountCreated | AppSubscriptionStarted;
+
+export const inngest = new Inngest({
+  name: "My App",
+  schemas: new EventSchemas().fromUnion<Events>(),
+});
+```
+```ts {{ title: "Zod" }}
+import { Inngest, EventSchemas } from "inngest";
+import { z } from "zod";
+
+const events = {
+  "app/account.created": {
+    data: z.object({
+      userId: z.string(),
+    }),
+  },
+  "app/subscription.started": {
+    data: z.object({
+      userId: z.string(),
+      planId: z.string(),
+    }),
+  },
+};
+
+export const inngest = new Inngest({
+  name: "My App",
+  schemas: new EventSchemas().fromZod(events),
+});
 ```
 </CodeGroup>
 
