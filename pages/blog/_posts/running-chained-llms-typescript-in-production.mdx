@@ -48,16 +48,10 @@ Here’s an example:
 ```js
 import { Inngest } from "inngest";
 // https://www.inngest.com/docs/sdk/serve#setting-up-the-api
-import { serve } from "inngest/express";
+import { serve } from "inngest/next";
 
-// Create a new Inngest client
 const client = new Inngest({ name: "Chained LLM app" });
 
-// Create a new function which chains two LLM calls using native libraries.
-//
-// Under the hood, we turn this function into a generator, calling each `step` as
-// a separate HTTP request.  We maintain and inject function state directly
-// into your function without any changes or input.
 export const chain = inngest.createFunction(
   { name: "Summarize chat and documents" },
   { event: "api/chat.submitted" },
