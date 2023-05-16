@@ -102,6 +102,8 @@ which introduces the report in under 100 words`;
 
 // Create an HTTP handler that serves your chained functions.  This function
 // will be called any time the `api/chat.submitted` event is received.
+//
+// It can be hosted anywhere: Vercel, Netlify, Cloudflare, Fly.io, Railway, etc.
 export const handler = serve(inngest, [chain]);
 
 // You can trigger this function by sending an event.  This is a single HTTP
