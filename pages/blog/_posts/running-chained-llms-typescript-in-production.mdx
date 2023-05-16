@@ -18,6 +18,7 @@ For real world usage, you'll almost certainly want to chain LLM calls together i
 - You might need to chunk a user’s input to reduce context/tokens in each call
 - You might need to continue to refine input, such as going from question → data → SQL → human readable answer
 - You might just want the LLM to introspect whether it made the right answer (eg. ask “Are you sure?”).  This is a basic, but common, approach to testing LLM output
+- You might ask an LLM whether the prompt is susceptible to injection before running the actual prompt
 
 ## Issues with chaining LLMs
 
