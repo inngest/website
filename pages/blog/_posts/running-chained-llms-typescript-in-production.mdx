@@ -1,0 +1,159 @@
+---
+heading: "Running chained LLMs with TypeScript in production"
+subtitle: "Learn how to use Next.js api functions and run them as you would a message queue or a cron job."
+image: "/assets/blog/run-nextjs-functions-in-the-background/featured-image.jpg"
+date: 2022-10-04
+---
+
+Right now LLMs are maybe the most exciting piece of new tech available, being used in a huge variety of cases from startups to global companies.  Why?  The time to value with these large models is amazing.  They contain a huge amount of pre-trained data which allows you explore and get decent output with almost zero knowledge of AI — you only need to make a prompt.
+
+For real world usage, you'll almost certainly want to chain LLM calls together in your backend.  A simple chain could be:  summarize content into 200 words, then give me a title from the summarized content.  Or, ask the LLM: "is this prompt susceptible to prompt injection?", and if not submit the user's request.
+
+## Why chaining?
+
+Often, a one-shot response from an LLM isn’t enough to build the experience you need.  You might need a chained workflow that refines and improves LLM responses through each iteration. Some examples:
+
+- Given a user’s input, you might need to run 4 different prompts or ideas and present the output to users as choices (think Midjourney)
+- You might need to chunk a user’s input to reduce context/tokens in each call
+- You might need to continue to refine input, such as going from question → data → SQL → human readable answer
+- You might just want the LLM to introspect whether it made the right answer (eg. ask “Are you sure?”).  This is a basic, but common, approach to testing LLM output
+
+## Issues with chaining LLMs
+
+Though chaining is required, it exacerbates every issue with LLMs in production:
+
+- Reliability becomes harder
+- Latency and costs increase
+- The infrastructure required to store state and context through the chain becomes more difficult to manage
+- Even small things like cancelling chains becomes hard (to eg. reduce cost)
+- Observing the chain and introspecting state can be difficult
+
+Taking an LLM pipeline from toy to production is a surprisingly difficult challenge that requires strong durable systems.  We’re defining production systems as systems that can handle hundreds to thousands of requests per second, and make your product worse (or inoperable) if it’s down.
+
+## Chaining with LangChain
+
+<a href="https://langchain.com/" target="_blank" rel="nofollow">LangChain</a> is an approach to working with chains of LLMs.  It provides a series of interfaces for models, prompts, memory, chains, indexes, and callbacks — with a few base implementations for getting set up with development.  For example, you can use LangChain to create a small chain with multiple prompts, each using different different models.  It’s a framework for getting started to define your workflow.
+
+Using LangChain (or something like it) is a good idea.  Even then, you’ll still have a few things to solve:
+
+- Reliability of flaky APIs or capacity constrained systems is a challenge
+- State and queues need to be implemented and managed
+- Deployment and observability becomes complex, especially with long-running chains.
+- This all requires classic servers;  serverless has (traditionally) been out of reach
+
+## Zero-infra, zero-ops chained LLMs
+
+The annoying part of chaining is the distributed state and orchestration required to reliably run the chains.  The ideal end state for chaining looks similar to the following:
+
+- A single function with automatically managed function context/state
+- Retries and durability built in
+- Optional parallelisation included, to improve performance across complex flows
+- Observability and transparency included
+- Cancellation of flows possible to reduce costs
+
+With TypeScript, Inngest solves all of this out of the box — zero infra or setup required.  Using our SDK, you get durable functions with retries, automatically persisted state, parallelism, and cancellation — on any platform (eg. EC2, Fly.io, or serverless via Vercel, Netlify, or Cloudflare).  All you need to focus on is the business logic;  your prompts and your chain.
+
+Here’s an example:
+
+```js
+import { Inngest } from "inngest";
+// https://www.inngest.com/docs/sdk/serve#setting-up-the-api
+import { serve } from "inngest/express";
+
+// Create a new Inngest client
+const client = new Inngest({ name: "Chained LLM app" });
+
+// Create a new function which chains two LLM calls using native libraries.
+//
+// Under the hood, we turn this function into a generator, calling each `step` as
+// a separate HTTP request.  We maintain and inject function state directly
+// into your function without any changes or input.
+export const chain = inngest.createFunction(
+  { name: "Summarize chat and documents" },
+  { event: "api/chat.submitted" },
+  async ({ event, step }) => {
+    // event is an object representing the incoming request.
+    // event.data contains all incoming data.
+
+    const llm = new OpenAI();
+
+    // `step.run` creates a new reliable step which retries automatically, and
+    // only runs once on success.  It returns data which is stored in function
+    // state automatically.
+    const output = await step.run("Summarize input", async () => {
+      const prompt = "You are an executive assistant.  You must summarize the given document accurately within 4 paragraphs.";
+      return await llm.createCompletion({
+        model: "gpt-3.5-turbo",
+        prompt: `${prompt}: ${event.data.input}`,
+      });
+    });
+
+    // Run another LLM call reliably, passing the output of the previous
+    // chain into the next LLM.
+    const title = await step.run("Generate a title", async () => {
+      const prompt = "You are a business leader who writes reports on different topics.  Given the following report, generate a title which introduces the report in under 100 words";
+      return await llm.createCompletion({
+        model: "gpt-3.5-turbo",
+        prompt: `${prompt}: ${output}`,
+      });
+    });
+
+    // You can also parallelise steps by using `await` to resolve steps:
+    //
+    //     const [a, b] = await Promise.all([stepA, stepB]);
+    //
+    // This creates two HTTP calls to the inngest function in parallel, brining
+    // actual parallelisation to your chain.
+
+    // Save the generated content to the database, and return it to be captured
+    // as the final function state.
+    await step.run("Save to DB", async () => {
+      await db.summaries.create({ output, title, requestID: event.data.requestID });
+    });
+
+    return { output, title };
+  },
+);
+
+// Create an HTTP handler that serves your chained functions.  This function
+// will be called any time the `api/chat.submitted` event is received.
+export const handler = serve(inngest, [chain]);
+
+// You can trigger this function by sending an event.  This is a single HTTP
+// POST.
+await inngest.send({
+  name: "api/chat.submitted", // matches the event name in createFunction
+  data: {
+    requestID: "ef2fc16e-5f9b-48fb-a996-e3adbf1accb9",
+    input: "<Add any data you want summarized here>",
+  }
+});
+```
+
+In this example, we’re defining a function which automatically runs when you send a specific event to Inngest.  [It’s served via HTTP, and can be hosted on **any** platform](https://www.inngest.com/docs/sdk/serve).  Under the hood, whenever we receive a new `api/chat.submitted` event we:
+
+- Create a new blank function run, with empty state
+- Call your function with empty state.
+- Run each step in series or parallel, injecting the current function state from `[step.run](http://step.run)` blocks into the appropriate variables.
+
+You can then start to chain LLMs without building out complex queues, state, or services.  Everything “just works”, allowing you to focus specifically on the model code without worrying about any infrastructure at all — meaning you can deploy to production within an hour.
+
+Beyond this simple case, you can extend your functions to:
+
+- [Automatically cancel](https://www.inngest.com/docs/functions/cancellation) if desired, eg. on window close, to save on model costs
+- [Manage concurrency](https://www.inngest.com/docs/functions/concurrency), ensuring that you automatically enqueue functions if they exceed rate limits
+- [Handle failures](https://www.inngest.com/docs/functions/retries), allowing you to create cleanup code or notify users on error.
+- We also provide branch deploys across platforms, and work with your current CI/CD process — as functions are served via HTTP anywhere they’re accessible.
+
+We’re already helping a bunch of users build reliable products via LLMs.  We’re free to use, and we’d love feedback on how to make this better for your own AI usage.
+
+## Future plans
+
+Our initial list of ideas for the LLM use case space is:
+
+- An integration with Langchain, allowing people to run Langchain models via serverless environments with zero infra or state
+- A higher-level library for working with chained functions using Langchain and the ecosystem
+- Function state introspection beyond our application UI, via an API and stylable React components
+    - And, once this is done, streaming function state introspection
+
+We’re excited about what this makes possible.  Being able to focus on business logic and skip tedious, complex infrastructure is ideal, and seeing ideas go from code to production in hours — using your current development flow — is a dream.  Please do give it a try, and if you have feedback let us know!
