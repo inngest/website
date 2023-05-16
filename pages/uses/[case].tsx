@@ -172,7 +172,7 @@ export default function useCase({ stringData }) {
               {example.steps.map((step, idx) => (
                 <p className="flex items-start gap-3">
                   <span className="bg-slate-800 rounded flex items-center justify-center w-6 h-6 text-xs font-bold shrink-0">
-                    {example.steps.length === 1 ? "→" : idx + 1 }
+                    {example?.steps?.length === 1 ? "→" : idx + 1 }
                   </span>{" "}
                   {step}
                 </p>
