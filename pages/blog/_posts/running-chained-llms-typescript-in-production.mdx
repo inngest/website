@@ -68,17 +68,21 @@ export const chain = inngest.createFunction(
     // only runs once on success.  It returns data which is stored in function
     // state automatically.
     const output = await step.run("Summarize input", async () => {
-      const prompt = "You are an executive assistant.  You must summarize the given document accurately within 4 paragraphs.";
+      const prompt = `You are an executive assistant.
+      You must summarize the given document accurately within 4 paragraphs.`;
       return await llm.createCompletion({
         model: "gpt-3.5-turbo",
         prompt: `${prompt}: ${event.data.input}`,
       });
     });
 
-    // Run another LLM call reliably, passing the output of the previous
-    // chain into the next LLM.
     const title = await step.run("Generate a title", async () => {
-      const prompt = "You are a business leader who writes reports on different topics.  Given the following report, generate a title which introduces the report in under 100 words";
+      const prompt = `You are a business leader who writes reports
+on different topics.  Given the following report, generate a title
+which introduces the report in under 100 words`;
+
+      // Uses output from the previous LLM call, stored automatically
+      // in function memory!
       return await llm.createCompletion({
         model: "gpt-3.5-turbo",
         prompt: `${prompt}: ${output}`,
