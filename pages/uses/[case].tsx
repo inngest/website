@@ -162,8 +162,8 @@ export default function useCase({ stringData }) {
       <Container className=" my-40">
         <SectionHeader title={data.codeSection.title} />
         {data.codeSection.examples.map((example) => (
-          <div className="flex mt-16 flex-col lg:flex-row flex-start ">
-            <div className="text-slate-200 mb-10 lg:mb-0 lg:pr-20 max-w-[400px] justify-center flex flex-col gap-3">
+          <div className="mt-16 grid lg:grid-cols-5 md:grid-cols-1">
+            <div className="text-slate-200 mb-10 lg:mb-0 lg:pr-20 max-w-[400px] justify-center flex flex-col gap-3 col-span-2">
               {!!example.title && (
                 <h3 className="mb-12 text-xl md:text-3xl font-semibold">
                   {example.title}
@@ -172,12 +172,12 @@ export default function useCase({ stringData }) {
               {example.steps.map((step, idx) => (
                 <p className="flex items-start gap-3">
                   <span className="bg-slate-800 rounded flex items-center justify-center w-6 h-6 text-xs font-bold shrink-0">
-                    {idx + 1}
+                    {example.steps.length === 1 ? "→" : idx + 1 }
                   </span>{" "}
                   {step}
                 </p>
               ))}
-              <p className="text-sm text-slate-300 mt-4">
+              <p className="text-sm text-slate-300 mt-4 ml-9">
                 {example.description}
               </p>
             </div>
@@ -193,6 +193,7 @@ export default function useCase({ stringData }) {
                 backgroundColor: "#0C1323",
                 display: "inline-flex",
               }}
+              className="col-span-3"
             >
               {example.code}
             </SyntaxHighlighter>

@@ -40,7 +40,7 @@ inngest.createFunction(
       },
       {
         steps: [
-          "Define a function triggered by an event and use step.sleepUntil to delay work until a given timestamp",
+          "Run at a specific timestamp defined in an event",
         ],
         description:
           "Use when you needs to schedule something dynamically, like a reminder time set by a user.",
