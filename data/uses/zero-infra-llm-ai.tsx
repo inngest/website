@@ -113,7 +113,7 @@ inngest.createFunction(
         title: "Running chained LLMs with TypeScript in production",
         description: "What is chaining and when should you use it?",
         type: "Blog",
-        href: "/docs/quick-start", // TODO - Update URL w/ new blog post
+        href: "/blog/running-chained-llms-typescript-in-production",
       },
       // TODO - Add upcoming guide here:
       // {
