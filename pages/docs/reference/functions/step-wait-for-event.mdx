@@ -126,7 +126,7 @@ export default inngest.createFunction(
   async ({ event, step }) => {
 
     // Generate a number of suggestions for topics with OpenAI
-    const data = await step.run("Generate topic ideas", async () => {
+    const generatedTopics = await step.run("Generate topic ideas", async () => {
       const completion = await openai.createCompletion({
         model: "text-davinci-003",
         prompt: helpers.topicIdeaPromptWrapper(event.data.prompt),
@@ -143,8 +143,8 @@ export default inngest.createFunction(
     await step.run("Send user topics", () => {
       pusher.sendToUser(event.data.userId, "topics_generated", {
         sessionId: event.data.sessionId,
-        completionId: data.completionId,
-        topics: data.topics,
+        completionId: generatedTopics.completionId,
+        topics: generatedTopics.topics,
       })
     });
 
@@ -153,7 +153,7 @@ export default inngest.createFunction(
     const topicSelected = await step.waitForEvent("ai/post.topic.selected", {
       timeout: "5m",
       // "async" is the "ai/post.topic.selected" event here:
-      if: `async.data.completionId == ${data.completionId}`
+      if: `async.data.completionId == ${generatedTopics.completionId}`
     });
 
     // If the user selected a topic within 5 minutes, "topicSelected" will
