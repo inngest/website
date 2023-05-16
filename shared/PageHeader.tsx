@@ -30,7 +30,7 @@ export default function PageHeader(props: PageHeaderProps) {
           className="text-sm md:text-base text-slate-200 max-w-xl leading-6 md:leading-7"
           dangerouslySetInnerHTML={{ __html: lede }}
         ></p>
-        {Boolean(ctas.length) && (
+        {Boolean(ctas?.length) && (
           <div className="mt-5">
             {ctas.map((cta) => (
               <Button {...cta}>{cta.text}</Button>
@@ -57,7 +57,7 @@ const LeftAlignedHeader = ({
           className="text-sm md:text-base text-slate-200 max-w-xl leading-6 md:leading-7"
           dangerouslySetInnerHTML={{ __html: lede }}
         ></p>
-        {Boolean(ctas.length) && (
+        {Boolean(ctas?.length) && (
           <div className="mt-5">
             {ctas.map((cta) => (
               <Button {...cta}>{cta.text}</Button>
