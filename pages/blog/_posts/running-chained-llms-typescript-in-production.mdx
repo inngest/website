@@ -8,11 +8,11 @@ date: 2023-05-16
 
 Right now LLMs are maybe the most exciting piece of new tech available, being used in a huge variety of cases from startups to global companies.  Why?  The time to value with these large models is amazing.  They contain a huge amount of pre-trained data which allows you explore and get decent output with almost zero knowledge of AI — you only need to make a prompt.
 
-For real world usage, you'll almost certainly want to chain LLM calls together in your backend.  A simple chain could be:  summarize content into 200 words, then give me a title from the summarized content.  Or, ask the LLM: "is this prompt susceptible to prompt injection?", and if not submit the user's request.
+For real world usage, you'll almost certainly want to chain LLM calls together in your backend, though chaining in production takes lots of time to develop well.
 
 ## Why chaining?
 
-Often, a one-shot response from an LLM isn’t enough to build the experience you need.  You might need a chained workflow that refines and improves LLM responses through each iteration. Some examples:
+**A one-shot response from an LLM often isn’t enough to build the experience you need**.  You might need a chained workflow that refines and improves LLM responses through each iteration. Some examples:
 
 - Given a user’s input, you might need to run 4 different prompts or ideas and present the output to users as choices (think Midjourney)
 - You might need to chunk a user’s input to reduce context/tokens in each call
@@ -29,18 +29,7 @@ Though chaining is required, it exacerbates every issue with LLMs in production:
 - Even small things like cancelling chains becomes hard (to eg. reduce cost)
 - Observing the chain and introspecting state can be difficult
 
-Taking an LLM pipeline from toy to production is a surprisingly difficult challenge that requires strong durable systems.  We’re defining production systems as systems that can handle hundreds to thousands of requests per second, and make your product worse (or inoperable) if it’s down.
-
-## Chaining with LangChain
-
-<a href="https://langchain.com/" target="_blank" rel="nofollow">LangChain</a> is an approach to working with chains of LLMs.  It provides a series of interfaces for models, prompts, memory, chains, indexes, and callbacks — with a few base implementations for getting set up with development.  For example, you can use LangChain to create a small chain with multiple prompts, each using different different models.  It’s a framework for getting started to define your workflow.
-
-Using LangChain (or something like it) is a good idea.  Even then, you’ll still have a few things to solve:
-
-- Reliability of flaky APIs or capacity constrained systems is a challenge
-- State and queues need to be implemented and managed
-- Deployment and observability becomes complex, especially with long-running chains.
-- This all requires classic servers;  serverless has (traditionally) been out of reach
+Taking an LLM pipeline from toy to production is a surprisingly difficult challenge that requires strong durable systems.  Availability, reliability, state, and maintenance all become much harder when running something for many users.
 
 ## Zero-infra, zero-ops chained LLMs
 
@@ -52,7 +41,7 @@ The annoying part of chaining is the distributed state and orchestration require
 - Observability and transparency included
 - Cancellation of flows possible to reduce costs
 
-With TypeScript, Inngest solves all of this out of the box — zero infra or setup required.  Using our SDK, you get durable functions with retries, automatically persisted state, parallelism, and cancellation — on any platform (eg. EC2, Fly.io, or serverless via Vercel, Netlify, or Cloudflare).  All you need to focus on is the business logic;  your prompts and your chain.
+Using Inngest, you get all of this for free — zero infra or setup required.  Using our SDK, you can build durable functions with retries, automatically persisted state, parallelism, and cancellation — on any platform (eg. EC2, Fly.io, or serverless via Vercel, Netlify, or Cloudflare).  All you need to focus on is the business logic;  your prompts and your chain.
 
 Here’s an example:
 
@@ -73,9 +62,6 @@ export const chain = inngest.createFunction(
   { name: "Summarize chat and documents" },
   { event: "api/chat.submitted" },
   async ({ event, step }) => {
-    // event is an object representing the incoming request.
-    // event.data contains all incoming data.
-
     const llm = new OpenAI();
 
     // `step.run` creates a new reliable step which retries automatically, and
@@ -103,8 +89,8 @@ export const chain = inngest.createFunction(
     //
     //     const [a, b] = await Promise.all([stepA, stepB]);
     //
-    // This creates two HTTP calls to the inngest function in parallel, brining
-    // actual parallelisation to your chain.
+    // This creates two HTTP calls to your function in parallel, bringing
+    // *actual* parallelisation to your chain.
 
     // Save the generated content to the database, and return it to be captured
     // as the final function state.
@@ -137,7 +123,7 @@ In this example, we’re defining a function which automatically runs when you s
 - Call your function with empty state.
 - Run each step in series or parallel, injecting the current function state from `[step.run](http://step.run)` blocks into the appropriate variables.
 
-You can then start to chain LLMs without building out complex queues, state, or services.  Everything “just works”, allowing you to focus specifically on the model code without worrying about any infrastructure at all — meaning you can deploy to production within an hour.
+You can then start to chain LLMs without building out complex queues, state, or services.  Everything “just works”, allowing you to focus specifically on the model code without worrying about any infrastructure at all — meaning you can deploy to production within an hour.  You're also writing standard TypeScript, so you don't need to learn a new framework.
 
 Beyond this simple case, you can extend your functions to:
 
