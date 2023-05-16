@@ -64,11 +64,12 @@ const productLinks = {
     //   url: "/uses/complex-workflows?ref=nav",
     //   icon: IconJourney,
     // },
-    {
-      title: "User journey automation",
-      url: "/uses/user-journey-automation?ref=nav",
-      icon: IconJourney,
-    },
+    //
+    // {
+    //   title: "User journey automation",
+    //   url: "/uses/user-journey-automation?ref=nav",
+    //   icon: IconJourney,
+    // },
   ],
 };
 
