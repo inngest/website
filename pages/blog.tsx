@@ -57,7 +57,7 @@ export default function BlogLayout(props) {
             </h2>
             <p className="text-slate-200 text-sm">{description}</p>
             <a
-              href="/rss.xml"
+              href="/api/rss.xml"
               className="py-1 rounded-md transition-all text-slate-300 hover:text-white border border-transparent hover:border-slate-200/30"
             >
               <Rss className="h-4" />

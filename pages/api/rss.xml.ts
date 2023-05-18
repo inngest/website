@@ -1,13 +1,10 @@
+import type { NextApiRequest, NextApiResponse } from "next";
 import RSS from "rss";
 
-import { loadMarkdownFilesMetadata } from "../utils/markdown";
-import { type BlogPost } from "./blog";
+import { loadMarkdownFilesMetadata } from "../../utils/markdown";
+import { type BlogPost } from "../blog";
 
-function RSSFeed() {
-  // getServerSideProps loads all of the data and forms the response
-}
-
-export async function getServerSideProps({ res }) {
+export default async (req: NextApiRequest, res: NextApiResponse<string>) => {
   const posts = await loadMarkdownFilesMetadata<BlogPost>("blog/_posts");
 
   const feed = new RSS({
@@ -36,13 +33,7 @@ export async function getServerSideProps({ res }) {
   const xml = feed.xml();
 
   res.setHeader("Content-Type", "text/xml");
-  // we send the XML to the browser
+  res.setHeader("Cache-Control", "s-maxage=360, stale-while-revalidate");
   res.write(xml);
   res.end();
-
-  return {
-    props: {},
-  };
-}
-
-export default RSSFeed;
+};
