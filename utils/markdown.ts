@@ -29,7 +29,7 @@ export async function loadMarkdownFilesMetadata<T>(
   const matter = require("gray-matter");
   const readingTime = require("reading-time");
 
-  const baseDir = path.join("./pages/", dir);
+  const baseDir = path.join(process.cwd(), "./pages/", dir);
 
   // Iterate all files in the directory, then parse the markdown.
   const mdxFilenames = fs.readdirSync(baseDir);
