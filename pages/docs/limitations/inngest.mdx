@@ -6,28 +6,26 @@ We have put some limits on the service to make sure we provide you a good defaul
 
 Some of these limits are changable, so if the current limits are too low for you, please feel free to reach out and we can change the limits for you.
 
-## Steps <Tag>Changable</Tag>
+## Functions
 
-The maximum number of steps per function is 1000.
+**Steps** <Tag>Changable</Tag>
 
-**Note**
+The limit for data returned by a step is 4MB, and the maximum number of steps per function is 1000.
 
-This limit is easily reached if you're using `step` to loop through some list of items.
+***Note***
+
+This limit is easily reached if you're using `step` on each item in a loop.
 We recommend to process the loop within a `step` and return that data instead.
 
-## Payload size <Tag>Changable</Tag>
+## Events
 
-**Event**
+**Payload size** <Tag>Changable</Tag>
 
 The limit for each event data is 512kB.
 
-**Steps**
+**# of Events per request** <Tag>Changable</Tag>
 
-The limit for data returned by a step is 4MB.
-
-## Events <Tag>Changable</Tag>
-
-Maximum number of events per send is 5000.
+Maximum number of events you can send in one request is 5000.
 If you're doing fan out, you'll need to be aware of this limitation when you run `step.sendEvent(events)`.
 
 ```typescript
@@ -39,6 +37,8 @@ step.sendEvent(events);
 inngest.send(events);;
 ```
 
-## Execution time per step
+## Execution Time
+
+**Steps**
 
 The maximum amound of time we wait for a step to complete is 2 hours.
