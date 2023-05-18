@@ -2,30 +2,41 @@ import { Tag } from "src/shared/Docs/Tag";
 
 # Limitations
 
-We have put some limits on the service to make sure we can provide a good default to start with, while also keeping it a good experience for all users.
+We have put some limits on the service to make sure we provide you a good default to start with, while also keeping it a good experience for all other users using Inngest.
 
-Some of these are changable, so if the current limits are too low for you, please feel free to reach out and we can tweak the settings for you.
+Some of these limits are changable, so if the current limits are too low for you, please feel free to reach out and we can change the limits for you.
 
 ## Steps <Tag>Changable</Tag>
 
 The maximum number of steps per function is 1000.
 
-## Payload size
+**Note**
+
+This limit is easily reached if you're using `step` to loop through some list of items.
+We recommend to process the loop within a `step` and return that data instead.
+
+## Payload size <Tag>Changable</Tag>
 
 **Event**
 
-The limit for each event data is 512kb.
+The limit for each event data is 512kB.
 
 **Steps**
 
-The limit for data returned by a step is 4Mb.
+The limit for data returned by a step is 4MB.
 
-## Events
+## Events <Tag>Changable</Tag>
 
 Maximum number of events per send is 5000.
 If you're doing fan out, you'll need to be aware of this limitation when you run `step.sendEvent(events)`.
 
-```
+```typescript
+// this `events` list will need to be <= 5000
+const events = [{name: "<event-name>", data: {}}, ...];
+
+step.sendEvent(events);
+// or
+inngest.send(events);;
 ```
 
 ## Execution time per step
