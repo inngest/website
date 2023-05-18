@@ -1,6 +1,6 @@
 import { Tag } from "src/shared/Docs/Tag";
 
-# Limitations
+# Usage Limits
 
 We have put some limits on the service to make sure we provide you a good default to start with, while also keeping it a good experience for all other users using Inngest.
 
@@ -19,10 +19,10 @@ The maximum amount of time we wait for a step to complete is `2 hours`.
 
 The limit for data returned by a step is `4MB`, and the maximum number of steps per function is `1000`.
 
-***Note***
-
-*This limit is easily reached if you're using `step` on each item in a loop.
-We recommend to process the loop within a `step` and return that data instead.*
+<Callout>
+  🚨 This limit is easily reached if you're using `step` on each item in a loop.
+We recommend to process the loop within a `step` and return that data instead.
+</Callout>
 
 ## Events
 
@@ -32,7 +32,7 @@ The maximum length allowed for an event name is `256` characters.
 
 **Payload size** <Tag>Changable</Tag>
 
-The limit for each event data is `512kB`.
+The limit for each event data is `512KB`.
 
 **# of Events per request** <Tag>Changable</Tag>
 

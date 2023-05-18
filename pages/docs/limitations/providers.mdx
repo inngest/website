@@ -2,16 +2,16 @@
 
 If you're using a serverless provider, it's best you're also aware of their limitations as well.
 
-Here are the default limits for each provider we support based on the lowest offerings of their available plans.
+Here are the the known usage limits for each provider we support based on their documentation.
 
-|                                         | Payload size | Concurrency | Timeout                    |
-|-----------------------------------------|:-------------|-------------|----------------------------|
-| [AWS Lambda][aws-quota]                 | 6MB          | 1000        | 15m                        |
-| [Google Cloud Functions][gcp-quota]     | 10MB         | 3000        | 10m (gen2)                 |
-| [Cloudflare Workers][cf-workers-limits] | 100MB        | 100         | [N/A][cf-workers-duration] |
-| [Vercel][vercel-limits]                 | 4.5MB        | 1000        | 10s                        |
-| [Netlify][netlify-limits]               | 6MB          | ???         | 10s                        |
-| [DigitalOcean][digitalocean-limits]     | 1MB          | 120         | 15m                        |
+|                                         | Payload size  | Concurrency         | Timeout                    |
+|-----------------------------------------|:--------------|---------------------|----------------------------|
+| [AWS Lambda][aws-quota]                 | 6MB - 20MB    | 1000                | 15m                        |
+| [Google Cloud Functions][gcp-quota]     | 512KB - 32MB  | 3000 (1st gen only) | 10m - 60m                  |
+| [Cloudflare Workers][cf-workers-limits] | 100MB - 500MB | 100 - 500           | [N/A][cf-workers-duration] |
+| [Vercel][vercel-limits]                 | 4MB - 4.5MB   | 1000                | 10s - 900s, N/A (Edge Fn)  |
+| [Netlify][netlify-limits]               | 256KB - 6MB   | ???                 | 10s - 15m                  |
+| [DigitalOcean][digitalocean-limits]     | 1MB           | 120                 | 15m                        |
 
 For more details tailored to your plan, please check each provider's website.
 

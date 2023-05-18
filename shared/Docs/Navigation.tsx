@@ -276,7 +276,7 @@ export const navigation = [
     ],
   },
   {
-    title: "Limitations",
+    title: "Usage Limits",
     links: [
       {
         title: "Inngest Cloud",
