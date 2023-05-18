@@ -8,14 +8,21 @@ Some of these limits are changable, so if the current limits are too low for you
 
 ## Functions
 
-**Steps** <Tag>Changable</Tag>
+The following applies to `step` usage.
+
+**Timeout**
+
+The maximum amound of time we wait for a step to complete is 2 hours.
+
+
+**Payload Size** <Tag>Changable</Tag>
 
 The limit for data returned by a step is 4MB, and the maximum number of steps per function is 1000.
 
 ***Note***
 
-This limit is easily reached if you're using `step` on each item in a loop.
-We recommend to process the loop within a `step` and return that data instead.
+*This limit is easily reached if you're using `step` on each item in a loop.
+We recommend to process the loop within a `step` and return that data instead.*
 
 ## Events
 
@@ -40,9 +47,3 @@ step.sendEvent(events);
 // or
 inngest.send(events);;
 ```
-
-## Execution Time
-
-**Steps**
-
-The maximum amound of time we wait for a step to complete is 2 hours.
