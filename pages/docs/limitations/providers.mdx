@@ -1,1 +1,25 @@
 # Providers
+
+If you're using a serverless provider, it's best you're also aware of their limitations as well.
+
+Here are the default limits for each provider we support based on the lowest offerings of their available plans.
+
+|                                         | Payload size | Concurrency | Timeout                    |
+|-----------------------------------------|:-------------|-------------|----------------------------|
+| [AWS Lambda][aws-quota]                 | 6MB          | 1000        | 15m                        |
+| [Google Cloud Functions][gcp-quota]     | 10MB         | 3000        | 10m (gen2)                 |
+| [Cloudflare Workers][cf-workers-limits] | 100MB        | 100         | [N/A][cf-workers-duration] |
+| [Vercel][vercel-limits]                 | 4.5MB        | 1000        | 10s                        |
+| [Netlify][netlify-limits]               | 6MB          | ???         | 10s                        |
+| [DigitalOcean][digitalocean-limits]     | 1MB          | 120         | 15m                        |
+
+For more details tailored to your plan, please check each provider's website.
+
+
+[aws-quota]: https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html
+[gcp-quota]: https://cloud.google.com/functions/quotas
+[cf-workers-limits]: https://developers.cloudflare.com/workers/platform/limits/
+[cf-workers-duration]: https://developers.cloudflare.com/workers/platform/limits/#worker-limits
+[vercel-limits]: https://vercel.com/docs/concepts/limits/overview
+[netlify-limits]: https://docs.netlify.com/functions/overview/#default-deployment-options
+[digitalocean-limits]: https://docs.digitalocean.com/products/functions/details/limits/
