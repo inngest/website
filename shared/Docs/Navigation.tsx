@@ -275,6 +275,19 @@ export const navigation = [
       },
     ],
   },
+  {
+    title: "Limitations",
+    links: [
+      {
+        title: "Inngest Cloud",
+        href: `${baseDir}/limitations/inngest`
+      },
+      {
+        title: "Serverless Providers",
+        href: `${baseDir}/limitations/providers`
+      }
+    ]
+  }
 ];
 
 const referenceNavigation = [

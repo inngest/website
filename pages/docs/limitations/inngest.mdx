@@ -1,0 +1,33 @@
+import { Tag } from "src/shared/Docs/Tag";
+
+# Limitations
+
+We have put some limits on the service to make sure we can provide a good default to start with, while also keeping it a good experience for all users.
+
+Some of these are changable, so if the current limits are too low for you, please feel free to reach out and we can tweak the settings for you.
+
+## Steps <Tag>Changable</Tag>
+
+The maximum number of steps per function is 1000.
+
+## Payload size
+
+**Event**
+
+The limit for each event data is 512kb.
+
+**Steps**
+
+The limit for data returned by a step is 4Mb.
+
+## Events
+
+Maximum number of events per send is 5000.
+If you're doing fan out, you'll need to be aware of this limitation when you run `step.sendEvent(events)`.
+
+```
+```
+
+## Execution time per step
+
+The maximum amound of time we wait for a step to complete is 2 hours.
