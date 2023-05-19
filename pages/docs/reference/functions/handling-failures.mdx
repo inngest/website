@@ -1,6 +1,6 @@
 # Handling Failures
 
-Define any failure handlers for your function with the [`onFailure`](/docs/reference/functions/create#configuration) option. This function will be automatically called when your function fails after it's maximum number of retries. You can alternatively, use the [`"inngest/function.failed"`](#the-inngest-function-failed-event) system event to handle failures across all functions.
+Define any failure handlers for your function with the [`onFailure`](/docs/reference/functions/create#configuration) option. This function will be automatically called when your function fails after it's maximum number of retries. Alternatively, you can use the [`"inngest/function.failed"`](#the-inngest-function-failed-event) system event to handle failures across all functions.
 
 ```ts
 import { inngest } from "./client";
@@ -25,7 +25,7 @@ The failure handler is very useful for:
 * Sending alerts to your team
 * Sending metrics to a third party monitoring tool (e.g. Datadog)
 * Send a notification to your team or user that the job has failed
-* Perform a rollback of the transaction (i.e. undo the work possibly done in your main function handler)
+* Perform a rollback of the transaction (i.e. undo work partially completed by the main handler)
 
 _Failures_ should not be confused with _Errors_ which will be retried. Read the [error handling & retries documentation](/docs/functions/retries) for more context.
 
@@ -35,7 +35,7 @@ _Failures_ should not be confused with _Errors_ which will be retried. Read the 
 
 The `onFailure` handler is a helper that actually creates a separate Inngest function used specifically for handling failures for your main function handler.
 
-The separate Inngest function utilizes an internal [`"inngest/function.failed"`](#the-inngest-function-failed-event) event that gets sent to your account any time a function fails. The function created with `onFailure` will appear as a separate function in your dashboard with the name format: `"<Your function name> (failure)"`.
+The separate Inngest function utilizes an [`"inngest/function.failed"`](#the-inngest-function-failed-event) system event that gets sent to your account any time a function fails. The function created with `onFailure` will appear as a separate function in your dashboard with the name format: `"<Your function name> (failure)"`.
 
 ## `onFailure({ error, event, step, runId })`
 
@@ -43,7 +43,7 @@ The `onFailure` handler function has the same arguments as [the main function ha
 
 ### `error`
 
-The [`Error`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/Error) as thrown from the last retry in your main function handler.
+The JavaScript [`Error`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/Error) object as thrown from the last retry in your main function handler.
 
 <Callout variant="warning">
 The Inngest SDK attempts to serialize and deserialize the `Error` object to the best of its ability and any custom error classes (e.g. `Prisma.PrismaClientKnownRequestError` or `MyCustomErrorType`) that may be thrown will be deserialized as the default `Error` object. This means you _cannot_ use `instance` of within `onFailure` to infer the type of error.
@@ -59,7 +59,7 @@ The [`"inngest/function.failed"`](#the-inngest-function-failed-event) system eve
 
 ### `runId`
 
-This will be the function run ID for the error handling function, not the original function. [Learn more about `runId` here](/docs/reference/functions/create#run-id).
+This will be the function run ID for the error handling function, _not the function that failed_. To get the failed function's run ID, use `event.data.run_id`. [Learn more about `runId` here](/docs/reference/functions/create#run-id).
 
 
 ## The `"inngest/function.failed"` event
@@ -67,14 +67,14 @@ This will be the function run ID for the error handling function, not the origin
 Inngest sends an `"inngest/function.failed"` event to your [environment](/docs/platform/environments) whenever any function fails after exhausting all of it's retry attempts. You can use this event as an `event` trigger within your own function or use the `onFailure` helper option as documented above.
 
 <Properties>
-  <Property name="name" type={`"inngest.function.failed"`} attribute>
-    The `inngest/` event prefix is reserved for system events in your environment.
+  <Property name="name" type={`string: "inngest/function.failed"`} attribute>
+    The `inngest/` event prefix is reserved for system events in each environment.
   </Property>
   <Property name="data" type="object" attribute>
-    The event payload data
+    The event payload data.
     <Properties nested>
       <Property name="error" type="object" attribute>
-        Data about the error payload as returned from the failed function
+        Data about the error payload as returned from the failed function.
         <Properties nested collapse>
           <Property name="body" type="string" attribute>
             The raw JSON-encoded response from the Inngest SDK.
@@ -132,7 +132,7 @@ Inngest sends an `"inngest/function.failed"` event to your [environment](/docs/p
 
 ### Send a Slack notification when a function fails
 
-In this example, the function attempts to sync all products from a Shopify store, and if it fails, it sends a message to the team's #eng-alerts Slack channel using the Slack Web Api's `chat.postMessage` ([docs](https://api.slack.com/methods/chat.postMessage)) API.
+In this example, the function attempts to sync all products from a Shopify store, and if it fails, it sends a message to the team's _#eng-alerts_ Slack channel using the Slack Web Api's `chat.postMessage` ([docs](https://api.slack.com/methods/chat.postMessage)) API.
 
 ```ts
 import { inngest } from "./client";
@@ -141,7 +141,7 @@ import { client } from "@slack/web-api";
 export default inngest.createFunction(
   {
     name: "Sync Shopify products",
-    // Your handler can be an async function:
+    // Your handler should be an async function:
     onFailure: async ({ error, event }) => {
 
       const originalEvent = event.data.event;
@@ -180,7 +180,7 @@ export default inngest.createFunction(
 
 ### Track all function failures in Datadog
 
-You can use the `"inngest/function.failed"` event to handle all failed functions in a single place. This can enable you to send metrics, alerts, or events to external systems like Datadog. Here's an example using [Datadog's Events API](https://docs.datadoghq.com/api/latest/events/) to send all failures the Datadog event stream.
+You can use the `"inngest/function.failed"` event to handle all failed functions in a single place. This can enable you to send metrics, alerts, or events to external systems like Datadog for all of your Inngest functions. Here's an example using [Datadog's Events API](https://docs.datadoghq.com/api/latest/events/) to send all failures the Datadog event stream.
 
 ```ts
 import { inngest } from "./client";
