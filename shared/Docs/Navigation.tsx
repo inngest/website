@@ -280,11 +280,11 @@ export const navigation = [
     links: [
       {
         title: "Inngest Cloud",
-        href: `${baseDir}/limitations/inngest`
+        href: `${baseDir}/usage-limits/inngest`
       },
       {
         title: "Serverless Providers",
-        href: `${baseDir}/limitations/providers`
+        href: `${baseDir}/usage-limits/providers`
       }
     ]
   }
