@@ -406,7 +406,6 @@ export function Navigation(props) {
           <Button
             href="/ai-personalized-documentation?ref=docs"
             variant="secondary"
-            className="w-full"
           >
             ✨ Create AI-Personalized Docs
           </Button>
