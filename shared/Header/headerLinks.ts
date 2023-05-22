@@ -95,7 +95,7 @@ const learnLinks = {
       desc: "Learn how to use Inngest with personalized code examples",
       url: "/ai-personalized-documentation?ref=nav",
       icon: () => "✨",
-      iconBg: "bg-indigo-900/50",
+      iconBg: "bg-indigo-900/50 text-[20px]",
     },
   ],
   linksTitle: "Quick Starts",
