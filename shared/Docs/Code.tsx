@@ -385,7 +385,7 @@ export function GuideSelector({
   const onChange = (newSelectedIndex) => {
     const newSelectedKey = options[newSelectedIndex].key;
     setSelected(newSelectedKey);
-    const url = new URL(router.asPath, process.env.NEXT_PUBLIC_HOST);
+    const url = new URL(router.asPath, window.location.origin);
     url.searchParams.set(searchParamKey, newSelectedKey);
     // Replace the URL state and do use shallow to avoid refresh
     router.replace(url.toString(), null, { shallow: true, scroll: false });
