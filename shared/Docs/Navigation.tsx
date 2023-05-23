@@ -246,6 +246,10 @@ export const navigation = [
         href: `${baseDir}/guides/fan-out-jobs`,
       },
       {
+        title: "User-defined Workflows",
+        href: `${baseDir}/guides/user-defined-workflows`,
+      },
+      {
         title: "Trigger code from Retool",
         href: `${baseDir}/guides/trigger-your-code-from-retool`,
       },
