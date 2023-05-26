@@ -24,7 +24,10 @@ The `createFunction` method accepts a series of arguments to define your functio
 
 <Properties>
   <Property name="name" type="string" required>
-    A unique name for your function. This will be used to create a unique slug identifier.
+    A unique name for your function. This will be used to create a unique slug `id` by default.
+  </Property>
+  <Property name="id" type="string">
+    A unique identifier for your function to override the default (a slug of your function name).
   </Property>
   <Property name="concurrency" type="number">
     Limit the number of concurrently running functions ([reference](/docs/functions/concurrency))
@@ -33,8 +36,7 @@ The `createFunction` method accepts a series of arguments to define your functio
     Configure the number of times the function will be retried from `0` to `20`. Default: `3`
   </Property>
   <Property name="onFailure" type="function">
-    A function that will be called only when this Inngest function permanently fails after all retries have been attempted.
-    {/* TODO - Link to improved error handling docs */}
+    A function that will be called only when this Inngest function fails after all retries have been attempted ([reference](/docs/reference/functions/handling-failures))
   </Property>
   <Property name="cancelOn" type="object">
     Define an event that can be used to cancel a running or sleeping function ([reference](/docs/functions/cancellation))

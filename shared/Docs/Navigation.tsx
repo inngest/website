@@ -315,9 +315,13 @@ const referenceNavigation = [
         href: `${baseDir}/reference/functions/step-send-event`,
       },
       {
-        title: "Error handling",
+        title: "Error handling & retries",
         href: `${baseDir}/functions/retries`,
         // href: `${baseDir}/reference/functions/error-handling`,
+      },
+      {
+        title: "Handling failures",
+        href: `${baseDir}/reference/functions/handling-failures`,
       },
       {
         title: "Cancel running functions",
@@ -369,6 +373,19 @@ const referenceNavigation = [
       { title: "Migrating to v2", href: `${baseDir}/sdk/v2-migration` },
     ],
   },
+  {
+    title: "Usage Limits",
+    links: [
+      {
+        title: "Inngest Cloud",
+        href: `${baseDir}/usage-limits/inngest`,
+      },
+      {
+        title: "Serverless Providers",
+        href: `${baseDir}/usage-limits/providers`,
+      },
+    ],
+  },
 ];
 
 export const headerLinks = [
@@ -386,21 +403,20 @@ export function Navigation(props) {
   return (
     <nav {...props}>
       <ul role="list">
+        <li>
+          <Button
+            href="/ai-personalized-documentation?ref=docs"
+            variant="secondary"
+          >
+            ✨ Create AI-Personalized Docs
+          </Button>
+        </li>
         <li className="mt-6 mb-4 flex gap-2 items-center text-base font-semibold text-slate-900 dark:text-white">
           <span className="p-0.5 bg-indigo-500 rounded-sm">
             <IconGuide />
           </span>
           Guides
         </li>
-        {/* <li>
-          <Button
-            href="/ai-personalized-documentation?ref=docs"
-            variant="secondary"
-            className="w-full mb-6 xl:hidden"
-          >
-            ✨ Create AI-Personalized Docs
-          </Button>
-        </li> */}
         {headerLinks.map((link) => (
           <TopLevelNavItem key={link.title} href={link.href}>
             {link.title}

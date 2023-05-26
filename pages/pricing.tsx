@@ -34,14 +34,6 @@ type Feature = {
 
 const FEATURES: Feature[] = [
   {
-    name: "Functions",
-    plans: {
-      Hobby: "50",
-      Team: "100",
-      Enterprise: "Unlimited",
-    },
-  },
-  {
     name: "Events",
     plans: {
       Hobby: "Unlimited",
@@ -135,10 +127,6 @@ const PLANS: Plan[] = [
     },
     features: [
       {
-        quantity: "50",
-        text: "Functions",
-      },
-      {
         quantity: "Unlimited",
         text: "Events",
       },
@@ -179,10 +167,6 @@ const PLANS: Plan[] = [
     },
     features: [
       {
-        quantity: "100",
-        text: "Functions",
-      },
-      {
         quantity: "Unlimited",
         text: "Events",
       },
@@ -220,10 +204,6 @@ const PLANS: Plan[] = [
       text: "Get in touch",
     },
     features: [
-      {
-        quantity: "Unlimited",
-        text: "Functions",
-      },
       {
         quantity: "Unlimited",
         text: "Events",
@@ -465,6 +445,7 @@ export default function Pricing() {
                   Sleeps and other pauses do not count towards your concurrency
                   limit as your function isn't running while waiting.
                 </p>
+                <p>See more details at <a href="/docs/usage-limits/inngest">Usage Limits</a> page.</p>
               </FAQRow>
               <FAQRow question={`Can I get a demo of the product?`}>
                 <p>
@@ -502,6 +483,7 @@ export default function Pricing() {
                   that, you can break it up into multiple steps (see: What is a
                   function step?).
                 </p>
+                <p>See more details at <a href="/docs/usage-limits/inngest">Usage Limits</a> page.</p>
               </FAQRow>
               <FAQRow
                 question={`Can multiple functions be triggered by the same event?`}
