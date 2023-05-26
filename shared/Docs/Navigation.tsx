@@ -285,6 +285,10 @@ const referenceNavigation = [
         title: "Create the client",
         href: `${baseDir}/reference/client/create`,
       },
+      {
+        title: "Middleware",
+        href: `${baseDir}/reference/client/middleware`,
+      },
     ],
   },
   {
