@@ -181,10 +181,12 @@ export function Col({ children, sticky = false }) {
 export function Properties({
   nested = false,
   collapse = false,
+  name = "Properties",
   children,
 }: {
   nested?: boolean;
   collapse?: boolean;
+  name?: string;
   children: React.ReactElement;
 }) {
   const [isCollapsed, setCollapsed] = useState<boolean>(collapse);
@@ -211,7 +213,7 @@ export function Properties({
                 setCollapsed(!isCollapsed);
               }}
             >
-              Show nested properties{" "}
+              {`Show nested ${name.toLowerCase()} `}
               {isCollapsed ? (
                 <ChevronDown className="h-3" />
               ) : (
@@ -219,7 +221,7 @@ export function Properties({
               )}
             </button>
           ) : (
-            "Properties"
+            name
           )}
         </div>
       )}
