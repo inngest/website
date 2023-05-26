@@ -36,8 +36,8 @@ const FEATURES: Feature[] = [
   {
     name: "Functions",
     plans: {
-      Hobby: "50",
-      Team: "100",
+      Hobby: "Unlimited",
+      Team: "Unlimited",
       Enterprise: "Unlimited",
     },
   },
@@ -135,7 +135,7 @@ const PLANS: Plan[] = [
     },
     features: [
       {
-        quantity: "50",
+        quantity: "Unlimited",
         text: "Functions",
       },
       {
@@ -179,7 +179,7 @@ const PLANS: Plan[] = [
     },
     features: [
       {
-        quantity: "100",
+        quantity: "Unlimited",
         text: "Functions",
       },
       {
