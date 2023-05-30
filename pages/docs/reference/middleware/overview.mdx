@@ -1,7 +1,7 @@
 # Advanced: Middleware <VersionBadge version="v2.0.0+" />
 
 <Callout>
-Middleware is still in pre-release mode. You can use it by installing v2.0.0 using the `next` tag.
+Middleware is still pre-release. You can use it by installing v2.0.0 using the `next` tag.
 
 <CodeGroup forceTabs>
 ```sh {{ title: "npm" }}
@@ -30,7 +30,11 @@ const myMiddleware = new InngestMiddleware({
         console.log(`Function ${fn.name} is running!`);
 
         // This is where you can optionally specify hooks for this particular run
-        return {};
+        return {
+          afterExecution() {
+            console.log(`Function ${fn.name} has finished running!`);
+          },
+        };
       },
     };
   },

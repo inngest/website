@@ -29,7 +29,7 @@ Middleware is created using the `InngestMiddleware` class.
                     Used primarily for debugging and logging.
                </Property>
                <Property name="register" type="function" required>
-                    A function that will be called when the Inngest client is created, used to set up your middleware and return the lifecycle hooks you wish to use.
+                    A function called at client instantiation used to set up middleware and define hooks.
                </Property>
           </Properties>
      </Col>
@@ -52,6 +52,8 @@ Middleware is created using the `InngestMiddleware` class.
           ```
      </Col>
 </Row>
+
+## Register
 
 As you can see above, we start with the `register` function, which is called when the client is initialized.
 
@@ -81,29 +83,30 @@ new InngestMiddleware({
 });
 ```
 
+All lifecycle and hook functions can be synchronous or `async` functions - the SDK will always wait until a middleware's function has resolved before continuing to the next one.
+
 <Callout>
-It's possible for a single application to utilize multiple Inngest clients, so always run plugin set-up within the `register()` function instead of globally.
+As it's possible for an application to use multiple Inngest clients, it's recommended to always initialize dependencies within `register()`, instead of in the global scope.
 </Callout>
 
 ## Specifying lifecycles and hooks
 
 Notice we're returning an empty object `{}`. From here, we can instead return the lifecycles we want to use for this client. See the [Middleware - Lifecycle - Hook reference](/docs/reference/middleware/lifecycle#hook-reference) for a full list of available hooks.
 
-Let's use the `run` lifecycle to execute some code during a function run.
-
 ```ts
 new InngestMiddleware({
   name: "Example Middleware",
-  async register() {
-    const db = await connectToDatabase();
-
+  async init() {
+    // 1. Use init to set up dependencies
+    // 2. Use return values to group hooks by lifecycle: - "onFunctionRun" "onSendEvent"
     return {
-      run({ ctx, fn, steps }) {
-        // This will run when a function run starts
-        // JS closures allow me to use variables (like `db`) from the outer register() scope
+      onFunctionRun({ ctx, fn, steps }) {
+        // 3. Use the lifecycle function to pass dependencies into hooks
+        // 4. Return any hooks that you want to define for this action
         return {
+          // 5. Define the hook that runs at a specific stage for this lifecycle.
           beforeExecution() {
-            // This will run just before new code is executed
+            // 6. Define your hook
           },
         };
       },
