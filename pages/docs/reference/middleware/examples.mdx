@@ -27,7 +27,7 @@ import * as Sentry from "@sentry/node";
 
 const sentryMiddleware = new InngestMiddleware({
   name: "Sentry Middleware",
-  register({ client }) {
+  init({ client }) {
     // Initialize Sentry as soon as possible, creating a hub
     Sentry.init({ dsn: "..." });
 
@@ -35,7 +35,7 @@ const sentryMiddleware = new InngestMiddleware({
     Sentry.setTag("inngest.client.name", client.name);
 
     return {
-      run({ ctx, fn }) {
+      onFunctionRun({ ctx, fn }) {
         // Keep adding context as we go deeper
         Sentry.setTags({
           "inngest.function.id": fn.id(client.name),
@@ -117,11 +117,11 @@ import { PrismaClient } from "@prisma/client";
 
 const prismaMiddleware = new InngestMiddleware({
   name: "Prisma Middleware",
-  register() {
+  init() {
     const prisma = new PrismaClient();
 
     return {
-      run(ctx) {
+      onFunctionRun(ctx) {
         return {
           input(ctx) {
             return {

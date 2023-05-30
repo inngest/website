@@ -23,9 +23,9 @@ import { Inngest, InngestMiddleware } from "inngest";
 
 const myMiddleware = new InngestMiddleware({
   name: "My Middleware",
-  register() {
+  init() {
     return {
-      run({ fn }) {
+      onFunctionRun({ fn }) {
         // This will be logged whenever a function is executed
         console.log(`Function ${fn.name} is running!`);
 

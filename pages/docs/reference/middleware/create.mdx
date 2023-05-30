@@ -28,7 +28,7 @@ Middleware is created using the `InngestMiddleware` class.
                <Property name="name" type="string" required>
                     Used primarily for debugging and logging.
                </Property>
-               <Property name="register" type="function" required>
+               <Property name="init" type="function" required>
                     A function called at client instantiation used to set up middleware and define hooks.
                </Property>
           </Properties>
@@ -38,7 +38,7 @@ Middleware is created using the `InngestMiddleware` class.
           // Create a new middleware
           const myMiddleware = new InngestMiddleware({
             name: "My Middleware",
-            register: () => {
+            init: () => {
               return {};
             },
           });
@@ -53,16 +53,16 @@ Middleware is created using the `InngestMiddleware` class.
      </Col>
 </Row>
 
-## Register
+## Initialization
 
-As you can see above, we start with the `register` function, which is called when the client is initialized.
+As you can see above, we start with the `init` function, which is called when the client is initialized.
 
 ```ts
 import { InngestMiddleware } from "inngest";
 
 new InngestMiddleware({
   name: "Example Middleware",
-  register() {
+  init() {
     // This runs when the client is initialized
     // Use this to set up anything your plugin needs
     return {};
@@ -70,12 +70,12 @@ new InngestMiddleware({
 });
 ```
 
-Function registration, lifecycles, and hooks can all be with synchronous or `async` functions. This makes it easy for our `register` to do some async work, like setting up a database connection.
+Function registration, lifecycles, and hooks can all be with synchronous or `async` functions. This makes it easy for our `init` to do some async work, like setting up a database connection.
 
 ```ts
 new InngestMiddleware({
   name: "Example Middleware",
-  async register() {
+  async init() {
     const db = await connectToDatabase();
 
     return {};
@@ -86,7 +86,7 @@ new InngestMiddleware({
 All lifecycle and hook functions can be synchronous or `async` functions - the SDK will always wait until a middleware's function has resolved before continuing to the next one.
 
 <Callout>
-As it's possible for an application to use multiple Inngest clients, it's recommended to always initialize dependencies within `register()`, instead of in the global scope.
+As it's possible for an application to use multiple Inngest clients, it's recommended to always initialize dependencies within `init()`, instead of in the global scope.
 </Callout>
 
 ## Specifying lifecycles and hooks
@@ -115,18 +115,18 @@ new InngestMiddleware({
 });
 ```
 
-Here we use the `beforeExecution()` hook within the `run()` lifecycle.
+Here we use the `beforeExecution()` hook within the `onFunctionRun()` lifecycle.
 
-The use of [closures](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures) here means that our `run()` hook can access anything from the plugin's initialization, like our `db` connection.
+The use of [closures](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures) here means that our `onFunctionRun()` lifecycle can access anything from the plugin's initialization, like our `db` connection.
 
-`run()` here is also called for every function execution, meaning you can run code specific to this execution without maintaining any global state. We can even conditionally register hooks based on incoming arguments. For example, here we only register a hook for a specific event trigger:
+`onFunctionRun()` here is also called for every function execution, meaning you can run code specific to this execution without maintaining any global state. We can even conditionally register hooks based on incoming arguments. For example, here we only register a hook for a specific event trigger:
 
 ```ts
 new InngestMiddleware({
   name: "Example Middleware",
-  async register() {
+  async init() {
     return {
-      run({ ctx, fn, steps }) {
+      onFunctionRun({ ctx, fn, steps }) {
         // Register a hook only if this event is the trigger
         if (ctx.event.name === "app/user.created") {
           return {
@@ -154,9 +154,9 @@ import { InngestMiddleware } from "inngest";
 export const createMyMiddleware = (logEventOutput: string) => {
   return new InngestMiddleware({
     name: "My Middleware",
-    register() {
+    init() {
       return {
-        run({ ctx, fn, steps }) {
+        onFunctionRun({ ctx, fn, steps }) {
           if (ctx.event.name === logEventOutput) {
             return {
               output({ result, step }) {

@@ -20,14 +20,14 @@ Some lifecycle hooks can be used to mutate both values and types at key points i
 
 ## Mutating input
 
-We can alter the input arguments for a function run (event data, `step` tooling, etc.), using `run`'s `input()` hook. (See [Middleware - Lifecycle - Hook reference](/docs/reference/middleware/lifecycle#hook-reference) for a list of all available hooks.)
+We can alter the input arguments for a function run (event data, `step` tooling, etc.), using `onFunctionRun`'s `input()` hook. (See [Middleware - Lifecycle - Hook reference](/docs/reference/middleware/lifecycle#hook-reference) for a list of all available hooks.)
 
 ```ts {{ title: "inngest/middleware/inputAlteration.ts" }}
 new InngestMiddleware({
   name: "Input Alteration",
-  register() {
+  init() {
     return {
-      run() {
+      onFunctionRun() {
         return {
           input() {
             return {
