@@ -31,11 +31,10 @@ Adding sleeps, retries, and reliable steps to a function:
 <CodeGroup>
 
 ```ts
-import { Inngest } from "inngest";
+import { EventSchemas, Inngest } from "inngest";
 
 type Events = {
   "user/new.signup": {
-    name: "user/new.signup";
     data: {
       email: string;
       name: string;
@@ -43,7 +42,10 @@ type Events = {
   };
 };
 
-const inngest = new Inngest<Events>({ name: "Next.js Shop" });
+const inngest = new Inngest({
+  name: "Next.js Shop",
+  schemas: new EventSchemas().fromRecord<Events>(),
+});
 
 export default inngest.createFunction(
   { name: "Signup flow" },

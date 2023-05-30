@@ -132,7 +132,6 @@ The Inngest SDK lets you strictly type all of your code against your real produc
 import { Inngest } from "inngest";
 
 type AppUserCreated = {
-  name: "app/user.created";
   data: {
     email: string;
   };
@@ -145,7 +144,10 @@ type Events = {
   "app/user.created": AppUserCreated;
 };
 
-export const inngest = new Inngest<Events>({ name: "My App" });
+export const inngest = new Inngest({
+  name: "My App",
+  schemas: new EventSchemas().fromRecord<Events>(),
+});
 ```
 
 You can then import this `inngest` client into where you're creating functions or sending events:
