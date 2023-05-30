@@ -20,10 +20,22 @@ yarn add inngest@next
 </CodeGroup>
 </Callout>
 
-## What's new in v2
+## Breaking changes in v2
 
-- **Better event schemas** - create and maintain your event types with a variety of native tools and third-party libraries
-- **Clearer event sending** - we removed some alternate methods of sending events to settle on a common standard
+Listed below are all breaking changes made in v2, potentially requiring code changes for you to upgrade.
+
+- <VersionBadge version="New" /> [Better event schemas](#better-event-schemas) - create and maintain your event types with a variety of native tools and third-party libraries
+- [Clearer event sending](#clearer-event-sending) - we removed some alternate methods of sending events to settle on a common standard
+- [Removed `tools` parameter](#removed-tools-parameter) - use `step` instead of `tools` for step functions
+- [Removed ability to `serve()` without a client](#removed-ability-to-serve-without-a-client) - everything is specified with a client, so it makes sense for this to be the same
+- [Renamed `throttle` to `rateLimit`](#renamed-throttle-to-ratelimit) - the concept didn't quite match the naming
+
+## New features in v2
+
+Aside from some of the breaking features above, this version also adds some new features that aren't breaking changes.
+
+- [Middleware](/docs/reference/middleware/overview) - specify functions to run at various points in an Inngest client's lifecycle
+- [Logging](todo-link) - TODO link
 
 ## Better event schemas
 
@@ -125,7 +137,90 @@ For more information, see [Defining Event Payload Types](/docs/reference/client/
 
 ## Clearer event sending
 
-TODO
+v1 had two different methods of sending events that shared the same function. This "overload" resulted in autocomplete typing for TypeScript users appear more complex than it needed to be.
+
+In addition, using a particular signature meant that you're locked in to sending a particular named event, meaning sending two different events in a batch required refactoring your call.
+
+For these reasons, we've removed a couple of the event-sending signatures and settled on a single standard.
+
+```ts
+// ❌ Invalid in v2
+inngest.send("app/user.created", { data: { userId: "123" } });
+inngest.send("app/user.created", [
+  { data: { userId: "123" } },
+  { data: { userId: "456" } },
+]);
+
+// ✅ Valid in v1 and v2
+inngest.send({ name: "app/user.created", data: { userId: "123" } });
+inngest.send([
+  { name: "app/user.created", data: { userId: "123" } },
+  { name: "app/user.created", data: { userId: "456" } },
+]);
+```
+
+## Removed `tools` parameter
+
+The `tools` parameter in a function was marked as deprecated in v1 and is now being fully removed in v2.
+
+You can swap out `tools` with `step` in every case.
+
+```ts
+inngest.createFunction(
+  { name: "Example" },
+  { event: "app/user.created" },
+  async ({ tools, step }) => {
+    // ❌ Invalid in v2
+    await tools.run("Foo", () => {});
+
+    // ✅ Valid in v1 and v2
+    await step.run("Foo", () => {});
+  }
+);
+```
+
+## Removed ability to `serve()` without a client
+
+In v1, serving Inngest functions could be done without a client via `serve("My App Name", ...)`. This limits our ability to do some clever TypeScript inference in places as we don't have access to the client that the functions have been created with.
+
+We're shifting to ensure the client is the place where everything is defined and created, so we're removing the ability to `serve()` with a string name.
+
+```ts
+// ❌ Invalid in v2
+serve("My App", [...fns]);
+
+// ✅ Valid in v1 and v2
+import { inngest } from "./client";
+serve(inngest, [...fns]);
+```
+
+As is the case already in v1, the app's name will be the name of the client passed to serve. To preserve the ability to explicitly name a serve handler, you can now pass a `name` option when serving to use the passed string instead of the client's name.
+
+```ts
+serve(inngest, [...fns], {
+  name: "My Custom App Name",
+});
+```
+
+## Renamed `throttle` to `rateLimit`
+
+Specifying a rate limit for a function in v1 meant specifying a `throttle` option when creating the function. The term "throttle" was confusing here, as the definition of throttling can change depending on the context, but usually implies that "throttled" events are still eventually used to trigger an event, which was not the case.
+
+To be clearer about the functionality of this option, we're renaming it to `rateLimit` instead.
+
+```ts
+inngest.createFunction(
+  {
+    name: "Example",
+    throttle: { count: 5 }, // ❌ Invalid in v2
+    rateLimit: { limit: 5 }, // ✅ Valid in v2
+  },
+  { event: "app/user.created" },
+  async ({ tools, step }) => {
+    // ...
+  }
+);
+```
 
 ---
 
