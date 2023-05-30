@@ -120,7 +120,7 @@ The `register()` function can return functions for two separate lifecycles to ho
 
           Triggered when a function is going to be executed.
 
-          <Properties name="Input" nested>
+          <Properties name="Arguments" nested>
                <Property name="ctx" type="object">
                     The input data for the function. Only `event` and `runId` are available at this point.
                </Property>
@@ -132,13 +132,13 @@ The `register()` function can return functions for two separate lifecycles to ho
                </Property>
           </Properties>
 
-          <Properties name="Output" nested>
+          <Properties name="Returns" nested>
                <Property name="input" type="function">
                     Called once the input for the function has been set up. This is where you can modify the input before the function starts.
 
                     Has the same input as the containing `run()` function, but with a complete `ctx` object, including `step` tooling.
 
-                    <Properties name="Output" nested collapse>
+                    <Properties name="Returns" nested collapse>
                          <Property name="ctx" type="object">
                               An object that will be merged with the existing function input to create a new input.
                          </Property>
@@ -162,7 +162,7 @@ The `register()` function can return functions for two separate lifecycles to ho
                <Property name="output" type="function">
                     Called after the function has finished executing and before the response is sent back to Inngest. This is where you can modify the output.
 
-                    <Properties name="Input" nested collapse>
+                    <Properties name="Arguments" nested collapse>
                          <Property name="result" type="object" required>
                               An object containing the data to be sent back to inngest in the `data` key, and an original `error` (if any) that threw.
                          </Property>
@@ -171,7 +171,7 @@ The `register()` function can return functions for two separate lifecycles to ho
                          </Property>
                     </Properties>
 
-                    <Properties name="Output" nested collapse>
+                    <Properties name="Returns" nested collapse>
                          <Property name="result" type="object">
                               An object containing a `data` key to overwrite the data that will be sent back to Inngest for this step or function.
                          </Property>
