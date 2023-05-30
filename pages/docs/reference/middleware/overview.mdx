@@ -19,6 +19,8 @@ yarn add inngest@next
 Middleware allows you to specify functions to run at various points in an Inngest client's lifecycle, such as during a function's execution or when sending an event. Use the `InngestMiddleware` class to define new middleware.
 
 ```ts
+import { Inngest, InngestMiddleware } from "inngest";
+
 const myMiddleware = new InngestMiddleware({
   name: "My Middleware",
   register() {
@@ -51,7 +53,6 @@ This can be used for a wide range of uses, for example:
 Check out some of the samples below for a quick look at how to use middleware:
 
 - [Example: Adding Sentry error reporting and tracing](#adding-sentry-error-reporting-and-tracing)
-- [Example: Transforming input and output data (todo)](#)
 - [Example: Adding Prisma to function context](#adding-prisma-to-function-context)
 
 Or see the next pages to walk through the details:

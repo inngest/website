@@ -18,7 +18,7 @@ yarn add inngest@next
 
 ## Registering and order
 
-Middleware can be added in two places by providing an array of middleware: when instantiating an Inngest client via `new Inngest()`, and when creating a function via `inngest.createFunction()`.
+Middleware can be added in two places by providing an array of middleware when instantiating an Inngest client via `new Inngest()`, or when creating a function via `inngest.createFunction()`.
 
 ```ts
 // Adding middleware to a client
@@ -37,7 +37,7 @@ inngest.createFunction(
 );
 ```
 
-Adding middleware contributes to an overall "stack" of middleware. If you multiple middlewares, each hook will be executed in the following order:
+Adding middleware contributes to an overall "stack" of middleware. If you register multiple middlewares, each hook will be executed in the following order:
 
 1. All middleware registered on the **client**, in descending order
 2. All middleware registered on the **function**, in descending order
@@ -101,6 +101,10 @@ Adding middleware contributes to an overall "stack" of middleware. If you multip
      3 - after execution
      4 - after execution
      ```
+
+     <Callout>
+     Sometimes order can be important, but it's best to create middleware that doesn't rely on ordering if possible.
+     </Callout>
      </Col>
 </Row>
 
