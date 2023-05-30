@@ -285,10 +285,6 @@ const referenceNavigation = [
         title: "Create the client",
         href: `${baseDir}/reference/client/create`,
       },
-      {
-        title: "Middleware",
-        href: `${baseDir}/reference/client/middleware`,
-      },
     ],
   },
   {
@@ -364,6 +360,31 @@ const referenceNavigation = [
         href: `${baseDir}/reference/serve`,
       },
       { title: "Streaming", href: `${baseDir}/streaming` },
+    ],
+  },
+  {
+    title: "Middleware",
+    links: [
+      {
+        title: "Overview",
+        href: `${baseDir}/reference/middleware/overview`,
+      },
+      {
+        title: "Creating middleware",
+        href: `${baseDir}/reference/middleware/create`,
+      },
+      {
+        title: "Lifecycle",
+        href: `${baseDir}/reference/middleware/lifecycle`,
+      },
+      {
+        title: "Examples",
+        href: `${baseDir}/reference/middleware/examples`,
+      },
+      {
+        title: "TypeScript",
+        href: `${baseDir}/reference/middleware/typescript`,
+      },
     ],
   },
   {

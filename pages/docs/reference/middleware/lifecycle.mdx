@@ -1,0 +1,262 @@
+# Middleware lifecycle <VersionBadge version="v2.0.0+" />
+
+<Callout>
+Middleware is still in pre-release mode. You can use it by installing v2.0.0 using the `next` tag.
+
+<CodeGroup forceTabs>
+```sh {{ title: "npm" }}
+npm install inngest@next
+```
+```sh {{ title: "pnpm " }}
+pnpm install inngest@next
+```
+```sh {{ title: "Yarn" }}
+yarn add inngest@next
+```
+</CodeGroup>
+</Callout>
+
+## Registering and order
+
+Middleware can be added in two places by providing an array of middleware: when instantiating an Inngest client via `new Inngest()`, and when creating a function via `inngest.createFunction()`.
+
+```ts
+// Adding middleware to a client
+const inngest = new Inngest({
+  name: "My App",
+  middleware: [fooMiddleware, barMiddleware],
+});
+
+// Adding middleware to a function
+inngest.createFunction(
+  { name: "Example", middleware: [bazMiddleware] },
+  { event: "test" },
+  async () => {
+    // ...
+  }
+);
+```
+
+Adding middleware contributes to an overall "stack" of middleware. If you multiple middlewares, each hook will be executed in the following order:
+
+1. All middleware registered on the **client**, in descending order
+2. All middleware registered on the **function**, in descending order
+
+<Row>
+     <Col>
+     For example:
+
+     ```ts
+     const logMiddleware = (value: number) =>
+       new InngestMiddleware({
+         name: `Log on Run: ${value}`,
+         register() {
+           return {
+             run() {
+               console.log(value, "- run started");
+
+               return {
+                 beforeExecution() {
+                   console.log(value, "- before execution");
+                 },
+                 afterExecution() {
+                   console.log(value, "- after execution");
+                 },
+               };
+             },
+           };
+         },
+       });
+
+     const inngest = new Inngest({
+       name: "My App",
+       middleware: [logMiddleware(1), logMiddleware(2)],
+     });
+
+     inngest.createFunction(
+       {
+         name: "Example",
+         middleware: [logMiddleware(3), logMiddleware(4)],
+       },
+       { event: "test" },
+       async () => {
+         // ...
+       }
+     );
+     ```
+     </Col>
+     <Col>
+     Output:
+     ```
+     1 - run started
+     2 - run started
+     3 - run started
+     4 - run started
+     1 - before execution
+     2 - before execution
+     3 - before execution
+     4 - before execution
+     1 - after execution
+     2 - after execution
+     3 - after execution
+     4 - after execution
+     ```
+     </Col>
+</Row>
+
+---
+
+## Hook reference
+
+The `register()` function can return functions for two separate lifecycles to hook into.
+
+<Callout>
+💡 All lifecycle and hook functions can be synchronous or `async` functions - the SDK will always wait until a middleware's function has resolved before continuing to the next one.
+</Callout>
+
+<Row>
+     <Col>
+          ### `run` lifecycle
+
+          Triggered when a function is going to be executed.
+
+          <Properties name="Input" nested>
+               <Property name="ctx" type="object">
+                    The input data for the function. Only `event` and `runId` are available at this point.
+               </Property>
+               <Property name="steps" type="array">
+                    An array of previously-completed steps and their `data`.
+               </Property>
+               <Property name="fn" type="InngestFunction">
+                    The function that is about to be executed.
+               </Property>
+          </Properties>
+
+          <Properties name="Output" nested>
+               <Property name="input" type="function">
+                    Called once the input for the function has been set up. This is where you can modify the input before the function starts.
+
+                    Has the same input as the containing `run()` function, but with a complete `ctx` object, including `step` tooling.
+
+                    <Properties name="Output" nested collapse>
+                         <Property name="ctx" type="object">
+                              An object that will be merged with the existing function input to create a new input.
+                         </Property>
+                         <Property name="steps" type="array">
+                              An array of modified step data to use in place of the current step data.
+                         </Property>
+                    </Properties>
+               </Property>
+               <Property name="beforeMemoization" type="function">
+                    Called before the function starts to memoize state (running over previously-seen code).
+               </Property>
+               <Property name="afterMemoization" type="function">
+                    Called after the function has finished memoizing state (running over previously-seen code).
+               </Property>
+               <Property name="beforeExecution" type="function">
+                    Called before the function starts to execute (running code seen for the first time).
+               </Property>
+               <Property name="afterExecution" type="function">
+                    Called after the function has finished executing.
+               </Property>
+               <Property name="output" type="function">
+                    Called after the function has finished executing and before the response is sent back to Inngest. This is where you can modify the output.
+
+                    <Properties name="Input" nested collapse>
+                         <Property name="result" type="object" required>
+                              An object containing the data to be sent back to inngest in the `data` key, and an original `error` (if any) that threw.
+                         </Property>
+                         <Property name="step" type="object">
+                              If this execution ran a step, will be a step that ran.
+                         </Property>
+                    </Properties>
+
+                    <Properties name="Output" nested collapse>
+                         <Property name="result" type="object">
+                              An object containing a `data` key to overwrite the data that will be sent back to Inngest for this step or function.
+                         </Property>
+                    </Properties>
+               </Property>
+               <Property name="beforeResponse" type="function">
+                    Called after the output has been set and before the response has been sent back to Inngest. Use this to perform any final actions before the request closes.
+               </Property>
+          </Properties>
+     </Col>
+     <Col>
+          ```ts
+          const myMiddleware = new InngestMiddleware({
+            name: "My Middleware",
+            register({ client, fn }) {
+              return {
+                run: ({ ctx, fn, steps }) {
+                  return {
+                    input({ ctx, fn, steps }) {
+                      // ...
+                    },
+                    beforeMemoization() {
+                      // ...
+                    },
+                    afterMemoization() {
+                      // ...
+                    },
+                    beforeExecution() {
+                      // ...
+                    },
+                    afterExecution() {
+                      // ...
+                    },
+                    output({ result, step }) {
+                      // ...
+                    },
+                    beforeResponse() {
+                      // ...
+                    },
+                  };
+                },
+              };
+            },
+          });
+          ```
+     </Col>
+</Row>
+
+---
+
+<Row>
+     <Col>
+          ### `sendEvent` lifecycle
+
+          Triggered when an event is going to be sent.
+
+          <Properties name="Output" nested>
+               <Property name="input" type="function">
+                    Called before the events are sent to Inngest. This is where you can modify the events before they're sent.
+               </Property>
+               <Property name="output" type="function">
+                    Called after events are sent to Inngest. This is where you can perform any final actions and modify the output from `inngest.send()`.
+               </Property>
+          </Properties>
+     </Col>
+     <Col>
+          ```ts
+          const myMiddleware = new InngestMiddleware({
+            name: "My Middleware",
+            register: ({ client, fn }) => {
+              return {
+                sendEvent() {
+                  return {
+                    input({ payloads }) {
+                      // ...
+                    },
+                    output() {
+                      // ...
+                    },
+                  };
+                },
+              };
+            },
+          });
+          ```
+     </Col>
+</Row>
+

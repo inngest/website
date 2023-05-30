@@ -1,0 +1,147 @@
+# Example middleware <VersionBadge version="v2.0.0+" />
+
+<Callout>
+Middleware is still in pre-release mode. You can use it by installing v2.0.0 using the `next` tag.
+
+<CodeGroup forceTabs>
+```sh {{ title: "npm" }}
+npm install inngest@next
+```
+```sh {{ title: "pnpm " }}
+pnpm install inngest@next
+```
+```sh {{ title: "Yarn" }}
+yarn add inngest@next
+```
+</CodeGroup>
+</Callout>
+
+The following examples show how you might use middleware in some real-world scenarios.
+
+## Sentry error reporting and tracing
+
+The following example uses middleware with [Sentry](https://sentry.io/?ref=inngest) to add exception handling and tracing to function runs while adding searchable context to each log.
+
+```ts
+import * as Sentry from "@sentry/node";
+
+const sentryMiddleware = new InngestMiddleware({
+  name: "Sentry Middleware",
+  register({ client }) {
+    // Initialize Sentry as soon as possible, creating a hub
+    Sentry.init({ dsn: "..." });
+
+    // Set up some tags that will be applied to all events
+    Sentry.setTag("inngest.client.name", client.name);
+
+    return {
+      run({ ctx, fn }) {
+        // Keep adding context as we go deeper
+        Sentry.setTags({
+          "inngest.function.id": fn.id(client.name),
+          "inngest.function.name": fn.name,
+          "inngest.event": ctx.event.name,
+          "inngest.run.id": ctx.runId,
+        });
+
+        // Start a transaction for this run
+        const transaction = Sentry.startTransaction({
+          name: "Inngest Function Run",
+          op: "run",
+          data: ctx.event,
+        });
+
+        let memoSpan: Sentry.Span;
+        let execSpan: Sentry.Span;
+
+        return {
+          input() {
+            return {
+              ctx: {
+                // Add the Sentry client to the input arg so our
+                // functions can use it directly too
+                sentry: Sentry.getCurrentHub(),
+              },
+            };
+          },
+          beforeMemoization() {
+            // Track different spans for memoization and execution
+            memoSpan = transaction.startChild({ op: "memoization" });
+          },
+          afterMemoization() {
+            memoSpan.finish();
+          },
+          beforeExecution() {
+            execSpan = transaction.startChild({ op: "execution" });
+          },
+          afterExecution() {
+            execSpan.finish();
+          },
+          output({ result, step }) {
+            // Capture step output and log errors
+            if (step) {
+              Sentry.setTags({
+                "inngest.step.name": step.name,
+                "inngest.step.op": step.op,
+              });
+
+              if (result.error) {
+                Sentry.captureException(result.error);
+              }
+            }
+          },
+          async beforeResponse() {
+            // Flush all events before closing the request
+            transaction.finish();
+            await Sentry.flush();
+          },
+        };
+      },
+    };
+  },
+});
+```
+
+## Prisma in function context
+
+The following is an example of adding a [Prisma](https://www.prisma.io/?ref=inngest) client to all Inngest functions, allowing them immediate access without needing to create the client themselves.
+
+While this example uses Prisma, it serves as a good example of mutating function input to perform crucial setup for your functions to keep them to just business logic.
+
+<Callout>
+💡 Types are inferred from middleware outputs, so your Inngest functions will see an appropriately-typed `prisma` property in their input.
+</Callout>
+
+```ts
+import { PrismaClient } from "@prisma/client";
+
+const prismaMiddleware = new InngestMiddleware({
+  name: "Prisma Middleware",
+  register() {
+    const prisma = new PrismaClient();
+
+    return {
+      run(ctx) {
+        return {
+          input(ctx) {
+            return {
+              ctx: {
+                prisma,
+              },
+            };
+          },
+        };
+      },
+    };
+  },
+});
+
+// When defining a function...
+inngest.createFunction(
+  { name: "Example" },
+  { event: "app/user.created" },
+  async ({ prisma }) => {
+    await prisma.user.create(/* ... */);
+  }
+);
+```
