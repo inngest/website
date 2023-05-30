@@ -59,3 +59,9 @@ inngest.createFunction(
 As you can see above, all of our functions now have access to the `foo` variable within our function's input, including typing from the SDK inferring the alterations.
 
 We can use this pattern to add additional typed tooling to function runs.
+
+## Ordering middleware and types
+
+Middleware runs in the order specified when registering it (see [Middleware - Lifecycle - Registering and order](/docs/reference/middleware/lifecycle#registering-and-order)), which affects typing too.
+
+When inferring a mutated input or output, the SDK will apply changes from each middleware in sequence, just as it will at runtime. This means that for two middlewares that add a `foo` value to input arguments, the last one to run will be what it seen both in types and at runtime.
