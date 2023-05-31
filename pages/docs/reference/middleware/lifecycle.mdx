@@ -24,12 +24,12 @@ Middleware can be added in two places by providing an array of middleware when i
 // Adding middleware to a client
 const inngest = new Inngest({
   name: "My App",
-  middleware: [fooMiddleware, barMiddleware],
+  middleware: [errorHandlerMiddleware, loggingMiddleware],
 });
 
 // Adding middleware to a function
 inngest.createFunction(
-  { name: "Example", middleware: [bazMiddleware] },
+  { name: "Example", middleware: [dbConnectionMiddleware] },
   { event: "test" },
   async () => {
     // ...
