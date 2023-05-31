@@ -106,7 +106,7 @@ const sentryMiddleware = new InngestMiddleware({
 
 The following is an example of adding a [Prisma](https://www.prisma.io/?ref=inngest) client to all Inngest functions, allowing them immediate access without needing to create the client themselves.
 
-While this example uses Prisma, it serves as a good example of mutating function input to perform crucial setup for your functions to keep them to just business logic.
+While this example uses Prisma, it serves as a good example of using the [onFunctionRun -> input](/docs/reference/middleware/lifecycle#on-function-run-lifecycle) hook to mutate function input to perform crucial setup for your functions and keep them to just business logic.
 
 <Callout>
 💡 Types are inferred from middleware outputs, so your Inngest functions will see an appropriately-typed `prisma` property in their input.
@@ -125,6 +125,7 @@ const prismaMiddleware = new InngestMiddleware({
         return {
           input(ctx) {
             return {
+              // Anything passed via `ctx` will be merged with the function's arguments
               ctx: {
                 prisma,
               },
@@ -139,9 +140,9 @@ const prismaMiddleware = new InngestMiddleware({
 // When defining a function...
 inngest.createFunction(
   { name: "Example" },
-  { event: "app/user.created" },
+  { event: "app/user.loggedin" },
   async ({ prisma }) => {
-    await prisma.user.create(/* ... */);
+    await prisma.auditTrail.create(/* ... */);
   }
 );
 ```
