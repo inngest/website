@@ -89,7 +89,16 @@ The `init()` function can return functions for two separate lifecycles to hook i
                     The input data for the function. Only `event` and `runId` are available at this point.
                </Property>
                <Property name="steps" type="array">
-                    An array of previously-completed steps and their `data`.
+                    An array of previously-completed step objects.
+
+                    <Properties nested collapse>
+                      <Property name="data" type="any">
+                        The serialized data for this step if it was successful.
+                      </Property>
+                      <Property name="error" type="any">
+                        The serialized error for this step if it failed.
+                      </Property>
+                    </Properties>
                </Property>
                <Property name="fn" type="InngestFunction">
                     The function that is about to be executed.
