@@ -95,7 +95,8 @@ const sentryMiddleware = new InngestMiddleware({
             }
           },
           async beforeResponse() {
-            // Flush all events before closing the request
+            // Finish the transcation and flush data to Sentry before the
+            // request closes
             transaction.finish();
             await Sentry.flush();
           },
