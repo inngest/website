@@ -64,7 +64,7 @@ new InngestMiddleware({
   name: "Example Middleware",
   init() {
     // This runs when the client is initialized
-    // Use this to set up anything your plugin needs
+    // Use this to set up anything your middleware needs
     return {};
   },
 });
@@ -117,7 +117,7 @@ new InngestMiddleware({
 
 Here we use the `beforeExecution()` hook within the `onFunctionRun()` lifecycle.
 
-The use of [closures](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures) here means that our `onFunctionRun()` lifecycle can access anything from the plugin's initialization, like our `db` connection.
+The use of [closures](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures) here means that our `onFunctionRun()` lifecycle can access anything from the middleware's initialization, like our `db` connection.
 
 `onFunctionRun()` here is also called for every function execution, meaning you can run code specific to this execution without maintaining any global state. We can even conditionally register hooks based on incoming arguments. For example, here we only register a hook for a specific event trigger:
 
