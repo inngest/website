@@ -40,7 +40,7 @@ const sentryMiddleware = new InngestMiddleware({
 
     return {
       onFunctionRun({ ctx, fn }) {
-        // Keep adding context as we go deeper
+        // Add specific context for the given function run
         Sentry.setTags({
           "inngest.function.id": fn.id(client.name),
           "inngest.function.name": fn.name,
