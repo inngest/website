@@ -20,7 +20,11 @@ The following examples show how you might use middleware in some real-world scen
 
 ## Sentry error reporting and tracing
 
-The following example uses middleware with [Sentry](https://sentry.io/?ref=inngest) to add exception handling and tracing to function runs while adding searchable context to each log.
+This example uses [Sentry](https://sentry.io/?ref=inngest) to:
+
+- Capture exceptions for reporting
+- Add tracing to each function run
+- Include useful context for each exception and trace like function ID and event names
 
 ```ts
 import * as Sentry from "@sentry/node";
