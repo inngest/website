@@ -59,7 +59,7 @@ const sentryMiddleware = new InngestMiddleware({
         let execSpan: Sentry.Span;
 
         return {
-          input() {
+          transformInput() {
             return {
               ctx: {
                 // Add the Sentry client to the input arg so our
@@ -81,7 +81,7 @@ const sentryMiddleware = new InngestMiddleware({
           afterExecution() {
             execSpan.finish();
           },
-          output({ result, step }) {
+          transformOutput({ result, step }) {
             // Capture step output and log errors
             if (step) {
               Sentry.setTags({
@@ -128,7 +128,7 @@ const prismaMiddleware = new InngestMiddleware({
     return {
       onFunctionRun(ctx) {
         return {
-          input(ctx) {
+          transformInput(ctx) {
             return {
               // Anything passed via `ctx` will be merged with the function's arguments
               ctx: {

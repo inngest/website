@@ -159,7 +159,7 @@ export const createMyMiddleware = (logEventOutput: string) => {
         onFunctionRun({ ctx, fn, steps }) {
           if (ctx.event.name === logEventOutput) {
             return {
-              output({ result, step }) {
+              transformOutput({ result, step }) {
                 console.log(
                   `${logEventOutput} output: ${JSON.stringify(result)}`
                 );
