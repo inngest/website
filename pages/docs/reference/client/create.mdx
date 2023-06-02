@@ -51,8 +51,27 @@ Click the toggles on the top left of the code block to see the different methods
 </Callout>
 
 <CodeGroup forceTabs={true}>
-```ts {{ title: "Union" }}
-import { Inngest, EventSchemas } from "inngest";
+```ts {{ title: "v1" }}
+type Events = {
+  "app/account.created": {
+    name: "app/account.created";
+    data: {
+      userId: string;
+    };
+  };
+  "app/subscription.started": {
+    name: "app/subscription.started";
+    data: {
+      userId: string;
+      planId: string;
+    };
+  };
+};
+
+export const inngest = new Inngest<Events>({ name: "My App" });
+```
+```ts {{ title: "Union (v2)" }}
+import { EventSchemas, Inngest } from "inngest";
 
 type AppAccountCreated = {
   name: "app/account.created";
@@ -76,8 +95,8 @@ export const inngest = new Inngest({
   schemas: new EventSchemas().fromUnion<Events>(),
 });
 ```
-```ts {{ title: "Record "}}
-import { Inngest, EventSchemas } from "inngest";
+```ts {{ title: "Record (v2)"}}
+import { EventSchemas, Inngest } from "inngest";
 
 type Events = {
   "app/account.created": {
@@ -98,8 +117,8 @@ export const inngest = new Inngest({
   schemas: new EventSchemas().fromRecord<Events>(),
 });
 ```
-```ts {{ title: "Zod" }}
-import { Inngest, EventSchemas } from "inngest";
+```ts {{ title: "Zod (v2)" }}
+import { EventSchemas, Inngest } from "inngest";
 import { z } from "zod";
 
 const events = {
@@ -119,6 +138,42 @@ const events = {
 export const inngest = new Inngest({
   name: "My App",
   schemas: new EventSchemas().fromZod(events),
+});
+```
+```ts {{ title: "Stacking (v2)" }}
+import { EventSchemas, Inngest } from "inngest";
+import { z } from "zod";
+
+type Events = {
+  "app/user.created": {
+    data: { id: string };
+  };
+};
+
+const zodEventSchemas = {
+  "app/account.created": {
+    data: z.object({
+      userId: z.string(),
+    }),
+  },
+};
+
+type AppPostCreated = {
+  name: "app/post.created";
+  data: { id: string };
+};
+
+type AppPostDeleted = {
+  name: "app/post.deleted";
+  data: { id: string };
+};
+
+export const inngest = new Inngest({
+  name: "My App",
+  schemas: new EventSchemas()
+    .fromRecord<Events>()
+    .fromUnion<AppPostCreated | AppPostDeleted>()
+    .fromZod(zodEventSchemas),
 });
 ```
 </CodeGroup>
