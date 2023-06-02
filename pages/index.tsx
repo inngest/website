@@ -38,7 +38,7 @@ export default function Home() {
       <LocalDev />
 
       <CustomerQuote
-        className="mt-20 md:mt-4 mb-20"
+        className="mt-20 md:mt-4 mb-40"
         logo="/assets/customers/ocoya.svg"
         text="At Ocoya, we were struggling with the complexities of managing our
               social media and e-commerce workflows. Thanks to Inngest, we were

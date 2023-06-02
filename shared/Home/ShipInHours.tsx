@@ -11,7 +11,7 @@ export default function ShipInHours() {
   return (
     <div className="overflow-hidden pb-60 -mb-60">
       <div>
-        <Container className="mt-60 mb-30 relative z-30">
+        <Container className="mt-6 mb-30 relative z-30">
           <SectionHeader
             center
             pre="Built for every developer"
@@ -24,11 +24,11 @@ export default function ShipInHours() {
 
           <div className="flex justify-center">
             <p className="text-center max-w-md lg:max-w-xl mt-4 text-slate-200">
-            Build background jobs, scheduled jobs, and workflows by adding our SDK to your existing code and redeploying to your current platform.  Think in code without worrying about infra, queues, and config.
+            Build background jobs, scheduled jobs, and workflows by adding our SDK to your existing codebase and redeploying to your current platform.  Think in code without worrying about infra, queues, and config.
             </p>
           </div>
 
-          <div className="">
+          <div className="py-20">
             {/* BEFORE/AFTER, or WHAT WE DO, or, HOW IT WORKS, etc. */}
           </div>
 
