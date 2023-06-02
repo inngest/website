@@ -24,9 +24,7 @@ export default function ShipInHours() {
 
           <div className="flex justify-center">
             <p className="text-center max-w-md lg:max-w-xl mt-4 text-slate-200">
-              Our open-source dev server runs on your machine for local testing.
-              Get instant feedback and debugging tools so you can build
-              serverless functions with events like never before.
+            Build background jobs, scheduled jobs, and workflows by adding our SDK to your existing code and redeploying to your current platform.  Think in code without worrying about infra, queues, and config.
             </p>
           </div>
 
@@ -34,7 +32,7 @@ export default function ShipInHours() {
             {/* BEFORE/AFTER, or WHAT WE DO, or, HOW IT WORKS, etc. */}
           </div>
 
-          <div className="grid xl:grid-cols-3 gap-20 mb-20 lg:grid-cols-1 mt-20">
+          <div className="grid xl:grid-cols-3 gap-20 mb-20 lg:grid-cols-1 mt-20 px-32 xl:px-32">
             <div>
               <h3 className="font-semibold text-xl mb-4">Just write functions</h3>
               <p className="text-slate-200">We take care of the hard stuff for you automatically — without worrying about queues, retries, concurrency, throttling, rate limiting, or dead-letters.</p>

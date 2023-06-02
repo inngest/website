@@ -14,7 +14,7 @@ export default function Hero() {
             workflows, in your own code
           </h1>
           <p className="text-sm md:text-base text-slate-300 max-w-2xl leading-6 md:leading-7">
-          Easily develop reliable serverless workflows in your current code, without any new infrastructure.  Using Inngest, your entire team can ship reliable products faster&nbsp;than&nbsp;ever.</p>
+          Easily develop reliable serverless workflows in your current codebase, without any new infrastructure.  Using Inngest, your entire team can ship reliable products faster&nbsp;than&nbsp;ever.</p>
 
           <ul className="text-sm md:text-base text-slate-300 max-w-xl leading-5 md:leading-6 my-8 grid sm:grid-cols-2 gap-x-4 gap-y-3">
             <li

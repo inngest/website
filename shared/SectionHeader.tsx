@@ -19,11 +19,11 @@ const SectionHeader = ({ title, lede = "", center = false, pre }: SectionHeaderP
         {title}
       </h2>
       {typeof lede === "string" ? (
-        <p className={`text-indigo-200 max-w-md lg:max-w-xl text-sm md:text-base leading-5 md:leading-7 ${center ? "text-center" : "" }`}>
+        <p className={`text-slate-200 max-w-md lg:max-w-xl text-sm md:text-base leading-5 md:leading-7 ${center ? "text-center" : "" }`}>
           {lede}
         </p>
       ) : (
-        <div className={`text-indigo-200 max-w-md lg:max-w-xl text-sm md:text-base leading-5 md:leading-7 ${center ? "text-center" : "" }`}>
+        <div className={`text-slate-200 max-w-md lg:max-w-xl text-sm md:text-base leading-5 md:leading-7 ${center ? "text-center" : "" }`}>
           {lede}
         </div>
       )}

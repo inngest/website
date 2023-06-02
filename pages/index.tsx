@@ -2,8 +2,7 @@ import React from "react";
 import Header from "../shared/Header";
 import Hero from "../shared/Home/Hero";
 import ShipInHours from "../shared/Home/ShipInHours";
-import FitsYourWorkflow from "../shared/Home/FitsYourWorkflow";
-import DevUI from "../shared/Home/DevUI";
+import LocalDev from "../shared/Home/LocalDev";
 import OutTheBox from "../shared/Home/OutTheBox";
 import FullyManaged from "../shared/Home/FullyManaged";
 import Roadmap from "../shared/Home/Roadmap";
@@ -36,9 +35,7 @@ export default function Home() {
 
       <ShipInHours />
 
-      <FitsYourWorkflow />
-
-      <DevUI />
+      <LocalDev />
 
       <CustomerQuote
         className="mt-20 md:mt-4 mb-20"
