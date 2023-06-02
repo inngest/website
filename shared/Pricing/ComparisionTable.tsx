@@ -28,7 +28,7 @@ export default function ComparisonTable({ plans, features }) {
             {plans.map((plan, i) => (
               <th className="text-left px-6 py-8" key={i}>
                 <span className="block text-4xl mb-2">
-                  {plan.cost}
+                  {plan.cost.basePrice}
                   <span className="text-sm text-slate-400 ml-1 font-medium">
                     {plan.costTime}
                   </span>

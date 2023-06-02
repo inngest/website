@@ -19,10 +19,6 @@ type Plan = {
     quantity?: string;
     text: string;
   }[];
-  resources: {
-    ram: string;
-    maxRuntime: string;
-  };
 };
 
 type Feature = {
@@ -118,8 +114,12 @@ const FEATURES: Feature[] = [
 const PLANS: Plan[] = [
   {
     name: "Hobby",
-    cost: "$0",
-    costTime: "/month",
+    cost: {
+      basePrice: "$0",
+      included: "100k",
+      additionalPrice: "$10",
+      additionalRate: "100k",
+    },
     description: "Bring your project to life",
     cta: {
       href: "/sign-up?ref=pricing-hobby",
@@ -131,33 +131,30 @@ const PLANS: Plan[] = [
         text: "Events",
       },
       {
-        quantity: "50k",
-        text: "Function steps/month",
+        quantity: "Unlimited",
+        text: "Seats",
       },
       {
-        quantity: "1",
-        text: "Concurrent Function",
+        quantity: "25",
+        text: "Concurrent Functions",
       },
       {
-        quantity: "1",
-        text: "Seat",
-      },
-      {
-        quantity: "1 day",
+        quantity: "3 days",
         text: "History",
       },
       {
-        text: "Discord support",
+        text: "Discord Support",
       },
     ],
-    resources: {
-      ram: "1GB",
-      maxRuntime: "6 hours",
-    },
   },
   {
-    name: "Team",
-    cost: "From $20*",
+    name: "Startup",
+    cost: {
+      basePrice: "$100",
+      included: "10M",
+      additionalPrice: "$100",
+      additionalRate: "5M",
+    },
     costTime: "/month",
     description: "From Startup to scale-up",
     popular: true,
@@ -171,33 +168,29 @@ const PLANS: Plan[] = [
         text: "Events",
       },
       {
-        quantity: "100k - 10m",
-        text: "Function steps/month",
-      },
-      {
-        quantity: "100",
-        text: "Concurrent Functions",
-      },
-      {
-        quantity: "20",
+        quantity: "Unlimited",
         text: "Seats",
       },
       {
-        quantity: "7 days",
+        quantity: "500",
+        text: "Concurrent Functions",
+      },
+      {
+        quantity: "14 days",
         text: "History",
       },
       {
-        text: "Email support",
+        text: "Email Support",
       },
     ],
-    resources: {
-      ram: "1GB",
-      maxRuntime: "6 hours",
-    },
   },
   {
     name: "Enterprise",
-    cost: "Flexible",
+    cost: {
+      basePrice: "Starts at $800",
+      included: "100M+",
+      additionalPrice: "custom",
+    },
     description: "Powerful access for any scale",
     cta: {
       href: "/contact?ref=pricing-advanced",
@@ -209,29 +202,21 @@ const PLANS: Plan[] = [
         text: "Events",
       },
       {
-        quantity: "10m+",
-        text: "Function steps/month",
+        quantity: "Unlimited",
+        text: "Seats",
       },
       {
         quantity: "Custom",
         text: "Concurrent Functions",
       },
       {
-        quantity: "20+",
-        text: "Seats",
-      },
-      {
         quantity: "90 Days",
         text: "History",
       },
       {
-        text: "Email support",
+        text: "Email Support + SLAs",
       },
     ],
-    resources: {
-      ram: "up to 16GB",
-      maxRuntime: "6+ hours",
-    },
   },
 ];
 
@@ -265,14 +250,12 @@ export default function Pricing() {
             <br />
             Powerful functionality.
           </h1>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-8 lg:gap-8 text-center mb-8">
-            <div className="md:col-span-2 rounded-lg flex flex-col gap-y-8 md:gap-y-0 md:flex-row items-stretch">
-              <PlanCard content={PLANS[0]} />
-              <PlanCard content={PLANS[1]} />
-            </div>
-            <div className="flex items-stretch">
-              <PlanCard content={PLANS[2]} variant="dark" />
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-y-8 lg:gap-0 text-center mb-8">
+            {/* <div className="md:col-span-2 rounded-lg flex flex-col gap-y-8 md:gap-y-0 md:flex-row items-stretch"> */}
+            <PlanCard content={PLANS[0]} variant="light" />
+            <PlanCard content={PLANS[1]} variant="focus" />
+            <PlanCard content={PLANS[2]} variant="light" />
+            {/* </div> */}
           </div>
 
           <p className="text-slate-200 text-sm text-center">
@@ -445,7 +428,10 @@ export default function Pricing() {
                   Sleeps and other pauses do not count towards your concurrency
                   limit as your function isn't running while waiting.
                 </p>
-                <p>See more details at <a href="/docs/usage-limits/inngest">Usage Limits</a> page.</p>
+                <p>
+                  See more details at{" "}
+                  <a href="/docs/usage-limits/inngest">Usage Limits</a> page.
+                </p>
               </FAQRow>
               <FAQRow question={`Can I get a demo of the product?`}>
                 <p>
@@ -483,7 +469,10 @@ export default function Pricing() {
                   that, you can break it up into multiple steps (see: What is a
                   function step?).
                 </p>
-                <p>See more details at <a href="/docs/usage-limits/inngest">Usage Limits</a> page.</p>
+                <p>
+                  See more details at{" "}
+                  <a href="/docs/usage-limits/inngest">Usage Limits</a> page.
+                </p>
               </FAQRow>
               <FAQRow
                 question={`Can multiple functions be triggered by the same event?`}
