@@ -244,6 +244,7 @@ export function Property({
   type,
   required = false,
   attribute = false,
+  version,
   children,
 }: {
   name: string;
@@ -252,6 +253,8 @@ export function Property({
   required?: boolean;
   /** Is the property an attribute part of an object? (required/optional will be hidden) */
   attribute?: boolean;
+  /** The version at which this property is available, e.g. "v2.0.0+" */
+  version?: string;
   children: React.ReactElement;
 }) {
   return (
@@ -280,6 +283,12 @@ export function Property({
             </dd>
           </>
         )}
+        {version ? (
+          <div>
+            <dt className="sr-only">Version</dt>
+            <VersionBadge version={version as `v${string}`} />
+          </div>
+        ) : null}
         <dt className="sr-only">Description</dt>
         <dd className="w-full text-sm flex-none [&>:first-child]:mt-0 [&>:last-child]:mb-0">
           {children}

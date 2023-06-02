@@ -21,10 +21,10 @@ const inngest = new Inngest({
   <Property name="eventKey" type="string">
     An Inngest [Event Key](/docs/events/creating-an-event-key). Alternatively, set the `INNGEST_EVENT_KEY` environment variable.
   </Property>
-  <Property name="schemas" type="EventSchemas">
+  <Property name="schemas" type="EventSchemas" version="v2.0.0+">
     Event payload types. See [Defining Event Payload Types](#defining-event-payload-types).
   </Property>
-  <Property name="middleware" type="array">
+  <Property name="middleware" type="array" version="v2.0.0+">
     A stack of [middleware](/docs/reference/middleware/overview) to add to the client.
   </Property>
   <Property name="env" type="string">
