@@ -83,7 +83,7 @@ export default function DevUI() {
       <Container className="lg:mb-40">
         <div className="bg-slate-900/70 backdrop-blur-sm -mt-40 pt-40 md:pt-32 lg:px-24 xl:px-32 rounded-xl px-8">
           <h2 className="text-white text-center font-medium pt-4 pb-8 text-2xl">
-            Run Inngest locally with production parity
+            Run Inngest locally for production parity
           </h2>
 
           <div className="flex flex-col xl:flex-row justify-between rounded-lg">

@@ -34,8 +34,8 @@ export default function ShipInHours() {
 
           <div className="grid xl:grid-cols-3 gap-20 mb-20 lg:grid-cols-1 mt-20 px-32 xl:px-32">
             <div>
-              <h3 className="font-semibold text-xl mb-4">Just write functions</h3>
-              <p className="text-slate-200">We take care of the hard stuff for you automatically — without worrying about queues, retries, concurrency, throttling, rate limiting, or dead-letters.</p>
+              <h3 className="font-semibold text-xl mb-4">Focus on functions</h3>
+              <p className="text-slate-200">Develop faster by working only on your business logic.  We take care of the hard stuff for you, including retries, concurrency, throttling, rate limiting, and failure replay.</p>
             </div>
             <div>
               <h3 className="font-semibold text-xl mb-4">Simple and powerful primitives</h3>
