@@ -1,6 +1,7 @@
 import React from "react";
 import Header from "../shared/Header";
 import Hero from "../shared/Home/Hero";
+import ShipInHours from "../shared/Home/ShipInHours";
 import FitsYourWorkflow from "../shared/Home/FitsYourWorkflow";
 import DevUI from "../shared/Home/DevUI";
 import OutTheBox from "../shared/Home/OutTheBox";
@@ -32,6 +33,8 @@ export default function Home() {
       <Header />
 
       <Hero />
+
+      <ShipInHours />
 
       <FitsYourWorkflow />
 

@@ -1,0 +1,119 @@
+import CopyBtn from "./CopyBtn";
+import Container from "../layout/Container";
+import SendEvents from "./HomeImg/SendEvents";
+import SectionHeader from "../SectionHeader";
+import { log } from "console";
+import HomePatternsCheck from "../Icons/HomePatternsCheck";
+import ArrowRight from "../Icons/ArrowRight";
+import Github from "../Icons/Github";
+
+export default function ShipInHours() {
+  return (
+    <div className="overflow-hidden pb-60 -mb-60">
+      <div>
+        <Container className="mt-60 mb-30 relative z-30">
+          <SectionHeader
+            center
+            pre="Built for every developer"
+            title={
+              <span className="gap-2 items-end text-slate-200 font-medium text-2xl lg:text-4xl xl:text-5xl mb-4 tracking-tighter text-center">
+                Ship in hours, not months
+              </span>
+            }
+          />
+
+          <div className="flex justify-center">
+            <p className="text-center max-w-md lg:max-w-xl mt-4 text-slate-200">
+              Our open-source dev server runs on your machine for local testing.
+              Get instant feedback and debugging tools so you can build
+              serverless functions with events like never before.
+            </p>
+          </div>
+
+          <div className="">
+            {/* BEFORE/AFTER, or WHAT WE DO, or, HOW IT WORKS, etc. */}
+          </div>
+
+          <div className="grid xl:grid-cols-3 gap-20 mb-20 lg:grid-cols-1 mt-20">
+            <div>
+              <h3 className="font-semibold text-xl mb-4">Just write functions</h3>
+              <p className="text-slate-200">We take care of the hard stuff for you automatically — without worrying about queues, retries, concurrency, throttling, rate limiting, or dead-letters.</p>
+            </div>
+            <div>
+              <h3 className="font-semibold text-xl mb-4">Simple and powerful primitives</h3>
+              <p className="text-slate-200">Write long-running workflows without learning distributed systems with a single line of the SDK, on any platform – even serverless functions.</p>
+            </div>
+            <div>
+              <h3 className="font-semibold text-xl mb-4">Any framework, any platform</h3>
+              <p className="text-slate-200">Drop the SDK into your existing codebase and deploy to your current cloud, using your current CI/CD process.</p>
+            </div>
+          </div>
+
+          <div>
+            <p className="text-sm text-center text-gray-400">Works with all the frameworks and platforms you already use:</p>
+          </div>
+
+          <div className="flex items-end lg:flex-row justify-evenly xl:justify-center w-full m-auto flex-wrap mt-8">
+            <a
+              href="/docs/sdk/serve?ref=homepage-fits-your-workflow#framework-next-js"
+              className="flex w-1/2 max-w-[140px] hover:scale-110 transition-all duration-150 opacity-50 hover:opacity-100"
+            >
+              <img
+                className="max-w-[140px]"
+                src="/assets/homepage/send-events/next-js.png"
+              />
+            </a>
+            <a
+              href="/docs/sdk/serve?ref=homepage-fits-your-workflow#framework-express"
+              className="flex w-1/2 max-w-[140px] hover:scale-110 transition-all duration-150 opacity-50 hover:opacity-100"
+            >
+              <img
+                className="max-w-[140px]"
+                src="/assets/homepage/send-events/express.png"
+              />
+            </a>
+            <a
+              href="/docs/sdk/serve?ref=homepage-fits-your-workflow#framework-redwood"
+              className="flex w-1/2 max-w-[140px] hover:scale-110 transition-all duration-150 opacity-50 hover:opacity-100"
+            >
+              <img
+                className="max-w-[140px]"
+                src="/assets/homepage/send-events/redwood.png"
+              />
+            </a>
+
+            <a
+              href="/docs/deploy/vercel?ref=homepage-fits-your-workflow"
+              className="flex w-1/2 md:w-1/3 max-w-[140px] hover:scale-110 transition-all duration-150 opacity-50 hover:opacity-100"
+            >
+              <img
+                className="max-w-[140px]"
+                src="/assets/homepage/send-events/vercel.png"
+              />
+            </a>
+            <a
+              href="/docs/deploy/netlify?ref=homepage-fits-your-workflow"
+              className="flex w-1/2 md:w-1/3 max-w-[140px] hover:scale-110 transition-all duration-150 opacity-50 hover:opacity-100"
+            >
+              <img
+                className="max-w-[140px]"
+                src="/assets/homepage/send-events/netlify.png"
+              />
+            </a>
+            <a
+              href="/docs/deploy/cloudflare?ref=homepage-fits-your-workflow"
+              className="flex w-1/2 md:w-1/3 max-w-[140px] hover:scale-110 transition-all duration-150 opacity-50 hover:opacity-100"
+            >
+              <img
+                className="max-w-[140px]"
+                src="/assets/homepage/send-events/cloudflare-pages.png"
+              />
+            </a>
+
+          </div>
+
+        </Container>
+      </div>
+    </div>
+  )
+}

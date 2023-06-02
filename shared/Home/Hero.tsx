@@ -8,14 +8,13 @@ export default function Hero() {
     <div className="relative">
       <Container className="pt-20 pb-16 md:pt-36 md:pb-28 lg:pt-36 lg:pb-40 xl:pt-40 xl:pb-32  2xl:pt-56 2xl:pb-48  flex items-center">
         <HeroImg />
-        <div className="max-w-[1000px] relative pr-10 lg:px-auto m-x-auto py-10 rounded-lg">
+        <div className="max-w-[900px] relative pr-10 lg:px-auto m-x-auto py-10 rounded-lg">
           <h1 className="text-4xl leading-[48px] sm:text-5xl sm:leading-[58px] lg:text-6xl lg:leading-[68px] tracking-[-2px] text-slate-50 mb-5 font-bold">
-            Zero config queues and
-            step-functions, hosted anywhere
+            Serverless queues and
+            workflows, in your own code
           </h1>
-          <p className="text-sm md:text-base text-slate-300 max-w-xl leading-6 md:leading-7">
-          Develop workflows in Typescript without managing queues, state, or infra.  Using Inngest, you can develop and ship reliable products faster than ever.
-          </p>
+          <p className="text-sm md:text-base text-slate-300 max-w-2xl leading-6 md:leading-7">
+          Easily develop reliable serverless workflows in your current code, without any new infrastructure.  Using Inngest, your entire team can ship reliable products faster&nbsp;than&nbsp;ever.</p>
 
           <ul className="text-sm md:text-base text-slate-300 max-w-xl leading-5 md:leading-6 my-8 grid sm:grid-cols-2 gap-x-4 gap-y-3">
             <li
@@ -48,7 +47,7 @@ export default function Hero() {
                 background: "url(/assets/check-white.svg) no-repeat 0 1px",
               }}
             >
-              Step functions
+              Workflows
             </li>
             <li
               className="pl-8"
