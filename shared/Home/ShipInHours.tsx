@@ -66,11 +66,11 @@ export default function ShipInHours() {
             </div>
           </div>
 
-          <div>
+          <div className="pt-12">
             <p className="text-sm text-center text-gray-400">Works with all the frameworks and platforms you already use:</p>
           </div>
 
-          <div className="flex items-end lg:flex-row justify-evenly xl:justify-center w-full m-auto flex-wrap mt-8">
+          <div className="flex items-end lg:flex-row justify-evenly xl:justify-center w-full m-auto flex-wrap my-8">
             <a
               href="/docs/sdk/serve?ref=homepage-fits-your-workflow#framework-next-js"
               className="flex w-1/2 max-w-[140px] hover:scale-110 transition-all duration-150 opacity-50 hover:opacity-100"
