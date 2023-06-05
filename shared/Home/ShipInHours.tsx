@@ -28,11 +28,30 @@ export default function ShipInHours() {
             </p>
           </div>
 
-          <div className="py-20">
+          <div className={`
+            my-20 grid grid-cols-3 lg:gap-20 py-20 pl-20
+            bg-slate-900/70 backdrop-blur-sm rounded-xl
+          `}>
+            <div className="flex flex-col justify-stretch items-center h-full">
+              <div className="text-center pb-20">
+                <p className="font-semibold text-xl mb-4">With Inngest</p>
+                <p>Write and deploy workflows as functions — everything else is done for you.</p>
+              </div>
+              <div className="flex items-center flex-1">
+              <img src="/assets/with-inngest.svg" alt="With Inngest"  className="max-w-[210px]" />
+              </div>
+            </div>
+            <div className="col-span-2 flex flex-col items-center justify-center">
+              <div className="text-center max-w-[400px] m-auto pb-20">
+                <p className="font-semibold text-xl mb-4">Without Inngest</p>
+                <p>Provision queues, handlers, and glue code for each job in a workflow, with everything handled manually.</p>
+              </div>
+              <img src="/assets/without-inngest.svg" alt="With Inngest" className="max-w-[540px]"/>
+            </div>
             {/* BEFORE/AFTER, or WHAT WE DO, or, HOW IT WORKS, etc. */}
           </div>
 
-          <div className="grid xl:grid-cols-3 gap-20 mb-20 lg:grid-cols-1 mt-20 px-32 xl:px-32">
+          <div className="grid xl:grid-cols-3 xl:gap-20 gap-y-20 mb-20 lg:grid-cols-1 mt-20 xl:px-32">
             <div>
               <h3 className="font-semibold text-xl mb-4">Focus on functions</h3>
               <p className="text-slate-200">Develop faster by working only on your business logic.  We take care of the hard stuff for you, including retries, concurrency, throttling, rate limiting, and failure replay.</p>
