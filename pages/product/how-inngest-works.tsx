@@ -4,7 +4,7 @@ import Link from "next/link";
 import Header from "../../shared/Header";
 import Footer from "../../shared/Footer";
 import Container from "../../shared/layout/Container";
-import HowInngestWorks from "src/shared/Graphics/HowInngestWorks";
+import HowInngestWorksGraphic from "src/shared/Graphics/HowInngestWorks";
 
 export async function getStaticProps() {
   return {
@@ -19,7 +19,7 @@ export async function getStaticProps() {
   };
 }
 
-export default function Patterns() {
+export default function HowInngestWorks() {
   return (
     <div>
       <Header />
@@ -53,9 +53,9 @@ export default function Patterns() {
 
           <section className="flex flex-col gap-8">
             <div className="flex items-center justify-center">
-              <HowInngestWorks />
+              <HowInngestWorksGraphic />
             </div>
-            <div className="mb-12 mx-auto max-w-2xl flex flex-col gap-4 text-lg font-medium">
+            <div className="mb-12 mx-auto max-w-2xl flex flex-col gap-8 text-lg font-medium">
               <p>
                 The lifecycle of a background job starts in your application
                 with an event.
