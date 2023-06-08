@@ -1,6 +1,6 @@
 import classNames from "src/utils/classNames";
 import { Button } from "../Button";
-import { Info } from "react-feather";
+import InformationCircle from "src/shared/Icons/InformationCircle";
 
 export default function PlanCard({ variant = "light", content }) {
   const theme = {
@@ -46,31 +46,34 @@ export default function PlanCard({ variant = "light", content }) {
           {content.name}
         </h2>
         <p
-          className={`text-3xl mt-2 -mr-4 font-bold tracking-tight text-indigo-500 ${theme[variant].price}`}
+          className={`text-4xl mt-4 -mr-4 font-bold tracking-tight text-indigo-500 ${theme[variant].price}`}
         >
           {content.cost.basePrice}
           <span
             className={`text-sm font-medium ml-0.5 ${theme[variant].secondary}`}
           >
-            /mo
+            /{content.cost.period}
           </span>
         </p>
         <p
-          className={`text-sm mt-2 font-medium flex items-center justify-center  ${theme[variant].description}`}
+          className={`text-base mt-4 font-medium flex items-center justify-center ${theme[variant].description}`}
         >
           {content.cost.included} Function Steps{" "}
-          <Info className="inline-flex h-3" />
+          <a
+            href="#what-is-a-function-step"
+            className="ml-1.5 transition-all text-slate-500 hover:text-slate-700"
+          >
+            <InformationCircle size="1.2em" />
+          </a>
         </p>
         <div className="flex justify-center mt-4">
-          <div
-            className={`py-2 px-3 rounded-full text-sm font-medium ${theme[variant].row} ${theme[variant].primary}`}
-          >
+          <div className={`text-sm font-medium ${theme[variant].secondary}`}>
             {content.cost.additionalPrice === "custom" ? (
-              "Custom pricing"
+              <>&nbsp;</>
             ) : (
               <>
-                + {content.cost.additionalPrice} per{" "}
-                {content.cost.additionalRate} Function Steps
+                + <strong>{content.cost.additionalPrice}</strong> per additional{" "}
+                <strong>{content.cost.additionalRate}</strong>
               </>
             )}
           </div>
