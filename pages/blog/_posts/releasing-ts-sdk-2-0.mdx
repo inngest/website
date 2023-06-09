@@ -9,7 +9,7 @@ disableCTA: true
 
 We're thrilled to announce the release of Inngest's TypeScript SDK v2.0, featuring some powerful new features alongside some housekeeping to keep the SDK a consistent, smooth experience.
 
-Check out the [v2 migration guide](https://www.inngest.com/docs/guides/logging?ref=blog) to learn how to upgrade today.
+Check out the [v2 migration guide](/docs/guides/logging?ref=blog-sdk-2-0) to learn how to upgrade today.
 
 ## Better Event Typing
 
@@ -27,16 +27,16 @@ export const inngest = new Inngest({
 });
 ```
 
-This provides everyone with massive benefits.
+This provides everyone with massive benefits:
 
-- Allows you to quickly discover every way to specify event payload types
+- Improves discoverability of each way to specify event payload types
 - You get specific, easy-to-fix errors for each method
 - Gives Inngest the ability to easily add support for new methods (including generated types in the future)
 - Gives Inngest space to add schema definition options in the future like `.allowUntyped()`
 
 Internally, this change also frees up the Inngest client from being passed a type, allowing us to perform even better type inference and build more powerful tooling, like middleware.
 
-Check out [Defining Event Payload Types](https://www.inngest.com/docs/reference/client/create#defining-event-payload-types) to learn about specifying types in v2.
+Check out [Defining Event Payload Types](/docs/reference/client/create?ref=blog-sdk-2-0#defining-event-payload-types) to learn about specifying types in v2.
 
 ## Middleware
 
@@ -76,7 +76,7 @@ const inngest = new Inngest({
 
 One of our aims with middleware is to make sure it's powerful enough to use for some of our own internal code in the SDK itself; we can't wait to see what you do with it!
 
-Check out the [Advanced: Middleware](https://www.inngest.com/docs/reference/middleware/overview/?ref=blog) documentation to get started with middleware and see some examples.
+Check out the [Advanced: Middleware](/docs/reference/middleware/overview/?ref=blog-sdk-2-0) documentation to get started with middleware and see some examples.
 
 ## Logging
 
@@ -102,7 +102,7 @@ Logging in serverless environments is often tricky, and a common problem we see 
 
 This `logger` accounts for all that, meaning you can immediately ship logs with your favorite logger.
 
-Check out [Logging in Inngest](https://www.inngest.com/docs/guides/logging/?ref=blog) to see how to get started specifying your own logger and see how we add helpful metadata to your logs, too!
+Check out [Logging in Inngest](/docs/guides/logging/?ref=blog-sdk-2-0) to see how to get started specifying your own logger and see how we add helpful metadata to your logs, too!
 
 ## What's next
 
@@ -110,4 +110,4 @@ Version 2.0 of the Inngest TypeScript SDK has established a strong foundation fo
 
 With these new foundations in place, we can focus on further refining and expanding upon these concepts, ultimately providing you with even more powerful tools and features in the future.
 
-We're excited to see what you'll create with v2! Check out the [v2 migration guide](https://www.inngest.com/docs/guides/logging?ref=blog) to learn how to upgrade today.
+We're excited to see what you'll create with v2! Check out the [v2 migration guide](/docs/guides/logging?ref=blog-sdk-2-0) to learn how to upgrade today.
