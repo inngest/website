@@ -26,22 +26,22 @@ export default function HowInngestWorks() {
           }
           @keyframes svg-pulse-series-1 {
             10% { stroke: #38bdf8; }
-            20% { stroke: #e0f2fe;  }
+            20% { stroke: #e0f2fe; stroke-width: 4px; }
             30% { stroke: #38bdf8; }
           }
           @keyframes svg-pulse-series-2 {
             30% { stroke: #38bdf8; }
-            40% { stroke: #e0f2fe;  }
+            40% { stroke: #e0f2fe; stroke-width: 4px; }
             50% { stroke: #38bdf8; }
           }
           @keyframes svg-pulse-series-3 {
             50% { stroke: #38bdf8; }
-            60% { stroke: #e0f2fe;  }
+            60% { stroke: #e0f2fe; stroke-width: 4px; }
             70% { stroke: #38bdf8; }
           }
           @keyframes svg-pulse-series-4 {
             70% { stroke: #38bdf8; }
-            80% { stroke: #e0f2fe;  }
+            80% { stroke: #e0f2fe; stroke-width: 4px; }
             90% { stroke: #38bdf8; }
           }
           `,
