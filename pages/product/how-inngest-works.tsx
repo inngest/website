@@ -52,6 +52,9 @@ export default function HowInngestWorks() {
           </div>
 
           <section className="flex flex-col gap-8">
+            <h2 className="text-2xl font-semibold tracking-tight">
+              The Lifecycle of an Inngest Function
+            </h2>
             <div className="flex items-center justify-center">
               <HowInngestWorksGraphic />
             </div>
@@ -96,6 +99,48 @@ export default function HowInngestWorks() {
                   .
                 </li>
               </ol>
+            </div>
+          </section>
+
+          <section className="mt-16 flex flex-col gap-8">
+            <h2 className="text-2xl font-semibold tracking-tight">
+              How Inngest Executes Steps
+            </h2>
+            <div className="flex flex-col md:flex-row gap-8">
+              <div className="my-4 max-w-3xl">
+                <p className="">
+                  Using the Inngest SDK's{" "}
+                  <code className="text-sm bg-slate-800 text-slate-200">
+                    step
+                  </code>{" "}
+                  tooling (e.g.{" "}
+                  <code className="text-sm bg-slate-800 text-slate-200">
+                    step.run
+                  </code>
+                  ,{" "}
+                  <code className="text-sm bg-slate-800 text-slate-200">
+                    step.sleep
+                  </code>
+                  ), splits your function into individually callable and
+                  retriable code segments. Each step is invoked separately via
+                  HTTP which enables you to write functions that run beyond your
+                  preferred platform's timeouts or limitations, including
+                  sleeping a function for hours, days, or weeks.
+                </p>
+                {/* Describe how it works in 2-4 key bullets/sections */}
+                <ul>
+                  <li>Memoization</li>
+                  <li>Invoking & retrying steps</li>
+                  <li>Managing state over steps</li>
+                  <li>Sleeping</li>
+                </ul>
+              </div>
+              <div>
+                <>
+                  Code example here for steps and sleep w/ line number
+                  highlights
+                </>
+              </div>
             </div>
           </section>
         </Container>
