@@ -264,6 +264,46 @@ const FEATURES: Feature[] = [
     all: true,
     infoUrl: "/docs/deploy/vercel?ref=pricing",
   },
+  {
+    name: "Discord Support",
+    plans: {
+      Team: true,
+      Startup: true,
+      Enterprise: true,
+    },
+  },
+  {
+    name: "Email Support",
+    plans: {
+      Team: false,
+      Startup: true,
+      Enterprise: true,
+    },
+  },
+  {
+    name: "Support SLA",
+    plans: {
+      Team: false,
+      Startup: false,
+      Enterprise: true,
+    },
+  },
+  {
+    name: "Onboarding Support",
+    plans: {
+      Team: false,
+      Startup: false,
+      Enterprise: true,
+    },
+  },
+  {
+    name: "HIPPA BAA Available",
+    plans: {
+      Team: false,
+      Startup: false,
+      Enterprise: true,
+    },
+  },
 ];
 
 const stepExamples = {
