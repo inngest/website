@@ -45,8 +45,8 @@ const PLANS: Plan[] = [
     cost: {
       basePrice: "$20",
       included: "100k",
-      additionalPrice: "$10",
-      additionalRate: "100k",
+      additionalPrice: "$1",
+      additionalRate: "10k",
       period: "month",
     },
     description: "Bring your product to life",
