@@ -148,7 +148,7 @@ const PLANS: Plan[] = [
         text: "Discord + Email Support + SLAs",
       },
       {
-        quantity: "HIPPA BAA Available",
+        quantity: "HIPAA BAA Available",
         text: "Compliance",
       },
     ],
