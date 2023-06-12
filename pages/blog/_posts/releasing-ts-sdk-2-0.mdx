@@ -13,7 +13,7 @@ Check out the [v2 migration guide](/docs/guides/logging?ref=blog-sdk-2-0) to lea
 
 ## Better Event Typing
 
-There were some common pain points around declaring event payload types in v1. You were always locked into a specific internal structure, but we also supported a few different inputs, meaning TypeScript errors attempting to help users get it right would be _huge_.
+Previously, types were defined using a verbose structure and could be passed as generics in several ways. Issues with this resulted in large, difficult to parse TypeScript errors which weren't helpful to the end developer.
 
 We've built some new foundation for this in v2, including support for [Zod](https://zod.dev/?ref=inngest).
 
@@ -42,7 +42,13 @@ Check out [Defining Event Payload Types](/docs/reference/client/create?ref=blog-
 
 Following the schema change, we can now add middleware. Middleware allows you to hook into various lifecycles of an Inngest client to add custom functionality.
 
-Some everyday use cases for middleware include error monitoring, data transformations, logging support, and pre-run setup like connecting to databases or adding tooling or patterns using Inngest's step tooling as building blocks.
+Some everyday use cases for middleware include:
+
+- Error monitoring (check out our [Sentry example](/docs/reference/middleware/examples?ref=blog-sdk-2-0#sentry-error-reporting-and-tracing))
+- Data transformations
+- Logging support (check out our [logging example](/docs/reference/middleware/examples?ref=blog-sdk-2-0#logging))
+- Pre-run setup like connecting to databases
+- Adding tooling or patterns using Inngest's step tooling as building blocks
 
 It even hooks into the Inngest client's typing, meaning you can use middleware to enhance your client however you see fit.
 
