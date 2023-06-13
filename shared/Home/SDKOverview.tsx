@@ -3,6 +3,7 @@ import Image from "next/image";
 
 import Container from "../layout/Container";
 import CodeWindow from "../CodeWindow";
+import Heading from "./Heading";
 
 const codeSnippet = `
 inngest.createFunction(
@@ -54,14 +55,12 @@ export default function SDKOverview() {
   return (
     <Container className="my-36 max-w-[1200px] flex flex-col lg:flex-row justify-center items-start gap-24 tracking-tight">
       <div className="mx-auto max-w-lg">
-        <h2 className="text-[40px] leading-snug font-semibold text-white">
-          From Proof-of-Concept to Production in Record Time
-        </h2>
-        <p className="my-4 leading-loose text-indigo-200">
-          Build everything from simple tasks to long-lived workflows using our
+        <Heading
+          title="From Proof-of-Concept to Production in Record Time"
+          lede="Build everything from simple tasks to long-lived workflows using our
           SDK. With Inngest, there is zero infrastructure to set up - just write
-          code.
-        </p>
+          code."
+        />
 
         <div className="mt-8 flex flex-col gap-5 max-w-[468px]">
           {highlights.map(({ title, description }, idx) => (

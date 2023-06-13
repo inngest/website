@@ -92,9 +92,10 @@ export default function Home() {
         />
       </div>
 
-      <ShipInHours />
-
-      <LocalDev />
+      <div className="">
+        {/* TODO - background colors and white bar */}
+        <LocalDev />
+      </div>
 
       <CustomerQuote
         className="mt-20 md:mt-4 mb-40"
