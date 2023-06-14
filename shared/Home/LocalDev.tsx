@@ -10,7 +10,7 @@ export default function LocalDev({ className }: { className?: string }) {
     navigator.clipboard?.writeText(copy);
   };
   return (
-    <Container className={`mt-44 mb-44 relative z-30 ${className}`}>
+    <Container className={`mt-44 relative z-30 ${className}`}>
       <div>
         <Heading
           title="End-to-End Local Development"
