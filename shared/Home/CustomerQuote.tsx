@@ -33,13 +33,7 @@ export default function CustomerQuote({
   avatar?: string;
 }) {
   return (
-    <aside
-      className={clsx(
-        "py-5",
-        className,
-        !className?.match(/absolute/) && "relative"
-      )}
-    >
+    <aside className={clsx("py-5 relative", className)}>
       <div
         className={clsx(
           "absolute top-0 z-0 w-full h-full rounded-[14px] backdrop-blur bg-white/5",

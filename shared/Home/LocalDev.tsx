@@ -46,8 +46,8 @@ export default function LocalDev({ className }: { className?: string }) {
         src="/assets/homepage/dev-server-screenshot.png"
         alt="Inngest Dev Server Screenshot"
         className={`
-          mt-14
-          rounded-sm shadow-none m-auto w-screen scale-80 origin-center
+          mt-14 w-full
+          rounded-sm shadow-none m-auto scale-80 origin-center
           pointer-events-none
           max-w-6xl
         `}
@@ -57,7 +57,7 @@ export default function LocalDev({ className }: { className?: string }) {
         quote="It's sensational - This is the best way to test a background job. I’ve never had a UI like this that I can follow and see my workflow."
         name="Garrett Tolbert - Vercel"
         avatar="/assets/customers/vercel-garrett-tolbert.jpg"
-        className="max-w-lg absolute -bottom-20 left-[20%]"
+        className="max-w-lg md:absolute md:-bottom-20 md:left-[20%]"
       />
     </Container>
   );

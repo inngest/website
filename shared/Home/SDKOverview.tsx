@@ -54,7 +54,7 @@ const highlights = [
 export default function SDKOverview() {
   return (
     <Container className="my-36 max-w-[1200px] flex flex-col lg:flex-row justify-center items-start gap-24 tracking-tight">
-      <div className="mx-auto max-w-lg">
+      <div className="mx-4 sm:mx-auto max-w-lg">
         <Heading
           title="From Proof-of-Concept to Production in Record Time"
           lede="Build everything from simple tasks to long-lived workflows using our
@@ -68,7 +68,9 @@ export default function SDKOverview() {
               className="py-6 px-9 relative bg-slate-950/50 bg-cover"
               style={{ backgroundImage: `url(/assets/textures/wave.svg)` }}
             >
-              <h3 className="text-xl font-semibold text-indigo-50">{title}</h3>
+              <h3 className="text-lg sm:text-xl font-semibold text-indigo-50">
+                {title}
+              </h3>
               <p className="mt-2 text-sm text-indigo-200">{description}</p>
               <CheckCircleIcon className="absolute -left-3.5 top-0 bottom-0 my-auto h-7 w-7 text-indigo-500" />
             </div>

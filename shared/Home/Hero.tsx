@@ -5,8 +5,8 @@ import Container from "../layout/Container";
 
 export default function Hero() {
   return (
-    <Container className="mt-36 tracking-tight">
-      <div className="mb-48 text-center">
+    <Container className="mt-24 md:mt-36 tracking-tight">
+      <div className="mb-12 sm:mb-48 text-center">
         <h1 className="text-4xl md:text-[3.125rem] md:leading-[3.75rem] font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#E2BEFF] via-white to-[#AFC1FF] drop-shadow">
           Effortless serverless queues,
           <br />
