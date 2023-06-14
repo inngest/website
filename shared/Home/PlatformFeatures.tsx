@@ -8,19 +8,19 @@ const highlights = [
     title: "Ship Reliable Code",
     description:
       "All functions are retried automatically. Configure concurrency, rate limiting and backoffs with ease.",
-    img: "/assets/homepage/out-the-box/automatic-retry.jpg",
+    img: "/assets/homepage/platform/reliable-code.svg",
   },
   {
     title: "Powerful Scheduling",
     description:
       "Enqueue future work, sleep for months, and dynamically cancel jobs without managing job state and plumbing multiple jobs together.",
-    img: "/assets/homepage/out-the-box/sleep.jpg",
+    img: "/assets/homepage/platform/powerful-scheduling.svg",
   },
   {
     title: "Replay Functions With The Click of a Button",
     description:
       "Forget the dead letter queue. Replay functions that have failed or replay functions in your local environment to debug issues easier than ever before.",
-    img: "/assets/homepage/out-the-box/automatic-retry.jpg",
+    img: "/assets/homepage/platform/replay-functions.svg",
   },
 ];
 
@@ -45,7 +45,7 @@ export default function PlatformFeatures() {
             </div>
             <img
               src={img}
-              className={`w-full px-12 pointer-events-none md:col-span-2 ${
+              className={`w-full max-h-72 px-12 pointer-events-none md:col-span-2 ${
                 idx % 2 === 0 ? "" : "md:col-start-0 md:order-1"
               }`}
               alt={`Graphic for ${title}`}
