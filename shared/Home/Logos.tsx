@@ -50,7 +50,7 @@ export default function Logos({
                   alt={name}
                   width={120}
                   height={30}
-                  className="text-white max-h-[40px] pointer-events-none opacity-80 transition-all group-hover:opacity-100"
+                  className="text-white max-h-[40px] pointer-events-none opacity-80 transition-all group-hover:opacity-100 grayscale group-hover:grayscale-0"
                 />
               </Link>
             );
@@ -60,9 +60,10 @@ export default function Logos({
               key={idx}
               src={src}
               alt={name}
+              title={name}
               width={120}
               height={30}
-              className="text-white max-h-[50px] pointer-events-none"
+              className="text-white max-h-[36px] transition-all grayscale hover:grayscale-0"
             />
           );
         })}

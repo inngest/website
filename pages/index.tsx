@@ -48,9 +48,10 @@ export default function Home() {
         logos={[
           { src: "/assets/customers/ocoya.svg", name: "Ocoya" },
           { src: "/assets/customers/snaplet-dark.svg", name: "Snaplet" },
-          { src: "/assets/customers/ocoya.svg", name: "Ocoya" },
-          { src: "/assets/customers/ocoya.svg", name: "Ocoya" },
-          { src: "/assets/customers/ocoya.svg", name: "Ocoya" },
+          { src: "/assets/customers/tono-logo.png", name: "Tono Health" },
+          // { src: "/assets/customers/semgrep-logo.svg", name: "Semgrep" },
+          { src: "/assets/customers/finta-logo.png?v=1", name: "Finta.io" },
+          { src: "/assets/customers/yoke-logo.svg", name: "Yoko" },
         ]}
       />
 
