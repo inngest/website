@@ -27,7 +27,7 @@ const highlights = [
 
 export default function RunAnywhere() {
   return (
-    <Container className="my-44 tracking-tight">
+    <Container className="mt-64 mb-24 tracking-tight">
       <Heading
         title={
           <>
