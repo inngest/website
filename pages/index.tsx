@@ -16,6 +16,7 @@ import Patterns from "src/shared/Home/Patterns";
 import GetThingsShipped from "src/shared/Home/GetThingsShipped";
 import RunAnywhere from "src/shared/Home/RunAnywhere";
 import PlatformFeatures from "src/shared/Home/PlatformFeatures";
+import FeatureCallouts from "src/shared/Home/FeatureCallouts";
 
 export async function getStaticProps() {
   return {
@@ -33,13 +34,12 @@ export async function getStaticProps() {
 export default function Home() {
   return (
     <div className="home font-sans bg-[#050911]">
+      <Header />
       <div
         style={{
           backgroundImage: `radial-gradient(63.13% 57.7% at 50% 33.33%, #0F003C 0%, rgba(5, 9, 17, 0) 100%)`,
         }}
       >
-        <Header />
-
         <Hero />
       </div>
 
@@ -95,6 +95,7 @@ export default function Home() {
       </div>
 
       <LocalDev className="-mb-96" />
+
       <div className="bg-white pt-96 pb-48">
         <div
           style={{
@@ -159,6 +160,8 @@ export default function Home() {
           variant="light"
         />
       </div>
+
+      <FeatureCallouts />
 
       <PlatformFeatures />
 
