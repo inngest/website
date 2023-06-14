@@ -165,12 +165,16 @@ export default function Home() {
 
       <PlatformFeatures />
 
-      {/* TODO - Add button to link to case study - /customers/ocoya?ref=homepage*/}
+      {/* TODO - Add button to link to case study - */}
       <CustomerQuote
         quote="We were struggling with the complexities of managing our social media and e-commerce workflows. Thanks to Inngest, we were able to simplify our development process, speed up our time to market, and deliver a better customer experience. Inngest has become an essential tool in our tech stack."
         name="Aivaras Tumas  - CEO @ Ocoya"
         avatar="/assets/customers/ocoya-aivaras-tumas.png"
         className="mx-auto max-w-2xl"
+        cta={{
+          href: "/customers/ocoya?ref=homepage",
+          text: "Read the Case Study",
+        }}
       />
 
       <GetThingsShipped />

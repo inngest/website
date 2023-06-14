@@ -1,5 +1,7 @@
 import Image from "next/image";
+import Link from "next/link";
 import clsx from "clsx";
+import { ChevronRightIcon } from "@heroicons/react/20/solid";
 
 const MeshGradient = `
 radial-gradient(at 21% 4%, hsla(209,94%,39%,0.69) 0px, transparent 50%),
@@ -25,12 +27,14 @@ export default function CustomerQuote({
   className,
   variant = "dark",
   name,
+  cta,
 }: {
   quote: string;
   name: string;
   className?: string;
   variant?: "dark" | "light";
   avatar?: string;
+  cta?: { href: string; text: string };
 }) {
   return (
     <aside className={clsx("py-5 relative", className)}>
@@ -79,6 +83,15 @@ export default function CustomerQuote({
           )}
           {name}
         </div>
+        {cta && (
+          <Link
+            href={cta.href}
+            className="group self-end flex flex-row items-center gap-0.5 mt-3 py-1.5 pl-3 pr-1.5 border border-white/50 rounded-lg text-sm text-indigo-50 transition-all hover:bg-white/10 font-medium whitespace-nowrap"
+          >
+            {cta.text}
+            <ChevronRightIcon className="h-4 transition-all group-hover:translate-x-0.5" />
+          </Link>
+        )}
       </div>
     </aside>
   );
