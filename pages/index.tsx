@@ -5,7 +5,6 @@ import Hero from "../shared/Home/Hero";
 import Logos from "src/shared/Home/Logos";
 import SDKOverview from "src/shared/Home/SDKOverview";
 
-import ShipInHours from "../shared/Home/ShipInHours";
 import LocalDev from "../shared/Home/LocalDev";
 import OutTheBox from "../shared/Home/OutTheBox";
 import FullyManaged from "../shared/Home/FullyManaged";
@@ -16,6 +15,7 @@ import CustomerQuote from "src/shared/Home/CustomerQuote";
 import Patterns from "src/shared/Home/Patterns";
 import GetThingsShipped from "src/shared/Home/GetThingsShipped";
 import RunAnywhere from "src/shared/Home/RunAnywhere";
+import PlatformFeatures from "src/shared/Home/PlatformFeatures";
 
 export async function getStaticProps() {
   return {
@@ -160,28 +160,17 @@ export default function Home() {
         />
       </div>
 
-      {/* <CustomerQuote
-        className="mt-20 md:mt-4 mb-40"
-        logo="/assets/customers/ocoya.svg"
-        text="At Ocoya, we were struggling with the complexities of managing our
-              social media and e-commerce workflows. Thanks to Inngest, we were
-              able to simplify our development process, speed up our time to
-              market, and deliver a better customer experience. Inngest has
-              become an essential tool in our tech stack, enabling us to focus
-              on delivering a world-class product to our users."
-        cta={{
-          href: "/customers/ocoya?ref=homepage",
-          text: "Read the case study",
-        }}
-      /> */}
+      <PlatformFeatures />
 
-      <OutTheBox />
+      {/* TODO - Add button to link to case study - /customers/ocoya?ref=homepage*/}
+      <CustomerQuote
+        quote="We were struggling with the complexities of managing our social media and e-commerce workflows. Thanks to Inngest, we were able to simplify our development process, speed up our time to market, and deliver a better customer experience. Inngest has become an essential tool in our tech stack."
+        name="Aivaras Tumas  - CEO @ Ocoya"
+        avatar="/assets/customers/ocoya-aivaras-tumas.png"
+        className="mx-auto max-w-2xl"
+      />
 
       <GetThingsShipped />
-
-      <FullyManaged />
-
-      <Patterns />
 
       {/* <Roadmap /> */}
 
