@@ -1,3 +1,4 @@
+import Link from "next/link";
 import React from "react";
 import Header from "../shared/Header";
 import Hero from "../shared/Home/Hero";
@@ -10,10 +11,11 @@ import OutTheBox from "../shared/Home/OutTheBox";
 import FullyManaged from "../shared/Home/FullyManaged";
 import SocialCTA from "../shared/Home/SocialCTA";
 import Footer from "../shared/Footer";
-import CustomerQuote from "src/shared/CustomerQuote";
+import CustomerQuote from "src/shared/Home/CustomerQuote";
 
 import Patterns from "src/shared/Home/Patterns";
 import GetThingsShipped from "src/shared/Home/GetThingsShipped";
+import RunAnywhere from "src/shared/Home/RunAnywhere";
 
 export async function getStaticProps() {
   return {
@@ -92,12 +94,73 @@ export default function Home() {
         />
       </div>
 
-      <div className="">
-        {/* TODO - background colors and white bar */}
-        <LocalDev />
+      <LocalDev className="-mb-96" />
+      <div className="bg-white pt-96 pb-48">
+        <div
+          style={{
+            backgroundImage: "url(/assets/pricing/table-bg.png)",
+            backgroundPosition: "center -30px",
+            backgroundRepeat: "no-repeat",
+            backgroundSize: "1800px 1200px",
+          }}
+          className="w-full h-100"
+        ></div>
+
+        <RunAnywhere />
+
+        <Logos
+          heading={
+            <>
+              Your code runs your existing platform, or{" "}
+              <Link
+                href="/docs/deploy?ref=homepage-platforms"
+                className="text-slate-700 underline hover:text-slate-900"
+              >
+                anywhere you choose
+              </Link>
+              :
+            </>
+          }
+          logos={[
+            {
+              src: "/assets/brand-logos/vercel-dark.svg",
+              name: "Vercel",
+              href: "/docs/deploy/vercel?ref=homepage-platforms",
+            },
+            {
+              src: "/assets/brand-logos/netlify-dark.svg",
+              name: "Netlify",
+              href: "/docs/deploy/netlify?ref=homepage-platforms",
+            },
+            {
+              src: "/assets/brand-logos/cloudflare-dark.svg",
+              name: "Cloudflare Pages",
+              href: "/docs/sdk/serve?ref=homepage-frameworks#framework-cloudflare",
+            },
+            {
+              src: "/assets/brand-logos/aws-dark.svg",
+              name: "AWS Lambda",
+              href: "/docs/sdk/serve?ref=homepage-frameworks#framework-aws-lambda",
+            },
+            {
+              src: "/assets/brand-logos/google-cloud-dark.svg",
+              name: "Google Cloud Functions",
+              href: "/docs/sdk/serve?ref=homepage-frameworks#framework-google-cloud-functions",
+            },
+          ]}
+          variant="light"
+        />
+
+        <CustomerQuote
+          quote="We switched from our PostgreSQL backed queue to Inngest in less than a day. Their approach is idiomatic with a great developer experience. Inngest allowed us to stop worrying about scalability and stability."
+          name="Peter Pistorius - CEO @ Snaplet"
+          avatar="/assets/customers/snaplet-peter-pistorius.png"
+          className="mx-auto max-w-2xl"
+          variant="light"
+        />
       </div>
 
-      <CustomerQuote
+      {/* <CustomerQuote
         className="mt-20 md:mt-4 mb-40"
         logo="/assets/customers/ocoya.svg"
         text="At Ocoya, we were struggling with the complexities of managing our
@@ -110,7 +173,7 @@ export default function Home() {
           href: "/customers/ocoya?ref=homepage",
           text: "Read the case study",
         }}
-      />
+      /> */}
 
       <OutTheBox />
 
