@@ -302,7 +302,7 @@ To send an event from your code, you can use the `Inngest` client's `send()` met
   import { inngest } from "../../../inngest/client"; // Import our client
 
   // Create a simple async Next.js API route handler
-  export async function GET(request: Request) {
+  export async function GET() {
     // Send your event payload to Inngest
     await inngest.send({
       name: "test/hello.world",
