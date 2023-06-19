@@ -10,7 +10,7 @@ import {
   IconTools,
 } from "../Icons/duotone";
 import Container from "../layout/Container";
-import SectionHeader from "../SectionHeader";
+import Heading from "./Heading";
 
 export default function GetThingsShipped() {
   const tabs = [
@@ -257,10 +257,11 @@ export default function GetThingsShipped() {
   return (
     <>
       <Container className="mt-40">
-        <SectionHeader
+        <Heading
           title="Get things shipped"
           lede="We built all the features that you need to build powerful applications
         without having to re-invent the wheel."
+          className="mx-auto max-w-3xl text-center"
         />
       </Container>
 
