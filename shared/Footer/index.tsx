@@ -24,7 +24,7 @@ export default function Footer({ ctaRef }: { ctaRef?: string }) {
           style={{
             backgroundColor: `hsla(222,79%,61%,1)`,
             backgroundImage: MeshGradient,
-            backgroundSize: "100%",
+            backgroundSize: "cover",
             backgroundPosition: "100%",
           }}
         >
