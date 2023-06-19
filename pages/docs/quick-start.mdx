@@ -299,7 +299,7 @@ To send an event from your code, you can use the `Inngest` client's `send()` met
 <GuideSection show="nextappdir">
   ```ts
   import { NextResponse } from 'next/server';
-  import { inngest } from "../../../inngest"; // Import our client
+  import { inngest } from "../../../inngest/client"; // Import our client
 
   // Create a simple async Next.js API route handler
   export async function GET(request: Request) {
