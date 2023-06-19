@@ -265,7 +265,7 @@ export default function GetThingsShipped() {
       </Container>
 
       <Container className="flex flex-col xl:flex-row items-start mt-10 lg:mt-20 mb-80">
-        <ul className="flex xl:flex-col max-md:self-center flex-wrap justify-start gap-1 xl:gap-2 xl:w-[290px] pb-8 xl:pb-0 xl:pt-10">
+        <ul className="flex xl:flex-col max-lg:self-center flex-wrap justify-start gap-1 xl:gap-2 xl:w-[290px] pb-8 xl:pb-0 xl:pt-10">
           {tabs.map((tab, i) => (
             <li key={i}>
               <button

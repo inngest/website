@@ -35,7 +35,11 @@ export default function Home() {
   return (
     <div className="home font-sans bg-[#050911]">
       <Header />
-      <div className="bg-[radial-gradient(var(--tw-gradient-stops))] from-purple-800/20 via-80% via-[#050911] to-transparent">
+      <div
+        style={{
+          backgroundImage: `radial-gradient(63.13% 40.7% at 50% 33.33%, #0F003C 0%, rgba(5, 9, 17, 0) 100%)`,
+        }}
+      >
         <Hero />
       </div>
       <Logos
