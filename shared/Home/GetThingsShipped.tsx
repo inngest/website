@@ -1,6 +1,4 @@
 import { useState } from "react";
-import SyntaxHighlighter from "react-syntax-highlighter";
-import { atomOneDark as syntaxThemeDark } from "react-syntax-highlighter/dist/cjs/styles/hljs";
 import classNames from "src/utils/classNames";
 import { stripIndent } from "src/utils/string";
 import {
@@ -267,7 +265,7 @@ export default function GetThingsShipped() {
       </Container>
 
       <Container className="flex flex-col xl:flex-row items-start mt-10 lg:mt-20 mb-80">
-        <ul className="flex xl:flex-col flex-wrap justify-start gap-1 xl:gap-2 xl:w-[290px] pb-8 xl:pb-0 xl:pt-4">
+        <ul className="flex xl:flex-col max-md:self-center flex-wrap justify-start gap-1 xl:gap-2 xl:w-[290px] pb-8 xl:pb-0 xl:pt-10">
           {tabs.map((tab, i) => (
             <li key={i}>
               <button
@@ -285,8 +283,8 @@ export default function GetThingsShipped() {
           ))}
         </ul>
 
-        <div className="w-full rounded-lg bg-indigo-600 pb-4 md:pb-0 flex relative">
-          <div className="hidden md:block absolute top-0 bottom-0 -left-10 -right-10 rounded-lg bg-indigo-500 opacity-20 rotate-1 -z-0 mx-5"></div>
+        <div className="w-full rounded-lg pb-4 md:pb-0 flex relative">
+          <div className="hidden md:block absolute top-0 bottom-0 -left-10 -right-10 rounded-lg opacity-20 rotate-1 -z-0 mx-5"></div>
           {tabs.map((tab, i) =>
             activeTab === i ? (
               <div
@@ -294,21 +292,21 @@ export default function GetThingsShipped() {
                 key={i}
               >
                 <div className="py-10 pr-8 flex flex-col gap-4">
-                  <h2 className="text-white text-xl font-semibold flex items-center gap-1">
-                    {tab.icon && <tab.icon size={28} />} {tab.title}
+                  <h2 className="text-white text-[1.375rem] font-semibold flex items-center gap-1">
+                    {tab.title}
                   </h2>
                   {tab.content.map((content, j) => (
                     <div key={j} className="flex flex-col gap-0.5">
                       <h4 className="text-lg text-white font-medium">
                         {content.title}
                       </h4>
-                      <p className="text-indigo-50 text-sm leading-6 ">
+                      <p className="text-indigo-200 text-sm leading-6 ">
                         {content.description}
                       </p>
                     </div>
                   ))}
                 </div>
-                <div className="max-w-full overflow-x-scroll md:w-1/2 md:absolute right-10 top-10 bg-slate-950/80 backdrop-blur-md border border-slate-800/60 rounded-lg overflow-hidden shadow-lg">
+                <div className="max-w-full overflow-x-scroll md:w-1/2 md:absolute right-10 top-10">
                   <CodeWindow
                     snippet={tab.code.content.trim()}
                     header={
