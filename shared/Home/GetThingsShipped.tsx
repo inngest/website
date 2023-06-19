@@ -182,7 +182,6 @@ export default function GetThingsShipped() {
                   template: "welcome",
                 })
               );
-
               const profileComplete = await step.waitForEvent(
                 "app/user.profile.completed",
                 {
@@ -190,7 +189,6 @@ export default function GetThingsShipped() {
                   match: "data.userId",
                 }
               );
-
               if (!profileComplete) {
                 await step.run("Send reminder email", () =>
                   sendEmail({
@@ -264,7 +262,7 @@ export default function GetThingsShipped() {
         />
       </Container>
 
-      <Container className="flex flex-col xl:flex-row items-start mt-10 lg:mt-20 mb-80">
+      <Container className="flex flex-col xl:flex-row items-start mt-10 lg:mt-20 mb-96">
         <ul className="flex xl:flex-col max-lg:self-center flex-wrap justify-start gap-1 xl:gap-2 xl:w-[290px] pb-8 xl:pb-0 xl:pt-10">
           {tabs.map((tab, i) => (
             <li key={i}>
