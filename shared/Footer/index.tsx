@@ -49,8 +49,8 @@ export default function Footer({ ctaRef }: { ctaRef?: string }) {
       </Container>
 
       <Container className="pb-12 pt-16 lg:pt-24">
-        <div className="w-full rounded-lg relative ">
-          <div className=" mb-12 flex gap-6 items-center">
+        <div className="xl:flex xl:gap-12 w-full rounded-lg relative ">
+          <div className=" mb-12 flex gap-6 items-start">
             <Logo className="text-white w-20 relative top-[3px]" />
             <StatusWidget />
           </div>
