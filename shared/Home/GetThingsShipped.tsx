@@ -10,6 +10,7 @@ import {
   IconTools,
 } from "../Icons/duotone";
 import Container from "../layout/Container";
+import CodeWindow from "../CodeWindow";
 import Heading from "./Heading";
 
 export default function GetThingsShipped() {
@@ -308,29 +309,22 @@ export default function GetThingsShipped() {
                   ))}
                 </div>
                 <div className="max-w-full overflow-x-scroll md:w-1/2 md:absolute right-10 top-10 bg-slate-950/80 backdrop-blur-md border border-slate-800/60 rounded-lg overflow-hidden shadow-lg">
-                  <h6 className="text-slate-300 w-full bg-slate-950/50 text-center text-xs py-1.5 border-b border-slate-800/50">
-                    {tab.code.title}
-                  </h6>
-                  {/* <pre className="px-4 py-3 overflow-x-scroll max-w-full">
-                    <code className="text-xs text-slate-300">
-                      {tab.code.content}
-                    </code>
-                  </pre> */}
-
-                  <SyntaxHighlighter
-                    language="javascript"
-                    showLineNumbers={false}
-                    style={syntaxThemeDark}
-                    codeTagProps={{ className: "code-window" }}
-                    // className="hello"
-                    customStyle={{
-                      backgroundColor: "transparent",
-                      fontSize: "0.7rem",
-                      padding: "1.5rem",
+                  <CodeWindow
+                    snippet={tab.code.content.trim()}
+                    header={
+                      <div className="flex py-2 px-5">
+                        <div className="py-1 px-4 rounded-full text-sm font-medium text-white bg-slate-950">
+                          {tab.code.title}
+                        </div>
+                      </div>
+                    }
+                    className="grow w-full md:max-w-xl text-xs lg:text-[13px]"
+                    style={{
+                      background: `radial-gradient(114.31% 100% at 50% 0%, #131E38 0%, #0A1223 100%),
+                        linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 100%)`,
                     }}
-                  >
-                    {tab.code.content.trim()}
-                  </SyntaxHighlighter>
+                    showLineNumbers={true}
+                  />
                 </div>
               </div>
             ) : null
