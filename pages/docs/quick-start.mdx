@@ -196,6 +196,8 @@ Let's write your first reliable serverless function! <GuideSection show="nextpag
   Create the following function in your new `inngest` directory at `src/inngest/functions.ts`:
 
   ```ts {{ filename: "src/inngest/functions.ts" }}
+  import { inngest } from "./client";
+
   export const helloWorld = inngest.createFunction(
     { name: "Hello World" },
     { event: "test/hello.world" },
