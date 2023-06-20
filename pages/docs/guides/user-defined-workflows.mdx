@@ -1,4 +1,4 @@
-export const description = "How to Inngest to build customizable workflows that your users can define in your system and Inngest handles the orchestration.";
+export const description = "How to Inngest to build customizable workflows that your users can define in your system and Inngest handles the scheduling & execution.";
 
 # Building a Workflow Engine for your users
 
@@ -11,8 +11,8 @@ Users today are demanding customization and integrations from every product. You
 Building a system like this is difficult. To do this, you would traditionally need:
 
 - Queues and/or event streams to trigger workflows
-- Orchestration logic to determine _what_ task to execute and _when_ to execute it
-- Queues to handle processing of of the tasks
+- Scheduling logic to determine _what_ task to execute and _when_ to execute it
+- Queues to handle processing of the tasks
 - A state store that handles passing context and interim state between tasks
 - Automatic retries of tasks that throw errors
 
@@ -26,7 +26,7 @@ Workflow is an overloaded term, but in the scope of this guide, we define a work
 
 ## A simple example
 
-First, we'll show a simple example, then walk through how to build something like this yourself. This example shows a custom workflow that might get triggered when a CRM product's user changes the status of one of their leads.
+We'll show a simple example, then walk through how to build something like this yourself. This example shows a custom workflow that might get triggered when a CRM product's user changes the status of one of their leads.
 
 ```ts
 import { inngest } from "./client";
@@ -114,3 +114,15 @@ export const workflowExecutor = inngest.createFunction(
   }
 )
 ```
+
+## How do I build this?
+
+There are several steps that you can take to build something like this, but they're all dependent on what you want to deliver for your users. This will walk through the high level flow of what you need to do and how to build with Inngest:
+
+1. **Define the structure to configure and store workflows**. The simplest option might be an array of sequential events, but you also could define a [DAG](https://en.wikipedia.org/wiki/Directed_acyclic_graph) to allow for parallel workflow steps or complex ordering. In the above example, we use a simple array of actions.
+2. **Determine the pre-built actions and their inputs/outputs**. What do you want your users to be able to do? Some ideas might include: sending an email notification, updating another system via API, add a delay for `n` days, or triggering another part of your system.
+3. **Write logic to traverse workflow structure**. Keep it simple and flexible. You basically want to write logic that loops over the workflow and determines what to do next - that's it.
+4. **Build your actions as steps**. Now that you have your workflow traversal code written, you can conditionally run different Inngest steps ([`step.run()`](/docs/reference/functions/step-run), [`step.sleep()`](/docs/reference/functions/step-sleep), etc.).
+5. **Send events to trigger the user workflows**. Lastly, you just need to start triggering Inngest events from your system with [`inngest.send()`](/docs/reference/events/send). Events trigger Inngest functions to run, so you can add triggers in any part of your system, like when a user edits data, a data pipeline completes ingestion, or an external trigger like a webhook event.
+
+With all of the above squared away, the rest is a UI task to allow users to define and customize workflows in your application. Inngest takes care of the hard parts so you can ship customizable workflow features to all of your users in a short amount of time.
