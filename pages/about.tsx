@@ -14,38 +14,57 @@ const TEAM = [
   {
     name: "Tony Holdstock-Brown",
     role: "CEO & Founder",
-    bio: (
-      <>
-        Head of Engineering at{" "}
-        <span className="text-slate-100">Uniform Teeth</span>
-      </>
-    ),
     avatar: "/assets/team/tony-2022-10-18.jpg",
   },
   {
     name: "Dan Farrelly",
-    role: "Founder",
-    bio: (
-      <>
-        CTO at <span className="text-slate-100">Buffer</span>. Created{" "}
-        <span className="text-slate-100">Timezone.io</span>.
-      </>
-    ),
-    avatar: "/assets/team/dan-f-2022-02-18.jpg",
+    role: "CTO & Founder",
+    avatar: "/assets/team/dan-f-2023-06-26.jpg",
   },
   {
     name: "Jack Williams",
     role: "Founding Engineer",
-    bio: "",
     avatar: "/assets/team/jack-2022-10-10.jpg",
+  },
+  {
+    name: "Ed Poole",
+    role: "Product Designer",
+    avatar: "/assets/team/ed-p-2023-06-26.jpg",
+  },
+  {
+    name: "Igor Gassmann",
+    role: "Engineer",
+    avatar: "/assets/team/aaron-h-2023-06-26.jpg",
+  },
+  {
+    name: "Aaron Harper",
+    role: "Engineer",
+    avatar: "/assets/team/igor-g-2023-06-26.jpg",
+  },
+  {
+    name: "Ana Filipa de Almeida",
+    role: "Engineer",
+    avatar: "/assets/team/ana-a-2023-06-26.jpg",
+  },
+  {
+    name: "Darwin Wu",
+    role: "Engineer",
+    avatar: "/assets/team/darwin-w-2023-06-26.jpg",
   },
 ];
 
 const INVESTORS = [
   {
+    name: "GGV Capital",
+    logo: "/assets/about/ggv-capital-logo-white.png",
+    maxWidth: "200px",
+    featured: true,
+  },
+  {
     name: "Afore.vc",
     logo: "/assets/about/afore-capital-white.png",
     maxWidth: "200px",
+    featured: true,
   },
   {
     name: "Kleiner Perkins",
@@ -62,16 +81,28 @@ const INVESTORS = [
 ];
 const ANGELS = [
   {
+    name: "Guillermo Rauch",
+    bio: "CEO of Vercel",
+    featured: true,
+    avatar: "/assets/about/guillermo-rauch-avatar.jpg",
+  },
+  {
+    name: "Tom Preson-Werner",
+    bio: "Founder of Github",
+    featured: true,
+    avatar: "/assets/about/tom-preston-werner-avatar.png",
+  },
+  {
     name: "Jason Warner",
-    bio: "Former CTO @ GitHub",
+    bio: "Former CTO at GitHub",
   },
   {
     name: "Jake Cooper",
-    bio: "Founder @ Railway",
+    bio: "Founder at Railway",
   },
   {
     name: "Oana Olteanu",
-    bio: "Partner @ Signalfire",
+    bio: "Partner at Signalfire",
   },
   {
     name: "Pim De Witte",
@@ -83,17 +114,16 @@ const ANGELS = [
 // or potential job applicants
 const FEATURED_BLOG_POSTS: { title: string; href: string }[] = [
   {
+    title: "Inngest - Add Superpowers To Serverless Functions",
+    href: "/blog/inngest-add-super-powers-to-serverless-functions",
+  },
+  {
     title: "Completing the Jamstack: What's needed in 2022?",
     href: "/blog/completing-the-jamstack",
   },
   {
     title: "Modern serverless job schedulers",
     href: "/blog/modern-serverless-job-scheduler",
-  },
-  {
-    title:
-      "Open sourcing Inngest: The serverless event-driven platform for developers",
-    href: "/blog/open-source-event-driven-queue",
   },
 ];
 
@@ -117,11 +147,9 @@ export default function About() {
         <article>
           <main className="m-auto max-w-3xl pt-16">
             <header className="lg:my-24 mt-8">
-              <span className="text-sm font-medium uppercase gradient-text-ltr">
-                Our Mission
-              </span>
+              {/* <span className="text-sm font-medium uppercase">Our Mission</span> */}
               <h1 className="mt-2 mb-6 pr-4 text-2xl md:text-5xl text-white font-medium tracking-tighter">
-                {MISSION}
+                All Developers Deserve
               </h1>
             </header>
 
@@ -170,8 +198,8 @@ export default function About() {
             <div className="my-16 mx-auto max-w-prose text-slate-300">
               <h2 className="text-xl sm:text-2xl font-normal">Our Team</h2>
               <p className="my-6">
-                We've built and scaled event-based architectures for years and
-                think that developers deserve something better.
+                We've built and scaled systems for years and think that
+                developers deserve something better.
               </p>
               <div className="mt-8 mb-6 grid sm:grid-cols-2 md:grid-cols-3 gap-10 items-start">
                 {TEAM.map((person) => {
@@ -186,11 +214,6 @@ export default function About() {
                         style={{ lineHeight: "1.5em" }}
                       >
                         {person.role}
-                        <br />
-                        <span className="text-slate-400">
-                          {person.bio && "Past: "}
-                          {person.bio}
-                        </span>
                       </p>
                     </div>
                   );
@@ -215,7 +238,7 @@ export default function About() {
                   Our Investors
                 </h2>
               </div>
-              <div className="pb-6 grid sm:grid-cols-2 md:grid-cols-4 gap-10 items-center">
+              <div className="pb-6 grid sm:grid-cols-2 md:grid-cols-6 gap-10 items-center">
                 {INVESTORS.map((investor) => {
                   return (
                     <img
@@ -223,18 +246,42 @@ export default function About() {
                       style={{ maxHeight: "50px" }}
                       src={investor.logo}
                       alt={investor.name}
+                      className={
+                        investor.featured
+                          ? "col-span-3 mx-auto"
+                          : "col-span-2 mx-auto"
+                      }
                     />
                   );
                 })}
               </div>
-              <div className="my-8">
+              <div className="my-12">
                 <div className="grid sm:grid-cols-2 gap-2">
-                  {ANGELS.map((a, idx) => (
-                    <div key={a.name} className="text-sm">
-                      {a.name} / <span className="text-slate-500">{a.bio}</span>
-                      <br />
-                    </div>
-                  ))}
+                  {ANGELS.map((a, idx) =>
+                    a.featured ? (
+                      <div
+                        key={a.name}
+                        className="mb-4 flex flex-row items-center gap-4 text-lg"
+                      >
+                        <img
+                          src={a.avatar}
+                          alt={`Image of ${a.name}`}
+                          className="rounded-full h-12 w-12"
+                        />
+                        <span>
+                          {a.name}
+                          <br />
+                          <span className="text-slate-500">{a.bio}</span>
+                        </span>
+                      </div>
+                    ) : (
+                      <div key={a.name} className="text-sm">
+                        {a.name} /{" "}
+                        <span className="text-slate-500">{a.bio}</span>
+                        <br />
+                      </div>
+                    )
+                  )}
                 </div>
               </div>
 
