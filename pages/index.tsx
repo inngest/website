@@ -33,15 +33,18 @@ export async function getStaticProps() {
 
 export default function Home() {
   return (
-    <div className="home font-sans bg-[#050911]">
+    <div
+      className="home font-sans bg-[#050911]"
+      style={{
+        backgroundImage: `radial-gradient(circle at center -20%, #0F003C 0%, rgba(5, 9, 17, 0) 100%)`,
+        backgroundSize: "100% 100vh",
+        backgroundRepeat: "no-repeat",
+      }}
+    >
       <Header />
-      <div
-        style={{
-          backgroundImage: `radial-gradient(63.13% 40.7% at 50% 33.33%, #0F003C 0%, rgba(5, 9, 17, 0) 100%)`,
-        }}
-      >
-        <Hero />
-      </div>
+
+      <Hero />
+
       <Logos
         heading="Trusted by teams all over the world"
         logos={[
