@@ -64,7 +64,7 @@ export default function Logos({
               src={src}
               alt={name}
               title={name}
-              width={featured ? 500 : 120}
+              width={featured ? 240 : 120}
               height={featured ? 120 : 30}
               className={clsx(
                 "text-white m-auto max-h-[36px] transition-all grayscale hover:grayscale-0",
