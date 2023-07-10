@@ -45,12 +45,12 @@ export default function Home() {
       <Logos
         heading="Trusted by teams all over the world"
         logos={[
-          { src: "/assets/customers/ocoya.svg", name: "Ocoya", featured: true },
           {
             src: "/assets/customers/tripadvisor.svg",
             name: "TripAdvisor",
             featured: true,
           },
+          { src: "/assets/customers/ocoya.svg", name: "Ocoya", featured: true },
           {
             src: "/assets/customers/snaplet-dark.svg",
             name: "Snaplet",
