@@ -42,7 +42,7 @@ export default function ComparisonTable({ plans, features }) {
                   {plan.description}
                 </span>
                 <Button arrow="right" href={plan.cta.href} full>
-                  {plan.cta.text}
+                  {plan.cta.shortText || plan.cta.text}
                 </Button>
               </th>
             ))}

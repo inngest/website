@@ -45,6 +45,7 @@ export default function PlanCard({ variant = "light", content }) {
         <h2 className={`text-lg font-semibold ${theme[variant].primary}`}>
           {content.name}
         </h2>
+
         <p
           className={`text-4xl mt-4 -mr-4 font-bold tracking-tight text-indigo-500 ${theme[variant].price}`}
         >
@@ -62,6 +63,13 @@ export default function PlanCard({ variant = "light", content }) {
             /{content.cost.period}
           </span>
         </p>
+
+        <div className="px-12 py-2 mt-4 mb-4">
+          <Button href={content.cta.href} arrow="right" full variant="primary">
+            {content.cta.text}
+          </Button>
+        </div>
+
         <p
           className={`text-base mt-4 font-medium flex items-center justify-center ${theme[variant].description}`}
         >
@@ -114,11 +122,6 @@ export default function PlanCard({ variant = "light", content }) {
             </li>
           ))}
         </ul>
-      </div>
-      <div className="px-12 py-2 mt-4 mb-4">
-        <Button href={content.cta.href} arrow="right" full>
-          {content.cta.text}
-        </Button>
       </div>
     </div>
   );
