@@ -1,12 +1,9 @@
-import styled from "@emotion/styled";
-// import Footer from "../shared/legacy/Footer";
-import Nav from "../shared/legacy/nav";
 import classNames from "src/utils/classNames";
 
 import Header from "src/shared/Header";
 import Container from "src/shared/layout/Container";
 import Footer from "src/shared/Footer";
-import Block from "../shared/legacy/Block";
+import ArrowRight from "src/shared/Icons/ArrowRight";
 import { Button } from "src/shared/Button";
 
 const MISSION = "To accelerate the adoption of event-based architecture.";
@@ -102,8 +99,16 @@ const ANGELS = [
     bio: "Founder at Railway",
   },
   {
+    name: "Tristan Handy",
+    bio: "CEO & Founder at dbt Labs",
+  },
+  {
     name: "Oana Olteanu",
     bio: "Partner at Signalfire",
+  },
+  {
+    name: "Ian Livingstone",
+    bio: "Technical Advisor at Snyk",
   },
   {
     name: "Pim De Witte",
@@ -115,16 +120,21 @@ const ANGELS = [
 // or potential job applicants
 const FEATURED_BLOG_POSTS: { title: string; href: string }[] = [
   {
-    title: "Inngest - Add Superpowers To Serverless Functions",
+    title: "Inngest Raises $3M Seed led by GGV Capital",
+    href: "/blog/announcing-inngest-seed-financing",
+  },
+  {
+    title: "Inngest: Add Superpowers To Serverless Functions",
     href: "/blog/inngest-add-super-powers-to-serverless-functions",
+  },
+  {
+    title:
+      "Partnership: Vercel + Inngest - The fastest way to ship background functions",
+    href: "/blog/vercel-integration",
   },
   {
     title: "Completing the Jamstack: What's needed in 2022?",
     href: "/blog/completing-the-jamstack",
-  },
-  {
-    title: "Modern serverless job schedulers",
-    href: "/blog/modern-serverless-job-scheduler",
   },
 ];
 
@@ -146,52 +156,41 @@ export default function About() {
       <Header />
       <main className="pt-16">
         <Container className="m-auto">
-          <header className="lg:my-24 mt-8">
-            {/* <span className="text-sm font-medium uppercase">Our Mission</span> */}
-            <h1 className="mt-2 mb-6 pr-4 text-2xl md:text-5xl text-white font-medium tracking-tighter">
-              All Developers Deserve
-            </h1>
-          </header>
+          <div className="mx-auto max-w-4xl">
+            <header className="lg:my-24 mt-8 text-center">
+              <h1 className="mt-2 mb-6 pr-4 text-2xl md:text-5xl tracking-tighter font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#E2BEFF] via-white to-[#AFC1FF] drop-shadow">
+                Ship More Reliable Workflows. Faster.
+              </h1>
+              <p className="mt-8 lg:mt-20 mx-auto max-w-lg text-xl font-medium">
+                Inngest is the developer platform for easily building reliable
+                workflows with zero infrastructure.
+              </p>
+            </header>
 
-          <div className="mx-auto prose text-slate-300 prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline hover:prose-a:text-white prose-a:font-medium prose-a:transition-all prose-invert">
-            <p>
-              Inngest is an{" "}
-              <a href="https://github.com/inngest/inngest">open source</a>{" "}
-              platform that enables developers to build amazing products by
-              ensuring serverless functions are reliable, schedulable and
-              event-driven.
-            </p>
-            <p>
-              Two trends have shaped our vision for the Inngest platform:
-              event-driven systems are driving some of the world's greatest
-              products and building these systems is <em>extremely hard</em>.
-            </p>
-            <p>
-              We believe that event-based systems can be beautifully simple and
-              we're building the world's first developer platform that allows
-              people to build event-driven products in minutes. Our aim is to
-              give developers the superpowers they need to just build.
-              Developers deserve first class local tooling and a{" "}
-              <em>platform</em> that gives them everything they need to deliver,
-              not just the underlying <em>plumbing</em> or infrastructure.
-            </p>
-            <p>
-              We're beginning our product journey focused on the early adopter -
-              the person who embraces <em>the developer cloud:</em> modern
-              solutions that put developer experience at the forefront of the
-              product. Our initial goal is to build the absolute best platform
-              and tooling for devs to build anything that runs in the background
-              using events. We're{" "}
-              <a href="https://www.inngest.com/blog/vercel-integration">
-                partnering with key companies
-              </a>{" "}
-              to fill a{" "}
-              <a href="https://www.inngest.com/blog/completing-the-jamstack">
-                key gap in the current ecosystem
-              </a>{" "}
-              and bring Inngest to the masses. We have very big plans beyond
-              that - if you're curious, drop us a note.
-            </p>
+            <div className="mx-auto max-w-2xl prose text-slate-300 prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline hover:prose-a:text-white prose-a:font-medium prose-a:transition-all prose-invert">
+              <p>
+                Shipping reliable background jobs and workflows are a time
+                consuming and frustrating experience for any software team.
+                Local development is painful. Managing infrastructure is
+                tedious. Days to weeks of developer time is lost doing this work
+                at every company.
+              </p>
+              <p>
+                Inngest is solving this problem for every software team, no
+                matter team size or experience.
+              </p>
+            </div>
+
+            <div className="mt-8 lg:mt-12 flex justify-center">
+              <a
+                href="/blog/announcing-inngest-seed-financing"
+                className="group inline-flex gap-0.5 items-center rounded-full font-medium pl-6 pr-5 py-2 border border-indigo-500/50 hover:bg-indigo-500/10 transition-all text-white flex-shrink-0"
+              >
+                News: Inngest Raises $3M Seed led by GGV Capital & Guillermo
+                Rauch
+                <ArrowRight className="group-hover:translate-x-1.5 relative top-px transition-transform duration-150 " />
+              </a>
+            </div>
           </div>
 
           <div className="my-32 mx-auto text-slate-300">
@@ -228,12 +227,6 @@ export default function About() {
               <h3 className="text-md lg:text-lg font-semibold text-white mb-4">
                 Want to join the team?
               </h3>
-
-              <p className="text-base text-slate-400 mb-2">
-                Inngest is hiring for several positions across{" "}
-                <span className="text-slate-200 font-medium">engineering</span>{" "}
-                and <span className="text-slate-200 font-medium">DevRel</span>.
-              </p>
               <p className="text-base text-slate-400 mb-8">
                 We're just getting started and are looking for people that want
                 to contribute highly to an early-stage startup focused on
@@ -333,45 +326,3 @@ export default function About() {
     </div>
   );
 }
-
-const Avatar = styled.img`
-  border-radius: 50%;
-  width: 5rem;
-  height: 5rem;
-  margin-bottom: 1rem;
-`;
-
-const InvestorBlock = styled(Block)`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-const Grid = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  grid-gap: 2rem 2rem;
-  margin: 2rem 0;
-
-  @media (max-width: 980px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const Label = styled.p`
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  margin: 0.5rem 0;
-  font-family: var(--font-mono);
-`;
-
-const Hero = styled.div`
-  margin: 4rem 0;
-
-  h1 {
-    font-size: 2rem;
-  }
-  p {
-    max-width: 36rem;
-  }
-`;
