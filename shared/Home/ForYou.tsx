@@ -9,23 +9,23 @@ const highlights = [
     title: "Ship reliable code",
     description:
       "All functions are retried automatically. Manage concurrency, rate limiting and backoffs in code within your function.",
-    img: "/assets/homepage/platform/ship-code.png",
+    img: "/assets/homepage/for-you/ship-code.png",
   },
   {
     title: "Powerful scheduling",
     description:
       "Enqueue future work, sleep for months, and dynamically cancel jobs without managing job state or hacking APIs together.",
-    img: "/assets/homepage/platform/powerful-scheduling.png",
+    img: "/assets/homepage/for-you/powerful-scheduling.png",
   },
   {
     title: "Replay functions at any time",
     description:
       "Forget the dead letter queue. Replay functions that have failed, or replay functions in your local environment to debug issues easier than ever before.",
-    img: "/assets/homepage/platform/replay-functions.png",
+    img: "/assets/homepage/for-you/replay-functions.png",
   },
 ];
 
-export default function PlatformFeatures() {
+export default function ForYou() {
   return (
     <Container className="my-44 tracking-tight">
       <Heading

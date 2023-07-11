@@ -36,7 +36,7 @@ export default function Home() {
     <div
       className="home font-sans bg-slate-1000"
       style={{
-        backgroundImage: `radial-gradient(circle at center -20%, #211740 0%, rgba(5, 9, 17, 0) 1500px)`,
+        backgroundImage: `radial-gradient(circle at center -20%, #231649 0%, rgba(5, 9, 17, 0) 1500px)`,
         backgroundSize: "100% 1500px",
         backgroundRepeat: "no-repeat",
       }}
