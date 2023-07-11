@@ -118,6 +118,10 @@ const PLANS: Plan[] = [
       {
         text: "Discord support",
       },
+      { text: "-", },
+      { text: "-", },
+      { text: "-", },
+      { text: "-", },
     ],
   },
   {
@@ -155,6 +159,10 @@ const PLANS: Plan[] = [
       {
         text: "Discord + Email Support",
       },
+      { text: "-", },
+      { text: "-", },
+      { text: "-", },
+      { text: "-", },
     ],
   },
   {
