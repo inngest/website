@@ -263,7 +263,7 @@ const FEATURES: Feature[] = [
     },
   },
   {
-    name: "History (Log Retention)",
+    name: "History (log retention)",
     plans: {
       [PLAN_NAMES.free]: getPlanFeatureQuantity(PLAN_NAMES.free, "History"),
       [PLAN_NAMES.team]: getPlanFeatureQuantity(PLAN_NAMES.team, "History"),
@@ -278,22 +278,7 @@ const FEATURES: Feature[] = [
     },
   },
   {
-    name: "Automatic Retries",
-    all: true,
-    infoUrl: "/docs/functions/retries?ref=pricing",
-  },
-  {
-    name: "Step Functions",
-    all: true,
-    infoUrl: "/docs/reference/functions/step-run?ref=pricing",
-  },
-  {
-    name: "Scheduled Functions",
-    all: true,
-    infoUrl: "/docs/guides/scheduled-functions?ref=pricing",
-  },
-  {
-    name: "Max Sleep Duration",
+    name: "Max sleep duration",
     plans: {
       [PLAN_NAMES.free]: "7 days",
       [PLAN_NAMES.team]: "60 days",
@@ -303,37 +288,52 @@ const FEATURES: Feature[] = [
     infoUrl: "/docs/guides/enqueueing-future-jobs?ref=pricing",
   },
   {
-    name: "Concurrency Controls",
+    name: "Automatic retries",
+    all: true,
+    infoUrl: "/docs/functions/retries?ref=pricing",
+  },
+  {
+    name: "Step functions",
+    all: true,
+    infoUrl: "/docs/reference/functions/step-run?ref=pricing",
+  },
+  {
+    name: "Scheduled functions",
+    all: true,
+    infoUrl: "/docs/guides/scheduled-functions?ref=pricing",
+  },
+  {
+    name: "Concurrency controls",
     all: true,
     infoUrl: "/docs/functions/concurrency?ref=pricing",
   },
   {
-    name: "Custom Failure Handlers",
+    name: "Custom failure handlers",
     all: true,
     infoUrl: "/docs/reference/functions/handling-failures?ref=pricing",
   },
   {
-    name: "Parallel Steps",
+    name: "Parallel steps",
     all: true,
     infoUrl: "/docs/guides/step-parallelism?ref=pricing",
   },
   {
-    name: "Fan-Out",
+    name: "Fan-out",
     all: true,
     infoUrl: "/docs/guides/fan-out-jobs?ref=pricing",
   },
   {
-    name: "Local Dev Server",
+    name: "Local dev server",
     all: true,
     infoUrl: "/docs/local-development?ref=pricing",
   },
   {
-    name: "Vercel Integration",
+    name: "Vercel integration",
     all: true,
     infoUrl: "/docs/deploy/vercel?ref=pricing",
   },
   {
-    name: "Discord Support",
+    name: "Discord support",
     plans: {
       [PLAN_NAMES.team]: true,
       [PLAN_NAMES.startup]: true,
@@ -341,7 +341,7 @@ const FEATURES: Feature[] = [
     },
   },
   {
-    name: "Email Support",
+    name: "Email support",
     plans: {
       [PLAN_NAMES.team]: false,
       [PLAN_NAMES.startup]: true,
