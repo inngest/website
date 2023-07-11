@@ -188,10 +188,23 @@ const PLANS: Plan[] = [
         text: "History",
       },
       {
-        text: "Discord + Email Support + SLAs",
+        text: "Exportable metrics",
       },
       {
-        quantity: "HIPAA BAA Available",
+        text: "Customer success",
+      },
+      {
+        text: "Dedicated live support (+ Discord, Email)",
+      },
+      {
+        text: "SLAs",
+      },
+      {
+        quantity: "SOC2 Report",
+        text: "Compliance",
+      },
+      {
+        quantity: "BAA Available",
         text: "Compliance",
       },
     ],
