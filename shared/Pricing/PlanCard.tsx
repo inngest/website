@@ -73,7 +73,7 @@ export default function PlanCard({ variant = "light", content }) {
         <p
           className={`text-base mt-4 font-medium flex items-center justify-center ${theme[variant].description}`}
         >
-          {content.cost.included} Function Steps{" "}
+          {content.cost.included} steps{" "}
           <a
             href="#what-is-a-function-step"
             className="ml-1.5 transition-all text-slate-500 hover:text-slate-700"

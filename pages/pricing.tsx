@@ -42,7 +42,7 @@ type Feature = {
 };
 
 const PLAN_NAMES = {
-  free: "Free Tier",
+  free: "Free tier",
   team: "Team",
   startup: "Startup",
   enterprise: "Enterprise",
@@ -60,7 +60,7 @@ const PLANS: Plan[] = [
     description: "Build your side project",
     cta: {
       href: "/sign-up?ref=pricing-free",
-      text: "Create an Account",
+      text: "Create an account",
     },
     features: [
       {
@@ -492,7 +492,7 @@ export default function Pricing() {
                       {PLAN_NAMES.free}
                     </h3>
                     <p className="flex items-center text-sky-100 text-sm">
-                      {getPlan(PLAN_NAMES.free).cost.included} function steps{" "}
+                      {getPlan(PLAN_NAMES.free).cost.included} steps{" "}
                       <a
                         href="#what-is-a-function-step"
                         className="mx-1 transition-all text-slate-200 hover:text-white"
@@ -502,11 +502,11 @@ export default function Pricing() {
                       &mdash;{" "}
                       {getPlanFeatureQuantity(
                         PLAN_NAMES.free,
-                        "Concurrent Functions"
+                        "Concurrent functions"
                       )}{" "}
-                      Concurrent Functions &mdash;{" "}
+                      concurrent functions &mdash;{" "}
                       {getPlanFeatureQuantity(PLAN_NAMES.free, "History")}{" "}
-                      History
+                      history
                     </p>
                   </div>
                   <div className="flex flex-col gap-2 items-center">
@@ -538,11 +538,11 @@ export default function Pricing() {
               id="what-is-a-function-step" // Used in PlanCard
               className="scroll-mt-32 mt-20 mb-4 text-white text-4xl font-semibold tracking-tight"
             >
-              What is a Function Step?
+              What is a step?
             </h2>
 
-            <p className="my-8 text-lg font-medium">
-              A Function Step is a callable unit of an Inngest function.
+            <p className="mt-8 text-lg font-medium max-w-4xl mb-16">
+              <a href="/docs/functions/multi-step" className="text-white underline">Steps</a> are building blocks for logic in functions.  They are individually retried, and only run once on success. They allow you to easily write complex logic in a single function.
             </p>
 
             <div className="w-full mt-12 flex flex-col lg:flex-row gap-8 items-start">
@@ -567,15 +567,13 @@ export default function Pricing() {
               <div className="max-w-[100%]">
                 <h3 className="text-lg font-semibold">Multi-step function</h3>
                 <p className="my-4">
-                  Steps are building blocks for logic in functions.  They are individually retried,
-                  and only run once on success.  They allow you to create complex logic in one function
-                  without queues. In this example, when a{" "}
+                  In this example, when a{" "}
                   <code className="bg-slate-800 text-slate-200 text-sm">
                     app/user.signup
                   </code>{" "}
                   event is triggered the function sends a welcome email,
-                  waits 3 days, then sends another email. This is billed as 3
-                  steps.
+                  waits 3 days, then sends another email - without any extra queues,
+                  state, or functions.  This is billed as 3 steps.
                 </p>
                 <div>
                   <CodeWindow
@@ -745,7 +743,7 @@ export default function Pricing() {
                   As Inngest runs your function any time an event is received,
                   you may have any number of events received within a short
                   period of time (e.g. 10ms). Inngest can run all of these
-                  functions concurrently (in parallel). Our Free Tier allows for
+                  functions concurrently (in parallel). Our free tier allows for
                   up to {getPlanFeatureQuantity("Free", "Concurrent Functions")}{" "}
                   concurrent functions at a time. Our paid plans offer
                   substantial concurrency to enable you to parallelize workloads
