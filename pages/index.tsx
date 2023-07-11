@@ -36,8 +36,8 @@ export default function Home() {
     <div
       className="home font-sans bg-[#050911]"
       style={{
-        backgroundImage: `radial-gradient(circle at center -20%, #0F003C 0%, rgba(5, 9, 17, 0) 100%)`,
-        backgroundSize: "100% 100vh",
+        backgroundImage: `radial-gradient(circle at center -20%, #211740 0%, rgba(5, 9, 17, 0) 1500px)`,
+        backgroundSize: "100% 1500px",
         backgroundRepeat: "no-repeat",
       }}
     >
@@ -57,12 +57,8 @@ export default function Home() {
         ]}
       />
 
-      <div
-        style={{
-          background: `url(/assets/textures/diagonal-cross.svg) no-repeat 0 160%`,
-          backgroundSize: "cover",
-        }}
-      >
+      <div className="relative">
+        <div className="absolute top-80 left-0 right-0 -skew-y-6 bottom-0 bg-gradient-to-b from-slate-900/80 border-t border-slate-800/70 to-slate-1000/0"></div>
         <SDKOverview />
 
         <Logos
