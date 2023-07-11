@@ -95,7 +95,7 @@ export default function Home() {
 
       <LocalDev className="-mb-80 md:-mb-60" />
 
-      <div className="bg-white pt-60 pb-48">
+      <div className="bg-white pt-60 pb-20 md:pb-40">
         <RunAnywhere />
 
         <Logos
@@ -155,7 +155,7 @@ export default function Home() {
           quote="We switched from our PostgreSQL backed queue to Inngest in less than a day. Their approach is idiomatic with a great developer experience. Inngest allowed us to stop worrying about scalability and stability."
           name="Peter Pistorius - CEO @ Snaplet"
           avatar="/assets/customers/snaplet-peter-pistorius.png"
-          className="mx-auto mb-24 max-w-2xl"
+          className="px-6 mx-auto mb-28 lg:mb-20 max-w-2xl"
           variant="light"
         />
       </div>
