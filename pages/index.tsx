@@ -34,7 +34,7 @@ export async function getStaticProps() {
 export default function Home() {
   return (
     <div
-      className="home font-sans bg-[#050911]"
+      className="home font-sans bg-slate-1000"
       style={{
         backgroundImage: `radial-gradient(circle at center -20%, #211740 0%, rgba(5, 9, 17, 0) 1500px)`,
         backgroundSize: "100% 1500px",
@@ -140,10 +140,10 @@ export default function Home() {
           ]}
           variant="light"
           footer={
-            <div className="flex items-center justify-center mt-8">
+            <div className="flex items-center justify-center mt-20">
               <Link
                 href="/product/how-inngest-works?ref=homepage-run-anywhere"
-                className="rounded-md px-3 py-1.5 text-sm font-medium bg-white transition-all text-slate-600 hover:text-slate-800 border border-slate-200 hover:bg-slate-50 whitespace-nowrap drop-shadow"
+                className="rounded-md px-6 py-3 text-sm font-medium bg-slate-900 transition-all text-white hover:bg-slate-800 whitespace-nowrap drop-shadow"
               >
                 Learn How Inngest Works
               </Link>
