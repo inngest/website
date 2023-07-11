@@ -161,13 +161,13 @@ export default function About() {
               <h1 className="mt-2 mb-6 pr-4 text-2xl md:text-5xl tracking-tighter font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#E2BEFF] via-white to-[#AFC1FF] drop-shadow">
                 Ship More Reliable Workflows. Faster.
               </h1>
-              <p className="mt-8 lg:mt-20 mx-auto max-w-lg text-xl font-medium">
+              <p className="mt-8 mx-auto max-w-lg text-lg font-regular">
                 Inngest is the developer platform for easily building reliable
                 workflows with zero infrastructure.
               </p>
             </header>
 
-            <div className="mx-auto max-w-2xl prose text-slate-300 prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline hover:prose-a:text-white prose-a:font-medium prose-a:transition-all prose-invert">
+            <div className="mx-auto max-w-[800px] text-center prose text-slate-300 prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline hover:prose-a:text-white prose-a:font-medium prose-a:transition-all prose-invert">
               <p>
                 Shipping reliable background jobs and workflows are a time
                 consuming and frustrating experience for any software team.
