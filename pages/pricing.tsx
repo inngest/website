@@ -800,14 +800,14 @@ export default function Pricing() {
                   function step?).
                 </p>
                 <p>
-                  See more details at{" "}
+                  See more details on our {" "}
                   <a
                     className="text-indigo-400 hover:text-white hover:underline hover:decoration-white transition-all"
                     href="/docs/usage-limits/inngest"
                   >
-                    Usage Limits
+                    usage limits
                   </a>{" "}
-                  page.
+                  documentation.
                 </p>
               </FAQRow>
               <FAQRow
