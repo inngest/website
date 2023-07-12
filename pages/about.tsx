@@ -49,7 +49,12 @@ const TEAM = [
   },
 ];
 
-const INVESTORS = [
+const INVESTORS: {
+  name: string;
+  logo: string;
+  maxWidth?: string;
+  featured?: boolean;
+}[] = [
   /*{
     name: "GGV Capital",
     logo: "/assets/about/ggv-capital-logo-white.png",
