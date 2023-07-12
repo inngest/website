@@ -18,7 +18,7 @@ export default function ComparisonTable({ plans, features }) {
                   {plan.name}{" "}
                   {plan.popular && (
                     <span className="bg-indigo-500 rounded-full font-semibold text-xs px-2 py-1 inline-block ml-3">
-                      Most Popular
+                      Most popular
                     </span>
                   )}
                 </h2>

@@ -38,7 +38,7 @@ export default function PlanCard({ variant = "light", content }) {
         {content.popular && (
           <div className="-mt-11 mb-3.5 block">
             <div className="bg-indigo-500 inline-block shadow-lg rounded-full text-white text-sm font-semibold tracking-tight leading-none py-2 px-4">
-              Most Popular
+              Most popular
             </div>
           </div>
         )}

@@ -42,7 +42,7 @@ export default function Footer({ ctaRef }: { ctaRef?: string }) {
               href={`/sign-up?ref=${ctaRef ? `${ctaRef}-callout` : "callout"}`}
               className="py-3 px-5 bg-slate-800 text-white rounded-lg transition-all hover:bg-slate-900"
             >
-              Get Started For Free
+              Get started For free
             </Link>
           </div>
         </div>

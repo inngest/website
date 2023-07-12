@@ -118,10 +118,10 @@ const PLANS: Plan[] = [
       {
         text: "Discord support",
       },
-      { text: "-", },
-      { text: "-", },
-      { text: "-", },
-      { text: "-", },
+      { text: "-" },
+      { text: "-" },
+      { text: "-" },
+      { text: "-" },
     ],
   },
   {
@@ -159,10 +159,10 @@ const PLANS: Plan[] = [
       {
         text: "Discord + Email Support",
       },
-      { text: "-", },
-      { text: "-", },
-      { text: "-", },
-      { text: "-", },
+      { text: "-" },
+      { text: "-" },
+      { text: "-" },
+      { text: "-" },
     ],
   },
   {
@@ -194,7 +194,7 @@ const PLANS: Plan[] = [
         text: "Concurrent functions",
       },
       {
-        quantity: "90 Days",
+        quantity: "90 days",
         text: "History",
       },
       {
@@ -229,7 +229,7 @@ function getPlanFeatureQuantity(planName: string, feature: string): string {
 
 const FEATURES: Feature[] = [
   {
-    name: "Function steps/month",
+    name: "Steps/month",
     plans: {
       [PLAN_NAMES.free]: `${getPlan(PLAN_NAMES.free).cost.included}`,
       [PLAN_NAMES.team]: `${getPlan(PLAN_NAMES.team).cost.included} + ${
@@ -397,7 +397,7 @@ const FEATURES: Feature[] = [
     },
   },
   {
-    name: "HIPAA BAA Available",
+    name: "HIPAA BAA available",
     plans: {
       [PLAN_NAMES.team]: false,
       [PLAN_NAMES.startup]: false,
@@ -405,7 +405,7 @@ const FEATURES: Feature[] = [
     },
   },
   {
-    name: "SOC2 Report",
+    name: "SOC2 report",
     plans: {
       [PLAN_NAMES.team]: false,
       [PLAN_NAMES.startup]: false,
@@ -550,14 +550,20 @@ export default function Pricing() {
             </h2>
 
             <p className="mt-8 text-lg font-medium max-w-4xl mb-16">
-              <a href="/docs/functions/multi-step" className="text-white underline">Steps</a> are building blocks for logic in functions.  They are individually retried, and only run once on success. They allow you to easily write complex logic in a single function.
+              <a
+                href="/docs/functions/multi-step"
+                className="text-white underline"
+              >
+                Steps
+              </a>{" "}
+              are building blocks for logic in functions. They are individually
+              retried, and only run once on success. They allow you to easily
+              write complex logic in a single function.
             </p>
 
             <div className="w-full mt-12 flex flex-col lg:flex-row gap-8 items-start">
               <div className="w-full lg:max-w-md">
-                <h3 className="text-lg font-semibold">
-                  Single-step function
-                </h3>
+                <h3 className="text-lg font-semibold">Single-step function</h3>
                 <p className="my-4">
                   This function does one thing. When a{" "}
                   <code className="bg-slate-800 text-slate-200 text-sm">
@@ -579,9 +585,9 @@ export default function Pricing() {
                   <code className="bg-slate-800 text-slate-200 text-sm">
                     app/user.signup
                   </code>{" "}
-                  event is triggered the function sends a welcome email,
-                  waits 3 days, then sends another email - without any extra queues,
-                  state, or functions.  This is billed as 3 steps.
+                  event is triggered the function sends a welcome email, waits 3
+                  days, then sends another email - without any extra queues,
+                  state, or functions. This is billed as 3 steps.
                 </p>
                 <div>
                   <CodeWindow
@@ -767,7 +773,7 @@ export default function Pricing() {
                     className="text-indigo-400 hover:text-white hover:underline hover:decoration-white transition-all"
                     href="/docs/usage-limits/inngest"
                   >
-                    Usage Limits
+                    usage limits
                   </a>{" "}
                   page.
                 </p>
@@ -808,7 +814,7 @@ export default function Pricing() {
                   function step?).
                 </p>
                 <p>
-                  See more details on our {" "}
+                  See more details on our{" "}
                   <a
                     className="text-indigo-400 hover:text-white hover:underline hover:decoration-white transition-all"
                     href="/docs/usage-limits/inngest"
