@@ -157,7 +157,7 @@ const PLANS: Plan[] = [
         text: "History",
       },
       {
-        text: "Discord + Email Support",
+        text: "Email, Discord support",
       },
       { text: "-" },
       { text: "-" },
@@ -198,7 +198,7 @@ const PLANS: Plan[] = [
         text: "History",
       },
       {
-        text: "Dedicated live support (+ Discord, Email)",
+        text: "Dedicated Slack channel, Email, Discord support",
       },
       {
         text: "Exportable metrics",
@@ -353,6 +353,14 @@ const FEATURES: Feature[] = [
     plans: {
       [PLAN_NAMES.team]: false,
       [PLAN_NAMES.startup]: true,
+      [PLAN_NAMES.enterprise]: true,
+    },
+  },
+  {
+    name: "Dedicated Slack channel support",
+    plans: {
+      [PLAN_NAMES.team]: false,
+      [PLAN_NAMES.startup]: false,
       [PLAN_NAMES.enterprise]: true,
     },
   },
