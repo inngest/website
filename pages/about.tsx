@@ -80,7 +80,12 @@ const INVESTORS: {
     logo: "/assets/about/comma-capital-white.png",
   },
 ];
-const ANGELS = [
+const ANGELS: {
+  name: string;
+  bio: string;
+  avatar?: string;
+  featured?: boolean;
+}[] = [
   /*{
     name: "Guillermo Rauch",
     bio: "CEO of Vercel",
