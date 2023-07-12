@@ -2,7 +2,7 @@
 heading: "Introducing Event Batching: Handling data at scale"
 subtitle: Providing a way to handle high load events, and processing them in bulk
 image: /assets/blog/event-batching/main.png
-date: 2023-07-06
+date: 2023-07-13
 author: Darwin Wu
 disableCTA: true
 ---
@@ -22,6 +22,31 @@ when dealing with high-volume and repetitive data.
 
 Take a look at our [Batching events guide](/docs/guides/batching) to get started with this powerful
 feature today.
+
+```ts
+inngest.createFunction(
+  // `batchEvents` is a new function configuration
+  { name: "Record API calls", batchEvents: { maxSize: 100, timeout: "5s" } },
+  { event: "log/api.call" },
+  // NOTE: Use the `events` instead of the `event` argument, which is an array of event payloads
+  async ({ events, step }) => {
+    const attrs = events.map(evt => {
+      return {
+        user_id: evt.data.user_id,
+        endpoint: evt.data.endpoint,
+        timestamp: toDateTime(evt.ts)
+      }
+    })
+
+    const result = await step.run("record data to DB", async () => {
+      return db.bulkWrite(attrs)
+    })
+
+    return { success: true, recorded: result.length }
+  }
+)
+```
+_Here's an example function from the documentation using batching._
 
 ## What lies ahead?
 
