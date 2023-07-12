@@ -6,8 +6,6 @@ import Footer from "src/shared/Footer";
 import ArrowRight from "src/shared/Icons/ArrowRight";
 import { Button } from "src/shared/Button";
 
-const MISSION = "To accelerate the adoption of event-based architecture.";
-
 const TEAM = [
   {
     name: "Tony Holdstock-Brown",
@@ -52,17 +50,17 @@ const TEAM = [
 ];
 
 const INVESTORS = [
-  {
+  /*{
     name: "GGV Capital",
     logo: "/assets/about/ggv-capital-logo-white.png",
     maxWidth: "200px",
     featured: true,
-  },
+  },*/
   {
     name: "Afore.vc",
     logo: "/assets/about/afore-capital-white.png",
     maxWidth: "200px",
-    featured: true,
+    // featured: true,
   },
   {
     name: "Kleiner Perkins",
@@ -78,7 +76,7 @@ const INVESTORS = [
   },
 ];
 const ANGELS = [
-  {
+  /*{
     name: "Guillermo Rauch",
     bio: "CEO of Vercel",
     featured: true,
@@ -89,7 +87,7 @@ const ANGELS = [
     bio: "Founder of Github",
     featured: true,
     avatar: "/assets/about/tom-preston-werner-avatar.png",
-  },
+  },*/
   {
     name: "Jason Warner",
     bio: "Former CTO at GitHub",
@@ -119,10 +117,10 @@ const ANGELS = [
 // Used for key announcements and significant thought leadership for investors
 // or potential job applicants
 const FEATURED_BLOG_POSTS: { title: string; href: string }[] = [
-  {
+  /*{
     title: "Inngest Raises $3M Seed led by GGV Capital",
     href: "/blog/announcing-inngest-seed-financing",
-  },
+  },*/
   {
     title: "Inngest: Add Superpowers To Serverless Functions",
     href: "/blog/inngest-add-super-powers-to-serverless-functions",
@@ -142,8 +140,9 @@ export async function getStaticProps() {
   return {
     props: {
       meta: {
-        title: "About Us",
-        description: MISSION,
+        title: "About Inngest",
+        description:
+          "Inngest is the developer platform for easily building reliable workflows with zero infrastructure",
       },
       designVersion: "2",
     },
@@ -181,7 +180,7 @@ export default function About() {
               </p>
             </div>
 
-            <div className="mt-8 lg:mt-12 flex justify-center">
+            {/* <div className="mt-8 lg:mt-12 flex justify-center">
               <a
                 href="/blog/announcing-inngest-seed-financing"
                 className="group inline-flex gap-0.5 items-center rounded-full font-medium pl-6 pr-5 py-2 border border-indigo-500/50 hover:bg-indigo-500/10 transition-all text-white flex-shrink-0"
@@ -190,7 +189,7 @@ export default function About() {
                 Rauch
                 <ArrowRight className="group-hover:translate-x-1.5 relative top-px transition-transform duration-150 " />
               </a>
-            </div>
+            </div> */}
           </div>
 
           <div className="my-32 mx-auto text-slate-300">

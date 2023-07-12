@@ -35,7 +35,7 @@ const FireIcon = () => (
   </svg>
 );
 
-const DISABLE_BANNER = false;
+const DISABLE_BANNER = true;
 
 function DefaultLayout({ children }) {
   const router = useRouter();
