@@ -262,7 +262,7 @@ import image from './img.png'
 
 With Next.js, static image imports return an object. The object can then be used directly with the Next.js [`<Image>` component](https://nextjs.org/docs/app/api-reference/components/image) or you can use the object's src property with your existing `<img>` tag.
 
-The `<Image>` component has the added benefits of [automatic image optimization and resizing](https://nextjs.org/docs/app/building-your-application/optimizing/images), but the width and height will be set automatically, so you'll need to visually ensure layout is correct for each image. Using the `<img>` tag will reduce the amount of changes in your application and prevent any image sizing or layout issues, so that is the easiest incremental path forward:
+The `<Image>` component has the added benefits of [automatic image optimization](https://nextjs.org/docs/app/building-your-application/optimizing/images), but the width and height will be set automatically, so you'll need to visually ensure layout is correct for each image. Using the `<img>` tag will reduce the amount of changes in your application and prevent any image sizing or layout issues, so that is the easiest incremental path forward:
 
 ```tsx
 // 1. Convert absolute import paths for images imported from `/public` into relative imports
