@@ -263,17 +263,18 @@ import image from './img.png'
 With Next.js, static image imports return an object which can then be used with the Next.js [`<Image>` component](https://nextjs.org/docs/app/api-reference/components/image). To reduce the risk of errors, in this step we won't be migrating all your `<img>` tags into `<Image>` components. Instead, we'll update the imports so that they still work with your `<img>` tags. You will still want [later](https://www.notion.so/Migrating-from-Vite-to-Next-js-64267a9dfbee4c10a91ad4fadfa1c177?pvs=21) to use the `<Image>` component to allow Next.js to [automatically optimize your images](https://nextjs.org/docs/app/building-your-application/optimizing/images).
 
 ```tsx
-// 1. Convert all absolute import paths for images imported from `/public` into relative imports
-// Before: import imageInPublicDir from '/img.png'
-import imageInPublicDir from '../public/img.png'
+// 1. Convert absolute import paths for images imported from `/public` into relative imports
+import logo from '/logo.png' // before
+// ⬇️ should now be
+import logo from '../public/logo.png' // after
 
 // 2a. Pass the image `src` property instead of the whole image object
-import logo from './logo.png'
+import logo from '../public/logo.png'
 <img src={logo.src} />
 
-// 2b. Use the Next.js Image tag
+// 2b. Use the Next.js Image component
 import Image from 'next/image'
-import logo from './logo.png'
+import logo from '../public/logo.png'
 <Image src={logo} />
 ```
 
