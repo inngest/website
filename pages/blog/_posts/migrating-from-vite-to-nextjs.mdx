@@ -260,7 +260,9 @@ import image from './img.png'
 <img src={image} >
 ```
 
-With Next.js, static image imports return an object which can then be used with the Next.js [`<Image>` component](https://nextjs.org/docs/app/api-reference/components/image). To reduce the risk of errors, in this step we won't be migrating all your `<img>` tags into `<Image>` components. Instead, we'll update the imports so that they still work with your `<img>` tags. You will still want [later](https://www.notion.so/Migrating-from-Vite-to-Next-js-64267a9dfbee4c10a91ad4fadfa1c177?pvs=21) to use the `<Image>` component to allow Next.js to [automatically optimize your images](https://nextjs.org/docs/app/building-your-application/optimizing/images).
+With Next.js, static image imports return an object. The object can then be used directly with the Next.js [`<Image>` component](https://nextjs.org/docs/app/api-reference/components/image) or you can use the object's src property with your existing `<img>` tag.
+
+The `<Image>` component has the added benefits of [automatic image optimization and resizing](https://nextjs.org/docs/app/building-your-application/optimizing/images), but the width and height will be set automatically, so you'll need to visually ensure layout is correct for each image. Using the `<img>` tag will reduce the amount of changes in your application and prevent any image sizing or layout issues, so that is the easiest incremental path forward:
 
 ```tsx
 // 1. Convert absolute import paths for images imported from `/public` into relative imports
@@ -275,7 +277,7 @@ import logo from '../public/logo.png'
 // 2b. Use the Next.js Image component
 import Image from 'next/image'
 import logo from '../public/logo.png'
-<Image src={logo} />
+<Image src={logo} /> // Be sure to set height and width via CSS
 ```
 
 <aside>
