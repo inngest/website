@@ -243,7 +243,7 @@ On Next.js you declare an entrypoint for your application by creating a `page.ts
 
     This file contains a `<Page>` component which is declared as a [Client Component](https://nextjs.org/docs/getting-started/react-essentials#client-components) by the `'use client'` directive. Without that directive the component would have been a [Server Component](https://nextjs.org/docs/getting-started/react-essentials#server-components).
 
-    On Next.js client components still get pre-rendered on the server ([SSR](https://nextjs.org/docs/pages/building-your-application/rendering/server-side-rendering)) before being rendered on the client, but since we want to first have a pure client-side app, we need to tell Next.js to disable the pre-rendering for the `<App>` component by importing it with the `ssr` option set to `false`:
+    On Next.js client components still get pre-rendered on the server ([SSR](https://nextjs.org/docs/app/building-your-application/rendering#component-level-client-and-server-rendering)) before being rendered on the client, but since we want to first have a pure client-side app, we need to tell Next.js to disable the pre-rendering for the `<App>` component by importing it with the `ssr` option set to `false`:
 
     ```tsx
     const App = dynamic(() => import('../../App'), { ssr: false })
