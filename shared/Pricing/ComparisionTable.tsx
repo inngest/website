@@ -56,7 +56,7 @@ export default function ComparisonTable({ plans, features }) {
             <tr key={i} className="h-14 border-t border-slate-900">
               <td
                 className={`h-14 flex items-center font-medium ${
-                  feature.heading && "font-bold text-lg mt-4"
+                  feature.heading && "font-bold text-lg mt-6"
                 }`}
               >
                 {feature.name}

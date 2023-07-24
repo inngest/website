@@ -652,6 +652,20 @@ export default function Pricing() {
                 </div>
               </div>
             </div>
+            <div className="w-full mt-12">
+              <h3 className="text-2xl font-semibold">
+                How can I estimate steps?
+              </h3>
+              <p className="my-4 max-w-3xl">
+                You can use the volume of messages that you currently process in
+                your queues to approximate your step usage. Additionally, add
+                the number of cron jobs that you run if you aim to use Inngest
+                for scheduling. <br />
+                <br />
+                <a href="/contact?ref=estimate-steps">Get in touch</a> if you
+                want help estimating advanced use cases.
+              </p>
+            </div>
           </div>
 
           <ComparisonTable plans={PLANS} features={FEATURES} />
