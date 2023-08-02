@@ -21,11 +21,6 @@
     "build-storybook": "build-storybook",
     "preinstall": "npx only-allow pnpm"
   },
-  "prettier": {
-    "trailingComma": "es5",
-    "tabWidth": 2,
-    "semi": true
-  },
   "dependencies": {
     "@algolia/autocomplete-core": "1.7.4",
     "@algolia/autocomplete-preset-algolia": "1.7.4",
