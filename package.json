@@ -113,5 +113,10 @@
     "@storybook/testing-library": "^0.0.13",
     "@types/lodash.shuffle": "^4.2.7",
     "@types/marked": "^4.0.5"
-  }
+  },
+  "engines": {
+    "node": "18.x",
+    "pnpm": "8.6.2"
+  },
+  "packageManager": "pnpm@8.6.2"
 }
