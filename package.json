@@ -1,6 +1,15 @@
 {
   "name": "@inngest/website",
   "description": "The Inngest Website containing the marketing, documentation, and blog content.",
+  "license": "UNLICENSED",
+  "homepage": "https://inngest.com/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/inngest/web-monorepo.git",
+    "directory": "apps/website"
+  },
+  "bugs": "https://linear.app/inngest/team/INN",
+  "author": "Inngest Inc. <info@inngest.com> (https://inngest.com/)",
   "main": "n/a",
   "scripts": {
     "dev": "next dev -p 3001",
