@@ -1,5 +1,5 @@
 {
-  "name": "inngest-www",
+  "name": "@inngest/website",
   "main": "n/a",
   "scripts": {
     "dev": "next dev -p 3001",
