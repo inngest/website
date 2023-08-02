@@ -1,5 +1,6 @@
 {
   "name": "@inngest/website",
+  "description": "The Inngest Website containing the marketing, documentation, and blog content.",
   "main": "n/a",
   "scripts": {
     "dev": "next dev -p 3001",
