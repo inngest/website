@@ -88,7 +88,7 @@ export default function Footer({ ctaRef }: { ctaRef?: string }) {
                 <li>
                   <a
                     className="text-white text-sm flex items-center group gap-2 hover:text-indigo-400 transition-all"
-                    href="https://inngest.com/discord"
+                    href="https://www.inngest.com/discord"
                   >
                     <Discord />
                     Discord
