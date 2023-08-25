@@ -125,21 +125,34 @@ You can serve Inngest functions within your existing Fastify app.
 
 We recommend using the exported `inngestFastify` plugin, though we also expose a generic `serve()` function if you'd like to manually create a route.
 
-```typescript
+<CodeGroup>
+```ts {{ title: "Plugin" }}
 import Fastify from "fastify";
-import inngestFastify, { serve } from "inngest/fastify";
+import inngestFastify from "inngest/fastify";
 import { inngest, fnA } from "./inngest";
 
 const fastify = Fastify();
 
-// The lead maintainer of Fastify recommends using this as a plugin:
 fastify.register(inngestFastify, {
   client: inngest,
   functions: [fnA],
   options: {},
 });
 
-// We do also export `serve()` if you want to use it directly, though.
+fastify.listen({ port: 3000 }, function (err, address) {
+  if (err) {
+    fastify.log.error(err);
+    process.exit(1);
+  }
+});
+```
+```ts {{ title: "Custom route" }}
+import Fastify from "fastify";
+import { serve } from "inngest/fastify";
+import { inngest, fnA } from "./inngest";
+
+const fastify = Fastify();
+
 fastify.route({
   method: ["GET", "POST", "PUT"],
   handler: serve(inngest, [fnA]),
@@ -153,6 +166,7 @@ fastify.listen({ port: 3000 }, function (err, address) {
   }
 });
 ```
+</CodeGroup>
 
 ## Framework: Fresh (Deno)
 
