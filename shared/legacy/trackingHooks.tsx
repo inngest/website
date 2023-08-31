@@ -20,15 +20,15 @@ export const useAnonymousID = (): { anonymousID: string; existing: boolean } => 
   // If the user has a legacy anonymous ID, migrate it to the new cookie.
   const [legacyAnonymousID, _, deleteLegacyAnonymousID] = useLocalStorage<string>("inngest-anon-id");
   if (!anonymousID && legacyAnonymousID) {
-    const sixMonths = 6 * 30 * 24 * 60 * 60 * 1000;
-    setAnonymousID(legacyAnonymousID, { domain: "inngest.com", path: "/", expires: sixMonths, sameSite: 'lax' });
+    const sixMonthsFromNow = new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000);
+    setAnonymousID(legacyAnonymousID, { domain: process.env.NEXT_PUBLIC_HOSTNAME, path: "/", expires: sixMonthsFromNow, sameSite: 'lax' });
     deleteLegacyAnonymousID();
   }
 
   if (!anonymousID) {
     const newAnonymousID = uuid();
-    const sixMonths = 6 * 30 * 24 * 60 * 60 * 1000;
-    setAnonymousID(newAnonymousID, { domain: "inngest.com", path: "/", expires: sixMonths, sameSite: 'lax' });
+    const sixMonthsFromNow = new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000);
+    setAnonymousID(newAnonymousID, { domain: process.env.NEXT_PUBLIC_HOSTNAME, path: "/", expires: sixMonthsFromNow, sameSite: 'lax' });
     return {
       anonymousID: newAnonymousID,
       existing: false,
