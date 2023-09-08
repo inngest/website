@@ -15,6 +15,7 @@ Our executor service, which invokes functions and handles responses from the SDK
 This caused extra load on several services:  the step processing handlers;  the pause/resume service which handles waitForEvent matching;  cancellation matching;  and the executor.
 
 ![](/assets/blog/2023-08-31-backlog.png)
+<small style={{display: "block", marginTop: "-1.5rem"}}>The step backlog grew until our fix went in</small>
 
 Shortly after being alerted to the backlog and errors, we introduced mitigations to fail functions when receiving invalid `waitForEvent` expressions.  This alleviated the root cause.  Once deployed, over the span of the next 36 hours we deployed code to improve the efficiency of the pause/resume service, and to improve how we handle repeated messages of successful steps.
 
