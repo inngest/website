@@ -143,7 +143,7 @@ export default function Header() {
               </a>
 
               <a
-                href="/sign-up?ref=nav"
+                href={`${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=nav`}
                 className="group flex gap-0.5 items-center rounded-full text-sm font-medium pl-6 pr-5 py-2  bg-indigo-500 hover:bg-indigo-400 transition-all text-white flex-shrink-0"
               >
                 Sign Up
