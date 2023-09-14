@@ -570,7 +570,7 @@ export default function Pricing() {
                   </div>
                   <div className="flex flex-col gap-2 items-center">
                     <Button
-                      href={`${process.env.NEXT_PUBLIC_SIGNUP_URL}/sign-up?ref=free`}
+                      href={`${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=free`}
                       variant="tertiary"
                       arrow="right"
                       className="whitespace-nowrap"
