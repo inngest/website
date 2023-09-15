@@ -143,7 +143,7 @@ const page = {
       text: "Get started for free",
     },
     secondaryCTA: {
-      href: "https://app.inngest.com/contact?ref=user-journey",
+      href: "/contact?ref=user-journey",
       text: "Request a demo",
     },
   },
