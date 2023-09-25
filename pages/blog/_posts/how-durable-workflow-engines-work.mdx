@@ -8,10 +8,10 @@ disableCTA: true
 
 ## Content overview
 
-- What are durable workflow engines
-- Why are workflow engines good?
-- How they work, high level
-- Nuances and approaches in the landscape
+- [What are durable workflow engines?](#what-are-durable-workflow-engines)
+- [What are the benefits?](#what-are-the-benefits)
+- [How workflow engines work](#how-workflow-engines-work)
+- [How event-driven workflow engines work](#how-inngest-works)
 
 ## What are durable workflow engines?
 
@@ -81,7 +81,7 @@ This function uses workflow primitives to create reliable, retryable steps withi
 of code.  Each step retries on error - whether that's a network error, worker crash, or some other
 failure.  Each step's data is recorded in "memory", and is available for use within the function.
 
-## Why are durable workflow engines beneficial?
+## What are the benefits?
 
 Writing code in this style has lots of benefits.  One important benefit is code is declarative and
 colocated.  Instead of having many individually scattered jobs linking to each other, you write a
