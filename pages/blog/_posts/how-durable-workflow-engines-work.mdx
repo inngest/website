@@ -183,7 +183,15 @@ When an event is received by the workflow engine, a few things happen in paralle
 - Function cancellations are evaluated and processed
 - `waitForEvent` signals are evaluated and processed
 
-Once processed, these invoke the queueing engine to resume functions using a queue.
+When triggering new function runs, several extra things happen automatically:
+
+- User-defined rate limiting is applied for each function
+- User-defined debounces are applied for each function
+- Function-based idempotency is checked and applied
+- Events are bundled into batches, if a function opts in to [event batching](https://www.inngest.com/docs/guides/batching)
+
+From there, Inngest works as expected:  we push a job into a queue so that workflows can be executed
+reliably.
 
 Inngest's queue is unique.  Inngest's queueing system creates two queues for every function deployed.
 Workers are shared-nothing, and pick up work from each queue without communication and minimal contention,
