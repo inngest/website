@@ -128,7 +128,7 @@ answer to these problems, and stick with single-threaded no-concurrency executio
 ## How Inngest works
 
 Inngest is a durable workflow engine which allows you to also work with events.  If you're familiar
-with `onClick` handlers on the web you're familiar with events.  An event is an object that contains
+with `onClick` handlers on the web, you're familiar with events.  An event is an object that contains
 data which is created whenever something happens. A webhook is an event.  A user signup is an event.
 And so on.
 
@@ -171,11 +171,13 @@ export default inngest.createFunction(
 );
 ```
 
-This decouples code.  Instead of modifying code which handles user signups, we create a workflow
-which automatically runs any time the signup event is received. To make this happen, a few extra
-additions are necessary to a regular workflow engine.  The engine itself needs to be modified to
-work with event streams.  It needs to combine queues with message brokers.  This is a non-trivial
-change.
+This decouples code.  Instead of modifying code which handles user signups to invoke functions,
+we create a workflow which automatically runs any time the signup event is received.  An event can
+trigger more than one function at once.
+
+To make this happen, a few extra additions are necessary to a regular workflow engine.  The engine
+itself needs to be modified to work with event streams.  It needs to combine queues with message
+brokers.  This is a non-trivial change.
 
 When an event is received by the workflow engine, a few things happen in parallel:
 
