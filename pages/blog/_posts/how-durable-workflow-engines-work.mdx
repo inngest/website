@@ -11,7 +11,7 @@ disableCTA: true
 - [What are durable workflow engines?](#what-are-durable-workflow-engines)
 - [What are the benefits?](#what-are-the-benefits)
 - [How workflow engines work](#how-workflow-engines-work)
-- [How event-driven workflow engines work](#how-event-driven-workflow-engines-work)
+- [How event-driven workflow engines work](#how-event-driven-workflow-engines-wor)
 
 ## What are durable workflow engines?
 
@@ -195,7 +195,8 @@ When an event is received by the workflow engine, a few things happen in paralle
 - Function cancellations are evaluated and processed
 - `waitForEvent` signals are evaluated and processed
 
-When triggering new function runs, several extra things happen automatically:
+When triggering new function runs, several extra things happen automatically (though this
+is unique to [Inngest](https://www.inngest.com)):
 
 - User-defined rate limiting is applied for each function
 - User-defined debounces are applied for each function
