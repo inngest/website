@@ -210,9 +210,8 @@ Side note:  Inngest is an event-driven workflow engine that provides everything 
 unique.  It creates two queues for every function deployed. Workers are shared-nothing, and
 pick up work from each queue without communication and minimal contention, whilst still
 having guarantees that the oldest jobs are worked on first.  It prioritizes finishing
-functions in order (excepting retries), and allows simple management of backpressure and load-shedding.
-
-This improves improves scale, running functions seamlessly across a fleet of executors without worrying about
+functions in order (excepting retries), and allows simple management of backpressure and load-shedding. This
+improves improves scale, running functions seamlessly across a fleet of executors without worrying about
 conflicting state or coordination.  We'll dive into event matching and queueing systems in future
 blog posts.
 
