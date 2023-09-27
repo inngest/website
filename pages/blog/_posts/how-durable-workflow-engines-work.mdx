@@ -1,5 +1,5 @@
 ---
-heading: "How a durable workflow engine works"
+heading: "How a durable workflow engine works:  you might not need a queue"
 subtitle: Breaking down how a durable workflow engine works, and how event-driven workflow engines improve DX
 image: /assets/blog/durable-workflow-engines.png
 date: 2023-09-25
@@ -23,7 +23,15 @@ the 2000's [business process model notation](https://en.wikipedia.org/wiki/Busin
 Without workflow engines, it's common to write code to run as a task within a queue,
 push jobs to that queue, and chain jobs together to build what you need.  Using a workflow engine is
 much simpler:  you write code as a series of steps, each of which is enqueued and attempted until
-successful. Here's an example of a billing function written as a workflow using Inngest:
+successful.
+
+<a href="https://adriano.fyi/posts/2023-09-24-choose-postgres-queue-technology/" rel="nofollow">Much has been said</a> about queues recently.
+Developers are up in arms arguing whether a database can be a queue.  Or if you should
+stick with queues like we've had since the 90s.  With workflow engines, the implementation
+details of a queue shouldn't matter.  You should be able to "just write code" without thinking
+about queues, state, or events altogether.
+
+Here's an example of a billing function written as a workflow using [Inngest](https://www.inngest.com):
 
 ```typescript
 import { lib } from "src/lib";
