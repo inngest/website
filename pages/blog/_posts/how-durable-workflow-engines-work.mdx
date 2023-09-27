@@ -92,7 +92,7 @@ async ({ event, step }) => {
 
 This function uses workflow primitives to create reliable, retryable steps within a single block
 of code.  Each step retries on error - whether that's a network error, worker crash, or some other
-failure.  Each step's data is recorded in "memory", and is available for use within the function.
+failure.  Each step's data is recorded in "memory", and is available for use later within the function.
 
 ## What are the benefits?
 
