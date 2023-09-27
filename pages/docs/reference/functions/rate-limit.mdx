@@ -1,6 +1,6 @@
 # Rate limit function execution
 
-Limit the number of times a function runs for a given `key` over a time `period`. All events in excess of the `limit` are ignored and never processed by the function.
+Limit the number of times a function runs over a time `period` with an optional `key` for dynamic limits.
 
 ```ts
 export default inngest.createFunction(
@@ -20,23 +20,56 @@ export default inngest.createFunction(
 );
 ```
 
-As `rateLimit` ignores all events in excess of the `limit` during the given `period`, this is not useful if you need to process every single event. Instead, you might be more interested in [configuring a `concurrency` limit with a `key`](/docs/functions/concurrency#limiting-concurrency-for-a-specific-key).
+As `rateLimit` will ignore events that are received in excess of the limit, this is not useful if you need to process every single event. Instead, you might be more interested in [configuring a `concurrency` limit with a `key`](/docs/functions/concurrency#limiting-concurrency-for-a-specific-key).
 
 ---
 
 ## How `rateLimit` works
 
-Each time an event is received that match's your function's trigger, it is evaluated prior to executing your function. If `rateLimit` is configured, Inngest creates a counter of the number of functions that are triggered by events over a given time `period`. The time period is begins when the first event is received and is reset when the period ends. In essence this acts as a mechanism to protect a given function from being run more than desired over a given period.
+Each time an event is received that match's your function's trigger, it is evaluated prior to executing your function. If `rateLimit` is configured, Inngest uses the `limit` and `period` options to only execute a maximum number of functions during that period.
 
-When a `key` is added, a separate counter is created for each unique value of the `key` expression. For example if your `key` is set to `event.data.customer_id`, each customer would have their own counter to limit the number of functions run.
+Inngest's rate limiting implementation uses the [“Generic Cell Rate Algorithm”](https://en.wikipedia.org/wiki/Generic_cell_rate_algorithm) (GCRA). To _overly simplify_ how this works, Inngest will use the `limit` and `period` options to create "buckets" of time in which your function can execute _once_.
+
+```
+limit / period = bucket time window
+```
+
+For example, this means that for a `limit: 10` and `period: '60m'` (60 minutes), the bucket time window will be 6 minutes. Any event triggering the function "fills up" the bucket for that time window and any additional events are ignored until the bucket's time window is reset. The algorithm (GCRA) is more sophisticated than this, but at the basic level - `rateLimit` ensures that you'll only run the max `limit` number of items over the `period` that you specify.
+
+**How the rate limit is applied with a consistent rate of events received**
 
 <img
   src="/assets/docs/reference/function-rate-limit.png"
   width="800"
-  height={320}
+  height={280}
   quality="95"
-  alt="Visualization of the function rate limit"
+  alt="Visualization of how the rate limit is applied with a consistent rate of events received"
 />
+
+**How the rate limit is applied with sporadic events received**
+
+<img
+  src="/assets/docs/reference/function-rate-limit-gaps.png"
+  width="800"
+  height={280}
+  quality="95"
+  alt="Visualization of how the rate limit is applied with sporadic events received"
+/>
+
+**How the rate limit is applied when limit is set to 1**
+
+<img
+  src="/assets/docs/reference/function-rate-limit-equal-1.png"
+  width="800"
+  height={280}
+  quality="95"
+  alt="Visualization of how the rate limit is applied when limit is set to 1"
+/>
+
+### Using a `key`
+
+When a `key` is added, a separate limit is applied for each unique value of the `key` expression. For example if your `key` is set to `event.data.customer_id`, each customer would have their individual rate limit applied to functions run meaning different users might have the same function run in same bucket time window, but two runs will not happen for the same `event.data.customer_id`.
+
 
 ## Configuration
 
