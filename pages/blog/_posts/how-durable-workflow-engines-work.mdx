@@ -32,59 +32,59 @@ stick with queues like we've had since the 90s.  With workflow engines, the impl
 details of a queue shouldn't matter.  You should be able to "just write code" without thinking
 about queues, state, or events altogether.
 
-Here's an example of a billing function written as a workflow (using Inngest, but
+Here's an example of a billing function written as a workflow (using TS pseudocode, but
 any workflow engine works):
 
 ```typescript
-import { lib } from "src/lib";
-import { inngest } from "src/inngest/client"
 
-inngest.createFunction(
-  { id: "handle-payments", name: "Handle payments" }, // Basic function name and configuration
-  { event: "api/invoice.created" },                   // Run any time a new invoice is created.
-  async ({ event, step }) => {
-    // Wait until the next billing date.
-    await step.sleepUntil(event.data.invoiceDate);
+// A single workflow function.
+//
+// `step` contains workflow primitives:
+//   - `step.run`, a single "transaction", enqueued and ran once on success
+//   - `step.sleep`/`step.sleepUntil`, to suspend a workflow for some amount of time
+//
+async ({ event, step }) => {
+  // Wait until the next billing date.
+  await step.sleepUntil(event.data.invoiceDate);
 
-    for (let i = 0; i < 3; i++) {
-      const charge = await step.run("Attempt charge", async () => {
-        // Note: This throws an error and retries automatically if the charge
-        // cannot be attempted.  If a charge is attempted, the returning
-        // object will specify whether the charge is successful.
-        return await lib.stripe.charges.create({
-          user: event.data.accountId,
-          amount: event.data.amount,
-        });
+  for (let i = 0; i < 3; i++) {
+    const charge = await step.run("Attempt charge", async () => {
+      // Note: This throws an error and retries automatically if the charge
+      // cannot be attempted.  If a charge is attempted, the returning
+      // object will specify whether the charge is successful.
+      return await lib.stripe.charges.create({
+        user: event.data.accountId,
+        amount: event.data.amount,
       });
+    });
 
-      if (charge.success) {
-        // Run two steps in parallel, both enqueued for reliability.
-        await Promise.all([
-          step.run("Update DB", async () => {
-            await db.payments.upsert(charge)
-          }),
-          step.run("Send receipt", async () => {
-            await resend.emails.send({
-              to: event.user.email,
-              subject: "Your receipt for Inngest",
-            })
+    if (charge.success) {
+      // Run two steps in parallel, both enqueued for reliability.
+      await Promise.all([
+        step.run("Update DB", async () => {
+          await db.payments.upsert(charge)
+        }),
+        step.run("Send receipt", async () => {
+          await resend.emails.send({
+            to: event.user.email,
+            subject: "Your receipt for Inngest",
           })
-        ]);
-        // Done.  Return the charge for observability.
-        return charge;
-      }
-
-      // Wait 24 hours and retry.
-      await step.sleep("24h");
+        })
+      ]);
+      // Done.  Return the charge for observability.
+      return charge;
     }
 
-    // If we're here, we've retried 3 times and we haven't been able to
-    // succeed with a payment. Handle the failure.
-    await step.run("Handle permanently failed payment", async () => {
-      lib.accounts.suspend(event.data.accountId);
-    });
-  },
-);
+    // Wait 24 hours and retry.
+    await step.sleep("24h");
+  }
+
+  // If we're here, we've retried 3 times and we haven't been able to
+  // succeed with a payment. Handle the failure.
+  await step.run("Handle permanently failed payment", async () => {
+    lib.accounts.suspend(event.data.accountId);
+  });
+};
 ```
 
 This function uses workflow primitives to create reliable, retryable steps within a single block
@@ -147,8 +147,12 @@ can also sample events from a stream within a function, or add automatic functio
 off of events:
 
 ```typescript
+import { lib } from "src/lib";
+import { inngest } from "src/inngest/client"
+
 export default inngest.createFunction(
   {
+    id: "user-onboarding",
     name: "User onboarding campaign"
     cancelOn: [
       // Automatically cancel this function any time the user is deleted.  This prevents
@@ -175,7 +179,9 @@ export default inngest.createFunction(
     );
 
     if (profileComplete === null) {
-      // Send the user a followup.
+      await step.run("send-followup", async () => {
+        // Send the user a followup.
+      });
     }
   }
 );
