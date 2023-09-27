@@ -11,7 +11,7 @@ disableCTA: true
 - [What are durable workflow engines?](#what-are-durable-workflow-engines)
 - [What are the benefits?](#what-are-the-benefits)
 - [How workflow engines work](#how-workflow-engines-work)
-- [How event-driven workflow engines work](#how-inngest-works)
+- [How event-driven workflow engines work](#how-event-driven-workflow-engines-work)
 
 ## What are durable workflow engines?
 
@@ -134,14 +134,15 @@ parallelism work?  These are not simple problems, and the solution changes depen
 workflow engine you use.  Some engines push the complexity to you, the developer.  Some have no
 answer to these problems, and stick with single-threaded no-concurrency execution.
 
-## How Inngest works
+## How event-driven workflow engines work
 
-Inngest is a durable workflow engine which allows you to also work with events.  If you're familiar
-with `onClick` handlers on the web, you're familiar with events.  An event is an object that contains
-data which is created whenever something happens. A webhook is an event.  A user signup is an event.
-And so on.
+Like it says on the tin, event-driven workflow engines also combine semantics that you'd
+find in an event stream.  Inngest is a durable workflow engine which allows you to also work with events.
+If you're familiar with `onClick` handlers on the web, you're familiar with events.  An event is an
+object that contains data which is created whenever something happens. A webhook is an event.  A user signup
+is an event. And so on.
 
-In Inngest, workflows are simple functions.  They run any time specific events are received.  You
+In this style, workflows are simple functions.  They run any time specific events are received.  You
 can also sample events from a stream within a function, or add automatic function cancellation based
 off of events:
 
@@ -201,15 +202,18 @@ When triggering new function runs, several extra things happen automatically:
 - Function-based idempotency is checked and applied
 - Events are bundled into batches, if a function opts in to [event batching](https://www.inngest.com/docs/guides/batching)
 
-From there, Inngest works as expected:  we push a job into a queue so that workflows can be executed
-reliably.
+From there, these workflow engines works as expected:  it pushes a job into a queue so that workflows
+can be executed reliably.
 
-Inngest's queue is unique.  Inngest's queueing system creates two queues for every function deployed.
-Workers are shared-nothing, and pick up work from each queue without communication and minimal contention,
-whilst still having guarantees that the oldest jobs are worked on first.  It prioritizes finishing
+
+Side note:  Inngest is an event-driven workflow engine that provides everything out of the box
+(eg. batching, concurrency, rate-limiting, debounce, branch deploys, and so on). Inngest's queue is
+unique.  It creates two queues for every function deployed. Workers are shared-nothing, and
+pick up work from each queue without communication and minimal contention, whilst still
+having guarantees that the oldest jobs are worked on first.  It prioritizes finishing
 functions in order (excepting retries), and allows simple management of backpressure and load-shedding.
 
-This allows us to scale functions seamlessly across a fleet of executors, without worrying about
+This improves improves scale, running functions seamlessly across a fleet of executors without worrying about
 conflicting state or coordination.  We'll dive into event matching and queueing systems in future
 blog posts.
 
