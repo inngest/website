@@ -14,6 +14,12 @@ disableCTA: true
 - [How workflow engines work](#how-workflow-engines-work)
 - [How event-driven workflow engines work](#how-event-driven-workflow-engines-work)
 
+<a href="https://adriano.fyi/posts/2023-09-24-choose-postgres-queue-technology/" rel="nofollow">Much has been said</a> about queues recently.
+Developers are up in arms arguing whether a database can be a queue.  Or if you should
+stick with queues like we've had since the 90s.  With workflow engines, the implementation
+details of a queue shouldn't matter.  You should be able to "just write code" without thinking
+about queues, state, or events altogether.
+
 ## What are durable workflow engines?
 
 Durable workflow engines are a powerful emerging technology which allow developers to write
@@ -23,14 +29,8 @@ the 2000's [business process model notation](https://en.wikipedia.org/wiki/Busin
 
 Without workflow engines, it's common to write code to run as a task within a queue,
 push jobs to that queue, and chain jobs together to build what you need.  Using a workflow engine is
-much simpler:  you write code as a series of steps, each of which is enqueued and attempted until
-successful.
-
-<a href="https://adriano.fyi/posts/2023-09-24-choose-postgres-queue-technology/" rel="nofollow">Much has been said</a> about queues recently.
-Developers are up in arms arguing whether a database can be a queue.  Or if you should
-stick with queues like we've had since the 90s.  With workflow engines, the implementation
-details of a queue shouldn't matter.  You should be able to "just write code" without thinking
-about queues, state, or events altogether.
+much simpler:  you write code as a series of steps in a single function. Each step which is enqueued
+and attempted until successful, automatically.
 
 Here's an example of a billing function written as a workflow (using TS pseudocode, but
 any workflow engine works):
