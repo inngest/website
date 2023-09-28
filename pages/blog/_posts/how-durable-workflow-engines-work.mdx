@@ -66,12 +66,14 @@ async ({ event, step }) => {
 
     if (charge.success) {
       // Run two steps in parallel, both enqueued for reliability.
-      await Promise.all([
+      // Note that both steps finish before the function continues, and the output
+      // of both steps is available to the function in the future.
+      const [update, send] = await Promise.all([
         step.run("Update DB", async () => {
-          await db.payments.upsert(charge)
+          return await db.payments.upsert(charge)
         }),
         step.run("Send receipt", async () => {
-          await resend.emails.send({
+          return await resend.emails.send({
             to: event.user.email,
             subject: "Your receipt for Inngest",
           })
