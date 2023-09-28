@@ -410,7 +410,7 @@ const referenceNavigation = [
         title: "Using TypeScript",
         href: `${baseDir}/typescript`,
       },
-      { title: "Upgrading to v2", href: `${baseDir}/sdk/migration` },
+      { title: "Upgrading to v3", href: `${baseDir}/sdk/migration` },
     ],
   },
   {

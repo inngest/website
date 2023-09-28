@@ -1,4 +1,335 @@
-export const description = "How to migrate your code to v2 of the Inngest TS SDK."
+export const description = "How to migrate your code to the latest version of the Inngest TS SDK."
+
+# Upgrading from Inngest SDK v2 to v3
+
+This guide walks through migrating your code from v2 to v3 of the Inngest TS SDK.
+
+## Breaking changes in v3
+
+Listed below are all breaking changes made in v3, potentially requiring code changes for you to upgrade.
+
+- [Inngest clients and functions now require IDs](#clients-and-functions-require-ids) - `name` was often being slugified automatically, causing some confusion around if it was safe to change a client/function's display name.
+- [Steps now require IDs](#all-steps-require-ids) - Like `step.run()`, all steps now require a string to help identify what they're for.
+- [Serve handlers refactored](#serve-handlers-refactor) - Creating a custom serve handler was a bit heavy, so we've lightened the process and made serve handlers much simpler.
+- [Shorthand function creation removed](#shorthand-function-creation-removed) - We're removing the ability to create a function without providing an options object, as it hid some important configuration for users.
+- [Some environment variables removed](#environment-variables) - We've reorganized `INNGEST_*` environment variables to be a bit more sane following many iterations in v2.
+- [Function `fns` option removed](#fns-removed) - We have a better answer for this problem with middleware, so we're removing this direct option.
+
+## Removing the guard rails
+
+Aside from some of the breaking changes above, this version also some new features.
+
+- **Versioning and state recovery** - Functions can change over time and even mid-run; our new engine will recover and adapt, even for functions running across huge timespans.
+- **Allow mixing step and async logic** - Top-level `await` alongside steps is now supported within Inngest functions, allowing easier reuse of logic and complex use cases like dynamic imports.
+- **Sending events returns IDs** - Sending an event now returns the event ID that has created.
+
+See [Introducing Inngest TypeScript SDK v3.0](#) to see what these features unlock for the future of the TS SDK.
+
+## Clients and functions require IDs
+
+When instantiating a client using `new Inngest()` or creating a function via `inngest.createFunction()`, it's now required to pass an `id` instead of a `name`.
+
+Previously only `name` was required, but this implied that the value was safe to change. Internally, we used this name to produce an ID which was used during deployments and executions.
+
+<Callout>
+We recommend keeping your `name` defined as-is and just adding the new required `id`. This will mean that the name of functions in the dashboard is unchanged.
+</Callout>
+
+#### Creating a client
+
+<Row>
+     <Col>
+          <CodeGroup filename="✅ v3">
+          ```ts
+          import { Inngest } from "inngest";
+
+          export const inngest = new Inngest({
+            id: "my-app",
+            name: "My App",
+          });
+          ```
+          </CodeGroup>
+     </Col>
+     <Col>
+          <CodeGroup filename="🛑 v2">
+          ```ts
+          import { Inngest } from "inngest";
+
+          export const inngest = new Inngest({
+            name: "My App",
+          });
+          ```
+          </CodeGroup>
+     </Col>
+</Row>
+
+#### Creating a function
+
+<Row>
+     <Col>
+          <CodeGroup filename="✅ v3">
+          ```ts
+          inngest.createFunction(
+            { id: "send-welcome-email", name: "Send welcome email" },
+            { event: "app/user.created" },
+            async ({ event }) => {
+              // ...
+            }
+          );
+          ```
+          </CodeGroup>
+     </Col>
+     <Col>
+          <CodeGroup filename="🛑 v2">
+          ```ts
+          inngest.createFunction(
+            { name: "Send welcome email" },
+            { event: "app/user.created" },
+            async ({ event }) => {
+              // ...
+            }
+          );
+          ```
+          </CodeGroup>
+     </Col>
+</Row>
+
+## All steps require IDs
+
+When using any `step.*` tool, an ID is now required to ensure that determinism across changes to a function is easier to reason about for the user and the underlying engine.
+
+The addition of these IDs allows you to deploy hotfixes and logic changes to long-running functions without fear of errors, failures, or panics. Beforehand, any changes to a function resulted in an irrecoverable error if step definitions changed. With this, changes to a function are smartly applied by default.
+
+Every step tool now takes a new option, `StepOptionsOrId`, as its first argument. Either a `string`, indicating the ID for that step, or an object that can also include a friendly `name`.
+
+```ts
+type StepOptionsOrId =
+  | string
+  | {
+      id: string;
+      name?: string;
+    };
+```
+
+#### `step.run()`
+
+This tool shouldn't require any changes. We'd still recommend changing the ID to something that's more obviously an identifier, like `send-welcome-email`, but you should wait for all existing v2 runs to complete before doing so.
+
+See [Handling in-progress runs triggered from v2](#) for more information.
+
+#### `step.sendEvent()`
+
+<Row>
+     <Col>
+          <CodeGroup filename="✅ v3">
+          ```ts
+          step.sendEvent("broadcast-user-creation", {
+            name: "app/user.created",
+            data: {
+              /* ... */
+            },
+          });
+          ```
+          </CodeGroup>
+     </Col>
+     <Col>
+          <CodeGroup filename="🛑 v2">
+          ```ts
+          step.sendEvent({
+            name: "app/user.created",
+            data: {
+              /* ... */
+            },
+          });
+          ```
+          </CodeGroup>
+     </Col>
+</Row>
+
+#### `step.sleep()`
+
+<Row>
+     <Col>
+          <CodeGroup filename="✅ v3">
+          ```ts
+          step.sleep("TODOTODO", "1h");
+          ```
+          </CodeGroup>
+     </Col>
+     <Col>
+          <CodeGroup filename="🛑 v2">
+          ```ts
+          step.sleep("1h");
+          ```
+          </CodeGroup>
+     </Col>
+</Row>
+
+#### `step.sleepUntil()`
+
+<Row>
+     <Col>
+          <CodeGroup filename="✅ v3">
+          ```ts
+          step.sleepUntil("wait-for-user-birthday", specialDate);
+          ```
+          </CodeGroup>
+     </Col>
+     <Col>
+          <CodeGroup filename="🛑 v2">
+          ```ts
+          step.sleepUntil(specialDate);
+          ```
+          </CodeGroup>
+     </Col>
+</Row>
+
+#### `step.waitForEvent()`
+
+<Row>
+     <Col>
+          <CodeGroup filename="✅ v3">
+          ```ts
+          step.waitForEvent("wait-for-user-login", {
+            event: " app/user.login",
+            timeout: "1h ",
+          });
+          ```
+          </CodeGroup>
+     </Col>
+     <Col>
+          <CodeGroup filename="🛑 v2">
+          ```ts
+          step.waitForEvent("app/user.login", {
+            timeout: "1h ",
+          });
+          ```
+          </CodeGroup>
+     </Col>
+</Row>
+
+## Shorthand function creation removed
+
+`inngest.createFunction()` can no longer take a `string` as the first or second arguments; an object is now required to aid in the discoverability of options and configuration.
+
+<Row>
+     <Col>
+          <CodeGroup filename="✅ v3">
+          ```ts
+          inngest.createFunction(
+            { id: "send-welcome-email", name: "Send welcome email" },
+            { event: "app/user.created" },
+            async () => {
+              // ...
+            }
+          );
+          ```
+          </CodeGroup>
+     </Col>
+     <Col>
+          <CodeGroup filename="🛑 v2">
+          ```ts
+          inngest.createFunction(
+            "Send welcome email",
+            "app/user.created",
+            async () => {
+              // ...
+            }
+          );
+          ```
+          </CodeGroup>
+     </Col>
+</Row>
+
+## Environment variables
+
+The arrangement of environment variables available has shifted a lot over the course of v2, so in v3 we've streamlined what's available and how they're used.
+
+We've removed some environment variables for setting URLs for communicating with Inngest.
+
+- **✅ Added `INNGEST_BASE_URL`** - set the URL to communicate with Inngest in one place
+- **🛑 Removed `INNGEST_API_BASE_URL`** - set `INNGEST_BASE_URL` instead
+- **🛑 Removed `INNGEST_DEVSERVER_URL`** - set `INNGEST_BASE_URL` instead
+
+<Callout>
+If you were using `INNGEST_DEVSERVER_URL` to test a production build against a local dev server, set `INNGEST_BASE_URL` to your dev server's address instead.
+</Callout>
+
+We've also added some new environment variables based on config options available when serving Inngest functions.
+
+- **✅ Added `INNGEST_SERVE_HOST`** - Sets the `servePath` serve option, e.g. `/api/inngest`.
+- **✅ Added `INNGEST_SERVE_PATH`** - Sets the `serveHost` serve option, e.g. `https://www.example.com`.
+- **✅ Added `INNGEST_LOG_LEVEL`** - One of `"fatal" | "error" | "warn" | "info" | "debug" | "silent"`. Setting to `"debug"` will also set `DEBUG=inngest:*`.
+- **✅ Added `INNGEST_STREAMING`** - One of `"allow" | "force" | "false"`.
+
+Check out the [Environment variables](#) page for information on all current environment variables.
+
+## Function `fns` option removed
+
+In v2, providing a `fns` option when creating a function -- an object of functions -- would wrap those passed functions in `step.run()`, meaning you can run code inside your function without the `step.run()` boilerplate.
+
+This wasn't a very well advertised feature and had some drawbacks, so we're instead replacing it with some optional middleware.
+
+Check out the [Common Actions Middleware Example](#) for the code.
+
+<Row>
+     <Col>
+          <CodeGroup filename="✅ v3">
+          ```ts
+          import * as actions from "./actions";
+          import { createActionsMiddleware } from "./middleware";
+
+          const inngest = new Inngest({
+            id: "my-app",
+            name: "My App",
+            middleware: [createActionsMiddleware(actions)],
+          });
+
+          inngest.createFunction(
+            { name: "Send welcome email" },
+            { event: "app/user.created" },
+            async ({ event, action }) => {
+              const user = await action.getUserFromDb(event.data.userId);
+              await action.sendWelcomeEmail(user.email);
+            }
+          );
+          ```
+          </CodeGroup>
+     </Col>
+     <Col>
+          <CodeGroup filename="🛑 v2">
+          ```ts
+          import * as actions from "./actions";
+
+          const inngest = new Inngest({ name: "My App" });
+
+          inngest.createFunction(
+            {
+              name: "Send welcome email",
+              fns: actions,
+            },
+            { event: "app/user.created" },
+            async ({ event, fns }) => {
+              const user = await fns.getUserFromDb(event.data.userId);
+              await fns.sendWelcomeEmail(user.email);
+            }
+          );
+          ```
+          </CodeGroup>
+     </Col>
+</Row>
+
+## Handling in-progress runs triggered from v2
+
+When upgrading to v3, there may be function runs in progress that were started using v2. For this reason, v3's engine changes are backwards compatible with v2 runs.
+
+TODOTODO
+
+## Advanced: Updating custom framework serve handlers
+
+TODOTODO
+
+---
 
 # Upgrading from Inngest SDK v1 to v2
 
