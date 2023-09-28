@@ -92,9 +92,9 @@ async ({ event, step }) => {
 };
 ```
 
-This function uses workflow primitives to create reliable, retryable steps within a single block
-of code.  Each step retries on error - whether that's a network error, worker crash, or some other
-failure.  Each step's data is recorded in "memory", and is available for use later within the function.
+This function uses workflow engine primitives to create reliable, retryable steps within a single block
+of code.  Workflow engines should retry steps on error - whether that's a network error, worker crash, or some other
+failure.  Each step's data should be recorded in "memory", available for use later within the function.
 
 ## What are the benefits?
 
@@ -114,10 +114,10 @@ makes teams more effective.
 
 Every workflow engine provides primitives that developers use to assemble their core workflows.
 
-Two primitives available in every platform are `steps` (single transactions that must complete once)
-and `sleeps` (the ability to wait a specific amount of time and reusme functions). Both of these
-require a queue under the hood.  Therefore, fundamentally **all workflow engines abstract some sort
-of queue**.
+Two primitives available in every platform are `steps` (single transactions that must complete as close
+to exactly once as possible) and `sleeps` (the ability to wait a specific amount of time and reusme
+functions). Both of these require a queue under the hood.  Therefore, fundamentally **all workflow engines
+abstract some sort of queue**.
 
 Modern workflow engines typically all do something similar:
 
