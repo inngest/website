@@ -32,8 +32,9 @@ first, and should get out of your way and let you think about your code - we're 
 the 2000's [business process model notation](https://en.wikipedia.org/wiki/Business_Process_Model_and_Notation), here.
 
 Without workflow engines, it's common to write code to run as a task within a queue,
-push jobs to that queue, and chain jobs together to build what you need.  Using a workflow engine is
-much simpler:  you write code as a series of steps in a single function. Each step which is enqueued
+push jobs to that queue, and chain jobs together to build what you need, managing state
+manually.  Using a workflow engine is much simpler:  you write code as a series of steps in a single
+function. Each step which is enqueued
 and attempted until successful, automatically.
 
 Here's an example of a billing function written as a workflow (using TS pseudocode, but
