@@ -168,7 +168,7 @@ export default inngest.createFunction(
       },
     ]
   },
-  { event: "app/user.signup" },
+  { event: "app/user.signup" }, // Automatically run instantly any time this event is received
   async ({ event, step }) => {
     // Wait for the `app/user.profile.completed` event to be received with the same user
     // ID for up to 24 hours.  Whenever the event is received, this function will be
