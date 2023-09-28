@@ -208,7 +208,7 @@ When an event is received by the workflow engine, a few things happen in paralle
 When triggering new function runs, several extra things happen automatically (though this
 is unique to [Inngest](https://www.inngest.com)):
 
-- User-defined rate limiting is applied for each function
+- User-defined [rate limiting](/docs/reference/functions/rate-limit) is applied for each function
 - User-defined debounces are applied for each function
 - Function-based idempotency is checked and applied
 - Events are bundled into batches, if a function opts in to [event batching](https://www.inngest.com/docs/guides/batching)
