@@ -21,19 +21,6 @@ export default defineType({
             }
         }),
         defineField({
-            name: 'type',
-            title: 'Article Type',
-            type: 'string',
-            validation: (Rule) => Rule.required(),
-            initialValue: 'knowledge-base',
-            options: {
-                list: [
-                    {title: 'Knowledge Base', value: 'knowledge-base'},
-                    {title: 'Blog Post', value: 'blog-post'}
-                ],
-            },
-        }),
-        defineField({
             name: 'content',
             title: 'Content',
             type: 'markdown'
