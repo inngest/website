@@ -10,7 +10,6 @@ import {deskTool} from 'sanity/desk'
 import {apiVersion, dataset, projectId} from './sanity/env'
 import {schema} from './sanity/schema'
 import {embeddingsIndexReferenceInput} from "@sanity/embeddings-index-ui";
-import {assist} from "@sanity/assist";
 import {codeInput} from "@sanity/code-input";
 import {markdownSchema} from "sanity-plugin-markdown";
 
@@ -26,7 +25,6 @@ export default defineConfig({
     // https://www.sanity.io/docs/the-vision-plugin
     visionTool({defaultApiVersion: apiVersion}),
     embeddingsIndexReferenceInput(),
-    assist(),
     codeInput(),
     markdownSchema()
   ],
