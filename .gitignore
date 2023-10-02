@@ -11,6 +11,7 @@
 # next.js
 /.next/
 /out/
+/dist/
 
 # production
 /build
@@ -20,6 +21,7 @@
 .DS_Store
 *.pem
 /.idea/
+/.sanity/
 
 # local env files
 .env.local

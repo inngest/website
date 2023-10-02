@@ -9,6 +9,10 @@ import {deskTool} from 'sanity/desk'
 // Go to https://www.sanity.io/docs/api-versioning to learn how API versioning works
 import {apiVersion, dataset, projectId} from './sanity/env'
 import {schema} from './sanity/schema'
+import {embeddingsIndexReferenceInput} from "@sanity/embeddings-index-ui";
+import {assist} from "@sanity/assist";
+import {codeInput} from "@sanity/code-input";
+import {markdownSchema} from "sanity-plugin-markdown";
 
 export default defineConfig({
   basePath: '/studio',
@@ -21,5 +25,9 @@ export default defineConfig({
     // Vision is a tool that lets you query your content with GROQ in the studio
     // https://www.sanity.io/docs/the-vision-plugin
     visionTool({defaultApiVersion: apiVersion}),
+    embeddingsIndexReferenceInput(),
+    assist(),
+    codeInput(),
+    markdownSchema()
   ],
 })
