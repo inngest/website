@@ -18,7 +18,15 @@ export default defineType({
             options: {
                 source: 'title',
                 maxLength: 96,
-            }
+            },
+            validation: (Rule) => Rule.required(),
+        }),
+        defineField({
+            name: 'category',
+            title: 'Category',
+            type: 'reference',
+            to: [{type: 'category'}],
+            validation: (Rule) => Rule.required(),
         }),
         defineField({
             name: 'content',
@@ -30,13 +38,6 @@ export default defineType({
             title: 'Tags',
             type: 'array',
             of: [{type: 'reference', to: [{type: 'tag'}]}]
-        }),
-        defineField({
-            name: 'category',
-            title: 'Category',
-            type: 'reference',
-            to: [{type: 'category'}]
-
         })
     ]
 })
