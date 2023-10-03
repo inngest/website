@@ -130,7 +130,24 @@ By default, each function is retried 3 times using [backoff](https://github.com/
 
 You can customize the number of retries directly from your function configuration:
 
-```typescript
+<CodeGroup>
+```ts {{ title: "v3" }}
+import { Inngest } from "inngest";
+
+const inngest = new Inngest({ id: "my-app" });
+
+export default inngest.createFunction(
+  {
+    id: "handle-form",
+    retries: 10, // Choose the number of retries you'd liie.
+  },
+  { event: "api/form.submitted" },
+  async ({ event, step }) => {
+    // ...
+  }
+);
+```
+```ts {{ title: "v2" }}
 import { Inngest } from "inngest";
 
 const inngest = new Inngest({ name: "My app" });
@@ -141,8 +158,11 @@ export default inngest.createFunction(
     retries: 10, // Choose the number of retries you'd liie.
   },
   { event: "api/form.submitted" },
+  async ({ event, step }) => {
+    // ...
   }
 );
 ```
+</CodeGroup>
 
 [Retries follow this backoff schedule](https://github.com/inngest/inngest/blob/main/pkg/backoff/backoff.go#L10-L22), with 0-30 seconds of random jitter added.

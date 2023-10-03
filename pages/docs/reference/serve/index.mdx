@@ -2,17 +2,33 @@
 
 The `serve()` API handler is used to serve your application's [functions](/docs/reference/functions/create) via HTTP. This handler enables Inngest to remotely and securely read your functions' configuration and invoke your function code. This enables you to host your function code on any platform.
 
-```ts
+<CodeGroup>
+```ts {{ title: "v3" }}
 import { serve } from "inngest/next"; // or your preferred framework
-import { inngest } from './client';
-import { sendSignupEmail, summarizeText, importProductImages } from './functions';
-
-serve(inngest, [
+import { inngest } from "./client";
+import {
+  importProductImages,
   sendSignupEmail,
   summarizeText,
-  importProductImages,
-])
+} from "./functions";
+
+serve({
+  client: inngest,
+  functions: [sendSignupEmail, summarizeText, importProductImages],
+});
 ```
+```ts {{ title: "v2" }}
+import { serve } from "inngest/next"; // or your preferred framework
+import { inngest } from "./client";
+import {
+  importProductImages,
+  sendSignupEmail,
+  summarizeText,
+} from "./functions";
+
+serve(inngest, [sendSignupEmail, summarizeText, importProductImages]);
+```
+</CodeGroup>
 
 `serve` handlers are imported from convenient framework-specific packages like `"inngest/next"`, `"inngest/express"`, or `"inngest/lambda"`. [Click here for a full list of officially supported frameworks](/docs/sdk/serve). For any framework that is not support, you can [create a custom handler](#custom-frameworks).
 
