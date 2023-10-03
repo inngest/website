@@ -8,12 +8,13 @@ This guide walks through migrating your code from v2 to v3 of the Inngest TS SDK
 
 Listed below are all breaking changes made in v3, potentially requiring code changes for you to upgrade.
 
-- [Inngest clients and functions now require IDs](#clients-and-functions-require-ids) - `name` was often being slugified automatically, causing some confusion around if it was safe to change a client/function's display name.
-- [Steps now require IDs](#all-steps-require-ids) - Like `step.run()`, all steps now require a string to help identify what they're for.
-- [Serve handlers refactored](#serve-handlers-refactor) - Creating a custom serve handler was a bit heavy, so we've lightened the process and made serve handlers much simpler.
-- [Shorthand function creation removed](#shorthand-function-creation-removed) - We're removing the ability to create a function without providing an options object, as it hid some important configuration for users.
-- [Some environment variables removed](#environment-variables) - We've reorganized `INNGEST_*` environment variables to be a bit more sane following many iterations in v2.
-- [Function `fns` option removed](#fns-removed) - We have a better answer for this problem with middleware, so we're removing this direct option.
+- [Clients and functions now require IDs](#clients-and-functions-require-ids)
+- [Steps now require IDs](#all-steps-require-ids)
+- [Refactored serve handlers](#serve-handlers-refactored)
+- [Removed shorthand function creation](#shorthand-function-creation-removed)
+- [Refactored environment variables and config](#environment-variables-and-configuration)
+- [Removed `fns` option](#fns-removed)
+- [Advanced: Updating custom framework serve handlers](#advanced-updating-custom-framework-serve-handlers)
 
 ## Removing the guard rails
 
@@ -23,7 +24,7 @@ Aside from some of the breaking changes above, this version also some new featur
 - **Allow mixing step and async logic** - Top-level `await` alongside steps is now supported within Inngest functions, allowing easier reuse of logic and complex use cases like dynamic imports.
 - **Sending events returns IDs** - Sending an event now returns the event ID that has created.
 
-See [Introducing Inngest TypeScript SDK v3.0](#) to see what these features unlock for the future of the TS SDK.
+See [Introducing Inngest TypeScript SDK v3.0](/blog/releasing-ts-sdk-3?ref=migration) to see what these features unlock for the future of the TS SDK.
 
 ## Clients and functions require IDs
 
@@ -115,7 +116,7 @@ type StepOptionsOrId =
 
 This tool shouldn't require any changes. We'd still recommend changing the ID to something that's more obviously an identifier, like `send-welcome-email`, but you should wait for all existing v2 runs to complete before doing so.
 
-See [Handling in-progress runs triggered from v2](#) for more information.
+See [Handling in-progress runs triggered from v2](#handling-in-progress-runs-triggered-from-v2) for more information.
 
 #### `step.sendEvent()`
 
@@ -152,14 +153,14 @@ See [Handling in-progress runs triggered from v2](#) for more information.
      <Col>
           <CodeGroup filename="✅ v3">
           ```ts
-          step.sleep("TODOTODO", "1h");
+          step.sleep("wait-before-poll", "1m");
           ```
           </CodeGroup>
      </Col>
      <Col>
           <CodeGroup filename="🛑 v2">
           ```ts
-          step.sleep("1h");
+          step.sleep("1m");
           ```
           </CodeGroup>
      </Col>
@@ -208,6 +209,41 @@ See [Handling in-progress runs triggered from v2](#) for more information.
      </Col>
 </Row>
 
+## Serve handlers refactored
+
+Serving functions could become a bit unwieldy with the format we had, so we've slightly altered how you serve your functions to ensure proper discoverability of options and aid in readability when revisiting the code.
+
+Also see the [Environment variables and config](#environment-variables-and-configuration) section.
+
+<Row>
+     <Col>
+          <CodeGroup filename="✅ v3">
+          ```ts
+          import { serve } from "inngest/next";
+          import { inngest, functions } from "~/inngest";
+
+          export default serve({
+            client: inngest,
+            functions,
+            // ...options
+          });
+          ```
+          </CodeGroup>
+     </Col>
+     <Col>
+          <CodeGroup filename="🛑 v2">
+          ```ts
+          import { serve } from "inngest/next";
+          import { inngest, functions } from "~/inngest";
+
+          export default serve(inngest, functions, {
+            // ...options
+          });
+          ```
+          </CodeGroup>
+     </Col>
+</Row>
+
 ## Shorthand function creation removed
 
 `inngest.createFunction()` can no longer take a `string` as the first or second arguments; an object is now required to aid in the discoverability of options and configuration.
@@ -241,15 +277,15 @@ See [Handling in-progress runs triggered from v2](#) for more information.
      </Col>
 </Row>
 
-## Environment variables
+## Environment variables and configuration
 
 The arrangement of environment variables available has shifted a lot over the course of v2, so in v3 we've streamlined what's available and how they're used.
 
-We've removed some environment variables for setting URLs for communicating with Inngest.
+We've refactored some environment variables for setting URLs for communicating with Inngest.
 
-- **✅ Added `INNGEST_BASE_URL`** - set the URL to communicate with Inngest in one place
-- **🛑 Removed `INNGEST_API_BASE_URL`** - set `INNGEST_BASE_URL` instead
-- **🛑 Removed `INNGEST_DEVSERVER_URL`** - set `INNGEST_BASE_URL` instead
+- **✅ Added `INNGEST_BASE_URL`** - Sets the URL to communicate with Inngest in one place, e.g. `http://localhost:8288`.
+- **🛑 Removed `INNGEST_API_BASE_URL`** - Set `INNGEST_BASE_URL` instead.
+- **🛑 Removed `INNGEST_DEVSERVER_URL`** - Set `INNGEST_BASE_URL` instead.
 
 <Callout>
 If you were using `INNGEST_DEVSERVER_URL` to test a production build against a local dev server, set `INNGEST_BASE_URL` to your dev server's address instead.
@@ -262,7 +298,17 @@ We've also added some new environment variables based on config options availabl
 - **✅ Added `INNGEST_LOG_LEVEL`** - One of `"fatal" | "error" | "warn" | "info" | "debug" | "silent"`. Setting to `"debug"` will also set `DEBUG=inngest:*`.
 - **✅ Added `INNGEST_STREAMING`** - One of `"allow" | "force" | "false"`.
 
-Check out the [Environment variables](#) page for information on all current environment variables.
+Check out the [Environment variables](/docs/sdk/environment-variables?ref=migration) page for information on all current environment variables.
+
+In this same vein, we've also refactored some configuration options when creating an Inngest client and serving functions.
+
+- `new Inngest()`
+  - **✅ Added `baseUrl`** - Sets the URL to communicate with Inngest in one place, e.g. `"http://localhost:8288"`. Synonymous with setting the `INNGEST_BASE_URL` environment variable above.
+  - **🛑 Removed `inngestBaseUrl`** - Set `baseUrl` instead.
+- `serve()`
+  - **✅ Added `baseUrl`** - Sets the URL to communicate with Inngest in one place, e.g. `"http://localhost:8288"`. Synonymous with setting the `INNGEST_BASE_URL` environment variable above or using `baseUrl` when creating the client.
+  - **🛑 Removed `inngestBaseUrl`** - Set `baseUrl` instead.
+  - **🛑 Removed `landingPage`** - The landing page for the SDK was deprecated in v2. Use the Inngest Dev Server instead via `npx inngest-cli@latest dev`.
 
 ## Function `fns` option removed
 
@@ -270,7 +316,7 @@ In v2, providing a `fns` option when creating a function -- an object of functio
 
 This wasn't a very well advertised feature and had some drawbacks, so we're instead replacing it with some optional middleware.
 
-Check out the [Common Actions Middleware Example](#) for the code.
+Check out the [Common Actions Middleware Example](/docs/reference/middleware/examples#common-actions-for-every-function?ref=migration) for the code.
 
 <Row>
      <Col>
@@ -323,11 +369,104 @@ Check out the [Common Actions Middleware Example](#) for the code.
 
 When upgrading to v3, there may be function runs in progress that were started using v2. For this reason, v3's engine changes are backwards compatible with v2 runs.
 
-TODOTODO
+<Callout>
+`step.run()` should require no changes from v2 to v3. To ensure runs are backwards-compatible, make sure to keep the ID the same while in-progress v2 runs complete.
+</Callout>
 
 ## Advanced: Updating custom framework serve handlers
 
-TODOTODO
+We found that writing custom serve handlers could be a confusing experience, focusing heavily on Inngest concepts. With v3, we've changed these handlers to now focus almost exclusively on shared concepts around how to parse requests and send responses.
+
+A handler is now defined by telling Inngest how to access certain pieces of the request and how to send a response. Handlers are also now correctly typed, meaning the output of `serve()` will be a function signature compatible with your framework.
+
+<Callout>
+In v2, `serve()` would always return `any`. You can return to this - though we don't recommend it - by using a type assertion such as `serve() as any`.
+</Callout>
+
+See the simple handler below that uses the native `Request` and `Response` objects to see the comparison between v2 and v3.
+
+As with custom handlers previously, check out our [custom framework handlers](/docs/reference/serve#custom-frameworks?ref=migration) section to see how to define your own.
+
+<Row>
+     <Col>
+          <CodeGroup filename="✅ v3">
+          ```ts
+          export const serve = (options: ServeHandlerOptions) => {
+            const handler = new InngestCommHandler({
+              frameworkName,
+              ...options,
+              handler: (req: Request) => {
+                return {
+                  body: () => req.json(),
+                  headers: (key) => req.headers.get(key),
+                  method: () => req.method,
+                  url: () => new URL(req.url, `https://${req.headers.get("host") || ""}`),
+                  transformResponse: ({ body, status, headers }) => {
+                    return new Response(body, { status, headers });
+                  },
+                };
+              },
+            });
+
+            return handler.createHandler();
+          };
+          ```
+          </CodeGroup>
+     </Col>
+     <Col>
+          <CodeGroup filename="🛑 v2">
+          ```ts
+          export const serve: ServeHandler = (inngest, fns, opts) => {
+            const handler = new InngestCommHandler(
+              name,
+              inngest,
+              fns,
+              {
+                fetch: fetch.bind(globalThis),
+                ...opts,
+              },
+              (req: Request) => {
+                const url = new URL(req.url, `https://${req.headers.get("host") || ""}`);
+
+                return {
+                  url,
+                  register: () => {
+                    if (req.method === "PUT") {
+                      return {
+                        deployId: url.searchParams.get(queryKeys.DeployId) as string,
+                      };
+                    }
+                  },
+                  run: async () => {
+                    if (req.method === "POST") {
+                      return {
+                        data: (await req.json()) as Record<string, unknown>,
+                        fnId: url.searchParams.get(queryKeys.FnId) as string,
+                        stepId: url.searchParams.get(queryKeys.StepId) as string,
+                        signature: req.headers.get(headerKeys.Signature) as string,
+                      };
+                    }
+                  },
+                  view: () => {
+                    if (req.method === "GET") {
+                      return {
+                        isIntrospection: url.searchParams.has(queryKeys.Introspect),
+                      };
+                    }
+                  },
+                };
+              },
+              ({ body, status, headers }): Response => {
+                return new Response(body, { status, headers });
+              }
+            );
+
+            return handler.createHandler();
+          };
+          ```
+          </CodeGroup>
+     </Col>
+</Row>
 
 ---
 
@@ -349,7 +488,7 @@ Listed below are all breaking changes made in v2, potentially requiring code cha
 
 Aside from some of the breaking features above, this version also adds some new features that aren't breaking changes.
 
-- [Middleware](/docs/reference/middleware/overview) - specify functions to run at various points in an Inngest client's lifecycle
+- [Middleware](/docs/reference/middleware/overview?ref=migration) - specify functions to run at various points in an Inngest client's lifecycle
 - **Logging** - use a default console logger or specify your own to log during your workflows
 
 ## Better event schemas
@@ -451,7 +590,7 @@ const inngest = new Inngest({ name: "My App" });
 type Events = GetEvents<typeof inngest>;
 ```
 
-For more information, see [Defining Event Payload Types](/docs/reference/client/create#defining-event-payload-types).
+For more information, see [Defining Event Payload Types](/docs/reference/client/create#defining-event-payload-types?ref=migration).
 
 ## Clearer event sending
 
@@ -755,7 +894,7 @@ These two examples have the exact same functionality. As above, there are a few 
 When translating code to v1, be aware that not awaiting a step tool will mean it happens in the background, in parallel to the tools that follow. Just like a regular JavaScript async function, `await` halts progress, which is sometimes just what you want!
 </Callout>
 
-Async step functions with v1 of the Inngest TS SDK unlocks a huge `Array<Possibility>`. To explore these further, check out the [multi-step functions](/docs/functions/multi-step) docs.
+Async step functions with v1 of the Inngest TS SDK unlocks a huge `Array<Possibility>`. To explore these further, check out the [multi-step functions](/docs/functions/multi-step?ref=migration) docs.
 
 ## Advanced: Updating custom framework serve handlers
 

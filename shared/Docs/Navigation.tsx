@@ -407,6 +407,10 @@ const referenceNavigation = [
     title: "Using the SDK",
     links: [
       {
+        title: "Environment variables",
+        href: `${baseDir}/sdk/environment-variables`,
+      },
+      {
         title: "Using TypeScript",
         href: `${baseDir}/typescript`,
       },
