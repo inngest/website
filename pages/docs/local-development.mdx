@@ -57,10 +57,10 @@ There are different ways that you can send events to the dev server when testing
 When using the Inngest SDK locally, it tries to detect if the dev server is running on your machine. If it's running, the event will be sent there.
 
 ```ts
-const inngest = new Inngest({ name: "My App" });
+const inngest = new Inngest({ id: "my-app" });
 await inngest.send({
   name: "user.avatar.uploaded",
-  data: { url: "https://a-bucket.s3.us-west-2.amazonaws.com/..." }
+  data: { url: "https://a-bucket.s3.us-west-2.amazonaws.com/..." },
 });
 ```
 

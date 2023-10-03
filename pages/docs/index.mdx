@@ -42,12 +42,12 @@ type Events = {
 };
 
 const inngest = new Inngest({
-  name: "Next.js Shop",
+  id: "nextjs-shop",
   schemas: new EventSchemas().fromRecord<Events>(),
 });
 
 export default inngest.createFunction(
-  { name: "Signup flow" },
+  { id: "signup-flow" },
   { event: "user/new.signup" },
   async ({ event, step }) => {
     // ⚡ If this step fails it will retry automatically. It will only run once
@@ -64,7 +64,7 @@ export default inngest.createFunction(
     );
 
     // 😴 You can sleep on any platform!
-    await step.sleep("1 day");
+    await step.sleep("wait-before-followup", "1 day");
 
     // ⏰ This runs exactly 1 day after the user signs up
     await step.run("Send drip campaign", () => sendDripCampaign());
