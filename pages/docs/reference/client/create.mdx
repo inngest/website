@@ -28,13 +28,13 @@ const inngest = new Inngest({
     The unique name of your application.
   </Property>
   <Property name="eventKey" type="string">
-    An Inngest [Event Key](/docs/events/creating-an-event-key). Alternatively, set the `INNGEST_EVENT_KEY` environment variable.
+    An Inngest [Event Key](/docs/events/creating-an-event-key). Alternatively, set the [`INNGEST_EVENT_KEY`](/docs/sdk/environment-variables#inngest-event-key) environment variable.
   </Property>
   <Property name="schemas" type="EventSchemas" version="v2.0.0+">
     Event payload types. See [Defining Event Payload Types](#defining-event-payload-types).
   </Property>
   <Property name="logger" type="Logger" version="v2.0.0+">
-    A logger object that provides the following interfaces (`.info()`, `.warn()`, `.error()`, `.debug()`). Defaults to using `console` if not provided. See [logging guide](/docs/guides/logging) for more details.
+    A logger object that provides the following interfaces (`.info()`, `.warn()`, `.error()`, `.debug()`). Defaults to using `console` if not provided. Overwrites [`INNGEST_LOG_LEVEL`](/docs/sdk/environment-variables#inngest-log-level) if set. See [logging guide](/docs/guides/logging) for more details.
   </Property>
   <Property name="middleware" type="array" version="v2.0.0+">
     A stack of [middleware](/docs/reference/middleware/overview) to add to the client.
@@ -51,7 +51,7 @@ const inngest = new Inngest({
 </Properties>
 
 <Callout>
-We recommend setting the `INNGEST_EVENT_KEY` as an environment variable over using the `eventKey` option. As with any secret, it's not a good practice to hard-code the event key in your codebase.
+We recommend setting the [`INNGEST_EVENT_KEY`](/docs/sdk/environment-variables#inngest-event-key) as an environment variable over using the `eventKey` option. As with any secret, it's not a good practice to hard-code the event key in your codebase.
 </Callout>
 
 ## Defining Event Payload Types
