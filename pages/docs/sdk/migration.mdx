@@ -32,17 +32,39 @@ The surface-level changes for v3 and mostly small syntactical changes, which Typ
 
 Here's a quick view of transitioning a client, function, and serve handler to v3.
 
+<Callout>
+When migrating, you'll want your ID to stay the same to ensure that in-progress runs switch over smoothly. We export a `slugify()` function you can use to generate an ID from your existing name as we used to do internally.
+
+```ts
+import { slugify } from "inngest";
+
+const fn = inngest.createFunction(
+  { id: slugify("Onboarding Example"), name: "Onboarding Example" },
+  { event: "app/user.created" },
+  async ({ event, step }) => {
+    // ...
+  }
+);
+```
+
+This is only needed to ensure function runs started on v2 will transition to v3; new functions can specify any ID.
+</Callout>
+
 <Row>
      <Col>
           <CodeGroup filename="✅ v3">
           ```ts
-          import { Inngest } from "inngest";
+          import { Inngest, slugify } from "inngest";
           import { serve } from "inngest/next";
 
-          const inngest = new Inngest({ id: "My App" });
+          const inngest = new Inngest({
+	    id: slugify("My App"),
+	  });
 
           inngest.createFunction(
-            { id: "onboarding-example" },
+	    // NOTE: You can manually slug IDs or import slugify to convert names to IDs automatically.
+            // { id: "onboarding-example", name: "Onboarding example" },
+            { id: slugify("Onboarding example"), name: "Onboarding example" },
             { event: "app/user.created" },
             async ({ event, step }) => {
               await step.run("send-welcome-email", () =>
@@ -188,23 +210,6 @@ When instantiating a client using `new Inngest()` or creating a function via `in
 
 Previously, only `name` was required, but this implied that the value was safe to change. Internally, we used this name to produce an ID which was used during deployments and executions.
 
-<Callout>
-When migrating, you'll want your ID to stay the same to ensure that in-progress runs switch over smoothly. We export a `slugify()` function you can use to generate an ID from your existing name as we used to do internally.
-
-```ts
-import { slugify } from "inngest";
-
-const fn = inngest.createFunction(
-  { id: slugify("Onboarding Example"), name: "Onboarding Example" },
-  { event: "app/user.created" },
-  async ({ event, step }) => {
-    // ...
-  }
-);
-```
-
-This is only needed to ensure function runs started on v2 will transition to v3; new functions can specify any ID.
-</Callout>
 
 ## All steps require IDs
 
