@@ -102,6 +102,16 @@ While this example uses Prisma, it serves as a good example of using the [onFunc
 </Callout>
 
 ```ts
+inngest.createFunction(
+  { name: "Example" },
+  { event: "app/user.loggedin" },
+  async ({ prisma }) => {
+    await prisma.auditTrail.create(/* ... */);
+  }
+);
+```
+
+```ts
 import { PrismaClient } from "@prisma/client";
 
 const prismaMiddleware = new InngestMiddleware({
@@ -125,15 +135,6 @@ const prismaMiddleware = new InngestMiddleware({
     };
   },
 });
-
-// When defining a function...
-inngest.createFunction(
-  { name: "Example" },
-  { event: "app/user.loggedin" },
-  async ({ prisma }) => {
-    await prisma.auditTrail.create(/* ... */);
-  }
-);
 ```
 
 Check out [Common actions for every function](http://localhost:3001/docs/reference/middleware/examples#common-actions-for-every-function) to see how this technique can be used to create steps for all of your unique logic.
@@ -209,6 +210,32 @@ You likely reuse the same steps across many functions - whether it be fetching u
 We could add some middleware to pass these into any Inngest function, automatically wrapping them in `step.run()` and allowing the code inside our function to feel a little bit cleaner.
 
 ```ts
+/**
+ * Pass to a client to provide a set of actions as steps to all functions, or to
+ * a function to provide a set of actions as steps only to that function.
+ */
+const inngest = new Inngest({
+  id: "my-app",
+  middleware: [
+    createActionsMiddleware({
+      getUser(id: string) {
+        return db.user.get(id);
+      },
+    }),
+  ],
+});
+
+inngest.createFunction(
+  { id: "user-data-dump" },
+  { event: "app/data.requested" },
+  async ({ event, action: { getUser } }) => {
+    // The first parameter is the step's options or ID
+    const user = await getUser("get-user-details", event.data.userId);
+  }
+);
+```
+
+```ts
 import { InngestMiddleware, StepOptionsOrId } from "inngest";
 
 /**
@@ -256,30 +283,6 @@ export const createActionsMiddleware = <T extends Actions>(rawActions: T) => {
     },
   });
 };
-
-/**
- * Pass to a client to provide a set of actions as steps to all functions, or to
- * a function to provide a set of actions as steps only to that function.
- */
-const inngest = new Inngest({
-  id: "my-app",
-  middleware: [
-    createActionsMiddleware({
-      getUser(id: string) {
-        return db.user.get(id);
-      },
-    }),
-  ],
-});
-
-inngest.createFunction(
-  { id: "user-data-dump" },
-  { event: "app/data.requested" },
-  async ({ event, action: { getUser } }) => {
-    // The first parameter is the step's options or ID
-    const user = await getUser("get-user-details", event.data.userId);
-  }
-);
 
 type Actions = Record<string, unknown>;
 
