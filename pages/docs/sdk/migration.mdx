@@ -62,7 +62,7 @@ This is only needed to ensure function runs started on v2 will transition to v3;
 	  });
 
           inngest.createFunction(
-	    // NOTE: You can manually slug IDs or import slugify to convert names to IDs automatically.
+            // NOTE: You can manually slug IDs or import slugify to convert names to IDs automatically.
             // { id: "onboarding-example", name: "Onboarding example" },
             { id: slugify("Onboarding example"), name: "Onboarding example" },
             { event: "app/user.created" },
