@@ -13,8 +13,8 @@ Listed below are all breaking changes made in v3, potentially requiring code cha
 - [Refactored serve handlers](#serve-handlers-refactored)
 - [Removed shorthand function creation](#shorthand-function-creation-removed)
 - [Refactored environment variables and config](#environment-variables-and-configuration)
-- [Removed `fns` option](#fns-removed)
 - [Advanced: Updating custom framework serve handlers](#advanced-updating-custom-framework-serve-handlers)
+- [Removed `fns` option](#fns-removed)
 
 ## Removing the guard rails
 
@@ -45,8 +45,7 @@ We recommend keeping your `name` defined as-is and just adding the new required 
           import { Inngest } from "inngest";
 
           export const inngest = new Inngest({
-            id: "my-app",
-            name: "My App",
+            id: "My App",
           });
           ```
           </CodeGroup>
@@ -310,61 +309,6 @@ In this same vein, we've also refactored some configuration options when creatin
   - **🛑 Removed `inngestBaseUrl`** - Set `baseUrl` instead.
   - **🛑 Removed `landingPage`** - The landing page for the SDK was deprecated in v2. Use the Inngest Dev Server instead via `npx inngest-cli@latest dev`.
 
-## Function `fns` option removed
-
-In v2, providing a `fns` option when creating a function -- an object of functions -- would wrap those passed functions in `step.run()`, meaning you can run code inside your function without the `step.run()` boilerplate.
-
-This wasn't a very well advertised feature and had some drawbacks, so we're instead replacing it with some optional middleware.
-
-Check out the [Common Actions Middleware Example](/docs/reference/middleware/examples#common-actions-for-every-function?ref=migration) for the code.
-
-<Row>
-     <Col>
-          <CodeGroup filename="✅ v3">
-          ```ts
-          import * as actions from "./actions";
-          import { createActionsMiddleware } from "./middleware";
-
-          const inngest = new Inngest({
-            id: "my-app",
-            name: "My App",
-            middleware: [createActionsMiddleware(actions)],
-          });
-
-          inngest.createFunction(
-            { name: "Send welcome email" },
-            { event: "app/user.created" },
-            async ({ event, action }) => {
-              const user = await action.getUserFromDb(event.data.userId);
-              await action.sendWelcomeEmail(user.email);
-            }
-          );
-          ```
-          </CodeGroup>
-     </Col>
-     <Col>
-          <CodeGroup filename="🛑 v2">
-          ```ts
-          import * as actions from "./actions";
-
-          const inngest = new Inngest({ name: "My App" });
-
-          inngest.createFunction(
-            {
-              name: "Send welcome email",
-              fns: actions,
-            },
-            { event: "app/user.created" },
-            async ({ event, fns }) => {
-              const user = await fns.getUserFromDb(event.data.userId);
-              await fns.sendWelcomeEmail(user.email);
-            }
-          );
-          ```
-          </CodeGroup>
-     </Col>
-</Row>
-
 ## Handling in-progress runs triggered from v2
 
 When upgrading to v3, there may be function runs in progress that were started using v2. For this reason, v3's engine changes are backwards compatible with v2 runs.
@@ -463,6 +407,61 @@ As with custom handlers previously, check out our [custom framework handlers](/d
 
             return handler.createHandler();
           };
+          ```
+          </CodeGroup>
+     </Col>
+</Row>
+
+## Function `fns` option removed
+
+In v2, providing a `fns` option when creating a function -- an object of functions -- would wrap those passed functions in `step.run()`, meaning you can run code inside your function without the `step.run()` boilerplate.
+
+This wasn't a very well advertised feature and had some drawbacks, so we're instead replacing it with some optional middleware.
+
+Check out the [Common Actions Middleware Example](/docs/reference/middleware/examples#common-actions-for-every-function?ref=migration) for the code.
+
+<Row>
+     <Col>
+          <CodeGroup filename="✅ v3">
+          ```ts
+          import * as actions from "./actions";
+          import { createActionsMiddleware } from "./middleware";
+
+          const inngest = new Inngest({
+            id: "my-app",
+            name: "My App",
+            middleware: [createActionsMiddleware(actions)],
+          });
+
+          inngest.createFunction(
+            { name: "Send welcome email" },
+            { event: "app/user.created" },
+            async ({ event, action }) => {
+              const user = await action.getUserFromDb(event.data.userId);
+              await action.sendWelcomeEmail(user.email);
+            }
+          );
+          ```
+          </CodeGroup>
+     </Col>
+     <Col>
+          <CodeGroup filename="🛑 v2">
+          ```ts
+          import * as actions from "./actions";
+
+          const inngest = new Inngest({ name: "My App" });
+
+          inngest.createFunction(
+            {
+              name: "Send welcome email",
+              fns: actions,
+            },
+            { event: "app/user.created" },
+            async ({ event, fns }) => {
+              const user = await fns.getUserFromDb(event.data.userId);
+              await fns.sendWelcomeEmail(user.email);
+            }
+          );
           ```
           </CodeGroup>
      </Col>
