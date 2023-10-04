@@ -26,15 +26,107 @@ Aside from some of the breaking changes above, this version also some new featur
 
 See [Introducing Inngest TypeScript SDK v3.0](/blog/releasing-ts-sdk-3?ref=migration) to see what these features unlock for the future of the TS SDK.
 
+## A simple example
+
+The surface-level changes for v3 and mostly small syntactical changes, which TypeScript should be able to guide you through.
+
+Here's a quick view of transitioning a client, function, and serve handler to v3.
+
+<Row>
+     <Col>
+          <CodeGroup filename="✅ v3">
+          ```ts
+          import { Inngest } from "inngest";
+          import { serve } from "inngest/next";
+
+          const inngest = new Inngest({ id: "My App" });
+
+          inngest.createFunction(
+            { id: "onboarding-example" },
+            { event: "app/user.created" },
+            async ({ event, step }) => {
+              await step.run("send-welcome-email", () =>
+                sendEmail(event.user.email, "Welcome!")
+              );
+
+              const profileCompleted = await step.waitForEvent(
+                "wait-for-profile-completion",
+                {
+                  event: "app/user.profile.completed",
+                  timeout: "1d",
+                  match: "data.userId",
+                }
+              );
+
+              await step.sleep("wait-a-moment", "5m");
+
+              if (!profileCompleted) {
+                await step.run("send-profile-reminder", () =>
+                  sendEmail(event.user.email, "Complete your profile!")
+                );
+              }
+            }
+          );
+
+          export default serve({
+            client: inngest,
+            functions: [fn],
+          });
+          ```
+          </CodeGroup>
+     </Col>
+     <Col>
+          <CodeGroup filename="🛑 v2">
+          ```ts
+          import { Inngest } from "inngest";
+          import { serve } from "inngest/next";
+
+          // Clients only previously required a `name`, but we want to be
+          // explicit that this is used to identify your application and manage
+          // concepts such as deployments.
+          const inngest = new Inngest({ name: "My App" });
+
+          const fn = inngest.createFunction(
+            // Similarly, functions now require an `id` and `name` is optional.
+            { name: "Onboarding Example" },
+            { event: "app/user.created" },
+            async ({ event, step }) => {
+              // `step.run()` stays the same.
+              await step.run("send-welcome-email", () =>
+                sendEmail(event.user.email, "Welcome!")
+              );
+
+              // The shape of `waitForEvent` has changed; all steps now require
+              // an ID.
+              const profileCompleted = await step.waitForEvent(
+                "app/user.profile.completed",
+                {
+                  timeout: "1d",
+                  match: "data.userId",
+                }
+              );
+
+              // All steps, even sleeps, require IDs.
+              await step.sleep("5m");
+
+              if (!profileCompleted) {
+                await step.run("send-profile-reminder", () =>
+                  sendEmail(event.user.email, "Complete your profile!")
+                );
+              }
+            }
+          );
+
+          // Serving now uses a single object parameter for better readability.
+          export default serve(inngest, [fn]);
+          ```
+          </CodeGroup>
+     </Col>
+</Row>
+
 ## Clients and functions require IDs
 
-When instantiating a client using `new Inngest()` or creating a function via `inngest.createFunction()`, it's now required to pass an `id` instead of a `name`.
-
-Previously only `name` was required, but this implied that the value was safe to change. Internally, we used this name to produce an ID which was used during deployments and executions.
-
-<Callout>
-We recommend keeping your `name` defined as-is and just adding the new required `id`. This will mean that the name of functions in the dashboard is unchanged.
-</Callout>
+When instantiating a client using `new Inngest()` or creating a function via `inngest.createFunction()`, it's now required to pass an `id` instead of a `name`. We recommend just changing the property name and leaving the value the same to ensure you don't redeploy any functions.
 
 #### Creating a client
 
