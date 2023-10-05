@@ -39,7 +39,7 @@ export default function Home() {
     <div
       className="home font-sans bg-slate-1000"
       style={{
-        backgroundImage: `radial-gradient(circle at center -20%, #231649 0%, rgba(5, 9, 17, 0) 1500px)`,
+        backgroundImage: `radial-gradient(circle at center -20%, #0e0821 0%, rgba(5, 9, 17, 0) 1500px)`,
         backgroundSize: "100% 1500px",
         backgroundRepeat: "no-repeat",
       }}
@@ -49,7 +49,7 @@ export default function Home() {
       <Hero />
 
       <Logos
-        heading="Trusted by teams all over the world"
+        heading="Helping these teams deliver reliable products"
         logos={[
           {
             src: "/assets/customers/tripadvisor.svg",
@@ -75,7 +75,18 @@ export default function Home() {
           { src: "/assets/customers/ocoya.svg", name: "Ocoya" },
           { src: "/assets/customers/finta-logo.png?v=1", name: "Finta.io" },
         ]}
+        footer={
+          <div className="flex items-center">
+            <Link
+              href="/customers"
+              className="mx-auto rounded-md font-medium px-6 py-2 bg-transparent transition-all text-white border border-slate-800 hover:border-slate-600 hover:bg-slate-500/10 whitespace-nowrap"
+            >
+              Read customer success stories
+            </Link>
+          </div>
+        }
       />
+      <div></div>
 
       <div className="relative">
         <div className="absolute top-80 left-0 right-0 -skew-y-6 bottom-0 bg-gradient-to-b from-slate-900/80 border-t border-slate-800/70 to-slate-1000/0"></div>

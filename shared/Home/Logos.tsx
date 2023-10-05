@@ -24,7 +24,11 @@ export default function Logos({
   const hasLinks = !!logos.find((l) => !!l.href);
   const nonFeaturedCount = logos.filter((l) => !l.featured).length;
   return (
-    <Container className="my-20 lg:my-36 mx-auto max-w-4xl">
+    <Container
+      className={clsx(
+        "my-20 lg:my-36 mx-auto max-w-4xl mb-20 lg:mb-40 xl:mb-60"
+      )}
+    >
       <h2
         className={clsx(
           "text-lg tracking-tight text-center",
@@ -36,10 +40,11 @@ export default function Logos({
       </h2>
       <div
         className={clsx(
-          "mt-16 mb-20 lg:mb-40 xl:mb-60 grid grid-cols-2 items-center justify-center px-20 max-w-[1200px] m-auto",
+          "mt-16 grid grid-cols-2 items-center justify-center px-20 max-w-[1200px] m-auto",
           nonFeaturedCount === 4 && "px-20 lg:grid-cols-4",
           nonFeaturedCount === 5 && "px-6 lg:grid-cols-5",
-          hasLinks ? "gap-x-4 gap-y-8" : "gap-x-16 gap-y-16"
+          hasLinks ? "gap-x-4 gap-y-8" : "gap-x-16 gap-y-16",
+          footer && "mb-16"
         )}
       >
         {logos.map(({ src, name, href, featured, scale = 1 }, idx) => {

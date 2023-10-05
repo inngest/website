@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ChevronRightIcon } from "@heroicons/react/20/solid";
+import clsx from "clsx";
 
 import Container from "../layout/Container";
 
@@ -8,42 +9,86 @@ import Container from "../layout/Container";
  */
 export default function Hero() {
   return (
-    <Container
-      className="mt-24 md:mt-36 tracking-tight lg:bg-[url(/assets/homepage/use-case-line-graphic.svg)]"
-      style={{
-        backgroundSize: "1980px 198px",
-        backgroundPosition: "50% 258px",
-        backgroundRepeat: "no-repeat",
-      }}
-    >
-      <div className="mb-12 md:mb-28 text-center">
-        <h1 className="text-4xl md:text-[3.125rem] md:leading-[3.75rem] font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#E2BEFF] via-white to-[#AFC1FF] drop-shadow">
-          Effortless serverless queues,
-          <br />
-          background jobs, and workflows
-        </h1>
-        <p className="mt-6 mx-auto max-w-2xl text-lg text-indigo-200 drop-shadow">
-          Easily develop serverless workflows in your current codebase, without
-          any new infrastructure. Using Inngest, your entire team can ship
-          reliable products.
-        </p>
-      </div>
-      <div className="flex flex-col gap-8 pt-12 lg:py-28 items-center justify-center">
-        <div>
-          <Link
-            href="/docs?ref=homepage-hero"
-            className="rounded-md font-medium px-11 py-3.5 bg-indigo-500 hover:bg-indigo-400 transition-all text-white whitespace-nowrap flex flex-row items-center"
+    <Container className="mt-12">
+      <div className="max-w-5xl mx-auto flex flex-col md:flex-row gap-16">
+        <div className="max-w-xl mt-12 mb-12 md:mt-24">
+          <h1
+            className="pb-8 tracking-tight font-semibold text-4xl md:text-6xl bg-gradient-to-br from-white to-slate-300 bg-clip-text text-transparent"
+            style={
+              {
+                "-webkit-text-stroke": "0.4px #ffffff80",
+                "-webkit-text-fill-color": "transparent",
+                "text-shadow":
+                  "-1px -1px 0 hsla(0,0%,100%,.2), 1px 1px 0 rgba(0,0,0,.1)",
+              } as any
+            } // silence the experimental webkit props
           >
-            Quick Start Guide{" "}
-            <ChevronRightIcon className="h-5 group-hover:translate-x-1 relative top-px transition-transform duration-150" />
-          </Link>
+            Build reliable products
+          </h1>
+          <div className="flex flex-col gap-6 font-normal text-base md:text-lg">
+            <p>
+              Run anything async from workflows to background jobs to AI agents
+              without the pain.
+            </p>
+            <ul className="flex flex-col gap-2">
+              <li>🅧 No more battling infra </li>
+              <li>🅧 No more debugging with logs and janky dashboards</li>
+              <li>🅧 No more losing sleep during your on-call shift</li>
+            </ul>
+            <p>
+              Inngest's{" "}
+              <Link
+                href="/blog/how-durable-workflow-engines-work?ref=homepage-hero"
+                className="transition text-indigo-200 hover:text-indigo-300 underline underline-offset-2 decoration-dotted decoration-slate-50/50"
+              >
+                durable workflow engine
+              </Link>{" "}
+              and SDKs enable you to write and run complex flows with
+              confidence.
+            </p>
+            <div className="flex gap-4 pt-8 text-base">
+              <div>
+                <Link
+                  href="/docs?ref=homepage-hero"
+                  className="group rounded-md font-medium px-6 py-2 bg-indigo-500 hover:bg-indigo-400 transition-all text-white whitespace-nowrap flex flex-row items-center"
+                >
+                  Quick Start Guide{" "}
+                  <ChevronRightIcon className="h-5 group-hover:translate-x-1 relative top-px transition-transform duration-150" />
+                </Link>
+              </div>
+              <Link
+                href={`${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=homepage-hero`}
+                className="rounded-md font-medium px-6 py-2 bg-transparent transition-all text-white border border-slate-800 hover:border-slate-600 hover:bg-slate-500/10 whitespace-nowrap"
+              >
+                Start Building For Free
+              </Link>
+            </div>
+          </div>
         </div>
-        <Link
-          href={`${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=homepage-hero`}
-          className="group flex items-center gap-1 rounded-md px-3 py-1.5 bg-transparent transition-all text-indigo-200 border border-transparent hover:border-slate-800 whitespace-nowrap"
-        >
-          Start Building For Free
-        </Link>
+        <div className="flex items-center justify-items-center tracking-tight bg-[url(/assets/homepage/hero-paths-graphic.svg)] bg-center	bg-contain bg-no-repeat">
+          <div className="lg:min-w-[460px] m-auto grid lg:grid-cols-2 backdrop-blur-sm border border-slate-100/10 border-collapse rounded-lg overflow-hidden font-medium text-md">
+            {[
+              "Durable workflows",
+              "AI & LLM chaining",
+              "Background jobs",
+              "Webhook event processing",
+              "Custom workflow engines",
+              "LLM Ops",
+            ].map((t, idx, a) => (
+              <div
+                className={clsx(
+                  "min-w-[220px] py-3 px-3 border border-slate-100/10 whitespace-nowrap shadow-lg",
+                  idx === 0 && "rounded-t-md lg:rounded-tr-none",
+                  idx === 1 && "lg:rounded-tr-md",
+                  idx === a.length - 2 && "lg:rounded-bl-md",
+                  idx === a.length - 1 && "rounded-b-md lg:rounded-bl-none"
+                )}
+              >
+                {t}
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </Container>
   );
