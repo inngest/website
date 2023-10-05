@@ -37,7 +37,8 @@ The first time an event is received, a new `debounce` is created.  The `debounce
 events are received that match the same key (or function ID, if no key is present), the debounce's expiration is pushed out to expire
 after a new `period`.
 
-Once events stop being received, the debounce executes, initializing a new function run after the specified time.
+Once events stop being received, the debounce executes, initializing a new function run after the specified time using the last event
+as the function's input data.
 
 A visual example:
 
