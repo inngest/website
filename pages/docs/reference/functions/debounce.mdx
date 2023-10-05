@@ -71,3 +71,22 @@ When a `key` is added, a separate limit is applied for each unique value of the 
 - Debounce does not work with [batched functions](/docs/guides/batching)
 - The maximum debounce time is 7 days (168h)
 - The minimum debounce time is 1 second
+
+## How it works
+
+The first time an event is received, a new `debounce` is created.  The `debounce` expires after yout given `period`.  Each time new
+events are received that match the same key (or function ID, if no key is present), the debounce's expiration is pushed out to expire
+after a new `period`.
+
+Once events stop being received, the debounce executes, initializing a new function run after the specified time.
+
+A visual example:
+
+<img
+  src="/assets/docs/reference/debounce.png"
+  width="800"
+  height={337}
+  quality="95"
+  alt="Visualization of how debounce is applied"
+/>
+
