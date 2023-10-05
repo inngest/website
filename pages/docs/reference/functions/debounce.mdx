@@ -1,4 +1,4 @@
-# Debounce functions and workflows
+# Debounce functions
 
 Debounce delays a function run for the given `period`, and reschedules functions for the given `period` any time new events are received while the debounce is active.  The function run starts after the specified `period` passes and no new events have been received.  Functions use the last event as their input data.
 
@@ -27,7 +27,7 @@ As debounce uses the *last* event received, it is a complement to idempotency (a
 
 Debounce fundamentally limits function executions, running a single function using the last of a series of events.  This is useful in many circimstances:
 
-- Run a function once after a noisy webhook finishes sending events
+- Run a function once after a noisy webhook finishes sending events, using the last event
 - Prevent wasted work when handling events from user input
 - Ensuring that functions use the latest event within a series of updates
 
