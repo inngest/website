@@ -115,7 +115,7 @@ export default function UseCases() {
         className="text-center"
       />
       <div className="max-w-[980px] mx-auto my-16">
-        <div className="mx-auto grid grid-cols-2 gap-8">
+        <div className="mx-auto grid md:grid-cols-2 gap-8">
           {content.map(({ title, content, bullets, href }) => (
             <div
               className="px-9 py-8 flex flex-col gap-6 border border-slate-100/5 rounded-3xl text-sm text-slate-300"
@@ -141,6 +141,7 @@ export default function UseCases() {
           ))}
         </div>
       </div>
+      {/* TODO - List all use cases with links */}
     </Container>
   );
 }

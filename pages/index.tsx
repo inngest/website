@@ -7,6 +7,7 @@ import Logos from "src/shared/Home/Logos";
 
 // import SDKOverview from "src/shared/Home/SDKOverview";
 import UseCases from "src/shared/Home/UseCases";
+import Features from "src/shared/Home/Features";
 import LocalDev from "../shared/Home/LocalDev";
 import SocialCTA from "../shared/Home/SocialCTA";
 import Footer from "../shared/Footer";
@@ -90,45 +91,55 @@ export default function Home() {
 
       <UseCases />
 
-      <div className="relative">
-        <div className="absolute top-80 left-0 right-0 -skew-y-6 bottom-0 bg-gradient-to-b from-slate-900/80 border-t border-slate-800/70 to-slate-1000/0"></div>
-        {/* <SDKOverview /> */}
-
-        <Logos
-          heading={
-            <>
-              Use your existing framework (<em>or no framework!</em>)
-            </>
-          }
-          logos={[
-            {
-              src: "/assets/brand-logos/next-js-white.svg",
-              name: "Next.js",
-              href: "/docs/sdk/serve?ref=homepage-frameworks#framework-next-js",
-            },
-            {
-              src: "/assets/brand-logos/express-js-white.svg",
-              name: "Express.js",
-              href: "/docs/sdk/serve?ref=homepage-frameworks#framework-express",
-            },
-            {
-              src: "/assets/brand-logos/redwoodjs-white.svg",
-              name: "RedwoodJS",
-              href: "/docs/sdk/serve?ref=homepage-frameworks#framework-redwood",
-            },
-            {
-              src: "/assets/brand-logos/remix-white.svg",
-              name: "Remix",
-              href: "/docs/sdk/serve?ref=homepage-frameworks#framework-remix",
-            },
-            {
-              src: "/assets/brand-logos/deno-white.svg",
-              name: "Deno",
-              href: "/docs/sdk/serve?ref=homepage-frameworks#framework-fresh-deno",
-            },
-          ]}
+      <div className="my-24">
+        <CustomerQuote
+          quote="We were struggling with the complexities of managing our social media and e-commerce workflows. Thanks to Inngest, we were able to simplify our development process, speed up our time to market, and deliver a better customer experience. Inngest has become an essential tool in our tech stack."
+          name="Aivaras Tumas  - CEO @ Ocoya"
+          avatar="/assets/customers/ocoya-aivaras-tumas.png"
+          className="mx-auto max-w-2xl"
+          cta={{
+            href: "/customers/ocoya?ref=homepage",
+            text: "Read the Case Study",
+          }}
         />
       </div>
+
+      <Features />
+
+      <Logos
+        heading={
+          <>
+            Use your existing framework (<em>or no framework!</em>)
+          </>
+        }
+        logos={[
+          {
+            src: "/assets/brand-logos/next-js-white.svg",
+            name: "Next.js",
+            href: "/docs/sdk/serve?ref=homepage-frameworks#framework-next-js",
+          },
+          {
+            src: "/assets/brand-logos/express-js-white.svg",
+            name: "Express.js",
+            href: "/docs/sdk/serve?ref=homepage-frameworks#framework-express",
+          },
+          {
+            src: "/assets/brand-logos/redwoodjs-white.svg",
+            name: "RedwoodJS",
+            href: "/docs/sdk/serve?ref=homepage-frameworks#framework-redwood",
+          },
+          {
+            src: "/assets/brand-logos/remix-white.svg",
+            name: "Remix",
+            href: "/docs/sdk/serve?ref=homepage-frameworks#framework-remix",
+          },
+          {
+            src: "/assets/brand-logos/deno-white.svg",
+            name: "Deno",
+            href: "/docs/sdk/serve?ref=homepage-frameworks#framework-fresh-deno",
+          },
+        ]}
+      />
 
       <LocalDev className="-mb-80 md:-mb-60" />
 
