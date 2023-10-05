@@ -4,8 +4,9 @@ import React from "react";
 import Header from "../shared/Header";
 import Hero from "../shared/Home/Hero";
 import Logos from "src/shared/Home/Logos";
-import SDKOverview from "src/shared/Home/SDKOverview";
 
+// import SDKOverview from "src/shared/Home/SDKOverview";
+import UseCases from "src/shared/Home/UseCases";
 import LocalDev from "../shared/Home/LocalDev";
 import SocialCTA from "../shared/Home/SocialCTA";
 import Footer from "../shared/Footer";
@@ -86,11 +87,12 @@ export default function Home() {
           </div>
         }
       />
-      <div></div>
+
+      <UseCases />
 
       <div className="relative">
         <div className="absolute top-80 left-0 right-0 -skew-y-6 bottom-0 bg-gradient-to-b from-slate-900/80 border-t border-slate-800/70 to-slate-1000/0"></div>
-        <SDKOverview />
+        {/* <SDKOverview /> */}
 
         <Logos
           heading={
