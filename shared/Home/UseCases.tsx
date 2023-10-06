@@ -118,10 +118,11 @@ export default function UseCases() {
         <div className="mx-auto grid md:grid-cols-2 gap-8">
           {content.map(({ title, content, bullets, href }) => (
             <div
-              className="px-9 py-8 flex flex-col gap-6 border border-slate-100/5 rounded-3xl text-sm text-slate-300"
+              className="px-9 py-8 flex flex-col gap-6 border border-indigo-300/20 rounded-3xl text-sm text-slate-300"
               style={{
                 background: `radial-gradient(70% 80% at center 0%, rgba(255,255,255,0.06) 3%, rgba(98, 255, 179, 0) 70%, rgba(98, 255, 179, 0) 100%)`,
                 // background: `radial-gradient(114.31% 100% at 50% 0%, #131E38 0%, #0A1223 100%)`,
+                boxShadow: `0px 4px 24px rgba(107, 75, 179, 0.20)`,
               }}
             >
               <h3 className="text-xl font-semibold text-slate-50">{title}</h3>

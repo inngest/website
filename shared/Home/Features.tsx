@@ -99,21 +99,15 @@ export default function Features() {
         className="text-center"
       />
       <div className="mx-auto my-16">
-        <div className="mx-auto grid grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="mx-auto grid grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
           {content.map(({ title, content, href }) => (
-            <div
-              className="px-6 py-6 flex flex-col gap-6 border border-indigo-300/20 rounded-2xl text-sm text-slate-300 tracking-normal font-medium leading-normal"
-              style={{
-                background: `linear-gradient(rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.05) 100%)`,
-                boxShadow: `0px 4px 24px rgba(107, 75, 179, 0.15)`,
-              }}
-            >
+            <div className="flex flex-col gap-6 text-sm text-slate-300 tracking-normal font-medium leading-normal">
               <h3 className="text-lg font-semibold text-slate-50">{title}</h3>
               <div className="flex-grow">{content}</div>
               {href && (
                 <Link
                   href={href}
-                  className="mt-4 text-slate-200 hover:text-white hover:underline decoration-dotted underline-offset-4 decoration-slate-50/30"
+                  className="text-indigo-300 hover:text-white hover:underline decoration-dotted underline-offset-4 decoration-slate-50/30"
                 >
                   Learn more →
                 </Link>

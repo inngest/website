@@ -27,7 +27,7 @@ export async function getStaticProps(): Promise<
     props: {
       designVersion: "2",
       meta: {
-        title: "Effortless serverless queues, background jobs, and workflows",
+        title: "Build reliable products - Durable workflow engine",
         description:
           "Easily develop serverless workflows in your current codebase, without any new infrastructure. Using Inngest, your entire team can ship reliable products.",
         image: "/assets/homepage/open-graph.png",
