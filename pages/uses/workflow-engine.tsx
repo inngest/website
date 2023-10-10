@@ -30,7 +30,7 @@ export default function workflowEngine() {
 
       <Container>
         <div className="py-24 md:py-48 gap-2 justify-between lg:items-center">
-          <div className="grid grid-cols-2 gap-40">
+          <div className="grid grid-cols-2 gap-40 content-center">
             <div>
               <h1 className="
                 text-4xl font-semibold leading-[48px]
@@ -59,8 +59,8 @@ export default function workflowEngine() {
               </li>
             </ul>
             </div>
-            <div>
-              <div className="h-[400px] w-[500px]">
+            <div className="flex items-center justify-center">
+              <div className="h-[405px] w-[500px]">
                 <RiveComponent />
               </div> 
             </div>
@@ -71,8 +71,8 @@ export default function workflowEngine() {
 
       <Container>
         <div className="grid grid-cols-2 gap-40">
-          <div>
-            {/*<!-- TODO: Case study image -->*/}
+          <div className="flex items-center justify-center">
+            <img src="/assets/florianworks.jpg" />
           </div>
 
           <div>
