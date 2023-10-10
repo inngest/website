@@ -1,12 +1,11 @@
-import { CheckIcon } from "@heroicons/react/20/solid";
 import { GetStaticProps } from "next";
-import { CheckCircle } from "react-feather";
 import CodeWindow from "src/shared/CodeWindow";
 import Header from "src/shared/Header";
 import Check from "src/shared/Icons/Check";
-import PageHeader from "src/shared/PageHeader";
 import Container from "src/shared/layout/Container";
 import PageContainer from "src/shared/layout/PageContainer";
+import Rive, { useRive } from '@rive-app/react-canvas';
+import { useEffect } from "react";
 
 export const getStaticProps: GetStaticProps = async (ctx) => {
   return {
@@ -17,6 +16,14 @@ export const getStaticProps: GetStaticProps = async (ctx) => {
 };
 
 export default function workflowEngine() {
+  const { rive, RiveComponent } = useRive({
+    src: '/assets/animations/workflows.riv',
+    stateMachines: "state",
+    autoplay: false,
+  });
+
+  useEffect(() => { rive && window.setTimeout(() => rive && rive.play(), 500) }, [rive]);
+  
   return (
     <PageContainer>
       <Header />
@@ -52,12 +59,14 @@ export default function workflowEngine() {
               </li>
             </ul>
             </div>
-          </div>
-
-          <div>
-            {/*<!-- TODO: Hero image -->*/}
+            <div>
+              <div className="h-[400px] w-[500px]">
+                <RiveComponent />
+              </div> 
+            </div>
           </div>
         </div>
+
       </Container>
 
       <Container>
