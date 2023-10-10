@@ -1,5 +1,7 @@
 import { CheckIcon } from "@heroicons/react/20/solid";
+import { GetStaticProps } from "next";
 import { CheckCircle } from "react-feather";
+import CodeWindow from "src/shared/CodeWindow";
 import Header from "src/shared/Header";
 import Check from "src/shared/Icons/Check";
 import PageHeader from "src/shared/PageHeader";
@@ -21,7 +23,7 @@ export default function workflowEngine() {
 
       <Container>
         <div className="py-24 md:py-48 gap-2 justify-between lg:items-center">
-          <div className="grid grid-cols-2">
+          <div className="grid grid-cols-2 gap-40">
             <div>
               <h1 className="
                 text-4xl font-semibold leading-[48px]
@@ -32,7 +34,7 @@ export default function workflowEngine() {
                 Launch customizable workflows, in&nbsp;weeks
             </h1>
 
-            <p className="text-lg text-slate-200 max-w-xl leading-8">
+            <p className="text-lg text-slate-200 leading-8">
               Build powerful customizable workflows directly in your product using Inngest as the reliable
               orchestration engine.  Develop locally and ship to your existing production systems ready for
               any scale.
@@ -59,7 +61,7 @@ export default function workflowEngine() {
       </Container>
 
       <Container>
-        <div className="grid grid-cols-2">
+        <div className="grid grid-cols-2 gap-40">
           <div>
             {/*<!-- TODO: Case study image -->*/}
           </div>
@@ -94,19 +96,104 @@ export default function workflowEngine() {
       </Container>
 
       <Container className="mt-48 mb-24">
-        <div className="w-1/2 m-auto text-center">
-          <h2 className="text-3xl font-semibold my-4">
-            Fully customizable, durable workflows
-          </h2>
-          <p>
-            You bring the application code, we bring the engine.  Allow your own users to
-            create workflows composed of reusable logic that you define.  Our engine
-            runs workflows as steps, taking care of scale, orchestration, idempotency, retries,
-            and observability for you.
-          </p>
+        <div className="grid grid-cols-2 gap-40 my-14">
+          <div>
+            <h2 className="text-3xl font-semibold my-4">
+              Fully customizable, durable workflows
+            </h2>
+            <p className="my-4">
+              You bring the application code, we bring the engine.  Allow your own users to
+              create workflows composed of reusable logic that you define.  Our engine
+              runs workflows as steps, taking care of scale, orchestration, idempotency, retries,
+              and observability for you.
+            </p>
+            <p>
+              Build simple linear workflows or complex DAG-based workflows with parallelism and
+              fan-in out of the box.  Leverage our step primitives for human-in-the-loop or paused
+              functions which automatically resume based off of conditions being met.
+            </p>
+
+            <div className="flex mt-8">
+              <Check size={14} className="mr-2 inline mt-1" />
+              <div className="flex-1">
+                <strong className="font-semibold">Concurrency, rate limiting and debounce</strong>
+                &nbsp;controls built in, with custom keys or controlling your own user's&nbsp;limits
+              </div>
+            </div>
+            <div className="flex mt-4">
+              <Check size={14} className="mr-2 inline mt-1" />
+              <div className="flex-1">
+                <strong className="font-semibold">Reliably run any code</strong>
+                &nbsp;in any step, with retries and error handling automatically&nbsp;managed
+              </div>
+            </div>
+            <div className="flex mt-4">
+              <Check size={14} className="mr-2 inline mt-1" />
+              <div className="flex-1">
+                <strong className="font-semibold">Auditable, observable, and scalable</strong>
+                &nbsp;handling tens of thousands of requests per second with real time metrics
+              </div>
+            </div>
+          </div>
+        
+          <div>
+            <CodeWindow
+              header={
+              <div className="flex py-2 px-5">
+                <div className="py-1 text-sm font-light text-slate-400">
+                  workflow.ts
+                </div>
+              </div>
+              }
+              snippet={stackWorkflows}
+              showLineNumbers={true}
+            />
+          </div>
         </div>
+      </Container>
+
+      <Container>
+        {/* TODO: Customer quote */}
       </Container>
 
     </PageContainer>
   );
 }
+
+
+const stackWorkflows = `
+import { runAction } from "@/actions";
+import { inngest } from "@/inngest";
+
+const fnOptions = {
+  id: "user-workflows",
+  // limit to 10 workflows for each tenant in your system.
+  concurrency: {
+    limit: 10,
+    key: "event.data.account_id",
+  },
+};
+
+const fnListener = { event: "api/workflow.invoked" };
+
+// Create a durable function which runs user defined workflows any time
+// the "api/workflow.invoked" event is received.  This loads the specified
+// user's workflow from your own system, and executes each step of the flow.
+export const userWorkflow = inngest.createFunction(
+  fnOptions,
+  fnListener,
+  async ({ event, step }) => {
+    const workflow = await step.run("load-workflow", async () => {
+      return db.workflows.find({ where: { id: event.data.workflowID } });
+    });
+
+    // Iterate over a simple stack, or create a graph and iteerate over a full
+    // blown DAG whioch a user can define.
+    for (let action of workflow) {
+      const result = await step.run("run-action", async () => {
+        return runAction(event, action);
+      });
+    }
+  }
+);
+`;
