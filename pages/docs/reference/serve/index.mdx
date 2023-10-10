@@ -37,6 +37,12 @@ serve(inngest, [sendSignupEmail, summarizeText, importProductImages]);
 ## `serve(options)`
 
 <Properties>
+  <Property name="client" type="Inngest client" required>
+    An Inngest client ([reference](/docs/reference/client/create)).
+  </Property>
+  <Property name="functions" type="InngestFunctions[]" required>
+    An array of Inngest functions defined using `inngest.createFunction()` ([reference](/docs/reference/functions/create)).
+  </Property>
   <Property name="signingKey" type="string" required>
     The Inngest Signing Key for your [selected environment](/docs/platform/environments). We recommend setting the [`INNGEST_SIGNING_KEY`](/docs/sdk/environment-variables#inngest-signing-key) environment variable instead of passing the `signingKey` option. You can find this in [the Inngest dashboard](https://app.inngest.com/env/production/manage/signing-key).
   </Property>
