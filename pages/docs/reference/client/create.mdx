@@ -45,8 +45,8 @@ const inngest = new Inngest({
   <Property name="fetch" type="Fetch API compatible interface">
     Override the default [`fetch`](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) implementation. Defaults to the runtime's native Fetch API.
   </Property>
-  <Property name="inngestBaseUrl" type="string">
-    Override the default (`https://inn.gs/`) base URL for sending events.
+  <Property name="baseUrl" type="string">
+    Override the default (`https://inn.gs/`) base URL for sending events. See also the [`INNGEST_BASE_URL`](/docs/sdk/environment-variables#inngest-base-url) environment variable.
   </Property>
 </Properties>
 
