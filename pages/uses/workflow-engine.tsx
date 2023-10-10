@@ -62,7 +62,8 @@ export default function workflowEngine() {
             </div>
             <div className="flex items-center justify-center">
               <div className="h-[405px] w-[500px]">
-                <RiveComponent />
+                <RiveComponent
+                />
               </div> 
             </div>
           </div>
@@ -83,7 +84,7 @@ export default function workflowEngine() {
             </h2>
             <p className="mb-3">
               FlorianWorks develops custom-built software products for fire departments, incorporating custom
-              workflows built directly on top of Inngest to ship reliable products faster and easier.
+              workflows built directly on top of Inngest to ship reliable products faster and easier than ever before.
             </p>
             <p>
               Utilizing Inngest's core workflow engine and primitives such as <code className="text-sm">step.waitForEvent</code>,
