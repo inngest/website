@@ -7,6 +7,7 @@ import PageContainer from "src/shared/layout/PageContainer";import Link from "ne
 import { ChevronRightIcon } from "@heroicons/react/20/solid";
 import { useRive } from '@rive-app/react-canvas';
 import { useEffect } from "react";
+import Footer from "src/shared/Footer";
 
 export const getStaticProps: GetStaticProps = async (ctx) => {
   return {
@@ -106,7 +107,19 @@ export default function workflowEngine() {
         </div>
       </Container>
 
-      <Container className="mt-48 mb-24">
+      <Container>
+        <div className="w-1/4 my-36 mx-auto flex flex-col items-center">
+          <img className="rounded-full" src="/assets/quotes/osenergy.jpeg" height="60" width="60" />
+           <p className="text-xl text-center py-4">
+            "Inngest is a great platform to build reliability into your long running tasks without drowning in complexity.""
+          </p>
+          <p className="text-slate-400">
+            Ozan Şener, Principal Engineer
+          </p>
+        </div>
+      </Container>
+
+      <Container className="mt-24 mb-24">
         <div className="grid grid-cols-2 gap-40 my-14">
           <div>
             <h2 className="text-3xl font-semibold my-4">
@@ -180,10 +193,7 @@ export default function workflowEngine() {
           </div>
         </div>
       </Container>
-
-      <Container>
-        {/* TODO: Customer quote */}
-      </Container>
+      <Footer ctaRef={`use-case-workflow`} />
 
     </PageContainer>
   );
