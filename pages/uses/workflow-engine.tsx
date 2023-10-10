@@ -3,8 +3,9 @@ import CodeWindow from "src/shared/CodeWindow";
 import Header from "src/shared/Header";
 import Check from "src/shared/Icons/Check";
 import Container from "src/shared/layout/Container";
-import PageContainer from "src/shared/layout/PageContainer";
-import Rive, { useRive } from '@rive-app/react-canvas';
+import PageContainer from "src/shared/layout/PageContainer";import Link from "next/link";
+import { ChevronRightIcon } from "@heroicons/react/20/solid";
+import { useRive } from '@rive-app/react-canvas';
 import { useEffect } from "react";
 
 export const getStaticProps: GetStaticProps = async (ctx) => {
@@ -142,6 +143,24 @@ export default function workflowEngine() {
                 <strong className="font-semibold">Auditable, observable, and scalable</strong>
                 &nbsp;handling tens of thousands of requests per second with real time metrics
               </div>
+            </div>
+
+            <div className="flex flex-row gap-8 pt-12 lg:py-28 items-center justify-center">
+              <div>
+                <Link
+                  href={`${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=workflows`}
+                  className="rounded-md font-medium px-11 py-3.5 bg-indigo-500 hover:bg-indigo-400 transition-all text-white whitespace-nowrap flex flex-row items-center"
+                >
+                  Get started
+                  <ChevronRightIcon className="h-5 group-hover:translate-x-1 relative top-px transition-transform duration-150" />
+                </Link>
+              </div>
+              <Link
+                href="/contact"
+                className="group flex items-center gap-1 rounded-md px-11 py-3.5 bg-transparent transition-all text-indigo-200 border border-transparent hover:border-slate-800 whitespace-nowrap"
+              >
+                Contact us
+              </Link>
             </div>
           </div>
         
