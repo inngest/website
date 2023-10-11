@@ -114,11 +114,11 @@ export default function UseCases() {
         }
         className="text-center"
       />
-      <div className="max-w-[980px] mx-auto my-16">
+      <div className="max-w-[980px] mx-auto my-16 bg-[url(/assets/homepage/use-case-background.svg)] bg-contain">
         <div className="mx-auto grid md:grid-cols-2 gap-8">
           {content.map(({ title, content, bullets, href }) => (
             <div
-              className="px-9 py-8 flex flex-col gap-6 border border-indigo-300/20 rounded-3xl text-sm text-slate-300"
+              className="px-9 py-8 flex flex-col gap-6 border border-indigo-300/20 rounded-3xl text-sm text-slate-300 backdrop-blur-sm"
               style={{
                 background: `radial-gradient(70% 80% at center 0%, rgba(255,255,255,0.06) 3%, rgba(98, 255, 179, 0) 70%, rgba(98, 255, 179, 0) 100%)`,
                 // background: `radial-gradient(114.31% 100% at 50% 0%, #131E38 0%, #0A1223 100%)`,

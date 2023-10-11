@@ -77,21 +77,22 @@ export default function Home() {
           { src: "/assets/customers/ocoya.svg", name: "Ocoya" },
           { src: "/assets/customers/finta-logo.png?v=1", name: "Finta.io" },
         ]}
-        footer={
-          <div className="flex items-center">
-            <Link
-              href="/customers"
-              className="mx-auto rounded-md font-medium px-6 py-2 bg-transparent transition-all text-white border border-slate-800 hover:border-slate-600 hover:bg-slate-500/10 whitespace-nowrap"
-            >
-              Read customer success stories
-            </Link>
-          </div>
-        }
+        // Enable when /customer is shipped
+        // footer={
+        //   <div className="flex items-center">
+        //     <Link
+        //       href="/customers"
+        //       className="mx-auto rounded-md font-medium px-6 py-2 bg-transparent transition-all text-white border border-slate-800 hover:border-slate-600 hover:bg-slate-500/10 whitespace-nowrap"
+        //     >
+        //       Read customer success stories
+        //     </Link>
+        //   </div>
+        // }
       />
 
       <UseCases />
 
-      <div className="my-24">
+      <div className="my-32">
         <CustomerQuote
           quote="We were struggling with the complexities of managing our social media and e-commerce workflows. Thanks to Inngest, we were able to simplify our development process, speed up our time to market, and deliver a better customer experience. Inngest has become an essential tool in our tech stack."
           name="Aivaras Tumas  - CEO @ Ocoya"
@@ -106,40 +107,14 @@ export default function Home() {
 
       <Features />
 
-      <Logos
-        heading={
-          <>
-            Use your existing framework (<em>or no framework!</em>)
-          </>
-        }
-        logos={[
-          {
-            src: "/assets/brand-logos/next-js-white.svg",
-            name: "Next.js",
-            href: "/docs/sdk/serve?ref=homepage-frameworks#framework-next-js",
-          },
-          {
-            src: "/assets/brand-logos/express-js-white.svg",
-            name: "Express.js",
-            href: "/docs/sdk/serve?ref=homepage-frameworks#framework-express",
-          },
-          {
-            src: "/assets/brand-logos/redwoodjs-white.svg",
-            name: "RedwoodJS",
-            href: "/docs/sdk/serve?ref=homepage-frameworks#framework-redwood",
-          },
-          {
-            src: "/assets/brand-logos/remix-white.svg",
-            name: "Remix",
-            href: "/docs/sdk/serve?ref=homepage-frameworks#framework-remix",
-          },
-          {
-            src: "/assets/brand-logos/deno-white.svg",
-            name: "Deno",
-            href: "/docs/sdk/serve?ref=homepage-frameworks#framework-fresh-deno",
-          },
-        ]}
-      />
+      <div className="my-32">
+        <CustomerQuote
+          quote="We switched from our PostgreSQL backed queue to Inngest in less than a day. Their approach is idiomatic with a great developer experience. Inngest allowed us to stop worrying about scalability and stability."
+          name="Peter Pistorius - CEO @ Snaplet"
+          avatar="/assets/customers/snaplet-peter-pistorius.png"
+          className="mx-auto mb-28 lg:mb-20 max-w-2xl"
+        />
+      </div>
 
       <LocalDev className="-mb-80 md:-mb-60" />
 
@@ -187,29 +162,45 @@ export default function Home() {
             },
           ]}
         />
-
-        <CustomerQuote
-          quote="We switched from our PostgreSQL backed queue to Inngest in less than a day. Their approach is idiomatic with a great developer experience. Inngest allowed us to stop worrying about scalability and stability."
-          name="Peter Pistorius - CEO @ Snaplet"
-          avatar="/assets/customers/snaplet-peter-pistorius.png"
-          className="mx-auto mb-28 lg:mb-20 max-w-2xl"
-        />
       </div>
 
       <FeatureCallouts />
 
       <PlatformFeatures />
 
-      {/* TODO - Add button to link to case study - */}
-      <CustomerQuote
-        quote="We were struggling with the complexities of managing our social media and e-commerce workflows. Thanks to Inngest, we were able to simplify our development process, speed up our time to market, and deliver a better customer experience. Inngest has become an essential tool in our tech stack."
-        name="Aivaras Tumas  - CEO @ Ocoya"
-        avatar="/assets/customers/ocoya-aivaras-tumas.png"
-        className="mx-auto max-w-2xl"
-        cta={{
-          href: "/customers/ocoya?ref=homepage",
-          text: "Read the Case Study",
-        }}
+      <Logos
+        heading={
+          <>
+            Use your existing framework (<em>or no framework!</em>)
+          </>
+        }
+        logos={[
+          {
+            src: "/assets/brand-logos/next-js-white.svg",
+            name: "Next.js",
+            href: "/docs/sdk/serve?ref=homepage-frameworks#framework-next-js",
+          },
+          {
+            src: "/assets/brand-logos/express-js-white.svg",
+            name: "Express.js",
+            href: "/docs/sdk/serve?ref=homepage-frameworks#framework-express",
+          },
+          {
+            src: "/assets/brand-logos/redwoodjs-white.svg",
+            name: "RedwoodJS",
+            href: "/docs/sdk/serve?ref=homepage-frameworks#framework-redwood",
+          },
+          {
+            src: "/assets/brand-logos/remix-white.svg",
+            name: "Remix",
+            href: "/docs/sdk/serve?ref=homepage-frameworks#framework-remix",
+          },
+          {
+            src: "/assets/brand-logos/deno-white.svg",
+            name: "Deno",
+            href: "/docs/sdk/serve?ref=homepage-frameworks#framework-fresh-deno",
+          },
+        ]}
       />
 
       <GetThingsShipped />
