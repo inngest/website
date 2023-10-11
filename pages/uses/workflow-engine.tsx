@@ -31,8 +31,8 @@ export default function workflowEngine() {
       <Header />
 
       <Container>
-        <div className="py-24 md:py-48 gap-2 justify-between lg:items-center">
-          <div className="grid grid-cols-2 gap-40 content-center">
+        <div className="py-24 lg:py-48 gap-2 justify-between lg:items-center">
+          <div className="grid content-center grid-cols-1 lg:grid-cols-2 lg:gap-40">
             <div>
               <h1 className="
                 text-4xl font-semibold leading-[48px]
@@ -62,7 +62,7 @@ export default function workflowEngine() {
             </ul>
             </div>
             <div className="flex items-center justify-center">
-              <div className="h-[405px] w-[500px]">
+              <div className="h-[405px] lg:w-[500px] w-full">
                 <RiveComponent
                 />
               </div> 
@@ -73,8 +73,8 @@ export default function workflowEngine() {
       </Container>
 
       <Container>
-        <div className="grid grid-cols-2 gap-40">
-          <div className="flex items-center justify-center">
+        <div className="grid lg:grid-cols-2 lg:gap-40">
+          <div className="flex items-center justify-center hidden lg:block">
             <img src="/assets/florianworks.jpg" />
           </div>
 
@@ -108,7 +108,7 @@ export default function workflowEngine() {
       </Container>
 
       <Container>
-        <div className="w-1/4 my-36 mx-auto flex flex-col items-center">
+        <div className="w-full lg:w-1/4 my-36 mx-auto flex flex-col items-center">
           <img className="rounded-full" src="/assets/quotes/osenergy.jpeg" height="60" width="60" />
            <p className="text-xl text-center py-4">
             "Inngest is a great platform to build reliability into your long running tasks without drowning in complexity.""
@@ -120,7 +120,7 @@ export default function workflowEngine() {
       </Container>
 
       <Container className="mt-24 mb-24">
-        <div className="grid grid-cols-2 gap-40 my-14">
+        <div className="grid lg:grid-cols-2 gap-40 my-14">
           <div>
             <h2 className="text-3xl font-semibold my-4">
               Fully customizable, durable workflows
@@ -159,7 +159,7 @@ export default function workflowEngine() {
               </div>
             </div>
 
-            <div className="flex flex-row gap-8 pt-12 lg:py-28 items-center justify-center">
+            <div className="flex flex-col lg:flex-row gap-8 pt-12 lg:py-28 items-center justify-center w-full">
               <div>
                 <Link
                   href={`${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=workflows`}
