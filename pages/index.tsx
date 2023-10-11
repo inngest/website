@@ -17,6 +17,7 @@ import SocialProof from "src/shared/Home/SocialProof";
 import GetThingsShipped from "src/shared/Home/GetThingsShipped";
 import RunAnywhere from "src/shared/Home/RunAnywhere";
 import PlatformFeatures from "src/shared/Home/PlatformFeatures";
+import PlatformFeatures2 from "src/shared/Home/PlatformFeatures2";
 import FeatureCallouts from "src/shared/Home/FeatureCallouts";
 import type { PageProps } from "src/shared/types";
 
@@ -116,9 +117,11 @@ export default function Home() {
         />
       </div>
 
-      <LocalDev className="-mb-80 md:-mb-60" />
+      {/* <LocalDev className="mb-32 md:mb-60" /> */}
 
-      <div className="pt-60 pb-20 md:pb-40">
+      <PlatformFeatures2 />
+
+      <div className="">
         <RunAnywhere />
 
         <Logos
