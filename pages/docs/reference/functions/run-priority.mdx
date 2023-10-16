@@ -52,7 +52,7 @@ export default inngest.createFunction(
 
 **The queue**
 
-Within Inngest, each function's scheduled runs is a prioirity queue scored by the time that jobs
+Within Inngest, each function's scheduled runs is a priority queue scored by the time that jobs
 should run.  When you create new function runs by sending events, a new job is inserted into the
 queue with a score of the current time (as a millisecond epoch).
 
