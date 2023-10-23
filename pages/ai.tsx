@@ -36,7 +36,7 @@ export default function AI() {
         ">
           Focus on what matters: the AI.
         </h2>
-        <p className="text-center mb-20 opacity-60">Spend time on what's important, and leave the state, orchestration, and observability to us.</p>
+        <p className="text-center mb-20 opacity-60">Spend time on what's important.  Scale from day 0 by leaving the complex orchestration to us.</p>
 
         <div className="
           grid lg:grid-cols-3
