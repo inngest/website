@@ -29,7 +29,15 @@ export default function AI() {
         <p className="text-zinc-400 text-center">Companies of all sizes trust Inngest to power their AI functionality.</p>
       </Container>
 
+      {/* Code example */}
       <Container>
+        <h2 className="
+          text-4xl text-center font-bold mt-16 mb-2
+        ">
+          Focus on what matters: the AI.
+        </h2>
+        <p className="text-center mb-20 opacity-60">Focus on what matters:  the AI.  Leave the state, orchestration, and observability to us.</p>
+
         <div className="
           grid lg:grid-cols-3
           bg-slate-800/50 border-slate-700/30 rounded-lg border
@@ -47,6 +55,8 @@ export default function AI() {
       </Container>
 
       <AIScroll />
+
+      {/* Call out box:  rapid development */}
 
       <Container>
         <GradientBox className="my-40 shadow-[0_10px_100px_0_rgba(52,211,153,0.2)]">
