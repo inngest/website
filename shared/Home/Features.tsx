@@ -1,10 +1,18 @@
 import Link from "next/link";
-import Image from "next/image";
 
 import Container from "../layout/Container";
-import CodeWindow from "../CodeWindow";
 import Heading from "./Heading";
-import { Button } from "../Button";
+import { ArrowPathRoundedSquareIcon } from "@heroicons/react/20/solid";
+import {
+  MoonIcon,
+  ChevronDoubleRightIcon,
+  ArrowDownOnSquareStackIcon,
+  BoltSlashIcon,
+  ExclamationCircleIcon,
+  PlayPauseIcon,
+  Square3Stack3DIcon,
+} from "@heroicons/react/24/outline";
+import Replay from "../Icons/Replay";
 
 const Code = ({ children }) => (
   <code className="font-mono bg-transparent text-indigo-200 px-0">
@@ -15,6 +23,7 @@ const Code = ({ children }) => (
 const content = [
   {
     title: "Automatic retries",
+    Icon: ArrowPathRoundedSquareIcon,
     content: (
       <p>
         Every step of your function is retried whenever it throws an error.
@@ -31,6 +40,7 @@ const content = [
   },
   {
     title: "Durable sleep",
+    Icon: MoonIcon,
     content: (
       <p>
         Pause your function for hours, days or weeks with{" "}
@@ -52,6 +62,7 @@ const content = [
   },
   {
     title: "Manage concurrency",
+    Icon: ChevronDoubleRightIcon,
     content: (
       <p>
         Set custom concurrency limits for every function to fine-tune how
@@ -68,6 +79,7 @@ const content = [
   },
   {
     title: "Rate limit + debounce",
+    Icon: ArrowDownOnSquareStackIcon,
     content: (
       <p>
         Control how your functions are executed in a given time period. You can
@@ -88,6 +100,7 @@ const content = [
   },
   {
     title: "Declarative job cancellation",
+    Icon: BoltSlashIcon,
     content: (
       <p>
         Cancel jobs just by sending an event. No need to keep track of running
@@ -104,6 +117,7 @@ const content = [
   },
   {
     title: "Custom failure handlers",
+    Icon: ExclamationCircleIcon,
     content: (
       <p>
         Define failure handlers along side your function code and Inngest will
@@ -120,6 +134,7 @@ const content = [
   },
   {
     title: "Pause functions for additional input",
+    Icon: PlayPauseIcon,
     content: (
       <p>
         Use <Code>step.waitForEvent()</Code> to pause your function until
@@ -136,6 +151,7 @@ const content = [
   },
   {
     title: "Batching for high load",
+    Icon: Square3Stack3DIcon,
     content: (
       <p>
         Reduce the load on your system and save money by automatically batching
@@ -152,6 +168,7 @@ const content = [
 
   {
     title: "Replay functions",
+    Icon: Replay,
     content: (
       <p>
         Forget dead letter queues. Fix your issues then replay a failed function
@@ -178,23 +195,30 @@ export default function Features() {
       />
       <div className="mx-auto my-24">
         <div className="mx-auto grid md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
-          {content.map(({ title, content, ctas }) => (
-            <div className="flex flex-col gap-6 text-sm text-slate-300 tracking-normal font-medium leading-normal">
-              <h3 className="text-lg font-semibold text-slate-50">{title}</h3>
-              <div className="flex-grow">{content}</div>
-              <div className="flex gap-4">
-                {ctas?.length > 0 &&
-                  ctas.map(({ href, text = "Learn more" }) => (
-                    <Link
-                      href={href}
-                      className="text-indigo-300 hover:text-white hover:underline decoration-dotted underline-offset-4 decoration-slate-50/30"
-                    >
-                      {text} →
-                    </Link>
-                  ))}
+          {content.map(
+            ({ title, Icon = ArrowPathRoundedSquareIcon, content, ctas }) => (
+              <div className="flex flex-col gap-6 text-sm text-slate-300 tracking-normal font-medium leading-normal">
+                <div className="flex gap-3 items-center text-slate-400/80">
+                  <Icon className="w-6" />
+                  <h3 className="text-lg font-semibold text-slate-50">
+                    {title}
+                  </h3>
+                </div>
+                <div className="flex-grow">{content}</div>
+                <div className="flex gap-4">
+                  {ctas?.length > 0 &&
+                    ctas.map(({ href, text = "Learn more" }) => (
+                      <Link
+                        href={href}
+                        className="text-indigo-300 hover:text-white hover:underline decoration-dotted underline-offset-4 decoration-slate-50/30"
+                      >
+                        {text} →
+                      </Link>
+                    ))}
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          )}
         </div>
       </div>
       <div className="flex items-center">

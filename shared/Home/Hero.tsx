@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ChevronRightIcon } from "@heroicons/react/20/solid";
 import clsx from "clsx";
+import { XMarkIcon } from "@heroicons/react/20/solid";
 
 import Container from "../layout/Container";
 
@@ -31,9 +32,15 @@ export default function Hero() {
               without the pain.
             </p>
             <ul className="flex flex-col gap-2">
-              <li>🅧 No more battling infra </li>
-              <li>🅧 No more debugging with logs and janky dashboards</li>
-              <li>🅧 No more losing sleep during your on-call shift</li>
+              {[
+                "No more battling infra",
+                "No more debugging with logs and janky dashboards",
+                "No more losing sleep during your on-call shift",
+              ].map((r) => (
+                <li className="flex items-center gap-2">
+                  <XMarkIcon className="h-6 text-slate-400/80" /> {r}
+                </li>
+              ))}
             </ul>
             <p>
               Inngest's{" "}
