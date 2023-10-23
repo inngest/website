@@ -1,5 +1,6 @@
 import type { GetStaticPropsResult } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import React from "react";
 import Header from "../shared/Header";
 import Hero from "../shared/Home/Hero";
@@ -93,8 +94,38 @@ export default function Home() {
 
       <UseCases />
 
-      <div className="my-32">
-        <CustomerQuote
+      <div className="my-32 lg:my-48">
+        <blockquote className="mx-auto max-w-3xl p-16 flex gap-8 bg-[url(/assets/textures/wave.svg)] bg-cover bg-no-repeat">
+          <p className="text-lg leading-7">
+            <span className="mr-1 text-2xl leading-3 text-slate-400/80">
+              &ldquo;
+            </span>
+            Inngest is an essential partner to Vercel's frontend cloud offering.
+            It extends Vercel's DX and serverless operational model to a
+            notoriously challenging yet crucial part of the stack: backend
+            workflows and asynchronous process coordination.
+            <span className="ml-1 text-2xl leading-3 text-slate-400/80">
+              &rdquo;
+            </span>
+          </p>
+          <footer className="min-w-[180px] flex flex-col gap-4">
+            <Image
+              src="/assets/about/guillermo-rauch-avatar.jpg"
+              alt={`Image of Guillermo Rauch`}
+              height="72"
+              width="72"
+              className="rounded-full"
+            />
+            <cite className="text-slate-300 leading-8 not-italic">
+              <span className="text-lg">Guillermo Rauch</span>
+              <br />
+              <span className="text-sm">
+                <span className="text-white">▲</span> CEO of Vercel
+              </span>
+            </cite>
+          </footer>
+        </blockquote>
+        {/* <CustomerQuote
           quote="We were struggling with the complexities of managing our social media and e-commerce workflows. Thanks to Inngest, we were able to simplify our development process, speed up our time to market, and deliver a better customer experience. Inngest has become an essential tool in our tech stack."
           name="Aivaras Tumas  - CEO @ Ocoya"
           avatar="/assets/customers/ocoya-aivaras-tumas.png"
@@ -103,7 +134,7 @@ export default function Home() {
             href: "/customers/ocoya?ref=homepage",
             text: "Read the Case Study",
           }}
-        />
+        /> */}
       </div>
 
       <Features />
