@@ -194,7 +194,7 @@ export default function Features() {
         className="text-center"
       />
       <div className="mx-auto my-24">
-        <div className="mx-auto grid md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
+        <div className="mx-auto grid md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12 lg:gap-y-20">
           {content.map(
             ({ title, Icon = ArrowPathRoundedSquareIcon, content, ctas }) => (
               <div className="flex flex-col gap-6 text-sm text-slate-300 tracking-normal font-medium leading-normal">
