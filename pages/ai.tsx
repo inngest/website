@@ -55,7 +55,7 @@ export default function AI() {
           bg-slate-800/50 border-slate-700/30 rounded-lg border
           m-auto
           mt-8 mb-24
-          dispaly-none
+          hidden
           lg:grid
           lg:w-2/3 
         "
@@ -79,8 +79,9 @@ export default function AI() {
 
       <Container className="pt-6">
         <GradientBox className="my-24 shadow-[0_10px_100px_0_rgba(52,211,153,0.2)]"
-          border="2px"
+        border="2px"
         >
+
           <div
             className={`flex items-center justify-center bg-[#0a0a12] back rounded-t-md flex-col`}
           >
@@ -99,7 +100,8 @@ export default function AI() {
 
               <p
                 className="
-                w-1/2
+                px-6
+                lg:w-1/2
                 text-center text-lg
               "
               >
@@ -129,7 +131,11 @@ export default function AI() {
           </div>
 
           <div className="grid lg:grid-cols-2 mt-[1px]">
-            <div className="pt-14 pb-10 px-10 bg-[#0a0a12] mr-[1px] flex flex-col items-center">
+            <div className="
+                pt-14 pb-10 px-10 bg-[#0a0a12] flex flex-col items-center
+                lg:rounded-bl-md lg:mr-[1px]
+                sm:m-0
+              ">
               <h3
                 className="
                 text-xl font-bold
@@ -146,7 +152,12 @@ export default function AI() {
 
               <StoreLogos className="mt-12 opacity-90" />
             </div>
-            <div className="py-14 px-10 bg-[#0a0a12] flex flex-col items-center">
+            <div className="
+              py-14 px-10 bg-[#0a0a12] flex flex-col items-center
+              mt-[1px]
+              lg:mt-0
+              lg:rounded-br-md
+            ">
               <h3
                 className="
                 text-xl font-bold
@@ -173,11 +184,14 @@ export default function AI() {
       <Container>
         <GradientBox
           className="my-24 shadow-[0_10px_100px_0_rgba(52,211,153,0.2)] w-1/2 m-auto"
-          border="1px"
+          border="0"
         >
-          <div className="grid grid-cols-2">
+          <div className="grid lg:grid-cols-2">
             <div
-              className={`flex items-center justify-center bg-[#0a0a12] back rounded-l-md flex-col m-[1px] p-8 text-center`}
+              className={`flex items-center justify-center bg-[#0a0a12] back flex-col p-8 text-center
+              rounded
+              m-[1px] 
+              lg:rounded-none lg:rounded-l-md`}
             >
               <span className="text-4xl">12x</span>
               <span>development speedup</span>
@@ -186,7 +200,9 @@ export default function AI() {
               </span>
             </div>
             <div
-              className={`flex items-center justify-center bg-[#0a0a12] back rounded-r-md flex-col m-[1px] ml-0 p-8`}
+              className={`flex items-center justify-center bg-[#0a0a12] back flex-col m-[1px] p-8
+              rounded
+              lg:rounded-none lg:rounded-r-md lg:ml-0`}
             >
               <span className="text-4xl">75%</span>
               <span>total cost reduction</span>
@@ -271,10 +287,11 @@ const AIHero = () => (
     >
       <h1
         className="
-        text-4xl font-bold leading-[48px]
+        text-4xl font-bold leading-[48px] text-center
         sm:text-5xl sm:leading-[58px]
         lg:text-6xl lg:leading-[68px]
-        tracking-[-2px] mb-8
+        tracking-[-2px]
+        mb-8
         bg-gradient-to-r from-[#FFEAEA] to-[#D2CACF] drop-shadow bg-clip-text
         text-transparent
       "
@@ -284,7 +301,7 @@ const AIHero = () => (
         code.
       </h1>
 
-      <p className="text-lg text-slate-100 leading-8 w-1/2 text-center">
+      <p className="text-lg text-slate-100 leading-8 lg:w-1/2 text-center">
         Develop, test, and deploy reliable AI workflows to production with zero
         new infrastructure, in less than a day. Inngest’s event-driven workflows
         handle queueing, state, scale, and observability, letting you focus on
@@ -346,7 +363,8 @@ const AIScroll = () => {
 const GradientBox = ({ children, className = "", border = "2px" }) => (
   <div className={`mx-auto flex items-center justify-center ${className}`}>
     <div
-      className={`w-full rounded-md bg-gradient-to-tl from-[#596555] via-[#D4FF8D] to-[#814828] p-[${border}]`}
+      className={`w-full rounded-md bg-gradient-to-tl from-[#596555] via-[#D4FF8D] to-[#814828]`}
+      style={{ padding: border }}
     >
       {children}
     </div>
@@ -359,7 +377,7 @@ const DevelopmentCopy = () => {
   };
   return (
     <Container className="pb-8">
-      <div className="grid grid-cols-3 gap-20 pt-10 pb-20 px-10 opacity-80">
+      <div className="grid lg:grid-cols-3 gap-20 pt-10 pb-20 px-10 opacity-80">
         <div>
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -392,16 +410,16 @@ const DevelopmentCopy = () => {
             everything you need to scale, while respecting rate limits, built in
             from the beginning.
           </p>
-          <ul className="my-6 leading-8 opacity-70">
-            <li className="flex items-center">
+          <ul className="my-6 leading-8 opacity-70 leading-snug">
+            <li className="flex items-center mb-4">
               <Check size={14} className="mr-2" /> Global and per-user
               concurrency limits
             </li>
-            <li className="flex items-center">
+            <li className="flex items-center mb-4">
               <Check size={14} className="mr-2" /> Per-user priorities with
               fairness guarantees
             </li>
-            <li className="flex items-center">
+            <li className="flex items-center mb-4">
               <Check size={14} className="mr-2" /> Auto-cancellation via events
               to save costs
             </li>
@@ -437,16 +455,16 @@ const DevelopmentCopy = () => {
             Iterate on AI flows in your existing code base and test things
             locally using our dev server, with full production parity.
           </p>
-          <ul className="my-6 leading-8 opacity-70">
-            <li className="flex items-center">
+          <ul className="my-6 leading-8 opacity-70 leading-snug">
+            <li className="flex items-center mb-4">
               <Check size={14} className="mr-2" /> One-command setup for local
               dev
             </li>
-            <li className="flex items-center">
+            <li className="flex items-center mb-4">
               <Check size={14} className="mr-2" /> Visual workflow debugging and
               logs
             </li>
-            <li className="flex items-center">
+            <li className="flex items-center mb-4">
               <Check size={14} className="mr-2" /> Production parity for
               risk-free deploys
             </li>
@@ -482,14 +500,14 @@ const DevelopmentCopy = () => {
             Easily create AI workflows with regular code, using any library or integrations
             you need without learning anything new.
           </p>
-          <ul className="my-6 leading-8 opacity-70">
-            <li className="flex items-center">
+          <ul className="my-6 leading-8 opacity-70 leading-snug">
+            <li className="flex items-center mb-4">
               <Check size={14} className="mr-2" /> No constraints on what you can use
             </li>
-            <li className="flex items-center">
+            <li className="flex items-center mb-4">
               <Check size={14} className="mr-2" /> Simple, retryable steps using `step.run`
             </li>
-            <li className="flex items-center">
+            <li className="flex items-center mb-4">
               <Check size={14} className="mr-2" /> Use any library, integration, or API
             </li>
           </ul>
@@ -531,7 +549,7 @@ const ProductionCopy = () => {
   };
   return (
     <Container className="py-8">
-      <div className="grid grid-cols-3 gap-20 pt-10 pb-20 px-10 opacity-80">
+      <div className="grid lg:grid-cols-3 gap-20 pt-10 pb-20 px-10 opacity-80">
         <div>
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -563,14 +581,14 @@ const ProductionCopy = () => {
             up new infra or provisioning new services — whether you use servers
             or serverless.
           </p>
-          <ul className="my-6 leading-8 opacity-70">
-            <li className="flex items-center">
+          <ul className="my-6 leading-8 opacity-70 leading-snug">
+            <li className="flex items-center mb-4">
               <Check size={14} className="mr-2" /> Hosted in your existing API
             </li>
-            <li className="flex items-center">
+            <li className="flex items-center mb-4">
               <Check size={14} className="mr-2" /> Serverless, servers, or edge
             </li>
-            <li className="flex items-center">
+            <li className="flex items-center mb-4">
               <Check size={14} className="mr-2" /> Zero additional infra or
               provisioning
             </li>
@@ -607,14 +625,14 @@ const ProductionCopy = () => {
             Hassle free development with preview environments, logging, one-click replay, and 
             error reporting built in.
           </p>
-          <ul className="my-6 leading-8 opacity-70">
-            <li className="flex items-center">
+          <ul className="my-6 leading-8 opacity-70 leading-snug">
+            <li className="flex items-center mb-4">
               <Check size={14} className="mr-2" /> Preview & branch envs built in
             </li>
-            <li className="flex items-center">
+            <li className="flex items-center mb-4">
               <Check size={14} className="mr-2" /> Logging and error reporting
             </li>
-            <li className="flex items-center">
+            <li className="flex items-center mb-4">
               <Check size={14} className="mr-2" /> E2E encryption available
             </li>
           </ul>
@@ -650,14 +668,14 @@ const ProductionCopy = () => {
             Full insight without the fuss.  Tag functions by user, account, context length,
             prompt rating, and see any data on any metric.
           </p>
-          <ul className="my-6 leading-8 opacity-70">
-            <li className="flex items-center">
+          <ul className="my-6 leading-8 opacity-70 leading-snug">
+            <li className="flex items-center mb-4">
               <Check size={14} className="mr-2" /> Real-time metrics
             </li>
-            <li className="flex items-center">
+            <li className="flex items-center mb-4">
               <Check size={14} className="mr-2" /> Function tagging with user-level cost basis
             </li>
-            <li className="flex items-center">
+            <li className="flex items-center mb-4">
               <Check size={14} className="mr-2" /> One click replay
             </li>
           </ul>
