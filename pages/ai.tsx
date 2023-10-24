@@ -313,7 +313,7 @@ const DevelopmentCopy = () => {
             Local development
           </h3>
           <p>
-            Develop in your existing code base and test things locally using our
+            Iterate on AI flows in your existing code base and test things locally using our
             dev server, with full production parity.
           </p>
         </div>
