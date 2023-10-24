@@ -39,7 +39,7 @@ export default function AI() {
           text-4xl text-center font-bold mt-16 mb-2
         "
         >
-          Focus on what matters: the AI.
+          Focus on what matters: <span className="font-extrabold">AI</span>.
         </h2>
         <p className="text-center mb-20 opacity-60">
           Spend time developing what's important. Scale from day 0 by leaving
@@ -159,10 +159,26 @@ export default function AI() {
 
       <DevelopmentCopy />
 
-      <br />
-      <br />
-      <br />
-      <br />
+      <Container>
+        <GradientBox className="my-16 shadow-[0_10px_100px_0_rgba(52,211,153,0.2)] w-1/2 m-auto" border="1px">
+          <div className="grid grid-cols-2">
+            <div
+              className={`flex items-center justify-center bg-[#0a0a12] back rounded-l-md flex-col m-[1px] p-8 text-center`}
+            >
+              <span className="text-4xl">12x</span>
+              <span>development speedup</span>
+              <span className="text-xs opacity-40 mt-1">compared to traditional infrastructure</span>
+            </div>
+            <div
+              className={`flex items-center justify-center bg-[#0a0a12] back rounded-r-md flex-col m-[1px] ml-0 p-8`}
+            >
+              <span className="text-4xl">75%</span>
+              <span>total cost reduction</span>
+              <span className="text-xs opacity-40 mt-1">on infrastructure and time spent</span>
+            </div>
+          </div>
+        </GradientBox>
+      </Container>
 
       <Footer />
     </PageContainer>
@@ -186,13 +202,16 @@ const AIHero = () => (
         text-transparent
       "
       >
-        Build powerful <span className="font-extrabold hero-text-shadow">AI workflows</span> in code.
+        Build powerful{" "}
+        <span className="font-extrabold hero-text-shadow">AI workflows</span> in
+        code.
       </h1>
 
       <p className="text-lg text-slate-100 leading-8 w-1/2 text-center">
-        Develop, test, and deploy reliable AI workflows to production, in less
-        than a day. Inngest’s event-driven workflows handle queueing, state,
-        scale, and observability, letting you focus on what matters.
+        Develop, test, and deploy reliable AI workflows to production with zero
+        new infrastructure, in less than a day. Inngest’s event-driven workflows
+        handle queueing, state, scale, and observability, letting you focus on
+        what matters.
       </p>
 
       <div
@@ -247,9 +266,9 @@ const AIScroll = () => {
   );
 };
 
-const GradientBox = ({ children, className = "" }) => (
+const GradientBox = ({ children, className = "", border = "2px" }) => (
   <div className={`mx-auto flex items-center justify-center ${className}`}>
-    <div className="w-full rounded-md bg-gradient-to-tl from-[#596555] via-[#D4FF8D] to-[#814828] p-[2px]">
+    <div className={`w-full rounded-md bg-gradient-to-tl from-[#596555] via-[#D4FF8D] to-[#814828] p-[${border}]`}>
       {children}
     </div>
   </div>
@@ -260,8 +279,8 @@ const DevelopmentCopy = () => {
     navigator.clipboard?.writeText(copy);
   };
   return (
-    <Container>
-      <div className="grid grid-cols-3 gap-20 pt-4 pb-20 px-10 opacity-70">
+    <Container className="pb-8">
+      <div className="grid grid-cols-3 gap-20 pt-10 pb-20 px-10 opacity-80">
         <div>
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -296,13 +315,16 @@ const DevelopmentCopy = () => {
           </p>
           <ul className="my-6 leading-8 opacity-70">
             <li className="flex items-center">
-              <Check size={14} className="mr-2" /> Global and per-user concurrency limits
+              <Check size={14} className="mr-2" /> Global and per-user
+              concurrency limits
             </li>
             <li className="flex items-center">
-              <Check size={14} className="mr-2" /> Per-user priorities with fairness guarantees
+              <Check size={14} className="mr-2" /> Per-user priorities with
+              fairness guarantees
             </li>
             <li className="flex items-center">
-              <Check size={14} className="mr-2" /> Auto-cancellation via events to save costs
+              <Check size={14} className="mr-2" /> Auto-cancellation via events
+              to save costs
             </li>
           </ul>
         </div>
@@ -333,18 +355,21 @@ const DevelopmentCopy = () => {
             Local development
           </h3>
           <p>
-            Iterate on AI flows in your existing code base and test things locally using our
-            dev server, with full production parity.
+            Iterate on AI flows in your existing code base and test things
+            locally using our dev server, with full production parity.
           </p>
           <ul className="my-6 leading-8 opacity-70">
             <li className="flex items-center">
-              <Check size={14} className="mr-2" /> One-command setup for local dev
+              <Check size={14} className="mr-2" /> One-command setup for local
+              dev
             </li>
             <li className="flex items-center">
-              <Check size={14} className="mr-2" /> Visual workflow debugging and logs
+              <Check size={14} className="mr-2" /> Visual workflow debugging and
+              logs
             </li>
             <li className="flex items-center">
-              <Check size={14} className="mr-2" /> Production parity for risk-free deploys 
+              <Check size={14} className="mr-2" /> Production parity for
+              risk-free deploys
             </li>
           </ul>
         </div>
@@ -375,8 +400,9 @@ const DevelopmentCopy = () => {
             Zero infra or CD changes
           </h3>
           <p>
-            Deploy in your existing API, on your existing host, without
-            spinning up new infra or provisioning new services — whether you use servers or serverless.
+            Deploy in your existing API, on your existing host, without spinning
+            up new infra or provisioning new services — whether you use servers
+            or serverless.
           </p>
           <ul className="my-6 leading-8 opacity-70">
             <li className="flex items-center">
@@ -386,13 +412,16 @@ const DevelopmentCopy = () => {
               <Check size={14} className="mr-2" /> Serverless, servers, or edge
             </li>
             <li className="flex items-center">
-              <Check size={14} className="mr-2" /> Zero additional infra or provisioning
+              <Check size={14} className="mr-2" /> Zero additional infra or
+              provisioning
             </li>
           </ul>
         </div>
       </div>
 
-      <p className="text-center mt-12 opacity-70">Get started locally in one command:</p>
+      <p className="text-center mt-12 opacity-70">
+        Get started locally in one command:
+      </p>
 
       <div className="mt-4 mb-20 flex gap-4 flex-col md:flex-row items-center justify-center">
         <div className="bg-white/10 backdrop-blur-md flex rounded text-sm text-slate-200 shadow-lg">
@@ -416,7 +445,6 @@ const DevelopmentCopy = () => {
         </Link>
       </div>
     </Container>
-
   );
 };
 
