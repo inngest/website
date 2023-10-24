@@ -78,10 +78,10 @@ export default function AI() {
       {/* Call out box:  rapid development */}
 
       <Container className="pt-6">
-        <GradientBox className="my-24 shadow-[0_10px_100px_0_rgba(52,211,153,0.2)]"
-        border="2px"
+        <GradientBox
+          className="my-24 shadow-[0_10px_100px_0_rgba(52,211,153,0.2)]"
+          border="2px"
         >
-
           <div
             className={`flex items-center justify-center bg-[#0a0a12] back rounded-t-md flex-col`}
           >
@@ -131,11 +131,13 @@ export default function AI() {
           </div>
 
           <div className="grid lg:grid-cols-2 mt-[1px]">
-            <div className="
+            <div
+              className="
                 pt-14 pb-10 px-10 bg-[#0a0a12] flex flex-col items-center
                 lg:rounded-bl-md lg:mr-[1px]
                 sm:m-0
-              ">
+              "
+            >
               <h3
                 className="
                 text-xl font-bold
@@ -152,12 +154,14 @@ export default function AI() {
 
               <StoreLogos className="mt-12 opacity-90" />
             </div>
-            <div className="
+            <div
+              className="
               py-14 px-10 bg-[#0a0a12] flex flex-col items-center
               mt-[1px]
               lg:mt-0
               lg:rounded-br-md
-            ">
+            "
+            >
               <h3
                 className="
                 text-xl font-bold
@@ -168,9 +172,9 @@ export default function AI() {
                 Any AI model, any AI pattern
               </h3>
               <p className="text-lg">
-                Easily implement any AI model as either a single call or using patterns
-                like RAG, tree of thoughts, chain of thoughts, or safety rails,
-                directly in code.
+                Easily implement any AI model as either a single call or using
+                patterns like RAG, tree of thoughts, chain of thoughts, or
+                safety rails, directly in code.
               </p>
 
               <ProviderLogos className="mt-14 opacity-90" />
@@ -233,7 +237,6 @@ export default function AI() {
           solid external orchestration, your workflows are ready to scale in
           milliseconds.
         </p>
-
       </Container>
 
       <ProductionCopy />
@@ -480,13 +483,13 @@ const DevelopmentCopy = () => {
             className="my-6"
           >
             <path
-      stroke="#fff"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={1}
-      d="m15 7 5 5-5 5m-6 0-5-5 5-5"
-    />
-  </svg>
+              stroke="#fff"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1}
+              d="m15 7 5 5-5 5m-6 0-5-5 5-5"
+            />
+          </svg>
           <h3
             className="
               text-xl font-semibold
@@ -497,18 +500,21 @@ const DevelopmentCopy = () => {
             No magic: write regular code
           </h3>
           <p>
-            Easily create AI workflows with regular code, using any library or integrations
-            you need without learning anything new.
+            Easily create AI workflows with regular code, using any library or
+            integrations you need without learning anything new.
           </p>
           <ul className="my-6 leading-8 opacity-70 leading-snug">
             <li className="flex items-center mb-4">
-              <Check size={14} className="mr-2" /> No constraints on what you can use
+              <Check size={14} className="mr-2" /> No constraints on what you
+              can use
             </li>
             <li className="flex items-center mb-4">
-              <Check size={14} className="mr-2" /> Simple, retryable steps using `step.run`
+              <Check size={14} className="mr-2" /> Simple, retryable steps using
+              `step.run`
             </li>
             <li className="flex items-center mb-4">
-              <Check size={14} className="mr-2" /> Use any library, integration, or API
+              <Check size={14} className="mr-2" /> Use any library, integration,
+              or API
             </li>
           </ul>
         </div>
@@ -604,14 +610,14 @@ const ProductionCopy = () => {
             fill="none"
             className="my-6"
           >
-          <path
-      stroke="#fff"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={1}
-      d="m15 11-4 4-2-2m-5 3.8v-5.348c0-.534 0-.801.065-1.05a2 2 0 0 1 .28-.617c.145-.213.346-.39.748-.741l4.801-4.202c.746-.652 1.119-.978 1.538-1.102.37-.11.765-.11 1.135 0 .42.124.794.45 1.54 1.104l4.8 4.2c.403.352.603.528.748.74.127.19.222.398.28.618.065.249.065.516.065 1.05v5.352c0 1.118 0 1.677-.218 2.105a2 2 0 0 1-.875.873c-.427.218-.986.218-2.104.218H7.197c-1.118 0-1.678 0-2.105-.218a1.999 1.999 0 0 1-.874-.873C4 18.48 4 17.92 4 16.8Z"
-    />
-  </svg>
+            <path
+              stroke="#fff"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1}
+              d="m15 11-4 4-2-2m-5 3.8v-5.348c0-.534 0-.801.065-1.05a2 2 0 0 1 .28-.617c.145-.213.346-.39.748-.741l4.801-4.202c.746-.652 1.119-.978 1.538-1.102.37-.11.765-.11 1.135 0 .42.124.794.45 1.54 1.104l4.8 4.2c.403.352.603.528.748.74.127.19.222.398.28.618.065.249.065.516.065 1.05v5.352c0 1.118 0 1.677-.218 2.105a2 2 0 0 1-.875.873c-.427.218-.986.218-2.104.218H7.197c-1.118 0-1.678 0-2.105-.218a1.999 1.999 0 0 1-.874-.873C4 18.48 4 17.92 4 16.8Z"
+            />
+          </svg>
           <h3
             className="
               text-xl font-semibold
@@ -622,12 +628,13 @@ const ProductionCopy = () => {
             Modern SDLC
           </h3>
           <p>
-            Hassle free development with preview environments, logging, one-click replay, and 
-            error reporting built in.
+            Hassle free development with preview environments, logging,
+            one-click replay, and error reporting built in.
           </p>
           <ul className="my-6 leading-8 opacity-70 leading-snug">
             <li className="flex items-center mb-4">
-              <Check size={14} className="mr-2" /> Preview & branch envs built in
+              <Check size={14} className="mr-2" /> Preview & branch envs built
+              in
             </li>
             <li className="flex items-center mb-4">
               <Check size={14} className="mr-2" /> Logging and error reporting
@@ -646,15 +653,15 @@ const ProductionCopy = () => {
             viewBox="0 0 24 24"
             fill="none"
             className="my-6 ml-[-2px]"
-  >
-    <path
-      stroke="#fff"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={1}
-      d="m15 15 6 6m-11-4a7 7 0 1 1 0-14 7 7 0 0 1 0 14Z"
-    />
-  </svg>
+          >
+            <path
+              stroke="#fff"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1}
+              d="m15 15 6 6m-11-4a7 7 0 1 1 0-14 7 7 0 0 1 0 14Z"
+            />
+          </svg>
           <h3
             className="
               text-xl font-semibold
@@ -665,22 +672,22 @@ const ProductionCopy = () => {
             End-to-end observability
           </h3>
           <p>
-            Full insight without the fuss.  Tag functions by user, account, context length,
-            prompt rating, and see any data on any metric.
+            Full insight without the fuss. Tag functions by user, account,
+            context length, prompt rating, and see any data on any metric.
           </p>
           <ul className="my-6 leading-8 opacity-70 leading-snug">
             <li className="flex items-center mb-4">
               <Check size={14} className="mr-2" /> Real-time metrics
             </li>
             <li className="flex items-center mb-4">
-              <Check size={14} className="mr-2" /> Function tagging with user-level cost basis
+              <Check size={14} className="mr-2" /> Function tagging with
+              user-level cost basis
             </li>
             <li className="flex items-center mb-4">
               <Check size={14} className="mr-2" /> One click replay
             </li>
           </ul>
         </div>
-
       </div>
     </Container>
   );
