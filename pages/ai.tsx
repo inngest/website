@@ -9,6 +9,7 @@ import PageContainer from "src/shared/layout/PageContainer";
 import CopyBtn from "../shared/Home/CopyBtn";
 import { ChevronRightIcon } from "@heroicons/react/20/solid";
 import CodeWindow from "src/shared/CodeWindow";
+import Footer from "src/shared/Footer";
 
 export const getStaticProps: GetStaticProps = async () => {
   return {
@@ -157,6 +158,13 @@ export default function AI() {
       </Container>
 
       <DevelopmentCopy />
+
+      <br />
+      <br />
+      <br />
+      <br />
+
+      <Footer />
     </PageContainer>
   );
 }
@@ -178,7 +186,7 @@ const AIHero = () => (
         text-transparent
       "
       >
-        Build powerful AI workflows in code.
+        Build powerful <span className="font-extrabold hero-text-shadow">AI workflows</span> in code.
       </h1>
 
       <p className="text-lg text-slate-100 leading-8 w-1/2 text-center">
@@ -408,6 +416,7 @@ const DevelopmentCopy = () => {
         </Link>
       </div>
     </Container>
+
   );
 };
 
