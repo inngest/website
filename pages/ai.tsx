@@ -147,7 +147,7 @@ export default function AI() {
                 Any AI model, any AI pattern
               </h3>
               <p className="text-lg">
-                Easily implement any AI model as a single call or using patterns
+                Easily implement any AI model as either a single call or using patterns
                 like RAG, tree of thoughts, chain of thoughts, or safety rails,
                 directly in code.
               </p>
