@@ -197,7 +197,7 @@ export default function AI() {
           w-2/3 m-auto
         "
         >
-          Scale-ready production in hours.
+          Scale-ready production AI in hours.
           Zero&nbsp;infrastructure&nbsp;required.
         </h2>
 
@@ -466,21 +466,21 @@ const DevelopmentCopy = () => {
               w-full
             "
           >
-            Simple, powerful primitives
+            No magic: write regular code
           </h3>
           <p>
-            Easily blend powerful primitives in our intuitive SDK to develop complex AI
-            flows, reliably spanning tens or hundreds of requests.
+            Easily create AI workflows with regular code, using any library or integrations
+            you need without learning anything new.
           </p>
           <ul className="my-6 leading-8 opacity-70">
+            <li className="flex items-center">
+              <Check size={14} className="mr-2" /> No constraints on what you can use
+            </li>
             <li className="flex items-center">
               <Check size={14} className="mr-2" /> Simple, retryable steps using `step.run`
             </li>
             <li className="flex items-center">
-              <Check size={14} className="mr-2" /> Human-in-the-loop tasks
-            </li>
-            <li className="flex items-center">
-              <Check size={14} className="mr-2" /> Easily react to external events
+              <Check size={14} className="mr-2" /> Use any library, integration, or API
             </li>
           </ul>
         </div>
