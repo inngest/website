@@ -9,7 +9,6 @@ import Check from "src/shared/Icons/Check";
 import { ChevronRightIcon } from "@heroicons/react/20/solid";
 import CodeWindow from "src/shared/CodeWindow";
 
-
 export const getStaticProps: GetStaticProps = async () => {
   return {
     props: {
@@ -26,23 +25,32 @@ export default function AI() {
       <AIHero />
 
       <Container className="pt-4 pb-36">
-        <p className="text-zinc-400 text-center">Companies of all sizes trust Inngest to power their AI functionality.</p>
+        <p className="text-zinc-400 text-center">
+          Companies of all sizes trust Inngest to power their AI functionality.
+        </p>
       </Container>
 
       {/* Code example */}
       <Container>
-        <h2 className="
+        <h2
+          className="
           text-4xl text-center font-bold mt-16 mb-2
-        ">
+        "
+        >
           Focus on what matters: the AI.
         </h2>
-        <p className="text-center mb-20 opacity-60">Spend time on what's important.  Scale from day 0 by leaving the complex orchestration to us.</p>
+        <p className="text-center mb-20 opacity-60">
+          Spend time developing what's important. Scale from day 0 by leaving
+          the complex orchestration to us.
+        </p>
 
-        <div className="
+        <div
+          className="
           grid lg:grid-cols-3
           bg-slate-800/50 border-slate-700/30 rounded-lg border
           mt-8 mb-24
-        ">
+        "
+        >
           <CodeWindow
             snippet={aiFlow}
             showLineNumbers={true}
@@ -60,28 +68,40 @@ export default function AI() {
 
       <Container>
         <GradientBox className="my-40 shadow-[0_10px_100px_0_rgba(52,211,153,0.2)]">
-          <div className={`flex items-center justify-center bg-[#0a0a12] back rounded-t-md flex-col`}>
+          <div
+            className={`flex items-center justify-center bg-[#0a0a12] back rounded-t-md flex-col`}
+          >
             <DevIcon className="mt-[-47px] mb-24" />
 
             <div className="flex flex-col items-center justify-center pb-24">
-              <h2 className="
+              <h2
+                className="
                 text-4xl text-center font-bold mb-8
-              ">
-                Rapidly iterate on complex AI chains,<br />directly&nbsp;in&nbsp;code.
+              "
+              >
+                Rapidly iterate on complex AI chains,
+                <br />
+                directly&nbsp;in&nbsp;code.
               </h2>
 
-              <p className="
+              <p
+                className="
                 w-1/2
                 text-center text-lg
-              ">
-                A simple, powerful interface that lets you define reliable flow control using any AI provider, connecting with any data source.  Write AI workflows directly in your API using our SDK, with local testing out of the box.
+              "
+              >
+                A simple, powerful interface that lets you define reliable flow
+                control in your own code. Write AI workflows directly in your
+                API using our SDK, with local testing out of the box.
               </p>
 
-              <div className="
+              <div
+                className="
                 flex
                 flex-col lg:flex-row
                 gap-8 pt-16 items-center justify-center
-              ">
+              "
+              >
                 <Link
                   href={`${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=ai-hero`}
                   className="rounded-md font-medium px-11 pr-9 py-3.5 bg-indigo-500 hover:bg-indigo-400 transition-all text-white whitespace-nowrap flex flex-row items-center
@@ -97,63 +117,180 @@ export default function AI() {
 
           <div className="grid lg:grid-cols-2 mt-[1px]">
             <div className="pt-14 pb-10 px-10 bg-[#0a0a12] mr-[1px] flex flex-col items-center">
-              <h3 className="
+              <h3
+                className="
                 text-xl font-bold
                 mb-4
                 w-full
-              ">
+              "
+              >
                 Your data, your environment
               </h3>
-              <p className="text-lg">Leverage data from your own database, vector store, or APIs directly in code — without complex interfaces or adapters.</p>
+              <p className="text-lg">
+                Leverage data from your own database, vector store, or APIs
+                directly in code — without complex interfaces or adapters.
+              </p>
 
               <StoreLogos className="mt-12 opacity-90" />
             </div>
             <div className="py-14 px-10 bg-[#0a0a12] flex flex-col items-center">
-              <h3 className="
+              <h3
+                className="
                 text-xl font-bold
                 mb-4
                 w-full
-              ">
+              "
+              >
                 Any AI model, any AI pattern
               </h3>
-              <p className="text-lg">Easily implement any AI model as a single call or using patterns like RAG, tree of thoughts, chain of thoughts, or safety rails, directly in code.</p>
+              <p className="text-lg">
+                Easily implement any AI model as a single call or using patterns
+                like RAG, tree of thoughts, chain of thoughts, or safety rails,
+                directly in code.
+              </p>
 
               <ProviderLogos className="mt-14 opacity-90" />
             </div>
           </div>
-
         </GradientBox>
       </Container>
 
+      <Container>
+        <div className="grid grid-cols-3 gap-20 pb-20 px-10 opacity-75">
+          <div>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width={36}
+              height={36}
+              viewBox="0 0 24 24"
+              fill="none"
+              className="my-6"
+            >
+              <path
+                stroke="#fff"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1}
+                d="M14 15h7M3 15h2m0 0a2.5 2.5 0 1 0 5 0 2.5 2.5 0 0 0-5 0Zm15-6h1M3 9h7m6.5 2.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5Z"
+              />
+            </svg>
+
+            <h3
+              className="
+              text-xl font-bold
+              mb-4
+              w-full
+            "
+            >
+              Full flow control
+            </h3>
+            <p className="text-lg">
+              Concurrency, rate limiting, debounce, automatic cancellation —
+              everything you need to scale, while respecting rate limits, built
+              in from the beginning.
+            </p>
+          </div>
+          <div>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width={36}
+              height={36}
+              viewBox="0 0 24 24"
+              fill="none"
+              className="my-6 ml-[-2px]"
+            >
+              <path
+                stroke="#fff"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1}
+                d="M17 15h-5m-5-5 3 2.5L7 15m-4 .8V8.2c0-1.12 0-1.68.218-2.108.192-.377.497-.682.874-.874C4.52 5 5.08 5 6.2 5h11.6c1.12 0 1.68 0 2.107.218.377.192.683.497.875.874.218.427.218.987.218 2.105v7.606c0 1.118 0 1.677-.218 2.104a2.003 2.003 0 0 1-.875.875c-.427.218-.986.218-2.104.218H6.197c-1.118 0-1.678 0-2.105-.218a2.001 2.001 0 0 1-.874-.875C3 17.48 3 16.92 3 15.8Z"
+              />
+            </svg>
+            <h3
+              className="
+              text-xl font-bold
+              mb-4
+              w-full
+            "
+            >
+              Local development
+            </h3>
+            <p className="text-lg">
+              Develop in your existing code base and test things locally using
+              our dev server, with full production parity.
+            </p>
+          </div>
+          <div>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              width={36}
+              height={36}
+              viewBox="0 0 24 24"
+              className="my-6"
+            >
+              <path
+                stroke="#fff"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1}
+                d="m9 6 3-3m0 0 3 3m-3-3v10m-5-3c-.932 0-1.398 0-1.765.152a2 2 0 0 0-1.083 1.083C4 11.602 4 12.068 4 13v4.8c0 1.12 0 1.68.218 2.108a2 2 0 0 0 .874.874c.427.218.987.218 2.105.218h9.607c1.118 0 1.677 0 2.104-.218.376-.192.682-.498.874-.874.218-.428.218-.987.218-2.105V13c0-.932 0-1.398-.152-1.765a2 2 0 0 0-1.083-1.083C18.398 10 17.932 10 17 10"
+              />
+            </svg>
+            <h3
+              className="
+              text-xl font-bold
+              mb-4
+              w-full
+            "
+            >
+              Zero infra or CD changes
+            </h3>
+            <p className="text-lg">
+              Deploy in your existing API, on your existing platform, without
+              spinning up new infra or provisioning new clouds.
+            </p>
+          </div>
+        </div>
+      </Container>
     </PageContainer>
   );
 }
 
 const AIHero = () => (
   <Container>
-    <div className="py-24 lg:py-48 gap-2 justify-between lg:items-center 
+    <div
+      className="py-24 lg:py-48 gap-2 justify-between lg:items-center 
       flex flex-col align-center
-    ">
-      <h1 className="
+    "
+    >
+      <h1
+        className="
         text-4xl font-bold leading-[48px]
         sm:text-5xl sm:leading-[58px]
         lg:text-6xl lg:leading-[68px]
         tracking-[-2px] mb-8
         bg-gradient-to-r from-[#FFEAEA] to-[#D2CACF] drop-shadow bg-clip-text
         text-transparent
-      ">
+      "
+      >
         Build powerful AI workflows in code.
       </h1>
 
       <p className="text-lg text-slate-100 leading-8 w-1/2 text-center">
-        Develop, test, and deploy reliable AI workflows to production, in less than a day. Inngest’s event-driven workflows handle queueing, state, scale, and observability, letting you focus on what matters.
+        Develop, test, and deploy reliable AI workflows to production, in less
+        than a day. Inngest’s event-driven workflows handle queueing, state,
+        scale, and observability, letting you focus on what matters.
       </p>
 
-      <div className="
+      <div
+        className="
         flex
         flex-col lg:flex-row
         gap-8 pt-16 items-center justify-center
-      ">
+      "
+      >
         <Link
           href={`${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=ai-hero`}
           className="rounded-md font-medium px-11 py-3.5 bg-indigo-500 hover:bg-indigo-400 transition-all text-white whitespace-nowrap flex flex-row items-center
@@ -181,7 +318,6 @@ const AIScroll = () => {
     "Embeddings",
     "Multi-model chains",
     "Guardrails",
-    "Chain of thoughts",
     "Hallucination checking",
     "Observability",
     "Scoring",
@@ -190,11 +326,15 @@ const AIScroll = () => {
   return (
     <Marquee>
       <div className="font-mono text-sm text-zinc-500 py-8">
-        {list.map((item, n) => <span className="mx-14" key={n}>{item}</span>)}
+        {list.map((item, n) => (
+          <span className="mx-14" key={n}>
+            {item}
+          </span>
+        ))}
       </div>
     </Marquee>
   );
-}
+};
 
 const GradientBox = ({ children, className = "" }) => (
   <div className={`mx-auto flex items-center justify-center ${className}`}>
@@ -202,7 +342,7 @@ const GradientBox = ({ children, className = "" }) => (
       {children}
     </div>
   </div>
-)
+);
 
 const aiFlow = `
 export const userWorkflow = inngest.createFunction(
@@ -236,7 +376,7 @@ export const userWorkflow = inngest.createFunction(
 `;
 
 const DevIcon = (props) => (
-<svg
+  <svg
     xmlns="http://www.w3.org/2000/svg"
     width={146}
     height={98}
@@ -263,7 +403,7 @@ const DevIcon = (props) => (
       d="M22.27 52v-8.531h1.974c.332.004.645.039.938.105.297.063.57.153.82.27.348.16.654.37.92.633a3 3 0 0 1 .644.896c.145.29.254.605.329.95.078.343.119.71.123 1.1v.628c0 .375-.038.73-.112 1.066a3.97 3.97 0 0 1-.31.926 3.45 3.45 0 0 1-1.254 1.406c-.282.176-.6.31-.955.404a4.591 4.591 0 0 1-1.143.147H22.27Zm1.101-7.64v6.755h.873c.313-.004.596-.043.85-.117.258-.074.486-.18.685-.316.211-.141.393-.313.545-.516.156-.207.28-.438.37-.691.078-.207.136-.43.175-.668.04-.242.06-.495.065-.756v-.639a4.765 4.765 0 0 0-.07-.762c-.04-.246-.1-.474-.182-.685a2.662 2.662 0 0 0-.428-.738 2.029 2.029 0 0 0-.65-.54 2.454 2.454 0 0 0-.616-.234 3.152 3.152 0 0 0-.744-.094h-.873Zm13.31 3.697H33.12v3.023h4.154V52h-5.238v-8.531h5.185v.925H33.12v2.743h3.562v.92ZM43.687 52l-2.696-8.531h1.16l1.876 6.369.123.416.129-.428 1.886-6.357h1.154L44.63 52h-.943Zm12.208-3.943h-3.562v3.023h4.154V52H51.25v-8.531h5.185v.925h-4.101v2.743h3.562v.92Zm6.139 3.023h4.172V52H60.95v-8.531h1.084v7.611Zm13.93-2.853a6.264 6.264 0 0 1-.081.925 4.939 4.939 0 0 1-.223.897c-.101.289-.232.558-.392.808-.157.25-.344.47-.563.657-.219.187-.47.336-.756.445a2.687 2.687 0 0 1-.949.158c-.352 0-.67-.052-.955-.158a2.58 2.58 0 0 1-.75-.445 2.964 2.964 0 0 1-.568-.657 4.012 4.012 0 0 1-.393-.814 4.958 4.958 0 0 1-.234-.896 6.141 6.141 0 0 1-.082-.92v-.973c.004-.305.029-.611.076-.92.05-.313.129-.613.234-.902.102-.29.23-.559.387-.809.16-.254.35-.476.568-.668.219-.187.469-.334.75-.44.285-.109.604-.163.955-.163.352 0 .67.054.955.164.285.105.538.252.756.44.219.187.407.407.563.661.16.25.293.52.398.809.102.289.176.59.223.902.05.313.078.621.082.926v.973Zm-1.071-.985a7.265 7.265 0 0 0-.041-.633 4.802 4.802 0 0 0-.118-.662 3.622 3.622 0 0 0-.228-.615 2.073 2.073 0 0 0-.352-.527 1.556 1.556 0 0 0-1.166-.487 1.542 1.542 0 0 0-1.16.492c-.14.153-.258.329-.351.528-.094.195-.168.4-.223.615-.059.219-.102.44-.129.662a7.238 7.238 0 0 0-.041.627v.985c.004.199.018.41.041.632.027.223.07.442.129.657.058.218.135.427.228.627.094.199.211.373.352.521.14.152.307.273.498.363.191.09.414.135.668.135a1.556 1.556 0 0 0 1.172-.498c.137-.148.25-.32.34-.516.094-.199.17-.408.228-.627a4.12 4.12 0 0 0 .112-.656c.023-.222.037-.435.04-.638v-.985Zm6.314 1.336V52h-1.084v-8.531h2.765c.383.008.744.068 1.084.181.344.114.645.278.903.493.257.214.46.48.609.797.152.316.229.68.229 1.09 0 .41-.077.773-.229 1.09a2.302 2.302 0 0 1-.61.79 2.725 2.725 0 0 1-.902.492 3.52 3.52 0 0 1-1.084.176h-1.681Zm0-.89h1.681c.25-.004.48-.044.692-.118.21-.078.394-.187.55-.328.157-.14.278-.31.364-.51.09-.203.135-.433.135-.691 0-.258-.045-.49-.135-.697a1.519 1.519 0 0 0-.358-.528 1.629 1.629 0 0 0-.556-.334 2.07 2.07 0 0 0-.692-.123h-1.681v3.328Zm9.613-4.22 1.388 4.266 1.5-4.265h1.348V52H94v-3.404l.088-3.563-1.576 4.594h-.621l-1.447-4.47.087 3.439V52h-1.054v-8.531h1.342Zm13.11 4.589h-3.562v3.023h4.154V52h-5.238v-8.531h5.186v.925h-4.102v2.743h3.562v.92ZM114.188 52h-1.102l-3.31-6.375-.018 6.375h-1.096v-8.531h1.102l3.311 6.363.017-6.363h1.096V52Zm10.017-7.605h-2.637V52h-1.054v-7.605h-2.637v-.926h6.328v.925Z"
     />
   </svg>
-)
+);
 
 const StoreLogos = (props) => (
   <svg
@@ -431,8 +571,7 @@ const StoreLogos = (props) => (
       />
     </defs>
   </svg>
-)
-
+);
 
 const ProviderLogos = (props) => (
   <svg
@@ -650,4 +789,4 @@ const ProviderLogos = (props) => (
       />
     </g>
   </svg>
-)
+);

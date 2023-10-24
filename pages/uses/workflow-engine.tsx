@@ -3,9 +3,10 @@ import CodeWindow from "src/shared/CodeWindow";
 import Header from "src/shared/Header";
 import Check from "src/shared/Icons/Check";
 import Container from "src/shared/layout/Container";
-import PageContainer from "src/shared/layout/PageContainer";import Link from "next/link";
+import PageContainer from "src/shared/layout/PageContainer";
+import Link from "next/link";
 import { ChevronRightIcon } from "@heroicons/react/20/solid";
-import { useRive } from '@rive-app/react-canvas';
+import { useRive } from "@rive-app/react-canvas";
 import { useEffect } from "react";
 import Footer from "src/shared/Footer";
 
@@ -19,13 +20,15 @@ export const getStaticProps: GetStaticProps = async (ctx) => {
 
 export default function workflowEngine() {
   const { rive, RiveComponent } = useRive({
-    src: '/assets/animations/workflows.riv',
+    src: "/assets/animations/workflows.riv",
     stateMachines: "state",
     autoplay: false,
   });
 
-  useEffect(() => { rive && window.setTimeout(() => rive && rive.play(), 500) }, [rive]);
-  
+  useEffect(() => {
+    rive && window.setTimeout(() => rive && rive.play(), 500);
+  }, [rive]);
+
   return (
     <PageContainer>
       <Header />
@@ -34,42 +37,45 @@ export default function workflowEngine() {
         <div className="py-24 lg:py-48 gap-2 justify-between lg:items-center">
           <div className="grid content-center grid-cols-1 lg:grid-cols-2 lg:gap-40">
             <div>
-              <h1 className="
+              <h1
+                className="
                 text-4xl font-semibold leading-[48px]
                 sm:text-5xl sm:leading-[58px]
                 lg:text-6xl lg:leading-[68px]
                 tracking-[-2px] text-slate-50 mb-8
-              ">
+              "
+              >
                 Launch customizable workflows, in&nbsp;weeks
-            </h1>
+              </h1>
 
-            <p className="text-lg text-slate-200 leading-8">
-              Build powerful customizable workflows directly in your product using Inngest as the reliable
-              orchestration engine.  Develop locally and ship to your existing production systems ready for
-              any scale.
-            </p>
+              <p className="text-lg text-slate-200 leading-8">
+                Build powerful customizable workflows directly in your product
+                using Inngest as the reliable orchestration engine. Develop
+                locally and ship to your existing production systems ready for
+                any scale.
+              </p>
 
-            <ul className="text-lg my-8 leading-8 font-medium">
-              <li className="flex items-center">
-                <Check size={20} className="mr-2" /> Integrate directly into your existing code
-              </li>
-              <li className="flex items-center">
-                <Check size={20} className="mr-2" /> Powerful, customizable, and observable
-              </li>
-              <li className="flex items-center">
-                <Check size={20} className="mr-2" /> Operate at scale
-              </li>
-            </ul>
+              <ul className="text-lg my-8 leading-8 font-medium">
+                <li className="flex items-center">
+                  <Check size={20} className="mr-2" /> Integrate directly into
+                  your existing code
+                </li>
+                <li className="flex items-center">
+                  <Check size={20} className="mr-2" /> Powerful, customizable,
+                  and observable
+                </li>
+                <li className="flex items-center">
+                  <Check size={20} className="mr-2" /> Operate at scale
+                </li>
+              </ul>
             </div>
             <div className="flex items-center justify-center">
               <div className="h-[405px] lg:w-[500px] w-full">
-                <RiveComponent
-                />
-              </div> 
+                <RiveComponent />
+              </div>
             </div>
           </div>
         </div>
-
       </Container>
 
       <Container>
@@ -79,28 +85,38 @@ export default function workflowEngine() {
           </div>
 
           <div>
-          <span className="text-2xs uppercase tracking-[.25em]">Case study</span>
+            <span className="text-2xs uppercase tracking-[.25em]">
+              Case study
+            </span>
             <h2 className="text-3xl font-semibold my-4">
-              FlorianWorks: zero to building a mission-critical workflow engine for fire departments
+              FlorianWorks: zero to building a mission-critical workflow engine
+              for fire departments
             </h2>
             <p className="mb-3">
-              FlorianWorks develops custom-built software products for fire departments, incorporating custom
-              workflows built directly on top of Inngest to ship reliable products faster and easier than ever before.
+              FlorianWorks develops custom-built software products for fire
+              departments, incorporating custom workflows built directly on top
+              of Inngest to ship reliable products faster and easier than ever
+              before.
             </p>
             <p>
-              Utilizing Inngest's core workflow engine and primitives such as <code className="text-sm">step.waitForEvent</code>,
-              FlorianWorks ships scheduling, roster management, a rules engine, and finance management without spending effort
-              developing custom distributed systems primitives or reliability concerns.
+              Utilizing Inngest's core workflow engine and primitives such as{" "}
+              <code className="text-sm">step.waitForEvent</code>, FlorianWorks
+              ships scheduling, roster management, a rules engine, and finance
+              management without spending effort developing custom distributed
+              systems primitives or reliability concerns.
             </p>
             <ul className="my-3 leading-8">
               <li className="flex items-center">
-                <Check size={14} className="mr-2" /> Development on core business logic only
+                <Check size={14} className="mr-2" /> Development on core
+                business logic only
               </li>
               <li className="flex items-center">
-                <Check size={14} className="mr-2" /> Auditable, logged, secure workflows
+                <Check size={14} className="mr-2" /> Auditable, logged, secure
+                workflows
               </li>
               <li className="flex items-center">
-                <Check size={14} className="mr-2" /> Zero additional infrastructure required
+                <Check size={14} className="mr-2" /> Zero additional
+                infrastructure required
               </li>
             </ul>
           </div>
@@ -109,13 +125,17 @@ export default function workflowEngine() {
 
       <Container>
         <div className="w-full lg:w-1/4 my-36 mx-auto flex flex-col items-center">
-          <img className="rounded-full" src="/assets/quotes/osenergy.jpeg" height="60" width="60" />
-           <p className="text-xl text-center py-4">
-            "Inngest is a great platform to build reliability into your long running tasks without drowning in complexity.""
+          <img
+            className="rounded-full"
+            src="/assets/quotes/osenergy.jpeg"
+            height="60"
+            width="60"
+          />
+          <p className="text-xl text-center py-4">
+            "Inngest is a great platform to build reliability into your long
+            running tasks without drowning in complexity.""
           </p>
-          <p className="text-slate-400">
-            Ozan Şener, Principal Engineer
-          </p>
+          <p className="text-slate-400">Ozan Şener, Principal Engineer</p>
         </div>
       </Container>
 
@@ -126,36 +146,44 @@ export default function workflowEngine() {
               Fully customizable, durable workflows
             </h2>
             <p className="my-4">
-              You bring the application code, we bring the engine.  Allow your own users to
-              create workflows composed of reusable logic that you define.  Our engine
-              runs workflows as steps, taking care of scale, orchestration, idempotency, retries,
-              and observability for you.
+              You bring the application code, we bring the engine. Allow your
+              own users to create workflows composed of reusable logic that you
+              define. Our engine runs workflows as steps, taking care of scale,
+              orchestration, idempotency, retries, and observability for you.
             </p>
             <p>
-              Build simple linear workflows or complex DAG-based workflows with parallelism and
-              fan-in out of the box.  Leverage our step primitives for human-in-the-loop or paused
-              functions which automatically resume based off of conditions being met.
+              Build simple linear workflows or complex DAG-based workflows with
+              parallelism and fan-in out of the box. Leverage our step
+              primitives for human-in-the-loop or paused functions which
+              automatically resume based off of conditions being met.
             </p>
 
             <div className="flex mt-8">
               <Check size={14} className="mr-2 inline mt-1" />
               <div className="flex-1">
-                <strong className="font-semibold">Concurrency, rate limiting and debounce</strong>
-                &nbsp;controls built in, with custom keys or controlling your own user's&nbsp;limits
+                <strong className="font-semibold">
+                  Concurrency, rate limiting and debounce
+                </strong>
+                &nbsp;controls built in, with custom keys or controlling your
+                own user's&nbsp;limits
               </div>
             </div>
             <div className="flex mt-4">
               <Check size={14} className="mr-2 inline mt-1" />
               <div className="flex-1">
                 <strong className="font-semibold">Reliably run any code</strong>
-                &nbsp;in any step, with retries and error handling automatically&nbsp;managed
+                &nbsp;in any step, with retries and error handling
+                automatically&nbsp;managed
               </div>
             </div>
             <div className="flex mt-4">
               <Check size={14} className="mr-2 inline mt-1" />
               <div className="flex-1">
-                <strong className="font-semibold">Auditable, observable, and scalable</strong>
-                &nbsp;handling tens of thousands of requests per second with real time metrics
+                <strong className="font-semibold">
+                  Auditable, observable, and scalable
+                </strong>
+                &nbsp;handling tens of thousands of requests per second with
+                real time metrics
               </div>
             </div>
 
@@ -177,15 +205,15 @@ export default function workflowEngine() {
               </Link>
             </div>
           </div>
-        
+
           <div>
             <CodeWindow
               header={
-              <div className="flex py-2 px-5">
-                <div className="py-1 text-sm font-light text-slate-400">
-                  workflow.ts
+                <div className="flex py-2 px-5">
+                  <div className="py-1 text-sm font-light text-slate-400">
+                    workflow.ts
+                  </div>
                 </div>
-              </div>
               }
               snippet={stackWorkflows}
               showLineNumbers={true}
@@ -194,12 +222,9 @@ export default function workflowEngine() {
         </div>
       </Container>
       <Footer ctaRef={`use-case-workflow`} />
-
     </PageContainer>
   );
 }
-
-
 
 const stackWorkflows = `
 import { runAction } from "@/actions";
