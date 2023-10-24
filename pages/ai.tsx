@@ -5,7 +5,7 @@ import Header from "src/shared/Header";
 import Container from "src/shared/layout/Container";
 import PageContainer from "src/shared/layout/PageContainer";
 // Icons
-import Check from "src/shared/Icons/Check";
+import CopyBtn from "../shared/Home/CopyBtn";
 import { ChevronRightIcon } from "@heroicons/react/20/solid";
 import CodeWindow from "src/shared/CodeWindow";
 
@@ -67,7 +67,7 @@ export default function AI() {
       {/* Call out box:  rapid development */}
 
       <Container>
-        <GradientBox className="my-40 shadow-[0_10px_100px_0_rgba(52,211,153,0.2)]">
+        <GradientBox className="my-24 shadow-[0_10px_100px_0_rgba(52,211,153,0.2)]">
           <div
             className={`flex items-center justify-center bg-[#0a0a12] back rounded-t-md flex-col`}
           >
@@ -112,7 +112,7 @@ export default function AI() {
                   <ChevronRightIcon className="h-5 group-hover:translate-x-1 relative top-px transition-transform duration-150" />
                 </Link>
               </div>
-            </div>
+          8</div>
           </div>
 
           <div className="grid lg:grid-cols-2 mt-[1px]">
@@ -155,105 +155,7 @@ export default function AI() {
         </GradientBox>
       </Container>
 
-      <Container>
-        <div className="grid grid-cols-3 gap-20 pb-20 px-10 opacity-75">
-          <div>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width={36}
-              height={36}
-              viewBox="0 0 24 24"
-              fill="none"
-              className="my-6"
-            >
-              <path
-                stroke="#fff"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1}
-                d="M14 15h7M3 15h2m0 0a2.5 2.5 0 1 0 5 0 2.5 2.5 0 0 0-5 0Zm15-6h1M3 9h7m6.5 2.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5Z"
-              />
-            </svg>
-
-            <h3
-              className="
-              text-xl font-bold
-              mb-4
-              w-full
-            "
-            >
-              Full flow control
-            </h3>
-            <p className="text-lg">
-              Concurrency, rate limiting, debounce, automatic cancellation —
-              everything you need to scale, while respecting rate limits, built
-              in from the beginning.
-            </p>
-          </div>
-          <div>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width={36}
-              height={36}
-              viewBox="0 0 24 24"
-              fill="none"
-              className="my-6 ml-[-2px]"
-            >
-              <path
-                stroke="#fff"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1}
-                d="M17 15h-5m-5-5 3 2.5L7 15m-4 .8V8.2c0-1.12 0-1.68.218-2.108.192-.377.497-.682.874-.874C4.52 5 5.08 5 6.2 5h11.6c1.12 0 1.68 0 2.107.218.377.192.683.497.875.874.218.427.218.987.218 2.105v7.606c0 1.118 0 1.677-.218 2.104a2.003 2.003 0 0 1-.875.875c-.427.218-.986.218-2.104.218H6.197c-1.118 0-1.678 0-2.105-.218a2.001 2.001 0 0 1-.874-.875C3 17.48 3 16.92 3 15.8Z"
-              />
-            </svg>
-            <h3
-              className="
-              text-xl font-bold
-              mb-4
-              w-full
-            "
-            >
-              Local development
-            </h3>
-            <p className="text-lg">
-              Develop in your existing code base and test things locally using
-              our dev server, with full production parity.
-            </p>
-          </div>
-          <div>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              width={36}
-              height={36}
-              viewBox="0 0 24 24"
-              className="my-6"
-            >
-              <path
-                stroke="#fff"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1}
-                d="m9 6 3-3m0 0 3 3m-3-3v10m-5-3c-.932 0-1.398 0-1.765.152a2 2 0 0 0-1.083 1.083C4 11.602 4 12.068 4 13v4.8c0 1.12 0 1.68.218 2.108a2 2 0 0 0 .874.874c.427.218.987.218 2.105.218h9.607c1.118 0 1.677 0 2.104-.218.376-.192.682-.498.874-.874.218-.428.218-.987.218-2.105V13c0-.932 0-1.398-.152-1.765a2 2 0 0 0-1.083-1.083C18.398 10 17.932 10 17 10"
-              />
-            </svg>
-            <h3
-              className="
-              text-xl font-bold
-              mb-4
-              w-full
-            "
-            >
-              Zero infra or CD changes
-            </h3>
-            <p className="text-lg">
-              Deploy in your existing API, on your existing platform, without
-              spinning up new infra or provisioning new clouds.
-            </p>
-          </div>
-        </div>
-      </Container>
+      <DevelopmentCopy />
     </PageContainer>
   );
 }
@@ -343,6 +245,137 @@ const GradientBox = ({ children, className = "" }) => (
     </div>
   </div>
 );
+
+const DevelopmentCopy = () => {
+  const handleCopyClick = (copy) => {
+    navigator.clipboard?.writeText(copy);
+  };
+  return (
+    <Container>
+      <div className="grid grid-cols-3 gap-20 pt-4 pb-20 px-10 opacity-70">
+        <div>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width={36}
+            height={36}
+            viewBox="0 0 24 24"
+            fill="none"
+            className="my-6"
+          >
+            <path
+              stroke="#fff"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1}
+              d="M14 15h7M3 15h2m0 0a2.5 2.5 0 1 0 5 0 2.5 2.5 0 0 0-5 0Zm15-6h1M3 9h7m6.5 2.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5Z"
+            />
+          </svg>
+
+          <h3
+            className="
+              text-xl font-semibold
+              mb-4
+              w-full
+            "
+          >
+            Full flow control
+          </h3>
+          <p>
+            Concurrency, rate limiting, debounce, automatic cancellation —
+            everything you need to scale, while respecting rate limits, built in
+            from the beginning.
+          </p>
+        </div>
+        <div>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width={36}
+            height={36}
+            viewBox="0 0 24 24"
+            fill="none"
+            className="my-6 ml-[-2px]"
+          >
+            <path
+              stroke="#fff"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1}
+              d="M17 15h-5m-5-5 3 2.5L7 15m-4 .8V8.2c0-1.12 0-1.68.218-2.108.192-.377.497-.682.874-.874C4.52 5 5.08 5 6.2 5h11.6c1.12 0 1.68 0 2.107.218.377.192.683.497.875.874.218.427.218.987.218 2.105v7.606c0 1.118 0 1.677-.218 2.104a2.003 2.003 0 0 1-.875.875c-.427.218-.986.218-2.104.218H6.197c-1.118 0-1.678 0-2.105-.218a2.001 2.001 0 0 1-.874-.875C3 17.48 3 16.92 3 15.8Z"
+            />
+          </svg>
+          <h3
+            className="
+              text-xl font-semibold
+              mb-4
+              w-full
+            "
+          >
+            Local development
+          </h3>
+          <p>
+            Develop in your existing code base and test things locally using our
+            dev server, with full production parity.
+          </p>
+        </div>
+        <div>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            width={36}
+            height={36}
+            viewBox="0 0 24 24"
+            className="my-6"
+          >
+            <path
+              stroke="#fff"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1}
+              d="m9 6 3-3m0 0 3 3m-3-3v10m-5-3c-.932 0-1.398 0-1.765.152a2 2 0 0 0-1.083 1.083C4 11.602 4 12.068 4 13v4.8c0 1.12 0 1.68.218 2.108a2 2 0 0 0 .874.874c.427.218.987.218 2.105.218h9.607c1.118 0 1.677 0 2.104-.218.376-.192.682-.498.874-.874.218-.428.218-.987.218-2.105V13c0-.932 0-1.398-.152-1.765a2 2 0 0 0-1.083-1.083C18.398 10 17.932 10 17 10"
+            />
+          </svg>
+          <h3
+            className="
+              text-xl font-semibold
+              mb-4
+              w-full
+            "
+          >
+            Zero infra or CD changes
+          </h3>
+          <p>
+            Deploy in your existing API, on your existing host, without
+            spinning up new infra or provisioning new services — whether you use servers or serverless.
+          </p>
+        </div>
+      </div>
+
+      <p className="text-center mt-12 opacity-70">Get started locally in one command:</p>
+
+      <div className="mt-4 mb-20 flex gap-4 flex-col md:flex-row items-center justify-center">
+        <div className="bg-white/10 backdrop-blur-md flex rounded text-sm text-slate-200 shadow-lg">
+          <pre className=" pl-4 pr-2 py-2">
+            <code className="bg-transparent text-slate-300">
+              <span>npx</span> inngest-cli dev
+            </code>
+          </pre>
+          <div className="rounded-r flex items-center justify-center pl-2 pr-2.5">
+            <CopyBtn
+              btnAction={handleCopyClick}
+              copy="npx inngest-cli@latest dev"
+            />
+          </div>
+        </div>
+        <Link
+          href="/docs/quick-start?ref=homepage-dev-tools"
+          className="rounded-md px-3 py-1.5 text-sm bg-transparent transition-all text-white border border-slate-800 hover:border-slate-600 hover:bg-slate-500/10 whitespace-nowrap"
+        >
+          Get Started
+        </Link>
+      </div>
+    </Container>
+  );
+};
 
 const aiFlow = `
 export const userWorkflow = inngest.createFunction(
