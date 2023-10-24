@@ -55,7 +55,9 @@ export default function AI() {
           bg-slate-800/50 border-slate-700/30 rounded-lg border
           m-auto
           mt-8 mb-24
-          w-2/3 
+          dispaly-none
+          lg:grid
+          lg:w-2/3 
         "
         >
           <CodeWindow
@@ -76,7 +78,9 @@ export default function AI() {
       {/* Call out box:  rapid development */}
 
       <Container className="pt-6">
-        <GradientBox className="my-24 shadow-[0_10px_100px_0_rgba(52,211,153,0.2)]">
+        <GradientBox className="my-24 shadow-[0_10px_100px_0_rgba(52,211,153,0.2)]"
+          border="2px"
+        >
           <div
             className={`flex items-center justify-center bg-[#0a0a12] back rounded-t-md flex-col`}
           >
