@@ -9,8 +9,9 @@ export default function Logos({
   logos,
   footer,
   variant = "dark",
+  className = "",
 }: {
-  heading: string | React.ReactNode;
+  heading?: string | React.ReactNode;
   logos: {
     src: string;
     name: string;
@@ -20,24 +21,28 @@ export default function Logos({
   }[];
   footer?: React.ReactNode;
   variant?: "dark" | "light";
+  className?: string;
 }) {
   const hasLinks = !!logos.find((l) => !!l.href);
   const nonFeaturedCount = logos.filter((l) => !l.featured).length;
   return (
     <Container
       className={clsx(
-        "my-20 lg:my-36 mx-auto max-w-4xl mb-20 lg:mb-40 xl:mb-60"
+        "my-20 lg:my-36 mx-auto max-w-4xl mb-20 lg:mb-40 xl:mb-60",
+        className
       )}
     >
-      <h2
-        className={clsx(
-          "text-lg tracking-tight text-center",
-          variant === "dark" && "text-slate-400 drop-shadow",
-          variant === "light" && "text-slate-700"
-        )}
-      >
-        {heading}
-      </h2>
+      {!!heading && (
+        <h2
+          className={clsx(
+            "text-lg tracking-tight text-center",
+            variant === "dark" && "text-slate-400 drop-shadow",
+            variant === "light" && "text-slate-700"
+          )}
+        >
+          {heading}
+        </h2>
+      )}
       <div
         className={clsx(
           "mt-16 grid grid-cols-2 items-center justify-center px-20 max-w-[1200px] m-auto",

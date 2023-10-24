@@ -38,7 +38,8 @@ export default function Hero() {
                 "No more losing sleep during your on-call shift",
               ].map((r) => (
                 <li className="flex items-center gap-2">
-                  <XMarkIcon className="h-6 text-slate-400/80" /> {r}
+                  <XMarkIcon className="h-6 w-6 text-slate-400/80 shrink-0" />{" "}
+                  {r}
                 </li>
               ))}
             </ul>
@@ -53,7 +54,7 @@ export default function Hero() {
               and SDKs enable you to write and run complex flows with
               confidence.
             </p>
-            <div className="flex gap-4 pt-8 text-base">
+            <div className="flex flex-wrap gap-4 pt-8 text-base">
               <div>
                 <Link
                   href="/docs?ref=homepage-hero"

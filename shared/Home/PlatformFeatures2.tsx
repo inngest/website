@@ -16,15 +16,15 @@ export default function PlatformFeatures() {
         lede={
           <>
             Building and testing code that runs in the background is a pain.
-            <br />
-            Streamline your developer workflow from local dev to production.
+            <br className="hidden md:block" /> Streamline your developer
+            workflow from local dev to production.
           </>
         }
         className="mx-auto max-w-3xl text-center"
       />
 
       <div className="my-24 mx-auto max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="md:col-span-2 rounded-2xl overflow-hidden xl:min-h-[420px] px-8 pt-12 lg:pt-0 lg:px-16 grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-[40%_1fr] gap-8 md:gap-8 lg:gap-24 items-center bg-[url(/assets/pricing/table-bg.png)] bg-center bg-[length:130%]">
+        <div className="md:col-span-2 rounded-2xl overflow-hidden xl:min-h-[420px] px-8 pt-12 lg:pt-0 lg:px-16 grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-[40%_1fr] gap-8 md:gap-8 lg:gap-24 items-center bg-[url(/assets/pricing/table-bg.png)] bg-center bg-[height:130%]">
           <div className="md:pb-8 lg:py-12 lg:pb-12">
             <p className="text-2xl font-semibold mb-5">Inngest Dev Server</p>
             <p className="text-lg mb-7 font-medium text-slate-300">

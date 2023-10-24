@@ -19,7 +19,8 @@ import GetThingsShipped from "src/shared/Home/GetThingsShipped";
 import RunAnywhere from "src/shared/Home/RunAnywhere";
 import PlatformFeatures from "src/shared/Home/PlatformFeatures";
 import PlatformFeatures2 from "src/shared/Home/PlatformFeatures2";
-import FeatureCallouts from "src/shared/Home/FeatureCallouts";
+// import FeatureCallouts from "src/shared/Home/FeatureCallouts";
+import Flexibility from "src/shared/Home/Flexibility";
 import type { PageProps } from "src/shared/types";
 
 export async function getStaticProps(): Promise<
@@ -95,7 +96,7 @@ export default function Home() {
       <UseCases />
 
       <div className="my-32 lg:my-48">
-        <blockquote className="mx-auto max-w-3xl p-16 flex gap-8 bg-[url(/assets/textures/wave.svg)] bg-cover bg-no-repeat">
+        <blockquote className="mx-auto max-w-3xl px-8 md:p-16 flex flex-col md:flex-row gap-8 bg-[url(/assets/textures/wave.svg)] bg-cover bg-no-repeat">
           <p className="text-lg leading-7">
             <span className="mr-1 text-2xl leading-3 text-slate-400/80">
               &ldquo;
@@ -114,7 +115,7 @@ export default function Home() {
               alt={`Image of Guillermo Rauch`}
               height="72"
               width="72"
-              className="rounded-full"
+              className="rounded-full h-12 w-12 lg:h-20 lg:w-20"
             />
             <cite className="text-slate-300 leading-8 not-italic">
               <span className="text-lg">Guillermo Rauch</span>
@@ -151,6 +152,25 @@ export default function Home() {
       {/* <LocalDev className="mb-32 md:mb-60" /> */}
 
       <PlatformFeatures2 />
+
+      {/*
+        TODO
+        - Move dev server callout section to it's own section again - prep for video/animation
+        - Add logging and history to feature callouts
+        - Add Replay to feature callouts
+        - Create "Flexibility" section
+          - Works with your framework
+          - Works with any cloud
+          - Language SDKs w/ coming soon/timelines (e.g. Q1 '24 for Python)
+          - Extend and customize with middleware
+
+        - Add by the numbers section w/ some data points and SLAs
+        - Enterprise section for SOC2, SAML, etc.
+      */}
+
+      <Flexibility />
+
+      {/* <FeatureCallouts /> */}
 
       <div className="">
         <RunAnywhere />
@@ -197,10 +217,6 @@ export default function Home() {
           ]}
         />
       </div>
-
-      <FeatureCallouts />
-
-      <PlatformFeatures />
 
       <Logos
         heading={

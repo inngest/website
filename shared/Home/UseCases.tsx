@@ -10,13 +10,11 @@ const content = [
   {
     title: "Durable workflows",
     content: (
-      <>
-        <p>
-          Combine any complex series of tasks into a single reliable workflow.
-          Each task becomes a “step” which is automatically retried when errors
-          happen.
-        </p>
-      </>
+      <p>
+        Combine any complex series of tasks into a single reliable workflow.
+        Each task becomes a “step” which is automatically retried when errors
+        happen.
+      </p>
     ),
     bullets: [
       <>Run steps in parallel or series or call a child workflow.</>,
@@ -31,73 +29,54 @@ const content = [
     href: "/uses/serverless-queues", // TODO
   },
   {
-    title: "AI & LLM Ops",
+    title: "AI + LLMs",
     content: (
-      <>
-        <p>
-          Combine any complex series of tasks into a single reliable workflow.
-          Each task becomes a “step” which is automatically retried when errors
-          happen.
-        </p>
-      </>
+      <p>
+        Chain calls to LLMs or any AI API reliably without worrying about glue
+        code.
+      </p>
     ),
     bullets: [
-      <>Run steps in parallel or series or call a child workflow.</>,
+      <>Handle complex text-generation with chain-based post-processing.</>,
+      <>Wrap steps to run exactly once to reduce extra, expensive API calls.</>,
       <>
-        Add durable sleep to pause your workflow for days or weeks at a time.
-      </>,
-      <>
-        Visually debug the entire workflow without having to parse logs and
-        connect the dots.
+        Load data from databases and vector stores without complex interfaces or
+        adapters.
       </>,
     ],
-    href: "/uses/serverless-queues", // TODO
+    href: "/ai",
   },
   {
     title: "Background jobs",
     content: (
-      <>
-        <p>
-          Combine any complex series of tasks into a single reliable workflow.
-          Each task becomes a “step” which is automatically retried when errors
-          happen.
-        </p>
-      </>
+      <p>Write declarative background jobs without queues or infrastructure.</p>
     ),
     bullets: [
-      <>Run steps in parallel or series or call a child workflow.</>,
-      <>
-        Add durable sleep to pause your workflow for days or weeks at a time.
-      </>,
-      <>
-        Visually debug the entire workflow without having to parse logs and
-        connect the dots.
-      </>,
+      <>Run your code in serverless, servers, or on the edge.</>,
+      <>Fan-out work to multiple functions from a single event trigger.</>,
+      <>Logs and observability metrics out-of-the-box.</>,
     ],
-    href: "/uses/serverless-queues", // TODO
+    href: "/uses/serverless-node-background-jobs",
   },
   {
-    title: "Durable workflows",
+    title: "Customizable workflow engines",
     content: (
-      <>
-        <p>
-          Combine any complex series of tasks into a single reliable workflow.
-          Each task becomes a “step” which is automatically retried when errors
-          happen.
-        </p>
-      </>
+      <p>
+        Create a user-customizable workflow engine right in your product without
+        having to build the engine itself.
+      </p>
     ),
     bullets: [
-      <>Run steps in parallel or series or call a child workflow.</>,
+      <>Build linear or complex DAG-workflows with our SDK's primitives.</>,
       <>
-        Add durable sleep to pause your workflow for days or weeks at a time.
+        Handle concurrency, prioritization and debounce in line with your user's
+        limits.
       </>,
       <>
-        Visually debug the entire workflow without having to parse logs and
-        connect the dots.
+        Easily audit, observe and scale your product without breaking a sweat.
       </>,
     ],
-    href: "/uses/serverless-queues", // TODO
+    href: "/uses/workflow-engine",
   },
 ];
 
@@ -127,14 +106,14 @@ export default function UseCases() {
             >
               <h3 className="text-xl font-semibold text-slate-50">{title}</h3>
               {content}
-              <ul className="list-disc ml-8 flex flex-col gap-2">
+              <ul className="list-disc ml-8 flex flex-col grow gap-2">
                 {bullets.map((b) => (
                   <li>{b}</li>
                 ))}
               </ul>
               <Link
                 href={href}
-                className="mt-4 text-slate-200 hover:text-white hover:underline decoration-dotted underline-offset-4 decoration-slate-50/30"
+                className="mt-4 text-indigo-300 hover:text-white hover:underline decoration-dotted underline-offset-4 decoration-slate-50/30"
               >
                 Learn more →
               </Link>
