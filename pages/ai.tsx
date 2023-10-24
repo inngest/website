@@ -212,6 +212,9 @@ export default function AI() {
 
       <ProductionCopy />
 
+      <p className="text-zinc-400 text-center opacity-70 pt-16 mb-[-30px]">
+        Use with any framework, on any cloud:
+      </p>
       <Logos
         className="opacity-60 my-1 lg:my-1 pb-20"
         noMargin
