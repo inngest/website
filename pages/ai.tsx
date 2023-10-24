@@ -1,6 +1,7 @@
 import { GetStaticProps } from "next";
 import Link from "next/link";
 import Marquee from "react-fast-marquee";
+import Check from "src/shared/Icons/Check";
 import Header from "src/shared/Header";
 import Container from "src/shared/layout/Container";
 import PageContainer from "src/shared/layout/PageContainer";
@@ -66,7 +67,7 @@ export default function AI() {
 
       {/* Call out box:  rapid development */}
 
-      <Container>
+      <Container className="pt-6">
         <GradientBox className="my-24 shadow-[0_10px_100px_0_rgba(52,211,153,0.2)]">
           <div
             className={`flex items-center justify-center bg-[#0a0a12] back rounded-t-md flex-col`}
@@ -112,7 +113,7 @@ export default function AI() {
                   <ChevronRightIcon className="h-5 group-hover:translate-x-1 relative top-px transition-transform duration-150" />
                 </Link>
               </div>
-          8</div>
+            </div>
           </div>
 
           <div className="grid lg:grid-cols-2 mt-[1px]">
@@ -285,6 +286,17 @@ const DevelopmentCopy = () => {
             everything you need to scale, while respecting rate limits, built in
             from the beginning.
           </p>
+          <ul className="my-6 leading-8 opacity-70">
+            <li className="flex items-center">
+              <Check size={14} className="mr-2" /> Global and per-user concurrency limits
+            </li>
+            <li className="flex items-center">
+              <Check size={14} className="mr-2" /> Per-user priorities with fairness guarantees
+            </li>
+            <li className="flex items-center">
+              <Check size={14} className="mr-2" /> Auto-cancellation via events to save costs
+            </li>
+          </ul>
         </div>
         <div>
           <svg
@@ -316,6 +328,17 @@ const DevelopmentCopy = () => {
             Iterate on AI flows in your existing code base and test things locally using our
             dev server, with full production parity.
           </p>
+          <ul className="my-6 leading-8 opacity-70">
+            <li className="flex items-center">
+              <Check size={14} className="mr-2" /> One-command setup for local dev
+            </li>
+            <li className="flex items-center">
+              <Check size={14} className="mr-2" /> Visual workflow debugging and logs
+            </li>
+            <li className="flex items-center">
+              <Check size={14} className="mr-2" /> Production parity for risk-free deploys 
+            </li>
+          </ul>
         </div>
         <div>
           <svg
@@ -347,6 +370,17 @@ const DevelopmentCopy = () => {
             Deploy in your existing API, on your existing host, without
             spinning up new infra or provisioning new services — whether you use servers or serverless.
           </p>
+          <ul className="my-6 leading-8 opacity-70">
+            <li className="flex items-center">
+              <Check size={14} className="mr-2" /> Hosted in your existing API
+            </li>
+            <li className="flex items-center">
+              <Check size={14} className="mr-2" /> Serverless, servers, or edge
+            </li>
+            <li className="flex items-center">
+              <Check size={14} className="mr-2" /> Zero additional infra or provisioning
+            </li>
+          </ul>
         </div>
       </div>
 
