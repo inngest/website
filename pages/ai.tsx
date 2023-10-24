@@ -188,16 +188,16 @@ export default function AI() {
         </GradientBox>
       </Container>
 
-      <Container className="pt-32">
+      <Container className="pt-28 pb-6">
         <ProdIcon className="m-auto" />
 
         <h2
           className="
-          text-4xl text-center font-bold pt-18 pb-8
+          text-4xl text-center font-bold pt-20 pb-8
           w-2/3 m-auto
         "
         >
-          Prototype to scale-ready production, in hours.
+          Scale-ready production in hours.
           Zero&nbsp;infrastructure&nbsp;required.
         </h2>
 
@@ -208,40 +208,41 @@ export default function AI() {
           milliseconds.
         </p>
 
-        <Logos
-          className="opacity-60 my-10 lg:my-16 pt-4"
-          noMargin
-          logos={[
-            {
-              src: "/assets/brand-logos/next-js-white.svg",
-              name: "Next.js",
-              href: "/docs/sdk/serve?ref=homepage-frameworks#framework-next-js",
-            },
-            {
-              src: "/assets/brand-logos/express-js-white.svg",
-              name: "Express.js",
-              href: "/docs/sdk/serve?ref=homepage-frameworks#framework-express",
-            },
-            {
-              src: "/assets/brand-logos/redwoodjs-white.svg",
-              name: "RedwoodJS",
-              href: "/docs/sdk/serve?ref=homepage-frameworks#framework-redwood",
-            },
-            {
-              src: "/assets/brand-logos/remix-white.svg",
-              name: "Remix",
-              href: "/docs/sdk/serve?ref=homepage-frameworks#framework-remix",
-            },
-            {
-              src: "/assets/brand-logos/deno-white.svg",
-              name: "Deno",
-              href: "/docs/sdk/serve?ref=homepage-frameworks#framework-fresh-deno",
-            },
-          ]}
-        />
       </Container>
 
       <ProductionCopy />
+
+      <Logos
+        className="opacity-60 my-1 lg:my-1 pb-20"
+        noMargin
+        logos={[
+          {
+            src: "/assets/brand-logos/next-js-white.svg",
+            name: "Next.js",
+            href: "/docs/sdk/serve?ref=homepage-frameworks#framework-next-js",
+          },
+          {
+            src: "/assets/brand-logos/express-js-white.svg",
+            name: "Express.js",
+            href: "/docs/sdk/serve?ref=homepage-frameworks#framework-express",
+          },
+          {
+            src: "/assets/brand-logos/redwoodjs-white.svg",
+            name: "RedwoodJS",
+            href: "/docs/sdk/serve?ref=homepage-frameworks#framework-redwood",
+          },
+          {
+            src: "/assets/brand-logos/remix-white.svg",
+            name: "Remix",
+            href: "/docs/sdk/serve?ref=homepage-frameworks#framework-remix",
+          },
+          {
+            src: "/assets/brand-logos/deno-white.svg",
+            name: "Deno",
+            href: "/docs/sdk/serve?ref=homepage-frameworks#framework-fresh-deno",
+          },
+        ]}
+      />
 
       <Footer />
     </PageContainer>
@@ -448,13 +449,13 @@ const DevelopmentCopy = () => {
             className="my-6"
           >
             <path
-              stroke="#fff"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={1}
-              d="m9 6 3-3m0 0 3 3m-3-3v10m-5-3c-.932 0-1.398 0-1.765.152a2 2 0 0 0-1.083 1.083C4 11.602 4 12.068 4 13v4.8c0 1.12 0 1.68.218 2.108a2 2 0 0 0 .874.874c.427.218.987.218 2.105.218h9.607c1.118 0 1.677 0 2.104-.218.376-.192.682-.498.874-.874.218-.428.218-.987.218-2.105V13c0-.932 0-1.398-.152-1.765a2 2 0 0 0-1.083-1.083C18.398 10 17.932 10 17 10"
-            />
-          </svg>
+      stroke="#fff"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={1}
+      d="m15 7 5 5-5 5m-6 0-5-5 5-5"
+    />
+  </svg>
           <h3
             className="
               text-xl font-semibold
@@ -462,23 +463,21 @@ const DevelopmentCopy = () => {
               w-full
             "
           >
-            
+            Simple, powerful primitives
           </h3>
           <p>
-            Deploy in your existing API, on your existing host, without spinning
-            up new infra or provisioning new services — whether you use servers
-            or serverless.
+            Easily blend powerful primitives in our intuitive SDK to develop complex AI
+            flows, reliably spanning tens or hundreds of requests.
           </p>
           <ul className="my-6 leading-8 opacity-70">
             <li className="flex items-center">
-              <Check size={14} className="mr-2" /> Hosted in your existing API
+              <Check size={14} className="mr-2" /> Simple, retryable steps using `step.run`
             </li>
             <li className="flex items-center">
-              <Check size={14} className="mr-2" /> Serverless, servers, or edge
+              <Check size={14} className="mr-2" /> Human-in-the-loop tasks
             </li>
             <li className="flex items-center">
-              <Check size={14} className="mr-2" /> Zero additional infra or
-              provisioning
+              <Check size={14} className="mr-2" /> Easily react to external events
             </li>
           </ul>
         </div>
@@ -518,7 +517,7 @@ const ProductionCopy = () => {
     navigator.clipboard?.writeText(copy);
   };
   return (
-    <Container className="pb-8">
+    <Container className="py-8">
       <div className="grid grid-cols-3 gap-20 pt-10 pb-20 px-10 opacity-80">
         <div>
           <svg
@@ -574,14 +573,14 @@ const ProductionCopy = () => {
             fill="none"
             className="my-6"
           >
-            <path
-              stroke="#fff"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={1}
-              d="M14 15h7M3 15h2m0 0a2.5 2.5 0 1 0 5 0 2.5 2.5 0 0 0-5 0Zm15-6h1M3 9h7m6.5 2.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5Z"
-            />
-          </svg>
+          <path
+      stroke="#fff"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={1}
+      d="m15 11-4 4-2-2m-5 3.8v-5.348c0-.534 0-.801.065-1.05a2 2 0 0 1 .28-.617c.145-.213.346-.39.748-.741l4.801-4.202c.746-.652 1.119-.978 1.538-1.102.37-.11.765-.11 1.135 0 .42.124.794.45 1.54 1.104l4.8 4.2c.403.352.603.528.748.74.127.19.222.398.28.618.065.249.065.516.065 1.05v5.352c0 1.118 0 1.677-.218 2.105a2 2 0 0 1-.875.873c-.427.218-.986.218-2.104.218H7.197c-1.118 0-1.678 0-2.105-.218a1.999 1.999 0 0 1-.874-.873C4 18.48 4 17.92 4 16.8Z"
+    />
+  </svg>
           <h3
             className="
               text-xl font-semibold
@@ -616,15 +615,15 @@ const ProductionCopy = () => {
             viewBox="0 0 24 24"
             fill="none"
             className="my-6 ml-[-2px]"
-          >
-            <path
-              stroke="#fff"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={1}
-              d="M17 15h-5m-5-5 3 2.5L7 15m-4 .8V8.2c0-1.12 0-1.68.218-2.108.192-.377.497-.682.874-.874C4.52 5 5.08 5 6.2 5h11.6c1.12 0 1.68 0 2.107.218.377.192.683.497.875.874.218.427.218.987.218 2.105v7.606c0 1.118 0 1.677-.218 2.104a2.003 2.003 0 0 1-.875.875c-.427.218-.986.218-2.104.218H6.197c-1.118 0-1.678 0-2.105-.218a2.001 2.001 0 0 1-.874-.875C3 17.48 3 16.92 3 15.8Z"
-            />
-          </svg>
+  >
+    <path
+      stroke="#fff"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={1}
+      d="m15 15 6 6m-11-4a7 7 0 1 1 0-14 7 7 0 0 1 0 14Z"
+    />
+  </svg>
           <h3
             className="
               text-xl font-semibold
