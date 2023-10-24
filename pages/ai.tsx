@@ -27,11 +27,13 @@ export default function AI() {
 
       <AIHero />
 
+      {/*
       <Container className="pt-4 pb-36">
         <p className="text-zinc-400 text-center">
           Companies of all sizes trust Inngest to power their AI functionality.
         </p>
       </Container>
+      */}
 
       {/* Code example */}
       <Container>
@@ -51,7 +53,9 @@ export default function AI() {
           className="
           grid lg:grid-cols-3
           bg-slate-800/50 border-slate-700/30 rounded-lg border
+          m-auto
           mt-8 mb-24
+          w-2/3 
         "
         >
           <CodeWindow
@@ -59,9 +63,11 @@ export default function AI() {
             showLineNumbers={true}
             className="col-span-2 bg-transparent border-none"
           />
+          {/*
           <div className="border-l border-slate-700/30 p-2">
             TODO: Flow diagram
           </div>
+          */}
         </div>
       </Container>
 
