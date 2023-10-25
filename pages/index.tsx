@@ -157,8 +157,8 @@ export default function Home() {
         TODO
         - Move dev server callout section to it's own section again - prep for video/animation
         - Add logging and history to feature callouts
-        - Add Replay to feature callouts
-        - Create "Flexibility" section
+        X Add Replay to feature callouts
+        X Create "Flexibility" section
           - Works with your framework
           - Works with any cloud
           - Language SDKs w/ coming soon/timelines (e.g. Q1 '24 for Python)
@@ -171,87 +171,7 @@ export default function Home() {
       <Flexibility />
 
       {/* <FeatureCallouts /> */}
-
-      <div className="">
-        <RunAnywhere />
-
-        <Logos
-          heading={
-            <>
-              Your code runs on your existing platform, or{" "}
-              <Link
-                href="/docs/deploy?ref=homepage-platforms"
-                className="underline hover:text-indigo-400"
-              >
-                anywhere you choose
-              </Link>
-              :
-            </>
-          }
-          logos={[
-            {
-              src: "/assets/brand-logos/vercel-white.svg",
-              name: "Vercel",
-              href: "/docs/deploy/vercel?ref=homepage-platforms",
-            },
-            {
-              src: "/assets/brand-logos/netlify-white.svg",
-              name: "Netlify",
-              href: "/docs/deploy/netlify?ref=homepage-platforms",
-            },
-            {
-              src: "/assets/brand-logos/cloudflare-white.svg",
-              name: "Cloudflare Pages",
-              href: "/docs/sdk/serve?ref=homepage-frameworks#framework-cloudflare",
-            },
-            {
-              src: "/assets/brand-logos/aws-white.svg",
-              name: "AWS Lambda",
-              href: "/docs/sdk/serve?ref=homepage-frameworks#framework-aws-lambda",
-            },
-            {
-              src: "/assets/brand-logos/google-cloud-white.svg",
-              name: "Google Cloud Functions",
-              href: "/docs/sdk/serve?ref=homepage-frameworks#framework-google-cloud-functions",
-            },
-          ]}
-        />
-      </div>
-
-      <Logos
-        heading={
-          <>
-            Use your existing framework (<em>or no framework!</em>)
-          </>
-        }
-        logos={[
-          {
-            src: "/assets/brand-logos/next-js-white.svg",
-            name: "Next.js",
-            href: "/docs/sdk/serve?ref=homepage-frameworks#framework-next-js",
-          },
-          {
-            src: "/assets/brand-logos/express-js-white.svg",
-            name: "Express.js",
-            href: "/docs/sdk/serve?ref=homepage-frameworks#framework-express",
-          },
-          {
-            src: "/assets/brand-logos/redwoodjs-white.svg",
-            name: "RedwoodJS",
-            href: "/docs/sdk/serve?ref=homepage-frameworks#framework-redwood",
-          },
-          {
-            src: "/assets/brand-logos/remix-white.svg",
-            name: "Remix",
-            href: "/docs/sdk/serve?ref=homepage-frameworks#framework-remix",
-          },
-          {
-            src: "/assets/brand-logos/deno-white.svg",
-            name: "Deno",
-            href: "/docs/sdk/serve?ref=homepage-frameworks#framework-fresh-deno",
-          },
-        ]}
-      />
+      {/* <RunAnywhere /> */}
 
       <GetThingsShipped />
 

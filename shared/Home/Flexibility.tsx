@@ -19,7 +19,7 @@ export default function Flexibility() {
         className="mx-auto max-w-3xl text-center"
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 p-px gap-px mt-16 mx-auto max-w-6xl rounded-md bg-gradient-to-tl from-[#596555] via-[#D4FF8D] to-[#814828] shadow-[0_10px_100px_0_rgba(52,211,153,0.15)]">
+      <div className="grid grid-cols-1 lg:grid-cols-2 p-px gap-px mt-16 mx-auto max-w-6xl rounded-md bg-gradient-to-tl from-green-800/60 via-orange-300/60 to-rose-900/60 shadow-[0_10px_100px_0_rgba(52,211,153,0.15)]">
         <div className="lg:col-span-2 p-8 md:rounded-t-md bg-slate-1000">
           <SectionHeading className="text-xl md:text-4xl mt-6 lg:mt-12">
             Works in any cloud
@@ -38,15 +38,9 @@ export default function Flexibility() {
                 href: "/docs/deploy/vercel?ref=homepage-platforms",
               },
               {
-                src: "/assets/brand-logos/netlify-white.svg",
+                src: "/assets/brand-logos/netlify-logo.svg",
                 name: "Netlify",
                 href: "/docs/deploy/netlify?ref=homepage-platforms",
-              },
-              // TODO FLY.io
-              {
-                src: "/assets/brand-logos/cloudflare-white.svg",
-                name: "Cloudflare Pages",
-                href: "/docs/sdk/serve?ref=homepage-frameworks#framework-cloudflare",
               },
               {
                 src: "/assets/brand-logos/aws-white.svg",
@@ -57,6 +51,11 @@ export default function Flexibility() {
                 src: "/assets/brand-logos/google-cloud-white.svg",
                 name: "Google Cloud Functions",
                 href: "/docs/sdk/serve?ref=homepage-frameworks#framework-google-cloud-functions",
+              },
+              {
+                src: "/assets/brand-logos/cloudflare-white.svg",
+                name: "Cloudflare Pages",
+                href: "/docs/sdk/serve?ref=homepage-frameworks#framework-cloudflare",
               },
             ]}
           />

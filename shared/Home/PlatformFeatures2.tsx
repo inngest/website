@@ -4,6 +4,7 @@ import clsx from "clsx";
 
 import Heading from "./Heading";
 import CopyBtn from "./CopyBtn";
+import Replay from "../Icons/Replay";
 
 export default function PlatformFeatures() {
   const handleCopyClick = (copy) => {
@@ -26,7 +27,7 @@ export default function PlatformFeatures() {
       <div className="my-24 mx-auto max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="md:col-span-2 rounded-2xl overflow-hidden xl:min-h-[420px] px-8 pt-12 lg:pt-0 lg:px-16 grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-[40%_1fr] gap-8 md:gap-8 lg:gap-24 items-center bg-[url(/assets/pricing/table-bg.png)] bg-center bg-[height:130%]">
           <div className="md:pb-8 lg:py-12 lg:pb-12">
-            <p className="text-2xl font-semibold mb-5">Inngest Dev Server</p>
+            <h3 className="text-2xl font-semibold mb-5">Inngest Dev Server</h3>
             <p className="text-lg mb-7 font-medium text-slate-300">
               Our open source Dev Server runs on your machine for a complete
               local development experience, with production parity. Get instant
@@ -66,9 +67,9 @@ export default function PlatformFeatures() {
 
         <div className="grid grid-rows-[auto_1fr] rounded-lg gap-8 md:gap-10 overflow-hidden bg-gradient-to-b	from-amber-400/20 to-rose-400/20">
           <div className="pt-11 px-8 md:px-10">
-            <p className="text-2xl font-semibold mb-5">
+            <h3 className="text-2xl font-semibold mb-5">
               Branch Environments for every deploy
-            </p>
+            </h3>
             <p className="text-lg mb-7 font-medium text-slate-300">
               Test your entire application end-to-end with an Inngest
               environment for every development branch that you deploy, without
@@ -92,7 +93,7 @@ export default function PlatformFeatures() {
 
         <div className="grid grid-rows-[auto_1fr] rounded-lg gap-8 md:gap-10 overflow-hidden bg-gradient-to-br from-blue-400/20 to-orange-200/20">
           <div className="pt-11 px-8 md:px-10">
-            <p className="text-2xl font-semibold mb-5">Observability</p>
+            <h3 className="text-2xl font-semibold mb-5">Observability</h3>
             <p className="text-lg mb-7 font-medium text-slate-300">
               Quickly diagnose system wide issues with built in metrics. View
               backlogs and spikes in failures for every single function. There
@@ -108,9 +109,47 @@ export default function PlatformFeatures() {
           </div>
           <div className="flex flex-col justify-end h-full pl-10">
             <img
-              src="/assets/homepage/branch-envs-screenshot.png"
-              alt="Branch environments"
-              className="rounded-tl-xl"
+              src="/assets/homepage/observability-metrics.png"
+              alt="Observability metrics"
+              className="rounded-tl"
+            />
+          </div>
+        </div>
+
+        <div className="md:col-span-2 rounded-2xl overflow-hidden xl:min-h-[420px] px-8 pt-12 lg:pt-0 lg:px-16 grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-[40%_1fr] gap-8 md:gap-8 lg:gap-24 items-center bg-gradient-to-bl from-indigo-500/40 to-cyan-200/40">
+          <div className="md:pb-8 lg:py-12 lg:pb-12">
+            <h3 className="flex gap-2 items-center text-2xl font-semibold mb-5">
+              <Replay />
+              Bulk Replay
+            </h3>
+            <p className="text-lg mb-7 font-medium text-slate-300">
+              Never deal with the hassle of dead-letter-queues. Replay one or{" "}
+              <em>millions</em> of failed functions at any time with the click
+              of a button.
+            </p>
+
+            <p className="text-xl mb-7 font-bold text-slate-300">
+              Coming Q4 2023
+            </p>
+
+            {/* <a
+              href="/docs/platform/environments"
+              className="mt-4 font-medium text-slate-200 hover:text-white hover:underline decoration-dotted underline-offset-4 decoration-slate-50/30"
+            >
+              Learn more →
+            </a> */}
+          </div>
+
+          <div className="flex flex-col justify-end h-full md:pt-8">
+            <img
+              src="/assets/homepage/replay-screenshot.png"
+              alt="Inngest Dev Server Screenshot"
+              className={`
+                w-full
+                max-w-[420px] md:min-w-[320px] xl:min-w-[380px] -mb-1
+                rounded-md drop-shadow-sm m-auto origin-center
+                pointer-events-none
+              `}
             />
           </div>
         </div>
