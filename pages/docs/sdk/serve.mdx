@@ -542,3 +542,20 @@ For more information about the `serve` handler, read the [the reference guide](/
 * [Configuration options](/docs/reference/serve#serve-client-functions-options)
 * [How the serve handler works](/docs/reference/serve#how-the-serve-api-handler-works)
 * [Custom framework handlers](/docs/reference/serve#custom-frameworks)
+
+## Deploys
+
+Once functions are served in your API, they must be deployed to Inngest.
+
+Because serverless functions do not have a startup process, this handshake is
+kicked off by sending a signal to your Inngest API url via a single PUT request:
+
+```
+curl -X PUT https://example.com/api/inngest
+```
+
+This tells the SDK to register your functions by sending function configuration
+securely to Inngest.  Note that when deploying to Vercel using the official integration
+this is handled automatically for you.
+
+[For more information, read the deploys guide](/docs/deploy).

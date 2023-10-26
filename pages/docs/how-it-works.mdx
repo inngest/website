@@ -1,0 +1,72 @@
+# How Inngest works
+
+Inngest allows you to serve durable workflows via HTTP in your own infrastructure, without
+managing event streams, orchestration, or state. In this section, we'll detail how this is
+possible, including:
+
+- [Function configuration and deployment](#function-configuration-and-deployment)
+- [The execution model, and how functions are invoked](#the-execution-model)
+- [How function state is managed](#function-state)
+- Function Versioning
+- Limitations
+
+We'll walk through these in order, introducing how Inngest works end-to-end.
+
+## Function configuration and deployment
+
+Prior to execution, functions must be configured served, and registered. Functions are
+configured via your language's SDK. There are two key parts to function configurations:
+the **definition** and the **triggers**.  For example:
+
+```ts
+inngest.createFunction(
+  // Function definition
+  {
+    id: "post-registration",
+    concurrency: 50,
+    idempotency: "event.dat.auser_id",
+  }
+  // The triggers.
+  { event: "api/user.created" },
+  async ({ event, step }) => {
+   // Your own durable workflow here.
+  },
+);
+```
+
+In this example, the function is defined with an ID, a concurrency limit, and an
+idempotency key (for exactly-once processing over 24 hours). It also specifies its
+trigger: this function runs every time the `api/user.created` event is received.
+
+<Callout>
+  Function definitions and triggers are separated for two reasons.  Firstly, a single event can trigger many functions (fan-out).  Secondly, functions can be triggered by more than one event.
+</Callout>
+
+Functions are configured then served via your own API, on your own infrastructure, via
+our [serve handlers](/docs/sdk/serve).  Once served, you must deploy your functions
+to Inngest.
+
+### Function deploys
+
+In order for Inngest to execute your functions, Inngest must know where your functions
+are hosted.  This happens via deploys. There are several things to consider:
+
+1. Functions are served on your own infrastructure, via your own deploy process
+2. We support both servers and serverless functions
+3. Inngest is typically unaware of when your deploys occur.
+
+The deploy process is a simple handshake between the SDK and Inngest.  The SDK
+reaches out to Inngest with a secret key (signing key), and pushes function
+configuration to a registration endpoint. [For more information, read the
+deploys guide](/docs/deploy).
+
+### Function invocation
+
+As part of the deploy process, Inngest sets up new listeners for your environment's
+event stream.
+
+### Function execution
+
+## The execution model
+
+## Function state
