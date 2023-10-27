@@ -1,8 +1,10 @@
+import Head from "next/head";
 import Image from "next/image";
 import Header from "src/shared/Header";
 import Container from "src/shared/layout/Container";
 import Footer from "src/shared/Footer";
-import Blockquote from "src/shared/Blog/Blockquote";
+import { getOpenGraphImageURL } from "../../utils/social";
+import { Button } from "../Button";
 
 export type Props = {
   children: React.ReactNode;
@@ -24,9 +26,6 @@ export type Props = {
   };
   companyDescription: string;
   companyURL: string;
-
-  /* The optional description */
-  description?: string;
 };
 
 export function Layout({
@@ -37,16 +36,29 @@ export function Layout({
   quote,
   companyDescription,
   companyURL,
-  metaTitle,
-  description,
 }: Props) {
   // TODO - metatags
+  const metaTitle = `Case Study - ${companyName}`;
+  const description = title;
+  const metaImage = getOpenGraphImageURL({ title: metaTitle });
+  console.log(metaTitle);
   return (
     <div className="bg-slate-1000 font-sans">
+      <Head>
+        <title>{metaTitle}</title>
+        <meta name="description" content={description}></meta>
+        <meta property="og:title" content={metaTitle} />
+        <meta property="og:description" content={description} />
+        <meta property="og:type" content="article" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:site" content="@inngest" />
+        <meta name="twitter:title" content={metaTitle} />
+        <meta name="twitter:image" content={metaImage} />
+      </Head>
       <Header />
       <Container>
-        <div className="mx-auto my-12 flex flex-col items-start justify-between md:flex-row gap-8 max-w-[1200px]">
-          <article className="max-w-[80ch]">
+        <div className="mx-auto my-12 flex flex-col lg:flex-row items-start justify-between gap-8 max-w-[1200px]">
+          <article className="w-full lg:max-w-[80ch]">
             <div className="mb-4 text-sm font-medium text-slate-500">
               Case Study - {companyName}
             </div>
@@ -80,11 +92,11 @@ export function Layout({
               </footer>
             </blockquote>
 
-            <div className="max-w-[70ch] prose mt-12 mb-20 prose-img:rounded-lg prose-code:bg-slate-800 prose-code:tracking-tight text-slate-300 prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline hover:prose-a:text-white prose-a:font-medium prose-a:transition-all prose-invert blog-content">
+            <div className="md:max-w-[70ch] prose mt-12 mb-20 prose-img:rounded-lg prose-code:bg-slate-800 prose-code:tracking-tight text-slate-300 prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline hover:prose-a:text-white prose-a:font-medium prose-a:transition-all prose-invert blog-content">
               {children}
             </div>
           </article>
-          <aside className="flex flex-col gap-6 md:w-[260px] px-8 py-4 mt-8 justify-between rounded-md md:border-l border-slate-100/10">
+          <aside className="md:sticky top-32 flex flex-col gap-6 min-w-[260px] px-8 py-4 mt-8 justify-between border-l border-slate-100/10">
             <img
               src={logo}
               alt={`${companyName}'s logo`}
@@ -100,6 +112,16 @@ export function Layout({
                 {companyURL.replace(/https\:\/\//, "")}
               </a>
             </p>
+            <div className="mt-2 pt-8 border-t border-slate-100/10">
+              <p className="mb-4 font-medium text-slate-50">
+                Interested in Inngest?
+              </p>
+              <Button
+                href={`/contact?ref=case-study-${companyName.toLowerCase()}`}
+              >
+                Talk to an expert
+              </Button>
+            </div>
           </aside>
         </div>
       </Container>
