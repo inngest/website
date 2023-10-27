@@ -14,6 +14,7 @@ import {
   Layout as DocsLayout,
   type Props as DocsLayoutProps,
 } from "../shared/Docs/Layout";
+import { Layout as CaseStudyLayout } from "../shared/CaseStudy/Layout";
 
 import PageBanner from "../shared/legacy/PageBanner";
 import type { PageProps } from "@/shared/types";
@@ -69,7 +70,12 @@ function MyApp({ Component, pageProps }: AppProps<DefaultProps>) {
 
   // Temp Layout swapping before we move to "app" dir
   const isDocs = !!router.asPath.match(/^\/docs/);
-  const Layout = isDocs ? DocsLayout : DefaultLayout;
+  const isCaseStudy = !!router.asPath.match(/^\/customers\//);
+  const Layout = isDocs
+    ? DocsLayout
+    : isCaseStudy
+    ? CaseStudyLayout
+    : DefaultLayout;
 
   useEffect(() => {
     fullstory.init({ orgId: "o-1CVB8R-na1" });
@@ -80,10 +86,8 @@ function MyApp({ Component, pageProps }: AppProps<DefaultProps>) {
     }
     if (pageProps.designVersion) {
       htmlEl.classList.add(`v${pageProps.designVersion}`);
-    } else if (isDocs) {
-      htmlEl.classList.add(`v2`);
     } else {
-      htmlEl.classList.add(`v1`);
+      htmlEl.classList.add(`v2`);
     }
     if (isDocs) {
       htmlEl.classList.add(`docs`);
