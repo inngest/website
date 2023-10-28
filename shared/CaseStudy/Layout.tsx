@@ -37,11 +37,9 @@ export function Layout({
   companyDescription,
   companyURL,
 }: Props) {
-  // TODO - metatags
   const metaTitle = `Case Study - ${companyName}`;
   const description = title;
   const metaImage = getOpenGraphImageURL({ title: metaTitle });
-  console.log(metaTitle);
   return (
     <div className="bg-slate-1000 font-sans">
       <Head>
