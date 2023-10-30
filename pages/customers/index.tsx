@@ -270,7 +270,7 @@ export default function Customers() {
         </div>
 
         <CTACallout
-          text="Would your engineering team benefit from faster development time and a managed queuing solution?"
+          text="Would your engineering team benefit from faster development time and a managed workflow execution solution?"
           cta={{
             href: "/contact?ref=custoemrs",
             text: "Get in touch",
