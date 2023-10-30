@@ -6,6 +6,7 @@ import Header from "src/shared/Header";
 import Container from "src/shared/layout/Container";
 import Footer from "src/shared/Footer";
 import CTACallout from "src/shared/CTACallout";
+import { ArrowTopRightOnSquareIcon } from "@heroicons/react/20/solid";
 
 import Button from "src/shared/legacy/Button";
 
@@ -44,6 +45,7 @@ const grid = [
   {
     src: "/assets/customers/snaplet-dark.svg",
     name: "Snaplet",
+    url: "https://www.snaplet.dev/",
     scale: 1.1,
     type: "company",
   },
@@ -62,24 +64,28 @@ const grid = [
   {
     src: "/assets/customers/productlane.svg",
     name: "Productlane",
+    url: "https://productlane.com/",
     scale: 1.4,
     type: "company",
   },
   {
     src: "/assets/customers/firstquadrant.svg",
     name: "FirstQuadrant.ai",
+    url: "https://firstquadrant.ai/",
     scale: 1.2,
     type: "company",
   },
   {
     src: "/assets/customers/aomni-logo.svg",
     name: "Aomni",
+    url: "https://www.aomni.com/",
     scale: 1,
     type: "company",
   },
   {
     src: "/assets/customers/zamp-logo.svg",
     name: "Zamp",
+    url: "https://zamp.com/",
     scale: 1,
     type: "company",
   },
@@ -98,22 +104,26 @@ const grid = [
   {
     src: "/assets/customers/finta-logo.png?v=1",
     name: "Finta.io",
+    url: "https://www.finta.io/",
     type: "company",
   },
   {
     src: "/assets/customers/secta-labs-logo.svg",
     name: "Secta.ai",
+    url: "https://secta.ai/",
     type: "company",
   },
   {
     src: "/assets/customers/devjobs.svg",
     name: "DevJobs.at",
+    url: "https://devjobs.at/",
     scale: 1.2,
     type: "company",
   },
   {
     src: "/assets/customers/niftykit.svg",
     name: "NiftyKit",
+    url: "https://niftykit.com/",
     scale: 1,
     type: "company",
   },
@@ -132,6 +142,7 @@ const grid = [
   {
     src: "/assets/customers/lynq-logo.svg",
     name: "Lynq.ai",
+    url: "https://www.lynq.ai/",
     scale: 1,
     type: "company",
   },
@@ -250,7 +261,7 @@ export default function Customers() {
               }
               const { src, scale = 0.8 } = item;
               return (
-                <div className="px-6 py-8 h-full min-h-[148px] border border-slate-100/10 rounded-2xl flex items-center">
+                <div className="group relative px-6 py-8 h-full min-h-[148px] border border-slate-100/10 rounded-2xl flex items-center">
                   <Image
                     key={idx}
                     src={src}
@@ -263,6 +274,16 @@ export default function Customers() {
                       `max-h-[${36 * scale}px]`
                     )}
                   />
+                  {!!item.url && (
+                    <a
+                      href={item.url}
+                      target="_blank"
+                      className="absolute hidden group-hover:flex flex-row gap-1 items-center bottom-2 right-2  px-3 py-1.5 text-xs bg-slate-400/10 hover:bg-slate-400/40 rounded-xl text-slate-50"
+                    >
+                      Visit website{" "}
+                      <ArrowTopRightOnSquareIcon className="h-3" />
+                    </a>
+                  )}
                 </div>
               );
             })}
