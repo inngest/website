@@ -84,11 +84,6 @@ const grid = [
     type: "company",
   },
   {
-    src: "/assets/customers/finta-logo.png?v=1",
-    name: "Finta.io",
-    type: "company",
-  },
-  {
     type: "quote",
     name: "Snaplet",
     quote: {
@@ -99,6 +94,11 @@ const grid = [
       },
       avatar: "/assets/customers/snaplet-peter-pistorius.png",
     },
+  },
+  {
+    src: "/assets/customers/finta-logo.png?v=1",
+    name: "Finta.io",
+    type: "company",
   },
   {
     src: "/assets/customers/secta-labs-logo.svg",
@@ -112,6 +112,12 @@ const grid = [
     type: "company",
   },
   {
+    src: "/assets/customers/niftykit.svg",
+    name: "NiftyKit",
+    scale: 1,
+    type: "company",
+  },
+  {
     type: "quote",
     name: "NiftyKit",
     quote: {
@@ -122,12 +128,6 @@ const grid = [
       },
       avatar: "/assets/customers/niftykit-robin-curbelo.jpg",
     },
-  },
-  {
-    src: "/assets/customers/niftykit.svg",
-    name: "NiftyKit",
-    scale: 1,
-    type: "company",
   },
   {
     src: "/assets/customers/lynq-logo.svg",
@@ -213,12 +213,12 @@ export default function Customers() {
             ))}
           </div>
 
-          <div className="mt-12 mb-36 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-12">
+          <div className="mt-12 mb-36 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-12">
             {grid.map(({ type, name, ...item }, idx) => {
               if (type === "quote") {
                 const { quote } = item;
                 return (
-                  <blockquote className="mx-auto row-span-2 my-8 max-w-3xl px-8 flex flex-col gap-8 bg-[url(/assets/textures/wave.svg)] bg-contain bg-center bg-no-repeat">
+                  <blockquote className="mx-auto row-span-2 col-span-2 sm:col-span-1 my-8 max-w-3xl px-8 flex flex-col gap-8 bg-[url(/assets/textures/wave.svg)] bg-contain bg-center bg-no-repeat">
                     <p className="text-lg leading-7 relative">
                       <span className="absolute top-1 -left-4 text-2xl leading-3 text-slate-400/80">
                         &ldquo;
