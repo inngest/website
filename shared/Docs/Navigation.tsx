@@ -203,6 +203,7 @@ export const navigation = [
     links: [
       { title: "Overview", href: `${baseDir}` },
       { title: "Quick Start Tutorial", href: `${baseDir}/quick-start` },
+      { title: "How Inngest works", href: `${baseDir}/how-it-works` },
     ],
   },
   {
