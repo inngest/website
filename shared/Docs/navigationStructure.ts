@@ -143,6 +143,19 @@ const sectionPlatform = [
       },
     ],
   },
+  {
+    title: "Usage Limits",
+    links: [
+      {
+        title: "Inngest Cloud",
+        href: `/usage-limits/inngest`,
+      },
+      {
+        title: "Serverless Providers",
+        href: `/usage-limits/providers`,
+      },
+    ],
+  },
 ];
 
 const sectionTypeScriptReference = [
@@ -289,19 +302,6 @@ const sectionTypeScriptReference = [
         href: `/typescript`,
       },
       { title: "Upgrading to v3", href: `/sdk/migration` },
-    ],
-  },
-  {
-    title: "Usage Limits",
-    links: [
-      {
-        title: "Inngest Cloud",
-        href: `/usage-limits/inngest`,
-      },
-      {
-        title: "Serverless Providers",
-        href: `/usage-limits/providers`,
-      },
     ],
   },
 ];

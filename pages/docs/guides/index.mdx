@@ -1,17 +1,17 @@
-import { Guides } from 'src/shared/Docs/Guides'
 import { ResourceGrid, Resource } from 'src/shared/Docs/Resources'
 
 # Guides
 
-Dive into advanced uses for Inngest with our guides:
+Learn how to build with Inngest:
 
-### Patterns
+## Patterns
 
 <ResourceGrid cols={3}>
 
 <Resource resource={{
   href: "/docs/guides/background-jobs",
   name: "Background jobs",
+  icon: "paper-airplane",
   description: "Run long-running tasks in the background out of the critical path of a request.",
   pattern: 0,
 }}/>
@@ -19,6 +19,7 @@ Dive into advanced uses for Inngest with our guides:
 <Resource resource={{
   href: "/docs/guides/enqueueing-future-jobs",
   name: "Enqueueing future jobs",
+  icon: "chevron-double-right",
   description: "Schedule or delay functions to run in the future.",
   pattern: 1,
 }}/>
@@ -26,6 +27,7 @@ Dive into advanced uses for Inngest with our guides:
 <Resource resource={{
   href: "/docs/guides/step-parallelism",
   name: "Step parallelism",
+  icon: "parallel",
   description: "Run function steps in parallel to speed up execution.",
   pattern: 2,
 }}/>
@@ -33,6 +35,7 @@ Dive into advanced uses for Inngest with our guides:
 <Resource resource={{
   href: "/docs/guides/fan-out-jobs",
   name: "Fan-out",
+  icon: "arrows-pointing-out",
   description: "Use events to trigger multiple functions at once.",
   pattern: 3,
 }}/>
@@ -40,6 +43,7 @@ Dive into advanced uses for Inngest with our guides:
 <Resource resource={{
   href: "/docs/guides/batching",
   name: "Batching events",
+  icon: "square-3-stack-3d",
   description: "Improve efficiency with high-load systems by processing batches of events at once.",
   pattern: 2,
 }}/>
@@ -47,6 +51,7 @@ Dive into advanced uses for Inngest with our guides:
 <Resource resource={{
   href: "/docs/guides/scheduled-functions",
   name: "Scheduled functions",
+  icon: "clock",
   description: "Run functions periodically on a cron schedule.",
   pattern: 1,
 }}/>

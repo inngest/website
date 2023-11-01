@@ -7,6 +7,26 @@ import { ChatBubbleIcon } from "./icons/ChatBubbleIcon";
 import { EnvelopeIcon } from "./icons/EnvelopeIcon";
 import { UserIcon } from "./icons/UserIcon";
 import { UsersIcon } from "./icons/UsersIcon";
+import {
+  PaperAirplaneIcon,
+  ClockIcon,
+  ArrowsPointingOutIcon,
+  Square3Stack3DIcon,
+  ChevronDoubleRightIcon,
+} from "@heroicons/react/24/outline";
+import ParallelIcon from "src/shared/Icons/Parallel";
+
+// Icons available for direct use in MDX
+const icons = {
+  "paper-airplane": PaperAirplaneIcon,
+  clock: ClockIcon,
+  "arrows-pointing-out": ArrowsPointingOutIcon,
+  "chevron-double-right": ChevronDoubleRightIcon,
+  "square-3-stack-3d": Square3Stack3DIcon,
+  parallel: ParallelIcon,
+} as const;
+
+type IconType = keyof typeof icons;
 
 const patterns = [
   {
@@ -95,7 +115,7 @@ const resources = [
 function ResourceIcon({ icon: Icon }) {
   return (
     <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/5 ring-1 ring-slate-900/25 backdrop-blur-[2px] transition duration-300 group-hover:bg-white/50 group-hover:ring-slate-900/25 dark:bg-white/7.5 dark:ring-white/15 dark:group-hover:bg-indigo-300/10 dark:group-hover:ring-indigo-400">
-      <Icon className="h-5 w-5 fill-slate-700/10 stroke-slate-700 transition-colors duration-300 group-hover:stroke-slate-900 dark:fill-white/10 dark:stroke-slate-400 dark:group-hover:fill-indigo-300/10 dark:group-hover:stroke-indigo-400" />
+      <Icon className="h-4 w45 fill-slate-700/10 stroke-slate-700 transition-colors duration-300 group-hover:stroke-slate-900 dark:fill-white/10 dark:stroke-slate-400 dark:group-hover:fill-indigo-300/10 dark:group-hover:stroke-indigo-400" />
     </div>
   );
 }
@@ -116,7 +136,7 @@ function ResourcePattern({ mouseX, mouseY, ...gridProps }) {
         />
       </div>
       <motion.div
-        className="absolute inset-0 rounded-lg bg-gradient-to-r from-[#D7EDEA] to-[#F4FBDF] opacity-0 transition duration-300 group-hover:opacity-100 dark:from-[#202D2E] dark:to-[#303428]"
+        className="absolute inset-0 rounded-lg bg-gradient-to-r from-indigo-50 to-sky-100 opacity-0 transition duration-300 group-hover:opacity-100 dark:from-[#202D2E] dark:to-[#303428]"
         style={style}
       />
       <motion.div
@@ -135,7 +155,17 @@ function ResourcePattern({ mouseX, mouseY, ...gridProps }) {
   );
 }
 
-export function Resource({ resource }) {
+export function Resource({
+  resource,
+}: {
+  resource: {
+    href: string;
+    name: string;
+    description: string;
+    pattern: 0 | 1 | 2 | 3 | object | null;
+    icon: IconType | ((any) => JSX.Element);
+  };
+}) {
   let mouseX = useMotionValue(0);
   let mouseY = useMotionValue(0);
 
@@ -151,6 +181,11 @@ export function Resource({ resource }) {
       ? patterns[resource.pattern]
       : resource.pattern;
 
+  const icon =
+    typeof resource.icon === "string" && icons.hasOwnProperty(resource.icon)
+      ? icons[resource.icon]
+      : resource.icon;
+
   return (
     <div
       key={resource.href}
@@ -160,7 +195,7 @@ export function Resource({ resource }) {
       <ResourcePattern {...pattern} mouseX={mouseX} mouseY={mouseY} />
       <div className="absolute inset-0 rounded-lg ring-1 ring-inset ring-slate-900/7.5 group-hover:ring-slate-900/10 dark:ring-white/10 dark:group-hover:ring-white/20" />
       <div className="relative rounded-lg px-4 pt-16 pb-4">
-        {!!resource.icon && <ResourceIcon icon={resource.icon} />}
+        {!!icon && <ResourceIcon icon={icon} />}
         <h3 className="mt-4 text-sm font-semibold leading-7 text-slate-900 dark:text-white">
           <Link href={resource.href}>
             <span className="absolute inset-0 rounded-lg" />
