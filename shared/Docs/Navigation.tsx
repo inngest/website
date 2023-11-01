@@ -9,7 +9,9 @@ import { useIsInsideMobileNavigation } from "./MobileNavigation";
 import { useSectionStore } from "./SectionProvider";
 import { Tag } from "./Tag";
 import { remToPx } from "../../utils/remToPx";
-import { IconDocs, IconGuide } from "../Icons/duotone";
+import { topLevelNav } from "./navigationStructure";
+
+const BASE_DIR = "/docs";
 
 function useInitialValue(value, condition = true) {
   let initialValue = useRef(value).current;
@@ -34,24 +36,29 @@ function NavLink({
   tag,
   active,
   isAnchorLink = false,
+  isTopLevel = false,
+  className = "",
   children,
 }: {
   href: string;
   tag?: any;
   active?: boolean;
   isAnchorLink?: boolean;
+  isTopLevel?: boolean;
+  className?: string;
   children: React.ReactNode;
 }) {
   return (
     <Link
-      href={href}
+      href={`${BASE_DIR}${href}`}
       aria-current={active ? "page" : undefined}
       className={clsx(
         "flex justify-between gap-2 py-1 pr-3 text-sm transition",
-        isAnchorLink ? "pl-7" : "pl-4",
+        isTopLevel ? "pl-0" : isAnchorLink ? "pl-7" : "pl-4",
         active
           ? "text-slate-900 dark:text-white"
-          : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+          : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white",
+        className
       )}
     >
       <span className="truncate">{children}</span>
@@ -118,7 +125,8 @@ function ActivePageMarker({ group, pathname }) {
   );
 }
 
-function NavigationGroup({ group, className }) {
+// A nested navigation group of links that expand and follow
+function NavigationGroup({ group, className = "" }) {
   // If this is the mobile navigation then we always render the initial
   // state, so that the state does not change during the close animation.
   // The state will still update when we re-open (re-render) the navigation.
@@ -135,7 +143,7 @@ function NavigationGroup({ group, className }) {
     <li className={clsx("relative mt-6", className)}>
       <motion.h2
         layout="position"
-        className="text-xs font-semibold text-slate-900 dark:text-white"
+        className="text-xs font-semibold text-slate-900 dark:text-white uppercase font-mono"
       >
         {group.title}
       </motion.h2>
@@ -289,157 +297,6 @@ export const navigation = [
   },
 ];
 
-const referenceNavigation = [
-  {
-    title: "Inngest Client",
-    links: [
-      {
-        title: "Create the client",
-        href: `${baseDir}/reference/client/create`,
-      },
-    ],
-  },
-  {
-    title: "Functions",
-    links: [
-      {
-        title: "Create function",
-        href: `${baseDir}/reference/functions/create`,
-      },
-      {
-        title: "Define steps (step.run)",
-        href: `${baseDir}/reference/functions/step-run`,
-      },
-      {
-        title: "Sleep",
-        href: `${baseDir}/reference/functions/step-sleep`,
-      },
-      {
-        title: "Sleep until a time",
-        href: `${baseDir}/reference/functions/step-sleep-until`,
-      },
-      {
-        title: "Wait for additional events",
-        href: `${baseDir}/reference/functions/step-wait-for-event`,
-      },
-      {
-        title: "Sending events from functions",
-        href: `${baseDir}/reference/functions/step-send-event`,
-      },
-      {
-        title: "Error handling & retries",
-        href: `${baseDir}/functions/retries`,
-        // href: `${baseDir}/reference/functions/error-handling`,
-      },
-      {
-        title: "Handling failures",
-        href: `${baseDir}/reference/functions/handling-failures`,
-      },
-      {
-        title: "Cancel running functions",
-        href: `${baseDir}/functions/cancellation`,
-        // href: `${baseDir}/reference/functions/cancel-running-functions`,
-      },
-      {
-        title: "Concurrency",
-        href: `${baseDir}/functions/concurrency`,
-        // href: `${baseDir}/reference/functions/concurrency`,
-      },
-      {
-        title: "Rate limit",
-        href: `${baseDir}/reference/functions/rate-limit`,
-      },
-      {
-        title: "Debounce",
-        href: `${baseDir}/reference/functions/debounce`,
-      },
-      {
-        title: "Function run priority",
-        href: `${baseDir}/reference/functions/run-priority`,
-      },
-      // {
-      //   title: "Logging",
-      //   href: `${baseDir}/reference/functions/logging`,
-      // },
-    ],
-  },
-  {
-    title: "Events",
-    links: [
-      {
-        title: "Send",
-        href: `${baseDir}/reference/events/send`,
-      },
-    ],
-  },
-  {
-    title: "Serve",
-    links: [
-      // {
-      //   title: "Framework handlers",
-      //   href: `${baseDir}/sdk/serve`,
-      // },
-      {
-        title: "Configuration",
-        href: `${baseDir}/reference/serve`,
-      },
-      { title: "Streaming", href: `${baseDir}/streaming` },
-    ],
-  },
-  {
-    title: "Middleware",
-    links: [
-      {
-        title: "Overview",
-        href: `${baseDir}/reference/middleware/overview`,
-      },
-      {
-        title: "Creating middleware",
-        href: `${baseDir}/reference/middleware/create`,
-      },
-      {
-        title: "Lifecycle",
-        href: `${baseDir}/reference/middleware/lifecycle`,
-      },
-      {
-        title: "Examples",
-        href: `${baseDir}/reference/middleware/examples`,
-      },
-      {
-        title: "TypeScript",
-        href: `${baseDir}/reference/middleware/typescript`,
-      },
-    ],
-  },
-  {
-    title: "Using the SDK",
-    links: [
-      {
-        title: "Environment variables",
-        href: `${baseDir}/sdk/environment-variables`,
-      },
-      {
-        title: "Using TypeScript",
-        href: `${baseDir}/typescript`,
-      },
-      { title: "Upgrading to v3", href: `${baseDir}/sdk/migration` },
-    ],
-  },
-  {
-    title: "Usage Limits",
-    links: [
-      {
-        title: "Inngest Cloud",
-        href: `${baseDir}/usage-limits/inngest`,
-      },
-      {
-        title: "Serverless Providers",
-        href: `${baseDir}/usage-limits/providers`,
-      },
-    ],
-  },
-];
-
 export const headerLinks = [
   {
     title: "Docs",
@@ -451,11 +308,102 @@ export const headerLinks = [
   },
 ];
 
+// Flatten the nested nav and get all nav sections w/ sectionLinks
+function getAllSections(nav) {
+  return nav.reduce((acc, item) => {
+    if (item.sectionLinks) {
+      acc.push(item);
+    }
+    if (item.links) {
+      acc.push(...getAllSections(item.links));
+    }
+    return acc;
+  }, []);
+}
+
+function findRecursiveSectionLinkMatch(nav, relativePathname) {
+  const sections = getAllSections(nav);
+  return sections.find(({ title, matcher, sectionLinks }) => {
+    if (matcher?.test(relativePathname)) {
+      return true;
+    }
+    return !!sectionLinks?.find((item) => {
+      console.log(item.links, relativePathname);
+      return item.links?.find((link) => link.href === relativePathname);
+    });
+  });
+}
+
 export function Navigation(props) {
+  const router = useRouter();
+  const pathname = router.asPath;
+  const relativePathname = pathname.replace(baseDir, "");
+
+  const nestedSection = findRecursiveSectionLinkMatch(
+    topLevelNav,
+    relativePathname
+  );
+  const isNested = !!nestedSection;
+  const nestedNavigation = nestedSection;
+
   return (
     <nav {...props}>
-      <ul role="list">
-        <li className="mt-6 mb-4 flex gap-2 items-center text-base font-semibold text-slate-900 dark:text-white">
+      {isNested && (
+        <NavLink href="/" className="pl-0 text-xs uppercase font-mono">
+          ← Back to docs home
+        </NavLink>
+      )}
+      <ul role="list" className={!isNested && "flex flex-col gap-2"}>
+        {nestedNavigation ? (
+          <>
+            <li className="mt-6 mb-4 flex gap-2 items-center text-base font-semibold text-slate-900 dark:text-white">
+              <span className="p-0.5">
+                <nestedNavigation.icon className="w-5 h-5 text-slate-400" />
+              </span>
+              {nestedNavigation.title}
+            </li>
+            {nestedNavigation.sectionLinks.map((group, groupIndex) => (
+              <NavigationGroup key={group.title} group={group} />
+            ))}
+          </>
+        ) : (
+          topLevelNav.map((item, idx) =>
+            item.href ? (
+              <li>
+                <NavLink href={item.href} key={idx} isTopLevel={true}>
+                  <span className="flex flex-row gap-3 items-center">
+                    {item.icon && (
+                      <item.icon className="w-5 h-5 text-slate-400" />
+                    )}
+                    {item.title}
+                  </span>
+                </NavLink>
+              </li>
+            ) : (
+              <li className="mt-6">
+                <h2 className="text-xs font-semibold text-slate-900 dark:text-white uppercase font-mono">
+                  {item.title}
+                </h2>
+                <ul role="list" className="mt-3 flex flex-col gap-2">
+                  {item.links.map((link, idx) => (
+                    <li>
+                      <NavLink href={link.href} key={idx} isTopLevel={true}>
+                        <span className="flex flex-row gap-3 items-center">
+                          {link.icon && (
+                            <link.icon className="w-5 h-4 text-slate-400" />
+                          )}
+                          {link.title}
+                        </span>
+                      </NavLink>
+                    </li>
+                  ))}
+                </ul>
+              </li>
+            )
+          )
+        )}
+
+        {/* <li className="mt-6 mb-4 flex gap-2 items-center text-base font-semibold text-slate-900 dark:text-white">
           <span className="p-0.5 bg-indigo-500 rounded-sm">
             <IconGuide />
           </span>
@@ -472,20 +420,8 @@ export function Navigation(props) {
             group={group}
             className={groupIndex === 0 && "lg:mt-0"}
           />
-        ))}
-        <li className="mt-6 mb-4 flex gap-2 items-center text-base font-semibold text-slate-900 dark:text-white">
-          <span className="p-0.5 bg-blue-500 rounded-sm">
-            <IconDocs />
-          </span>
-          Reference
-        </li>
-        {referenceNavigation.map((group, groupIndex) => (
-          <NavigationGroup
-            key={group.title}
-            group={group}
-            className={groupIndex === 0 && "lg:mt-0"}
-          />
-        ))}
+        ))} */}
+
         <li className="sticky bottom-0 z-10 mt-6 sm:hidden gap-2 flex dark:bg-slate-900">
           <Button
             href={process.env.NEXT_PUBLIC_SIGNIN_URL}

@@ -48,6 +48,7 @@ export function Layout({
   const metaDescription =
     description || `Inngest documentation for ${preferredTitle}`;
   const metaImage = getOpenGraphImageURL({ title: preferredTitle });
+
   return (
     <div className="dark:bg-slate-1000">
       <MDXProvider components={mdxComponents}>
