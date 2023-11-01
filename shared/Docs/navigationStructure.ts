@@ -306,6 +306,19 @@ const sectionTypeScriptReference = [
   },
 ];
 
+const sectionPythonReference = [
+  {
+    title: "Overview",
+    // TODO - Allow this to be flattened w/ NavGroup
+    links: [
+      {
+        title: "Introduction",
+        href: `/docs/reference/python`,
+      },
+    ],
+  },
+];
+
 export const topLevelNav = [
   {
     title: "Home",
@@ -342,12 +355,13 @@ export const topLevelNav = [
         href: `/docs/reference/typescript`,
         sectionLinks: sectionTypeScriptReference,
       },
-      // {
-      //   title: "Python SDK",
-      //   icon: PythonIcon,
-      //   href: `/docs/reference/python`,
-      //   sectionLinks: [],
-      // },
+      {
+        title: "Python SDK",
+        icon: PythonIcon,
+        href: `/docs/reference/python`,
+        tag: "Beta",
+        sectionLinks: sectionPythonReference,
+      },
       // {
       //   title: "REST API",
       //   icon: CommandLineIcon,

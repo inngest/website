@@ -53,7 +53,7 @@ function NavLink({
       href={href}
       aria-current={active ? "page" : undefined}
       className={clsx(
-        "flex justify-between gap-2 py-1 pr-3 text-sm transition",
+        "flex justify-between gap-2 py-1 pr-3 text-sm font-medium transition group", // group for nested hovers
         isTopLevel ? "pl-0" : isAnchorLink ? "pl-7" : "pl-4",
         active
           ? "text-slate-900 dark:text-white"
@@ -228,14 +228,14 @@ function getAllSections(nav) {
   }, []);
 }
 
-function findRecursiveSectionLinkMatch(nav, relativePathname) {
+function findRecursiveSectionLinkMatch(nav, pathname) {
   const sections = getAllSections(nav);
-  return sections.find(({ title, matcher, sectionLinks }) => {
-    if (matcher?.test(relativePathname)) {
+  return sections.find(({ matcher, sectionLinks }) => {
+    if (matcher?.test(pathname)) {
       return true;
     }
     return !!sectionLinks?.find((item) => {
-      return item.links?.find((link) => link.href === relativePathname);
+      return item.links?.find((link) => link.href === pathname);
     });
   });
 }
@@ -243,12 +243,8 @@ function findRecursiveSectionLinkMatch(nav, relativePathname) {
 export function Navigation(props) {
   const router = useRouter();
   const pathname = router.asPath;
-  const relativePathname = pathname.replace(BASE_DIR, "");
 
-  const nestedSection = findRecursiveSectionLinkMatch(
-    topLevelNav,
-    relativePathname
-  );
+  const nestedSection = findRecursiveSectionLinkMatch(topLevelNav, pathname);
   const isNested = !!nestedSection;
   const nestedNavigation = nestedSection;
 
@@ -279,7 +275,7 @@ export function Navigation(props) {
                 <NavLink href={item.href} key={idx} isTopLevel={true}>
                   <span className="flex flex-row gap-3 items-center">
                     {item.icon && (
-                      <item.icon className="w-5 h-5 text-slate-400" />
+                      <item.icon className="w-5 h-5 text-slate-400 group-hover:text-slate-600" />
                     )}
                     {item.title}
                   </span>
@@ -293,10 +289,15 @@ export function Navigation(props) {
                 <ul role="list" className="mt-3 flex flex-col gap-2">
                   {item.links.map((link, idx) => (
                     <li>
-                      <NavLink href={link.href} key={idx} isTopLevel={true}>
+                      <NavLink
+                        href={link.href}
+                        key={idx}
+                        isTopLevel={true}
+                        tag={link.tag}
+                      >
                         <span className="flex flex-row gap-3 items-center">
                           {link.icon && (
-                            <link.icon className="w-5 h-4 text-slate-400" />
+                            <link.icon className="w-5 h-4 text-slate-400 group-hover:text-slate-600" />
                           )}
                           {link.title}
                         </span>
