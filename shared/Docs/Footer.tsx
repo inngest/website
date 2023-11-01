@@ -132,15 +132,18 @@ function PageLink({ label, page, previous = false }) {
 }
 
 function flattenNav(nav) {
-  return nav.flatMap((group) =>
-    group.sectionLinks ? flattenNav(group.sectionLinks) : group.links || []
-  );
+  return nav.flatMap((group) => {
+    return group.sectionLinks
+      ? flattenNav(group.sectionLinks)
+      : group.links
+      ? flattenNav(group.links)
+      : group;
+  });
 }
 
 function PageNavigation() {
   let router = useRouter();
   let allPages = flattenNav(topLevelNav);
-  // TODO - fix this flattening back/forward
   let currentPageIndex = allPages.findIndex(
     (page) => page.href === router.pathname
   );
@@ -151,6 +154,11 @@ function PageNavigation() {
 
   let previousPage = allPages[currentPageIndex - 1];
   let nextPage = allPages[currentPageIndex + 1];
+
+  // Skip next page if it's an external link
+  if (!nextPage?.href.match(/^\//)) {
+    nextPage = null;
+  }
 
   if (!previousPage && !nextPage) {
     return null;

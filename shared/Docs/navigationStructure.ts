@@ -1,11 +1,13 @@
 import TypeScriptIcon from "src/shared/Icons/TypeScript";
 import PythonIcon from "src/shared/Icons/Python";
 import GuideIcon from "src/shared/Icons/Guide";
+import { StatusIcon } from "src/shared/StatusWidget";
 import {
   HomeIcon,
   CogIcon,
   PlayIcon,
   CommandLineIcon,
+  LifebuoyIcon,
 } from "@heroicons/react/24/outline";
 
 // A basic link in the nav
@@ -368,6 +370,21 @@ export const topLevelNav = [
       //   href: `/docs/reference/api`,
       //   sectionLinks: [],
       // },
+    ],
+  },
+  {
+    title: "Links",
+    links: [
+      {
+        title: "Status Page",
+        icon: StatusIcon,
+        href: "https://status.inngest.com",
+      },
+      {
+        title: "Support Center",
+        icon: LifebuoyIcon,
+        href: "https://app.inngest.com.support",
+      },
     ],
   },
 ];
