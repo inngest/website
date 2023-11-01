@@ -259,7 +259,7 @@ export function Navigation(props) {
           ← Back to docs home
         </NavLink>
       )}
-      <ul role="list" className={!isNested && "flex flex-col gap-2"}>
+      <ul role="list" className={!isNested ? "flex flex-col gap-2" : undefined}>
         {nestedNavigation ? (
           <>
             <li className="mt-6 mb-4 flex gap-2 items-center text-base font-semibold text-slate-900 dark:text-white">

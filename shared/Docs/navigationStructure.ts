@@ -359,31 +359,36 @@ export const topLevelNav = [
     sectionLinks: sectionPlatform,
   },
   {
-    title: "Reference",
+    title: "SDK Reference",
     links: [
       {
-        title: "TypeScript SDK",
+        title: "TypeScript",
         icon: TypeScriptIcon,
         href: `/docs/reference/typescript`,
         sectionLinks: sectionTypeScriptReference,
       },
       {
-        title: "Python SDK",
+        title: "Python",
         icon: PythonIcon,
         href: `/docs/reference/python`,
         tag: "Beta",
         sectionLinks: sectionPythonReference,
       },
-      // {
-      //   title: "REST API",
-      //   icon: CommandLineIcon,
-      //   href: `/docs/reference/api`,
-      //   sectionLinks: [],
-      // },
     ],
   },
   {
-    title: "Links",
+    title: "API",
+    links: [
+      {
+        title: "REST API",
+        icon: CommandLineIcon,
+        href: `/docs/reference/rest-api`,
+        tag: "Coming soon",
+      },
+    ],
+  },
+  {
+    title: "Help",
     links: [
       {
         title: "Status Page",
