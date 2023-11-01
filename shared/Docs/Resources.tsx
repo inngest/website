@@ -8,6 +8,34 @@ import { EnvelopeIcon } from "./icons/EnvelopeIcon";
 import { UserIcon } from "./icons/UserIcon";
 import { UsersIcon } from "./icons/UsersIcon";
 
+const patterns = [
+  {
+    y: 16,
+    squares: [
+      [0, 1],
+      [1, 3],
+    ],
+  },
+  {
+    y: -6,
+    squares: [
+      [-1, 2],
+      [1, 3],
+    ],
+  },
+  {
+    y: 32,
+    squares: [
+      [0, 2],
+      [1, 4],
+    ],
+  },
+  {
+    y: 22,
+    squares: [[0, 1]],
+  },
+];
+
 const resources = [
   {
     href: "/contacts",
@@ -107,7 +135,7 @@ function ResourcePattern({ mouseX, mouseY, ...gridProps }) {
   );
 }
 
-function Resource({ resource }) {
+export function Resource({ resource }) {
   let mouseX = useMotionValue(0);
   let mouseY = useMotionValue(0);
 
@@ -116,6 +144,12 @@ function Resource({ resource }) {
     mouseX.set(clientX - left);
     mouseY.set(clientY - top);
   }
+  const pattern =
+    resource.pattern === null
+      ? patterns[0]
+      : typeof resource.pattern === "number"
+      ? patterns[resource.pattern]
+      : resource.pattern;
 
   return (
     <div
@@ -123,10 +157,10 @@ function Resource({ resource }) {
       onMouseMove={onMouseMove}
       className="group relative flex rounded-lg bg-slate-50 transition-shadow hover:shadow-md hover:shadow-slate-900/5 dark:bg-white/2.5 dark:hover:shadow-black/5"
     >
-      <ResourcePattern {...resource.pattern} mouseX={mouseX} mouseY={mouseY} />
+      <ResourcePattern {...pattern} mouseX={mouseX} mouseY={mouseY} />
       <div className="absolute inset-0 rounded-lg ring-1 ring-inset ring-slate-900/7.5 group-hover:ring-slate-900/10 dark:ring-white/10 dark:group-hover:ring-white/20" />
       <div className="relative rounded-lg px-4 pt-16 pb-4">
-        <ResourceIcon icon={resource.icon} />
+        {!!resource.icon && <ResourceIcon icon={resource.icon} />}
         <h3 className="mt-4 text-sm font-semibold leading-7 text-slate-900 dark:text-white">
           <Link href={resource.href}>
             <span className="absolute inset-0 rounded-lg" />
@@ -152,6 +186,17 @@ export function Resources() {
           <Resource key={resource.href} resource={resource} />
         ))}
       </div>
+    </div>
+  );
+}
+
+export function ResourceGrid({ cols = 4, children }) {
+  return (
+    <div
+      className={`not-prose mt-4 grid grid-cols-1 gap-8 border-t border-slate-900/5 pt-10 dark:border-white/5
+      sm:grid-cols-${cols >= 2 ? 2 : cols} xl:grid-cols-${cols}`}
+    >
+      {children}
     </div>
   );
 }

@@ -72,10 +72,6 @@ const sectionGuides = [
         href: `/guides/enqueueing-future-jobs`,
       },
       {
-        title: "Scheduled functions",
-        href: `/guides/scheduled-functions`,
-      },
-      {
         title: "Step parallelism",
         href: `/guides/step-parallelism`,
       },
@@ -83,10 +79,13 @@ const sectionGuides = [
         title: "Fan-out jobs",
         href: `/guides/fan-out-jobs`,
       },
-
       {
         title: "Batching events",
         href: `/guides/batching`,
+      },
+      {
+        title: "Scheduled functions",
+        href: `/guides/scheduled-functions`,
       },
     ],
   },
@@ -343,18 +342,18 @@ export const topLevelNav = [
         href: `/reference/typescript`,
         sectionLinks: sectionTypeScriptReference,
       },
-      {
-        title: "Python SDK",
-        icon: PythonIcon,
-        href: `/reference/python`,
-        sectionLinks: [],
-      },
-      {
-        title: "REST API",
-        icon: CommandLineIcon,
-        href: `/reference/api`,
-        sectionLinks: [],
-      },
+      // {
+      //   title: "Python SDK",
+      //   icon: PythonIcon,
+      //   href: `/reference/python`,
+      //   sectionLinks: [],
+      // },
+      // {
+      //   title: "REST API",
+      //   icon: CommandLineIcon,
+      //   href: `/reference/api`,
+      //   sectionLinks: [],
+      // },
     ],
   },
 ];

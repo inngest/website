@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 import { Transition } from "@headlessui/react";
 
 import { Button } from "../Button";
-import { navigation } from "./Navigation";
+import { topLevelNav } from "./navigationStructure";
 import SocialBadges from "./SocialBadges";
 
 function CheckIcon(props) {
@@ -131,9 +131,16 @@ function PageLink({ label, page, previous = false }) {
   );
 }
 
+function flattenNav(nav) {
+  return nav.flatMap((group) =>
+    group.sectionLinks ? flattenNav(group.sectionLinks) : group.links || []
+  );
+}
+
 function PageNavigation() {
   let router = useRouter();
-  let allPages = navigation.flatMap((group) => group.links);
+  let allPages = flattenNav(topLevelNav);
+  // TODO - fix this flattening back/forward
   let currentPageIndex = allPages.findIndex(
     (page) => page.href === router.pathname
   );

@@ -204,103 +204,10 @@ function NavigationGroup({ group, className = "" }) {
   );
 }
 
-const baseDir = "/docs";
-export const navigation = [
-  {
-    title: "Introduction",
-    links: [
-      { title: "Overview", href: `${baseDir}` },
-      { title: "Quick Start Tutorial", href: `${baseDir}/quick-start` },
-    ],
-  },
-  {
-    title: "Getting Started",
-    links: [
-      { title: "SDK Overview", href: `${baseDir}/sdk/overview` },
-      { title: "Serving the API & Frameworks", href: `${baseDir}/sdk/serve` },
-      { title: "Writing Functions", href: `${baseDir}/functions` },
-      { title: "Sending Events", href: `${baseDir}/events` },
-      {
-        title: "Multi-step Functions",
-        href: `${baseDir}/functions/multi-step`,
-      },
-      {
-        title: "Local Development",
-        href: `${baseDir}/local-development`,
-      },
-    ],
-  },
-  {
-    title: "Use Cases",
-    links: [
-      {
-        title: "Background jobs",
-        href: `${baseDir}/guides/background-jobs`,
-      },
-      {
-        title: "Enqueueing future jobs",
-        href: `${baseDir}/guides/enqueueing-future-jobs`,
-      },
-      {
-        title: "Scheduled functions",
-        href: `${baseDir}/guides/scheduled-functions`,
-      },
-      {
-        title: "Step parallelism",
-        href: `${baseDir}/guides/step-parallelism`,
-      },
-      {
-        title: "Fan-out jobs",
-        href: `${baseDir}/guides/fan-out-jobs`,
-      },
-      {
-        title: "User-defined Workflows",
-        href: `${baseDir}/guides/user-defined-workflows`,
-      },
-      {
-        title: "Logging",
-        href: `${baseDir}/guides/logging`,
-      },
-      {
-        title: "Batching events",
-        href: `${baseDir}/guides/batching`,
-      },
-      {
-        title: "Trigger code from Retool",
-        href: `${baseDir}/guides/trigger-your-code-from-retool`,
-      },
-      {
-        title: "Instrumenting GraphQL",
-        href: `${baseDir}/guides/instrumenting-graphql`,
-      },
-    ],
-  },
-  {
-    title: "Platform",
-    links: [
-      {
-        title: "Working With Environments",
-        href: `${baseDir}/platform/environments`,
-      },
-      {
-        title: "Creating an Event Key",
-        href: `${baseDir}/events/creating-an-event-key`,
-      },
-      { title: "How to Deploy", href: `${baseDir}/deploy` },
-      { title: "Deploy: Vercel", href: `${baseDir}/deploy/vercel` },
-      { title: "Deploy: Netlify", href: `${baseDir}/deploy/netlify` },
-      {
-        title: "Deploy: Cloudflare Pages",
-        href: `${baseDir}/deploy/cloudflare`,
-      },
-    ],
-  },
-];
-
 export const headerLinks = [
   {
     title: "Docs",
-    href: baseDir,
+    href: BASE_DIR,
   },
   {
     title: "Patterns",
@@ -328,7 +235,6 @@ function findRecursiveSectionLinkMatch(nav, relativePathname) {
       return true;
     }
     return !!sectionLinks?.find((item) => {
-      console.log(item.links, relativePathname);
       return item.links?.find((link) => link.href === relativePathname);
     });
   });
@@ -337,7 +243,7 @@ function findRecursiveSectionLinkMatch(nav, relativePathname) {
 export function Navigation(props) {
   const router = useRouter();
   const pathname = router.asPath;
-  const relativePathname = pathname.replace(baseDir, "");
+  const relativePathname = pathname.replace(BASE_DIR, "");
 
   const nestedSection = findRecursiveSectionLinkMatch(
     topLevelNav,
@@ -402,25 +308,6 @@ export function Navigation(props) {
             )
           )
         )}
-
-        {/* <li className="mt-6 mb-4 flex gap-2 items-center text-base font-semibold text-slate-900 dark:text-white">
-          <span className="p-0.5 bg-indigo-500 rounded-sm">
-            <IconGuide />
-          </span>
-          Guides
-        </li>
-        {headerLinks.map((link) => (
-          <TopLevelNavItem key={link.title} href={link.href}>
-            {link.title}
-          </TopLevelNavItem>
-        ))}
-        {navigation.map((group, groupIndex) => (
-          <NavigationGroup
-            key={group.title}
-            group={group}
-            className={groupIndex === 0 && "lg:mt-0"}
-          />
-        ))} */}
 
         <li className="sticky bottom-0 z-10 mt-6 sm:hidden gap-2 flex dark:bg-slate-900">
           <Button
