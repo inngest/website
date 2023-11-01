@@ -51,7 +51,7 @@ export function Guide(guide: {
 export function GuideGrid({ cols = 4, children }) {
   return (
     <div
-      className={`not-prose mt-4 grid grid-cols-1 gap-8 border-t border-slate-900/5 pt-10 dark:border-white/5
+      className={`xl:max-w-none not-prose mt-4 grid grid-cols-1 gap-8 border-t border-slate-900/5 pt-10 dark:border-white/5
       sm:grid-cols-2 xl:grid-cols-${cols}`}
     >
       {children}

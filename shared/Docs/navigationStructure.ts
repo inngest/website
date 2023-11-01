@@ -37,24 +37,24 @@ const sectionGettingStarted = [
     links: [
       {
         title: "Next.js",
-        href: "/quick-start",
+        href: "/docs/quick-start",
       },
     ],
   },
   {
     title: "Learn the basics",
     links: [
-      { title: "SDK Overview", href: `/sdk/overview` },
-      { title: "Serving the API & Frameworks", href: `/sdk/serve` },
-      { title: "Writing Functions", href: `/functions` },
-      { title: "Sending Events", href: `/events` },
+      { title: "SDK Overview", href: `/docs/sdk/overview` },
+      { title: "Serving the API & Frameworks", href: `/docs/sdk/serve` },
+      { title: "Writing Functions", href: `/docs/functions` },
+      { title: "Sending Events", href: `/docs/events` },
       {
         title: "Multi-step Functions",
-        href: `/functions/multi-step`,
+        href: `/docs/functions/multi-step`,
       },
       {
         title: "Local Development",
-        href: `/local-development`,
+        href: `/docs/local-development`,
       },
     ],
   },
@@ -65,27 +65,27 @@ const sectionGuides = [
     links: [
       {
         title: "Background jobs",
-        href: `/guides/background-jobs`,
+        href: `/docs/guides/background-jobs`,
       },
       {
         title: "Enqueueing future jobs",
-        href: `/guides/enqueueing-future-jobs`,
+        href: `/docs/guides/enqueueing-future-jobs`,
       },
       {
         title: "Step parallelism",
-        href: `/guides/step-parallelism`,
+        href: `/docs/guides/step-parallelism`,
       },
       {
         title: "Fan-out jobs",
-        href: `/guides/fan-out-jobs`,
+        href: `/docs/guides/fan-out-jobs`,
       },
       {
         title: "Batching events",
-        href: `/guides/batching`,
+        href: `/docs/guides/batching`,
       },
       {
         title: "Scheduled functions",
-        href: `/guides/scheduled-functions`,
+        href: `/docs/guides/scheduled-functions`,
       },
     ],
   },
@@ -94,7 +94,7 @@ const sectionGuides = [
     links: [
       {
         title: "Logging",
-        href: `/guides/logging`,
+        href: `/docs/guides/logging`,
       },
     ],
   },
@@ -103,15 +103,15 @@ const sectionGuides = [
     links: [
       {
         title: "User-defined Workflows",
-        href: `/guides/user-defined-workflows`,
+        href: `/docs/guides/user-defined-workflows`,
       },
       {
         title: "Trigger code from Retool",
-        href: `/guides/trigger-your-code-from-retool`,
+        href: `/docs/guides/trigger-your-code-from-retool`,
       },
       {
         title: "Instrumenting GraphQL",
-        href: `/guides/instrumenting-graphql`,
+        href: `/docs/guides/instrumenting-graphql`,
       },
     ],
   },
@@ -121,12 +121,12 @@ const sectionPlatform = [
   {
     title: "Deploying",
     links: [
-      { title: "How to Deploy", href: `/deploy` },
-      { title: "Deploy: Vercel", href: `/deploy/vercel` },
-      { title: "Deploy: Netlify", href: `/deploy/netlify` },
+      { title: "How to Deploy", href: `/docs/deploy` },
+      { title: "Deploy: Vercel", href: `/docs/deploy/vercel` },
+      { title: "Deploy: Netlify", href: `/docs/deploy/netlify` },
       {
         title: "Deploy: Cloudflare Pages",
-        href: `/deploy/cloudflare`,
+        href: `/docs/deploy/cloudflare`,
       },
     ],
   },
@@ -135,11 +135,11 @@ const sectionPlatform = [
     links: [
       {
         title: "Working With Environments",
-        href: `/platform/environments`,
+        href: `/docs/platform/environments`,
       },
       {
         title: "Creating an Event Key",
-        href: `/events/creating-an-event-key`,
+        href: `/docs/events/creating-an-event-key`,
       },
     ],
   },
@@ -148,11 +148,11 @@ const sectionPlatform = [
     links: [
       {
         title: "Inngest Cloud",
-        href: `/usage-limits/inngest`,
+        href: `/docs/usage-limits/inngest`,
       },
       {
         title: "Serverless Providers",
-        href: `/usage-limits/providers`,
+        href: `/docs/usage-limits/providers`,
       },
     ],
   },
@@ -165,7 +165,7 @@ const sectionTypeScriptReference = [
     links: [
       {
         title: "Introduction",
-        href: `/reference/typescript`,
+        href: `/docs/reference/typescript`,
       },
     ],
   },
@@ -174,7 +174,7 @@ const sectionTypeScriptReference = [
     links: [
       {
         title: "Create the client",
-        href: `/reference/client/create`,
+        href: `/docs/reference/client/create`,
       },
     ],
   },
@@ -183,62 +183,62 @@ const sectionTypeScriptReference = [
     links: [
       {
         title: "Create function",
-        href: `/reference/functions/create`,
+        href: `/docs/reference/functions/create`,
       },
       {
         title: "Define steps (step.run)",
-        href: `/reference/functions/step-run`,
+        href: `/docs/reference/functions/step-run`,
       },
       {
         title: "Sleep",
-        href: `/reference/functions/step-sleep`,
+        href: `/docs/reference/functions/step-sleep`,
       },
       {
         title: "Sleep until a time",
-        href: `/reference/functions/step-sleep-until`,
+        href: `/docs/reference/functions/step-sleep-until`,
       },
       {
         title: "Wait for additional events",
-        href: `/reference/functions/step-wait-for-event`,
+        href: `/docs/reference/functions/step-wait-for-event`,
       },
       {
         title: "Sending events from functions",
-        href: `/reference/functions/step-send-event`,
+        href: `/docs/reference/functions/step-send-event`,
       },
       {
         title: "Error handling & retries",
-        href: `/functions/retries`,
-        // href: `/reference/functions/error-handling`,
+        href: `/docs/functions/retries`,
+        // href: `/docs/reference/functions/error-handling`,
       },
       {
         title: "Handling failures",
-        href: `/reference/functions/handling-failures`,
+        href: `/docs/reference/functions/handling-failures`,
       },
       {
         title: "Cancel running functions",
-        href: `/functions/cancellation`,
-        // href: `/reference/functions/cancel-running-functions`,
+        href: `/docs/functions/cancellation`,
+        // href: `/docs/reference/functions/cancel-running-functions`,
       },
       {
         title: "Concurrency",
-        href: `/functions/concurrency`,
-        // href: `/reference/functions/concurrency`,
+        href: `/docs/functions/concurrency`,
+        // href: `/docs/reference/functions/concurrency`,
       },
       {
         title: "Rate limit",
-        href: `/reference/functions/rate-limit`,
+        href: `/docs/reference/functions/rate-limit`,
       },
       {
         title: "Debounce",
-        href: `/reference/functions/debounce`,
+        href: `/docs/reference/functions/debounce`,
       },
       {
         title: "Function run priority",
-        href: `/reference/functions/run-priority`,
+        href: `/docs/reference/functions/run-priority`,
       },
       // {
       //   title: "Logging",
-      //   href: `/reference/functions/logging`,
+      //   href: `/docs/reference/functions/logging`,
       // },
     ],
   },
@@ -247,7 +247,7 @@ const sectionTypeScriptReference = [
     links: [
       {
         title: "Send",
-        href: `/reference/events/send`,
+        href: `/docs/reference/events/send`,
       },
     ],
   },
@@ -256,13 +256,13 @@ const sectionTypeScriptReference = [
     links: [
       // {
       //   title: "Framework handlers",
-      //   href: `/sdk/serve`,
+      //   href: `/docs/sdk/serve`,
       // },
       {
         title: "Configuration",
-        href: `/reference/serve`,
+        href: `/docs/reference/serve`,
       },
-      { title: "Streaming", href: `/streaming` },
+      { title: "Streaming", href: `/docs/streaming` },
     ],
   },
   {
@@ -270,23 +270,23 @@ const sectionTypeScriptReference = [
     links: [
       {
         title: "Overview",
-        href: `/reference/middleware/overview`,
+        href: `/docs/reference/middleware/overview`,
       },
       {
         title: "Creating middleware",
-        href: `/reference/middleware/create`,
+        href: `/docs/reference/middleware/create`,
       },
       {
         title: "Lifecycle",
-        href: `/reference/middleware/lifecycle`,
+        href: `/docs/reference/middleware/lifecycle`,
       },
       {
         title: "Examples",
-        href: `/reference/middleware/examples`,
+        href: `/docs/reference/middleware/examples`,
       },
       {
         title: "TypeScript",
-        href: `/reference/middleware/typescript`,
+        href: `/docs/reference/middleware/typescript`,
       },
     ],
   },
@@ -295,13 +295,13 @@ const sectionTypeScriptReference = [
     links: [
       {
         title: "Environment variables",
-        href: `/sdk/environment-variables`,
+        href: `/docs/sdk/environment-variables`,
       },
       {
         title: "Using TypeScript",
-        href: `/typescript`,
+        href: `/docs/typescript`,
       },
-      { title: "Upgrading to v3", href: `/sdk/migration` },
+      { title: "Upgrading to v3", href: `/docs/sdk/migration` },
     ],
   },
 ];
@@ -310,26 +310,26 @@ export const topLevelNav = [
   {
     title: "Home",
     icon: HomeIcon,
-    href: `/`,
+    href: `/docs/`,
   },
   {
     title: "Getting started",
     icon: PlayIcon,
-    href: "/quick-start",
+    href: "/docs/quick-start",
     matcher: /\/(getting-started|quick-start)/,
     sectionLinks: sectionGettingStarted,
   },
   {
     title: "Guides",
     icon: GuideIcon,
-    href: "/guides",
+    href: "/docs/guides",
     matcher: /\/guides/,
     sectionLinks: sectionGuides,
   },
   {
     title: "Platform",
     icon: CogIcon,
-    href: "/platform",
+    href: "/docs/platform",
     matcher: /\/platform/,
     sectionLinks: sectionPlatform,
   },
@@ -339,19 +339,19 @@ export const topLevelNav = [
       {
         title: "TypeScript SDK",
         icon: TypeScriptIcon,
-        href: `/reference/typescript`,
+        href: `/docs/reference/typescript`,
         sectionLinks: sectionTypeScriptReference,
       },
       // {
       //   title: "Python SDK",
       //   icon: PythonIcon,
-      //   href: `/reference/python`,
+      //   href: `/docs/reference/python`,
       //   sectionLinks: [],
       // },
       // {
       //   title: "REST API",
       //   icon: CommandLineIcon,
-      //   href: `/reference/api`,
+      //   href: `/docs/reference/api`,
       //   sectionLinks: [],
       // },
     ],

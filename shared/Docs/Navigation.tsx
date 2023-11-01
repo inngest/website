@@ -50,7 +50,7 @@ function NavLink({
 }) {
   return (
     <Link
-      href={`${BASE_DIR}${href}`}
+      href={href}
       aria-current={active ? "page" : undefined}
       className={clsx(
         "flex justify-between gap-2 py-1 pr-3 text-sm transition",
@@ -255,7 +255,7 @@ export function Navigation(props) {
   return (
     <nav {...props}>
       {isNested && (
-        <NavLink href="/" className="pl-0 text-xs uppercase font-mono">
+        <NavLink href={BASE_DIR} className="pl-0 text-xs uppercase font-mono">
           ← Back to docs home
         </NavLink>
       )}
