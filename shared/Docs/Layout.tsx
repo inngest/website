@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 
 import * as mdxComponents from "src/shared/Docs/mdx";
 import { Footer } from "./Footer";
+import { Home } from "./Home";
 import { Header } from "./Header";
 import Logo from "../Icons/Logo";
 import { Navigation } from "./Navigation";

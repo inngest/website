@@ -46,7 +46,7 @@ const sectionGettingStarted = [
   {
     title: "Learn the basics",
     links: [
-      { title: "SDK Overview", href: `/docs/sdk/overview` },
+      { title: "Installing the SDK", href: `/docs/sdk/overview` },
       { title: "Serving the API & Frameworks", href: `/docs/sdk/serve` },
       { title: "Writing Functions", href: `/docs/functions` },
       { title: "Sending Events", href: `/docs/events` },
@@ -74,7 +74,7 @@ const sectionGuides = [
         href: `/docs/guides/enqueueing-future-jobs`,
       },
       {
-        title: "Step parallelism",
+        title: "Parallelize steps",
         href: `/docs/guides/step-parallelism`,
       },
       {
@@ -188,26 +188,6 @@ const sectionTypeScriptReference = [
         href: `/docs/reference/functions/create`,
       },
       {
-        title: "Define steps (step.run)",
-        href: `/docs/reference/functions/step-run`,
-      },
-      {
-        title: "Sleep",
-        href: `/docs/reference/functions/step-sleep`,
-      },
-      {
-        title: "Sleep until a time",
-        href: `/docs/reference/functions/step-sleep-until`,
-      },
-      {
-        title: "Wait for additional events",
-        href: `/docs/reference/functions/step-wait-for-event`,
-      },
-      {
-        title: "Sending events from functions",
-        href: `/docs/reference/functions/step-send-event`,
-      },
-      {
         title: "Error handling & retries",
         href: `/docs/functions/retries`,
         // href: `/docs/reference/functions/error-handling`,
@@ -242,6 +222,36 @@ const sectionTypeScriptReference = [
       //   title: "Logging",
       //   href: `/docs/reference/functions/logging`,
       // },
+    ],
+  },
+  {
+    title: "Steps",
+    links: [
+      {
+        title: "step.run()",
+        href: `/docs/reference/functions/step-run`,
+        className: "font-mono",
+      },
+      {
+        title: "step.sleep()",
+        href: `/docs/reference/functions/step-sleep`,
+        className: "font-mono",
+      },
+      {
+        title: "step.sleepUntil()",
+        href: `/docs/reference/functions/step-sleep-until`,
+        className: "font-mono",
+      },
+      {
+        title: "step.waitForEvent()",
+        href: `/docs/reference/functions/step-wait-for-event`,
+        className: "font-mono",
+      },
+      {
+        title: "step.sendEvent()",
+        href: `/docs/reference/functions/step-send-event`,
+        className: "font-mono",
+      },
     ],
   },
   {
@@ -383,7 +393,7 @@ export const topLevelNav = [
       {
         title: "Support Center",
         icon: LifebuoyIcon,
-        href: "https://app.inngest.com.support",
+        href: "https://app.inngest.com/support",
       },
     ],
   },

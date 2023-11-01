@@ -165,7 +165,11 @@ function NavigationGroup({ group, className = "" }) {
         <ul role="list" className="border-l border-transparent">
           {group.links.map((link) => (
             <motion.li key={link.href} layout="position" className="relative">
-              <NavLink href={link.href} active={link.href === router.pathname}>
+              <NavLink
+                href={link.href}
+                active={link.href === router.pathname}
+                className={link.className}
+              >
                 {link.title}
               </NavLink>
               <AnimatePresence mode="popLayout" initial={false}>
