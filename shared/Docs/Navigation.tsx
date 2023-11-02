@@ -51,7 +51,7 @@ function NavLink({
   children: React.ReactNode;
 }) {
   return (
-    <Link
+    <LinkOrHref
       href={href}
       aria-current={active ? "page" : undefined}
       target={target}
@@ -70,8 +70,17 @@ function NavLink({
           {tag}
         </Tag>
       )}
-    </Link>
+    </LinkOrHref>
   );
+}
+
+// LinkOrHref returns a standard link with target="_blank" if we want to open a docs
+// link in a new tab.
+const LinkOrHref = (props: any) => {
+  if (props.target === "_blank") {
+    return <a {...props} />
+  }
+  return <Link {...props} />
 }
 
 function VisibleSectionHighlight({ group, pathname }) {
