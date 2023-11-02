@@ -310,6 +310,7 @@ export function Navigation(props) {
                         key={idx}
                         isTopLevel={true}
                         tag={link.tag}
+                        target={link.target}
                       >
                         <span className="flex flex-row gap-3 items-center">
                           {link.icon && (
