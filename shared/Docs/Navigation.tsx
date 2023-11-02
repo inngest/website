@@ -39,6 +39,7 @@ function NavLink({
   isTopLevel = false,
   className = "",
   children,
+  target,
 }: {
   href: string;
   tag?: any;
@@ -46,12 +47,14 @@ function NavLink({
   isAnchorLink?: boolean;
   isTopLevel?: boolean;
   className?: string;
+  target?: string;
   children: React.ReactNode;
 }) {
   return (
     <Link
       href={href}
       aria-current={active ? "page" : undefined}
+      target={target}
       className={clsx(
         "flex justify-between gap-2 py-1 pr-3 text-sm font-medium transition group", // group for nested hovers
         isTopLevel ? "pl-0" : isAnchorLink ? "pl-7" : "pl-4",
