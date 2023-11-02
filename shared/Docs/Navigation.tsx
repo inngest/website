@@ -243,10 +243,12 @@ function findRecursiveSectionLinkMatch(nav, pathname) {
     });
   });
 }
+// todo fix active on top level
 
 export function Navigation(props) {
   const router = useRouter();
-  const pathname = router.asPath;
+  // Remove query params and hash from pathname
+  const pathname = router.asPath.replace(/(\?|#).+$/, "");
 
   const nestedSection = findRecursiveSectionLinkMatch(topLevelNav, pathname);
   const isNested = !!nestedSection;
@@ -292,10 +294,9 @@ export function Navigation(props) {
                 </h2>
                 <ul role="list" className="mt-3 flex flex-col gap-2">
                   {item.links.map((link, idx) => (
-                    <li>
+                    <li key={idx}>
                       <NavLink
                         href={link.href}
-                        key={idx}
                         isTopLevel={true}
                         tag={link.tag}
                       >
