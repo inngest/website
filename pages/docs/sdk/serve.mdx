@@ -284,7 +284,7 @@ export const handler = serve(inngest, [fnA]);
 Google's [Functions Framework](https://github.com/GoogleCloudPlatform/functions-framework-nodejs) has an Express-compatible API which enables you to use the Express serve handler to deploy your functions to Google's Cloud Functions or Cloud Run. This is an example of a function
 
 <CodeGroup>
-```ts {{ title: "v3" }}
+```js {{ title: "v3" }}
 const functions = require("@google-cloud/functions-framework");
 const { Inngest } = require("inngest");
 const { serve } = require("inngest/express");
