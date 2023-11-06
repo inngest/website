@@ -285,30 +285,28 @@ Google's [Functions Framework](https://github.com/GoogleCloudPlatform/functions-
 
 <CodeGroup>
 ```ts {{ title: "v3" }}
-import * as ff from "@google-cloud/functions-framework";
-import { serve } from "inngest/express";
-import { inngest } from "./src/inngest/client";
-import fnA from "./src/inngest/fnA"; // Your own function
+const functions = require("@google-cloud/functions-framework");
+const { Inngest } = require("inngest");
+const { serve } = require("inngest/express");
+const { hello, minute } = require("./functions");
 
-ff.http(
+const inngest = new Inngest({
+  id: "gcp-sample",
+  name: "GCP CloudFunction Example",
+})
+
+functions.http(
   "inngest",
   serve({
     client: inngest,
-    functions: [fnA],
+    functions: [hello, minute],
   })
-);
-```
-```ts {{ title: "v2" }}
-import * as ff from "@google-cloud/functions-framework";
-import { serve } from "inngest/express";
-import { inngest } from "./src/inngest/client";
-import fnA from "./src/inngest/fnA"; // Your own function
-
-ff.http('inngest', serve(inngest, [fnA]));
+)
 ```
 </CodeGroup>
 
 You can run this locally with `npx @google-cloud/functions-framework --target=inngest` which will serve your Inngest functions on port `8080`.
+See our [Cloud Function example](https://github.com/inngest/sdk-example-gcp-cloud-function) for details.
 
 ## Framework: H3 <VersionBadge version="v2.7.0+" />
 
