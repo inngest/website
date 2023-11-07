@@ -54,6 +54,7 @@ export default function Home() {
       <Hero />
 
       <Logos
+        className="my-20 lg:my-36 mb-20 lg:mb-40 xl:mb-52"
         heading="Helping these teams deliver reliable products"
         logos={[
           {
@@ -80,17 +81,16 @@ export default function Home() {
           { src: "/assets/customers/ocoya.svg", name: "Ocoya" },
           { src: "/assets/customers/finta-logo.png?v=1", name: "Finta.io" },
         ]}
-        // Enable when /customer is shipped
-        // footer={
-        //   <div className="flex items-center">
-        //     <Link
-        //       href="/customers"
-        //       className="mx-auto rounded-md font-medium px-6 py-2 bg-transparent transition-all text-white border border-slate-800 hover:border-slate-600 hover:bg-slate-500/10 whitespace-nowrap"
-        //     >
-        //       Read customer success stories
-        //     </Link>
-        //   </div>
-        // }
+        footer={
+          <div className="flex items-center">
+            <Link
+              href="/customers"
+              className="mx-auto rounded-md font-medium px-6 py-2 bg-transparent transition-all text-white border border-slate-800 hover:border-slate-600 hover:bg-slate-500/10 whitespace-nowrap"
+            >
+              Read customer success stories
+            </Link>
+          </div>
+        }
       />
 
       <UseCases />

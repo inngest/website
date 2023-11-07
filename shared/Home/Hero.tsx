@@ -17,8 +17,8 @@ export default function Hero() {
             className="pb-8 tracking-tight font-semibold text-4xl md:text-6xl bg-gradient-to-br from-white to-slate-300 bg-clip-text text-transparent"
             style={
               {
-                "-webkit-text-stroke": "0.4px #ffffff80",
-                "-webkit-text-fill-color": "transparent",
+                WebkitTextStroke: "0.4px #ffffff80",
+                WebkitTextFillColor: "transparent",
                 textShadow:
                   "-1px -1px 0 hsla(0,0%,100%,.2), 1px 1px 0 rgba(0,0,0,.1)",
               } as any

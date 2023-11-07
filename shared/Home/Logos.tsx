@@ -10,7 +10,6 @@ export default function Logos({
   footer,
   variant = "dark",
   className,
-  noMargin,
 }: {
   heading?: string | React.ReactNode;
   logos: {
@@ -23,14 +22,13 @@ export default function Logos({
   footer?: React.ReactNode;
   className?: string;
   variant?: "dark" | "light";
-  noMargin?: boolean;
 }) {
   const hasLinks = !!logos.find((l) => !!l.href);
   const nonFeaturedCount = logos.filter((l) => !l.featured).length;
   return (
     <Container
       className={clsx(
-        "my-20 lg:my-36 mx-auto max-w-4xl mb-20 lg:mb-40 xl:mb-60",
+        "mx-auto max-w-4xl", // my-20 lg:my-36 mb-20 lg:mb-40 xl:mb-60
         className
       )}
     >
@@ -51,8 +49,7 @@ export default function Logos({
           nonFeaturedCount === 4 && "px-20 lg:grid-cols-4",
           nonFeaturedCount === 5 && "px-6 lg:grid-cols-5",
           hasLinks ? "gap-x-4 gap-y-8" : "gap-x-16 gap-y-16",
-          footer && "mb-16",
-          noMargin ? "mb-0 lg:mb-0 xl:mb-0" : "mb-20 lg:mb-40 xl:mb-60"
+          footer && "mb-16"
         )}
       >
         {logos.map(({ src, name, href, featured, scale = 1 }, idx) => {
