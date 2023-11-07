@@ -23,11 +23,11 @@ The `createFunction` method accepts a series of arguments to define your functio
 ### Configuration
 
 <Properties>
-  <Property name="name" type="string" required>
-    A unique name for your function. This will be used to create a unique slug `id` by default.
+  <Property name="id" type="string" required>
+    A unique identifier for your function. This should not change between deploys.
   </Property>
-  <Property name="id" type="string">
-    A unique identifier for your function to override the default (a slug of your function name).
+  <Property name="name" type="string">
+    A name for your function. If defined, this will be shown in the UI as a friendly display name instead of the ID.
   </Property>
 
   <Property name="concurrency" type="number | object">
@@ -41,6 +41,15 @@ The `createFunction` method accepts a series of arguments to define your functio
         A unique key expression for which to restrict concurrently running steps to. The expression is evaluated for each triggering event and a unique key is generate.
       </Property>
     </Properties>
+  </Property>
+
+  <Property name="idempotency" type="string">
+    A key expression which is used to prevent duplicate events from triggering a function more than once in 24 hours. This is equivalent to setting `rateLimit` with a `key`, a `limit` of `1`  and `period` of `24hr`.
+
+    Expressions are defined using the [Common Expression Language (CEL)](https://github.com/google/cel-go) with the original event accessible using dot-notation. Examples:
+
+    * Only run once for each customer id: `'event.data.customer_id'`
+    * Only run once for each account and email address: `'event.data.account_id + "-" + event.user.email'`
   </Property>
 
   <Property name="rateLimit" type="object">
@@ -62,6 +71,35 @@ The `createFunction` method accepts a series of arguments to define your functio
 
         * Rate limit per customer id: `'event.data.customer_id'`
         * Rate limit per account and email address: `'event.data.account_id + "-" + event.user.email'`
+      </Property>
+    </Properties>
+  </Property>
+
+  <Property name="debounce" type="object">
+    Options to configure function debounce ([reference](/docs/reference/functions/debounce))
+    <Properties nested={true} collapse={true}>
+      <Property name="period" type="string" required>
+        The time period of which to set the limit. The period begins when the first matching event is received.
+        How long to wait before invoking the function with the batch even if it's not full.
+        Current permitted values are from `1s` to `7d` (`168h`).
+      </Property>
+      <Property name="key" type="string">
+        A unique key expression to apply the debounce to. The expression is evaluated for each triggering event.
+
+        Expressions are defined using the [Common Expression Language (CEL)](https://github.com/google/cel-go) with the original event accessible using dot-notation. Examples:
+
+        * Debounce per customer id: `'event.data.customer_id'`
+        * Debounce per account and email address: `'event.data.account_id + "-" + event.user.email'`
+      </Property>
+    </Properties>
+  </Property>
+
+  <Property name="priority" type="object">
+    Prioritize specific function runs ahead of others ([reference](/docs/reference/functions/run-priority))
+
+    <Properties nested={true} collapse={true}>
+      <Property name="run" type="string">
+        An expression which must return an integer between -600 and 600 (by default), with higher return values resulting in a higher priority. See [reference](/docs/reference/functions/run-priority) for more information.
       </Property>
     </Properties>
   </Property>
@@ -99,6 +137,24 @@ The `createFunction` method accepts a series of arguments to define your functio
       </Property>
     </Properties>
   </Property>
+
+  <Properties>
+    <Property name="priority" type="object">
+      Options to configure how to prioritize functions
+
+      <Properties nested={true}>
+        <Property name="run" type="string">
+          An expression which must return an integer between -600 and 600 (by default), with higher
+  	return values resulting in a higher priority.  Examples:
+
+          * Return the priority within an event directly: `event.data.priority` (where
+  	  `event.data.priority` is an int within your account's range)
+          * Rate limit by a string field: `event.data.plan == 'enterprise' ? 180 : 0`
+        </Property>
+      </Properties>
+    </Property>
+  </Properties>
+
 </Properties>
 
 {/* TODO - Document fns arg */}
@@ -113,6 +169,19 @@ One of the following function triggers is **Required**.
   </Property>
   <Property name="cron" type="string">
     A [unix-cron](https://crontab.guru/) compatible schedule string. <br/>Optional timezone prefix, e.g. `TZ=Europe/Paris 0 12 * * 5`.
+  </Property>
+</Properties>
+
+When using an `event` trigger, you can optionally combine it with the `if` option to filter events:
+
+<Properties nested={true} name="Additional options">
+  <Property name="if" type="string">
+    A comparison expression that returns true or false whether the function should handle or ignore a given matching event.
+
+    Expressions are defined using the [Common Expression Language (CEL)](https://github.com/google/cel-go) with the original event accessible using dot-notation. Examples:
+
+    * `'event.data.action == "published"'`
+    * `'event.data.priority >= 4'`
   </Property>
 </Properties>
 

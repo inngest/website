@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 
 import * as mdxComponents from "src/shared/Docs/mdx";
 import { Footer } from "./Footer";
+import { Home } from "./Home";
 import { Header } from "./Header";
 import Logo from "../Icons/Logo";
 import { Navigation } from "./Navigation";
@@ -57,6 +58,7 @@ export function Layout({
           <meta name="description" content={metaDescription}></meta>
           <meta property="og:title" content={pageTitle} />
           <meta property="og:description" content={metaDescription} />
+          <meta property="og:image" content={metaImage} />
           <meta property="og:type" content="article" />
           <meta name="twitter:card" content="summary_large_image" />
           <meta name="twitter:site" content="@inngest" />

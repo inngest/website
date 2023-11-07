@@ -5,6 +5,8 @@ import { Heading } from "./Heading";
 import React, { useState } from "react";
 import { ChevronDown, ChevronUp } from "react-feather";
 
+export { default as YouTube } from "react-youtube-embed";
+
 // export const a: React.FunctionComponent<LinkProps> = (props) => (
 //   <Link {...props} />
 // );
@@ -26,13 +28,16 @@ export {
   GuideSection,
 } from "./Code";
 
-export const h2: React.FC<any> = function H2(props) {
+export const h1: React.FC<any> = function (props) {
+  return <Heading level={1} {...props} />;
+};
+export const h2: React.FC<any> = function (props) {
   return <Heading level={2} {...props} />;
 };
-export const h3: React.FC<any> = function H2(props) {
+export const h3: React.FC<any> = function (props) {
   return <Heading level={3} {...props} />;
 };
-export const h4: React.FC<any> = function H2(props) {
+export const h4: React.FC<any> = function (props) {
   return <Heading level={3} {...props} />;
 };
 

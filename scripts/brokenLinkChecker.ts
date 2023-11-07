@@ -17,6 +17,8 @@ const options = {
     "https://the-guild.dev/graphql/yoga-server",
     "https://envelop.dev",
     "https://twitter.com",
+    "https://postmarkapp.com",
+    "https://api-docs.inngest.com/docs/inngest-api",
     "http://localhost:8288",
     "http://localhost:",
   ],
