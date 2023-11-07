@@ -19,7 +19,7 @@ export default function Hero() {
               {
                 "-webkit-text-stroke": "0.4px #ffffff80",
                 "-webkit-text-fill-color": "transparent",
-                "text-shadow":
+                textShadow:
                   "-1px -1px 0 hsla(0,0%,100%,.2), 1px 1px 0 rgba(0,0,0,.1)",
               } as any
             } // silence the experimental webkit props
