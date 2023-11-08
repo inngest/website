@@ -22,6 +22,7 @@ import PlatformFeatures2 from "src/shared/Home/PlatformFeatures2";
 // import FeatureCallouts from "src/shared/Home/FeatureCallouts";
 import Flexibility from "src/shared/Home/Flexibility";
 import type { PageProps } from "src/shared/types";
+import EnterpriseTrust from "src/shared/Home/EnterpriseTrust";
 
 export async function getStaticProps(): Promise<
   GetStaticPropsResult<PageProps>
@@ -96,36 +97,18 @@ export default function Home() {
       <UseCases />
 
       <div className="my-32 lg:my-48">
-        <blockquote className="mx-auto max-w-3xl px-8 md:p-16 flex flex-col md:flex-row gap-8 bg-[url(/assets/textures/wave.svg)] bg-cover bg-no-repeat">
-          <p className="text-lg leading-7">
-            <span className="mr-1 text-2xl leading-3 text-slate-400/80">
-              &ldquo;
-            </span>
-            Inngest is an essential partner to Vercel's frontend cloud offering.
-            It extends Vercel's DX and serverless operational model to a
-            notoriously challenging yet crucial part of the stack: backend
-            workflows and asynchronous process coordination.
-            <span className="ml-1 text-2xl leading-3 text-slate-400/80">
-              &rdquo;
-            </span>
-          </p>
-          <footer className="min-w-[180px] flex flex-col gap-4">
-            <Image
-              src="/assets/about/guillermo-rauch-avatar.jpg"
-              alt={`Image of Guillermo Rauch`}
-              height="72"
-              width="72"
-              className="rounded-full h-12 w-12 lg:h-20 lg:w-20"
-            />
-            <cite className="text-slate-300 leading-8 not-italic">
-              <span className="text-lg">Guillermo Rauch</span>
-              <br />
-              <span className="text-sm">
+        <Quote
+          text={`Inngest is an essential partner to Vercel's frontend cloud offering. It extends Vercel's DX and serverless operational model to a notoriously challenging yet crucial part of the stack: backend workflows and asynchronous process coordination.`}
+          attribution={{
+            name: "Guillermo Rauch",
+            title: (
+              <span>
                 <span className="text-white">▲</span> CEO of Vercel
               </span>
-            </cite>
-          </footer>
-        </blockquote>
+            ),
+            avatar: "/assets/about/guillermo-rauch-avatar.jpg",
+          }}
+        />
         {/* <CustomerQuote
           quote="We were struggling with the complexities of managing our social media and e-commerce workflows. Thanks to Inngest, we were able to simplify our development process, speed up our time to market, and deliver a better customer experience. Inngest has become an essential tool in our tech stack."
           name="Aivaras Tumas  - CEO @ Ocoya"
@@ -141,47 +124,135 @@ export default function Home() {
       <Features />
 
       <div className="my-32">
-        <CustomerQuote
-          quote="We switched from our PostgreSQL backed queue to Inngest in less than a day. Their approach is idiomatic with a great developer experience. Inngest allowed us to stop worrying about scalability and stability."
-          name="Peter Pistorius - CEO @ Snaplet"
-          avatar="/assets/customers/snaplet-peter-pistorius.png"
-          className="mx-auto mb-28 lg:mb-20 max-w-2xl"
+        <Quote
+          text="The DX and visibility with Inngest is really incredible. We are able to develop functions locally easier and faster that with our previous queue. Also, Inngest's tools give us the visibility to debug issues much quicker than before."
+          attribution={{
+            name: "Bu Kinoshita",
+            title: "Co-founder @ Resend",
+            logo: "/assets/customers/resend.svg",
+          }}
+          caseStudy="/customers/resend?ref=homepage"
         />
       </div>
 
-      {/* <LocalDev className="mb-32 md:mb-60" /> */}
+      <LocalDev className="mb-24" />
+
+      <div className="mt-32 mb-48">
+        <Quote
+          text="The DX and code simplicity it brings is unmatched, especially around local development. We're currently working to migrate some of our larger systems over and it’s a joy to see all the complexity it replaces, and with a much better story around partial failures and retries."
+          attribution={{
+            name: "Justin Cypret",
+            title: "Director of Engineer @ Zamp",
+            logo: "/assets/customers/zamp-logo.svg",
+          }}
+        />
+      </div>
 
       <PlatformFeatures2 />
 
       {/*
         TODO
         - Move dev server callout section to it's own section again - prep for video/animation
-        - Add logging and history to feature callouts
-        X Add Replay to feature callouts
-        X Create "Flexibility" section
-          - Works with your framework
-          - Works with any cloud
-          - Language SDKs w/ coming soon/timelines (e.g. Q1 '24 for Python)
-          - Extend and customize with middleware
 
         - Add by the numbers section w/ some data points and SLAs
         - Enterprise section for SOC2, SAML, etc.
       */}
 
+      <div className="my-32">
+        <Quote
+          text="We switched from our PostgreSQL backed queue to Inngest in less than a day. Their approach is idiomatic with a great developer experience. Inngest allowed us to stop worrying about scalability and stability."
+          attribution={{
+            name: "Peter Pistorius",
+            title: "CEO @ Snaplet",
+            avatar: "/assets/customers/snaplet-peter-pistorius.png",
+          }}
+        />
+      </div>
+
       <Flexibility />
 
-      {/* <FeatureCallouts /> */}
-      {/* <RunAnywhere /> */}
+      {/* <EnterpriseTrust /> */}
 
-      <GetThingsShipped />
+      {/* <GetThingsShipped /> */}
+
+      <div className="my-32">
+        <Quote
+          text={`I can't stress enough how integral Inngest has been to our operations. It's more than just "battle tested" for us—it's been a game-changer and a cornerstone of our processes.`}
+          attribution={{
+            name: "Robin Curbelo",
+            title: "Engineer @ Niftykit",
+            avatar: "/assets/customers/niftykit-robin-curbelo.jpg",
+          }}
+        />
+      </div>
 
       <SocialProof />
-
-      {/* <Roadmap /> */}
 
       <SocialCTA />
 
       <Footer />
     </div>
+  );
+}
+
+function Quote({
+  text,
+  attribution: { name, title, avatar, logo },
+  caseStudy,
+}: {
+  text: string;
+  attribution: {
+    name: string;
+    title: React.ReactNode | string;
+    avatar?: string;
+    logo?: string;
+  };
+  caseStudy?: string;
+}) {
+  return (
+    <blockquote className="mx-auto max-w-3xl px-8 md:p-16 flex flex-col md:flex-row gap-8 bg-[url(/assets/textures/wave.svg)] bg-cover bg-no-repeat">
+      <p className="text-lg leading-7">
+        <span className="mr-1 text-2xl leading-3 text-slate-400/80">
+          &ldquo;
+        </span>
+        {text}
+        <span className="ml-1 text-2xl leading-3 text-slate-400/80">
+          &rdquo;
+        </span>
+      </p>
+      <footer className="min-w-[180px] flex flex-col gap-4">
+        {!!avatar && (
+          <Image
+            src={avatar}
+            alt={`Image of ${name}`}
+            height="72"
+            width="72"
+            className="rounded-full h-12 w-12 lg:h-20 lg:w-20"
+          />
+        )}
+        {!!logo && (
+          <Image
+            src={logo}
+            alt={`Image of ${name}`}
+            height="72"
+            width="128"
+            className="h-12 lg:h-20"
+          />
+        )}
+        <cite className="text-slate-300 leading-8 not-italic">
+          <span className="text-lg">{name}</span>
+          <br />
+          <span className="text-sm">{title}</span>
+        </cite>
+        {!!caseStudy && (
+          <Link
+            href={caseStudy}
+            className="text-sm text-indigo-300 hover:text-white hover:underline decoration-dotted underline-offset-4 decoration-slate-50/30"
+          >
+            Read the case study →
+          </Link>
+        )}
+      </footer>
+    </blockquote>
   );
 }

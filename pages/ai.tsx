@@ -707,7 +707,7 @@ export const userWorkflow = inngest.createFunction(
       const prompt = createAgentPrompt(similar, event.data.input);
       return await llm.createCompletion({
         model: "gpt-3.5-turbo",
-        prompt: createAgentPrompt(similar),
+        prompt,
       });
     });
 
