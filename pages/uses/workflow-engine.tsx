@@ -111,7 +111,7 @@ export default function workflowEngine() {
         <div className="w-full lg:w-1/4 my-36 mx-auto flex flex-col items-center">
           <img className="rounded-full" src="/assets/quotes/osenergy.jpeg" height="60" width="60" />
            <p className="text-xl text-center py-4">
-            "Inngest is a great platform to build reliability into your long running tasks without drowning in complexity.""
+            "Inngest is a great platform to build reliability into your long running tasks without drowning in complexity."
           </p>
           <p className="text-slate-400">
             Ozan Şener, Principal Engineer
