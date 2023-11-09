@@ -11,6 +11,8 @@ import {
   IconTools,
   IconWritingFns,
   IconCompiling,
+  IconPower,
+  IconRetry,
 } from "../Icons/duotone";
 
 const productLinks = {
@@ -35,41 +37,35 @@ const productLinks = {
   linksTheme: "indigo",
   links: [
     {
-      title: "Serverless Queues",
-      url: "/uses/serverless-queues?ref=nav",
-      icon: IconSteps,
-    },
-    // {
-    //   title: "Durable Functions",
-    //   url: "/uses/durable-functions?ref=nav",
-    //   icon: IconScheduled,
-    // },
-    {
-      title: "Background Jobs",
-      url: "/uses/serverless-node-background-jobs?ref=nav",
-      icon: IconBackgroundTasks,
-    },
-    {
       title: "AI + LLMs",
       url: "/ai?ref=nav",
       icon: IconSDK,
+    },
+    {
+      title: "Durable workflows",
+      url: "/uses/durable-workflows?ref=nav",
+      icon: IconRetry,
+    },
+    {
+      title: "Workflow engines",
+      url: "/uses/workflow-engine?ref=nav",
+      icon: IconJourney,
+    },
+    {
+      title: "Serverless queues",
+      url: "/uses/serverless-queues?ref=nav",
+      icon: IconSteps,
+    },
+    {
+      title: "Background jobs",
+      url: "/uses/serverless-node-background-jobs?ref=nav",
+      icon: IconBackgroundTasks,
     },
     {
       title: "Scheduled & cron jobs",
       url: "/uses/serverless-cron-jobs?ref=nav",
       icon: IconScheduled,
     },
-    // {
-    //   title: "Complex Workflows",
-    //   url: "/uses/complex-workflows?ref=nav",
-    //   icon: IconJourney,
-    // },
-    //
-    // {
-    //   title: "User journey automation",
-    //   url: "/uses/user-journey-automation?ref=nav",
-    //   icon: IconJourney,
-    // },
   ],
 };
 
@@ -89,7 +85,7 @@ const learnLinks = {
       url: "/patterns?ref=nav",
       icon: IconPatterns,
       iconBg: "bg-sky-500",
-    }
+    },
   ],
   linksTitle: "Quick Starts",
   linksTheme: "blue",
