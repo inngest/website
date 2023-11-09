@@ -240,9 +240,8 @@ function Quote({
           />
         )}
         <cite className="text-slate-300 leading-8 not-italic">
-          <span className="text-lg">{name}</span>
-          <br />
-          <span className="text-sm">{title}</span>
+          <div className="mb-2 text-lg">{name}</div>
+          <div className="text-sm">{title}</div>
         </cite>
         {!!caseStudy && (
           <Link
