@@ -125,7 +125,7 @@ const content = [
       </>,
     ],
     snippet: snippetDurableWorkflow,
-    href: "/uses/serverless-queues", // TODO
+    href: "/uses/durable-workflows?ref=homepage",
   },
   {
     title: "AI + LLMs",
@@ -144,7 +144,7 @@ const content = [
       </>,
     ],
     snippet: snippetAI,
-    href: "/ai",
+    href: "/ai?ref=homepage",
   },
   {
     title: "Background jobs",
@@ -157,7 +157,7 @@ const content = [
       <>Logs and observability metrics out-of-the-box.</>,
     ],
     snippet: snippetBackgroundJobs,
-    href: "/uses/serverless-node-background-jobs",
+    href: "/uses/serverless-node-background-jobs?ref=homepage",
   },
   {
     title: "Workflow engines",
@@ -178,7 +178,7 @@ const content = [
       </>,
     ],
     snippet: snippetWorkflowEngine,
-    href: "/uses/workflow-engine",
+    href: "/uses/workflow-engine?ref=homepage",
   },
 ];
 
