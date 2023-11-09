@@ -92,12 +92,12 @@ export default function PlatformFeatures() {
               parsing logs or trying to connect the dots over workflows that
               could span days or weeks.
             </p>
-            <a
+            {/* <a
               href="/blog/2023-10-27-fn-metrics-release"
               className="mt-4 font-medium text-slate-200 hover:text-white hover:underline decoration-dotted underline-offset-4 decoration-slate-50/30"
             >
               Learn more →
-            </a>
+            </a> */}
           </div>
 
           <div className="flex flex-col justify-end h-full pl-10">
