@@ -49,7 +49,7 @@ export default function Hero() {
                 href="/blog/how-durable-workflow-engines-work?ref=homepage-hero"
                 className="transition text-indigo-200 hover:text-indigo-300 underline underline-offset-2 decoration-dotted decoration-slate-50/50"
               >
-                durable workflow engine
+                durable workflow platform
               </Link>{" "}
               and SDKs enable you to write and run complex flows with
               confidence.
