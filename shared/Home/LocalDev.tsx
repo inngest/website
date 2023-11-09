@@ -21,7 +21,7 @@ export default function LocalDev({ className }: { className?: string }) {
       <Container className={`mt-44 relative z-30 ${className}`}>
         <div>
           <Heading
-            title="Unparalleled Local Development Experience"
+            title="Unparalleled Local Dev"
             lede="Our open source Inngest dev server runs on your machine for a complete
           local development experience, with production parity. Get instant feedback on
           your work and deploy to prod with full confidence."
