@@ -6,8 +6,6 @@ import Heading from "./Heading";
 import CopyBtn from "./CopyBtn";
 import Replay from "../Icons/Replay";
 
-// TODO - Move Dev server out - add logging and history to this section
-
 export default function PlatformFeatures() {
   const handleCopyClick = (copy) => {
     navigator.clipboard?.writeText(copy);
@@ -29,7 +27,7 @@ export default function PlatformFeatures() {
       <div className="my-24 mx-auto max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="md:col-span-2 rounded-2xl overflow-hidden xl:min-h-[420px] px-8 pt-12 lg:pt-0 lg:px-16 grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-[40%_1fr] gap-8 md:gap-8 lg:gap-24 items-center bg-gradient-to-br from-emerald-400/10 to-cyan-400/10">
           <div className="md:pb-8 lg:py-12 lg:pb-12">
-            <h3 className="text-2xl font-semibold mb-5">Branch Environments</h3>
+            <h3 className="text-2xl font-semibold mb-5">Branch environments</h3>
             <p className="text-lg mb-7 font-medium text-slate-300">
               Test your entire application end-to-end with an Inngest
               environment for every development branch that you deploy, without
@@ -60,7 +58,9 @@ export default function PlatformFeatures() {
 
         <div className="grid grid-rows-[auto_1fr] rounded-lg gap-8 md:gap-10 overflow-hidden bg-gradient-to-b	from-amber-400/10 to-rose-400/15">
           <div className="pt-11 px-8 md:px-10">
-            <h3 className="text-2xl font-semibold mb-5">Observability</h3>
+            <h3 className="text-2xl font-semibold mb-5">
+              Real-time observability metrics
+            </h3>
             <p className="text-lg mb-7 font-medium text-slate-300">
               Quickly diagnose system wide issues with built in metrics. View
               backlogs and spikes in failures for every single function. There
@@ -77,16 +77,21 @@ export default function PlatformFeatures() {
           <div className="flex flex-col justify-end h-full pl-10">
             <img
               src="/assets/homepage/observability-metrics.png"
-              alt="Branch environments"
-              className="Observability metrics"
+              alt="Real-time observability metrics"
+              className="rounded-tl"
             />
           </div>
         </div>
 
         <div className="grid grid-rows-[auto_1fr] rounded-lg gap-8 md:gap-10 overflow-hidden bg-gradient-to-br from-blue-400/20 to-orange-200/20">
           <div className="pt-11 px-8 md:px-10">
-            <h3 className="text-2xl font-semibold mb-5">Full history & logs</h3>
-            <p className="text-lg mb-7 font-medium text-slate-300">ok</p>
+            <h3 className="text-2xl font-semibold mb-5">Full logs & history</h3>
+            <p className="text-lg mb-7 font-medium text-slate-300">
+              Inngest keeps a full history of every event and function run
+              allowing you to easily debug any production issues. No more
+              parsing logs or trying to connect the dots over workflows that
+              could span days or weeks.
+            </p>
             <a
               href="/blog/2023-10-27-fn-metrics-release"
               className="mt-4 font-medium text-slate-200 hover:text-white hover:underline decoration-dotted underline-offset-4 decoration-slate-50/30"
@@ -95,11 +100,10 @@ export default function PlatformFeatures() {
             </a>
           </div>
 
-          {/* TODO - get a screenshot of the timeline or function run list? */}
           <div className="flex flex-col justify-end h-full pl-10">
             <img
-              src="/assets/homepage/observability-metrics.png"
-              alt="Observability metrics"
+              src="/assets/homepage/screenshot-logs-timeline.png"
+              alt="Full logs and history"
               className="rounded-tl"
             />
           </div>
