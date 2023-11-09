@@ -3,7 +3,6 @@ import Container from "../layout/Container";
 import CopyBtn from "./CopyBtn";
 
 import Heading from "./Heading";
-import CustomerQuote from "./CustomerQuote";
 
 export default function LocalDev({ className }: { className?: string }) {
   const handleCopyClick = (copy) => {
@@ -61,13 +60,6 @@ export default function LocalDev({ className }: { className?: string }) {
           border border-white/10
         `}
         />
-
-        {/* <CustomerQuote
-          quote="It's sensational - this is the best way to test a background job! I’ve never had a UI like this that I can use to follow and see my workflows."
-          name="Garrett Tolbert - Vercel"
-          avatar="/assets/customers/vercel-garrett-tolbert.jpg"
-          className="max-w-lg m-auto -mt-20 md:m-auto md:absolute md:-bottom-20 md:left-[20%]"
-        /> */}
       </Container>
     </div>
   );
