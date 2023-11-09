@@ -57,7 +57,7 @@ def upsert_thing(thing_id: str) -> Thing:
 	return user
 ```
 
-As we think about each possible error we realize that our original logic would crash the program when we didn’t want it to! But while this is safe it's also extremely verbose. Python engineers overwhelmingly agree, which is why most Python code has 1 large `try/catch` *at best*:
+As we think about each possible error we realize that our original logic would crash the program when we didn't want it to! But while this is safe it's also extremely verbose. Python engineers overwhelmingly agree, which is why most Python code has 1 large `try/catch` *at best*:
 
 ```python
 def upsert_thing(thing_id: str) -> Thing:
@@ -74,8 +74,8 @@ def upsert_thing(thing_id: str) -> Thing:
 
 So the thrown error approach:
 
-- Doesn’t tell us which functions could error.
-- Doesn’t force us to handle errors where they happen.
+- Doesn't tell us which functions could error.
+- Doesn't force us to handle errors where they happen.
 - Encourages engineers to use coarse-grained error handling (i.e. one big `try/catch`).
 
 There has to be a better way 🤔.
@@ -164,7 +164,7 @@ def rename_user(
     return user, None
 ```
 
-Since the type checker doesn't know the tuple values are mutually exclusive, we’re forced to do a superfluous `assert user is not None`. Otherwise, the type checker incorrectly thinks `user` is nullable.
+Since the type checker doesn't know the tuple values are mutually exclusive, we're forced to do a superfluous `assert user is not None`. Otherwise, the type checker incorrectly thinks `user` is nullable.
 
 Next, let's try something Rust-like using the awesome library [result](https://github.com/rustedpy/result), which leverages pattern matching:
 
@@ -185,7 +185,7 @@ def rename_user(user_id: str, name: str) -> result.Result[User, Exception]:
         case result.Ok(user):
             pass
         case result.Err(err):
-            return err
+            return result.Err(err)
 
     user.name = name
     return result.Ok(user)
@@ -201,7 +201,7 @@ Better than the tuple! But we still have some downsides:
 The last approach we'll try is returning a union:
 
 ```python
-# Define a function that returns a tuple of a User and an error
+# Define a function that returns a union of a User and an error
 def get_user(user_id: str) -> User | Exception:
     rows = users.find(user_id=user_id)
     if len(rows) == 0:
@@ -226,6 +226,6 @@ This looks great! We didn't need superfluous assertions (like the tuple approach
 
 # Conclusion
 
-Inngest’s [Python SDK](https://github.com/inngest/inngest-py) handles errors as values, since this integrates error handling into the normal control flow of the program. This makes programs more verbose, but it ensures that we’re properly handling errors.
+Inngest's [Python SDK](https://github.com/inngest/inngest-py) handles errors as values, since this integrates error handling into the normal control flow of the program. This makes programs more verbose, but it ensures that we're properly handling errors.
 
-We implemented errors as values using unions, since that was the most idiomatic and terse approach. Other languages use tuples (e.g. Go) or wrapper types (e.g. Rust), but we felt that these patterns either didn’t work well in Python, were too verbose, or heavily used a pattern that isn’t yet idiomatic.
+We implemented errors as values using unions, since that was the most idiomatic and terse approach. Other languages use tuples (e.g. Go) or wrapper types (e.g. Rust), but we felt that these patterns either didn't work well in Python, were too verbose, or heavily used a pattern that isn't yet idiomatic.
