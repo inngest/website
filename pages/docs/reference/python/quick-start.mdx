@@ -54,13 +54,8 @@ inngest_client = inngest.Inngest(
     # Event that triggers this function
     trigger=inngest.TriggerEvent(event="app/my_function"),
 )
-def my_function(
-    *,
-    event: inngest.Event,
-    logger: inngest.Logger,
-    **_kwargs: object,
-) -> str:
-    logger.info(event)
+async def my_function(ctx: inngest.Context, step: inngest.Step) -> str:
+    ctx.logger.info(ctx.event)
     return "done"
 
 app = FastAPI()

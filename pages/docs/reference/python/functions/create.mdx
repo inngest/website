@@ -9,7 +9,7 @@ import inngest
     fn_id="import-product-images",
     trigger=inngest.TriggerEvent(event="shop/product.imported"),
 )
-async def fn(**_kwargs: object):
+async def fn(ctx: inngest.Context, step: inngest.Step):
     # Your function code
 ```
 
@@ -166,15 +166,7 @@ The handler is your code that runs whenever the trigger occurs. Every function h
 @inngest.create_function(
     # Function options
 )
-async def fn(
-  *,
-  attempt: int,
-  event: inngest.Event,
-  events: list[inngest.Event],
-  logger: inngest.Logger,
-  run_id: str,
-  step: inngest.Step,
-):
+async def fn(ctx: inngest.Context, step: inngest.Step):
     # Function code
 ```
 
