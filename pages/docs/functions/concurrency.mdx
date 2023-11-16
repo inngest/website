@@ -50,7 +50,7 @@ Optionally, specifying a concurrency `key` applies the `limit` to unique values 
 ## Configuration
 
 <Properties>
-  <Property name="concurrency" type="object | integer">
+  <Property name="concurrency" type="number | object | [object, object]">
     Options to configure concurrency. Specifying an `integer` is a shorthand to set the `limit` property.
 
     <Properties nested={true}>
