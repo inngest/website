@@ -186,8 +186,52 @@ Prometheus has a similar problem, but it’s not as big of a deal if you’re on
 
 As a result we have to rely on postgres’ windowing functions to compute the differences between counters by partitions.
 
-```
-<<insert sample window function here>>
+```sql
+WITH
+  base AS (
+    SELECT
+      account_id,
+      environment_id,
+      function_id,
+      time,
+      host,
+      value,
+      value - LAG(value, 1, 0) OVER (PARTITION BY account_id,environment_id,function_id,host ORDER BY time) as diff_val
+    FROM
+      function_run_scheduled_total
+    WHERE
+      function_id = '?' AND time >= NOW() - INTERVAL '1d2h'
+  ),
+  final AS (
+    SELECT
+      account_id,
+      environment_id,
+      function_id,
+      time,
+      CASE
+        WHEN diff_val >= 0 THEN diff_val
+        ELSE value
+      END AS diff
+    FROM
+      base
+    WHERE
+      time != (SELECT time FROM function_run_scheduled_total LIMIT 1)
+  )
+
+SELECT
+  time_bucket_gapfill (INTERVAL '30 minutes', time) AS bucket,
+  account_id,
+  environment_id,
+  function_id,
+  COALESCE(SUM(diff), 0) AS count
+FROM
+  final
+WHERE
+  time >= NOW() - INTERVAL '1 day' AND time <= NOW()
+GROUP BY
+  bucket, account_id, environment_id, function_id
+ORDER BY
+  bucket DESC
 ```
 
 Reference: https://docs.timescale.com/use-timescale/latest/continuous-aggregates/troubleshooting/#queries-fail-when-defining-continuous-aggregates-but-work-on-regular-tables
@@ -210,13 +254,17 @@ If you’ve used Prometheus before, you’ve probably noticed that a change of t
 Because we went with the pattern created/spreaded by Prometheus, we inherently have a similar problem.
 
 For example,
+
 > We have no choice but to stop recording RunIDs for function runs, and reset the related metrics table.
 Earlier when I was talking about high cardinality, I mentioned we need to remove the RunID from the metrics tag, and need to reset, and here’s why.
 
 If you take a look at the window function SQL code again, you’ll see something like this,
+
+```sql
+-- ...
+value - LAG(value, 1, 0) OVER (PARTITION BY account_id,environment_id,function_id,host ORDER BY time) as diff_val
 ```
-PARTITION BY (....)
-```
+
 RunID was one of those fields that were initially used as a partition, and removing it will mean that existing partitions will become invalid, and can no longer be used. Why?
 
 Because in order to calculate the delta accurately, we need to make sure the window function operates under the correct context.
@@ -229,9 +277,9 @@ metrics_a{msg=”hello world”, status=”success”} 306
 metrics_a{msg=”hello world”, status=”failed”} 303
 ```
 
-It’ll make sense to diff between #1 and #2 because they have the same “success” status, and the delta here will be 6. But there’s no point in trying to diff #1 and #3 because their statuses are different.
+It’ll make sense to diff between #1 and #2 because they have the same `success` status, and the delta here will be 6. But there’s no point in trying to diff #1 and #3 because their statuses are different.
 
-Now, what if I take away “status” from the tags? Since timescale is just postgres, it means I will be dropping a column, and this is what will become of existing metrics.
+Now, what if I take away `status` from the tags? Since timescale is just postgres, it means I will be dropping a column, and this is what will become of existing metrics.
 
 ```txt
 metrics_a{msg=”hello world”} 300
@@ -239,9 +287,10 @@ metrics_a{msg=”hello world”} 306
 metrics_a{msg=”hello world”} 303
 ```
 
-Now, because we’ve lost the context of “status”, calculating the deltas for all these metrics will become wildly inaccurate because you can be calculating the diffs with a metric record that previously you wouldn't do when “status” existed.
+Now, because we’ve lost the context of `status`, calculating the deltas for all these metrics will become wildly inaccurate because you can be calculating the diffs with a metric record that previously you wouldn't do when `status` existed.
 
 Because of this behavior, we needed to abandon the table, in this case, truncate it since the data are no longer usable from the date of the change.
+
 This is a consequence of the technical choice we’ve made, and unfortunately there’s not much leeway to work around it (there are ways to handle smooth transition but excluding it as it’s a separate topic).
 
 ## Thoughts
