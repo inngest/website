@@ -37,8 +37,8 @@ The metrics project was a focus to expose the ***What*** of the user’s workloa
 
 For example, a function with a concurrency setting could be throttled because
 
-a. There was a burst of events, and it exceed the limit
-b. External API that it was calling was having an outage, and all function runs has been failing, causing a lot of retries, and resulted in using up the limit
+* There was a burst of events, and it exceed the limit
+* External API that it was calling was having an outage, and all function runs has been failing, causing a lot of retries, and resulted in using up the limit
 
 We can go on and on, and it’s impossible for us as service providers to tell users why something went wrong. It’s up to the users to know, but we can still provide the indicators to help them form a theory and get to the root cause.
 
