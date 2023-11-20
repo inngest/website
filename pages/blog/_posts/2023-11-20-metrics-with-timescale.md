@@ -81,7 +81,7 @@ And the chart will give the user enough information for them to dive in more on 
 
 ### How to store the data?
 
-When it comes to storing timeseries data, there are a couple ways of doing it.
+When it comes to storing time series data, there are a couple ways of doing it.
 
 1. Keep it dumb, store each entry as a record
 2. The prometheus style, Counter, Gauges, Histograms…
