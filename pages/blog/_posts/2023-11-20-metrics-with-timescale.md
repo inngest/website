@@ -1,9 +1,11 @@
 ---
 focus: false
 heading: Building Metrics with TimescaleDB
+subtitle: How we built better observability into Inngest
 image: /assets/blog/metrics-with-timescaledb/feature.png
 date: 2023-11-20
 author: Darwin Wu
+disableCTA: true
 ---
 
 Understanding how your system works is key to keeping one’s sanity.
@@ -20,19 +22,18 @@ As we have more users deploying their workloads on Inngest, a common set of ques
 
 Not being able to tell what’s going on was a common complaint/feedback, and on the flip side, our team was spending more time diving into our data stores to see what’s going on in order to provide the answers our users are asking.
 
-We completely understand the need to answer these basic questions in order for users to be successful. For a team of less than 10, this eats up our capacity really fast. So it was pretty obvious to us that we needed to do something about it very quickly.
+We completely understand the need to answer these basic questions in order for users to be successful, but for a team of less than 10, this eats up our capacity really fast. So it was pretty obvious to us that we needed to do something about it very quickly.
 
 ## Understanding what to build
 
-A lot of the questions falls into 2 buckets
-* Status
-  + What’s going on?
-* Resolution
-  + What do I need to do to get out of this?
+A lot of the questions falls into 2 buckets,
+
+* **Status** - What’s going on?
+* **Resolution** - What do I need to do to get out of this?
 
 It’s almost impossible to provide a solution if you don’t know what the current status is, and to properly assess an issue, we need to understand the *what* and the *why*.
 
-The metrics project was a focus to expose the ***What*** of the user’s workload, as a starting point. The ***Why*** is usually trickier to address as there is usually some kind of context behind it.
+The metrics project was a focus to expose the ***What*** of the user’s workload as a starting point. The ***Why*** is usually trickier to address as there are always some kind of context behind it.
 
 For example, a function with a concurrency setting could be throttled because
 
@@ -43,7 +44,7 @@ We can go on and on, and it’s impossible for us as service providers to tell u
 
 ## Choosing the storage
 
-Choosing the right tool for the job is always important. We’ve looked into a couple of existing tools like,
+Choosing the right tool for the job is always important. We’ve looked into a couple of existing tools,
 
 * [InfluxDB](https://www.influxdata.com/)
 * [Prometheus](https://prometheus.io/)
@@ -52,18 +53,19 @@ Choosing the right tool for the job is always important. We’ve looked into a c
 * [M3](https://m3db.io/)
 * [Grafana Mimir](https://grafana.com/oss/mimir/)
 
-We pretty much cross off Prometheus related tools right off the bat. It’s generally a pain to maintain, and also scaling profile is questionable. You need a Thanos or some other tool like M3 or Mimir to use as a storage backend, or it’ll overflow very quickly.
+We pretty much crossed off Prometheus related tools right off the bat. It’s generally a pain to maintain, and also scaling profile is questionable. You need a Thanos or some other tool like M3 or Mimir to use as a storage backend, or it’ll overflow very quickly.
 
 InfluxDB was off the list mainly because it doesn’t have a local development solution. While cloud development has become more of a thing lately, it’s quite unreasonable to force the rest of the team to have to connect to some remote environment just to do development.
 
 On top of that, having to think about keeping data separated, and not stepping on each other’s toes is a waste of brain capacity. A problem that won’t exist if you’re all running tools in a local environment.
 
-It was then a 1:1 between Timescale and Clickhouse. Due to prior jobs, I’d had a pretty pleasant experience as a user with Clickhouse, but maintaining it was the opposite experience. Cloudflare has a whole team behind it, to make sure topology and quorum are not obstructed. When they do, you can kiss your day goodbye (they’ve gotten a lot better at managing/automating it by the time I left).
+It was now down to Timescale and Clickhouse. Due to prior jobs, I’d had a pretty pleasant experience as a user with Clickhouse, but maintaining it was the opposite experience. Cloudflare has a whole team behind it, to make sure topology and quorum are not obstructed. When they do, you can kiss your day goodbye (they’ve gotten a lot better at managing/automating it by the time I left).
 
 While there was a managed solution with Clickhouse now, we ultimately decided to go with TimescaleDB for the following reasons:
-* It is PostgreSQL, and we do not need additional SQL drivers
+
+* It is Postgres, and we do not need additional SQL drivers
 * We already run Postgres so we have a good idea of the scaling profile and what pitfalls there are
-* We already have some existing feature using Timescale, and it was easier to expand the usage, instead of introducing a new database
+* We already have some existing feature using TimescaleDB, and it was easier to expand the usage, instead of introducing a new database
 
 ## Requirements & Approach
 
@@ -83,13 +85,13 @@ When it comes to storing timeseries data, there are a couple ways of doing it.
 
 1. Keep it dumb, store each entry as a record
 2. The prometheus style, Counter, Gauges, Histograms…
-3. Store the data as a flat structure
+3. Store the data as a flat structure (e.g. `"<account_id>.<environment_id>.<function_id>.started": "2023-11-20T00:02:10.031Z`)
 
 #3 is the most ideal, in terms of storing large amounts of data, and also querying them. It’s the closest form to raw outputs and it’s easier to slice and dice the data. Also easier to separate the query engine and the data storage, utilizing elastic resources effectively. However, at this iteration we went with option #2 instead.
 
 Mainly because,
 
-* Timescale is not a columnar DB, querying massive amounts of data will incur penalties
+* Timescale is not a columnar database, querying massive amounts of data will incur penalties
 * A future possible feature to expose metrics endpoints for each account, and this format was easier
 * The Go tally library has a nice way of extending it to work with custom storage, and saves us time to release
 * #3 requires more involved technical work, which unfortunately we do not have the capacity and time right now
@@ -103,9 +105,9 @@ metrics.Tagged(
 	metrics.WithWorkflowID(id.WorkflowID.String()),
 ).Counter(timescale.CounterFunctionRunStartedTotal).Inc(1)
 ```
+which will create a Counter for `FunctionRunStartedTotal` if it doesn't exist, and increment the Counter.
 
-We can leverage this easily by providing a custom reporter
-
+We can leverage this easily by providing a custom reporter like this.
 ```go
 type metricsReporter struct {
 	cachedCounters *CachedCounters
@@ -141,6 +143,7 @@ func (r metricsReporter) ReportCounter(name string, tags map[string]string, valu
 		Ts:    timestamppb.New(now),
 	}
 
+  // recordCounter will write the data to TimescaleDB
 	if err := recordCounter(ctx, &metric); err != nil {
 		log.From(ctx).
 			Err(err).
@@ -154,15 +157,20 @@ func (r metricsReporter) ReportCounter(name string, tags map[string]string, valu
 // more code...
 ```
 
+All we need to care about now is to make sure `recordCounter` can map the metrics correctly to the database tables when writing to it, instead of having to figure out all the details like,
+
+* handle mapping of metrics with tags
+* atomic operations for counters, gauages, etc
+
 ### Architecture
 
 This is what the overall structure looks like,
 
 ![Architecture](/assets/blog/metrics-with-timescaledb/arch.png)
 
-Nothing uncommon here as this is a pretty common service design. The metrics server is there mainly to make sure Timescale is not overwhelmed by connections as our other services that want to record metrics scales up and down.
+Nothing uncommon here as this is a pretty common service design. The metrics server is there mainly to make sure Timescale is not overwhelmed by the number of connections as our other services that want to record metrics scales up and down.
 
-While there are improvements that can be made, this has been working pretty well regardless of the load we’re getting.
+While there are improvements that can be made, this has been working pretty well regardless of the amount of load (including huge spikes) we’re getting.
 
 ## Challenges
 
@@ -176,15 +184,40 @@ Due to some technical limitations, Timescale cannot run continuous aggregates on
 
 In our case, we were testing out the counter & gauge aggregators to compute differences between counters and gauges.
 
-```
-<< insert counter aggregate sample sql >>
+```sql
+WITH
+  agg AS (
+    SELECT
+      account_id,
+      environment_id,
+      function_id,
+      counter_agg(time, counter) AS summary,
+      time_bucket_gapfill(INTERVAL '30 minutes', time) AS bucket
+    FROM
+      function_run_scheduled_total
+    WHERE
+      function_id = '?' AND time >= NOW() - INTERVAL '1 day' AND time <= NOW()
+    GROUP BY
+      bucket,account_id,environment_id,function_id
+  )
+
+SELECT
+  bucket,
+  account_id,
+  environment_id,
+  function_id,
+  interpolated_delta(summary, bucket, INTERVAL '30 minutes')
+FROM
+  agg
+ORDER BY
+  bucket DESC
 ```
 
 The aggregate functions can give you a rough idea of what’s going on, but the numbers are widely inaccurate, sometimes in the multiples of 3 or more, where the result of the aggregate will show 10, but the actual difference was 30.
 
 Prometheus has a similar problem, but it’s not as big of a deal if you’re only dealing with internal systems. For our users, the numbers need to be accurate in order to be able to tackle issues or else any approach to solving issues will be flawed due to the shaking foundation.
 
-As a result we have to rely on postgres’ windowing functions to compute the differences between counters by partitions.
+As a result we have to rely on Postgres’ windowing functions to compute the differences between counters by partitions.
 
 ```sql
 WITH
@@ -196,6 +229,7 @@ WITH
       time,
       host,
       value,
+      -- NOTE: Calculating diff compared with the previous record value
       value - LAG(value, 1, 0) OVER (PARTITION BY account_id,environment_id,function_id,host ORDER BY time) as diff_val
     FROM
       function_run_scheduled_total
@@ -261,7 +295,6 @@ Earlier when I was talking about high cardinality, I mentioned we need to remove
 If you take a look at the window function SQL code again, you’ll see something like this,
 
 ```sql
--- ...
 value - LAG(value, 1, 0) OVER (PARTITION BY account_id,environment_id,function_id,host ORDER BY time) as diff_val
 ```
 
@@ -279,7 +312,7 @@ metrics_a{msg=”hello world”, status=”failed”} 303
 
 It’ll make sense to diff between #1 and #2 because they have the same `success` status, and the delta here will be 6. But there’s no point in trying to diff #1 and #3 because their statuses are different.
 
-Now, what if I take away `status` from the tags? Since timescale is just postgres, it means I will be dropping a column, and this is what will become of existing metrics.
+Now, what if I take away `status` from the tags? Since timescale is just Postgres, it means I will be dropping a column, and this is what will become of existing metrics.
 
 ```txt
 metrics_a{msg=”hello world”} 300
@@ -291,10 +324,10 @@ Now, because we’ve lost the context of `status`, calculating the deltas for al
 
 Because of this behavior, we needed to abandon the table, in this case, truncate it since the data are no longer usable from the date of the change.
 
-This is a consequence of the technical choice we’ve made, and unfortunately there’s not much leeway to work around it (there are ways to handle smooth transition but excluding it as it’s a separate topic).
+This is a consequence of the technical choice we’ve made, and unfortunately there’s not much leeway to work around it (there are ways to handle smooth transition but excluding it as that’s a separate topic).
 
 ## Thoughts
 
-Developing on and using Timescale has been a pretty pleasant experience so far. The fact that it’s just postgres behind the scenes gives us comfort that it’s built on battle tested technology.
+Developing on and using Timescale has been a pretty pleasant experience so far. The fact that it’s just Postgres behind the scenes gives us comfort that it’s built on battle tested technology.
 
 While there were some challenges, those were more due to the technical choices we made. For what we’ve been trying to do, Timescale has been performing very well, and above all it has allowed us to get something out rather quickly.
