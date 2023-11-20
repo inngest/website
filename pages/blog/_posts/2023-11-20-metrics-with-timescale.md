@@ -93,7 +93,7 @@ Mainly because,
 
 * Timescale is not a columnar database, querying massive amounts of data will incur penalties
 * A future possible feature to expose metrics endpoints for each account, and this format was easier
-* The Go tally library has a nice way of extending it to work with custom storage, and saves us time to release
+* The Go tally library has a nice way of [extending it to work with custom storage](https://pkg.go.dev/github.com/uber-go/tally#StatsReporter), and saves us time to release
 * #3 requires more involved technical work, which unfortunately we do not have the capacity and time right now
 
 To give an idea what I’m talking about, here’s what a typical tally metric recording look like
@@ -107,7 +107,8 @@ metrics.Tagged(
 ```
 which will create a Counter for `FunctionRunStartedTotal` if it doesn't exist, and increment the Counter.
 
-We can leverage this easily by providing a custom reporter like this.
+We can leverage this easily by providing a [custom reporter](https://pkg.go.dev/github.com/uber-go/tally#StatsReporter) like this.
+
 ```go
 type metricsReporter struct {
 	cachedCounters *CachedCounters
