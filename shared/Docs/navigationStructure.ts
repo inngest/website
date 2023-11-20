@@ -353,6 +353,44 @@ const sectionPythonReference = [
       },
     ],
   },
+  {
+    title: "Steps",
+    links: [
+      {
+        title: "parallel",
+        href: `/docs/reference/python/steps/parallel`,
+      },
+      {
+        title: "run",
+        href: `/docs/reference/python/steps/run`,
+      },
+      {
+        title: "send_event",
+        href: `/docs/reference/python/steps/send_event`,
+      },
+      {
+        title: "sleep",
+        href: `/docs/reference/python/steps/sleep`,
+      },
+      {
+        title: "sleep_until",
+        href: `/docs/reference/python/steps/sleep_until`,
+      },
+      {
+        title: "wait_for_event",
+        href: `/docs/reference/python/steps/wait_for_event`,
+      },
+    ],
+  },
+  {
+    title: "Middleware",
+    links: [
+      {
+        title: "Overview",
+        href: `/docs/reference/python/middleware/overview`,
+      },
+    ],
+  },
 ];
 
 export const topLevelNav = [
