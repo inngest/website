@@ -331,16 +331,20 @@ const sectionPythonReference = [
       },
       {
         title: "Quick start",
-        href: `/docs/reference/python/quick-start`,
+        href: `/docs/reference/python/overview/quick-start`,
+      },
+      {
+        title: "Environment variables",
+        href: `/docs/reference/python/overview/env-vars`,
       },
     ],
   },
   {
-    title: "Inngest Client",
+    title: "Client",
     links: [
       {
-        title: "Create the client",
-        href: `/docs/reference/python/client/create`,
+        title: "Overview",
+        href: `/docs/reference/python/client/overview`,
       },
     ],
   },
@@ -366,7 +370,7 @@ const sectionPythonReference = [
       },
       {
         title: "send_event",
-        href: `/docs/reference/python/steps/send_event`,
+        href: `/docs/reference/python/steps/send-event`,
       },
       {
         title: "sleep",
@@ -374,11 +378,11 @@ const sectionPythonReference = [
       },
       {
         title: "sleep_until",
-        href: `/docs/reference/python/steps/sleep_until`,
+        href: `/docs/reference/python/steps/sleep-until`,
       },
       {
         title: "wait_for_event",
-        href: `/docs/reference/python/steps/wait_for_event`,
+        href: `/docs/reference/python/steps/wait-for-event`,
       },
     ],
   },
