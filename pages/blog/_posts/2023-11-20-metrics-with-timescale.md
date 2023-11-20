@@ -268,7 +268,7 @@ ORDER BY
   bucket DESC
 ```
 
-Reference: https://docs.timescale.com/use-timescale/latest/continuous-aggregates/troubleshooting/#queries-fail-when-defining-continuous-aggregates-but-work-on-regular-tables
+See [here](https://docs.timescale.com/use-timescale/latest/continuous-aggregates/troubleshooting/#queries-fail-when-defining-continuous-aggregates-but-work-on-regular-tables) for more details.
 
 ### High cardinality
 
