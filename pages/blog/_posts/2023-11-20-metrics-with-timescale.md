@@ -101,8 +101,8 @@ To give an idea what I’m talking about, here’s what a typical tally metric r
 ```go
 metrics.Tagged(
 	metrics.WithAccountID(id.AccountID.String()),
-	metrics.WithWorkspaceID(id.WorkspaceID.String()),
-	metrics.WithWorkflowID(id.WorkflowID.String()),
+	metrics.WithEnvironmentID(id.EnvironmentID.String()),
+	metrics.WithFunctionID(id.FunctionID.String()),
 ).Counter(timescale.CounterFunctionRunStartedTotal).Inc(1)
 ```
 which will create a Counter for `FunctionRunStartedTotal` if it doesn't exist, and increment the Counter.
