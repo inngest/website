@@ -10,7 +10,7 @@
 
 There are multiple ways to achieve it:
 1. Conditionally rendering depending on the environment.
-```javascript 
+```javascript
 process.env.NODE_ENV === "production" ? { cron: "* * *" } : { event: "dev/manualXYZ" }
 ```
 💡 If you render an event instead of a cron in the other environments, you can still trigger your functions manually if needed.
@@ -35,3 +35,16 @@ We recommend doing [E2E encryption](https://www.inngest.com/docs/reference/middl
 This is a Vercel error that means your function timed out within Vercel's infrastructure before it was able to respond to Inngest. More information can be found in [Vercel's docs](https://vercel.com/docs/functions/serverless-functions/runtimes#max-duration).
 
 If you're unable to sufficiently extend the timeout within Vercel, our [streaming feature](https://www.inngest.com/docs/streaming) can help.
+
+## My app's serve endpoint requires authentication. What should I do?
+Your app's [serve endpoint](https://www.inngest.com/docs/sdk/serve) needs to be accessible by our
+servers, so we can trigger your functions. For this reason, we recommend disabling authentication
+for the serve endpoint.
+
+Our servers communicate securely with your app's serve endpoint using your [signing key](https://www.inngest.com/docs/sdk/serve#signing-key).
+
+### Vercel
+By default, Vercel enables [Deployment Protection](https://vercel.com/docs/security/deployment-protection)
+for both preview and generated production URLs. This means that your app's serve endpoint will be
+unreachable by our servers unless you [disable Deployment Protection](https://vercel.com/docs/security/deployment-protection#configuring-deployment-protection)
+or, if you're on Vercel's Pro plan, [configure protection bypass](https://www.inngest.com/docs/deploy/vercel#bypassing-deployment-protection).
