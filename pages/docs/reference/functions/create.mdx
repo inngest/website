@@ -97,7 +97,7 @@ The `createFunction` method accepts a series of arguments to define your functio
   <Property name="priority" type="object">
     Options to configure how to prioritize functions
 
-    <Properties nested={true}>
+    <Properties nested={true} collapse={true}>
       <Property name="run" type="string">
         An expression which must return an integer between -600 and 600 (by default), with higher return values resulting in a higher priority.
 
@@ -114,7 +114,7 @@ The `createFunction` method accepts a series of arguments to define your functio
   <Property name="batchEvents" type="object">
     Configure how the function should consume batches of events ([reference](/docs/guides/batching))
 
-    <Properties nested={true}>
+    <Properties nested={true} collapse={true}>
       <Property name="maxSize" type="number" required>
         The maximum number of events a batch can have. Current limit is `100`.
       </Property>
@@ -132,7 +132,7 @@ The `createFunction` method accepts a series of arguments to define your functio
   </Property>
   <Property name="cancelOn" type="object">
     Define an event that can be used to cancel a running or sleeping function ([reference](/docs/functions/cancellation))
-    <Properties nested={true}>
+    <Properties nested={true} collapse={true}>
       <Property name="event" type="string" required>
         The event name which will be used to cancel
       </Property>
