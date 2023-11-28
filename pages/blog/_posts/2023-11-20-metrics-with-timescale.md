@@ -24,6 +24,8 @@ Not being able to tell what’s going on was a common complaint/feedback, and on
 
 We completely understand the need to answer these basic questions in order for users to be successful, but for a team of less than 10, this eats up our capacity really fast. So it was pretty obvious to us that we needed to do something about it very quickly.
 
+---
+
 ## Understanding what to build
 
 A lot of the questions falls into 2 buckets,
@@ -41,6 +43,8 @@ For example, a function with a concurrency setting could be throttled because
 * External API that it was calling was having an outage, and all function runs has been failing, causing a lot of retries, and resulted in using up the limit
 
 We can go on and on, and it’s impossible for us as service providers to tell users why something went wrong. It’s up to the users to know, but we can still provide the indicators to help them form a theory and get to the root cause.
+
+---
 
 ## Choosing the storage
 
@@ -67,6 +71,8 @@ While there was a managed solution with Clickhouse now, we ultimately decided to
 * We already run Postgres so we have a good idea of the scaling profile and what pitfalls there are
 * We already have some existing feature using TimescaleDB, and it was easier to expand the usage, instead of introducing a new database
 
+---
+
 ## Requirements & Approach
 
 It was pretty clear what we wanted to provide as the MVP release at this point.
@@ -85,13 +91,16 @@ When it comes to storing time series data, there are a couple ways of doing it.
 
 1. Keep it dumb, store each entry as a record
 2. The prometheus style, Counter, Gauges, Histograms…
-3. Store the data as a flat structure (e.g. `"<account_id>.<environment_id>.<function_id>.started": "2023-11-20T00:02:10.031Z`)
+3. Store the data as a flat, schema agnostic structure
 
-#3 is the most ideal, in terms of storing large amounts of data, and also querying them. It’s the closest form to raw outputs and it’s easier to slice and dice the data. Also easier to separate the query engine and the data storage, utilizing elastic resources effectively. However, at this iteration we went with option #2 instead.
+#3 is the most ideal, in terms of storing large amounts of data, and also querying them. It’s the closest form to raw outputs and it’s easier to slice and dice the data.
+Also easier to separate the query engine and the data storage, which results in more effective compute and storage resource utilization[^1].
+
+However, at this iteration we went with option #2 instead.
 
 Mainly because,
 
-* Timescale is not a columnar database, querying massive amounts of data will incur penalties
+* Timescale is not a columnar database, querying massive amounts of data will incur penalties[^2]
 * A future possible feature to expose metrics endpoints for each account, and this format was easier
 * The Go tally library has a nice way of [extending it to work with custom storage](https://pkg.go.dev/github.com/uber-go/tally#StatsReporter), and saves us time to release
 * #3 requires more involved technical work, which unfortunately we do not have the capacity and time right now
@@ -269,7 +278,24 @@ ORDER BY
   bucket DESC
 ```
 
-See [here](https://docs.timescale.com/use-timescale/latest/continuous-aggregates/troubleshooting/#queries-fail-when-defining-continuous-aggregates-but-work-on-regular-tables) for more details.
+What am I talking about? Let's take a closer look.
+
+![Aggregated Delta](/assets/blog/metrics-with-timescaledb/cagg.jpg)
+
+The screenshot above shows an example when inspecting deltas with different methods for a specific metric.
+
+The goal here is `calculate the difference between the last value of the current bucket and the previous bucket`. In other words,
+
+```js
+diff = prev ? current - prev : current
+```
+
+When attempting to calculating the difference using `delta` or `interpolated_delta` aggregate functions, both are off from the actual value by `+1` or `-1`.
+
+Because `delta` is not considering the previous bucket's last value, and `interpolated_delta` is taking into account the value at the end of the bucket that shouldn't be included.
+
+Though the difference is small when inspecting one metric, when data is aggregated across multiple metrics (even one counter metric for a function can have multiple variants because they run on different hosts, hence under different contexts),
+the slight difference of `1` will grow to something that can't be ignored.
 
 ### High cardinality
 
@@ -325,10 +351,23 @@ Now, because we’ve lost the context of `status`, calculating the deltas for al
 
 Because of this behavior, we needed to abandon the table, in this case, truncate it since the data are no longer usable from the date of the change.
 
-This is a consequence of the technical choice we’ve made, and unfortunately there’s not much leeway to work around it (there are ways to handle smooth transition but excluding it as that’s a separate topic).
+This is a consequence of the technical choice we’ve made, and unfortunately there’s not much leeway to work around it[^3].
+
+---
 
 ## Thoughts
 
-Developing on and using Timescale has been a pretty pleasant experience so far. The fact that it’s just Postgres behind the scenes gives us comfort that it’s built on battle tested technology.
+Developing with TimescaleDB and using TimescaleDB's cloud offering has been a pretty pleasant experience so far. The fact that it’s just Postgres behind the scenes gives us comfort that it’s built on battle tested technology.
+
+The cloud offering also provides good indications of compression, and they have a data tiering option available at the point of writing, so it has saved us a lot of effort in terms of having to operate our own cluster and all the fun things that comes with it.
 
 While there were some challenges, those were more due to the technical choices we made. For what we’ve been trying to do, Timescale has been performing very well, and above all it has allowed us to get something out rather quickly.
+
+
+---
+
+[^1]: Uber has a good [blog post](https://www.uber.com/blog/logging/) about this for their logging if you're interested. This can also apply to metrics as they're also just logs in a different format.
+
+[^2]: Although they do seem to have a [hybrid vectorization](https://www.timescale.com/blog/teaching-postgres-new-tricks-simd-vectorization-for-faster-analytical-queries/) as well if you're interested.
+
+[^3]: There are other ways to smooth the transition, including delete -> update to merge segments or create a new table and record to both at the same time, but truncate was the quickest and most bullet proof method for our need at the time.
