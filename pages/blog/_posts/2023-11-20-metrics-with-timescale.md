@@ -357,7 +357,7 @@ This is a consequence of the technical choice we’ve made, and unfortunately th
 
 ## Thoughts
 
-Developing with TimescaleDB and using TimescaleDB's cloud offering has been a pretty pleasant experience so far. The fact that it’s just Postgres behind the scenes gives us comfort that it’s built on battle tested technology.
+Developing with TimescaleDB and using Timescale's cloud offering has been a pretty pleasant experience so far. The fact that it’s just Postgres behind the scenes gives us comfort that it’s built on battle tested technology.
 
 The cloud offering also provides good indications of compression, and they have a data tiering option available at the point of writing, so it has saved us a lot of effort in terms of having to operate our own cluster and all the fun things that comes with it.
 
