@@ -37,9 +37,17 @@ const mainFunction = inngest.createFunction(
       </Property>
       <Property name="options" type="object" required>
         Options for the invocation:
-        * `function`: Either the ID or the local instance of the function to invoke.
-        * `data`: Optional data to pass to the invoked function.
-        * `user`: Optional user context for the invocation.
+        <Properties nested={true}>
+          <Property name="function" type="string | InngestFunction" required>
+            Either the ID or the local instance of the function to invoke.
+          </Property>
+          <Property name="data" type="object">
+            Optional data to pass to the invoked function.
+          </Property>
+          <Property name="user" type="object">
+            Optional user context for the invocation.
+          </Property>
+        </Properties>
         Throwing errors within the invoked function will be reflected in the invoking function.
       </Property>
     </Properties>
