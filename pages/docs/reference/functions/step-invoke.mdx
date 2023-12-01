@@ -1,6 +1,6 @@
 # Calling Inngest functions directly `step.invoke()`
 
-`step.invoke()` is used to call other functions within your event-driven system. It allows you to invoke functions either by specifying the function's event identifier or by passing the function directly. The method returns a `Promise` that resolves with the return value of the invoked function.
+Use `step.invoke()` to asynchronously call other functions and handle the result. Invoking other functions allows you to easily re-use functionality and compose them to create more complex workflows or map-reduce type jobs. `step.invoke() returns a `Promise` that resolves with the return value of the invoked function.
 
 ```ts
 // Some function we'll call
