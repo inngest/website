@@ -106,7 +106,7 @@ Use of `step.invoke()` to call an Inngest function directly is more akin to trad
 
 ## Internal behaviour
 
-When passed a function to invoke, internally we retrieve the ID of the function to invoke using the function's ID and the ID of the client used to create it. It can also be passed a string directly, in which case the user is reliant on Inngest to assert that the ID is correct. See [Error handling](#error-handling) for more information around this point.
+When a function object is passed as an argument, internally, the SDK retrieves the function's ID automatically. Alternatively, if a function ID `string` is passed, the Inngest SDK will assert the ID is correct at runtime. See [Error handling](#error-handling) for more information about this point. 
 
 When Inngest receives the request to invoke a function, it'll do so and wait for an `inngest/function.finished` event, which it will use to fulfil the data (or error) for the step.
 
