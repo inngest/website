@@ -2,7 +2,6 @@ import TypeScriptIcon from "src/shared/Icons/TypeScript";
 import PythonIcon from "src/shared/Icons/Python";
 import GoIcon from "src/shared/Icons/Go";
 import ElixirIcon from "src/shared/Icons/Elixir";
-import RustIcon from "src/shared/Icons/Rust";
 import GuideIcon from "src/shared/Icons/Guide";
 import { StatusIcon } from "src/shared/StatusWidget";
 import {
@@ -402,30 +401,6 @@ const sectionPythonReference = [
     ],
   },
 ];
-
-const sectionElixirReference = [
-  {
-    title: "Overview",
-    links: [
-      {
-        title: "Introduction",
-        href: `/docs/reference/elixir`
-      }
-    ]
-  }
-]
-
-const sectionRustReference = [
-  {
-    title: "Overview",
-    links: [
-      {
-        title: "Introduction",
-        href: `/docs/reference/rust`
-      }
-    ]
-  }
-]
 
 export const topLevelNav = [
   {
