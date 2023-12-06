@@ -145,6 +145,10 @@ const sectionPlatform = [
         title: "Creating an Event Key",
         href: `/docs/events/creating-an-event-key`,
       },
+      {
+        title: "Consuming webhook events",
+        href: `/docs/platform/webhooks`,
+      },
     ],
   },
   {
@@ -334,14 +338,22 @@ const sectionPythonReference = [
         title: "Introduction",
         href: `/docs/reference/python`,
       },
+      {
+        title: "Quick start",
+        href: `/docs/reference/python/overview/quick-start`,
+      },
+      {
+        title: "Environment variables",
+        href: `/docs/reference/python/overview/env-vars`,
+      },
     ],
   },
   {
-    title: "Inngest Client",
+    title: "Client",
     links: [
       {
-        title: "Create the client",
-        href: `/docs/reference/python/client/create`,
+        title: "Overview",
+        href: `/docs/reference/python/client/overview`,
       },
     ],
   },
@@ -351,6 +363,44 @@ const sectionPythonReference = [
       {
         title: "Create function",
         href: `/docs/reference/python/functions/create`,
+      },
+    ],
+  },
+  {
+    title: "Steps",
+    links: [
+      {
+        title: "parallel",
+        href: `/docs/reference/python/steps/parallel`,
+      },
+      {
+        title: "run",
+        href: `/docs/reference/python/steps/run`,
+      },
+      {
+        title: "send_event",
+        href: `/docs/reference/python/steps/send-event`,
+      },
+      {
+        title: "sleep",
+        href: `/docs/reference/python/steps/sleep`,
+      },
+      {
+        title: "sleep_until",
+        href: `/docs/reference/python/steps/sleep-until`,
+      },
+      {
+        title: "wait_for_event",
+        href: `/docs/reference/python/steps/wait-for-event`,
+      },
+    ],
+  },
+  {
+    title: "Middleware",
+    links: [
+      {
+        title: "Overview",
+        href: `/docs/reference/python/middleware/overview`,
       },
     ],
   },
