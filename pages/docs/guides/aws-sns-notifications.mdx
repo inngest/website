@@ -1,4 +1,4 @@
-# Using SNS to trigger functions
+# Using Amazon SNS to trigger functions
 
 Amazon's [Simple Notification Service (SNS)](https://aws.amazon.com/sns/) is a pub/sub service that allows you to send messages to a topic and have them delivered to subscribers. In this example, we'll use SNS to trigger an Inngest function when a new file is uploaded to an S3 bucket.
 
@@ -34,7 +34,7 @@ function transform(evt, headers = {}, queryParams = {}) {
   } catch(e) {
     // If the fails, push the entire SNS notification through:
     return {
-      id: evt.MessageId, // used for deduplication
+      id: evt.MessageId,
       name: `aws.sns/${evt.Notification}`,
       data: evt,
     };
@@ -57,7 +57,7 @@ function transform(evt, headers = {}, queryParams = {}) {
   } catch(e) {/* noop */}
 
   return {
-    id: e.MessageId, // used for deduplication
+    id: evt.MessageId, // used for deduplication
     name: `sns/${evt.Notification}`,
     data: { ...evt, Message  },
   };

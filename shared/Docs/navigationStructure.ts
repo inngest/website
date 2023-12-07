@@ -114,7 +114,7 @@ const sectionGuides = [
         href: `/docs/guides/user-defined-workflows`,
       },
       {
-        title: "Using SNS to trigger functions",
+        title: "Using Amazon SNS to trigger functions",
         href: `/docs/guides/aws-sns-notifications`,
       },
       {
