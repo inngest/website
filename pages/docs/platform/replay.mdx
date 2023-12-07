@@ -1,0 +1,26 @@
+# Replay functions
+
+Function runs that have ended can be replayed in bulk from the Inngest Dashboard. This is useful for
+when you have a large number of runs that you want to replay, for example, if you had a bug in your
+function that you have now fixed.
+
+![Replay button in function runs page](/assets/docs/replay/replay-function-runs.png)
+
+To replay a function, click the replay button which is present on both the function runs page and
+the function replay page. This will open a modal where you can select the runs you want to replay.
+
+![Replay modal empty](/assets/docs/replay/replay-function-modal-empty.png)
+
+You need to provide a replay name, which will be used to identify the replay in the replay list.
+To select the runs to be replayed, provide a time range during which the runs were ended and specify
+which status(es) they ended with.
+
+![Replay modal filled](/assets/docs/replay/replay-function-modal-filled.png)
+
+Once you have selected the runs you want to replay, click the replay button to start the replay. You
+will be redirected to the replay page where you can see the progress of the replay.
+
+![Replay page](/assets/docs/replay/replay-function-replays.png)
+
+A replay will run until all the selected runs have been replayed. This doesn't happen all at once.
+Instead, the replay will spread the load over time.
