@@ -114,6 +114,10 @@ const sectionGuides = [
         href: `/docs/guides/user-defined-workflows`,
       },
       {
+        title: "Using SNS to trigger functions",
+        href: `/docs/guides/aws-sns-notifications`,
+      },
+      {
         title: "Trigger code from Retool",
         href: `/docs/guides/trigger-your-code-from-retool`,
       },

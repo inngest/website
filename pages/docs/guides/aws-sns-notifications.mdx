@@ -1,0 +1,101 @@
+# Using SNS to trigger functions
+
+Amazon's [Simple Notification Service (SNS)](https://aws.amazon.com/sns/) is a pub/sub service that allows you to send messages to a topic and have them delivered to subscribers. In this example, we'll use SNS to trigger an Inngest function when a new file is uploaded to an S3 bucket.
+
+![A diagram showing the S3 to SNS to Inngest flow](/assets/docs/guides/aws-sns-notifications/featured-image.png)
+
+## Setting up the SNS topic
+
+- Link to SNS/S3 topic on this, this is a prerequisite
+
+## Creating an the Inngest webhook
+
+- Create the Inngest webhook
+  - Link to webhook creation guide
+- Show the transform to use, show raw before event for testing in the UI
+- Show what the S3 event will look like with the transform
+
+<details open>
+  <summary>**S3 message parsing** - Use for S3 bucket subscriptions</summary>
+
+```js
+// Only pass through the useful bits from the S3 notification message
+function transform(evt, headers = {}, queryParams = {}) {
+  // Attempt to parse the Message as a s3 notification
+  try {
+    const message = JSON.parse(evt.Message)
+    const data = message.Records[0]; // flatten the message, s3 only has one record
+    const eventName = data.eventName; // e.g. 'ObjectCreated:Put'
+    return {
+      id: evt.MessageId, // used for deduplication
+      name: `aws.s3/${eventName}`,
+      data,
+    };
+  } catch(e) {
+    // If the fails, push the entire SNS notification through:
+    return {
+      id: evt.MessageId, // used for deduplication
+      name: `aws.sns/${evt.Notification}`,
+      data: evt,
+    };
+  }
+};
+```
+</details>
+
+<details>
+  <summary>**Generic SNS transform** - Use for any type of SNS event</summary>
+
+```js
+// Pass the entire SNS notification as the event
+function transform(evt, headers = {}, queryParams = {}) {
+
+  let Message = evt.Message;
+  // Attempt to parse the Message, which typically is JSON
+  try {
+    Message = JSON.parse(evt.Message)
+  } catch(e) {/* noop */}
+
+  return {
+    id: e.MessageId, // used for deduplication
+    name: `sns/${evt.Notification}`,
+    data: { ...evt, Message  },
+  };
+};
+```
+</details>
+
+<details>
+  <summary>**Example SNS sd:ObjectCreated:Put message**</summary>
+
+```json
+{
+  "Type": "Notification",
+  "MessageId": "a0f0ad61-c8ef-5f11-b526-f08a31db1470",
+  "TopicArn": "arn:aws:sns:us-east-2:497734433844:inngest-sns",
+  "Subject": "Amazon S3 Notification",
+  "Message": "{\"Records\":[{\"eventVersion\":\"2.1\",\"eventSource\":\"aws:s3\",\"awsRegion\":\"us-east-2\",\"eventTime\":\"2023-12-07T16:46:43.408Z\",\"eventName\":\"ObjectCreated:Put\",\"userIdentity\":{\"principalId\":\"AWS:ABCDXXXXXXXXXXXXXXXXX:hello@inngest.com\"},\"requestParameters\":{\"sourceIPAddress\":\"91.7.79.17\"},\"responseElements\":{\"x-amz-request-id\":\"23TTGDRBMPPQ5REY\",\"x-amz-id-2\":\"mvi9wT09DIp3dm4l9smAgBtnU/ixt2P3x4lwLtiQiPqiXxNnDVlB6/YVVs1a8CWVmey96A4txFtvJufnd7l14Cp+dyR9XEOS68UAPVkgtJQ=\"},\"s3\":{\"s3SchemaVersion\":\"1.0\",\"configurationId\":\"Upload\",\"bucket\":{\"name\":\"inngest-demo-bucket\",\"ownerIdentity\":{\"principalId\":\"ZXR28HJSF84H5\"},\"arn\":\"arn:aws:s3:::inngest-demo-bucket\"},\"object\":{\"key\":\"cursor+%281%29.svg\",\"size\":785,\"eTag\":\"01f57870fc202b2d662a99a1614fa5c1\",\"sequencer\":\"006571F6F35EAC6719\"}}}]}",
+  "Timestamp": "2023-12-07T16:46:44.298Z",
+  "SignatureVersion": "1",
+  "Signature": "KypaAODGxl/eZylOj5cn2yVqONBq2iT11thI1ZRnMnhIF37dDSbMY7TjaaojoGsmWENm9hVHxVq8NEa75UvqZjYqRSOWEb7Q+RnNkBTYXKj65F0zTqsRUmnrUGjqDd7tNWlK/7bGoSw3/1jzdRR9bKo8nBRjE3jF5kfOGzzZBwlb/yXDoSWKpthzja7rG+gY44cwO3Jv7YIR35xw6OQJznbAKvYcU8R+5Iwpnh2oq5l+AgCXBRErqNvdic+Z6fAkSlGaRh50e9/BRt6nu8CsY0ttIEHn9xKreEiWwle59/Jwed9VZKDisWJKOnJjhyUioXDGiHhGU4rTGj8qSJPCfg==",
+  "SigningCertURL": "https://sns.us-east-2.amazonaws.com/SimpleNotificationService-01d088a6f77103d0fe307c0069e40ed6.pem",
+  "UnsubscribeURL": "https://sns.us-east-2.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:us-east-2:497734433844:inngest-sns:dba563e7-d03c-4006-b34e-e77350686db6"
+}
+```
+</details>
+
+## Creating the SNS subscription
+
+- Creating the sub
+- Requesting confirmation
+- Finding the event and copying the URL
+- Confirming the subscription
+- Testing with an S3 file upload
+- View the event in Inngest dashboard
+
+## Writing your function
+
+- Use the new trigger w/ the name
+- How to get a test event?
+- Show basic function that performs an action on the file like downloading and parsing a CSV
+- Done!
