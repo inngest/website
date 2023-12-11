@@ -1,16 +1,16 @@
-import TypeScriptIcon from "src/shared/Icons/TypeScript";
-import PythonIcon from "src/shared/Icons/Python";
-import GoIcon from "src/shared/Icons/Go";
-import GuideIcon from "src/shared/Icons/Guide";
-import { StatusIcon } from "src/shared/StatusWidget";
 import {
-  HomeIcon,
   CogIcon,
-  PlayIcon,
   CommandLineIcon,
+  HomeIcon,
   LifebuoyIcon,
+  PlayIcon,
   QuestionMarkCircleIcon,
 } from "@heroicons/react/24/outline";
+import GoIcon from "src/shared/Icons/Go";
+import GuideIcon from "src/shared/Icons/Guide";
+import PythonIcon from "src/shared/Icons/Python";
+import TypeScriptIcon from "src/shared/Icons/TypeScript";
+import { StatusIcon } from "src/shared/StatusWidget";
 
 // A basic link in the nav
 type NavLink = {
@@ -84,6 +84,10 @@ const sectionGuides = [
         href: `/docs/guides/fan-out-jobs`,
       },
       {
+        title: "Invoking functions directly",
+        href: `/docs/guides/invoking-functions-directly`,
+      },
+      {
         title: "Batching events",
         href: `/docs/guides/batching`,
       },
@@ -138,16 +142,20 @@ const sectionPlatform = [
     title: "Inngest Cloud",
     links: [
       {
-        title: "Working With Environments",
+        title: "Working with environments",
         href: `/docs/platform/environments`,
       },
       {
-        title: "Creating an Event Key",
+        title: "Creating an event key",
         href: `/docs/events/creating-an-event-key`,
       },
       {
         title: "Consuming webhook events",
         href: `/docs/platform/webhooks`,
+      },
+      {
+        title: "Replaying functions",
+        href: `/docs/platform/replay`,
       },
     ],
   },
@@ -159,7 +167,7 @@ const sectionPlatform = [
         href: `/docs/usage-limits/inngest`,
       },
       {
-        title: "Serverless Providers",
+        title: "Serverless providers",
         href: `/docs/usage-limits/providers`,
       },
     ],
@@ -246,6 +254,11 @@ const sectionTypeScriptReference = [
       {
         title: "step.sleepUntil()",
         href: `/docs/reference/functions/step-sleep-until`,
+        className: "font-mono",
+      },
+      {
+        title: "step.invoke()",
+        href: `/docs/reference/functions/step-invoke`,
         className: "font-mono",
       },
       {
