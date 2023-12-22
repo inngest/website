@@ -146,12 +146,10 @@ One reason why you might want to use `idempotency` at the function level is if y
 In this case, you would want to set `idempotency` on the "Run generation" function to ensure that it runs once, for example, for every unique prompt that is sent. You may want to do this as you don't want to re-run the same exact prompt and waste compute resources/credits. However, you still might want to track the number of requests that each user submitted, so you would not want to set `idempotency` on the "Track requests" function. You can see the code for both functions below.
 
 <details>
-  <summary>View the function code</summary>
+  <summary>**View the function code**</summary>
 
-  Both functions use the same event trigger, `ai/generation.requested`.
+  Both functions use the same event trigger, `ai/generation.requested` which contains a `promptHash` and a `userId` in the event payload.
 
-  <Row>
-    <Col>
 ```ts {{ title: "Track requests function" }}
 const trackRequests = inngest.createFunction(
   { id: 'track-requests' },
@@ -161,8 +159,7 @@ const trackRequests = inngest.createFunction(
   }
 )
 ```
-    </Col>
-    <Col>
+
 ```ts {{ title: "Run generation function" }}
 const runGeneration = inngest.createFunction(
   {
@@ -178,8 +175,7 @@ const runGeneration = inngest.createFunction(
   }
 )
 ```
-    </Col>
-  </Row>
+
 </details>
 
 
