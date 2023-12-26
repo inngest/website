@@ -40,6 +40,11 @@ The `createFunction` method accepts a series of arguments to define your functio
       <Property name="key" type="string">
         A unique key expression for which to restrict concurrently running steps to. The expression is evaluated for each triggering event and a unique key is generate.
       </Property>
+      <Property name="scope" type='"fn" | "env" | "account"'>
+        The scope that the concurrency limit should be applied to. Defaults to per-function (`"fn"`).
+
+        Set to `"env"` to apply the limit to all functions in the same environment (e.g. production vs branch environments) or to `"account"` to apply the limit to all functions in your account.
+      </Property>
     </Properties>
   </Property>
 

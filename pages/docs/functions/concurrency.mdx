@@ -66,7 +66,11 @@ Optionally, specifying a concurrency `key` applies the `limit` to unique values 
 
         * Limit concurrency to `n` (via `limit`) per customer id: `'event.data.customer_id'`
         * Limit concurrency to `n` per user, per import id: `'event.data.user_id + "-" + event.data.import_id'`
+      </Property>
+      <Property name="scope" type='"fn" | "env" | "account"'>
+        The scope that the concurrency limit should be applied to. Defaults to per-function (`"fn"`).
 
+        Set to `"env"` to apply the limit to all functions in the same environment (e.g. production vs branch environments) or to `"account"` to apply the limit to all functions in your account.
       </Property>
     </Properties>
   </Property>
