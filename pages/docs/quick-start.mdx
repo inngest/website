@@ -1,19 +1,15 @@
 export const description =
-  `This quick start walks you step-by-step through everything you need to get started with Inngest.`
+  `Get started with Inngest with this five-minute tutorial`
 
 # Quick start
 
-This quick start walks you step-by-step through everything you need to get started. It'll take approximately 5 minutes. You will learn how to:
+Inngest enables you to XYZ. 
 
-- Run Inngest on your machine for local testing
-- Add Inngest to an existing Next.js project ([other frameworks are also supported](/docs/sdk/serve#setting-up-the-api))
-- Write your first function
-- Trigger your function from the development UI
-- Trigger your function from code
+This five-minute tutorial will walk you through setting up and running Inngest on your machine. You will write your first function and trigger it from code and your app's UI.
 
-Afterwards you'll be ready to [deploy your app to any platform](/docs/deploy), then build [advanced functions using our guides](/docs/guides)!  Let's get started.
+Let's get started.
 
-## Choose the Next.js App Router or Pages Router:
+## Choose a framework:
 
 <GuideSelector
   options={[
@@ -21,20 +17,63 @@ Afterwards you'll be ready to [deploy your app to any platform](/docs/deploy), t
     { key: "nextpages", title: "Next.js - Pages Router" }
   ]}>
 
+## Prerequisite: choose a project to which you'll add Inngest
 
+You can choose any existing Next.js project or create a new one.
 
-## 1. Run Inngest locally
+<details>
+  <summary><strong>Create a new Next.js project</strong></summary>
 
-Before integrating Inngest we will start the [open-source development server](https://www.github.com/inngest/inngest).  Run the following command in your terminal:
+ Run the following command in your terminal to create a new Next.js project:
+
+<GuideSection show="nextpages">
+```shell
+npx create-next-app@latest --ts --eslint --tailwind --no-src-dir --no-app --import-alias='@/*' inngest-guide
+```
+</GuideSection>
+
+<GuideSection show="nextappdir">
+```shell
+npx create-next-app@latest --ts --eslint --tailwind --src-dir --app --import-alias='@/*' inngest-guide
+```
+</GuideSection>
+
+</details>
+
+Open the project in your code editor and start the Next.js development server in your terminal by running:
+
+```shell
+npm run dev
+```
+
+Let's now add Inngest.
+
+## 1. Install Inngest
+
+With your development server running, open a new tab in your terminal. In your project directory's root, run the following command to install Inngest JavaScript SDK:
+
+<CodeGroup>
+```shell {{ title: "npm" }}
+npm install inngest
+```
+```shell {{ title: "yarn" }}
+yarn add inngest
+```
+```shell {{ title: "pnpm" }}
+pnpm add inngest
+```
+</CodeGroup>
+
+## 2. Run Inngest dev server
+
+Next, start the Inngest development server:
 
 ```
 npx inngest-cli@latest dev
 ```
 
-You should see the following output:
-
 <details>
-  <summary><strong>You should see the following output:</strong></summary>
+  <summary><strong>You should see a similar output:</strong></summary>
 
 <CodeGroup>
 
@@ -64,7 +103,7 @@ $ npx inngest-cli@latest dev
 
 </details>
 
-This runs Inngest locally.  We'll use this to test our functions as we write them.  With this running you can visit [`http://localhost:8288`](http://localhost:8288) to see the development UI:
+In your browser open [`http://localhost:8288`](http://localhost:8288) to see the development UI where you will test the functions you write:
 
 <img
   src="/assets/docs/quick-start/dev-server-empty-stream.jpg"
@@ -72,52 +111,9 @@ This runs Inngest locally.  We'll use this to test our functions as we write the
   className="max-w-2xl rounded-md"
 />
 
-Let's get started with adding Inngest to a project!
+## 3. Create an Inngest client
 
-## 2. Add Inngest to a Next.js project
-
-Inngest runs your functions securely via an API endpoint at `/api/inngest`.  The first step is to add this API endpoint to your project.
-
-
-<details>
-  <summary><strong>Prerequisite: Create a new Next.js project</strong></summary>
-
-
-
-Let's start a new Next.js project by running `create-next-app` in your terminal:
-
-<GuideSection show="nextpages">
-```shell
-npx create-next-app@latest --ts --eslint --tailwind --no-src-dir --no-app --import-alias='@/*' inngest-guide
-```
-</GuideSection>
-
-<GuideSection show="nextappdir">
-```shell
-npx create-next-app@latest --ts --eslint --tailwind --src-dir --app --import-alias='@/*' inngest-guide
-```
-</GuideSection>
-
-You can answer the questions however you'd like.  This creates a new `inngest-guide` directory containing your project.  Open this directory in your terminal and code editor, then we can start adding Inngest!
-</details>
-
-### Install the Inngest SDK
-
-Within your Next.js project root, add the Inngest JS SDK:
-
-<CodeGroup>
-```shell {{ title: "npm" }}
-npm install inngest
-```
-```shell {{ title: "yarn" }}
-yarn add inngest
-```
-```shell {{ title: "pnpm" }}
-pnpm add inngest
-```
-</CodeGroup>
-
-### Create a client and API handler
+Now it's time to create an [Inngest client](/docs/reference/client/create) in your Next.js project. You will use it to send and receive events. Inngest runs your functions securely via an API endpoint at `/api/inngest`.
 
 <GuideSection show="nextpages">
   Create a new file at `./pages/api/inngest.ts` with the following code:
@@ -140,9 +136,9 @@ pnpm add inngest
 </GuideSection>
 
 <GuideSection show="nextappdir">
-  Create a new directory next to your `app` directory where you'll define your Inngest functions and client (e.g. `src/inngest`).
+  Make a new directory next to your `app` directory (for example, `src/inngest`) where you'll define your Inngest functions and client.
 
-  Create an Inngest client in this new directory:
+  In this directory create an Inngest client:
 
   ```ts {{ filename: "src/inngest/client.ts" }}
   import { Inngest } from "inngest";
@@ -151,7 +147,11 @@ pnpm add inngest
   export const inngest = new Inngest({ id: "my-app" });
   ```
 
-  And now create a route handler to handle the `/api/inngest` route within your app directory at `src/app/api/inngest/route.ts`:
+## 4. Create an API handler
+
+Now you will set up the API endpoint for hosting and invoking functions. 
+
+Add a route handler within your app directory (for example, at `src/app/api/inngest/route.ts`) to handle the `/api/inngest` endpoint:
 
   ```ts {{ filename: "src/app/api/inngest/route.ts" }}
   import { serve } from "inngest/next";
@@ -167,22 +167,28 @@ pnpm add inngest
   ```
 </GuideSection>
 
-Here, we're creating a new [Inngest client](/docs/reference/client/create) which we'll use to send and receive events. With this, we create an API endpoint called a "Serve Handler" with a list of available functions.
+<Callout>
+👉 Note that you can import [`serve()`](/docs/reference/serve) for other frameworks but the code, in fact, is the same — only the import statement changes.
+</Callout>
 
-You can import [`serve()`](/docs/reference/serve) for other frameworks, though the code is the same — only the import changes.
+## 5. Write your first Inngest function
 
-This sets up the API endpoint for hosting and invoking functions!  We'll update the array passed in to `serve` with functions as we write them.
+In this step, you will write your first reliable serverless function.
 
-## 3. Write your first function
+### Define the function
 
-### Defining the function
+To define the function, use the [`createFunction`](/docs/reference/functions/create) method, which takes three arguments:
+  - Configuration: `id` is required and is the name of your function, which is used in the Inngest dashboard to identify the function.
+  - Trigger: `event` is the name of the event that triggers your function. Alternatively, you can also use `cron` to specifiy a schedule to trigger this function.
+  - Handler: the function that is called when the event is received (or, what is supposed to happen when the Trigger happens).
 
-Let's write your first reliable serverless function! <GuideSection show="nextpages">Add the following to your `./pages/api/inngest.ts` file:</GuideSection>
 
 <GuideSection show="nextpages">
+
+Add the following code to the `./pages/api/inngest.ts` file:
+
   ```ts
   // Step 2 code...
-
   const helloWorld = inngest.createFunction(
     { id: "hello-world" },
     { event: "test/hello.world" },
@@ -192,28 +198,11 @@ Let's write your first reliable serverless function! <GuideSection show="nextpag
     },
   );
   ```
-
-  `createFunction` takes three arguments:
-
-  - Configuration: `name` is required and is the name of your function, which is used in your dashboard to identify the function
-  - Trigger: `event` is the name of the event that triggers your function, you can also use `cron` to specifiy a schedule to trigger this function. One or the other is required.
-  - `handler` is the function that is called when the event is received
-
-Full details about [`createFunction` can be found here](/docs/reference/functions/create) in the docs.
-
-  We also add this new function to the `serve` handler.
-
-  ```ts
-  export default serve({
-    client: inngest,
-    functions: [
-      helloWorld, // <-- This is where you'll always add your new functions
-    ],
-  });
-  ```
+  
 </GuideSection>
 
 <GuideSection show="nextappdir">
+
   Create the following function in your new `inngest` directory at `src/inngest/functions.ts`:
 
   ```ts {{ filename: "src/inngest/functions.ts" }}
@@ -229,15 +218,28 @@ Full details about [`createFunction` can be found here](/docs/reference/function
   );
   ```
 
-  `createFunction` takes three arguments:
+</GuideSection>
 
-  - Configuration: `name` is required and is the name of your function, which is used in your dashboard to identify the function
-  - Trigger: `event` is the name of the event that triggers your function, you can also use `cron` to specifiy a schedule to trigger this function. One or the other is required.
-  - `handler` is the function that is called when the event is received
+### Add the function to `serve()`
 
-Full details about [`createFunction` can be found here](/docs/reference/functions/create) in the docs.
+<GuideSection show="nextpages">
 
-  Now we need to add this new functions to the `serve` handler so Inngest can invoke it via HTTP:
+  Next, add this new Inngest function to the `serve` handler.
+
+  ```ts
+  export default serve({
+    client: inngest,
+    functions: [
+      helloWorld, // <-- This is where you'll always add your new functions
+    ],
+  });
+  ```
+
+</GuideSection>
+
+<GuideSection show="nextappdir">
+
+  Next, add this new Inngest function to the `serve` handler so Inngest can invoke it via HTTP:
 
   ```ts {{ filename: "src/app/api/inngest/route.ts" }}
   import { serve } from "inngest/next";
@@ -254,20 +256,23 @@ Full details about [`createFunction` can be found here](/docs/reference/function
 
 </GuideSection>
 
-This creates a new function which will be called in the background any time Inngest receives an event with the name `test/hello.world`.  This introduces some new concepts:
+Now, time to run your function!
 
-{/*  TODO/DOCS: Link these to relevant docs on each when completed (Concepts, guides, references etc.) */}
-- Functions are called by events (or on a schedule), in the background
-- Functions can [sleep](/docs/reference/functions/step-sleep)
-- Functions will [retry automatically if they error](/docs/functions/retries).
+## 6. Triggering your function from the development UI
 
-Instead of calling your function directly as an API with a JSON body, you send a JSON event to Inngest.  Inngest calls all functions listening to this event, and automatically passes the event payload JSON as an function argument.
+<details>
+  <summary><strong>Inngest's key feature are events.</strong></summary>
 
-Now, let's run your function!
+Event-driven architecture allow you to:
+- Run one or many functions automatically
+- See the event payload, and use the event payload in your functions
+- Store the event for some amount of time, to locally replay if there are errors in production
+- Build complex sleeps and schedules without worrying about queues
+</details>
 
-## 4. Triggering your function from the development UI
+You will see an event firing in practice first by sending it directly to Inngest UI.
 
-Ensure your Next.js app is up and running via `npm run dev` inside project the root, then head to [`http://localhost:8288`](http://localhost:8288).  You should see the following UI, which allows you to send events directly to Inngest:
+With your Next.js and Inngest dev servers running, head to Inngest's [`http://localhost:8288`](http://localhost:8288).
 
 <img
   src="/assets/docs/quick-start/dev-server-empty-stream.jpg"
@@ -275,7 +280,7 @@ Ensure your Next.js app is up and running via `npm run dev` inside project the r
   className="max-w-2xl rounded-md"
 />
 
-To send the event, click on “Test Event” in the top right corner then add the following event data:
+To send the event, click on “Test Event” in the top right corner. Add the data from the `createFunction` you defined earlier:
 
 ```json
 {
@@ -292,7 +297,7 @@ To send the event, click on “Test Event” in the top right corner then add th
   className="max-w-2xl rounded-md"
 />
 
-The event is sent to Inngest running locally via `npx inngest-cli@latest dev`, which automatically runs your function in the background reliably!
+The event is sent to Inngest (which is running locally) and automatically runs your function in the background!
 
 <img
   src="/assets/docs/quick-start/dev-server-stream.jpg"
@@ -306,23 +311,23 @@ The event is sent to Inngest running locally via `npx inngest-cli@latest dev`, w
   className="rounded-md"
 />
 
-This highlights the power of event-driven development.  Using events, you can:
+In the next step, you will trigger events from your app.
 
-- Run one or many functions automatically
-- See the event payload, and use the event payload in your functions
-- Store the event for some amount of time, to locally replay if there are errors in production
-- Build complex sleeps and schedules without worrying about queues
+## 6. Triggering your function from code
 
-{/* - TODO/DOCS:
-  Add and link "which we talk about here" (after using events...) to future "benefits of events" concept doc
-*/}
-There are many other benefits to using events.  For now, let's show you how to trigger functions in your code by sending events from your own app.
+When you want to run functions reliably in your app, you'll need to send an event to Inngest. Once an event is received, it is forwarded to all functions that listen to it.
 
-## 5. Triggering your function from code
+<details><summary>To send an event from your code, you can use the `Inngest` client's `send()` method.</summary>
 
-When you want to run functions reliably in your app, you'll need to send an event to Inngest.  As you've seen, these events are forwarded to all functions that listen to this event.
+With the `send` method used above you now can:
+- Send one or more events within any API route.
+- Include any data you need in your function within the `data` object.
 
-To send an event from your code, you can use the `Inngest` client's `send()` method. Let's send an event from the a “hello” Next.js API function that you can create in <GuideSection show="nextpages">`./pages/api/hello.ts`</GuideSection><GuideSection show="nextappdir">`src/app/api/hello/route.ts`</GuideSection>:
+In a real-world app, you might send events from API routes that perform an action, like registering users (for example, `app/user.signup`) or creating something (for example, `app/report.created`).
+
+</details>
+
+You will now send an event from the “hello” Next.js API function that you can create in the <GuideSection show="nextpages">`./pages/api/hello.ts`</GuideSection><GuideSection show="nextappdir">`src/app/api/hello/route.ts`</GuideSection> file:
 
 <GuideSection show="nextpages">
   ```ts
@@ -372,23 +377,19 @@ To send an event from your code, you can use the `Inngest` client's `send()` met
   ```
 </GuideSection>
 
-Note that we use [`"force-dynamic"`](https://nextjs.org/docs/app/building-your-application/caching) to ensure we always send a new event on every request. In most situations, you'll probably want to send an event during a `POST` request so that you don't need this config option.
+<Callout>
+👉 Note that we use [`"force-dynamic"`](https://nextjs.org/docs/app/building-your-application/caching) to ensure we always send a new event on every request. In most situations, you'll probably want to send an event during a `POST` request so that you don't need this config option.
+</Callout>
 
-Every time this API route is requested, an event is sent to Inngest. To test it, drop this new API route's URL in your web browser: `http://localhost:3000/api/hello` (change your port if your app is running elsewhere). With the `send` function you now can:
+Every time this API route is requested, an event is sent to Inngest. To test it, open http://localhost:3000/api/hello (change your port if your app is running elsewhere). You should see XYZ.
 
-- Send one or more events within any API route
-- Include any data you need in your function within the `data` object
+Congratulations! You now have learned how to use Inngest by creating functions and sending events to trigger those functions.
 
-In a real world app, you might send events from API routes that perform an action, like registering users (e.g. `app/user.signup`) or creating something (e.g. `app/report.created`).
+## Next Steps
 
-That's it! You now have learned how to use Inngest by creating functions and sending events to trigger those functions. You can now explore [how to deploy your app to your platform](/docs/deploy) or learn [how to use Inngest with other frameworks](/docs/sdk/serve)!
-
-If you'd like to learn more about functions or sending events check out these related docs:
-
-- [Writing functions](/docs/functions)
-- [Writing scheduled functions](/docs/functions#writing-a-scheduled-function)
-- [Sending events](/docs/events)
-{/* TODO/DOCS: Add the concepts category index page here when complete
-  - [Learn the concepts](/docs/concepts) */}
-
-</GuideSelector>
+To continue your adventure, feel free to check out:
+- How to [deploy your app to your platform](/docs/deploy).
+- How to [use Inngest with other frameworks](/docs/sdk/serve).
+- Docs page on [writing functions](/docs/functions).
+- Docs page on [writing scheduled functions](/docs/functions#writing-a-scheduled-function).
+- Docs page on [sending events](/docs/events).
