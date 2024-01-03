@@ -32,12 +32,22 @@ Most expressions are given the `event` payload object as the input. Expressions 
 "event.data.billingPlan == 'enterprise' && event.data.amount > 1000"
 "event.data.billingPlan != 'pro' || event.data.amount < 300"
 
+// Compare the function trigger with an inbound event (for wait for event or cancellation)
+"event.data.userId == async.data.userId"
+
+// Alternatively, you can use JavaScript string interpolation for wait for event
+`${userId} == async.data.userId` // => "user_1234 == async.data.userId"
+
 // Advanced CEL methods (see reference linked above):
 // Check if a string contains a substring
 "event.data.email.contains('gmail.com')"
 
 // Check that a field is set
 "has(event.data.email)"
+
+// Compare timestamps
+"timestamp(event.data.created) > timestamp('2024-01-01T00:00:00Z')"
+"timestamp(event.data.createdAt) + duration('5m') > timestamp(event.data.expireAt)"
 ```
 
 ### Value Expressions
@@ -50,6 +60,10 @@ Most expressions are given the `event` payload object as the input. Expressions 
 
 // Concatenate two strings together to create a unique key
 `event.data.userId + "-" + event.type` // => "user_1234-signup"
+
+// Advanced CEL methods (see reference linked above):
+// Convert a number to a string for concatenation
+`string(event.data.amount) + "-" event.data.planId`
 ```
 
 #### Dynamic Values
@@ -74,6 +88,39 @@ Most expressions are given the `event` payload object as the input. Expressions 
 * When working with the TypeScript SDK, write expressions within backticks `` ` `` to use quotes in your expression or use JavaScript's string interpolation.
 * Use ternary operators to return default values
 * When using the or operator (`||`), CEL will always return a boolean. This is different from JavaScript, where the or operator returns the value of the statement left of the operator if truthy. Use the ternary operator (`?`) instead of `||` for conditional returns.
+
+### CEL Helpers & Macros
+
+This is a non-exhaustive list of CEL [helpers](https://github.com/google/cel-spec/blob/master/doc/langdef.md#list-of-standard-definitions) and [macros](https://github.com/google/cel-spec/blob/master/doc/langdef.md#macros) that are useful for writing expressions:
+
+```js
+// Check if a field is set
+"has(event.data.email)"
+
+// Convert a number to a string
+"string(event.data.count)"
+
+// Convert a string to an int
+"int(event.data.amount)"
+
+// Get the first item in an array
+"event.data.items[0]"
+
+// Check if an item exists in an array
+"event.data.items.exists(e, e == 'shirt_1234')"
+
+// Check if only one item matches a condition
+"event.data.items.exists_one(e, e.starsWith('shirt_'))"
+
+// Check if all items in an array match a condition
+"event.data.amounts.all(n, n > 10)"
+
+// Convert a timestamp to an int (unix timestamp)
+"int(timestamp(event.data.createdAt))"
+
+// Add a duration to a timestamp
+"timestamp(event.data.createdAt) + duration('5m')"
+```
 
 
 ## Testing out expressions
