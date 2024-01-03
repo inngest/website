@@ -108,6 +108,10 @@ const sectionGuides = [
         title: "Logging",
         href: `/docs/guides/logging`,
       },
+      {
+        title: "Writing expressions",
+        href: `/docs/guides/writing-expressions`,
+      },
     ],
   },
   {
@@ -408,6 +412,15 @@ const sectionPythonReference = [
       {
         title: "wait_for_event",
         href: `/docs/reference/python/steps/wait-for-event`,
+      },
+    ],
+  },
+  {
+    title: "Events",
+    links: [
+      {
+        title: "Send",
+        href: `/docs/reference/python/events/send`,
       },
     ],
   },
