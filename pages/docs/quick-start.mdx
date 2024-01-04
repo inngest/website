@@ -1,14 +1,16 @@
 export const description =
-  `Get started with Inngest in this five-minute tutorial`
+  `Get started with Inngest in this ten-minute tutorial`
 
 # Quick start
 
+In this tutorial you will add Inngest to a Next.js app to see how easy it can be to build complex workflows.
+
 Inngest makes it easy to build, manage, and execute reliable workflows. Some use cases include scheduling drip marketing campaigns and payment flows, or chaining LLM interactions.
 
-By the end of this five-minute tutorial you will:
-- Set up and run Inngest on your machine. 
+By the end of this ten-minute tutorial you will:
+- Set up and run Inngest on your machine.
 - Write your first Inngest function.
-- Trigger your function from code and your app's UI.
+- Trigger your function from code and Inngest Dev Server.
 
 Let's get started!
 
@@ -71,9 +73,9 @@ pnpm add inngest
 ```
 </CodeGroup>
 
-## 2. Run Inngest dev server
+## 2. Run Inngest Dev Server
 
-Next, start the Inngest dev server:
+Next, start the [Inngest Dev Server](https://www.inngest.com/docs/local-development#inngest-dev-server):
 
 ```
 npx inngest-cli@latest dev
@@ -101,7 +103,7 @@ $ npx inngest-cli@latest dev
 12:38PM INF runner > service starting
 12:38PM INF runner > subscribing to events topic=events
 
-        Inngest dev server online at 0.0.0.0:8288, visible at the following URLs:
+        Inngest Dev Server online at 0.0.0.0:8288, visible at the following URLs:
 
           - http://127.0.0.1:8288 (http://localhost:8288)
 ```
@@ -116,7 +118,7 @@ In your browser open [`http://localhost:8288`](http://localhost:8288) to see the
   src="/assets/docs/quick-start/dev-server.png"
   width="800" height={800/2762*1868} quality="95"
   className="rounded-md"
-  alt="Inngest dev server screen with no events recorded"
+  alt="Inngest Dev Server screen with no events recorded"
 />
 
 ## 3. Create an Inngest client
@@ -174,7 +176,7 @@ Next, you will set up a route handler for the `/api/inngest` route. To do so, cr
 
 ## 4. Write your first Inngest function
 
-In this step, you will write your first reliable serverless function. Our function will be triggered whenever a specific event occurs (in our case, it will be `test/hello.world`). Then, it will sleep for a second and return a string.
+In this step, you will write your first reliable serverless function. This function will be triggered whenever a specific event occurs (in our case, it will be `test/hello.world`). Then, it will sleep for a second and return a "Hello, World!".
 
 ### Define the function
 
@@ -280,13 +282,13 @@ It is worth mentioninghere that event-driven architecture allows you to:
 
 You will test your first event in two ways: by sending it directly to the Inngest UI, and then by triggering it from code.
 
-With your Next.js and Inngest dev servers running, head over to Inngest dev server ([`http://localhost:8288`](http://localhost:8288)):
+With your Next.js and Inngest Dev Servers running, head over to Inngest Dev Server ([`http://localhost:8288`](http://localhost:8288)):
 
 <img
   src="/assets/docs/quick-start/dev-server.png"
   width="800" height={800/2762*1868} quality="95"
   className="rounded-md"
-  alt="Inngest dev server screen with no events recorded"
+  alt="Inngest Dev Server screen with no events recorded"
 />
 
 To send a test event, click on “Test Event” in the top right corner: 
@@ -295,7 +297,7 @@ To send a test event, click on “Test Event” in the top right corner:
   src="/assets/docs/quick-start/dev-server-frame.png"
   width="800" height={800/2762*1868} quality="95"
   className="rounded-md"
-  alt="Inngest dev server screen with no events recorded and the test button highlighted"
+  alt="Inngest Dev Server screen with no events recorded and the test button highlighted"
 />
 
 In the popup console, add the event name (which you defined in the `createFunction` method earlier) and some test metadata like an email address and press the "Send Event" button:
@@ -322,7 +324,7 @@ The event is sent to Inngest (which is running locally) and automatically execut
   src="/assets/docs/quick-start/dev-server-event-1.png"
   width="800" height={800/2762*1868} quality="95"
   className="rounded-md"
-  alt="Inngest dev server screen with one event recorded"
+  alt="Inngest Dev Server screen with one event recorded"
 />
 
 When you click on the event, you will see more information about the event such as which function was triggered, its payload, output, and timeline:
@@ -358,7 +360,7 @@ After the event was replayed, there are two events recorded in the dashboard:
   src="/assets/docs/quick-start/dev-server-event-2.png"
   width="800" height={800/2762*1868} quality="95"
   className="rounded-md"
-  alt="Inngest dev server screen with two events recorded"
+  alt="Inngest Dev Server screen with two events recorded"
 />
 
 Now you will trigger an event from inside your app.
@@ -441,13 +443,13 @@ Every time this API route is requested, an event is sent to Inngest. To test it,
   alt="Black screen with the JSON statement"
 />
 
-If you go back to the Inngest dev server, you will see this new event appear there as well:
+If you go back to the Inngest Dev Server, you will see this new event appear there as well:
 
 <img
   src="/assets/docs/quick-start/dev-server-event-3.png"
   width="800" height={800/2762*1868} quality="95"
   className="rounded-md"
-  alt="Inngest dev server screen with three events recorded"
+  alt="Inngest Dev Server screen with three events recorded"
 />
 
 However, what happens if you send a different event? Let's see! Change `test/hello.world` to `test/hello.from.next.app` and refresh [`http://localhost:3000/api/hello`](http://localhost:3000/api/hello). You will see that the event was sent and received:
@@ -456,7 +458,7 @@ However, what happens if you send a different event? Let's see! Change `test/hel
   src="/assets/docs/quick-start/dev-server-event-4.png"
   width="800" height={800/2762*1868} quality="95"
   className="rounded-md"
-  alt="Inngest dev server screen with four events recorded, last one being 'test/hello.bizarro.world' with no functions called"
+  alt="Inngest Dev Server screen with four events recorded, last one being 'test/hello.bizarro.world' with no functions called"
 />
 
 ... but no functions were triggered because there is not a single function in your app that is listening to such a bizarre event:
