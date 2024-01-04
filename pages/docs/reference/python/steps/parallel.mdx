@@ -2,6 +2,16 @@
 
 Run steps in parallel. Returns the parallel steps' result as a tuple.
 
+## Arguments
+
+<Properties>
+  <Property name="callables" type="tuple[Callable[[], object], ...]" required>
+    Accepts a tuple of callables. Each callable has no arguments and returns a JSON serializable value. Typically this is just a `lambda` around a `step` method.
+  </Property>
+</Properties>
+
+## Examples
+
 ```py
 @inngest_client.create_function(
     fn_id="my-function",

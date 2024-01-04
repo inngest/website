@@ -390,6 +390,14 @@ const sectionPythonReference = [
     title: "Steps",
     links: [
       {
+        title: "invoke",
+        href: `/docs/reference/python/steps/invoke`,
+      },
+      {
+        title: "invoke_by_id",
+        href: `/docs/reference/python/steps/invoke_by_id`,
+      },
+      {
         title: "parallel",
         href: `/docs/reference/python/steps/parallel`,
       },

@@ -2,11 +2,16 @@
 
 Calls another Inngest function, waits for its completion, and returns its output.
 
+This method behaves identically to the [invoke](/docs/reference/python/steps/invoke) step method, but accepts an ID instead of the function object. This can be useful for a few reasons:
+- Trigger a function whose code is in a different codebase.
+- Avoid circular dependencies.
+- Avoid undesired transitive imports.
+
 ## Arguments
 
 <Properties>
   <Property name="step_id" type="str" required>
-    Step ID.
+    Step ID. Should be unique within the function.
   </Property>
   <Property name="app_id" type="str">
     App ID of the invoked function.
