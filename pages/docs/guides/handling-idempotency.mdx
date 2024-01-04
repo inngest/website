@@ -8,8 +8,6 @@ Ensuring that your code is idempotent is foundational to building reliable syste
 
 Idempotency, by definition, describes an operation that can occur multiple times without changing the result beyond the initial execution. In the world of software, this means that a functions can be executed multiple times, but it will always have the same effect as being called once. An example of this is an "upsert."
 
-{/*TODO - maybe improve this*/}
-
 ## How to handle idempotency with Inngest
 
 It should always be the aim to write code that is idempotent itself within your system or your Inngest functions, but there are also some features within Inngest that can help you ensure idempotency.
@@ -21,8 +19,6 @@ As Inngest functions are triggered by events, there are two main ways to ensure 
 
 {/*TODO - New graphic in similar design style ![Relay graphic](/assets/docs/platform/replay/featured-image.png) */}
 
-{/*TODO - a little bit about the producer vs the consumer*/}
-
 ## At the event level (the producer)
 
 Each event that is received by Inngest will trigger any functions with that matching trigger. If an event is sent twice, Inngest will trigger the function twice. This is the default behavior as Inngest does not know if the event is the same event or a new event.
@@ -31,7 +27,7 @@ Each event that is received by Inngest will trigger any functions with that matc
 **Example:** Using an e-commerce store as an example, a user can add the same t-shirt to their cart twice because they want to buy two (_2 unique events_). That same user may check out and pay for all items in their cart but click the "pay" button twice (_2 duplicate events_).
 </Callout>
 
-To prevent an event from being handled twice, you can set a unique [event `id` when sending the event](/docs/reference/events/send#inngest-send-event-payload-event-payload-promise). This `id` acts as an idempotency key **over a 24 hour period** and Inngest will check to see if that event has already been received before triggering another function.
+To prevent an event from being handled twice, you can set a unique event `id` when [sending the event](/docs/reference/events/send#inngest-send-event-payload-event-payload-promise). This `id` acts as an idempotency key **over a 24 hour period** and Inngest will check to see if that event has already been received before triggering another function.
 
 ```ts
 const cartId = 'CGo5Q5ekAxilN92d27asEoDO';
@@ -48,7 +44,7 @@ await inngest.send({
 | Event ID | Timestamp | Function |
 | -------- | --------- | -------- |
 | `checkout-completed-CGo5Q5ekAxilN92d27asEoDO` | 08:00:00.000 | ✅ Functions are triggered |
-| `checkout-completed-CGo5Q5ekAxilN92d27asEoDO` | 08:00:00.010 | ❌ Nothing is triggered |
+| `checkout-completed-CGo5Q5ekAxilN92d27asEoDO` | 08:00:00.248 | ❌ Nothing is triggered |
 
 As you can see in the above example, setting the `id` allows you to prevent duplicate execution on the producer side, where the event originates.
 
@@ -72,7 +68,7 @@ TODO - Highlight the importance of the uniqueness of the event ID across events 
 
 You might prefer to ensure idempotency at the function level or you may not be able to control the event that is being sent (from a webhook). The [function's `idempotency` config option](/docs/reference/functions/create#inngest-create-function-configuration-trigger-handler-inngest-function) allows you to do this.
 
-Each function's `idempotency` key is defined as a [CEL expression](https://github.com/google/cel-go) that is evaluated with the event payload's data. The expression is used to generate a unique string key which idempotently prevents duplicate execution of the function.
+Each function's `idempotency` key is defined as a [CEL expression](/docs/guides/writing-expressions) that is evaluated with the event payload's data. The expression is used to generate a unique string key which idempotently prevents duplicate execution of the function.
 
 Each unique expression will only trigger one function execution **per 24 hour period**. After 24 hours, a new event that generates the same unique expression will trigger another function execution.
 
@@ -125,6 +121,8 @@ Combining two or more properties together is a good way to ensure the level of u
 
 * **User signup:** You only want to send a welcome email once per user, so you'd set `idempotency` to `event.data.userId` in case there your API sends duplicate events.
 * **Organization team invite:** A user may be part of multiple organizations in your app. You only want to send a team invite email once per user/organization combination, so you'd set `idempotency` to `event.data.userId + "-" + event.data.organizationId`.
+
+For more information on writing CEL expressions, read [our guide](/docs/guides/writing-expressions).
 
 <Callout>
   💡 If you want to control when a function is executed over a period of time you might prefer:
