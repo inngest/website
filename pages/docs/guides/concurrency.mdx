@@ -47,7 +47,7 @@ In this example, we define **two concurrency constraints which creates two virtu
 
 This lets you provide fine-grained concurrency across all functions in a simple, configurable manner.
 
-## Concurrency control across individual steps
+## Concurrency control across specific steps in a function
 
 You might need to control capacity for a single step in your function. For example, within an AI flow you may have 10 pre-processing steps which can run with higher limits, and a single AI call with much lower limits. To control concurrency on indivudal steps, extract the step into a new function with its _own_ concurrency controls, and invoke the new function using `step.invoke`. This lets you combine concurrency controls and manage "flow control" in a clean, composible manner.
 
