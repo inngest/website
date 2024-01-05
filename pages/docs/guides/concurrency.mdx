@@ -1,8 +1,8 @@
 # Concurrency management
 
 Managing concurrency is important for any production system. Inngest provides concurrency controls that allow you to create **multi-level virtual queues** **within each function**, directly in code, without thinking about infrastructure. Use cases include:
-- **Setting global limits for many functions which share a pool of resources, **for example with many functions which use shared AI capacity, or global DB connections.
-- **Setting limits on your own individual accounts, tenants or users, **for example limiting unpaid users to a specific capacity.
+- **Setting global limits for many functions which share a pool of resources**, for example with many functions which use shared AI capacity, or global DB connections.
+- **Setting limits on your own individual accounts, tenants or users**, for example limiting unpaid users to a specific capacity.
 - **A combination of the above**, with functions limited by the lowest/most constrained concurrency key.
 
 ## How to configure concurrency
