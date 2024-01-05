@@ -85,19 +85,62 @@ To control concurrency on indivudal steps, extract the step into a new function 
 
 **Concurrency works by limiting the number of steps executing at a single time.** Within Inngest, execution is defined as "an SDK running code". **Calling **`step.sleep`**, **`step.sleepUntil`**, or **`step.waitForEvent`** does not count towards capacity limits**, as the SDK doesn't execute code while those steps wait. Because sleeping or waiting is common, concurrency _does not_ limit the number of functions in progress; it specifically limits the number of steps executing at any single time.
 
-**Concurrency is strictly ordered from oldest to newest ([FIFO](https://en.wikipedia.org/wiki/FIFO))**, so Inngest prioritizes finishing older functions above starting newer functions, even if the older functions continue to schedule new steps to run.
+**Concurrency is strictly ordered from oldest to newest ([FIFO](https://en.wikipedia.org/wiki/FIFO))** with ordering kept amongst individual functions.  Ordering amongst different functions is not guaranteed. so Inngest prioritizes finishing older functions above starting newer functions, even if the older functions continue to schedule new steps to run.
 
 Inngest manages concurrency for you within our scheduling system, and you do not need to provision queues, infrastructure, or manage concurrency limits within your own workers or services.
 
 ## Global conflicts in two function definitions
 
-You may write two functions that define different levels for an 'account' level concurrency limit.  This works in Inngest, and controls concurrency
+You may write two functions that define different levels for an 'account' scoped concurrency limit.  For example, function A may limit the "ai" capacity to 5, while function B limits the "ai" capacity to 50:
+
+```js
+inngest.createFunction(
+  {
+    id: "func-a",
+    concurrency: [
+      {
+         scope: "account",
+         key: `"openai"`,
+         limit: 5,
+      },
+    ],
+  }
+  { event: "ai/summary.requested" },
+  async ({ event, step }) => {
+  }
+);
+
+inngest.createFunction(
+  {
+    id: "func-b",
+    concurrency: [
+      {
+         scope: "account",
+         key: `"openai"`,
+         limit: 50,
+      },
+    ],
+  }
+  { event: "ai/summary.requested" },
+  async ({ event, step }) => {
+  }
+);
+```
+
+
+This works in Inngest and is *not* a conflict.  Instead, function A is limited any time there are 5 or more functions running in the 'openai' queue.  Function B, however, is limited when there are 50 or more items in the queue.  This means that function B has more capacity than function A, though both are limited and compete on the same virtual queue.
+
+Because functions are FIFO, function runs are more likely to be worked on the older their jobs get (as the backlog grows).  If function A's jobs stay in the backlog longer than function B's jobs, it's likely that their jobs will be worked on as soon as capacity is free.  That said, function B will almost always have capacity before function A and may block function A's work.
+
+While this works, we strongly recommend that you use global constants for `env` or `account` level scopes, giving functions the same limit.
 
 ## Limitations
 
 - Concurrency limits the number of steps executing at a single time. It does not _yet_ perform rate limiting over a given period of time. This is scheduled for a Q2 '24 release.
 - Functions can specify up to 2 concurrency constraints at once
 - The maximum concurrency limit is defined by your account's plan
+- Ordering amongst the same function is guaranteed (with the exception of retries)
+- Ordering amongst different functions is not guaranteed.  Functions compete with each other randomly to be scheduled.
 
 ## SDK References
 
