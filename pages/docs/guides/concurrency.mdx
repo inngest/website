@@ -61,6 +61,8 @@ This lets you provide fine-grained concurrency across all functions in a simple,
     * `fn` (default):  the concurrency limit applies to runs within this function only
     * `env`:  the concurrency limit applies to all functions within the same environment that share the same evaluated key value.  This requires setting a "key" which evaluates to a virtual queue name.
     * `account`:  the concurrency limit applies to all functions in your account that share the same evaluated key value.  This requires setting a "key" which evaluates to a virtual queue name.
+
+    Each SDK exposes these enums in the language's idiomatic manner, though the meanings of the enums are the same across all languages.
   </Property>
   <Property name="key" type="string">
     A unique key expression for which to restrict concurrently running steps to. The expression is evaluated for each triggering event.  A key is required when setting an `env` or `account` level scope. 
@@ -86,6 +88,10 @@ To control concurrency on indivudal steps, extract the step into a new function 
 **Concurrency is strictly ordered from oldest to newest ([FIFO](https://en.wikipedia.org/wiki/FIFO))**, so Inngest prioritizes finishing older functions above starting newer functions, even if the older functions continue to schedule new steps to run.
 
 Inngest manages concurrency for you within our scheduling system, and you do not need to provision queues, infrastructure, or manage concurrency limits within your own workers or services.
+
+## Global conflicts in two function definitions
+
+You may write two functions that define different levels for an 'account' level concurrency limit.  This works in Inngest, and controls concurrency
 
 ## Limitations
 
