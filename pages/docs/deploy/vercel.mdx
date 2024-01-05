@@ -62,7 +62,15 @@ Installing [Inngest's official Vercel integration](https://vercel.com/integratio
 <ButtonDeploy href="https://vercel.com/integrations/inngest" type="vercel" label="Install the Inngest Vercel integration" />
 
 To enable communication between Inngest and your app, you need to either [disable Deployment Protection](https://vercel.com/docs/security/deployment-protection#configuring-deployment-protection)
-or, if you're on Vercel's Pro plan, configure protection bypass:
+or, if you're on Vercel's Pro plan, configure [protection bypass](/docs/deploy/vercel?ref=docs-deploy#bypassing-deployment-protection).
+
+<Callout>
+
+👉 Please note that **currently**, active runs will use the function configuration and URL that was the latest when the run started. Each Vercel deploy has a unique URL, which means that new deploys will not affect active runs.
+
+Inngest can always use the latest code by using a static URL. To do so, use the `serveHost` param in the [`serve`](https://www.inngest.com/docs/reference/serve) function. For example, if you change the `serveHost` to your domain name, Inngest will use that domain name instead. In this way, you will always use the latest version of the function.
+
+</Callout>
 
 ## Bypassing Deployment Protection
 
