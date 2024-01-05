@@ -132,7 +132,7 @@ This works in Inngest and is *not* a conflict.  Instead, function A is limited a
 
 Because functions are FIFO, function runs are more likely to be worked on the older their jobs get (as the backlog grows).  If function A's jobs stay in the backlog longer than function B's jobs, it's likely that their jobs will be worked on as soon as capacity is free.  That said, function B will almost always have capacity before function A and may block function A's work.
 
-While this works, we strongly recommend that you use global constants for `env` or `account` level scopes, giving functions the same limit.
+**While this works we strongly recommend that you use global constants for `env` or `account` level scopes, giving functions the same limit.**
 
 ## Limitations
 
