@@ -49,7 +49,9 @@ This lets you provide fine-grained concurrency across all functions in a simple,
 
 ## Concurrency control across specific steps in a function
 
-You might need to control capacity for a single step in your function. For example, within an AI flow you may have 10 pre-processing steps which can run with higher limits, and a single AI call with much lower limits. To control concurrency on indivudal steps, extract the step into a new function with its _own_ concurrency controls, and invoke the new function using `step.invoke`. This lets you combine concurrency controls and manage "flow control" in a clean, composible manner.
+You might need to control capacity for a single step in your function. For example, within an AI flow you may have 10 pre-processing steps which can run with higher limits, and a single AI call with much lower limits.
+
+To control concurrency on indivudal steps, extract the step into a new function with its _own_ concurrency controls, and invoke the new function using `step.invoke`. This lets you combine concurrency controls and manage "flow control" in a clean, composible manner.
 
 ## How concurrency works
 
@@ -63,9 +65,12 @@ Also, Inngest manages concurrency for you within our scheduling system, and you 
 
 - Concurrency limits the number of steps executing at a single time. It does not _yet_ perform rate limiting over a given period of time. This is scheduled for a Q2 '24 release.
 - Functions can specify up to 2 concurrency constraints at once
+- The maximum concurrency limit is defined by your account's plan
 
 ## Reference
 
 - Typescript:
 - Python:
 - Golang:
+
+## Further examples
