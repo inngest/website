@@ -277,7 +277,7 @@ It is worth mentioning here that an event-driven approach allows you to:
 - Trigger one _or_ multiple functions from one event.
 - Store received events for a historical record of what happened in your application.
 - Use stored events to replay functions when there are issues in production.
-- Interact with long-running functions by sending new events (cancel, wait for input, etc.)
+- Interact with long-running functions by sending new events (cancel, wait for input, and other).
 </details>
 
 You will test your first event in two ways: by sending it directly to the Inngest UI, and then by triggering it from code.
@@ -318,7 +318,7 @@ In the popup console, add the event name (which you defined in the `createFuncti
   alt="Event console with test data"
 />
 
-The event is sent to Inngest (which is running locally) and automatically executes your function in the background! You can see it recorded:
+The event is sent to Inngest (which is running locally) and automatically executes your function in the background! You can see the new function run logged in the stream tab:
 
 <img
   src="/assets/docs/quick-start/dev-server-event-1.png"
@@ -327,7 +327,7 @@ The event is sent to Inngest (which is running locally) and automatically execut
   alt="Inngest Dev Server screen with one event recorded"
 />
 
-When you click on the event, you will see more information about the event such as which function was triggered, its payload, output, and timeline:
+When you click on the run, you will see more information about the event such as which function was triggered, its payload, output, and timeline:
 
 <img
   src="/assets/docs/quick-start/event-details-1.png"
