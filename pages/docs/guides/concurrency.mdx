@@ -10,6 +10,7 @@ Managing concurrency is important for any production system. Inngest provides co
 Inngest lets you provide fine-grained concurrency across all functions in a simple, configurable manner.  You can control each function's concurrency limits within your function definition. Here are two examples:
 
 ```js
+// Example 1:  A complete, complex example with two virtual concurrency queues.
 inngest.createFunction(
   {
     id: "unique-function-id",
@@ -40,10 +41,10 @@ inngest.createFunction(
   }
 );
 
-// Or, for a simple single-function concurrency definition:
+// Example 2: a simple concurrency definition limiting this function to 10 steps at once.
 inngest.createFunction(
   {
-    id: "unique-function-id",
+    id: "another-function",
     concurrency: 10,
   }
   { event: "ai/summary.requested" },
