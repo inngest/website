@@ -49,7 +49,7 @@ npx create-next-app@latest --ts --eslint --tailwind --src-dir --app --import-ali
 
 Open the chosen project in your code editor. 
 
-Next, start the app in development mode by running:
+Next, start your Next.js app in development mode by running:
 
 ```shell
 npm run dev
@@ -59,7 +59,7 @@ Now you can add Inngest to your project!
 
 ## 1. Install Inngest
 
-With the app now running running open a new tab in your terminal. In your project directory's root, run the following command to install Inngest JavaScript SDK:
+With the Next.js app now running running open a new tab in your terminal. In your project directory's root, run the following command to install Inngest SDK:
 
 <CodeGroup>
 ```shell {{ title: "npm" }}
@@ -75,7 +75,7 @@ pnpm add inngest
 
 ## 2. Run Inngest Dev Server
 
-Next, start the [Inngest Dev Server](https://www.inngest.com/docs/local-development#inngest-dev-server):
+Next, start the [Inngest Dev Server](https://www.inngest.com/docs/local-development#inngest-dev-server), which is a fast, in-memory version of Inngest where you can quickly send and view events events and function runs:
 
 ```
 npx inngest-cli@latest dev
@@ -345,7 +345,7 @@ In our case, the event triggered the `hello-world` function, which did sleep for
   alt="Event details popup indicating that hello-world function ran, that it slept for 1s, and that the correct body was returned"
 />
 
-A handy little trick: if your event behaved in an odd way, you can either replay it or edit and replay it. Try replaying it by clicking on the "Replay" button in the top center:
+A handy little trick: if your event behaved in an odd way, you can either replay it or edit and replay it. Replaying a function can be really helpful in debugging the function errors locally. To try it, click on the "Replay" button in the top center:
 
 <img
   src="/assets/docs/quick-start/event-details-1-replay.png"
