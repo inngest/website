@@ -1,0 +1,71 @@
+# Concurrency management
+
+Managing concurrency is important for any production system. Inngest provides concurrency controls that allow you to create **multi-level virtual queues** **within each function**, directly in code, without thinking about infrastructure. Use cases include:
+- **Setting global limits for many functions which share a pool of resources, **for example with many functions which use shared AI capacity, or global DB connections.
+- **Setting limits on your own individual accounts, tenants or users, **for example limiting unpaid users to a specific capacity.
+- **A combination of the above**, with functions limited by the lowest/most constrained concurrency key.
+
+## How to configure concurrency
+
+You can control each function's concurrency limits within a function's definition. Here's a complete example:
+
+```js
+inngest.createFunction(
+  {
+    id: "unique-function-id",
+    concurrency: [
+      {
+         // Use an account-level concurrency limit for this function, using the
+         // "openai" key as a virtual queue.  Any other function which
+         // runs using the same "openai"` key counts towards this limit.
+         scope: "account",
+         key: `"openai"`,
+         // If there are 10 functions running with the "openai" key, this function's
+         // runs will wait for capacity before executing.
+         limit: 10,
+      },
+      {
+         // Create another virtual concurrency queue for this function only.  This
+         // limits all accounts to a single execution for this function, based off
+         // of the `event.data.account_id` field.
+         // "fn" is the default scope, so we could omit this field.
+         scope: "fn",
+         key: "event.data.account_id",
+         limit: 1,
+      },
+    ],
+  }
+  { event: "ai/summary.requested" },
+  async ({ event, step }) => {
+  }
+);
+```
+
+In this example, we define **two concurrency constraints** which creates **two virtual queues to manage capacity**. Runs will be limited if they hit either of the virtual queue's limits. For example:
+- If there are 10 steps executing under the 'openai' key's virtual queue, any future runs will be blocked and will wait for existing runs to finish before executing.
+- If there are 5 steps executing under the 'openai' key and a single `event.data.account_id` enqueues 2 runs, the second run is limited by the `event.data.account_id` virtual queue and will wait before executing.
+
+This lets you provide fine-grained concurrency across all functions in a simple, configurable manner.
+
+## Concurrency control across individual steps
+
+You might need to control capacity for a single step in your function. For example, within an AI flow you may have 10 pre-processing steps which can run with higher limits, and a single AI call with much lower limits. To control concurrency on indivudal steps, extract the step into a new function with its _own_ concurrency controls, and invoke the new function using `step.invoke`. This lets you combine concurrency controls and manage "flow control" in a clean, composible manner.
+
+## How concurrency works
+
+**Concurrency works by limiting the number of steps executing at a single time.** Within Inngest, execution is defined as "an SDK running code". Therefore, **calling **`step.sleep`**, **`step.sleepUntil`**, or **`step.waitForEvent`** does not count towards capacity limits**, as the SDK doesn't execute code while those steps wait. Also, because sleeping or waiting is common, concurrency _does not _limit the number of functions in progress; it specifically limits the number of steps executing at any single time.
+
+**Concurrency is strictly ordered from oldest to newest ([FIFO](https://en.wikipedia.org/wiki/FIFO))**, so Inngest prioritizes finishing older functions above starting newer functions, even if the older functions continue to schedule new steps to run.
+
+Also, Inngest manages concurrency for you within our scheduling system, and you do not need to provision queues, infrastructure, or manage concurrency limits within your own workers or services.
+
+## Limitations
+
+- Concurrency limits the number of steps executing at a single time. It does not _yet_ perform rate limiting over a given period of time. This is scheduled for a Q2 '24 release.
+- Functions can specify up to 2 concurrency constraints at once
+
+## Reference
+
+- Typescript:
+- Python:
+- Golang:
