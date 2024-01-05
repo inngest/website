@@ -53,7 +53,7 @@ You might need to control capacity for a single step in your function. For examp
 
 ## How concurrency works
 
-**Concurrency works by limiting the number of steps executing at a single time.** Within Inngest, execution is defined as "an SDK running code". Therefore, **calling **`step.sleep`**, **`step.sleepUntil`**, or **`step.waitForEvent`** does not count towards capacity limits**, as the SDK doesn't execute code while those steps wait. Also, because sleeping or waiting is common, concurrency _does not _limit the number of functions in progress; it specifically limits the number of steps executing at any single time.
+**Concurrency works by limiting the number of steps executing at a single time.** Within Inngest, execution is defined as "an SDK running code". Therefore, **calling **`step.sleep`**, **`step.sleepUntil`**, or **`step.waitForEvent`** does not count towards capacity limits**, as the SDK doesn't execute code while those steps wait. Also, because sleeping or waiting is common, concurrency _does not_ limit the number of functions in progress; it specifically limits the number of steps executing at any single time.
 
 **Concurrency is strictly ordered from oldest to newest ([FIFO](https://en.wikipedia.org/wiki/FIFO))**, so Inngest prioritizes finishing older functions above starting newer functions, even if the older functions continue to schedule new steps to run.
 
