@@ -41,7 +41,7 @@ inngest.createFunction(
 );
 ```
 
-In this example, we define **two concurrency constraints** which creates **two virtual queues to manage capacity**. Runs will be limited if they hit either of the virtual queue's limits. For example:
+In this example, we define **two concurrency constraints which creates two virtual queues to manage capacity**. Runs will be limited if they hit either of the virtual queue's limits. For example:
 - If there are 10 steps executing under the 'openai' key's virtual queue, any future runs will be blocked and will wait for existing runs to finish before executing.
 - If there are 5 steps executing under the 'openai' key and a single `event.data.account_id` enqueues 2 runs, the second run is limited by the `event.data.account_id` virtual queue and will wait before executing.
 
