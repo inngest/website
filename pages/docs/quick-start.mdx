@@ -274,10 +274,10 @@ Now, it's time to run your function!
   <summary><strong>Inngest relies on events.</strong></summary>
 
 It is worth mentioning here that an event-driven approach allows you to:
-- Run one or many functions automatically.
-- See the event payload, and use the event payload in your functions.
-- Store the event for some amount of time, to locally replay if there are errors in production.
-- Build complex sleeps and schedules without worrying about queues.
+- Trigger one _or_ multiple functions from one event.
+- Store received events for a historical record of what happened in your application.
+- Use stored events to replay functions when there are issues in production.
+- Interact with long-running functions by sending new events (cancel, wait for input, etc.)
 </details>
 
 You will test your first event in two ways: by sending it directly to the Inngest UI, and then by triggering it from code.
