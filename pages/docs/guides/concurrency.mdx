@@ -67,14 +67,14 @@ In the second example, the function is constrained to `10` executing steps at on
   <Property name="limit" type="number" required>
     The maximum number of concurrently running steps.
     A value of `0` or `undefined` is the equivalent of not setting a limit.
-    The maximum value is dicated by your accout's plan.
+    The maximum value is dictated by your accout's plan.
   </Property>
   <Property name="scope" type="'account' | 'env' | 'fn'">
     The scope for the concurrency limit, which impacts whether concurrency is managed on an individual function, across an environment, or across your entire account.
 
-    * `fn` (default):  the concurrency limit applies to runs within this function only
-    * `env`:  the concurrency limit applies to all functions within the same environment that share the same evaluated key value.  This requires setting a "key" which evaluates to a virtual queue name.
-    * `account`:  the concurrency limit applies to all functions in your account that share the same evaluated key value.  This requires setting a "key" which evaluates to a virtual queue name.
+    * `fn` (default):  only this function's runs affects the concurrency limit
+    * `env`:  all runs within the same environment that share the same evaluated key value will affect the concurrency limit.  This requires setting a "key" which evaluates to a virtual queue name.
+    * `account`:  all runs in your account that share the same evaluated key value will affect the concurrency limit.  This requires setting a "key" which evaluates to a virtual queue name.
 
     Each SDK exposes these enums in the language's idiomatic manner, though the meanings of the enums are the same across all languages.
   </Property>
@@ -103,7 +103,11 @@ To control concurrency on indivudal steps, extract the step into a new function 
 
 Inngest manages concurrency for you within our scheduling system, and you do not need to provision queues, infrastructure, or manage concurrency limits within your own workers or services.
 
-## Global conflicts in two function definitions
+## How global limits work
+
+<Callout>
+  While two functions can share different `account` scoped limits, we strongly recommend that you use a global const with a single shared limit.
+</Callout>
 
 You may write two functions that define different levels for an 'account' scoped concurrency limit.  For example, function A may limit the "ai" capacity to 5, while function B limits the "ai" capacity to 50:
 
