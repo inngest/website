@@ -31,7 +31,7 @@ export default function Contact() {
     e.preventDefault();
     setDisabled(true);
     setButtonCopy("Sending...");
-    let ref = "";
+    let ref: string | null = "";
     try {
       const u = new URLSearchParams(window.location.search);
       if (u.get("ref")) {

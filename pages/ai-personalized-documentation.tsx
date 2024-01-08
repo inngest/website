@@ -1,10 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
-import styled from "@emotion/styled";
-import Link from "next/link";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { atomOneDark as syntaxThemeDark } from "react-syntax-highlighter/dist/cjs/styles/hljs";
-
-import { MDXRemote } from "next-mdx-remote";
 
 import Header from "../shared/Header";
 import Footer from "../shared/Footer";
@@ -41,7 +37,9 @@ type Selected = {
 };
 
 export default function InngestGPT() {
-  const [selected, setSelected] = useState<Selected | null>(EXAMPLE_PROMPTS[0]);
+  const [selected, setSelected] = useState<Selected | undefined>(
+    EXAMPLE_PROMPTS[0]
+  );
   const [history, setHistory] = useState<Selected[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState("");
@@ -88,7 +86,13 @@ export default function InngestGPT() {
         "ai-sdk-history",
         JSON.stringify(newHistory)
       );
-      resultRef.current.scrollIntoView({ block: "start", behavior: "smooth" });
+      if (resultRef.current) {
+        // @ts-ignore
+        resultRef.current.scrollIntoView({
+          block: "start",
+          behavior: "smooth",
+        });
+      }
     } catch (e) {
       setLoading(false);
       console.warn(e);

@@ -219,7 +219,7 @@ function usePreventLayoutShift() {
 
   useEffect(() => {
     return () => {
-      window.cancelAnimationFrame(rafRef.current);
+      rafRef.current && window.cancelAnimationFrame(rafRef.current);
     };
   }, []);
 
@@ -231,6 +231,9 @@ function usePreventLayoutShift() {
       callback();
 
       rafRef.current = window.requestAnimationFrame(() => {
+        if (!positionRef.current || !initialTop) {
+          return;
+        }
         let newTop = positionRef.current.getBoundingClientRect().top;
         window.scrollBy(0, newTop - initialTop);
       });
@@ -359,7 +362,7 @@ type GuideOption = {
 const GuideSelectorContext = createContext<{
   selected: string;
   options: GuideOption[];
-}>(null);
+}>({ selected: "", options: [] });
 
 export function GuideSelector({
   children,
@@ -378,7 +381,7 @@ export function GuideSelector({
       : router.query[searchParamKey];
     const isValidOption = options.find((o) => o.key === urlSelected);
     if (isValidOption && Boolean(urlSelected) && urlSelected !== selected) {
-      setSelected(urlSelected);
+      setSelected(urlSelected || "");
     }
   }, [router, selected]);
 
@@ -388,7 +391,7 @@ export function GuideSelector({
     const url = new URL(router.asPath, window.location.origin);
     url.searchParams.set(searchParamKey, newSelectedKey);
     // Replace the URL state and do use shallow to avoid refresh
-    router.replace(url.toString(), null, { shallow: true, scroll: false });
+    router.replace(url.toString(), undefined, { shallow: true, scroll: false });
   };
 
   return (

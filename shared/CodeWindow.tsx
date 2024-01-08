@@ -10,7 +10,7 @@ export const removeLeadingSpaces = (snippet: string): string => {
     lines.pop();
   }
   const leadingSpace = lines[0]?.match(/^\s+/)?.[0];
-  return lines.map((l) => l.replace(leadingSpace, "")).join("\n");
+  return lines.map((l) => l.replace(leadingSpace || "", "")).join("\n");
 };
 
 const colors = {

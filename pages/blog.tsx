@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import Image from "next/image";
@@ -8,11 +7,8 @@ import IconCalendar from "src/shared/Icons/Calendar";
 import ArrowRight from "src/shared/Icons/ArrowRight";
 import Footer from "../shared/Footer";
 import Header from "../shared/Header";
-import Nav from "../shared/legacy/nav";
-import ThemeToggleButton from "../shared/legacy/ThemeToggleButton";
 import Container from "../shared/layout/Container";
 import Tags from "../shared/Blog/Tags";
-import SectionHeader from "src/shared/SectionHeader";
 import {
   loadMarkdownFilesMetadata,
   type MDXFileMetadata,

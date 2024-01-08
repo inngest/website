@@ -86,6 +86,9 @@ export type UseCase = {
 };
 
 export const getStaticProps: GetStaticProps = async (ctx) => {
+  if (!ctx.params?.case) {
+    throw new Error("Slug is undefined");
+  }
   const {
     data,
   }: { data: UseCase } = require(`../../data/uses/${ctx.params.case}.tsx`);

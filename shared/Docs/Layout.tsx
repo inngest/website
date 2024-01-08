@@ -1,4 +1,3 @@
-import Link from "next/link";
 import Head from "next/head";
 import { Router } from "next/router";
 import { MDXProvider } from "@mdx-js/react";
@@ -6,7 +5,6 @@ import { motion } from "framer-motion";
 
 import * as mdxComponents from "src/shared/Docs/mdx";
 import { Footer } from "./Footer";
-import { Home } from "./Home";
 import { Header } from "./Header";
 import Logo from "../Icons/Logo";
 import { Navigation } from "./Navigation";

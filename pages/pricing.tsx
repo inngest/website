@@ -49,7 +49,7 @@ const PLAN_NAMES = {
   team: "Team",
   startup: "Startup",
   enterprise: "Enterprise",
-};
+} as const;
 
 const PLANS: Plan[] = [
   {
@@ -234,7 +234,11 @@ const PLANS: Plan[] = [
 ];
 
 function getPlan(planName: string): Plan {
-  return PLANS.find((p) => p.name === planName);
+  const plan = PLANS.find((p) => p.name === planName);
+  if (!plan) {
+    throw new Error(`No plan found for ${planName}`);
+  }
+  return plan;
 }
 
 function getPlanFeatureQuantity(planName: string, feature: string): string {
@@ -253,6 +257,9 @@ function getPlanStepsMonth(plan: Plan): string {
   });
   if (!plan.cost.additionalPrice) {
     return `${base}`;
+  }
+  if (!plan.cost.additionalRate) {
+    throw new Error("No additional rate for plan with additional price");
   }
   return `${base} + $${
     plan.cost.additionalPrice

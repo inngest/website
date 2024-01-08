@@ -27,6 +27,8 @@ const permanentRedirects = [
 
   // Other pages
   ["/uses/zero-infra-llm-ai", "/ai"],
+  ["/uses/internal-tools", "/docs/guides/trigger-your-code-from-retool"],
+  ["/uses/user-journey-automation", "/blog/lifecycle-emails-with-resend"],
 ];
 
 async function redirects() {

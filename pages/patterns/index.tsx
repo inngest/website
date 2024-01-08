@@ -1,5 +1,4 @@
 import React from "react";
-import styled from "@emotion/styled";
 import Link from "next/link";
 
 import Header from "../../shared/Header";

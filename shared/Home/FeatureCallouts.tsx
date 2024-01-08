@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { type Route } from "next";
 import Container from "../layout/Container";
 import { ChevronRightIcon } from "@heroicons/react/20/solid";
 
@@ -76,7 +77,9 @@ export default function FeatureCallouts() {
             </p>
 
             <Link
-              href={href ? href : process.env.NEXT_PUBLIC_DISCORD_URL}
+              href={
+                href ? href : (process.env.NEXT_PUBLIC_DISCORD_URL as Route)
+              }
               className="group mt-6 flex flex-row items-center text-sm text-indigo-100 transition-all hover:text-indigo-50 whitespace-nowrap"
             >
               {href ? "Learn More" : "Join Our Community for First Access"}{" "}

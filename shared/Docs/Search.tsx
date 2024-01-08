@@ -18,8 +18,8 @@ import algoliasearch from "algoliasearch/lite";
 import clsx from "clsx";
 
 const searchClient = algoliasearch(
-  process.env.NEXT_PUBLIC_DOCSEARCH_APP_ID,
-  process.env.NEXT_PUBLIC_DOCSEARCH_API_KEY
+  process.env.NEXT_PUBLIC_DOCSEARCH_APP_ID || "",
+  process.env.NEXT_PUBLIC_DOCSEARCH_API_KEY || ""
 );
 
 type AutocompleteItem = {
@@ -70,7 +70,7 @@ function useAutocomplete() {
               return `${url.pathname}${url.hash}`;
             },
             onSelect({ itemUrl }) {
-              router.push(itemUrl);
+              router.push(itemUrl || "");
             },
             getItems({ query }) {
               return getAlgoliaResults({
@@ -131,8 +131,10 @@ function resolveResult(result: Result): {
           .pop();
 
   return {
+    // @ts-ignore
     titleHtml: result._highlightResult.hierarchy[level].value,
     hierarchyHtml: hierarchy
+      // @ts-ignore
       .slice(0, levels.indexOf(level))
       .map(([, { value }]) => value),
   };
@@ -405,21 +407,23 @@ function SearchDialog({ open, setOpen, className }: SearchDialogProps) {
           >
             <Dialog.Panel className="mx-auto overflow-hidden rounded-lg bg-slate-50 shadow-xl ring-1 ring-slate-900/7.5 dark:bg-slate-900 dark:ring-slate-800 sm:max-w-xl">
               <div {...autocomplete.getRootProps({})}>
-                {/* @ts-ignore */}
                 <form
+                  // @ts-ignore
                   ref={formRef}
                   {...autocomplete.getFormProps({
+                    // @ts-ignore
                     inputElement: inputRef.current,
                   })}
                 >
                   <SearchInput
+                    // @ts-ignore
                     ref={inputRef}
                     autocomplete={autocomplete}
                     autocompleteState={autocompleteState}
                     onClose={() => setOpen(false)}
                   />
-                  {/* @ts-ignore */}
                   <div
+                    // @ts-ignore
                     ref={panelRef}
                     className="border-t border-slate-200 bg-white empty:hidden dark:border-slate-100/5 dark:bg-white/2.5"
                     {...autocomplete.getPanelProps({})}
@@ -429,6 +433,7 @@ function SearchDialog({ open, setOpen, className }: SearchDialogProps) {
                         <SearchResults
                           autocomplete={autocomplete}
                           query={autocompleteState.query}
+                          // @ts-ignore
                           collection={autocompleteState.collections[0]}
                         />
                       </>
@@ -464,6 +469,7 @@ function useSearchProps(): SearchProps {
 
   return {
     buttonProps: {
+      // @ts-ignore
       ref: buttonRef,
       onClick() {
         setOpen(true);
@@ -472,6 +478,7 @@ function useSearchProps(): SearchProps {
     dialogProps: {
       open,
       setOpen(open) {
+        // @ts-ignore
         let { width, height } = buttonRef.current.getBoundingClientRect();
         if (!open || (width !== 0 && height !== 0)) {
           setOpen(open);

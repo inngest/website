@@ -22,6 +22,9 @@ export const getStaticProps: GetStaticProps = async (ctx) => {
   const slug = Array.isArray(ctx?.params?.pattern)
     ? ctx?.params?.pattern[0]
     : ctx?.params?.pattern;
+  if (!slug) {
+    throw new Error("Slug is undefined");
+  }
   const pageInfo = getPatternProps(slug || "");
   const pageData = await loadMarkdownFile("patterns/_patterns", slug);
   return {

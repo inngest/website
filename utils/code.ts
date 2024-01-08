@@ -93,12 +93,14 @@ function tokensToHast(lines) {
         },
         [u("text", clean)]
       );
+      // @ts-ignore
       tree.push(errorNode);
       continue;
     }
 
     for (const token of line) {
       children.push(
+        // @ts-ignore
         u(
           "element",
           {
@@ -119,6 +121,7 @@ function tokensToHast(lines) {
       },
       children
     );
+    // @ts-ignore
     tree.push(lineNode);
   }
 

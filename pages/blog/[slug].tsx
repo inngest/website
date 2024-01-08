@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import Head from "next/head";
 import Image from "next/image";
 import rehypeSlug from "rehype-slug";
@@ -19,15 +18,12 @@ import IconCalendar from "src/shared/Icons/Calendar";
 import CTACallout from "src/shared/CTACallout";
 import Blockquote from "src/shared/Blog/Blockquote";
 import rehypeCodeTitles from "rehype-code-titles";
-import YouTube from "react-youtube-embed";
 import remarkGfm from "remark-gfm";
 
 const components = {
   DiscordCTA,
   Button,
-  CTACallout,
   Blockquote,
-  YouTube,
 };
 
 type Props = {
@@ -115,8 +111,6 @@ export default function BlogLayout(props) {
           }}
         ></script>
       </Head>
-
-      {/* <ThemeToggleButton isFloating={true} /> */}
 
       <div className="font-sans">
         <Header />
