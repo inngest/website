@@ -66,9 +66,11 @@ or, if you're on Vercel's Pro plan, configure [protection bypass](/docs/deploy/v
 
 <Callout>
 
-👉 Please note that **currently**, active runs will use the function configuration and URL that was the latest when the run started. Each Vercel deploy has a unique URL, which means that new deploys will not affect active runs.
+👉 Please note that **currently**, active runs will use the function configuration and URL that was the latest when the run started. Each Vercel deploy has a unique URL, which means that new deploys will not affect active runs. This will be addressed in the future releases, please check our [Roadmap](https://roadmap.inngest.com/roadmap).
 
-Inngest can always use the latest code by using a static URL. To do so, use the `serveHost` param in the [`serve`](https://www.inngest.com/docs/reference/serve) function. For example, if you change the `serveHost` to your domain name, Inngest will use that domain name instead. In this way, you will always use the latest version of the function.
+Inngest can always use the latest function logic by using a static URL. To do so, use the `serveHost` param in the [`serve`](https://www.inngest.com/docs/reference/serve) function. For example, if you change the `serveHost` to your domain name, Inngest will use that domain name instead. In this way, you will always use the latest version of the callback passed to the Inngest function.
+
+However, this solution won't affect any of the function configuration. For example, changing a function's `retries` option and deploying will not affect retries for active runs.
 
 </Callout>
 
