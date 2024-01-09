@@ -3,7 +3,7 @@ import { ImageResponse } from "@vercel/og";
 import Logo from "src/shared/Icons/Logo";
 
 export const config = {
-  runtime: "experimental-edge",
+  runtime: "edge",
 };
 
 const SVGBackgroundGradient =
