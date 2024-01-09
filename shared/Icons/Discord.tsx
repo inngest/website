@@ -3,6 +3,7 @@ import type { IconProps } from "./props";
 
 const calc = (size: string | number, multiplier: number): string => {
   if (typeof size === "string") {
+    // @ts-ignore
     const [_, int, unit] = size.match(/^(\d+)(px|em|rem|vh)$/);
     return `${multiplier * parseInt(int, 10)}${unit}`;
   }

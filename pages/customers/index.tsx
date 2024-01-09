@@ -8,8 +8,6 @@ import Footer from "src/shared/Footer";
 import CTACallout from "src/shared/CTACallout";
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/20/solid";
 
-import Button from "src/shared/legacy/Button";
-
 export async function getStaticProps() {
   return {
     props: {
@@ -226,7 +224,7 @@ export default function Customers() {
 
           <div className="mt-12 mb-36 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-12">
             {grid.map(({ type, name, ...item }, idx) => {
-              if (type === "quote") {
+              if (type === "quote" && item.quote) {
                 const { quote } = item;
                 return (
                   <blockquote className="mx-auto row-span-2 col-span-2 sm:col-span-1 my-8 max-w-3xl px-8 flex flex-col gap-8 bg-[url(/assets/textures/wave.svg)] bg-contain bg-center bg-no-repeat">
@@ -259,6 +257,7 @@ export default function Customers() {
                   </blockquote>
                 );
               }
+              if (!item.src) return null;
               const { src, scale = 0.8 } = item;
               return (
                 <div className="group relative px-6 py-8 h-full min-h-[148px] border border-slate-100/10 rounded-2xl flex items-center">

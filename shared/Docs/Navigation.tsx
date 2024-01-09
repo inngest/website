@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import { type Route } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import clsx from "clsx";
@@ -305,7 +306,7 @@ export function Navigation(props) {
                   {item.title}
                 </h2>
                 <ul role="list" className="mt-3 flex flex-col gap-2">
-                  {item.links.map((link, idx) => (
+                  {item.links?.map((link, idx) => (
                     <li key={idx}>
                       <NavLink
                         href={link.href}
@@ -330,7 +331,7 @@ export function Navigation(props) {
 
         <li className="sticky bottom-0 z-10 mt-6 sm:hidden gap-2 flex dark:bg-slate-900">
           <Button
-            href={process.env.NEXT_PUBLIC_SIGNIN_URL}
+            href={process.env.NEXT_PUBLIC_SIGNIN_URL as Route}
             variant="secondary"
             className="w-full"
           >

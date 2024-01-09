@@ -21,7 +21,7 @@ const options = {
     "https://api-docs.inngest.com/docs/inngest-api",
     "http://localhost:8288",
     "http://localhost:",
-    "https://www.uber.com"
+    "https://www.uber.com",
   ],
 };
 
@@ -32,6 +32,7 @@ const uniqueURLs = {};
 
 function hasBeenSeen({ pathname, link, text }): boolean {
   return !!seen.find(function (l) {
+    // @ts-ignore
     return l.pathname === pathname && l.link === link && l.text === text;
   });
 }
@@ -49,6 +50,7 @@ function logBrokenLink(result) {
     return;
   }
   brokenLinks++;
+  // @ts-ignore
   seen.push({
     pathname,
     link,

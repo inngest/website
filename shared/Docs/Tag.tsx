@@ -1,6 +1,6 @@
 import clsx from "clsx";
 
-const variantStyle = (variant: string): string => {
+const variantStyle = (variant: string): string | null => {
   switch (variant) {
     case "medium":
       return "rounded-lg px-1.5 py-1 ring-1 ring-inset";
@@ -10,7 +10,7 @@ const variantStyle = (variant: string): string => {
   }
 };
 
-const colorStyle = (color: string, variant: string): string => {
+const colorStyle = (color: string, variant: string): string | null => {
   switch (variant) {
     case "small":
       return `text-${color}-500 dark:text-${color}-400`;

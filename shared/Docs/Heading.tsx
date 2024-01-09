@@ -78,6 +78,7 @@ export function Heading({
   let ref = useRef();
   let registerHeading = useSectionStore((s) => s.registerHeading);
 
+  // @ts-ignore
   let inView = useInView(ref, {
     margin: `${remToPx(-3.5)}px 0px 0px 0px`,
     amount: "all",
@@ -96,6 +97,7 @@ export function Heading({
     <>
       <Eyebrow tag={tag} label={label} />
       <Component
+        // @ts-ignore
         ref={ref}
         id={anchor ? id : undefined}
         className={`${flexClasses} ${

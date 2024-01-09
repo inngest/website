@@ -15,12 +15,15 @@ export default function PlanCard({
   const [stepCalculator, setStepCalculator] = useState<number>(
     typeof content.cost.included === "number" ? content.cost.included : 0
   );
-  // Calculate price with additional steps from calcuator
+  // Calculate price with additional steps from calculator
+  if (content.cost.additionalPrice && !content.cost.additionalRate) {
+    console.error("Missing additionalRate for plan with additionalPrice");
+  }
   const additionalCost =
     typeof content.cost.included === "number" &&
     typeof content.cost.additionalPrice === "number"
       ? ((stepCalculator - content.cost.included) /
-          content.cost.additionalRate) *
+          (content.cost.additionalRate || 1)) *
         content.cost.additionalPrice
       : 0;
   const price =
@@ -78,7 +81,7 @@ export default function PlanCard({
               theme[variant].price
             } ${!!content.cost.period && "pl-4"}`}
           >
-            {typeof price === "string" ? price : '$' + price}
+            {typeof price === "string" ? price : "$" + price}
             <span
               className={`text-sm font-medium ml-0.5 ${theme[variant].secondary}`}
             >
@@ -134,7 +137,7 @@ export default function PlanCard({
 
           <div className="flex justify-center mt-4">
             <div className={`text-sm font-medium ${theme[variant].secondary}`}>
-              {content.cost.additionalPrice ? (
+              {content.cost.additionalPrice && content.cost.additionalRate ? (
                 <>
                   + $<strong>{content.cost.additionalPrice}</strong> per
                   additional{" "}

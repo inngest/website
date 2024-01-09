@@ -1,5 +1,5 @@
 export const trackPageView = (url: string) => {
-  let ref = null;
+  let ref: string | null = null;
   try {
     const urlParams = new URLSearchParams(window.location.search);
     ref = urlParams.get("ref");
@@ -23,7 +23,7 @@ export const trackPageView = (url: string) => {
 };
 
 export const trackDemoView = () => {
-  let ref = null;
+  let ref: string | null = null;
   try {
     const urlParams = new URLSearchParams(window.location.search);
     ref = urlParams.get("ref");

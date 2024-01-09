@@ -3,7 +3,7 @@ import { ImageResponse } from "@vercel/og";
 import Logo from "src/shared/Icons/Logo";
 
 export const config = {
-  runtime: "experimental-edge",
+  runtime: "edge",
 };
 
 const SVGBackgroundGradient =
@@ -26,6 +26,9 @@ const font = fetch(
 export default async function handler(req: NextApiRequest) {
   try {
     const fontData = await font;
+    if (!req.url) {
+      throw new Error("No URL");
+    }
     const { searchParams } = new URL(req.url);
 
     // ?title=<title>
@@ -33,7 +36,7 @@ export default async function handler(req: NextApiRequest) {
     const title = hasTitle
       ? searchParams.get("title")?.slice(0, 100)
       : "Inngest";
-    const isLongTitle = title.length > 40;
+    const isLongTitle = title && title.length > 40;
 
     return new ImageResponse(
       (

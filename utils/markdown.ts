@@ -125,10 +125,10 @@ export type Headings = {
 export const getHeadings = (content: string): Headings => {
   // Get headers for table of contents.
   const headings = {};
-  let h2 = null; // store the current heading we're in
+  let h2: string | null = null; // store the current heading we're in
   let order = 0;
 
-  (content.match(/^###? (.*)/gm) || []).forEach((heading) => {
+  (content.match(/^###? (.*)/gm) || []).forEach((heading: string) => {
     const title = heading.replace(/^###? /, "");
     if (heading.indexOf("## ") === 0) {
       h2 = title;
@@ -137,7 +137,10 @@ export const getHeadings = (content: string): Headings => {
       return;
     }
     // add this subheading to the current heading list.
-    (headings[h2]?.subheadings || []).push({ title, slug: toSlug(title) });
+    ((h2 && headings[h2]?.subheadings) || []).push({
+      title,
+      slug: toSlug(title),
+    });
   });
   return headings;
 };

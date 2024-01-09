@@ -49,7 +49,7 @@ const PLAN_NAMES = {
   team: "Team",
   startup: "Startup",
   enterprise: "Enterprise",
-};
+} as const;
 
 const PLANS: Plan[] = [
   {
@@ -234,7 +234,11 @@ const PLANS: Plan[] = [
 ];
 
 function getPlan(planName: string): Plan {
-  return PLANS.find((p) => p.name === planName);
+  const plan = PLANS.find((p) => p.name === planName);
+  if (!plan) {
+    throw new Error(`No plan found for ${planName}`);
+  }
+  return plan;
 }
 
 function getPlanFeatureQuantity(planName: string, feature: string): string {
@@ -253,6 +257,9 @@ function getPlanStepsMonth(plan: Plan): string {
   });
   if (!plan.cost.additionalPrice) {
     return `${base}`;
+  }
+  if (!plan.cost.additionalRate) {
+    throw new Error("No additional rate for plan with additional price");
   }
   return `${base} + $${
     plan.cost.additionalPrice
@@ -847,7 +854,11 @@ export default function Pricing() {
                   you may have any number of events received within a short
                   period of time (e.g. 10ms). Inngest can run all of these
                   functions concurrently (in parallel). Our free tier allows for
-                  up to {getPlanFeatureQuantity("Free", "Concurrent Functions")}{" "}
+                  up to{" "}
+                  {getPlanFeatureQuantity(
+                    PLAN_NAMES.free,
+                    "Concurrent Functions"
+                  )}{" "}
                   concurrent functions at a time. Our paid plans offer
                   substantial concurrency to enable you to parallelize workloads
                   and keep your system efficient and performant.

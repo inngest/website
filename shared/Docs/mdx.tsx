@@ -1,11 +1,10 @@
 import Link, { LinkProps } from "next/link";
+import { Route } from "next";
 import clsx from "clsx";
 
 import { Heading } from "./Heading";
 import React, { useState } from "react";
 import { ChevronDown, ChevronUp } from "react-feather";
-
-export { default as YouTube } from "react-youtube-embed";
 
 // export const a: React.FunctionComponent<LinkProps> = (props) => (
 //   <Link {...props} />
@@ -14,7 +13,7 @@ export { default as YouTube } from "react-youtube-embed";
 export const a: React.FunctionComponent<
   React.AnchorHTMLAttributes<HTMLAnchorElement>
 > = ({ children, href, target, rel, download }) => (
-  <Link href={href} target={target} rel={rel} download={download}>
+  <Link href={href as Route} target={target} rel={rel} download={download}>
     {children}
   </Link>
 );
@@ -104,7 +103,7 @@ export function Note({ children }) {
 
 export function Callout({
   variant = "default",
-  Icon = null,
+  Icon = undefined,
   children,
 }: {
   variant: "default" | "info" | "warning";

@@ -1,14 +1,13 @@
 import React from "react";
-import styled from "@emotion/styled";
 
 const TagMap = {
   "release-notes": "Release Notes",
   "new-feature": "New Feature",
 };
 
-const Tags: React.FC<{ tags: string[] }> = ({ tags = [] }) => {
+const Tags: React.FC<{ tags: string[] | undefined }> = ({ tags = [] }) => {
   return (
-    <TagContainer>
+    <span className="inline-block ml-2">
       {tags.map((t) => (
         <span
           className="bg-indigo-500/30 text-indigo-200 text-sm inline-flex px-2.5 py-1 rounded"
@@ -17,13 +16,8 @@ const Tags: React.FC<{ tags: string[] }> = ({ tags = [] }) => {
           {TagMap[t]}
         </span>
       ))}
-    </TagContainer>
+    </span>
   );
 };
-
-const TagContainer = styled.span`
-  display: inline-block;
-  margin-left: 0.5rem; ;
-`;
 
 export default Tags;

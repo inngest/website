@@ -42,7 +42,7 @@ export default function PageHeader(props: PageHeaderProps) {
       ></p>
       {Boolean(ctas?.length) && (
         <div className="mt-5">
-          {ctas.map((cta) => (
+          {ctas?.map((cta) => (
             <Button {...cta}>{cta.text}</Button>
           ))}
         </div>
@@ -75,7 +75,7 @@ const LeftAlignedHeader = ({
           </div>
         )}
       </div>
-      {Boolean(image) && (
+      {typeof image === "string" && (
         <div className="shrink w-[75%] max-w-lg lg:w-5/12 h-auto mx-auto">
           <Image
             src={image}
