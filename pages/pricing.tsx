@@ -854,7 +854,11 @@ export default function Pricing() {
                   you may have any number of events received within a short
                   period of time (e.g. 10ms). Inngest can run all of these
                   functions concurrently (in parallel). Our free tier allows for
-                  up to {getPlanFeatureQuantity("Free", "Concurrent Functions")}{" "}
+                  up to{" "}
+                  {getPlanFeatureQuantity(
+                    PLAN_NAMES.free,
+                    "Concurrent Functions"
+                  )}{" "}
                   concurrent functions at a time. Our paid plans offer
                   substantial concurrency to enable you to parallelize workloads
                   and keep your system efficient and performant.

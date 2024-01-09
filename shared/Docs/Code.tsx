@@ -10,7 +10,7 @@ import React, {
 import { useRouter } from "next/router";
 import { Tab } from "@headlessui/react";
 import clsx from "clsx";
-import create from "zustand";
+import { create } from "zustand";
 
 import { Tag } from "./Tag";
 

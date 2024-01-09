@@ -1,7 +1,7 @@
 import { createContext, Fragment, useContext, useEffect } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { motion } from "framer-motion";
-import create from "zustand";
+import { create } from "zustand";
 
 import { Header } from "./Header";
 import { Navigation } from "./Navigation";
