@@ -5,34 +5,41 @@ import Footer from "src/shared/Footer";
 
 export default function LaunchWeek() {
   return (
-    <div className="home font-sans bg-slate-1000">
+    <div className="home font-sans bg-slate-1000 bg-[url(/assets/launch-week/background-image.png)] bg-cover">
       <Header />
       <Container className="py-8">
         <div className="my-12 tracking-tight flex items-center justify-center">
-          <div className="mx-auto inline-flex rounded-md p-px bg-gradient-to-tl from-green-800/60 via-orange-300/60 to-rose-900/60">
-            <div className="py-12 md:py-24 px-12 md:px-24 rounded-md bg-slate-1000">
-              <h1 className="uppercase tracking-tight font-bold text-4xl md:text-8xl bg-gradient-to-br from-white to-slate-300 bg-clip-text text-transparent">
-                Inngest Launch <br />
-                Week{" "}
-                <span className="bg-clip-text bg-indigo-600">Jan 2023</span>
-              </h1>
-              <p className="my-8 font-bold text-slate-200 text-lg md:text-xl">
-                A week of updates from Inngest starting January 22nd, 2023
-              </p>
-              <ul className="uppercase font-bold text-lg text-slate-200">
-                <li>Monday - Jan 22</li>
-                <li>Tuesday - Jan 23</li>
-                <li>Wednesday - Jan 24</li>
-                <li>Thursday - Jan 25</li>
-              </ul>
-
-              <NewsletterSignup tags={["launch-week-jan-2023"]} />
+          <div className="py-12 md:py-24 rounded-md">
+            <h1 className="font-bold text-5xl md:text-7xl leading-tight md:leading-tight text-white text-center">
+              inngest <br />
+              <span className="bg-clip-text text-transparent bg-gradient-to-br bg-gradient-to-r from-[#5EEAD4] via-[#A7F3D0] to-[#FDE68A]">
+                Launch Week
+              </span>
+            </h1>
+            <div className="mt-5 flex items-center justify-center">
+              <span
+                className="py-2 px-8 uppercase text-white font-extrabold text-lg md:text-xl border-2 border-transparent rounded-full"
+                style={{
+                  background: `linear-gradient(#292e23, #292e23) padding-box,
+                              linear-gradient(to right, #5EEAD4, #A7F3D0, #FDE68A) border-box`,
+                }}
+              >
+                January 22-25 2024
+              </span>
             </div>
+            <p className="my-12 text-slate-200 text-lg md:text-xl">
+              A week of updates from Inngest starting{" "}
+              <span className="font-bold bg-clip-text text-transparent bg-gradient-to-br bg-gradient-to-r from-[#5EEAD4] via-[#A7F3D0] to-[#FDE68A]">
+                January 22nd, 2024
+              </span>
+            </p>
+
+            <NewsletterSignup tags={["launch-week-jan-2023"]} />
           </div>
         </div>
       </Container>
 
-      <Footer />
+      <Footer disableCta={true} />
     </div>
   );
 }
@@ -70,13 +77,11 @@ function NewsletterSignup({ tags = [] }: { tags: string[] }) {
 
   return (
     <form onSubmit={subscribeUser}>
-      <p className="my-8 font-bold text-slate-200 text-lg md:text-xl">
-        Get notified:
-      </p>
+      <p className="mb-2 text-white text-sm">Get notified:</p>
 
-      <div className="flex flex-row gap-4">
+      <div className="flex flex-row flex-wrap gap-4">
         <input
-          className="w-72 border border-slate-800 rounded-md px-4 py-2 text-slate-200 bg-slate-1000 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+          className="w-72 flex-grow border border-slate-400 rounded-md px-4 py-2 text-white bg-transparent focus:outline-none focus:ring-1 focus:ring-[#A7F3D0] focus:border-transparent"
           type="email"
           id="email-input"
           name="email"
@@ -90,7 +95,7 @@ function NewsletterSignup({ tags = [] }: { tags: string[] }) {
           type="submit"
           name="register"
           disabled={loading || response.result === true}
-          className="whitespace-nowrap button group inline-flex items-center justify-center gap-0.5 rounded-lg font-medium tracking-tight transition-all text-white bg-indigo-500 hover:bg-indigo-400 text-sm px-6 py-2.5"
+          className="whitespace-nowrap button group inline-flex items-center justify-center gap-0.5 rounded-md font-medium tracking-tight transition-all text-slate-950 placeholder:text-slate-300 bg-gradient-to-br bg-gradient-to-r from-[#5EEAD4] via-[#A7F3D0] to-[#FDE68A] text-sm px-3 py-2"
         >
           Register
         </button>

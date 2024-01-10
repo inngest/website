@@ -48,12 +48,11 @@ export default function Home() {
     >
       <Header />
 
-      <PageBanner href="/launch-week?ref=homepage-banner">
-        <RocketLaunchIcon className="inline-flex h-5 mr-1" />
-        <span className="sm:hidden">Join Us for Launch Week! Jan 22nd</span>
-        <span className="hidden sm:inline">
+      <PageBanner href="/launch-week?ref=homepage-banner" className="mt-px">
+        <RocketLaunchIcon className="inline-flex h-7 sm:h-5 mr-1" />
+        <span className="shrink">
           Join Us for Launch Week!{" "}
-          <span className="font-normal">Starts January 22nd</span>
+          <span className="font-normal inline-flex">Starts January 22nd</span>
         </span>
       </PageBanner>
 
