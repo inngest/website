@@ -12,7 +12,17 @@ export default function Hero() {
   return (
     <Container className="mt-12">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-16 md:gap-24">
-        <div className="max-w-[580px] mt-12 mb-12 md:mt-24">
+        <div className="max-w-[580px] mt-18 mb-12 md:mt-24">
+          {/* mt-12 without banner */}
+          <a
+            href="/launch-week"
+            className="inline-flex p-px text-white text-lg tracking-tight mb-8 font-semibold rounded-md bg-gradient-to-tl from-green-800/60 via-orange-300/60 to-rose-900/60"
+          >
+            <div className="flex flex-row gap-1 items-center px-3 py-0.5 bg-slate-1000 rounded-md">
+              Launch Week - Starts January 22nd{" "}
+              <ChevronRightIcon className="h-4 group-hover:translate-x-1 relative top-px transition-transform duration-150" />
+            </div>
+          </a>
           <h1
             className="pb-8 tracking-tight font-semibold text-4xl md:text-5xl bg-gradient-to-br from-white to-slate-300 bg-clip-text text-transparent"
             style={
@@ -38,7 +48,7 @@ export default function Hero() {
                 "Zero-infrastructure to manage",
                 "Automatic retries for max reliability",
               ].map((r) => (
-                <li className="flex items-center gap-2">
+                <li className="flex items-center gap-2" key={r}>
                   <CheckIcon className="h-5 w-5 text-slate-400/80 shrink-0" />{" "}
                   {r}
                 </li>
