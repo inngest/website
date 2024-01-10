@@ -30,7 +30,7 @@ interface Env {
 }
 
 export const cloudflareMiddleware = new InngestMiddleware({
-  name: "foo",
+  name: "Inngest: Workers AI",
   init: () => {
     return {
       onFunctionRun: ({ reqArgs }) => {
