@@ -77,7 +77,7 @@ Inngest manages concurrency for you within our scheduling system, and you do not
 
 You might need to set a different concurrency limit for a single step in a function. For example, within an AI flow you may have 10 pre-processing steps which can run with higher limits, and a single AI call with much lower limits.
 
-To control concurrency on individual steps, extract the step into a new function with its _own_ concurrency controls, and invoke the new function using `step.invoke`. This lets you combine concurrency controls and manage "flow control" in a clean, composible manner.
+To control concurrency on individual steps, extract the step into a new function with its _own_ concurrency controls, and invoke the new function using `step.invoke`. This lets you combine concurrency controls and manage "flow control" in a clean, composable manner.
 
 ## How global limits work
 
