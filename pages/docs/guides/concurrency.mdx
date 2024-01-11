@@ -163,3 +163,64 @@ Because functions are FIFO, function runs are more likely to be worked on the ol
     * Limit globally using a specific string: `'"global-quoted-key"'` (wrapped in quotes, as the expression is evaluated as a language)
   </Property>
 </Properties>
+
+## Further examples
+
+### Handling third party API rate limits
+
+Here, we use the Resend SDK to send an email. Resend's rate limit is 10 requests per second so we set a lower concurrency as our function is simple and may execute multiple times per second. Here we use a limit of `4` to keep the throughput a bit slower than necessary:
+
+```ts
+export const send = inngest.createFunction(
+  {
+    name: "Email: Pending invoice",
+    id: "email-pending-invoice",
+    concurrency: {
+      limit: 4, // Resend's rate limit is 10 req/s
+    },
+  },
+  { event: "billing/invoice.pending" },
+  async ({ event, step }) => {
+    await step.run("send-email", async () => {
+      return await resend.emails.send({
+        from: "hello@myco.com",
+        to: event.user.email,
+        subject: `Invoice pending for ${event.data.invoicePeriod}`,
+        text: `Dear user, ...`,
+      });
+    });
+
+    return { message: "success" };
+  }
+);
+```
+
+### Restricting parallel import jobs for a customer id
+
+In this hypothetical system, customers can upload `.csv` files which each need to be processed and imported. We want to limit each customer to only one import job at a time so no two jobs are writing to a customer's data at a given time. We do this by setting a `limit: 1` and a concurrency `key` to the `customerId` which is included in every single event payload.
+
+Inngest ensures that the concurrency (`1`) applies to each unique value for `event.data.customerId`. This allows different customers to have functions running at the same exact time, but no given customer can have two functions running at once!
+
+
+```ts
+export const send = inngest.createFunction(
+  {
+    name: "Process customer csv import",
+    id: "process-customer-csv-import",
+    concurrency: {
+      limit: 1,
+      key: `event.data.customerId`, // You can use any piece of data from the event payload
+    },
+  },
+  { event: "csv/file.uploaded" },
+  async ({ event, step }) => {
+    await step.run("process-file", async () => {
+      const file = await bucket.fetch(event.data.fileURI);
+      // ...
+    });
+
+    return { message: "success" };
+  }
+);
+```
+
