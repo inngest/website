@@ -1,17 +1,32 @@
 # Concurrency management
 
-Managing concurrency is important for any production system. Inngest provides concurrency controls that allow you to create **multi-level virtual queues** **within each function**, directly in code, without thinking about infrastructure. Use cases include:
+Managing concurrency is important for any production system. Inngest allows you to manage concurreny limits in functions.  Concurrency controls the number of steps executing code at any one time.  It works by creating multi-level virtual queues within each function, directly in code, without thinking about infrastructure.
+
+## Use cases
+#
+Use cases include:
 - **Setting global limits for many functions which share a pool of resources**, for example with many functions which use shared AI capacity, or global DB connections.
 - **Setting limits on your own individual accounts, tenants or users**, for example limiting unpaid users to a specific capacity.
 - **Setting individual function concurrency limits**, for example limiting a function run's total capacity.
-- **A combination of the above**, with functions limited by the lowest/most constrained concurrency key.
+- **A combination of the above**, with functions limited by the first concurrency key to hit limits.
 
 ## How to configure concurrency
 
 Inngest lets you provide fine-grained concurrency across all functions in a simple, configurable manner.  You can control each function's concurrency limits within your function definition. Here are two examples:
 
 ```js
-// Example 1:  A complete, complex example with two virtual concurrency queues.
+// Example 1: a simple concurrency definition limiting this function to 10 steps at once.
+inngest.createFunction(
+  {
+    id: "another-function",
+    concurrency: 10,
+  }
+  { event: "ai/summary.requested" },
+  async ({ event, step }) => {
+  }
+);
+
+// Example 2:  A complete, complex example with two virtual concurrency queues.
 inngest.createFunction(
   {
     id: "unique-function-id",
@@ -42,23 +57,13 @@ inngest.createFunction(
   }
 );
 
-// Example 2: a simple concurrency definition limiting this function to 10 steps at once.
-inngest.createFunction(
-  {
-    id: "another-function",
-    concurrency: 10,
-  }
-  { event: "ai/summary.requested" },
-  async ({ event, step }) => {
-  }
-);
 ```
 
-In the first example, we define **two concurrency constraints that create two virtual queues to manage capacity**. Runs will be limited if they hit either of the virtual queue's limits. For example:
+In the first example, the function is constrained to `10` executing steps at once.
+
+In the second example, we define **two concurrency constraints that create two virtual queues to manage capacity**. Runs will be limited if they hit either of the virtual queue's limits. For example:
 - If there are 10 steps executing under the 'openai' key's virtual queue, any future runs will be blocked and will wait for existing runs to finish before executing.
 - If there are 5 steps executing under the 'openai' key and a single `event.data.account_id` enqueues 2 runs, the second run is limited by the `event.data.account_id` virtual queue and will wait before executing.
-
-In the second example, the function is constrained to `10` executing steps at once.
 
 
 
