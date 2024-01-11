@@ -5,9 +5,9 @@ Managing concurrency is important for any production system. Inngest allows you 
 ## Concurrency use cases
 
 Use cases include:
+- **Setting individual function concurrency limits**, for example to only run 10 imports at once.
 - **Setting global limits for many functions which share a pool of resources**, for example with many functions which use shared AI capacity, or global DB connections.
 - **Setting limits on your own individual accounts, tenants or users**, for example limiting unpaid users to a specific capacity.
-- **Setting individual function concurrency limits**, for example limiting a function run's total capacity.
 - **A combination of the above**, with functions limited by the first concurrency key to hit limits.
 
 ## Examples and configuration
