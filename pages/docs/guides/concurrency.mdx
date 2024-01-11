@@ -2,15 +2,15 @@
 
 Managing concurrency is important for any production system. Inngest allows you to manage concurreny limits in functions.  Concurrency controls the number of steps executing code at any one time.  It works by creating multi-level virtual queues within each function, directly in code, without thinking about infrastructure.
 
-## Use cases
-#
+## Concurrency use cases
+
 Use cases include:
 - **Setting global limits for many functions which share a pool of resources**, for example with many functions which use shared AI capacity, or global DB connections.
 - **Setting limits on your own individual accounts, tenants or users**, for example limiting unpaid users to a specific capacity.
 - **Setting individual function concurrency limits**, for example limiting a function run's total capacity.
 - **A combination of the above**, with functions limited by the first concurrency key to hit limits.
 
-## How to configure concurrency
+## Examples and configuration
 
 Inngest lets you provide fine-grained concurrency across all functions in a simple, configurable manner.  You can control each function's concurrency limits within your function definition. Here are two examples:
 
@@ -65,42 +65,6 @@ In the second example, we define **two concurrency constraints that create two v
 - If there are 10 steps executing under the 'openai' key's virtual queue, any future runs will be blocked and will wait for existing runs to finish before executing.
 - If there are 5 steps executing under the 'openai' key and a single `event.data.account_id` enqueues 2 runs, the second run is limited by the `event.data.account_id` virtual queue and will wait before executing.
 
-
-
-## Concurrency reference
-
-<Properties>
-  <Property name="limit" type="number" required>
-    The maximum number of concurrently running steps.
-    A value of `0` or `undefined` is the equivalent of not setting a limit.
-    The maximum value is dictated by your accout's plan.
-  </Property>
-  <Property name="scope" type="'account' | 'env' | 'fn'">
-    The scope for the concurrency limit, which impacts whether concurrency is managed on an individual function, across an environment, or across your entire account.
-
-    * `fn` (default):  only this function's runs affects the concurrency limit
-    * `env`:  all runs within the same environment that share the same evaluated key value will affect the concurrency limit.  This requires setting a "key" which evaluates to a virtual queue name.
-    * `account`:  all runs in your account that share the same evaluated key value will affect the concurrency limit.  This requires setting a "key" which evaluates to a virtual queue name.
-
-    Each SDK exposes these enums in the language's idiomatic manner, though the meanings of the enums are the same across all languages.
-  </Property>
-  <Property name="key" type="string">
-    A unique key expression for which to restrict concurrently running steps to. The expression is evaluated for each triggering event.  A key is required when setting an `env` or `account` level scope. 
-
-    Expressions are defined using the Common Expression Language (CEL) with the original event accessible using dot-notation. Read [our guide to writing expressions](/docs/guides/writing-expressions) for more info. Examples:
-
-    * Limit concurrency to `n` (via `limit`) per customer id: `'event.data.customer_id'`
-    * Limit concurrency to `n` per user, per import id: `'event.data.user_id + "-" + event.data.import_id'`
-    * Limit globally using a specific string: `'"global-quoted-key"'` (wrapped in quotes, as the expression is evaluated as a language)
-  </Property>
-</Properties>
-
-## Concurrency control across specific steps in a function
-
-You might need to set a different concurrency limit for a single step in a function. For example, within an AI flow you may have 10 pre-processing steps which can run with higher limits, and a single AI call with much lower limits.
-
-To control concurrency on indivudal steps, extract the step into a new function with its _own_ concurrency controls, and invoke the new function using `step.invoke`. This lets you combine concurrency controls and manage "flow control" in a clean, composible manner.
-
 ## How concurrency works
 
 **Concurrency works by limiting the number of steps executing at a single time.** Within Inngest, execution is defined as "an SDK running code". **Calling **`step.sleep`**, **`step.sleepUntil`**, or **`step.waitForEvent`** does not count towards capacity limits**, as the SDK doesn't execute code while those steps wait. Because sleeping or waiting is common, concurrency _does not_ limit the number of functions in progress; it specifically limits the number of steps executing at any single time.
@@ -108,6 +72,12 @@ To control concurrency on indivudal steps, extract the step into a new function 
 **Concurrency is strictly ordered from oldest to newest ([FIFO](https://en.wikipedia.org/wiki/FIFO))** across the same function.  Ordering amongst different functions is not guaranteed.  This means that within a specific function, Inngest prioritizes finishing older functions above starting newer functions - even if the older functions continue to schedule new steps to run.  Different functions, however, compete for capacity, with runs on the most backlogged function much more likely (but not guaranteed) to be scheduled first.
 
 Inngest manages concurrency for you within our scheduling system, and you do not need to provision queues, infrastructure, or manage concurrency limits within your own workers or services.
+
+## Concurrency control across specific steps in a function
+
+You might need to set a different concurrency limit for a single step in a function. For example, within an AI flow you may have 10 pre-processing steps which can run with higher limits, and a single AI call with much lower limits.
+
+To control concurrency on indivudal steps, extract the step into a new function with its _own_ concurrency controls, and invoke the new function using `step.invoke`. This lets you combine concurrency controls and manage "flow control" in a clean, composible manner.
 
 ## How global limits work
 
@@ -165,6 +135,34 @@ Because functions are FIFO, function runs are more likely to be worked on the ol
 - The maximum concurrency limit is defined by your account's plan
 - Ordering amongst the same function is guaranteed (with the exception of retries)
 - Ordering amongst different functions is not guaranteed.  Functions compete with each other randomly to be scheduled.
+
+## Concurrency reference
+
+<Properties>
+  <Property name="limit" type="number" required>
+    The maximum number of concurrently running steps.
+    A value of `0` or `undefined` is the equivalent of not setting a limit.
+    The maximum value is dictated by your accout's plan.
+  </Property>
+  <Property name="scope" type="'account' | 'env' | 'fn'">
+    The scope for the concurrency limit, which impacts whether concurrency is managed on an individual function, across an environment, or across your entire account.
+
+    * `fn` (default):  only this function's runs affects the concurrency limit
+    * `env`:  all runs within the same environment that share the same evaluated key value will affect the concurrency limit.  This requires setting a "key" which evaluates to a virtual queue name.
+    * `account`:  all runs in your account that share the same evaluated key value will affect the concurrency limit.  This requires setting a "key" which evaluates to a virtual queue name.
+
+    Each SDK exposes these enums in the language's idiomatic manner, though the meanings of the enums are the same across all languages.
+  </Property>
+  <Property name="key" type="string">
+    A unique key expression for which to restrict concurrently running steps to. The expression is evaluated for each triggering event.  A key is required when setting an `env` or `account` level scope. 
+
+    Expressions are defined using the Common Expression Language (CEL) with the original event accessible using dot-notation. Read [our guide to writing expressions](/docs/guides/writing-expressions) for more info. Examples:
+
+    * Limit concurrency to `n` (via `limit`) per customer id: `'event.data.customer_id'`
+    * Limit concurrency to `n` per user, per import id: `'event.data.user_id + "-" + event.data.import_id'`
+    * Limit globally using a specific string: `'"global-quoted-key"'` (wrapped in quotes, as the expression is evaluated as a language)
+  </Property>
+</Properties>
 
 ## SDK References
 
