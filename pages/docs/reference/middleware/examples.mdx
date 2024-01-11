@@ -15,7 +15,7 @@ The following examples show how you might use middleware in some real-world scen
 
 [Workers AI](https://developers.cloudflare.com/workers-ai/) allows you to run machine learning models, on the Cloudflare network, from your own code, triggered by Inngest.
 
-To use the `@cloudflare/ai` package, we need access to the `env` object passed to a Workers route handler. This argument is usually abstracted away by a serve handler, but middleware can access arguments passed to the request.
+To use the `@cloudflare/ai` package, you need access to the `env` object passed to a Workers route handler. This argument is usually abstracted away by a serve handler, but middleware can access arguments passed to the request.
 
 We use this along with [mutating function input](/docs/reference/middleware/typescript#mutating-input) to set a new `ai` property that we can use within functions.
 
