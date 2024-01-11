@@ -244,6 +244,10 @@ const sectionTypeScriptReference = [
       //   title: "Logging",
       //   href: `/docs/reference/functions/logging`,
       // },
+      {
+        title: "Referencing functions",
+        href: `/docs/functions/references`,
+      },
     ],
   },
   {
