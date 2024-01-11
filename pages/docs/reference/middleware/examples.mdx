@@ -17,7 +17,7 @@ The following examples show how you might use middleware in some real-world scen
 
 To use the `@cloudflare/ai` package, you need access to the `env` object passed to a Workers route handler. This argument is usually abstracted away by a serve handler, but middleware can access arguments passed to the request.
 
-We use this along with [mutating function input](/docs/reference/middleware/typescript#mutating-input) to set a new `ai` property that we can use within functions.
+You use this along with [mutating function input](/docs/reference/middleware/typescript#mutating-input) to set a new `ai` property that you can use within functions.
 
 ```ts
 import { Ai } from "@cloudflare/ai";
