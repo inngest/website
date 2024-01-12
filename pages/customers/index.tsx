@@ -225,7 +225,7 @@ export default function Customers() {
             for <em>their</em> customers
           </h1>
           <p className="mx-auto my-8 text-slate-300 text-center text-lg">
-            From startups to public companies, these customers chose Inngest to
+            From startups to public companies, our customers chose Inngest to
             power their products.
           </p>
         </div>
