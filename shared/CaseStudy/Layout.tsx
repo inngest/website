@@ -4,7 +4,7 @@ import Image from "next/image";
 import Header from "src/shared/Header";
 import Container from "src/shared/layout/Container";
 import Footer from "src/shared/Footer";
-import { getOpenGraphImageURL } from "../../utils/social";
+import FooterCallout from "src/shared/Footer/FooterCallout";
 import { Button } from "../Button";
 
 export type Props = {
@@ -138,13 +138,23 @@ export function Layout({
               <Button
                 href={`/contact?ref=case-study-${companyName.toLowerCase()}`}
               >
-                Talk to an expert
+                Talk to a product expert
               </Button>
             </div>
           </aside>
         </div>
       </Container>
-      <Footer />
+
+      <FooterCallout
+        title="Talk to a product expert"
+        description="Chat with sales engineering to learn how Inngest can help your team ship more reliable products, faster"
+        ctaHref="/contact?ref=customers"
+        ctaText="Contact sales engineering"
+        ctaRef={"customers"}
+        showCliCmd={false}
+      />
+
+      <Footer disableCta={true} />
     </div>
   );
 }

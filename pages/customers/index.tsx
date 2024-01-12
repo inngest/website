@@ -5,8 +5,9 @@ import clsx from "clsx";
 import Header from "src/shared/Header";
 import Container from "src/shared/layout/Container";
 import Footer from "src/shared/Footer";
-import CTACallout from "src/shared/CTACallout";
+import FooterCallout from "src/shared/Footer/FooterCallout";
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/20/solid";
+import CaseStudyCard from "src/shared/CaseStudy/CaseStudyCard";
 
 export async function getStaticProps() {
   return {
@@ -230,48 +231,9 @@ export default function Customers() {
         </div>
         <div className="max-w-6xl mx-auto">
           <div className="my-20 grid md:grid-cols-2 gap-6 md:gap-12">
-            {caseStudies.map(
-              ({ logo, name, href, title, snippet, tags = [] }, idx) => (
-                <a
-                  href={href}
-                  className="group text-slate-50 h-full flex"
-                  key={idx}
-                >
-                  <div className="p-8 grow flex flex-col justify-items-start border border-slate-100/10 group-hover:border-slate-100/20 rounded-2xl transition-all bg-slate-800/10 group-hover:bg-slate-800/30 bg-[url(/assets/textures/wave.svg)] bg-contain">
-                    <div className="mb-4 text-sm font-medium text-slate-500">
-                      Case Study
-                    </div>
-                    <h2 className="font-bold text-2xl">{title}</h2>
-                    <div className="my-10 grow lg:grow-0 min-h-20 lg:h-24 flex flex-row md:flex-col lg:flex-row items-center space-between gap-8">
-                      <p className="text-slate-300">{snippet}</p>
-                      <Image
-                        src={logo}
-                        alt={`${name} logo`}
-                        title={name}
-                        width={240 * 0.6 * 1}
-                        height={120 * 0.6 * 1}
-                        className={clsx(
-                          "w-36 shrink-0 text-white mx-auto width-auto transition-all"
-                        )}
-                      />
-                    </div>
-                    <div className="flex items-end justify-between">
-                      <div className="flex gap-2 text-sm font-medium text-slate-500">
-                        {tags.map((tag) => (
-                          <span>{tag}</span>
-                        ))}
-                      </div>
-                      <div>
-                        Read the case study{" "}
-                        <span className="ml-1 transition-all group-hover:translate-x-0.5">
-                          →
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </a>
-              )
-            )}
+            {caseStudies.map((props, idx) => (
+              <CaseStudyCard {...props} key={idx} />
+            ))}
           </div>
 
           <div className="my-20 grid md:grid-cols-3 gap-6 md:gap-12">
@@ -369,16 +331,18 @@ export default function Customers() {
             })}
           </div>
         </div>
-
-        <CTACallout
-          text="Would your engineering team benefit from faster development time and a managed workflow execution solution?"
-          cta={{
-            href: "/contact?ref=customers",
-            text: "Get in touch",
-          }}
-        />
       </Container>
-      <Footer />
+
+      <FooterCallout
+        title="Talk to a product expert"
+        description="Chat with sales engineering to learn how Inngest can help your team ship more reliable products, faster"
+        ctaHref="/contact?ref=customers"
+        ctaText="Contact sales engineering"
+        ctaRef={"customers"}
+        showCliCmd={false}
+      />
+
+      <Footer disableCta={true} />
     </div>
   );
 }
