@@ -115,11 +115,11 @@ export function Layout({
               </Link>
             </p>
           </div>
-          <aside className="md:sticky top-32 flex flex-col gap-6 min-w-[260px] px-8 py-4 mt-8 justify-between border-l border-slate-100/10">
+          <aside className="md:sticky top-32 flex flex-col gap-6 min-w-[260px] md:w-[360px] px-8 py-4 mt-8 items-start justify-between border-l border-slate-100/10">
             <img
               src={logo}
               alt={`${companyName}'s logo`}
-              className="w-full max-w-[160px] mb-4"
+              className="inline-flex min-w-[160px] max-h-[40px] mb-4"
             />
             <p>{companyDescription}</p>
             <p>
