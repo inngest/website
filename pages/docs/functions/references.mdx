@@ -1,13 +1,19 @@
 # Referencing functions
 
-Using [`step.invoke()`](/docs/reference/functions/step-invoke), you can directly call one Inngest function from another and handle the result. You can use this with `referenceFunction` to call Inngest functions located in other apps.
+Using [`step.invoke()`](/docs/reference/functions/step-invoke), you can directly call one Inngest function from another and handle the result. You can use this with `referenceFunction` to call Inngest functions located in other apps, or to avoid importing dependencies of functions within the same app.
 
 ```ts
-// @/inngest/computeSquare.ts
+// @/inngest/compute.ts
 import { referenceFunction } from "inngest";
 import { z } from "zod";
+import { type computePi } from "@/inngest/computePi";
 
-// Create a reference to a function in another application.
+// Create a local reference to a function without importing dependencies
+export const computePi = referenceFunction<typeof computePi>({
+  functionId: "compute-pi",
+});
+
+// Create a reference to a function in another application
 export const computeSquare = referenceFunction({
   appId: "my-python-app",
   functionId: "compute-square",
@@ -25,7 +31,7 @@ export const computeSquare = referenceFunction({
 
 ```ts
 // @/inngest/someFn.ts
-import { computeSquare } from "@/inngest/computeSquare";
+import { computeSquare } from "@/inngest/compute"; // import the referenece
 
 // square.result is typed as a number
 const square = await step.invoke("compute-square-value", {
@@ -35,8 +41,6 @@ const square = await step.invoke("compute-square-value", {
 ```
 
 ## How to use `referenceFunction`
-
-A referenced function can be used with [`step.invoke()`](/docs/reference/functions/step-invoke) to invoke the function and wait for the result.
 
 The simplest reference just contains a `functionId`. When used, this will invoke the function with the given ID in the same app that is used to invoke it.
 
