@@ -1,42 +1,45 @@
-# Events
+export const description = '';
 
-To start, make sure you have the [`inngest`](https://www.npmjs.com/package/inngest) package installed via NPM or yarn:
+# Sending events
 
-```bash
-npm install inngest  # or yarn add inngest
-```
+With the [Inngest SDK installed](/docs/sdk/overview), you can send events from your application to trigger your functions.
 
-Start with creating an `Inngest` client. An "Event Key" is required to send events ([How to create an Event Key](/docs/events/creating-an-event-key)):
+## Setting the Event Key
 
-<CodeGroup>
-```ts {{ title: "v3" }}
-import { Inngest } from 'inngest';
+An "Event Key" is required to send events ([How to create an Event Key](/docs/events/creating-an-event-key)). There are two ways to configure your `Inngest` client to use your Event Key:
 
-// Recommended: Set an INNGEST_EVENT_KEY environment variable for automatic configuration:
-const inngest = new Inngest({ id: "your-app-id" });
+### 1. Set the `INNGEST_EVENT_KEY` environment variable
 
-// Or you can pass the eventKey explicitly to the constructor:
-const inngest = new Inngest({ id: "your-app-id", eventKey: "xyz..." });
-```
-```ts {{ title: "v2" }}
-import { Inngest } from 'inngest';
-
-// Recommended: Set an INNGEST_EVENT_KEY environment variable for automatic configuration:
-const inngest = new Inngest({ name: "Your app name" });
-
-// Or you can pass the eventKey explicitly to the constructor:
-const inngest = new Inngest({ name: "Your app name", eventKey: "xyz..." });
-```
-</CodeGroup>
-
-Then, sending an event is simple, just call the the `send()` method with your event payload ([Read about the payload format](/docs/reference/events/send#inngest-send-event-payload-event-payload-promise)):
+The recommended way to configure your `Inngest` client is to set the `INNGEST_EVENT_KEY` environment variable. The `Inngest` client will automatically use this environment variable if it's set.
 
 ```ts
-// This sends an event to Inngest.
+import { Inngest } from 'inngest';
+
+// process.env.INNGEST_EVENT_KEY is automatically detected and used
+const inngest = new Inngest({ id: "your-app-id" });
+```
+
+### 2. Pass the Event Key to the `Inngest` constructor
+
+Alternatively, you can pass the Event Key to the `Inngest` constructor, although, you should never hard-code your Event Key in your application code.
+
+```ts
+import { Inngest } from 'inngest';
+
+const inngest = new Inngest({ id: "your-app-id", eventKey: "xyz..." });
+```
+
+## Sending an event
+
+With your newly created `Inngest` client, you can send events using the `inngest.send()` method ([Read about the payload format](/docs/reference/events/send#inngest-send-event-payload-event-payload-promise)):
+
+<CodeGroup forceTabs={true}>
+```ts {{ title: "TypeScript / JavaScript" }}
+// This sends an event to Inngest
 await inngest.send({
   // The event name
   name: "storefront/cart.checkout.completed",
-  // The event's data
+  // The event payload data
   data: {
     cartId: "ed12c8bde",
     itemIds: ["9f08sdh84", "sdf098487", "0fnun498n"],
@@ -47,17 +50,18 @@ await inngest.send({
   }
 });
 ```
+</CodeGroup>
 
 <Callout>
 
-👉 You should always use `await` or `.then()` with `send()` to ensure that the event has been sent to Inngest. Serverless platforms may terminate early and prevent an event from being successfully sent.
+👉 `send()` is an asynchronous method that returns a `Promise`, so you should always use `await` or `.then()` to ensure that the method has finished sending the event to Inngest. Serverless functions can shut down very quickly, so not `await`ing `send()` may result in events failing to be sent.
 
 </Callout>
 
 Sending this event, named `storefront/cart.checkout.completed`, to Inngest will do two things:
 
 1. Automatically run any [functions](/docs/functions) that are triggered by this specific event, passing the event payload to the function's arguments.
-2. Store the event payload in Inngest cloud, creating a new event type and event version if it doesn't already exist.
+2. Store the event payload in Inngest cloud. You can find this in the **Events** tab of the dashboard.
 
 <Callout>
 
@@ -67,7 +71,7 @@ Sending this event, named `storefront/cart.checkout.completed`, to Inngest will 
 
 ## Sending multiple events at once
 
-You can also send multiple events in a single `send` call. This enables you to send a batch of events very easily. You can send up to `512kb` in a single call which means you can send anywhere between 10 and 1000 typically sized payloads at once. This is the default and can be increased for your account.
+You can also send multiple events in a single `send()` call. This enables you to send a batch of events very easily. You can send up to `512kb` in a single request which means you can send anywhere between 10 and 1000 typically sized payloads at once. This is the default and can be increased for your account.
 
 ```ts
 await inngest.send([
@@ -92,6 +96,90 @@ const events = importedItems.map((item) => ({
 await inngest.send(events);
 ```
 
+## Sending events from within functions
+
+You can also send events from within your functions using `step.sendEvent()`. This is useful if you want to trigger other functions from within a function. It is recommended to use `step.sendEvent()` within functions instead of `inngest.send()` as can ensure reliable event delivery and prevent duplicate events from being sent. [Learn more here](/docs/reference/functions/step-send-event).
+
+```ts
+export default inngest.createFunction(
+  { id: "user-onboarding" },
+  { event: "app/user.signup" },
+  async ({ event, step }) => {
+    // Do something
+    await step.sendEvent("send-activation-event", {
+      name: "app/user.activated",
+      data: { userId: event.data.userId },
+    });
+    // Do something else
+  }
+);
+```
+
+## Send events from other languages via HTTP (Event API)
+
+You can send events from any system or programming language with our simple API and an Inngest Event Key. The API accepts a single event payload or an array of event payloads.
+
+{/* NOTE - We'll leave other SDKs here for now, but in time, instead we'll make this entire guide have Python and Go examples for each section above */}
+
+<Callout>
+  To send events from Python or Go applications, use our [Python SDK](/docs/reference/python/client/send) or [Go SDK](https://pkg.go.dev/github.com/inngest/inngestgo#Client).
+</Callout>
+
+To send an event to a specific [branch environment](/docs/platform/environments#branch-environments), set the `x-inngest-env` header to the name of your branch environment, e.g. `x-inngest-env: feature/my-branch`.
+
+<CodeGroup tag="POST" label="inn.gs/e/:eventKey">
+
+```bash {{ title: 'cURL' }}
+curl -X POST https://inn.gs/e/$INNGEST_EVENT_KEY \
+  -H 'Content-Type: application/json' \
+  --data '{
+    "name": "user.signup",
+    "data": {
+      "userId": "645ea8289ad09eac29230442"
+    }
+  }'
+```
+
+```php
+$url = "https://inn.gs/e/{$eventKey}";
+$content = json_encode([
+    "name" => "user.signup",
+    "data" => [
+      "userId" => "645ea8289ad09eac29230442",
+    ],
+]);
+
+$curl = curl_init($url);
+curl_setopt($curl, CURLOPT_HEADER, false);
+curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($curl, CURLOPT_HTTPHEADER, ["Content-type: application/json"]);
+curl_setopt($curl, CURLOPT_POST, true);
+curl_setopt($curl, CURLOPT_POSTFIELDS, $content);
+
+$json_response = curl_exec($curl);
+$status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+if ($status != 200) {
+    return [
+        'status' => $status,
+        'message' => "Error: call to URL $url failed with status $status, response $json_response, curl_error " . curl_error($curl) . ", curl_errno " . curl_errno($curl),
+    ];
+}
+
+curl_close($curl);
+$response = json_decode($json_response, true);
+```
+
+</CodeGroup>
+
+The response will contain the `ids` of the events that were sent:
+
+```json {{ title: 'Response' }}
+{
+  "ids": ["01H08W4TMBNKMEWFD0TYC532GG"],
+  "status": 200
+}
+```
+
 ## Deduplication
 
 Often, you may need to prevent duplicate events from being processed by Inngest. If your system could possibly send the same event more than once, you will want to ensure that it does not run functions more than once.
@@ -111,6 +199,8 @@ await inngest.send({
 });
 ```
 
+Learn more about this in the [handling idempotency guide](/docs/guides/handling-idempotency).
+
 <Callout variant="warning">
 💡 Deduplication prevents duplicate function runs for 24 hours from the first event.
 </Callout>
@@ -123,6 +213,10 @@ For example, for two events like `storefront/item.imported` and `storefront/item
 
 </Callout>
 
-## Reference
+## Further reading
 
-For a full reference of how you can send events, read [the reference](/docs/reference/events/send).
+* [Creating an Event Key](/docs/events/creating-an-event-key)
+* [TypeScript SDK Reference: Send events](/docs/reference/events/send)
+* [Python SDK Reference: Send events](/docs/reference/python/client/send)
+* [Go SDK Reference: Send events](https://pkg.go.dev/github.com/inngest/inngestgo#Client)
+
