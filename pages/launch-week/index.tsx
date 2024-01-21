@@ -1,5 +1,8 @@
 import type { GetStaticPropsResult } from "next";
+import Image from "next/image";
 import { useRef, useState } from "react";
+import clsx from "clsx";
+
 import Header from "src/shared/Header";
 import Logo from "src/shared/Icons/Logo";
 import Container from "src/shared/layout/Container";
@@ -57,6 +60,25 @@ export default function LaunchWeek() {
             <NewsletterSignup tags={["launch-week-jan-2023"]} />
           </div>
         </div>
+
+        <RowItem
+          title="Announcing Replay"
+          subtitle="The death of the dead-letter queue"
+          image="/assets/blog/durable-workflow-engines.png"
+          label="New"
+          buttonHref="#"
+          docsHref="/docs/platform/replay"
+          orientation="left"
+        />
+        <RowItem
+          title="Cancellation features"
+          subtitle="The death of the dead-letter queue"
+          image="/assets/blog/durable-workflow-engines.png"
+          label="New"
+          buttonHref="#"
+          docsHref="/docs/platform/replay"
+          orientation="right"
+        />
       </Container>
 
       <Footer disableCta={true} />
@@ -100,8 +122,6 @@ function NewsletterSignup({ tags = [] }: { tags: string[] }) {
 
   const canSubmit = response.result !== true || response.error !== "";
 
-  console.log(response);
-
   return (
     <form onSubmit={subscribeUser}>
       <p className="mb-2 text-white text-sm">Get notified:</p>
@@ -124,7 +144,7 @@ function NewsletterSignup({ tags = [] }: { tags: string[] }) {
             name="register"
             disabled={loading || response.result === true}
             className={`whitespace-nowrap button group inline-flex items-center justify-center gap-0.5 rounded-md font-medium tracking-tight transition-all text-slate-950 placeholder:text-slate-300
-            bg-gradient-to-br bg-gradient-to-r from-[#5EEAD4] via-[#A7F3D0] to-[#FDE68A] text-sm px-3 py-2
+            bg-gradient-to-r from-[#5EEAD4] via-[#A7F3D0] to-[#FDE68A] text-sm px-3 py-2
             ${loading ? "opacity-40 cursor-not-allowed" : ""}`}
           >
             Register
@@ -141,5 +161,76 @@ function NewsletterSignup({ tags = [] }: { tags: string[] }) {
         </p>
       )}
     </form>
+  );
+}
+
+function RowItem({
+  title,
+  subtitle,
+  label,
+  buttonHref,
+  docsHref,
+  image,
+  orientation = "left",
+}) {
+  return (
+    <div className="mx-auto md:px-8 my-16 max-w-[440px] md:max-w-[1072px] grid grid-cols-1 md:grid-cols-2 items-center gap-8 md:gap-16">
+      <div
+        className={clsx(
+          "flex",
+          orientation === "right" ? "md:order-2" : "text-right"
+        )}
+      >
+        <Image
+          src={image}
+          height={220}
+          width={440}
+          quality={95}
+          alt={`Blog featured image for ${title}`}
+          className={clsx(
+            "max-w-[440px] w-full shadow-2xl	rounded-lg",
+            orientation === "right" && "md:order-2"
+          )}
+        />
+      </div>
+      <div
+        className={clsx(
+          "flex flex-col items-start",
+          orientation === "right" && "items-end text-right"
+        )}
+      >
+        <span
+          className="inline-flex py-1 px-6 text-white font-extrabold text-sm border-2 border-transparent rounded-full"
+          style={{
+            background: `linear-gradient(#292e23, #292e23) padding-box,
+                         linear-gradient(to right, #5EEAD4, #A7F3D0, #FDE68A) border-box`,
+          }}
+        >
+          {label}
+        </span>
+        <div className="mt-4 mb-8">
+          <h2 className="mb-2 text-xl md:text-[32px] font-extrabold">
+            {title}
+          </h2>
+          <p className="text-base md:text-lg">{subtitle}</p>
+        </div>
+        <div className="flex flex-row gap-x-10 gap-y-4 items-center flex-wrap">
+          <a
+            href={buttonHref}
+            className="px-3 py-2 text-slate-950 font-medium rounded-md shadow-sm bg-gradient-to-r from-[#5EEAD4] to-[#FDE68A] transition-all hover:from-[#B0F4E9] hover:to-[#FBEDB7]"
+          >
+            Read blog post
+          </a>
+          {docsHref && (
+            <a
+              href={docsHref}
+              className="px-3 py-2 text-white hover:text-slate-100"
+            >
+              Documentation
+            </a>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
