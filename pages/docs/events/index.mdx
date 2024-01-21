@@ -1,45 +1,27 @@
-export const description = '';
+export const description = 'A guide to sending events with the Inngest SDK, setting the Event Key, and sending events from other languages via HTTP.';
 
 # Sending events
 
-With the [Inngest SDK installed](/docs/sdk/overview), you can send events from your application to trigger your functions.
+To start, make sure you have [installed the Inngest SDK](/docs/sdk/overview).
 
-## Setting the Event Key
+In order to send events, you'll need to instantiate the `Inngest` client. We recommend doing this in a single file and exporting the client so you can import it anywhere in your app. In production, you'll need an event key, which [we'll cover below](#setting-an-event-key).
 
-An "Event Key" is required to send events ([How to create an Event Key](/docs/events/creating-an-event-key)). There are two ways to configure your `Inngest` client to use your Event Key:
+```ts {{ filename: 'inngest/client.ts' }}
+import { Inngest } from "inngest";
 
-### 1. Set the `INNGEST_EVENT_KEY` environment variable
-
-The recommended way to configure your `Inngest` client is to set the `INNGEST_EVENT_KEY` environment variable. The `Inngest` client will automatically use this environment variable if it's set.
-
-```ts
-import { Inngest } from 'inngest';
-
-// process.env.INNGEST_EVENT_KEY is automatically detected and used
-const inngest = new Inngest({ id: "your-app-id" });
+export const inngest = new Inngest({ id: "acme-storefront-app" }); // Use your app's ID
 ```
 
-### 2. Pass the Event Key to the `Inngest` constructor
+Now with this client, you can send events from anywhere in your app. You can send a single event, or [multiple events at once](#sending-multiple-events-at-once).
 
-Alternatively, you can pass the Event Key to the `Inngest` constructor, although, you should never hard-code your Event Key in your application code.
+```ts {{ filename: 'app/api/checkout/route.ts' }}
+import { inngest } from "../inngest/client";
 
-```ts
-import { Inngest } from 'inngest';
-
-const inngest = new Inngest({ id: "your-app-id", eventKey: "xyz..." });
-```
-
-## Sending an event
-
-With your newly created `Inngest` client, you can send events using the `inngest.send()` method ([Read about the payload format](/docs/reference/events/send#inngest-send-event-payload-event-payload-promise)):
-
-<CodeGroup forceTabs={true}>
-```ts {{ title: "TypeScript / JavaScript" }}
-// This sends an event to Inngest
+// This sends an event to Inngest.
 await inngest.send({
   // The event name
   name: "storefront/cart.checkout.completed",
-  // The event payload data
+  // The event's data
   data: {
     cartId: "ed12c8bde",
     itemIds: ["9f08sdh84", "sdf098487", "0fnun498n"],
@@ -47,14 +29,13 @@ await inngest.send({
       id: 123,
       email: "test@example.com",
     },
-  }
+  },
 });
 ```
-</CodeGroup>
 
 <Callout>
 
-👉 `send()` is an asynchronous method that returns a `Promise`, so you should always use `await` or `.then()` to ensure that the method has finished sending the event to Inngest. Serverless functions can shut down very quickly, so not `await`ing `send()` may result in events failing to be sent.
+👉 `send()` is an asynchronous method that returns a `Promise`. You should always use `await` or `.then()` to ensure that the method has finished sending the event to Inngest. Serverless functions can shut down very quickly, so skipping `await` may result in events failing to be sent.
 
 </Callout>
 
@@ -68,6 +49,88 @@ Sending this event, named `storefront/cart.checkout.completed`, to Inngest will 
 💡 One event can trigger multiple functions, enabling you to consume a single event in multiple ways. This is different than traditional message queues where only one worker can consume a single message. Learn about [the fan-out approach here](/docs/guides/fan-out-jobs).
 
 </Callout>
+
+## Setting an Event Key
+
+In production, your application will need an "Event Key" to send events to Inngest. This is a secret key that is used to authenticate your application and ensure that only your application can send events to a given [environment](/docs/platform/environments) in your Inngest account.
+
+You can learn [how to create an Event Key here](/docs/events/creating-an-event-key). Once you have a key, you can set it in one of two ways:
+
+1. Set an `INNGEST_EVENT_KEY` environment variable with your Event Key. **This is the recommended approach.**
+2. Pass the Event Key to the `Inngest` constructor as the `eventKey` option:
+
+```ts {{ filename: 'inngest/client.ts' }}
+import { Inngest } from "inngest";
+
+// NOTE - It is not recommended to hard-code your Event Key in your code.
+const inngest = new Inngest({ id: "your-app-id", eventKey: "xyz..." });
+```
+
+<Callout>
+
+Event keys are _not_ required in local development with the [Inngest Dev Server](/docs/local-development). You can omit them in development and your events will still be sent to the Dev Server.
+
+</Callout>
+
+## Event payload format
+
+{/* TODO - Most of the detail and additional information not captured here should be moved to a generic reference */}
+
+The event payload is a JSON object that must contain a `name` and `data` property.
+
+### Required properties
+
+* The `name` is the type or category of event. Event `name`s are used to [trigger functions](/docs/functions). For example, `app/user.created` or `billing/invoice.paid`. See [tips for event naming](#tips-for-event-naming) below.
+* `data` contains any data you want to associate with the event. This data will be serialized to JSON. For example, if you're sending an event for a paid invoice, you might include the invoice's `id`, the `amount`, and the `customerId` in the `data` property. The `data` property can contain any nested JSON object, including objects and arrays.
+
+### Optional properties
+
+* `user` contains any relevant user identifying data or attributes associated with the event. This data is encrypted at rest. For example, you might include the user's `id`, `email`, and `name` in the `user` property. The `user` property can contain any JSON object, including nested objects and arrays.
+* `id` is a unique identifier for the event used to prevent duplicate events. [Learn more about deduplication](#deduplication).
+* `ts` is the timestamp of the event in milliseconds since the Unix epoch. If not provided, the timestamp will be set to the time the event was received by Inngest.
+* `v` is the event payload version. This is useful to track changes in the event payload shape over time. For example, `"2024-01-14.1"`
+
+<CodeGroup>
+```ts {{ title: "Basic JSON event example" }}
+{
+  "name": "billing/invoice.paid",
+  "data": {
+    "customerId": "cus_NffrFeUfNV2Hib",
+    "invoiceId": "in_1J5g2n2eZvKYlo2C0Z1Z2Z3Z",
+    "amount": 1000,
+    "metadata": {
+      "accountId": "acct_1J5g2n2eZvKYlo2C0Z1Z2Z3Z",
+      "accountName": "Acme.ai"
+    }
+  },
+  "user": {
+    "email": "taylor@example.com"
+  }
+}
+```
+```ts {{ title: "TypeScript Type representation" }}
+// If you prefer to think in TypeScript types, here's the type representation of the event payload:
+type EventPayload = {
+  name: string;
+  data: Record<string, any>;
+  user?: Record<string, any>;
+  id?: string;
+  ts?: number;
+  v?: string;
+}
+```
+</CodeGroup>
+
+### Tips for event naming
+
+Event names are used to trigger functions. We recommend using a consistent naming convention for your events. This will make it easier to find and trigger functions in the future. Here are some tips for naming events:
+
+* **Object-Action**: Use an Object-Action pattern as represented by noun and a verb. This is great for grouping related events on a given object, `account.created`, `account.updated`, `account.deleted`.
+* **Past-tense**: Use a past-tense verb for the action. For example, `uploaded`, `paid`, `completed`, `sent`.
+* **Separators**: Use dot-notation and or underscores to separate words. For example, `user.created` or `blog_post.published`.
+* **Prefixes**: Use prefixes to group related events. For example, `api/user.created`, `billing/invoice.paid`, `stripe/customer.created`. This is especially useful if you have multiple applications that send events to Inngest.
+
+There is no right or wrong way to name events. The most important thing is to be consistent and use a naming convention that makes sense for your application.
 
 ## Sending multiple events at once
 
@@ -98,7 +161,7 @@ await inngest.send(events);
 
 ## Sending events from within functions
 
-You can also send events from within your functions using `step.sendEvent()`. This is useful if you want to trigger other functions from within a function. It is recommended to use `step.sendEvent()` within functions instead of `inngest.send()` as can ensure reliable event delivery and prevent duplicate events from being sent. [Learn more here](/docs/reference/functions/step-send-event).
+You can also send events from within your functions using `step.sendEvent()` to, for example, trigger other functions. Learn more about [sending events from within functions here](/docs/guides/sending-events-from-functions). Within functions, `step.sendEvent()` wraps the event sending request within a `step` to ensure reliable event delivery and prevent duplicate events from being sent. It's recommended to use `step.sendEvent()` instead of `inngest.send()` within functions.
 
 ```ts
 export default inngest.createFunction(
@@ -115,7 +178,7 @@ export default inngest.createFunction(
 );
 ```
 
-## Send events from other languages via HTTP (Event API)
+## Send events via HTTP (Event API)
 
 You can send events from any system or programming language with our simple API and an Inngest Event Key. The API accepts a single event payload or an array of event payloads.
 
