@@ -57,7 +57,7 @@ export async function POST(request: Request) {
 
 Now, with this event, any function using `"app/user.signup"` as its event trigger will be automatically invoked.
 
-Here, we'll define our two functions: `sendWelcomeEmail` and `startStripeTrial`. As you can see below, both functions use the same event trigger, but perform different work.
+Next, define two functions: `sendWelcomeEmail` and `startStripeTrial`. As you can see below, both functions use the same event trigger, but perform different work.
 
 ```ts {{ filename: "inngest/functions.ts" }}
 const sendWelcomeEmail = inngest.createFunction(
