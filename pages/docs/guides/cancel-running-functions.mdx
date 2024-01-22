@@ -97,7 +97,7 @@ Learn more in the full [reference](/docs/functions/cancellation).
 
 You can also cancel functions in bulk via the [REST API](https://api-docs.inngest.com/docs/inngest-api). This is useful if you have a large number of functions within a specific range that you need to cancel.
 
-With the `POST /cancellations` endpoint, you can cancel functions by specifying the `app_id`, `function_id`, and a `from` and `to` timestamp range. You can also optionally specify an `if` statement to only cancel functions that match a [given expression](/docs/guides/writing-expressions).
+With the `POST /cancellations` endpoint, you can cancel functions by specifying the `app_id`, `function_id`, and a `started_after` and `started_before` timestamp range. You can also optionally specify an `if` statement to only cancel functions that match a [given expression](/docs/guides/writing-expressions).
 
 <CodeGroup tag="POST" label="api.inngest.com/v1/cancellations">
 
@@ -108,8 +108,8 @@ curl -X POST https://api.inngest.com/v1/cancellations \
   --data '{
     "app_id": "acme-app",
     "function_id": "schedule-reminder",
-    "from": 1611273600,
-    "to": 1611288000,
+    "started_after": "2024-01-21T18:23:12.000Z",
+    "started_before": "2024-01-22T14:22:42.130Z",
     "if": "event.data.userId == 'user_o9235hf84hf'"
   }'
 ```
@@ -123,8 +123,8 @@ When successful, the response will be returned with the cancellation ID and the 
   "id": "01HMRMPE5ZQ4AMNJ3S2N79QGRZ",
   "environment_id": "e03843e1-d2df-419e-9b7b-678b03f7398f",
   "function_id": "schedule-reminder",
-  "from": 1611273600,
-  "to": 1611288000,
+  "started_after": "2024-01-21T18:23:12.000Z",
+  "started_before": "2024-01-22T14:22:42.130Z",
   "if": "event.data.userId == 'user_o9235hf84hf'"
 }
 ```
