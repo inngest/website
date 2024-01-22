@@ -27,7 +27,7 @@ The fan-out pattern is also useful in distributed systems where a single event i
 
 ## How to fan-out to multiple functions
 
-As Inngest is powered by events, implementing fan-out is as defining multiple functions that use the same event trigger. Let's take the above example of user signup and implement it in Inngest.
+Since Inngest is powered by events, implementing fan-out is as straightforward as defining multiple functions that use the same event trigger. Let's take the above example of user signup and implement it in Inngest.
 
 First, we'll instrument out `/signup` route handler to send an event to Inngest when a user signs up:
 
