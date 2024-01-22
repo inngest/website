@@ -26,7 +26,7 @@ export async function getStaticProps(): Promise<
 
 export default function LaunchWeek() {
   return (
-    <div className="home font-sans bg-slate-1000 bg-[url(/assets/launch-week/background-image.png)] bg-cover">
+    <div className="home font-sans bg-slate-1000 bg-[url(/assets/launch-week/background-image.png)] bg-cover bg-fixed">
       <Header />
       <Container className="py-8">
         <div className="my-12 tracking-tight flex items-center justify-center">
@@ -61,7 +61,43 @@ export default function LaunchWeek() {
           </div>
         </div>
 
+        <Heading title="Monday" />
+        {/*
+          1. Replay
+          2. Cancellation features
+          3. Building the Inngest queue pt 1
+        */}
         <RowItem
+          title="..."
+          subtitle="Something is coming soon"
+          image="/assets/launch-week/placeholder-image.png"
+          label="New"
+          buttonHref="#"
+          docsHref=""
+          orientation="left"
+          blur={true}
+        />
+        <RowItem
+          title="..."
+          subtitle="Something is coming soon"
+          image="/assets/launch-week/placeholder-image.png"
+          label="New"
+          buttonHref="#"
+          docsHref=""
+          orientation="right"
+          blur={true}
+        />
+        <RowItem
+          title="..."
+          subtitle="Something is coming soon"
+          image="/assets/launch-week/placeholder-image.png"
+          label="New"
+          buttonHref="#"
+          docsHref=""
+          orientation="left"
+          blur={true}
+        />
+        {/* <RowItem
           title="Announcing Replay"
           subtitle="The death of the dead-letter queue"
           image="/assets/blog/durable-workflow-engines.png"
@@ -69,6 +105,7 @@ export default function LaunchWeek() {
           buttonHref="#"
           docsHref="/docs/platform/replay"
           orientation="left"
+          blur={true}
         />
         <RowItem
           title="Cancellation features"
@@ -78,6 +115,133 @@ export default function LaunchWeek() {
           buttonHref="#"
           docsHref="/docs/platform/replay"
           orientation="right"
+          blur={true}
+        />
+        <RowItem
+          title="Building the Inngest queue - Part I"
+          subtitle="Fairness and multi-tenancy"
+          image="/assets/blog/durable-workflow-engines.png"
+          label="Technical post"
+          buttonHref="#"
+          docsHref="/docs/platform/replay"
+          orientation="left"
+          blur={true}
+        /> */}
+
+        <Heading title="Tuesday" />
+        {/*
+          1. Per-step errors
+          2. Clerk partnership
+          3. Svix integration
+        */}
+        <RowItem
+          title="..."
+          subtitle="Something is coming soon"
+          image="/assets/launch-week/placeholder-image.png"
+          label="New"
+          buttonHref="#"
+          docsHref=""
+          orientation="right"
+          blur={true}
+        />
+        <RowItem
+          title="..."
+          subtitle="Something is coming soon"
+          image="/assets/launch-week/placeholder-image.png"
+          label="New"
+          buttonHref="#"
+          docsHref=""
+          orientation="left"
+          blur={true}
+        />
+
+        <Heading title="Wednesday" />
+        {/*
+          1. Per-step errors
+          2. Clerk partnership
+          3. Svix integration
+        */}
+        <RowItem
+          title="..."
+          subtitle="Something is coming soon"
+          image="/assets/launch-week/placeholder-image.png"
+          label="New"
+          buttonHref="#"
+          docsHref=""
+          orientation="right"
+          blur={true}
+        />
+        <RowItem
+          title="..."
+          subtitle="Something is coming soon"
+          image="/assets/launch-week/placeholder-image.png"
+          label="New"
+          buttonHref="#"
+          docsHref=""
+          orientation="left"
+          blur={true}
+        />
+        <RowItem
+          title="..."
+          subtitle="Something is coming soon"
+          image="/assets/launch-week/placeholder-image.png"
+          label="New"
+          buttonHref="#"
+          docsHref=""
+          orientation="right"
+          blur={true}
+        />
+
+        <Heading title="Thursday" />
+        {/*
+          1. Funding annoncement
+          2. Multi-account (stretch goal)
+        */}
+        <RowItem
+          title="..."
+          subtitle="Something is coming soon"
+          image="/assets/launch-week/placeholder-image.png"
+          label="New"
+          buttonHref="#"
+          docsHref=""
+          orientation="left"
+          blur={true}
+        />
+        <RowItem
+          title="..."
+          subtitle="Something is coming soon"
+          image="/assets/launch-week/placeholder-image.png"
+          label="New"
+          buttonHref="#"
+          docsHref=""
+          orientation="right"
+          blur={true}
+        />
+
+        <Heading title="Friday" />
+        {/*
+          1. Event API v2 - globally deployed for speed
+          2. Multi-account (stretch goal)
+        */}
+        <RowItem
+          title="..."
+          subtitle="Something is coming soon"
+          image="/assets/launch-week/placeholder-image.png"
+          label="New"
+          buttonHref="#"
+          docsHref=""
+          orientation="left"
+          blur={true}
+        />
+        <RowItem
+          title="..."
+          subtitle="Something is coming soon"
+          image="/assets/launch-week/placeholder-image.png"
+          label="New"
+          buttonHref="#"
+          docsHref=""
+          orientation="right"
+          blur={true}
         />
       </Container>
 
@@ -164,6 +328,14 @@ function NewsletterSignup({ tags = [] }: { tags: string[] }) {
   );
 }
 
+function Heading({ title }) {
+  return (
+    <h2 className="text-xl md:text-2xl mt-4 text-center uppercase font-bold">
+      {title}
+    </h2>
+  );
+}
+
 function RowItem({
   title,
   subtitle,
@@ -172,9 +344,15 @@ function RowItem({
   docsHref,
   image,
   orientation = "left",
+  blur = false,
 }) {
   return (
-    <div className="mx-auto md:px-8 my-16 max-w-[440px] md:max-w-[1072px] grid grid-cols-1 md:grid-cols-2 items-center gap-8 md:gap-16">
+    <div
+      className={clsx(
+        "mx-auto md:px-8 my-16 max-w-[440px] md:max-w-[1072px] grid grid-cols-1 md:grid-cols-2 items-center gap-8 md:gap-16",
+        blur === true && "blur-lg pointer-events-none"
+      )}
+    >
       <div
         className={clsx(
           "flex",
@@ -209,9 +387,9 @@ function RowItem({
           {label}
         </span>
         <div className="mt-4 mb-8">
-          <h2 className="mb-2 text-xl md:text-[32px] font-extrabold">
+          <h3 className="mb-2 text-xl md:text-[32px] leading-snug font-extrabold">
             {title}
-          </h2>
+          </h3>
           <p className="text-base md:text-lg">{subtitle}</p>
         </div>
         <div className="flex flex-row gap-x-10 gap-y-4 items-center flex-wrap">
