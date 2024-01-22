@@ -161,7 +161,7 @@ await inngest.send(events);
 
 ## Sending events from within functions
 
-You can also send events from within your functions using `step.sendEvent()` to, for example, trigger other functions. Learn more about [sending events from within functions here](/docs/guides/sending-events-from-functions). Within functions, `step.sendEvent()` wraps the event sending request within a `step` to ensure reliable event delivery and prevent duplicate events from being sent. It's recommended to use `step.sendEvent()` instead of `inngest.send()` within functions.
+You can also send events from within your functions using `step.sendEvent()` to, for example, trigger other functions. Learn more about [sending events from within functions](/docs/guides/sending-events-from-functions). Within functions, `step.sendEvent()` wraps the event sending request within a `step` to ensure reliable event delivery and prevent duplicate events from being sent. It's recommended to use `step.sendEvent()` instead of `inngest.send()` within functions.
 
 ```ts
 export default inngest.createFunction(
