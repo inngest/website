@@ -85,7 +85,7 @@ Each of these functions will run in parallel and individually retry on error, re
 
 ### Why `step.sendEvent()` vs. `inngest.send()`?
 
-By using [`step.sendEvent()`](/docs/reference/functions/step-send-event) Inngest's SDK can automatically add context and tracing which ties events to the current function run. If you use [`inngest.send()`](/docs/reference/events/send) the context around the function run is not present.
+By using [`step.sendEvent()`](/docs/reference/functions/step-send-event) Inngest's SDK can automatically add context and tracing which ties events to the current function run. If you use [`inngest.send()`](/docs/reference/events/send), the context around the function run is not present.
 
 ## Parallel functions vs. parallel steps
 
