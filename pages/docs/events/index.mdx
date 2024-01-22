@@ -1,4 +1,4 @@
-export const description = 'A guide to sending events with the Inngest SDK, setting the Event Key, and sending events from other languages via HTTP.';
+export const description = 'Learn how to send events with the Inngest SDK, set the Event Key, and send events from other languages via HTTP.';
 
 # Sending events
 
@@ -127,7 +127,7 @@ Event names are used to trigger functions. We recommend using a consistent namin
 
 * **Object-Action**: Use an Object-Action pattern as represented by noun and a verb. This is great for grouping related events on a given object, `account.created`, `account.updated`, `account.deleted`.
 * **Past-tense**: Use a past-tense verb for the action. For example, `uploaded`, `paid`, `completed`, `sent`.
-* **Separators**: Use dot-notation and or underscores to separate words. For example, `user.created` or `blog_post.published`.
+* **Separators**: Use dot-notation and/or underscores to separate words. For example, `user.created` or `blog_post.published`.
 * **Prefixes**: Use prefixes to group related events. For example, `api/user.created`, `billing/invoice.paid`, `stripe/customer.created`. This is especially useful if you have multiple applications that send events to Inngest.
 
 There is no right or wrong way to name events. The most important thing is to be consistent and use a naming convention that makes sense for your application.
@@ -161,7 +161,7 @@ await inngest.send(events);
 
 ## Sending events from within functions
 
-You can also send events from within your functions using `step.sendEvent()` to, for example, trigger other functions. Learn more about [sending events from within functions](/docs/guides/sending-events-from-functions). Within functions, `step.sendEvent()` wraps the event sending request within a `step` to ensure reliable event delivery and prevent duplicate events from being sent. It's recommended to use `step.sendEvent()` instead of `inngest.send()` within functions.
+You can also send events from within your functions using `step.sendEvent()` to, for example, trigger other functions. Learn more about [sending events from within functions](/docs/guides/sending-events-from-functions). Within functions, `step.sendEvent()` wraps the event sending request within a `step` to ensure reliable event delivery and prevent duplicate events from being sent. We recommend using `step.sendEvent()` instead of `inngest.send()` within functions.
 
 ```ts
 export default inngest.createFunction(
@@ -180,7 +180,7 @@ export default inngest.createFunction(
 
 ## Send events via HTTP (Event API)
 
-You can send events from any system or programming language with our simple API and an Inngest Event Key. The API accepts a single event payload or an array of event payloads.
+You can send events from any system or programming language with our API and an Inngest Event Key. The API accepts a single event payload or an array of event payloads.
 
 {/* NOTE - We'll leave other SDKs here for now, but in time, instead we'll make this entire guide have Python and Go examples for each section above */}
 
