@@ -80,7 +80,7 @@ export const sendReminder = inngest.createFunction(
 Each of these functions will run in parallel and individually retry on error, resulting in a faster, more reliable system.
 
 <Callout>
-  💡 **Tip**: When triggering lots of functions to run in parallel, you will likely want to configure `concurrency` limits to prevent overloading your system. See [our concurrency guide](/docs/guides/concurrency) for more information.
+  💡 **Tip**: When triggering lots of functions to run in parallel, you will likely want to configure `concurrency` limits to prevent overloading your system. See our [concurrency guide](/docs/guides/concurrency) for more information.
 </Callout>
 
 ### Why `step.sendEvent()` vs. `inngest.send()`?
