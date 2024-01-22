@@ -59,7 +59,7 @@ export const loadCron = inngest.createFunction(
 );
 ```
 
-Next, we create a function that listens for the `"app/weekly-email-activity.send"` event. This function will be triggered for each user that was sent an event in the previous function.
+Next, create a function that listens for the `"app/weekly-email-activity.send"` event. This function will be triggered for each user that was sent an event in the previous function.
 
 ```ts
 export const sendReminder = inngest.createFunction(
