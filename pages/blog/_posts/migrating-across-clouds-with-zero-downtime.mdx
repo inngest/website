@@ -53,9 +53,7 @@ Inngest executes functions via HTTP wherever you have your code hosted, so all i
 
 On the Inngest dashboard, you can see all of your apps (a URL serving Inngest functions) at a glance along with the URL that they are served from. When you [“sync” your app](/docs/apps) with Inngest, functions are automatically created, updated, or removed from your Inngest account. To sync your app, all you need is the URL.
 
-Inngest is agnostic to where your code is running, so after you deploy your code to a new cloud, all you need to do to complete the migration is to sync your app with a new URL. As your code should have the same [app ID and function IDs](), all of your functions will pick up where they left off without a hiccup.
-
-{/* [TODO - screenshot of GIF of this flow: https://github.com/inngest/inngest/pull/1050 when live] */}
+Inngest is agnostic to where your code is running, so after you deploy your code to a new cloud, all you need to do to complete the migration is to sync your app with a new URL. As your code should have the same [app ID](/docs/apps#apps-in-sdk) and [function IDs](/docs/reference/functions/create#inngest-create-function-configuration-trigger-handler-inngest-function), all of your functions will pick up where they left off without a hiccup.
 
 <video controls autoPlay loop src="/assets/blog/migrating-across-clouds-with-zero-downtime/migration-via-ui.mp4" />
 
