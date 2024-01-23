@@ -30,7 +30,7 @@ The Inngest SDKs provide a language- and cloud-agnostic way to create fault-tole
 
 Because of how the Inngest architecture works, state is decoupled from your application using our SDKs. The state of your functions are stored within Inngest and the SDKs handle the communication with our APIs. This includes how state functions are triggered, results of steps are sent back to Inngest, and how state from previous steps is injected into your function (memoization). Because of this, the SDK logic does not need to be burdened by managing state — it’s just a chain of HTTP request and responses.
 
-This design makes the SDKs light weight and the communication layer is thin, only requiring HTTP. This makes it easier, and faster, to create new language SDKs. If you want to learn more about how state works in Inngest how it is enabled in the SDKs, read our [open source SDK spec] ().
+This design makes the SDKs light weight and the communication layer is thin, only requiring HTTP. This makes it easier, and faster, to create new language SDKs. If you want to learn more about how state works in Inngest how it is enabled in the SDKs, read our [open source SDK spec](/docs/sdk-spec.md).
 
 We are fully committed to ensuring that developers can focus on writing code, without having to also think unnecessarily about the infrastructure necessary to power their apps. With this guiding principle, we built on the existing SDKs and made it easier to use Inngest in multi-language backends.
 
