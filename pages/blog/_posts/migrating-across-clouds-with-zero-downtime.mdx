@@ -101,29 +101,22 @@ export const processAudio = inngest.createFunction(
     fn_id="process-audio",
     trigger=inngest.TriggerEvent(event="podcast/audio.uploaded"),
 )
-async def fn(
-    ctx: inngest.Context,
-    step: inngest.Step,
-) -> int:
+async def fn(ctx: inngest.Context, step: inngest.Step) -> None:
     async def transcode_audio() -> str:
         filename = download(ctx.event.data["url"])
-        return transcode(filename, 'aac')
-
-    await step.run("transcode-audio", transcode_audio)
+        return await transcode(filename, 'aac')
+    new_file_url = await step.run("transcode-audio", transcode_audio)
 
     async def generate_transcript() -> str:
-        return # ... business logic omitted for sake of example ...
-
-    await step.run("generate-transcript", generate_transcript)
+        return # ... business logic omitted ...
+    transcript = await step.run("generate-transcript", generate_transcript)
 
     async def summarize() -> str:
         return # ...
-
-    await step.run("summarize-with-ai", summarize)
+    summary = await step.run("summarize-with-ai", summarize)
 
     async def save_to_db() -> uuid.UUID:
         return # ...
-
     await step.run("save-to-db", save_to_db)
 ```
 
