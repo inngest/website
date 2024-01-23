@@ -31,7 +31,7 @@ What I described above, in its simplest form, is a function. Functions contain m
 
 As I highlighted above how important job state is, Inngest’s durable execution engine manages state for your function. Job state is serialized and stored by Inngest and using [our SDKs](blog/cross-language-support-with-new-sdks), state is injected into your functions so they can continue where they left off. Basically this is [memoization](https://en.wikipedia.org/wiki/Memoization) with job state. Each “step” in your function can return data to build up state.
 
-This approach allows your functions to be *stateless*, which allows them to run on serverless platforms. Inngest SDKs take care of the complex bits of hashing step IDs, serializing each step’s output, [running steps in parallel](/docs/guides/step-parallelism), and inserting state for completed steps. (You can check out our [SDK spec](/docs/sdk-spec.md) if you are curious to go deeper)
+This approach allows your functions to be *stateless*, which allows them to run on serverless platforms. Inngest SDKs take care of the complex bits of hashing step IDs, serializing each step’s output, [running steps in parallel](/docs/guides/step-parallelism), and inserting state for completed steps. (You can check out our [SDK spec](https://github.com/inngest/inngest/blob/main/docs/SDK_SPEC.md) if you are curious to go deeper)
 
 There are major benefits to standardizing the way to serialize, store, and consume state. Long running functions can start running on one machine (or serverless isolate) and continue on another.
 
