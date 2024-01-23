@@ -81,8 +81,8 @@ export const hello = inngestClient.createFunction(
 
     const totalResult = await step.invoke("get-total", {
       function: referenceFunction({
-				appId: "python-app", functionId: "total"
-			}),
+        appId: "python-app", functionId: "total"
+      }),
       data: { values },
     });
 
