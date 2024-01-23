@@ -107,15 +107,15 @@ async def fn(ctx: inngest.Context, step: inngest.Step) -> None:
         return await transcode(filename, 'aac')
     new_file_url = await step.run("transcode-audio", transcode_audio)
 
-    async def generate_transcript() -> str:
+    async def generate_transcript():
         return # ... business logic omitted ...
     transcript = await step.run("generate-transcript", generate_transcript)
 
-    async def summarize() -> str:
+    async def summarize():
         return # ...
     summary = await step.run("summarize-with-ai", summarize)
 
-    async def save_to_db() -> uuid.UUID:
+    async def save_to_db():
         return # ...
     await step.run("save-to-db", save_to_db)
 ```
