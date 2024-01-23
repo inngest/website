@@ -21,14 +21,14 @@ We have just official released our [Python](/docs/reference/python) and [Go](htt
       src="/assets/blog/cross-language-support-with-new-sdks/cross-language-support-python-go.png"
       alt="TypeScript, Python, and Go logos"
       className="rounded-sm"
-      style={{ marginBottom: "1rem", height:"200px", width:"auto", display: "block", marginLeft: "auto", marginRight: "auto"}}
+      style={{ marginBottom: "1rem", height:"160px", width:"auto", display: "block", marginLeft: "auto", marginRight: "auto"}}
     />
 
 The Inngest SDKs provide a language- and cloud-agnostic way to create fault-tolerant, long-running functions with built-in flow control.
 
 👉 *Is your favorite language not included here? We want to hear from you! [Vote for your language of choice](https://roadmap.inngest.com/roadmap).*
 
-Because of how the Inngest architecture works, state is decoupled from your application using our SDKs. The state of your functions are stored within Inngest and the SDKs handle the communication with our APIs. This includes how state functions are triggered, results of steps are sent back to Inngest, and how state from previous steps is injected into your function (memoization). Because of this, the SDK logic does not need to be burdened by managing state — it’s just a chain of HTTP request and responses. 
+Because of how the Inngest architecture works, state is decoupled from your application using our SDKs. The state of your functions are stored within Inngest and the SDKs handle the communication with our APIs. This includes how state functions are triggered, results of steps are sent back to Inngest, and how state from previous steps is injected into your function (memoization). Because of this, the SDK logic does not need to be burdened by managing state — it’s just a chain of HTTP request and responses.
 
 This design makes the SDKs light weight and the communication layer is thin, only requiring HTTP. This makes it easier, and faster, to create new language SDKs. If you want to learn more about how state works in Inngest how it is enabled in the SDKs, read our [open source SDK spec] ().
 
@@ -38,7 +38,7 @@ We are fully committed to ensuring that developers can focus on writing code, wi
 
 Two months ago we added [`step.invoke()`](/docs/guides/invoking-functions-directly), a new tool that allows you to compose workflows together and re-use functionality from any part of your system. It differs from traditional event-driven triggers, offering a more direct, RPC-like approach.
 
-With regards to the new SDKs, being able to call Inngest functions directly from within other Inngest functions means that you can use Inngest in a multi-language system. 
+With regards to the new SDKs, being able to call Inngest functions directly from within other Inngest functions means that you can use Inngest in a multi-language system.
 
 For example, you could create a Python function using the powerful [pandas](https://pandas.pydata.org/) library that runs within a Docker container, and then call that code from your JavaScript function which may be running on serverless.
 
@@ -80,8 +80,8 @@ export const hello = inngestClient.createFunction(
     const values = [1, 2, 3];
 
     const totalResult = await step.invoke("get-total", {
-      function: referenceFunction({ 
-				appId: "python-app", functionId: "total" 
+      function: referenceFunction({
+				appId: "python-app", functionId: "total"
 			}),
       data: { values },
     });
