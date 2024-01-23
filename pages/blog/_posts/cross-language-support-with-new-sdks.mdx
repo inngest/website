@@ -5,7 +5,7 @@ subtitle: "The Inngest SDKs provide a language- and cloud-agnostic way to create
 showSubtitle: true
 image: /assets/blog/cross-language-support-with-new-sdks/featured-image.png
 date: 2024-01-23
-author: Dan Farrelly
+author: Sylwia
 disableCTA: true
 ---
 
@@ -19,11 +19,16 @@ Today, we are excited to announce next two milestones in this journey: new SDKs,
 
 We have just official released our [Python](/docs/reference/python) and [Go](https://pkg.go.dev/github.com/inngest/inngestgo) SDK betas with already enough feature compatibility to be suitable for most use cases. This expansion aims to make it easier for everyone to build reliable applications, regardless of the language of your codebase.
 
+    <img
+      src="/assets/blog/cross-language-support-with-new-sdks/cross-language-support-python-go.png"
+      alt="TypeScript, Python, and Go logos"
+      className="rounded-sm"
+      style={{ marginBottom: "1rem", height:"200px", width:"auto", display: "block", marginLeft: "auto", marginRight: "auto"}}
+    />
+
 The Inngest SDKs provide a language- and cloud-agnostic way to create fault-tolerant, long-running functions with built-in flow control.
 
-<Callout>
-Is your favorite language not included here? We want to hear from you! [Vote for your language of choice](https://roadmap.inngest.com/roadmap).
-</Callout>
+👉 *Is your favorite language not included here? We want to hear from you! [Vote for your language of choice](https://roadmap.inngest.com/roadmap).*
 
 Because of how the Inngest architecture works, state is decoupled from your application using our SDKs. The state of your functions are stored within Inngest and the SDKs handle the communication with our APIs. This includes how state functions are triggered, results of steps are sent back to Inngest, and how state from previous steps is injected into your function (memoization). Because of this, the SDK logic does not need to be burdened by managing state — it’s just a chain of HTTP request and responses. 
 
