@@ -2,6 +2,8 @@ export const description = 'Set up Clerk webhooks with Inngest and use Clerk eve
 
 # Handling Clerk webhook events
 
+![Clerk logo and graphic showing Clerk webhook events](/assets/docs/guides/clerk-webhook-events/featured-image.png)
+
 Third party authentication providers like [Clerk](https://clerk.com/) are a fantastic way to add auth, user management, and security features to your application. They also provide drop-in components that can get your auth set up quickly. However, with an external source of truth for auth, you'll often need to:
 
 * Sync data from Clerk with your database,
@@ -9,8 +11,6 @@ Third party authentication providers like [Clerk](https://clerk.com/) are a fant
 * Trigger other work from events (such as emails).
 
 This page offers a guide on setting up a Clerk webhook with Inngest and using Clerk events within Inngest functions.
-
-{/* TODO - Some sort of graphic with the Clerk logo and events listed */}
 
 ## Setting up the Clerk webhook
 
@@ -26,7 +26,7 @@ On the next page, select the "Transformation" template tab and the Inngest templ
 
 A popup window will appear to complete the setup. Select "Approve" to create the webhook.
 
-![The Inngest permissions popup window showing the Approve button.](/assets/docs/guides/clerk-webhook-events/inngest-permissions-dialog.webp)
+![The Inngest permissions popup window showing the Approve button.](/assets/docs/guides/clerk-webhook-events/inngest-permissions-dialog.png)
 
 After the popup window disappears, the Webhooks page will now display "Connected" with the webhook URL underneath. There is one more step to complete setup.
 
