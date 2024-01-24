@@ -42,7 +42,7 @@ You'll be redirected to the new endpoint. In your Inngest dashboard, you will se
 
 Often, one key part of integrating with an auth provider like [Clerk](https://clerk.com/) is handling asynchronous updates with a webhook.
 
-Suppose you need to write a function which will insert a new user into the database which will be triggered whenever `clerk/user.created` event occurs. You would use the `inngest.createFunction` method, like in the example below:
+Suppose you need to write a function which will insert a new user into the database which will be triggered whenever `clerk/user.created` event occurs. You would use the `inngest.createFunction()` method, like in the example below:
 
 ```ts
 const syncUser = inngest.createFunction(
@@ -95,9 +95,9 @@ Now, you have a function that utilizes the same Clerk webhook event for another 
 
 ### Sending a delayed follow-up email
 
-To send a follow-up email, you can use the [`step.run()`](/docs/reference/functions/step-run). This method will encapsulate specific code that will be automatically retried ensuring that issues with one part of your function don't force the entire function to re-run. Additionally, you will extend the functionality with [`step.sleep`](/docs/reference/functions/step-sleep).
+To send a follow-up email, you can use the [`step.run()`](/docs/reference/functions/step-run). This method will encapsulate specific code that will be automatically retried ensuring that issues with one part of your function don't force the entire function to re-run. Additionally, you will extend the functionality with [`step.sleep()`](/docs/reference/functions/step-sleep).
 
-The code below sends a welcome email, then uses `step.sleep` to wait for three days before sending another email offering a free trial:
+The code below sends a welcome email, then uses `step.sleep()` to wait for three days before sending another email offering a free trial:
 
 ```ts
 const sendWelcomeEmail = inngest.createFunction(
