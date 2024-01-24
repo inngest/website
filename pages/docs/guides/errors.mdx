@@ -1,0 +1,37 @@
+# Error handling
+
+intro
+
+- things
+- you
+- can
+- do
+
+## Retries
+
+functions have retries even without steps
+
+you can configure them
+
+survive temporary network issues or problems wth external APIs
+
+## Failure handlers
+
+can use `onFailure`
+
+this just listens to `inngest/function.finished`
+eda bro ;)
+
+## Steps
+
+steps have their own retries too
+
+even if it _still_ fails, you can handle it in code natively
+
+```tsandgo
+
+```
+
+this enables fun shit, like reliable rollbacks, or gracefully recovering from errors to run other steps, or maybe restart a set of steps
+
+read more in TS or go mate
