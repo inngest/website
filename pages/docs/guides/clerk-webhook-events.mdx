@@ -44,17 +44,18 @@ Often, one key part of integrating with an auth provider like [Clerk](https://cl
 
 Suppose you need to write a function which will insert a new user into the database which will be triggered whenever `clerk/user.created` event occurs. You would use the `inngest.createFunction()` method, like in the example below:
 
-```ts
+```ts {{ filename: "src/inngest/sync-user.ts" }}
 const syncUser = inngest.createFunction(
   { id: 'sync-user-from-clerk' },
   { event: 'clerk/user.created' },
   async ({ event }) => {
-    const { user } = event.data // The event payload's data will be the Clerk User json object
-    const { id, first_name, last_name } = user
+    // The event payload's data will be the Clerk User json object
+    const { user } = event.data;
+    const { id, first_name, last_name } = user;
     const email = user.email_addresses.find(e =>
       e.id === user.primary_email_address_id
-    ).email
-    await database.users.insert({ id, email, first_name, last_name })
+    ).email;
+    await database.users.insert({ id, email, first_name, last_name });
   }
 )
 ```
@@ -76,17 +77,17 @@ You can make use of the fact that with Inngest, each function has [automatic ret
 The code below creates another function using the same `clerk/user.created` event and adds the logic to send the welcome email:
 
 
-```ts
+```ts {{ filename: "src/inngest/send-welcome-email.ts" }}
 const sendWelcomeEmail = inngest.createFunction(
   { id: 'send-welcome-email' },
   { event: 'clerk/user.created' },
   async ({ event }) => {
-    const { user } = event.data
-    const { first_name } = user
+    const { user } = event.data;
+    const { first_name } = user;
     const email = user.email_addresses.find(e =>
       e.id === user.primary_email_address_id
-    ).email
-    await emails.sendWelcomeEmail({ email, first_name })
+    ).email;
+    await emails.sendWelcomeEmail({ email, first_name });
   }
 )
 ```
@@ -99,27 +100,29 @@ To send a follow-up email, you can use the [`step.run()`](/docs/reference/functi
 
 The code below sends a welcome email, then uses `step.sleep()` to wait for three days before sending another email offering a free trial:
 
-```ts
+```ts {{ filename: "src/inngest/send-welcome-email.ts" }}
 const sendWelcomeEmail = inngest.createFunction(
   { id: 'send-welcome-email' },
   { event: 'clerk/user.created' },
   async ({ event, step }) => {
-    const { user } = event.data
-    const { first_name } = user
+    const { user } = event.data;
+    const { first_name } = user;
     const email = user.email_addresses.find(e =>
       e.id === user.primary_email_address_id
-    ).email
+    ).email;
 
+    // Wrapping each distinct task in step.run() ensures that each
+    // will be retried automatically on error and will not be re-run
     await step.run('welcome-email', async () => {
       await emails.sendWelcomeEmail({ email, first_name })
-    })
+    });
 
     // wait 3 days before second email
-    await step.sleep('wait-3-days', '3 days')
+    await step.sleep('wait-3-days', '3 days');
 
     await step.run('trial-offer-email', async () => {
       await emails.sendTrialOfferEmail({ email, first_name })
-    })
+    });
   }
 )
 ```
