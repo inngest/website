@@ -1,41 +1,174 @@
 # Error handling
 
-intro
+Inngest functions are designed to handle failures gracefully and will automatically retry after a failure. This adds an immediate layer of durability to your code, ensuring it survives transient issues like network timeouts, outages, or database locks.
 
-- things
-- you
-- can
-- do
+- **Automatic retries:** Functions are retried automatically upon failure
+- **Configurable retry policies:** Tailor the retry behavior to suit your specific use case
+- **Failure handlers:** Utilize `onFailure` to handle all retries failing
+- **Step-level retries:** Each step within a function can have its own retry logic and be handled individually
 
 ## Retries
 
-functions have retries even without steps
+In a basic Inngest function, a default configuration of 3 retries will be set. For the function below, if the database write fails then it'll be retried up to 3 times until it succeeds or runs out of attempts.
 
-you can configure them
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
+inngest.createFunction(
+  { id: "click-recorder" },
+  { event: "app/button.clicked" },
+  async ({ event, attempt }) => {
+    await db.clicks.insertOne(event.data); // this code now retries!
+  },
+);
+```
+```go {{ title: "Go" }}
 
-survive temporary network issues or problems wth external APIs
+```
+```py {{ title: "Python" }}
+
+```
+</CodeGroup>
+
+Notice that an `attempt` count is passed to the function, which is the current zero-based attempt number for this run.
+
+The first attempt will be `0`, the second `1`, and so on. It is incremented every time the function throws an error and is retried.
+
+You can configure the number of retries by specifying it in your function configuration, including setting it to `0` to disable them:
+
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
+inngest.createFunction(
+  {
+    id: "click-recorder",
+    retries: 10, // choose how many retries you'd like
+  },
+  { event: "app/button.clicked" },
+  async () => { /* ... */ },
+);
+```
+```go {{ title: "Go" }}
+
+```
+```py {{ title: "Python" }}
+
+```
+</CodeGroup>
 
 ## Failure handlers
 
-can use `onFailure`
+If your function exhausts all of its retries, it will be marked as "Failed." You can handle this circumstance by providing an `onFailure` handler when defining your function.
 
-this just listens to `inngest/function.finished`
-eda bro ;)
+Here we attempt to check a user's susbcription is valid a total of 6 times. If we can't check the subscription after all retries, we unsubscribe the user:
+
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
+inngest.createFunction(
+  {
+    id: "update-subscription",
+    retries: 5,
+    onFailure: async ({ event, error }) => {
+      // if the susbcription check fails after all retries, unsubscribe the user
+      await unsubscribeUser(event.data.userId);
+    },
+  },
+  { event: "user/subscription.check" },
+  async ({ event }) => { /* ... */ },
+);
+```
+```go {{ title: "Go" }}
+
+```
+```py {{ title: "Python" }}
+
+```
+</CodeGroup>
+
+Internally, this handler creates a second function that listens for the `inngest/function.failed` event, which you can listen to yourself to capture all failed runs across your system.
+
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
+inngest.createFunction(
+  { id: "handle-any-fn-failure" },
+  { event: "inngest/function.failed" },
+  async ({ event }) => { /* ... */ },
+);
+```
+```go {{ title: "Go" }}
+
+```
+```py {{ title: "Python" }}
+
+```
+</CodeGroup>
 
 ## Steps
+
+A function can be broken down into multiple steps, where each step is individually executed and retried.
+
+Here, both the "Get data" and "Save data" steps have their own set of retries. If the "Save data" step has a failure, it's retried, alone, in a separate request.
+
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
+inngest.createFunction(
+  { id: "sync-systems" },
+  { event: "auto/sync.request" },
+  async ({ step }) => {
+    // Can be retried up to 3 times
+    const data = await step.run("Get data", async () => {
+      return getDataFromExternalSource();
+    });
+
+    // Can also be retried up to 3 times
+    await step.run("Save data", async () => {
+      return db.syncs.insertOne(data);
+    });
+  },
+);
+```
+```go {{ title: "Go" }}
+
+```
+```py {{ title: "Python" }}
+
+```
+</CodeGroup>
+
+Unlike a function failure, a failing step will throw an
 
 steps have their own retries too
 
 even if it _still_ fails, you can handle it in code natively
 
-```tsandgo
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
 
 ```
+```go {{ title: "Go" }}
+
+```
+```py {{ title: "Python" }}
+
+```
+</CodeGroup>
 
 this enables fun shit, like reliable rollbacks, or gracefully recovering from errors to run other steps, or maybe restart a set of steps
 
-```exampleofloopingtorestartasetofsteps
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
+
+```
+```go {{ title: "Go" }}
+
+```
+</CodeGroup>
+
+```ts
+exampleofloopingtorestartasetofsteps
 e.g. https://discord.com/channels/842170679536517141/845000011040555018/1199619305243934750
 ```
+
+## Non-retriable errors
+
+can cancelll
 
 read more in TS or go mate
