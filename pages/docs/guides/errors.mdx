@@ -45,7 +45,12 @@ inngestgo.CreateFunction(
 )
 ```
 ```py {{ title: "Python" }}
-
+@inngest_client.create_function(
+    fn_id="click-recorder",
+    trigger=inngest.TriggerEvent(event="app/button.clicked"),
+)
+def record_click(ctx: inngest.Context) -> None:
+    db.clicks.insert_one(ctx.event.data)
 ```
 </CodeGroup>
 
@@ -77,7 +82,13 @@ inngestgo.CreateFunction(
 )
 ```
 ```py {{ title: "Python" }}
-
+@inngest_client.create_function(
+    fn_id="click-recorder",
+    retries=10,  # choose how many retries you'd like
+    trigger=inngest.TriggerEvent(event="app/button.clicked"),
+)
+def click_recorder(ctx: inngest.Context) -> None:
+    # ...
 ```
 </CodeGroup>
 
@@ -129,7 +140,16 @@ inngestgo.CreateFunction(
 )
 ```
 ```py {{ title: "Python" }}
+@inngest_client.create_function(
+    fn_id="sync-systems",
+    trigger=inngest.TriggerEvent(event="auto/sync.request"),
+)
+def sync_systems(ctx: inngest.Context, step: inngest.StepSync) -> None:
+    # Can be retried up to 3 times
+    data = step.run("Get data", lambda: get_data_from_external_source())
 
+    # Can also be retried up to 3 times
+    step.run("Save data", lambda: db.syncs.insert_one(data))
 ```
 </CodeGroup>
 
@@ -177,18 +197,21 @@ inngestgo.CreateFunction(
 	inngestgo.FunctionOpts{ID: "generate-result"},
 	inngestgo.EventTrigger("prompt.created", nil),
 	func(ctx context.Context, input inngestgo.Input[PromptCreatedEvent]) (any, error) {
-		var imageURL string
-		var err error
-		via := "dall-e"
+		var (
+			imageURL string
+			err      error
+		)
 
-		imageURL, err = step.Run(ctx, "generate-image-dall-e", func(ctx context.Context) (any, error) {
+		via := "dall-e"
+		imageURL, err = step.Run(ctx, "generate-image-dall-e", func(ctx context.Context) (string, error) {
 			// Open API call to generate image with Dall-E...
 		})
 		if err != nil {
-			imageURL, err = step.Run(ctx, "generate-image-midjourney", func(ctx context.Context) (any, error) {
+			// Update how we ran the code.  This could also have been a return from the step.
+			via = "midjourney"
+			imageURL, err = step.Run(ctx, "generate-image-midjourney", func(ctx context.Context) (string, error) {
 				// MidJourney call to generate image...
 			})
-			via = "midjourney"
 		}
 		if err != nil {
 			return nil, err
@@ -209,7 +232,25 @@ inngestgo.CreateFunction(
 )
 ```
 ```py {{ title: "Python" }}
+@inngest_client.create_function(
+    fn_id="generate-result",
+    trigger=inngest.TriggerEvent(event="prompt.created"),
+)
+def generate_result(ctx: inngest.Context, step: inngest.StepSync) -> None:
+    image_url = None
+    via = None
 
+    try:
+        image_url = step.run("generate-image-dall-e", lambda: open_api_call_to_generate_image())
+        via = "dall-e"
+    except Exception as err:
+        image_url = step.run("generate-image-midjourney", lambda: midjourney_call_to_generate_image())
+        via = "midjourney"
+
+    def _notify_user() -> None:
+        pusher.trigger(ctx.event.data["channelID"], "image-result", {"imageURL": image_url, "via": via})
+
+    step.run("notify-user", _notify_user)
 ```
 </CodeGroup>
 
@@ -274,7 +315,26 @@ inngestgo.CreateFunction(
 )
 ```
 ```py {{ title: "Python" }}
+@inngest_client.create_function(
+    fn_id="add-data",
+    trigger=inngest.TriggerEvent(event="app/row.data.added"),
+)
+def add_data(ctx: inngest.Context, step: inngest.StepSync) -> None:
+    # ignore the error - this step is fine if it fails
+    try:
+        step.run("Non-critical step", lambda: update_metric())
+    except Exception:
+        pass
 
+    # Add a rollback to a step
+    try:
+        step.run("Create row", lambda: create_row_and_add_detail(ctx.event.data["rowId"], ctx.event.data["entry"]))
+    except Exception as err:
+        step.run("Rollback row creation", lambda: remove_row(ctx.event.data["rowId"]))
+
+def create_row_and_add_detail(row_id, entry):
+    create_row(row_id)
+    add_detail(entry)
 ```
 </CodeGroup>
 
@@ -299,9 +359,6 @@ inngest.createFunction(
   async ({ event }) => { /* ... */ },
 );
 ```
-```py {{ title: "Python" }}
-
-```
 </CodeGroup>
 
 Internally, this handler creates a second function that listens for the `inngest/function.failed` event, which you can listen to yourself to capture all failed runs across your system.
@@ -313,12 +370,6 @@ inngest.createFunction(
   { event: "inngest/function.failed" },
   async ({ event }) => { /* ... */ },
 );
-```
-```go {{ title: "Go" }}
-
-```
-```py {{ title: "Python" }}
-
 ```
 </CodeGroup>
 
@@ -379,11 +430,25 @@ inngestgo.CreateFunction(
 )
 ```
 ```py {{ title: "Python" }}
+from inngest.errors import NonRetriableError
 
+@inngest_client.create_function(
+    fn_id="user-weekly-digest",
+    trigger=inngest.TriggerEvent(event="user/weekly-digest-requested"),
+)
+def user_weekly_digest(ctx: inngest.Context, step: inngest.StepSync) -> None:
+    try:
+        user = step.run("Get user email", lambda: db.users.find_one(ctx.event.data["userId"]))
+    except Exception as err:
+        if err.name == "UserNotFoundError":
+            raise NonRetriableError("User no longer exists; stopping")
+        raise
+
+    step.run("Send digest", lambda: send_digest(user["email"]))
 ```
 </CodeGroup>
 
-## Delaying retries
+## Customizing retry times
 
 Retries are executed with exponential back-off with some jitter, but it's also possible to specify exactly when you'd like a step or function to be retried.
 
@@ -426,8 +491,5 @@ inngestgo.CreateFunction(
 		return nil, nil
 	},
 )
-```
-```py {{ title: "Python" }}
-
 ```
 </CodeGroup>
