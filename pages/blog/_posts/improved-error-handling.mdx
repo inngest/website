@@ -12,18 +12,18 @@ We built Inngest to help you build reliable products. Every Inngest function has
 
 Let's see how it's done. Inngest wraps your code within a [`step.run()`](/docs/reference/functions/step-run) to capture these errors and retry until attempts are exhausted, which marks that step as “failed.” With automatic retries, Inngest catches the error for you and retries the step, but sometimes errors are expected and you can, or _need_, to handle them gracefully.
 
-Today, you can handle errors with more flexibility with standard language primitives and patterns so you can combine the reliability of automatic retries with graceful error handling.
+Today, you can handle errors with more flexibility with standard language primitives and patterns. In this way, you can combine the reliability of automatic retries with graceful error handling.
 
 This enables you to:
 
 * Perform rollbacks or cleanup data after a step fails
 * Create workflows that take different code paths based on the error
 * Handle rejected inputs (for example prompts) with step errors while not marking the function as “failed”
-* Leverage maximum retries while ensuring that your …?? TODO
+* Leverage maximum retries while ensuring that you have more control over how your functions behave
 
 ## Native error handling with retries
 
-You can gracefully handle errors with the standard ways you would with [any language SDK](/blog/cross-language-support-with-new-sdks). With TypeScript, you can now wrap one or more steps within a try/catch block. Here is an example of a simple function which attempts to generate an image with DALL-E and if it fails, try to generate an image with Midjourney:
+You can gracefully handle errors in exactly the same way you would with [any language SDK](/blog/cross-language-support-with-new-sdks). With TypeScript, you can now wrap one or more steps within a try/catch block. Here is an example of a simple function which attempts to generate an image with DALL-E and if it fails, it will try to generate an image with Midjourney:
 
 
 ```typescript
@@ -124,7 +124,7 @@ const sync = inngest.createFunction(
 
 ```
 
-## Using this today
+## Use this today
 
 Learn more about error handling and these changes in our [error handling guide](/docs/guides/error-handling) in our documentation.
 
