@@ -36,7 +36,13 @@ inngest.createFunction(
 );
 ```
 ```go {{ title: "Go" }}
-
+inngestgo.CreateFunction(
+	inngestgo.FunctionOpts{ID: "click-recorder"},
+	inngestgo.EventTrigger("app/button.clicked", nil),
+	func(ctx context.Context, input inngestgo.Input[ButtonClickedEvent]) (any, error) {
+		result, err := db.Clicks.InsertOne(input.Event["data"])
+	},
+)
 ```
 ```py {{ title: "Python" }}
 
@@ -59,7 +65,16 @@ inngest.createFunction(
 );
 ```
 ```go {{ title: "Go" }}
-
+inngestgo.CreateFunction(
+	inngestgo.FunctionOpts{
+		ID:      "click-recorder",
+		Retries: 10, // choose how many retries you'd like
+	},
+	inngestgo.EventTrigger("app/button.clicked", nil),
+	func(ctx context.Context, input inngestgo.Input[ButtonClickedEvent]) (any, error) {
+		// ...
+	},
+)
 ```
 ```py {{ title: "Python" }}
 
@@ -91,7 +106,27 @@ inngest.createFunction(
 );
 ```
 ```go {{ title: "Go" }}
+inngestgo.CreateFunction(
+	inngestgo.FunctionOpts{ID: "sync-systems"},
+	inngestgo.EventTrigger("auto/sync.request", nil),
+	func(ctx context.Context, input inngestgo.Input[SyncRequestEvent]) (any, error) {
+		data, err := step.Run(ctx, "Get data", func(ctx context.Context) (any, error) {
+			return getDataFromExternalSource()
+		})
+		if err != nil {
+			return nil, err
+		}
 
+		_, err = step.Run(ctx, "Save data", func(ctx context.Context) (any, error) {
+			return db.Syncs.InsertOne(data.(DataType))
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		return nil, nil
+	},
+)
 ```
 ```py {{ title: "Python" }}
 
@@ -138,7 +173,40 @@ inngest.createFunction(
 );
 ```
 ```go {{ title: "Go" }}
+inngestgo.CreateFunction(
+	inngestgo.FunctionOpts{ID: "generate-result"},
+	inngestgo.EventTrigger("prompt.created", nil),
+	func(ctx context.Context, input inngestgo.Input[PromptCreatedEvent]) (any, error) {
+		var imageURL string
+		var err error
+		via := "dall-e"
 
+		imageURL, err = step.Run(ctx, "generate-image-dall-e", func(ctx context.Context) (any, error) {
+			// Open API call to generate image with Dall-E...
+		})
+		if err != nil {
+			imageURL, err = step.Run(ctx, "generate-image-midjourney", func(ctx context.Context) (any, error) {
+				// MidJourney call to generate image...
+			})
+			via = "midjourney"
+		}
+		if err != nil {
+			return nil, err
+		}
+
+		_, err = step.Run(ctx, "notify-user", func(ctx context.Context) (any, error) {
+			return pusher.Trigger(input.Event.Data.ChannelID, "image-result", map[string]string{
+				"imageURL": imageURL.(string),
+				"via":      via,
+			})
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		return nil, nil
+	},
+)
 ```
 ```py {{ title: "Python" }}
 
@@ -177,7 +245,33 @@ inngest.createFunction(
 );
 ```
 ```go {{ title: "Go" }}
+inngestgo.CreateFunction(
+	inngestgo.FunctionOpts{ID: "add-data"},
+	inngestgo.EventTrigger("app/row.data.added", nil),
+	func(ctx context.Context, input inngestgo.Input[RowDataAddedEvent]) (any, error) {
+		_, _ = step.Run(ctx, "Non-critical step", func(ctx context.Context) (any, error) {
+			return updateMetric()
+		})
 
+		_, err := step.Run(ctx, "Create row", func(ctx context.Context) (any, error) {
+			_, err := createRow(input.Event.Data.RowID)
+			if err != nil {
+				return nil, err
+			}
+			return addDetail(input.Event.Data.Entry)
+		})
+		if err != nil {
+			_, err = step.Run(ctx, "Rollback row creation", func(ctx context.Context) (any, error) {
+				return removeRow(input.Event.Data.RowID)
+			})
+               if err != nil {
+               	return nil, err
+               }
+		}
+
+		return nil, nil
+	},
+)
 ```
 ```py {{ title: "Python" }}
 
@@ -204,9 +298,6 @@ inngest.createFunction(
   { event: "user/subscription.check" },
   async ({ event }) => { /* ... */ },
 );
-```
-```go {{ title: "Go" }}
-
 ```
 ```py {{ title: "Python" }}
 
@@ -262,7 +353,30 @@ inngest.createFunction(
 );
 ```
 ```go {{ title: "Go" }}
+inngestgo.CreateFunction(
+	inngestgo.FunctionOpts{ID: "user-weekly-digest"},
+	inngestgo.EventTrigger("user/weekly-digest-requested", nil),
+	func(ctx context.Context, input inngestgo.Input[WeeklyDigestRequestedEvent]) (any, error) {
+		user, err := step.Run(ctx, "Get user email", func(ctx context.Context) (any, error) {
+			return db.Users.FindOne(input.Event.Data.UserID)
+		})
+		if err != nil {
+			if stepErr, ok := err.(step.StepError); ok && stepErr.Name == "UserNotFoundError" {
+				return nil, inngestgo.NoRetryError(fmt.Errorf("User no longer exists; stopping"))
+			}
+			return nil, err
+		}
 
+		_, err = step.Run(ctx, "Send digest", func(ctx context.Context) (any, error) {
+			return sendDigest(user.(UserType).Email)
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		return nil, nil
+	},
+)
 ```
 ```py {{ title: "Python" }}
 
@@ -293,7 +407,25 @@ inngest.createFunction(
 );
 ```
 ```go {{ title: "Go" }}
+inngestgo.CreateFunction(
+	inngestgo.FunctionOpts{ID: "send-welcome-notification"},
+	inngestgo.EventTrigger("user/signed-up", nil),
+	func(ctx context.Context, input inngestgo.Input[SignedUpEvent]) (any, error) {
+		success, retryAfter, err := twilio.Messages.Create(twilio.MessageOpts{
+			To:   input.Event.Data.User.PhoneNumber,
+			Body: "Welcome to our service!",
+		})
+		if err != nil {
+			return nil, err
+		}
 
+		if !success && retryAfter != nil {
+			return nil, inngestgo.RetryAtError(fmt.Errorf("Hit Twilio rate limit"), *retryAfter)
+		}
+
+		return nil, nil
+	},
+)
 ```
 ```py {{ title: "Python" }}
 
