@@ -98,7 +98,7 @@ def click_recorder(ctx: inngest.Context) -> None:
 
 A function can be broken down into multiple steps, where each step is individually executed and retried.
 
-Here, both the "_Get data_" and "_Save data_" steps have their own set of retries. If the "_Save data_" step has a failure, it's retried, alone, in a separate request.
+Here, both the "_get-data_" and "_save-data_" steps have their own set of retries. If the "_save-data_" step has a failure, it's retried, alone, in a separate request.
 
 <CodeGroup>
 ```ts {{ title: "TypeScript" }}
@@ -107,12 +107,12 @@ inngest.createFunction(
   { event: "auto/sync.request" },
   async ({ step }) => {
     // Can be retried up to 4 times
-    const data = await step.run("Get data", async () => {
+    const data = await step.run("get-data", async () => {
       return getDataFromExternalSource();
     });
 
     // Can also be retried up to 4 times
-    await step.run("Save data", async () => {
+    await step.run("save-data", async () => {
       return db.syncs.insertOne(data);
     });
   },
@@ -124,7 +124,7 @@ inngestgo.CreateFunction(
 	inngestgo.EventTrigger("auto/sync.request", nil),
 	func(ctx context.Context, input inngestgo.Input[SyncRequestEvent]) (any, error) {
 		// can be retried up to 4 times
-		data, err := step.Run(ctx, "Get data", func(ctx context.Context) (any, error) {
+		data, err := step.Run(ctx, "get-data", func(ctx context.Context) (any, error) {
 			return getDataFromExternalSource()
 		})
 		if err != nil {
@@ -132,7 +132,7 @@ inngestgo.CreateFunction(
 		}
 
 		// can also be retried up to 4 times
-		_, err = step.Run(ctx, "Save data", func(ctx context.Context) (any, error) {
+		_, err = step.Run(ctx, "save-data", func(ctx context.Context) (any, error) {
 			return db.Syncs.InsertOne(data.(DataType))
 		})
 		if err != nil {
@@ -235,7 +235,7 @@ inngestgo.CreateFunction(
 	},
 )
 ```
-```py {{ title: "Python" }}
+{/* ```py {{ title: "Python" }}
 @inngest_client.create_function(
     fn_id="generate-result",
     trigger=inngest.TriggerEvent(event="prompt.created"),
@@ -255,7 +255,7 @@ def generate_result(ctx: inngest.Context, step: inngest.StepSync) -> None:
         pusher.trigger(ctx.event.data["channelID"], "image-result", {"imageURL": image_url, "via": via})
 
     step.run("notify-user", _notify_user)
-```
+``` */}
 </CodeGroup>
 
 ### Simple rollbacks
@@ -318,7 +318,7 @@ inngestgo.CreateFunction(
 	},
 )
 ```
-```py {{ title: "Python" }}
+{/* ```py {{ title: "Python" }}
 @inngest_client.create_function(
     fn_id="add-data",
     trigger=inngest.TriggerEvent(event="app/row.data.added"),
@@ -339,14 +339,14 @@ def add_data(ctx: inngest.Context, step: inngest.StepSync) -> None:
 def create_row_and_add_detail(row_id, entry):
     create_row(row_id)
     add_detail(entry)
-```
+``` */}
 </CodeGroup>
 
 ## Failure handlers
 
-If your function exhausts all of its retries, it will be marked as "Failed." You can handle this circumstance by providing an `onFailure` handler when defining your function.
+If your function exhausts all of its retries, it will be marked as "Failed." You can handle this circumstance by providing an [`onFailure`](/docs/reference/functions/handling-failures) handler when defining your function.
 
-Here we attempt to check a user's susbcription is valid a total of 6 times. If we can't check the subscription after all retries, we unsubscribe the user:
+The example below checks if a user's subscription is valid a total of six times. If you can't check the subscription after all retries, you'll unsubscribe the user:
 
 <CodeGroup>
 ```ts {{ title: "TypeScript" }}
@@ -365,7 +365,7 @@ inngest.createFunction(
 ```
 </CodeGroup>
 
-Internally, this handler creates a second function that listens for the `inngest/function.failed` event, which you can listen to yourself to capture all failed runs across your system.
+Internally, this handler creates a second function that listens for the [`inngest/function.failed`](/docs/reference/functions/handling-failures#the-inngest-function-failed-event) event, which you can listen to yourself to capture all failed runs across your system.
 
 <CodeGroup>
 ```ts {{ title: "TypeScript" }}
@@ -381,7 +381,7 @@ inngest.createFunction(
 
 You can throw a non-retriable error from a step or a function, which will bypass any remaining retries and fail the step or function it was thrown from.
 
-This is really useful for when you know an error is permanent and want to stop all execution. In this example, we know the user doesn't exist, so we'll stop trying to email them.
+This is useful for when you know an error is permanent and want to stop all execution. In this example, the user doesn't exist, so there's no need to continue to email them.
 
 <CodeGroup>
 ```ts {{ title: "TypeScript" }}
@@ -456,10 +456,11 @@ def user_weekly_digest(ctx: inngest.Context, step: inngest.StepSync) -> None:
 
 Retries are executed with exponential back-off with some jitter, but it's also possible to specify exactly when you'd like a step or function to be retried.
 
-In this example, an external API has informed us when we can make requests again using a `Retry-After` header, so we'll tell Inngest to retry our function then.
+In this example, an external API provided `Retry-After` header with information on when requests can be made again, so you can tell Inngest to retry your function then.
+
 
 <CodeGroup>
-```ts {{ title: "TypeScript" }}
+```ts
 inngest.createFunction(
   { id: "send-welcome-notification" },
   { event: "user/signed-up" },
@@ -475,7 +476,7 @@ inngest.createFunction(
   },
 );
 ```
-```go {{ title: "Go" }}
+```go
 inngestgo.CreateFunction(
 	inngestgo.FunctionOpts{ID: "send-welcome-notification"},
 	inngestgo.EventTrigger("user/signed-up", nil),
@@ -493,7 +494,13 @@ inngestgo.CreateFunction(
 		}
 
 		return nil, nil
-	},
+	}
 )
 ```
 </CodeGroup>
+
+## Learn more
+
+Check out some related resources to learn more about error handling in Inngest:
+
+* TypeScript SDK Reference: [`onFailure`](/docs/reference/functions/handling-failures)
