@@ -7,6 +7,20 @@ Inngest functions are designed to handle failures gracefully and will automatica
 - **Failure handlers:** Utilize `onFailure` to handle all retries failing
 - **Step-level retries:** Each step within a function can have its own retry logic and be handled individually
 
+## Types of failure
+
+Inngest helps you handle both **errors** and **failures**, which are defined differently.
+
+<Callout>
+A function that defines no steps is treated as a function with a single step, where that step is the entire function's code.
+</Callout>
+
+An **error** causes a step to retry. Exhausting all retry attempts will cause that step to **fail**, which means the step will never be attempted again this run.
+
+A **failed** step can be handled with native language features such as `try`/`catch`, but unhandled errors will cause the function to **fail**, meaning the run is marked as "Failed" in the Inngest UI and all future executions are canceled.
+
+Let's look at how to use and configure these retries.
+
 ## Retries
 
 In a basic Inngest function, a default configuration of 3 retries will be set. For the function below, if the database write fails then it'll be retried up to 3 times until it succeeds or runs out of attempts.
@@ -29,9 +43,7 @@ inngest.createFunction(
 ```
 </CodeGroup>
 
-Notice that an `attempt` count is passed to the function, which is the current zero-based attempt number for this run.
-
-The first attempt will be `0`, the second `1`, and so on. It is incremented every time the function throws an error and is retried.
+Notice that an `attempt` count is passed to the function, which is the current zero-based attempt number for this run. The first attempt will be `0`, the second `1`, and so on. It is incremented every time the function throws an error and is retried.
 
 You can configure the number of retries by specifying it in your function configuration, including setting it to `0` to disable them:
 
@@ -44,6 +56,124 @@ inngest.createFunction(
   },
   { event: "app/button.clicked" },
   async () => { /* ... */ },
+);
+```
+```go {{ title: "Go" }}
+
+```
+```py {{ title: "Python" }}
+
+```
+</CodeGroup>
+
+## Steps
+
+A function can be broken down into multiple steps, where each step is individually executed and retried.
+
+Here, both the "_Get data_" and "_Save data_" steps have their own set of retries. If the "_Save data_" step has a failure, it's retried, alone, in a separate request.
+
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
+inngest.createFunction(
+  { id: "sync-systems" },
+  { event: "auto/sync.request" },
+  async ({ step }) => {
+    // Can be retried up to 3 times
+    const data = await step.run("Get data", async () => {
+      return getDataFromExternalSource();
+    });
+
+    // Can also be retried up to 3 times
+    await step.run("Save data", async () => {
+      return db.syncs.insertOne(data);
+    });
+  },
+);
+```
+```go {{ title: "Go" }}
+
+```
+```py {{ title: "Python" }}
+
+```
+</CodeGroup>
+
+### Handling a failing step
+
+Unlike an error being thrown in the main function's body, a failing step (one that has exhausted all retries) will throw a `StepError`. This allows you to handle failures for each step indiviudally, where you can recover from the error gracefully.
+
+If a step failure isn't handled, the error will bubble up to the function itself, which will then be marked as failed.
+
+Here attempt to use DALL-E to generate an image from a prompt, but fall back to Midjourney if it fails. Remember that these calls are split over separate requests, making the code much more durable against timeouts, transient errors, and these depenencies on external APIs.
+
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
+inngest.createFunction(
+  { id: "generate-result" },
+  { event: "prompt.created" },
+  async ({ event, step }) => {
+    // try one AI model, if it fails, try another
+    let imageURL: string | null = null;
+    let via: "dall-e" | "midjourney";
+
+    try {
+      imageURL = await step.run("generate-image-dall-e", () => {
+        // open api call to generate image...
+      });
+      via = "dall-e";
+    } catch (err) {
+      imageURL = await step.run("generate-image-midjourney", () => {
+        // midjourney call to generate image...
+      });
+      via = "midjourney";
+    }
+
+    await step.run("notify-user", () => {
+      return pusher.trigger(event.data.channelID, "image-result", {
+        imageURL,
+        via,
+      });
+    });
+  },
+);
+```
+```go {{ title: "Go" }}
+
+```
+```py {{ title: "Python" }}
+
+```
+</CodeGroup>
+
+### Simple rollbacks
+
+With this pattern, it's possible to assign a small rollback for each step, making sure that every action is safe regardless of how many steps are being run.
+
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
+inngest.createFunction(
+  { id: "add-data" },
+  { event: "app/row.data.added" },
+  async ({ event, step }) => {
+    // ignore the error - this step is fine if it fails
+    await step
+      .run("Non-critical step", () => {
+        return updateMetric();
+      })
+      .catch();
+
+    // Add a rollback to a step
+    await step
+      .run("Create row", async () => {
+        const row = await createRow(event.data.rowId);
+        await addDetail(event.data.entry);
+      })
+      .catch((err) =>
+        step.run("Rollback row creation", async () => {
+          await removeRow(event.data.rowId);
+        }),
+      );
+  },
 );
 ```
 ```go {{ title: "Go" }}
@@ -101,26 +231,32 @@ inngest.createFunction(
 ```
 </CodeGroup>
 
-## Steps
+## Non-retriable errors
 
-A function can be broken down into multiple steps, where each step is individually executed and retried.
+You can throw a non-retriable error from a step or a function, which will bypass any remaining retries and fail the step or function it was thrown from.
 
-Here, both the "Get data" and "Save data" steps have their own set of retries. If the "Save data" step has a failure, it's retried, alone, in a separate request.
+This is really useful for when you know an error is permanent and want to stop all execution. In this example, we know the user doesn't exist, so we'll stop trying to email them.
 
 <CodeGroup>
 ```ts {{ title: "TypeScript" }}
 inngest.createFunction(
-  { id: "sync-systems" },
-  { event: "auto/sync.request" },
-  async ({ step }) => {
-    // Can be retried up to 3 times
-    const data = await step.run("Get data", async () => {
-      return getDataFromExternalSource();
-    });
+  { id: "user-weekly-digest" },
+  { event: "user/weekly-digest-requested" },
+  async ({ event, step }) => {
+    const user = await step
+      .run("Get user email", () => {
+        return db.users.findOne(event.data.userId);
+      })
+      .catch((err) => {
+        if (err.name === "UserNotFoundError") {
+          throw NonRetriableError("User no longer exists; stopping");
+        }
 
-    // Can also be retried up to 3 times
-    await step.run("Save data", async () => {
-      return db.syncs.insertOne(data);
+        throw err;
+      });
+
+    await step.run("Send digest", () => {
+      return sendDigest(user.email);
     });
   },
 );
@@ -133,15 +269,28 @@ inngest.createFunction(
 ```
 </CodeGroup>
 
-Unlike a function failure, a failing step will throw an
+## Delaying retries
 
-steps have their own retries too
+Retries are executed with exponential back-off with some jitter, but it's also possible to specify exactly when you'd like a step or function to be retried.
 
-even if it _still_ fails, you can handle it in code natively
+In this example, an external API has informed us when we can make requests again using a `Retry-After` header, so we'll tell Inngest to retry our function then.
 
 <CodeGroup>
 ```ts {{ title: "TypeScript" }}
+inngest.createFunction(
+  { id: "send-welcome-notification" },
+  { event: "user/signed-up" },
+  async ({ event, step }) => {
+    const { success, retryAfter } = await twilio.messages.create({
+      to: event.data.user.phoneNumber,
+      body: "Welcome to our service!",
+    });
 
+    if (!success && retryAfter) {
+      throw new RetryAfterError("Hit Twilio rate limit", retryAfter);
+    }
+  },
+);
 ```
 ```go {{ title: "Go" }}
 
@@ -150,25 +299,3 @@ even if it _still_ fails, you can handle it in code natively
 
 ```
 </CodeGroup>
-
-this enables fun shit, like reliable rollbacks, or gracefully recovering from errors to run other steps, or maybe restart a set of steps
-
-<CodeGroup>
-```ts {{ title: "TypeScript" }}
-
-```
-```go {{ title: "Go" }}
-
-```
-</CodeGroup>
-
-```ts
-exampleofloopingtorestartasetofsteps
-e.g. https://discord.com/channels/842170679536517141/845000011040555018/1199619305243934750
-```
-
-## Non-retriable errors
-
-can cancelll
-
-read more in TS or go mate
