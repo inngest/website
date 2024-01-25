@@ -107,7 +107,7 @@ const sectionGuides = [
     links: [
       {
         title: "Error handling",
-        href: "/docs/guides/errors",
+        href: "/docs/guides/error-handling",
       },
       {
         title: "Concurrency",
