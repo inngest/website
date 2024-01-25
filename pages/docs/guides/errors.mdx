@@ -23,7 +23,7 @@ Let's look at how to use and configure these retries.
 
 ## Retries
 
-In a basic Inngest function, a default configuration of 3 retries will be set. For the function below, if the database write fails then it'll be retried up to 3 times until it succeeds or runs out of attempts.
+In a basic Inngest function, a default configuration of 4 retries will be set. For the function below, if the database write fails then it'll be retried up to 4 times until it succeeds or runs out of attempts.
 
 <CodeGroup>
 ```ts {{ title: "TypeScript" }}
@@ -104,12 +104,12 @@ inngest.createFunction(
   { id: "sync-systems" },
   { event: "auto/sync.request" },
   async ({ step }) => {
-    // Can be retried up to 3 times
+    // Can be retried up to 4 times
     const data = await step.run("Get data", async () => {
       return getDataFromExternalSource();
     });
 
-    // Can also be retried up to 3 times
+    // Can also be retried up to 4 times
     await step.run("Save data", async () => {
       return db.syncs.insertOne(data);
     });
@@ -121,6 +121,7 @@ inngestgo.CreateFunction(
 	inngestgo.FunctionOpts{ID: "sync-systems"},
 	inngestgo.EventTrigger("auto/sync.request", nil),
 	func(ctx context.Context, input inngestgo.Input[SyncRequestEvent]) (any, error) {
+		// can be retried up to 4 times
 		data, err := step.Run(ctx, "Get data", func(ctx context.Context) (any, error) {
 			return getDataFromExternalSource()
 		})
@@ -128,6 +129,7 @@ inngestgo.CreateFunction(
 			return nil, err
 		}
 
+		// can also be retried up to 4 times
 		_, err = step.Run(ctx, "Save data", func(ctx context.Context) (any, error) {
 			return db.Syncs.InsertOne(data.(DataType))
 		})
@@ -145,10 +147,10 @@ inngestgo.CreateFunction(
     trigger=inngest.TriggerEvent(event="auto/sync.request"),
 )
 def sync_systems(ctx: inngest.Context, step: inngest.StepSync) -> None:
-    # Can be retried up to 3 times
+    # Can be retried up to 4 times
     data = step.run("Get data", lambda: get_data_from_external_source())
 
-    # Can also be retried up to 3 times
+    # Can also be retried up to 4 times
     step.run("Save data", lambda: db.syncs.insert_one(data))
 ```
 </CodeGroup>
