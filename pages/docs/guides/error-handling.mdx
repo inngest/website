@@ -158,7 +158,7 @@ def sync_systems(ctx: inngest.Context, step: inngest.StepSync) -> None:
 </CodeGroup>
 
 <Callout>
-You define the number of **retries** on a function.  This excludes the initial attempt.  A retry count of "4" means that a step will be attempted 5 times.
+You can configure the number of [`retries`](/docs/reference/functions/create#inngest-create-function-configuration-trigger-handler-inngest-function) for each function. This excludes the initial attempt.  A retry count of `4` means that each step will be attempted up to 5 times.
 </Callout>
 
 ### Handling a failing step
