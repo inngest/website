@@ -100,11 +100,11 @@ inngest.createFunction(
 
 ### Handling a failing step
 
-Unlike an error being thrown in the main function's body, a failing step (one that has exhausted all retries) will throw a `StepError`. This allows you to handle failures for each step indiviudally, where you can recover from the error gracefully.
+Unlike an error being thrown in the main function's body, a failing step (one that has exhausted all retries) will throw a `StepError`. This allows you to handle failures for each step individually, where you can recover from the error gracefully.
 
 If a step failure isn't handled, the error will bubble up to the function itself, which will then be marked as failed.
 
-Here attempt to use DALL-E to generate an image from a prompt, but fall back to Midjourney if it fails. Remember that these calls are split over separate requests, making the code much more durable against timeouts, transient errors, and these depenencies on external APIs.
+Below is an attempt to use DALL-E to generate an image from a prompt, and to fall back to Midjourney if it fails. Remember that these calls are split over separate requests, making the code much more durable against timeouts, transient errors, and these dependencies on external APIs.
 
 <CodeGroup>
 ```ts {{ title: "TypeScript" }}
