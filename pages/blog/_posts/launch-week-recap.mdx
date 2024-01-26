@@ -14,13 +14,13 @@ These were much-requested features from our Community. We hear your feedback and
 
 But that's not all. This week, we also launched a partnership with Clerk to make auth workflows easier, and Svix to simplify Inngest integrations for webhook providers.
 
-The response of our Community was thrilling. Beyond the interest on Twitter, LinkedIn, and Discord, our post on how we built the [Inngest queuing system](https://www.inngest.com/blog/building-the-inngest-queue-pt-i-fairness-multi-tenancy) stayed at the top of the Hacker News for a while 🔥 The [discussion](https://news.ycombinator.com/item?id=39092849) raised a few interesting points, too.
+The response of our Community was thrilling. Beyond the interest on Twitter, LinkedIn, and Discord, our post on how we built the [Inngest queuing system](/blog/building-the-inngest-queue-pt-i-fairness-multi-tenancy) stayed at the top of the Hacker News for a while 🔥 The [discussion](https://news.ycombinator.com/item?id=39092849) raised a few interesting points, too.
 
 Let’s look at each of the major milestones we achieved this week.
 
 ## Release: Inngest Replay
 
-<a href="/blog/announcing-replay-the-death-of-the-dead-letter-queue" target="_blank" rel="noopener noreferrer">
+<a href="/blog/announcing-replay-the-death-of-the-dead-letter-queue">
     <img src="/assets/blog/announcing-replay/featured-image.png" alt=""/>
 </a>
 
@@ -30,9 +30,9 @@ With Replay, you can easily query for all jobs between two timestamps and filter
 
 ➡️ Read ["Inngest Replay"](/blog/announcing-replay-the-death-of-the-dead-letter-queue) blog post.
 
-## Deep Dive: Building Inngest Quequing System
+## Deep Dive: Building Inngest Queueing System
 
-<a href="/assets/blog/inngest-queue-pt-i" target="_blank" rel="noopener noreferrer">
+<a href="/assets/blog/inngest-queue-pt-i">
     <img src="/assets/blog/inngest-queue-pt-i/featured-image-v2.png" alt=""/>
 </a>
 
@@ -40,12 +40,11 @@ In this blog post Tony Holdstock-Brown, our CEO, explains what challenges we fac
 
 The post was met with a lot of interest online. You can read (and contribute to) its [HackerNews discussion here](https://news.ycombinator.com/item?id=39092849).
 
-➡️ Read ["How we built a fair multi-tenant queuing system
-"](/assets/blog/inngest-queue-pt-i) blog post.
+➡️ Read ["How we built a fair multi-tenant queuing system"](/assets/blog/inngest-queue-pt-i) blog post.
 
 ## Release: Bulk cancellation
 
-<a href="/blog/bulk-cancellation-api" target="_blank" rel="noopener noreferrer">
+<a href="/blog/bulk-cancellation-api" >
     <img src="/assets/blog/bulk-cancellation-api/featured-image.png" alt=""/>
 </a>
 
@@ -57,22 +56,22 @@ The API comes with selective cancellation. You can define an expression directly
 
 ➡️ Read ["Bulk Cancellation"](/blog/bulk-cancellation-api) blog post.
 
-## Release: Cross-language support 
+## Release: Cross-language support
 
-<a href="/blog/cross-language-support-with-new-sdks" target="_blank" rel="noopener noreferrer">
+<a href="/blog/cross-language-support-with-new-sdks">
     <img src="/assets/blog/cross-language-support-with-new-sdks/featured-image.png" alt=""/>
 </a>
 
-We have officially released our [Python](https://www.inngest.com/docs/reference/python) and [Go](https://pkg.go.dev/github.com/inngest/inngestgo) SDK betas with enough feature compatibility to be ready for most use cases. We also published our [SDK spec](https://github.com/inngest/inngest/blob/main/docs/SDK_SPEC.md) so anyone could learn more about how it works, or even contribute.
+We have officially released our [Python](/docs/reference/python) and [Go](https://pkg.go.dev/github.com/inngest/inngestgo) SDK betas with enough feature compatibility to be ready for most use cases. We also published our [SDK spec](https://github.com/inngest/inngest/blob/main/docs/SDK_SPEC.md) so anyone could learn more about how it works, or even contribute.
 
-This is another step towards becoming a truly language-agnostic reliability layer for everyone. Two months ago we added [`step.invoke()`](https://www.inngest.com/docs/guides/invoking-functions-directly), which allows you to invoke any Inngest function from within another function. With these two new SKDs, you can now use Inngest in multi-language systems -- if you're curious to see an example, check this [Node and Python app](https://github.com/inngest/inngest-multi-lang).
+This is another step towards becoming a truly language-agnostic reliability layer for everyone. Two months ago we added [`step.invoke()`](/docs/guides/invoking-functions-directly), which allows you to invoke any Inngest function from within another function. With these two new SDKs, you can now use Inngest in multi-language systems -- if you're curious to see an example, check this [Node and Python app](https://github.com/inngest/inngest-multi-lang).
 
 ➡️ Read ["Cross-Language support with new SDKs"](/blog/cross-language-support-with-new-sdks) blog post.
 
 
 ## Release: Zero-downtime cloud migrations
 
-<a href="/blog/migrating-across-clouds-with-zero-downtime" target="_blank" rel="noopener noreferrer">
+<a href="/blog/migrating-across-clouds-with-zero-downtime" >
     <img src="/assets/blog/migrating-across-clouds-with-zero-downtime/featured-image.png" alt=""/>
 </a>
 
@@ -83,18 +82,18 @@ We made it easier to migrate across clouds with zero downtime, and minimal effor
 
 ## Release: Inngest Apps
 
-<a href="/blog/migrating-across-clouds-with-zero-downtime" target="_blank" rel="noopener noreferrer">
+<a href="/blog/migrating-across-clouds-with-zero-downtime">
     <img src="/assets/blog/migrating-across-clouds-with-zero-downtime/apps-ui.png" alt=""/>
 </a>
 
-Inngest apps map directly to your projects or services. When you serve your functions using our serve API handler, you are hosting a new Inngest app. With Inngest apps, your dashboard reflects your code organization better.
+Inngest Apps map directly to your projects or services. When you serve your functions using our serve API handler, you are hosting a new Inngest App. With Inngest Apps, your dashboard reflects your code organization better.
 
 ➡️ Read [Inngest App guide](/docs/apps) in our docs.
 
 
 ## Integration with Clerk
 
-<a href="/blog/building-auth-workflows-with-clerk-integration" target="_blank" rel="noopener noreferrer">
+<a href="/blog/building-auth-workflows-with-clerk-integration">
     <img src="/assets/blog/building-auth-workflows-with-clerk-integration/featured-image.png" alt=""/>
 </a>
 
@@ -109,7 +108,7 @@ Clerk is the easiest way to add authentication and user management. When a new u
     <img src="/assets/blog/svix-integration/featured-image.png" alt=""/>
 </a>
 
-Svix is the easiest way for engineering teams to reliably provide webhooks in their products. 
+Svix is the easiest way for engineering teams to reliably provide webhooks in their products.
 With Svix's new Inngest transformation template, any webhook provider can easily allow their users to set up their Inngest account to start receiving webhook events in seconds.
 
 ➡️ Read ["Svix Integration"](/blog/svix-integration) blog post.
@@ -128,7 +127,7 @@ You can now use language-native features like try/catch to gracefully handler er
 
 ## Edge Event API Beta
 
-<a href="/blog/edge-event-api-beta" target="_blank" rel="noopener noreferrer">
+<a href="/blog/edge-event-api-beta">
     <img src="/assets/blog/edge-event-api-beta/featured-image.png" alt=""/>
 </a>
 
@@ -143,8 +142,8 @@ To try the new Event API upvote the project [directly on our roadmap](https://ro
 
 ## What's next?
 
-The Launch Week is over but we are not stopping here! We already have next announcements and releases lined up, starting next week. 
+The Launch Week is over but we are not stopping here! We already have next announcements and releases lined up, starting next week.
 
 If you're curious what we are working on, please check (and comment on!) our [public roadmap](https://roadmap.inngest.com/).
 
- We wouldn’t be where we are now without you, your questions, feedback, and feature requests. Join [our Discord](https://discord.gg/mPfcyDEdpx) and help shape the future of Inngest 💜
+ We wouldn’t be where we are now without you, your questions, feedback, and feature requests. Join [our Discord](/discord) and help shape the future of Inngest 💜
