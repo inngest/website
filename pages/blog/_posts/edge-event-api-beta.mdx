@@ -1,8 +1,8 @@
 ---
-heading: "Global Event API: Lower latency from everywhere"
-subtitle: "Global Event API beta early metrics: 46-85% reduction in response times."
+heading: "Edge Event API Beta: Lower latency from everywhere"
+subtitle: Targeting sub 100ms response times from anywhere in the world
 showSubtitle: true
-image: /assets/blog/global-event-api/feature.png
+image: /assets/blog/edge-event-api-beta/featured-image.png
 date: 2024-01-26
 author: Dan Farelly
 disableCTA: true
@@ -16,9 +16,9 @@ Developers deploy applications that run in cloud regions across the globe and ma
 
 Up until now, Inngest core services, including the Event API, are run within cloud regions in the US. Unfortunately this leads to higher latency for those not running close to our own servers. We know that when you are sending an event within the critical path of your application, an API request for example, it has to be as fast as possible.
 
-That’s why, today we are announcing our new **global Event API** as a closed beta.
+That’s why, today we are announcing our new **Edge Event API** as a closed beta.
 
-## A global Event API
+## Moving to the edge
 
 For the Event API to have low latency from across the world, it needs to run close to your own servers. This means regional replication, caching, and validation of event payloads. The goal of our Event API v2 is to reach sub 100ms response times throughout the world.
 
@@ -32,18 +32,18 @@ The Inngest architecture combines event streams, queues and durable execution in
 
 While we are still testing different hosting solutions, generally, the new Event API has the following requirements:
 
-- **[Event Keys](https://www.inngest.com/docs/events/creating-an-event-key) must be replicated at all locations.** We’ll start with caching, but with just caching, the first request may be slow to fetch the key from our database in the US. To get around this, we’ll push key changes to the API whenever any changes are made which also should alleviate issues with cache invalidation. This will include allow/deny lists for event names and IP addresses.
-- **Essential [payload validation](https://www.inngest.com/docs/events#event-payload-format)**. Events that do not follow the required payload should be rejected as fast as possible
+- **[Event Keys](/docs/events/creating-an-event-key) must be replicated at all locations.** We’ll start with caching, but with just caching, the first request may be slow to fetch the key from our database in the US. To get around this, we’ll push key changes to the API whenever any changes are made which also should alleviate issues with cache invalidation. This will include allow/deny lists for event names and IP addresses.
+- **Essential [payload validation](/docs/events#event-payload-format)**. Events that do not follow the required payload should be rejected as fast as possible
 - **Non-blocking event stream publishing**. The requester should not be required to wait for the server to publish to the Inngest event stream. Publishing should happen asynchronously with failover.
-- **Payload size limit expansion**. We currently limit the size of payloads to 4MB, but customers often request larger sizes, especially when [sending events in bulk](https://www.inngest.com/docs/events#sending-multiple-events-at-once). While the new API will have limits to start, it will be designed for larger payload sizes.
+- **Payload size limit expansion**. We currently limit the size of payloads to 4MB, but customers often request larger sizes, especially when [sending events in bulk](/docs/events#sending-multiple-events-at-once). While the new API will have limits to start, it will be designed for larger payload sizes.
 
 These are the essential requirements in addition to the features already built into our v1 Event API. Each one of these is intended to improve performance or lay the foundation for new features and improved capacity.
 
 ## How to join the beta
 
-You can be first in line to try the new Event API by upvoting the project [directly on our roadmap](https://roadmap.inngest.com/roadmap?id=cddffcf8-47ba-44ac-a6c3-dd318f9eb132) with your Inngest account email. Please share any context on your application that you’d like to start using it for. Additionally, if you just want to be notified when the feature comes out of beta for wide usage, [add your email here](https://www.inngest.com/newsletter?tag=beta-event-api).
+You can be first in line to try the new Event API by upvoting the project [directly on our roadmap](https://roadmap.inngest.com/roadmap?id=cddffcf8-47ba-44ac-a6c3-dd318f9eb132) with your Inngest account email. Please share any context on your application that you’d like to start using it for. Additionally, if you just want to be notified when the feature comes out of beta for wide usage, [add your email here](/newsletter?tag=beta-event-api).
 
-We’re planning to roll this out first for sending events via [our SDKs](https://www.inngest.com/blog/cross-language-support-with-new-sdks) or [HTTP](https://www.inngest.com/docs/events#send-events-via-http-event-api). Due to the requirements for [transforms](https://www.inngest.com/docs/platform/webhooks#defining-a-transform-function), webhooks will not be part of this beta, but more webhook features will be coming later this year!
+We’re planning to roll this out first for sending events via [our SDKs](/blog/cross-language-support-with-new-sdks) or [HTTP](/docs/events#send-events-via-http-event-api). Due to the requirements for [transforms](/docs/platform/webhooks#defining-a-transform-function), webhooks will not be part of this beta, but more webhook features will be coming later this year!
 
 ## Onward
 
