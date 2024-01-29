@@ -104,11 +104,11 @@ export const handler = serve(inngest, [fnA]);
 
 ## Bun.serve()
 
-You can use the `inngest/edge` handler with `Bun.serve()` for a lightweight
+You can use the `inngest/bun` handler with `Bun.serve()` for a lightweight
 Inngest server.
 
 ```ts
-import { serve } from "inngest/edge";
+import { serve } from "inngest/bun";
 import { functions, inngest } from "./inngest";
 
 Bun.serve({
