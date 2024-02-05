@@ -389,6 +389,8 @@ This is useful for when you know an error is permanent and want to stop all exec
 
 <CodeGroup>
 ```ts {{ title: "TypeScript" }}
+import { NonRetriableError } from "inngest";
+
 inngest.createFunction(
   { id: "user-weekly-digest" },
   { event: "user/weekly-digest-requested" },
@@ -465,6 +467,8 @@ In this example, an external API provided `Retry-After` header with information 
 
 <CodeGroup>
 ```ts
+import { RetryAfterError } from 'inngest';
+
 inngest.createFunction(
   { id: "send-welcome-notification" },
   { event: "user/signed-up" },
