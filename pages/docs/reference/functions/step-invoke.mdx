@@ -49,7 +49,7 @@ const mainFunction = inngest.createFunction(
           <Property name="user" type="object">
             Optional user context for the invocation.
           </Property>
-          <Property name="timeout" type="string | number | Date">
+          <Property name="timeout" type="string | number | Date" version="v3.14.0+">
             {/* Purposefully not mentioning the default timeout of 1 year, as we expect to lower this very soon. */}
             The amount of time to wait for the invoked function to complete. The time to wait can be specified using a `number` of milliseconds, an `ms`-compatible time string like `"1 hour"`, `"30 mins"`, or `"2.5d"`, or a `Date` object.
           </Property>
