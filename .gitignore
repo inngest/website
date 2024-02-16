@@ -21,13 +21,10 @@
 *.pem
 /.idea/
 
-# local env files
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+# Environment variable files; we keep our environment variables on Vercel
+.env*
 
-# vercel
+# Vercel
 .vercel
 
 ./library
