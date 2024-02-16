@@ -1,5 +1,4 @@
-{ pkgs ? import (fetchTarball
-  "https://github.com/NixOS/nixpkgs/archive/refs/tags/23.05.tar.gz") { } }:
+{ pkgs ? import <nixos-23.11> {} }:
 
 let
   corepack = pkgs.stdenv.mkDerivation {
