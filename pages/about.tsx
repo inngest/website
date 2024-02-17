@@ -44,7 +44,7 @@ const TEAM = [
     avatar: "/assets/team/darwin-w-2023-06-26.jpg",
   },
   {
-    name: "John Bucta",
+    name: "John Buchta",
     role: "Designer",
     avatar: "/assets/team/john-b-2024-01-21.jpg",
   },
