@@ -62,6 +62,12 @@ const INVESTORS: {
   featured?: boolean;
 }[] = [
   {
+    name: "Andreessen Horowitz",
+    logo: "/assets/about/a16z-logo.svg",
+    maxWidth: "240px",
+    featured: true,
+  },
+  {
     name: "GGV Capital",
     logo: "/assets/about/ggv-capital-logo-white.png",
     maxWidth: "200px",
@@ -71,7 +77,6 @@ const INVESTORS: {
     name: "Afore.vc",
     logo: "/assets/about/afore-capital-white.png",
     maxWidth: "200px",
-    featured: true,
   },
   {
     name: "Kleiner Perkins",
@@ -132,23 +137,27 @@ const ANGELS: {
 
 // Used for key announcements and significant thought leadership for investors
 // or potential job applicants
-const FEATURED_BLOG_POSTS: { title: string; href: string }[] = [
+const FEATURED_BLOG_POSTS: { title: string; href: string; date?: string }[] = [
+  {
+    title: "Inngest raises $6.1M led by a16z",
+    href: "/blog/announcing-funding-from-a16z?ref=about",
+    date: "January 2024",
+  },
   {
     title: "Inngest Raises $3M Seed led by GGV Capital",
     href: "/blog/announcing-inngest-seed-financing",
+    date: "July 2023",
   },
   {
     title: "Inngest: Add Superpowers To Serverless Functions",
     href: "/blog/inngest-add-super-powers-to-serverless-functions",
+    date: "April 2023",
   },
   {
     title:
       "Partnership: Vercel + Inngest - The fastest way to ship background functions",
     href: "/blog/vercel-integration",
-  },
-  {
-    title: "Completing the Jamstack: What's needed in 2022?",
-    href: "/blog/completing-the-jamstack",
+    date: "October 2022",
   },
 ];
 
@@ -172,8 +181,8 @@ export default function About() {
       <main className="pt-16">
         <Container className="m-auto">
           <div className="mx-auto max-w-4xl">
-            <header className="lg:my-24 mt-8 text-center">
-              <h1 className="mt-2 mb-6 pr-4 text-2xl md:text-5xl tracking-tighter font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#f2e3ff] via-white to-[#e3e9ff] drop-shadow">
+            <header className="lg:my-24 my-8 text-center">
+              <h1 className="mt-2 mb-6 pr-4 text-3xl md:text-5xl tracking-tighter font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#f2e3ff] via-white to-[#e3e9ff] drop-shadow">
                 About Inngest
               </h1>
               <p className="mt-8 mx-auto max-w-lg text-lg font-regular">
@@ -198,11 +207,11 @@ export default function About() {
 
             <div className="mt-8 lg:mt-12 flex justify-center">
               <a
-                href="/blog/announcing-inngest-seed-financing"
-                className="group inline-flex gap-0.5 items-center rounded-full font-medium pl-6 pr-5 py-2 border border-indigo-500/50 hover:bg-indigo-500/10 transition-all text-white flex-shrink-0"
+                href="/blog/announcing-funding-from-a16z?ref=about"
+                className="group inline-flex gap-0.5 items-center rounded-full font-medium pl-6 pr-5 py-2 border border-indigo-500/50 hover:bg-indigo-500/10 transition-all text-white whitespace-normal text-wrap md:flex-shrink-0"
               >
-                News: Inngest Raises $3M Seed led by GGV Capital & Guillermo
-                Rauch
+                <span className="hidden md:inline">News: </span>Inngest raises
+                $6.1M led by a16z
                 <ArrowRight className="group-hover:translate-x-1.5 relative top-px transition-transform duration-150 " />
               </a>
             </div>
@@ -213,7 +222,7 @@ export default function About() {
               Our Team
             </h2>
             <p className="mt-2 text-center text-slate-400">
-              We've built and scaled systems for years and think that developers
+              We've built and scaled systems for years and know that developers
               deserve something better.
             </p>
             <div
@@ -266,13 +275,13 @@ export default function About() {
                 Our Investors
               </h2>
             </div>
-            <div className="pb-6 grid sm:grid-cols-2 md:grid-cols-6 gap-8 mb-12 items-center">
+            <div className="pb-6 grid sm:grid-cols-2 md:grid-cols-8 gap-8 mb-12 items-center">
               {INVESTORS.map((investor) => {
                 return (
                   <div
                     className={classNames(
                       investor.featured
-                        ? "md:col-span-3 mx-auto"
+                        ? "md:col-span-4 mx-auto"
                         : "md:col-span-2 mx-auto",
                       "flex items-center bg-slate-950 rounded w-full justify-center p-10  border border-slate-900 shadow h-[130px]"
                     )}
@@ -333,6 +342,9 @@ export default function About() {
                     >
                       {p.title} →
                     </a>
+                    {p.date && (
+                      <span className="text-slate-400 ml-2">{p.date}</span>
+                    )}
                   </p>
                 ))}
               </div>
