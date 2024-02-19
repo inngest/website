@@ -53,7 +53,7 @@ const mainFunction = inngest.createFunction(
             {/* Purposefully not mentioning the default timeout of 1 year, as we expect to lower this very soon. */}
             The amount of time to wait for the invoked function to complete. The time to wait can be specified using a `number` of milliseconds, an `ms`-compatible time string like `"1 hour"`, `"30 mins"`, or `"2.5d"`, or a `Date` object.
 
-            Note that the invoked function will continue to run even if this step times out.
+            If the timeout is reached, the step will throw an error. See [Error handling](#error-handling) below. Note that the invoked function will continue to run even if this step times out.
           </Property>
         </Properties>
         Throwing errors within the invoked function will be reflected in the invoking function.
@@ -178,7 +178,14 @@ If Inngest could not find a function to invoke using the given ID (see [Internal
 
 ### Invoked function fails
 
-If the function exhausts all retries and fails, an `inngest/function.finished` event will be sent with an appropriate error and the step will fail with a `NonRetriableError`.
+If the function exhausts all retries and fails, an `inngest/function.finished`
+event will be sent with an appropriate error and the step will fail with a
+`NonRetriableError`.
+
+### Invoked function times out
+
+If the `timeout` has been reached and the invoked function is still running, the
+step will fail with a `NonRetriableError`.
 
 ## Usage limits
 
