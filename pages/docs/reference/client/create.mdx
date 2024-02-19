@@ -27,11 +27,21 @@ const inngest = new Inngest({
   <Property name="id" type="string" required>
     A unique identifier for your application. We recommend a hyphenated slug.
   </Property>
+  <Property name="baseUrl" type="string">
+    Override the default (`https://inn.gs/`) base URL for sending events. See also the [`INNGEST_BASE_URL`](/docs/sdk/environment-variables#inngest-base-url) environment variable.
+  </Property>
+    <Property name="env" type="string">
+    The environment name. Required only when using [Branch Environments](/docs/platform/environments).
+  </Property>
   <Property name="eventKey" type="string">
     An Inngest [Event Key](/docs/events/creating-an-event-key). Alternatively, set the [`INNGEST_EVENT_KEY`](/docs/sdk/environment-variables#inngest-event-key) environment variable.
   </Property>
-  <Property name="schemas" type="EventSchemas" version="v2.0.0+">
-    Event payload types. See [Defining Event Payload Types](#defining-event-payload-types).
+  <Property name="fetch" type="Fetch API compatible interface">
+    Override the default [`fetch`](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) implementation. Defaults to the runtime's native Fetch API.
+  </Property>
+  <Property name="isDev" type="boolean" version="v3.15.0+">
+    Set to `true` to force Dev mode, setting default local URLs and turning off
+    signature verification, or force Cloud mode with `false`. Alternatively, set [`INNGEST_DEV`](/docs/sdk/environment-variables#inngest-dev).
   </Property>
   <Property name="logger" type="Logger" version="v2.0.0+">
     A logger object that provides the following interfaces (`.info()`, `.warn()`, `.error()`, `.debug()`). Defaults to using `console` if not provided. Overwrites [`INNGEST_LOG_LEVEL`](/docs/sdk/environment-variables#inngest-log-level) if set. See [logging guide](/docs/guides/logging) for more details.
@@ -39,14 +49,8 @@ const inngest = new Inngest({
   <Property name="middleware" type="array" version="v2.0.0+">
     A stack of [middleware](/docs/reference/middleware/overview) to add to the client.
   </Property>
-  <Property name="env" type="string">
-    The environment name. Required only when using [Branch Environments](/docs/platform/environments).
-  </Property>
-  <Property name="fetch" type="Fetch API compatible interface">
-    Override the default [`fetch`](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) implementation. Defaults to the runtime's native Fetch API.
-  </Property>
-  <Property name="baseUrl" type="string">
-    Override the default (`https://inn.gs/`) base URL for sending events. See also the [`INNGEST_BASE_URL`](/docs/sdk/environment-variables#inngest-base-url) environment variable.
+  <Property name="schemas" type="EventSchemas" version="v2.0.0+">
+    Event payload types. See [Defining Event Payload Types](#defining-event-payload-types).
   </Property>
 </Properties>
 
@@ -203,7 +207,27 @@ type Events = GetEvents<typeof inngest>;
 type AppUserCreated = Events["app/user.created"];
 ```
 
-For more information on this and other TypeScript helpers, see [TypeScript - Helpers](/docs/typescript#helpers).
+For more information on this and other TypeScript helpers, see [TypeScript -
+Helpers](/docs/typescript#helpers).
+
+## Cloud Mode and Dev Mode
+
+An SDK can run in two separate "modes:" **Cloud** or **Dev**.
+
+- **Cloud Mode**
+  - 🔒 Signature verification **ON**
+  - Defaults to communicating with Inngest Cloud (e.g. `https://api.inngest.com`)
+- **Dev Mode**
+  - ❌ Signature verification **OFF**
+  - Defaults to communicating with an Inngest Dev Server (e.g. `http://localhost:8288`)
+
+You can force either Dev or Cloud Mode by setting
+[`INNGEST_DEV`](/docs/sdk/environment-variables#inngest-dev) or the
+[`isDev`](#configuration) option.
+
+If neither is set, the SDK will attempt to infer which mode it should be in
+based on environment variables such as `NODE_ENV`. Most of the time, this inference is all you need and explicitly setting a mode
+isn't required.
 
 ## Best Practices
 
