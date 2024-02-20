@@ -3,22 +3,9 @@ import Container from "src/shared/layout/Container";
 import Footer from "../../shared/Footer";
 import { Button } from "src/shared/Button";
 
-import { loadMarkdownFilesMetadata, MDXFileMetadata } from "utils/markdown";
-
-export type Role = {
-  title: string;
-  location: string;
-  date: string;
-  applicationURL: string;
-};
-type RoleMetadata = Role & MDXFileMetadata;
-
 export async function getStaticProps({ params }) {
-  const roles = await loadMarkdownFilesMetadata<Role>("careers/_roles");
-  const visibleRoles = roles.filter((r) => !r.hidden);
   return {
     props: {
-      roles: JSON.stringify(visibleRoles),
       meta: {
         title: `Careers at Inngest`,
         description: `We're hiring!`,
@@ -29,8 +16,6 @@ export async function getStaticProps({ params }) {
 }
 
 export default function Careers(props) {
-  const roles: RoleMetadata[] = JSON.parse(props.roles);
-
   return (
     <>
       <div className="font-sans">
@@ -156,20 +141,8 @@ export default function Careers(props) {
                 <h2 id="positions" className="mb-12 scroll-mt-32">
                   Open Positions
                 </h2>
-                {roles.map((role) => (
-                  <div
-                    key={role.slug}
-                    className="my-8 flex flex-row justify-between items-center text-white text-lg"
-                  >
-                    <h3 className="font-medium m-0">
-                      <a href={`/careers/${role.slug}`}>{role.title}</a>
-                    </h3>
-                    <p className="m-0">{role.location}</p>
-                  </div>
-                ))}
-                {roles.length === 0 && (
-                  <p>There are currently no open roles.</p>
-                )}
+                
+                <div id="ashby_embed" />
               </div>
               <aside className=" max-w-[65ch] m-auto bg-indigo-900/20 text-indigo-100 flex flex-col items-start gap-4 leading-relaxed rounded-lg py-5 px-6  my-12 border border-indigo-900/50">
                 <p className="text-sm lg:text-base">
@@ -183,6 +156,7 @@ export default function Careers(props) {
           </article>
         </Container>
         <Footer />
+        <script src="https://jobs.ashbyhq.com/inngest/embed"></script>
       </div>
     </>
   );
@@ -205,25 +179,9 @@ export const AboutInngest = ({ heading = false }) => (
       We believe that event-based systems can be beautifully simple and we're
       building the world's first developer platform that allows people to build
       event-driven products in minutes. Our aim is to give developers the
-      superpowers they need to just build. Developers deserve first class local
+      superpowers they need to build. Developers deserve first class local
       tooling and a <em>platform</em> that gives them everything they need to
       deliver, not just the underlying <em>plumbing</em> or infrastructure.
-    </p>
-    <p>
-      We're beginning our product journey focused on the early adopter - the
-      person who embraces <em>the developer cloud:</em> modern solutions that
-      put developer experience at the forefront of the product. Our initial goal
-      is to build the absolute best platform and tooling for devs to build
-      anything that runs in the background using events. We're{" "}
-      <a href="https://www.inngest.com/blog/vercel-integration">
-        partnering with key companies
-      </a>{" "}
-      to fill a{" "}
-      <a href="https://www.inngest.com/blog/completing-the-jamstack">
-        key gap in the current ecosystem
-      </a>{" "}
-      and bring Inngest to the masses. We have very big plans beyond that - if
-      you're curious, drop us a note.
     </p>
   </>
 );
