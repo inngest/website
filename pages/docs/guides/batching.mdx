@@ -80,7 +80,7 @@ the full list of events within a batch, which you can now operate on all of them
 ## Caveats
 
 Batching breaks a lot of other primitives, therefore there are features that won't work when combined
-with batching. This is true for any type of configuration that are operated on a single event because it's impossible
+with batching. This is true for any type of configuration which is operated on a single event because it's impossible
 to tell if a condition that was valid for an event will still be true when there is a list of them.
 
 Here are some features on the event level configuration that won't work with batching:
