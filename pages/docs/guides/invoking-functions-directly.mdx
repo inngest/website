@@ -6,6 +6,15 @@ Inngest's `step.invoke()` function provides a powerful tool for calling function
 - Naturally separates your system into reusable functions that can spread across process boundaries
 - Allows use of synchronous interaction between functions in an otherwise-asynchronous event-driven architecture, making it much easier to manage functions that require immediate outcomes
 
+<Callout>
+### When should I invoke?
+
+Use `step.invoke()` in tasks that need specific settings like concurrency limits. Because it runs with its own configuration,
+distinct from the invoker's, you can provide a tailored configuration for each function.
+
+If you don't need to define granular configuration or if your function won't be reused across app boundaries, use `step.run()` for simplicity.
+</Callout>
+
 ## Invoking another function
 
 ```ts
