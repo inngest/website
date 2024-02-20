@@ -152,6 +152,11 @@ See [Referencing functions](/docs/functions/references) for more information.
 
 Use of `step.invoke()` to call an Inngest function directly is more akin to traditional RPC than Inngest's usual event-driven flow. While this tool still uses events behind the scenes, you can use it to help break up your codebase into reusable workflows that can be called from anywhere.
 
+Use `step.invoke()` in tasks that need specific settings like concurrency limits. Because it runs with its own configuration,
+distinct from the invoker's, you can provide a tailored configuration for each function.
+
+If you don't need to define granular configuration or if your function won't be reused across app boundaries, use `step.run()` for simplicity.
+
 ## Internal behaviour
 
 When a function object is passed as an argument, internally, the SDK retrieves the function's ID automatically. Alternatively, if a function ID `string` is passed, the Inngest SDK will assert the ID is correct at runtime. See [Error handling](#error-handling) for more information about this point.
