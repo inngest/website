@@ -193,7 +193,7 @@ function EditPageLink({ url }: { url: string }) {
     <Divider>
       <Link
         href={url}
-        className="flex space-x-2 font-medium hover:text-black hover:underline transition-all duration-150 dark:hover:text-white"
+        className="flex space-x-2 font-medium text-indigo-600 hover:text-slate-800 hover:underline transition-all duration-150 dark:hover:text-white dark:text-indigo-400"
       >
         <PencilSquareIcon className="h-5" />
         <span>Edit this page on GitHub</span>
