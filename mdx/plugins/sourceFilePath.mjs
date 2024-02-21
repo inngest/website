@@ -1,8 +1,8 @@
-import * as path from 'path';
-import { parse } from 'acorn';
+import * as path from "path";
+import { parse } from "acorn";
 
-const VARIABLE_NODE_TYPE = 'mdxjsEsm';
-const VARIABLE_NAME = 'sourceFilePath';
+const VARIABLE_NODE_TYPE = "mdxjsEsm";
+const VARIABLE_NAME = "sourceFilePath";
 
 /**
  * Exports the MDX file path, relative to the project root
@@ -20,7 +20,7 @@ export function remark() {
       value: `export const ${VARIABLE_NAME} = ${JSON.stringify(relative)}`,
     });
 
-    if (typeof next === 'function') {
+    if (typeof next === "function") {
       return next(null, ast, vFile);
     }
 
@@ -34,7 +34,8 @@ export function remark() {
 export function rehype() {
   return function transformer(ast) {
     const def = ast.children.find(
-      (node) => node.type === VARIABLE_NODE_TYPE && node.value.includes(VARIABLE_NAME)
+      (node) =>
+        node.type === VARIABLE_NODE_TYPE && node.value.includes(VARIABLE_NAME)
     );
 
     // add estree metadata to the node, or it will not be picked up by recma-nextjs-static-props
@@ -42,8 +43,8 @@ export function rehype() {
     if (def) {
       def.data = {
         estree: parse(def.value, {
-          sourceType: 'module',
-          ecmaVersion: 'latest',
+          sourceType: "module",
+          ecmaVersion: "latest",
         }),
       };
     }
