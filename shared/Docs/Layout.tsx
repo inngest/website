@@ -15,6 +15,8 @@ import { SectionProvider } from "./SectionProvider";
 import { useMobileNavigationStore } from "./MobileNavigation";
 import { getOpenGraphImageURL } from "../../utils/social";
 
+const GITHUB_PREFIX = "https://github.com/inngest/website/tree/main/";
+
 // Unsure if this should be here or in the _app and conditionally run only on docs
 function onRouteChange() {
   useMobileNavigationStore.getState().close();
@@ -33,6 +35,8 @@ export type Props = {
   metaTitle?: string;
   /* The optional description */
   description?: string;
+  /* Source file path for the current page */
+  sourceFilePath?: string;
 };
 
 export function Layout({
@@ -41,6 +45,7 @@ export function Layout({
   title,
   metaTitle,
   description,
+  sourceFilePath,
 }: Props) {
   const siteTitle = `Inngest Documentation`;
   const preferredTitle: string = metaTitle || title || siteTitle;
@@ -51,6 +56,9 @@ export function Layout({
   const metaDescription =
     description || `Inngest documentation for ${preferredTitle}`;
   const metaImage = getOpenGraphImageURL({ title: preferredTitle });
+  const editPageURL = sourceFilePath
+    ? GITHUB_PREFIX + sourceFilePath
+    : undefined;
 
   return (
     <div className="dark:bg-slate-1000">
@@ -90,7 +98,7 @@ export function Layout({
               <main className="py-16">
                 <Prose as="article">{children}</Prose>
               </main>
-              <Footer />
+              <Footer editPageURL={editPageURL} />
             </div>
           </div>
         </SectionProvider>

@@ -180,6 +180,10 @@ function PageNavigation() {
   );
 }
 
+function EditPageLink({ url }: { url: string }) {
+  return <a href={url}>Edit this page on GitHub</a>;
+}
+
 function SmallPrint() {
   return (
     <div className="flex flex-col items-center justify-between gap-5 border-t border-slate-900/5 pt-8 dark:border-white/5 sm:flex-row">
@@ -191,12 +195,13 @@ function SmallPrint() {
   );
 }
 
-export function Footer() {
+export function Footer({ editPageURL }: { editPageURL: string }) {
   let router = useRouter();
 
   return (
     <footer className="mx-auto max-w-2xl space-y-10 pb-16 lg:max-w-5xl">
       {/* <Feedback key={router.pathname} /> */}
+      <EditPageLink url={editPageURL} />
       <PageNavigation />
       <SmallPrint />
     </footer>
