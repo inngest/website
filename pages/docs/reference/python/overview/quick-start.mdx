@@ -42,6 +42,7 @@ Let's add Inngest to the app! We'll do a few things
 1. Serve the **Inngest endpoint** on the FastAPI app.
 
 ```py {{ filename: "main.py" }}
+import logging
 from fastapi import FastAPI
 import inngest
 import inngest.fast_api
