@@ -39,7 +39,7 @@ To send events from outside of the context of a function, use [`inngest.send()`]
 
 ---
 
-## `step.sendEvent(id, eventPayload | eventPayload[]): Promise`
+## `step.sendEvent(id, eventPayload | eventPayload[]): Promise<{ ids: String[] }>`
 
 <Row>
   <Col>
@@ -101,3 +101,26 @@ To send events from outside of the context of a function, use [`inngest.send()`]
 <Callout>
   `step.sendEvent()` must be called using `await` or some other Promise handler to ensure your function sleeps correctly.
 </Callout>
+
+### Return values
+
+The function returns a promise that resolves to an object with an array of Event IDs that were send. These events can be used to look up the event in the Inngest dashboard or via [the REST API](https://api-docs.inngest.com/docs/inngest-api/pswkqb7u3obet-get-an-event).
+
+```ts
+const { ids } = await step.sendEvent([
+  {
+    name: "app/invoice.created",
+    data: { invoiceId: "645e9e024befa68763f5b500" }
+  },
+  {
+    name: "app/invoice.created",
+    data: { invoiceId: "645e9e08f29fb563c972b1f7" }
+  },
+]);
+/**
+ * ids = [
+ *   "01HQ8PTAESBZPBDS8JTRZZYY3S",
+ *   "01HQ8PTFYYKDH1CP3C6PSTBZN5"
+ * ]
+ */
+```
