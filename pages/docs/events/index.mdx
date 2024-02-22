@@ -180,7 +180,7 @@ export default inngest.createFunction(
 
 ## Using Event IDs
 
-Each event sent to Inngest is assigned a unique Event ID. These `ids` are returned from `inngest.send()` or `step.sendEvent()`. Event IDs events can be used to look up the event in the Inngest dashboard or via [the REST API](https://api-docs.inngest.com/docs/inngest-api/pswkqb7u3obet-get-an-event). You can choose to log this or save these Event IDs if you want to look them up later.
+Each event sent to Inngest is assigned a unique Event ID. These `ids` are returned from `inngest.send()` or `step.sendEvent()`. Event IDs can be used to look up the event in the Inngest dashboard or via [the REST API](https://api-docs.inngest.com/docs/inngest-api/pswkqb7u3obet-get-an-event). You can choose to log or save these Event IDs if you want to look them up later.
 
 ```ts
 const { ids } = await inngest.send([
