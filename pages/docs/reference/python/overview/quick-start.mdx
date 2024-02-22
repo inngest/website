@@ -71,7 +71,7 @@ inngest.fast_api.serve(app, inngest_client, [my_function])
 
 Start your app:
 ```sh
-uvicorn main:app --reload
+(INNGEST_DEV=1 uvicorn main:app --reload)
 ```
 
 ---
