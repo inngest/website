@@ -74,6 +74,12 @@ Start your app:
 (INNGEST_DEV=1 uvicorn main:app --reload)
 ```
 
+<Callout variant="info">
+  💡 The `INNGEST_DEV` env var tells the Inngest SDK to put itself in "dev mode". By default, the SDK will start in [production mode](/docs/reference/python/overview/prod-mode). We made production mode opt-out for security reasons.
+  
+  Always set `INNGEST_DEV` when you want to sync with the Dev Server. Never set `INNGEST_DEV` when you want to sync with Inngest Cloud.
+</Callout>
+
 ---
 
 ## Run Inngest Dev Server
