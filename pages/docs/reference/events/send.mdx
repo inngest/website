@@ -25,9 +25,7 @@ To send events from within of the context of a function, use [`step.sendEvent()`
 ---
 
 
-## `inngest.send(eventPayload | eventPayload[]): Promise`
-{/* TODO - Show the event ids in the return value when we add to the SDK */}
-{/*## `inngest.send(eventPayload | eventPayload[]): Promise<string[]>`*/}
+## `inngest.send(eventPayload | eventPayload[]): Promise<{ ids: string[] }>`
 
 <Row>
   <Col>
@@ -73,7 +71,7 @@ To send events from within of the context of a function, use [`step.sendEvent()`
   await inngest.send({
     name: "app/post.created",
     data: { postId: "01H08SEAXBJFJNGTTZ5TAWB0BD" }
-  })
+  });
 
   // Send an array of events
   await inngest.send([
@@ -85,7 +83,7 @@ To send events from within of the context of a function, use [`step.sendEvent()`
       name: "app/invoice.created",
       data: { invoiceId: "645e9e08f29fb563c972b1f7" }
     },
-  ])
+  ]);
 
   // Send user data that will be encrypted at rest
   await inngest.send({
@@ -95,7 +93,7 @@ To send events from within of the context of a function, use [`step.sendEvent()`
       external_id: "6463da8211cdbbcb191dd7da",
       email: "test@example.com"
     }
-  })
+  });
 
   // Specify the idempotency id, version, and timestamp
   await inngest.send({
@@ -110,6 +108,29 @@ To send events from within of the context of a function, use [`step.sendEvent()`
   ```
   </Col>
 </Row>
+
+### Return values
+
+The function returns a promise that resolves to an object with an array of Event IDs that were sent. These events can be used to look up the event in the Inngest dashboard or via [the REST API](https://api-docs.inngest.com/docs/inngest-api/pswkqb7u3obet-get-an-event).
+
+```ts
+const { ids } = await inngest.send([
+  {
+    name: "app/invoice.created",
+    data: { invoiceId: "645e9e024befa68763f5b500" }
+  },
+  {
+    name: "app/invoice.created",
+    data: { invoiceId: "645e9e08f29fb563c972b1f7" }
+  },
+]);
+/**
+ * ids = [
+ *   "01HQ8PTAESBZPBDS8JTRZZYY3S",
+ *   "01HQ8PTFYYKDH1CP3C6PSTBZN5"
+ * ]
+ */
+```
 
 ## User data encryption 🔐
 
