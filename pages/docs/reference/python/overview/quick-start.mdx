@@ -42,6 +42,7 @@ Let's add Inngest to the app! We'll do a few things
 1. Serve the **Inngest endpoint** on the FastAPI app.
 
 ```py {{ filename: "main.py" }}
+import logging
 from fastapi import FastAPI
 import inngest
 import inngest.fast_api
@@ -70,8 +71,14 @@ inngest.fast_api.serve(app, inngest_client, [my_function])
 
 Start your app:
 ```sh
-uvicorn main:app --reload
+(INNGEST_DEV=1 uvicorn main:app --reload)
 ```
+
+<Callout variant="info">
+  💡 The `INNGEST_DEV` environment variable tells the Inngest SDK to run in "dev mode". By default, the SDK will start in [production mode](/docs/reference/python/overview/prod-mode). We made production mode opt-out for security reasons.
+  
+  Always set `INNGEST_DEV` when you want to sync with the Dev Server. Never set `INNGEST_DEV` when you want to sync with Inngest Cloud.
+</Callout>
 
 ---
 
@@ -81,7 +88,7 @@ Inngest functions are run using an **Inngest server**. For this guide we'll use 
 
 Start the Dev Server:
 ```sh
-npx inngest-cli@latest dev
+npx inngest-cli@latest dev -u http://127.0.0.1:8000/api/inngest --no-discovery
 ```
 
 After a few seconds, your app and function should now appear in the Dev Server UI:
