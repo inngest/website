@@ -10,7 +10,7 @@ Before being able to run the app for the first time, you need to follow the step
 
 - [Git](https://git-scm.com/downloads)
 - [Node.js 18](https://nodejs.org/en/download/)
-- Join the team on Vercel with your GitHub account.
+- _Optional\*_ - Join the team on Vercel with your GitHub account.
 
 ### Instructions
 
@@ -19,8 +19,10 @@ Before being able to run the app for the first time, you need to follow the step
    [Corepack](https://nodejs.org/docs/latest-v18.x/api/corepack.html) by running
    `corepack enable; corepack prepare`
 3. Install dependencies by running `pnpm install`
-4. Link local project to its Vercel project by running `pnpm vercel link`
-5. Download environment variables by running `pnpm env:pull`
+4. _Optional\*_ - Link local project to its Vercel project by running `pnpm vercel link`
+5. _Optional\*_ - Download environment variables by running `pnpm env:pull`
+
+\* Running the website is possible with the default environment variables available in `.env.development`. Fetching other environment variables is only necessary if working on features that require them.
 
 ## Developing
 

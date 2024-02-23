@@ -21,8 +21,11 @@
 *.pem
 /.idea/
 
-# Environment variable files; we keep our environment variables on Vercel
+# Environment variable files.
+# Development is allowed for open-source contributions and defaults in local development
+# Necessary keys can be fetched via Vercel CLI (see README.md)
 .env*
+!.env.development
 
 # Vercel
 .vercel
