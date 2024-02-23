@@ -4,6 +4,16 @@ You can set environment variables to change various parts of Inngest's configura
 
 We'll look at all available environment variables here, what to set them to, and what our recommendations are for their use.
 
+- [INNGEST_BASE_URL](#inngest-base-url)
+- [INNGEST_DEV](#inngest-dev)
+- [INNGEST_ENV](#inngest-env)
+- [INNGEST_EVENT_KEY](#inngest-event-key)
+- [INNGEST_LOG_LEVEL](#inngest-log-level)
+- [INNGEST_SERVE_HOST](#inngest-serve-host)
+- [INNGEST_SERVE_PATH](#inngest-serve-path)
+- [INNGEST_SIGNING_KEY](#inngest-signing-key)
+- [INNGEST_STREAMING](#inngest-streaming)
+
 ---
 
 ## INNGEST_BASE_URL
@@ -12,15 +22,35 @@ Use this to tell an SDK the host to use to communicate with Inngest.
 
 If set, it should be the host including the protocol and port, e.g. `http://localhost:8288` or `https://my.tunnel.com`. Can be overwritten by manually specifying `baseUrl` in `new Inngest()` or `serve()`.
 
-In most cases we recommend keeping this unset. A common case, though, is wanting to force a production build of your app to use the Inngest Dev Server instead of Inngest Cloud for local integration testing or similar.
+In most cases we recommend keeping this unset. A common case, though, is wanting
+to force a production build of your app to use the Inngest Dev Server instead of
+Inngest Cloud for local integration testing or similar.
 
-In this case, set `INNGEST_BASE_URL=http://localhost:8288`, or wherever your Inngest Dev Server is accessible. For docker, this might be `http://host.docker.internal:8288`.
+In this case, prefer using [INNGEST_DEV=1](#inngest-dev). For Docker, it may be
+appropriate to also set `INNGEST_BASE_URL=http://host.docker.internal:8288`.
+
+---
+
+## INNGEST_DEV
+
+Use this to force an SDK to be in Dev Mode with `INNGEST_DEV=1`, or Cloud mode
+with `INNGEST_DEV=0`. A URL for the dev server can be set at the same time with `INNGEST_DEV=http://localhost:8288`.
+
+Can be overwritten by manually specifying `isDev` is `new Inngest()`.
+
+Explicitly setting either mode will change the URLs used to communicate with
+Inngest, as well as turning **off** signature verification in Dev mode, or **on** in
+Cloud mode.
+
+If neither the environment variable nor config option are specified, the SDK will
+attempt to infer which mode it should be in based on environment variables such
+as `NODE_ENV`.
 
 ---
 
 ## INNGEST_ENV
 
-Use this to tell Inngest which [envionment](/docs/platform/environments?ref=environment-variables) you're wanting to send and receive events from.
+Use this to tell Inngest which [Inngest Envionment](/docs/platform/environments?ref=environment-variables) you're wanting to send and receive events from.
 
 Can be overwritten by manually specifying `env` in `new Inngest()`.
 
