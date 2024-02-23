@@ -42,8 +42,8 @@ export default function Careers(props) {
                 <h1 className="text-white font-medium text-2xl md:text-4xl xl:text-5xl mb-2 md:mb-4 tracking-tighter lg:leading-loose">
                   Careers at Inngest
                 </h1>
-                <Button href="#positions" arrow="right">
-                  Jump to open positions
+                <Button href="https://jobs.ashbyhq.com/inngest" arrow="right">
+                  See Our Open Positions
                 </Button>
               </header>
               <div className="my-20 mx-auto prose prose-img:rounded-lg prose-code:bg-slate-800 prose-code:tracking-tight text-slate-300 prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline hover:prose-a:text-white prose-a:font-medium prose-a:transition-all prose-invert">
@@ -152,25 +152,10 @@ export default function Careers(props) {
                 {/* <h2>Backed by key investors</h2> */}
 
                 <Benefits />
-
-                <h2 id="positions" className="mb-12 scroll-mt-32">
-                  Open Positions
-                </h2>
-                {roles.map((role) => (
-                  <div
-                    key={role.slug}
-                    className="my-8 flex flex-row justify-between items-center text-white text-lg"
-                  >
-                    <h3 className="font-medium m-0">
-                      <a href={`/careers/${role.slug}`}>{role.title}</a>
-                    </h3>
-                    <p className="m-0">{role.location}</p>
-                  </div>
-                ))}
-                {roles.length === 0 && (
-                  <p>There are currently no open roles.</p>
-                )}
               </div>
+              <Button href="https://jobs.ashbyhq.com/inngest" arrow="right">
+                See Our Open Positions
+              </Button>
               <aside className=" max-w-[65ch] m-auto bg-indigo-900/20 text-indigo-100 flex flex-col items-start gap-4 leading-relaxed rounded-lg py-5 px-6  my-12 border border-indigo-900/50">
                 <p className="text-sm lg:text-base">
                   Have any questions about a role?
