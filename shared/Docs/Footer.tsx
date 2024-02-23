@@ -2,7 +2,7 @@ import React, { forwardRef, Fragment, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { Transition } from "@headlessui/react";
-
+import { PencilSquareIcon } from "@heroicons/react/24/outline";
 import { Button } from "../Button";
 import { topLevelNav } from "./navigationStructure";
 import SocialBadges from "./SocialBadges";
@@ -180,23 +180,46 @@ function PageNavigation() {
   );
 }
 
-function SmallPrint() {
+const Divider: React.FC<React.PropsWithChildren> = ({ children }) => {
   return (
     <div className="flex flex-col items-center justify-between gap-5 border-t border-slate-900/5 pt-8 dark:border-white/5 sm:flex-row">
+      {children}
+    </div>
+  );
+};
+
+function EditPageLink({ url }: { url: string }) {
+  return (
+    <Divider>
+      <Link
+        href={url}
+        className="flex space-x-2 font-medium text-indigo-600 hover:text-slate-800 hover:underline transition-all duration-150 dark:hover:text-white dark:text-indigo-400"
+      >
+        <PencilSquareIcon className="h-5" />
+        <span>Edit this page on GitHub</span>
+      </Link>
+    </Divider>
+  );
+}
+
+function SmallPrint() {
+  return (
+    <Divider>
       <p className="text-xs text-slate-600 dark:text-slate-400">
         &copy; {new Date().getFullYear()} Inngest Inc. All rights reserved.
       </p>
       <SocialBadges />
-    </div>
+    </Divider>
   );
 }
 
-export function Footer() {
+export function Footer({ editPageURL }: { editPageURL: string }) {
   let router = useRouter();
 
   return (
     <footer className="mx-auto max-w-2xl space-y-10 pb-16 lg:max-w-5xl">
       {/* <Feedback key={router.pathname} /> */}
+      <EditPageLink url={editPageURL} />
       <PageNavigation />
       <SmallPrint />
     </footer>

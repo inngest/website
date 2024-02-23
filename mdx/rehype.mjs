@@ -1,11 +1,13 @@
+import { slugifyWithCounter } from "@sindresorhus/slugify";
+import * as acorn from "acorn";
+import { toString } from "mdast-util-to-string";
 import { mdxAnnotations } from "mdx-annotations";
-import { visit } from "unist-util-visit";
+import rehypeCodeTitles from "rehype-code-titles";
 import rehypeMdxTitle from "rehype-mdx-title";
 import shiki from "shiki";
-import { toString } from "mdast-util-to-string";
-import * as acorn from "acorn";
-import { slugifyWithCounter } from "@sindresorhus/slugify";
-import rehypeCodeTitles from "rehype-code-titles";
+import { visit } from "unist-util-visit";
+
+import * as sourceFilePath from "./plugins/sourceFilePath.mjs";
 
 export function rehypeParseCodeBlocks() {
   return (tree) => {
@@ -126,4 +128,5 @@ export const rehypePlugins = [
       sections: `[${getSections(tree).join()}]`,
     }),
   ],
+  sourceFilePath.rehype,
 ];
