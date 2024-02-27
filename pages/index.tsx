@@ -38,11 +38,17 @@ export async function getStaticProps(): Promise<
 
 export function LaunchWeekBanner({ urlRef = "homepage-banner" }) {
   return (
-    <PageBanner href={`/launch-week?ref=${urlRef}`} className="mt-px">
+    <PageBanner
+      href={`/blog/announcing-funding-from-a16z?ref=${urlRef}`}
+      className="mt-px"
+    >
       <RocketLaunchIcon className="inline-flex h-7 sm:h-5 mr-1" />
       <span className="shrink">
-        We've just wrapped up a Launch Week.{" "}
-        <span className="font-normal inline-flex">See all we've shipped.</span>
+        We've just raised $6.1M{" "}
+        <span className="font-normal inline-flex">
+          {" "}
+          in new funding led by a16z.
+        </span>
       </span>
     </PageBanner>
   );
