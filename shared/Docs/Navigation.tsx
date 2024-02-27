@@ -220,16 +220,16 @@ function NavigationGroup({ group, className = "" }) {
   );
 }
 
-export const headerLinks = [
-  {
-    title: "Docs",
-    href: BASE_DIR,
-  },
-  {
-    title: "Patterns",
-    href: "/patterns?ref=docs",
-  },
-];
+// export const headerLinks = [
+//   {
+//     title: "Docs",
+//     href: BASE_DIR,
+//   },
+//   {
+//     title: "Patterns",
+//     href: "/patterns?ref=docs",
+//   },
+// ];
 
 // Flatten the nested nav and get all nav sections w/ sectionLinks
 function getAllSections(nav) {
