@@ -159,16 +159,12 @@ Upcoming releases include a manual archival feature, which will provide users wi
   <summary id="syncing-issues"><h3 className="inline-block my-2">Why don’t I see my sync in the sync list?</h3></summary>
 
   If you're experiencing difficulties with syncing and cannot locate your sync in the sync list, consider the following scenarios:
-
-  1. **Deduped Syncs:**
-  - When you resync the app with identical function configurations to a previous sync, a new sync is not created. Instead, we update the "latest sync" time on the existing sync.
-  - Solution: Check the latest sync time on the previous sync to verify if the update occurred as expected.
   
-  2. **Different App ID:**
+  1. **Different App ID:**
   - If you resync the app after modifying the [app ID](/docs/reference/client/create), a new app is created, not a new sync within the existing app.
   - Solution: Confirm the creation of a new app when changing the app ID.
   
-  3. **Syncing Errors:**
+  2. **Syncing Errors:**
   - *Manual Syncs and Manual Resyncs:*
     - Sync failures during manual operations are immediately displayed, preventing the creation of a new sync. The image below shows an example of an error while manually syncing:
       <img
