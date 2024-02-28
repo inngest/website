@@ -21,7 +21,7 @@ Debouncing is used to avoid unnecessary executions. At its core, it is a techniq
 
 A classic front-end example involves an auto-complete input where a user's actions, like typing, could trigger duplicate work by fetching search results. The goal is to send a single action, such as an HTTP request, only after the user has finished typing.
 
-## When use debouncing in queuing systems
+## When to use debouncing in queuing systems
 
 Debouncing within queueing systems is most important when you're aiming to improve efficiency of execution. It might be a user that triggers a job that's costly to run or some event that triggers a larger job to execute that is wasteful to have to re-run. Here are couple of specific situations where you may want to add debouncing into your queue and worker system:
 
