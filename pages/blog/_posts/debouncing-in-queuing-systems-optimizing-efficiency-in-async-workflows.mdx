@@ -17,9 +17,9 @@ When developers talk about debouncing, it's most often discussed as a front-end 
 
 ## What is debouncing
 
-Debouncing is used to to avoid unnecessary re-executions. At its core, it is a technique used to control how often a particular task or operation is executed, ensuring that it only occurs once within a specified timeframe, even if it is triggered multiple times.
+Debouncing is used to avoid unnecessary executions. At its core, it is a technique to ensure a particular task or operation is executed only once after a specified delay since its last invocation, even if triggered multiple times within that delay.
 
-A classic front-end example is: a user might click or do something that triggers duplicate work to happen, like an auto-complete input that fetches search results, but you only want to send a single action (for example, an HTTP request) when the user is done typing.
+A classic front-end example involves an auto-complete input where a user's actions, like typing, could trigger duplicate work by fetching search results. The goal is to send a single action, such as an HTTP request, only after the user has finished typing.
 
 ## When use debouncing in queuing systems
 
@@ -44,12 +44,12 @@ First, we'll create a simple `debounce_job_queue` table in our database. It will
 
 ```sql
 CREATE TABLE debounce_job_queue (
-    id SERIAL PRIMARY KEY,
-    job_type VARCHAR(64),
-		status VARCHAR(64),
-    payload JSONB,
-    scheduled_at TIMESTAMP,
-		debounce_key VARCHAR(64)
+  id SERIAL PRIMARY KEY,
+  job_type VARCHAR(64),
+  status VARCHAR(64),
+  payload JSONB,
+  scheduled_at TIMESTAMP,
+  debounce_key VARCHAR(64)
 );
 ```
 
@@ -63,21 +63,22 @@ WHERE status = 'QUEUED';
 
 Creating a new job in this queue is a relatively straightforward insert, but we add a few things that help us implement debounce:
 
-1. Create a deterministic `debounce_key` using a hash of the job's type and payload JSON data. Alternatively, this could be any unique piece of data like a user id.
+1. Create a deterministic `debounce_key` using a hash of the job's type and payload JSON data. Alternatively, this could be any unique piece of data like a user's ID.
 2. Allow the calling function to specify a delay when setting the `scheduled_at`.
 3. Handle conflicts with existing queued items with an `UPDATE` to the existing item's `scheduled_at` with the specific delay. **This is where the debouncing happens.**
 
 We'll use the `@vercel/postgres` library's simple `sql` here, but your favorite library will do just fine.
 
 ```jsx
-import { crypto } from 'node:crypto'
-import { sql } from '@vercel/postgres'
-
+import { crypto } from "node:crypto";
+import { sql } from "@vercel/postgres";
 async function enqueue(jobType, payload, delay = 0) {
-	const json = JSON.stringify(payload)
-	const debounceKey = crypto.createHash('sha256')
-		.update(jobType + json).digest('hex')
-	return await sql`
+  const json = JSON.stringify(payload);
+  const debounceKey = crypto
+    .createHash("sha256")
+    .update(jobType + json)
+    .digest("hex");
+  return await sql`
 		INSERT INTO debounce_job_queue (
 			job_type, status, payload, scheduled_at, debounce_key
 		)
@@ -88,7 +89,7 @@ async function enqueue(jobType, payload, delay = 0) {
 		-- If the item is already QUEUED, update the scheduled at w/ the delay
 		ON CONFLICT (debounce_key, status) WHERE status = 'QUEUED'
 		DO UPDATE SET scheduled_at = now() + INTERVAL '${delay} seconds';
-	`
+	`;
 }
 ```
 
@@ -98,24 +99,24 @@ To query for available jobs, we'll also now use our `scheduled_at` timestamp to 
 
 In our query, we'll also update the `status` to `PROCESSING` to mark that this job should not be picked up by any other worker and that it shouldn't be debounced again as it's being executed. In our code, we'll omit the worker polling logic and focus on the query. We'll use `SKIP LOCKED` here to prevent only query for rows that are locked due to being updated elsewhere.
 
-```jsx
+```js
 async function getQueueItem(jobType) {
-	return await sql`
-		UPDATE debounce_job_queue
-		SET status = 'PROCESSING'
-		WHERE id = (
-		  SELECT id FROM debounce_job_queue
-		  WHERE status = 'QUEUED' and scheduled_at <= now() + INTERVAL '2 minute'
-		  ORDER BY scheduled_at ASC
-		  FOR UPDATE SKIP LOCKED
-		  LIMIT 1
-		)
-		RETURNING id, payload;
-	`
+  return await sql`
+    UPDATE debounce_job_queue
+    SET status = 'PROCESSING'
+    WHERE id = (
+      SELECT id FROM debounce_job_queue
+      WHERE status = 'QUEUED' and scheduled_at <= now() + INTERVAL '2 minute'
+      ORDER BY scheduled_at ASC
+      FOR UPDATE SKIP LOCKED
+      LIMIT 1
+    )
+    RETURNING id, payload;
+  `;
 }
 ```
 
-That's it! In your own worker code you'll want to also `delete` this item from the queue table when it's done processing (or similar). If you are implementing a debounce queue in Postgres, you may want to additionally consider:
+That's it! In your own worker code you'll want to also `DELETE` this item from the queue table when it's done processing (or similar). If you are implementing a debounce queue in Postgres, you may want to additionally consider:
 
 - Adding other indexes to your table for performance.
 - Adding a job expiration timestamp and clearing of expired jobs.
@@ -127,7 +128,7 @@ Next, we'll compare this to implementing debounce with Inngest.
 
 ## How to debounce with Inngest functions
 
-Inngest's architecture combines an event stream, queues and durable execution into a single reliability layer for your application. Within Inngest's internal queueing system, we have a build-in ability to debounce jobs quite easily. 
+Inngest's architecture combines an event stream, queues, and durable execution into a single reliability layer for your application. With Inngest's internal queueing system, you can easily debounce jobs.
 
 The main differences to the above example is that with Inngest:
 
@@ -144,22 +145,22 @@ The main differences to the above example is that with Inngest:
   alt="Visualization of how debounce is applied"
 />
 
-To configure debouncing for an Inngest function is a couple lines of code. In our example below, we'll create a function that generates suggested titles for a blog post every time a user saves a draft. We'll add a debounce `period` of one minute and we'll set a debounce `key` to only debounce based off the given `blog_post_id` . Setting the key will make sure that each unique blog post will be separately debounced.
+Configuring debouncing for an Inngest function is a couple of lines of code. In our example below, we'll create a function that generates suggested titles for a blog post every time a user saves a draft. We'll add a debounce `period` of one minute and we'll set a debounce `key` to only debounce based off the given `blog_post_id` . Setting the key will make sure that each unique blog post will be separately debounced.
 
-```jsx
+```js
 const generateIdeasFunction = inngest.createFunction(
   {
-		id: 'generate-ideas-via-open-ai',
-		debounce: {
+    id: "generate-ideas-via-open-ai",
+    debounce: {
       period: "1m",
-	    key: "event.data.blog_post_id",
-		}
-	},
-	{ event: 'blog/draft.saved' },
-	async ({ event, step }) => {
-		/* business logic omitted for sake of example */
-	}
-)
+      key: "event.data.blog_post_id",
+    },
+  },
+  { event: "blog/draft.saved" },
+  async ({ event, step }) => {
+    /* call OpenAI */
+  },
+);
 ```
 
 For more information on this, check out [our guide on debouncing](/docs/reference/functions/debounce) or check out [our quick start tutorial](/docs/quick-start) to learn the basics of Inngest.
