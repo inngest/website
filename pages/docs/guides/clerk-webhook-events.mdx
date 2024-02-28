@@ -14,7 +14,7 @@ This page offers a guide on setting up a Clerk webhook with Inngest and using Cl
 
 ## Setting up the Clerk webhook
 
-Clerk enables [sending events to a webhook endpoint](https://clerk.com/docs/integrations/webhooks) when certain events occur. Inngest's [webhook endpoints](/docs/platform/webhooks) allow you to receive these events within your account just like [events that you send](/docs/events) from your own application.
+Clerk enables [sending events to a webhook endpoint](https://clerk.com/docs/integrations/webhooks/overview) when certain events occur. Inngest's [webhook endpoints](/docs/platform/webhooks) allow you to receive these events within your account just like [events that you send](/docs/events) from your own application.
 
 To set up the Clerk webhook, open the Clerk dashboard and navigate to the ["Webhooks"](https://dashboard.clerk.com/last-active?path=webhooks) page. Next, select the "Add Endpoint" button.
 
@@ -60,7 +60,7 @@ const syncUser = inngest.createFunction(
 )
 ```
 
-The `event` object contains all of the relevant data for the event. The `event.data` will match the `data` object from the standard Clerk webhook [payload structure](https://clerk.com/docs/integrations/webhooks#payload-structure). With this `clerk/user.created` event, the `event.data` will be a Clerk User json object.
+The `event` object contains all of the relevant data for the event. The `event.data` will match the `data` object from the standard Clerk webhook [payload structure](https://clerk.com/docs/integrations/webhooks/overview#payload-structure). With this `clerk/user.created` event, the `event.data` will be a Clerk User json object.
 
 As you can see, you can choose which events you want to handle with each function. You might write a separate function for `clerk/user.updated` and `clerk/user.deleted` handling the entire lifecycle end to end.
 
