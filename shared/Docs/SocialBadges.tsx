@@ -38,14 +38,19 @@ export default function SocialBadges() {
   return (
     <div className="flex gap-4">
       <SocialLink href="https://github.com/inngest/inngest" icon={GitHubIcon}>
-        Star our open source repo
+        Star our open source repository
       </SocialLink>
-      <SocialLink href="https://www.inngest.com/discord" icon={DiscordIcon}>
+      <SocialLink
+        href="https://www.inngest.com/discord?ref=social-badge"
+        icon={DiscordIcon}
+      >
         Join our Discord community
       </SocialLink>
-      <SocialLink href="https://twitter.com/inngest" icon={TwitterIcon}>
-        Follow us on X.com
-      </SocialLink>
+      <span className="transform scale-75">
+        <SocialLink href="https://twitter.com/inngest" icon={TwitterIcon}>
+          Follow us on X
+        </SocialLink>
+      </span>
     </div>
   );
 }
