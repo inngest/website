@@ -14,7 +14,6 @@ import { useMobileNavigationStore } from "./MobileNavigation";
 import { ModeToggle } from "./ModeToggle";
 import { MobileSearch, Search } from "./Search";
 import SocialBadges from "./SocialBadges";
-import { headerLinks } from "./Navigation";
 
 function TopLevelNavItem({ href, children }) {
   return (
@@ -70,7 +69,7 @@ export const Header = forwardRef<HTMLDivElement>(function Header(
       <Search />
       <div className="flex items-center gap-5 lg:hidden">
         <MobileNavigation />
-        <a href="/" className="flex gap-1.5 group/logo items-center pt-1">
+        <a href="/docs" className="flex gap-1.5 group/logo items-center pt-1">
           <Logo className="w-20 text-indigo-500 dark:text-white" />
           <span className="text-slate-700 dark:text-indigo-400 text-base group-hover/logo:text-white transition-color font-semibold">
             Docs
@@ -78,22 +77,8 @@ export const Header = forwardRef<HTMLDivElement>(function Header(
         </a>
       </div>
       <div className="flex items-center gap-5">
-        <nav className="hidden lg:block mr-4">
-          <ul role="list" className="flex items-center gap-8">
-            {headerLinks.map((link) => (
-              <TopLevelNavItem key={link.title} href={link.href}>
-                {link.title}
-              </TopLevelNavItem>
-            ))}
-          </ul>
-        </nav>
-        <div className="hidden lg:block">
+        <div className="hidden lg:block mr-3">
           <SocialBadges />
-        </div>
-        <div className="hidden lg:block md:h-5 md:w-px md:bg-slate-900/10 md:dark:bg-white/15" />
-        <div className="flex gap-4">
-          <MobileSearch />
-          <ModeToggle />
         </div>
         <div className="hidden sm:flex items-center gap-3">
           <Button
@@ -110,6 +95,11 @@ export const Header = forwardRef<HTMLDivElement>(function Header(
           >
             Sign Up
           </Button>
+        </div>
+        <div className="hidden lg:block md:h-5 md:w-px md:bg-slate-900/10 md:dark:bg-white/15" />
+        <div className="flex gap-4">
+          <MobileSearch />
+          <ModeToggle />
         </div>
       </div>
     </motion.div>
