@@ -15,7 +15,8 @@ import { SectionProvider } from "./SectionProvider";
 import { useMobileNavigationStore } from "./MobileNavigation";
 import { getOpenGraphImageURL } from "../../utils/social";
 
-const GITHUB_PREFIX = "https://github.com/inngest/website/tree/main/";
+const GITHUB_BRANCH = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_REF || "main";
+const GITHUB_PREFIX = `https://github.com/inngest/website/tree/${GITHUB_BRANCH}/`;
 
 // Unsure if this should be here or in the _app and conditionally run only on docs
 function onRouteChange() {
