@@ -45,9 +45,10 @@ export default function Logos({
       )}
       <div
         className={clsx(
-          "mt-16 grid grid-cols-2 items-center justify-center max-w-[1200px] m-auto",
-          nonFeaturedCount === 4 && "sm:px-8 md:px-20 lg:grid-cols-4",
-          nonFeaturedCount === 5 && "sm:px-6 lg:grid-cols-5",
+          "mt-16 grid grid-cols-4 items-center justify-center max-w-[1200px] m-auto",
+          nonFeaturedCount === 4 && "sm:px-8 md:px-20 lg:grid-cols-12",
+          nonFeaturedCount === 5 && "sm:px-6 lg:grid-cols-10",
+          nonFeaturedCount === 6 && "sm:px-6 lg:grid-cols-12",
           hasLinks ? "gap-x-4 gap-y-8" : "gap-x-16 gap-y-16",
           footer && "mb-16"
         )}
@@ -67,7 +68,7 @@ export default function Logos({
                   !featured &&
                     nonFeaturedCount % 2 == 1 &&
                     idx === logos.length - 1 &&
-                    "col-span-2 lg:col-span-1" // center the last item if there is an odd number
+                    "col-span-2 lg:col-span-2" // center the last item if there is an odd number
                 )}
               >
                 <Image
@@ -91,8 +92,12 @@ export default function Logos({
               height={(featured ? 120 : 30) * scale}
               className={clsx(
                 "text-white m-auto width-auto transition-all grayscale hover:grayscale-0",
-                `max-h-[${36 * scale}px]`,
-                featured && "col-span-2 max-h-[60px]"
+                `max-h-[${36 * scale}px] col-span-2`,
+                featured && "lg:col-span-4 max-h-[60px]",
+                // Hide the last item if there is an odd number
+                logos.length % 2 == 1 &&
+                  idx === logos.length - 1 &&
+                  "hidden lg:block"
               )}
             />
           );

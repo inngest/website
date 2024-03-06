@@ -98,17 +98,17 @@ const featuredCompanies = [
     scale: 1.1,
   },
   {
-    src: "/assets/customers/snaplet-dark.svg",
-    name: "Snaplet",
-    url: "https://www.snaplet.dev/",
+    src: "/assets/customers/gitbook-logo-white.svg",
+    name: "Gitbook",
+    url: "https://www.gitbook.com/",
     scale: 1.1,
     type: "company",
   },
   {
-    src: "/assets/customers/zamp-logo.svg",
-    name: "Zamp",
-    url: "https://zamp.com/",
-    scale: 1,
+    src: "/assets/customers/snaplet-dark.svg",
+    name: "Snaplet",
+    url: "https://www.snaplet.dev/",
+    scale: 1.1,
     type: "company",
   },
 ];
@@ -123,20 +123,27 @@ const grid = [
   },
   {
     type: "quote",
-    name: "Snaplet",
+    name: "Resend",
     quote: {
-      text: `We switched from our PostgreSQL backed queue to Inngest in less than a day. Their approach is idiomatic with a great developer experience. Inngest allowed us to stop worrying about scalability and stability.`,
+      text: `The DX and visibility with Inngest is really incredible. We able to develop functions locally easier and faster that with our previous queue. Also, Inngest's tools give us the visibility to debug issues much quicker than before.`,
       attribution: {
-        name: "Peter Pistorius",
-        title: "CEO",
+        name: "Bu Kinoshita",
+        title: "Co-founder",
       },
-      avatar: "/assets/customers/snaplet-peter-pistorius.png",
+      avatar: "/assets/customers/resend-bu-kinoshita.jpg",
     },
   },
   {
     src: "/assets/customers/leap-logo-white.svg",
     name: "Leap",
     url: "https://tryleap.ai/",
+    scale: 1,
+    type: "company",
+  },
+  {
+    src: "/assets/customers/zamp-logo.svg",
+    name: "Zamp",
+    url: "https://zamp.com/",
     scale: 1,
     type: "company",
   },
@@ -148,12 +155,6 @@ const grid = [
     type: "company",
   },
   {
-    src: "/assets/customers/finta-logo.png?v=1",
-    name: "Finta.io",
-    url: "https://www.finta.io/",
-    type: "company",
-  },
-  {
     src: "/assets/customers/secta-labs-logo.svg",
     name: "Secta.ai",
     url: "https://secta.ai/",
@@ -161,14 +162,14 @@ const grid = [
   },
   {
     type: "quote",
-    name: "NiftyKit",
+    name: "Snaplet",
     quote: {
-      text: `I can't stress enough how integral Inngest has been to our operations. It's more than just "battle tested" for us—it's been a game-changer and a cornerstone of our processes.`,
+      text: `We switched from our PostgreSQL backed queue to Inngest in less than a day. Their approach is idiomatic with a great developer experience. Inngest allowed us to stop worrying about scalability and stability.`,
       attribution: {
-        name: "Robin Curbelo",
-        title: "Engineer",
+        name: "Peter Pistorius",
+        title: "CEO",
       },
-      avatar: "/assets/customers/niftykit-robin-curbelo.jpg",
+      avatar: "/assets/customers/snaplet-peter-pistorius.png",
     },
   },
   {
@@ -186,6 +187,12 @@ const grid = [
     type: "company",
   },
   {
+    src: "/assets/customers/finta-logo.png?v=1",
+    name: "Finta.io",
+    url: "https://www.finta.io/",
+    type: "company",
+  },
+  {
     src: "/assets/customers/lynq-logo.svg",
     name: "Lynq.ai",
     url: "https://www.lynq.ai/",
@@ -193,22 +200,22 @@ const grid = [
     type: "company",
   },
   {
+    type: "quote",
+    name: "NiftyKit",
+    quote: {
+      text: `I can't stress enough how integral Inngest has been to our operations. It's more than just "battle tested" for us—it's been a game-changer and a cornerstone of our processes.`,
+      attribution: {
+        name: "Robin Curbelo",
+        title: "Engineer",
+      },
+      avatar: "/assets/customers/niftykit-robin-curbelo.jpg",
+    },
+  },
+  {
     src: "/assets/customers/sliderule-analytics.png",
     name: "SlideRule",
     scale: 1,
     type: "company",
-  },
-  {
-    type: "quote",
-    name: "Resend",
-    quote: {
-      text: `The DX and visibility with Inngest is really incredible. We able to develop functions locally easier and faster that with our previous queue. Also, Inngest's tools give us the visibility to debug issues much quicker than before.`,
-      attribution: {
-        name: "Bu Kinoshita",
-        title: "Co-founder",
-      },
-      avatar: "/assets/customers/resend-bu-kinoshita.jpg",
-    },
   },
   {
     src: "/assets/customers/double-logo.svg",
@@ -222,11 +229,12 @@ const grid = [
     scale: 0.9,
     type: "company",
   },
-  {
-    src: "/assets/customers/awaken-tax-logo.png",
-    name: "Awaken.tax",
-    type: "company",
-  },
+  // Hide b/c we don't want a single dangling item at the end - we want even rows
+  // {
+  //   src: "/assets/customers/awaken-tax-logo.png",
+  //   name: "Awaken.tax",
+  //   type: "company",
+  // },
 ];
 
 export default function Customers() {

@@ -86,11 +86,16 @@ export default function Home() {
             featured: true,
           },
           {
+            src: "/assets/customers/gitbook-logo-white.svg",
+            name: "Gitbook",
+            featured: true,
+          },
+          {
             src: "/assets/customers/resend.svg",
             name: "Resend",
             scale: 1.1,
           },
-
+          { src: "/assets/customers/leap-logo-white.svg", name: "Leap" },
           {
             src: "/assets/customers/snaplet-dark.svg",
             name: "Snaplet",
@@ -100,7 +105,14 @@ export default function Home() {
             name: "Productlane",
             scale: 1.3,
           },
-          { src: "/assets/customers/leap-logo-white.svg", name: "Leap" },
+          {
+            src: "/assets/customers/zamp-logo.svg",
+            name: "Zamp",
+          },
+          {
+            src: "/assets/customers/aomni-logo.svg",
+            name: "Aomni",
+          },
         ]}
         footer={
           <div className="flex items-center">
