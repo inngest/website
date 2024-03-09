@@ -241,13 +241,13 @@ The `init()` function can return functions for two separate lifecycles to hook i
      <Col>
           ### `onSendEvent` lifecycle
 
-          Triggered when an event is going to be sent via `inngest.send()` or `step.sendEvent()`.
+          Triggered when an event is going to be sent via `inngest.send()`, `step.sendEvent()`, or `step.invoke()`.
 
           <Properties name="Output" nested>
-               <Property name="input" type="function">
+               <Property name="transformInput" type="function">
                     Called before the events are sent to Inngest. This is where you can modify the events before they're sent.
                </Property>
-               <Property name="output" type="function">
+               <Property name="transformOutput" type="function">
                     Called after events are sent to Inngest. This is where you can perform any final actions and modify the output from `inngest.send()`.
                </Property>
           </Properties>
