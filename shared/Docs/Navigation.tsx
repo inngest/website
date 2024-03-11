@@ -37,6 +37,8 @@ function NavLink({
   active,
   isAnchorLink = false,
   isTopLevel = false,
+  truncate = true,
+
   className = "",
   children,
   target,
@@ -46,6 +48,7 @@ function NavLink({
   active?: boolean;
   isAnchorLink?: boolean;
   isTopLevel?: boolean;
+  truncate?: boolean;
   className?: string;
   target?: string;
   children: React.ReactNode;
@@ -57,14 +60,14 @@ function NavLink({
       target={target}
       className={clsx(
         "flex justify-between items-center gap-2 py-1 pr-3 text-sm font-medium transition group", // group for nested hovers
-        isTopLevel ? "pl-0" : isAnchorLink ? "pl-7" : "pl-4",
+        isTopLevel ? "pl-0" : isAnchorLink ? "pl-3" : "pl-4",
         active
           ? "text-slate-900 dark:text-white"
           : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white",
         className
       )}
     >
-      <span className="truncate">{children}</span>
+      <span className={truncate ? "truncate" : ""}>{children}</span>
       {tag && (
         <Tag variant="small" color="slate" background="page">
           {tag}
@@ -137,6 +140,48 @@ function ActivePageMarker({ group, pathname }) {
   );
 }
 
+export function PageSidebar() {
+  let isInsideMobileNavigation = useIsInsideMobileNavigation();
+  let [router, sections] = useInitialValue(
+    [useRouter(), useSectionStore((s) => s.sections)],
+    isInsideMobileNavigation
+  );
+
+  return (
+    <div>
+      <h4 className="text-base font-medium pb-2">On this page</h4>
+      {/* TODO: Add highlighted page section back */}
+      {/* <AnimatePresence initial={!isInsideMobileNavigation}>
+        <VisibleSectionHighlight group={group} pathname={router.pathname} />
+      </AnimatePresence> */}
+      <motion.ul
+        role="list"
+        initial={{ opacity: 0 }}
+        animate={{
+          opacity: 1,
+          transition: { delay: 0.1 },
+        }}
+        exit={{
+          opacity: 0,
+          transition: { duration: 0.15 },
+        }}
+      >
+        {sections.map((section) => (
+          <li key={section.id}>
+            <NavLink
+              href={`#${section.id}`}
+              tag={section.tag}
+              isAnchorLink
+              truncate={false}
+            >
+              {section.title}
+            </NavLink>
+          </li>
+        ))}
+      </motion.ul>
+    </div>
+  );
+}
 // A nested navigation group of links that expand and follow
 function NavigationGroup({ group, className = "" }) {
   // If this is the mobile navigation then we always render the initial
@@ -160,11 +205,6 @@ function NavigationGroup({ group, className = "" }) {
         {group.title}
       </motion.h2>
       <div className="relative mt-3 pl-2">
-        <AnimatePresence initial={!isInsideMobileNavigation}>
-          {isActiveGroup && (
-            <VisibleSectionHighlight group={group} pathname={router.pathname} />
-          )}
-        </AnimatePresence>
         <motion.div
           layout
           className="absolute inset-y-0 left-2 w-px bg-slate-900/10 dark:bg-white/5"
@@ -184,34 +224,6 @@ function NavigationGroup({ group, className = "" }) {
               >
                 {link.title}
               </NavLink>
-              <AnimatePresence mode="popLayout" initial={false}>
-                {link.href === router.pathname && sections.length > 0 && (
-                  <motion.ul
-                    role="list"
-                    initial={{ opacity: 0 }}
-                    animate={{
-                      opacity: 1,
-                      transition: { delay: 0.1 },
-                    }}
-                    exit={{
-                      opacity: 0,
-                      transition: { duration: 0.15 },
-                    }}
-                  >
-                    {sections.map((section) => (
-                      <li key={section.id}>
-                        <NavLink
-                          href={`${link.href}#${section.id}`}
-                          tag={section.tag}
-                          isAnchorLink
-                        >
-                          {section.title}
-                        </NavLink>
-                      </li>
-                    ))}
-                  </motion.ul>
-                )}
-              </AnimatePresence>
             </motion.li>
           ))}
         </ul>

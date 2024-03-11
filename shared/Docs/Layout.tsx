@@ -9,7 +9,7 @@ import { Footer } from "./Footer";
 import { Home } from "./Home";
 import { Header } from "./Header";
 import Logo from "../Icons/Logo";
-import { Navigation } from "./Navigation";
+import { Navigation, PageSidebar } from "./Navigation";
 import { Prose } from "./Prose";
 import { SectionProvider } from "./SectionProvider";
 import { useMobileNavigationStore } from "./MobileNavigation";
@@ -38,6 +38,8 @@ export type Props = {
   description?: string;
   /* Source file path for the current page */
   sourceFilePath?: string;
+  /* Whether to hide the right hand sidebar */
+  hidePageSidebar?: boolean;
 };
 
 export function Layout({
@@ -47,6 +49,7 @@ export function Layout({
   metaTitle,
   description,
   sourceFilePath,
+  hidePageSidebar,
 }: Props) {
   const siteTitle = `Inngest Documentation`;
   const preferredTitle: string = metaTitle || title || siteTitle;
@@ -98,11 +101,25 @@ export function Layout({
               <Header />
               <Navigation className="hidden lg:mt-6 lg:block" />
             </motion.header>
-            <div className="relative px-4 pt-14 sm:px-6 lg:px-8">
-              <main className="py-16">
+
+            {hidePageSidebar ? null : (
+              <motion.header
+                layoutScroll
+                className="fixed inset-y-0 my-14 pt-16 pb-12 right-0 z-40 hidden w-60 border-l border-slate-900/10 px-6 2xl:px-10 dark:border-white/10 xl:block 2xl:w-96"
+              >
+                <div className="pt-2">
+                  <PageSidebar />
+                </div>
+              </motion.header>
+            )}
+
+            <div className="relative px-4 pt-14 sm:px-6 lg:px-8 xl:pl-8 xl:pr-16 xl:mr-32 2xl:mr-10">
+              <main className="py-16 pr-20">
                 <Prose as="article">{children}</Prose>
               </main>
-              <Footer editPageURL={editPageURL} />
+              <div className={hidePageSidebar ? "" : "xl:pr-20 2xl:pr-80"}>
+                <Footer editPageURL={editPageURL} />
+              </div>
             </div>
           </div>
         </SectionProvider>
