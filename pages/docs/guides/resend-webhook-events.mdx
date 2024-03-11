@@ -2,6 +2,9 @@ export const description = 'Set up Resend webhooks with Inngest and use Resend e
 
 # Integrate email events with Resend webhooks
 
+![Resend logo](/assets/docs/guides/resend-webhook-events/featured-image.png)
+
+
 [Resend webhooks](https://resend.com/docs/dashboard/webhooks/introduction) can be used to build functionality into your application based on changes in the email status. In this guide, you will learn:
 
 - What webhook events are offered by Resend.
@@ -9,7 +12,7 @@ export const description = 'Set up Resend webhooks with Inngest and use Resend e
 - How to define Inngest functions in your application using Resend events.
 - How to build a dynamic drip marketing campaign which responds to a user's behavior.
 
-To follow this guide, you need a [Resend](https://resend.com/) and [Inngest](https://www.inngest.com/) accounts and have Inngest [set up](https://www.inngest.com/docs/quick-start) in your codebase.
+To follow this guide, you need a [Resend](https://resend.com/) and [Inngest](/) accounts and have Inngest [set up](/docs/quick-start) in your codebase.
 
 ## Resend webhooks
 
@@ -31,13 +34,13 @@ These events can be used to build responsive behavior based on changes in the em
 
 ### Building with Resend webhooks
 
-You can manage webhook events directly in your backend through an endpoint or you could use a tool like [Inngest](https://www.inngest.com/docs) which ensures reliable execution of functions in your codebase. Inngest comes with functionalities such as: 
+You can manage webhook events directly in your backend through an endpoint or you could use a tool like [Inngest](/docs) which ensures reliable execution of functions in your codebase. Inngest comes with functionalities such as: 
 
 - a built-in queue to execute longer-running functions reliably
-- [Controlling concurrency](https://www.inngest.com/docs/guides/concurrency) to handle spikes without overwhelming your API or database.
-- Executing multiple functions from a single event ([fan-out jobs](https://www.inngest.com/docs/guides/fan-out-jobs)).
-- Implementing [delayed code execution](https://www.inngest.com/docs/functions/multi-step) after a specified period.
-- [Debouncing events](https://www.inngest.com/docs/reference/functions/debounce) to minimize duplicate processing.
+- [Controlling concurrency](/docs/guides/concurrency) to handle spikes without overwhelming your API or database.
+- Executing multiple functions from a single event ([fan-out jobs](/docs/guides/fan-out-jobs)).
+- Implementing [delayed code execution](/docs/functions/multi-step) after a specified period.
+- [Debouncing events](/docs/reference/functions/debounce) to minimize duplicate processing.
 
 In short, using Inngest makes your application more resilient, scalable, and easier to recover from an incident.
 
@@ -57,7 +60,7 @@ You will now see your webhook page with the webhook URL at the top:
 
 ![A webhook page on Inngest Cloud.](/assets/docs/guides/resend-webhook-events/inngest-3-webhook-page.png)
 
-1. Paste the following [transform function](https://www.inngest.com/docs/platform/webhooks#defining-a-transform-function) into the **Transform Event** area:
+1. Paste the following [transform function](/docs/platform/webhooks#defining-a-transform-function) into the **Transform Event** area:
 
 ```jsx
 function transform(evt, headers = {}, queryParams = {}) {
@@ -99,7 +102,7 @@ Your webhook will be created but there will be no webhook events yet.
 
 Your Resend webhook is set up 🥳
 
-1. Now check your Inngest dashboard to see the **[Events](app.inngest.com/env/production/events)** page in Inngest Cloud:
+1. Now check your Inngest dashboard to see the **[Events](https://app.app.inngest.com/env/production/events)** page in Inngest Cloud:
 
 ![Events tab in Inngest Cloud featuring two events from Resend](/assets/docs/guides/resend-webhook-events/inngest-5-event-screen.png)
 
@@ -107,7 +110,7 @@ Congratulations! Now you have Resend events coming into Inngest. Next, you will 
 
 ## Writing your first Inngest function
 
-*Please note that this example assumes that you are using TypeScript and Next.js, and that you have already added Inngest to your project, but if you're using Inngest for the first time, you can follow the [Quickstart guide](https://www.inngest.com/docs/quick-start) to get it set up.*
+*Please note that this example assumes that you are using TypeScript and Next.js, and that you have already added Inngest to your project, but if you're using Inngest for the first time, you can follow the [Quickstart guide](/docs/quick-start) to get it set up.*
 
 With Inngest set up in your codebase, you can write a function that is triggered every time a specific event arrives. For example, if an email sent to an user bounces, you can mark the user's email invalid in your database:
 
@@ -115,16 +118,16 @@ With Inngest set up in your codebase, you can write a function that is triggered
 import db from "./database";
 
 const invalidateUserEmail = inngest.createFunction(
- { id: 'invalidate-user-email' },
- { event: 'resend/email.bounced' },
- async ({ event }) => {
-   const email = event.data.to[0];
-   const user = await db.users.byEmail(email);
-   if (user) {
-     user.email_status = "invalid";
-     await db.users.update(user);
-   }
- }
+  { id: 'invalidate-user-email' },
+  { event: 'resend/email.bounced' },
+  async ({ event }) => {
+    const email = event.data.to[0];
+    const user = await db.users.byEmail(email);
+    if (user) {
+      user.email_status = "invalid";
+      await db.users.update(user);
+    }
+  }
 )
 ```
 
@@ -144,9 +147,9 @@ import { Resend } from 'resend';
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function sendEmail(
-	to: string, 
-	subject: string, 
-	content: React.ReactElement
+  to: string, 
+  subject: string, 
+  content: React.ReactElement
 ) {
   const { data, error } = await resend.emails.send({
     from: 'Acme <noreply@acme.dev>',
@@ -173,15 +176,15 @@ The below example assumes that your application receives a `app/signup.completed
 import { sendEmail } from "./resend";
 
 const sendWelcomeEmail = inngest.createFunction(
- { id: 'send-welcome-email' },
- { event: 'app/signup.completed' },
- async ({ event }) => {
-	 const { user } = event.data;
-   await sendEmail(user.email, "Welcome to Acme", (
-     <div>
-       <h1>Welcome to ACME, {user.firstName}</h1>
-     </div>
-   ));
+  { id: 'send-welcome-email' },
+  { event: 'app/signup.completed' },
+  async ({ event }) => {
+	  const { user } = event.data;
+    await sendEmail(user.email, "Welcome to Acme", (
+      <div>
+        <h1>Welcome to ACME, {user.firstName}</h1>
+      </div>
+    ));
   }
 )
 ```
@@ -190,37 +193,37 @@ Now that we've mastered the basics of sending email with Resend from an Inngest 
 
 ## Sending a delayed follow-up email
 
-Every Inngest function handler comes with an additional [`step` object](https://www.inngest.com/docs/reference/functions/step-sleep-until) which provides tools to create more fine-grained functions. Using `step.run` allows you to encapsulate specific code that will be automatically retried ensuring that issues with one part of your function don't force the entire function to re-run. Additionally, [other tools like `step.sleep`](https://www.inngest.com/docs/reference/functions/step-sleep) are available to extend your app's functionality.
+Every Inngest function handler comes with an additional [`step` object](/docs/reference/functions/step-sleep-until) which provides tools to create more fine-grained functions. Using `step.run` allows you to encapsulate specific code that will be automatically retried ensuring that issues with one part of your function don't force the entire function to re-run. Additionally, [other tools like `step.sleep`](/docs/reference/functions/step-sleep) are available to extend your app's functionality.
 
 The code below sends a welcome email, then uses `step.sleep` to wait for three days before sending another email offering a free trial:
 
 ```tsx
 const sendOnboardingEmails = inngest.createFunction(
- { id: 'onboarding-emails' },
- { event: 'app/signup.completed' },
- async ({ event, step }) => { // ← step is available in the handler's arguments
-   const { user } = event.data
-	 const { email, first_name } = user
+  { id: 'onboarding-emails' },
+  { event: 'app/signup.completed' },
+  async ({ event, step }) => { // ← step is available in the handler's arguments
+    const { user } = event.data
+	  const { email, first_name } = user
 
-   await step.run('welcome-email', async () => {
-     await sendEmail(email, "Welcome to ACME", (
-       <div>
-         <h1>Welcome to ACME, {firstName}</h1>
-       </div>
-     ));
-   })
+    await step.run('welcome-email', async () => {
+      await sendEmail(email, "Welcome to ACME", (
+        <div>
+          <h1>Welcome to ACME, {firstName}</h1>
+        </div>
+      ));
+    })
  
    // wait 3 days before second email
    await step.sleep('wait-3-days', '3 days')
  
    await step.run('trial-offer-email', async () => {
      await sendEmail(email, "Free ACME Pro trial", (
-       <div>
-         <h1>Hello {firstName}, try our Pro features for 30 days for free</h1>
-       </div>
-     ));
-   })
- }
+        <div>
+          <h1>Hello {firstName}, try our Pro features for 30 days for free</h1>
+        </div>
+      ));
+    })
+  }
 )
 ```
 
