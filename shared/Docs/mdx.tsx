@@ -4,6 +4,7 @@ import clsx from "clsx";
 import { Heading } from "./Heading";
 import React, { useState } from "react";
 import { ChevronDown, ChevronUp } from "react-feather";
+import Image, { ImageProps } from "next/image";
 
 export { default as YouTube } from "react-youtube-embed";
 
@@ -321,6 +322,46 @@ export function VersionBadge({ version }: { version: `v${string}` }) {
   return (
     <div className="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-medium leading-4 bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-200">
       <span>{version}</span>
+    </div>
+  );
+}
+
+export function ImageTheme({
+  light,
+  dark,
+  alt,
+  ...imageProps
+}: ImageProps & {
+  light: string;
+  dark?: string;
+}) {
+  // if there's no dark mode image provided, invert the light mode
+  if (!dark) {
+    return (
+      <div>
+        <Image
+          src={light}
+          className="block dark:invert"
+          alt={alt}
+          {...imageProps}
+        />
+      </div>
+    );
+  }
+  return (
+    <div>
+      <Image
+        src={light}
+        className="block dark:hidden"
+        alt={alt}
+        {...imageProps}
+      />
+      <Image
+        src={dark}
+        className="hidden dark:block"
+        alt={alt}
+        {...imageProps}
+      />
     </div>
   );
 }
