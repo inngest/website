@@ -335,6 +335,7 @@ export function ImageTheme({
   light: string;
   dark?: string;
 }) {
+  // if there's no dark mode image provided, invert the light mode
   if (!dark) {
     return (
       <div>
