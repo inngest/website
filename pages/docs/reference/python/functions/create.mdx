@@ -133,7 +133,7 @@ The `create_function` decorator accepts a configuration and wraps a plain functi
   </Property>
 
   <Property name="trigger" type="TriggerEvent | TriggerCron | list[TriggerEvent | TriggerCron]" required>
-    What should trigger the function to run. Either an event or a cron schedule.
+    What should trigger the function to run. Either an event or a cron schedule. Use a list to specify multiple triggers.
   </Property>
 </Properties>
 
@@ -159,6 +159,24 @@ The `create_function` decorator accepts a configuration and wraps a plain functi
     A [unix-cron](https://crontab.guru/) compatible schedule string. <br/>Optional timezone prefix, e.g. `TZ=Europe/Paris 0 12 * * 5`.
   </Property>
 </Properties>
+
+### Multiple Triggers
+
+Multiple triggers can be defined by setting the `trigger` option to a list of `TriggerEvent` or `TriggerCron` objects:
+
+```py
+import inngest
+
+@inngest_client.create_function(
+    fn_id="import-product-images",
+    trigger=[
+      inngest.TriggerEvent(event="shop/product.imported"),
+      inngest.TriggerEvent(event="shop/product.updated"),
+    ],
+)
+async def fn(ctx: inngest.Context, step: inngest.Step):
+    # Your function code
+```
 
 ---
 
