@@ -132,7 +132,7 @@ The `create_function` decorator accepts a configuration and wraps a plain functi
     </Properties>
   </Property>
 
-  <Property name="trigger" type="TriggerEvent | TriggerCron" required>
+  <Property name="trigger" type="TriggerEvent | TriggerCron | list[TriggerEvent | TriggerCron]" required>
     What should trigger the function to run. Either an event or a cron schedule.
   </Property>
 </Properties>
