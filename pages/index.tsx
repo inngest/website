@@ -66,12 +66,12 @@ export default function Home() {
     >
       <Header />
 
-      <LaunchWeekBanner />
+      {/* <LaunchWeekBanner /> */}
 
       <Hero />
 
       <Logos
-        className="my-20 lg:my-36 mb-20 lg:mb-40 xl:mb-52"
+        className="my-20 mb-20 lg:mb-40 xl:mb-52"
         heading="Helping these teams deliver reliable products"
         logos={[
           {

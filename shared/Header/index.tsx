@@ -37,7 +37,7 @@ export default function Header() {
           <div
             className={classNames(
               menuState ? `bg-slate-900` : ``,
-              `md:bg-transparent flex items-center py-5 md:py-0 w-full md:w-auto px-8 md:px-0 justify-between`
+              `md:bg-transparent flex items-center py-5 md:py-0 w-full md:w-auto justify-between`
             )}
           >
             <a href="/" className="mr-4">
