@@ -187,8 +187,8 @@ const PLANS: Plan[] = [
     description: "Powerful access for any scale",
     cta: {
       href: "/contact?ref=pricing-enterprise",
-      text: "Speak with solutions engineering",
-      shortText: "Book a demo",
+      text: "Contact sales",
+      shortText: "Contact sales",
     },
     features: [
       {
