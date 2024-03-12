@@ -200,22 +200,24 @@ const Divider: React.FC<React.PropsWithChildren> = ({ children }) => {
 
 function EditPageLink({ url }: { url: string }) {
   return (
-    <Link
-      href={url}
-      className="flex space-x-2 font-medium text-indigo-600 hover:text-slate-800 hover:underline transition-all duration-150 dark:hover:text-white dark:text-indigo-400"
-    >
-      <PencilSquareIcon className="h-5" />
-      <span>Edit this page on GitHub</span>
-    </Link>
+    <div className="flex justify-center md:justify-start">
+      <Link
+        href={url}
+        className="flex space-x-2 font-medium text-indigo-600 hover:text-slate-800 hover:underline transition-all duration-150 dark:hover:text-white dark:text-indigo-400"
+      >
+        <PencilSquareIcon className="h-5" />
+        <span>Edit this page on GitHub</span>
+      </Link>
+    </div>
   );
 }
 
 function SmallPrint() {
   return (
     <Divider>
-      <p className="text-xs text-slate-600 dark:text-slate-400">
+      <div className="text-xs text-slate-600 dark:text-slate-400">
         &copy; {new Date().getFullYear()} Inngest Inc. All rights reserved.
-      </p>
+      </div>
       <SocialBadges />
     </Divider>
   );
@@ -225,7 +227,7 @@ export function Footer({ editPageURL }: { editPageURL: string }) {
   let router = useRouter();
 
   return (
-    <footer className="mx-auto max-w-2xl space-y-10 pb-16 lg:max-w-5xl">
+    <footer className="mx-auto max-w-2xl space-y-8 lg:max-w-5xl">
       <Feedback key={router.pathname} page={router.pathname} />
       <EditPageLink url={editPageURL} />
       <PageNavigation />

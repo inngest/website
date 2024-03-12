@@ -103,23 +103,29 @@ export function Layout({
             </motion.header>
 
             {hidePageSidebar ? null : (
-              <motion.header
+              <motion.nav
                 layoutScroll
-                className="fixed inset-y-0 my-14 pt-16 pb-12 right-0 z-40 hidden w-60 border-l border-slate-900/10 px-6 2xl:px-10 dark:border-white/10 xl:block 2xl:w-96"
+                className="fixed inset-y-0 mt-14 pt-16 pb-12 right-0 z-40 hidden w-60 border-l border-slate-900/10 px-6 2xl:px-10 dark:border-white/10 xl:block 2xl:w-96"
               >
                 <div className="pt-2">
                   <PageSidebar />
                 </div>
-              </motion.header>
+              </motion.nav>
             )}
 
             <div className="relative px-4 pt-14 sm:px-6 lg:px-8 xl:pl-8 xl:pr-16 xl:mr-32 2xl:mr-10">
-              <main className="py-16 pr-20">
-                <Prose as="article">{children}</Prose>
+              <main className="pt-16 xl:pr-16">
+                <Prose as="article">
+                  {children}
+                  <div
+                    className={
+                      hidePageSidebar ? "py-10" : "pt-10 pb-12 xl:pr-0"
+                    }
+                  >
+                    <Footer editPageURL={editPageURL} />
+                  </div>
+                </Prose>
               </main>
-              <div className={hidePageSidebar ? "" : "xl:pr-20 2xl:pr-80"}>
-                <Footer editPageURL={editPageURL} />
-              </div>
             </div>
           </div>
         </SectionProvider>
