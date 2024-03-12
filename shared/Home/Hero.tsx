@@ -11,13 +11,7 @@ import Container from "../layout/Container";
 export default function Hero() {
   return (
     <div className="overflow-x-hidden">
-      <Container
-        className={`
-          flex-col
-          font-heading font-['IBM Plex Sans']
-          overflow-y-hidden
-        `}
-      >
+      <Container className={`flex-col font-heading overflow-y-hidden`}>
         <div
           className={`
           relative z-20
