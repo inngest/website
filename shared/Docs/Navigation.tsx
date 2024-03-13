@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import clsx from "clsx";
@@ -10,6 +10,8 @@ import { useSectionStore } from "./SectionProvider";
 import { Tag } from "./Tag";
 import { remToPx } from "../../utils/remToPx";
 import { topLevelNav } from "./navigationStructure";
+import * as Accordion from "@radix-ui/react-accordion";
+import { ChevronDownIcon } from "@heroicons/react/24/outline";
 
 const BASE_DIR = "/docs";
 
@@ -183,7 +185,7 @@ export function PageSidebar() {
   );
 }
 // A nested navigation group of links that expand and follow
-function NavigationGroup({ group, className = "" }) {
+function NavigationGroup({ group, isActiveGroup, className = "" }) {
   // If this is the mobile navigation then we always render the initial
   // state, so that the state does not change during the close animation.
   // The state will still update when we re-open (re-render) the navigation.
@@ -193,42 +195,49 @@ function NavigationGroup({ group, className = "" }) {
     isInsideMobileNavigation
   );
 
-  let isActiveGroup =
-    group.links.findIndex((link) => link.href === router.pathname) !== -1;
-
   return (
-    <li className={clsx("relative mt-6", className)}>
-      <motion.h2
-        layout="position"
-        className="text-xs font-semibold text-slate-900 dark:text-white uppercase font-mono"
-      >
-        {group.title}
-      </motion.h2>
-      <div className="relative mt-3 pl-2">
-        <motion.div
-          layout
-          className="absolute inset-y-0 left-2 w-px bg-slate-900/10 dark:bg-white/5"
-        />
-        <AnimatePresence initial={false}>
-          {isActiveGroup && (
-            <ActivePageMarker group={group} pathname={router.pathname} />
-          )}
-        </AnimatePresence>
-        <ul role="list" className="border-l border-transparent">
-          {group.links.map((link) => (
-            <motion.li key={link.href} layout="position" className="relative">
-              <NavLink
-                href={link.href}
-                active={link.href === router.pathname}
-                className={link.className}
-              >
-                {link.title}
-              </NavLink>
-            </motion.li>
-          ))}
-        </ul>
-      </div>
-    </li>
+    <Accordion.Item value={group.title}>
+      <li className={clsx("relative mt-6", className)}>
+        <h2 className="flex justify-between text-xs font-semibold text-slate-900 dark:text-white uppercase font-mono">
+          {/* TODO: Make group title a link to group landing page */}
+          <span>{group.title}</span>
+          <Accordion.Trigger className="animate-accordion-trigger">
+            <ChevronDownIcon className="h-4 w-4" />
+          </Accordion.Trigger>
+        </h2>
+
+        <Accordion.Content className="animate-accordion">
+          <div className="relative mt-3 pl-2 overflow-hidden">
+            <motion.div
+              layout
+              className="absolute inset-y-0 left-2 w-px bg-slate-900/10 dark:bg-white/5"
+            />
+            <AnimatePresence initial={false}>
+              {isActiveGroup && (
+                <ActivePageMarker group={group} pathname={router.pathname} />
+              )}
+            </AnimatePresence>
+            <motion.ul role="list" className="border-l border-transparent">
+              {group.links.map((link) => (
+                <motion.li
+                  key={link.href}
+                  layout="position"
+                  className="relative"
+                >
+                  <NavLink
+                    href={link.href}
+                    active={link.href === router.pathname}
+                    className={link.className}
+                  >
+                    {link.title}
+                  </NavLink>
+                </motion.li>
+              ))}
+            </motion.ul>
+          </div>
+        </Accordion.Content>
+      </li>
+    </Accordion.Item>
   );
 }
 
@@ -267,6 +276,26 @@ export function Navigation(props) {
   const isNested = !!nestedSection;
   const nestedNavigation = nestedSection;
 
+  const activeGroup = useMemo(
+    () =>
+      nestedNavigation?.sectionLinks.find((group) =>
+        group.links.find((link) => link.href === router.pathname)
+      ),
+    [nestedNavigation]
+  );
+
+  const defaultOpenGroupTitles = useMemo(
+    () =>
+      (activeGroup
+        ? [activeGroup]
+        : nestedNavigation?.sectionLinks.filter((group) => group.defaultOpen)
+      )?.map((group) => group.title),
+    [activeGroup, nestedNavigation]
+  );
+
+  console.log("activeGroup", activeGroup);
+  console.log("defaultOpenGroupTitles", defaultOpenGroupTitles);
+
   return (
     <nav {...props}>
       {isNested && (
@@ -283,9 +312,18 @@ export function Navigation(props) {
               </span>
               {nestedNavigation.title}
             </li>
-            {nestedNavigation.sectionLinks.map((group, groupIndex) => (
-              <NavigationGroup key={group.title} group={group} />
-            ))}
+            <Accordion.Root
+              type="multiple"
+              defaultValue={defaultOpenGroupTitles}
+            >
+              {nestedNavigation.sectionLinks.map((group, groupIndex) => (
+                <NavigationGroup
+                  key={group.title}
+                  group={group}
+                  isActiveGroup={group.title === activeGroup?.title}
+                />
+              ))}
+            </Accordion.Root>
           </>
         ) : (
           topLevelNav.map((item, idx) =>

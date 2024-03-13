@@ -16,12 +16,15 @@ import { StatusIcon } from "src/shared/StatusWidget";
 type NavLink = {
   title: string;
   href: string;
+  className?: string;
 };
 // A group nested of nav links with a header
 type NavGroup = {
   title: string;
   icon?: React.FC<React.SVGProps<SVGSVGElement>>;
   links: (NavLink | NavSection)[];
+  /* Whether group should be open when there is no active group */
+  defaultOpen?: boolean;
 };
 // A nav section with a nested navigation section
 type NavSection = {
@@ -29,13 +32,15 @@ type NavSection = {
   icon?: React.FC<React.SVGProps<SVGSVGElement>>;
   href: string;
   matcher?: RegExp;
+  tag?: string;
+  target?: string;
   sectionLinks: {
     title: string;
     links: NavLink[];
   }[];
 };
 
-const sectionGettingStarted = [
+const sectionGettingStarted: NavGroup[] = [
   {
     title: "Quick start tutorials",
     links: [
@@ -64,9 +69,10 @@ const sectionGettingStarted = [
     ],
   },
 ];
-const sectionGuides = [
+const sectionGuides: NavGroup[] = [
   {
     title: "Patterns",
+    defaultOpen: true,
     links: [
       {
         title: "Background jobs",
@@ -158,9 +164,10 @@ const sectionGuides = [
   },
 ];
 
-const sectionPlatform = [
+const sectionPlatform: NavGroup[] = [
   {
     title: "Going to production",
+    defaultOpen: true,
     links: [
       {
         title: "Working with apps",
@@ -210,7 +217,7 @@ const sectionPlatform = [
   },
 ];
 
-const sectionTypeScriptReference = [
+const sectionTypeScriptReference: NavGroup[] = [
   {
     title: "Overview",
     // TODO - Allow this to be flattened w/ NavGroup
@@ -380,7 +387,7 @@ const sectionTypeScriptReference = [
   },
 ];
 
-const sectionPythonReference = [
+const sectionPythonReference: NavGroup[] = [
   {
     title: "Overview",
     // TODO - Allow this to be flattened w/ NavGroup
