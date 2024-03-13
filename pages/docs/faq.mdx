@@ -53,7 +53,15 @@ unreachable by our servers unless you [disable Deployment Protection](https://ve
 or, if you're on Vercel's Pro plan, [configure protection bypass](/docs/deploy/vercel#bypassing-deployment-protection).
 
 ## Why am I getting a `killed` error when running the Dev Server?
-This is likely an npx issue, which can be solved by running `rm -rf ~/.npm/_npx`. If the error still persist, please reach out to us on [our Discord](https://www.inngest.com/discord).
+The Inngest CLI binary may become corrupted, particularly during updates while
+being downloaded. Symptoms can also include the CLI giving no output or a
+`Segmentation fault`.
+
+Clear your npx cache by running `rm -rf ~/.npm/_npx`, or the cache of whichever
+package manager you're using to run the Dev Server (e.g. `pnpm prune`, `yarn
+cache clean`).
+
+If the error still persists, please reach out to us on [our Discord](https://www.inngest.com/discord).
 
 ## Why am I getting a `NON_DETERMINISTIC_FUNCTION` error?
 This is an error present in v2.x.x of the TypeScript SDK that can be thrown when a deployment changes a function in the middle of a run.
