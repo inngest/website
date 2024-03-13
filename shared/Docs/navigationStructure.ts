@@ -129,6 +129,10 @@ const sectionGuides = [
         title: "Writing expressions",
         href: `/docs/guides/writing-expressions`,
       },
+      {
+        title: "Using multiple triggers",
+        href: `/docs/guides/multiple-triggers`,
+      },
     ],
   },
   {
