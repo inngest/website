@@ -13,24 +13,23 @@ import TypeScriptIcon from "src/shared/Icons/TypeScript";
 import { StatusIcon } from "src/shared/StatusWidget";
 
 // A basic link in the nav
-type NavLink = {
+export type NavLink = {
   title: string;
   href: string;
   className?: string;
 };
 // A group nested of nav links with a header
-type NavGroup = {
+export type NavGroup = {
   title: string;
+  href?: string;
   icon?: React.FC<React.SVGProps<SVGSVGElement>>;
-  links: (NavLink | NavSection)[];
+  links: (NavGroup | NavLink | NavSection)[];
   /* Whether group should be open when there is no active group */
   defaultOpen?: boolean;
 };
 // A nav section with a nested navigation section
-type NavSection = {
-  title: string;
+export type NavSection = NavLink & {
   icon?: React.FC<React.SVGProps<SVGSVGElement>>;
-  href: string;
   matcher?: RegExp;
   tag?: string;
   target?: string;
@@ -173,11 +172,17 @@ const sectionPlatform: NavGroup[] = [
         title: "Working with apps",
         href: `/docs/apps/cloud`,
       },
-      { title: "Deploy: Vercel", href: `/docs/deploy/vercel` },
-      { title: "Deploy: Netlify", href: `/docs/deploy/netlify` },
       {
-        title: "Deploy: Cloudflare Pages",
-        href: `/docs/deploy/cloudflare`,
+        title: "Deployment targets",
+        defaultOpen: true,
+        links: [
+          { title: "Deploy: Vercel", href: `/docs/deploy/vercel` },
+          { title: "Deploy: Netlify", href: `/docs/deploy/netlify` },
+          {
+            title: "Deploy: Cloudflare Pages",
+            href: `/docs/deploy/cloudflare`,
+          },
+        ],
       },
     ],
   },

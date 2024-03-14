@@ -783,11 +783,11 @@ ul.check li {
   animation: accordionSlideUp 150ms ease-out;
 }
 
-.animate-accordion-trigger > svg {
+.animate-accordion-trigger svg {
   transition: transform 150ms ease-out;
 }
 
-.animate-accordion-trigger[data-state='open'] > svg {
+.animate-accordion-trigger[data-state='open'] svg {
   transform: rotate(180deg);
 }
 

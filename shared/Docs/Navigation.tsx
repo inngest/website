@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import clsx from "clsx";
@@ -9,7 +9,7 @@ import { useIsInsideMobileNavigation } from "./MobileNavigation";
 import { useSectionStore } from "./SectionProvider";
 import { Tag } from "./Tag";
 import { remToPx } from "../../utils/remToPx";
-import { topLevelNav } from "./navigationStructure";
+import { topLevelNav, type NavGroup } from "./navigationStructure";
 import * as Accordion from "@radix-ui/react-accordion";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
 
@@ -109,7 +109,7 @@ function VisibleSectionHighlight({ group, pathname }) {
     ? Math.max(1, visibleSections.length) * itemHeight
     : itemHeight;
   let top =
-    group.links.findIndex((link) => link.href === pathname) * itemHeight +
+    findPathIndex(group.links, pathname) * itemHeight +
     firstVisibleSectionIndex * itemHeight;
 
   return (
@@ -127,13 +127,13 @@ function VisibleSectionHighlight({ group, pathname }) {
 function ActivePageMarker({ group, pathname }) {
   let itemHeight = 28;
   let offset = remToPx(0.27);
-  let activePageIndex = group.links.findIndex((link) => link.href === pathname);
+  let activePageIndex = findPathIndex(group.links, pathname);
   let top = offset + activePageIndex * itemHeight;
 
   return (
     <motion.div
       layout
-      className="absolute left-2 h-[20px] w-px bg-indigo-500"
+      className="absolute h-[20px] w-px bg-indigo-500"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1, transition: { delay: 0.2 } }}
       exit={{ opacity: 0 }}
@@ -185,60 +185,108 @@ export function PageSidebar() {
   );
 }
 // A nested navigation group of links that expand and follow
-function NavigationGroup({ group, isActiveGroup, className = "" }) {
+function NavigationGroup({
+  group,
+  isActiveGroup = false,
+  isNestedGroup = false,
+  className = "",
+}: {
+  group: NavGroup;
+  isActiveGroup?: boolean;
+  isNestedGroup?: boolean;
+  className?: string;
+}) {
   // If this is the mobile navigation then we always render the initial
   // state, so that the state does not change during the close animation.
   // The state will still update when we re-open (re-render) the navigation.
   let isInsideMobileNavigation = useIsInsideMobileNavigation();
-  let [router, sections] = useInitialValue(
-    [useRouter(), useSectionStore((s) => s.sections)],
-    isInsideMobileNavigation
-  );
-
+  let [router] = useInitialValue([useRouter()], isInsideMobileNavigation);
   return (
     <Accordion.Item value={group.title}>
-      <li className={clsx("relative mt-6", className)}>
-        <h2 className="flex justify-between text-xs font-semibold text-slate-900 dark:text-white uppercase font-mono">
-          {/* TODO: Make group title a link to group landing page */}
-          <span>{group.title}</span>
-          <Accordion.Trigger className="animate-accordion-trigger">
+      <li
+        className={clsx("relative", className, {
+          "mt-2": isNestedGroup,
+          "mt-6": !isNestedGroup,
+        })}
+      >
+        <Accordion.Trigger className="w-full animate-accordion-trigger">
+          <h2
+            className={clsx("flex justify-between", { "ml-4": isNestedGroup })}
+          >
+            <span
+              className={clsx("text-slate-900 dark:text-white", {
+                "text-sm font-medium": isNestedGroup,
+                "text-xs font-semibold uppercase font-mono": !isNestedGroup,
+              })}
+            >
+              {/* TODO: Make group title a link to group landing page */}
+              {group.title}
+            </span>
             <ChevronDownIcon className="h-4 w-4" />
-          </Accordion.Trigger>
-        </h2>
+          </h2>
+        </Accordion.Trigger>
 
         <Accordion.Content className="animate-accordion">
-          <div className="relative mt-3 pl-2 overflow-hidden">
-            <motion.div
-              layout
-              className="absolute inset-y-0 left-2 w-px bg-slate-900/10 dark:bg-white/5"
-            />
+          <div
+            className={clsx(
+              "relative overflow-hidden",
+              isNestedGroup ? "mt-2" : "pl-2 mt-3"
+            )}
+          >
+            {!isNestedGroup && (
+              <motion.div
+                layout
+                className="absolute inset-y-0 left-2 w-px bg-slate-900/10 dark:bg-white/5"
+              />
+            )}
+
             <AnimatePresence initial={false}>
-              {isActiveGroup && (
+              {(isActiveGroup || isNestedGroup) && (
                 <ActivePageMarker group={group} pathname={router.pathname} />
               )}
             </AnimatePresence>
+
             <motion.ul role="list" className="border-l border-transparent">
-              {group.links.map((link) => (
-                <motion.li
-                  key={link.href}
-                  layout="position"
-                  className="relative"
-                >
-                  <NavLink
-                    href={link.href}
-                    active={link.href === router.pathname}
-                    className={link.className}
+              {group.links.map((link) =>
+                "links" in link ? (
+                  <Accordion.Root
+                    type="multiple"
+                    defaultValue={
+                      hasPath(link.links, router.pathname) ? [link.title] : []
+                    }
                   >
-                    {link.title}
-                  </NavLink>
-                </motion.li>
-              ))}
+                    <NavigationGroup group={link} isNestedGroup />
+                  </Accordion.Root>
+                ) : (
+                  <motion.li
+                    key={link.href}
+                    layout="position"
+                    className={clsx("relative", { "ml-3": isNestedGroup })}
+                  >
+                    <NavLink
+                      href={link.href}
+                      active={link.href === router.pathname}
+                      className={link.className}
+                    >
+                      {link.title}
+                    </NavLink>
+                  </motion.li>
+                )
+              )}
             </motion.ul>
           </div>
         </Accordion.Content>
       </li>
     </Accordion.Item>
   );
+}
+
+function findPathIndex(links: { href?: string }[], pathname: string) {
+  return links.findIndex((link) => link.href && link.href === pathname);
+}
+
+function hasPath(links: { href?: string }[], pathname: string) {
+  return findPathIndex(links, pathname) !== -1;
 }
 
 // Flatten the nested nav and get all nav sections w/ sectionLinks
@@ -260,9 +308,21 @@ function findRecursiveSectionLinkMatch(nav, pathname) {
     if (matcher?.test(pathname)) {
       return true;
     }
-    return !!sectionLinks?.find((item) => {
-      return item.links?.find((link) => link.href === pathname);
-    });
+
+    if (
+      sectionLinks?.find((item) => {
+        return (
+          hasPath(item.links, pathname) ||
+          item.links?.some(
+            (subgroup) => subgroup.links && hasPath(subgroup.links, pathname)
+          )
+        );
+      })
+    ) {
+      return true;
+    }
+
+    return false;
   });
 }
 // todo fix active on top level
@@ -279,9 +339,9 @@ export function Navigation(props) {
   const activeGroup = useMemo(
     () =>
       nestedNavigation?.sectionLinks.find((group) =>
-        group.links.find((link) => link.href === router.pathname)
+        hasPath(group.links, router.pathname)
       ),
-    [nestedNavigation]
+    [router.pathname, nestedNavigation]
   );
 
   const defaultOpenGroupTitles = useMemo(
@@ -292,9 +352,6 @@ export function Navigation(props) {
       )?.map((group) => group.title),
     [activeGroup, nestedNavigation]
   );
-
-  console.log("activeGroup", activeGroup);
-  console.log("defaultOpenGroupTitles", defaultOpenGroupTitles);
 
   return (
     <nav {...props}>
