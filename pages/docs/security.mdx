@@ -4,7 +4,7 @@ Security is a primary consideration when moving systems into production.  In thi
 
 ## Signing keys and SDK security
 
-Firstly, it's important to understand that in production all communication between Inngest and your servers is encrypted via TLS. The SDK also actively mitigates attacks by use of the signing key, a secret pre-shared key unique to each environment. By default, the signing key adds the following:
+Firstly, it's important to understand that in production all communication between Inngest and your servers is encrypted via TLS. The SDK also actively mitigates attacks by use of the [signing key](/docs/sdk/serve#signing-key), a secret pre-shared key unique to each environment. By default, the signing key adds the following:
 - **Authentication:** requests to your endpoint are authenticated, ensuring that they originate from Inngest. Inngest SDKs reject all requests that are not authenticated with the signing key.
 - **Replay attack prevention:** requests are signed with a timestamp embedded, and old requests are rejected, even if the requests are authenticated correctly.
 
@@ -29,7 +29,7 @@ Inngest runs functions automatically, based off of event data that you send to I
 - All data in `event.data.encrypted` is encrypted _before_ it leaves your servers. Inngest can never read data in this object.
 - All step output and function output is encrypted _before_ it leaves your servers. Inngest only receives the encrypted values, and can never read this data. Function state is sent fully encrypted to the SDKs. The SDKs decrypt data on your servers and then resume as usual.
 
-With this enabled, even in the case of unexpected issues your data is encrypted and secure. This Wgreatly improves the security posture for sensitive data.
+With this enabled, even in the case of unexpected issues your data is encrypted and secure. This greatly improves the security posture for sensitive data.
 
 ## Security practices, audits, and reports
 
