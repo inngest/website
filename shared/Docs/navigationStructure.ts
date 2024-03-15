@@ -549,6 +549,11 @@ export const topLevelNav = [
         href: `/docs/faq`,
       },
       {
+        title: "Security",
+        icon: CogIcon,
+        href: `/docs/security`,
+      },
+      {
         title: "Status Page",
         icon: StatusIcon,
         href: "https://status.inngest.com",
