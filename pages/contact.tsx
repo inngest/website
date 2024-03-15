@@ -52,7 +52,7 @@ export default function Contact() {
       );
       // GTM
       window.dataLayer?.push({
-        event: "contact_form_submitted",
+        event: "Sales Lead Form Submitted",
         ref,
         teamSize,
       });
