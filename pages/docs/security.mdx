@@ -13,7 +13,7 @@ Firstly, it's important to understand that in production all communication betwe
 ### Function registration + handshake
 
 Functions are defined and served on your own infrastructure using one of our SDKs. In order to run your functions, they must be [synced](/docs/apps/cloud), or registered, with your Inngest account. This is required for Inngest to know which functions your application is serving and the configuration of each function. Syncing functions is done via a secure handshake. Here's how the handshake works:
-1. After your SDK's endpoint is live, a PUT request to the endpoint initiates a secure handshake to the Inngest servers.
+1. After your SDK's endpoint is live, a PUT request to the endpoint initiates a secure handshake with the Inngest servers.
 2. The SDK sends function configuration to Inngest's API, with the signing key as a bearer token.
 3. The SDK idempotently updates your apps and functions. If there are no changes, nothing happens.
 
