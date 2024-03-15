@@ -50,6 +50,12 @@ export default function Contact() {
         },
         { key: CONTACT_KEY }
       );
+      // GTM
+      window.dataLayer.push({
+        event: "contact_form_submitted",
+        ref,
+        teamSize,
+      });
       setButtonCopy("Your message has been sent!");
     } catch (e) {
       console.warn("Message not sent");
@@ -131,8 +137,8 @@ export default function Contact() {
                   <option value="1">Just Me</option>
                   <option value="2-9">2-9</option>
                   <option value="10-30">10-20</option>
-                  <option value="10-30">20-99</option>
-                  <option value="10-30">100+</option>
+                  <option value="20-99">20-99</option>
+                  <option value="100+">100+</option>
                 </select>
               </label>
               <div className="mt-4 w-full flex flex-row justify-items-end">
