@@ -51,7 +51,7 @@ export default function Contact() {
         { key: CONTACT_KEY }
       );
       // GTM
-      window.dataLayer.push({
+      window.dataLayer?.push({
         event: "contact_form_submitted",
         ref,
         teamSize,
