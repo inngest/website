@@ -17,7 +17,7 @@ Functions are defined and served on your own infrastructure using one of our SDK
 2. The SDK sends function configuration to Inngest's API, with the signing key as a bearer token.
 3. The SDK idempotently updates your apps and functions. If there are no changes, nothing happens.
 
-This process is necessary for several reasons, largely as serverless environments are the lowest common denominator. Serverless environments have no default bootup/init process, which means serverless environments can't self-register. Secondly, serverless platforms such as AWS Lambda and Vercel create unique URLs for each function deployed, which can't be known ahead of time. The incoming PUT request allows the SDK to introspect the request's URL, which is then used for all function calls.
+This process is necessary for several reasons, largely as serverless environments are the lowest common denominator. Serverless environments have no default bootup/init process, which means serverless environments can't self-initiate the sync. Secondly, serverless platforms such as AWS Lambda and Vercel create unique URLs for each function deployed, which can't be known ahead of time. The incoming PUT request allows the SDK to introspect the request's URL, which is then used for all function calls.
 
 Note that because the SDK reaches out to inngest.com to register, it never leaks the signing key to clients attempting registration, keeping your key secure.
 
