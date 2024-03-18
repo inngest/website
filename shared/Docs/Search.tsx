@@ -526,7 +526,7 @@ export function Search() {
   }, []);
 
   return (
-    <div className="hidden lg:block lg:max-w-md lg:flex-auto">
+    <div className="hidden lg:block lg:max-w-min lg:flex-auto">
       <button
         type="button"
         className="hidden h-8 w-full items-center gap-2 rounded-full bg-white pl-2 pr-3 text-sm text-slate-500 ring-1 ring-slate-900/10 transition hover:ring-slate-900/20 dark:bg-white/5 dark:text-slate-400 dark:ring-inset dark:ring-white/10 dark:hover:ring-white/20 lg:flex focus:outline-none"

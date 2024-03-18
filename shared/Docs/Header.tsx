@@ -14,13 +14,24 @@ import { useMobileNavigationStore } from "./MobileNavigation";
 import { ModeToggle } from "./ModeToggle";
 import { MobileSearch, Search } from "./Search";
 import SocialBadges from "./SocialBadges";
+import { menuTabs } from "./navigationStructure";
+import { useRouter } from "next/router";
 
-function TopLevelNavItem({ href, children }) {
+function TabItem({ href, children, matcher }) {
+  const router = useRouter();
+  const pathname = router.pathname;
+  const isActive = matcher.test(pathname);
   return (
     <li>
       <a
         href={href}
-        className="text-sm leading-5 text-slate-600 transition hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+        className={clsx(
+          "text-sm leading-5 transition whitespace-nowrap p-4 relative top-[3px]",
+          isActive &&
+            "font-medium text-indigo-700 dark:text-white border-b dark:border-b-white border-b-indigo-700  hover:text-indigo-900",
+          !isActive &&
+            "text-slate-600  dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+        )}
       >
         {children}
       </a>
@@ -59,6 +70,15 @@ export const Header = forwardRef<HTMLDivElement>(function Header(
         } as any
       }
     >
+      <nav className="hidden lg:block mr-4">
+        <ul role="list" className="flex items-center">
+          {menuTabs.map((tab) => (
+            <TabItem key={tab.title} href={tab.href} matcher={tab.matcher}>
+              {tab.title}
+            </TabItem>
+          ))}
+        </ul>
+      </nav>
       <div
         className={clsx(
           "absolute inset-x-0 top-full h-px transition",

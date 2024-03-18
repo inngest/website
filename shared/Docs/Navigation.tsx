@@ -9,7 +9,7 @@ import { useIsInsideMobileNavigation } from "./MobileNavigation";
 import { useSectionStore } from "./SectionProvider";
 import { Tag } from "./Tag";
 import { remToPx } from "../../utils/remToPx";
-import { topLevelNav, type NavGroup } from "./navigationStructure";
+import { topLevelNav, menuTabs, type NavGroup } from "./navigationStructure";
 import * as Accordion from "@radix-ui/react-accordion";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
 

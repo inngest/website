@@ -485,6 +485,33 @@ const sectionPythonReference: NavGroup[] = [
   },
 ];
 
+export const menuTabs = [
+  {
+    title: "Getting started",
+    icon: PlayIcon,
+    href: "/docs/quick-start",
+    matcher: /\/quick-start/,
+  },
+  {
+    title: "Guides",
+    icon: GuideIcon,
+    href: "/docs/guides",
+    matcher: /\/guides/,
+  },
+  {
+    title: "Reference",
+    icon: CogIcon,
+    href: "/docs/reference",
+    matcher: /\/reference/,
+  },
+  {
+    title: "Examples",
+    icon: CogIcon,
+    href: "/docs/examples",
+    matcher: /\/examples/,
+  },
+];
+
 export const topLevelNav = [
   {
     title: "Home",
