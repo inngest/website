@@ -1,0 +1,56 @@
+[
+  {
+    "name": "Amazon Web Services",
+    "status": "ACTIVE",
+    "dataStored": "User and most of product data",
+    "notes": null
+  },
+  {
+    "name": "Amplitude",
+    "status": "ACTIVE",
+    "dataStored": "User profile and interactions on UIs",
+    "notes": null
+  },
+  {
+    "name": "Close",
+    "status": "ACTIVE",
+    "dataStored": "Potential and existing customers' sales contact",
+    "notes": null
+  },
+  {
+    "name": "Google Cloud",
+    "status": "ACTIVE",
+    "dataStored": "Some customer's customer related data (encrypted). Events and execution archives.",
+    "notes": null
+  },
+  {
+    "name": "Google Workspace",
+    "status": "ACTIVE",
+    "dataStored": "Email, calendar, documents (including confidential)",
+    "notes": null
+  },
+  {
+    "name": "Mailchimp",
+    "status": "ACTIVE",
+    "dataStored": "User email addresses",
+    "notes": null
+  },
+  {
+    "name": "Plain",
+    "status": "ACTIVE",
+    "dataStored": "Customer email communications and support chat communications.",
+    "notes": null
+  },
+  {
+    "name": "SavvyCal",
+    "status": "ACTIVE",
+    "dataStored": "Email and names for meeting scheduling purposes",
+    "notes": null
+  },
+  {
+    "name": "Slack",
+    "status": "ACTIVE",
+    "dataStored": "Customer support chats",
+    "notes": null
+  }
+]
