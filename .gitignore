@@ -35,3 +35,6 @@
 # Nix
 /.direnv/
 .env*.local
+
+# Creds
+.creds/
