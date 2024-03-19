@@ -12,6 +12,12 @@
     "notes": null
   },
   {
+    "name": "Clerk",
+    "status": "ACTIVE",
+    "dataStored": "User email, passwords and any information that are required for authentication",
+    "notes": null
+  },
+  {
     "name": "Close",
     "status": "ACTIVE",
     "dataStored": "Potential and existing customers' sales contact",
@@ -51,6 +57,12 @@
     "name": "Slack",
     "status": "ACTIVE",
     "dataStored": "Customer support chats",
+    "notes": null
+  },
+  {
+    "name": "Stripe",
+    "status": "ACTIVE",
+    "dataStored": "User email and names, used for billing purposes",
     "notes": null
   }
 ]
