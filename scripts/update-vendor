@@ -1,0 +1,5 @@
+#!/bin/bash
+
+curl -X GET \
+  'https://public-api.drata.com/public/vendors?limit=50' \
+  -H "Authorization: Bearer $DRATA_API_KEY" | jq '[.data[] | select(.hasPii == true) | {name,status,dataStored,notes}]' > data/vendors.json
