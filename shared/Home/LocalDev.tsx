@@ -69,7 +69,7 @@ export default function LocalDev({ className }: { className?: string }) {
           mt-14 w-full
           rounded-lg shadow-none m-auto scale-80 origin-center
           pointer-events-none
-          max-w-6xl
+          max-w-8xl
           border border-white/10
         `}
         />
