@@ -11,16 +11,21 @@ import Container from "../layout/Container";
 export default function Hero() {
   return (
     <div className="overflow-x-hidden">
-      <Container className={`flex-col font-heading overflow-y-hidden`}>
+      <Container
+        className={`
+          flex flex-col lg:flex-row gap-16 lg:items-center
+          font-heading overflow-y-hidden
+          my-12 lg:my-24
+        `}
+      >
         <div
           className={`
           relative z-20
-          max-w-[520px] md:max-w-[420px] lg:max-w-[520px]
-          mt-12 md:mt-24 mb-12
-          md:pb-12 lg:pb-36 xl:pb-48
+          sm:max-w-[520px] md:max-w-[600px] lg:max-w-[520px]
+          shrink-0
         `}
         >
-          <h1 className="pb-8 font-semibold text-3xl md:text-4xl lg:text-5xl bg-gradient-to-br from-white to-slate-300 bg-clip-text text-transparent">
+          <h1 className="pb-8 font-semibold text-4xl lg:text-5xl bg-gradient-to-br from-white to-slate-300 bg-clip-text text-transparent">
             Ship reliable products
           </h1>
           <div className="flex flex-col gap-6 font-normal text-base md:text-lg">
@@ -49,7 +54,7 @@ export default function Hero() {
                 Sign up for free
               </Link>
             </div>
-            <div className="sm:max-w-[320px] xl:max-w-none text-slate-300">
+            <div className="text-slate-300">
               <p className="mb-2">Everything you need including:</p>
               <ul className="flex flex-wrap gap-3">
                 {[
@@ -67,7 +72,18 @@ export default function Hero() {
             </div>
           </div>
         </div>
-        <div
+        <div className="shrink">
+          <img
+            src="/assets/homepage/hero/2024-mar-dev-server.png"
+            alt="Inngest Dev Server"
+            className={`
+              shrink
+              rounded-lg shadow-none border border-white/10
+              pointer-events-none
+            `}
+          />
+        </div>
+        {/* <div
           className={`
             flex-col relative md:absolute top-0 right-0 z-10
             flex justify-end items-start
@@ -102,7 +118,7 @@ export default function Hero() {
               w-[42%] md:w-3/5 lg:w-1/2 max-w-3xl min-w-[300px] sm:min-w-0
               rounded-lg shadow-sm border border-white/10`}
           />
-        </div>
+        </div> */}
       </Container>
     </div>
   );

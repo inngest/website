@@ -70,8 +70,10 @@ export default function Home() {
 
       <Hero />
 
+      <UseCases />
+
       <Logos
-        className="my-20 mb-20 lg:mb-40 xl:mb-52"
+        className="my-20 mb-20 lg:mb-32"
         heading="Helping these teams deliver reliable products"
         logos={[
           {
@@ -126,9 +128,7 @@ export default function Home() {
         }
       />
 
-      <UseCases />
-
-      <div className="my-32 lg:my-48">
+      <div className="my-24">
         <Quote
           text={`Inngest is an essential partner to Vercel's frontend cloud offering. It extends Vercel's DX and serverless operational model to a notoriously challenging yet crucial part of the stack: backend workflows and asynchronous process coordination.`}
           attribution={{

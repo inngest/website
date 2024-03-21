@@ -5,6 +5,7 @@ import clsx from "clsx";
 import Container from "../layout/Container";
 import Heading from "./Heading";
 import CodeWindow from "../CodeWindow";
+import { ArrowDownIcon } from "@heroicons/react/24/outline";
 
 const snippetDurableWorkflow = `
 export const processVideo = inngest.createFunction(
@@ -45,7 +46,7 @@ export const userWorkflow = inngest.createFunction(
       async () =>
         await llm.createCompletion({
           model: "gpt-3.5-turbo",
-          prompt: createAgentPrompt(similar),
+          prompt: createPromptForSummary(similar),
         });
       );
     await step.run("save-to-db", async () => {
@@ -53,6 +54,33 @@ export const userWorkflow = inngest.createFunction(
         requestID: event.data.requestID, data
       });
     });
+  }
+);
+`;
+
+const snippetAIAgent = `
+export const agent = inngest.createFunction(
+  fnOptions, fnListener,
+  async ({ event, step }) => {
+    const plan = await step.run("create-plan", async () => {
+      await llm.createCompletion({
+        model: "gpt-3.5-turbo",
+        prompt: createAgentPrompt(event.data.input),
+      });
+    });
+    const reviewed = await step.waitForEvent('approval', {
+      event: 'agent/plan.reviewed',
+      timeout: '1h',
+    });
+    if (!reviewed.data.approved) return { status: "rejected" }
+    const ctx = {};
+    for (let action of plan.actions) {
+      ctx[action.id] = await step.invoke('execute-action', {
+        function: ACTIONS[action.function],
+        data: ctx,
+      });
+    }
+    // ...
   }
 );
 `;
@@ -106,6 +134,46 @@ export const engine = inngest.createFunction(
 
 const content = [
   {
+    title: "LLM Chains",
+    content: (
+      <p>
+        Get your LLM apps running in production without the complexity of glue
+        code and additional infrastructure.
+      </p>
+    ),
+    bullets: [
+      <>Handle complex text-generation with chain-based post-processing.</>,
+      <>
+        Leverage Retrieval Augmented Generation (RAG) by querying vector stores
+        without complex interfaces and building ingestion functions.
+      </>,
+      <>Wrap steps to run exactly once to reduce extra, expensive API calls.</>,
+      <>Limit concurrency and prioritize jobs ahead of others</>,
+    ],
+    snippet: snippetAI,
+    href: "/ai?ref=homepage",
+  },
+  {
+    title: "AI Agents",
+    content: (
+      <p>
+        Build long-running autonomous agent functions that make decisions and
+        call other functions to complete complex tasks.
+      </p>
+    ),
+    bullets: [
+      <>
+        Define human-in-the-loop flows that wait for approval or additional
+        input.
+      </>,
+      <>Create functions that track state across actions</>,
+      <>Define actions as normal functions with built-in retries</>,
+      <>Build a system of multiple agents that work together</>,
+    ],
+    snippet: snippetAIAgent,
+    href: "/ai?ref=homepage",
+  },
+  {
     title: "Durable workflows",
     content: (
       <p>
@@ -126,25 +194,6 @@ const content = [
     ],
     snippet: snippetDurableWorkflow,
     href: "/uses/durable-workflows?ref=homepage",
-  },
-  {
-    title: "AI + LLMs",
-    content: (
-      <p>
-        Chain calls to LLMs or any AI API reliably without worrying about glue
-        code.
-      </p>
-    ),
-    bullets: [
-      <>Handle complex text-generation with chain-based post-processing.</>,
-      <>Wrap steps to run exactly once to reduce extra, expensive API calls.</>,
-      <>
-        Load data from databases and vector stores without complex interfaces or
-        adapters.
-      </>,
-    ],
-    snippet: snippetAI,
-    href: "/ai?ref=homepage",
   },
   {
     title: "Background jobs",
@@ -185,7 +234,7 @@ const content = [
 export default function UseCases() {
   return (
     <Container className="mt-12">
-      <Heading
+      {/* <Heading
         title="Ship the impossible. Today."
         lede={
           <>
@@ -194,7 +243,7 @@ export default function UseCases() {
           </>
         }
         className="text-center"
-      />
+      /> */}
 
       <UseCaseGrid />
 
@@ -207,8 +256,11 @@ function UseCaseGrid() {
   const [selected, setSelected] = useState(0);
   const selectedContent = content[selected];
   return (
-    <div>
-      <div className="mx-auto my-12 flex flex-wrap gap-x-4 gap-y-2 justify-center">
+    <div className="max-w-6xl mx-auto my-16">
+      <p className="text-slate-300 text-base md:text-lg">
+        Build powerful products without the complexity:
+      </p>
+      <div className="mx-auto my-6 flex flex-wrap gap-x-6 gap-y-2 justify-start">
         {content.map(({ title, content, bullets, href }, idx) => (
           <Option
             key={idx}
@@ -216,15 +268,29 @@ function UseCaseGrid() {
             onClick={() => setSelected(idx)}
           >
             {title}
+            <div
+              className={clsx(
+                `inline-flex ml-2 overflow-hidden w-0 transition-all outline-none`,
+                selected === idx && "w-4"
+              )}
+            >
+              <ArrowDownIcon className="h-4 w-4 inline" />
+            </div>
           </Option>
         ))}
       </div>
-      <div className="grid grid-rows-auto grid-cols-1 md:grid-cols-8 lg:grid-cols-7 p-px gap-px mt-12 mx-auto max-w-5xl rounded-md bg-gradient-to-tl from-green-800/60 via-orange-300/60 to-rose-900/60 shadow-[0_10px_100px_0_rgba(52,211,153,0.10)]">
-        <div className="flex flex-col gap-px md:col-span-4 md:rounded-tl-md">
-          <div className="p-8 grow md:rounded-tl-md bg-slate-1000">
+      <div
+        className={`
+        grid grid-rows-auto grid-cols-1 md:grid-cols-8 p-px gap-px mx-auto
+        rounded-md bg-gradient-to-tl from-green-800/60 via-orange-300/60 to-rose-900/60
+        transition-all
+        shadow-[0_10px_100px_0_rgba(52,211,153,0.20)]`}
+      >
+        <div className="flex flex-col md:col-span-4 md:rounded-tl-md">
+          <div className="flex flex-col gap-8 p-8 grow md:rounded-tl-md bg-slate-1000 ">
             {selectedContent.content}
-          </div>
-          <div className="p-8 grow bg-slate-1000">
+            {/* </div>
+          <div className="pb-8 grow bg-slate-1000"> */}
             <ul className="list-disc ml-4 flex flex-col grow gap-2">
               {selectedContent.bullets.map((b) => (
                 <li>{b}</li>
@@ -245,7 +311,7 @@ function UseCaseGrid() {
         </div>
 
         {/* The min height here is for the longest code snippet that we show */}
-        <div className="md:col-span-4 lg:col-span-3 md:min-h-[492px] md:rounded-r-md bg-slate-1000">
+        <div className="md:col-span-4 md:min-h-[492px] md:rounded-r-md bg-slate-1000">
           <CodeWindow
             snippet={selectedContent.snippet}
             className="border-0 bg-transparent"
@@ -261,8 +327,9 @@ function Option({ isSelected = false, onClick, children }) {
     <button
       onClick={onClick}
       className={clsx(
-        `px-4 py-2 rounded-full border text-white border border-slate-800 hover:border-slate-600 hover:bg-slate-500/10 whitespace-nowrap text-base sm:text-lg font-semibold`,
-        isSelected && "bg-slate-100 text-slate-900 hover:bg-slate-100/90"
+        `whitespace-nowrap text-base sm:text-lg md:text-xl xl:text-2xl font-semibold transition-all`,
+        `hover:underline hover:text-white/90`,
+        isSelected ? "text-white" : "text-slate-400"
       )}
     >
       {children}
