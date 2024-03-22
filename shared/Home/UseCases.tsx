@@ -138,7 +138,7 @@ const content = [
     content: (
       <p>
         Get your LLM apps running in production without the complexity of glue
-        code and additional infrastructure.
+        code or additional infrastructure.
       </p>
     ),
     bullets: [
@@ -147,8 +147,8 @@ const content = [
         Leverage Retrieval Augmented Generation (RAG) by querying vector stores
         without complex interfaces and building ingestion functions.
       </>,
-      <>Wrap steps to run exactly once to reduce extra, expensive API calls.</>,
-      <>Limit concurrency and prioritize jobs ahead of others</>,
+      <>Wrap steps to run exactly once to prevent unnecessary expensive API calls.</>,
+      <>Limit concurrency and prioritize jobs ahead of others.</>,
     ],
     snippet: snippetAI,
     href: "/ai?ref=homepage",
@@ -166,8 +166,8 @@ const content = [
         Define human-in-the-loop flows that wait for approval or additional
         input.
       </>,
-      <>Create functions that track state across actions</>,
-      <>Define actions as normal functions with built-in retries</>,
+      <>Create functions that track state across actions.</>,
+      <>Define actions as standard functions with built-in retries.</>,
       <>Build a system of multiple agents that work together</>,
     ],
     snippet: snippetAIAgent,
@@ -183,7 +183,7 @@ const content = [
       </p>
     ),
     bullets: [
-      <>Run steps in parallel or series or call a child workflow.</>,
+      <>Run steps in parallel or series, or call a child workflow.</>,
       <>
         Add durable sleep to pause your workflow for days or weeks at a time.
       </>,
