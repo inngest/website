@@ -506,8 +506,9 @@ function useSearchProps(): SearchProps {
     dialogProps: {
       open,
       setOpen(open) {
-        let { width, height } = buttonRef.current.getBoundingClientRect();
-        if (!open || (width !== 0 && height !== 0)) {
+        let { width, height } =
+          buttonRef.current?.getBoundingClientRect() ?? {};
+        if (!open || (width && height)) {
           setOpen(open);
         }
       },
@@ -515,6 +516,25 @@ function useSearchProps(): SearchProps {
   };
 }
 
+function SearchButton({ shortcutKey = null, ...buttonProps }) {
+  return (
+    <button
+      type="button"
+      className="flex h-8 w-full items-center gap-2 rounded-full bg-white pl-2 pr-3 text-sm text-slate-500 ring-1 ring-slate-900/10 transition hover:ring-slate-900/20 dark:bg-white/5 dark:text-slate-400 dark:ring-inset dark:ring-white/10 dark:hover:ring-white/20 focus:outline-none"
+      {...buttonProps}
+    >
+      <SearchIcon className="h-5 w-5 stroke-current" />
+      Search...
+      {shortcutKey ? (
+        <kbd className="ml-auto text-xs font-sans text-slate-500 dark:text-slate-400">
+          {shortcutKey}
+        </kbd>
+      ) : null}
+    </button>
+  );
+}
+
+/* Search input button in desktop mode */
 export function Search() {
   let [modifierKey, setModifierKey] = useState<string>();
   let { buttonProps, dialogProps } = useSearchProps();
@@ -527,23 +547,25 @@ export function Search() {
 
   return (
     <div className="hidden lg:block lg:max-w-sm lg:flex-auto">
-      <button
-        type="button"
-        className="hidden h-8 w-full items-center gap-2 rounded-full bg-white pl-2 pr-3 text-sm text-slate-500 ring-1 ring-slate-900/10 transition hover:ring-slate-900/20 dark:bg-white/5 dark:text-slate-400 dark:ring-inset dark:ring-white/10 dark:hover:ring-white/20 lg:flex focus:outline-none"
-        {...buttonProps}
-      >
-        <SearchIcon className="h-5 w-5 stroke-current" />
-        Search...
-        <kbd className="ml-auto text-xs font-sans text-slate-500 dark:text-slate-400">
-          {modifierKey}K
-        </kbd>
-      </button>
+      <SearchButton {...buttonProps} shortcutKey={`${modifierKey}K`} />
       <SearchDialog className="hidden lg:block" {...dialogProps} />
     </div>
   );
 }
 
+/* Search input button in mobile sidebar */
 export function MobileSearch() {
+  let { buttonProps, dialogProps } = useSearchProps();
+  return (
+    <div className="block lg:hidden flex-auto mb-4">
+      <SearchButton {...buttonProps} />
+      <SearchDialog className="block" {...dialogProps} />
+    </div>
+  );
+}
+
+/* Search icon */
+export function HeaderSearchIcon() {
   let { buttonProps, dialogProps } = useSearchProps();
 
   return (

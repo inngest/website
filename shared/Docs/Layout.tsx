@@ -89,7 +89,7 @@ export function Layout({
               layoutScroll
               className="fixed inset-y-0 mt-14 left-0 z-40 contents w-72 overflow-y-auto border-r border-slate-900/10 px-6 pt-4 pb-8 dark:border-white/10 lg:block xl:w-80"
             >
-              <Navigation className="hidden lg:mt-6 lg:block" />
+              <Navigation className="hidden lg:block" />
             </motion.header>
 
             {hidePageSidebar ? null : (
@@ -104,7 +104,7 @@ export function Layout({
             )}
 
             <div className="relative px-4 pt-14 sm:px-6 lg:px-8 xl:pl-8 xl:pr-16 xl:mr-32 2xl:mr-10">
-              <main className="pt-16 xl:pr-16">
+              <main className="pt-6 lg:pt-8 xl:pr-8">
                 <Prose as="article">
                   {children}
                   <div

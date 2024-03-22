@@ -51,6 +51,7 @@ const sectionGettingStarted: NavGroup[] = [
   },
   {
     title: "Learn the basics",
+    defaultOpen: true,
     links: [
       { title: "Installing the SDK", href: `/docs/sdk/overview` },
       { title: "Serving the API & Frameworks", href: `/docs/sdk/serve` },
@@ -73,19 +74,6 @@ const sectionGuides: NavGroup[] = [
     title: "Patterns",
     defaultOpen: true,
     links: [
-      { title: "Installing the SDK", href: `/docs/sdk/overview` },
-      { title: "Serving the API & Frameworks", href: `/docs/sdk/serve` },
-      { title: "Writing Functions", href: `/docs/functions` },
-      { title: "Sending Events", href: `/docs/events` },
-      {
-        title: "Multi-step Functions",
-        href: `/docs/functions/multi-step`,
-      },
-      { title: "Inngest Apps", href: `/docs/apps` },
-      {
-        title: "Local Development",
-        href: `/docs/local-development`,
-      },
       {
         title: "Background jobs",
         href: `/docs/guides/background-jobs`,
@@ -122,6 +110,7 @@ const sectionGuides: NavGroup[] = [
   },
   {
     title: "How to",
+    defaultOpen: true,
     links: [
       {
         title: "Error handling",
@@ -151,6 +140,7 @@ const sectionGuides: NavGroup[] = [
   },
   {
     title: "Use cases",
+    defaultOpen: true,
     links: [
       {
         title: "User-defined Workflows",
@@ -183,7 +173,7 @@ const sectionGuides: NavGroup[] = [
         href: `/docs/apps/cloud`,
       },
       {
-        title: "Deployment targets",
+        title: "Platform",
         defaultOpen: true,
         links: [
           { title: "Deploy: Vercel", href: `/docs/deploy/vercel` },
@@ -198,6 +188,7 @@ const sectionGuides: NavGroup[] = [
   },
   {
     title: "Inngest Cloud",
+    defaultOpen: true,
     links: [
       {
         title: "Working with environments",
@@ -219,6 +210,7 @@ const sectionGuides: NavGroup[] = [
   },
   {
     title: "Usage Limits",
+    defaultOpen: true,
     links: [
       {
         title: "Inngest Cloud",
@@ -242,7 +234,7 @@ const sectionPlatform: NavGroup[] = [
         href: `/docs/apps/cloud`,
       },
       {
-        title: "Deployment targets",
+        title: "Platform",
         defaultOpen: true,
         links: [
           { title: "Deploy: Vercel", href: `/docs/deploy/vercel` },
@@ -554,6 +546,295 @@ const sectionPythonReference: NavGroup[] = [
   },
 ];
 
+const sectionReference: NavGroup[] = [
+  {
+    title: "TypeScript SKD",
+    defaultOpen: true,
+    links: [
+      {
+        title: "Overview",
+        // TODO - Allow this to be flattened w/ NavGroup
+        links: [
+          {
+            title: "Introduction",
+            href: `/docs/reference/typescript`,
+          },
+        ],
+      },
+      {
+        title: "Inngest Client",
+        links: [
+          {
+            title: "Create the client",
+            href: `/docs/reference/client/create`,
+          },
+        ],
+      },
+      {
+        title: "Functions",
+        links: [
+          {
+            title: "Create function",
+            href: `/docs/reference/functions/create`,
+          },
+          {
+            title: "Errors",
+            href: `/docs/reference/typescript/functions/errors`,
+          },
+          {
+            title: "Handling failures",
+            href: `/docs/reference/functions/handling-failures`,
+          },
+          {
+            title: "Cancel running functions",
+            href: `/docs/functions/cancellation`,
+            // href: `/docs/reference/functions/cancel-running-functions`,
+          },
+          {
+            title: "Concurrency",
+            href: `/docs/functions/concurrency`,
+            // href: `/docs/reference/functions/concurrency`,
+          },
+          {
+            title: "Rate limit",
+            href: `/docs/reference/functions/rate-limit`,
+          },
+          {
+            title: "Debounce",
+            href: `/docs/reference/functions/debounce`,
+          },
+          {
+            title: "Function run priority",
+            href: `/docs/reference/functions/run-priority`,
+          },
+          // {
+          //   title: "Logging",
+          //   href: `/docs/reference/functions/logging`,
+          // },
+          {
+            title: "Referencing functions",
+            href: `/docs/functions/references`,
+          },
+        ],
+      },
+      {
+        title: "Steps",
+        links: [
+          {
+            title: "step.run()",
+            href: `/docs/reference/functions/step-run`,
+            className: "font-mono",
+          },
+          {
+            title: "step.sleep()",
+            href: `/docs/reference/functions/step-sleep`,
+            className: "font-mono",
+          },
+          {
+            title: "step.sleepUntil()",
+            href: `/docs/reference/functions/step-sleep-until`,
+            className: "font-mono",
+          },
+          {
+            title: "step.invoke()",
+            href: `/docs/reference/functions/step-invoke`,
+            className: "font-mono",
+          },
+          {
+            title: "step.waitForEvent()",
+            href: `/docs/reference/functions/step-wait-for-event`,
+            className: "font-mono",
+          },
+          {
+            title: "step.sendEvent()",
+            href: `/docs/reference/functions/step-send-event`,
+            className: "font-mono",
+          },
+        ],
+      },
+      {
+        title: "Events",
+        links: [
+          {
+            title: "Send",
+            href: `/docs/reference/events/send`,
+          },
+        ],
+      },
+      {
+        title: "Serve",
+        links: [
+          // {
+          //   title: "Framework handlers",
+          //   href: `/docs/sdk/serve`,
+          // },
+          {
+            title: "Configuration",
+            href: `/docs/reference/serve`,
+          },
+          { title: "Streaming", href: `/docs/streaming` },
+        ],
+      },
+      {
+        title: "Middleware",
+        links: [
+          {
+            title: "Overview",
+            href: `/docs/reference/middleware/overview`,
+          },
+          {
+            title: "Creating middleware",
+            href: `/docs/reference/middleware/create`,
+          },
+          {
+            title: "Lifecycle",
+            href: `/docs/reference/middleware/lifecycle`,
+          },
+          {
+            title: "Examples",
+            href: `/docs/reference/middleware/examples`,
+          },
+          {
+            title: "TypeScript",
+            href: `/docs/reference/middleware/typescript`,
+          },
+        ],
+      },
+      {
+        title: "Using the SDK",
+        links: [
+          {
+            title: "Environment variables",
+            href: `/docs/sdk/environment-variables`,
+          },
+          {
+            title: "Using TypeScript",
+            href: `/docs/typescript`,
+          },
+          {
+            title: "ESLint plugin",
+            href: `/docs/sdk/eslint`,
+          },
+          { title: "Upgrading to v3", href: `/docs/sdk/migration` },
+        ],
+      },
+    ],
+  },
+  {
+    title: "Python SDK",
+    links: [
+      {
+        title: "Overview",
+        // TODO - Allow this to be flattened w/ NavGroup
+        links: [
+          {
+            title: "Introduction",
+            href: `/docs/reference/python`,
+          },
+          {
+            title: "Quick start",
+            href: `/docs/reference/python/overview/quick-start`,
+          },
+          {
+            title: "Environment variables",
+            href: `/docs/reference/python/overview/env-vars`,
+          },
+          {
+            title: "Production mode",
+            href: `/docs/reference/python/overview/prod-mode`,
+          },
+        ],
+      },
+      {
+        title: "Client",
+        links: [
+          {
+            title: "Overview",
+            href: `/docs/reference/python/client/overview`,
+          },
+          {
+            title: "Send events",
+            href: `/docs/reference/python/client/send`,
+          },
+        ],
+      },
+      {
+        title: "Functions",
+        links: [
+          {
+            title: "Create function",
+            href: `/docs/reference/python/functions/create`,
+          },
+        ],
+      },
+      {
+        title: "Steps",
+        links: [
+          {
+            title: "invoke",
+            href: `/docs/reference/python/steps/invoke`,
+          },
+          {
+            title: "invoke_by_id",
+            href: `/docs/reference/python/steps/invoke_by_id`,
+          },
+          {
+            title: "parallel",
+            href: `/docs/reference/python/steps/parallel`,
+          },
+          {
+            title: "run",
+            href: `/docs/reference/python/steps/run`,
+          },
+          {
+            title: "send_event",
+            href: `/docs/reference/python/steps/send-event`,
+          },
+          {
+            title: "sleep",
+            href: `/docs/reference/python/steps/sleep`,
+          },
+          {
+            title: "sleep_until",
+            href: `/docs/reference/python/steps/sleep-until`,
+          },
+          {
+            title: "wait_for_event",
+            href: `/docs/reference/python/steps/wait-for-event`,
+          },
+        ],
+      },
+      {
+        title: "Middleware",
+        links: [
+          {
+            title: "Overview",
+            href: `/docs/reference/python/middleware/overview`,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    title: "Go SDK",
+    links: [
+      {
+        title: "Documentation",
+        href: "https://pkg.go.dev/github.com/inngest/inngestgo",
+      },
+    ],
+  },
+  {
+    title: "REST API",
+    links: [
+      {
+        title: "Documentation",
+        href: "https://api-docs.inngest.com/docs/inngest-api/1j9i5603g5768-introduction",
+      },
+    ],
+  },
+];
+
 export const menuTabs = [
   {
     title: "Getting started",
@@ -573,12 +854,13 @@ export const menuTabs = [
     href: "/docs/reference",
     matcher: /\/reference/,
   },
-  {
-    title: "Examples",
-    icon: CogIcon,
-    href: "/docs/examples",
-    matcher: /\/examples/,
-  },
+  // will add this in the future
+  // {
+  //   title: "Examples",
+  //   icon: CogIcon,
+  //   href: "/docs/examples",
+  //   matcher: /\/examples/,
+  // },
 ];
 
 export const topLevelNav = [
@@ -599,6 +881,13 @@ export const topLevelNav = [
     href: "/docs/guides",
     matcher: /\/guides/,
     sectionLinks: sectionGuides,
+  },
+  {
+    title: "Reference",
+    icon: CogIcon,
+    href: "/docs/reference",
+    matcher: /\/reference/,
+    sectionLinks: sectionReference,
   },
   {
     title: "Platform",

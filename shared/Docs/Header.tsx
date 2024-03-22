@@ -1,5 +1,4 @@
 import { forwardRef } from "react";
-import Link from "next/link";
 import clsx from "clsx";
 import { motion, useScroll, useTransform } from "framer-motion";
 
@@ -12,32 +11,9 @@ import {
 } from "./MobileNavigation";
 import { useMobileNavigationStore } from "./MobileNavigation";
 import { ModeToggle } from "./ModeToggle";
-import { MobileSearch, Search } from "./Search";
-import SocialBadges from "./SocialBadges";
+import { HeaderSearchIcon, Search } from "./Search";
 import { menuTabs } from "./navigationStructure";
-import { useRouter } from "next/router";
-
-function TabItem({ href, children, matcher }) {
-  const router = useRouter();
-  const pathname = router.pathname;
-  const isActive = matcher.test(pathname);
-  return (
-    <li>
-      <a
-        href={href}
-        className={clsx(
-          "text-sm leading-5 transition whitespace-nowrap px-3 py-4 relative top-[3px]",
-          isActive &&
-            "font-medium text-indigo-700 dark:text-white border-b dark:border-b-white border-b-indigo-700  hover:text-indigo-900",
-          !isActive &&
-            "text-slate-600  dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-        )}
-      >
-        <span className="relative -top-[2px]">{children}</span>
-      </a>
-    </li>
-  );
-}
+import { TabItem } from "./Navigation";
 
 function Separator() {
   return (
@@ -115,20 +91,11 @@ export const Header = forwardRef<HTMLDivElement>(function Header(
               "bg-slate-900/7.5 dark:bg-white/7.5"
           )}
         />
-        <Search />
+
+        {!isInsideMobileNavigation && <Search />}
 
         <div className="flex items-center gap-4">
-          {/* <div className="hidden lg:block mr-3">
-            <SocialBadges />
-          </div> */}
           <div className="hidden sm:flex items-center gap-4">
-            {/* <Button
-              href={process.env.NEXT_PUBLIC_SIGNIN_URL}
-              size="sm"
-              variant="secondary"
-            >
-              Sign In
-            </Button> */}
             <Button
               href={`${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=docs-header`}
               size="sm"
@@ -139,7 +106,7 @@ export const Header = forwardRef<HTMLDivElement>(function Header(
           </div>
           <Separator />
           <div className="flex gap-2">
-            {/* <MobileSearch /> */}
+            <HeaderSearchIcon />
             <ModeToggle />
           </div>
         </div>

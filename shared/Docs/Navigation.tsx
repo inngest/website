@@ -12,6 +12,7 @@ import { remToPx } from "../../utils/remToPx";
 import { topLevelNav, menuTabs, type NavGroup } from "./navigationStructure";
 import * as Accordion from "@radix-ui/react-accordion";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
+import { MobileSearch } from "./Search";
 
 const BASE_DIR = "/docs";
 
@@ -20,15 +21,45 @@ function useInitialValue(value, condition = true) {
   return condition ? initialValue : value;
 }
 
-function TopLevelNavItem({ href, children }) {
+function TopLevelNavItem({ href, matcher, title, icon: Icon }) {
+  const router = useRouter();
+  const pathname = router.pathname;
+  const isActive = matcher.test(pathname);
   return (
-    <li className="lg:hidden">
-      <Link
-        href={href}
-        className="block py-1 text-sm text-slate-600 transition hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+    <NavLink href={href} isTopLevel={true}>
+      <span
+        className={clsx(
+          "flex flex-row py-1 gap-4 items-center",
+          isActive && "font-bold text-indigo-600"
+        )}
       >
-        {children}
-      </Link>
+        {Icon && (
+          <Icon className="w-5 h-5 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200" />
+        )}
+        {title}
+      </span>
+    </NavLink>
+  );
+}
+
+export function TabItem({ href, children, matcher }) {
+  const router = useRouter();
+  const pathname = router.pathname;
+  const isActive = matcher.test(pathname);
+  return (
+    <li>
+      <a
+        href={href}
+        className={clsx(
+          "text-sm leading-5 transition whitespace-nowrap px-3 py-4 relative top-0.5",
+          isActive &&
+            "font-medium text-indigo-700 dark:text-white border-b dark:border-b-white border-b-indigo-700  hover:text-indigo-900",
+          !isActive &&
+            "text-slate-600  dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+        )}
+      >
+        <span className="relative -top-0.5">{children}</span>
+      </a>
     </li>
   );
 }
@@ -206,7 +237,7 @@ function NavigationGroup({
       <li
         className={clsx("relative", className, {
           "mt-2": isNestedGroup,
-          "mt-6": !isNestedGroup,
+          "mt-4": !isNestedGroup,
         })}
       >
         <Accordion.Trigger className="w-full animate-accordion-trigger">
@@ -346,29 +377,37 @@ export function Navigation(props) {
 
   const defaultOpenGroupTitles = useMemo(
     () =>
-      (activeGroup
-        ? [activeGroup]
-        : nestedNavigation?.sectionLinks.filter((group) => group.defaultOpen)
-      )?.map((group) => group.title),
+      [
+        activeGroup,
+        ...(nestedNavigation?.sectionLinks.filter(
+          (group) => group.defaultOpen
+        ) ?? []),
+      ]
+        .filter(Boolean)
+        .map((group) => group.title),
     [activeGroup, nestedNavigation]
   );
 
   return (
     <nav {...props}>
-      {isNested && (
-        <NavLink href={BASE_DIR} className="pl-0 text-xs uppercase font-mono">
-          ← Back to docs home
-        </NavLink>
-      )}
+      <MobileSearch />
+
+      <ul role="list" className="flex lg:hidden flex-col">
+        {menuTabs.map((tab, idx) => (
+          <li key={idx}>
+            <TopLevelNavItem
+              href={tab.href}
+              matcher={tab.matcher}
+              icon={tab.icon}
+              title={tab.title}
+            />
+          </li>
+        ))}
+      </ul>
+
       <ul role="list" className={!isNested ? "flex flex-col gap-2" : undefined}>
         {nestedNavigation ? (
           <>
-            <li className="mt-6 mb-4 flex gap-2 items-center text-base font-semibold text-slate-900 dark:text-white">
-              <span className="p-0.5">
-                <nestedNavigation.icon className="w-5 h-5 text-slate-400" />
-              </span>
-              {nestedNavigation.title}
-            </li>
             <Accordion.Root
               type="multiple"
               defaultValue={defaultOpenGroupTitles}
@@ -384,18 +423,7 @@ export function Navigation(props) {
           </>
         ) : (
           topLevelNav.map((item, idx) =>
-            item.href ? (
-              <li key={idx}>
-                <NavLink href={item.href} key={idx} isTopLevel={true}>
-                  <span className="flex flex-row gap-3 items-center">
-                    {item.icon && (
-                      <item.icon className="w-5 h-5 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200" />
-                    )}
-                    {item.title}
-                  </span>
-                </NavLink>
-              </li>
-            ) : (
+            item.href ? null : (
               <li className="mt-6" key={idx}>
                 <h2 className="text-xs font-semibold text-slate-900 dark:text-white uppercase">
                   {item.title}
