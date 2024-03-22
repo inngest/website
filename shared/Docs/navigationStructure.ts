@@ -73,6 +73,19 @@ const sectionGuides: NavGroup[] = [
     title: "Patterns",
     defaultOpen: true,
     links: [
+      { title: "Installing the SDK", href: `/docs/sdk/overview` },
+      { title: "Serving the API & Frameworks", href: `/docs/sdk/serve` },
+      { title: "Writing Functions", href: `/docs/functions` },
+      { title: "Sending Events", href: `/docs/events` },
+      {
+        title: "Multi-step Functions",
+        href: `/docs/functions/multi-step`,
+      },
+      { title: "Inngest Apps", href: `/docs/apps` },
+      {
+        title: "Local Development",
+        href: `/docs/local-development`,
+      },
       {
         title: "Background jobs",
         href: `/docs/guides/background-jobs`,
@@ -158,6 +171,62 @@ const sectionGuides: NavGroup[] = [
       {
         title: "Instrumenting GraphQL",
         href: `/docs/guides/instrumenting-graphql`,
+      },
+    ],
+  },
+  {
+    title: "Going to production",
+    defaultOpen: true,
+    links: [
+      {
+        title: "Working with apps",
+        href: `/docs/apps/cloud`,
+      },
+      {
+        title: "Deployment targets",
+        defaultOpen: true,
+        links: [
+          { title: "Deploy: Vercel", href: `/docs/deploy/vercel` },
+          { title: "Deploy: Netlify", href: `/docs/deploy/netlify` },
+          {
+            title: "Deploy: Cloudflare Pages",
+            href: `/docs/deploy/cloudflare`,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    title: "Inngest Cloud",
+    links: [
+      {
+        title: "Working with environments",
+        href: `/docs/platform/environments`,
+      },
+      {
+        title: "Creating an event key",
+        href: `/docs/events/creating-an-event-key`,
+      },
+      {
+        title: "Consuming webhook events",
+        href: `/docs/platform/webhooks`,
+      },
+      {
+        title: "Replaying functions",
+        href: `/docs/platform/replay`,
+      },
+    ],
+  },
+  {
+    title: "Usage Limits",
+    links: [
+      {
+        title: "Inngest Cloud",
+        href: `/docs/usage-limits/inngest`,
+      },
+      {
+        title: "Serverless providers",
+        href: `/docs/usage-limits/providers`,
       },
     ],
   },
