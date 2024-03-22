@@ -145,9 +145,12 @@ const content = [
       <>Handle complex text-generation with chain-based post-processing.</>,
       <>
         Leverage Retrieval Augmented Generation (RAG) by querying vector stores
-        without complex interfaces and building ingestion functions.
+        and building ingestion functions.
       </>,
-      <>Wrap steps to run exactly once to prevent unnecessary expensive API calls.</>,
+      <>
+        Wrap steps to run exactly once to prevent unnecessary expensive API
+        calls.
+      </>,
       <>Limit concurrency and prioritize jobs ahead of others.</>,
     ],
     snippet: snippetAI,
@@ -168,7 +171,10 @@ const content = [
       </>,
       <>Create functions that track state across actions.</>,
       <>Define actions as standard functions with built-in retries.</>,
-      <>Build a system of multiple agents that work together</>,
+      <>
+        Build a system of multiple agents that <em>collaborate</em> with each
+        other.
+      </>,
     ],
     snippet: snippetAIAgent,
     href: "/ai?ref=homepage",
