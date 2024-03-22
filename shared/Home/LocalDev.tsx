@@ -49,17 +49,6 @@ export default function LocalDev({ className }: { className?: string }) {
             </Link>
           </div>
         </div>
-        {/* <img
-          src="/assets/homepage/dev-server-screenshot.jpg"
-          alt="Inngest Dev Server Screenshot"
-          className={`
-          mt-14 w-full
-          rounded-lg shadow-none m-auto scale-80 origin-center
-          pointer-events-none
-          max-w-6xl
-          border border-white/10
-        `}
-        /> */}
         <video
           src="/assets/homepage/video/2024-mar-dev-server-4k.mp4"
           autoPlay

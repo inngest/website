@@ -83,42 +83,6 @@ export default function Hero() {
             `}
           />
         </div>
-        {/* <div
-          className={`
-            flex-col relative md:absolute top-0 right-0 z-10
-            flex justify-end items-start
-            w-full
-            md:w-[calc(100%-420px-5rem)] lg:w-[calc(100%-520px-8rem)]
-            max-w-[920px]
-            mt-12 md:mt-24
-            md:translate-y-[5%] lg:translate-y-[-1%] xl:translate-y-[-4%]
-          `}
-          style={{}}
-        >
-          <video
-            src="/assets/homepage/hero/dev-server-mar-2024-pop-open.mp4"
-            muted
-            autoPlay
-            loop
-            className={`
-              relative z-10 self-end
-              w-[90%] xl:w-4/5
-              mr-1
-              origin-top-right
-              rounded-lg shadow-none border border-white/10
-              pointer-events-none`}
-          />
-          <img
-            src="/assets/homepage/hero/agent-function.png"
-            alt="Inngest Function"
-            className={`
-              relative XX-top-12 XXXsm:-top-3 XXXlg:-top-12
-              left-0 z-20
-              translate-y-[-20%] sm:translate-y-[-20%] lg:translate-y-[-40%]
-              w-[42%] md:w-3/5 lg:w-1/2 max-w-3xl min-w-[300px] sm:min-w-0
-              rounded-lg shadow-sm border border-white/10`}
-          />
-        </div> */}
       </Container>
     </div>
   );
