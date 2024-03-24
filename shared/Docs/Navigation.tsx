@@ -48,7 +48,7 @@ export function TabItem({ href, children, matcher }) {
   const isActive = matcher.test(pathname);
   return (
     <li>
-      <a
+      <Link
         href={href}
         className={clsx(
           "text-sm leading-5 transition whitespace-nowrap px-3 py-4 relative top-0.5",
@@ -59,7 +59,7 @@ export function TabItem({ href, children, matcher }) {
         )}
       >
         <span className="relative -top-0.5">{children}</span>
-      </a>
+      </Link>
     </li>
   );
 }
