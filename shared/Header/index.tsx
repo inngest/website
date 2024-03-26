@@ -37,7 +37,7 @@ export default function Header() {
           <div
             className={classNames(
               menuState ? `bg-slate-900` : ``,
-              `md:bg-transparent flex items-center py-5 md:py-0 w-full md:w-auto px-8 md:px-0 justify-between`
+              `md:bg-transparent flex items-center py-5 md:py-0 w-full md:w-auto justify-between`
             )}
           >
             <a href="/" className="mr-4">
@@ -122,7 +122,7 @@ export default function Header() {
                 </li>
               </ul>
             </div>
-            <div className="px-8 md:px-10 py-8 md:py-0 flex gap-6 items-center md:w-1/3 md:justify-end flex-shrink-0">
+            <div className="pl-8 md:pl-10 py-8 md:py-0 flex gap-6 items-center md:w-1/3 md:justify-end flex-shrink-0">
               <a
                 href={`${process.env.NEXT_PUBLIC_SIGNIN_URL}?ref=nav`}
                 className="text-white font-medium text-sm  hover:opacity-60 duration-150 transition-all flex-shrink-0"
