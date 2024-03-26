@@ -64,11 +64,12 @@ export default function Logos({
                     "border-slate-700 hover:border-slate-600",
                   variant === "light" &&
                     "border-slate-200 hover:border-slate-300",
+                  "col-span-2 ",
                   featured && "col-span-2",
                   !featured &&
                     nonFeaturedCount % 2 == 1 &&
                     idx === logos.length - 1 &&
-                    "col-span-2 lg:col-span-2" // center the last item if there is an odd number
+                    "lg:col-span-2" // center the last item if there is an odd number
                 )}
               >
                 <Image
