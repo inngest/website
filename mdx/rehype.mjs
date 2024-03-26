@@ -55,7 +55,8 @@ export function rehypeShiki() {
   };
 }
 
-const tagsToAddIds = ["h2", "h3", "h4"];
+const tagsToAddIds = ["h1", "h2", "h3", "h4"];
+const tagsToIncludeInSectionIndex = ["h1", "h2"];
 function rehypeSlugify() {
   return (tree) => {
     let slugify = slugifyWithCounter();
@@ -101,7 +102,10 @@ function getSections(node) {
   let sections = [];
 
   for (let child of node.children ?? []) {
-    if (child.type === "element" && child.tagName === "h2") {
+    if (
+      child.type === "element" &&
+      tagsToIncludeInSectionIndex.includes(child.tagName)
+    ) {
       sections.push(`{
         title: ${JSON.stringify(toString(child))},
         id: ${JSON.stringify(child.properties.id)},

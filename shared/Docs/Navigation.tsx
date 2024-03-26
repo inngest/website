@@ -93,7 +93,7 @@ function NavLink({
       target={target}
       className={clsx(
         "flex justify-between items-center gap-2 py-1 pr-3 text-sm font-medium transition group", // group for nested hovers
-        isTopLevel ? "pl-0" : isAnchorLink ? "pl-3" : "pl-4",
+        isTopLevel || isAnchorLink ? "pl-0" : "pl-4",
         active
           ? "text-slate-900 dark:text-white"
           : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white",
@@ -119,7 +119,7 @@ const LinkOrHref = (props: any) => {
   return <Link {...props} />;
 };
 
-function VisibleSectionHighlight({ group, pathname }) {
+function VisibleSectionHighlight({ pathname }) {
   let [sections, visibleSections] = useInitialValue(
     [
       useSectionStore((s) => s.sections),
@@ -131,17 +131,15 @@ function VisibleSectionHighlight({ group, pathname }) {
   let isPresent = useIsPresent();
   let firstVisibleSectionIndex = Math.max(
     0,
-    [{ id: "_top" }, ...sections].findIndex(
-      (section) => section.id === visibleSections[0]
-    )
+    sections.findIndex((section) => section.id === visibleSections[0])
   );
+  // TODO: calculate
   let itemHeight = remToPx(1.76);
   let height = isPresent
     ? Math.max(1, visibleSections.length) * itemHeight
     : itemHeight;
-  let top =
-    findPathIndex(group.links, pathname) * itemHeight +
-    firstVisibleSectionIndex * itemHeight;
+
+  let top = firstVisibleSectionIndex * itemHeight;
 
   return (
     <motion.div
@@ -149,7 +147,7 @@ function VisibleSectionHighlight({ group, pathname }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1, transition: { delay: 0.2 } }}
       exit={{ opacity: 0 }}
-      className="absolute inset-x-0 top-0 bg-slate-800/2.5 will-change-transform dark:bg-white/2.5"
+      className="absolute -left-2 right-0 top-0 bg-slate-800/10 will-change-transform dark:bg-white/2.5"
       style={{ borderRadius: 8, height, top }}
     />
   );
@@ -183,35 +181,42 @@ export function PageSidebar() {
   return (
     <div>
       <h4 className="text-base font-medium pb-2">On this page</h4>
-      {/* TODO: Add highlighted page section back */}
-      {/* <AnimatePresence initial={!isInsideMobileNavigation}>
-        <VisibleSectionHighlight group={group} pathname={router.pathname} />
-      </AnimatePresence> */}
-      <motion.ul
-        role="list"
-        initial={{ opacity: 0 }}
-        animate={{
-          opacity: 1,
-          transition: { delay: 0.1 },
-        }}
-        exit={{
-          opacity: 0,
-          transition: { duration: 0.15 },
-        }}
-      >
-        {sections.map((section) => (
-          <li key={section.id}>
-            <NavLink
-              href={`#${section.id}`}
-              tag={section.tag}
-              isAnchorLink
-              truncate={false}
+      <div className="relative">
+        <AnimatePresence initial={!isInsideMobileNavigation}>
+          <VisibleSectionHighlight pathname={router.pathname} />
+        </AnimatePresence>
+        <motion.ul
+          role="list"
+          initial={{ opacity: 0 }}
+          animate={{
+            opacity: 1,
+            transition: { delay: 0.1 },
+          }}
+          exit={{
+            opacity: 0,
+            transition: { duration: 0.15 },
+          }}
+        >
+          {sections.map((section) => (
+            <li
+              key={section.id}
+              className="relative"
+              style={{
+                marginLeft: `${(section.level - 1) * 12}px`,
+              }}
             >
-              {section.title}
-            </NavLink>
-          </li>
-        ))}
-      </motion.ul>
+              <NavLink
+                href={`#${section.id}`}
+                tag={section.tag}
+                isAnchorLink
+                truncate={false}
+              >
+                {section.title}
+              </NavLink>
+            </li>
+          ))}
+        </motion.ul>
+      </div>
     </div>
   );
 }

@@ -35,6 +35,7 @@ function createSectionStore(sections) {
               return {
                 ...section,
                 headingRef: ref,
+                level: +(ref.current?.tagName.replace('H', '') ?? 0),
                 offsetRem,
               };
             }
@@ -63,9 +64,9 @@ function useVisibleSections(sectionStore) {
         let offset = remToPx(offsetRem);
         let top = headingRef?.current.getBoundingClientRect().top + scrollY;
 
-        if (sectionIndex === 0 && top - offset > scrollY) {
-          newVisibleSections.push("_top");
-        }
+        // if (sectionIndex === 0 && top - offset > scrollY) {
+        //   newVisibleSections.push("_top");
+        // }
 
         let nextSection = sections[sectionIndex + 1];
         let bottom =
