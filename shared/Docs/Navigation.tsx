@@ -1,4 +1,4 @@
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import clsx from "clsx";
@@ -119,27 +119,25 @@ const LinkOrHref = (props: any) => {
   return <Link {...props} />;
 };
 
-function VisibleSectionHighlight({ pathname }) {
-  let [sections, visibleSections] = useInitialValue(
-    [
-      useSectionStore((s) => s.sections),
-      useSectionStore((s) => s.visibleSections),
-    ],
-    useIsInsideMobileNavigation()
-  );
+function VisibleSectionHighlight({ listItems }) {
+  const sections = useSectionStore((s) => s.sections);
+  const visibleSections = useSectionStore((s) => s.visibleSections);
 
-  let isPresent = useIsPresent();
   let firstVisibleSectionIndex = Math.max(
     0,
     sections.findIndex((section) => section.id === visibleSections[0])
   );
-  // TODO: calculate
-  let itemHeight = remToPx(1.76);
-  let height = isPresent
-    ? Math.max(1, visibleSections.length) * itemHeight
-    : itemHeight;
 
-  let top = firstVisibleSectionIndex * itemHeight;
+  let aboveItems = listItems?.slice(0, firstVisibleSectionIndex);
+  let visibleItems = listItems?.slice(
+    firstVisibleSectionIndex,
+    firstVisibleSectionIndex + visibleSections.length
+  );
+
+  let top = 0;
+  let height = 0;
+  for (const item of aboveItems) top += item.offsetHeight;
+  for (const item of visibleItems) height += item.offsetHeight;
 
   return (
     <motion.div
@@ -147,7 +145,7 @@ function VisibleSectionHighlight({ pathname }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1, transition: { delay: 0.2 } }}
       exit={{ opacity: 0 }}
-      className="absolute -left-2 right-0 top-0 bg-slate-800/10 will-change-transform dark:bg-white/2.5"
+      className="absolute -left-2 right-0 top-0 bg-slate-800/10 will-change-transform dark:bg-white/10"
       style={{ borderRadius: 8, height, top }}
     />
   );
@@ -178,14 +176,35 @@ export function PageSidebar() {
     isInsideMobileNavigation
   );
 
+  let pageSectionsRef = useRef(null);
+  let [pageSectionListItems, setPageSectionListItems] = useState(null);
+  let [windowWidth, setWindowWidth] = useState(null);
+
+  useEffect(() => {
+    const updateWindowWidth = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", updateWindowWidth);
+    return () => {
+      window.removeEventListener("resize", updateWindowWidth);
+    };
+  }, []);
+
+  useEffect(() => {
+    setPageSectionListItems([
+      ...pageSectionsRef.current?.querySelectorAll("li"),
+    ]);
+  }, [windowWidth]);
+
   return (
     <div>
       <h4 className="text-base font-medium pb-2">On this page</h4>
       <div className="relative">
         <AnimatePresence initial={!isInsideMobileNavigation}>
-          <VisibleSectionHighlight pathname={router.pathname} />
+          {pageSectionListItems && (
+            <VisibleSectionHighlight listItems={pageSectionListItems} />
+          )}
         </AnimatePresence>
         <motion.ul
+          ref={pageSectionsRef}
           role="list"
           initial={{ opacity: 0 }}
           animate={{
