@@ -817,12 +817,12 @@ export const menuTabs = [
     href: "/docs/reference",
     matcher: /\/reference/,
   },
-  {
-    title: "Examples",
-    icon: CogIcon,
-    href: "/docs/examples",
-    matcher: /\/examples/,
-  },
+  // {
+  //   title: "Examples",
+  //   icon: CogIcon,
+  //   href: "/docs/examples",
+  //   matcher: /\/examples/,
+  // },
 ];
 
 export const topLevelNav = [
