@@ -46,7 +46,6 @@
     "cronstrue": "1.125.0",
     "cross-fetch": "3.1.5",
     "deterministic-split": "1.0.4",
-    "express": "4.18.2",
     "focus-visible": "5.2.0",
     "framer-motion": "7.8.1",
     "fs": "0.0.1-security",
