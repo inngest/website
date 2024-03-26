@@ -1,6 +1,4 @@
 import React, { useEffect, useState, useRef } from "react";
-import styled from "@emotion/styled";
-import Link from "next/link";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { atomOneDark as syntaxThemeDark } from "react-syntax-highlighter/dist/cjs/styles/hljs";
 
