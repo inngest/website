@@ -37,7 +37,11 @@ const inngest = new Inngest({
     An Inngest [Event Key](/docs/events/creating-an-event-key). Alternatively, set the [`INNGEST_EVENT_KEY`](/docs/sdk/environment-variables#inngest-event-key) environment variable.
   </Property>
   <Property name="fetch" type="Fetch API compatible interface">
-    Override the default [`fetch`](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) implementation. Defaults to the runtime's native Fetch API.
+    Override the default
+    [`fetch`](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API)
+    implementation. Defaults to the runtime's native Fetch API.
+
+    If you need to specify this, make sure that you preserve the function's [binding](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_objects/Function/bind), either by using `.bind` or by wrappng it in an anonymous function.
   </Property>
   <Property name="isDev" type="boolean" version="v3.15.0+">
     Set to `true` to force Dev mode, setting default local URLs and turning off
