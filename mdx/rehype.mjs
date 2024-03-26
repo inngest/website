@@ -56,7 +56,7 @@ export function rehypeShiki() {
 }
 
 const tagsToAddIds = ["h1", "h2", "h3", "h4"];
-const tagsToIncludeInSectionIndex = ["h1", "h2"];
+const tagsToIncludeInSectionIndex = ["h1", "h2", "h3"];
 function rehypeSlugify() {
   return (tree) => {
     let slugify = slugifyWithCounter();

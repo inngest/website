@@ -171,12 +171,10 @@ function ActivePageMarker({ group, pathname }) {
 
 export function PageSidebar() {
   let isInsideMobileNavigation = useIsInsideMobileNavigation();
-  let [router, sections] = useInitialValue(
-    [useRouter(), useSectionStore((s) => s.sections)],
-    isInsideMobileNavigation
-  );
+  let router = useRouter();
+  let sections = useSectionStore((s) => s.sections);
 
-  let pageSectionsRef = useRef(null);
+  let [pageSectionsEl, setPageSectionsEl] = useState(null);
   let [pageSectionListItems, setPageSectionListItems] = useState(null);
   let [windowWidth, setWindowWidth] = useState(null);
 
@@ -189,10 +187,12 @@ export function PageSidebar() {
   }, []);
 
   useEffect(() => {
-    setPageSectionListItems([
-      ...pageSectionsRef.current?.querySelectorAll("li"),
-    ]);
-  }, [windowWidth]);
+    if (pageSectionsEl) {
+      setPageSectionListItems([
+        ...(pageSectionsEl?.querySelectorAll("li") ?? []),
+      ]);
+    }
+  }, [router.pathname, windowWidth, pageSectionsEl]);
 
   return (
     <div>
@@ -204,7 +204,8 @@ export function PageSidebar() {
           )}
         </AnimatePresence>
         <motion.ul
-          ref={pageSectionsRef}
+          key={router.pathname}
+          ref={setPageSectionsEl}
           role="list"
           initial={{ opacity: 0 }}
           animate={{
