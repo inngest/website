@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import Head from "next/head";
 import Image from "next/image";
 import rehypeSlug from "rehype-slug";

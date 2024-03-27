@@ -6,7 +6,7 @@ import Script from "next/script";
 
 import { trackPageView } from "../utils/tracking";
 import { getOpenGraphImageURL } from "../utils/social";
-import { useAnonymousID } from "../shared/legacy/trackingHooks";
+import { useAnonymousID } from "../shared/trackingHooks";
 import "../styles/globals.css";
 import * as fullstory from "@fullstory/browser";
 
