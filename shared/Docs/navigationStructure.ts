@@ -548,7 +548,7 @@ const sectionPythonReference: NavGroup[] = [
 
 const sectionReference: NavGroup[] = [
   {
-    title: "TypeScript SKD",
+    title: "TypeScript SDK",
     defaultOpen: true,
     links: [
       {
