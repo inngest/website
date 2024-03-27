@@ -548,74 +548,62 @@ const sectionPythonReference: NavGroup[] = [
 
 const sectionReference: NavGroup[] = [
   {
-    title: "TypeScript SKD",
+    title: "TypeScript SDK",
     defaultOpen: true,
     links: [
       {
-        title: "Overview",
-        // TODO - Allow this to be flattened w/ NavGroup
-        links: [
-          {
-            title: "Introduction",
-            href: `/docs/reference/typescript`,
-          },
-        ],
+        title: "Introduction",
+        href: `/docs/reference/typescript`,
       },
       {
-        title: "Inngest Client",
-        links: [
-          {
-            title: "Create the client",
-            href: `/docs/reference/client/create`,
-          },
-        ],
+        title: "Create the client",
+        href: `/docs/reference/client/create`,
       },
       {
-        title: "Functions",
-        links: [
-          {
-            title: "Create function",
-            href: `/docs/reference/functions/create`,
-          },
-          {
-            title: "Errors",
-            href: `/docs/reference/typescript/functions/errors`,
-          },
-          {
-            title: "Handling failures",
-            href: `/docs/reference/functions/handling-failures`,
-          },
-          {
-            title: "Cancel running functions",
-            href: `/docs/functions/cancellation`,
-            // href: `/docs/reference/functions/cancel-running-functions`,
-          },
-          {
-            title: "Concurrency",
-            href: `/docs/functions/concurrency`,
-            // href: `/docs/reference/functions/concurrency`,
-          },
-          {
-            title: "Rate limit",
-            href: `/docs/reference/functions/rate-limit`,
-          },
-          {
-            title: "Debounce",
-            href: `/docs/reference/functions/debounce`,
-          },
-          {
-            title: "Function run priority",
-            href: `/docs/reference/functions/run-priority`,
-          },
-          // {
-          //   title: "Logging",
-          //   href: `/docs/reference/functions/logging`,
-          // },
-          {
-            title: "Referencing functions",
-            href: `/docs/functions/references`,
-          },
-        ],
+        title: "Create a function",
+        href: `/docs/reference/functions/create`,
+      },
+      {
+        title: "Send events",
+        href: `/docs/reference/events/send`,
+      },
+      {
+        title: "Errors",
+        href: `/docs/reference/typescript/functions/errors`,
+      },
+      {
+        title: "Handling failures",
+        href: `/docs/reference/functions/handling-failures`,
+      },
+      {
+        title: "Cancel running functions",
+        href: `/docs/functions/cancellation`,
+        // href: `/docs/reference/functions/cancel-running-functions`,
+      },
+      {
+        title: "Concurrency",
+        href: `/docs/functions/concurrency`,
+        // href: `/docs/reference/functions/concurrency`,
+      },
+      {
+        title: "Rate limit",
+        href: `/docs/reference/functions/rate-limit`,
+      },
+      {
+        title: "Debounce",
+        href: `/docs/reference/functions/debounce`,
+      },
+      {
+        title: "Function run priority",
+        href: `/docs/reference/functions/run-priority`,
+      },
+      // {
+      //   title: "Logging",
+      //   href: `/docs/reference/functions/logging`,
+      // },
+      {
+        title: "Referencing functions",
+        href: `/docs/functions/references`,
       },
       {
         title: "Steps",
@@ -649,15 +637,6 @@ const sectionReference: NavGroup[] = [
             title: "step.sendEvent()",
             href: `/docs/reference/functions/step-send-event`,
             className: "font-mono",
-          },
-        ],
-      },
-      {
-        title: "Events",
-        links: [
-          {
-            title: "Send",
-            href: `/docs/reference/events/send`,
           },
         ],
       },
@@ -724,48 +703,32 @@ const sectionReference: NavGroup[] = [
     title: "Python SDK",
     links: [
       {
-        title: "Overview",
-        // TODO - Allow this to be flattened w/ NavGroup
-        links: [
-          {
-            title: "Introduction",
-            href: `/docs/reference/python`,
-          },
-          {
-            title: "Quick start",
-            href: `/docs/reference/python/overview/quick-start`,
-          },
-          {
-            title: "Environment variables",
-            href: `/docs/reference/python/overview/env-vars`,
-          },
-          {
-            title: "Production mode",
-            href: `/docs/reference/python/overview/prod-mode`,
-          },
-        ],
+        title: "Introduction",
+        href: `/docs/reference/python`,
       },
       {
-        title: "Client",
-        links: [
-          {
-            title: "Overview",
-            href: `/docs/reference/python/client/overview`,
-          },
-          {
-            title: "Send events",
-            href: `/docs/reference/python/client/send`,
-          },
-        ],
+        title: "Quick start",
+        href: `/docs/reference/python/overview/quick-start`,
       },
       {
-        title: "Functions",
-        links: [
-          {
-            title: "Create function",
-            href: `/docs/reference/python/functions/create`,
-          },
-        ],
+        title: "Inngest Client",
+        href: `/docs/reference/python/client/overview`,
+      },
+      {
+        title: "Create function",
+        href: `/docs/reference/python/functions/create`,
+      },
+      {
+        title: "Send events",
+        href: `/docs/reference/python/client/send`,
+      },
+      {
+        title: "Environment variables",
+        href: `/docs/reference/python/overview/env-vars`,
+      },
+      {
+        title: "Production mode",
+        href: `/docs/reference/python/overview/prod-mode`,
       },
       {
         title: "Steps",
@@ -854,7 +817,6 @@ export const menuTabs = [
     href: "/docs/reference",
     matcher: /\/reference/,
   },
-  // will add this in the future
   // {
   //   title: "Examples",
   //   icon: CogIcon,

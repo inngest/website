@@ -84,7 +84,7 @@ export function Heading({
   });
 
   useEffect(() => {
-    if (level === 2) {
+    if (level <= 3) {
       registerHeading({ id, ref, offsetRem: tag || label ? 8 : 6 });
     }
   });
