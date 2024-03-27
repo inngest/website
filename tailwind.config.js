@@ -1,3 +1,5 @@
+const colors = require("tailwindcss/colors");
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: "class",
@@ -10,6 +12,8 @@ module.exports = {
     typography: require("./typography"),
     extend: {
       colors: {
+        // Aliases for ease of re-design
+        body: colors.slate[100],
         slate: {
           950: "#0C1323",
           1000: "#080D19",

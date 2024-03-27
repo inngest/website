@@ -29,7 +29,7 @@ export default function Footer({
         <Container className="pb-12 pt-12 lg:pt-24">
           <div className="xl:flex xl:gap-12 w-full rounded-lg relative ">
             <div className="mb-12 flex gap-6 items-start">
-              <Logo className="text-white w-20 relative top-[3px]" />
+              <Logo className="text-white w-20 relative top-[3px]" w="20" />
               <StatusWidget />
             </div>
             <div className="flex flex-wrap gap-8 lg:gap-12 xl:gap-20">

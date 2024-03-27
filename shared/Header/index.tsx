@@ -1,3 +1,4 @@
+"use client";
 import { useState, useEffect } from "react";
 import ArrowRight from "../Icons/ArrowRight";
 import Logo from "../Icons/Logo";
