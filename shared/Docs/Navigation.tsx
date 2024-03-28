@@ -257,6 +257,13 @@ function NavigationGroup({
   // The state will still update when we re-open (re-render) the navigation.
   let isInsideMobileNavigation = useIsInsideMobileNavigation();
   let [router] = useInitialValue([useRouter()], isInsideMobileNavigation);
+
+  // hack: animation flickers on initial render so let's enable it after mount
+  let [animateAccordion, setAnimateAccordion] = useState(false);
+  useEffect(() => {
+    setAnimateAccordion(true);
+  }, []);
+
   return (
     <Accordion.Item value={group.title}>
       <li
@@ -282,7 +289,9 @@ function NavigationGroup({
           </h2>
         </Accordion.Trigger>
 
-        <Accordion.Content className="animate-accordion">
+        <Accordion.Content
+          className={animateAccordion ? "animate-accordion" : ""}
+        >
           <div
             className={clsx(
               "relative overflow-hidden",
@@ -450,36 +459,7 @@ export function Navigation(props) {
               ))}
             </Accordion.Root>
           </>
-        ) : (
-          topLevelNav.map((item, idx) =>
-            item.href ? null : (
-              <li className="mt-6" key={idx}>
-                <h2 className="text-xs font-semibold text-slate-900 dark:text-white uppercase">
-                  {item.title}
-                </h2>
-                <ul role="list" className="mt-3 flex flex-col gap-2">
-                  {item.links.map((link, idx) => (
-                    <li key={idx}>
-                      <NavLink
-                        href={link.href}
-                        isTopLevel={true}
-                        tag={link.tag}
-                        target={link.target}
-                      >
-                        <span className="flex flex-row gap-3 items-center">
-                          {link.icon && (
-                            <link.icon className="w-5 h-4 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200" />
-                          )}
-                          {link.title}
-                        </span>
-                      </NavLink>
-                    </li>
-                  ))}
-                </ul>
-              </li>
-            )
-          )
-        )}
+        ) : null}
 
         <li className="sticky bottom-0 z-10 mt-6 sm:hidden gap-2 flex dark:bg-slate-900">
           <Button
