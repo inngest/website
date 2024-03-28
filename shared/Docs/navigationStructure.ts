@@ -71,6 +71,10 @@ const sectionGettingStarted: NavGroup[] = [
         title: "Next.js",
         href: "/docs/quick-start",
       },
+      {
+        title: "Python",
+        href: "/docs/getting-started/quick-start/python",
+      },
     ],
   },
 ];
