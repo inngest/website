@@ -50,10 +50,10 @@ export default function Quote({
         {!!logo && (
           <Image
             src={logo}
-            alt={`Image of ${name}`}
+            alt={`Logo of ${name}`}
             height="72"
             width="128"
-            className="h-12 lg:h-20"
+            className="w-full max-w-[220px]"
           />
         )}
         <cite className="text-slate-300 leading-8 not-italic">
@@ -63,7 +63,7 @@ export default function Quote({
         {!!caseStudy && (
           <Link
             href={caseStudy}
-            className="text-sm text-indigo-300 hover:text-white hover:underline decoration-dotted underline-offset-4 decoration-slate-50/30"
+            className="mt-4 mx-auto rounded-md font-medium px-6 py-2 bg-slate-800 hover:bg-slate-600 transition-all text-white border border-slate-800 hover:border-slate-600 hover:bg-slate-500/10 whitespace-nowrap"
           >
             Read the case study →
           </Link>

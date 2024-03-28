@@ -1,5 +1,4 @@
 ---
-focus: true
 heading: "Debouncing in Queueing Systems: Optimizing Efficiency in Asynchronous Workflows"
 subtitle: Explore backend message queuing systems, implementing debouncing in Postgres, and simplifying the process with Inngest.
 showSubtitle: true
@@ -25,9 +24,9 @@ A classic front-end example involves an auto-complete input where a user's actio
 
 Debouncing within queueing systems is most important when you're aiming to improve efficiency of execution. It might be a user that triggers a job that's costly to run or some event that triggers a larger job to execute that is wasteful to have to re-run. Here are couple of specific situations where you may want to add debouncing into your queue and worker system:
 
-1. **Cost efficiency with AI / LLMs.** 
+1. **Cost efficiency with AI / LLMs.**
 Leveraging any sort of AI is expensive. Whether you're using OpenAI's APIs or running your own models on GPU-optimized instances, leveraging AI can be costly. Depending on what is triggering your AI code to run (for example, a user saves data in a form) it may be triggered twice within a short time window. Debouncing this trigger can help ensure there is no wasted re-work with AI.
-2. **Data synchronization and integrity.** 
+2. **Data synchronization and integrity.**
 In systems involving data synchronization or batch processing, it's often essential to ensure that operations are performed only when all relevant changes have been completed. Debounce can facilitate this by delaying execution until a predefined idle period has passed, ensuring data integrity and consistency.
 3. **User interface interactions and auto-save.** Similar to the example mentioned above,  background jobs are often triggered by user actions that save data. If a user saves the same data in quick succession, or perhaps the front-end implements auto-save, it is likely that multiple background jobs will be triggered. Adding a debounce delay to your background job can make your system more efficient.
 4. **Deduplicating chatty webhook events.** While webhook events are great to integrate with third-party systems, some webhook providers, for example Intercom, may trigger multiple events in short succession for the same or similar actions that you only need to react to once. Also, often when building webhook integrations, you'd design for eventual consistency, so debounce delays are acceptable.
@@ -38,7 +37,7 @@ While debouncing is traditionally associated with frontend development and user 
 
 Depending on what backing queue you use, implementing debounce can be simple or difficult. At the basic level, your system needs to be able to schedule a given message at a timestamp in the future (the delay) and when the same message is sent, the currently scheduled message's timestamp is “pushed” back by the delay amount again. Your queue then must only pick up messages that are ready (the current timestamp).
 
-Here we'll cover a basic implementation of a Postgres queue and look at how to add debounce. There are more advanced techniques for queuing in Postgres, but we will not cover that here. 
+Here we'll cover a basic implementation of a Postgres queue and look at how to add debounce. There are more advanced techniques for queuing in Postgres, but we will not cover that here.
 
 First, we'll create a simple `debounce_job_queue` table in our database. It will have a job `id` , a `job_type` , a current `status` for the job, a `payload` for relevant job data, and a `scheduled_at` timestamp. Lastly, we'll add a `debounce_key` which will be what we'll use to de-duplicate and delay work.
 
@@ -56,7 +55,7 @@ CREATE TABLE debounce_job_queue (
 As we want to de-duplicate jobs waiting the queue, we'll add a unique index to ensure that there is only one matching job that is `'QUEUED'` at a given time.
 
 ```sql
-CREATE UNIQUE INDEX debounce_key_status 
+CREATE UNIQUE INDEX debounce_key_status
 ON debounce_job_queue(debounce_key, status)
 WHERE status = 'QUEUED';
 ```

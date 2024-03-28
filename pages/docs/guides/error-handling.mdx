@@ -405,7 +405,7 @@ inngest.createFunction(
       })
       .catch((err) => {
         if (err.name === "UserNotFoundError") {
-          throw NonRetriableError("User no longer exists; stopping");
+          throw new NonRetriableError("User no longer exists; stopping");
         }
 
         throw err;

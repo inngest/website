@@ -145,6 +145,10 @@ const sectionGuides: NavGroup[] = [
         title: "Writing expressions",
         href: `/docs/guides/writing-expressions`,
       },
+      {
+        title: "Using multiple triggers",
+        href: `/docs/guides/multiple-triggers`,
+      },
     ],
   },
   {
@@ -919,6 +923,11 @@ export const topLevelNav = [
         title: "FAQs",
         icon: QuestionMarkCircleIcon,
         href: `/docs/faq`,
+      },
+      {
+        title: "Security",
+        icon: CogIcon,
+        href: `/docs/security`,
       },
       {
         title: "Status Page",

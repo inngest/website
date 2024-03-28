@@ -31,6 +31,10 @@ const Security = () => {
                 Report a security issue
               </Button>
             </header>
+
+            <p className="pt-20">
+              To read how we handle SDK and function security, <a href="/docs/security">read our docs on security</a>.
+            </p>
             <div className="my-20 mx-auto prose prose-img:rounded-lg prose-code:bg-slate-800 prose-code:tracking-tight text-slate-300 prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline hover:prose-a:text-white prose-a:font-medium prose-a:transition-all prose-invert">
               <h2>Organizational Security</h2>
               <h3>Information Security Program</h3>

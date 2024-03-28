@@ -1,0 +1,94 @@
+# Multiple triggers
+
+Each Inngest function can be triggered by one or more events or schedules, up to
+a maximum of 10.
+
+This is useful for running the same logic for a wide array of events, or
+ensuring something also runs on a schedule, for example running an integrity
+check every morning, or when requested using an event.
+
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
+inngest.createFunction(
+  { id: "my-fn" },
+  [
+    { event: "a" },
+    { event: "b" },
+    { cron: "0 * * * *" },
+  ],
+  async ({ event, step }) => {
+    // ...
+  },
+);
+```
+```go {{ title: "Go" }}
+inngestgo.CreateFunction(
+	inngestgo.FunctionOpts{ID: "my-fn"},
+	inngestgo.MultipleTriggers{
+		inngestgo.EventTrigger("a", nil),
+		inngestgo.EventTrigger("b", nil),
+		inngestgo.CronTrigger("0 * * * *", nil),
+	},
+	func(ctx context.Context, input inngestgo.Input) (any, error) {
+		// ...
+	},
+)
+```
+```py {{ title: "Python" }}
+@inngest_client.create_function(
+    fn_id="my-fn",
+    trigger=[
+        inngest.TriggerEvent(event="a"),
+        inngest.TriggerEvent(event="b"),
+        inngest.TriggerCron(cron="0 * * * *")
+    ],
+)
+def my_handler(ctx: inngest.Context) -> None:
+     # ...
+```
+</CodeGroup>
+
+## Determining event types
+
+In the handler for a function with multiple triggers, the event that triggered
+the function can be determined using the `event.name` property.
+
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
+async ({ event }) => {
+  //      ^? type event: EventA | EventB | InngestScheduledEvent | InngestFnInvoked
+  if (event.name === "a") {
+    // `event` is type narrowed to only the `a` event
+  } else if (event.name === "b") {
+    // `event` is type narrowed to only the `b` event
+  } else {
+    // `event` is type narrowed to only the `inngest/function.invoked` event
+  }
+}
+```
+```go {{ title: "Go" }}
+func(ctx context.Context, input inngestgo.Input) (any, error) {
+	switch event := input.Event.(type) {
+	case EventA:
+		// `event` is type narrowed to only the `a` event
+	case EventB:
+		// `event` is type narrowed to only the `b` event
+	case inngestgo.FunctionInvokedEvent:
+		// `event` is type narrowed to only the `inngest/function.invoked` event
+	}
+	return nil, nil
+},
+```
+</CodeGroup>
+
+Note that batches of `events` can contain many different events; you will need
+to assert the shape of each event in a batch individually.
+
+## Overlapping crons
+
+If your function defines multiple cron triggers, the schedules may sometimes overlap. For example, a cron `0 * * * *` that runs every hour and a cron `*/30 * * * *` that runs every half hour would overlap at the start of each hour.
+
+Only one cron job will be run for each given second, so in this case above, one cron would run every half hour.
+
+{/* There's a place for wildcards here if we want to talk about them. They're
+pretty undocumented... */}

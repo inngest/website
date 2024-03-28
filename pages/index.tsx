@@ -27,9 +27,9 @@ export async function getStaticProps(): Promise<
     props: {
       designVersion: "2",
       meta: {
-        title: "Build reliable products - Durable workflow engine",
+        title: "Ship reliable products",
         description:
-          "Easily develop serverless workflows in your current codebase, without any new infrastructure. Using Inngest, your entire team can ship reliable products.",
+          "Inngest enables your team to develop durable functions in your current codebase with zero new infrastructure. Develop complex, long-running functions without queues, workers, or additional state management.",
         image: "/assets/homepage/open-graph.png",
       },
     },
@@ -66,69 +66,13 @@ export default function Home() {
     >
       <Header />
 
-      <LaunchWeekBanner />
+      {/* <LaunchWeekBanner /> */}
 
       <Hero />
 
-      <Logos
-        className="my-20 lg:my-36 mb-20 lg:mb-40 xl:mb-52"
-        heading="Helping these teams deliver reliable products"
-        logos={[
-          {
-            src: "/assets/customers/soundcloud-logo-white-horizontal.svg",
-            name: "SoundCloud",
-            scale: 1.1,
-            featured: true,
-          },
-          {
-            src: "/assets/customers/tripadvisor.svg",
-            name: "TripAdvisor",
-            featured: true,
-          },
-          {
-            src: "/assets/customers/gitbook-logo-white.svg",
-            name: "Gitbook",
-            featured: true,
-          },
-          {
-            src: "/assets/customers/resend.svg",
-            name: "Resend",
-            scale: 1.1,
-          },
-          { src: "/assets/customers/leap-logo-white.svg", name: "Leap" },
-          {
-            src: "/assets/customers/snaplet-dark.svg",
-            name: "Snaplet",
-          },
-          {
-            src: "/assets/customers/productlane.svg",
-            name: "Productlane",
-            scale: 1.3,
-          },
-          {
-            src: "/assets/customers/zamp-logo.svg",
-            name: "Zamp",
-          },
-          {
-            src: "/assets/customers/aomni-logo.svg",
-            name: "Aomni",
-          },
-        ]}
-        footer={
-          <div className="flex items-center">
-            <Link
-              href="/customers"
-              className="mx-auto rounded-md font-medium px-6 py-2 bg-slate-800 hover:bg-slate-600 transition-all text-white border border-slate-800 hover:border-slate-600 hover:bg-slate-500/10 whitespace-nowrap"
-            >
-              Read customer case studies
-            </Link>
-          </div>
-        }
-      />
-
       <UseCases />
 
-      <div className="my-32 lg:my-48">
+      {/* <div className="my-24">
         <Quote
           text={`Inngest is an essential partner to Vercel's frontend cloud offering. It extends Vercel's DX and serverless operational model to a notoriously challenging yet crucial part of the stack: backend workflows and asynchronous process coordination.`}
           attribution={{
@@ -140,6 +84,19 @@ export default function Home() {
             ),
             avatar: "/assets/about/guillermo-rauch-avatar.jpg",
           }}
+        />
+      </div> */}
+
+      <div className="my-24">
+        <Quote
+          text={`I wanted to find a solution that would let us just write the code, not manage the infrastructure around queues, concurrency, retries, error handling, prioritization... I don't think that developers should be even configuring and managing queues themselves in 2024.`}
+          attribution={{
+            name: "Matthew Drooker",
+            title: <span>CTO of SoundCloud</span>,
+            logo: "/assets/customers/soundcloud-logo-white-horizontal.svg",
+            avatar: "/assets/customers/soundcloud-matthew-drooker.jpg",
+          }}
+          caseStudy="/customers/soundcloud?ref=homepage"
         />
       </div>
 
