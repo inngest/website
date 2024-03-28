@@ -41,18 +41,13 @@ export type NavSection = NavLink & {
 
 const sectionGettingStarted: NavGroup[] = [
   {
-    title: "Quick start tutorials",
-    links: [
-      {
-        title: "Next.js",
-        href: "/docs/quick-start",
-      },
-    ],
-  },
-  {
     title: "Learn the basics",
     defaultOpen: true,
     links: [
+      {
+        title: "Overview",
+        href: "/docs",
+      },
       { title: "Installing the SDK", href: `/docs/sdk/overview` },
       { title: "Serving the API & Frameworks", href: `/docs/sdk/serve` },
       { title: "Writing Functions", href: `/docs/functions` },
@@ -65,6 +60,16 @@ const sectionGettingStarted: NavGroup[] = [
       {
         title: "Local Development",
         href: `/docs/local-development`,
+      },
+    ],
+  },
+  {
+    title: "Quick start tutorials",
+    defaultOpen: true,
+    links: [
+      {
+        title: "Next.js",
+        href: "/docs/quick-start",
       },
     ],
   },
@@ -798,24 +803,32 @@ const sectionReference: NavGroup[] = [
   },
 ];
 
+const matchers = {
+  guides: /^\/docs\/guides/,
+  reference: /^\/docs\/reference/,
+  examples: /^\/docs\/examples/,
+  // should match everything except above
+  default: /^\/docs(?!\/guides|\/reference|\/examples)/,
+};
+
 export const menuTabs = [
   {
     title: "Getting started",
     icon: PlayIcon,
     href: "/docs/quick-start",
-    matcher: /\/quick-start/,
+    matcher: matchers.default,
   },
   {
     title: "Guides",
     icon: GuideIcon,
     href: "/docs/guides",
-    matcher: /\/guides/,
+    matcher: matchers.guides,
   },
   {
     title: "Reference",
     icon: CogIcon,
     href: "/docs/reference",
-    matcher: /\/reference/,
+    matcher: matchers.reference,
   },
   // {
   //   title: "Examples",
@@ -841,14 +854,14 @@ export const topLevelNav = [
     title: "Guides",
     icon: GuideIcon,
     href: "/docs/guides",
-    matcher: /\/guides/,
+    matcher: matchers.guides,
     sectionLinks: sectionGuides,
   },
   {
     title: "Reference",
     icon: CogIcon,
     href: "/docs/reference",
-    matcher: /\/reference/,
+    matcher: matchers.reference,
     sectionLinks: sectionReference,
   },
   {
