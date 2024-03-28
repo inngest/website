@@ -3,7 +3,7 @@ focus: true
 heading: Queues are no longer the right abstraction
 subtitle: Why you shouldn't use message queues in 2024
 showSubtitle: true
-image: /assets/blog/debouncing-in-queuing-systems/featured-image.png
+image: /assets/blog/queues-are-no-longer-the-right-abstraction/queues-are-over.png
 date: 2024-03-28
 author: Dan Farrelly
 ---
@@ -90,7 +90,7 @@ Implementing this at the queue level is a serious effort. Will you encapsulate a
 
 With a durable function, those problems are abstracted away to give you this:
 
-```TypeScript
+```typescript
 export const processVideo = inngest.createFunction(
   {
     name: "Process video upload", id: "process-video",
@@ -129,7 +129,7 @@ You don't see all the infrastructure because it is abstracted away, but this han
 
 What might this look like with the partial abstractions you see in something like Celery and Python? Firstly, we'd need a message broker service as Celery doesn't abstract that away. We'd then add that to our Celery workers as a broker URL. Then we have to think about flow control. How are we managing prioritization and concurrency, and on a per-user basis? This is possible in Celery by dynamically updating the configuration:
 
-```Python
+```python
 # celery_app.py
 def user_task_router(name, args, kwargs, options, task=None, **kw):
     user_id = kwargs.get('user_id')
@@ -154,7 +154,7 @@ app.conf.update(
 
 Then we'd use that within our `tasks.py` file:
 
-```Python
+```python
 # tasks.py
 
 from celery import shared_task
@@ -185,7 +185,7 @@ What's wrong with this? Well, it's just more complicated. To our point about Cel
 
 Compare that to this example, which is doing an even more complicated job and pausing the queue for a period of time.
 
-```TypeScript
+```typescript
 export const handlePayments = inngest.createFunction(
   {
     name: "Handle payments", id: "handle-payments"

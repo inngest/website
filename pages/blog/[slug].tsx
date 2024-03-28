@@ -192,6 +192,7 @@ export default function BlogLayout(props) {
                 />
               )} */}
                 <div className="prose mt-12 mb-20 Xtext-[18px] Xleading-[30px] prose-img:rounded-lg prose-code:bg-slate-800 prose-code:tracking-tight text-slate-200 prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline hover:prose-a:text-white prose-a:font-medium prose-a:transition-all prose-invert blog-content">
+                  {/* @ts-ignore */}
                   <MDXRemote
                     compiledSource={props.post.compiledSource}
                     scope={scope}
