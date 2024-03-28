@@ -434,6 +434,10 @@ export function Navigation(props) {
         {nestedNavigation ? (
           <>
             <Accordion.Root
+              key={
+                // re-mount on page navigation
+                router.pathname
+              }
               type="multiple"
               defaultValue={defaultOpenGroupTitles}
             >
