@@ -3,6 +3,7 @@ import Head from "next/head";
 import type { AppProps } from "next/app";
 import { useRouter } from "next/router";
 import Script from "next/script";
+import { GoogleTagManager } from "@next/third-parties/google";
 
 import { trackPageView } from "../utils/tracking";
 import { getOpenGraphImageURL } from "../utils/social";
@@ -217,20 +218,7 @@ function MyApp({ Component, pageProps }: AppProps<DefaultProps>) {
           }
         }}
       />
-      <script
-        async
-        src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GTAG_ID}`}
-      ></script>
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', '${process.env.NEXT_PUBLIC_GTAG_ID}');
-      `,
-        }}
-      />
+      <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GTM_ID} />
     </>
   );
 }
