@@ -9,6 +9,8 @@ import { createStore, useStore } from "zustand";
 
 import { remToPx } from "../../utils/remToPx";
 
+const PAGE_HEADER_OFFSET_REM = 4;
+
 // type Section = { id: string; headingRef: any; offsetRem: string };
 // type State = {
 //   sections?: Section[];
@@ -35,6 +37,7 @@ function createSectionStore(sections) {
               return {
                 ...section,
                 headingRef: ref,
+                level: +(ref.current?.tagName.replace('H', '') ?? 0),
                 offsetRem,
               };
             }
@@ -59,20 +62,15 @@ function useVisibleSections(sectionStore) {
         sectionIndex < sections.length;
         sectionIndex++
       ) {
-        let { id, headingRef, offsetRem } = sections[sectionIndex];
-        let offset = remToPx(offsetRem);
+        let { id, headingRef } = sections[sectionIndex];
         let top = headingRef?.current.getBoundingClientRect().top + scrollY;
-
-        if (sectionIndex === 0 && top - offset > scrollY) {
-          newVisibleSections.push("_top");
-        }
 
         let nextSection = sections[sectionIndex + 1];
         let bottom =
           (nextSection?.headingRef?.current.getBoundingClientRect().top ??
             Infinity) +
           scrollY -
-          remToPx(nextSection?.offsetRem ?? 0);
+          remToPx(nextSection?.offsetRem ?? 0) - PAGE_HEADER_OFFSET_REM;
 
         if (
           (top > scrollY && top < scrollY + innerHeight) ||
