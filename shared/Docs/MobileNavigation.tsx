@@ -84,7 +84,7 @@ export function MobileNavigation() {
       {!isInsideMobileNavigation && (
         <Transition.Root show={isOpen} as={Fragment}>
           <Dialog onClose={close} className="fixed inset-0 z-50 lg:hidden">
-            <Transition.Child
+            {/* <Transition.Child
               as={Fragment}
               enter="duration-300 ease-out"
               enterFrom="opacity-0"
@@ -94,7 +94,7 @@ export function MobileNavigation() {
               leaveTo="opacity-0"
             >
               <div className="fixed inset-0 top-14 bg-slate-400/20 backdrop-blur-sm dark:bg-black/40" />
-            </Transition.Child>
+            </Transition.Child> */}
 
             <Dialog.Panel>
               <Transition.Child
@@ -120,7 +120,7 @@ export function MobileNavigation() {
               >
                 <motion.div
                   layoutScroll
-                  className="fixed left-0 top-14 bottom-0 w-full overflow-y-auto bg-white px-4 pt-6 pb-4 shadow-lg shadow-slate-900/10 ring-1 ring-slate-900/7.5 dark:bg-slate-900 dark:ring-slate-800 min-[416px]:max-w-sm sm:px-6 sm:pb-10"
+                  className="fixed left-0 top-14 bottom-0 w-full overflow-y-auto bg-white px-4 pt-6 pb-4 shadow-lg shadow-slate-900/10 ring-1 ring-slate-900/7.5 dark:bg-slate-900 dark:ring-slate-800 sm:px-6 sm:pb-10"
                 >
                   <Navigation />
                 </motion.div>

@@ -760,3 +760,45 @@ ul.check li {
 .hero-text-shadow {
   text-shadow: 0 5px 30px rgba(224,198,210,0.2);
 }
+
+.animate-accordion {
+  overflow: hidden;
+}
+
+.animate-accordion[data-state='open'] {
+  animation: accordionSlideDown 150ms ease-out;
+}
+
+.animate-accordion[data-state='closed'] {
+  animation: accordionSlideUp 150ms ease-out;
+}
+
+.animate-accordion-trigger svg {
+  transition: transform 150ms ease-out;
+}
+
+.animate-accordion-trigger[data-state='open'] svg {
+  transform: rotate(180deg);
+}
+
+@keyframes accordionSlideDown {
+  from {
+    height: 0;
+    opacity: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+    opacity: 1
+  }
+}
+
+@keyframes accordionSlideUp {
+  from {
+    height: var(--radix-accordion-content-height);
+    opacity: 1;
+  }
+  to {
+    height: 0;
+    opacity: 0;
+  }
+}
