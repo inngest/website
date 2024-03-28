@@ -536,18 +536,18 @@ function SearchButton({ shortcutKey = null, ...buttonProps }) {
 
 /* Search input button in desktop mode */
 export function Search() {
-  let [modifierKey, setModifierKey] = useState<string>();
+  let [shortcutKey, setShortcutKey] = useState<string>();
   let { buttonProps, dialogProps } = useSearchProps();
 
   useEffect(() => {
-    setModifierKey(
-      /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform) ? "⌘" : "Ctrl "
+    setShortcutKey(
+      /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform) ? "⌘K" : "Ctrl+K"
     );
   }, []);
 
   return (
     <div className="hidden lg:block lg:max-w-sm lg:flex-auto">
-      <SearchButton {...buttonProps} shortcutKey={`${modifierKey}K`} />
+      <SearchButton {...buttonProps} shortcutKey={shortcutKey} />
       <SearchDialog className="hidden lg:block" {...dialogProps} />
     </div>
   );
