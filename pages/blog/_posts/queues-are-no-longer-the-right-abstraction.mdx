@@ -1,0 +1,237 @@
+---
+focus: true
+heading: Queues are no longer the right abstraction
+subtitle: Why you shouldn't directly use message queues in 2024
+showSubtitle: true
+image: /assets/blog/queues-are-no-longer-the-right-abstraction/queues-are-over.png
+date: 2024-03-28
+author: Dan Farrelly
+---
+
+Amazon SQS will be [20 years old](https://aws.amazon.com/about-aws/whats-new/2004/11/03/introducing-the-amazon-simple-queue-service/) later this year. It still offers precisely what it advertises-a [simple queue service](https://aws.amazon.com/sqs/). It's also still great. During Prime Day 2022, SQS handled [over 70 million messages per second at peak](https://aws.amazon.com/blogs/aws/amazon-prime-day-2022-aws-for-the-win/). If you want a queue, this, or other time-tested solutions like RabbitMQ or ActiveMQ, work well.
+
+But you don't want a queue. You want something better.
+
+
+## The Goal of Message Queues
+
+Why have message queues been so widely used in networked systems and environments by developers over the last few decades?
+
+Many workloads within an application are long-running: notifications, data processing, billing, etc. These operations can be time-consuming or resource-intensive and you don't want them blocking the rest of the application. Message queues offload these functions from the critical path (_or thread_) and allow you to execute them asynchronously. The queue will enable applications to remain responsive while tasks are processed in the background.
+
+So, queues run critical workloads, just not on the critical path. You need queues for three core reasons:
+
+
+1. They offer reliability through guaranteed delivery, persistence, and dead letter queues, so developers know they aren't sending workloads into a black hole.
+2. They allow developers to run critical, longer-running processes. These processes often involve complex business logic, data transformations, or integration with external systems. By offloading these tasks to a queue, developers can ensure they are executed reliably without blocking the main application flow.
+3. Queues also offer horizontal scalability by allowing multiple consumers to process messages in parallel. This means applications can handle high throughput and scale as the workload increases. Queues can also handle spikes in workload well, leveling out load and allowing applications to remain stable.
+
+At a higher level, queues are a way to build more efficient, functional, and reliable applications. When you add queues to your application, you go from having to fit every operation into a request-response framework to having the ability to decouple and prioritize workloads. This allows you to design your application around the optimal user experience rather than being constrained by the limitations of synchronous processing. By leveraging queues, you can create applications that are more responsive, scalable, and resilient to failures.
+
+Why do developers need queues today?
+
+Exactly the same reasons. That is why developers still reach for them. All of the above is still true. You want decoupling? Queues work. You want scalability? Queues work. You want flexibility? Queues work.
+
+But queues suck _from an implementation point of view_. The underlying idea is excellent, but anyone who has built infrastructure with message queues knows the queue is just the pipe. And you need a lot of architecture to support that pipe.
+
+
+## Queues Are The Wrong Abstraction
+
+Message queues are an abstraction. They abstract away the communication protocols and data storage  required to enqueue and pass messages.
+
+But in 2024, queues are no longer the right abstraction for building modern systems. The underlying concept of queues still holds, but building a system with queues requires much more than just the queue itself. Once developers have implemented the primary queue, they find they need:
+
+* **Chaining** to run tasks in a sequence
+* **Concurrency** to control how many jobs are executed at one time.
+* **Back-off** to gracefully handle rate-limited API calls.
+* **Debouncing** to prevent functions executing multiple times.
+* **State persistence and management** as you'll have to share state across different workers and queues.
+* **Prioritization** to determine which messages are most critical.
+* **Error handling** to include retries for failures and timeouts.
+* **Idempotency** to ensure non-duplication and prevent unwanted side effects.
+* **Cancellation** to abort messages and in-progress jobs when required.
+* **Observability** to monitor and optimize the system.
+* **Recovery tooling** to help understand errors and reprocess failed events.
+
+Say you want concurrency. Now you're actually thinking about the workers that are consuming the messages. You'll need to add more workers and/or adjust message polling logic within the worker's code. Now, you need to think about the visibility timeout for each message, among other things, and consider the downstream implications of messages being processed more than once.
+
+Repeat that decision tree for every component of the infrastructure. It isn't just a matter of grabbing an SQS URL and having SQS take care of everything. All of this needs to be built _around_ the message queue. Even if you don't immediately need this infrastructure, you'll have to build it out fully over time to build a robust message system.
+
+This is challenging and tedious work. There are ways to lessen the load - [Celery](https://docs.celeryq.dev/en/stable/getting-started/introduction.html), [Resque](https://github.com/resque/resque), [BullMQ](https://bullmq.io/) - but then you have the problems of these half-abstractions: lack of a polyglot option, slightly different implementations, and a learning curve for developers who are not familiar with these tools leading to increased complexity and maintenance overhead.
+
+So, why do developers still reach for message queues if they are the wrong abstraction? Two reasons:
+
+
+1. They understand message queues. Even if they know they'll have to implement the infrastructure around the queue, developers have been working with SQS, RabbitMQ, etc., for 20 years. It's a hassle, but a _known_ hassle.
+2. They don't know there is a better abstraction.
+
+Over time, the abstraction has evolved and moved up the stack.
+
+
+## Reliability Through Durability
+
+Durable execution is the right abstraction instead of dealing with queues directly. Durable execution combines two elements to provide reliability and guarantees to application workflows.
+
+First, **durability**. Durable execution is fault-tolerant execution, guaranteeing that code will run to completion even with failures or restarts. This removes part of the problem above. With durable execution, developers don't have to build out processes to guarantee execution, such as implementing retry logic, handling failures, or persisting state, as these capabilities are provided out of the box by the durable execution runtime.
+
+But durability alone isn't enough. Reliability through durable execution requires **flow control**. Flow control is everything listed above that you have to build out for reliable workflows around queues. While durable execution focuses on guaranteeing the execution of tasks and handling failures, flow control deals with managing how or when the code is executed.
+
+Flow control encompasses various aspects such as concurrency control, rate limiting, resource sharing, and prioritization. Let's say you have a processing workflow for transcribing video. What does this entail?
+
+
+
+* You need multiple queues for transcription, summarization, and upload. Since these have to run in series, you must manage the state between them.
+* You have to trigger the initial transcription with one event. Then, the next two are triggered by the previous steps in the process.
+* You have to control for concurrency to manage the amount of videos being processed by a single user at once.
+* You want to have some level of prioritization so you can control which users' workflows run first.
+* You must implement retry logic in case any step fails, back-off logic if any API is rate-limited, debouncing to stop multiple calls, and observability to ensure you can understand what happens within the operations.
+
+Implementing this at the queue level is a serious effort. Will you encapsulate all this inside a single function or break it into different tasks for specific queues? Are you going to save the state in the database for every step? Or YOLO it and just create a call chain?
+
+With a durable function, those problems are abstracted away to give you this:
+
+```typescript
+export const processVideo = inngest.createFunction(
+  {
+    name: "Process video upload", id: "process-video",
+    concurrency: {
+      limit: 1,
+      key: `event.data.userId`, // You can use any piece of data from the event payload
+    },
+    priority: {
+      run: "event.data.billingPlan != 'free' ? 120 : 0",
+    },
+
+  },
+  { event: "video.uploaded" },
+  async ({ event, step }) => {
+    const transcript = await step.run('transcribe-video', async () => {
+      return deepgram.transcribe(event.data.videoUrl);
+    });
+    const summary = await step.run('summarize-transcript', async () => {
+      return llm.createCompletion({
+        model: "gpt-3.5-turbo",
+        prompt: createSummaryPrompt(transcript),
+      });
+    });
+    await step.run('write-to-db', async () => {
+      await db.videoSummaries.upsert({
+        videoId: event.data.videoId,
+        transcript,
+        summary,
+      });
+    });
+  }
+)
+```
+
+You don't see all the infrastructure because it is abstracted away, but this handles concurrency, retries, state, and the underlying queues. It is triggered by a `video.uploaded` event then will continue to completion or show you the errors (and allow you to replay if necessary).
+
+What might this look like with the partial abstractions you see in something like Celery and Python? Firstly, we'd need a message broker service as Celery doesn't abstract that away. We'd then add that to our Celery workers as a broker URL. Then we have to think about flow control. How are we managing prioritization and concurrency, and on a per-user basis? This is possible in Celery by dynamically updating the configuration:
+
+```python
+# celery_app.py
+def user_task_router(name, args, kwargs, options, task=None, **kw):
+    user_id = kwargs.get('user_id')
+    if user_id:
+        return {
+            'queue': f'user_{user_id}',
+            'priority': kwargs.get('priority', 10),  # Get the priority from kwargs, default to 10
+        }
+    return None
+
+app = Celery('tasks', broker='amqp://guest:guest@localhost:5672//')
+app.conf.update(
+    worker_concurrency=4,
+    worker_prefetch_multiplier=1,
+    task_routes = (user_task_router,),
+    task_default_queue = 'default',
+    task_default_priority = 0,
+    task_queue_max_priority = 10,
+    task_queues = [Queue('default', routing_key='default')],
+)
+```
+
+Then we'd use that within our `tasks.py` file:
+
+```python
+# tasks.py
+
+from celery import shared_task
+from utils import transcribe_video, summarize_transcript, write_to_db
+
+@shared_task(name='process_video')
+def process_video(event, user_id, priority=10):
+    video_path = event['data']['videoPath']
+
+    # Transcribe the video
+    transcript = transcribe_video(video_path, user_id, priority)
+
+    # Summarize the transcript
+    summary = summarize_transcript(transcript, user_id, priority)
+
+    # Write to the database
+    write_to_db(video_path, transcript, summary, user_id, priority)
+
+@shared_task
+def process_video_event(event, priority=10):
+    user_id = event['data']['userId']
+    process_video.apply_async(args=[event], kwargs={'user_id': user_id, 'priority': priority})
+```
+
+Each of `transcribe_video`, `summarize_transcript`, and `write_to_db` will be in utils.py and then we can call `process_video_event` from our actual application.
+
+What's wrong with this? Well, it's just more complicated. To our point about Celery being a partial abstraction, we're still dealing with the low-level message queue directly, and then we have to set up a lot of configuration. The flow control we want (prioritization, concurrency) isn't easily embedded into our code. Instead, we have to use a workaround to update the Celery configuration for each user. State and logic are also separated, making it more difficult to understand the workflow.
+
+Compare that to this example, which is doing an even more complicated job and pausing the queue for a period of time.
+
+```typescript
+export const handlePayments = inngest.createFunction(
+  {
+    name: "Handle payments", id: "handle-payments"
+  },
+  { event: "api/invoice.created" },
+  async ({ event, step }) => {
+    // Wait until the next billing date
+    await step.sleepUntil("wait-for-billing-date", event.data.invoiceDate);
+
+    // Steps automatically retry on error, and only run
+    // once on success - automatically, with no work.
+    const charge = await step.run("charge", async () => {
+      return await stripe.charges.create({
+        amount: event.data.amount,
+      });
+    });
+
+    await step.run("update-db", async () => {
+      return await db.payments.upsert(charge);
+    });
+
+    await step.run("send-receipt", async () => {
+      return await resend.emails.send({
+        to: event.user.email,
+        subject: "Your receipt for Inngest",
+      });
+    });
+  }
+);
+```
+
+Much easier to follow even though it is a long-running workflow. Say you are billing a customer and need to retry if the billing fails. Usually, a dunning process takes place over a few days. How would you handle that with a queue?
+
+With a lot of Ibuprofen. Some queues give you the ability to add a delay, but usually in the timeframe of seconds and minutes, not days you'd need here. So you'd have to save the state and start another queue one day later. For this, you'll probably end up with a mess of cron jobs and queues, managing state and functions between them.
+
+With durable execution, all this can be encapsulated in a single workflow function:
+
+The entire process sleeps for a day before resuming where it left off. The developer has to manage none of the state during this time—it just happens. Cross-language support is first-class as the difficult parts of managing queues are completely abstracted away.
+
+Durable execution delivers on the original goal of queues: To reliably execute code that runs in a background process outside of synchronous API requests.
+
+
+## Don't Build With Raw Queues
+
+Could you build this yourself? Sure. If you have been using queues since their inception, you probably understand the workarounds needed to get them into an actual functional state.
+
+Should you? No. It is going to be a resource suck, both in time and money, to implement all this just to have a durable execution engine that is available off-the-shelf. All the infrastructure, all the logic, all the state - it's just tedious. If you are interested in the nuts and bolts of message queues, go nuts. For everyone else, use the higher-level abstraction that is now available - durable execution.
+
+To see how teams use durable execution in production today, check out how [Soundcloud streamlined dynamic video generation](/customers/soundcloud?ref=blog), [Resend sends email using serverless workflows](/customers/resend?ref=blog), and [Aomni productionized AI-driven sales flows](/customers/aomni?ref=blog). When you want to start with durable execution yourself, you can [sign up for Inngest](https://app.inngest.com/sign-up) today or [reach out to sales engineering](/contact?ref=blog).
