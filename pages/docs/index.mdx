@@ -22,9 +22,25 @@ export const hidePageSidebar = true;
 
 Discover how to get set up with Inngest in just a few minutes:
 
-<div className="not-prose mb-16 mt-6 flex gap-3">
-  <Button  href="/docs/quick-start" arrow="right">Quick start tutorial</Button>
-</div>
+<ResourceGrid cols={3} border={false}>
+
+  <Resource resource={{
+    href: "/docs/guides",
+    name: "Next.js quick start",
+    logo: { light: "/assets/brand-logos/next-js-dark.svg", dark: "/assets/brand-logos/next-js-white.svg" },
+    pattern: 0,
+  }}/>
+
+  <Resource resource={{
+    href: "/docs/apps/cloud",
+    name: "Python quick start",
+    logo: { light: "/assets/brand-logos/python-logo-only.svg", dark: "/assets/brand-logos/python-logo-only.svg" },
+    pattern: 0,
+  }}/>
+
+</ResourceGrid>
+
+## Dive in further
 
 <ResourceGrid cols={3} border={false}>
 

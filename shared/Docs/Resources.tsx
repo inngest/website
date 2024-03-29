@@ -163,9 +163,10 @@ export function Resource({
   resource: {
     href: string;
     name: string;
-    description: string;
+    description?: string;
+    logo?: { dark: string; light: string };
     pattern: 0 | 1 | 2 | 3 | object | null;
-    icon: IconType | ((any) => JSX.Element);
+    icon?: IconType | ((any) => JSX.Element);
   };
 }) {
   let mouseX = useMotionValue(0);
@@ -196,18 +197,41 @@ export function Resource({
     >
       <ResourcePattern {...pattern} mouseX={mouseX} mouseY={mouseY} />
       <div className="absolute inset-0 rounded-lg ring-1 ring-inset ring-slate-900/7.5 group-hover:ring-slate-900/10 dark:ring-white/10 dark:group-hover:ring-white/20" />
-      <div className="relative rounded-lg px-4 pt-16 pb-4">
-        {!!icon && <ResourceIcon icon={icon} />}
-        <h3 className="mt-4 text-sm font-semibold leading-7 text-slate-900 dark:text-white">
-          <Link href={resource.href}>
+      <Link
+        href={resource.href}
+        className="w-full text-slate-900 hover:text-slate-700"
+      >
+        <div
+          className={`relative rounded-lg px-4 pb-4 ${
+            resource.logo ? "pt-4" : "pt-16"
+          }`}
+        >
+          {!!resource.logo && (
+            <>
+              <img
+                src={resource.logo.light}
+                alt={resource.name}
+                className="dark:hidden h-12 max-w-[160px]"
+              />
+              <img
+                src={resource.logo.dark}
+                alt={resource.name}
+                className="hidden dark:inline h-12 max-w-[160px]"
+              />
+            </>
+          )}
+          {!!icon && <ResourceIcon icon={icon} />}
+          <h3 className="mt-4 text-sm font-semibold leading-7">
             <span className="absolute inset-0 rounded-lg" />
             {resource.name}
-          </Link>
-        </h3>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          {resource.description}
-        </p>
-      </div>
+          </h3>
+          {resource.description && (
+            <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+              {resource.description}
+            </p>
+          )}
+        </div>
+      </Link>
     </div>
   );
 }
