@@ -227,11 +227,16 @@ export function Resources() {
   );
 }
 
-export function ResourceGrid({ cols = 4, children }) {
+export function ResourceGrid({ cols = 4, border = true, children }) {
   return (
     <div
-      className={`xl:max-w-none not-prose mt-4 grid grid-cols-1 gap-8 border-t border-slate-900/5 pt-10 dark:border-white/5
-      sm:grid-cols-${cols >= 2 ? 2 : cols} xl:grid-cols-${cols}`}
+      className={`xl:max-w-none not-prose grid grid-cols-1 gap-8
+      sm:grid-cols-${cols >= 2 ? 2 : cols} xl:grid-cols-${cols}
+      ${
+        border
+          ? "mt-4 border-t border-slate-900/5 pt-10 dark:border-white/5"
+          : ""
+      }`}
     >
       {children}
     </div>

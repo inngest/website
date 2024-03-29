@@ -1,4 +1,4 @@
-import { CodeBracketSquareIcon } from "@heroicons/react/20/solid"
+import { CodeBracketSquareIcon, RocketLaunchIcon } from '@heroicons/react/20/solid';
 import { Home } from 'src/shared/Docs/Home'
 import { Guides } from 'src/shared/Docs/Guides'
 import { ResourceGrid, Resource } from 'src/shared/Docs/Resources'
@@ -6,13 +6,15 @@ import { GuideGrid, Guide } from 'src/shared/Docs/Guides'
 import { HeroPattern } from 'src/shared/Docs/HeroPattern'
 import EventIcon from 'src/shared/Icons/Event'
 import StepsIcon from 'src/shared/Icons/Steps'
+import TypeScriptIcon from 'src/shared/Icons/TypeScript';
+import GuideIcon from 'src/shared/icons/Guide';
 
 export const pageTitle = 'Inngest Documentation & Guides'
 export const description =
   'Learn how to use Inngest to deploy reliable background functions to any platform.'
 export const hidePageSidebar = true;
 
-{/* <HeroPattern/> TODO - Add cool header graphic*/}
+<HeroPattern/>
 
 <Home/>
 
@@ -23,6 +25,34 @@ Discover how to get set up with Inngest in just a few minutes:
 <div className="not-prose mb-16 mt-6 flex gap-3">
   <Button  href="/docs/quick-start" arrow="right">Quick start tutorial</Button>
 </div>
+
+<ResourceGrid cols={3} border={false}>
+
+  <Resource resource={{
+    href: "/docs/guides",
+    name: "Guides",
+    icon: GuideIcon,
+    description: "Learn how to build with Inngest",
+    pattern: 0,
+  }}/>
+
+  <Resource resource={{
+    href: "/docs/apps/cloud",
+    name: "Going to production",
+    icon: RocketLaunchIcon,
+    description: "How to sync your app with Inngest cloud",
+    pattern: 0,
+  }}/>
+
+  <Resource resource={{
+    href: "/docs/reference/typescript",
+    name: "TypeScript SDK Reference",
+    icon: TypeScriptIcon,
+    description: "Explore every SDK feature and option",
+    pattern: 0,
+  }}/>
+
+</ResourceGrid>
 
 ## Introduction to Inngest
 
