@@ -811,12 +811,31 @@ const sectionReference: NavGroup[] = [
   },
 ];
 
+function linkSearch(groups: NavGroup[], pathname) {
+  return groups.find((group) => recursiveLinkSearch(group, pathname));
+}
+
+function recursiveLinkSearch(group: NavGroup, pathname) {
+  if (group.href === pathname) {
+    return true;
+  }
+  return group.links.find((link) => {
+    return link.href
+      ? link.href === pathname
+      : "links" in link && recursiveLinkSearch(link, pathname);
+  });
+}
+
 const matchers = {
-  guides: /^\/docs\/guides/,
-  reference: /^\/docs\/reference/,
+  // guides: /^\/docs\/guides/,
+  guides: (pathname) =>
+    /^\/docs\/guides/.test(pathname) || linkSearch(sectionGuides, pathname),
+  // reference: /^\/docs\/reference/,
+  reference: (pathname) => linkSearch(sectionReference, pathname),
   examples: /^\/docs\/examples/,
   // should match everything except above
-  default: /^\/docs(?!\/guides|\/reference|\/examples)/,
+  // default: /^\/docs(?!\/guides|\/reference|\/examples)/,
+  default: (pathname) => linkSearch(sectionGettingStarted, pathname),
 };
 
 export const menuTabs = [
