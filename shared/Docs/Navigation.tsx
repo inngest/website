@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import clsx from "clsx";
-import { AnimatePresence, motion, useIsPresent } from "framer-motion";
+import { AnimatePresence, m, motion, useIsPresent } from "framer-motion";
 
 import { Button } from "./Button";
 import { useIsInsideMobileNavigation } from "./MobileNavigation";
@@ -21,10 +21,21 @@ function useInitialValue(value, condition = true) {
   return condition ? initialValue : value;
 }
 
+function isMatch(
+  matcher: RegExp | ((pathname: string) => boolean),
+  pathname
+): boolean {
+  return matcher instanceof RegExp
+    ? matcher.test(pathname)
+    : typeof matcher === "function"
+    ? matcher(pathname)
+    : false;
+}
+
 function TopLevelNavItem({ href, matcher, title, icon: Icon }) {
   const router = useRouter();
   const pathname = router.pathname;
-  const isActive = matcher.test(pathname);
+  const isActive = isMatch(matcher, pathname) || href === pathname;
   return (
     <NavLink href={href} isTopLevel={true}>
       <span
@@ -45,7 +56,7 @@ function TopLevelNavItem({ href, matcher, title, icon: Icon }) {
 export function TabItem({ href, children, matcher }) {
   const router = useRouter();
   const pathname = router.pathname;
-  const isActive = matcher.test(pathname);
+  const isActive = isMatch(matcher, pathname) || href === pathname;
   return (
     <li>
       <Link
@@ -370,7 +381,7 @@ function getAllSections(nav) {
 function findRecursiveSectionLinkMatch(nav, pathname) {
   const sections = getAllSections(nav);
   return sections.find(({ matcher, sectionLinks }) => {
-    if (matcher?.test(pathname)) {
+    if (matcher && isMatch(matcher, pathname)) {
       return true;
     }
 
