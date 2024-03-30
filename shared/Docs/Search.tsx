@@ -357,7 +357,12 @@ const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
   }
 );
 
-function SearchDialog({ open, setOpen, className }: SearchDialogProps) {
+function SearchDialog({
+  open,
+  setOpen,
+  className,
+  enableShortcutKey,
+}: SearchDialogProps) {
   let router = useRouter();
   let formRef = useRef();
   let panelRef = useRef();
@@ -383,7 +388,7 @@ function SearchDialog({ open, setOpen, className }: SearchDialogProps) {
   }, [open, setOpen, router]);
 
   useEffect(() => {
-    if (open) {
+    if (open || enableShortcutKey === false) {
       return;
     }
 
@@ -399,7 +404,7 @@ function SearchDialog({ open, setOpen, className }: SearchDialogProps) {
     return () => {
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [open, setOpen]);
+  }, [open, setOpen, enableShortcutKey]);
 
   function onClose(open) {
     setOpen(open);
@@ -486,6 +491,7 @@ type SearchDialogProps = {
   open: boolean;
   setOpen: (boolean) => void;
   className?: string;
+  enableShortcutKey?: boolean;
 };
 type SearchProps = {
   buttonProps: SearchButtonProps;
@@ -505,12 +511,8 @@ function useSearchProps(): SearchProps {
     },
     dialogProps: {
       open,
-      setOpen(open) {
-        let { width, height } =
-          buttonRef.current?.getBoundingClientRect() ?? {};
-        if (!open || (width && height)) {
-          setOpen(open);
-        }
+      setOpen(newOpenState) {
+        setOpen(newOpenState);
       },
     },
   };
@@ -548,7 +550,11 @@ export function Search() {
   return (
     <div className="hidden lg:block lg:max-w-sm lg:flex-auto">
       <SearchButton {...buttonProps} shortcutKey={shortcutKey} />
-      <SearchDialog className="hidden lg:block" {...dialogProps} />
+      <SearchDialog
+        className="hidden lg:block"
+        enableShortcutKey={true}
+        {...dialogProps}
+      />
     </div>
   );
 }
@@ -556,10 +562,15 @@ export function Search() {
 /* Search input button in mobile sidebar */
 export function MobileSearch() {
   let { buttonProps, dialogProps } = useSearchProps();
+  console.log("MobileSearch");
   return (
     <div className="block lg:hidden flex-auto mb-4">
       <SearchButton {...buttonProps} />
-      <SearchDialog className="block" {...dialogProps} />
+      <SearchDialog
+        className="block"
+        enableShortcutKey={false}
+        {...dialogProps}
+      />
     </div>
   );
 }

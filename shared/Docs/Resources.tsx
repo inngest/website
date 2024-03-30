@@ -199,7 +199,7 @@ export function Resource({
       <div className="absolute inset-0 rounded-lg ring-1 ring-inset ring-slate-900/7.5 group-hover:ring-slate-900/10 dark:ring-white/10 dark:group-hover:ring-white/20" />
       <Link
         href={resource.href}
-        className="w-full text-slate-900 hover:text-slate-700"
+        className="w-full text-slate-900 dark:text-slate-200 hover:text-slate-700 hover:dark:text-slate-50"
       >
         <div
           className={`relative rounded-lg px-4 pb-4 ${
