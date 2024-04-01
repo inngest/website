@@ -831,7 +831,9 @@ const matchers = {
   guides: (pathname) =>
     /^\/docs\/guides/.test(pathname) || linkSearch(sectionGuides, pathname),
   // reference: /^\/docs\/reference/,
-  reference: (pathname) => linkSearch(sectionReference, pathname),
+  reference: (pathname) =>
+    /^\/docs\/reference/.test(pathname) ||
+    linkSearch(sectionReference, pathname),
   examples: /^\/docs\/examples/,
   // should match everything except above
   // default: /^\/docs(?!\/guides|\/reference|\/examples)/,
