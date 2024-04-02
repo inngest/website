@@ -6,7 +6,7 @@ export default function Link(
   props: LinkProps & AnchorHTMLAttributes<HTMLAnchorElement>
 ) {
   const className = clsx(
-    "underline text-indigo-500 hover:text-indigo-400 underline-offset-2",
+    "text-indigo-400 hover:text-indigo-200 hover:underline underline-offset-2",
     props.className
   );
   return <NextLink {...props} className={className} />;

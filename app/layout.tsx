@@ -41,7 +41,7 @@ export default function RootLayout({
           {children}
         </main>
 
-        <Footer />
+        <Footer disableCta={true} />
 
         {/* <Script
           id="js-inngest-sdk-script"
