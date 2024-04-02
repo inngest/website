@@ -18,6 +18,12 @@
     "notes": null
   },
   {
+    "name": "Clickhouse",
+    "status": "ACTIVE",
+    "dataStored": "Customer metrics data, and also execution related data.",
+    "notes": null
+  },
+  {
     "name": "Close",
     "status": "ACTIVE",
     "dataStored": "Potential and existing customers' sales contact",
