@@ -180,7 +180,7 @@ export default function Page() {
         <div className="px-8 py-8 rounded-md bg-slate-1000">
           <Heading
             level={2}
-            title="Secure, compliant, scalable"
+            title="Enterprise ready"
             lede={
               <>
                 The Inngest platform has been designed from the ground up with
