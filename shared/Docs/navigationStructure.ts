@@ -61,6 +61,10 @@ const sectionGettingStarted: NavGroup[] = [
         title: "Local Development",
         href: `/docs/local-development`,
       },
+      {
+        title: "Security",
+        href: `/docs/security`,
+      },
     ],
   },
   {
@@ -148,6 +152,10 @@ const sectionGuides: NavGroup[] = [
       {
         title: "Using multiple triggers",
         href: `/docs/guides/multiple-triggers`,
+      },
+      {
+        title: "FAQs",
+        href: `/docs/faq`,
       },
     ],
   },
