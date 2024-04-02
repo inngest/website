@@ -1,13 +1,14 @@
 ---
-heading: "Streamlining Financial Data Syncs: How Inngest Powers Finta's Backend Workflows"
-subtitle: Learn how Finta optimizes financial data syncing using Inngest's orchestration and webhook integration, enhancing backend efficiency
+heading: "Synchronizing financial data from Plaid and Stripe"
+showSubtitle: true
+subtitle: Learn how Finta builds and optimizesdata pipelines.
 image: /assets/blog/finta/main.jpg
 date: 2024-03-28
 author: Taylor Facen
 disableCTA: true
 ---
 
-Hi 👋🏽, I'm Taylor, founder and solo-builder of [Finta](https://www.finta.io/). Finta helps users sync their financial data to their favorite apps, so that they can manage their finances how they want, where they want. The platform integrates with data providers like Plaid and Stripe to sync data to destination integrations like Notion, Airtable, Coda, and Google Sheets. These syncs can be triggered by webhooks when new data is available or by manual triggers initiated by users. 
+Hi 👋🏽, I'm Taylor, founder and solo-builder of [Finta](https://www.finta.io/). Finta helps users sync their financial data to their favorite apps, so that they can manage their finances how they want, where they want. The platform integrates with data providers like Plaid and Stripe to sync data to destination integrations like Notion, Airtable, Coda, and Google Sheets. These syncs can be triggered by webhooks when new data is available or by manual triggers initiated by users.
 
 ![Diagram showing how webhooks and users can trigger syncs within Finta](/assets/blog/finta/finta-webhooks.png)
 
@@ -52,11 +53,14 @@ This feature is the star of the show. Previously, we used `waitForEvents` to run
 ```jsx
 const { destinationId, syncId } = event.data;
 
-const transactions = await step.run({ id: 'fetch-transaction' }, async () => ...)
+const transactions = await step.run(
+  { id: 'fetch-transaction' }, 
+  async () => ...
+)
 
 const syncTransactionsPromise = step.waitForEvent('app/destination.sync.task.finished', {
-timeout: '10m',
-if: `async.data.destinationId == '${destinationId}' && async.data.syncId == '${syncId}' && async.data.action == 'Sync' && async.data.table == 'Transactions'}`
+  timeout: '10m',
+  if: `async.data.destinationId == '${destinationId}' && async.data.syncId == '${syncId}' && async.data.action == 'Sync' && async.data.table == 'Transactions'}`
 })
 
 await step.sendEvent({
@@ -109,12 +113,12 @@ Now, there are distinct sync events and functions for each data type. Each event
 
 ```jsx
 {
-name: 'app/destination.sync.accounts',
-data: {
-  destinationId: string;
-  syncId: string;
-  accounts: Account[]
-}
+  name: 'app/destination.sync.accounts',
+  data: {
+    destinationId: string;
+    syncId: string;
+    accounts: Account[]
+  }
 }
 ```
 
@@ -124,40 +128,50 @@ Each event corresponds to a sync function:
 const table = 'Accounts';
 
 const syncAccounts = inngest.createFunction(
-	{
-		...
-	},
-	async ({ event, step, utils }) => { // Utils comes from middleware
-		const { destinationId, accounts } = event.data;
-		const destination = await utils.fetchDestination({ id: 'fetch-destination' }, destinationId);
+  {
+    ...
+  },
+  async ({ event, step, utils }) => { // Utils comes from middleware
+    const { destinationId, accounts } = event.data;
+    const destination = await utils.fetchDestination(
+	  { id: 'fetch-destination' }, 
+	  destinationId
+	);
 		
-		const { records, destinationError } = await utils.loadRecords({ id: 'load-account-records' }, {
-	  table,
-	  destinationId,
-	  destination
-	});
+	const { records, destinationError } = await utils.loadRecords(
+	  { id: 'load-account-records' }, {
+	    table,
+	    destinationId,
+	    destination
+		}
+	);
 	
 	if { destinationError } {
-		return { hasError: true }
+	  return { hasError: true }
 	}
 	
 	const currentAccounts = records.map(record => record.properties.id);
-	
 	const newAccounts = accounts.filter(account => !currentAccounts.includes(account.id));
 	const updatedAccounts = accounts.filter(account => currentAccounts.includes(account.id));
-	
-		const createResults = await step.run({ id: 'sync-new-accounts-to-destination' }, async () => {
-			...
-		});
+
+	const createResults = await step.run(
+	  { id: 'sync-new-accounts-to-destination' }, 
+	  async () => {
+	    ...
+	  }
+	);
 		
-		const updateResults = await step.run({ id: 'sync-updated-accounts-to-destination' }, async () => {
-			...
-		});
+	const updateResults = await step.run(
+	  { id: 'sync-updated-accounts-to-destination' },
+	  async () => {
+	    ...
+	  }
+	);
 		
-		await utils.logResultsToDB({ id: 'log-results-to-db' }, { createResults, updateResults });
+	await utils.logResultsToDB({ id: 'log-results-to-db' }, { createResults, updateResults });
 		
-		return { hasError: false }
-	}
+	return { hasError: false }
+  }
 )
 ```
 
@@ -175,43 +189,42 @@ Function:
 import { syncAccounts, syncTransactions } from './functions/...';
 
 const plaidDefaultUpdate = inngest.createFunction(
-	{
-		...
-	},
-	{ event: 'plaid/transactions.default_update' },
-	async ({ event, step, utils }) => {
-		const connectedDestinationIds = await utils.getConnectedDestinationIds({ id: 'get-connected-destination-ids' }, data: event.data)
+  {
+    ...
+  },
+  { event: 'plaid/transactions.default_update' },
+  async ({ event, step, utils }) => {
+    const connectedDestinationIds = await utils.getConnectedDestinationIds(
+	  { id: 'get-connected-destination-ids' }, 
+	  data: event.data
+	)
 		
-		const sync = await utils.startSync({ id: 'start-sync' }, ...);
+	const sync = await utils.startSync({ id: 'start-sync' }, ...);
+	const accountsData = await step.run({ id: 'fetch-accounts-from-plaid' }, ...)
 		
-		const accountsData = await step.run({ id: 'fetch-accounts-from-plaid' }, ...)
-		
-		const syncAccountsResponse = await Promise.all(connectedDestinationIds.map(destinationId => 
-			step.invoke({ id: `sync-accounts-to-${destinationId}` }, {
-				function: syncAccounts,
-				data: {
-					destinationid,
-					syncId: sync.id,
-					accounts: accountsData
-				}
-			})
+	const syncAccountsResponse = await Promise.all(connectedDestinationIds.map(destinationId => 
+	  step.invoke({ id: `sync-accounts-to-${destinationId}` }, {
+	    function: syncAccounts,
+		data: {
+		  destinationid,
+		  syncId: sync.id,
+		  accounts: accountsData
+		}
+	  })
 	)).then(responses => {
-		const hasError = Boolean(responses.find(response => response.hasError));
+	  const hasError = Boolean(responses.find(response => response.hasError));
 		
-		return { responses, hasError }
+	  return { responses, hasError }
 	})
 	
 	if ( syncAccountsResponse.hasError ) {
-		// Send notification
-		
-		// Update logs
-		
-		// etc.
-		return;
+	  // Send notification
+	  // Update logs
+	  // etc.
+	  return;
 	}
 
 	const transactionsData = await step.run({ id: 'fetch-transactions-from-plaid' }, ...);
-	
 	const syncTransactionsResponse = ...
 })
 ```
