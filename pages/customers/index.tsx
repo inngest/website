@@ -88,6 +88,15 @@ const caseStudies: {
     ),
     tags: ["Workflow Engine"],
   },
+  {
+    href: "/customers/fey",
+    logo: "/assets/customers/fey/fey-icon.svg",
+    name: "Fey",
+    title: "Orchestrating complex financial data pipelines",
+    snippet:
+      "50x faster and 50x cheaper. How Fey leverages Inngest in data-intensive processes.",
+    tags: ["Workflows", "AI", "Serverless"],
+  },
 ];
 
 const featuredCompanies = [
