@@ -84,11 +84,11 @@ sometimes providing a custom `fetch` function is necessary or wanted.
 This error is usually indicative of providing a custom `fetch` function to
 either a `new Inngest()` or `serve()` call, but not carrying over its
 [binding](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_objects/Function/bind).
-This is a common JavaScript gotcha, where bound methods lose their binding was
+This is a common JavaScript gotcha, where bound methods lose their binding when
 passed into an object.
 
 To resolve, make sure that you rebind the `fetch` function as it is passed. This
-is commonly to `globalThis`, though your specific runtime/version/environment
+is commonly bound to `globalThis`, though your specific runtime/version/environment
 may vary.
 
 ```ts
