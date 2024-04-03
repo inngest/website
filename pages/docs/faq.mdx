@@ -9,7 +9,9 @@
 - [My app's serve endpoint requires authentication. What should I
   do?](#my-app-s-serve-endpoint-requires-authentication-what-should-i-do)
 - [Why am I getting a `killed` error when running the Dev Server?](#why-am-i-getting-a-killed-error-when-running-the-dev-server)
-- [Why am I getting a `NON_DETERMINISTIC_FUNCTION` error?](#why-am-i-getting-a-non-deterministic-function-error)
+- [Why am I getting a `NON_DETERMINISTIC_FUNCTION`
+  error?](#why-am-i-getting-a-non-deterministic-function-error)
+- [Why am I getting an `Illegal invocation` error?](#why-am-i-getting-an-illegal-invocation-error)
 
 ## How do I run crons only in production?
 
@@ -71,3 +73,26 @@ This is an error present in v2.x.x of the TypeScript SDK that can be thrown when
 If you're seeing this error, we encourage you to upgrade to v3.x.x of the TypeScript SDK, which will recover and continue gracefully from this circumstance.
 
 For more information, see the [Upgrading from v2 to v3](/docs/sdk/migration) migration guide.
+
+## Why am I getting an `Illegal invocation` error?
+When making requests to an Inngest Server, the TypeScript SDK uses
+[`fetch`](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API). The
+actual implementation of this varies across different runtimes, versions, and
+environments. The SDK tries to account for these differences internally, but
+sometimes providing a custom `fetch` function is necessary or wanted.
+
+This error is usually indicative of providing a custom `fetch` function to
+either a `new Inngest()` or `serve()` call, but not carrying over its
+[binding](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_objects/Function/bind).
+This is a common JavaScript gotcha, where bound methods lose their binding when
+passed into an object.
+
+To resolve, make sure that you rebind the `fetch` function as it is passed. This
+is commonly bound to `globalThis`, though your specific runtime/version/environment
+may vary.
+
+```ts
+new Inngest({
+  fetch: fetch.bind(globalThis),
+});
+```
