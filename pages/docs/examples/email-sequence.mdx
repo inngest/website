@@ -1,4 +1,6 @@
 import { ResourceGrid, Resource } from 'src/shared/Docs/Resources';
+import { Example } from 'src/shared/Docs/Examples';
+
 import { EnvelopeIcon } from "@heroicons/react/24/outline";
 
 
@@ -6,17 +8,15 @@ export const description = "See how to implement an email sequence with Inngest"
 
 # Email Sequence
 
-Inngest enables you to build a dynamic drip campaign based on your user's behavior.
-
-## Introduction
+A drip campaign is a dynamic marketing campaign which is based on your user's behavior.
 
 Let's say you want to create the following campaign:
 
 - Send every user a welcome email when they join.
-- If a user received an email, wait a day and then follow-up with pro user tips meant for highly engaged users.
-- Otherwise, wait for up to 3 days and then send them the default trial offer, but only if the user hasn't already upgraded their plan in the meantime.
+  - If a user received an email: wait a day and then follow-up with pro user tips meant for highly engaged users.
+  - Otherwise: wait for up to three days and then send them the default trial offer, but only if the user hasn't already upgraded their plan in the meantime.
 
-You can build this with Inngest.
+This page provides an overview on how to use Inngest to build reliable marketing campaigns, as well as all the related materials to this feature.
 
 ## How it works
 
@@ -24,7 +24,7 @@ tba
 
 ## Quick Snippet
 
-Below is a snippet from SOURCE on how such a campaign would look like:
+Below is an example of how such a campaign would look like:
 
 ```javascript
 const signupDripCampaign = inngest.createFunction(
@@ -90,38 +90,57 @@ const signupDripCampaign = inngest.createFunction(
 
 ## Example apps
 
-An example app built by our team.
+Here are apps which use Inngest to power email campaigns.
 
-Community contributions:
+<Example example={{
+  href: "/docs/guides/resend-webhook-events",
+  title: "Integrate email events with Resend webhooks",
+  technology: "Next.js, Resend",
+  description: "Get started sending customer lifecycle emails with Resend and Inngest.",
+  pattern: 1,
+  demo: "/docs/guides/resend-webhook-events",
+  github: "/docs/guides/resend-webhook-events",
+}}/>
 
-- Inngest+Resend example by [Joel Hooks](https://twitter.com/jhooks) ([GitHub](https://github.com/joelhooks/inngest-resend-example) | [demo](https://inngest-resend.vercel.app/))
-    - “The purpose of this example is to show you how to get started sending customer lifecycle emails with Resend and Inngest.”
+## More context
 
-## Learn more
+Check the resources below to learn more about building email sequences with Inngest.
 
 <ResourceGrid cols={2}>
 
 <Resource resource={{
-  href: "/docs/examples/email-sequence",
-  name: "Integrate email events with Resend webhooks",
+  href: "/docs/guides/resend-webhook-events",
+  name: "Guide: Integrate email events with Resend webhooks",
   icon: EnvelopeIcon,
-  description: "resend webhooks can be used to build functionality into your application based on changes in the email status. In this guide, you will learn how to build a dynamic drip marketing campaign which responds to a user's behavior.",
+  description: "Resend webhooks can be used to build functionality into your application based on changes in the email status. In this guide, you will learn how to build a dynamic drip marketing campaign which responds to a user's behavior.",
+  pattern: 1,
+}}/>
+
+<Resource resource={{
+  href: "/docs/examples/email-sequence",
+  name: 'Talk: "Background jobs 101: building reliable apps with Inngest"',
+  icon: EnvelopeIcon,
+  description: "In this talk Sylwia Vargas explains why the DIY approaches to user onboarding email campaigns tend to be slow and unreliable, and how we can leverage background jobs to deliver a great UX.",
+  pattern: 1,
+}}/>
+
+<Resource resource={{
+  href: "https://www.youtube.com/watch?v=EoFI_Bmzb4g",
+  name: 'Talk: "Automate All of Your Customer Emails with AI in Next.js"',
+  icon: EnvelopeIcon,
+  description: "In this talk Joel Hooks dives into managing long-running processes like generative AI to enhance our processes and handle the human interaction required at each step of the workflow process.",
+  pattern: 1,
+}}/>
+
+<Resource resource={{
+  href: "/blog/lifecycle-emails-with-resend",
+  name: 'Blog post: "Sending customer lifecycle emails with Resend and Inngest"',
+  icon: EnvelopeIcon,
+  description: "In this blog post Joel Hooks implements customer lifecycle emails using Inngest, Next.js, Prisma, and Resend, building a highly personalized and automated email workflows.",
   pattern: 1,
 }}/>
 
 </ResourceGrid>
-
-
-- Guide: “[Integrate email events with Resend webhooks](/docs/guides/resend-webhook-events)” (Inngest docs)
-    - Resend webhooks can be used to build functionality into your application based on changes in the email status. In this guide, you will learn how to build a dynamic drip marketing campaign which responds to a user's behavior.
-- Talk: “Background jobs 101: building reliable apps with Inngest” by Sylwia Vargas
-    - This talk offers a gentle introduction to a new paradigm of durable workflows by walking the audience through a common use case: user onboarding email campaign.
-    I'll show how the DIY approaches tend to be slow and unreliable — or require significant investment of resources. Instead, by embracing background jobs you can deliver a great User Experience and stress-free ops.
-- Talk: “[Automate All of Your Customer Emails with AI in Next.js](https://www.youtube.com/watch?v=EoFI_Bmzb4g)” by Joel Hooks at Next.js Conf 2023
-    - Let's dive into the challenges of serverless workflows, and explore how we can manage long-running processes like generative AI to enhance our processes and handle the human interaction required at each step of the workflow process.
-- Blog post: “[Sending customer lifecycle emails with Resend and Inngest](https://www.inngest.com/blog/lifecycle-emails-with-resend)” by Joel Hooks
-    - The blog post discusses the significance of email communication in web applications and stresses the importance of sending relevant and non-disruptive emails to users. It offers insights into implementing customer lifecycle emails using tools like Next.js, Prisma, and Resend, while emphasizing the need for a robust, event-driven workflow facilitated by Inngest. Finally, it highlights the simplicity and efficacy of Resend for sending emails and suggests the potential for highly personalized and automated email workflows.
-    
 
 ## Related concepts
 
