@@ -1,0 +1,78 @@
+export const title = '50x faster and 50x cheaper. How Fey leverages Inngest in data-intensive processes.'
+export const companyName = 'Fey'
+export const logo = '/assets/customers/fey/fey-icon.svg'
+export const logoScale = 2;
+export const quote = {
+  text: `As soon as companies release their data, we want to have it in Fey. With our old tool it would take up to a day for them to show up. And with Inngest it's almost instant.`,
+  attribution: {
+    name: 'Dennis Brotzky',
+    title: 'CTO, Co-founder',
+  },
+  avatar: '/assets/customers/fey/dennis-brotzky.jpg',
+}
+export const companyURL = 'https://www.feyapp.com'
+export const companyDescription = `Fey is a personal finance app that that's making making financial research more accessible and effortless for anyone.`
+export const ogImage = '/assets/customers/fey/og-image-fey.png'
+
+_Fey is a personal finance app that that's making making financial research more accessible and effortless for anyone. Built by a small team, the app uses Next.js, Inngest, and Render, leveraging serverless functions wherever appropriate._
+
+## The Challenge: Quickly process massive datasets
+
+Fey relies on different financial data providers for data like price history, earnings, analyst estimates, financials, statistics, among many others. At the core of this data-intensive application are data pipelines which fetch, parse, clean, sort, and store the data. Also, different pieces of data come from different providers which adds additional complexity. Most of these complicated pipelines are run on schedules and may contain many discrete steps.
+
+![A screenshot of Fey's dashboard](/assets/customers/fey/fey-dashboard.png)
+
+Fey needed a tool that can quickly orchestrate tasks and reliably trigger scheduled jobs and which would allow them to easily execute these background processes from the client through an API.
+
+## Inngest: An SDK that reduces code complexity
+
+Initially, the team used Google Cloud Composer — a platform that, designed for data pipelines, required everything to be written as DAGs in Python and considerable additional customization.
+
+> The technology we were using before was a lot harder and wasn't as efficient. It was difficult to work with events, it required Python (when Fey's tech stack is JavaScript), and deploying was more annoying since it didn't integrate to Vercel. Inngest made it much easier and as a result, we now get much faster data updates in our application.
+
+The team discovered Inngest by coincidence and quickly saw the potential benefits. Using the Inngest SDK could simplify the hard parts of their problems: it was easier to define pipeline stages as steps and re-usable functions then combine via [function invocation](/docs/guides/invoking-functions-directly).
+
+As a result, their codebase also significantly simplified and because all of the jobs now lived in a single TypeScript codebase, sharing code, packages, or database helper methods prevented repeated work. Additionally, Inngest's Vercel integration enabled a fully-automated and stress free deployment process.
+
+Simpler code and developer workflow weren't the only improvements. The new data pipelines completed in a fraction of the time of their previous system: **on average, data was now processed 50x faster**.
+
+Finally, they saw a major reduction in unit costs - **workloads that previously cost them $2,800 monthly to run could now be completed for less than $100** due to significant efficiencies. This improved margins and gives them much more room to scale.
+
+> As soon as companies release their data, we want to have it in Fey. **With our old tool it would take up to a day** for them to show up, which was a result of mostly complicated configuration. And **with Inngest now it's like almost instant**, maximum 30 minutes.
+
+## Combining ingestion with OpenAI
+
+One of the competitive advantages of Fey is how they use generative AI to enhance stock research reporting.
+
+There are two features where Fey employs OpenAI. First is summarizing news articles to provide a “human-friendly” rundown of different types financial data.
+
+![A screenshot of Fey's news page](/assets/customers/fey/fey-news-page.jpeg)
+
+The second feature are SEC filings, both 10-Ks and 10-Qs. Fey generates a summary of the highlights, risks, and strengths. In this way, users don't have to deal with the cognitive load of financial jargon.
+
+![A screenshot of Fey's news page](/assets/customers/fey/fey-news-page-2.png)
+
+Both features are orchestrated using Inngest's [`step.invoke()`](/docs/reference/functions/step-invoke), which allows you to asynchronously call another function and handle the result, making it perfect for composing complex workflows with re-usable components.
+
+Both features are orchestrated using Inngest's [`step.invoke()`](/docs/reference/functions/step-invoke), which allows you to asynchronously call another function and handle the result, making it perfect for complex workflows.
+
+![Inngest UI used by Fey](/assets/customers/fey/fey-inngest-ui.jpeg)
+
+## Inngest Benefits
+
+The adoption of Inngest resulted in several positive outcomes for Fey:
+
+1. **Concise codebase:** Inngest's SDK is designed with developers in mind, which results in elegant and self-evident code. Moreover, given that all code lives in a single codebase now, there's no need for duplicated logic in different language codebases. 
+2. **Decreased context-switching:** Connected to the previous point, it is easier to introduce new features because all code lives in the same place. Working across frontend and backend is not necessary anymore.
+3. **50x faster execution:** When companies release earnings, Fey needs to process this data and serve it to the users, which with the previous provider could take up to a day. With Inngest, the data is available within 30 minutes or most often, instantly.
+4. **50x lower bills:** Previous provider billed Fey team $2,800 a month. Having switched to Inngest, the bills went down to less than $100 due to significant efficiencies.
+
+## Conclusion
+
+Inngest became Fey's single solution for scheduled jobs, data ingestion, and AI orchestration. The integration of Inngest into Fey's data-intensive processes has increased the efficiency and performance of the application. By simplifying codebase management and reducing redundancy, Inngest contributed to a more cohesive development experience, allowing the team to focus on product innovation. This aligns with Inngest's mission of helping developers focus on just code. 
+
+By integrating Inngest, Fey saw a 50x increase in speed in data processing, while the monthly expenses plummeting from $2,800 to less than $100. This is a testament to how cost-effective Inngest is for companies of all sizes.
+
+---
+
+If you're interested in learning how Inngest can help your team, [reach out to us](/contact?ref=case-study-fey) to chat with an export.
