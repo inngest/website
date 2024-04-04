@@ -33,7 +33,7 @@ export default function Hero() {
           <div className="flex flex-col gap-6 font-normal text-base md:text-lg">
             <p>
               Develop durable functions and workflows in code <em>without</em>{" "}
-              having to create queues, workers, or manage complex state.
+              creating queues, workers, or managing complex state.
             </p>
             <p>
               Our SDK and developer tools help you ship reliable code that
