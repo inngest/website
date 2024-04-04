@@ -567,6 +567,20 @@ const sectionPythonReference: NavGroup[] = [
   },
 ];
 
+const sectionExamples: NavGroup[] = [
+  {
+    title: "Examples",
+    defaultOpen: true,
+    links: [
+      { title: "All examples", href: `/docs/examples/` },
+      {
+        title: "Email Sequence",
+        href: `/docs/examples/email-sequence`,
+      },
+    ],
+  },
+];
+
 const sectionReference: NavGroup[] = [
   {
     title: "TypeScript SDK",
@@ -842,7 +856,7 @@ const matchers = {
   reference: (pathname) =>
     /^\/docs\/reference/.test(pathname) ||
     linkSearch(sectionReference, pathname),
-  examples: /^\/docs\/examples/,
+  examples: /^\/docs\/examples/ || linkSearch(sectionExamples, pathname),
   // should match everything except above
   // default: /^\/docs(?!\/guides|\/reference|\/examples)/,
   default: (pathname) => linkSearch(sectionGettingStarted, pathname),
@@ -867,12 +881,12 @@ export const menuTabs = [
     href: "/docs/reference",
     matcher: matchers.reference,
   },
-  // {
-  //   title: "Examples",
-  //   icon: CogIcon,
-  //   href: "/docs/examples",
-  //   matcher: /\/examples/,
-  // },
+  {
+    title: "Examples",
+    icon: CogIcon,
+    href: "/docs/examples",
+    matcher: matchers.examples,
+  },
 ];
 
 export const topLevelNav = [
@@ -900,6 +914,13 @@ export const topLevelNav = [
     href: "/docs/reference",
     matcher: matchers.reference,
     sectionLinks: sectionReference,
+  },
+  {
+    title: "Examples",
+    icon: CogIcon,
+    href: "/docs/examples",
+    matcher: matchers.examples,
+    sectionLinks: sectionExamples,
   },
   {
     title: "Platform",

@@ -1,0 +1,20 @@
+import { ResourceGrid, Resource } from 'src/shared/Docs/Resources'
+import { EnvelopeIcon } from "@heroicons/react/24/outline";
+
+export const hidePageSidebar = true;
+
+# Examples
+
+Explore the features built with Inngest:
+
+<ResourceGrid cols={3}>
+
+<Resource resource={{
+  href: "/docs/examples/email-sequence",
+  name: "Email Sequence",
+  icon: EnvelopeIcon,
+  description: "Build a dynamic drip campaign based on a user's behavior.",
+  pattern: 1,
+}}/>
+
+</ResourceGrid>

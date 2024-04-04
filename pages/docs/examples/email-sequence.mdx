@@ -1,0 +1,131 @@
+import { ResourceGrid, Resource } from 'src/shared/Docs/Resources';
+import { EnvelopeIcon } from "@heroicons/react/24/outline";
+
+
+export const description = "See how to implement an email sequence with Inngest"
+
+# Email Sequence
+
+Inngest enables you to build a dynamic drip campaign based on your user's behavior.
+
+## Introduction
+
+Let's say you want to create the following campaign:
+
+- Send every user a welcome email when they join.
+- If a user received an email, wait a day and then follow-up with pro user tips meant for highly engaged users.
+- Otherwise, wait for up to 3 days and then send them the default trial offer, but only if the user hasn't already upgraded their plan in the meantime.
+
+You can build this with Inngest.
+
+## How it works
+
+tba
+
+## Quick Snippet
+
+Below is a snippet from SOURCE on how such a campaign would look like:
+
+```javascript
+const signupDripCampaign = inngest.createFunction(
+  { id: "signup-drip-campaign" },
+  { event: "app/signup.completed" },
+  async ({ event, step }) => {
+    const { user } = event.data;
+    const { email, first_name } = user
+    const welcome = "Welcome to ACME";
+
+    const { id: emailId } = await step.run("welcome-email", async () => {
+      return await sendEmail(
+        email,
+        welcome,
+        <div>
+          <h1>Welcome to ACME, {user.firstName}</h1>
+        </div>
+      );
+    });
+
+    // Wait up to 3 days for the user open the email and click any link in it
+    const clickEvent = await step.waitForEvent("wait-for-engagement", {
+      event: "resend/email.clicked",
+			if: `async.data.email_id == ${emailId}`,
+      timeout: "3 days",
+    });
+
+    // if the user clicked the email, send them power user tips
+    if (clickEvent) {
+      await step.sleep("delay-power-tips-email", "1 day");
+      await step.run("send-power-user-tips", async () => {
+        await sendEmail(
+          email,
+          "Supercharge your ACME experience",
+          <h1>
+            Hello {firstName}, here are tips to get the most out of ACME
+          </h1>
+        );
+      });
+
+      // wait one more day before sending the trial offer
+      await step.sleep("delay-trial-email", "1 day");
+    }
+
+    // check that the user is not already on the pro plan
+    const dbUser = db.users.byEmail(email);
+
+    if (dbUser.plan !== "pro") {
+      // send them a free trial offer
+      await step.run("trial-offer-email", async () => {
+        await sendEmail(
+          email,
+          "Free ACME Pro trial",
+          <h1>
+            Hello {firstName}, try our Pro features for 30 days for free
+          </h1>
+        );
+      });
+    }
+  }
+);
+```
+
+## Example apps
+
+An example app built by our team.
+
+Community contributions:
+
+- Inngest+Resend example by [Joel Hooks](https://twitter.com/jhooks) ([GitHub](https://github.com/joelhooks/inngest-resend-example) | [demo](https://inngest-resend.vercel.app/))
+    - “The purpose of this example is to show you how to get started sending customer lifecycle emails with Resend and Inngest.”
+
+## Learn more
+
+<ResourceGrid cols={2}>
+
+<Resource resource={{
+  href: "/docs/examples/email-sequence",
+  name: "Integrate email events with Resend webhooks",
+  icon: EnvelopeIcon,
+  description: "resend webhooks can be used to build functionality into your application based on changes in the email status. In this guide, you will learn how to build a dynamic drip marketing campaign which responds to a user's behavior.",
+  pattern: 1,
+}}/>
+
+</ResourceGrid>
+
+
+- Guide: “[Integrate email events with Resend webhooks](/docs/guides/resend-webhook-events)” (Inngest docs)
+    - Resend webhooks can be used to build functionality into your application based on changes in the email status. In this guide, you will learn how to build a dynamic drip marketing campaign which responds to a user's behavior.
+- Talk: “Background jobs 101: building reliable apps with Inngest” by Sylwia Vargas
+    - This talk offers a gentle introduction to a new paradigm of durable workflows by walking the audience through a common use case: user onboarding email campaign.
+    I'll show how the DIY approaches tend to be slow and unreliable — or require significant investment of resources. Instead, by embracing background jobs you can deliver a great User Experience and stress-free ops.
+- Talk: “[Automate All of Your Customer Emails with AI in Next.js](https://www.youtube.com/watch?v=EoFI_Bmzb4g)” by Joel Hooks at Next.js Conf 2023
+    - Let's dive into the challenges of serverless workflows, and explore how we can manage long-running processes like generative AI to enhance our processes and handle the human interaction required at each step of the workflow process.
+- Blog post: “[Sending customer lifecycle emails with Resend and Inngest](https://www.inngest.com/blog/lifecycle-emails-with-resend)” by Joel Hooks
+    - The blog post discusses the significance of email communication in web applications and stresses the importance of sending relevant and non-disruptive emails to users. It offers insights into implementing customer lifecycle emails using tools like Next.js, Prisma, and Resend, while emphasizing the need for a robust, event-driven workflow facilitated by Inngest. Finally, it highlights the simplicity and efficacy of Resend for sending emails and suggests the potential for highly personalized and automated email workflows.
+    
+
+## Related concepts
+
+- [Fan-out jobs](/docs/guides/fan-out-jobs)
+- [Scheduled functions](/docs/guides/scheduled-functions)
+- [Delayed functions](/docs/guides/enqueueing-future-jobs#delaying-jobs)
+- [Steps](/docs/reference/functions/step-run)
