@@ -22,11 +22,11 @@ Fey relies on different financial data providers for data like price history, ea
 
 ![A screenshot of Fey's dashboard](/assets/customers/fey/fey-dashboard.png)
 
-The team a tool that can quickly orchestrate tasks and reliably trigger scheduled jobsand which would allow them to easily execute these background processes from the client through an API.
+Fey needed a tool that can quickly orchestrate tasks and reliably trigger scheduled jobs and which would allow them to easily execute these background processes from the client through an API.
 
 ## Inngest: An SDK that reduces code complexity
 
-Initially, the team used Google Cloud Composer — a platform that, although designed for data pipelines, required everything to be written as DAGs in Python and plenty of additional customization.
+Initially, the team used Google Cloud Composer — a platform that, designed for data pipelines, required everything to be written as DAGs in Python and considerable additional customization.
 
 > The technology we were using before was a lot harder and wasn't as efficient. It was difficult to work with events, it required Python (when Fey's tech stack is JavaScript), and deploying was more annoying since it didn't integrate to Vercel. Inngest made it much easier and as a result, we now get much faster data updates in our application.
 
@@ -52,7 +52,7 @@ The second feature are SEC filings, both 10-Ks and 10-Qs. Fey generates a summar
 
 ![A screenshot of Fey's news page](/assets/customers/fey/fey-news-page-2.png)
 
-Both features use GPT-4 model via their Assistants API. Both require a complex data pipeline. For example, to achieve best results when reporting on SEC filings, each piece needs to be split into a few sections, which then are run through different prompts.
+Both features are orchestrated using Inngest's [`step.invoke()`](/docs/reference/functions/step-invoke), which allows you to asynchronously call another function and handle the result, making it perfect for composing complex workflows with re-usable components.
 
 Both features are orchestrated using Inngest's [`step.invoke()`](/docs/reference/functions/step-invoke), which allows you to asynchronously call another function and handle the result, making it perfect for complex workflows.
 
@@ -64,7 +64,7 @@ The adoption of Inngest resulted in several positive outcomes for Fey:
 
 1. **Concise codebase:** Inngest's SDK is designed with developers in mind, which results in elegant and self-evident code. Moreover, given that all code lives in a single codebase now, there's no need for duplicated logic in different language codebases. 
 2. **Decreased context-switching:** Connected to the previous point, it is easier to introduce new features because all code lives in the same place. Working across frontend and backend is not necessary anymore.
-3. **50x faster execution:** When companies release earnings, Fey needs to process this data and serve it to the users, which with the previous provider could take up to a day. With Inngest, the data is available instantly (or up to 30 minutes).
+3. **50x faster execution:** When companies release earnings, Fey needs to process this data and serve it to the users, which with the previous provider could take up to a day. With Inngest, the data is available within 30 minutes or most often, instantly.
 4. **50x lower bills:** Previous provider billed Fey team $2,800 a month. Having switched to Inngest, the bills went down to less than $100 due to significant efficiencies.
 
 ## Conclusion
