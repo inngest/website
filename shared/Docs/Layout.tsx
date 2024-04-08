@@ -14,6 +14,7 @@ import { Prose } from "./Prose";
 import { SectionProvider } from "./SectionProvider";
 import { useMobileNavigationStore } from "./MobileNavigation";
 import { getOpenGraphImageURL } from "../../utils/social";
+import clsx from "clsx";
 
 const GITHUB_BRANCH = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_REF || "main";
 const GITHUB_PREFIX = `https://github.com/inngest/website/tree/${GITHUB_BRANCH}/`;
@@ -103,7 +104,13 @@ export function Layout({
               </motion.nav>
             )}
 
-            <div className="relative px-4 pt-14 sm:px-6 lg:px-8 xl:pl-8 xl:pr-16 xl:mr-32 2xl:mr-10">
+            <div
+              className={clsx(
+                "relative px-4 pt-14 sm:px-6 lg:px-8 xl:pl-8 xl:pr-16",
+                hidePageSidebar && "xl:mr-32 2xl:mr-10",
+                !hidePageSidebar && "xl:mr-40 2xl:mr-80"
+              )}
+            >
               <main className="pt-6 lg:pt-8 xl:pr-8">
                 <Prose as="article">
                   {children}
