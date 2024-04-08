@@ -71,7 +71,7 @@ Wherever it ends up, the result is a URL that we can reference, so once that’s
 
 With the video media uploaded, we send the title and the media URL to the backend with a tRPC mutation.
 
-[tRPC](https://trpc.io/) is a library that gives seamless type safety with your Next.js serverless function API. It uses [react-query](https://tanstack.com/query/latest/docs/react) under the hood and gives you a nice full-stack developer experience with TypeScript.
+[tRPC](https://trpc.io/) is a library that gives seamless type safety with your Next.js serverless function API. It uses [react-query](https://tanstack.com/query/latest) under the hood and gives you a nice full-stack developer experience with TypeScript.
 
 Calling the [mutation looks like this](https://github.com/skillrecordings/products/blob/2caf79b4adec32ac4dcd775b46c7544d6192cc0d/apps/epic-web/src/module-builder/create-tip-form.tsx#L66C9-L78C10):
 
