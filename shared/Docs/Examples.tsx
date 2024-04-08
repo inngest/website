@@ -50,7 +50,7 @@ export function Example({
           </ExampleInfo>
         )}
         <ExampleInfo label="Explore">
-          <Link href={example.href}>Code</Link>
+          <Link href={example.github}>Code</Link>
           {example.demo && (
             <>
               {" | "} <Link href={example.demo}>Demo</Link>
