@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 
 import Link from "src/components/Link";
@@ -5,6 +6,12 @@ import Heading from "src/components/Heading";
 import Command from "src/components/Command";
 import { Button } from "src/shared/Button";
 import Github from "src/shared/Icons/Github";
+
+export const metadata: Metadata = {
+  title: "Inngest - Platform overview",
+  description:
+    "Learn about the Inngest platform, the features, and how it works.",
+};
 
 export default function Page() {
   return (
@@ -98,7 +105,20 @@ export default function Page() {
             title="Invoke, cancel, or resume with events"
             description="Invoke functions to run with a single event (or batch of events). Cancelling or resuming in-progress functions is also as easy as sending an event."
             img="/assets/platform/wait-for-event.svg"
-            href="/docs/events"
+            href={[
+              {
+                href: "/docs/guides/invoking-functions-directly",
+                text: "Invoke",
+              },
+              {
+                href: "/docs/guides/cancel-running-functions",
+                text: "Cancel",
+              },
+              {
+                href: "/docs/reference/functions/step-wait-for-event",
+                text: "Wait for event",
+              },
+            ]}
           />
           <FeatureCard
             title="Full historical archive"
@@ -375,27 +395,31 @@ function FeatureCard({
 }: {
   title?: string;
   description: string | React.ReactElement;
-  href?: string;
+  href?: string | { href: string; text: string }[];
   img?: string;
   icon?: string;
 }) {
   return (
     <div className="flex flex-col items-start gap-4 text-body">
       {icon && <img src={icon} className="w-8 h-8" />}
-      <h3 className="text-lg font-semibold">{title}</h3>
       {img && (
         <Image
           src={img}
           width="512"
           height="192"
           alt={title || ""}
-          className="rounded-md w-full"
+          className="rounded-md w-full mb-2"
         />
       )}
+      <h3 className="text-lg font-semibold">{title}</h3>
       <p className="">{description}</p>
       {href && (
-        <p>
-          <Link href={href}>Learn more &gt; </Link>
+        <p className="flex flex-row flex-wrap gap-4">
+          {typeof href === "string" ? (
+            <Link href={href}>Learn more &gt; </Link>
+          ) : (
+            href.map(({ href, text }) => <Link href={href}>{text} →</Link>)
+          )}
         </p>
       )}
     </div>
