@@ -18,10 +18,6 @@ Let's say you want to create the following campaign:
 
 This page provides an overview on how to use Inngest to build reliable marketing campaigns, as well as all the related materials to this feature.
 
-## How it works
-
-tba
-
 ## Quick Snippet
 
 Below is an example of how such a campaign would look like:
@@ -143,6 +139,14 @@ Check the resources below to learn more about building email sequences with Inng
 }}/>
 
 </ResourceGrid>
+
+## How it works
+
+With Inngest, you define functions or workflows using its SDK right in your own codebase and serve them through an HTTP endpoint in your application. Inngest uses this endpoint to download the function definitions and to execute them.
+
+When a specific event is triggered, Inngest takes care of reliably executing the function (or functions).
+
+In case of failure, Inngest will retry until it succeeds or you will see the failure on the Inngest dashboard, which you can debug and then retrigger so no data is lost.
 
 ## Related concepts
 
