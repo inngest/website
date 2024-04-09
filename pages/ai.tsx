@@ -52,7 +52,7 @@ export default function AI() {
 
         <div
           className="
-          grid lg:grid-cols-3
+          lg:grid-cols-3
           bg-slate-800/50 border-slate-700/30 rounded-lg border
           m-auto
           mt-8 mb-24
@@ -64,7 +64,7 @@ export default function AI() {
           <CodeWindow
             snippet={aiFlow}
             showLineNumbers={true}
-            className="col-span-2 bg-transparent border-none"
+            className="col-span-2 lg:col-span-3 bg-transparent border-none"
           />
           {/*
           <div className="border-l border-slate-700/30 p-2">
@@ -242,15 +242,25 @@ export default function AI() {
 
       <ProductionCopy />
 
-      <div className="max-w-xl mx-auto">
-        <CaseStudyCard
-          href="/customers/aomni"
-          logo="/assets/customers/aomni-logo.svg"
-          name="Aomni"
-          title="Productionizing AI-driven sales flows using serverless LLMs"
-          snippet="Leveraging Inngest for production-grade complex state management and LLM chaining."
-          tags={["AI"]}
-        />
+      <div className="max-w-6xl mx-auto">
+        <div className="my-20 grid md:grid-cols-2 gap-6 md:gap-12">
+          <CaseStudyCard
+            href="/customers/aomni"
+            logo="/assets/customers/aomni-logo.svg"
+            name="Aomni"
+            title="Productionizing AI-driven sales flows using serverless LLMs"
+            snippet="Leveraging Inngest for production-grade complex state management and LLM chaining."
+            tags={["AI"]}
+          />
+          <CaseStudyCard
+            href="/customers/fey"
+            logo="/assets/customers/fey/fey-icon.svg"
+            name="Fey"
+            title="50x faster and 50x cheaper."
+            snippet="How Fey leverages Inngest in orchestrating complex financial data pipelines and AI-powered features."
+            tags={["AI"]}
+          />
+        </div>
       </div>
 
       <p className="mt-8 text-zinc-400 text-center opacity-70 pt-16 mb-[-30px]">
