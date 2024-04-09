@@ -23,6 +23,7 @@ const options = {
     "http://localhost:",
     "https://www.uber.com",
     "https://www.tripadvisor.com",
+    "https://linkedin.com",
   ],
 };
 
