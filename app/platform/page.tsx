@@ -6,6 +6,8 @@ import Heading from "src/components/Heading";
 import Command from "src/components/Command";
 import { Button } from "src/shared/Button";
 import Github from "src/shared/Icons/Github";
+import Card from "./Card";
+import PlatformComparison from "./PlatformComparison";
 
 export const metadata: Metadata = {
   title: "Inngest - Platform overview",
@@ -57,12 +59,9 @@ export default function Page() {
             </>
           }
         />
-        <div className="max-w-4xl mx-auto my-16">
-          <Card
-            img="/assets/platform/existing-tools.png"
-            title="Everything that Inngest replaces"
-          />
-        </div>
+
+        <PlatformComparison />
+
         <p className="max-w-[720px] my-4 text-sm sm:text-base md:text-lg text-body">
           Inngest can be run in local development or CI as a single binary. This
           means simpler, faster feedback loops during dev and integration
@@ -124,7 +123,6 @@ export default function Page() {
             title="Full historical archive"
             description="Events are recorded for debugging, replay, or export enabling you to do more with the valuable data in your application."
             img="/assets/platform/event-archive.svg"
-            href="/docs/events"
           />
         </div>
       </section>
@@ -142,14 +140,17 @@ export default function Page() {
           }
         />
         <div className="my-16 grid grid-cols-3 gap-8">
-          {flowControlFeatures.map(({ title, description, href, icon }) => (
-            <FeatureCard
-              title={title}
-              description={description}
-              href={href}
-              icon={icon}
-            />
-          ))}
+          {flowControlFeatures.map(
+            ({ title, description, href, icon }, idx) => (
+              <FeatureCard
+                key={idx}
+                title={title}
+                description={description}
+                href={href}
+                icon={icon}
+              />
+            )
+          )}
         </div>
       </section>
 
@@ -167,8 +168,13 @@ export default function Page() {
           }
         />
         <div className="my-16 grid grid-cols-3 gap-8">
-          {durableExecutionFeatures.map(({ title, description, href }) => (
-            <FeatureCard title={title} description={description} href={href} />
+          {durableExecutionFeatures.map(({ title, description, href }, idx) => (
+            <FeatureCard
+              title={title}
+              description={description}
+              href={href}
+              key={idx}
+            />
           ))}
         </div>
       </section>
@@ -186,8 +192,14 @@ export default function Page() {
           }
         />
         <div className="my-16 grid grid-cols-3 gap-8">
-          {platformFeatures.map(({ title, description, href }) => (
-            <FeatureCard title={title} description={description} href={href} />
+          {platformFeatures.map(({ icon, title, description, href }, idx) => (
+            <FeatureCard
+              key={idx}
+              icon={icon}
+              title={title}
+              description={description}
+              href={href}
+            />
           ))}
         </div>
       </section>
@@ -212,8 +224,8 @@ export default function Page() {
             ledeClassName="mx-auto"
           />
           <div className="mt-16 mb-8 grid grid-cols-3 gap-x-8 gap-y-16">
-            {enterpriseFeatures.map(({ title, description }) => (
-              <FeatureCard title={title} description={description} />
+            {enterpriseFeatures.map(({ title, description }, idx) => (
+              <FeatureCard title={title} description={description} key={idx} />
             ))}
           </div>
         </div>
@@ -303,47 +315,55 @@ const durableExecutionFeatures = [
     title: "Serverless, servers, or both",
     description:
       "Functions can run on any serverless platform or any cloud provider. You deploy the code, Inngest handles the rest.",
-    href: "TODO",
+    href: "/docs/apps/cloud",
   },
   {
     title: "Sleep, delay, schedule",
     description:
       "Functions can sleep or be scheduled for days, weeks, or months in the future.",
-    href: "TODO",
+    href: [
+      { href: "/docs/reference/functions/step-sleep", text: "Sleep" },
+      { href: "/docs/guides/scheduled-functions", text: "Crons" },
+    ],
   },
   {
     title: "Pause for additional data",
     description:
       "Create human-in-the-middle flows that wait for additional input.",
-    href: "TODO",
+    href: "/docs/reference/functions/step-wait-for-event",
   },
   {
     title: "Automatically retry on errors",
     description:
       "Create human-in-the-middle flows that wait for additional input.",
-    href: "TODO",
+    href: "/docs/reference/typescript/functions/errors",
   },
-  // TODO
+  {
+    title: "Declarative job cancellation",
+    description: `Cancel in-progress functions by sending events or via API without the need to track "job ids."`,
+    href: "/docs/guides/cancel-running-functions",
+  },
 ];
 
 const platformFeatures = [
   {
+    icon: "/assets/platform/icon-metrics.svg",
     title: "Metrics and monitoring",
     description:
       "View your system at a glance or dig into a specific function to easily see what's happening without any additional instrumentation.",
-    href: "TODO",
   },
   {
+    icon: "/assets/platform/icon-tracing.svg",
     title: "Logging and tracing",
     description:
       "View, filter, and search logs for any function. Trace the path of an event through the most complex of workflows.",
-    href: "TODO",
   },
   {
+    icon: "/assets/platform/icon-branch.svg",
     title: "On-demand branch development environments",
     description:
       "Spin up a full development environment for every branch, automatically. Or create dedicated environments for testing.",
-    href: "TODO",
+    href: "/docs/platform/environments",
   },
   // TODO
 ];
@@ -377,15 +397,6 @@ const enterpriseFeatures = [
   },
 ];
 
-function Card({ title, img }: { title?: string; img: string }) {
-  return (
-    <div>
-      <img src={img} className="rounded-md bg-slate-300 h-72 w-full" />
-      {title && <p className="mt-4 text-body text-lg text-center">{title}</p>}
-    </div>
-  );
-}
-
 function FeatureCard({
   title,
   description,
@@ -418,7 +429,11 @@ function FeatureCard({
           {typeof href === "string" ? (
             <Link href={href}>Learn more &gt; </Link>
           ) : (
-            href.map(({ href, text }) => <Link href={href}>{text} →</Link>)
+            href.map(({ href, text }, idx) => (
+              <Link key={idx} href={href}>
+                {text} →
+              </Link>
+            ))
           )}
         </p>
       )}

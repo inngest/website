@@ -20,7 +20,7 @@ const productLinks = {
   featured: [
     {
       title: "Platform",
-      desc: "Learn about the Inngest serverless queue & workflow engine",
+      desc: "Learn about features, flow control, and more",
       url: "/platform?ref=nav",
       icon: IconSteps,
       iconBg: "bg-indigo-500",
