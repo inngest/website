@@ -80,7 +80,7 @@ export default function BlogLayout(props) {
                     </h2>
                     <p className="text-slate-200 text-sm font-medium mb-4 flex gap-1 items-center">
                       <IconCalendar />
-                      {focus.humanDate} <Tags tags={focus.tags} />
+                      {focus.humanDate} <Tags tags={focus.tags || []} />
                     </p>
                     <p className="text-slate-100">{focus.subtitle}</p>
                   </div>
@@ -137,7 +137,7 @@ export default function BlogLayout(props) {
                       </h2>
                       <p className="text-slate-400 text-sm font-medium mb-4 mt-2 flex items-center gap-1">
                         <IconCalendar />
-                        {item.humanDate} <Tags tags={item.tags} />
+                        {item.humanDate} <Tags tags={item.tags || []} />
                       </p>
                       <p className="text-slate-300 text-sm">{item.subtitle}</p>
                     </div>

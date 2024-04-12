@@ -45,7 +45,7 @@ const parseJobDescription = (content: string) => {
   const responsibilitiesSection = sections.find((s) =>
     s.match(/^\s+What you'll do/i)
   );
-  let responsibilities = [];
+  let responsibilities: string[] = [];
   if (responsibilitiesSection) {
     const bulletPoints = responsibilitiesSection
       .replace(/^\s+What you'll do\s+/i, "")

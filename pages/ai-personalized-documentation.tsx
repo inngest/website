@@ -86,6 +86,7 @@ export default function InngestGPT() {
         "ai-sdk-history",
         JSON.stringify(newHistory)
       );
+      // @ts-ignore
       resultRef.current.scrollIntoView({ block: "start", behavior: "smooth" });
     } catch (e) {
       setLoading(false);
@@ -195,6 +196,7 @@ export default function InngestGPT() {
                 <PromptUI
                   key={i}
                   prompt={prompt}
+                  // @ts-ignore
                   selected={selected}
                   onClick={() => setSelected(prompt)}
                 />
@@ -234,6 +236,7 @@ export default function InngestGPT() {
                         <PromptUI
                           key={i}
                           prompt={prompt}
+                          // @ts-ignore
                           selected={selected}
                           onClick={() => setSelected(prompt)}
                           variant="history"

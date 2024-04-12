@@ -13,7 +13,7 @@ export default async (req, res) => {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
-  const { email, tags = [] }: { email: string | null; tags: string[] | null } =
+  const { email, tags = [] }: { email: string | null; tags: string[] } =
     req.body;
 
   if (!email) {

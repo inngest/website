@@ -193,7 +193,7 @@ function MyApp({ Component, pageProps }: AppProps<DefaultProps>) {
           window.Inngest.identify({ anonymous_id: anonymousID });
           // The hook should tell us if the anon id is an existing one, or it's just been set
           const firstTouch = !existing;
-          let ref = null;
+          let ref: string | null = null;
           try {
             const urlParams = new URLSearchParams(window.location.search);
             ref = urlParams.get("ref");
