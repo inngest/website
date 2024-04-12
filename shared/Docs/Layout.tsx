@@ -104,7 +104,7 @@ export function Layout({
             )}
 
             <div className="relative px-4 pt-14 sm:px-6 lg:px-8 xl:pl-8 xl:pr-16 xl:mr-32 2xl:mr-10">
-              <main className="pt-6 lg:pt-8 xl:pr-8">
+              <main className="pt-6 lg:pt-8 xl:pr-12">
                 <Prose as="article">
                   {children}
                   <div
