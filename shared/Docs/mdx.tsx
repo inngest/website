@@ -179,7 +179,7 @@ export function ButtonDeploy({ label, type, href }) {
 
 export function Row({ children }) {
   return (
-    <div className="grid grid-cols-1 items-start gap-x-16 gap-y-10 xl:max-w-none xl:grid-cols-2 my-6 [&>:first-child]:mt-0 [&>:last-child]:mb-0">
+    <div className="grid grid-cols-1 items-start gap-x-12 gap-y-10 xl:max-w-none xl:grid-cols-2 my-6 [&>:first-child]:mt-0 [&>:last-child]:mb-0">
       {children}
     </div>
   );
