@@ -24,6 +24,7 @@ const options = {
     "https://www.uber.com",
     "https://www.tripadvisor.com",
     "https://linkedin.com",
+    "http://web.archive.org",
   ],
 };
 

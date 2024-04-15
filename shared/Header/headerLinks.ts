@@ -19,9 +19,9 @@ const productLinks = {
   featuredTitle: "Product",
   featured: [
     {
-      title: "How Inngest Works",
-      desc: "Learn about the Inngest serverless queue & workflow engine",
-      url: "/product/how-inngest-works?ref=nav",
+      title: "Platform",
+      desc: "Learn about features, flow control, and more",
+      url: "/platform?ref=nav",
       icon: IconSteps,
       iconBg: "bg-indigo-500",
     },

@@ -36,7 +36,7 @@ export default function FooterCallout({
             backgroundPosition: "100%",
           }}
         >
-          <h4 className="text-2xl lg:text-3xl tracking-tight mb-4 font-semibold drop-shadow">
+          <h4 className="text-2xl lg:text-3xl tracking-tight mb-4 text-indigo-50 font-semibold drop-shadow">
             {title}
           </h4>
           <p className="mt-4 mb-6 text-sm lg:text-base text-indigo-100 drop-shadow">

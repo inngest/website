@@ -51,6 +51,10 @@ async function loadSheet(sheet: string) {
     scopes: ["https://www.googleapis.com/auth/spreadsheets"],
   });
 
+  if (!GOOGLE_SHEETS_ID) {
+    throw new Error("Missing environment variable");
+  }
+
   const doc = new GoogleSpreadsheet(GOOGLE_SHEETS_ID, GOOGLE_SERVICE_ACCOUNT);
   await doc.loadInfo();
 

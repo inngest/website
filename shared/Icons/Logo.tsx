@@ -38,6 +38,7 @@ const Logo = ({
       <svg
         width={w}
         height={h}
+        className="w-full"
         viewBox="0 0 100 30"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"

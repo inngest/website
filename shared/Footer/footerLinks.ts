@@ -1,5 +1,6 @@
 import {
   IconSDK,
+  IconSteps,
   IconDocs,
   IconPatterns,
   IconScheduled,
@@ -11,11 +12,11 @@ const footerLinks = [
   {
     name: "Product",
     links: [
-      // {
-      //   label: "Function SDK",
-      //   url: "/features/sdk?ref=footer",
-      //   icon: IconSDK,
-      // },
+      {
+        label: "Platform",
+        url: "/platform?ref=footer",
+        icon: IconSteps,
+      },
       // {
       //   label: "Step Functions",
       //   url: "/features/step-functions?ref=footer",
