@@ -297,7 +297,7 @@ const flowControlFeatures = [
   {
     title: "Rate limiting",
     description:
-      "Limit the number of function invocations for everything or a specific resource key.",
+      "Skip excessive function invocations by setting limits over a period for a specific resource key.",
     href: "/docs/reference/functions/rate-limit",
     icon: "/assets/platform/icon-rate-limit.svg",
   },
@@ -371,7 +371,7 @@ const platformFeatures = [
 const enterpriseFeatures = [
   {
     title: "SOC 2 Compliance",
-    description: "Regular audits and compliance with SOC 2 Type 2.",
+    description: "Regular security audits and compliance with SOC 2.",
   },
   {
     title: "100k+ executions per second",
