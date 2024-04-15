@@ -78,3 +78,4 @@ for more information.
 You should **never commit environment variables** to the repository. If you need to add a new
 environment variable, add it with the `pnpm env:add` command and then download it with the
 `pnpm env:pull` command.
+ok 
