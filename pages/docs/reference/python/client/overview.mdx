@@ -21,6 +21,9 @@ inngest_client = inngest.Inngest(
   <Property name="app_id" type="str" required>
     A unique identifier for your application. We recommend a hyphenated slug.
   </Property>
+  <Property name="env" type="str">
+    The environment name. Required only when using [Branch Environments](/docs/platform/environments).
+  </Property>
   <Property name="event_api_base_url" type="str">
     Override the default base URL for sending events (`https://inn.gs/`). See also the [`INNGEST_EVENT_API_BASE_URL`](/docs/reference/python/overview/env-vars#inngest-event-api-base-url) environment variable.
   </Property>

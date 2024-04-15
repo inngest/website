@@ -21,6 +21,16 @@ Set to `1` to disable [production mode](/docs/reference/python/overview/prod-mod
 
 ---
 
+## `INNGEST_ENV`
+
+Use this to tell Inngest which [branch environment](/docs/platform/environments#branch-environments) you want to send and receive events from.
+
+Can be overwritten by manually specifying `env` on the Inngest client.
+
+This is detected and set automatically for some platforms, but others will need manual action. See our [configuring branch environments](/docs/platform/environments#configuring-branch-environments) guide to check if you need this.
+
+---
+
 ## `INNGEST_EVENT_API_BASE_URL`
 
 Origin for the Inngest Event API. The Inngest client sends events to this API.

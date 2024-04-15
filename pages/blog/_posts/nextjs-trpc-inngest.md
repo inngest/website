@@ -30,12 +30,12 @@ Below is a real-world look into how we solved this for KCD, and created a repeat
 
 We used a stack of excellent services to get the job done:
 
-* **Vercel**: Hosting our Next.js application and serverless functions
-* **Cloudinary**: Original media storage
-* **Sanity**: Content Management System, but so much more. They see content as data and give us a ton of flexibility.
-* **Mux**: excellent global video delivery and analytics
-* **Deepgram**: AI Transcription using Whisper models for excellent high-quality results
-* **OpenAI**: Just a little extra sauce.
+- **Vercel**: Hosting our Next.js application and serverless functions
+- **Cloudinary**: Original media storage
+- **Sanity**: Content Management System, but so much more. They see content as data and give us a ton of flexibility.
+- **Mux**: excellent global video delivery and analytics
+- **Deepgram**: AI Transcription using Whisper models for excellent high-quality results
+- **OpenAI**: Just a little extra sauce.
 
 All of this is glued together with **[Inngest, which provides consistent, reliable, resilient, and understandable workflows](https://inngest.com)** throughout the complex asynchronous process.
 
@@ -55,13 +55,13 @@ The first step is to get the media from Kent’s hard drive and onto the interne
 
 This took the shape of a [simple form that lives inside of our Next.js monorepo](https://github.com/skillrecordings/products/blob/2caf79b4adec32ac4dcd775b46c7544d6192cc0d/apps/epic-web/src/module-builder/create-tip-form.tsx) as a React component. The form requires two pieces of data from the creator:
 
-* A title
-* A video media file
+- A title
+- A video media file
 
 When you hit the submit button on the form, it performs two actions. The first is to [upload the video file to Cloudinary as a multi-part upload](https://github.com/skillrecordings/products/blob/5320faede1b975a349eeb16e771b066eda310124/apps/epic-web/src/module-builder/cloudinary-video-uploader.ts) which will give us:
 
-* A “forever” reference to the original media
-* A DNS addressable URL to the original media that we can use for other aspects of the process, such as transcoding and generating transcripts.
+- A “forever” reference to the original media
+- A DNS addressable URL to the original media that we can use for other aspects of the process, such as transcoding and generating transcripts.
 
 An alternative to Cloudinary might be to upload to Amazon’s S3 or some other similar blob storage service like [Upload Thing](https://uploadthing.com/).
 
@@ -71,47 +71,47 @@ Wherever it ends up, the result is a URL that we can reference, so once that’s
 
 With the video media uploaded, we send the title and the media URL to the backend with a tRPC mutation.
 
-[tRPC](https://trpc.io/) is a library that gives seamless type safety with your Next.js serverless function API. It uses [react-query](https://tanstack.com/query/latest/docs/react) under the hood and gives you a nice full-stack developer experience with TypeScript.
+[tRPC](https://trpc.io/) is a library that gives seamless type safety with your Next.js serverless function API. It uses [react-query](https://tanstack.com/query/latest/docs/framework/react/overview) under the hood and gives you a nice full-stack developer experience with TypeScript.
 
 Calling the [mutation looks like this](https://github.com/skillrecordings/products/blob/2caf79b4adec32ac4dcd775b46c7544d6192cc0d/apps/epic-web/src/module-builder/create-tip-form.tsx#L66C9-L78C10):
 
 ```typescript
- const {mutate: createTip} = trpc.tips.create.useMutation()
+const { mutate: createTip } = trpc.tips.create.useMutation();
 
-  const handleSubmit = async (values?: any, event?: BaseSyntheticEvent) => {
-    try {
-      if (fileType && fileContents) {
-        setState('uploading')
-        const uploadResponse: {secure_url: string} = await processFile(
-          fileContents,
-          (progress) => {
-            setProgress(progress)
+const handleSubmit = async (values?: any, event?: BaseSyntheticEvent) => {
+  try {
+    if (fileType && fileContents) {
+      setState("uploading");
+      const uploadResponse: { secure_url: string } = await processFile(
+        fileContents,
+        (progress) => {
+          setProgress(progress);
+        }
+      );
+
+      setState("success");
+
+      console.log({ values });
+
+      createTip(
+        {
+          s3Url: uploadResponse.secure_url,
+          fileName,
+          title: values.title,
+        },
+        {
+          onSettled: (data) => {
+            console.log("tip creation settled", data);
+            router.push(`/creator/tips/${data?.slug}`);
           },
-        )
-
-        setState('success')
-
-        console.log({values})
-
-        createTip(
-          {
-            s3Url: uploadResponse.secure_url,
-            fileName,
-            title: values.title,
-          },
-          {
-            onSettled: (data) => {
-              console.log('tip creation settled', data)
-              router.push(`/creator/tips/${data?.slug}`)
-            },
-          },
-        )
-      }
-    } catch (err) {
-      setState('error')
-      console.log('error is', err)
+        }
+      );
     }
+  } catch (err) {
+    setState("error");
+    console.log("error is", err);
   }
+};
 ```
 
 This mutation effectively submits our form and sends the data to the server so we can safely and securely kick off our video processing workflow.
@@ -204,17 +204,17 @@ export const tipsRouter = router({
 
 The mutation creates multiple resources in Sanity, which is a headless content management system (CMS) that treats your content as data and stores it for later querying and retrieval. For Kent’s tips, we are creating two documents:
 
-* **Video Resource** represents an “immutable” reference to the original video media. Every video we upload is unique and points to a URL of the original video media.
-* **Tip Resource** that has a reference to the Video Resource. The Tip Resource contains metadata around the tip itself, such as the title, description, and other similar information.
+- **Video Resource** represents an “immutable” reference to the original video media. Every video we upload is unique and points to a URL of the original video media.
+- **Tip Resource** that has a reference to the Video Resource. The Tip Resource contains metadata around the tip itself, such as the title, description, and other similar information.
 
 Storing these two resources in our content management system means they are safe and secure and ready for the rest of the process to proceed.
 
 The next steps are:
 
-* Convert the video to an adaptive streaming format and use a global CDN for distribution. We love Mux.
-* Create transcripts for the video.
-* Create subtitles for the video.
-* Generate some placeholder text for the video using OpenAI large language models
+- Convert the video to an adaptive streaming format and use a global CDN for distribution. We love Mux.
+- Create transcripts for the video.
+- Create subtitles for the video.
+- Generate some placeholder text for the video using OpenAI large language models
 
 There are a lot of moving parts, and keeping it consistent, organized, and reliably error resistant is a huge challenge.
 
@@ -226,12 +226,12 @@ When the Tip has been created and everything is ready to go, we [send an event t
 
 ```typescript
 await inngest.send({
-  name: 'tip/video.uploaded',
+  name: "tip/video.uploaded",
   data: {
     tipId: tip._id,
     videoResourceId: newVideoResource._id,
   },
-})
+});
 ```
 
 We also return the newly created Tip to the client immediately so that the user can have a visual display of the current state and feel comfortable that the helper robots are behind the scenes making the magic happen.
@@ -249,14 +249,14 @@ Along the way, we want to keep the status of the tip updated. This allows us to 
 Inside of our [multi-step Inngest function, we will first update the status](https://github.com/skillrecordings/products/blob/65dde5644242ec089bcefedc966e912ca6abf8f2/apps/epic-web/src/pages/api/inngest.ts#L136-L143):
 
 ```typescript
-await step.run('Update Tip Status', async () => {
+await step.run("Update Tip Status", async () => {
   return await sanityWriteClient
     .patch(event.data.tipId)
     .set({
-      state: 'processing',
+      state: "processing",
     })
-    .commit()
-})
+    .commit();
+});
 ```
 
 We don’t like sad creators! Because our Inngest workflow is well organized we can discreetly update our data which is then used by our front-end to display progress and status to the user.
@@ -269,14 +269,14 @@ This [step sends our original media URL to Mux](https://github.com/skillrecordin
 
 ```typescript
 const newMuxAsset = await step.run("Create a Mux Asset", async () => {
-  const videoResource = await getVideoResource(event.data.videoResourceId)
-  const {originalMediaUrl, muxAsset, duration} = videoResource
+  const videoResource = await getVideoResource(event.data.videoResourceId);
+  const { originalMediaUrl, muxAsset, duration } = videoResource;
   return await createMuxAsset({
     originalMediaUrl,
     muxAsset,
     duration,
-  })
-})
+  });
+});
 ```
 
 They provide excellent delivery of the media, analytics, and have a wonderful video player.
@@ -289,8 +289,8 @@ When we send the video to Mux, we create a Mux Asset, and we can [associate that
 
 ```typescript
 await step.run("Sync Asset with Sanity", async () => {
-  const videoResource = await getVideoResource(event.data.videoResourceId)
-  const {duration: assetDuration, ...muxAsset} = newMuxAsset
+  const videoResource = await getVideoResource(event.data.videoResourceId);
+  const { duration: assetDuration, ...muxAsset } = newMuxAsset;
 
   return await sanityWriteClient
     .patch(videoResource._id)
@@ -298,8 +298,8 @@ await step.run("Sync Asset with Sanity", async () => {
       duration: assetDuration,
       muxAsset,
     })
-    .commit()
-})
+    .commit();
+});
 ```
 
 With all of that in place we can display the tip in the front-end for the creator once Mux has finished processing the video.
@@ -312,8 +312,8 @@ Deepgram uses Whisper to generate high-quality AI-fueled transcripts. For the pu
 
 ```typescript
 await step.run("Initiate Transcript Order via Deepgram", async () => {
-  const videoResource = await getVideoResource(event.data.videoResourceId)
-  const {originalMediaUrl, _id} = videoResource
+  const videoResource = await getVideoResource(event.data.videoResourceId);
+  const { originalMediaUrl, _id } = videoResource;
   return await fetch(
     `https://deepgram-wrangler.skillstack.workers.dev/transcript?videoUrl=${originalMediaUrl}&videoResourceId=${_id}`,
     {
@@ -322,8 +322,8 @@ await step.run("Initiate Transcript Order via Deepgram", async () => {
         "Content-Type": "application/json",
       },
     }
-  )
-})
+  );
+});
 ```
 
 Now we wait…
@@ -336,7 +336,7 @@ Back in our Next.js app, our Inngest [workflow is waiting for the next step in t
 const transcript = await step.waitForEvent("tip/video.transcript.created", {
   match: "data.videoResourceId",
   timeout: "1h",
-})
+});
 ```
 
 Depending on the length of the video, this process can take a while, but our workflow will patiently wait for it to finish before proceeding. You can set custom timeouts when waiting for events inside Inngest workflows from seconds to hours, which is very handy in cases where a timeout might occur and you want the workflow to continue anyway.
@@ -345,9 +345,9 @@ Sending the event is simple from Cloudflare (or anywhere!) with Inngest. In this
 
 ```typescript
 const inngestResponse = await inngest.send({
- name: 'tip/video.transcript.created',
- data,
-})
+  name: "tip/video.transcript.created",
+  data,
+});
 ```
 
 EZ
@@ -366,8 +366,8 @@ await step.run("Update Video Resource with Transcript", async () => {
         srt: transcript.data.transcript.srt,
       },
     })
-    .commit()
-})
+    .commit();
+});
 ```
 
 At this point we need to take a little detour and kickoff a sub-workflow to make sure everything is timed just right.
@@ -385,8 +385,8 @@ await step.run("Notify SRT is Ready to Add to Mux Asset", async () => {
       videoResourceId: event.data.videoResourceId,
       srt: transcript.data.transcript.srt,
     },
-  })
-})
+  });
+});
 ```
 
 This part is tricky since the Deepgram transcription can sometimes be faster than the Mux processing. If Mux hasn’t finished processing the video and you send a transcript, it throws an error.
@@ -395,17 +395,17 @@ This part is tricky since the Deepgram transcription can sometimes be faster tha
 
 ```typescript
 const addSrtToMuxAsset = inngest.createFunction(
-  {name: "Add SRT to Mux Asset"},
-  {event: "tip/video.srt.ready"},
-  async ({event, step}) => {
+  { name: "Add SRT to Mux Asset" },
+  { event: "tip/video.srt.ready" },
+  async ({ event, step }) => {
     const muxAssetStatus = await step.run(
       "Check if Mux Asset is Ready",
       async () => {
-        const {Video} = new Mux()
-        const {status} = await Video.Assets.get(event.data.muxAssetId)
-        return status
+        const { Video } = new Mux();
+        const { status } = await Video.Assets.get(event.data.muxAssetId);
+        return status;
       }
-    )
+    );
 
     await step.run("Update Video Resource Status", async () => {
       return await sanityWriteClient
@@ -413,33 +413,33 @@ const addSrtToMuxAsset = inngest.createFunction(
         .set({
           state: muxAssetStatus,
         })
-        .commit()
-    })
+        .commit();
+    });
 
     if (muxAssetStatus === "ready") {
       await step.run(
         "Check for existing subtitles in Mux and remove if found",
         async () => {
-          const {Video} = new Mux()
-          const {tracks} = await Video.Assets.get(event.data.muxAssetId)
+          const { Video } = new Mux();
+          const { tracks } = await Video.Assets.get(event.data.muxAssetId);
 
           const existingSubtitle = tracks?.find(
             (track: any) => track.name === "English"
-          )
+          );
 
           if (existingSubtitle) {
             return await Video.Assets.deleteTrack(
               event.data.muxAssetId,
               existingSubtitle.id
-            )
+            );
           } else {
-            return "No existing subtitle found."
+            return "No existing subtitle found.";
           }
         }
-      )
+      );
 
       await step.run("Update Mux with SRT", async () => {
-        const {Video} = new Mux()
+        const { Video } = new Mux();
         return await Video.Assets.createTrack(event.data.muxAssetId, {
           url: `https://www.epicweb.dev/api/videoResource/${event.data.videoResourceId}/srt`,
           type: "text",
@@ -448,23 +448,23 @@ const addSrtToMuxAsset = inngest.createFunction(
           language_code: "en-US",
           name: "English",
           passthrough: "English",
-        })
-      })
+        });
+      });
 
       // await step.run('Notify in Slack', async () => {
       //
       // })
     } else {
-      await step.sleep(60000)
+      await step.sleep(60000);
       await step.run("Re-run After Cooldown", async () => {
         return await inngest.send({
           name: "tip/video.srt.ready",
           data: event.data,
-        })
-      })
+        });
+      });
     }
   }
-)
+);
 ```
 
 This sub-workflow checks the status of the video in Mux, sleeps for a bit if it is still processing, and then tries again until it gets the green light.
@@ -494,10 +494,10 @@ await step.run("Send Transcript for LLM Suggestions", async () => {
         tipId: event.data.tipId,
       }),
     }
-  )
-  await sleep(1000)
-  return "Transcript sent to LLM"
-})
+  );
+  await sleep(1000);
+  return "Transcript sent to LLM";
+});
 ```
 
 This isn’t perfect most of the time, but it is an exciting way to get the creative juices flowing and take the next steps.
@@ -523,13 +523,13 @@ const llmResponse = await step.waitForEvent(
     match: "data.videoResourceId",
     timeout: "1h",
   }
-)
+);
 
 if (llmResponse) {
   await step.run("Update Tip with Generated Text", async () => {
-    const title = llmResponse.data.llmSuggestions?.titles?.[0]
-    const body = llmResponse.data.llmSuggestions?.body
-    const description = llmResponse.data.llmSuggestions?.descriptions?.[0]
+    const title = llmResponse.data.llmSuggestions?.titles?.[0];
+    const body = llmResponse.data.llmSuggestions?.body;
+    const description = llmResponse.data.llmSuggestions?.descriptions?.[0];
     return await sanityWriteClient
       .patch(event.data.tipId)
       .set({
@@ -538,11 +538,11 @@ if (llmResponse) {
         body,
         state: "reviewing",
       })
-      .commit()
-  })
-  return {llmSuggestions: llmResponse.data.llmSuggestions, transcript}
+      .commit();
+  });
+  return { llmSuggestions: llmResponse.data.llmSuggestions, transcript };
 } else {
-  return {transcript, llmSuggestions: null}
+  return { transcript, llmSuggestions: null };
 }
 ```
 

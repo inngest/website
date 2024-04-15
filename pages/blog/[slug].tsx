@@ -50,6 +50,7 @@ const authorURLs = {
   "Darwin Wu": "https://twitter.com/67darwin",
   "Joel Hooks": "https://twitter.com/jhooks",
   "Sylwia Vargas": "https://twitter.com/sylwiavargas",
+  "Taylor Facen": "https://twitter.com/ItsTayFay",
 };
 
 export default function BlogLayout(props) {
@@ -143,34 +144,35 @@ export default function BlogLayout(props) {
                   )}
                 </figure>
               )}
-              <header className="pt-12 lg:pt-24 max-w-[70ch] m-auto">
-                <h1 className="text-white font-medium text-2xl md:text-4xl xl:text-5xl mb-2 md:mb-4 tracking-tighter lg:leading-loose">
-                  {scope.heading}
-                </h1>
-                {scope.showSubtitle && (
-                  <p className="text-slate-200 text-lg font-bold mb-6 flex gap-1 items-center">
-                    {scope.subtitle}
+              <div className="max-w-[76ch] m-auto pt-12 lg:pt-18">
+                <header className="">
+                  <h1 className="text-white font-medium text-2xl md:text-4xl xl:text-5xl mb-2 md:mb-4 tracking-tighter lg:leading-loose">
+                    {scope.heading}
+                  </h1>
+                  {scope.showSubtitle && (
+                    <p className="text-slate-200 text-lg font-bold mb-6 flex gap-1 items-center">
+                      {scope.subtitle}
+                    </p>
+                  )}
+                  <p className="text-slate-300 text-sm mt-2 flex items-center gap-2">
+                    {!!scope.author ? <>{scope.author} &middot; </> : ""}
+                    <span className="flex items-center gap-1">
+                      <IconCalendar /> {scope.humanDate}
+                    </span>{" "}
+                    &middot; <span>{scope.reading.text}</span>
+                    <Tags tags={scope.tags} />
                   </p>
+                </header>
+                {scope.introCallout && (
+                  <CTACallout
+                    text={scope.introCallout}
+                    cta={{
+                      href: "https://www.inngest.com?ref=blog-post",
+                      text: "Give it a try",
+                    }}
+                  />
                 )}
-                <p className="text-slate-300 text-sm mt-2 flex items-center gap-2">
-                  {!!scope.author ? <>{scope.author} &middot; </> : ""}
-                  <span className="flex items-center gap-1">
-                    <IconCalendar /> {scope.humanDate}
-                  </span>{" "}
-                  &middot; <span>{scope.reading.text}</span>
-                  <Tags tags={scope.tags} />
-                </p>
-              </header>
-              {scope.introCallout && (
-                <CTACallout
-                  text={scope.introCallout}
-                  cta={{
-                    href: "https://www.inngest.com?ref=blog-post",
-                    text: "Give it a try",
-                  }}
-                />
-              )}
-              {/* {!scope.disableCTA && !scope.introCallout && (
+                {/* {!scope.disableCTA && !scope.introCallout && (
                 <CTACallout
                   text={
                     <>
@@ -190,14 +192,16 @@ export default function BlogLayout(props) {
                   }}
                 />
               )} */}
-              <div className="max-w-[70ch] prose m-auto mt-12 mb-20 prose-img:rounded-lg prose-code:bg-slate-800 prose-code:tracking-tight text-slate-300 prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline hover:prose-a:text-white prose-a:font-medium prose-a:transition-all prose-invert blog-content">
-                <MDXRemote
-                  compiledSource={props.post.compiledSource}
-                  scope={scope}
-                  components={components}
-                />
+                <div className="prose mt-12 mb-20 Xtext-[18px] Xleading-[30px] prose-img:rounded-lg prose-code:bg-slate-800 prose-code:tracking-tight text-slate-200 prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline hover:prose-a:text-white prose-a:font-medium prose-a:transition-all prose-invert blog-content">
+                  {/* @ts-ignore */}
+                  <MDXRemote
+                    compiledSource={props.post.compiledSource}
+                    scope={scope}
+                    components={components}
+                  />
+                </div>
+                <DiscordCTA />
               </div>
-              <DiscordCTA />
             </main>
           </article>
         </Container>

@@ -105,6 +105,7 @@ export default function Careers(props) {
                 <AboutInngest heading={false} />
 
                 <h2>The role</h2>
+                {/* @ts-ignore */}
                 <MDXRemote compiledSource={role.compiledSource} />
 
                 <Benefits />

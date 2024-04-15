@@ -17,7 +17,7 @@ export default function CaseStudyCard({
   tags?: string[];
 }) {
   return (
-    <Link href={href} className="group text-slate-50 h-full flex">
+    <Link href={href} className="group text-slate-50 flex">
       <div className="p-8 grow flex flex-col justify-items-start border border-slate-100/10 group-hover:border-slate-100/20 rounded-2xl transition-all bg-slate-800/10 group-hover:bg-slate-800/30 bg-[url(/assets/textures/wave.svg)] bg-contain">
         <div className="mb-4 text-sm font-medium text-slate-500">
           Case Study

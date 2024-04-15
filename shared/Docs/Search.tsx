@@ -357,7 +357,12 @@ const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
   }
 );
 
-function SearchDialog({ open, setOpen, className }: SearchDialogProps) {
+function SearchDialog({
+  open,
+  setOpen,
+  className,
+  enableShortcutKey,
+}: SearchDialogProps) {
   let router = useRouter();
   let formRef = useRef();
   let panelRef = useRef();
@@ -383,7 +388,7 @@ function SearchDialog({ open, setOpen, className }: SearchDialogProps) {
   }, [open, setOpen, router]);
 
   useEffect(() => {
-    if (open) {
+    if (open || enableShortcutKey === false) {
       return;
     }
 
@@ -399,7 +404,7 @@ function SearchDialog({ open, setOpen, className }: SearchDialogProps) {
     return () => {
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [open, setOpen]);
+  }, [open, setOpen, enableShortcutKey]);
 
   function onClose(open) {
     setOpen(open);
@@ -486,6 +491,7 @@ type SearchDialogProps = {
   open: boolean;
   setOpen: (boolean) => void;
   className?: string;
+  enableShortcutKey?: boolean;
 };
 type SearchProps = {
   buttonProps: SearchButtonProps;
@@ -505,45 +511,72 @@ function useSearchProps(): SearchProps {
     },
     dialogProps: {
       open,
-      setOpen(open) {
-        let { width, height } = buttonRef.current.getBoundingClientRect();
-        if (!open || (width !== 0 && height !== 0)) {
-          setOpen(open);
-        }
+      setOpen(newOpenState) {
+        setOpen(newOpenState);
       },
     },
   };
 }
 
+function SearchButton({ shortcutKey = null, ...buttonProps }) {
+  return (
+    <button
+      type="button"
+      className="flex h-8 w-full items-center gap-2 rounded-full bg-white pl-2 pr-3 text-sm text-slate-500 ring-1 ring-slate-900/10 transition hover:ring-slate-900/20 dark:bg-white/5 dark:text-slate-400 dark:ring-inset dark:ring-white/10 dark:hover:ring-white/20 focus:outline-none"
+      {...buttonProps}
+    >
+      <SearchIcon className="h-5 w-5 stroke-current" />
+      Search...
+      {shortcutKey ? (
+        <kbd className="ml-auto text-xs font-sans text-slate-500 dark:text-slate-400">
+          {shortcutKey}
+        </kbd>
+      ) : null}
+    </button>
+  );
+}
+
+/* Search input button in desktop mode */
 export function Search() {
-  let [modifierKey, setModifierKey] = useState<string>();
+  let [shortcutKey, setShortcutKey] = useState<string>();
   let { buttonProps, dialogProps } = useSearchProps();
 
   useEffect(() => {
-    setModifierKey(
-      /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform) ? "⌘" : "Ctrl "
+    setShortcutKey(
+      /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform) ? "⌘K" : "Ctrl+K"
     );
   }, []);
 
   return (
-    <div className="hidden lg:block lg:max-w-md lg:flex-auto">
-      <button
-        type="button"
-        className="hidden h-8 w-full items-center gap-2 rounded-full bg-white pl-2 pr-3 text-sm text-slate-500 ring-1 ring-slate-900/10 transition hover:ring-slate-900/20 dark:bg-white/5 dark:text-slate-400 dark:ring-inset dark:ring-white/10 dark:hover:ring-white/20 lg:flex focus:outline-none"
-        {...buttonProps}
-      >
-        <SearchIcon className="h-5 w-5 stroke-current" />
-        Search...
-        <kbd className="ml-auto text-xs font-sans text-slate-500 dark:text-slate-400">
-          {modifierKey}K
-        </kbd>
-      </button>
-      <SearchDialog className="hidden lg:block" {...dialogProps} />
+    <div className="hidden lg:block lg:max-w-sm lg:flex-auto">
+      <SearchButton {...buttonProps} shortcutKey={shortcutKey} />
+      <SearchDialog
+        className="hidden lg:block"
+        enableShortcutKey={true}
+        {...dialogProps}
+      />
     </div>
   );
 }
 
+/* Search input button in mobile sidebar */
 export function MobileSearch() {
+  let { buttonProps, dialogProps } = useSearchProps();
+  console.log("MobileSearch");
+  return (
+    <div className="block lg:hidden flex-auto mb-4">
+      <SearchButton {...buttonProps} />
+      <SearchDialog
+        className="block"
+        enableShortcutKey={false}
+        {...dialogProps}
+      />
+    </div>
+  );
+}
+
+/* Search icon */
+export function HeaderSearchIcon() {
   let { buttonProps, dialogProps } = useSearchProps();
 
   return (

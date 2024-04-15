@@ -82,24 +82,14 @@ export function Layout({
           <script dangerouslySetInnerHTML={{ __html: modeScript }} />
         </Head>
         <SectionProvider sections={sections}>
+          <Header />
+
           <div className="lg:ml-72 xl:ml-80">
             <motion.header
               layoutScroll
-              className="fixed inset-y-0 left-0 z-40 contents w-72 overflow-y-auto border-r border-slate-900/10 px-6 pt-4 pb-8 dark:border-white/10 lg:block xl:w-80"
+              className="fixed inset-y-0 mt-14 left-0 z-40 contents w-72 overflow-y-auto border-r border-slate-900/10 px-6 pt-4 pb-8 dark:border-white/10 lg:block xl:w-80"
             >
-              <div className="hidden lg:flex">
-                <a
-                  href="/docs"
-                  className="flex gap-1.5 group/logo items-center"
-                >
-                  <Logo className="w-20 text-indigo-500 dark:text-white" />
-                  <span className="mb-0.5 text-slate-700 dark:text-indigo-400 text-base group-hover/logo:text-slate-500 dark:group-hover/logo:text-white transition-color font-semibold">
-                    Docs
-                  </span>
-                </a>
-              </div>
-              <Header />
-              <Navigation className="hidden lg:mt-6 lg:block" />
+              <Navigation className="hidden lg:block" />
             </motion.header>
 
             {hidePageSidebar ? null : (
@@ -114,7 +104,7 @@ export function Layout({
             )}
 
             <div className="relative px-4 pt-14 sm:px-6 lg:px-8 xl:pl-8 xl:pr-16 xl:mr-32 2xl:mr-10">
-              <main className="pt-16 xl:pr-16">
+              <main className="pt-6 lg:pt-8 xl:pr-12">
                 <Prose as="article">
                   {children}
                   <div
