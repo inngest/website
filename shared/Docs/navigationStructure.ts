@@ -134,6 +134,10 @@ const sectionGuides: NavGroup[] = [
         href: `/docs/guides/concurrency`,
       },
       {
+        title: "Throttling",
+        href: `/docs/guides/throttling`,
+      },
+      {
         title: "Handling idempotency",
         href: `/docs/guides/handling-idempotency`,
       },
