@@ -214,6 +214,9 @@ module.exports = ({ theme }) => ({
       "img, video": {
         width: "100%",
       },
+      svg: {
+        color: "var(--tw-prose-headings)",
+      },
       "figure > *": {
         marginTop: "0",
         marginBottom: "0",
