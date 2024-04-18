@@ -34,7 +34,7 @@ export default inngest.createFunction(
 
 * `limit` - The maximum number of functions to run in the given time period.
 * `period` - The time period of which to set the limit. The period begins when the first matching event is received.
-* `key` - An optional [expression](/docs/guides/writing-expressions) using event data to apply each limit too. Each unique value of the `key` has it's own limit, enabling you to rate limit function runs by any particular key, like a user id.
+* `key` - An optional [expression](/docs/guides/writing-expressions) using event data to apply each limit too. Each unique value of the `key` has its own limit, enabling you to rate limit function runs by any particular key, like a user ID.
 
 <Callout>
   Any events received in excess of your `limit` are ignored. This means this is not the right approach if you need to process every single event sent to Inngest. Consider using [throttle](/docs/guides/throttling) instead.
