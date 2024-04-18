@@ -43,6 +43,25 @@ The `createFunction` method accepts a series of arguments to define your functio
     </Properties>
   </Property>
 
+  <Property name="throttle" type="object">
+    Limits the number of new function runs started over a given period of time ([guide](/docs/guides/throttling)).
+
+    <Properties nested={true} collapse={true}>
+      <Property name="limit" type="number" required>
+        The total number of runs allowed to start within the given `period`.
+      </Property>
+      <Property name="period" type="number" required>
+        The period within the `limit` will be applied.
+      </Property>
+      <Property name="burst" type="number">
+        The number of runs allowed to start in the given window in a single burst. This defaults to 1, which ensures that requests are smoothed amongst the given `period`.
+      </Property>
+      <Property name="key" type="string">
+        A unique expression for which to apply the throttle limit to. The expression is evaluated for each triggering event and will be applied for each unique value. Read [our guide to writing expressions](/docs/guides/writing-expressions) for more info.
+      </Property>
+    </Properties>
+  </Property>
+
   <Property name="idempotency" type="string">
     A key expression which is used to prevent duplicate events from triggering a function more than once in 24 hours. This is equivalent to setting `rateLimit` with a `key`, a `limit` of `1`  and `period` of `24hr`. [Read the idempotency guide here](/docs/guides/handling-idempotency).
 

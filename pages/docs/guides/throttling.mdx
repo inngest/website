@@ -1,10 +1,16 @@
+export const description = 'Limit the throughput of function execution over a period of time. Ideal for working around third-party API rate limits.';
+
 # Throttling
 
-Throttling allows you to specify how many function runs can start within a time period.  When the limit is reached, new function runs over the throttling limit will be enqueued for the future.  This smooths how often functions start running in a given time period.
+Throttling allows you to specify how many function runs can start within a time period. When the limit is reached, new function runs over the throttling limit will be _enqueued for the future_. Some use cases for priority include:
+
+* Evenly distributing function execution over time to reduce spikes.
+* Working around third-party API rate limits.
 
 ## How to configure throttling
 
-```js
+<CodeGroup forceTabs>
+```ts
 inngest.createFunction(
   {
     id: "unique-function-id",
@@ -20,15 +26,16 @@ inngest.createFunction(
   }
 );
 ```
+</CodeGroup>
 
 You can configure throttling on each function using the optional `throttle` parameter.  The options directly control the generic cell rate algorithm parameters used within the queue.
 
 ### Configuration reference
 
 - `limit`: The total number of runs allowed to start within the given `period`.
-- `period`: The period for the rate limit.
-- `burst`: The number of runs allow to start in the given window in a single burst. This defaults to 1, which ensure that requests are smoothed amongst the given `period`.
-- `key`: An optional expression which returns a throttling key using event data. This allows you to apply unique throttle limits specific to a user
+- `period`: The period within the limit will be applied.
+- `burst`: The number of runs allowed to start in the given window in a single burst. This defaults to 1, which ensures that requests are smoothed amongst the given `period`.
+- `key`: An optional expression which returns a throttling key using event data. This allows you to apply unique throttle limits specific to a user.
 
 **Configuration information**
 
@@ -57,3 +64,8 @@ Note that throttling only applies to function run starts.  It does not apply to 
 Rate limiting also specifies how many functions can start within a time period.  However, in Inngest rate limiting ignores function runs over the limit and does not enqueue them for future work. Throttling will enqueue runs over the limit for the future.
 
 Rate limiting is *lossy* and provides hard limits on function runs, while throttling delays function runs over the limit until there’s capacity, smoothing spikes.
+
+## Further reference
+
+* [TypeScript SDK Reference](/docs/reference/functions/create#throttle)
+* [Python SDK Reference](/docs/reference/python/functions/create#configuration)

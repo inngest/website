@@ -5,13 +5,13 @@ import Heading from "./Heading";
 import { ArrowPathRoundedSquareIcon } from "@heroicons/react/20/solid";
 import {
   MoonIcon,
-  ChevronDoubleRightIcon,
-  ArrowDownOnSquareStackIcon,
   BoltSlashIcon,
   ExclamationCircleIcon,
   PlayPauseIcon,
-  Square3Stack3DIcon,
 } from "@heroicons/react/24/outline";
+import IconThrottle from "src/shared/Icons/FlowControl/Throttle";
+import IconConcurrency from "src/shared/Icons/FlowControl/Concurrency";
+import IconBatching from "src/shared/Icons/FlowControl/Batching";
 import Replay from "../Icons/Replay";
 
 const Code = ({ children }) => (
@@ -62,7 +62,8 @@ const content = [
   },
   {
     title: "Manage concurrency",
-    Icon: ChevronDoubleRightIcon,
+    Icon: IconConcurrency,
+    iconSize: "1.5rem",
     content: (
       <p>
         Set custom concurrency limits for every function to fine-tune how
@@ -78,8 +79,9 @@ const content = [
     ],
   },
   {
-    title: "Rate limit + debounce",
-    Icon: ArrowDownOnSquareStackIcon,
+    title: "Throttle, rate limit, or debounce",
+    Icon: IconThrottle,
+    iconSize: "1.5rem",
     content: (
       <p>
         Control how your functions are executed in a given time period. You can
@@ -151,7 +153,8 @@ const content = [
   },
   {
     title: "Batching for high load",
-    Icon: Square3Stack3DIcon,
+    Icon: IconBatching,
+    iconSize: "1.5rem",
     content: (
       <p>
         Reduce the load on your system and save money by automatically batching
@@ -202,10 +205,16 @@ export default function Features() {
       <div className="mx-auto my-24">
         <div className="mx-auto grid md:grid-cols-2 lg:grid-cols-3 gap-x-8 lg:gap-x-12 gap-y-12 lg:gap-y-20">
           {content.map(
-            ({ title, Icon = ArrowPathRoundedSquareIcon, content, ctas }) => (
+            ({
+              title,
+              Icon = ArrowPathRoundedSquareIcon,
+              iconSize,
+              content,
+              ctas,
+            }) => (
               <div className="flex flex-col gap-6 text-sm text-slate-300 tracking-normal font-medium leading-normal">
                 <div className="flex gap-3 items-center text-slate-400/80">
-                  <Icon className="w-6" />
+                  <Icon className="w-6" size={iconSize} />
                   <h3 className="text-lg font-semibold text-slate-50">
                     {title}
                   </h3>
