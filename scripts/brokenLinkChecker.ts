@@ -25,6 +25,8 @@ const options = {
     "https://www.tripadvisor.com",
     "https://linkedin.com",
     "http://web.archive.org",
+    "https://platform.openai.com",
+    "https://t.co",
   ],
 };
 

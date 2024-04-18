@@ -68,7 +68,7 @@ Third, AI APIs are flaky. Scale doesn't always work perfectly, so in their nasce
 
 OpenAI has a [5k requests/minute rate limit](https://platform.openai.com/docs/guides/rate-limits/usage-tiers?context=tier-two) on the mid-tier level. This may seem like a lot initially, but it is easy to hit once you are seeing success.
 
-[Throttle](/docs/guides/throttle?ref=blog-manage-capacity-ai) can be used to flatten spikes in usage and ensure you don't hit the rate limits. Let's say OpenAI releases a new model, and all your users suddenly want a piece of the action. If everyone tries to access the service simultaneously, you get the problems outlined above, such as bumping up against the rate limits, leading to a poor user experience.
+[Throttle](/docs/guides/throttling?ref=blog-manage-capacity-ai) can be used to flatten spikes in usage and ensure you don't hit the rate limits. Let's say OpenAI releases a new model, and all your users suddenly want a piece of the action. If everyone tries to access the service simultaneously, you get the problems outlined above, such as bumping up against the rate limits, leading to a poor user experience.
 
 With throttle, you can limit the number of calls to a function over a set period. In this case, let's say the OpenAI API can only be called ten times per minute. We can define this limit on the function:
 
