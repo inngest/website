@@ -112,22 +112,18 @@ const sectionGuides: NavGroup[] = [
         href: `/docs/guides/sending-events-from-functions`,
       },
       {
-        title: "Batching events",
-        href: `/docs/guides/batching`,
-      },
-      {
         title: "Scheduled functions",
         href: `/docs/guides/scheduled-functions`,
       },
     ],
   },
   {
-    title: "How to",
+    title: "Flow control",
     defaultOpen: true,
     links: [
       {
-        title: "Error handling",
-        href: "/docs/guides/error-handling",
+        title: "Overview",
+        href: `/docs/guides/flow-control`,
       },
       {
         title: "Concurrency",
@@ -138,8 +134,34 @@ const sectionGuides: NavGroup[] = [
         href: `/docs/guides/throttling`,
       },
       {
+        title: "Rate limiting",
+        href: `/docs/guides/rate-limiting`,
+      },
+      {
+        title: "Debouncing",
+        href: `/docs/guides/debounce`,
+      },
+      {
+        title: "Priority",
+        href: `/docs/guides/run-priority`,
+      },
+      {
         title: "Handling idempotency",
         href: `/docs/guides/handling-idempotency`,
+      },
+      {
+        title: "Batching events",
+        href: `/docs/guides/batching`,
+      },
+    ],
+  },
+  {
+    title: "How to",
+    defaultOpen: true,
+    links: [
+      {
+        title: "Error handling",
+        href: "/docs/guides/error-handling",
       },
       {
         title: "Cancel running functions",
