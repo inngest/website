@@ -143,7 +143,7 @@ const sectionGuides: NavGroup[] = [
       },
       {
         title: "Priority",
-        href: `/docs/guides/run-priority`,
+        href: `/docs/guides/priority`,
       },
       {
         title: "Handling idempotency",

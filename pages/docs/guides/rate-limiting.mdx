@@ -92,7 +92,7 @@ When a `key` is added, a separate limit is applied for each unique value of the 
 
 **Note** - To prevent duplicate events from triggering your function more than once in a 24 hour period, use [the `idempotency` option](/docs/guides/handling-idempotency#at-the-function-level-the-consumer) which is the equivalent to setting `rateLimit` with a `key`, a `limit` of `1`  and `period` of `24hr`.
 
-## Limits
+## Limitations
 
 * The maximum rate limit `period` is 24 hours.
 
