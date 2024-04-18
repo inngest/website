@@ -4,8 +4,8 @@ export const description = 'Prevent excessive function runs over a given time pe
 
 Rate limiting is a _hard limit_ on how many function runs can start within a time period. Events that exceed the rate limit are _skipped_ and do not trigger functions to start. This prevents excessive function runs over a given time period. Some use cases for rate limiting include:
 
-* Preventing abuse of your system
-* Reducing frequency of data synchronization functions
+* Preventing abuse of your system.
+* Reducing frequency of data synchronization functions.
 * Smoothing out noisy [webhook](/docs/platform/webhooks) events
 
 ## How to configure rate limiting
@@ -24,7 +24,7 @@ export default inngest.createFunction(
   { event: "intercom/company.updated" },
   async ({ event, step }) => {
     // This function will be rate limited
-    // It will only run 1 once per 4 hours for a given event payload with matching company_id
+    // It will only run once per 4 hours for a given event payload with matching company_id
   }
 );
 ```
@@ -37,12 +37,12 @@ export default inngest.createFunction(
 * `key` - An optional [expression](/docs/guides/writing-expressions) using event data to apply each limit too. Each unique value of the `key` has it's own limit, enabling you to rate limit function runs by any particular key, like a user id.
 
 <Callout>
-  Any events received in excess of your `limit` are ignored. This means this is not the right approach if you need to process every single event sent to Inngest. Instead, check out [throttle](/docs/guides/throttling).
+  Any events received in excess of your `limit` are ignored. This means this is not the right approach if you need to process every single event sent to Inngest. Consider using [throttle](/docs/guides/throttling) instead.
 </Callout>
 
 ## How rate limiting works
 
-Each time an event is received that match's your function's trigger, it is evaluated prior to executing your function. If `rateLimit` is configured, Inngest uses the `limit` and `period` options to only execute a maximum number of functions during that period.
+Each time an event is received that matches your function's trigger, it is evaluated prior to executing your function. If `rateLimit` is configured, Inngest uses the `limit` and `period` options to only execute a maximum number of functions during that period.
 
 Inngest's rate limiting implementation uses the [“Generic Cell Rate Algorithm”](https://en.wikipedia.org/wiki/Generic_cell_rate_algorithm) (GCRA). To _overly simplify_ how this works, Inngest will use the `limit` and `period` options to create "buckets" of time in which your function can execute _once_.
 
@@ -88,7 +88,7 @@ For example, this means that for a `limit: 10` and `period: '60m'` (60 minutes),
 
 ### Using a `key`
 
-When a `key` is added, a separate limit is applied for each unique value of the `key` expression. For example if your `key` is set to `event.data.customer_id`, each customer would have their individual rate limit applied to functions run meaning different users might have the same function run in same bucket time window, but two runs will not happen for the same `event.data.customer_id`. Read [our guide to writing expressions](/docs/guides/writing-expressions) for more info.
+When a `key` is added, a separate limit is applied for each unique value of the `key` expression. For example, if your `key` is set to `event.data.customer_id`, each customer would have their individual rate limit applied to functions run meaning different users might have the same function run in same bucket time window, but two runs will not happen for the same `event.data.customer_id`. Read [our guide to writing expressions](/docs/guides/writing-expressions) for more information.
 
 **Note** - To prevent duplicate events from triggering your function more than once in a 24 hour period, use [the `idempotency` option](/docs/guides/handling-idempotency#at-the-function-level-the-consumer) which is the equivalent to setting `rateLimit` with a `key`, a `limit` of `1`  and `period` of `24hr`.
 

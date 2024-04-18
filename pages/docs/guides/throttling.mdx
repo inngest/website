@@ -4,8 +4,8 @@ export const description = 'Limit the throughput of function execution over a pe
 
 Throttling allows you to specify how many function runs can start within a time period. When the limit is reached, new function runs over the throttling limit will be _enqueued for the future_. Some use cases for priority include:
 
-* Smooth out execution of functions over time
-* Working around third-party API rate limits
+* Evenly distributing function execution over time to reduce spikes.
+* Working around third-party API rate limits.
 
 ## How to configure throttling
 
@@ -34,7 +34,7 @@ You can configure throttling on each function using the optional `throttle` para
 
 - `limit`: The total number of runs allowed to start within the given `period`.
 - `period`: The period within the limit will be applied.
-- `burst`: The number of runs allow to start in the given window in a single burst. This defaults to 1, which ensure that requests are smoothed amongst the given `period`.
+- `burst`: The number of runs allowed to start in the given window in a single burst. This defaults to 1, which ensures that requests are smoothed amongst the given `period`.
 - `key`: An optional expression which returns a throttling key using event data. This allows you to apply unique throttle limits specific to a user.
 
 **Configuration information**

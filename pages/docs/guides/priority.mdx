@@ -2,11 +2,11 @@ export const description = 'Dynamically adjust the execution order of functions 
 
 # Priority
 
-Priority allows you to dynamically execute some runs ahead or behind others based on any data. This allows you to prioritize some jobs ahead others without the need for a separate queue. Some use cases for priority include:
+Priority allows you to dynamically execute some runs ahead or behind others based on any data. This allows you to prioritize some jobs ahead of others without the need for a separate queue. Some use cases for priority include:
 
-* Give higher priority based on a user's subscription level, for example, free vs. paid users
-* Ensure that critical work is executed before other work in the queue
-* Prioritize certain jobs for users during onboarding to give the user a better first run experience
+* Giving higher priority based on a user's subscription level, for example, free vs. paid users.
+* Ensuring that critical work is executed before other work in the queue.
+* Prioritizing certain jobs during onboarding to give the user a better first-run experience.
 
 ## How to configure priority
 
@@ -42,7 +42,7 @@ Expressions that return a **positive** number will **increase the priority** of 
 
 Expressions that return a **negative** number will **delay** the function run by the given value in seconds.
 
-**Practical example**
+### Practical example
 
 Given we have three jobs in the queue, each which was enqueued at the following times:
 
@@ -64,7 +64,7 @@ Then Job Y will run ahead of Job X. Job Y will also run before any jobs schedule
 Jobs:          [A,        Y,        B,        C,        X     ]
 Priority/Time: [12:00:10, 12:00:30, 12:00:40, 12:02:10, 12:02:30]
                           │                             │
-                          └ 12:02:30 - 120s = 12:00:30   └ 12:02:30 - 0s = 12:02:30
+                          └ 12:02:30 - 120s = 12:00:30  └ 12:02:30 - 0s = 12:02:30
 ```
 
 Job Y was successfully prioritized by a factor of `120` seconds ahead of other jobs in the queue.
