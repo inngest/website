@@ -215,15 +215,15 @@ export function Properties({
       className={clsx(
         "my-6",
         nested &&
-          "-mt-3 pt-2 pb-3 border border-slate-900/5 dark:border-white/5 rounded-md",
-        collapse && isCollapsed && "pb-0"
+          "-mt-3 pt-2 border border-slate-900/5 dark:border-white/5 rounded-md",
+        collapse && isCollapsed ? "pb-0" : "pb-3"
       )}
     >
       {nested && (
         <div
           className={clsx(
-            "px-3 pb-2 mb-3 border-b border-slate-900/5 text-xs font-semibold",
-            collapse && isCollapsed && "mb-0 border-b-0"
+            "px-3 pb-2 border-b border-slate-900/5 text-xs font-semibold",
+            collapse && isCollapsed ? "mb-0 border-b-0" : "mb-3"
           )}
         >
           {collapse ? (
