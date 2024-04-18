@@ -1,7 +1,6 @@
 import React from "react";
 import type { IconProps } from "../props";
 
-// TODO
 const Throttle = ({
   size = "1em",
   fill = "currentColor",

@@ -274,10 +274,17 @@ const flowControlFeatures = [
     icon: "/assets/platform/icon-concurrency-global.svg",
   },
   {
+    title: "Throttling",
+    description:
+      "Limit the throughput of function execution over a period of time. Ideal for working around third-party API rate limits.",
+    href: "/docs/guides/throttling",
+    icon: "/assets/platform/icon-throttle.svg",
+  },
+  {
     title: "Prioritization",
     description:
       "Dynamically determine the execution order of functions based on any data. No separate queues required.",
-    href: "/docs/reference/functions/run-priority",
+    href: "/docs/guides/priority",
     icon: "/assets/platform/icon-priority.svg",
   },
   {
@@ -291,14 +298,14 @@ const flowControlFeatures = [
     title: "Debounce",
     description:
       "Avoid unnecessary function invocations by adding debounce delays to functions.",
-    href: "/docs/reference/functions/debounce",
+    href: "/docs/guides/debounce",
     icon: "/assets/platform/icon-debounce.svg",
   },
   {
     title: "Rate limiting",
     description:
       "Skip excessive function invocations by setting limits over a period for a specific resource key.",
-    href: "/docs/reference/functions/rate-limit",
+    href: "/docs/guides/rate-limiting",
     icon: "/assets/platform/icon-rate-limit.svg",
   },
   {
