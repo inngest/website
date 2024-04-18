@@ -30,13 +30,11 @@ export default inngest.createFunction(
 ```
 </CodeGroup>
 
-Rate limiting is configured through the `rateLimit` option on each function.
-
 ### Configuration reference
 
 * `limit` - The maximum number of functions to run in the given time period.
 * `period` - The time period of which to set the limit. The period begins when the first matching event is received.
-* `key` - An optional [expression](/docs/guides/writing-expressions) using event data to apply each limit too. Each unique value of the `key` will have it's own limit, enabling you to rate limit function runs by any particular key, like a user id.
+* `key` - An optional [expression](/docs/guides/writing-expressions) using event data to apply each limit too. Each unique value of the `key` has it's own limit, enabling you to rate limit function runs by any particular key, like a user id.
 
 <Callout>
   Any events received in excess of your `limit` are ignored. This means this is not the right approach if you need to process every single event sent to Inngest. Instead, check out [throttle](/docs/guides/throttling).
@@ -57,12 +55,6 @@ For example, this means that for a `limit: 10` and `period: '60m'` (60 minutes),
 <Callout>
   Events that are ignored by the function will continue to be stored by Inngest.
 </Callout>
-
-### Using a `key`
-
-When a `key` is added, a separate limit is applied for each unique value of the `key` expression. For example if your `key` is set to `event.data.customer_id`, each customer would have their individual rate limit applied to functions run meaning different users might have the same function run in same bucket time window, but two runs will not happen for the same `event.data.customer_id`. Read [our guide to writing expressions](/docs/guides/writing-expressions) for more info.
-
-**Note** - To prevent duplicate events from triggering your function more than once in a 24 hour period, use [the `idempotency` option](/docs/guides/handling-idempotency#at-the-function-level-the-consumer) which is the equivalent to setting `rateLimit` with a `key`, a `limit` of `1`  and `period` of `24hr`.
 
 **How the rate limit is applied with a consistent rate of events received**
 
@@ -93,6 +85,16 @@ When a `key` is added, a separate limit is applied for each unique value of the 
   quality="95"
   alt="Visualization of how the rate limit is applied when limit is set to 1"
 />
+
+### Using a `key`
+
+When a `key` is added, a separate limit is applied for each unique value of the `key` expression. For example if your `key` is set to `event.data.customer_id`, each customer would have their individual rate limit applied to functions run meaning different users might have the same function run in same bucket time window, but two runs will not happen for the same `event.data.customer_id`. Read [our guide to writing expressions](/docs/guides/writing-expressions) for more info.
+
+**Note** - To prevent duplicate events from triggering your function more than once in a 24 hour period, use [the `idempotency` option](/docs/guides/handling-idempotency#at-the-function-level-the-consumer) which is the equivalent to setting `rateLimit` with a `key`, a `limit` of `1`  and `period` of `24hr`.
+
+## Limits
+
+* The maximum rate limit `period` is 24 hours.
 
 ## Further reference
 
