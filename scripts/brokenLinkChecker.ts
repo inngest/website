@@ -27,6 +27,7 @@ const options = {
     "http://web.archive.org",
     "https://platform.openai.com",
     "https://t.co",
+    "https://sentry.io",
   ],
 };
 
