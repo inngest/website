@@ -42,6 +42,9 @@ export default inngest.createFunction(
         * Rate limit per customer id: `'event.data.customer_id'`
         * Rate limit per account and email address: `'event.data.account_id + "-" + event.user.email'`
       </Property>
+      <Property name="timeout" type="string">
+        The maximum time that a debounce can be extended before running.
+      </Property>
     </Properties>
   </Property>
 </Properties>

@@ -18,6 +18,7 @@ export default inngest.createFunction(
     debounce: {
       key: "event.data.account_id",
       period: "5m",
+      timeout: "10m",
     },
   },
   { event: "intercom/company.updated" },
@@ -35,10 +36,13 @@ export default inngest.createFunction(
 
 * `period` - The time delay to delay execution. The period begins when the first matching event is received.
 * `key` - An optional [expression](/docs/guides/writing-expressions) using event data to apply each limit too. Each unique value of the `key` has its own limit, enabling you to rate limit function runs by any particular key, like a user ID.
+* `timeout` - Optional. The maximum time that a debounce can be extended before running.
 
 ## How it works
 
 When a function is triggered, the debounce `period` begins. If another event is received that matches the function's trigger, the debounce `period` is reset.  This continues until no events are received for the debounce `period`.  Once the `period` has passed without any new events, the function is executed using the last event received.
+
+If a `timeout` is provided, the function will always run after the `timeout` has passed even if new events are received. This ensures that the function does not continue to be debounced indefinitely if events continue to debounce the function.
 
 <img
   src="/assets/docs/reference/debounce.png"

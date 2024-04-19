@@ -80,7 +80,6 @@ The `createFunction` method accepts a series of arguments to define your functio
       </Property>
       <Property name="period" type="string" required>
         The time period of which to set the limit. The period begins when the first matching event is received.
-        How long to wait before invoking the function with the batch even if it's not full.
         Current permitted values are from `1s` to `60s`.
       </Property>
       <Property name="key" type="string">
@@ -99,7 +98,6 @@ The `createFunction` method accepts a series of arguments to define your functio
     <Properties nested={true} collapse={true}>
       <Property name="period" type="string" required>
         The time period of which to set the limit. The period begins when the first matching event is received.
-        How long to wait before invoking the function with the batch even if it's not full.
         Current permitted values are from `1s` to `7d` (`168h`).
       </Property>
       <Property name="key" type="string">
