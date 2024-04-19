@@ -150,7 +150,7 @@ export default function BlogLayout(props) {
                     {scope.heading}
                   </h1>
                   {scope.showSubtitle && (
-                    <p className="text-slate-200 text-lg font-bold mb-6 flex gap-1 items-center">
+                    <p className="text-slate-200 text-lg font-medium mb-6 flex gap-1 items-center">
                       {scope.subtitle}
                     </p>
                   )}
