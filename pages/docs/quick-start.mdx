@@ -80,9 +80,21 @@ bun add inngest
 
 Next, start the [Inngest Dev Server](https://www.inngest.com/docs/local-development#inngest-dev-server), which is a fast, in-memory version of Inngest where you can quickly send and view events events and function runs:
 
-```
+<CodeGroup>
+```shell {{ title: "npm" }}
 npx inngest-cli@latest dev
 ```
+```shell {{ title: "yarn" }}
+yarn dlx inngest-cli@latest dev
+```
+```shell {{ title: "pnpm" }}
+pnpx inngest-cli@latest dev
+```
+```shell {{ title: "bun" }}
+bun add global inngest-cli@latest
+inngest-cli dev
+```
+</CodeGroup>
 
 <details>
   <summary><strong>You should see a similar output:</strong></summary>
@@ -92,23 +104,23 @@ npx inngest-cli@latest dev
 ```bash {{ language: 'js' }}
 $ npx inngest-cli@latest dev
 
-12:38PM INF runner > starting event stream backend=inmemory
-12:38PM INF executor > starting queue backend=inmemory
-12:38PM INF devserver > autodiscovering locally hosted SDKs
-12:38PM INF executor > service starting
-12:38PM INF coreapi > service starting
-12:38PM INF devserver > service starting
-12:38PM INF executor > subscribing to function queue
-12:38PM INF runner > starting queue backend=inmemory
-12:38PM INF coreapi > starting server addr=0.0.0.0:8300
-12:38PM INF api > starting server addr=0.0.0.0:8288
-12:38PM INF runner > initializing scheduled messages len=0
-12:38PM INF runner > service starting
-12:38PM INF runner > subscribing to events topic=events
+12:33PM INF executor > service starting
+12:33PM INF runner > starting event stream backend=redis
+12:33PM INF executor > subscribing to function queue
+12:33PM INF runner > service starting
+12:33PM INF runner > subscribing to events topic=events
+12:33PM INF no shard finder;  skipping shard claiming
+12:33PM INF devserver > service starting
+12:33PM INF devserver > autodiscovering locally hosted SDKs
+12:33PM INF api > starting server addr=0.0.0.0:8288
 
-        Inngest Dev Server online at 0.0.0.0:8288, visible at the following URLs:
 
-          - http://127.0.0.1:8288 (http://localhost:8288)
+        Inngest dev server online at 0.0.0.0:8288, visible at the following URLs:
+
+         - http://127.0.0.1:8288 (http://localhost:8288)
+
+        Scanning for available serve handlers.
+        To disable scanning run `inngest dev` with flags: --no-discovery -u <your-serve-url>
 ```
 
 </CodeGroup>
