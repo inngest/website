@@ -102,6 +102,14 @@ Can be overwritten by manually specifying `signingKey` in `serve()`.
 
 ---
 
+## INNGEST_SIGNING_KEY_FALLBACK
+
+Only used during signing key rotation. When it's specified, the SDK will automatically retry signing key auth failures with the fallback key.
+
+Available in version `3.18.0` and above.
+
+---
+
 ## INNGEST_STREAMING
 
 Sets an SDK's streaming support, potentially circumventing restrictive request timeouts and other limitations. See [Streaming](/docs/streaming?ref=environment-variables) for more information.

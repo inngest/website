@@ -60,3 +60,11 @@ The secret key used to sign requests to and from Inngest, mitigating the risk of
 
 - Can be overwritten by specifying `signing_key` when calling a `serve` function.
 - Not needed when using the Dev Server.
+
+---
+
+## `INNGEST_SIGNING_KEY_FALLBACK`
+
+Only used during signing key rotation. When it's specified, the SDK will automatically retry signing key auth failures with the fallback key.
+
+Available in version `0.3.9` and above.

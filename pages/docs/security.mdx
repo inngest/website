@@ -21,6 +21,32 @@ This process is necessary for several reasons, largely as serverless environment
 
 Note that because the SDK only sends HTTP requests to `api.inngest.com` to complete the sync, it never leaks the signing key to clients attempting registration, keeping your key secure.
 
+### Rotation
+
+<Callout variant="info">
+💡 Signing key rotation is in closed beta. If you'd like access, please email support@inngest.com.
+</Callout>
+
+Signing key rotation is a security best practice that helps mitigate the risk of a compromised key. Inngest supports zero downtime signing key rotation if your SDK version meets the minimum version:
+
+| Language    | Minimum Version |
+| ----------- | --------------- |
+| Go          | `0.7.2`         |
+| Python      | `0.3.9`         |
+| TypeScript  | `3.18.0`        |
+
+You can still rotate your signing key if you're on an older version, but you'll experience downtime.
+
+To begin the rotation process, navigate to https://app.inngest.com/env/production/manage/signing-key. Click the "Create new signing key" button and then follow the instructions in the **Rotate key** section.
+
+<Callout variant="info">
+🤔 **Why do I need a "fallback" signing key?**
+
+Inngest only allows 1 active signing key at a time. To ensure zero downtime, our SDKs will retry auth failures with the fallback key.
+</Callout>
+
+If you use our Vercel integration, note that environment variable setting is manual for signing key rotation. While we automatically created your environment variables when you enabled the integration, the signing key process is manual.
+
 ## End to end encryption
 
 Inngest runs functions automatically, based off of event data that you send to Inngest. Additionally, Inngest runs steps transactionally, and stores the output of each `step.run` within function state. This may contain regulated, sensitive data.
