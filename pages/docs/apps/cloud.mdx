@@ -5,7 +5,7 @@ After deploying your code to a hosting platform, it is time to go to production 
 
 ## Sync a new app in Inngest Cloud
 
-You can synchronize your app with Inngest using three methods: 
+You can synchronize your app with Inngest using three methods:
 - Manually;
 - Automatically using an integration;
 - With a curl command.
@@ -105,7 +105,7 @@ If you have the Vercel integration and resync the app manually, the next time yo
   alt="Inngest Cloud screen with resync app modal"
 />
 
-If your app location changes, enable the "Override" switch and edit the URL before clicking on "Resync App". Please ensure that the app ID is the same, otherwise Inngest will consider it a new app white resyncing. 
+If your app location changes, enable the "Override" switch and edit the URL before clicking on "Resync App". Please ensure that the app ID is the same, otherwise Inngest will consider it a new app white resyncing.
 <img
   src="/assets/docs/apps/apps-cloud-resync-modal-override.png"
   className="rounded-md"
@@ -133,14 +133,14 @@ Upcoming releases include a manual archival feature, which will provide users wi
 <details>
   <summary id="app-wrong-environment"><h3 className="inline-block my-2">Why is my app syncing to the wrong environment?</h3></summary>
 
-- Apps are synced to one environment. The [**`INNGEST_SIGNING_KEY`**](/docs/sdk/environment-variables#inngest-signing-key) ensures that your app is synced within the correct Inngest environment. Verify that you assigned your signing key to the right `INNGEST_SIGNING_KEY` environment variable in your hosting provider or **`.env`** file locally.
+- Apps are synced to one environment. The [**`INNGEST_SIGNING_KEY`**](/docs/platform/signing-keys) ensures that your app is synced within the correct Inngest environment. Verify that you assigned your signing key to the right `INNGEST_SIGNING_KEY` environment variable in your hosting provider or **`.env`** file locally.
 
 </details>
 
 <details>
   <summary id="duplicated-apps"><h3 className="inline-block my-2">Why do I have duplicated apps?</h3></summary>
 
-- Each app ID is considered a persistent identifier. [Since the app ID is determined by the ID passed to the serve handler from the Inngest client](/docs/apps#apps-in-sdk), changing that ID will result in Inngest not recognizing the app ID during the next sync. As a result, Inngest will create a new app. 
+- Each app ID is considered a persistent identifier. [Since the app ID is determined by the ID passed to the serve handler from the Inngest client](/docs/apps#apps-in-sdk), changing that ID will result in Inngest not recognizing the app ID during the next sync. As a result, Inngest will create a new app.
 
 </details>
 
@@ -151,15 +151,15 @@ Upcoming releases include a manual archival feature, which will provide users wi
 
 </details>
 
-<details> 
+<details>
   <summary id="syncing-issues"><h3 className="inline-block my-2">Why don’t I see my sync in the sync list?</h3></summary>
 
   If you're experiencing difficulties with syncing and cannot locate your sync in the sync list, consider the following scenarios:
-  
+
   1. **Different App ID:**
   - If you resync the app after modifying the [app ID](/docs/reference/client/create), a new app is created, not a new sync within the existing app.
   - Solution: Confirm the creation of a new app when changing the app ID.
-  
+
   2. **Syncing Errors:**
   - *Manual Syncs and Manual Resyncs:*
     - Sync failures during manual operations are immediately displayed, preventing the creation of a new sync. The image below shows an example of an error while manually syncing:
@@ -167,7 +167,7 @@ Upcoming releases include a manual archival feature, which will provide users wi
         src="/assets/docs/apps/apps-cloud-error-sync.png"
         className="rounded-md"
         alt="Inngest Cloud screen with app error while syncing"
-      />            
+      />
     - Solution: Review the displayed error message and address the syncing issue accordingly.
   - *Automatic Syncs (such as Vercel Integration):*
     - Failures in automatic syncs may not be immediately visible. In such cases, an unattached sync (a sync without an app) containing the failure message is created.
@@ -176,7 +176,7 @@ Upcoming releases include a manual archival feature, which will provide users wi
         className="rounded-md"
         alt="Inngest Cloud screen with app sync error"
       />
-        
+
     - Solution: Check for unattached syncs and address the issues outlined in the failure message. The image below shows the location of unattached syncs in Inngest Cloud:
       <img
         src="/assets/docs/apps/apps-cloud-unattached-syncs.png"

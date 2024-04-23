@@ -246,6 +246,10 @@ const sectionGuides: NavGroup[] = [
         href: `/docs/events/creating-an-event-key`,
       },
       {
+        title: "Signing keys",
+        href: `/docs/platform/signing-keys`,
+      },
+      {
         title: "Consuming webhook events",
         href: `/docs/platform/webhooks`,
       },

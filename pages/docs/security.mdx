@@ -4,11 +4,11 @@ Security is a primary consideration when moving systems into production.  In thi
 
 ## Signing keys and SDK security
 
-Firstly, it's important to understand that in production all communication between Inngest and your servers is encrypted via TLS. The SDK also actively mitigates attacks by use of the [signing key](/docs/sdk/serve#signing-key), a secret pre-shared key unique to each environment. By default, the signing key adds the following:
+Firstly, it's important to understand that in production all communication between Inngest and your servers is encrypted via TLS. The SDK also actively mitigates attacks by use of the [signing key](/docs/platform/signing-keys), a secret pre-shared key unique to each environment. By default, the signing key adds the following:
 - **Authentication**: requests to your endpoint are authenticated, ensuring that they originate from Inngest. Inngest SDKs reject all requests that are not authenticated with the signing key.
 - **Replay attack prevention:** requests are signed with a timestamp embedded, and old requests are rejected, even if the requests are authenticated correctly.
 
-**It's important that the signing key is kept secret.** If your signing key is exposed, it puts the security of your endpoints at risk. Note that it's possible to rotate signing keys with zero downtime.
+**It's important that the signing key is kept secret.** If your signing key is exposed, it puts the security of your endpoints at risk. Note that it's possible to [rotate signing keys](/docs/platform/signing-keys#rotation) with zero downtime.
 
 ### Function registration + handshake
 
@@ -20,32 +20,6 @@ Functions are defined and served on your own infrastructure using one of our SDK
 This process is necessary for several reasons, largely as serverless environments are the lowest common denominator. Serverless environments have no default bootup/init process, which means serverless environments can't self-initiate the sync. Secondly, serverless platforms such as AWS Lambda and Vercel create unique URLs for each function deployed, which can't be known ahead of time. The incoming PUT request allows the SDK to introspect the request's URL, which is then used for all function calls.
 
 Note that because the SDK only sends HTTP requests to `api.inngest.com` to complete the sync, it never leaks the signing key to clients attempting registration, keeping your key secure.
-
-### Rotation
-
-<Callout variant="info">
-💡 Signing key rotation is in closed beta. If you'd like access, please email support@inngest.com.
-</Callout>
-
-Signing key rotation is a security best practice that helps mitigate the risk of a compromised key. Inngest supports zero downtime signing key rotation if your SDK version meets the minimum version:
-
-| Language    | Minimum Version |
-| ----------- | --------------- |
-| Go          | `0.7.2`         |
-| Python      | `0.3.9`         |
-| TypeScript  | `3.18.0`        |
-
-You can still rotate your signing key if you're on an older version, but you'll experience downtime.
-
-To begin the rotation process, navigate to https://app.inngest.com/env/production/manage/signing-key. Click the "Create new signing key" button and then follow the instructions in the **Rotate key** section.
-
-<Callout variant="info">
-🤔 **Why do I need a "fallback" signing key?**
-
-Inngest only allows 1 active signing key at a time. To ensure zero downtime, our SDKs will retry auth failures with the fallback key.
-</Callout>
-
-If you use our Vercel integration, note that environment variable setting is manual for signing key rotation. While we automatically created your environment variables when you enabled the integration, the signing key process is manual.
 
 ## End to end encryption
 
