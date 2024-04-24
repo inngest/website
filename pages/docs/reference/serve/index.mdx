@@ -44,7 +44,7 @@ serve(inngest, [sendSignupEmail, summarizeText, importProductImages]);
     An array of Inngest functions defined using `inngest.createFunction()` ([reference](/docs/reference/functions/create)).
   </Property>
   <Property name="signingKey" type="string" required>
-    The Inngest Signing Key for your [selected environment](/docs/platform/environments). We recommend setting the [`INNGEST_SIGNING_KEY`](/docs/sdk/environment-variables#inngest-signing-key) environment variable instead of passing the `signingKey` option. You can find this in [the Inngest dashboard](https://app.inngest.com/env/production/manage/signing-key).
+    The Inngest [Signing Key](/docs/platform/signing-keys) for your [selected environment](/docs/platform/environments). We recommend setting the [`INNGEST_SIGNING_KEY`](/docs/sdk/environment-variables#inngest-signing-key) environment variable instead of passing the `signingKey` option. You can find this in [the Inngest dashboard](https://app.inngest.com/env/production/manage/signing-key).
   </Property>
   <Property name="serveHost" type="string">
     The domain host of your application, _including_ protocol, e.g. `https://myapp.com`. The SDK attempts to infer this via HTTP headers at runtime, but this may be required when using platforms like AWS Lambda or when using a reverse proxy. See also [`INNGEST_SERVE_HOST`](/docs/sdk/environment-variables#inngest-serve-host).
