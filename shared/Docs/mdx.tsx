@@ -30,7 +30,7 @@ export {
 } from "./Code";
 
 export const h1: React.FC<any> = function (props) {
-  return <Heading level={1} {...props} />;
+  return <Heading level={1} {...props} anchor={false} />;
 };
 export const h2: React.FC<any> = function (props) {
   return <Heading level={2} {...props} />;
