@@ -44,7 +44,7 @@ const signupDripCampaign = inngest.createFunction(
     // Wait up to 3 days for the user open the email and click any link in it
     const clickEvent = await step.waitForEvent("wait-for-engagement", {
       event: "resend/email.clicked",
-			if: `async.data.email_id == ${emailId}`,
+      if: `async.data.email_id == ${emailId}`,
       timeout: "3 days",
     });
 
