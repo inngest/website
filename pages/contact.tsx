@@ -35,7 +35,7 @@ export default function Contact() {
     try {
       const u = new URLSearchParams(window.location.search);
       if (u.get("ref")) {
-        ref = u.get("ref");
+        ref = u.get("ref") || "";
       }
     } catch (err) {
       // noop

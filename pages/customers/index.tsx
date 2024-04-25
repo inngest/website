@@ -62,6 +62,15 @@ const caseStudies: {
     tags: ["Serverless"],
   },
   {
+    href: "/customers/fey",
+    logo: "/assets/customers/fey/fey-icon.svg",
+    name: "Fey",
+    title: "Orchestrating complex financial data pipelines",
+    snippet:
+      "50x faster and 50x cheaper. How Fey leverages Inngest in data-intensive processes.",
+    tags: ["Workflows", "AI", "Serverless"],
+  },
+  {
     href: "/customers/ocoya",
     logo: "/assets/customers/ocoya.svg",
     name: "Ocoya",
@@ -293,6 +302,9 @@ export default function Customers() {
             {grid.map(({ type, name, ...item }, idx) => {
               if (type === "quote") {
                 const { quote } = item;
+                if (!quote) {
+                  return <></>;
+                }
                 return (
                   <blockquote className="mx-auto row-span-2 col-span-2 sm:col-span-1 my-8 max-w-3xl px-8 flex flex-col gap-8 bg-[url(/assets/textures/wave.svg)] bg-contain bg-center bg-no-repeat">
                     <p className="text-lg leading-7 relative">
@@ -327,18 +339,20 @@ export default function Customers() {
               const { src, scale = 0.8 } = item;
               return (
                 <div className="group relative px-6 py-8 h-full min-h-[148px] border border-slate-100/10 rounded-2xl flex items-center">
-                  <Image
-                    key={idx}
-                    src={src}
-                    alt={name}
-                    title={name}
-                    width={120 * scale}
-                    height={30 * scale}
-                    className={clsx(
-                      "text-white m-auto width-auto transition-all",
-                      `max-h-[${36 * scale}px]`
-                    )}
-                  />
+                  {!!src && (
+                    <Image
+                      key={idx}
+                      src={src}
+                      alt={name}
+                      title={name}
+                      width={120 * scale}
+                      height={30 * scale}
+                      className={clsx(
+                        "text-white m-auto width-auto transition-all",
+                        `max-h-[${36 * scale}px]`
+                      )}
+                    />
+                  )}
                   {!!item.url && (
                     <a
                       href={item.url}

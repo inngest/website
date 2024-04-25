@@ -69,6 +69,7 @@ function NewsletterSignup({ tags = [] }: { tags: string[] }) {
     setLoading(true);
     const res = await fetch("/api/newsletter/subscribe", {
       body: JSON.stringify({
+        // @ts-ignore
         email: inputRef.current.value,
         tags,
       }),

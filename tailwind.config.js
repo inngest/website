@@ -1,7 +1,10 @@
+const colors = require("tailwindcss/colors");
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: "class",
   content: [
+    "./app/**/*.{js,ts,jsx,tsx}",
     "./pages/**/*.{js,ts,jsx,tsx}",
     "./components/**/*.{js,ts,jsx,tsx}",
     "./shared/**/*.{js,ts,jsx,tsx}",
@@ -10,6 +13,9 @@ module.exports = {
     typography: require("./typography"),
     extend: {
       colors: {
+        // Aliases for ease of re-design
+        body: colors.slate[100],
+        primary: colors.indigo["500"],
         slate: {
           950: "#0C1323",
           1000: "#080D19",

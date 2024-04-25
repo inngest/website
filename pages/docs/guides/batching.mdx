@@ -1,25 +1,29 @@
-# Batching events <VersionBadge version="v2.2.0+" />
+export const description = 'Handle high load by processing events in batches. Ideal for bulk operations.'
 
-When you have a high load system, it's common to handle a batch of events together rather
-than handling each event individually.
-It's cost efficient both in terms of computation, and less network roundtrips.
+# Batching events
 
-Another common use case for batch handling events is to account for interactions with external system
-limitations.
-For example, if your event handler calls an API with a rigid rate limit, then batching events could reduce
-the number of requests to that API.
+Batching allows a function to processing multiple events in a single run. This is useful for high load systems where it's more efficient to handle a batch of events together rather than handling each event individually. Some use cases for batching include:
 
-## Usage
+* Reducing the number of requests to an external API that supports batch operations.
+* Creating a batch of database writes to reduce the number of transactions.
+* Reducing the number of requests to your [Inngest app](/docs/apps) to improve performance or serverless costs.
 
-Now if you're convinced this is a feature you need, here's how you can enable batching event
-consumption with Inngest.
+## How to configure batching
 
+{/* NOTE - This should be moved to an example and we can make this more succinct */}
+<CodeGroup forceTabs>
 ```ts {{ title: "record-api-calls.ts"}}
 inngest.createFunction(
-  { id: "record-api-calls", batchEvents: { maxSize: 100, timeout: "5s" } },
+  {
+    id: "record-api-calls",
+    batchEvents: {
+      maxSize: 100,
+      timeout: "5s",
+    },
+  },
   { event: "log/api.call" },
-  // NOTE: Use the `events` argument, which is an array of event payloads
   async ({ events, step }) => {
+    // NOTE: Use the `events` argument, which is an array of event payloads
     const attrs = events.map((evt) => {
       return {
         user_id: evt.data.user_id,
@@ -36,67 +40,36 @@ inngest.createFunction(
   }
 );
 ```
+</CodeGroup>
 
-Imagine we have a job that we use for counting calls made to our API, and we want to track that to
-know how many users are utilizing it.
+### Configuration reference
 
-Ignoring the fact there are definitely better databases for recording this kind of data, if we
-established a transaction for every single event here, this will put a tremendous amount of stress on
-a database, and in certain cases could cause issues like [this](https://blog.sentry.io/transaction-id-wraparound-in-postgres/).
+* `maxSize` - The maximum number of events to add to a single batch.
+* `timeout` - The duration of time to wait to add events to a batch. If the batch is not full after this time, the function will be invoked with whatever events are in the current batch, regardless of size.
 
-By simply batching the database writes to every 100 events, it will reduce the database load ~100x.
+<Callout>
+  It is recommended to consider the overall batch size that you will need to process including the typical event payload size. Processing large batches can lead to memory or performance issues in your application.
+</Callout>
 
-### Configurations
+## How batching works
 
-To enable batching, simply set the `batchEvents` object in your function configuration
-([reference](/docs/reference/functions/create#inngest-create-function-configuration-trigger-handler-inngest-function)).
-It accepts two attributes:
+When batching is enabled, Inngest creates a new batch when the first event is received. The batch is filled with events until the `maxSize` is reached _or_ the `timeout` is up. The function is then invoked with the full list of events in the batch.
 
-* `maxSize`
-* `timeout`
+Depending on your SDK, the `events` argument will contain the full list of events within a batch. This allows you to operate on all of them within a single function.
 
-#### maxSize
+## Combining with other flow control methods
 
-The number of events in a "full" batch. This is the maximum amount of events your function will receive in a single
-batch when it gets invoked.
+Batching does not work with all other flow control features.
 
-#### timeout
+You _can_ combine batching with simple [concurrency](/docs/guides/concurrency) limits, but will not work correctly with the `key` configuration option.
 
-The duration Inngest will wait before invoking your function even if the batch is not full.
-Typical high load systems will have their timeouts set to a couple of seconds, usually not more than 10s.
+You _cannot_ use batching with [idempotency](/docs/guides/handling-idempotency), [rate limiting](/docs/guides/rate-limiting), or [cancellation events](/docs/guides/cancel-running-functions#cancel-with-events).
 
-### How it works
+## Limitations
 
-A function that has batching enabled will be invoked if one of the two conditions are met:
+* The maximum batch size is `100`. For the free tier, the maximum batch size is `25`.
 
-* The batch is full
-* Timer is up
+## Further reference
 
-#### `events` argument
-
-With `batchEvents` set, the SDK will send an `events` array argument to the handler. It contains
-the full list of events within a batch, which you can now operate on all of them within a single function.
-
-## Caveats
-
-Batching breaks a lot of other primitives, therefore there are features that won't work when combined
-with batching. This is true for any type of configuration which is operated on a single event because it's impossible
-to tell if a condition that was valid for an event will still be true when there is a list of them.
-
-Here are some features on the event level configuration that won't work with batching:
-
-* [idempotency](/docs/guides/handling-idempotency)
-* [rate limit](/docs/reference/functions/rate-limit)
-* [cancellation](/docs/functions/cancellation).
-
-When using batching, we recommend to keep the above in mind, and try to keep it simple if you can.
-
-
-### Note
-
-[Concurrency](/docs/guides/concurrency) will still work with batching, but with the caveat of using only the `limit` option
-and not providing any `key`.
-If you also provide a `key` for concurrency, it will only apply to the first item of the batch, which will very likely
-result in unexpected behaviors.
-
-This could change in the future with batching providing more granular control.
+* [TypeScript SDK Reference](/docs/reference/functions/create#batchEvents)
+* [Python SDK Reference](/docs/reference/python/functions/create#batch_events)

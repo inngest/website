@@ -4,11 +4,11 @@ Security is a primary consideration when moving systems into production.  In thi
 
 ## Signing keys and SDK security
 
-Firstly, it's important to understand that in production all communication between Inngest and your servers is encrypted via TLS. The SDK also actively mitigates attacks by use of the [signing key](/docs/sdk/serve#signing-key), a secret pre-shared key unique to each environment. By default, the signing key adds the following:
+Firstly, it's important to understand that in production all communication between Inngest and your servers is encrypted via TLS. The SDK also actively mitigates attacks by use of the [signing key](/docs/platform/signing-keys), a secret pre-shared key unique to each environment. By default, the signing key adds the following:
 - **Authentication**: requests to your endpoint are authenticated, ensuring that they originate from Inngest. Inngest SDKs reject all requests that are not authenticated with the signing key.
 - **Replay attack prevention:** requests are signed with a timestamp embedded, and old requests are rejected, even if the requests are authenticated correctly.
 
-**It's important that the signing key is kept secret.** If your signing key is exposed, it puts the security of your endpoints at risk. Note that it's possible to rotate signing keys with zero downtime.
+**It's important that the signing key is kept secret.** If your signing key is exposed, it puts the security of your endpoints at risk. Note that it's possible to [rotate signing keys](/docs/platform/signing-keys#rotation) with zero downtime.
 
 ### Function registration + handshake
 

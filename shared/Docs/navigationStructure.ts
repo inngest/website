@@ -112,12 +112,46 @@ const sectionGuides: NavGroup[] = [
         href: `/docs/guides/sending-events-from-functions`,
       },
       {
-        title: "Batching events",
-        href: `/docs/guides/batching`,
-      },
-      {
         title: "Scheduled functions",
         href: `/docs/guides/scheduled-functions`,
+      },
+    ],
+  },
+  {
+    title: "Flow control",
+    defaultOpen: true,
+    links: [
+      {
+        title: "Overview",
+        href: `/docs/guides/flow-control`,
+      },
+      {
+        title: "Concurrency",
+        href: `/docs/guides/concurrency`,
+      },
+      {
+        title: "Throttling",
+        href: `/docs/guides/throttling`,
+      },
+      {
+        title: "Rate limiting",
+        href: `/docs/guides/rate-limiting`,
+      },
+      {
+        title: "Debouncing",
+        href: `/docs/guides/debounce`,
+      },
+      {
+        title: "Priority",
+        href: `/docs/guides/priority`,
+      },
+      {
+        title: "Handling idempotency",
+        href: `/docs/guides/handling-idempotency`,
+      },
+      {
+        title: "Batching events",
+        href: `/docs/guides/batching`,
       },
     ],
   },
@@ -128,14 +162,6 @@ const sectionGuides: NavGroup[] = [
       {
         title: "Error handling",
         href: "/docs/guides/error-handling",
-      },
-      {
-        title: "Concurrency",
-        href: `/docs/guides/concurrency`,
-      },
-      {
-        title: "Handling idempotency",
-        href: `/docs/guides/handling-idempotency`,
       },
       {
         title: "Cancel running functions",
@@ -218,6 +244,10 @@ const sectionGuides: NavGroup[] = [
       {
         title: "Creating an event key",
         href: `/docs/events/creating-an-event-key`,
+      },
+      {
+        title: "Signing keys",
+        href: `/docs/platform/signing-keys`,
       },
       {
         title: "Consuming webhook events",

@@ -27,7 +27,10 @@ export default function PlatformFeatures() {
       <div className="my-24 mx-auto max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="md:col-span-2 rounded-2xl overflow-hidden xl:min-h-[420px] px-8 pt-12 lg:pt-0 lg:px-16 grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-[40%_1fr] gap-8 md:gap-8 lg:gap-24 items-center bg-gradient-to-br from-emerald-400/10 to-cyan-400/10">
           <div className="md:pb-8 lg:py-12 lg:pb-12">
-            <h3 className="text-2xl font-semibold mb-5">Branch environments</h3>
+            <div className="flex flex-row gap-2 items-center mb-5">
+              <img src="/assets/platform/icon-branch.svg" />
+              <h3 className="text-2xl font-semibold">Branch environments</h3>
+            </div>
             <p className="text-lg mb-7 font-medium text-slate-300">
               Test your entire application end-to-end with an Inngest
               environment for every development branch that you deploy, without
@@ -58,9 +61,12 @@ export default function PlatformFeatures() {
 
         <div className="grid grid-rows-[auto_1fr] rounded-lg gap-8 md:gap-10 overflow-hidden bg-gradient-to-b	from-amber-400/10 to-rose-400/15">
           <div className="pt-11 px-8 md:px-10">
-            <h3 className="text-2xl font-semibold mb-5">
-              Real-time observability metrics
-            </h3>
+            <div className="flex flex-row gap-2 items-center mb-5">
+              <img src="/assets/platform/icon-metrics.svg" />
+              <h3 className="text-2xl font-semibold">
+                Real-time observability metrics
+              </h3>
+            </div>
             <p className="text-lg mb-7 font-medium text-slate-300">
               Quickly diagnose system wide issues with built in metrics. View
               backlogs and spikes in failures for every single function. There
@@ -85,7 +91,10 @@ export default function PlatformFeatures() {
 
         <div className="grid grid-rows-[auto_1fr] rounded-lg gap-8 md:gap-10 overflow-hidden bg-gradient-to-br from-blue-400/20 to-orange-200/20">
           <div className="pt-11 px-8 md:px-10">
-            <h3 className="text-2xl font-semibold mb-5">Full logs & history</h3>
+            <div className="flex flex-row gap-2 items-center mb-5">
+              <img src="/assets/platform/icon-tracing.svg" />
+              <h3 className="text-2xl font-semibold">Full logs & history</h3>
+            </div>
             <p className="text-lg mb-7 font-medium text-slate-300">
               Inngest keeps a full history of every event and function run
               allowing you to easily debug any production issues. No more

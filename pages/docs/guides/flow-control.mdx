@@ -1,0 +1,48 @@
+import IconConcurrency from 'src/shared/Icons/FlowControl/Concurrency';
+import IconThrottle from 'src/shared/Icons/FlowControl/Throttle';
+import IconRateLimit from 'src/shared/Icons/FlowControl/RateLimit';
+import IconDebounce from 'src/shared/Icons/FlowControl/Debounce';
+import IconPriority from 'src/shared/Icons/FlowControl/Priority';
+import IconIdempotency from 'src/shared/Icons/FlowControl/Idempotency';
+import IconBatching from 'src/shared/Icons/FlowControl/Batching';
+
+export const description = 'Learn how to manage how functions are executed with flow control.';
+
+# Flow Control
+
+Flow control is a critical part of building robust applications. It allows you to manage the flow of data and events through your application which can help you manage resources, prevent overloading systems, and ensure that your application is responsive and reliable.
+
+There are several methods to manage flow control for each Inngest function. Learn about each method and how to use them in your functions:
+
+
+### <a href="/docs/guides/concurrency" className="flex items-center gap-4"><IconConcurrency size="2rem"/> Concurrency</a> {{anchor: false}}
+
+Limit the number of executing steps across your function runs. Ideal for limiting concurrent workloads by user, resource, or in general.
+
+### <a href="/docs/guides/throttling" className="flex items-center gap-4"><IconThrottle size="2rem"/> Throttle</a> {{anchor: false}}
+
+Limit the throughput of function execution over a period of time. Ideal for working around third-party API rate limits.
+
+### <a href="/docs/guides/rate-limiting" className="flex items-center gap-4"><IconRateLimit size="2rem" /> Rate Limiting</a> {{anchor: false}}
+
+Prevent excessive function runs over a given time period by _skipping_ events beyond a specific limit. Ideal for protecting against abuse.
+
+### <a href="/docs/guides/debounce" className="flex items-center gap-4"><IconDebounce size="2rem"/> Debounce</a> {{anchor: false}}
+
+Avoid unnecessary function invocations by de-duplicating events over a sliding time window. Ideal for preventing wasted work when a function might be triggered in quick succession.
+
+### <a href="/docs/guides/priority" className="flex items-center gap-4"><IconPriority size="2rem"/> Priority</a> {{anchor: false}}
+
+Dynamically adjust the execution order of functions based on any data. Ideal for pushing critical work to the front of the queue.
+
+### <a href="/docs/guides/handling-idempotency" className="flex items-center gap-4"><IconIdempotency size="2rem"/> Idempotency</a> {{anchor: false}}
+
+Prevent duplicate work with two different approaches to ensure functions run only once.
+
+### <a href="/docs/guides/batching" className="flex items-center gap-4"><IconBatching size="2rem"/> Batch processing</a> {{anchor: false}}
+
+Handle high load by processing events in batches. Ideal for bulk operations.
+
+
+
+{/* NOTE - Should we include 'delaying for flow control - e.g. using the ts' */}
