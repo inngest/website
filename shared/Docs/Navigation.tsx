@@ -237,7 +237,7 @@ export function PageSidebar() {
               }}
             >
               <NavLink
-                href={`#${section.id}`}
+                href={section.level === 1 ? `#top` : `#${section.id}`}
                 tag={section.tag}
                 isAnchorLink
                 truncate={false}

@@ -227,7 +227,7 @@ export function Footer({ editPageURL }: { editPageURL: string }) {
   let router = useRouter();
 
   return (
-    <footer className="mx-auto max-w-2xl space-y-8 lg:max-w-5xl">
+    <footer className="mx-auto max-w-2xl space-y-8 lg:max-w-none">
       <Feedback key={router.pathname} page={router.pathname} />
       <EditPageLink url={editPageURL} />
       <PageNavigation />
