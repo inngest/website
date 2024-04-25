@@ -577,6 +577,10 @@ const sectionExamples: NavGroup[] = [
         title: "Email Sequence",
         href: `/docs/examples/email-sequence`,
       },
+      {
+        title: "Fetch run status and output",
+        href: `/docs/examples/fetch-run-status-and-output`,
+      },
     ],
   },
 ];
