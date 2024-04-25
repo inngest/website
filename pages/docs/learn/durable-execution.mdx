@@ -1,0 +1,34 @@
+export const description = 'Learn how Durable Execution works with Inngest. '
+
+# How Durable Execution works with Inngest
+
+One of the core features of Inngest is Durable Execution. Durable Execution allows your functions to be fault-tolerant and resilient to failures. The end result is that your code, and therefore, your overall application, is more reliable.
+
+In this guide, we'll cover the basics of Durable Execution, how it works, and how it works with Inngest functions.
+
+{/* Note - this page is written a specific way for search optimization */}
+## What is Durable Execution?
+
+Durable Execution is a fault-tolerant approach to executing code that handles failures and interruptions gracefully through automatic retries and state persistence. This means that your code can continue to run even if there are issues like network failures, timeouts, infrastructure outages, and other transient errors.
+
+Durable functions can throw errors or exceptions and automatically retry, resuming execution from the point of failure. Durable functions are designed to be long-running and stateful, meaning that they can persist state across function invocations and retries.
+
+Some key aspects of Durable Execution include:
+
+* **State persistance** - Function state is persisted outside of the function execution context. This enables function execution to be resumed from the point of failure on the same _or_ different infrastructure.
+* **Fault-tolerance** - Errors or exceptions are caught by the execution layer and are automatically retried. Retry behavior can be customized to handle the accepted number of retries as well as handle different types of errors.
+
+## How Inngest functions work
+
+Inngest functions are durable as described in the previous section. Inngest functions use "Steps" to define the execution flow of a function. Each step:
+
+* Is a unit of work that can be run and retried independently.
+* Captures any error or exception thrown within it to
+* Returns state (_data_) that can be used by subsequent steps.
+* Can be executed in parallel or sequentially, depending on the function's configuration.
+
+In comparison, some durable execution systems modify the runtime environment to support durable execution. Inngest functions are designed to be stateless and can be run in any environment that supports the Inngest runtime.
+
+
+* stateful - works with serverless functions
+idempotency

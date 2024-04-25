@@ -62,6 +62,10 @@ const sectionGettingStarted: NavGroup[] = [
         href: `/docs/local-development`,
       },
       {
+        title: "Durable Execution",
+        href: `/docs/learn/durable-execution`,
+      },
+      {
         title: "Security",
         href: `/docs/security`,
       },
