@@ -28,7 +28,8 @@ const scheduleReminder = inngest.createFunction(
     id: "schedule-reminder",
     cancelOn: [{
       event: "tasks/reminder.deleted", // The event name that cancels this function
-      match: "data.reminderId", // The field that must match in both events received
+      // Ensure the cancelation event (async) and the triggering event (event)'s reminderId are the same:
+      if: "async.data.reminderId == event.data.reminderId", 
     }],
   }
   { event: "tasks/reminder.created" },
@@ -45,7 +46,9 @@ const scheduleReminder = inngest.createFunction(
 Let's break down how this works:
 
 1. Whenever the function is triggered, a cancelation listener is created which waits for an `"tasks/reminder.deleted"` event to be received.
-2. The `match` statement tells Inngest that both the triggering event (`"tasks/reminder.created"`) and the cancelation event (`"tasks/reminder.deleted"`) have the same exact value for `data.reminderId` in each event payload. This makes sure that an event does not cancel a different reminder.
+2. The `if` statement tells Inngest that both the triggering event (`"tasks/reminder.created"`) and the cancelation event (`"tasks/reminder.deleted"`) have the same exact value for `data.reminderId` in each event payload. This makes sure that an event does not cancel a different reminder.
+
+For more information on writing events, read our guide [on writing expressions](/docs/guides/writing-expressions).
 
 Here is an example of these two events which will be matched on the `data.reminderId` field:
 
