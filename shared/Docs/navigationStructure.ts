@@ -17,6 +17,7 @@ export type NavLink = {
   title: string;
   href: string;
   className?: string;
+  tag?: string;
 };
 // A group nested of nav links with a header
 export type NavGroup = {

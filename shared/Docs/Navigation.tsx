@@ -103,20 +103,20 @@ function NavLink({
       aria-current={active ? "page" : undefined}
       target={target}
       className={clsx(
-        "flex justify-between items-center gap-2 py-1 pr-3 text-sm font-medium transition group", // group for nested hovers
+        "flex justify-between items-center gap-2 py-1 pr-3 text-sm transition group", // group for nested hovers
         isTopLevel || isAnchorLink ? "pl-0" : "pl-4",
         active
-          ? "text-slate-900 dark:text-white"
-          : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white",
+          ? "font-semibold text-black dark:text-white"
+          : "font-medium text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white",
         className
       )}
     >
-      <span className={truncate ? "truncate" : ""}>{children}</span>
-      {tag && (
-        <Tag variant="small" color="slate" background="page">
-          {tag}
-        </Tag>
+      {!isAnchorLink && (
+        <span className="absolute inset-y-0 left-0 w-px bg-slate-900/10 dark:bg-white/15" />
       )}
+
+      <span className={truncate ? "truncate" : ""}>{children}</span>
+      {tag && <Tag color="indigo">{tag}</Tag>}
     </LinkOrHref>
   );
 }
@@ -156,26 +156,8 @@ function VisibleSectionHighlight({ listItems }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1, transition: { delay: 0.2 } }}
       exit={{ opacity: 0 }}
-      className="absolute -left-2 right-0 top-0 bg-slate-800/10 will-change-transform dark:bg-white/10"
+      className="absolute -left-2 right-0 top-0 bg-slate-500/10 will-change-transform dark:bg-white/10"
       style={{ borderRadius: 8, height, top }}
-    />
-  );
-}
-
-function ActivePageMarker({ group, pathname }) {
-  let itemHeight = 28;
-  let offset = remToPx(0.27);
-  let activePageIndex = findPathIndex(group.links, pathname);
-  let top = offset + activePageIndex * itemHeight;
-
-  return (
-    <motion.div
-      layout
-      className="absolute h-[20px] w-px bg-indigo-500"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1, transition: { delay: 0.2 } }}
-      exit={{ opacity: 0 }}
-      style={{ top }}
     />
   );
 }
@@ -309,19 +291,6 @@ function NavigationGroup({
               isNestedGroup ? "mt-2" : "pl-2 mt-3"
             )}
           >
-            {!isNestedGroup && (
-              <motion.div
-                layout
-                className="absolute inset-y-0 left-2 w-px bg-slate-900/10 dark:bg-white/5"
-              />
-            )}
-
-            <AnimatePresence initial={false}>
-              {(isActiveGroup || isNestedGroup) && (
-                <ActivePageMarker group={group} pathname={router.pathname} />
-              )}
-            </AnimatePresence>
-
             <motion.ul role="list" className="border-l border-transparent">
               {group.links.map((link) =>
                 "links" in link ? (
@@ -343,6 +312,7 @@ function NavigationGroup({
                       href={link.href}
                       active={link.href === router.pathname}
                       className={link.className}
+                      tag={link.tag}
                     >
                       {link.title}
                     </NavLink>
