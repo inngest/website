@@ -17,6 +17,7 @@ import { Button } from "src/shared/Button";
 import IconCalendar from "src/shared/Icons/Calendar";
 import CTACallout from "src/shared/CTACallout";
 import Blockquote from "src/shared/Blog/Blockquote";
+import { YouTubeEmbed } from "@next/third-parties/google";
 import rehypeCodeTitles from "rehype-code-titles";
 import YouTube from "react-youtube-embed";
 import remarkGfm from "remark-gfm";
@@ -27,6 +28,7 @@ const components = {
   Button,
   CTACallout,
   Blockquote,
+  YouTubeEmbed,
   YouTube,
 };
 
@@ -51,6 +53,7 @@ const authorURLs = {
   "Joel Hooks": "https://twitter.com/jhooks",
   "Sylwia Vargas": "https://twitter.com/sylwiavargas",
   "Taylor Facen": "https://twitter.com/ItsTayFay",
+  "Igor Samokhovets": "https://twitter.com/IgorSamokhovets",
 };
 
 export default function BlogLayout(props) {
