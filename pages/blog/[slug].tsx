@@ -17,7 +17,6 @@ import { Button } from "src/shared/Button";
 import IconCalendar from "src/shared/Icons/Calendar";
 import CTACallout from "src/shared/CTACallout";
 import Blockquote from "src/shared/Blog/Blockquote";
-import { YouTubeEmbed } from "@next/third-parties/google";
 import rehypeCodeTitles from "rehype-code-titles";
 import YouTube from "react-youtube-embed";
 import remarkGfm from "remark-gfm";
@@ -28,7 +27,6 @@ const components = {
   Button,
   CTACallout,
   Blockquote,
-  YouTubeEmbed,
   YouTube,
 };
 
