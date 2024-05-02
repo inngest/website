@@ -28,7 +28,7 @@ Let's dive into some parts of the video rendering pipeline.
 The first step in the render pipeline is to update the render status and set user credits on hold
 
 ```js
-const updatedVideo = await step.run('Update user balance', async () => {
+const updatedVideo = await step.run('update-user-balance', async () => {
   await dbConnect()
 
   const render = await VideoModel.findOneAndUpdate(
@@ -66,7 +66,7 @@ Let's see it in code.
 
 ```js
 const croppedMp3Url = await step.run(
-  'Trim audio and convert to mp3',
+  'trim-audio-and-convert-to-mp3',
   async () => {
     // create temporary file
     const tempFilePath = `${os.tmpdir()}/${videoId}.mp3`
@@ -122,7 +122,7 @@ We have a sub-queue that communicates with our own infrastructure. We send a job
 
 ```js
 const { videoFileURL, renderTime } = await step.run(
-  'Render video to s3',
+  'render-video-to-s3',
   async () => {
     const outKey = await getVideoOutKey(videoId)
 
@@ -198,7 +198,7 @@ const { videoFileURL, renderTime } = await step.run(
 There are some cases when video needs to be re-rendered. To make sure CDN cache is always fresh, we purge it each time the video renders.
 
 ```js
-await step.run('Create invalidation on CloudFront', async () => {
+await step.run('create-invalidation-on-CloudFront', async () => {
   try {
     const { pathname: videoPathnameToInvalidate } = new URL(videoFileURL)
 
@@ -219,7 +219,7 @@ await step.run('Create invalidation on CloudFront', async () => {
 After video is successfully rendered and we have obtained a URL, we set video status to "ready" and update `renderTime`.
 
 ```js
-await step.run('Update video status to ready', () =>
+await step.run('update-video-status-to-ready', () =>
   Promise.all([
     VideoModel.updateOne(
       { _id: videoId },
@@ -242,7 +242,7 @@ await step.run('Update video status to ready', () =>
 Finally, we also want to create a thumbnail for each video to show it in listings or use as a video posters.
 
 ```js
-await step.run('Generate thumbnail and upload to S3', async () => {
+await step.run('generate-thumbnail-and-upload-to-s3', async () => {
   const thumbnailFilePath = `${os.tmpdir()}/${videoId}-thumbnail.jpg`
 
   await execa(`ffmpeg`, [
