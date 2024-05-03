@@ -235,6 +235,20 @@ const sectionGuides: NavGroup[] = [
     ],
   },
   {
+    title: "Local development",
+    defaultOpen: false,
+    links: [
+      // {
+      //   title: "Inngest Dev Server",
+      //   href: `/docs/local-development`,
+      // },
+      {
+        title: "Development with Docker",
+        href: `/docs/guides/development-with-docker`,
+      },
+    ],
+  },
+  {
     title: "Inngest Cloud",
     defaultOpen: true,
     links: [
