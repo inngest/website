@@ -1,6 +1,6 @@
 import { ResourceGrid, Resource } from 'src/shared/Docs/Resources'
 import { EnvelopeIcon } from "@heroicons/react/24/outline";
-import { RiBracesFill } from "@remixicon/react";
+import { RiBracesFill, RiCalendarScheduleFill } from "@remixicon/react";
 
 export const hidePageSidebar = true;
 
@@ -19,11 +19,19 @@ Explore the features built with Inngest:
 }}/>
 
 <Resource resource={{
+  href: "/docs/examples/scheduling-one-off-function",
+  name: "Scheduling a one-off function",
+  icon: RiCalendarScheduleFill,
+  description: "Schedule a function to run at a specific time.",
+  pattern: 2,
+}}/>
+
+<Resource resource={{
   href: "/docs/examples/fetch-run-status-and-output",
   name: "Fetch run status and output",
   icon: RiBracesFill,
   description: "Get the result of a run using an Event ID.",
-  pattern: 2,
+  pattern: 3,
 }}/>
 
 </ResourceGrid>
