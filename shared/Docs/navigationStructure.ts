@@ -609,6 +609,10 @@ const sectionExamples: NavGroup[] = [
         href: `/docs/examples/email-sequence`,
       },
       {
+        title: "Scheduling a one-off function",
+        href: `/docs/examples/scheduling-one-off-function`,
+      },
+      {
         title: "Fetch run status and output",
         href: `/docs/examples/fetch-run-status-and-output`,
       },
