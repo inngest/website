@@ -14,12 +14,18 @@ Hi everyone! My name is [Igor Samokhovets](https://twitter.com/IgorSamokhovets) 
 
 <YouTube id="eSLKm6IfZM4" height={300}/>
 
- Creating a video for your new song takes only a few minutes and you don't need to know any complex software because banger.show works in your browser.
+Creating a video for your new song takes only a few minutes and you don't need to install or learn any complex software because banger.show works in your browser!
 
 
 ## Making background processing snappy
 
-At banger.show, we do a lot of background processing. Managing render states, generating visual assets in the background, and even handling the rendering process on remote distributed workers. We chose Inngest because there's no better way to handle background jobs if you're using Next.js.
+At banger.show, we do a lot of background processing. Managing render states, generating visual assets in the background, and even handling the rendering process on remote distributed workers.
+
+We chose Inngest because there's no better way to handle background jobs if you're using Next.js **without a custom server**. **It's a primary "flow controller" for us**, even though we have a simple queue solution based on Redis to handle tasks on our infra. It allows us to orchestrate, observe, and abstract away lower-level processes, for example:
+
+- We don't have to delegate every post-render task to the video rendering machine, but have some flow where the main server can receive render results from the workers and do something with it.
+- We can observe each step and its return data in the dashboard.
+- We can handle emergency cases when all of our infra goes down and we need to spin up some backup workers on AWS.
 
 Let's dive into some parts of the video rendering pipeline.
 
@@ -156,8 +162,6 @@ const { videoFileURL, renderTime } = await step.run(
     logger.info(
       `Rendering Remotion video with renderer ${renderer} and crf ${constantRateFactor}`
     )
-
-    let processingStatusIsSet = false
 
     const renderedVideo = await renderVideo({
       videoId: videoId,
