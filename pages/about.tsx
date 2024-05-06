@@ -24,11 +24,6 @@ const TEAM = [
     avatar: "/assets/team/jack-2022-10-10.jpg",
   },
   {
-    name: "Igor Gassmann",
-    role: "Engineer",
-    avatar: "/assets/team/igor-g-2023-06-26.jpg",
-  },
-  {
     name: "Aaron Harper",
     role: "Engineer",
     avatar: "/assets/team/aaron-h-2023-06-26.jpg",
@@ -52,6 +47,21 @@ const TEAM = [
     name: "Sylwia Vargas",
     role: "Dev Rel",
     avatar: "/assets/team/sylwia-v-2024-01-21.jpg",
+  },
+  {
+    name: "Sanjana Laddha",
+    role: "Designer",
+    avatar: "/assets/team/sanjana-v-2024-05-06.jpg",
+  },
+  {
+    name: "Bruno Scheufler",
+    role: "Engineer",
+    avatar: "/assets/team/bruno-v-2024-05-06.jpg",
+  },
+  {
+    name: "Chris Dzombak",
+    role: "Engineer",
+    avatar: "/assets/team/chris-v-2024-05-06.jpg",
   },
 ];
 
