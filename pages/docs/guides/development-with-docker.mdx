@@ -41,7 +41,7 @@ You will then be able to access the Inngest Dev Server on your host machine at `
 
 If you're using [Docker Compose](https://docs.docker.com/compose/) to run your services locally, you can easily add Inngest to your local environment. Here's an example `docker-compose.yml` file that includes Inngest:
 
-```yaml
+```yaml {{ filename: "docker-compose.yaml" }}
 services:
   app:
     build: ./app
@@ -59,7 +59,17 @@ services:
 
 In this example, we have two services: `app` and `inngest`. The `app` service is your application, and the `inngest` service is the Inngest Dev Server. There are a few key configurations to note:
 
-* The `INNGEST_DEV=1` environment variable tells the Inngest SDK it should connect to the Dev Server.
+* The `INNGEST_DEV=1` environment variable tells the Inngest SDK it should connect to the Dev Server*.
 * The `INNGEST_BASE_URL=http://inngest:8288` environment variable tells the Inngest SDK where the Dev Server is running. In our example, the `inngest` service is running on port `8288` (the default Dev Server port).
 * The `command: 'inngest dev -u http://app:3000/api/inngest'` command tells the Dev Server where to find your app within the Docker network. In this example, the `app` service is running on port `3000`.
 * The `ports` configuration exposes the Dev Server on port `8288` so you can view this on your host machine in the browser.
+
+\* - The `INNGEST_DEV` environment variable was added to the TypeScript SDK in version 3.14. Prior to this version, you can set `NODE_ENV=development` to force the SDK to connect to the Dev Server.
+
+## Further reference
+
+* [Local development](/docs/local-development)
+* [Dev Server source code on GitHub](https://github.com/inngest/inngest)
+* [`inngest/inngest` Docker image on Docker Hub](https://hub.docker.com/r/inngest/inngest)
+* [TypeScript SDK Environment variable reference](/docs/sdk/environment-variables)
+* [Python SDK Environment variable reference](/docs/reference/python/overview/env-vars)

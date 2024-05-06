@@ -529,10 +529,6 @@ const sectionPythonReference: NavGroup[] = [
         href: `/docs/reference/python`,
       },
       {
-        title: "Quick start",
-        href: `/docs/reference/python/overview/quick-start`,
-      },
-      {
         title: "Environment variables",
         href: `/docs/reference/python/overview/env-vars`,
       },

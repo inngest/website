@@ -81,7 +81,7 @@ Start your app:
 
 <Callout variant="info">
   💡 The `INNGEST_DEV` environment variable tells the Inngest SDK to run in "dev mode". By default, the SDK will start in [production mode](/docs/reference/python/overview/prod-mode). We made production mode opt-out for security reasons.
-  
+
   Always set `INNGEST_DEV` when you want to sync with the Dev Server. Never set `INNGEST_DEV` when you want to sync with Inngest Cloud.
 </Callout>
 
@@ -92,9 +92,16 @@ Start your app:
 Inngest functions are run using an **Inngest server**. For this guide we'll use the [Dev Server](https://github.com/inngest/inngest), which is a single-binary version of our [Cloud](https://app.inngest.com) offering. The Dev Server is great for local development and testing, while Cloud is for deployed apps (e.g. production).
 
 Start the Dev Server:
-```sh
+
+<CodeGroup>
+```sh {{ title: "npx (npm)" }}
 npx inngest-cli@latest dev -u http://127.0.0.1:8000/api/inngest --no-discovery
 ```
+```sh {{ title: "Docker" }}
+docker run -p 8288:8288 inngest/inngest \
+  inngest dev -u http://host.docker.internal:8000/api/inngest --no-discovery
+```
+</CodeGroup>
 
 After a few seconds, your app and function should now appear in the Dev Server UI:
 
