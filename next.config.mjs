@@ -26,6 +26,10 @@ const permanentRedirects = [
   ["/docs/sdk/reference/serve", "/docs/reference/serve"],
   ["/docs/events/webhooks", "/docs/platform/webhooks"],
   ["/docs/functions/retries", "/docs/reference/typescript/functions/errors"],
+  [
+    "/docs/reference/python/overview/quick-start",
+    "/docs/getting-started/quick-start/python",
+  ],
 
   // Other pages
   ["/uses/zero-infra-llm-ai", "/ai"],

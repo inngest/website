@@ -235,6 +235,20 @@ const sectionGuides: NavGroup[] = [
     ],
   },
   {
+    title: "Local development",
+    defaultOpen: false,
+    links: [
+      // {
+      //   title: "Inngest Dev Server",
+      //   href: `/docs/local-development`,
+      // },
+      {
+        title: "Development with Docker",
+        href: `/docs/guides/development-with-docker`,
+      },
+    ],
+  },
+  {
     title: "Inngest Cloud",
     defaultOpen: true,
     links: [
@@ -513,10 +527,6 @@ const sectionPythonReference: NavGroup[] = [
       {
         title: "Introduction",
         href: `/docs/reference/python`,
-      },
-      {
-        title: "Quick start",
-        href: `/docs/reference/python/overview/quick-start`,
       },
       {
         title: "Environment variables",

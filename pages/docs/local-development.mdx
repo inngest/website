@@ -13,13 +13,19 @@ The Inngest dev server is an [open source](https://github.com/inngest/inngest) e
 
 To start the dev server is a single command. It will scan for ports and common endpoints for an Inngest `serve` API endpoint ([list of ports](https://github.com/inngest/inngest/blob/ea67219e7e7c33451416249f98fd5ca48e99ba28/pkg/devserver/discovery.go#L15-L28)):
 
-```shell
+<CodeGroup>
+```shell {{ title: "npx (npm)" }}
 npx inngest-cli@latest dev
 # You can also tell the local URL for the dev server to check
-npx inngest-cli@latest dev -u http://localhost:3333/api/inngest
+npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
 ```
+```shell {{ title: "Docker" }}
+docker run -p 8288:8288 inngest/inngest \
+  inngest dev -u http://host.docker.internal:3000/api/inngest
+```
+</CodeGroup>
 
-You can now open the dev server's browser interface on [`http://localhost:8288`](http://localhost:8288).
+You can now open the dev server's browser interface on [`http://localhost:8288`](http://localhost:8288). For more information about developing with Docker, see the [Docker guide](/docs/guides/development-with-docker).
 
 ### Connecting apps to the Dev Server
 

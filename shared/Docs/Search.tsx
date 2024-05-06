@@ -562,7 +562,6 @@ export function Search() {
 /* Search input button in mobile sidebar */
 export function MobileSearch() {
   let { buttonProps, dialogProps } = useSearchProps();
-  console.log("MobileSearch");
   return (
     <div className="block lg:hidden flex-auto mb-4">
       <SearchButton {...buttonProps} />
