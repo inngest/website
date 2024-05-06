@@ -78,9 +78,9 @@ const INVESTORS: {
     featured: true,
   },
   {
-    name: "GGV Capital",
-    logo: "/assets/about/ggv-capital-logo-white.png",
-    maxWidth: "200px",
+    name: "Notable Capital",
+    logo: "/assets/about/notable-capital-white.svg",
+    maxWidth: "240px",
     featured: true,
   },
   {
@@ -154,7 +154,7 @@ const FEATURED_BLOG_POSTS: { title: string; href: string; date?: string }[] = [
     date: "January 2024",
   },
   {
-    title: "Inngest Raises $3M Seed led by GGV Capital",
+    title: "Inngest Raises $3M Seed led by Notable Capital (fka GGV Capital)",
     href: "/blog/announcing-inngest-seed-financing",
     date: "July 2023",
   },
@@ -293,12 +293,12 @@ export default function About() {
                       investor.featured
                         ? "md:col-span-4 mx-auto"
                         : "md:col-span-2 mx-auto",
-                      "flex items-center bg-slate-950 rounded w-full justify-center p-10  border border-slate-900 shadow h-[130px]"
+                      "flex items-center bg-slate-950 rounded w-full justify-center px-10 py-4 border border-slate-900 shadow h-[130px]"
                     )}
                   >
                     <img
                       key={investor.name}
-                      style={{ maxHeight: "50px" }}
+                      style={{ maxHeight: investor.featured ? "96px" : "50px" }}
                       src={investor.logo}
                       alt={investor.name}
                     />
