@@ -24,11 +24,6 @@ const TEAM = [
     avatar: "/assets/team/jack-2022-10-10.jpg",
   },
   {
-    name: "Igor Gassmann",
-    role: "Engineer",
-    avatar: "/assets/team/igor-g-2023-06-26.jpg",
-  },
-  {
     name: "Aaron Harper",
     role: "Engineer",
     avatar: "/assets/team/aaron-h-2023-06-26.jpg",
@@ -53,6 +48,21 @@ const TEAM = [
     role: "Dev Rel",
     avatar: "/assets/team/sylwia-v-2024-01-21.jpg",
   },
+  {
+    name: "Sanjana Laddha",
+    role: "Designer",
+    avatar: "/assets/team/sanjana-v-2024-05-06.jpg",
+  },
+  {
+    name: "Bruno Scheufler",
+    role: "Engineer",
+    avatar: "/assets/team/bruno-v-2024-05-06.jpg",
+  },
+  {
+    name: "Chris Dzombak",
+    role: "Engineer",
+    avatar: "/assets/team/chris-v-2024-05-06.jpg",
+  },
 ];
 
 const INVESTORS: {
@@ -68,9 +78,9 @@ const INVESTORS: {
     featured: true,
   },
   {
-    name: "GGV Capital",
-    logo: "/assets/about/ggv-capital-logo-white.png",
-    maxWidth: "200px",
+    name: "Notable Capital",
+    logo: "/assets/about/notable-capital-white.svg",
+    maxWidth: "240px",
     featured: true,
   },
   {
@@ -144,7 +154,7 @@ const FEATURED_BLOG_POSTS: { title: string; href: string; date?: string }[] = [
     date: "January 2024",
   },
   {
-    title: "Inngest Raises $3M Seed led by GGV Capital",
+    title: "Inngest Raises $3M Seed led by Notable Capital (fka GGV Capital)",
     href: "/blog/announcing-inngest-seed-financing",
     date: "July 2023",
   },
@@ -283,12 +293,12 @@ export default function About() {
                       investor.featured
                         ? "md:col-span-4 mx-auto"
                         : "md:col-span-2 mx-auto",
-                      "flex items-center bg-slate-950 rounded w-full justify-center p-10  border border-slate-900 shadow h-[130px]"
+                      "flex items-center bg-slate-950 rounded w-full justify-center px-10 py-4 border border-slate-900 shadow h-[130px]"
                     )}
                   >
                     <img
                       key={investor.name}
-                      style={{ maxHeight: "50px" }}
+                      style={{ maxHeight: investor.featured ? "96px" : "50px" }}
                       src={investor.logo}
                       alt={investor.name}
                     />
