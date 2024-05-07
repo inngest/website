@@ -316,7 +316,58 @@ export const renderVideo = inngest.createFunction(
       await dbConnect()
 
       const isStalled = RenderStalledError.isRenderStalledError(error)
+
+       const updatedVideo = await step.run(
+        'Update video status to failed',
+        () =>
+          VideoModel.findOneAndUpdate(
+            { _id: event.data.event.data.videoId },
+            {
+              $set: {
+                status: isStalled ? 'stalled' : 'error',
+                ...(isStalled && { stalledAt: new Date() }),
+                renderProgress: null
+              }
+            },
+            { new: true }
+          )
+            .lean()
+      )
+
+      invariant(updatedVideo, 'no video found')
+
+      // refund user units if error is not recoverable
+      // if it's stalled, we're going to recover it later
+      if (!isStalled) {
+        await step.run('Refund user units', async () => {
+          await UserModel.updateOne(
+            {
+              _id: event.data.event.data.userId
+            },
+            { $inc: { unitsRemaining: updatedVideo.videoDuration } }
+          )
+        })
+      }
+
+      if (process.env.NODE_ENV === 'production') {
+        const errorJson = _.truncate(JSON.stringify(event), {
+          length: 3000
+        })
+        await sendTelegramLog(
+          _.truncate(
+            `🚨 Error while rendering video: ${error.message}\n
+          Event: ${errorJson}\n`,
+            { length: 3000 }
+          )
+        )
+      }
+
+      Sentry.captureException(error)
     }
+  },
+  { event: 'banger/video.create' },
+  async ({ event, step, attempt, logger }) => {
+    // ...
   })
 ```
 
