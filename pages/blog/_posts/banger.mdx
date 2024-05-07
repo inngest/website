@@ -26,7 +26,7 @@ At banger.show, we do a lot of background processing. Managing render states, ge
 We chose Inngest because there's no better way to handle background jobs if you're using Next.js **without a custom server**. **It's a primary "flow controller" for us**, even though we have a simple queue solution based on Redis to handle tasks on our infra. It allows us to orchestrate, observe, and abstract away lower-level processes, for example:
 
 - We don't have to delegate every post-render task to the video rendering machine, but have some flow where the main server can receive render results from the workers and do something with it.
-- We can observe each step and its return data in the dashboard.
+- We can observe each [step](/docs/reference/functions/step-run) and its return data in the dashboard.
 - We can handle emergency cases when all of our infra goes down and we need to spin up some backup workers on AWS.
 
 ![A screenshot of the Banger app](/assets/blog/banger/banger-satisfied-screenshot.png)
@@ -42,7 +42,7 @@ Let's now dive into some parts of the video rendering pipeline.
 
 ### 1. Updating the render status
 
-The first step in the render pipeline is to update the render status and set user credits on hold. Here we are using the default Inngest concurrency.
+The first step in the render pipeline is to update the render status and set user credits on hold. Here we are using the default Inngest [concurrency](/docs/guides/concurrency).
 
 
 ```js
@@ -87,7 +87,7 @@ export const renderVideo = inngest.createFunction(
 In banger.show, the user selects a fragment of the song to create a "videoization" for it. In the background job, we:
 
 - Crop audio file based on the user selection.
-- Convert the file to MP3 format for disk space efficiency and optimal compatibility.
+- Convert the file to mp3 format for disk space efficiency and optimal compatibility.
 
 Let's see it in code.
 
@@ -299,7 +299,7 @@ await step.run('generate-thumbnail-and-upload-to-s3', async () => {
 
 ### 7. Handling failures
 
-We set a graceful flow termination strategy in the `onFailure` function (please keep in mind that it's simplified for this blog post).
+We set a graceful flow termination strategy in the [`onFailure`](/docs/reference/functions/handling-failures) function (please keep in mind that it's simplified for this blog post).
 
 ```js
 export const renderVideo = inngest.createFunction(
@@ -375,6 +375,6 @@ export const renderVideo = inngest.createFunction(
 
 Inngest makes the difficult parts easy.
 
-For example, there's no simpler way to put it: I find the `steps` concept mindblowing. I wished something like this was available back in 2019, when I was just starting out with BullMQ, Agenda.js, and other solutions. It's a really sweet abstraction. I also enjoy observability, so I can track each step and function run in one dashboard.
+For example, there's no simpler way to put it: I find the [`steps`](/docs/reference/functions/step-run) concept mindblowing. I wished something like this was available back in 2019, when I was just starting out with BullMQ, Agenda.js, and other solutions. It's a really sweet abstraction. I also enjoy observability, so I can track each step and function run in one dashboard.
 
 _You can reach out to Igor on [Twitter](https://twitter.com/IgorSamokhovets) or listen to his music on [Spotify](https://open.spotify.com/artist/66PsDRGGiij2rHAK21GUEB)._
