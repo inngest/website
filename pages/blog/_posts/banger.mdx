@@ -3,19 +3,21 @@ heading: A Deep Dive into a Video Rendering Pipeline
 showSubtitle: true
 subtitle: banger.show is a video app maker that heavily relies on background data processing
 image: /assets/blog/banger/banger-main.jpg
-date: 2024-05-01
+date: 2024-05-07
 author: Igor Samokhovets
 disableCTA: true
 ---
 
 import YouTube from 'react-youtube-embed';
 
-Hi everyone! My name is [Igor Samokhovets](https://twitter.com/IgorSamokhovets) and I'm a music producer who goes by the artist name Tequila Funk. Together with Mark Beziaev we created [banger.show](https://banger.show/) -- a video maker app for musicians, DJs, and labels. It allows music industry people to create stunning visual assets for their music.
+Hi everyone! My name is [Igor Samokhovets](https://twitter.com/IgorSamokhovets) and I'm a music producer who goes by the artist name Tequila Funk. In this blog post I will walk you through our video rendering pipeline built with Inngest, which powers [banger.show](https://banger.show/).
+
+
+[banger.show](https://banger.show/) is a video maker app for musicians, DJs, and labels, which I built together with Mark Beziaev. It allows music industry people to create stunning visual assets for their music.
 
 <YouTube id="eSLKm6IfZM4" height={300}/>
 
 Creating a video for your new song takes only a few minutes and you don't need to install or learn any complex software because banger.show works in your browser!
-
 
 ## Making background processing snappy
 
@@ -27,39 +29,93 @@ We chose Inngest because there's no better way to handle background jobs if you'
 - We can observe each step and its return data in the dashboard.
 - We can handle emergency cases when all of our infra goes down and we need to spin up some backup workers on AWS.
 
-Let's dive into some parts of the video rendering pipeline.
+![A screenshot of the Banger app](/assets/blog/banger/banger-satisfied-screenshot.png)
+
+Before we dive in, let's take a high-level look at our video rendering pipeline:
+
+- First, the app receives an uploaded project from the user.
+- Next, it converts the audio for the more efficient rendering.
+- The project is then sent to the render machine, which controls the progress, updates statuses, and handles error retries and "stalled render" cases.
+- Finally, when the render is finished, a number of tasks need to run, such as invalidating CDN cache, creating video thumbnails, or sending email to the user when the video is ready.
+
+Let's now dive into some parts of the video rendering pipeline. 
 
 ### 1. Updating the render status
 
-The first step in the render pipeline is to update the render status and set user credits on hold
+The first step in the render pipeline is to update the render status and set user credits on hold.
 
 ```js
-const updatedVideo = await step.run('update-user-balance', async () => {
-  await dbConnect()
+export const renderVideo = inngest.createFunction(
+  {
+    name: 'Render video',
+    id: 'render-video',
+    cancelOn: [
+      {
+        event: 'banger/video.create',
+        match: 'data.videoId'
+      }
+    ],
+    onFailure: async ({ error, event, step }) => {
+      await dbConnect()
 
-  const render = await VideoModel.findOneAndUpdate(
-    { _id: videoId },
-    { $set: { renderProgress: 0, renderTime: 0, status: 'pending' } },
-    { new: true }
-  )
-    .populate('user')
-    .lean()
+      const isStalled = RenderStalledError.isRenderStalledError(error)
 
-  invariant(video, 'no render found')
+       const updatedVideo = await step.run(
+        'update-video-status-to-failed',
+        () =>
+          VideoModel.findOneAndUpdate(
+            { _id: event.data.event.data.videoId },
+            {
+              $set: {
+                status: isStalled ? 'stalled' : 'error',
+                ...(isStalled && { stalledAt: new Date() }),
+                renderProgress: null
+              }
+            },
+            { new: true }
+          )
+            .lean()
+      )
 
-  // Simplified
-  await UserModel.updateOne(
-    {
-      _id: video.user._id
-    },
-    {
-      $inc: { unitsRemaining: -video.videoDuration }
+      invariant(updatedVideo, 'no video found')
+
+      // refund user units if error is not recoverable
+      // if it's stalled, we're going to recover it later
+      if (!isStalled) {
+        await step.run('refund-user-units', async () => {
+          await UserModel.updateOne(
+            {
+              _id: event.data.event.data.userId
+            },
+            { $inc: { unitsRemaining: updatedVideo.videoDuration } }
+          )
+        })
+      }
+
+      if (process.env.NODE_ENV === 'production') {
+        const errorJson = _.truncate(JSON.stringify(event), {
+          length: 3000
+        })
+        await sendTelegramLog(
+          _.truncate(
+            `🚨 Error while rendering video: ${error.message}\n
+          Event: ${errorJson}\n`,
+            { length: 3000 }
+          )
+        )
+      }
+
+      Sentry.captureException(error)
     }
-  )
-
-  return video
-})
+  },
+  { event: 'banger/video.create' },
+  async ({ event, step, attempt, logger }) => {
+    // ...
+  })
 ```
+
+In the code snippet above, you can see that we're using the default Inngest concurrency and we set a graceful flow termination strategy in the `onFailure` function (please keep in mind that it's simplified for this blog post).
+
 
 ### 2. Cropping the audio file
 
@@ -199,7 +255,7 @@ const { videoFileURL, renderTime } = await step.run(
 
 ### 4. Invalidate CDN cache
 
-There are some cases when video needs to be re-rendered. To make sure CDN cache is always fresh, we purge it each time the video renders.
+There are some cases when video needs to be re-rendered. We host our videos on a CDN, but some times, the video needs to be re-rendered. To make sure CDN cache is always fresh, we purge it each time the video renders.
 
 ```js
 await step.run('create-invalidation-on-CloudFront', async () => {
@@ -273,6 +329,8 @@ await step.run('generate-thumbnail-and-upload-to-s3', async () => {
   await unlink(thumbnailFilePath)
 })
 ```
+
+![A screenshot of the Banger app](/assets/blog/banger/banger-cassette-tape-screenshot.png)
 
 ## Working with Inngest
 
