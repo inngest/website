@@ -7,7 +7,7 @@ Log handling could have some caveats when working with serverless runtimes.
 One of the main problems is due to how serverless providers terminates after a function exits.
 There might not be enough time for a logger to finish flushing, which results in logs being lost.
 
-Another (opposite) problem is due to how Inngest handles memorization and code execution via HTTP calls to the SDK.
+Another (opposite) problem is due to how Inngest handles memoization and code execution via HTTP calls to the SDK.
 A log statement outside of `step` function could end up running multiple times, resulting in duplicated deliveries.
 
 ```ts {{ title: "example-fn.ts" }}
