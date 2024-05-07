@@ -42,7 +42,8 @@ Let's now dive into some parts of the video rendering pipeline.
 
 ### 1. Updating the render status
 
-The first step in the render pipeline is to update the render status and set user credits on hold.
+The first step in the render pipeline is to update the render status and set user credits on hold. Here we are using the default Inngest concurrency.
+
 
 ```js
 export const renderVideo = inngest.createFunction(
@@ -55,67 +56,31 @@ export const renderVideo = inngest.createFunction(
         match: 'data.videoId'
       }
     ],
-    onFailure: async ({ error, event, step }) => {
-      await dbConnect()
-
-      const isStalled = RenderStalledError.isRenderStalledError(error)
-
-       const updatedVideo = await step.run(
-        'update-video-status-to-failed',
-        () =>
-          VideoModel.findOneAndUpdate(
-            { _id: event.data.event.data.videoId },
-            {
-              $set: {
-                status: isStalled ? 'stalled' : 'error',
-                ...(isStalled && { stalledAt: new Date() }),
-                renderProgress: null
-              }
-            },
-            { new: true }
-          )
-            .lean()
-      )
-
-      invariant(updatedVideo, 'no video found')
-
-      // refund user units if error is not recoverable
-      // if it's stalled, we're going to recover it later
-      if (!isStalled) {
-        await step.run('refund-user-units', async () => {
-          await UserModel.updateOne(
-            {
-              _id: event.data.event.data.userId
-            },
-            { $inc: { unitsRemaining: updatedVideo.videoDuration } }
-          )
-        })
-      }
-
-      if (process.env.NODE_ENV === 'production') {
-        const errorJson = _.truncate(JSON.stringify(event), {
-          length: 3000
-        })
-        await sendTelegramLog(
-          _.truncate(
-            `🚨 Error while rendering video: ${error.message}\n
-          Event: ${errorJson}\n`,
-            { length: 3000 }
-          )
-        )
-      }
-
-      Sentry.captureException(error)
-    }
   },
   { event: 'banger/video.create' },
   async ({ event, step, attempt, logger }) => {
-    // ...
-  })
+    const updatedVideo = await step.run('update-user-balance', async () => {
+      await dbConnect()
+
+      const render = await VideoModel.findOneAndUpdate(
+        { _id: videoId },
+        { $set: { renderProgress: 0, renderTime: 0, status: 'pending' } },
+        { new: true }
+      )
+      .populate('user')
+      .lean()
+
+      invariant(video, 'no render found')
+
+      // Simplified
+      await UserModel.updateOne(
+        { _id: video.user._id },
+        { $inc: { unitsRemaining: -video.videoDuration } }
+      )
+      return video
+    })
+})
 ```
-
-In the code snippet above, you can see that we're using the default Inngest concurrency and we set a graceful flow termination strategy in the `onFailure` function (please keep in mind that it's simplified for this blog post).
-
 
 ### 2. Cropping the audio file
 
@@ -331,6 +296,29 @@ await step.run('generate-thumbnail-and-upload-to-s3', async () => {
 ```
 
 ![A screenshot of the Banger app](/assets/blog/banger/banger-cassette-tape-screenshot.png)
+
+### 7. Handling failures
+
+We set a graceful flow termination strategy in the `onFailure` function (please keep in mind that it's simplified for this blog post).
+
+```js
+export const renderVideo = inngest.createFunction(
+  {
+    name: 'Render video',
+    id: 'render-video',
+    cancelOn: [
+      {
+        event: 'banger/video.create',
+        match: 'data.videoId'
+      }
+    ],
+    onFailure: async ({ error, event, step }) => {
+      await dbConnect()
+
+      const isStalled = RenderStalledError.isRenderStalledError(error)
+    }
+  })
+```
 
 ## Working with Inngest
 
