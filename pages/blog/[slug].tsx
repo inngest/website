@@ -51,6 +51,7 @@ const authorURLs = {
   "Joel Hooks": "https://twitter.com/jhooks",
   "Sylwia Vargas": "https://twitter.com/sylwiavargas",
   "Taylor Facen": "https://twitter.com/ItsTayFay",
+  "Igor Samokhovets": "https://twitter.com/IgorSamokhovets",
 };
 
 export default function BlogLayout(props) {

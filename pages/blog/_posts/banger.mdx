@@ -1,0 +1,380 @@
+---
+heading: A Deep Dive into a Video Rendering Pipeline
+showSubtitle: true
+subtitle: banger.show is a video app maker that heavily relies on background data processing
+image: /assets/blog/banger/banger-main.jpg
+date: 2024-05-07
+author: Igor Samokhovets
+disableCTA: true
+---
+
+import YouTube from 'react-youtube-embed';
+
+Hi everyone! My name is [Igor Samokhovets](https://twitter.com/IgorSamokhovets) and I'm a music producer who goes by the artist name Tequila Funk. In this blog post I will walk you through our video rendering pipeline built with Inngest, which powers [banger.show](https://banger.show/).
+
+
+[banger.show](https://banger.show/) is a video maker app for musicians, DJs, and labels, which I built together with Mark Beziaev. It allows music industry people to create stunning visual assets for their music.
+
+<YouTube id="eSLKm6IfZM4" height={300}/>
+
+Creating a video for your new song takes only a few minutes and you don't need to install or learn any complex software because banger.show works in your browser!
+
+## Making background processing snappy
+
+At banger.show, we do a lot of background processing. Managing render states, generating visual assets in the background, and even handling the rendering process on remote distributed workers.
+
+We chose Inngest because there's no better way to handle background jobs if you're using Next.js **without a custom server**. **It's a primary "flow controller" for us**, even though we have a simple queue solution based on Redis to handle tasks on our infra. It allows us to orchestrate, observe, and abstract away lower-level processes, for example:
+
+- We don't have to delegate every post-render task to the video rendering machine, but have some flow where the main server can receive render results from the workers and do something with it.
+- We can observe each [step](/docs/reference/functions/step-run) and its return data in the dashboard.
+- We can handle emergency cases when all of our infra goes down and we need to spin up some backup workers on AWS.
+
+![A screenshot of the Banger app](/assets/blog/banger/banger-satisfied-screenshot.png)
+
+Before we dive in, let's take a high-level look at our video rendering pipeline:
+
+- First, the app receives an uploaded project from the user.
+- Next, it converts the audio for the more efficient rendering.
+- The project is then sent to the render machine, which controls the progress, updates statuses, and handles error retries and "stalled render" cases.
+- Finally, when the render is finished, a number of tasks need to run, such as invalidating CDN cache, creating video thumbnails, or sending email to the user when the video is ready.
+
+Let's now dive into some parts of the video rendering pipeline. 
+
+### 1. Updating the render status
+
+The first step in the render pipeline is to update the render status and set user credits on hold. Here we are using the default Inngest [concurrency](/docs/guides/concurrency).
+
+
+```js
+export const renderVideo = inngest.createFunction(
+  {
+    name: 'Render video',
+    id: 'render-video',
+    cancelOn: [
+      {
+        event: 'banger/video.create',
+        match: 'data.videoId'
+      }
+    ],
+  },
+  { event: 'banger/video.create' },
+  async ({ event, step, attempt, logger }) => {
+    const updatedVideo = await step.run('update-user-balance', async () => {
+      await dbConnect()
+
+      const render = await VideoModel.findOneAndUpdate(
+        { _id: videoId },
+        { $set: { renderProgress: 0, renderTime: 0, status: 'pending' } },
+        { new: true }
+      )
+      .populate('user')
+      .lean()
+
+      invariant(video, 'no render found')
+
+      // Simplified
+      await UserModel.updateOne(
+        { _id: video.user._id },
+        { $inc: { unitsRemaining: -video.videoDuration } }
+      )
+      return video
+    })
+})
+```
+
+### 2. Cropping the audio file
+
+In banger.show, the user selects a fragment of the song to create a "videoization" for it. In the background job, we:
+
+- Crop audio file based on the user selection.
+- Convert the file to mp3 format for disk space efficiency and optimal compatibility.
+
+Let's see it in code.
+
+```js
+const croppedMp3Url = await step.run(
+  'trim-audio-and-convert-to-mp3',
+  async () => {
+    // create temporary file
+    const tempFilePath = `${os.tmpdir()}/${videoId}.mp3`
+
+    await execa(`ffmpeg`, [
+      '-i',
+      updatedVideo.audioFileURL, // ffmpeg will grab input from URL
+      '-map',
+      '0:a',
+      '-map_metadata',
+      '-1',
+      '-ab',
+      '320k',
+      '-f',
+      'aac',
+      '-ss',
+      String(updatedVideo.regionStartTime), // start time
+      '-to',
+      String(updatedVideo.regionEndTime), // end time
+      tempFilePath
+    ])
+
+    const croppedAudioS3Key = await getAudioFileKey(videoId)
+
+    // upload mp3 to file storage
+    const mp3URL = await uploadFile({
+      Key: croppedAudioS3Key,
+      Body: fs.createReadStream(tempFilePath)
+    })
+
+    // remove temp file
+    await unlink(tempFilePath)
+
+    await dbConnect()
+
+    await VideoModel.updateOne(
+      { _id: videoId },
+      { $set: { croppedAudioFileURL: mp3URL } }
+    )
+
+    return mp3URL
+  }
+)
+```
+
+### 3. Rendering the video
+
+The next step is to render the video using remote workers with beefy CPUs and GPUs.
+
+![A screenshot of the Banger app](/assets/blog/banger/banger-app.png)
+
+We have a sub-queue that communicates with our own infrastructure. We send a job to the queue while Inngest allows us to wait until the job is done and handles new progress events.
+
+```js
+const { videoFileURL, renderTime } = await step.run(
+  'render-video-to-s3',
+  async () => {
+    const outKey = await getVideoOutKey(videoId)
+
+    const userBundle = bundles.find((p) => p.key === updatedVideo.user.bundle)
+
+    if (!userBundle) {
+      throw new NonRetriableError('no bundle assigned to user')
+    }
+
+    await dbConnect()
+
+    const video = await VideoModel.findOne({
+      _id: videoId
+    }).populate('user')
+
+    if (!video) {
+      throw new NonRetriableError('no video found')
+    }
+
+    // attempt is provided by Inngest.
+    // if video fails to render from the first attempt, we will pick different worker
+    const renderer = await determineRenderer(video, attempt)
+
+    // CRF of the video based on user bundle
+    const constantRateFactor = determineRemotionConstantRateFactor(
+      video.user.bundle
+    )
+
+    const renderPriority = await determineQueuePriority(video.user.bundle)
+
+    logger.info(
+      `Rendering Remotion video with renderer ${renderer} and crf ${constantRateFactor}`
+    )
+
+    const renderedVideo = await renderVideo({
+      videoId: videoId,
+      priority: renderPriority,
+      renderOptions: {
+        crf: constantRateFactor,
+        concurrency: determineRemotionConcurrency(video),
+        ...(video.hdr && {
+          colorSpace: 'bt2020-ncl'
+        })
+      },
+      inputPropsOverride: {
+        ...video.videoSettings,
+        videoFormat: video.videoFormat
+      },
+      renderer,
+      audioURL: croppedMp3Url,
+      startTime: 0,
+      endTime: video.videoDuration,
+      outKey,
+      onProgress: async (progress) => {
+        await VideoModel.updateOne(
+          {
+            _id: videoId
+          },
+          { $set: { renderProgress: progress, status: 'processing' } }
+        )
+      }
+    })
+
+    return renderedVideo
+  }
+)
+```
+
+### 4. Invalidate CDN cache
+
+There are some cases when video needs to be re-rendered. We host our videos on a CDN, but some times, the video needs to be re-rendered. To make sure CDN cache is always fresh, we purge it each time the video renders.
+
+```js
+await step.run('create-invalidation-on-CloudFront', async () => {
+  try {
+    const { pathname: videoPathnameToInvalidate } = new URL(videoFileURL)
+
+    return await invalidateCloudFrontPaths([
+      videoPathnameToInvalidate,
+      `/thumbnails/${videoId}.jpg`,
+      `/thumbnails/${videoId}-square.jpg`
+    ])
+  } catch (error) {
+    sendTelegramLog(`Invalidation failed for ${videoId}: ${error.message}`)
+    return `Invalidation failed, skipping: ${error.message}`
+  }
+})
+```
+
+### 5. Updating video status to "ready"
+
+After video is successfully rendered and we have obtained a URL, we set video status to "ready" and update `renderTime`.
+
+```js
+await step.run('update-video-status-to-ready', () =>
+  Promise.all([
+    VideoModel.updateOne(
+      { _id: videoId },
+      {
+        $set: {
+          status: 'ready',
+          videoFileURL
+        },
+        $inc: {
+          renderTime
+        }
+      }
+    )
+  ])
+)
+```
+
+### 6. Creating a video thumbnail
+
+Finally, we also want to create a thumbnail for each video to show it in listings or use as a video posters.
+
+```js
+await step.run('generate-thumbnail-and-upload-to-s3', async () => {
+  const thumbnailFilePath = `${os.tmpdir()}/${videoId}-thumbnail.jpg`
+
+  await execa(`ffmpeg`, [
+    '-i',
+    videoFileURL, // ffmpeg will grab input from URL
+    '-vf',
+    'thumbnail=300',
+    '-frames:v', // only one frame
+    '1',
+    thumbnailFilePath
+  ])
+
+  const thumbnailFileURL = await uploadFile({
+    Key: `thumbnails/${videoId}.jpg`,
+    Body: fs.createReadStream(thumbnailFilePath)
+  })
+
+  await dbConnect()
+  await VideoModel.updateOne(
+    { _id: videoId },
+    { $set: { thumbnailURL: thumbnailFileURL } }
+  )
+
+  await unlink(thumbnailFilePath)
+})
+```
+
+![A screenshot of the Banger app](/assets/blog/banger/banger-cassette-tape-screenshot.png)
+
+### 7. Handling failures
+
+We set a graceful flow termination strategy in the [`onFailure`](/docs/reference/functions/handling-failures) function (please keep in mind that it's simplified for this blog post).
+
+```js
+export const renderVideo = inngest.createFunction(
+  {
+    name: 'Render video',
+    id: 'render-video',
+    cancelOn: [
+      {
+        event: 'banger/video.create',
+        match: 'data.videoId'
+      }
+    ],
+    onFailure: async ({ error, event, step }) => {
+      await dbConnect()
+
+      const isStalled = RenderStalledError.isRenderStalledError(error)
+
+       const updatedVideo = await step.run(
+        'Update video status to failed',
+        () =>
+          VideoModel.findOneAndUpdate(
+            { _id: event.data.event.data.videoId },
+            {
+              $set: {
+                status: isStalled ? 'stalled' : 'error',
+                ...(isStalled && { stalledAt: new Date() }),
+                renderProgress: null
+              }
+            },
+            { new: true }
+          )
+            .lean()
+      )
+
+      invariant(updatedVideo, 'no video found')
+
+      // refund user units if error is not recoverable
+      // if it's stalled, we're going to recover it later
+      if (!isStalled) {
+        await step.run('Refund user units', async () => {
+          await UserModel.updateOne(
+            {
+              _id: event.data.event.data.userId
+            },
+            { $inc: { unitsRemaining: updatedVideo.videoDuration } }
+          )
+        })
+      }
+
+      if (process.env.NODE_ENV === 'production') {
+        const errorJson = _.truncate(JSON.stringify(event), {
+          length: 3000
+        })
+        await sendTelegramLog(
+          _.truncate(
+            `🚨 Error while rendering video: ${error.message}\n
+          Event: ${errorJson}\n`,
+            { length: 3000 }
+          )
+        )
+      }
+
+      Sentry.captureException(error)
+    }
+  },
+  { event: 'banger/video.create' },
+  async ({ event, step, attempt, logger }) => {
+    // ...
+  })
+```
+
+## Working with Inngest
+
+Inngest makes the difficult parts easy.
+
+For example, there's no simpler way to put it: I find the [`steps`](/docs/reference/functions/step-run) concept mindblowing. I wished something like this was available back in 2019, when I was just starting out with BullMQ, Agenda.js, and other solutions. It's a really sweet abstraction. I also enjoy observability, so I can track each step and function run in one dashboard.
+
+_You can reach out to Igor on [Twitter](https://twitter.com/IgorSamokhovets) or listen to his music on [Spotify](https://open.spotify.com/artist/66PsDRGGiij2rHAK21GUEB)._
