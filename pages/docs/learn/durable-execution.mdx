@@ -9,26 +9,42 @@ In this guide, we'll cover what Durable Execution is, how it works, and how it w
 {/* Note - this page is written a specific way for search optimization */}
 ## What is Durable Execution?
 
-Durable Execution is a fault-tolerant approach to executing code that handles failures and interruptions gracefully through automatic retries and state persistence. This means that your code can continue to run even if there are issues like network failures, timeouts, infrastructure outages, and other transient errors.
+Durable Execution is a fault-tolerant approach to executing code that is achieved by handling failures and interruptions gracefully with automatic retries and state persistence. This means that your code can continue to run even if there are issues like network failures, timeouts, infrastructure outages, and other transient errors.
 
-Durable functions can throw errors or exceptions and automatically retry, resuming execution from the point of failure. Durable functions are designed to be long-running and stateful, meaning that they can persist state across function invocations and retries.
-
-Some key aspects of Durable Execution include:
+Key aspects of Durable Execution include:
 
 * **State persistance** - Function state is persisted outside of the function execution context. This enables function execution to be resumed from the point of failure on the same _or_ different infrastructure.
 * **Fault-tolerance** - Errors or exceptions are caught by the execution layer and are automatically retried. Retry behavior can be customized to handle the accepted number of retries as well as handle different types of errors.
 
+In practice, Durable Execution is implemented in the form of "durable functions," sometimes also called "durable workflows." Durable functions can throw errors or exceptions and automatically retry, resuming execution from the point of failure. Durable functions are designed to be long-running and stateful, meaning that they can persist state across function invocations and retries.
+
 ## How Inngest functions work
 
-Inngest functions are durable as described in the previous section. Inngest functions use "Steps" to define the execution flow of a function. Each step:
+Inngest functions are durable: they throw errors or exceptions, automatically retry from the point of failure, and can be stateful and long-running.
+
+Inngest functions use "**Steps**" to define the execution flow of a function. Each step:
 
 * Is a unit of work that can be run and retried independently.
 * Captures any error or exception thrown within it to.
+* Will not be re-executed if it has already been successfully executed.
 * Returns state (_data_) that can be used by subsequent steps.
 * Can be executed in parallel or sequentially, depending on the function's configuration.
 
-In comparison, some durable execution systems modify the runtime environment to support durable execution. Inngest functions are designed to be stateless and can be run in any environment that supports the Inngest runtime.
+Complex functions can be comprised of many steps. This allows a long-running function to be broken down into smaller, more manageable units of work. As each step is retried independently, and the function can be resumed from the point of failure, avoiding unnecessary re-execution of work.
 
+In comparison, some durable execution systems modify the runtime environment to persist state or interrupt errors or exceptions. Inngest functions are defined with steps written in normal language code, which enables them to run in any environment or runtime - including serverless environments - without modification.
 
-* stateful - works with serverless functions
-idempotency
+### How steps are executed
+
+Inngest functions are defined with a series of steps that define the execution flow of the function. Each step is defined with a unique ID and a function that defines the work to be done. The data returned can be used by subsequent steps.
+
+Inngest functions are executed incrementally, _step by step_. As functions are executed, the results of each step are returned to Inngest and persisted in a managed function state store. The function is then re-executed and any steps that have already been successfully executed are [_memoized_](https://en.wikipedia.org/wiki/Memoization). This means that the successfully executed steps are skipped and the SDK injects the data returned by the previous execution into the function.
+
+Let's look at an example of a function and walk through how it is executed:
+
+```typescript
+await step.run("create-user", async () => {
+  const user = await createUser(state);
+  return { user };
+});
+```
