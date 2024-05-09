@@ -148,8 +148,8 @@ const content = [
         and building ingestion functions.
       </>,
       <>
-        Wrap steps to run exactly once to prevent unnecessary expensive API
-        calls.
+        Wrap steps to run once and maintain state, without having to manage data
+        or queues yourself.
       </>,
       <>Limit concurrency and prioritize jobs ahead of others.</>,
     ],
