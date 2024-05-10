@@ -154,10 +154,10 @@ inngestgo.CreateFunction(
 )
 def sync_systems(ctx: inngest.Context, step: inngest.StepSync) -> None:
     # Can be retried up to 4 times
-    data = step.run("Get data", lambda: get_data_from_external_source())
+    data = step.run("Get data", get_data_from_external_source)
 
     # Can also be retried up to 4 times
-    step.run("Save data", lambda: db.syncs.insert_one(data))
+    step.run("Save data", db.syncs.insert_one, data)
 ```
 </CodeGroup>
 
@@ -452,13 +452,13 @@ from inngest.errors import NonRetriableError
 )
 def user_weekly_digest(ctx: inngest.Context, step: inngest.StepSync) -> None:
     try:
-        user = step.run("Get user email", lambda: db.users.find_one(ctx.event.data["userId"]))
+        user = step.run("Get user email", db.users.find_one, ctx.event.data["userId"])
     except Exception as err:
         if err.name == "UserNotFoundError":
             raise NonRetriableError("User no longer exists; stopping")
         raise
 
-    step.run("Send digest", lambda: send_digest(user["email"]))
+    step.run("Send digest", send_digest, user["email"])
 ```
 </CodeGroup>
 
