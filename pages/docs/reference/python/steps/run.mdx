@@ -1,6 +1,6 @@
 # Run
 
-Run steps in parallel.
+Turn a normal function into a durable function. Any function passed to `step.run` will be executed in a durable way, including retries and memoization.
 
 
 ## Arguments
@@ -10,8 +10,12 @@ Run steps in parallel.
         Step ID. Should be unique within the function.
     </Property>
 
-    <Property name="handler" required type="Callable[[], object]">
+    <Property name="handler" required type="Callable">
         A callable that has no arguments and returns a JSON serializable value.
+    </Property>
+
+    <Property name="*handler_args">
+        Positional arguments for the handler. This is type-safe since we infer the types from the handler using generics.
     </Property>
 </Properties>
 
@@ -25,10 +29,31 @@ Run steps in parallel.
 async def fn(
     ctx: inngest.Context,
     step: inngest.Step,
-) -> int:
-    async def my_step() -> int:
-        # Do stuff
-        return 1
+) -> None:
+    # Pass a function to step.run
+    await step.run("my_fn", my_fn)
 
-    return await step.run("my_step", my_step)
+    # Args are passed after the function
+    await step.run("my_fn_with_args", my_fn_with_args, 1, "a")
+
+    # Kwargs require functools.partial
+    await step.run(
+        "my_fn_with_args_and_kwargs",
+        functools.partial(my_fn_with_args_and_kwargs, 1, b="a"),
+    )
+
+    # Defining functions like this gives you easy access to scoped variables
+    def use_scoped_variable() -> None:
+        print(ctx.event.data["user_id"])
+
+    await step.run("use_scoped_variable", use_scoped_variable)
+
+async def my_fn() -> None:
+    pass
+
+async def my_fn_with_args(a: int, b: str) -> None:
+    pass
+
+async def my_fn_with_args_and_kwargs(a: int, *, b: str) -> None:
+    pass
 ```
