@@ -114,7 +114,38 @@ If your app location changes, enable the "Override" switch and edit the URL befo
 
 ## Archive an app
 
-Apps cannot be directly archived. Instead, an app is considered archived when all of its functions are archived.
+Apps can be archived and unarchived at any time. Once an app is archived, all of its functions are archived.
+
+When the app is archived:
+- New function runs will not be triggered.
+- Existing function runs will continue until completion.
+- Functions will be marked as archived but still be visible, including their run history.
+
+
+### How to archive an app
+1. Navigate to the app you want to archive. You will find an “Archive” button at the top-right corner of the page.
+
+<img
+  src="/assets/docs/apps/apps-cloud-archive-button.png"
+  className="rounded-md"
+  alt="Inngest Cloud screen with archive app button"
+/>
+
+2. Confirm that you want to archive the app by clicking "Yes".
+
+<img
+  src="/assets/docs/apps/apps-cloud-archive-modal.png"
+  className="rounded-md"
+  alt="Inngest Cloud screen with archived app confirmation modal"
+/>
+
+3. Your app is now archived. 🎉
+
+<img
+  src="/assets/docs/apps/apps-cloud-archived-app.png"
+  className="rounded-md"
+  alt="Inngest Cloud screen with one app archived"
+/>
 
 In the image below, you can see how archived apps look like in Inngest Cloud:
 
@@ -123,10 +154,6 @@ In the image below, you can see how archived apps look like in Inngest Cloud:
   className="rounded-md"
   alt="Inngest Cloud screen with archived apps"
 />
-
-**Future Archival Feature**
-
-Upcoming releases include a manual archival feature, which will provide users with the ability to archive apps based on specific requirements or preferences. Check our [roadmap](https://roadmap.inngest.com/roadmap) to track the progress on this feature.
 
 ## Troubleshooting
 
