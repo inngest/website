@@ -52,6 +52,7 @@ const authorURLs = {
   "Sylwia Vargas": "https://twitter.com/sylwiavargas",
   "Taylor Facen": "https://twitter.com/ItsTayFay",
   "Igor Samokhovets": "https://twitter.com/IgorSamokhovets",
+  "Dave Kiss": "https://twitter.com/davekiss",
 };
 
 export default function BlogLayout(props) {
