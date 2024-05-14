@@ -3,7 +3,7 @@
 Expressions are used in a number of ways for configuring your functions. They are used for:
 
 * Defining keys for [concurrency](/docs/functions/concurrency), [rate limiting](/docs/reference/functions/rate-limit), [debounce](/docs/reference/functions/debounce), or [idempotency](/docs/guides/handling-idempotency)
-* Conditionally matching events for [wait for event](/docs/reference/functions/step-wait-for-event), [cancellation](/docs/functions/cancellation), or the [function trigger's `if` option](/docs/reference/functions/create#trigger)
+* Conditionally matching events for [wait for event](/docs/reference/functions/step-wait-for-event), [cancellation](/docs/guides/cancel-running-functions), or the [function trigger's `if` option](/docs/reference/functions/create#trigger)
 * Returning values for function [run priority](/docs/reference/functions/run-priority)
 
 All expressions are defined using the [Common Expression Language (CEL)](https://github.com/google/cel-go). CEL offers simple, fast, non-turing complete expressions. It allows Inngest to evaluate millions of expressions for all users at scale.
@@ -18,7 +18,7 @@ Within the scope of Inngest, expressions should evaluate to either a boolean or 
 ## Variables
 
 - `event` refers to the event that triggered the function run, in every case.
-- `async` refers to a new event in `step.waitForEvent` and [cancellation](/docs/functions/cancellation).  It's the incoming event which is matched asynchronously.  This is only present when matching new events in a function run.
+- `async` refers to a new event in `step.waitForEvent` and [cancellation](/docs/guides/cancel-running-functions).  It's the incoming event which is matched asynchronously.  This is only present when matching new events in a function run.
 
 ## Examples
 

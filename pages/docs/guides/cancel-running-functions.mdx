@@ -29,7 +29,7 @@ const scheduleReminder = inngest.createFunction(
     cancelOn: [{
       event: "tasks/reminder.deleted", // The event name that cancels this function
       // Ensure the cancelation event (async) and the triggering event (event)'s reminderId are the same:
-      if: "async.data.reminderId == event.data.reminderId", 
+      if: "async.data.reminderId == event.data.reminderId",
     }],
   }
   { event: "tasks/reminder.created" },
@@ -89,7 +89,7 @@ Here is an example of these two events which will be matched on the `data.remind
 * You can configure multiple events to cancel a function, up to five.
 * You can write a more complex matching statement using the `if` field.
 
-Learn more in the full [reference](/docs/functions/cancellation).
+Learn more in the full [reference](/docs/reference/typescript/cancel-on).
 
 
 {/* TODO

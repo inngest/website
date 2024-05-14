@@ -7,7 +7,7 @@ In some workflows or pipeline functions, you may want to broadcast events from w
 * You want to decouple logic into separate functions that can be re-used across your system
 * You want to send an event to [fan-out](/docs/guides/fan-out-jobs) to multiple other functions
 * Your function is handling many items that you want to process in parallel functions
-* You want to [cancel](/docs/functions/cancellation) another function
+* You want to [cancel](/docs/guides/cancel-running-functions) another function
 * You want to send data to another function [waiting for an event](/docs/reference/functions/step-wait-for-event)
 
 If your function needs to handle the result of another function, or wait until that other function has completed, you should use [direct function invocation with `step.invoke()`](/docs/guides/invoking-functions-directly) instead.

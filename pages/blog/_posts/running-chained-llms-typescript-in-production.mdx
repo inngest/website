@@ -122,7 +122,7 @@ You can then start to chain LLMs without building out complex queues, state, or 
 Beyond this simple case, you can extend your functions to:
 
 - [Automatically parallelize calls](/docs/guides/step-parallelism) using *actual parallelism* to speed up your chain
-- [Automatically cancel](/docs/functions/cancellation?ref=blog-chained-llms) if desired, eg. on window close, to save on model costs
+- [Automatically cancel](/docs/guides/cancel-running-functions?ref=blog-chained-llms) if desired, eg. on window close, to save on model costs
 - [Manage concurrency](/docs/functions/concurrency?ref=blog-chained-llms), ensuring that you automatically enqueue functions if they exceed rate limits
 - [Handle failures](/docs/functions/retries?ref=blog-chained-llms), allowing you to create cleanup code or notify users on error.
 - We also provide [branch environments](/docs/platform/environments?ref=blog-chained-llms) across platforms, and work with your current CI/CD process — as functions are served via HTTP anywhere they’re accessible.
