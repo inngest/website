@@ -79,7 +79,7 @@ Within every `waitForEvent` and `cancelOn`, we have to match an expression. Thes
 
 - **Simple**: `async.data.id == "inng_01HJWB7BXGDV7M33V3PJH84ZC2_1"`
 - **Compound**: `async.data.env == "NL" && async.data.centerId == "ae4f5871-c3a6-420a-b377-f8ab583c0086"`
-- **Complex**: `async.data.seller == 'Fantastic Store' && async.data.region == 'GB' && async.data.request.operation == 'reports.getReportDocument' && async.data.request.path.reportDocumentId == 'fb.doc.2408'`
+- **Complex**: `async.data.seller == 'Fantastic Store' && async.data.region == 'GB' && async.data.request.operation == 'reports.getReportDocument' && async.data.amount >= 2000`
 
 Here's an example of how this looks in the code:
 
@@ -149,7 +149,7 @@ With each expression broken down, parsed, and normalized, we need to do the actu
 
 Initially, we tried some fancy ways to match equalities, such as aggregate trees, but we found simple hashmaps work best for string equality, while B-trees work best for numbers (we're exploring roaring bitmaps on the hash front, too).
 
-Our matching engine is a simple yet effective lookup for string equality matching within expressions. Here's how it works its magic:
+Our matching engine is a simple yet effective lookup for string equality matching within expressions. It's all written in [our open source `expr` repository](https://github.com/inngest/expr) in Go. Here's how it works its magic:
 
 - All strings from expressions are added to a hashmap, pointing to the [ExpressionPart](https://github.com/inngest/expr/blob/b191c2b0e90d0d54966bd4d51284bda2f32e4925/engine.go#L66) they match.
 - When an event comes in, all its strings are stored in a hashmap, linking them to the ExpressionPart they match.
