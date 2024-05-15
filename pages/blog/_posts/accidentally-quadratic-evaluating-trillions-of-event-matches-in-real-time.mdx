@@ -141,7 +141,7 @@ event.data.id == vars.a
 
 where `vars.a` points to a different value (either “foo” or “bar”). We then parse the expressions into ASTs and normalize the AST so that differences in the CEL added by customers are …. For instance, `!(a == b)` is the same as `(a != b)`, and `!(a > b)` is the same as `(a <= b)`.
 
-![Diagram showing a conditional check and its representation in a structured format. The condition 'event.data.order_id == abc_123' is translated to a structured format with operator: 'equals', variable_ident: 'event.data.order_id', and literal_value: 'abc_123'. The diagram connects these two representations with arrows, indicating the relationship between the original condition and its structured format.](/assets/blog/accidentally-quadratic/graph-2-b&w.png)
+![Diagram showing a conditional check and its representation in a structured format. The condition 'event.data.order_id == abc_123' is translated to a structured format with operator: 'equals', variable_ident: 'event.data.order_id', and literal_value: 'abc_123'. The second condition is 'event.data.order_id == jkf_456'. The diagram connects these two representations with arrows, indicating the relationship between the original condition and its structured format.](/assets/blog/accidentally-quadratic/graph-2-b&w.png)
 
 With each expression broken down, parsed, and normalized, we need to do the actual match.
 
