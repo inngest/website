@@ -877,6 +877,16 @@ const sectionReference: NavGroup[] = [
         title: "Documentation",
         href: "https://api-docs.inngest.com/docs/inngest-api/1j9i5603g5768-introduction",
       },
+      {
+        title: "Function runs",
+        links: [
+          {
+            title: "Get a function run",
+            href: "/docs/reference/rest-api/get-function-run",
+            tag: "GET",
+          },
+        ],
+      },
     ],
   },
 ];
