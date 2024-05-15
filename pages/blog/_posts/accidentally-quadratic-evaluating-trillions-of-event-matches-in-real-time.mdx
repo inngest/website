@@ -14,7 +14,7 @@ With Inngest, we allow developers to build event-driven functions that are able 
 
 ## Dynamic Event Filtering
 
-This is the core of the challenge that we have with Inngest. Inngest allows developers to create event-driven functions that can be [canceled](/docs/guides/cancel-running-functions) by or wait for additional events that match specific [filter expressions](/docs/reference/functions/step-wait-for-event#advanced-event-matching-with-if). The hard part is abstracted away from the developer with a line of code.
+This is the core of the challenge that we have with Inngest. Inngest allows developers to create event-driven functions that can wait for additional events that match specific [filter expressions](/docs/reference/functions/step-wait-for-event#advanced-event-matching-with-if), or declare that functions should automatically be [be canceled by specific events](/docs/guides/cancel-running-functions). The hard part is abstracted away from the developer with a line of code.
 
 As an example, this code allows the developer to pause a function in the middle of execution to wait for an `app/onboarding.completed` event with a payload that matches the value of the `data.userId` exactly:
 
