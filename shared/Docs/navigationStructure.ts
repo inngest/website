@@ -660,9 +660,8 @@ const sectionReference: NavGroup[] = [
         href: `/docs/reference/functions/handling-failures`,
       },
       {
-        title: "Cancel running functions",
-        href: `/docs/functions/cancellation`,
-        // href: `/docs/reference/functions/cancel-running-functions`,
+        title: "Cancel on",
+        href: `/docs/reference/typescript/functions/cancel-on`,
       },
       {
         title: "Concurrency",
