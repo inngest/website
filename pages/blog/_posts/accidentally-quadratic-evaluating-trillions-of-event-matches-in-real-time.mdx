@@ -29,7 +29,7 @@ const onboardingCompleted = await step.waitForEvent(
     );
 ```
 
-While this looks very simple, this [matching expression](/docs/guides/writing-expressions) is created **dynamically at runtime**, so under the hood, the system must quickly update the internal event stream consumers to evaluate all events for a potential match. We run a [multi-tenant system](/blog/building-the-inngest-queue-pt-i-fairness-multi-tenancy), so each event needs to be evaluated against millions of potential matches.
+While this looks very simple, this [matching expression](/docs/guides/writing-expressions) is created **dynamically at runtime**, so under the hood, the system must quickly update the internal event stream consumers to evaluate all events for a potential match. We run a [multi-tenant system](/blog/building-the-inngest-queue-pt-i-fairness-multi-tenancy), so each event needs to be evaluated against millions of potential matches.  Even worse:  every run of the function can create a new, unique expression, leading to an explosion of mathing expressions.
 
 This is where the complexity lies, these *ephemeral* event matchers must be quickly added, evaluated and removed just as quickly. With their short-lived nature, we also can't quite optimize the system with topics and thousands of stream consumers with filtering that spin up and down for each statement.
 
