@@ -1,0 +1,126 @@
+---
+heading: When to use Vercel and Cloudflare's waitUntil utility
+subtitle: What is it, when to use it, and when not to use it
+image: /assets/blog/vercel-cloudflare-wait-until/featured-image.png
+date: 2024-05-16
+author: Dan Farrelly
+---
+
+Recently, [Vercel announced](https://vercel.com/changelog/waituntil-is-now-available-for-vercel-functions) that their `waitUntil` utility method is now available for all serverless functions. Now, this useful feature is available for both Vercel's Node.js and edge functions. A similar utility is also available for [Cloudflare Workers](https://developers.cloudflare.com/workers/runtime-apis/context/#waituntil).
+
+This is a very useful tool, but it's important to understand when to use it and when not to use it. In this post, I'll explain:
+
+## What does `waitUntil` do
+
+To understand what `waitUntil` does, we need to understand how serverless functions work. This also helps us understand why it exists.
+
+Serverless functions are designed to be [stateless](https://www.redhat.com/en/topics/cloud-native-apps/stateful-vs-stateless) and short-lived. Unlike traditional servers, serverless functions are not kept alive between requests. Instead, they are spun up on-demand to handle incoming requests and then shut down once the response is sent.
+
+With JavaScript serverless functions, you have to `await` all asynchronous operations to ensure that the function doesn't return before the asynchronous operation is complete. If you don't `await` an asynchronous operation, the serverless function might be shut down before the operation is complete. If this happens, the operation might be canceled or fail which results in unpredictable behavior. This is why it's important to `await` all asynchronous operations in serverless functions.
+
+```js
+// ❌ BAD: If sendMetrics is an async function (a Promise), there is no guarantee it will succeed
+async function POST(request) {
+  const data = await createPost(request.body)
+  sendMetrics({ metric: 'posts.created', increment: 1 })
+  return new Response(data)
+}
+// ✅ GOOD: Awaiting will ensure it completes before the function returns
+async function POST(request) {
+  const data = await createPost(request.body)
+  await sendMetrics({ metric: 'posts.created', increment: 1 })
+  return new Response(data)
+}
+```
+
+The downside of this is that it can slow down the response time of your serverless functions. You ideally want to [keep the critical path of your request minimal](https://www.epicweb.dev/talks/improve-performance-and-reliability-of-your-api-with-events-and-background-functions) so you return the fastest response possible for your users. This is where `waitUntil` comes in.
+
+`waitUntil` allows you to ensure that an async function (a [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)) completes before the serverless function is shut down. As the example code above doesn't require any data returned from `sendMetrics`, we can use `waitUntil` to ensure that the async function completes in the background without blocking the response from returning to the user.
+
+```js
+// ✅ GOOD: The sendMetrics function will execute in the background,
+// but not block the response from returning to the user
+async function POST(request) {
+  const data = await createPost(request.body)
+  waitUntil(sendMetrics({ metric: 'posts.created', increment: 1 }))
+  return new Response(data)
+}
+```
+
+`waitUntil` is a very useful tool that ensures completion, but it does not ensure _success_. If the promise passed to `waitUntil` fails, the serverless function will still complete and return a response. It's important to understand when to use it and when to not use it.
+
+## When to use `waitUntil`
+
+`waitUntil` is useful when you need to perform some asynchronous work that is not critical to the response of the serverless function. This is useful for things like sending metrics, logging, or other things that should not block the user's response. The user should not pay the penalty for these operations, so they can be done in the background.
+
+## When _not_ to use `waitUntil`
+
+As mentioned above, `waitUntil` does not ensure _success_. If the promise passed to `waitUntil` fails, the serverless function will still complete and return a response. This is important to understand when deciding when to use `waitUntil`.
+
+You shouldn't use `waitUntil` if the asynchronous operation effects critical business logic in your application. This is what makes it great for logging and metrics. If the operation fails, it's not the end of the world. But if the operation is critical to the response of the serverless function, you should `await` it instead.
+
+## Can I run background jobs with `waitUntil`?
+
+Short answer: No.
+
+Long answer: `waitUntil` is not designed for running background jobs. There are no retries or tools for handling failures. For running background jobs, you should use a system that handles queueing, retries, and logs failures.
+
+Inngest is designed to handle background jobs reliably. It automatically handles retries, logs, and failures. If you need to run background jobs, you should use Inngest instead of `waitUntil`.
+
+## Should I use `waitUntil` with Inngest?
+
+Inngest functions are truly async, background jobs. To trigger Inngest functions, you use `inngest.send()` which sends the data to the Inngest _Event API_. Inngest then triggers the function and handles retries on it's end. The `inngest.send()` function returns a `Promise` so it is possible to use with `waitUntil`. Should you use it though?
+
+```js
+import { inngest } from "src/inngest";
+
+async function POST(request) {
+  const data = await createPost(request.body)
+  waitUntil(inngest.send({ name: "post.created", data: data }))
+  return new Response(data)
+}
+```
+
+Typically, Inngest functions contain core business logic, so you need to ensure that the functions are triggered successfully. The key question is the reliability of `waitUntil` and the function it calls. Let's break down some things to consider:
+
+* The Inngest Event API has very high uptime and is designed to be reliable.
+* The `inngest.send()` function is very simple - mostly just an `POST` request to the Event API.
+* The `waitUntil` utility from Vercel and Cloudflare is designed to be reliable.
+* Networking issues or blips can always cause issues with outbound requests from any platform.
+
+Given these points, it is safe to use `waitUntil` with `inngest.send()` with the caveat that if there is a networking issue, the event may not reach Inngest. While this is a rare occurrence, it is a risk to be aware of and is a trade off that you need to decide for yourself.
+
+If you don't like this risk, you can use `inngest.send()` without `waitUntil`, but it will be blocking:
+
+```js
+import { inngest } from "src/inngest";
+
+async function POST(request) {
+  const data = await createPost(request.body)
+  await inngest.send({ name: "post.created", data: data })
+  return new Response(data)
+}
+```
+
+If you want the best of both worlds, you might determine a recovery strategy for when the event doesn't reach Inngest. This could be as simple as logging the failure and retrying the event later.
+
+```js
+import { inngest } from "src/inngest";
+
+async function POST(request) {
+  const data = await createPost(request.body)
+  waitUntil(
+    inngest.send({ name: "post.created", data: data })})
+      .catch((error) => {
+        // Log the event somewhere where you could read and re-send it later
+      })
+  )
+  return new Response(data)
+}
+```
+
+## Conclusion
+
+`waitUntil` is a highly useful tool to have in your serverless toolkit. It can help keep async code out of the critical path of the request to return the response to the user as fast as possible. It is very important to understand when to use it and when not to use it. It's also important to understand the risks of using it with other services.
+
+Ideally, in the future, these services might offer some sort of out-of-the-box logging and retry mechanism for `waitUntil`. Until then, you should be aware of the risks and decide if it's right for your use case.
