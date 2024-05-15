@@ -8,7 +8,7 @@ date: 2024-05-15
 author: Tony Holdstock-Brown
 ---
 
-Event-driven systems depend on accurately matching and filtering events. This process ensures data is directed to the right part of the code that needs specific event information.Systems like Kafka offer topics and filters to allow consumers to achieve this, but they need to be determined up front either at the infrastructure level or directly in the code. This is great, but what about in a multi-tenant system where you don't know what event types or filters you might need up front?
+Event-driven systems depend on accurately matching and filtering events. This process ensures data is directed to the right part of the code that needs specific event information. Systems like Kafka offer topics and filters to allow consumers to achieve this, but they need to be determined up front either at the infrastructure level or directly in the code. This is great, but what about in a multi-tenant system where you don't know what event types or filters you might need up front?
 
 With Inngest, we allow developers to build event-driven functions that are able to filter over millions of events. Developers can also define short-lived event matching statements that might exist for seconds or weeks. Our goal is to offer the flexibility of filtering and matching of event-driven systems like Kafka without all of the work of managing or optimizing the system itself.
 
