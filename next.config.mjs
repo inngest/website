@@ -26,6 +26,7 @@ const permanentRedirects = [
   ["/docs/sdk/reference/serve", "/docs/reference/serve"],
   ["/docs/events/webhooks", "/docs/platform/webhooks"],
   ["/docs/functions/retries", "/docs/reference/typescript/functions/errors"],
+  ["/docs/functions/cancellation", "/docs/guides/cancel-running-functions"],
   [
     "/docs/reference/python/overview/quick-start",
     "/docs/getting-started/quick-start/python",
