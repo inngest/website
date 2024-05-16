@@ -12,7 +12,7 @@ This is a very useful tool so let's dive into what `waitUntil` is and what it do
 
 ## What does `waitUntil` do
 
-To understand what `waitUntil` does, we need to understand how serverless functions work. This also helps us understand why it exists.
+To understand what `waitUntil` does and why it exists, let's talk about how serverless functions work.
 
 Serverless functions are designed to be [stateless](https://www.redhat.com/en/topics/cloud-native-apps/stateful-vs-stateless) and short-lived. Unlike traditional servers, serverless functions are not kept alive between requests. Instead, they are spun up on-demand to handle incoming requests and then shut down once the response is sent.
 
@@ -33,7 +33,7 @@ async function POST(request) {
 }
 ```
 
-The downside of this is that it can slow down the response time of your serverless functions. You ideally want to [keep the critical path of your request minimal](https://www.epicweb.dev/talks/improve-performance-and-reliability-of-your-api-with-events-and-background-functions) so you return the fastest response possible for your users. This is where `waitUntil` comes in.
+The downside of using `await` is that it can slow down the response time of your serverless functions. You ideally want to [keep the critical path of your request minimal](https://www.epicweb.dev/talks/improve-performance-and-reliability-of-your-api-with-events-and-background-functions) so you return the fastest response possible for your users. This is where `waitUntil` comes in.
 
 `waitUntil` allows you to ensure that an async function (a [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)) completes before the serverless function is shut down. As the example code above doesn't require any data returned from `sendMetrics`, we can use `waitUntil` to ensure that the async function completes in the background without blocking the response from returning to the user.
 
@@ -47,7 +47,7 @@ async function POST(request) {
 }
 ```
 
-`waitUntil` is a very useful tool that ensures completion, but it does not ensure _success_. If the promise passed to `waitUntil` fails, the serverless function will still complete and return a response. It's important to understand when to use it and when to not use it.
+So, is `waitUntil` a solution to all possible problems? Well, it is a very useful tool and it ensures completion. However, it does not ensure _success_. For example, if the promise passed to `waitUntil` fails, the serverless function will still complete and return a response. So when should we use it?
 
 ## When to use `waitUntil`
 
@@ -57,7 +57,7 @@ async function POST(request) {
 
 As mentioned above, `waitUntil` does not ensure _success_. If the promise passed to `waitUntil` fails, the serverless function will still complete and return a response. This is important to understand when deciding when to use `waitUntil`.
 
-You shouldn't use `waitUntil` if the asynchronous operation effects critical business logic in your application. This is what makes it great for logging and metrics. If the operation fails, it's not the end of the world. But if the operation is critical to the response of the serverless function, you should `await` it instead.
+In other words, `waitUntil` is not the tool for the job if the asynchronous operation affects critical business logic in your application (which is precisely what makes it great for logging and metrics!). If the operation fails, it's not the end of the world. But if the operation is critical to the response of the serverless function, `await` is the way to go.
 
 ## Can I run background jobs with `waitUntil`?
 
@@ -65,7 +65,7 @@ Short answer: No.
 
 Long answer: `waitUntil` is not designed for running background jobs. There are no retries or tools for handling failures. Also, `waitUntil` will only run for as long as your function's timeout is set for, meaning if something takes longer than your timeout, it will be canceled. For running background jobs, you should use a system that handles queueing, retries, and logs failures.
 
-Inngest is designed to handle background jobs reliably. It automatically handles retries, logs, and failures. If you need to run background jobs, you should use Inngest instead of `waitUntil`.
+Inngest is designed to handle background jobs reliably. It automatically handles retries, logs, and failures. If you need to run background jobs, you should consider using Inngest instead of `waitUntil`.
 
 ## Should I use `waitUntil` with Inngest?
 
@@ -103,7 +103,7 @@ async function POST(request) {
 }
 ```
 
-If you want the best of both worlds, you might determine a recovery strategy for when the event doesn't reach Inngest. This could be as simple as logging the failure and retrying the event later.
+If you want **the best of both worlds**, you might determine a recovery strategy for when the event doesn't reach Inngest. This could be as simple as logging the failure and retrying the event later.
 
 ```js
 import { inngest } from "src/inngest";
