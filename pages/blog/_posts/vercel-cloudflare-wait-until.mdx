@@ -1,12 +1,12 @@
 ---
-heading: When to use Vercel and Cloudflare's waitUntil utility
+heading: What is waitUntil (Vercel, Cloudflare) and when should I use it?
 subtitle: What is it, when to use it, and when not to use it
 image: /assets/blog/vercel-cloudflare-wait-until/featured-image.png
 date: 2024-05-16
 author: Dan Farrelly
 ---
 
-Recently, [Vercel announced](https://vercel.com/changelog/waituntil-is-now-available-for-vercel-functions) that their `waitUntil` utility method is now available for all serverless functions. Now, this useful feature is available for both Vercel's Node.js and edge functions. This utility is not unique to Vercel -- [Cloudflare Workers](https://developers.cloudflare.com/workers/runtime-apis/context/#waituntil) also offers a similar one.
+Recently, [Vercel announced](https://vercel.com/changelog/waituntil-is-now-available-for-vercel-functions) that their `waitUntil` utility method is now available for all serverless functions. Now, this useful feature is available for _both_ Vercel's Node.js and edge functions. This utility is not unique to Vercel -- [Cloudflare Workers](https://developers.cloudflare.com/workers/runtime-apis/context/#waituntil) also offers a similar one.
 
 This is a very useful tool so let's dive into what `waitUntil` is and what it does, when to use it, and when it's better not to.
 
@@ -51,7 +51,7 @@ async function POST(request) {
 
 ## When to use `waitUntil`
 
-`waitUntil` is useful when you need to perform some asynchronous work that is not critical to the response of the serverless function. This is useful for things like sending metrics, logging, or other things that should not block the user's response. The user should not pay the penalty for these operations, so they can be done in the background.
+`waitUntil` is useful when you need to perform some asynchronous work that is not critical to the response of the serverless function. This is useful for things like sending metrics, logging, cache control, or other things that should not block the user's response. The user should not pay the penalty for these operations, so they can be done in the background.
 
 ## When _not_ to use `waitUntil`
 
@@ -63,7 +63,7 @@ You shouldn't use `waitUntil` if the asynchronous operation effects critical bus
 
 Short answer: No.
 
-Long answer: `waitUntil` is not designed for running background jobs. There are no retries or tools for handling failures. For running background jobs, you should use a system that handles queueing, retries, and logs failures.
+Long answer: `waitUntil` is not designed for running background jobs. There are no retries or tools for handling failures. Also, `waitUntil` will only run for as long as your function's timeout is set for, meaning if something takes longer than your timeout, it will be canceled. For running background jobs, you should use a system that handles queueing, retries, and logs failures.
 
 Inngest is designed to handle background jobs reliably. It automatically handles retries, logs, and failures. If you need to run background jobs, you should use Inngest instead of `waitUntil`.
 
@@ -87,6 +87,7 @@ Typically, Inngest functions contain core business logic, so you need to ensure 
 * The `inngest.send()` function is very simple - mostly just an `POST` request to the Event API.
 * The `waitUntil` utility from Vercel and Cloudflare is designed to be reliable.
 * Networking issues or blips can always cause issues with outbound requests from any platform.
+* `waitUntil` will only last as long as the timeout for the function.
 
 Given these points, it is safe to use `waitUntil` with `inngest.send()` with the caveat that if there is a networking issue, the event may not reach Inngest. While this is a rare occurrence, it is a risk to be aware of and is a trade off that you need to decide for yourself.
 
