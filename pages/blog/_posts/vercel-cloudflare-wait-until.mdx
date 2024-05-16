@@ -55,7 +55,7 @@ So, is `waitUntil` a solution to all possible problems? Well, it is a very usefu
 
 ## When _not_ to use `waitUntil`
 
-As mentioned above, `waitUntil` does not ensure _success_. If the promise passed to `waitUntil` fails, the serverless function will still complete and return a response. This is important to understand when deciding when to use `waitUntil`.
+As mentioned above, `waitUntil` does not ensure _success_. If the promise passed to `waitUntil` fails, the serverless function will still complete and return a response. This is important to keep in mind when deciding when to use `waitUntil`.
 
 In other words, `waitUntil` is not the tool for the job if the asynchronous operation affects critical business logic in your application (which is precisely what makes it great for logging and metrics!). If the operation fails, it's not the end of the world. But if the operation is critical to the response of the serverless function, `await` is the way to go.
 
@@ -91,7 +91,7 @@ Typically, Inngest functions contain core business logic, so you need to ensure 
 
 Given these points, it is safe to use `waitUntil` with `inngest.send()` with the caveat that if there is a networking issue, the event may not reach Inngest. While this is a rare occurrence, it is a risk to be aware of and is a trade off that you need to decide for yourself.
 
-If you don't like this risk, you can use `inngest.send()` without `waitUntil`, but it will be blocking:
+If you don't want to take this risk, you can use `inngest.send()` without `waitUntil`, but it will be blocking:
 
 ```js
 import { inngest } from "src/inngest";
@@ -103,7 +103,7 @@ async function POST(request) {
 }
 ```
 
-If you want **the best of both worlds**, you might determine a recovery strategy for when the event doesn't reach Inngest. This could be as simple as logging the failure and retrying the event later.
+If you want **the best of both worlds**, you might determine a recovery strategy for when the event doesn't reach Inngest. This could be as simple as logging the failure and retrying the event later. Below is an incomplete example of how you might handle a failure and do something with the event. Not included is any logic you might need for retrying the event later using whatever logging backend or similar that you use.
 
 ```js
 import { inngest } from "src/inngest";
