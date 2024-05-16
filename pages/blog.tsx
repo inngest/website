@@ -90,17 +90,9 @@ export default function BlogLayout(props) {
                   </span>
                 </div>
                 {focus.image && (
-                  <div className="lg:w-3/5 flex rounded-t-lg lg:rounded-t-none lg:rounded-r-lg relative group-hover:scale-105 group-hover:rounded-lg overflow-hidden transition-all">
+                  <div className="lg:w-3/5 flex rounded-t-lg lg:rounded-t-none lg:rounded-r-lg relative group-hover:scale-105 group-hover:origin-center group-hover:rounded-lg overflow-hidden transition-all lg:pr-2">
                     <Image
-                      className="z-10 w-full m-auto rounded-t-lg lg:rounded-t-none lg:rounded-r-lg group-hover:rounded-lg"
-                      src={focus.image}
-                      alt={`Featured image for ${focus.heading} blog post`}
-                      width={900}
-                      height={900 / 2}
-                      quality={95}
-                    />
-                    <Image
-                      className="absolute h-[110%] w-[calc(100% + theme('spacing.4'))] max-w-none z-0 -top-2 -bottom-2 -left-2 -right-2 w-full m-auto blur-sm opacity-90 rounded-t-lg lg:rounded-t-none lg:rounded-r-lg"
+                      className="z-10 w-full m-auto rounded-t-lg lg:rounded-lg group-hover:rounded-lg"
                       src={focus.image}
                       alt={`Featured image for ${focus.heading} blog post`}
                       width={900}
