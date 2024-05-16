@@ -6,9 +6,9 @@ date: 2024-05-16
 author: Dan Farrelly
 ---
 
-Recently, [Vercel announced](https://vercel.com/changelog/waituntil-is-now-available-for-vercel-functions) that their `waitUntil` utility method is now available for all serverless functions. Now, this useful feature is available for both Vercel's Node.js and edge functions. A similar utility is also available for [Cloudflare Workers](https://developers.cloudflare.com/workers/runtime-apis/context/#waituntil).
+Recently, [Vercel announced](https://vercel.com/changelog/waituntil-is-now-available-for-vercel-functions) that their `waitUntil` utility method is now available for all serverless functions. Now, this useful feature is available for both Vercel's Node.js and edge functions. This utility is not unique to Vercel -- [Cloudflare Workers](https://developers.cloudflare.com/workers/runtime-apis/context/#waituntil) also offers a similar one.
 
-This is a very useful tool, but it's important to understand when to use it and when not to use it. In this post, I'll explain:
+This is a very useful tool so let's dive into what `waitUntil` is and what it does, when to use it, and when it's better not to.
 
 ## What does `waitUntil` do
 
