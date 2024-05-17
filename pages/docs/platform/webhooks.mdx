@@ -97,7 +97,9 @@ function transform(evt, headers = {}, queryParams = {}) {
   return {
     name: `clerk/${evt.type}`,
     data: evt.data,
-    // You can optionally set "ts" using an
+    // You can optionally set ts using data from the raw json payload 
+    // to explicitly set the timestamp of the incoming event.
+    // If ts is not set, it will be automatically set to the time the request is received.
   }
 }
 ```
