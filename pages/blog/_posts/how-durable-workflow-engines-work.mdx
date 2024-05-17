@@ -94,7 +94,7 @@ async ({ event, step }) => {
 };
 ```
 
-This function uses workflow engine primitives to create reliable, retryable steps within a single block
+This function uses workflow engine primitives to create reliable, retriable steps within a single block
 of code.  Workflow engines should retry steps on error - whether that's a network error, worker crash, or some other
 failure.  Each step's data should be recorded in "memory", available for use later within the function.
 

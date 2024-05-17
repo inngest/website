@@ -8,11 +8,11 @@ Critically, multi-step functions are written in code, not config, meaning you cr
 
 Writing multi-step functions provide you with some easy-to-use tools to create intuitive flows for your system.
 
-- Run retryable blocks of code to maximum reliability
+- Run retriable blocks of code to maximum reliability
 - Pause execution and Wait for an event matching rules before continuing
 - Pause for an amount of time or until a specified time
 
-This makes building reliable, distributed code simple. By wrapping asynchronous actions such as API calls in retryable blocks, we can ensure reliability when coordinating across many services.
+This makes building reliable, distributed code simple. By wrapping asynchronous actions such as API calls in retriable blocks, we can ensure reliability when coordinating across many services.
 
 ## Writing
 
@@ -186,7 +186,7 @@ Most importantly, we had to write no config to do this. We can use all the power
 
 For an in-depth reference of each step tool that you can use read [our create function reference](/docs/reference/functions/create#step) or jump directly to a step reference guide:
 
-- [`step.run()`](/docs/reference/functions/step-run) - Run synchronous or asynchronous code as a retryable step in your function
+- [`step.run()`](/docs/reference/functions/step-run) - Run synchronous or asynchronous code as a retriable step in your function
 - [`step.sleep()`](/docs/reference/functions/step-sleep) - Sleep for a given amount of time
 - [`step.sleepUntil()`](/docs/reference/functions/step-sleep-until) - Sleep until a given time
 - [`step.invoke()`](/docs/reference/functions/step-invoke) - Invoke another Inngest function as a step, receiving the result of the invoked function
@@ -211,7 +211,7 @@ await step.run("do-something", async () => {
 });
 ```
 
-Each call to `step.run()` is a single retryable step - a lightweight transaction.  Therefore, each step should have a single side effect.  For example, the below code is problematic:
+Each call to `step.run()` is a single retriable step - a lightweight transaction.  Therefore, each step should have a single side effect.  For example, the below code is problematic:
 
 ```ts
 await step.run("create-alert", async () => {

@@ -16,7 +16,7 @@ To understand what `waitUntil` does and why it exists, let's talk about how serv
 
 Serverless functions are designed to be [stateless](https://www.redhat.com/en/topics/cloud-native-apps/stateful-vs-stateless) and short-lived. Unlike traditional servers, serverless functions are not kept alive between requests. Instead, they are spun up on-demand to handle incoming requests and then shut down once the response is sent.
 
-With JavaScript serverless functions, you have to `await` all asynchronous operations to ensure that the function doesn't return before the asynchronous operation is complete. If you don't `await` an asynchronous operation, the serverless function might be shut down before the operation is complete. If this happens, the operation might be canceled or fail which results in unpredictable behavior. This is why it's important to `await` all asynchronous operations in serverless functions.
+With JavaScript serverless functions, you have to `await` all asynchronous operations to ensure that the function doesn't return before the asynchronous operation is complete. If you don't `await` an asynchronous operation, the serverless function might be shut down before the operation is complete. If this happens, the operation might be cancelled or fail which results in unpredictable behavior. This is why it's important to `await` all asynchronous operations in serverless functions.
 
 ```js
 // ❌ BAD: If sendMetrics is an async function (a Promise), there is no guarantee it will succeed
@@ -63,7 +63,7 @@ In other words, `waitUntil` is not the tool for the job if the asynchronous oper
 
 Short answer: No.
 
-Long answer: `waitUntil` is not designed for running background jobs. There are no retries or tools for handling failures. Also, `waitUntil` will only run for as long as your function's timeout is set for, meaning if something takes longer than your timeout, it will be canceled. For running background jobs, you should use a system that handles queueing, retries, and logs failures.
+Long answer: `waitUntil` is not designed for running background jobs. There are no retries or tools for handling failures. Also, `waitUntil` will only run for as long as your function's timeout is set for, meaning if something takes longer than your timeout, it will be cancelled. For running background jobs, you should use a system that handles queueing, retries, and logs failures.
 
 Inngest is designed to handle background jobs reliably. It automatically handles retries, logs, and failures. If you need to run background jobs, you should consider using Inngest instead of `waitUntil`.
 

@@ -14,7 +14,7 @@ With Inngest, we allow developers to build event-driven functions that are able 
 
 ## Dynamic Event Filtering
 
-This is the core of the challenge that we have with Inngest. Inngest allows developers to create event-driven functions that can wait for additional events that match specific [filter expressions](/docs/reference/functions/step-wait-for-event#advanced-event-matching-with-if), or declare that functions should automatically be [be canceled by specific events](/docs/guides/cancel-running-functions). The hard part is abstracted away from the developer with a line of code.
+This is the core of the challenge that we have with Inngest. Inngest allows developers to create event-driven functions that can wait for additional events that match specific [filter expressions](/docs/reference/functions/step-wait-for-event#advanced-event-matching-with-if), or declare that functions should automatically be [be cancelled by specific events](/docs/guides/cancel-running-functions). The hard part is abstracted away from the developer with a line of code.
 
 As an example, this code allows the developer to pause a function in the middle of execution to wait for an `app/onboarding.completed` event with a payload that matches the value of the `data.userId` exactly:
 
@@ -43,7 +43,7 @@ As Inngest is event-driven, there are two types of event matching that happens i
 
 The first type are long-lived matchers which trigger functions to run. These are mostly generic matchers based on an event name, for example `app/user.created`.
 
-The second type are ephemeral matchers which only exist during the life of a running function. These matchers contain explicit matching statements that are relevant to the running function itself. For example, if a function is started using the `app/user.created` event, the function should only be canceled by an `app/user.deleted` event with a matching `userId`.
+The second type are ephemeral matchers which only exist during the life of a running function. These matchers contain explicit matching statements that are relevant to the running function itself. For example, if a function is started using the `app/user.created` event, the function should only be cancelled by an `app/user.deleted` event with a matching `userId`.
 
 ```js
 inngest.createFunction(
@@ -63,7 +63,7 @@ To visualize how ephemeral event matchers are created and removed through the li
 These ephemeral matching statements might be used in various use cases:
 
 - A human-in-the-middle AI workflow that needs to pause and wait for approval to continue execution.
-- A function that schedules the publishing of a blog post that must be canceled if the user updates the status back to a draft.
+- A function that schedules the publishing of a blog post that must be cancelled if the user updates the status back to a draft.
 - A data pipeline that needs to restart (cancel + start again) if data in the source changes.
 - An onboarding email campaign that changes depending on if a user does or does not complete a funnel action within a desired time.
 

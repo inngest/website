@@ -19,7 +19,7 @@ A function that defines no steps is treated as a function with a single step, wh
 
 An **error** causes a step to retry. Exhausting all retry attempts will cause that step to **fail**, which means the step will never be attempted again this run.
 
-A **failed** step can be handled with native language features such as `try`/`catch`, but unhandled errors will cause the function to **fail**, meaning the run is marked as "Failed" in the Inngest UI and all future executions are canceled.
+A **failed** step can be handled with native language features such as `try`/`catch`, but unhandled errors will cause the function to **fail**, meaning the run is marked as "Failed" in the Inngest UI and all future executions are cancelled.
 
 Let's look at how to use and configure these retries.
 

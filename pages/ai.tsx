@@ -530,7 +530,7 @@ const DevelopmentCopy = () => {
               can use
             </li>
             <li className="flex items-center mb-4">
-              <Check size={14} className="mr-2" /> Simple, retryable steps using
+              <Check size={14} className="mr-2" /> Simple, retriable steps using
               `step.run`
             </li>
             <li className="flex items-center mb-4">

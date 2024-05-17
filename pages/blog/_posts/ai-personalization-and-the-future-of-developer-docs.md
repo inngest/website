@@ -126,7 +126,7 @@ We make sure to use Inngest’s step tooling here to provide retries to the repl
 
 AI’s here to stay, and more obvious patterns are emerging for how it can help us. There are fantastic examples of AI helping us learn already being demonstrated, such as [Supabase's Clippy](https://supabase.com/blog/chatgpt-supabase-docs?ref=inngest), [Astro's Houston](https://houston.astro.build/) and [Dagster's support bot](https://dagster.io/blog/chatgpt-langchain).
 
-Even specific to just software, personalizing learning experiences will accelerate the pace at which we can build and communicate concepts across the entire community; examples such as this are just the beginning.
+Even specific to just software, personalizing learning experiences will accelerate the pace at which we can build and communicate concepts across the entire community; examples such as this one are just the beginning.
 
 Make sure to check out Inngest’s offering and see how we might be able to solve your problem today.
 
