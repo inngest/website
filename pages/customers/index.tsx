@@ -49,6 +49,15 @@ const caseStudies: {
     tags: ["AI"],
   },
   {
+    href: "/customers/gitbook",
+    logo: "/assets/customers/gitbook/gitbook-logo.svg",
+    name: "GitBook",
+    title: "Solving bi-directional data synchronization",
+    snippet:
+      "How the GitBook team cut sync times from hours to minutes with Inngest's concurrency management.",
+    tags: ["Workflows", "Serverless"],
+  },
+  {
     href: "/customers/resend",
     logo: "/assets/customers/resend.svg",
     name: "Resend",
