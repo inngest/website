@@ -64,7 +64,7 @@ The team also appreciated that with Inngest, it's easy to set up [isolated envir
 
 Lastly, Inngest provides simple configuration options for managing concurrency, which aligned well with GitBook's codebase and workflows. Additionally, features like rate limiting, debounce, and robust configuration capabilities addressed their specific needs around bi-directional sync, eliminating the need for constant complex workarounds.
 
-## Using Inngest to solve redundant function calls in Custom Domain Validation
+## Using Inngest to prevent redundant function calls in Custom Domain Validation
 
 While initially GitBook team aimed to just solve concurrency issues, now they had access to other parts of Inngest's infrastructure.
 
@@ -74,9 +74,19 @@ Going with Inngest provided reliability but also made service deployment faster.
 
 > The good thing about Inngest is that we explicitly say in our codebase: “send an event to Inngest” and then we can check in the dashboard what Inngest reacts to. It's easy to debug and follow the flows of changes in our application this way.
 
+<figure>
+  <img src="/assets/customers/gitbook/inngest-runs-list.png" alt="Inngest App showing a list of the function runs" />
+  <figcaption>Function runs view in Inngest app</figcaption>
+</figure>
+
 The Inngest dashboard offers a lot of crucial information. While other tools only informed the team about the number of failing jobs, Inngest allows you to peer into each function and event, and even replay and test your functions after publishing a fix. That being said,
 
 > In all honesty, we don't need to use the dashboard much because Inngest just works. So that's great. But we know it's there if an error happens and then we can investigate it, understand why it failed, and recover the information.
+
+<figure>
+  <img src="/assets/customers/gitbook/inngest-run-view.png" alt="Inngest App showing information about the function runs" />
+  <figcaption>Function metrics view in Inngest app</figcaption>
+</figure>
 
 ## Why choose Inngest?
 
