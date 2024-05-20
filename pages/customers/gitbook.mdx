@@ -16,21 +16,34 @@ export const ogImage = ''
 
 _GitBook is a knowledge management tool for engineering teams. It simplifies knowledge sharing, with docs-as-code support, AI-powered search, and insights. Among the companies that rely on GitBook are Linear, Snyk, and RedHat._
 
-### First Challenge: Scaling Background Job Processing
+## First Challenge: Scaling Background Job Processing
 
 One of the key features that GitBook offers is ["Git Sync"](https://www.gitbook.com/solutions/git-sync). The process is bi-directional: you can either sync the contents from a GitBook space (a documentation site) to a remote Git repository, or vice versa, import the remote Git repository's contents to a GitBook space (for example, your documentation page).
 
-Having onboarded a multitude of users, GitBook's team noticed that Git syncs were getting slower. Depending on the state of the repository and the GitBook space, this process could take anywhere from a few seconds to many minutes in any standard situation.
+### Performance Issues
 
-At the time, their infrastructure was built on Google Cloud Tasks, which contained fifteen queues where background jobs would be enqueued for thousands of GitBook spaces. This setup required the team to do a lot of manual work, like to randomly distribute the processes across the tasks queues to achieve a pseudo-even distribution of the tasks. This didn't only resulted in time wasted on maintenance, but it also didn't solve the underlying problems. The team would repeatedly hit scalability issues and bottlenecks, leading to delays for paying customers and free users alike. In fact, sometimes free-tier users' work would end up blocking the paying customers. The team wanted to preserve the execution ordering. Since each tasks queue had a maximum concurrency of one, so for a task to run, all the tasks before it needed to be completed. Because of this, there were situations when a paying customer needed to wait an hour or more to sync their work. This meant that updating public documentation sites would sometimes drag on.
+Having onboarded a multitude of users, GitBook's team noticed that Git syncs were getting slower. Depending on the state of the repository and the GitBook space, **this process could take anywhere from a few seconds to a few minutes** in any standard situation.
 
-![A screenshot of GitBook's site](/assets/customers/gitbook/gitbook-published-site.png)
+### Infrastructure Limitations
+
+At the time, their infrastructure was built on Google Cloud Tasks, which contained fifteen queues where background jobs would be enqueued for thousands of GitBook spaces. This setup required the team to do a lot of manual work, like to randomly distribute the processes across the tasks queues to achieve a pseudo-even distribution of the tasks. Not only did this result in time wasted on maintenance, but it also didn't solve the underlying problems. The team would repeatedly hit scalability issues and bottlenecks, leading to delays for paying customers and free users alike. In fact, sometimes free-tier users' work would end up blocking the paying customers.
+
+### Concurrency Challenges
+
+The team wanted to preserve the execution ordering. Since each tasks queue had a maximum concurrency of one, so for a task to run, all the tasks before it needed to be completed. Because of this, **there were situations when a paying customer needed to wait an hour or more to sync their work. **This meant that updating public documentation sites would sometimes drag on.
+
+### Sync Order and Edits
 
 Another challenge with bi-directional sync was maintaining the order of edits. Imagine a situation where a few team members are editing the same documentation page. Someone is working in a GitBook space, and someone else has pushed their edits to GitHub. Both changes should not only be applied, but also the correct order should be preserved to maintain a linear history between exports and also imports. This is a tricky engineering problem, and quite emblematic for distributed systems. To solve it, the GitBook team needed a queuing mechanism that prioritizes tasks based on their triggering events rather than their arrival timestamps. In this way, tasks are processed in the order they were triggered, even if events occur asynchronously (which is a common case when working with webhooks, for instance).
 
+<figure>
+  <img src="/assets/customers/gitbook/gitbook-published-site.png" alt="A screenshot of GitBook's site" />
+  <figcaption>GitBook's documentation site</figcaption>
+</figure>
+
 The team needed to explore solutions to enable each GitBook space to have its own queue, which would not be blocked by others. Seeking a solution to efficiently manage concurrency and improve performance, they explored alternatives and discovered Inngest.
 
-### **Choosing Inngest: concurrency management, simple configuration, tasks as code, reliability**
+## Choosing Inngest: concurrency management, simple configuration, tasks as code, reliability
 
 Concurrency management was GitBook's gateway to Inngest, as it allowed the team to create queues for each individual GitBook space. This ensuring that the tasks were processed without interference from others.
 
@@ -38,7 +51,10 @@ Concurrency management was GitBook's gateway to Inngest, as it allowed the team 
 
 Thanks to the fact that each space now has their own queue, the sync time now is mostly immediate, as opposed to minutes or hours previously. In worst-case scenarios, it takes a few minutes, which before was “the best-case scenario”.
 
-![A screenshot of a space published on GitBook](/assets/customers/gitbook/gitbook-space.png)
+<figure>
+  <img src="/assets/customers/gitbook/gitbook-space.png" alt="An example of a space published on GitBook" />
+  <figcaption>An example of a space published on GitBook</figcaption>
+</figure>
 
 But the benefits of choosing this tool did not end there. GitBook's entire architecture is serverless, and their codebase is in TypeScript, and the team found Inngest's TS SDK straightforward and intuitive. Most importantly, the team could still have their own typing for their payloads “for the humans”.
 
@@ -48,7 +64,7 @@ The team also appreciated that with Inngest, it's easy to set up [isolated envir
 
 Lastly, Inngest provides simple configuration options for managing concurrency, which aligned well with GitBook's codebase and workflows. Additionally, features like rate limiting, debounce, and robust configuration capabilities addressed their specific needs around bi-directional sync, eliminating the need for constant complex workarounds.
 
-### Next challenge: Preventing redundant function calls in Custom Domain Validation
+## Using Inngest to solve redundant function calls in Custom Domain Validation
 
 While initially GitBook team aimed to just solve concurrency issues, now they had access to other parts of Inngest's infrastructure.
 
@@ -72,7 +88,7 @@ GitBook team points to the following benefits having worked with Inngest:
 4. **Monitoring and efficient recovery:** Inngest's dashboard offers deep insights into task execution, enabling developers to monitor, troubleshoot, and recover from failed runs. Especially helpful here are features such as Replay and detailed function tracking, which further enhance system reliability.
 5. **Future-proofing and gradual migration:** Inngest's scalability and flexibility allowed GitBook to gradually migrate other features, ensuring future-proofing and smooth transition to a more efficient background job processing system.
 
-### Conclusion
+## Conclusion
 
 GitBook's switch to Inngest significantly improved how they handle background tasks and solved their bi-directional sync challenges, which drastically cut down sync times, from hours to immediate results. The team especially appreciates Inngest's concurrency management, debouncing, and rate limiting, which are now powering an increasing number of GitBook's features. The intuitive dashboard gave them a clear view of what's happening with their tasks, making monitoring and troubleshooting a breeze. 
 
