@@ -116,9 +116,9 @@ const featuredCompanies = [
     scale: 1.1,
   },
   {
-    src: "/assets/customers/gitbook-logo-white.svg",
-    name: "Gitbook",
-    url: "https://www.gitbook.com/",
+    src: "/assets/customers/howl-logo.svg",
+    name: "Howl",
+    url: "https://www.planethowl.com/",
     scale: 1.1,
     type: "company",
   },
