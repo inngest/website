@@ -50,7 +50,7 @@ const caseStudies: {
   },
   {
     href: "/customers/gitbook",
-    logo: "/assets/customers/gitbook/gitbook-logo.svg",
+    logo: "/assets/customers/gitbook-logo-white.svg",
     name: "GitBook",
     title: "Solving bi-directional data synchronization",
     snippet:
