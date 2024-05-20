@@ -119,7 +119,7 @@ const featuredCompanies = [
     src: "/assets/customers/howl-logo.svg",
     name: "Howl",
     url: "https://www.planethowl.com/",
-    scale: 1.1,
+    scale: 0.9,
     type: "company",
   },
   {
