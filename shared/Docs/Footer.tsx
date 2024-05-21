@@ -123,7 +123,7 @@ function PageLink({ label, page, previous = false }) {
       <Button
         href={page.href}
         aria-label={`${label}: ${page.title}`}
-        variant="primary"
+        variant="secondary"
         arrow={previous ? "left" : "right"}
         size="sm"
         className="not-prose"
