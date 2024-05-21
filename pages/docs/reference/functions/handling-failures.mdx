@@ -1,3 +1,6 @@
+import { ResourceGrid, Resource } from 'src/shared/Docs/Resources';
+import { RiErrorWarningFill } from "@remixicon/react";
+
 # Handling Failures
 
 Define any failure handlers for your function with the [`onFailure`](/docs/reference/functions/create#configuration) option. This function will be automatically called when your function fails after it's maximum number of retries. Alternatively, you can use the [`"inngest/function.failed"`](#the-inngest-function-failed-event) system event to handle failures across all functions.
@@ -185,51 +188,6 @@ export default inngest.createFunction(
 );
 ```
 
-### Track all function failures in Datadog
-
-You can use the `"inngest/function.failed"` event to handle all failed functions in a single place. This can enable you to send metrics, alerts, or events to external systems like Datadog or Sentry for all of your Inngest functions. Here's an example using [Datadog's Events API](https://docs.datadoghq.com/api/latest/events/) to send all failures the Datadog event stream.
-
-```ts
-import { client, v1 } from "@datadog/datadog-api-client";
-import { inngest } from "./client";
-
-const configuration = client.createConfiguration();
-const apiInstance = new v1.EventsApi(configuration);
-
-export default inngest.createFunction(
-  {
-    name: "Send failures to Datadog",
-    id: "send-failed-function-events-to-datadog"
-  },
-  { event: "inngest/function.failed" },
-  async ({ event, step }) => {
-    // This is a normal Inngest function, so we can use steps as we normally do:
-    await step.run("send-event-to-datadog", async () => {
-      const error = event.data.error;
-
-      // Create the Datadog event body using information about the failed function:
-      const params: v1.EventsApiCreateEventRequest = {
-        body: {
-          title: "Inngest Function Failed",
-          alert_type: "error",
-          text: `The ${event.data.function_id} function failed with the error: ${error.message}`,
-          tags: [
-            // Add a tag with the Inngest function id:
-            `inngest_function_id:${event.data.function_id}`,
-          ],
-        },
-      };
-
-      // Send to Datadog:
-      const data = await apiInstance.createEvent(params);
-
-      // Return the data to Inngest for viewing in function logs:
-      return { message: "Event sent successfully", data };
-    });
-  }
-);
-```
-
 ### Capture all failure errors with Sentry
 
 Similar to the above example, you can capture and all failed functions' errors and send them to a singular place. Here's an example using [Sentry's node.js library](https://docs.datadoghq.com/api/latest/events/) to capture and send all failure errors to Sentry.
@@ -273,3 +231,17 @@ export default inngest.createFunction(
   }
 );
 ```
+
+### Additional examples
+
+<ResourceGrid cols={2}>
+
+<Resource resource={{
+  href: "/docs/examples/track-failures-in-datadog",
+  name: "Track all function failures in Datadog",
+  icon: RiErrorWarningFill,
+  description: "Send all function failures to Datadog (or similar) for monitoring.",
+  pattern: 1,
+}}/>
+
+</ResourceGrid>
