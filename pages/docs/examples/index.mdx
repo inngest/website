@@ -1,6 +1,6 @@
 import { ResourceGrid, Resource } from 'src/shared/Docs/Resources'
 import { EnvelopeIcon } from "@heroicons/react/24/outline";
-import { RiBracesFill, RiCalendarScheduleFill } from "@remixicon/react";
+import { RiBracesFill, RiCalendarScheduleFill, RiErrorWarningFill } from "@remixicon/react";
 
 export const hidePageSidebar = true;
 
@@ -8,7 +8,7 @@ export const hidePageSidebar = true;
 
 Explore the features built with Inngest:
 
-<ResourceGrid cols={3}>
+<ResourceGrid cols={2}>
 
 <Resource resource={{
   href: "/docs/examples/email-sequence",
@@ -32,6 +32,14 @@ Explore the features built with Inngest:
   icon: RiBracesFill,
   description: "Get the result of a run using an Event ID.",
   pattern: 3,
+}}/>
+
+<Resource resource={{
+  href: "/docs/examples/track-failures-in-datadog",
+  name: "Track all function failures in Datadog",
+  icon: RiErrorWarningFill,
+  description: "Send all function failures to Datadog (or similar) for monitoring.",
+  pattern: 1,
 }}/>
 
 </ResourceGrid>

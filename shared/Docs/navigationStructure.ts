@@ -626,6 +626,10 @@ const sectionExamples: NavGroup[] = [
         title: "Fetch run status and output",
         href: `/docs/examples/fetch-run-status-and-output`,
       },
+      {
+        title: "Track all function failures in Datadog",
+        href: `/docs/examples/track-failures-in-datadog`,
+      },
     ],
   },
 ];
