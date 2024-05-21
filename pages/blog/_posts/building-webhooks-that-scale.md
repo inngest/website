@@ -29,7 +29,7 @@ If you’re already familiar with what a webhook is, you need to be aware of wha
 
 ## v0.1 - Handling webhooks on your existing backend
 
-Your version zero of your webhook likely starts with just adding a new endpoint onto your existing backend or API server to to handle your new webhook. This approach works for an MVP, but it’s only viable at low throughput to start.
+Your version zero of your webhook likely starts with just adding a new endpoint onto your existing backend or API server to handle your new webhook. This approach works for an MVP, but it’s only viable at low throughput to start.
 
 ![A simple webhook as part of your API server](/assets/blog/building-webhooks-that-scale/simple-webhook.png)
 

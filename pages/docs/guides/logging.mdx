@@ -2,28 +2,27 @@ import { Tag } from "src/shared/Docs/Tag";
 
 # Logging in Inngest <VersionBadge version="v2.0.0+" />
 
-Log handling could have some caveats when working with serverless runtimes.
+Log handling can have some caveats when working with serverless runtimes.
 
-One of the main problems is due to how serverless providers terminates after a function exits.
+One of the main problems is due to how serverless providers terminate after a function exits.
 There might not be enough time for a logger to finish flushing, which results in logs being lost.
 
-Another (opposite) problem is due to how Inngest handles memorization and code execution via HTTP calls to the SDK.
+Another (opposite) problem is due to how Inngest handles memoization and code execution via HTTP calls to the SDK.
 A log statement outside of `step` function could end up running multiple times, resulting in duplicated deliveries.
 
 ```ts {{ title: "example-fn.ts" }}
 async ({ event, step }) => {
-  logger.info("something") // this can be ran three times
+  logger.info("something") // this can be run three times
 
   await step.run("fn", () => {
-    logger.info("something else") // this will always be ran once
+    logger.info("something else") // this will always be run once
   })
 
   await step.run(...)
 }
 ```
 
-We provide a thin wrapper over existing logging tools, and export it to Inngest functions in order to mitigate these
-problems, so you as the user don't need to deal with it and things should work as you expect.
+We provide a thin wrapper over existing logging tools, and export it to Inngest functions in order to mitigate these problems, so you, as the user, don't need to deal with them and things should work as you expect.
 
 ## Usage
 
@@ -46,7 +45,7 @@ inngest.createFunction(
 );
 ```
 
-The exported logger provides the following interfaces.
+The exported logger provides the following interface methods:
 
 ```ts
 export interface Logger {
@@ -137,7 +136,7 @@ with.
 ### child logger
 
 If the logger library supports a child logger `.child()` implementation, the built-in middleware will utilize it to add
-function runtime metadata for you.
+function runtime metadata for you:
 
 - function name
 - event name
@@ -145,7 +144,7 @@ function runtime metadata for you.
 
 ## Loggers supported
 
-The following is a list of loggers we're aware of that works, but is not an exhaustive list.
+The following is a list of loggers we're aware of that work, but is not an exhaustive list:
 
 - [Winston][winston] <Tag>child logger support</Tag>
 - [Pino](https://github.com/pinojs/pino) <Tag>child logger support</Tag>
@@ -153,7 +152,7 @@ The following is a list of loggers we're aware of that works, but is not an exha
 - [Roarr](https://github.com/gajus/roarr) <Tag>child logger support</Tag>
 - [LogLevel](https://github.com/pimterry/loglevel)
 - [Log4js](https://github.com/log4js-node/log4js-node)
-- [npmlog](https://github.com/npm/npmlog) (don't have `.debug()` but has a way to add custom levels)
+- [npmlog](https://github.com/npm/npmlog) (doesn't have `.debug()` but has a way to add custom levels)
 - [Tracer](https://github.com/baryon/tracer)
 - [Signale](https://github.com/klaudiosinani/signale)
 

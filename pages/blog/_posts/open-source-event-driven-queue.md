@@ -9,7 +9,7 @@ In recent years, products have grown more and more complex — which requires m
 
 We’re bullish on our ideas on how to address the annoyances of building these systems using standard, simple interfaces and a developer-focused approach.
 
-Today, we’re taking the the first step to open sourcing the core of Inngest so more developers can benefit from and influence it’s development. Our first release is to extract core components from Inngest’s platform and embed them in our cli as [the brand new Inngest DevServer](/blog/introducing-inngest-dev-server), which brings this better UX to your own machine. We use the same executor code internally and plan to open source additional components, like our own state store.
+Today, we’re taking the first step to open sourcing the core of Inngest so more developers can benefit from and influence it’s development. Our first release is to extract core components from Inngest’s platform and embed them in our cli as [the brand new Inngest DevServer](/blog/introducing-inngest-dev-server), which brings this better UX to your own machine. We use the same executor code internally and plan to open source additional components, like our own state store.
 
 Let’s share some context of what those problems are that we’re taking on first, how we’re looking to improve them, and our open source plans.
 

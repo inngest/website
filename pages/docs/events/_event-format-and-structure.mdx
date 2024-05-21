@@ -30,7 +30,7 @@ The `user` object is a special field in Inngest Cloud. Sending data in this obje
 Inngest creates and stores a unified identity (aka profile) for each unique user that you send events for. You can think of it as performing an “upsert” for any data passed in the `user` object. There are two key ways to use this feature:
 
 - **Identifiers** - `id`, `email`, `phone`, or any field ending in `_id` will be used to match and group events together into a single identity. (Examples: `stripe_customer_id`, `zendesk_id`)
-- **Attributes** - Any non-identifier field will be stored as an an attribute for your own reference. Potential uses for attributes: `billing_plan` , `signup_source`, or `last_login_at`.
+- **Attributes** - Any non-identifier field will be stored as an attribute for your own reference. Potential uses for attributes: `billing_plan` , `signup_source`, or `last_login_at`.
 
 <aside>
   <p>🔐 <strong>Security</strong> - Each user's attributes is stored fully encrypted in our database using row-level encryption.  Each user gets its own encryption key which is permanently deleted when you delete the user from our system, which helps comply with GDPR and CCPA.</p>

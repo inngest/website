@@ -105,7 +105,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
 
 ### Using with `waitForEvent`
 
-When writing step functions, you can use `waitForEvent` to to, pause the current function until another event is received or the timeout expires - whichever happens first. When you declare your types using the `Inngest` constructor, `waitForEvent` leverages any types that you have:
+When writing step functions, you can use `waitForEvent` to pause the current function until another event is received or the timeout expires - whichever happens first. When you declare your types using the `Inngest` constructor, `waitForEvent` leverages any types that you have:
 
 <CodeGroup forceTabs filename="inngest/client.ts">
 ```ts {{ title: "v3" }}

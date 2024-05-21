@@ -14,7 +14,7 @@ We recently redesigned the Inngest Dashboard to account for new features (branch
 
 ## Why use the App Router?
 
-Before we dive in, it's good to understand _why_ to use the App Router. [There are several](https://www.youtube.com/watch?v=DrxiNfbr63s) [resources](https://www.youtube.com/watch?v=gSSsZReIFRk) from the Next.js team explaining the benefits of the the new router, but why did _our team_ decide to use it now?
+Before we dive in, it's good to understand _why_ to use the App Router. [There are several](https://www.youtube.com/watch?v=DrxiNfbr63s) [resources](https://www.youtube.com/watch?v=gSSsZReIFRk) from the Next.js team explaining the benefits of the new router, but why did _our team_ decide to use it now?
 
 Our previous app was built using [Create React App](https://create-react-app.dev/) and React Router, so switching to Next.js in general gave us some clear benefits:
 
