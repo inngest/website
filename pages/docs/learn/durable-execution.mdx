@@ -43,8 +43,57 @@ Inngest functions are executed incrementally, _step by step_. As functions are e
 Let's look at an example of a function and walk through how it is executed:
 
 ```typescript
-await step.run("create-user", async () => {
-  const user = await createUser(state);
-  return { user };
-});
+const fn = inngest.createFunction(
+  { id: "import-contacts" },
+  { event: "contacts/csv.uploaded" },
+  // The function handler:
+  async ({ event, step }) => {
+    const rows = await step.run("parse-csv", async () => {
+      return await parseCsv(event.data.fileURI);
+    });
+
+    const normalizedRows = await step.run("normalize-raw-csv", async () => {
+      const normalizedColumnMapping = getNormalizedColumnNames();
+      return normalizeRows(rows, normalizedColumnMapping);
+    });
+
+    const results = await step.run("input-contacts", async () => {
+      return await importContacts(normalizedRows);
+    });
+
+    return { results };
+  }
 ```
+
+### Initial execution
+
+1. When the function is first called, the _function handler_ is called with only the `event` payload data sent.
+2. When the first step is discovered, the `"parse-csv"` step is run. As the step has not been executed before, the step's code (the callback function) is run and the result is captured.
+3. The function does not continue executing beyond this step. Each SDK uses a different method to interrupt the function execution before running any more code in your function handler.
+4. Internally, the step's id (`"parse-csv"`) is hashed as the state identifier to be used in future executions. Additionally, the steps' index (`0` in this case) is also included in the result.
+5. The result is sent back to Inngest and persisted in the function state store.
+
+### Secondary executions - Memoization of steps
+
+Steps executed after the first step leverage the state of previous executions and memoization. Here's how it works:
+
+6. The function is re-executed, this time with the `event` payload data and the state of the previous execution in JSON.
+7. The next step is discovered (`"parse-csv"`).
+8. The previous result is found in the state of previous executions. Internally, the SDK uses the hash of the step name to look up the result in the state data.
+9. The step's code is not executed, instead the SDK injects the result into the return value of `step.run`, (in this example, the data will be returned as `rows`).
+10. The function continues execution until the next step is discovered (`"normalize-raw-csv"`).
+11. The step's code is executed and the result is returned to Inngest (in the same approach as steps 2-5 above).
+
+### Error handling
+
+Some steps may throw errors or exceptions during execution. Here's how error handling works within function execution:
+
+12. If an error occurs during the execution of a step (for example, `"input-contacts"`), the function is interrupted and the error is caught by the SDK.
+13. The error is serialized and returned to Inngest. The number of attempts are logged and the error is persisted in the function state store.
+14. Depending on the number of attempts configured for the function, the function may be retried (see: [Error handling]((/docs/guides/error-handling))):
+    * If the the function _has not_ exhausted the number of attempts, the function is re-executed from the point of failure with the state of all previous step executions. The step is re-executed and follows the same process as above (see: steps 6-11).
+    * If the function _has_ exhausted the number of attempts, the function is re-executed with the error thrown. The function can then catch and handle the error as desired (see: [Handling a failing step](https://www.inngest.com/docs/guides/error-handling#handling-a-failing-step)).
+
+
+{/* TODO - Add what happens when steps are re-ordered (or added) */}
+{/* TODO - Add what happens when a step is removed */}
