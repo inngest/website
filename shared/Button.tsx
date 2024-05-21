@@ -27,8 +27,11 @@ export function Button({
   };
 
   const variants = {
-    primary: "text-white bg-indigo-500 hover:bg-indigo-400",
-    secondary: "bg-slate-800/80 hover:bg-slate-700/80 text-white",
+    primary: "text-white bg-indigo-500 hover:bg-indigo-400 hover:text-white",
+    secondary: `
+      bg-slate-300/80 hover:bg-slate-300/100 text-slate-900 hover:text-slate-900,
+      dark:bg-slate-600/80 dark:hover:bg-slate-500/100 dark:text-white dark:hover:text-white
+    `,
     tertiary:
       "bg-slate-100 hover:bg-slate-300 text-slate-800 dark:bg-slate-800  dark:hover:bg-slate-700 dark:text-slate-100",
   };

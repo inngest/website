@@ -126,6 +126,7 @@ function PageLink({ label, page, previous = false }) {
         variant="secondary"
         arrow={previous ? "left" : "right"}
         size="sm"
+        className="not-prose"
       >
         {label}
       </Button>
