@@ -55,7 +55,7 @@ We think that this is a simple, yet powerful, workflow for developers and [the c
 curl -sfL https://cli.inngest.com/install.sh | sh && sudo mv ./inngest /usr/local/bin/inngest
 ```
 
-2. Navigate to your project repo and create a new function and enter a custom name for your event:
+2. Navigate to your project repository and create a new function and enter a custom name for your event:
 
 ```
 cd my-project

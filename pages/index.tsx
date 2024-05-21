@@ -107,7 +107,7 @@ export default function Home() {
           text="The DX and visibility with Inngest is really incredible. We are able to develop functions locally easier and faster that with our previous queue. Also, Inngest's tools give us the visibility to debug issues much quicker than before."
           attribution={{
             name: "Bu Kinoshita",
-            title: "Co-founder @ Resend",
+            title: "Co-founder, Resend",
             logo: "/assets/customers/resend.svg",
           }}
           caseStudy="/customers/resend?ref=homepage"
@@ -121,7 +121,7 @@ export default function Home() {
           text="The DX and code simplicity it brings is unmatched, especially around local development. We're currently working to migrate some of our larger systems over and it’s a joy to see all the complexity it replaces, and with a much better story around partial failures and retries."
           attribution={{
             name: "Justin Cypret",
-            title: "Director of Engineer @ Zamp",
+            title: "Director of Engineering, Zamp",
             logo: "/assets/customers/zamp-logo.svg",
           }}
         />
@@ -131,12 +131,13 @@ export default function Home() {
 
       <div className="my-32">
         <Quote
-          text="We switched from our PostgreSQL backed queue to Inngest in less than a day. Their approach is idiomatic with a great developer experience. Inngest allowed us to stop worrying about scalability and stability."
+          text={`Configuration with Inngest is really easy. When we read our code base, we can immediately understand what it is and what it does. We are going to be gradually migrating most features to Inngest.`}
           attribution={{
-            name: "Peter Pistorius",
-            title: "CEO @ Snaplet",
-            avatar: "/assets/customers/snaplet-peter-pistorius.png",
+            name: "Johan Preynat",
+            title: "Engineering Lead, GitBook",
+            avatar: "/assets/customers/gitbook/johan-preynat.jpeg",
           }}
+          caseStudy="/customers/gitbook?ref=homepage"
         />
       </div>
 
@@ -146,11 +147,11 @@ export default function Home() {
 
       <div className="my-32">
         <Quote
-          text={`I can't stress enough how integral Inngest has been to our operations. It's more than just "battle tested" for us—it's been a game-changer and a cornerstone of our processes.`}
+          text="We switched from our PostgreSQL backed queue to Inngest in less than a day. Their approach is idiomatic with a great developer experience. Inngest allowed us to stop worrying about scalability and stability."
           attribution={{
-            name: "Robin Curbelo",
-            title: "Engineer @ Niftykit",
-            avatar: "/assets/customers/niftykit-robin-curbelo.jpg",
+            name: "Peter Pistorius",
+            title: "CEO, Snaplet",
+            avatar: "/assets/customers/snaplet-peter-pistorius.png",
           }}
         />
       </div>
