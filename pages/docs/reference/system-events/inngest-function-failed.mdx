@@ -1,10 +1,10 @@
 # `inngest/function.failed` {{ className: "not-prose" }}
 
-The `inngest/function.failed` event is triggered whenever any single function fails in your Inngest [environment]((/docs/platform/environments)).
+The `inngest/function.failed` event is sent whenever any single function fails in your Inngest [environment]((/docs/platform/environments)).
 
-This event can be used to track all function failures in a single place, enabling you to send metrics, alerts, or events to external systems like Datadog or Sentry for all of your Inngest functions.
+This event can be used to track all function failures in a single place, enabling you to send metrics, alerts, or events to [external systems like Datadog or Sentry](/docs/examples/track-failures-in-datadog) for all of your Inngest functions.
 
-The TypeScript SDK offers a short hand `onFailure` handler that can be used to handle this event for a specific function.
+The TypeScript SDK offers a shorthand `onFailure` handler that can be used to handle this event for a specific function.
 
 ## The event payload
 
@@ -22,13 +22,13 @@ The TypeScript SDK offers a short hand `onFailure` handler that can be used to h
         Data about the error payload as returned from the failed function.
         <Properties nested>
           <Property name="message" type="string" attribute>
-            The error message when an error is caught
+            The error message when an error is caught.
           </Property>
           <Property name="name" type="string" attribute>
-            The name of the error, defaulting to "Error" if unspecified
+            The name of the error, defaulting to "Error" if unspecified.
           </Property>
           <Property name="stack" type="string">
-            The stack trace of the error, if supported by the language SDK
+            The stack trace of the error, if supported by the language SDK.
           </Property>
         </Properties>
       </Property>
@@ -36,10 +36,10 @@ The TypeScript SDK offers a short hand `onFailure` handler that can be used to h
         The failed function's original event payload.
       </Property>
       <Property name="function_id" type="string" attribute>
-        The failed function's [`id`](/docs/reference/functions/create#configuration)
+        The failed function's [`id`](/docs/reference/functions/create#configuration).
       </Property>
       <Property name="run_id" type="string" attribute>
-        The failed function's function run ID.
+        The failed function's [run ID](/docs/reference/functions/create#run-id).
       </Property>
     </Properties>
   </Property>
