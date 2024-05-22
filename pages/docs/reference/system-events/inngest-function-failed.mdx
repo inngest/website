@@ -4,7 +4,7 @@ The `inngest/function.failed` event is sent whenever any single function fails i
 
 This event can be used to track all function failures in a single place, enabling you to send metrics, alerts, or events to [external systems like Datadog or Sentry](/docs/examples/track-failures-in-datadog) for all of your Inngest functions.
 
-The TypeScript SDK offers a shorthand `onFailure` handler that can be used to handle this event for a specific function.
+Our SDKs offer shorthand ["on failure"](#related-resources) handler options that can be used to handle this event for a specific function.
 
 ## The event payload
 
@@ -83,5 +83,6 @@ The TypeScript SDK offers a shorthand `onFailure` handler that can be used to ha
 
 ## Related resources
 
-* [TypeScript SDK: onFailure](/docs/reference/functions/handling-failures)
+* [TypeScript SDK: onFailure handler](/docs/reference/functions/handling-failures)
+* [Python SDK: on_failure handler](/docs/reference/python/functions/create#on_failure)
 * [Example: Track all function failures in Datadog](/docs/examples/track-failures-in-datadog)
