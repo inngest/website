@@ -883,6 +883,16 @@ const sectionReference: NavGroup[] = [
       },
     ],
   },
+  {
+    title: "System events",
+    links: [
+      {
+        title: "inngest/function.failed",
+        href: "/docs/reference/system-events/inngest-function-failed",
+        className: "font-mono",
+      },
+    ],
+  },
 ];
 
 function linkSearch(groups: NavGroup[], pathname) {
