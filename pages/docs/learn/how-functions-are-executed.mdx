@@ -1,6 +1,6 @@
-export const description = 'Learn how Durable Execution works with Inngest. '
+export const description = "Learn how Inngest works and it's approach to Durable Execution."
 
-# How Durable Execution works with Inngest
+# How Inngest functions are executed (Durable Execution)
 
 One of the core features of Inngest is Durable Execution. Durable Execution allows your functions to be fault-tolerant and resilient to failures. The end result is that your code, and therefore, your overall application, is more reliable.
 
@@ -90,7 +90,7 @@ Some steps may throw errors or exceptions during execution. Here's how error han
 
 12. If an error occurs during the execution of a step (for example, `"input-contacts"`), the function is interrupted and the error is caught by the SDK.
 13. The error is serialized and returned to Inngest. The number of attempts are logged and the error is persisted in the function state store.
-14. Depending on the number of attempts configured for the function, the function may be retried (see: [Error handling]((/docs/guides/error-handling))):
+14. Depending on the number of attempts configured for the function, the function may be retried (see: [Error handling](/docs/guides/error-handling)):
     * If the the function _has not_ exhausted the number of attempts, the function is re-executed from the point of failure with the state of all previous step executions. The step is re-executed and follows the same process as above (see: steps 6-11).
     * If the function _has_ exhausted the number of attempts, the function is re-executed with the error thrown. The function can then catch and handle the error as desired (see: [Handling a failing step](https://www.inngest.com/docs/guides/error-handling#handling-a-failing-step)).
 
