@@ -99,3 +99,7 @@ Some steps may throw errors or exceptions during execution. Here's how error han
 {/* TODO - Add what happens when steps are re-ordered (or added) */}
 {/* TODO - Add what happens when a step is removed */}
 {/* TODO - Add how parallel steps are executed differently (more complex topic) */}
+
+## Conclusion
+
+Inngest functions use steps and memoization to execute functions incrementally and durably. This approach ensures that functions are fault-tolerant and resilient to failures. By breaking down functions into steps, Inngest functions can be retried and resumed from the point of failure. This approach ensures that your code is more reliable and can handle transient errors gracefully.
