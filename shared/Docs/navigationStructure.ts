@@ -62,9 +62,20 @@ const sectionGettingStarted: NavGroup[] = [
         title: "Local Development",
         href: `/docs/local-development`,
       },
+
       {
         title: "Security",
         href: `/docs/security`,
+      },
+    ],
+  },
+  {
+    title: "How Inngest works",
+    defaultOpen: true,
+    links: [
+      {
+        title: "Function execution",
+        href: `/docs/learn/how-functions-are-executed`,
       },
     ],
   },
