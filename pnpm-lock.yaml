@@ -53,6 +53,9 @@ dependencies:
   '@sindresorhus/slugify':
     specifier: 2.1.1
     version: 2.1.1
+  '@types/mdx':
+    specifier: 2.0.13
+    version: 2.0.13
   '@vercel/og':
     specifier: 0.0.22
     version: 0.0.22
@@ -2276,7 +2279,7 @@ packages:
     resolution: {integrity: sha512-hZ3ex7exYLJn6FfReq8yTvA6TE53uW9UHJQM9IlSauOuS55J9y8RtA7W+dzp6Yrzr00/U1sd7q+Wf61q6SfiTQ==}
     dependencies:
       '@types/estree-jsx': 1.0.0
-      '@types/mdx': 2.0.3
+      '@types/mdx': 2.0.13
       estree-util-build-jsx: 2.2.0
       estree-util-is-identifier-name: 2.0.1
       estree-util-to-js: 1.1.0
@@ -2309,7 +2312,7 @@ packages:
     peerDependencies:
       react: '>=16'
     dependencies:
-      '@types/mdx': 2.0.3
+      '@types/mdx': 2.0.13
       '@types/react': 18.0.26
       react: 18.2.0
     dev: false
@@ -4495,8 +4498,8 @@ packages:
     dependencies:
       '@types/unist': 2.0.6
 
-  /@types/mdx@2.0.3:
-    resolution: {integrity: sha512-IgHxcT3RC8LzFLhKwP3gbMPeaK7BM9eBH46OdapPA7yvuIUJ8H6zHZV53J8hGZcTSnt95jANt+rTBNUUc22ACQ==}
+  /@types/mdx@2.0.13:
+    resolution: {integrity: sha512-+OWZQfAYyio6YkJb3HLxDrvnx6SWWDbC0zVPfBRzUk0/nqoDyf6dNxQi3eArPe8rJ473nobTMQ/8Zk+LxJ+Yuw==}
     dev: false
 
   /@types/mime@3.0.1:

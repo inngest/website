@@ -1,0 +1,31 @@
+export const test = "Message Queue vs. Message Bus";
+
+# Message Queue vs. Message Bus
+
+Understand when to use a message queue vs a message bus
+
+## What is a Message Queue
+
+A message queue receives events, buffers them, and allows a worker to read from the queue to process the events. This enables you to implement things like ordering, coupling, and retries.
+
+## What is a Message Bus
+
+A message bus (or, message broker, event bus, or event broker) accepts events to be received by other services. Within a message bus, you send events to a "topic" rather than a queue which is then received by one or more services. This enables you to implement fan-out, delivery guarantees, real-time distribution, and scale
+
+## Simplified Message Brokers and Queues with Inngest
+
+Inngest is an application reliability layer for developers building AI-based apps. It combines an event stream, queues, and durable execution into a single layer to make it easier for you to build more complex flows.
+
+### How It Works
+
+When you send events to Inngest via HTTP, they are received by a broker which processes the event. Step functions are then scheduled to run via a queue. This means you can fan-out from one event and run many functions, and you can also aggregate and stream all events from your systems to build out async logic.
+
+### See It In Action
+
+TODO do we have a short video demo of this??
+
+## Get Started with Inngest Today
+
+To start using Inngest's combined message broker and queue in your application, get started with Inngest's free and open source dev server today. Learn more about the practical differences between message queues and brokers here.
+
+TODO Quickstart

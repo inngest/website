@@ -41,6 +41,7 @@
     "@remixicon/react": "4.2.0",
     "@rive-app/react-canvas": "4.4.0",
     "@sindresorhus/slugify": "2.1.1",
+    "@types/mdx": "2.0.13",
     "@vercel/og": "0.0.22",
     "acorn": "8.8.1",
     "algoliasearch": "4.14.3",
