@@ -36,6 +36,9 @@ const permanentRedirects = [
   ["/uses/zero-infra-llm-ai", "/ai"],
   ["/uses/internal-tools", "/uses/workflow-engine"],
   ["/uses/user-journey-automation", "/blog/lifecycle-emails-with-resend"],
+
+  // new IA
+  ["/docs/security", "docs/learn/security"],
 ];
 
 async function redirects() {
