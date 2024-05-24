@@ -77,6 +77,10 @@ const sectionGettingStarted: NavGroup[] = [
         title: "Function execution",
         href: `/docs/learn/how-functions-are-executed`,
       },
+      {
+        title: "Versioning",
+        href: `/docs/learn/versioning`,
+      },
     ],
   },
   {
