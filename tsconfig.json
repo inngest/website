@@ -24,7 +24,6 @@
         "name": "next"
       }
     ],
-    "types": ["mdx"],
     "strictNullChecks": false
   },
   "include": [

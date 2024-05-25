@@ -1,4 +1,5 @@
 "use client";
+
 import {
   createContext,
   useContext,
@@ -120,5 +121,8 @@ export function SectionProvider({ sections, children }) {
 
 export function useSectionStore(selector) {
   let store = useContext(SectionStoreContext);
+  if (!store) {
+    throw new Error('Include SectionProvider within your page component')
+  }
   return useStore(store, selector);
 }

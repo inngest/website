@@ -1,5 +1,9 @@
 const colors = require("tailwindcss/colors");
 
+const theme2024 = {
+  black: "#010101",
+};
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: "class",
@@ -21,6 +25,7 @@ module.exports = {
           1000: "#080D19",
           1050: "#050911",
         },
+        inngestBlack: theme2024.black,
       },
       fontSize: {
         "5xl": ["3rem", "1.3"],

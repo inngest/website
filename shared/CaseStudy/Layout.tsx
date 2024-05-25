@@ -7,6 +7,7 @@ import Container from "src/shared/layout/Container";
 import Footer from "src/shared/Footer";
 import FooterCallout from "src/shared/Footer/FooterCallout";
 import { Button } from "../Button";
+import { SectionProvider } from "shared/Docs/SectionProvider";
 
 export type Props = {
   children: React.ReactNode;
@@ -105,9 +106,11 @@ export function Layout({
                 </blockquote>
               )}
 
-              <div className="md:max-w-[70ch] prose mt-12 mb-20 prose-img:rounded-lg prose-code:bg-slate-800 prose-code:tracking-tight text-slate-300 prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline hover:prose-a:text-white prose-a:font-medium prose-a:transition-all prose-invert blog-content">
-                {children}
-              </div>
+              <SectionProvider sections={[]}>
+                <div className="md:max-w-[70ch] prose mt-12 mb-20 prose-img:rounded-lg prose-code:bg-slate-800 prose-code:tracking-tight text-slate-300 prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline hover:prose-a:text-white prose-a:font-medium prose-a:transition-all prose-invert blog-content">
+                  {children}
+                </div>
+              </SectionProvider>
             </article>
             <p>
               <Link
