@@ -878,6 +878,15 @@ const sectionReference: NavGroup[] = [
           },
         ],
       },
+      {
+        title: "Migrations",
+        links: [
+          {
+            title: "v0.3 to v0.4",
+            href: `/docs/reference/python/migrations/v0.3-to-v0.4`,
+          },
+        ],
+      },
     ],
   },
   {
