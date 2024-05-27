@@ -222,7 +222,7 @@ inngest.createFunction(
 
 ## Stack traces
 
-When calling out to other functions returning Promises, it can be helpful to await the Promise to ensure that the stack trace is preserved. This applies to functions executing in different cycles of the event loop, for example, when calling out to a database or an external API. This is especially useful when debugging errors in production.
+When calling functions that return Promises, await the Promise to ensure that the stack trace is preserved. This applies to functions executing in different cycles of the event loop, for example, when calling a database or an external API. This is especially useful when debugging errors in production.
 
 <CodeGroup>
   ```ts {{ title: "Returning Promise" }}
