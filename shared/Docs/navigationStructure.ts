@@ -100,36 +100,48 @@ const sectionGettingStarted: NavGroup[] = [
 ];
 const sectionGuides: NavGroup[] = [
   {
-    title: "Patterns",
+    title: "Functions",
     defaultOpen: true,
     links: [
       {
+        title: "Overview",
+        href: `/docs/functions/overview`,
+      },
+      {
         title: "Background jobs",
         href: `/docs/guides/background-jobs`,
+      },
+      {
+        title: "Scheduled functions",
+        href: `/docs/guides/scheduled-functions`,
       },
       {
         title: "Enqueueing future jobs",
         href: `/docs/guides/enqueueing-future-jobs`,
       },
       {
-        title: "Parallelize steps",
-        href: `/docs/guides/step-parallelism`,
-      },
-      {
         title: "Fan-out (one-to-many)",
         href: `/docs/guides/fan-out-jobs`,
       },
       {
-        title: "Invoking functions directly",
-        href: `/docs/guides/invoking-functions-directly`,
+        title: "Multi-step functions",
+        href: `/docs/functions/multi-step`,
+      },
+      {
+        title: "Parallelizing steps",
+        href: `/docs/guides/step-parallelism`,
       },
       {
         title: "Sending events from functions",
         href: `/docs/guides/sending-events-from-functions`,
       },
       {
-        title: "Scheduled functions",
-        href: `/docs/guides/scheduled-functions`,
+        title: "Using multiple triggers",
+        href: `/docs/guides/multiple-triggers`,
+      },
+      {
+        title: "Invoking functions directly",
+        href: `/docs/guides/invoking-functions-directly`,
       },
     ],
   },
@@ -190,10 +202,6 @@ const sectionGuides: NavGroup[] = [
       {
         title: "Writing expressions",
         href: `/docs/guides/writing-expressions`,
-      },
-      {
-        title: "Using multiple triggers",
-        href: `/docs/guides/multiple-triggers`,
       },
       {
         title: "FAQs",
