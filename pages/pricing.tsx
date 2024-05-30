@@ -326,7 +326,7 @@ const FEATURES: Feature[] = [
       [PLAN_NAMES.startup]: "6 months",
       [PLAN_NAMES.enterprise]: "1 year",
     },
-    infoUrl: "/docs/guides/enqueueing-future-jobs?ref=pricing",
+    infoUrl: "/docs/guides/delayed-functions?ref=pricing",
   },
   {
     name: "Features",
@@ -626,7 +626,7 @@ export default function Pricing() {
 
             <p className="mt-8 text-lg font-medium max-w-4xl mb-16">
               <a
-                href="/docs/functions/multi-step"
+                href="/docs/guides/multi-step-functions"
                 className="text-white underline"
               >
                 Steps
@@ -743,7 +743,7 @@ export default function Pricing() {
                   . Read more in our{" "}
                   <a
                     className="text-indigo-400 hover:text-white hover:underline hover:decoration-white transition-all"
-                    href="/docs/functions/multi-step"
+                    href="/docs/guides/multi-step-functions"
                   >
                     documentation
                   </a>
@@ -782,7 +782,7 @@ export default function Pricing() {
                   wait for additional input. Read more about steps{" "}
                   <a
                     className="text-indigo-400 hover:text-white hover:underline hover:decoration-white transition-all"
-                    href="/docs/functions/multi-step"
+                    href="/docs/guides/multi-step-functions"
                   >
                     here
                   </a>

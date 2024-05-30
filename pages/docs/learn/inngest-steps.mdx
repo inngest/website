@@ -1,18 +1,22 @@
 import IconConcurrency from 'src/shared/Icons/FlowControl/Concurrency';
-import IconThrottle from 'src/shared/Icons/FlowControl/Throttle';
-import IconRateLimit from 'src/shared/Icons/FlowControl/RateLimit';
-import IconDebounce from 'src/shared/Icons/FlowControl/Debounce';
-import IconPriority from 'src/shared/Icons/FlowControl/Priority';
-import IconIdempotency from 'src/shared/Icons/FlowControl/Idempotency';
-import IconBatching from 'src/shared/Icons/FlowControl/Batching';
 
-export const description = 'Learn how to manage how functions are executed with flow control.';
+export const description = 'Learn what Inngest functions are and of what they are capable.';
 
-# Inngest Functions
+# Inngest Steps
 
-Inngest functions are a core part of the Inngest platform. They enable developers to create and manage event-driven workflows. Inngest functions offer a flexible way to build and manage event-driven workflows and background tasks, providing robust tools for retrying, scheduling, and coordinating complex sequences of operations.
+Steps are fundamental building blocks in Inngest functions. Each step represents individual task (or other unit of work) within a function that can be executed independently. They are crucial because they allow functions to run specific tasks in a controlled and sequential (or parallel) manner. You can build complex workflows by chaining together simple, discrete operations.
 
-This page covers components of an Inngest function, as well as introduces different kinds of functions. If you'd like to learn more about Inngest's execution model, check the ["How Inngest functions are executed"](/docs/learn/how-functions-are-executed) page.
+## Benefits of Steps
+
+- Error Isolation: By breaking down functions into smaller steps, errors can be isolated and handled more effectively, minimizing the impact on the overall workflow.
+- Independent Testing: Each step can be independently tested and debugged, ensuring more robust and reliable applications.
+- Retry Mechanism: Failing steps can be retried and recovered without re-executing already successful steps.
+- Improved Reliability: Structured steps enhance the overall reliability of applications by allowing precise control and handling of each task within a function.
+- Enhanced Error Handling: Capturing and managing errors at the step level leads to better error recovery and resilience in applications.
+
+By breaking down a function into smaller, manageable steps, errors can be isolated and handled more effectively, which minimizes the impact on the overall workflow. This means that each failing step captures any error or exception and can be independently tested, debugged, retried, and recovered. It also will not be re-executed if it has already been successfully executed, even when another steps failed.
+
+If you'd like to learn more about how Inngest steps are executed, check the ["How Inngest functions are executed"](/docs/learn/how-functions-are-executed) page.
 
 ## Anatomy of an Inngest function
 
@@ -42,6 +46,10 @@ The above code can be translated as:
 
 Let's have a look at each of this function's components.
 
+<Callout>
+💡 You can test Inngest functions using standard tooling such as Jest or Mocha. To do so, export the job code and run standard unit tests.
+</Callout>
+
 ### Config
 
 The first parameter of the `createFunction` method specifies Inngest function's configuration. In the above example, the `id` is specified, which is a unique identifier for the function. It is the only required parameter of the configuration.
@@ -68,7 +76,7 @@ To summarize, the handler allows you to define detailed logic that should happen
 
 ## Kinds of Inngest functions
 
-### <a href="/docs/guides/background-functions" className="flex items-center gap-4"><IconConcurrency size="2rem"/> Background functions</a> {{anchor: false}}
+### <a href="/docs/guides/background-jobs" className="flex items-center gap-4"><IconConcurrency size="2rem"/> Background functions</a> {{anchor: false}}
 
 Long tasks can be executed outside the critical path of the main flow, which improves app's performance and reliability. Perfect for data pipelines or data processing.
 
@@ -78,13 +86,13 @@ Inngest's scheduled functions enable you to run tasks automatically at specified
 
 ### <a href="/docs/guides/delayed-functions" className="flex items-center gap-4"><IconConcurrency size="2rem"/> Delayed functions</a> {{anchor: false}}
 
-You can schedule an Inngest function to run at a specific time in the future. The task will be executed exactly when needed without manual intervention. Perfect for actions like sending follow-up emails or processing delayed orders.
+You can equeue an Inngest function to run at a specific time in the future. The task will be executed exactly when needed without manual intervention. Perfect for actions like sending follow-up emails or processing delayed orders.
 
 ### <a href="/docs/guides/multi-step-functions" className="flex items-center gap-4"><IconConcurrency size="2rem"/> Multi-step functions</a> {{anchor: false}}
 
 Multi-step functions allow you to create complex workflows. You can coordinate between multiple steps, including waiting for other events, delaying execution, or running code conditionally based on previous steps or incoming events. Each step is individually retriable, making the workflow robust against failures. Ideal for scenarios like onboarding flows or conditional notifications.
 
-### <a href="/docs/guides/fan-out-functions" className="flex items-center gap-4"><IconConcurrency size="2rem"/> Fan-out functions</a> {{anchor: false}}
+### <a href="/docs/guides/fan-out-jobs" className="flex items-center gap-4"><IconConcurrency size="2rem"/> Fan-out functions</a> {{anchor: false}}
 
 Inngest's fan-out jobs enable a single event to trigger multiple functions simultaneously. Ideal for parallel processing tasks, like sending notifications to multiple services or processing data across different systems.
 
@@ -96,4 +104,4 @@ This is useful when you need to break down complex workflows into simpler, manag
 
 ## Further reading
 
-- ["How Inngest functions are executed"](/docs/learn/how-functions-are-executed): Learn more about Inngest's execution model.
+- ["How Inngest functions are executed"](/docs/learn/how-functions-are-executed): Learn more about Inngest's execution model, including how steps are handled.
