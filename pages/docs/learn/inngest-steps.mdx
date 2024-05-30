@@ -1,106 +1,141 @@
 import IconConcurrency from 'src/shared/Icons/FlowControl/Concurrency';
 
-export const description = 'Learn what Inngest functions are and of what they are capable.';
+export const description = 'Learn about Inngest steps and their methods.';
 
 # Inngest Steps
 
-Steps are fundamental building blocks in Inngest functions. Each step represents individual task (or other unit of work) within a function that can be executed independently. They are crucial because they allow functions to run specific tasks in a controlled and sequential (or parallel) manner. You can build complex workflows by chaining together simple, discrete operations.
+Steps are fundamental building blocks in Inngest functions. Each step represents individual task (or other unit of work) within a function that can be executed independently.
 
-## Benefits of Steps
+Steps are crucial because they allow functions to run specific tasks in a controlled and sequential (or parallel) manner. You can build complex workflows by chaining together simple, discrete operations.
 
-- Error Isolation: By breaking down functions into smaller steps, errors can be isolated and handled more effectively, minimizing the impact on the overall workflow.
-- Independent Testing: Each step can be independently tested and debugged, ensuring more robust and reliable applications.
-- Retry Mechanism: Failing steps can be retried and recovered without re-executing already successful steps.
-- Improved Reliability: Structured steps enhance the overall reliability of applications by allowing precise control and handling of each task within a function.
-- Enhanced Error Handling: Capturing and managing errors at the step level leads to better error recovery and resilience in applications.
+On this page, you will learn about the benefits of using steps, and get an overview of the available step methods.
 
-By breaking down a function into smaller, manageable steps, errors can be isolated and handled more effectively, which minimizes the impact on the overall workflow. This means that each failing step captures any error or exception and can be independently tested, debugged, retried, and recovered. It also will not be re-executed if it has already been successfully executed, even when another steps failed.
+## Benefits of Using Steps
+
+- **Improved reliability**: structured steps enable precise control and handling of each task within a function.
+- **Error handling**: capturing and managing errors at the step level means better error recovery.
+- **Retry mechanism**: failing steps can be retried and recovered independently, without re-executing other successful steps.
+- **Independent testing**: each step can be tested and debugged independently from others.
+- **Improved code readability**: modular approach makes code easier to navigate and refactor.
 
 If you'd like to learn more about how Inngest steps are executed, check the ["How Inngest functions are executed"](/docs/learn/how-functions-are-executed) page.
 
-## Anatomy of an Inngest function
+## Available Step Methods
 
-Let's have a look at the following Inngest function:
+### <a href="/docs/reference/functions/step-run" className="flex items-center gap-4"><IconConcurrency size="2rem"/><pre>step.run()</pre></a> {{anchor: false}}
 
-```ts
-import { inngest } from "./client";
+This method executes a defined piece of code. Use it to run synchronous or asynchronous code as a retriable step in your function.
 
+```typescript
 export default inngest.createFunction(
-    // config
   { id: "import-product-images" },
-    // trigger (event or cron)
   { event: "shop/product.imported" },
-    // handler function
-    async ({ event, step }) => {
-      // here goes the business logic
+  async ({ event, step }) => {
+    const uploadedImageURLs = await step.run("copy-images-to-s3", async () => {
       return copyAllImagesToS3(event.data.imageURLs);
-      // if you need to perform more than one task,
-      // wrap each one in step.run()
-    };
+    });
+  }
 );
 ```
 
-The above code can be translated as:
+### <a href="/docs/reference/functions/step-sleep" className="flex items-center gap-4"><IconConcurrency size="2rem"/><pre>step.sleep()</pre></a> {{anchor: false}}
 
-> This Inngest function is called `import-product-images`. When an event called `shop/product.imported` is received, run a function called `copyAllImagesToS3`.
+This method pauses execution for a specified duration. Even though it seems like a `setInterval`, your function does not run for that time. Inngest handles the scheduling for you. Use it to add delays or to wait for a specific amount of time before proceeding.
 
-Let's have a look at each of this function's components.
+```typescript
+export default inngest.createFunction(
+  { id: "send-delayed-email" },
+  { event: "app/user.signup" },
+  async ({ event, step }) => {
+    await step.sleep("wait-a-couple-of-days", "2d");
+    // Do something else
+  }
+);
+```
 
-<Callout>
-💡 You can test Inngest functions using standard tooling such as Jest or Mocha. To do so, export the job code and run standard unit tests.
-</Callout>
+### <a href="/docs/reference/functions/step-sleep-until" className="flex items-center gap-4"><IconConcurrency size="2rem"/><pre>step.sleepUntil()</pre></a> {{anchor: false}}
 
-### Config
+This method pauses execution until a specific date time. Any date time string in the format accepted by the Date object, for example `YYYY-MM-DD` or `YYYY-MM-DDHH:mm:ss`.
 
-The first parameter of the `createFunction` method specifies Inngest function's configuration. In the above example, the `id` is specified, which is a unique identifier for the function. It is the only required parameter of the configuration.
+```typescript
+export default inngest.createFunction(
+  { id: "send-scheduled-reminder" },
+  { event: "app/reminder.scheduled" },
+  async ({ event, step }) => {
+    const date = new Date(event.data.remind_at);
+    await step.sleepUntil("wait-for-the-date", date);
+    // Do something else
+  }
+);
+```
 
-You can also provide other [configuration options](/docs/reference/functions/create#configuration), such as `concurrency`, `throttle`, `debounce`, `rateLimit`, `priority`, `batchEvents`, or `idempotency` (preventing duplicate events from triggering the function within 24 hours). You can also specify how many times the function will retry, what callback function will run on failure, and when to cancel the function.
+### <a href="/docs/reference/functions/step-wait-for-event" className="flex items-center gap-4"><IconConcurrency size="2rem"/><pre>step.waitForEvent()</pre></a> {{anchor: false}}
 
-### Trigger
+This method pauses the execution until a specific event is received.
 
-Inngest functions are designed to be triggered by events or crons (schedules). Events can come from various sources like HTTP requests, your own code, or external webhooks. When an event is received, it triggers a corresponding function to execute the tasks defined in the function handler (see the ["Handler" section](/docs/functions/overview#handler) below).
+```typescript
+export default inngest.createFunction(
+  { id: "send-onboarding-nudge-email" },
+  { event: "app/account.created" },
+  async ({ event, step }) => {
+    const onboardingCompleted = await step.waitForEvent(
+      "wait-for-onboarding-completion",
+      { event: "app/onboarding.completed", timeout: "3d", match: "data.userId" }
+    );
+    // Do something else
+  }
+);
+```
 
-Each function needs at least one trigger. However, you can also work with [multiple triggers](/docs/guides/multiple-triggers) to invoke your function whenever any of the events or crons is received.
+### <a href="/docs/reference/functions/step-send-event" className="flex items-center gap-4"><IconConcurrency size="2rem"/><pre>step.sendEvent()</pre></a> {{anchor: false}}
 
-### Handler
+This method sends events to Inngest to invoke functions with a matching event. It is useful when emitting events to trigger other functions or processes, for example in [fan-out functions](/docs/guides/fan-out-jobs). 
 
-A "handler" is the core function that defines what should happen when the function is triggered. In the example above, the handler contains only one function called `copyAllImagesToS3`.
+```typescript
+export default inngest.createFunction(
+  { id: "user-onboarding" },
+  { event: "app/user.signup" },
+  async ({ event, step }) => {
+    // Do something
+    await step.sendEvent("send-activation-event", {
+      name: "app/user.activated",
+      data: { userId: event.data.userId },
+    });
+    // Do something else
+  }
+);
+```
 
-Handler receives context, which includes the event data (like `event.data.imageURLs` in the example above), logging configuration, and tools for managing execution flow (such as `step.run`, `step.sleep()`, or `step.waitForEvent()`.)
+### <a href="/docs/reference/functions/step-invoke" className="flex items-center gap-4"><IconConcurrency size="2rem"/><pre>step.invoke()</pre></a> {{anchor: false}}
 
-<Callout>
-   💡 If your handler contains numerous functions, it is a good practice to wrap each one in a step. In this way, you can manage complex state easier and if any task fails, it will be retried independently from others.
-</Callout>
+This method is used to asynchronously call another Inngest function ([written in any language SDK](/blog/cross-language-support-with-new-sdks)) and handle the result. Invoking other functions allows you to easily re-use functionality and compose them to create more complex workflows or map-reduce type jobs.
 
-To summarize, the handler allows you to define detailed logic that should happen in response to the triggering event.
+This method comes with its own configuration, which enables defining specific settings like concurrency limits.
 
-## Kinds of Inngest functions
+```typescript
+// A function we will call in another place in our app
+const computeSquare = inngest.createFunction(
+  { id: "compute-square" },
+  { event: "calculate/square" },
+  async ({ event }) => {
+    return { result: event.data.number * event.data.number }; // Result typed as { result: number }
+  }
+);
 
-### <a href="/docs/guides/background-jobs" className="flex items-center gap-4"><IconConcurrency size="2rem"/> Background functions</a> {{anchor: false}}
+// In this function, we'll call `computeSquare`
+const mainFunction = inngest.createFunction(
+  { id: "main-function" },
+  { event: "main/event" },
+  async ({ step }) => {
+    const square = await step.invoke("compute-square-value", {
+      function: computeSquare,
+      data: { number: 4 }, // input data is typed, requiring input if it's needed
+    });
 
-Long tasks can be executed outside the critical path of the main flow, which improves app's performance and reliability. Perfect for data pipelines or data processing.
-
-### <a href="/docs/guides/scheduled-functions" className="flex items-center gap-4"><IconConcurrency size="2rem"/> Scheduled functions</a> {{anchor: false}}
-
-Inngest's scheduled functions enable you to run tasks automatically at specified intervals using cron schedules. These functions ensure consistent and timely execution without manual intervention. Perfect for routine operations like sending weekly reports or clearing caches.
-
-### <a href="/docs/guides/delayed-functions" className="flex items-center gap-4"><IconConcurrency size="2rem"/> Delayed functions</a> {{anchor: false}}
-
-You can equeue an Inngest function to run at a specific time in the future. The task will be executed exactly when needed without manual intervention. Perfect for actions like sending follow-up emails or processing delayed orders.
-
-### <a href="/docs/guides/multi-step-functions" className="flex items-center gap-4"><IconConcurrency size="2rem"/> Multi-step functions</a> {{anchor: false}}
-
-Multi-step functions allow you to create complex workflows. You can coordinate between multiple steps, including waiting for other events, delaying execution, or running code conditionally based on previous steps or incoming events. Each step is individually retriable, making the workflow robust against failures. Ideal for scenarios like onboarding flows or conditional notifications.
-
-### <a href="/docs/guides/fan-out-jobs" className="flex items-center gap-4"><IconConcurrency size="2rem"/> Fan-out functions</a> {{anchor: false}}
-
-Inngest's fan-out jobs enable a single event to trigger multiple functions simultaneously. Ideal for parallel processing tasks, like sending notifications to multiple services or processing data across different systems.
-
-## Invoking functions directly
-
-You can [call an Inngest function directly](/docs/guides/invoking-functions-directly) from within your event-driven system by using `step.invoke()`, even across different Inngest SDKs.
-
-This is useful when you need to break down complex workflows into simpler, manageable parts or when you want to leverage existing functionality without duplicating code. Direct invocation is ideal for orchestrating dependent tasks, handling complex business logic, or improving code maintainability and readability.
+    return `Square of 4 is ${square.result}.`; // square.result is typed as number
+  }
+);
+```
 
 ## Further reading
 
