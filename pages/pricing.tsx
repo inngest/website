@@ -340,7 +340,7 @@ const FEATURES: Feature[] = [
   {
     name: "Step functions",
     all: true,
-    infoUrl: "/docs/reference/functions/step-run?ref=pricing",
+    infoUrl: "/docs/learn/inngest-steps?ref=pricing",
   },
   {
     name: "Scheduled functions",

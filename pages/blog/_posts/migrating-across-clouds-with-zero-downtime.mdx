@@ -66,7 +66,7 @@ Today, we simultaneously [announced two new language SDKs](/blog/cross-language-
 
 Thanks to how Inngest works, it’s possible for you to rewrite a function in another programming language, sync the app with a new URL, and state will still be preserved.
 
-How would you do this? For seamless migration, Inngest requires that your app ID and function ID remain the same. State is built up using the output of each [step that is run](/docs/reference/functions/step-run), which is stored using the hash of each step’s ID. If you rewrite your function in another language and ensure step IDs are the same, Inngest’s SDKs will be able to handle the memoization (aka state injection) and carry on where the function left off… in the previous language. It just works!
+How would you do this? For seamless migration, Inngest requires that your app ID and function ID remain the same. State is built up using the output of each [step that is run](/docs/learn/inngest-steps), which is stored using the hash of each step’s ID. If you rewrite your function in another language and ensure step IDs are the same, Inngest’s SDKs will be able to handle the memoization (aka state injection) and carry on where the function left off… in the previous language. It just works!
 
 Here’s an example of two functions in two languages that would be interoperable:
 

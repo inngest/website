@@ -41,6 +41,7 @@ const permanentRedirects = [
   ["/docs/functions", "/docs/learn/inngest-functions"],
   ["/docs/functions/multi-step", "/docs/guides/multi-step-functions"],
   ["/docs/guides/enqueueing-future-jobs", "/docs/guides/delayed-functions"],
+  ["/docs/steps", "/docs/learn/inngest-steps"],
 ];
 
 async function redirects() {
