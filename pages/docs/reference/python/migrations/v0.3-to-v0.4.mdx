@@ -1,7 +1,10 @@
-# v0.3 to v0.4 migration guide
+# Python SDK migration guide: v0.3 to v0.4
 
-This guide will help you migrate your Inngest Python SDK from v0.3 to v0.4 by providing a summary of the breaking changes. The `v0.4` release also includes new features, which can be found in the [release notes](TODO).
+This guide will help you migrate your Inngest Python SDK from v0.3 to v0.4 by providing a summary of the breaking changes.
 
+<Callout variant="info">
+  v0.4 is still in pre-release. Please report any issues you encounter on [GitHub](https://github.com/inngest/inngest-py/issues)
+</Callout>
 
 ## Middleware
 
@@ -39,10 +42,6 @@ class TransformOutputStepInfo:
 
 Its return type is now `None` since modifying data should happen by mutating args.
 
-## Require `timeout` arg in `step.invoke` and `step.invoke_by_id`
-
-When calling `step.invoke` or `step.invoke_by_id`, you must now provide a `timeout` argument. This ensures that the function doesn't hang indefinitely.
-
 ## Removed exports
 
 - `inngest.FunctionID` -- No use case.
@@ -50,7 +49,7 @@ When calling `step.invoke` or `step.invoke_by_id`, you must now provide a `timeo
 
 ## Removed `async_mode` arg in `inngest.django.serve`
 
-This argument is no longer needed since we infer async mode based on the Inngest functions you declare. If you have 1 or more `async` Inngest functions then we'll enable async mode.
+This argument is no longer needed since async mode is inferred based on the Inngest functions you declare. If you have one or more `async` Inngest functions then async mode is enabled.
 
 ## `NonRetriableError`
 
