@@ -394,9 +394,11 @@ export function Navigation(props) {
     () =>
       [
         activeGroup,
-        ...(nestedNavigation?.sectionLinks.filter(
-          (group) => group.defaultOpen
-        ) ?? []),
+        ...(activeGroup
+          ? []
+          : nestedNavigation?.sectionLinks.filter(
+              (group) => group.defaultOpen
+            ) ?? []),
       ]
         .filter(Boolean)
         .map((group) => group.title),
