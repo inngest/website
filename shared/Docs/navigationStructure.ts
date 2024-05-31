@@ -59,12 +59,7 @@ const sectionGettingStarted: NavGroup[] = [
       },
       { title: "Installing the SDK", href: `/docs/sdk/overview` },
       { title: "Serving the API & Frameworks", href: `/docs/sdk/serve` },
-      { title: "Writing Functions", href: `/docs/functions` },
       { title: "Sending Events", href: `/docs/events` },
-      {
-        title: "Multi-step Functions",
-        href: `/docs/guides/multi-step-functions`,
-      },
       { title: "Inngest Apps", href: `/docs/apps` },
       {
         title: "Local Development",

@@ -22,7 +22,25 @@ If you'd like to learn more about how Inngest steps are executed, check the ["Ho
 
 ## Anatomy of an Inngest Step
 
+The first argument of every Inngest step method is an `id`. Each step is treated as a separate job which can be individually retried, debugged, or recovered. Inngest uses the ID to memoize step state across function versions.
 
+```typescript
+export default inngest.createFunction(
+  { id: "import-product-images" },
+  { event: "shop/product.imported" },
+  async ({ event, step }) => {
+    const uploadedImageURLs = await step.run(
+      // step ID
+      "copy-images-to-s3", 
+      // other arguments, in this case: a handler
+      async () => {
+        return copyAllImagesToS3(event.data.imageURLs);
+    });
+  }
+);
+```
+
+The ID is also used as an identifier in the [Inngest Dev Server](/docs/local-development) for you to quickly find a specific step.
 
 ## Available Step Methods
 
