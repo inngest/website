@@ -19,7 +19,7 @@ The example below shows a background job that uses an event (here called `user/c
 👉 To be able to use the code below, remember to make first [serve your functions in your Inngest API](/docs/sdk/serve) to make it available to Inngest.
 </aside>
 
-### 1. Create the function that runs in the background
+### 1. Create a function that runs in the background
 
 <Row>
   <Col>
@@ -81,7 +81,7 @@ export const sendSignUpEmail = inngest.createFunction(
   </Col>
 </Row>
 
-### 2. Trigger the Function
+### 2. Trigger the function
 
 Your `sendSignUpEmail` function will be triggered whenever Inngest receives an event called `user/created`. is received. You send this event to Inngest like so:
 
