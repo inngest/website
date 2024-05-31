@@ -1,49 +1,51 @@
-# Background jobs
-This guide will walk you through creating background jobs with retries in a few minutes.  Background tasks in Inngest are easy because:
+export const description = `Define background jobs in just a few lines of code.`
 
-- You don't need to create queues, workers, or subscriptions
-- You can run background jobs on serverless functions without setting up infrastructure
+# Background jobs
+This guide will walk you through creating background jobs with retries in a few minutes.
+
+By running background tasks in Inngest:
+
+- You don't need to create queues, workers, or subscriptions.
+- You can run background jobs on serverless functions without setting up infrastructure.
 - You can enqueue jobs to run in the future, similar to a task queue, without any configuration.
 
 ## How to create background jobs
 
-There are two parts to background jobs:
+Background jobs in Inngest are executed in response to a trigger (an event or cron).
 
-1. Creating the function that runs in the background
-2. Triggering the function
+The example below shows a background job that uses an event (here called `user/created`) to send an email to new signups. It consists of two parts: creating the function that runs in the background and triggering the function.
 
-Let's get started on a background job that sends an email to new signups. This code creates
-a new Inngest function [as outlined in the function reference](/docs/reference/functions/create):
+<aside>
+👉 To be able to use the code below, remember to make first [serve your functions in your Inngest API](/docs/sdk/serve) to make it available to Inngest.
+</aside>
 
+### 1. Create the function that runs in the background
+
+<Row>
+  <Col>
+Let's walk through the code step by step:
+1. We [create a new Inngest function](/docs/reference/functions/create), which will run in the background any time the `user/created` event is sent to Inngest.
+2. We send an email reliably using the [`step.run()`](/docs/reference/functions/step-run) method. Every [Inngest step](/docs/steps) is automatically retried upon failure.
+3. We pause the execution of the function until a specific date using [`step.sleepUntil()`](/docs/reference/functions/step-sleep-until). The function will be resumed automatically, across server restarts or serverless functions. You don't have to worry about scale, memory leaks, connections, or restarts.
+4. We resume execution and perform other tasks.
+  </Col>
+<Col>
 <CodeGroup>
 ```ts {{ title: "v3" }}
 import { Inngest } from "inngest";
-
 const inngest = new Inngest({ id: "signup-flow" });
 
-export const fn = inngest.createFunction(
+export const sendSignUpEmail = inngest.createFunction(
   { id: "send-signup-email" },
-  { event: "user/created" }, // Trigger
+  { event: "user/created" },
   ({ event, step }) => {
-
-    // This runs in the background any time the `user/created` event is
-    // sent to Inngest.
-    //
-    // Whatever event data you send is accessible within `event`.
-
     await step.run("send-the-user-a-signup-email", async () => {
-      // Reliably send an email.  Anything in `step.run` automatically retries
       await sesclient.clientsendEmail({
         to: event.data.user_email,
         subject: "Welcome to Inngest!"
         message: "...",
       });
     });
-
-    // You can schedule work for the future by sleeping within functions.
-    // NOTE: This actually *****stops***** functions and continues execution automatically,
-    // across server restarts or serverless functions.  You don't have to worry about
-    // scale, memory leaks, connections, or restarts.
     await step.sleepUntil("wait-for-the-future", "2023-02-01T16:30:00");
 
     await step.run("do-some-work-in-the-future", async () => {
@@ -54,32 +56,19 @@ export const fn = inngest.createFunction(
 ```
 ```ts {{ title: "v2" }}
 import { Inngest } from "inngest";
-
 const inngest = new Inngest({ name: "Signup flow" });
 
-export const fn = inngest.createFunction(
+export const sendSignUpEmail = inngest.createFunction(
   { name: "Send signup email" },
-  { event: "user/created" }, // Trigger
+  { event: "user/created" },
   ({ event, step }) => {
-
-    // This runs in the background any time the `user/created` event is
-    // sent to Inngest.
-    //
-    // Whatever event data you send is accessible within `event`.
-
     await step.run("send the user a signup email", async () => {
-      // Reliably send an email.  Anything in `step.run` automatically retries
       await sesclient.clientsendEmail({
         to: event.data.user_email,
         subject: "Welcome to Inngest!"
         message: "...",
       });
     });
-
-    // You can schedule work for the future by sleeping within functions.
-    // NOTE: This actually *****stops***** functions and continues execution automatically,
-    // across server restarts or serverless functions.  You don't have to worry about
-    // scale, memory leaks, connections, or restarts.
     await step.sleepUntil("2023-02-01T16:30:00");
 
     await step.run("Do some work in the future", async () => {
@@ -89,33 +78,34 @@ export const fn = inngest.createFunction(
 );
 ```
 </CodeGroup>
+  </Col>
+</Row>
 
-<aside>
-👉 Note: You’ll need to [serve this function in your inngest API](/docs/sdk/serve) for the function to be available to Inngest.
-</aside>
+### 2. Trigger the Function
 
-You can **trigger this background function by sending an event** to Inngest:
+Your `sendSignUpEmail` function will be triggered whenever Inngest receives an event called `user/created`. is received. You send this event to Inngest like so:
 
 ```ts
 await inngest.send({
   name: "user/created", // This matches the event used in `createFunction`
   data: {
     email: "test@example.com",
+    // any data you want to send
   },
 });
 ```
 
-When you send an event to Inngest, we automatically find any functions that are triggered by the event name and automatically run those functions in the background.  The entire JSON object you pass in to
-[`inngest.send()`](/docs/reference/events/send) will be available to your functions.
+When you send an event to Inngest, it automatically finds any functions that are triggered by the event ID and automatically runs those functions in the background. The entire JSON object you pass in to `inngest.send()` will be available to your functions.
 
-<aside>
-👉 You can create many functions which listen to the same event, and all of them will run in the background
-</aside>
+<Callout>
+💡 Tip: You can create many functions which listen to the same event, and all of them will run in the background. Learn more about this pattern in our ["Fan out" guide](/docs/guides/fan-out-jobs).
+</Callout>
 
 ## Further reading
 
-Now that you've created a background function you might want to learn how to:
-
-- [Run Inngest locally to test functions](/docs/local-development)
-- [Enqueue jobs in the future](/docs/guides/enqueueing-future-jobs)
-- [Cancel running functions](/docs/guides/cancel-running-functions)
+More information on background jobs:
+- [Email sequence examples](/docs/examples/email-sequence) implemented with Inngest.
+- [Soundcloud Case Study](/customers/soundcloud): building scalable video pipelines with Inngest to streamline dynamic video generation.
+- [GitBook Case Study](/customers/gitbook): how GitBook scaled background job processing with Inngest.
+- [Fey Case Study](/customers/fey): how Fey cut execution time and costs by 50x in data-intensive processes.
+- Blog post: building _banger.show_'s [video rendering pipeline](/blog/banger).
