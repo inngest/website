@@ -42,7 +42,14 @@ Let's have a look at each of this function's components.
 
 ### Config
 
-The first parameter of the `createFunction` method specifies Inngest function's configuration. In the above example, the `id` is specified, which is a unique identifier for the function. It is the only required parameter of the configuration.
+The first parameter of the `createFunction` method specifies Inngest function's configuration. In the above example, the `id` is specified, which will be used to identify the function in the [Inngest Dev Server](/docs/local-development):
+
+<img
+  src="/assets/docs/local-development/dev-server-functions.png"
+  width="400" height={400/2762*1868} quality="95"
+  className="rounded-md"
+  alt="Screenshot of the Inngest Dev Server interface showing three functions listed under the 'Functions' tab. The functions are: 'store-events,' 'Generate monthly report,' and 'Customer Onboarding,' each with their respective triggers and App URLs."
+/>
 
 You can also provide other [configuration options](/docs/reference/functions/create#configuration), such as `concurrency`, `throttle`, `debounce`, `rateLimit`, `priority`, `batchEvents`, or `idempotency` (preventing duplicate events from triggering the function within 24 hours). You can also specify how many times the function will retry, what callback function will run on failure, and when to cancel the function.
 
