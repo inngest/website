@@ -1,16 +1,10 @@
 import IconConcurrency from 'src/shared/Icons/FlowControl/Concurrency';
-import IconThrottle from 'src/shared/Icons/FlowControl/Throttle';
-import IconRateLimit from 'src/shared/Icons/FlowControl/RateLimit';
-import IconDebounce from 'src/shared/Icons/FlowControl/Debounce';
-import IconPriority from 'src/shared/Icons/FlowControl/Priority';
-import IconIdempotency from 'src/shared/Icons/FlowControl/Idempotency';
-import IconBatching from 'src/shared/Icons/FlowControl/Batching';
 
-export const description = 'Learn how to manage how functions are executed with flow control.';
+export const description = 'Learn what Inngest functions are and of what they are capable.';
 
 # Inngest Functions
 
-Inngest functions are a core part of the Inngest platform. They enable developers to create and manage event-driven workflows. Inngest functions offer a flexible way to build and manage event-driven workflows and background tasks, providing robust tools for retrying, scheduling, and coordinating complex sequences of operations.
+Inngest functions enable developers to create and manage event-driven workflows. They offer a flexible way to build and manage event-driven workflows and background tasks, providing robust tools for retrying, scheduling, and coordinating complex sequences of operations.
 
 This page covers components of an Inngest function, as well as introduces different kinds of functions. If you'd like to learn more about Inngest's execution model, check the ["How Inngest functions are executed"](/docs/learn/how-functions-are-executed) page.
 
@@ -42,9 +36,20 @@ The above code can be translated as:
 
 Let's have a look at each of this function's components.
 
+<Callout>
+💡 You can test Inngest functions using standard tooling such as Jest or Mocha. To do so, export the job code and run standard unit tests.
+</Callout>
+
 ### Config
 
-The first parameter of the `createFunction` method specifies Inngest function's configuration. In the above example, the `id` is specified, which is a unique identifier for the function. It is the only required parameter of the configuration.
+The first parameter of the `createFunction` method specifies Inngest function's configuration. In the above example, the `id` is specified, which will be used to identify the function in the [Inngest Dev Server](/docs/local-development):
+
+<img
+  src="/assets/docs/local-development/dev-server-functions.png"
+  width="400" height={400/2762*1868} quality="95"
+  className="rounded-md"
+  alt="Screenshot of the Inngest Dev Server interface showing three functions listed under the 'Functions' tab. The functions are: 'store-events,' 'Generate monthly report,' and 'Customer Onboarding,' each with their respective triggers and App URLs."
+/>
 
 You can also provide other [configuration options](/docs/reference/functions/create#configuration), such as `concurrency`, `throttle`, `debounce`, `rateLimit`, `priority`, `batchEvents`, or `idempotency` (preventing duplicate events from triggering the function within 24 hours). You can also specify how many times the function will retry, what callback function will run on failure, and when to cancel the function.
 
@@ -68,7 +73,7 @@ To summarize, the handler allows you to define detailed logic that should happen
 
 ## Kinds of Inngest functions
 
-### <a href="/docs/guides/background-functions" className="flex items-center gap-4"><IconConcurrency size="2rem"/> Background functions</a> {{anchor: false}}
+### <a href="/docs/guides/background-jobs" className="flex items-center gap-4"><IconConcurrency size="2rem"/> Background functions</a> {{anchor: false}}
 
 Long tasks can be executed outside the critical path of the main flow, which improves app's performance and reliability. Perfect for data pipelines or data processing.
 
@@ -78,13 +83,13 @@ Inngest's scheduled functions enable you to run tasks automatically at specified
 
 ### <a href="/docs/guides/delayed-functions" className="flex items-center gap-4"><IconConcurrency size="2rem"/> Delayed functions</a> {{anchor: false}}
 
-You can schedule an Inngest function to run at a specific time in the future. The task will be executed exactly when needed without manual intervention. Perfect for actions like sending follow-up emails or processing delayed orders.
+You can equeue an Inngest function to run at a specific time in the future. The task will be executed exactly when needed without manual intervention. Perfect for actions like sending follow-up emails or processing delayed orders.
 
 ### <a href="/docs/guides/multi-step-functions" className="flex items-center gap-4"><IconConcurrency size="2rem"/> Multi-step functions</a> {{anchor: false}}
 
 Multi-step functions allow you to create complex workflows. You can coordinate between multiple steps, including waiting for other events, delaying execution, or running code conditionally based on previous steps or incoming events. Each step is individually retriable, making the workflow robust against failures. Ideal for scenarios like onboarding flows or conditional notifications.
 
-### <a href="/docs/guides/fan-out-functions" className="flex items-center gap-4"><IconConcurrency size="2rem"/> Fan-out functions</a> {{anchor: false}}
+### <a href="/docs/guides/fan-out-jobs" className="flex items-center gap-4"><IconConcurrency size="2rem"/> Fan-out functions</a> {{anchor: false}}
 
 Inngest's fan-out jobs enable a single event to trigger multiple functions simultaneously. Ideal for parallel processing tasks, like sending notifications to multiple services or processing data across different systems.
 
@@ -96,4 +101,4 @@ This is useful when you need to break down complex workflows into simpler, manag
 
 ## Further reading
 
-- ["How Inngest functions are executed"](/docs/learn/how-functions-are-executed): Learn more about Inngest's execution model.
+- ["How Inngest functions are executed"](/docs/learn/how-functions-are-executed): learn more about Inngest's execution model.

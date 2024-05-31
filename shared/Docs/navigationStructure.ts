@@ -49,14 +49,17 @@ const sectionGettingStarted: NavGroup[] = [
         title: "Overview",
         href: "/docs",
       },
+      {
+        title: "Inngest functions",
+        href: `/docs/learn/inngest-functions`,
+      },
+      {
+        title: "Inngest steps",
+        href: `/docs/learn/inngest-steps`,
+      },
       { title: "Installing the SDK", href: `/docs/sdk/overview` },
       { title: "Serving the API & Frameworks", href: `/docs/sdk/serve` },
-      { title: "Writing Functions", href: `/docs/functions` },
       { title: "Sending Events", href: `/docs/events` },
-      {
-        title: "Multi-step Functions",
-        href: `/docs/functions/multi-step`,
-      },
       { title: "Inngest Apps", href: `/docs/apps` },
       {
         title: "Local Development",
@@ -104,10 +107,6 @@ const sectionGuides: NavGroup[] = [
     defaultOpen: true,
     links: [
       {
-        title: "Overview",
-        href: `/docs/functions/overview`,
-      },
-      {
         title: "Background jobs",
         href: `/docs/guides/background-jobs`,
       },
@@ -116,8 +115,8 @@ const sectionGuides: NavGroup[] = [
         href: `/docs/guides/scheduled-functions`,
       },
       {
-        title: "Enqueueing future jobs",
-        href: `/docs/guides/enqueueing-future-jobs`,
+        title: "Delayed functions",
+        href: `/docs/guides/delayed-functions`,
       },
       {
         title: "Fan-out (one-to-many)",
@@ -125,7 +124,7 @@ const sectionGuides: NavGroup[] = [
       },
       {
         title: "Multi-step functions",
-        href: `/docs/functions/multi-step`,
+        href: `/docs/guides/multi-step-functions`,
       },
       {
         title: "Parallelizing steps",
