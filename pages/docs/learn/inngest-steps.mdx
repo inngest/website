@@ -22,7 +22,7 @@ If you'd like to learn more about how Inngest steps are executed, check the ["Ho
 
 ## Anatomy of an Inngest Step
 
-The first argument of every Inngest step method is an `id`. Each step is treated as a separate job which can be individually retried, debugged, or recovered. Inngest uses the ID to memoize step state across function versions.
+The first argument of every Inngest step method is an `id`. Each step is treated as a discrete task which can be individually retried, debugged, or recovered. Inngest uses the ID to memoize step state across function versions.
 
 ```typescript
 export default inngest.createFunction(
@@ -39,14 +39,14 @@ export default inngest.createFunction(
   }
 );
 ```
-
-The ID is also used as an identifier in the [Inngest Dev Server](/docs/local-development) for you to quickly find a specific step.
+ 
+The ID is also used to identify the function in the Inngest system.
 
 ## Available Step Methods
 
 ### <a href="/docs/reference/functions/step-run" className="flex items-center gap-4"><IconConcurrency size="2rem"/><pre>step.run()</pre></a> {{anchor: false}}
 
-This method executes a defined piece of code. Use it to run synchronous or asynchronous code as a retriable step in your function.
+This method executes a defined piece of code. Code within `step.run()` is automatically retried when it throws an error and does not re-run when another step throws an error. Use it to run synchronous or asynchronous code as a retriable step in your function.
 
 ```typescript
 export default inngest.createFunction(
@@ -109,25 +109,6 @@ export default inngest.createFunction(
 );
 ```
 
-### <a href="/docs/reference/functions/step-send-event" className="flex items-center gap-4"><IconConcurrency size="2rem"/><pre>step.sendEvent()</pre></a> {{anchor: false}}
-
-This method sends events to Inngest to invoke functions with a matching event. It is useful when emitting events to trigger other functions or processes, for example in [fan-out functions](/docs/guides/fan-out-jobs). 
-
-```typescript
-export default inngest.createFunction(
-  { id: "user-onboarding" },
-  { event: "app/user.signup" },
-  async ({ event, step }) => {
-    // Do something
-    await step.sendEvent("send-activation-event", {
-      name: "app/user.activated",
-      data: { userId: event.data.userId },
-    });
-    // Do something else
-  }
-);
-```
-
 ### <a href="/docs/reference/functions/step-invoke" className="flex items-center gap-4"><IconConcurrency size="2rem"/><pre>step.invoke()</pre></a> {{anchor: false}}
 
 This method is used to asynchronously call another Inngest function ([written in any language SDK](/blog/cross-language-support-with-new-sdks)) and handle the result. Invoking other functions allows you to easily re-use functionality and compose them to create more complex workflows or map-reduce type jobs.
@@ -159,6 +140,27 @@ const mainFunction = inngest.createFunction(
 );
 ```
 
+### <a href="/docs/reference/functions/step-send-event" className="flex items-center gap-4"><IconConcurrency size="2rem"/><pre>step.sendEvent()</pre></a> {{anchor: false}}
+
+This method sends events to Inngest to invoke functions with a matching event. Use `sendEvent()` when you want to trigger other functions, but you do not need to return the result. It is useful for example in [fan-out functions](/docs/guides/fan-out-jobs). 
+
+```typescript
+export default inngest.createFunction(
+  { id: "user-onboarding" },
+  { event: "app/user.signup" },
+  async ({ event, step }) => {
+    // Do something
+    await step.sendEvent("send-activation-event", {
+      name: "app/user.activated",
+      data: { userId: event.data.userId },
+    });
+    // Do something else
+  }
+);
+```
+
 ## Further reading
 
-- ["How Inngest functions are executed"](/docs/learn/how-functions-are-executed): learn more about Inngest's execution model, including how steps are handled.
+- [Quick Start](/docs/quick-start): learn how to build complex workflows.
+- Blog post: ["How Inngest functions are executed"](/docs/learn/how-functions-are-executed). Learn more about Inngest's execution model, including how steps are handled.
+- Docs guide: ["Multi-step functions"](/docs/guides/multi-step-functions).
