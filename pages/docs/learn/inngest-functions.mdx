@@ -16,17 +16,17 @@ Let's have a look at the following Inngest function:
 import { inngest } from "./client";
 
 export default inngest.createFunction(
-    // config
+  // config
   { id: "import-product-images" },
-    // trigger (event or cron)
+  // trigger (event or cron)
   { event: "shop/product.imported" },
-    // handler function
-    async ({ event, step }) => {
-      // here goes the business logic
-      return copyAllImagesToS3(event.data.imageURLs);
-      // if you need to perform more than one task,
-      // wrap each one in step.run()
-    };
+  // handler function
+  async ({ event, step }) => {
+    // here goes the business logic
+    return copyAllImagesToS3(event.data.imageURLs);
+    // if you need to perform more than one task,
+    // wrap each one in step.run()
+  };
 );
 ```
 
