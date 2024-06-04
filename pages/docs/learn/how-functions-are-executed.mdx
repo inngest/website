@@ -95,10 +95,9 @@ Some steps may throw errors or exceptions during execution. Here's how error han
     * If the the function _has not_ exhausted the number of attempts, the function is re-executed from the point of failure with the state of all previous step executions. The step is re-executed and follows the same process as above (see: steps 6-11).
     * If the function _has_ exhausted the number of attempts, the function is re-executed with the error thrown. The function can then catch and handle the error as desired (see: [Handling a failing step](/docs/guides/error-handling#handling-a-failing-step)).
 
-
-{/* TODO - Add what happens when steps are re-ordered (or added) */}
-{/* TODO - Add what happens when a step is removed */}
 {/* TODO - Add how parallel steps are executed differently (more complex topic) */}
+
+To learn about how determinism is handled and how you can version functions, read the [Versioning long running functions](/docs/learn/versioning) guide.
 
 ## Conclusion
 

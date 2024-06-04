@@ -115,7 +115,7 @@ function NavLink({
         <span className="absolute inset-y-0 left-0 w-px bg-slate-900/10 dark:bg-white/15" />
       )}
 
-      <span className={truncate ? "truncate" : ""}>{children}</span>
+      <span>{children}</span>
       {tag && <Tag color="indigo">{tag}</Tag>}
     </LinkOrHref>
   );

@@ -76,6 +76,10 @@ const sectionGettingStarted: NavGroup[] = [
         title: "Security",
         href: `/docs/learn/security`,
       },
+      {
+        title: "Versioning",
+        href: `/docs/learn/versioning`,
+      },
     ],
   },
   {
@@ -870,6 +874,15 @@ const sectionReference: NavGroup[] = [
           {
             title: "Overview",
             href: `/docs/reference/python/middleware/overview`,
+          },
+        ],
+      },
+      {
+        title: "Migrations",
+        links: [
+          {
+            title: "v0.3 to v0.4",
+            href: `/docs/reference/python/migrations/v0.3-to-v0.4`,
           },
         ],
       },
