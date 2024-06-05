@@ -21,7 +21,7 @@ Multi-step functions are written using the `createFunction()` method on the `Inn
 First, let's look at a simple single-step function.
 
 <CodeGroup>
-```ts {{ title: "v3" }}
+```ts
 import { Inngest } from "inngest";
 
 const inngest = new Inngest({ id: "my-app" });
@@ -66,7 +66,7 @@ Once our welcome email is sent, we want to wait at most 24 hours for our user to
 To do this, we can use the `waitForEvent` step tool. This tool will wait for a matching event to be fired, and then return the event data. If the event is not fired within the timeout, it will return `null`, which we can use to decide whether to send the reminder email.
 
 <CodeGroup>
-```ts {{ title: "v3" }}
+```ts
 export default inngest.createFunction(
   { id: "activation-email" },
   { event: "app/user.created" },
@@ -91,7 +91,7 @@ Now we have our `postCreated` variable, which will be `null` if the user hasn't 
 Finally, we can use this to send the reminder email if the user hasn't created a post by running another block of code with `step.run()`.
 
 <CodeGroup>
-```ts {{ title: "v3" }}
+```ts
 export default inngest.createFunction(
   { id: "activation-email" },
   { event: "app/user.created" },

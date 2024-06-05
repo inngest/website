@@ -17,7 +17,7 @@ You can run steps in parallel via `Promise.all()`:
 A common use case is to split work into chunks:
 
 <CodeGroup>
-```ts {{ title: "v3" }}
+```ts 
 import { Inngest } from "inngest";
 
 const inngest = new Inngest({ id: "signup-flow" });
@@ -57,7 +57,7 @@ When each step is finished, Inngest will aggregate each step's state and re-invo
 A common use case is to chunk work. For example, when using OpenAI's APIs you might need to chunk a user's input and run the API on many chunks, then aggregate all data:
 
 <CodeGroup>
-```ts {{ title: "v3" }}
+```ts 
 import { Inngest } from "inngest";
 
 const inngest = new Inngest({ id: "signup-flow" });
