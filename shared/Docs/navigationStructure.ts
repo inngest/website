@@ -65,11 +65,6 @@ const sectionGettingStarted: NavGroup[] = [
         title: "Local Development",
         href: `/docs/local-development`,
       },
-
-      {
-        title: "Security",
-        href: `/docs/security`,
-      },
     ],
   },
   {
@@ -79,6 +74,10 @@ const sectionGettingStarted: NavGroup[] = [
       {
         title: "Function execution",
         href: `/docs/learn/how-functions-are-executed`,
+      },
+      {
+        title: "Security",
+        href: `/docs/learn/security`,
       },
       {
         title: "Versioning",

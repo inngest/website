@@ -38,6 +38,7 @@ const permanentRedirects = [
   ["/uses/user-journey-automation", "/blog/lifecycle-emails-with-resend"],
 
   // new IA
+  ["/docs/security", "/docs/learn/security"],
   ["/docs/functions", "/docs/learn/inngest-functions"],
   ["/docs/functions/multi-step", "/docs/guides/multi-step-functions"],
   ["/docs/guides/enqueueing-future-jobs", "/docs/guides/delayed-functions"],
