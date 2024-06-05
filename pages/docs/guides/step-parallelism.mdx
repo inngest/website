@@ -48,37 +48,6 @@ export const fn = inngest.createFunction(
   }
 );
 ```
-```ts {{ title: "v2" }}
-import { Inngest } from "inngest";
-
-const inngest = new Inngest({ name: "Signup flow" });
-
-export const fn = inngest.createFunction(
-  { name: "Post-payment flow" },
-  { event: "stripe/charge.created" },
-  async ({ event, step }) => {
-    // These steps are not `awaited` and run in parallel when Promise.all
-    // is invoked.
-    const sendEmail = step.run("Confirmation email", async () => {
-      const emailID = await sendEmail(event.data.email);
-      return emailID;
-    });
-
-    const updateUser = step.run("Update user", async () => {
-      return db.updateUserWithCharge(event);
-    });
-
-    // Run both steps in parallel.  Once complete, Promise.all will return all
-    // parallelized state here.
-    //
-    // This ensures that all steps complete as fast as possible, and we still have
-    // access to each step's data once they're compelte.
-    const [emailID, updates] = await Promise.all([sendEmail, updateUser]);
-
-    return { emailID, updates };
-  }
-);
-```
 </CodeGroup>
 
 When each step is finished, Inngest will aggregate each step's state and re-invoke the function with all state available.
@@ -106,27 +75,6 @@ export const fn = inngest.createFunction(
     );
 
     await step.run("summarize-summaries", () => summarizeSummaries(summaries));
-  }
-);
-```
-```ts {{ title: "v2" }}
-import { Inngest } from "inngest";
-
-const inngest = new Inngest({ name: "Signup flow" });
-
-export const fn = inngest.createFunction(
-  { name: "Summarize text" },
-  { event: "app/text.summarize" },
-  async ({ event, step }) => {
-    const chunks = splitTextIntoChunks(event.data.text);
-
-    const summaries = await Promise.all(
-      chunks.map((chunk) =>
-        step.run("Summarize chunk", () => summarizeChunk(chunk))
-      )
-    );
-
-    await step.run("Summarize summaries", () => summarizeSummaries(summaries));
   }
 );
 ```

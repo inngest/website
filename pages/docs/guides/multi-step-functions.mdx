@@ -34,19 +34,6 @@ export default inngest.createFunction(
   }
 );
 ```
-```ts {{ title: "v2" }}
-import { Inngest } from "inngest";
-
-const inngest = new Inngest({ name: "My App" });
-
-export default inngest.createFunction(
-  { name: "Activation email" },
-  { event: "app/user.created" },
-  async ({ event }) => {
-    await sendEmail({ email: event.user.email, template: "welcome" });
-  }
-);
-```
 </CodeGroup>
 
 This function will send a user an email when they sign up. Nice and simple.
@@ -97,23 +84,6 @@ export default inngest.createFunction(
   }
 );
 ```
-```ts {{ title: "v2" }}
-export default inngest.createFunction(
-  { name: "Activation email" },
-  { event: "app/user.created" },
-  async ({ event, step }) => {
-    await step.run("Send welcome email", async () => {
-      return await sendEmail({ email: event.user.email, template: "welcome" });
-    });
-
-    // Wait for an "app/post.created" event
-    const postCreated = await step.waitForEvent("app/post.created", {
-      match: "data.user.id", // the field "data.user.id" must match
-      timeout: "24h", // wait at most 24 hours
-    });
-  }
-);
-```
 </CodeGroup>
 
 Now we have our `postCreated` variable, which will be `null` if the user hasn't created a post within 24 hours, or the event data if they have.
@@ -140,33 +110,6 @@ export default inngest.createFunction(
     if (!postCreated) {
       // If no post was created, send a reminder email
       await step.run("send-reminder-email", async () => {
-        return await sendEmail({
-          email: event.user.email,
-          template: "reminder",
-        });
-      });
-    }
-  }
-);
-```
-```ts {{ title: "v2" }}
-export default inngest.createFunction(
-  { name: "Activation email" },
-  { event: "app/user.created" },
-  async ({ event, step }) => {
-    await step.run("Send welcome email", async () => {
-      return await sendEmail({ email: event.user.email, template: "welcome" });
-    });
-
-    // Wait for an "app/post.created" event
-    const postCreated = await step.waitForEvent("app/post.created", {
-      match: "data.user.id", // the field "data.user.id" must match
-      timeout: "24h", // wait at most 24 hours
-    });
-
-    if (!postCreated) {
-      // If no post was created, send a reminder email
-      await step.run("Send reminder email", async () => {
         return await sendEmail({
           email: event.user.email,
           template: "reminder",

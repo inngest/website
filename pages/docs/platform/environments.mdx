@@ -44,16 +44,6 @@ const inngest = new Inngest({
 // Pass the client to the serve handler to complete the setup
 serve({ client: inngest, functions: [myFirstFunction, mySecondFunction] });
 ```
-```ts {{ title: "v2" }}
-const inngest = new Inngest({
-  name: "My app",
-  env: process.env.BRANCH,
-});
-// Alternatively, you can set the INNGEST_ENV environment variable in your app
-
-// Pass the client to the serve handler to complete the setup
-serve(inngest, [myFirstFunction, mySecondFunction]);
-```
 </CodeGroup>
 
 ### Automatically Supported Platforms
@@ -72,12 +62,6 @@ Some platforms only pass an environment variable at build time. This means you'l
 ```ts {{ title: "v3" }}
 const inngest = new Inngest({
   id: "my-app",
-  env: process.env.BRANCH,
-});
-```
-```ts {{ title: "v2" }}
-const inngest = new Inngest({
-  name: "My app",
   env: process.env.BRANCH,
 });
 ```
