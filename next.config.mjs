@@ -38,7 +38,7 @@ const permanentRedirects = [
   ["/uses/user-journey-automation", "/blog/lifecycle-emails-with-resend"],
 
   // new IA
-  ["/docs/security", "docs/learn/security"],
+  ["/docs/security", "/docs/learn/security"],
 ];
 
 async function redirects() {
