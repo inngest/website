@@ -1,0 +1,166 @@
+import IconConcurrency from 'src/shared/Icons/FlowControl/Concurrency';
+
+export const description = 'Learn about Inngest steps and their methods.';
+
+# Inngest Steps
+
+Steps are fundamental building blocks in Inngest functions. Each step represents individual task (or other unit of work) within a function that can be executed independently.
+
+Steps are crucial because they allow functions to run specific tasks in a controlled and sequential (or parallel) manner. You can build complex workflows by chaining together simple, discrete operations.
+
+On this page, you will learn about the benefits of using steps, and get an overview of the available step methods.
+
+## Benefits of Using Steps
+
+- **Improved reliability**: structured steps enable precise control and handling of each task within a function.
+- **Error handling**: capturing and managing errors at the step level means better error recovery.
+- **Retry mechanism**: failing steps can be retried and recovered independently, without re-executing other successful steps.
+- **Independent testing**: each step can be tested and debugged independently from others.
+- **Improved code readability**: modular approach makes code easier to navigate and refactor.
+
+If you'd like to learn more about how Inngest steps are executed, check the ["How Inngest functions are executed"](/docs/learn/how-functions-are-executed) page.
+
+## Anatomy of an Inngest Step
+
+The first argument of every Inngest step method is an `id`. Each step is treated as a discrete task which can be individually retried, debugged, or recovered. Inngest uses the ID to memoize step state across function versions.
+
+```typescript
+export default inngest.createFunction(
+  { id: "import-product-images" },
+  { event: "shop/product.imported" },
+  async ({ event, step }) => {
+    const uploadedImageURLs = await step.run(
+      // step ID
+      "copy-images-to-s3", 
+      // other arguments, in this case: a handler
+      async () => {
+        return copyAllImagesToS3(event.data.imageURLs);
+    });
+  }
+);
+```
+ 
+The ID is also used to identify the function in the Inngest system.
+
+## Available Step Methods
+
+### <a href="/docs/reference/functions/step-run" className="flex items-center gap-4"><IconConcurrency size="2rem"/><pre>step.run()</pre></a> {{anchor: false}}
+
+This method executes a defined piece of code. Code within `step.run()` is automatically retried when it throws an error and does not re-run when another step throws an error. Use it to run synchronous or asynchronous code as a retriable step in your function.
+
+```typescript
+export default inngest.createFunction(
+  { id: "import-product-images" },
+  { event: "shop/product.imported" },
+  async ({ event, step }) => {
+    const uploadedImageURLs = await step.run("copy-images-to-s3", async () => {
+      return copyAllImagesToS3(event.data.imageURLs);
+    });
+  }
+);
+```
+
+### <a href="/docs/reference/functions/step-sleep" className="flex items-center gap-4"><IconConcurrency size="2rem"/><pre>step.sleep()</pre></a> {{anchor: false}}
+
+This method pauses execution for a specified duration. Even though it seems like a `setInterval`, your function does not run for that time. Inngest handles the scheduling for you. Use it to add delays or to wait for a specific amount of time before proceeding.
+
+```typescript
+export default inngest.createFunction(
+  { id: "send-delayed-email" },
+  { event: "app/user.signup" },
+  async ({ event, step }) => {
+    await step.sleep("wait-a-couple-of-days", "2d");
+    // Do something else
+  }
+);
+```
+
+### <a href="/docs/reference/functions/step-sleep-until" className="flex items-center gap-4"><IconConcurrency size="2rem"/><pre>step.sleepUntil()</pre></a> {{anchor: false}}
+
+This method pauses execution until a specific date time. Any date time string in the format accepted by the Date object, for example `YYYY-MM-DD` or `YYYY-MM-DDHH:mm:ss`.
+
+```typescript
+export default inngest.createFunction(
+  { id: "send-scheduled-reminder" },
+  { event: "app/reminder.scheduled" },
+  async ({ event, step }) => {
+    const date = new Date(event.data.remind_at);
+    await step.sleepUntil("wait-for-the-date", date);
+    // Do something else
+  }
+);
+```
+
+### <a href="/docs/reference/functions/step-wait-for-event" className="flex items-center gap-4"><IconConcurrency size="2rem"/><pre>step.waitForEvent()</pre></a> {{anchor: false}}
+
+This method pauses the execution until a specific event is received.
+
+```typescript
+export default inngest.createFunction(
+  { id: "send-onboarding-nudge-email" },
+  { event: "app/account.created" },
+  async ({ event, step }) => {
+    const onboardingCompleted = await step.waitForEvent(
+      "wait-for-onboarding-completion",
+      { event: "app/onboarding.completed", timeout: "3d", match: "data.userId" }
+    );
+    // Do something else
+  }
+);
+```
+
+### <a href="/docs/reference/functions/step-invoke" className="flex items-center gap-4"><IconConcurrency size="2rem"/><pre>step.invoke()</pre></a> {{anchor: false}}
+
+This method is used to asynchronously call another Inngest function ([written in any language SDK](/blog/cross-language-support-with-new-sdks)) and handle the result. Invoking other functions allows you to easily re-use functionality and compose them to create more complex workflows or map-reduce type jobs.
+
+This method comes with its own configuration, which enables defining specific settings like concurrency limits.
+
+```typescript
+// A function we will call in another place in our app
+const computeSquare = inngest.createFunction(
+  { id: "compute-square" },
+  { event: "calculate/square" },
+  async ({ event }) => {
+    return { result: event.data.number * event.data.number }; // Result typed as { result: number }
+  }
+);
+
+// In this function, we'll call `computeSquare`
+const mainFunction = inngest.createFunction(
+  { id: "main-function" },
+  { event: "main/event" },
+  async ({ step }) => {
+    const square = await step.invoke("compute-square-value", {
+      function: computeSquare,
+      data: { number: 4 }, // input data is typed, requiring input if it's needed
+    });
+
+    return `Square of 4 is ${square.result}.`; // square.result is typed as number
+  }
+);
+```
+
+### <a href="/docs/reference/functions/step-send-event" className="flex items-center gap-4"><IconConcurrency size="2rem"/><pre>step.sendEvent()</pre></a> {{anchor: false}}
+
+This method sends events to Inngest to invoke functions with a matching event. Use `sendEvent()` when you want to trigger other functions, but you do not need to return the result. It is useful for example in [fan-out functions](/docs/guides/fan-out-jobs). 
+
+```typescript
+export default inngest.createFunction(
+  { id: "user-onboarding" },
+  { event: "app/user.signup" },
+  async ({ event, step }) => {
+    // Do something
+    await step.sendEvent("send-activation-event", {
+      name: "app/user.activated",
+      data: { userId: event.data.userId },
+    });
+    // Do something else
+  }
+);
+```
+
+## Further reading
+
+- [Quick Start](/docs/quick-start): learn how to build complex workflows.
+- Blog post: ["How Inngest functions are executed"](/docs/learn/how-functions-are-executed). Learn more about Inngest's execution model, including how steps are handled.
+- Docs guide: ["Multi-step functions"](/docs/guides/multi-step-functions).

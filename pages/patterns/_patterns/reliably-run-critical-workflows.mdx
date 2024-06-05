@@ -8,7 +8,7 @@ The challenge with this pattern is often on the developer determining how to bre
 
 ## How to implement with Inngest
 
-Inngest enables you to compose workflows using a set of [pre-built tools](/docs/functions/multi-step?ref=patterns) to break functionality down into independently run steps. You can leverage these tools using `inngest.createFunction`. The following example demonstrates processing a large CSV upload including validation, data enrichment all when a custom `api/contact_list.uploaded` event is sent from an application.
+Inngest enables you to compose workflows using a set of [pre-built tools](/docs/guides/multi-step-functions?ref=patterns) to break functionality down into independently run steps. You can leverage these tools using `inngest.createFunction`. The following example demonstrates processing a large CSV upload including validation, data enrichment all when a custom `api/contact_list.uploaded` event is sent from an application.
 
 ```typescript
 import { inngest } from "./client";
@@ -59,6 +59,6 @@ Developers can roll their own solution, which is a valid path and might start of
 
 ## Additional Resources
 
-* [Docs: Writing Multi-step functions](/docs/functions/multi-step?ref=patterns)
+* [Docs: Writing Multi-step functions](/docs/guides/multi-step-functions?ref=patterns)
 * [Patterns: Cancelling scheduled functions](/patterns/cancelling-scheduled-functions?ref=patterns)
 * [Patterns: Building flows for lost customers](/patterns/event-coordination-for-lost-customers)
