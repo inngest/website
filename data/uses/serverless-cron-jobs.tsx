@@ -103,7 +103,7 @@ inngest.createFunction(
         title: "Enqueue future jobs",
         description: "How to schedule your code to run at a specific time.",
         type: "Guide",
-        href: "/docs/guides/enqueueing-future-jobs",
+        href: "/docs/guides/delayed-functions",
       },
       {
         title: "Writing scheduled functions",

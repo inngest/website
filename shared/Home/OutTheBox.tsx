@@ -61,7 +61,7 @@ export default function OutTheBox() {
               Create functions that run over hours, days, or weeks.
             </p>
             <a
-              href="/docs/functions/multi-step?ref=homepage-everything-you-need"
+              href="/docs/guides/multi-step-functions?ref=homepage-everything-you-need"
               className="group inline-flex mt-4 items-center gap-0.5 rounded-full text-sm font-medium pl-6 pr-5 py-2  bg-slate-800 hover:bg-slate-700 transition-all text-white"
             >
               Learn more
@@ -81,7 +81,7 @@ export default function OutTheBox() {
               churn flows.
             </p>
             <a
-              href="/docs/functions/multi-step?ref=homepage-everything-you-need"
+              href="/docs/guides/multi-step-functions?ref=homepage-everything-you-need"
               className="group inline-flex mt-4 items-center gap-0.5 rounded-full text-sm font-medium pl-6 pr-5 py-2  bg-slate-800 hover:bg-slate-700 transition-all text-white"
             >
               Learn more

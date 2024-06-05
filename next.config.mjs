@@ -13,7 +13,7 @@ const permanentRedirects = [
   ["/docs/event-format-and-structure", "/docs/reference/events/send"],
   ["/docs/events/event-format-and-structure", "/docs/reference/events/send"],
   ["/docs/writing-and-running-fuctions", "/docs/functions"], //typo
-  ["/docs/cli/steps/", "/docs/functions/multi-step"],
+  ["/docs/cli/steps/", "/docs/guides/multi-step-functions"],
   ["/docs/events/sources/sdks", "/docs/events"],
   ["/docs/deploying-fuctions", "/docs/apps/cloud"],
   ["/docs/deploy", "/docs/apps/cloud"],
@@ -39,6 +39,10 @@ const permanentRedirects = [
 
   // new IA
   ["/docs/security", "/docs/learn/security"],
+  ["/docs/functions", "/docs/learn/inngest-functions"],
+  ["/docs/functions/multi-step", "/docs/guides/multi-step-functions"],
+  ["/docs/guides/enqueueing-future-jobs", "/docs/guides/delayed-functions"],
+  ["/docs/steps", "/docs/learn/inngest-steps"],
 ];
 
 async function redirects() {
@@ -66,7 +70,7 @@ async function redirects() {
     },
     {
       source: "/features/step-functions",
-      destination: "/docs/functions/multi-step",
+      destination: "/docs/guides/multi-step-functions",
       permanent: true,
     },
     ...permanentRedirects.map(([source, destination]) => ({
