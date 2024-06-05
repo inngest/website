@@ -25,7 +25,7 @@ const inngest = new Inngest({ id: "signup-flow" });
 
 export const fn = inngest.createFunction(
   { id: "send-signup-email" },
-  { event: "user/created" },
+  { event: "app/user.created" },
   async ({ event, step }) => {
     await step.sleep("wait-a-moment", "1 hour");
     await step.run("do-some-work-in-the-future", async () => {
@@ -41,7 +41,7 @@ const inngest = new Inngest({ name: "Signup flow" });
 
 export const fn = inngest.createFunction(
   { name: "Send signup email" },
-  { event: "user/created" },
+  { event: "app/user.created" },
   async ({ event, step }) => {
     await step.sleep("1 hour");
     await step.run("Do some work in the future", async () => {
@@ -67,7 +67,7 @@ const inngest = new Inngest({ id: "signup-flow" });
 
 export const fn = inngest.createFunction(
   { id: "send-signup-email" },
-  { event: "user/created" },
+  { event: "app/user.created" },
   async ({ event, step }) => {
     await step.sleepUntil("wait-for-iso-string", "2023-04-01T12:30:00");
 
@@ -88,7 +88,7 @@ const inngest = new Inngest({ name: "Signup flow" });
 
 export const fn = inngest.createFunction(
   { name: "Send signup email" },
-  { event: "user/created" },
+  { event: "app/user.created" },
   async ({ event, step }) => {
     await step.sleepUntil("2023-04-01T12:30:00");
 

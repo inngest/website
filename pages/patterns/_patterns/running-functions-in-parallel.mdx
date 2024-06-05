@@ -13,7 +13,7 @@ import { inngest } from "@/inngest";
 
 const funcA = inngest.createFunction(
   { id: "a" },
-  { event: "user/signup" },
+  { event: "app/user.created" },
   ({ event }) => {
     /* Your logic runs on signup here */
   }
@@ -21,7 +21,7 @@ const funcA = inngest.createFunction(
 
 const funcB = inngest.createFunction(
   { id: "b" },
-  { event: "user/signup" },
+  { event: "app/user.created" },
   ({ event }) => {
     /* And this function runs in parallel on signup */
   }
@@ -29,14 +29,14 @@ const funcB = inngest.createFunction(
 
 const funcC = inngest.createFunction(
   { id: "c" },
-  { event: "user/signup" },
+  { event: "app/user.created" },
   ({ event }) => {
     /* This function _also_ runs at the same time */
   }
 );
 ```
 
-In this example, we define three functions which run automatically in parallel whenever the `user/signup` event is received.  Each of these run independently, and can be defined in different projects - without worrying about managing queues or subscribers.
+In this example, we define three functions which run automatically in parallel whenever the `app/user.created` event is received.  Each of these run independently, and can be defined in different projects - without worrying about managing queues or subscribers.
 
 **Alternative event-driven systems**
 
