@@ -65,7 +65,7 @@ export default function BlogLayout(props) {
     description: scope.subtitle,
     image: [`${process.env.NEXT_PUBLIC_HOST}${scope.image}`],
     datePublished: scope.date,
-    dateModified: scope.date,
+    dateModified: scope.dateUpdated ? scope.dateUpdated : scope.date,
     introCallout: scope.introCallout,
     author: [
       {
@@ -79,6 +79,14 @@ export default function BlogLayout(props) {
     ],
   };
   const title = `${scope.heading} - Inngest Blog`;
+  let dateUpdated: string | null = null;
+  try {
+    dateUpdated = scope.dateUpdated
+      ? new Date(scope.dateUpdated).toLocaleDateString()
+      : null;
+  } catch (err) {
+    console.log(`Could not parse updated date: ${scope.dateUpdated}`);
+  }
 
   return (
     <>
@@ -159,7 +167,8 @@ export default function BlogLayout(props) {
                   <p className="text-slate-300 text-sm mt-2 flex items-center gap-2">
                     {!!scope.author ? <>{scope.author} &middot; </> : ""}
                     <span className="flex items-center gap-1">
-                      <IconCalendar /> {scope.humanDate}
+                      <IconCalendar /> {scope.humanDate}{" "}
+                      {!!dateUpdated && <> (Updated: {dateUpdated})</>}
                     </span>{" "}
                     &middot; <span>{scope.reading.text}</span>
                     <Tags tags={scope.tags} />
