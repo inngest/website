@@ -15,7 +15,7 @@ Concurrency management is one of the methods offered by Inngest's [Flow Control]
 
 ## Debouncing
 
-Debouncing is one of the methods offered by Inngest's [Flow Control](#flow-control). It prevents a [function](#inngest-function) from being executed multiple times in rapid succession by ensuring it is only triggered after a specified period of inactivity. This technique helps to eliminate redundant function executions caused by quick, repeated events, thereby optimizing performance and reducing unnecessary load on the system. It is particularly useful for managing user input events and other high-frequency triggers. Read more about [Concurrency Management](/docs/guides/debounce).
+Debouncing is one of the methods offered by Inngest's [Flow Control](#flow-control). It prevents a [function](#inngest-function) from being executed multiple times in rapid succession by ensuring it is only triggered after a specified period of inactivity. This technique helps to eliminate redundant function executions caused by quick, repeated events, thereby optimizing performance and reducing unnecessary load on the system. It is particularly useful for managing user input events and other high-frequency triggers. Read more about [Debouncing](/docs/guides/debounce).
 
 ## Durable Execution
 
@@ -65,7 +65,7 @@ which enable developers to run reliable background logic, from background jobs t
 
 ## Inngest Step
 
-In Inngest, a "step" represents a discrete, independently retriable unit of work within a [function](#inngest-function). Each step can be run synchronously or asynchronously and is defined using the `step.run()` method. Steps enable complex workflows by breaking down a function into smaller, manageable blocks, allowing for automatic retries and state persistence. This approach ensures that even if a step fails, only that task is retried, not the entire function. Read more about [Inngest Steps](/docs/learn/inngest-steps).
+In Inngest, a "step" represents a discrete, independently retriable unit of work within a [function](#inngest-function). Steps enable complex workflows by breaking down a function into smaller, manageable blocks, allowing for automatic retries and state persistence. This approach ensures that even if a step fails, only that task is retried, not the entire function. Read more about [Inngest Steps](/docs/learn/inngest-steps).
 
 ### Step Memoization
 
@@ -83,24 +83,22 @@ Observability in Inngest refers to the ability to monitor and analyze the execut
 
 ## Rate Limiting
 
-Rate limiting is one of the methods offered by Inngest's [Flow Control](#flow-control). It controls the frequency of [function](#inngest-function) executions over a specified period to prevent overloading the system. It helps manage API calls and other resources by setting limits on how many requests or processes can occur within a given timeframe, ensuring system stability and fair usage. Read more about [Rate Limiting](/docs/learn/rate-limiting).
+Rate limiting is one of the methods offered by Inngest's [Flow Control](#flow-control). It controls the frequency of [function](#inngest-function) executions over a specified period to prevent overloading the system. It helps manage API calls and other resources by setting limits on how many requests or processes can occur within a given timeframe, ensuring system stability and fair usage. Read more about [Rate Limiting](/docs/guides/rate-limiting).
 
 ## SDK
 
-The Software Development Kit (SDK) is a collection of tools, libraries, and documentation that allows developers to easily integrate and utilize Inngest's features within their applications. The SDK simplifies the process of creating, managing, and executing functions, handling events, and configuring workflows. It supports multiple programming languages and environments, ensuring broad compatibility and ease of use. Currently, Inngest offers SDKs for TypeScript, Python, and Go. Read more about [SDK](/docs/reference).
+The Software Development Kit (SDK) is a collection of tools, libraries, and documentation that allows developers to easily integrate and utilize Inngest's features within their applications. The SDK simplifies the process of creating, managing, and executing functions, handling events, and configuring workflows. It supports multiple programming languages and environments, ensuring broad compatibility and ease of use. Currently, Inngest offers SDKs for TypeScript, Python, and Go. Read more about [Inngest SDKs](/docs/reference).
 
 ## Throttling
 
-Throttling is one of the methods offered by Inngest's [Flow Control](#flow-control). It controls the rate at which [functions](#inngest-function) are executed to prevent system overload. By setting limits on the number of executions within a specific timeframe, throttling ensures that resources are used efficiently and helps maintain the stability and performance of your application. It can be configured on a per-user or per-function basis, allowing for flexible and precise control over execution rates. Read more about [SDK](/docs/guides/throttling).
-
-
-
+Throttling is one of the methods offered by Inngest's [Flow Control](#flow-control). It controls the rate at which [functions](#inngest-function) are executed to prevent system overload. By setting limits on the number of executions within a specific timeframe, throttling ensures that resources are used efficiently and helps maintain the stability and performance of your application. It can be configured on a per-user or per-function basis, allowing for flexible and precise control over execution rates. Read more about [Throttling](/docs/guides/throttling).
 
 ## Next Steps
 
-- [Quick Start](/docs/quick-start)
-- [Inngest Functions](/docs/learn/inngest-functions)
-- [Inngest Steps](/docs/learn/inngest-steps)
+- Explore Inngest through our [Quick Start](/docs/quick-start).
+- Learn about [Inngest Functions](/docs/learn/inngest-functions).
+- Learn about [Inngest Steps](/docs/learn/inngest-steps).
+- Understand how [Inngest functions are executed](/docs/learn/how-functions-are-executed).
 
 
 
