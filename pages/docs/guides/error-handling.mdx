@@ -397,7 +397,7 @@ import { NonRetriableError } from "inngest";
 
 inngest.createFunction(
   { id: "user-weekly-digest" },
-  { event: "user/weekly-digest-requested" },
+  { event: "user/weekly.digest.requested" },
   async ({ event, step }) => {
     const user = await step
       .run("Get user email", () => {
@@ -420,7 +420,7 @@ inngest.createFunction(
 ```go {{ title: "Go" }}
 inngestgo.CreateFunction(
 	inngestgo.FunctionOpts{ID: "user-weekly-digest"},
-	inngestgo.EventTrigger("user/weekly-digest-requested", nil),
+	inngestgo.EventTrigger("user/weekly.digest.requested", nil),
 	func(ctx context.Context, input inngestgo.Input[WeeklyDigestRequestedEvent]) (any, error) {
 		user, err := step.Run(ctx, "Get user email", func(ctx context.Context) (any, error) {
 			return db.Users.FindOne(input.Event.Data.UserID)
@@ -448,7 +448,7 @@ from inngest.errors import NonRetriableError
 
 @inngest_client.create_function(
     fn_id="user-weekly-digest",
-    trigger=inngest.TriggerEvent(event="user/weekly-digest-requested"),
+    trigger=inngest.TriggerEvent(event="user/weekly.digest.requested"),
 )
 def user_weekly_digest(ctx: inngest.Context, step: inngest.StepSync) -> None:
     try:
@@ -491,7 +491,7 @@ inngest.createFunction(
 ```go
 inngestgo.CreateFunction(
 	inngestgo.FunctionOpts{ID: "send-welcome-notification"},
-	inngestgo.EventTrigger("user/signed-up", nil),
+	inngestgo.EventTrigger("user.created", nil),
 	func(ctx context.Context, input inngestgo.Input[SignedUpEvent]) (any, error) {
 		success, retryAfter, err := twilio.Messages.Create(twilio.MessageOpts{
 			To:   input.Event.Data.User.PhoneNumber,
