@@ -491,7 +491,7 @@ inngest.createFunction(
 ```go
 inngestgo.CreateFunction(
 	inngestgo.FunctionOpts{ID: "send-welcome-notification"},
-	inngestgo.EventTrigger("user/created", nil),
+	inngestgo.EventTrigger("user.created", nil),
 	func(ctx context.Context, input inngestgo.Input[SignedUpEvent]) (any, error) {
 		success, retryAfter, err := twilio.Messages.Create(twilio.MessageOpts{
 			To:   input.Event.Data.User.PhoneNumber,
