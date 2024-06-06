@@ -43,6 +43,7 @@ const permanentRedirects = [
   ["/docs/functions/multi-step", "/docs/guides/multi-step-functions"],
   ["/docs/guides/enqueueing-future-jobs", "/docs/guides/delayed-functions"],
   ["/docs/steps", "/docs/learn/inngest-steps"],
+  ["/blog/banger", "/blog/banger-video-rendering-pipeline"],
 ];
 
 async function redirects() {

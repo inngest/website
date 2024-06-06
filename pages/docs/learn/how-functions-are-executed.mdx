@@ -38,7 +38,7 @@ In comparison, some Durable Execution systems modify the runtime environment to 
 
 Inngest functions are defined with a series of steps that define the execution flow of the function. Each step is defined with a unique ID and a function that defines the work to be done. The data returned can be used by subsequent steps.
 
-Inngest functions are executed incrementally, _step by step_. As functions are executed, the results of each step are returned to Inngest and persisted in a managed function state store. The function is then re-executed and any steps that have already been successfully executed are [_memoized_](https://en.wikipedia.org/wiki/Memoization). This means that the successfully executed steps are skipped and the SDK injects the data returned by the previous execution into the function.
+Inngest functions execute incrementally, _step by step_. As a function is executed, the results of each step are returned to Inngest and persisted in a managed function state store. The steps that successfully executed are [_memoized_](https://en.wikipedia.org/wiki/Memoization). The function then resumes, skipping any steps that have already been completed and the SDK injects the data returned by the previous step into the function.
 
 Let's look at an example of a function and walk through how it is executed:
 
@@ -102,3 +102,12 @@ To learn about how determinism is handled and how you can version functions, rea
 ## Conclusion
 
 Inngest functions use steps and memoization to execute functions incrementally and durably. This approach ensures that functions are fault-tolerant and resilient to failures. By breaking down functions into steps, Inngest functions can be retried and resumed from the point of failure. This approach ensures that your code is more reliable and can handle transient errors gracefully.
+
+## Further reading
+
+More information on Durable Execution in Inngest:
+
+- Blog post: ["How we built a fair multi-tenant queuing system"](/blog/building-the-inngest-queue-pt-i-fairness-multi-tenancy)
+- Blog post: ["Debouncing in Queueing Systems: Optimizing Efficiency in Asynchronous Workflows"](/blog/debouncing-in-queuing-systems-optimizing-efficiency-in-async-workflows)
+- Blog post: ["Accidentally Quadratic: Evaluating trillions of event matches in real-time"](/blog/accidentally-quadratic-evaluating-trillions-of-event-matches-in-real-time)
+- Blog post: ["Queues aren't the right abstraction"](/blog/queues-are-no-longer-the-right-abstraction)
