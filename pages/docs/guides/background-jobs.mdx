@@ -31,7 +31,7 @@ Let's walk through the code step by step:
   </Col>
 <Col>
 <CodeGroup>
-```ts {{ title: "v3" }}
+```ts
 import { Inngest } from "inngest";
 const inngest = new Inngest({ id: "signup-flow" });
 
@@ -49,29 +49,6 @@ export const sendSignUpEmail = inngest.createFunction(
     await step.sleepUntil("wait-for-the-future", "2023-02-01T16:30:00");
 
     await step.run("do-some-work-in-the-future", async () => {
-      // Code here runs in the future automatically.
-    });
-  }
-);
-```
-```ts {{ title: "v2" }}
-import { Inngest } from "inngest";
-const inngest = new Inngest({ name: "Signup flow" });
-
-export const sendSignUpEmail = inngest.createFunction(
-  { name: "Send signup email" },
-  { event: "app/user.created" },
-  ({ event, step }) => {
-    await step.run("send the user a signup email", async () => {
-      await sesclient.clientsendEmail({
-        to: event.data.user_email,
-        subject: "Welcome to Inngest!"
-        message: "...",
-      });
-    });
-    await step.sleepUntil("2023-02-01T16:30:00");
-
-    await step.run("Do some work in the future", async () => {
       // Code here runs in the future automatically.
     });
   }
