@@ -44,7 +44,7 @@ Let's have a look at each of this function's components.
 
 ### Config
 
-The first parameter of the `createFunction` method specifies Inngest function's configuration. In the above example, the `id` is specified, which will be used to identify the function in the Inngest system. 
+The first parameter of the `createFunction` method specifies Inngest function's configuration. In the above example, the `id` is specified, which will be used to identify the function in the Inngest system.
 
 You can see this ID in the [Inngest Dev Server's](/docs/local-development) function list:
 
@@ -59,7 +59,7 @@ You can also provide other configuration options](/docs/reference/functions/crea
 
 ### Trigger
 
-Inngest functions are designed to be triggered by events or crons (schedules). Events can be [sent from your own code](/docs/events) or received from third party webhooks or API requests. When an event is received, it triggers a corresponding function to execute the tasks defined in the function handler (see the ["Handler" section](/docs/functions/overview#handler) below).
+Inngest functions are designed to be triggered by events or crons (schedules). Events can be [sent from your own code](/docs/events) or received from third party webhooks or API requests. When an event is received, it triggers a corresponding function to execute the tasks defined in the function handler (see the ["Handler" section](#handler) below).
 
 Each function needs at least one trigger. However, you can also work with [multiple triggers](/docs/guides/multiple-triggers) to invoke your function whenever any of the events are received or cron schedule occurs.
 

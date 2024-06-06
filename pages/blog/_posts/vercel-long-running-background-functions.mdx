@@ -3,6 +3,7 @@ heading: Long-running background functions on Vercel
 subtitle: How to run business critical jobs for minutes, hours or days
 image: /assets/blog/vercel-long-running-background-functions/featured-image.png
 date: 2023-03-31
+dateUpdated: 2024-06-06
 author: Dan Farrelly
 disableCTA: true
 ---
@@ -89,10 +90,10 @@ We now know the concepts, let's check out some code. This example code fetches e
 
 ```typescript
 export default inngest.createFunction(
-  { name: "Invite waiting list" },
+  { id: "invite-waiting-list" },
   { event: "invite.users" },
   async ({ event, step }) => {
-    const emails = await step.run("Fetch waiting list", async () => {
+    const emails = await step.run("fetch-waiting-list", async () => {
       const data = await typeformAPI.responses.list({
         after: event.data.from,
         until: event.data.until,
@@ -102,10 +103,10 @@ export default inngest.createFunction(
     });
 
     for (let email of emails) {
-      const inviteCode = await step.run("Create invite code", async () => {
+      const inviteCode = await step.run("create-invite-code", async () => {
         return await createInviteCodeAndSaveInDatabase(email);
       });
-      await step.run("Send invite email", async () => {
+      await step.run("send-invite-email", async () => {
         return await emails.sendInviteEmail({ email, inviteCode });
       });
     }
@@ -115,7 +116,7 @@ export default inngest.createFunction(
 )
 ```
 
-As you can see - it's just JavaScript. The Inngest SDK's `[step.run](http://step.run)` allows you to encapsulate each part of your function. As mentioned above, each is invoked separately, so the sum of all the time can be greater than the normal HTTP timeouts.
+As you can see - it's just JavaScript. The Inngest SDK's `[step.run](/docs/learn/inngest-steps)` allows you to encapsulate each part of your function. As mentioned above, each is invoked separately, so the sum of all the time can be greater than the normal HTTP timeouts.
 
 With automatic retries built-in, this enables you to run long background jobs reliably!
 
@@ -148,16 +149,16 @@ Use `Promise.all` to kick off any number of steps in parallel just like you woul
 
 ```typescript
 inngest.createFunction(
-  { name: "Shopify Product Import", concurrency: 10 },
+  { id: "shopify-product-import", concurrency: 10 },
   { event: "shopify/import.requested" },
   async ({ event, step }) => {
-    const products = await step.run("Fetch all products", async () => {
+    const products = await step.run("fetch-all-products", async () => {
       return await shopify.rest.Product.all()
     })
     // Use Promise.all to kick off all steps in parallel!
     Promise.all(
       products.map((product) =>
-        step.run("Import product", async () => {
+        step.run("import-product", async () => {
           await database.upsertProduct({
             storeId: event.data.storeId,
             product,
@@ -175,22 +176,22 @@ Use `step.sleep` to pause your function for hours, days, or weeks. Inngest will 
 
 ```typescript
 inngest.createFunction(
-  { name: "New user email drip campaign" },
+  { id: "new-user-email-drip-campaign" },
   { event: "api/account.created" },
   async ({ event, step }) => {
-    await step.run("Send welcome email", async () =>
+    await step.run("send-welcome-email", async () =>
       await sendWelcomeEmail(event.user.email)
     )
 
-    await step.sleep("2d")
+    await step.sleep("delay-second-email", "2d")
 
-    await step.run("Send product tips email", async () =>
+    await step.run("send-product-tips-email", async () =>
       await sendTipsEmail(event.user.email)
     )
 
-    await step.sleep("3d")
+    await step.sleep("delay-third-email", "3d")
 
-    await step.run("Send how-to's email", async () =>
+    await step.run("send-how-tos-email", async () =>
       await sentHowTosEmail(event.user.email)
     )
   }
@@ -203,14 +204,14 @@ Use `step.sleepUntil` to tell schedule a step in the future at a specific time:
 
 ```typescript
 inngest.createFunction(
-  { name: "Send reminder" },
+  { id: "send-reminder" },
   { event: "dinner_reservation.created" },
   async ({ event, step }) => {
     const reservationAt = new Date(event.data.reservationTimestamp);
     const dayBefore = new Date(reservationAt - 24 * 60 * 60 * 1000);
     await step.sleepUntil(dayBefore)
 
-    await step.run("Send reminder text message", async () =>
+    await step.run("send-reminder-text-message", async () =>
       await sendSMSReminder(event.user.phone, event.data)
     )
   }
