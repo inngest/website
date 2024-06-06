@@ -197,7 +197,7 @@ export default inngest.createFunction(
 import { inngest } from "./client";
 
 export default inngest.createFunction(
-  { name: "Onboarding drip campaign" },
+  { id: "Onboarding drip campaign" },
   { event: "user/new.signup" },
   async ({ event, step }) => {
     await step.run("Send welcome email", async () => {
