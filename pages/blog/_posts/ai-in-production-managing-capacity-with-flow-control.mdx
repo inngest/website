@@ -223,7 +223,7 @@ This should be adjusted for realistic use on your product, but finding the right
 
 It's not always bad actors causing problems. As we said above, the AI fail whale often rears its head. If your product requires a single API call to complete, this isn't too much of a problem, cost-wise. But if you are LLM chaining or creating agents or RAG flows with multiple API calls, retrying this multi-step process can result in high costs as everything must be called again.
 
-We can fix that using chaining with durable execution. Every individual API call can become a separate run in a [multi-step process](https://www.inngest.com/docs/functions/multi-step?ref=blog-manage-capacity-ai). Using multi-step functions, you can:
+We can fix that using chaining with durable execution. Every individual API call can become a separate run in a [multi-step process](https://www.inngest.com/docs/guides/multi-step-functions?ref=blog-manage-capacity-ai). Using multi-step functions, you can:
 
 * Enhance the reliability of your code by retrying executable blocks.
 * Pause execution until an event matches specific rules.

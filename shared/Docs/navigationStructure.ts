@@ -49,23 +49,21 @@ const sectionGettingStarted: NavGroup[] = [
         title: "Overview",
         href: "/docs",
       },
+      {
+        title: "Inngest functions",
+        href: `/docs/learn/inngest-functions`,
+      },
+      {
+        title: "Inngest steps",
+        href: `/docs/learn/inngest-steps`,
+      },
       { title: "Installing the SDK", href: `/docs/sdk/overview` },
       { title: "Serving the API & Frameworks", href: `/docs/sdk/serve` },
-      { title: "Writing Functions", href: `/docs/functions` },
       { title: "Sending Events", href: `/docs/events` },
-      {
-        title: "Multi-step Functions",
-        href: `/docs/functions/multi-step`,
-      },
       { title: "Inngest Apps", href: `/docs/apps` },
       {
         title: "Local Development",
         href: `/docs/local-development`,
-      },
-
-      {
-        title: "Security",
-        href: `/docs/security`,
       },
     ],
   },
@@ -76,6 +74,10 @@ const sectionGettingStarted: NavGroup[] = [
       {
         title: "Function execution",
         href: `/docs/learn/how-functions-are-executed`,
+      },
+      {
+        title: "Security",
+        href: `/docs/learn/security`,
       },
       {
         title: "Versioning",
@@ -100,7 +102,7 @@ const sectionGettingStarted: NavGroup[] = [
 ];
 const sectionGuides: NavGroup[] = [
   {
-    title: "Patterns",
+    title: "Functions",
     defaultOpen: true,
     links: [
       {
@@ -108,28 +110,36 @@ const sectionGuides: NavGroup[] = [
         href: `/docs/guides/background-jobs`,
       },
       {
-        title: "Enqueueing future jobs",
-        href: `/docs/guides/enqueueing-future-jobs`,
+        title: "Scheduled functions",
+        href: `/docs/guides/scheduled-functions`,
       },
       {
-        title: "Parallelize steps",
-        href: `/docs/guides/step-parallelism`,
+        title: "Delayed functions",
+        href: `/docs/guides/delayed-functions`,
       },
       {
         title: "Fan-out (one-to-many)",
         href: `/docs/guides/fan-out-jobs`,
       },
       {
-        title: "Invoking functions directly",
-        href: `/docs/guides/invoking-functions-directly`,
+        title: "Multi-step functions",
+        href: `/docs/guides/multi-step-functions`,
+      },
+      {
+        title: "Parallelizing steps",
+        href: `/docs/guides/step-parallelism`,
       },
       {
         title: "Sending events from functions",
         href: `/docs/guides/sending-events-from-functions`,
       },
       {
-        title: "Scheduled functions",
-        href: `/docs/guides/scheduled-functions`,
+        title: "Using multiple triggers",
+        href: `/docs/guides/multiple-triggers`,
+      },
+      {
+        title: "Invoking functions directly",
+        href: `/docs/guides/invoking-functions-directly`,
       },
     ],
   },
@@ -190,10 +200,6 @@ const sectionGuides: NavGroup[] = [
       {
         title: "Writing expressions",
         href: `/docs/guides/writing-expressions`,
-      },
-      {
-        title: "Using multiple triggers",
-        href: `/docs/guides/multiple-triggers`,
       },
       {
         title: "FAQs",

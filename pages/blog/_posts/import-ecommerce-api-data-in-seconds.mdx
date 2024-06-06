@@ -157,7 +157,7 @@ You can combine these step tools in any way that you want. For example, you may 
 
 ## Using fan-out for faster parallel processing
 
-We've learned that you can use [`step.run()`](/docs/functions/multi-step?ref=blog-import-ecommerce) to break your job into reliable steps, but what if you want to have different levels of concurrency for part of your code? You can send events from one function to “fan-out” work to another function and run that work in parallel, speeding up your pipeline.
+We've learned that you can use [`step.run()`](/docs/guides/multi-step-functions?ref=blog-import-ecommerce) to break your job into reliable steps, but what if you want to have different levels of concurrency for part of your code? You can send events from one function to “fan-out” work to another function and run that work in parallel, speeding up your pipeline.
 
 Let's look at an example that fetches all images and copies those images to our image storage bucket. First, we build on the above code to add fetching images for each product, mapping over the list of images to create `"shopify/copy.image"` events to send to Inngest. Then we use `step.sendEvent()` to send the events in bulk.
 
