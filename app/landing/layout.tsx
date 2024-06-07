@@ -1,5 +1,6 @@
 // Import SectionProvider due to the global MDX components and it's usage in Docs
 import { SectionProvider } from "shared/Docs/SectionProvider";
+import { FullWidthCTA } from "src/components/FullWidthCTA";
 
 export default function LandingPageLayout({
   children,
@@ -13,6 +14,10 @@ export default function LandingPageLayout({
         <main className="mx-auto max-w-[800px] prose dark:prose-invert">
           {children}
         </main>
+        <FullWidthCTA
+          ctaText="Read the quick start guide"
+          ctaHref="/docs/quick-start"
+        />
       </div>
     </SectionProvider>
   );

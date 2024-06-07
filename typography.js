@@ -355,6 +355,13 @@ module.exports = ({ theme }) => ({
       "a[data-footnote-ref]": {
         scrollMarginTop: theme("spacing.32"),
       },
+
+      // Landing pages
+      ".header h1": {
+        marginBottom: theme("spacing.8"),
+        fontSize: theme("fontSize.4xl")[0],
+        lineHeight: theme("lineHeight.10"),
+      },
     },
   },
   invert: {

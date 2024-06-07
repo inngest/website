@@ -403,8 +403,8 @@ export function GuideSelector({
               className={clsx(
                 "border-b py-3 transition focus:outline-none",
                 option.key === selected
-                  ? "border-indigo-500 text-indigo-700"
-                  : "border-transparent text-slate-600 hover:text-indigo-600"
+                  ? "border-indigo-500 text-indigo-700 dark:text-indigo-300 dark:border-indigo-300"
+                  : "border-transparent text-slate-600 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-300"
               )}
             >
               {option.title}

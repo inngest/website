@@ -9,6 +9,5 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  console.log("Front matter?", props);
   return <Content />;
 }

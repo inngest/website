@@ -1,8 +1,10 @@
 export default function Header({ children }) {
   return (
     <header
+      /* .header class used for tailwind prose override (see typography.js) */
       className={`
-      relative mb-32
+      header
+      relative mb-24
       flex flex-col items-center text-center justify-center
     `}
     >
@@ -14,7 +16,9 @@ export default function Header({ children }) {
         bg-cover bg-no-repeat bg-bottom
       `}
       ></div>
-      <div className="relative py-32 z-20">{children}</div>
+      <div className="relative py-32 z-20 text-carbon-50 font-regular">
+        {children}
+      </div>
     </header>
   );
 }

@@ -29,10 +29,32 @@ When you send events to Inngest via HTTP, they are received by a broker which pr
 
 ### See It In Action
 
-TODO do we have a short video demo of this??
+```typescript
+const createSummary = inngest.createFunction(
+  { id: "create-conversation-summary", concurrency: { limit: 10 } },
+  { event: "thread/message.sent" }
+  async (event) => {
+    // business logic to create a summary via LLM
+  }
+);
+const createSummary = inngest.createFunction(
+  { id: "send-notifications" },
+  { event: "thread/message.sent" }
+  async (event) => {
+    // business logic to send email notifications to users
+  }
+);
+// In your API endpoint
+async function POST(req) {
+  const message = await db.messages.create(req.body);
+
+  // ⬇️ This event triggers both functions to run, each with their own queue:
+  await inngest.send({ name: "thread/message.sent", data: message });
+
+  return Response.json({ success: true }, { status: 200 });
+}
+```
 
 ## Get Started with Inngest Today
 
 To start using Inngest's combined message broker and queue in your application, get started with Inngest's free and open source dev server today. Learn more about the practical differences between message queues and brokers here.
-
-TODO Quickstart
