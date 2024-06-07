@@ -119,6 +119,7 @@
     "autoprefixer": "10.4.13",
     "broken-link-checker": "0.7.8",
     "eslint-config-next": "13.1.1",
+    "ignore-loader": "0.1.2",
     "postcss": "8.4.19",
     "postcss-focus-visible": "6.0.4",
     "prettier": "2.8.1",

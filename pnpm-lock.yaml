@@ -283,6 +283,9 @@ devDependencies:
   eslint-config-next:
     specifier: 13.1.1
     version: 13.1.1(eslint@8.46.0)(typescript@5.1.3)
+  ignore-loader:
+    specifier: 0.1.2
+    version: 0.1.2
   postcss:
     specifier: 8.4.19
     version: 8.4.19
@@ -9656,6 +9659,10 @@ packages:
 
   /iferr@0.1.5:
     resolution: {integrity: sha512-DUNFN5j7Tln0D+TxzloUjKB+CtVu6myn0JEFak6dG18mNt9YkQ6lzGCdafwofISZ1lLF3xRHJ98VKy9ynkcFaA==}
+
+  /ignore-loader@0.1.2:
+    resolution: {integrity: sha512-yOJQEKrNwoYqrWLS4DcnzM7SEQhRKis5mB+LdKKh4cPmGYlLPR0ozRzHV5jmEk2IxptqJNQA5Cc0gw8Fj12bXA==}
+    dev: true
 
   /ignore@4.0.6:
     resolution: {integrity: sha512-cyFDKrqc/YdcWFniJhzI42+AzS+gNwmUzOSFcRCQYwySuBBBy/KjuxWLZ/FHEH6Moq1NizMOBWyTcv8O4OZIMg==}
