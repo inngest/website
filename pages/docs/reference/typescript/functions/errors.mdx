@@ -222,6 +222,40 @@ inngest.createFunction(
 );
 ```
 
+## Stack traces
+
+When calling functions that return Promises, await the Promise to ensure that the stack trace is preserved. This applies to functions executing in different cycles of the event loop, for example, when calling a database or an external API. This is especially useful when debugging errors in production.
+
+<CodeGroup>
+  ```ts {{ title: "Returning Promise" }}
+  inngest.createFunction(
+    { id: "update-recent-usage" },
+    { event: "app/update-recent-usage" },
+    async ({ event, step }) => {
+      // ...
+      await step.run("update in db", () => doSomeWork(event.data));
+      // ...
+    }
+  );
+  ```
+  ```ts {{ title: "Awaiting Promise" }}
+  inngest.createFunction(
+    { id: "update-recent-usage" },
+    { event: "app/update-recent-usage" },
+    async ({ event, step }) => {
+      // ...
+      await step.run("update in db", async () => {
+        return await doSomeWork(event.data);
+      });
+      // ...
+    }
+  );
+
+  ```
+</CodeGroup>
+
+Please note that immediately returning the Promise will not include a pointer to the calling function in the stack trace. Awaiting the Promise will ensure that the stack trace includes the calling function.
+
 ## Learn more
 
 * Guide: [Error handling](/docs/guides/error-handling)

@@ -1,0 +1,246 @@
+import { CodeGroup } from "shared/Docs/mdx";
+export const description = `Build reliable workflows with event coordination and conditional execution using Inngest's multi-step functions.`
+
+# Multi-Step Functions
+
+Use Inngest's multi-step functions to safely coordinate events, delay execution for hours or _days_, retry [individual steps](/docs/learn/inngest-steps), and conditionally run code based on the result of previous steps and incoming events.
+
+Critically, multi-step functions are written in code, not config, meaning you create readable, obvious functionality that's easy to maintain.
+
+## Benefits of multi-step functions
+
+Creating functions that utilize multiple steps enable you to:
+
+- Running retriable blocks of code to maximum reliability.
+- Pausing execution and waiting for an event matching rules before continuing.
+- Pausing for an amount of time or until a specified time.
+
+This approach makes building reliable and distributed code simple. By wrapping asynchronous actions such as API calls in retriable blocks, we can ensure reliability when coordinating across many services.
+
+## How to write a multi-step function
+
+Consider this simple [Inngest function](/docs/learn/inngest-functions) which sends a welcome email when a user signs up:
+
+<CodeGroup>
+```ts
+import { Inngest } from "inngest";
+
+const inngest = new Inngest({ id: "my-app" });
+
+export default inngest.createFunction(
+  { id: "activation-email" },
+  { event: "app/user.created" },
+  async ({ event }) => {
+    await sendEmail({ email: event.user.email, template: "welcome" });
+  }
+);
+```
+</CodeGroup>
+
+This function comes with all of the benefits of Inngest: the code is reliable and retriable. If an error happens, you will recover the data. This works for a single-task functions.
+
+However, there is a new requirement: if a user hasn't created a post on our platform within 24 hours of signing up, we should send the user another email. Instead of adding more logic to the handler, we can convert this function into a multi-step one.
+
+### 1. Convert to a step function
+
+First, let's convert this function into a multi-step function:
+- Add a `step` argument to the handler in the Inngest function.
+- Wrap `sendEmail()` call in a [`step.run()`](/docs/reference/functions/step-run) method.
+
+```ts
+export default inngest.createFunction(
+  { id: "activation-email" },
+  { event: "app/user.created" },
+  async ({ event, step }) => {
+    await step.run("send-welcome-email", async () => {
+      return await sendEmail({ email: event.user.email, template: "welcome" });
+    });
+  }
+);
+```
+
+The main difference is that we've wrapped our `sendEmail()` call in a `step.run()` call. This is how we tell Inngest that this is an individual step in our function. This step can be retried independently, just like a single-step function would.
+
+### 2. Add another step: wait for event
+
+Once the welcome email is sent, we want to wait at most 24 hours for our user to create a post. If they haven't created one by then, we want to send them a reminder email.
+
+Elsewhere in our app, an `app/post.created` event is sent whenever a user creates a new post. We could use it to trigger the second email.
+
+To do this, we can use the [`step.waitForEvent()`](/docs/reference/functions/step-wait-for-event) method. This tool will wait for a matching event to be fired, and then return the event data. If the event is not fired within the timeout, it will return `null`, which we can use to decide whether to send the reminder email.
+
+<CodeGroup>
+```ts
+export default inngest.createFunction(
+  { id: "activation-email" },
+  { event: "app/user.created" },
+  async ({ event, step }) => {
+    await step.run("send-welcome-email", async () => {
+      return await sendEmail({ email: event.user.email, template: "welcome" });
+    });
+
+    // Wait for an "app/post.created" event
+    const postCreated = await step.waitForEvent("wait-for-post-creation", {
+      event: "app/post.created",
+      match: "data.user.id", // the field "data.user.id" must match
+      timeout: "24h", // wait at most 24 hours
+    });
+  }
+);
+```
+</CodeGroup>
+
+Now we have a `postCreated` variable, which will be `null` if the user hasn't created a post within 24 hours, or the event data if they have.
+
+### 3. Set conditional action
+
+Finally, we can use the `postCreated` variable to send the reminder email if the user hasn't created a post. Let's add another block of code with `step.run()`:
+
+<CodeGroup>
+```ts
+export default inngest.createFunction(
+  { id: "activation-email" },
+  { event: "app/user.created" },
+  async ({ event, step }) => {
+    await step.run("send-welcome-email", async () => {
+      return await sendEmail({ email: event.user.email, template: "welcome" });
+    });
+
+    // Wait for an "app/post.created" event
+    const postCreated = await step.waitForEvent("wait-for-post-creation", {
+      event: "app/post.created",
+      match: "data.user.id", // the field "data.user.id" must match
+      timeout: "24h", // wait at most 24 hours
+    });
+
+    if (!postCreated) {
+      // If no post was created, send a reminder email
+      await step.run("send-reminder-email", async () => {
+        return await sendEmail({
+          email: event.user.email,
+          template: "reminder",
+        });
+      });
+    }
+  }
+);
+```
+</CodeGroup>
+
+That's it! We've now written a multi-step function that will send a welcome email, and then send a reminder email if the user hasn't created a post within 24 hours.
+
+Most importantly, we had to write no config to do this. We can use all the power of JavaScript to write our functions and all the power of Inngest's tools to coordinate between events and steps.
+
+## Step Reference
+
+You can read more about [Inngest steps](/docs/learn/inngest-steps) or jump directly to a step reference guide:
+
+- [`step.run()`](/docs/reference/functions/step-run): Run synchronous or asynchronous code as a retriable step in your function.
+- [`step.sleep()`](/docs/reference/functions/step-sleep): Sleep for a given amount of time.
+- [`step.sleepUntil()`](/docs/reference/functions/step-sleep-until): Sleep until a given time.
+- [`step.invoke()`](/docs/reference/functions/step-invoke): Invoke another Inngest function as a step, receiving the result of the invoked function.
+- [`step.waitForEvent()`](/docs/reference/functions/step-wait-for-event): Pause a function's execution until another event is received.
+- [`step.sendEvent()`](/docs/reference/functions/step-send-event): Send event(s) reliability within your function. Use this instead of `inngest.send()` to ensure reliable event delivery from within functions.
+
+## Gotchas
+
+### My function is running twice
+
+Inngest will communicate with your function multiple times throughout a single run and will use your use of tools to intelligently memoize state.
+
+For this reason, placing business logic outside of a `step.run()` call is a bad idea, as this will be run every time Inngest communicates with your function.
+
+### I want to run asynchronous code
+
+`step.run()` accepts an `async` function, like so:
+
+```ts
+await step.run("do-something", async () => {
+  // your code
+});
+```
+
+Each call to `step.run()` is a single retriable step - a lightweight transaction.  Therefore, each step should have a single side effect. For example, the below code is problematic:
+
+```ts
+await step.run("create-alert", async () => {
+  const alertId = await createAlert();
+  await sendAlertLinkToSlack(alertId);
+});
+```
+
+If `createAlert()` succeeds but `sendAlertLinkToSlack()` fails, the code will be retried and an alert will be created every time the step is retried.
+
+Instead, we should split out asynchronous actions into multiple steps so they're retried independently.
+
+```ts
+const alertId = await step.run("create-alert", () => createAlert());
+
+await step.run("send-alert-link", () => sendAlertLinkToSlack(alertId));
+```
+
+### My variable isn't updating
+
+Because Inngest communicates with your function multiple times, memoising state as it goes, code within calls to `step.run()` is not called on every invocation.
+
+Make sure that any variables needed for the overall function are _returned_ from calls to `step.run()`:
+
+```ts
+// This is the right way to set variables within step.run :)
+const userId = await step.run("get-user", () => getRandomUserId());
+
+console.log(userId); // 123
+```
+
+For comparison, here are **two examples of malfunctioning code** (if you're using steps to update variables within the function's closure):
+
+```ts
+// THIS IS WRONG! step.run() only runs once and is skipped for future
+// steps, so userID will not be defined.
+let userId;
+
+// Do NOT do this! Instead, return data from step.run()
+await step.run("get-user", async () => {
+  userId = await getRandomUserId();
+});
+
+console.log(userId); // undefined
+```
+
+### `sleepUntil()` isn't working as expected
+
+Make sure to only to use `sleepUntil()` with dates that will be static across the various calls to your function.
+
+Always use `sleep()` if you'd like to wait a particular time from _now_.
+
+```ts
+// ❌ Bad
+const tomorrow = new Date();
+tomorrow.setDate(tomorrow.getDate() + 1);
+await step.sleepUntil("wait-until-tomorrow", tomorrow);
+
+// ✅ Good
+await step.sleep("wait-a-day", "1 day");
+```
+
+```ts
+// ✅ Good
+const userBirthday = await step.run("get-user-birthday", async () => {
+  const user = await getUser();
+  return user.birthday; // Date
+});
+
+await sleepUntil("wait-for-user-birthday", userBirthday);
+```
+
+
+## Further reading
+
+More information on multi-step functions:
+- Blog post: ["Building an Event Driven Video Processing Workflow with Next.js, tRPC, and Inngest
+"](/blog/nextjs-trpc-inngest)
+- Blog post: ["Running chained LLMs with TypeScript in production"](/blog/running-chained-llms-typescript-in-production)
+- Blog post: [building Truckload](/blog/mux-migrating-video-collections), a tool for heavy video migration between hosting platforms, from Mux.
+- Blog post: building _banger.show_'s [video rendering pipeline](/blog/banger-video-rendering-pipeline).
+- [Email sequence examples](/docs/examples/email-sequence) implemented with Inngest.
+- [Soundcloud Case Study](/customers/soundcloud): building scalable video pipelines with Inngest to streamline dynamic video generation.

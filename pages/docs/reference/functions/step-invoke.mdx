@@ -165,7 +165,7 @@ When a function object is passed as an argument, internally, the SDK retrieves t
 
 When Inngest receives the request to invoke a function, it'll do so and wait for an `inngest/function.finished` event, which it will use to fulfil the data (or error) for the step.
 
-## Return values & serialization
+## Return values and serialization
 
 Similar to `step.run()`, all data returned from `step.invoke()` is serialized as JSON. This is done to enable the SDK to return a valid serialized response to the Inngest service.
 
