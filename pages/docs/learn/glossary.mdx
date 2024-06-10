@@ -27,7 +27,7 @@ A fan-out function (also known as "fan-out job") in Inngest is designed to trigg
 
 ## Flow Control
 
-Flow control in Inngest encompasses the management of how and when code executes. This includes features like rate limiting, idempotency, debouncing, and concurrency controls. It helps optimize the performance and reliability of workflows by preventing bottlenecks and managing the execution order of tasks with tools like [steps](#inngest-step). Read more about [Flow Control](/docs/guides/flow-control).
+Flow control in Inngest encompasses rate, throughput, priority, timing, and conditions of how functions are executed in regard to events. It helps optimize the performance and reliability of workflows by preventing bottlenecks and managing the execution order of tasks with tools like [steps](#inngest-step). Read more about [Flow Control](/docs/guides/flow-control).
 
 ## Function Replay
 
@@ -67,10 +67,6 @@ which enable developers to run reliable background logic, from background jobs t
 
 In Inngest, a "step" represents a discrete, independently retriable unit of work within a [function](#inngest-function). Steps enable complex workflows by breaking down a function into smaller, manageable blocks, allowing for automatic retries and state persistence. This approach ensures that even if a step fails, only that task is retried, not the entire function. Read more about [Inngest Steps](/docs/learn/inngest-steps).
 
-### Step Memoization
-
-Step memoization in Inngest refers to the technique of storing the results of steps so they do not need to be re-executed if already completed. This optimization enhances performance and reliability by preventing redundant computations and ensuring that each step's result is consistently available for subsequent operations. Read more about [Step Memoization](/docs/learn/how-functions-are-executed#secondary-executions-memoization-of-steps).
-
 ## Priority
 
 Priority is one of the methods offered by Inngest's [Flow Control](#flow-control). It allows you to assign different priority levels to [functions](#inngest-function), ensuring that critical tasks are executed before less important ones. By setting priorities, you can manage the order of execution, improving the responsiveness and efficiency of your workflows. This feature is essential for optimizing resource allocation and ensuring that high-priority operations are handled promptly. Read more about [Priority](/docs/guides/priority).
@@ -88,6 +84,10 @@ Rate limiting is one of the methods offered by Inngest's [Flow Control](#flow-co
 ## SDK
 
 The Software Development Kit (SDK) is a collection of tools, libraries, and documentation that allows developers to easily integrate and utilize Inngest's features within their applications. The SDK simplifies the process of creating, managing, and executing functions, handling events, and configuring workflows. It supports multiple programming languages and environments, ensuring broad compatibility and ease of use. Currently, Inngest offers SDKs for TypeScript, Python, and Go. Read more about [Inngest SDKs](/docs/reference).
+
+## Step Memoization
+
+Step memoization in Inngest refers to the technique of storing the results of steps so they do not need to be re-executed if already completed. This optimization enhances performance and reliability by preventing redundant computations and ensuring that each step's result is consistently available for subsequent operations. Read more about [Step Memoization](/docs/learn/how-functions-are-executed#secondary-executions-memoization-of-steps).
 
 ## Throttling
 
