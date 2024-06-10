@@ -5,6 +5,7 @@ import {
   LifebuoyIcon,
   PlayIcon,
   QuestionMarkCircleIcon,
+  LightBulbIcon,
 } from "@heroicons/react/24/outline";
 import GoIcon from "src/shared/Icons/Go";
 import GuideIcon from "src/shared/Icons/Guide";
@@ -980,7 +981,7 @@ export const menuTabs = [
   },
   {
     title: "Examples",
-    icon: CogIcon,
+    icon: LightBulbIcon,
     href: "/docs/examples",
     matcher: matchers.examples,
   },
@@ -1014,7 +1015,7 @@ export const topLevelNav = [
   },
   {
     title: "Examples",
-    icon: CogIcon,
+    icon: LightBulbIcon,
     href: "/docs/examples",
     matcher: matchers.examples,
     sectionLinks: sectionExamples,
