@@ -57,6 +57,10 @@ const sectionGettingStarted: NavGroup[] = [
         title: "Inngest steps",
         href: `/docs/learn/inngest-steps`,
       },
+      {
+        title: "Glossary",
+        href: `/docs/learn/glossary`,
+      },
       { title: "Installing the SDK", href: `/docs/sdk/overview` },
       { title: "Serving the API & Frameworks", href: `/docs/sdk/serve` },
       { title: "Sending Events", href: `/docs/events` },
