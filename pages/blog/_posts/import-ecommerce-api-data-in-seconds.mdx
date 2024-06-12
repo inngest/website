@@ -60,7 +60,7 @@ Here's some example code of an Inngest function that runs whenever the above eve
 
 ```typescript
 export default inngest.createFunction(
-  { ide: "shopify-product-import", concurrency: 10 },
+  { id: "shopify-product-import", concurrency: 10 },
   { event: "shopify/import.requested" },
   async ({ event, step }) => {
     const allProducts = []
