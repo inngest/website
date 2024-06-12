@@ -205,14 +205,20 @@ export default function Features() {
       <div className="mx-auto my-24">
         <div className="mx-auto grid md:grid-cols-2 lg:grid-cols-3 gap-x-8 lg:gap-x-12 gap-y-12 lg:gap-y-20">
           {content.map(
-            ({
-              title,
-              Icon = ArrowPathRoundedSquareIcon,
-              iconSize,
-              content,
-              ctas,
-            }) => (
-              <div className="flex flex-col gap-6 text-sm text-slate-300 tracking-normal font-medium leading-normal">
+            (
+              {
+                title,
+                Icon = ArrowPathRoundedSquareIcon,
+                iconSize,
+                content,
+                ctas,
+              },
+              idx
+            ) => (
+              <div
+                key={idx}
+                className="flex flex-col gap-6 text-sm text-slate-300 tracking-normal font-medium leading-normal"
+              >
                 <div className="flex gap-3 items-center text-slate-400/80">
                   <Icon className="w-6" size={iconSize} />
                   <h3 className="text-lg font-semibold text-slate-50">
@@ -222,8 +228,9 @@ export default function Features() {
                 <div className="flex-grow">{content}</div>
                 <div className="flex gap-4">
                   {ctas?.length > 0 &&
-                    ctas.map(({ href, text = "Learn more" }) => (
+                    ctas.map(({ href, text = "Learn more" }, idx) => (
                       <Link
+                        key={idx}
                         href={href}
                         className="text-indigo-300 hover:text-white hover:underline decoration-dotted underline-offset-4 decoration-slate-50/30"
                       >
