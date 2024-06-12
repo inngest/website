@@ -86,7 +86,48 @@ inngest.createFunction(
 
 Now, "hello" is printed only once, as expected.
 
-## Implementing Loops in Inngest
+## Loop example
+
+Here's [an example](/blog/import-ecommerce-api-data-in-seconds) of an Inngest function that imports all products from a Shopify store into a local system. This function iterates over all pages combining all products into a single array.
+
+```typescript
+export default inngest.createFunction(
+  { id: "shopify-product-import"},
+  { event: "shopify/import.requested" },
+  async ({ event, step }) => {
+    const allProducts = []
+    let cursor = null
+    let hasMore = true
+
+    // Use the event's "data" to pass key info like IDs
+    const session = await database.getShopifySession(event.data.storeId)
+
+    while (hasMore) {
+      const page = await step.run(`fetch-products-${pageNumber}`, async () => {
+        return await shopify.rest.Product.all({
+          session,
+          since_id: cursor,
+        })
+      })
+      // Combine all of the data into a single list
+      allProducts.push(...page.products)
+      if (page.products.length === 50) {
+        cursor = page.products[49].id
+      } else {
+        hasMore = false
+      }
+    }
+
+    // Now we have the entire list of products within allProducts!
+  }
+)
+```
+
+In the example above, each iteration of the loop is managed using `step.run()`, ensuring that **all non-deterministic logic (like fetching products from Shopify) is encapsulated within a step**. This approach guarantees that if the request fails, it will be retried automatically. This structure aligns with Inngest's execution model, where each step is a separate HTTP request, ensuring robust and consistent loop behavior.
+
+Read more about this use case in the [blog post](/blog/import-ecommerce-api-data-in-seconds).
+
+## Best practices: implementing loops in Inngest
 
 To ensure your loops run correctly within [Inngest's execution model](/docs/learn/how-functions-are-executed):
 
@@ -102,89 +143,8 @@ Place non-deterministic logic (like API calls, database queries, or random numbe
 
 When using `step.sleep` inside a loop, ensure it is combined with structuring the loop to handle each iteration as a separate step. This prevents the function from appearing to restart and allows for controlled timing between iterations.
 
-Consider this function:
-
-```typescript
-inngest.createFunction(
-  { id: "loop-sleep" },
-  { event: "test/loop.sleep" },
-  async ({ step }) => {
-    for (let i = 0; i < 3; i++) {
-      console.log("Loop iteration", i);
-      await step.sleep("sleep", "1s");
-      await step.run("log", () => {
-        console.log("Slept for 1 second");
-      });
-    }
-  },
-);
-```
-
-In the example, every step method is run in a separate HTTP request, which means Inngest needs to start the function from the beginning each time. The SDK receives a request, runs the next unmemoized step, and then exits early to report the results. So as Inngest runs each step, it gets further into the loop iterations.
-
-
-With this in mind, the above code will be executed in Inngest as follows:
-
-<CodeGroup forceTabs>
-```bash {{ title: "✅ How Inngest executes the code" }}
-
-# This is how Inngest executes the code above:
-
-<run start>
-
-Loop iteration 0
-
-Loop iteration 0
-<sleep>
-Slept for 1 second
-
-Loop iteration 0
-Loop iteration 1
-
-Loop iteration 0
-Loop iteration 1
-<sleep>
-Slept for 1 second
-
-Loop iteration 0
-Loop iteration 1
-Loop iteration 2
-
-Loop iteration 0
-Loop iteration 1
-Loop iteration 2
-<sleep>
-Slept for 1 second
-
-<run complete>
-```
-```bash {{ title: "❌ Common incorrect misconception" }}
-
-# This is a common assumption of how Inngest executes the code above.
-# It is not correct.
-
-<run start>
-
-Loop iteration 0
-<sleep>
-Slept for 1 second
-
-Loop iteration 1
-<sleep>
-Slept for 1 second
-
-Loop iteration 2
-<sleep>
-Slept for 1 second
-
-<run complete>
-```
-</CodeGroup>
-
-When writing an Inngest function, assume all code outside of `step.run` is executed multiple times. All code within `step.run` is executed once (if it ran successfully and does not need a retry).
-
-
 ## Next steps
 
 - Learn more about [Inngest execution model](/docs/learn/how-functions-are-executed).
 - Explore [multi-step functions](/docs/guides/multi-step-functions).
+- Blog post: ["How to import 1000s of items from any E-commerce API in seconds with serverless functions"](/blog/import-ecommerce-api-data-in-seconds).
