@@ -41,7 +41,7 @@ Inngest functions are defined with a series of steps that define the execution f
 Inngest functions execute incrementally, _step by step_. As a function is executed, the results of each step are returned to Inngest and persisted in a managed function state store. The steps that successfully executed are [_memoized_](https://en.wikipedia.org/wiki/Memoization). The function then resumes, skipping any steps that have already been completed and the SDK injects the data returned by the previous step into the function.
 
 <Callout variant="info">
-Each step in your function is executed as **a separate HTTP request**. Any non-deterministic logic (such as DB calls or API calls) must be placed within a `step.run` call to ensure it executes correctly in the context of the execution model.
+Each step in your function is executed as **a separate HTTP request**. Any non-deterministic logic (such as DB calls or API calls) must be placed within a `step.run()` call to ensure it executes correctly in the context of the execution model.
 </Callout>
 
 Let's look at an example of a function and walk through how it is executed:
