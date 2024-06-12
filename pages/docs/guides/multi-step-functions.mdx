@@ -142,7 +142,7 @@ You can read more about [Inngest steps](/docs/learn/inngest-steps) or jump direc
 - [`step.sendEvent()`](/docs/reference/functions/step-send-event): Send event(s) reliability within your function. Use this instead of `inngest.send()` to ensure reliable event delivery from within functions.
 
 <Callout>
-Please note that each step is executed as **a separate HTTP request**. To ensure efficient execution, place any non-deterministic logic (such as DB calls or API calls) within a `step.run()` call. Learn more about [working with loops in Inngest](/docs/guides/working-with-loops).
+Please note that each step is executed as **a separate HTTP request**. To ensure efficient execution, place any non-deterministic logic (such as DB calls or API calls) within a `step.run()` call. [Learn more](/docs/guides/working-with-loops).
 
 </Callout>
 
