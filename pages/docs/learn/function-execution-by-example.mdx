@@ -1,0 +1,127 @@
+# Function execution by example
+
+
+<CH.Spotlight>
+
+How a function is executed:
+
+<CH.Code>
+```ts function.ts
+async ({ event, step }) => {
+  const data = await step.run('update-db', () => {
+    return await contacts.insert(event.data);
+  });
+  await step.run('save-to-crm', () => {
+    return crm.post('/api/v1/contacts', data.email);
+  });
+}
+```
+---
+```json State
+{}
+```
+</CH.Code>
+
+---
+
+First, the function is called with the `event` payload data.
+
+<CH.Code>
+```ts function.ts focus=1
+```
+---
+```json State
+{}
+```
+</CH.Code>
+
+---
+
+Next, the first step is discovered, `"update-db"`. The step is executed.
+
+<CH.Code>
+```ts function.ts focus=2
+```
+---
+```json State
+```
+</CH.Code>
+
+---
+
+✅ This step is successfully executed and the result is returned to Inngest.
+
+<CH.Code>
+```ts function.ts focus=3
+```
+---
+```json State
+{
+  "update-db": {
+    "id": "12345",
+    "email": "johnny@utah.com"
+  }
+}
+```
+</CH.Code>
+
+
+
+---
+
+Next, the function is re-invoked from the beginning with the state of the previous execution.
+
+The first step is discovered, `"update-db"`. The previous result is found in the state of previous executions.
+
+<CH.Code>
+```ts function.ts focus=2:5 mark=5
+async ({ event, step }) => {
+  const data = await step.run('update-db', () => {
+    return await contacts.insert(event.data);
+  });
+  // data = { id: '12345', email: "johnny@utah.com" }
+  await step.run('save-to-crm', () => {
+    return crm.post('/api/v1/contacts', data.email);
+  });
+}
+```
+---
+```json State
+{
+  "update-db": {
+    "id": "12345",
+    "email": "johnny@utah.com"
+  }
+}
+```
+</CH.Code>
+
+---
+
+The next step is discovered, `"save-to-crm"`. The step is executed.
+
+<CH.Code>
+```ts function.ts focus=6:8 mark=6
+async ({ event, step }) => {
+  const data = await step.run('update-db', () => {
+    return await contacts.insert(event.data);
+  });
+  // data = { id: '12345', email: "johnny@utah.com" }
+  await step.run('save-to-crm', () => {
+    return crm.post('/api/v1/contacts', data.email);
+  });
+}
+```
+---
+```json State
+{
+  "update-db": {
+    "id": "12345",
+    "email": "johnny@utah.com"
+  }
+}
+```
+</CH.Code>
+
+
+</CH.Spotlight>
