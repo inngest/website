@@ -319,16 +319,6 @@ const FEATURES: Feature[] = [
     },
   },
   {
-    name: "Max sleep duration",
-    plans: {
-      [PLAN_NAMES.free]: "7 days",
-      [PLAN_NAMES.team]: "60 days",
-      [PLAN_NAMES.startup]: "6 months",
-      [PLAN_NAMES.enterprise]: "1 year",
-    },
-    infoUrl: "/docs/guides/delayed-functions?ref=pricing",
-  },
-  {
     name: "Features",
     heading: true,
   },

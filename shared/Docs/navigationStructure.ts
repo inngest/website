@@ -5,6 +5,7 @@ import {
   LifebuoyIcon,
   PlayIcon,
   QuestionMarkCircleIcon,
+  LightBulbIcon,
 } from "@heroicons/react/24/outline";
 import GoIcon from "src/shared/Icons/Go";
 import GuideIcon from "src/shared/Icons/Guide";
@@ -56,6 +57,10 @@ const sectionGettingStarted: NavGroup[] = [
       {
         title: "Inngest steps",
         href: `/docs/learn/inngest-steps`,
+      },
+      {
+        title: "Glossary",
+        href: `/docs/learn/glossary`,
       },
       { title: "Installing the SDK", href: `/docs/sdk/overview` },
       { title: "Serving the API & Frameworks", href: `/docs/sdk/serve` },
@@ -976,7 +981,7 @@ export const menuTabs = [
   },
   {
     title: "Examples",
-    icon: CogIcon,
+    icon: LightBulbIcon,
     href: "/docs/examples",
     matcher: matchers.examples,
   },
@@ -1010,7 +1015,7 @@ export const topLevelNav = [
   },
   {
     title: "Examples",
-    icon: CogIcon,
+    icon: LightBulbIcon,
     href: "/docs/examples",
     matcher: matchers.examples,
     sectionLinks: sectionExamples,

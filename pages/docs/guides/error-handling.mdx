@@ -280,19 +280,19 @@ inngest.createFunction(
   async ({ event, step }) => {
     // ignore the error - this step is fine if it fails
     await step
-      .run("Non-critical step", () => {
+      .run("non-critical-step", () => {
         return updateMetric();
       })
       .catch();
 
     // Add a rollback to a step
     await step
-      .run("Create row", async () => {
+      .run("create-row", async () => {
         const row = await createRow(event.data.rowId);
         await addDetail(event.data.entry);
       })
       .catch((err) =>
-        step.run("Rollback row creation", async () => {
+        step.run("rollback-row-creation", async () => {
           await removeRow(event.data.rowId);
         }),
       );
@@ -304,11 +304,11 @@ inngestgo.CreateFunction(
 	inngestgo.FunctionOpts{ID: "add-data"},
 	inngestgo.EventTrigger("app/row.data.added", nil),
 	func(ctx context.Context, input inngestgo.Input[RowDataAddedEvent]) (any, error) {
-		_, _ = step.Run(ctx, "Non-critical step", func(ctx context.Context) (any, error) {
+		_, _ = step.Run(ctx, "non-critical-step", func(ctx context.Context) (any, error) {
 			return updateMetric()
 		})
 
-		_, err := step.Run(ctx, "Create row", func(ctx context.Context) (any, error) {
+		_, err := step.Run(ctx, "create-row", func(ctx context.Context) (any, error) {
 			_, err := createRow(input.Event.Data.RowID)
 			if err != nil {
 				return nil, err
@@ -316,7 +316,7 @@ inngestgo.CreateFunction(
 			return addDetail(input.Event.Data.Entry)
 		})
 		if err != nil {
-			_, err = step.Run(ctx, "Rollback row creation", func(ctx context.Context) (any, error) {
+			_, err = step.Run(ctx, "rollback-row-creation", func(ctx context.Context) (any, error) {
 				return removeRow(input.Event.Data.RowID)
 			})
                if err != nil {
@@ -402,7 +402,7 @@ inngest.createFunction(
   { event: "user/weekly.digest.requested" },
   async ({ event, step }) => {
     const user = await step
-      .run("Get user email", () => {
+      .run("get-user-email", () => {
         return db.users.findOne(event.data.userId);
       })
       .catch((err) => {
@@ -413,7 +413,7 @@ inngest.createFunction(
         throw err;
       });
 
-    await step.run("Send digest", () => {
+    await step.run("send-digest", () => {
       return sendDigest(user.email);
     });
   },
@@ -424,7 +424,7 @@ inngestgo.CreateFunction(
 	inngestgo.FunctionOpts{ID: "user-weekly-digest"},
 	inngestgo.EventTrigger("user/weekly.digest.requested", nil),
 	func(ctx context.Context, input inngestgo.Input[WeeklyDigestRequestedEvent]) (any, error) {
-		user, err := step.Run(ctx, "Get user email", func(ctx context.Context) (any, error) {
+		user, err := step.Run(ctx, "get-user-email", func(ctx context.Context) (any, error) {
 			return db.Users.FindOne(input.Event.Data.UserID)
 		})
 		if err != nil {
@@ -434,7 +434,7 @@ inngestgo.CreateFunction(
 			return nil, err
 		}
 
-		_, err = step.Run(ctx, "Send digest", func(ctx context.Context) (any, error) {
+		_, err = step.Run(ctx, "send-digest", func(ctx context.Context) (any, error) {
 			return sendDigest(user.(UserType).Email)
 		})
 		if err != nil {
@@ -454,13 +454,13 @@ from inngest.errors import NonRetriableError
 )
 def user_weekly_digest(ctx: inngest.Context, step: inngest.StepSync) -> None:
     try:
-        user = step.run("Get user email", db.users.find_one, ctx.event.data["userId"])
+        user = step.run("get-user-email", db.users.find_one, ctx.event.data["userId"])
     except Exception as err:
         if err.name == "UserNotFoundError":
             raise NonRetriableError("User no longer exists; stopping")
         raise
 
-    step.run("Send digest", send_digest, user["email"])
+    step.run("send-digest", send_digest, user["email"])
 ```
 </CodeGroup>
 
