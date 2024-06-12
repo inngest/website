@@ -141,6 +141,11 @@ You can read more about [Inngest steps](/docs/learn/inngest-steps) or jump direc
 - [`step.waitForEvent()`](/docs/reference/functions/step-wait-for-event): Pause a function's execution until another event is received.
 - [`step.sendEvent()`](/docs/reference/functions/step-send-event): Send event(s) reliability within your function. Use this instead of `inngest.send()` to ensure reliable event delivery from within functions.
 
+<Callout>
+Please note that each step is executed as **a separate HTTP request**. To ensure efficient execution, place any non-deterministic logic (such as DB calls or API calls) within a `step.run()` call. Learn more about [working with loops in Inngest](/docs/guides/working-with-loops).
+
+</Callout>
+
 ## Gotchas
 
 ### My function is running twice
@@ -232,10 +237,17 @@ const userBirthday = await step.run("get-user-birthday", async () => {
 await sleepUntil("wait-for-user-birthday", userBirthday);
 ```
 
+### Unexpected loop behavior
+
+Users often find that loops in their functions do not behave as expected, leading to repeated or inconsistent operations. This issue arises because each step in Inngest is executed as a separate HTTP request. The function re-enters from the beginning for each step execution, causing loops to restart unless properly managed. To correctly implement loops, treat each iteration as an independent step using `step.run()` and `step.sleep()`, and encapsulate non-deterministic logic within steps.
+
+Learn more about [working with loops in Inngest](/docs/guides/working-with-loops).
+
 
 ## Further reading
 
 More information on multi-step functions:
+- Docs guide: [working with loops in Inngest](/docs/guides/working-with-loops)
 - Blog post: ["Building an Event Driven Video Processing Workflow with Next.js, tRPC, and Inngest
 "](/blog/nextjs-trpc-inngest)
 - Blog post: ["Running chained LLMs with TypeScript in production"](/blog/running-chained-llms-typescript-in-production)

@@ -1,0 +1,190 @@
+export const description = 'Each step is executed as a separate HTTP request.';
+
+# Working with Loops in Inngest
+
+In Inngest each step in your function is executed as a separate HTTP request.  This means that for every step in your function, the function is re-entered, starting from the beginning, up to the point where the next step is executed. This [execution model](/docs/learn/how-functions-are-executed) helps in managing retries, timeouts, and ensures robustness in distributed systems.
+
+This page covers how to implement loops in your Inngest functions and avoid common pitfalls.
+
+## Simple function example
+
+Let's start with a simple example to illustrate the concept:
+
+```javascript
+inngest.createFunction(
+  { id: "simple-function" },
+  { event: "test/simple.function" },
+  async ({ step }) => {
+    console.log("hello");
+
+    await step.run("a", async () => { console.log("a") });
+    await step.run("b", async () => { console.log("b") });
+    await step.run("c", async () => { console.log("c") });
+  }
+);
+```
+
+In the above example, you will see "hello" printed four times, once for the initial function entry and once for each step execution (`a`, `b`, and `c`).
+
+
+<CodeGroup forceTabs>
+```bash {{ title: "✅ How Inngest executes the code" }}
+
+# This is how Inngest executes the code above:
+
+<run start>
+"hello"
+
+"hello"
+"a"
+
+"hello"
+"b"
+
+"hello"
+"c"
+<run complete>
+```
+```bash {{ title: "❌ Common incorrect misconception" }}
+
+# This is a common assumption of how Inngest executes the code above.
+# It is not correct.
+
+<run start>
+
+"hello"
+"a"
+"b"
+"c"
+
+<run complete>
+```
+</CodeGroup>
+
+Any non-deterministic logic (like database calls or API calls) must be placed inside a `step.run` call to ensure it is executed correctly within each step.
+
+With this in mind, here is how the previous example can be fixed:
+
+```ts
+inngest.createFunction(
+  { id: "simple-function" },
+  { event: "test/simple.function" },
+  async ({ step }) => {
+    await step.run("hello", () => { console.log("hello") });
+
+    await step.run("a", async () => { console.log("a") });
+    await step.run("b", async () => { console.log("b") });
+    await step.run("c", async () => { console.log("c") });
+  }
+);
+
+// hello
+// a
+// b
+// c
+```
+
+Now, "hello" is printed only once, as expected.
+
+## Implementing Loops in Inngest
+
+To ensure your loops run correctly within [Inngest's execution model](/docs/learn/how-functions-are-executed):
+
+### 1. Treat each loop iterations as a single step
+
+In a typical programming environment, loops maintain their state across iterations. In Inngest, each step re-executes the function from the beginning to ensure that only the failed steps will be re-tried. To handle this, treat each loop iteration as a separate step. This way, the loop progresses correctly, and each iteration builds on the previous one.
+
+### 2. Place non-deterministic logic inside steps
+
+Place non-deterministic logic (like API calls, database queries, or random number generation) inside `step.run` calls. This ensures that such operations are executed correctly and consistently within each step, preventing repeated execution with each function re-entry.
+
+### 3. Use sleep effectively
+
+When using `step.sleep` inside a loop, ensure it is combined with structuring the loop to handle each iteration as a separate step. This prevents the function from appearing to restart and allows for controlled timing between iterations.
+
+Consider this function:
+
+```typescript
+inngest.createFunction(
+  { id: "loop-sleep" },
+  { event: "test/loop.sleep" },
+  async ({ step }) => {
+    for (let i = 0; i < 3; i++) {
+      console.log("Loop iteration", i);
+      await step.sleep("sleep", "1s");
+      await step.run("log", () => {
+        console.log("Slept for 1 second");
+      });
+    }
+  },
+);
+```
+
+In the example, every step method is run in a separate HTTP request, which means Inngest needs to start the function from the beginning each time. The SDK receives a request, runs the next unmemoized step, and then exits early to report the results. So as Inngest runs each step, it gets further into the loop iterations.
+
+
+With this in mind, the above code will be executed in Inngest as follows:
+
+<CodeGroup forceTabs>
+```bash {{ title: "✅ How Inngest executes the code" }}
+
+# This is how Inngest executes the code above:
+
+<run start>
+
+Loop iteration 0
+
+Loop iteration 0
+<sleep>
+Slept for 1 second
+
+Loop iteration 0
+Loop iteration 1
+
+Loop iteration 0
+Loop iteration 1
+<sleep>
+Slept for 1 second
+
+Loop iteration 0
+Loop iteration 1
+Loop iteration 2
+
+Loop iteration 0
+Loop iteration 1
+Loop iteration 2
+<sleep>
+Slept for 1 second
+
+<run complete>
+```
+```bash {{ title: "❌ Common incorrect misconception" }}
+
+# This is a common assumption of how Inngest executes the code above.
+# It is not correct.
+
+<run start>
+
+Loop iteration 0
+<sleep>
+Slept for 1 second
+
+Loop iteration 1
+<sleep>
+Slept for 1 second
+
+Loop iteration 2
+<sleep>
+Slept for 1 second
+
+<run complete>
+```
+</CodeGroup>
+
+When writing an Inngest function, assume all code outside of `step.run` is executed multiple times. All code within `step.run` is executed once (if it ran successfully and does not need a retry).
+
+
+## Next steps
+
+- Learn more about [Inngest execution model](/docs/learn/how-functions-are-executed).
+- Explore [multi-step functions](/docs/guides/multi-step-functions).
