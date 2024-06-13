@@ -574,12 +574,11 @@ at the `/api` root.
 
 ## Framework: Remix
 
-You can add Inngest to Remix easily.  Add the following to `./app/routes/api.inngest.ts` for Remix v2 (or `./app/routes/api/inngest.ts` for Remix v1):
+You can add Inngest to Remix easily.  Add the following to `./app/routes/api.inngest.ts` for Remix:
 
 <CodeGroup>
 ```ts {{ title: "v3" }}
 // app/routes/api.inngest.ts
-// (for Remix 1, use app/routes/api/inngest.ts)
 import { serve } from "inngest/remix";
 import { inngest } from "~/inngest/client";
 import fnA from "~/inngest/fnA";
