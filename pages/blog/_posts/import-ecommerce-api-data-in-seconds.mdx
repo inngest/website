@@ -60,7 +60,7 @@ Here's some example code of an Inngest function that runs whenever the above eve
 
 ```typescript
 export default inngest.createFunction(
-  { name: "Shopify Product Import", concurrency: 10 },
+  { id: "shopify-product-import", concurrency: 10 },
   { event: "shopify/import.requested" },
   async ({ event, step }) => {
     const allProducts = []
@@ -72,7 +72,7 @@ export default inngest.createFunction(
 
     while (hasMore) {
       // step.run will be retried automatically if the request fails
-      const page = await step.run("Fetch products", async () => {
+      const page = await step.run("fetch-products", async () => {
         return await shopify.rest.Product.all({
           session,
           since_id: cursor,
@@ -103,13 +103,13 @@ With these concepts you can now add a series of steps that writes to your databa
 
 ```typescript
 inngest.createFunction(
-  { name: "Shopify Product Import", concurrency: 10 },
+  { id: "shopify-product-import", concurrency: 10 },
   { event: "shopify/import.requested" },
   async ({ event, step }) => {
     // --- See first code snippet above for the setup ---
 
     for (let product of allProducts) {
-      await step.run("Import product", async () => {
+      await step.run("import-product", async () => {
         await database.upsertProduct({
           storeId: event.data.storeId,
           product,
@@ -125,7 +125,7 @@ Even better, since `step.run()` returns a `Promise`, you can use `Promise.all()`
 
 ```typescript
 inngest.createFunction(
-  { name: "Shopify Product Import", concurrency: 10 },
+  { id: "shopify-product-import", concurrency: 10 },
   { event: "shopify/import.requested" },
   async ({ event, step }) => {
     // --- See first code snippet above for the setup ---
@@ -134,7 +134,7 @@ inngest.createFunction(
     // creating an array of step.run Promises - Inngest can handle it all!
     Promise.all(
       allProducts.map((product) =>
-        step.run("Import product", async () => {
+        step.run("import-product", async () => {
           await database.upsertProduct({
             storeId: event.data.storeId,
             product,
@@ -144,7 +144,7 @@ inngest.createFunction(
     )
 
     // Tell the user the import has been completed
-    await step.run("Import completed notification", async () => {
+    await step.run("import-completed-notification", async () => {
       const user = await database.getUser(event.data.userId)
       await sentEmail(user.email, "import_completed")
     })
@@ -163,14 +163,14 @@ Let's look at an example that fetches all images and copies those images to our 
 
 ```typescript
 inngest.createFunction(
-  { name: "Shopify Product Import", concurrency: 10 },
+  { id: "shopify-product-import", concurrency: 10 },
   { event: "shopify/import.requested" },
   async ({ event, step }) => {
     // --- See first code snippet above for the setup ---
 
     for (let product of allProducts) {
       // Fetch all images from each product
-      const response = await step.run("Fetch images product", async () => {
+      const response = await step.run("fetch-images-product", async () => {
         return await shopify.rest.Image.all({
           session: session,
           product_id: product.id,
@@ -198,11 +198,11 @@ Now that we have a `"shopify/copy.image"` event - we can write another function 
 
 ```typescript
 inngest.createFunction(
-  { name: "Shopify Copy Image to S3", concurrency: 20 },
+  { id: "shopify-copy-image-to-S3", concurrency: 20 },
   { event: "shopify/copy.image" },
   async ({ event, step }) => {
     const { imageId, storeId, productId } = event.data
-    await step.run("Copy image", async () => {
+    await step.run("copy-image", async () => {
       const res = await fetch(event.data.imageUrl)
       const blob = await res.blob()
       const ext = path.extname(event.data.imageUrl)
