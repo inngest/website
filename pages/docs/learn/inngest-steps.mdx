@@ -42,6 +42,10 @@ export default inngest.createFunction(
  
 The ID is also used to identify the function in the Inngest system.
 
+<Callout>
+Please note that each step is executed as **a separate HTTP request**. To ensure efficient execution, place any non-deterministic logic (such as DB calls or API calls) within a `step.run()` call.
+</Callout>
+
 ## Available Step Methods
 
 ### <a href="/docs/reference/functions/step-run" className="flex items-center gap-4"><IconConcurrency size="2rem"/><pre>step.run()</pre></a> {{anchor: false}}

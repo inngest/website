@@ -146,6 +146,10 @@ const sectionGuides: NavGroup[] = [
         title: "Invoking functions directly",
         href: `/docs/guides/invoking-functions-directly`,
       },
+      {
+        title: "Working with loops",
+        href: `/docs/guides/working-with-loops`,
+      },
     ],
   },
   {
