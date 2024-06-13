@@ -7,3 +7,7 @@ Host: https://www.inngest.com
 
 # Sitemaps
 Sitemap: https://www.inngest.com/sitemap.xml
+
+# Prevent short-lived ad landing pages from being indexed
+User-agent: Googlebot
+Disallow: /landing/*

@@ -1,3 +1,5 @@
+import { Callout, Row, Col, Properties, Property } from "src/shared/Docs/mdx";
+
 # Consuming webhook events
 
 At it's core, Inngest is centered around functions that are triggered by events. Webhooks are one of the most ubiquitous sources for events for developers. Inngest was designed to support webhook events.
@@ -97,7 +99,7 @@ function transform(evt, headers = {}, queryParams = {}) {
   return {
     name: `clerk/${evt.type}`,
     data: evt.data,
-    // You can optionally set ts using data from the raw json payload 
+    // You can optionally set ts using data from the raw json payload
     // to explicitly set the timestamp of the incoming event.
     // If ts is not set, it will be automatically set to the time the request is received.
   }

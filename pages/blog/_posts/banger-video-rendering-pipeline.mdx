@@ -8,8 +8,6 @@ author: Igor Samokhovets
 disableCTA: true
 ---
 
-import YouTube from 'react-youtube-embed';
-
 Hi everyone! My name is [Igor Samokhovets](https://twitter.com/IgorSamokhovets) and I'm a music producer who goes by the artist name Tequila Funk. In this blog post I will walk you through our video rendering pipeline built with Inngest, which powers [banger.show](https://banger.show/).
 
 
@@ -38,7 +36,7 @@ Before we dive in, let's take a high-level look at our video rendering pipeline:
 - The project is then sent to the render machine, which controls the progress, updates statuses, and handles error retries and "stalled render" cases.
 - Finally, when the render is finished, a number of tasks need to run, such as invalidating CDN cache, creating video thumbnails, or sending email to the user when the video is ready.
 
-Let's now dive into some parts of the video rendering pipeline. 
+Let's now dive into some parts of the video rendering pipeline.
 
 ### 1. Updating the render status
 

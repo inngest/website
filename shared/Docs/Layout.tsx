@@ -15,6 +15,7 @@ import { SectionProvider } from "./SectionProvider";
 import { useMobileNavigationStore } from "./MobileNavigation";
 import { getOpenGraphImageURL } from "../../utils/social";
 import clsx from "clsx";
+import { MDXComponents } from "mdx/types";
 
 const GITHUB_BRANCH = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_REF || "main";
 const GITHUB_PREFIX = `https://github.com/inngest/website/tree/${GITHUB_BRANCH}/`;
@@ -67,7 +68,7 @@ export function Layout({
 
   return (
     <div className="dark:bg-slate-1000">
-      <MDXProvider components={mdxComponents}>
+      <MDXProvider components={mdxComponents as any}>
         <Head>
           <title>{pageTitle}</title>
           <meta name="description" content={metaDescription}></meta>

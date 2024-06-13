@@ -188,6 +188,7 @@ function MyApp({ Component, pageProps }: AppProps<DefaultProps>) {
       <Script
         id="js-inngest-sdk-script"
         strategy="afterInteractive"
+        // @ts-ignore this should inherit base html props
         src="/inngest-sdk.js"
         onLoad={() => {
           window.Inngest.init(process.env.NEXT_PUBLIC_INNGEST_KEY);
