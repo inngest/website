@@ -10,6 +10,7 @@ import { loadMarkdownFile, Heading } from "utils/markdown";
 import * as MDXComponents from "../../shared/Patterns/mdx";
 import { SECTIONS } from "./index";
 import { Button } from "src/shared/Button";
+import { SectionProvider } from "src/shared/Docs/SectionProvider";
 import DebugBreakpoints from "src/shared/DebugBreakpoints";
 
 const getPatternProps = (slug: string) => {
@@ -123,11 +124,13 @@ export default function Patterns({
 
           {/* <article className="col-span-3 row-start-1 col-start-1 xl:col-start-2 xl:col-span-3 max-w-[65ch] prose m-auto mb-20 prose-img:rounded-lg prose-code:bg-slate-800 prose-code:tracking-tight text-slate-300 prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline hover:prose-a:text-white prose-a:font-medium prose-a:transition-all prose-invert"> */}
           <article className="lg:col-span-3 lg:pr-12 xl:pr-20 lg:col-start-1 lg:row-start-1 max-w-[65ch] lg:max-w-none m-auto lg:m-0 prose mb-20 prose-img:rounded-lg prose-code:bg-slate-800 prose-code:tracking-tight text-slate-400 prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline hover:prose-a:text-white prose-a:font-medium prose-a:transition-all prose-invert">
-            {/* @ts-ignore */}
-            <MDXRemote
-              compiledSource={compiledSource}
-              components={MDXComponents}
-            />
+            <SectionProvider sections={[]}>
+              {/* @ts-ignore */}
+              <MDXRemote
+                compiledSource={compiledSource}
+                components={MDXComponents}
+              />
+            </SectionProvider>
           </article>
           {/* <div className="col-start-2 col-span-3 max-w-[65ch]">
           <Button

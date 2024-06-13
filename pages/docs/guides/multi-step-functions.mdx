@@ -1,3 +1,4 @@
+import { CodeGroup } from "shared/Docs/mdx";
 export const description = `Build reliable workflows with event coordination and conditional execution using Inngest's multi-step functions.`
 
 # Multi-Step Functions
@@ -239,7 +240,11 @@ await sleepUntil("wait-for-user-birthday", userBirthday);
 
 ### Unexpected loop behavior
 
-Users often find that loops in their functions do not behave as expected, leading to repeated or inconsistent operations. This issue arises because each step in Inngest is executed as a separate HTTP request. The function re-enters from the beginning for each step execution, causing loops to restart unless properly managed. To correctly implement loops, treat each iteration as an independent step using `step.run()` and `step.sleep()`, and encapsulate non-deterministic logic within steps.
+When using loops within functions, it is recommended to treat each iteration as it's own step or steps. 
+
+When [functions are run](/docs/learn/how-functions-are-executed), the function handler is re-executed from the start for each new step and previously completed steps are memoized. This means that iterations of loops will be run every re-execution, but code encapsulated within `step.run()` will not re-run. 
+
+If code within a loop is not encapsulated within a step, it will re-run multiple times, which can lead to confusing behavior, debugging, or [logging](/docs/guides/logging). This is why it is recommended to encapsulate non-deterministic code within a `step.run()` when working with loops.
 
 Learn more about [working with loops in Inngest](/docs/guides/working-with-loops).
 

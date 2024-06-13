@@ -1,9 +1,17 @@
+import type { Metadata } from "next";
+
 import Header from "src/shared/Header";
 import Footer from "src/shared/Footer";
-import Script from "next/script";
 import { HeaderInit, PageViews } from "../components/InngestClientSDK";
 
 import "./globals.css";
+
+export const metadata: Metadata = {
+  title: {
+    default: "Inngest - Ship reliable code, no extra infrastructure",
+    template: "%s - Inngest",
+  },
+};
 
 export default function RootLayout({
   children,
@@ -22,7 +30,7 @@ export default function RootLayout({
         />
         <HeaderInit />
       </head>
-      <body className="home font-sans bg-slate-1000">
+      <body className="home font-sans bg-inngestBlack">
         <Header />
 
         <main className="max-w-container-desktop m-auto px-6 md:px-10 lg:px-20">

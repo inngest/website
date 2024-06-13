@@ -33,8 +33,8 @@ dependencies:
     specifier: 4.4.6
     version: 4.4.6(monaco-editor@0.28.1)(react-dom@18.2.0)(react@18.2.0)
   '@next/mdx':
-    specifier: 13.1.1
-    version: 13.1.1(@mdx-js/loader@2.2.1)(@mdx-js/react@2.2.1)
+    specifier: 13.5.6
+    version: 13.5.6(@mdx-js/loader@2.2.1)(@mdx-js/react@2.2.1)
   '@next/third-parties':
     specifier: 14.2.3
     version: 14.2.3(next@13.2.4)(react@18.2.0)
@@ -53,6 +53,9 @@ dependencies:
   '@sindresorhus/slugify':
     specifier: 2.1.1
     version: 2.1.1
+  '@types/mdx':
+    specifier: 2.0.13
+    version: 2.0.13
   '@vercel/og':
     specifier: 0.0.22
     version: 0.0.22
@@ -280,6 +283,9 @@ devDependencies:
   eslint-config-next:
     specifier: 13.1.1
     version: 13.1.1(eslint@8.46.0)(typescript@5.1.3)
+  ignore-loader:
+    specifier: 0.1.2
+    version: 0.1.2
   postcss:
     specifier: 8.4.19
     version: 8.4.19
@@ -2276,7 +2282,7 @@ packages:
     resolution: {integrity: sha512-hZ3ex7exYLJn6FfReq8yTvA6TE53uW9UHJQM9IlSauOuS55J9y8RtA7W+dzp6Yrzr00/U1sd7q+Wf61q6SfiTQ==}
     dependencies:
       '@types/estree-jsx': 1.0.0
-      '@types/mdx': 2.0.3
+      '@types/mdx': 2.0.13
       estree-util-build-jsx: 2.2.0
       estree-util-is-identifier-name: 2.0.1
       estree-util-to-js: 1.1.0
@@ -2309,7 +2315,7 @@ packages:
     peerDependencies:
       react: '>=16'
     dependencies:
-      '@types/mdx': 2.0.3
+      '@types/mdx': 2.0.13
       '@types/react': 18.0.26
       react: 18.2.0
     dev: false
@@ -2410,11 +2416,16 @@ packages:
       glob: 7.1.7
     dev: true
 
-  /@next/mdx@13.1.1(@mdx-js/loader@2.2.1)(@mdx-js/react@2.2.1):
-    resolution: {integrity: sha512-a588olt++s7vcuhlgrNOBpZUqlbr9vr94NjA3ixM9AgL8fnwJ/GgxEMsrcsp2gPw91lzBlumBfjK6Lc3k3m23Q==}
+  /@next/mdx@13.5.6(@mdx-js/loader@2.2.1)(@mdx-js/react@2.2.1):
+    resolution: {integrity: sha512-2AMyCrz1SxSWNUpADyLz3RbPbq0GHrchbO7Msvg7IsH8MrTw3VYaZSI1KNa6JzZIoykwtNVSEL+uBmPZi106Jw==}
     peerDependencies:
       '@mdx-js/loader': '>=0.15.0'
-      '@mdx-js/react': '*'
+      '@mdx-js/react': '>=0.15.0'
+    peerDependenciesMeta:
+      '@mdx-js/loader':
+        optional: true
+      '@mdx-js/react':
+        optional: true
     dependencies:
       '@mdx-js/loader': 2.2.1(webpack@4.46.0)
       '@mdx-js/react': 2.2.1(react@18.2.0)
@@ -4495,8 +4506,8 @@ packages:
     dependencies:
       '@types/unist': 2.0.6
 
-  /@types/mdx@2.0.3:
-    resolution: {integrity: sha512-IgHxcT3RC8LzFLhKwP3gbMPeaK7BM9eBH46OdapPA7yvuIUJ8H6zHZV53J8hGZcTSnt95jANt+rTBNUUc22ACQ==}
+  /@types/mdx@2.0.13:
+    resolution: {integrity: sha512-+OWZQfAYyio6YkJb3HLxDrvnx6SWWDbC0zVPfBRzUk0/nqoDyf6dNxQi3eArPe8rJ473nobTMQ/8Zk+LxJ+Yuw==}
     dev: false
 
   /@types/mime@3.0.1:
@@ -9648,6 +9659,10 @@ packages:
 
   /iferr@0.1.5:
     resolution: {integrity: sha512-DUNFN5j7Tln0D+TxzloUjKB+CtVu6myn0JEFak6dG18mNt9YkQ6lzGCdafwofISZ1lLF3xRHJ98VKy9ynkcFaA==}
+
+  /ignore-loader@0.1.2:
+    resolution: {integrity: sha512-yOJQEKrNwoYqrWLS4DcnzM7SEQhRKis5mB+LdKKh4cPmGYlLPR0ozRzHV5jmEk2IxptqJNQA5Cc0gw8Fj12bXA==}
+    dev: true
 
   /ignore@4.0.6:
     resolution: {integrity: sha512-cyFDKrqc/YdcWFniJhzI42+AzS+gNwmUzOSFcRCQYwySuBBBy/KjuxWLZ/FHEH6Moq1NizMOBWyTcv8O4OZIMg==}

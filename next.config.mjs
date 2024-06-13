@@ -109,6 +109,15 @@ const nextConfig = {
     scrollRestoration: true,
     appDir: true,
   },
+  webpack: (config, { dev, isServer }) => {
+    // Exclude old-style _prefix directories from being rendered (ex. mdx pages)
+    config.module.rules.push({
+      test: /_\w+\/.+\.mdx?$/,
+      use: "ignore-loader",
+    });
+
+    return config;
+  },
 };
 
 export default withMDX(nextConfig);
