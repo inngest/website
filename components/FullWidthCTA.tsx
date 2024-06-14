@@ -34,7 +34,7 @@ export function FullWidthCTA({
         Ship more reliable background functions and workflows today
       </p>
       <div className="flex flex-col gap-4">
-        <Command command="npx inngest-cli@latest dev" />
+        {/* <Command command="npx inngest-cli@latest dev" /> */}
         <Button href={`${ctaHref}?ref=${ref}`} variant="tertiary">
           {ctaText}
         </Button>
