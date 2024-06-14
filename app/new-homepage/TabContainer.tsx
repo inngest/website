@@ -280,72 +280,66 @@ const content = [
   },
 ];
 
-export default function UseCases() {
-  return (
-    <Container>
-      <UseCaseGrid />
-    </Container>
-  );
-}
-
-function UseCaseGrid() {
+export default function TabsContainer() {
   const [selected, setSelected] = useState(0);
   const selectedContent = content[selected];
   return (
-    <div className="max-w-6xl mx-auto my-8">
-      <div className="mb-8 border-b border-carbon-800">
-        <Container className="mx-auto flex flex-wrap gap-y-2 justify-stretch">
-          {content.map(({ title, ...tab }, idx) => (
-            <Tab
-              key={idx}
-              isSelected={selected === idx}
-              onClick={() => setSelected(idx)}
-            >
-              <tab.icon className="h-6 w-6 fill-[#1CB4D5]" />
-              {title}
-            </Tab>
-          ))}
-        </Container>
-      </div>
-      <Container className="grid grid-rows-auto grid-cols-1 md:grid-cols-8 gap-2 my-12">
-        <div className="flex flex-col md:col-span-4">
-          <div className="flex flex-col gap-8">
-            <p className="text-2xl font-bold text-body">
-              {selectedContent.content}
-            </p>
-            <div className="flex flex-col grow gap-4">
-              {selectedContent.highlights.map(({ title, content }) => (
-                <Card>
-                  <h3 className="font-bold">{title}</h3>
-                  {content}
-                </Card>
-              ))}
+    <Container>
+      <div className="max-w-6xl mx-auto my-8">
+        <div className="mb-8 border-b border-carbon-800">
+          <Container className="mx-auto flex flex-wrap gap-y-2 justify-stretch">
+            {content.map(({ title, ...tab }, idx) => (
+              <Tab
+                key={idx}
+                isSelected={selected === idx}
+                onClick={() => setSelected(idx)}
+              >
+                <tab.icon className="h-6 w-6 fill-[#1CB4D5]" />
+                {title}
+              </Tab>
+            ))}
+          </Container>
+        </div>
+        <Container className="grid grid-rows-auto grid-cols-1 md:grid-cols-8 gap-4 my-12">
+          <div className="flex flex-col md:col-span-4">
+            <div className="flex flex-col gap-8">
+              <p className="text-2xl font-bold text-body">
+                {selectedContent.content}
+              </p>
+              <div className="flex flex-col grow gap-4">
+                {selectedContent.highlights.map(({ title, content }) => (
+                  <Card>
+                    <h3 className="font-bold">{title}</h3>
+                    {content}
+                  </Card>
+                ))}
+              </div>
+            </div>
+            <div className="pt-8">
+              <Link
+                href={`${selectedContent.href}?ref=homepage-use-cases}`}
+                className="inline-flex mx-auto rounded-md font-medium px-6 py-2 bg-cta hover:bg-ctaHover transition-all text-carbon-1000 whitespace-nowrap"
+              >
+                Learn more
+              </Link>
             </div>
           </div>
-          <div className="pt-8">
-            <Link
-              href={`${selectedContent.href}?ref=homepage-use-cases}`}
-              className="inline-flex mx-auto rounded-md font-medium px-6 py-2 bg-cta hover:bg-ctaHover transition-all text-carbon-1000 whitespace-nowrap"
-            >
-              Learn more
-            </Link>
-          </div>
-        </div>
 
-        {/* The min height here is for the longest code snippet that we show */}
-        <div className="md:col-span-4">
-          <div
-            className="md:min-h-[492px] md:max-w-[496px] py-2 px-1 ml-auto border border-carbon-800 rounded-2xl
+          {/* The min height here is for the longest code snippet that we show */}
+          <div className="md:col-span-4">
+            <div
+              className="md:min-h-[492px] md:max-w-[520px] py-2 px-1 ml-auto border border-carbon-800 rounded-2xl
          shadow-[0_0_220px_16px_rgba(20,284,286,0.2)]"
-          >
-            <CodeWindow
-              snippet={selectedContent.snippet}
-              className="border-0 bg-transparent"
-            />
+            >
+              <CodeWindow
+                snippet={selectedContent.snippet}
+                className="border-0 bg-transparent"
+              />
+            </div>
           </div>
-        </div>
-      </Container>
-    </div>
+        </Container>
+      </div>
+    </Container>
   );
 }
 
