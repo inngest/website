@@ -22,6 +22,8 @@ export default function RootLayout({
     <html>
       <head>
         <link rel="icon" href={`/${process.env.NEXT_PUBLIC_FAVICON}`} />
+        <link rel="preconnect" href="https://fonts-cdn.inngest.com/" />
+        <link rel="stylesheet" href="https://fonts-cdn.inngest.com/fonts.css" />
         <link rel="preconnect" href="https://rsms.me/" />
         <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
         <link

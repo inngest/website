@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 
 export default function Page() {
   return (
-    <div>
+    <div className="font-circular no-antialiasing">
       {/* Hero */}
       <div
         // negative margin to match layout.tsx's horizontal margin - px-6 md:px-10 lg:px-20

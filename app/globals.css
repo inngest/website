@@ -13,3 +13,6 @@
 body {
   -webkit-font-smoothing: antialiased;
 }
+.no-antialiasing {
+  -webkit-font-smoothing: none;
+}
