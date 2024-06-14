@@ -22,13 +22,13 @@ export function Button({
 }: ButtonProps) {
   const sizes = {
     sm: "text-sm px-4 py-1.5",
-    md: "text-sm px-6 py-2.5",
+    md: "text-base px-6 py-2.5",
     lg: "text-lg px-8 py-4",
   };
 
   const variants = {
     // primary: "text-white bg-indigo-500 hover:bg-indigo-400 hover:text-white",
-    primary: `bg-cta`,
+    primary: `bg-cta hover:bg-ctaHover text-carbon-1000 font-medium`,
     secondary: `
       bg-slate-300/80 hover:bg-slate-300/100 text-slate-900 hover:text-slate-900,
       dark:bg-slate-600/80 dark:hover:bg-slate-500/100 dark:text-white dark:hover:text-white

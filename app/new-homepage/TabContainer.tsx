@@ -287,23 +287,34 @@ export default function TabsContainer() {
     <Container>
       <div className="max-w-6xl mx-auto my-8">
         <div className="mb-8 border-b border-carbon-800">
-          <Container className="mx-auto flex flex-wrap gap-y-2 justify-stretch">
-            {content.map(({ title, ...tab }, idx) => (
-              <Tab
-                key={idx}
-                isSelected={selected === idx}
-                onClick={() => setSelected(idx)}
-              >
-                <tab.icon className="h-6 w-6 fill-[#1CB4D5]" />
-                {title}
-              </Tab>
-            ))}
+          <Container className="mx-auto">
+            <div className="relative grid grid-cols-6 gap-y-2 justify-stretch">
+              {content.map(({ title, ...tab }, idx) => (
+                <Tab
+                  key={idx}
+                  isSelected={selected === idx}
+                  onClick={() => setSelected(idx)}
+                >
+                  <tab.icon className="hidden md:inline-block sm:h-4 sm:w-4 md:h-6 md:w-6 fill-[#1CB4D5]" />
+                  {title}
+                </Tab>
+              ))}
+              <div
+                className={clsx(
+                  `absolute -bottom-px left-0 w-1/6 h-0.5 bg-[#1CB4D5] bg-gradient-to-b from-cyan-500 to-blue-500`,
+                  `transform transition-transform duration-300`
+                )}
+                style={{
+                  transform: `translateX(${selected * 100}%)`,
+                }}
+              ></div>
+            </div>
           </Container>
         </div>
         <Container className="grid grid-rows-auto grid-cols-1 md:grid-cols-8 gap-4 my-12">
           <div className="flex flex-col md:col-span-4">
             <div className="flex flex-col gap-8">
-              <p className="text-2xl font-bold text-body">
+              <p className="text-xl font-bold text-body">
                 {selectedContent.content}
               </p>
               <div className="flex flex-col grow gap-4">
@@ -349,7 +360,7 @@ function Tab({ isSelected = false, onClick, children }) {
       onClick={onClick}
       className={clsx(
         `flex flex-row grow gap-2 items-center justify-center p-4 -mb-px whitespace-nowrap `,
-        `text-base font-semibold transition-all text-white border-b-2`,
+        `text-base font-semibold transition-all text-white Xborder-b-2`,
         isSelected ? "border-[#1CB4D5]" : "border-transparent"
       )}
     >

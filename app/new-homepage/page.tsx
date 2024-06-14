@@ -31,12 +31,12 @@ export default function Page() {
       `}
       >
         <Container>
-          <header className="pt-36 pb-28">
+          <header className="pt-32 pb-28">
             <h1 className="font-bold text-6xl leading-tight">
               The modern platform for <br className="hidden lg:inline" />
               shipping fast, reliable code
             </h1>
-            <p className="max-w-5xl mt-16 mx-auto text-xl leading-normal">
+            <p className="max-w-5xl mt-10 mx-auto text-xl leading-normal">
               <strong>
                 Develop and ship durable functions in minutes, without managing
                 infrastructure, queues, or state.
@@ -47,17 +47,18 @@ export default function Page() {
               <br className="hidden lg:inline" />
               on serverless, servers, or the edge.
             </p>
-            <div className="mt-8 flex flex-col items-center gap-8">
+            <div className="mt-8 flex flex-col items-center gap-4">
               <Button
                 variant="dark"
-                size="lg"
+                size="md"
+                className="shadow-lg px-8 py-3"
                 href={`${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=homepage-hero`}
               >
                 Start building for free
               </Button>
               <Link
                 href="/docs?ref=homepage-hero"
-                className="p-2 font-semibold text-white hover:text-slate-50"
+                className="p-2 font-semibold text-white hover:text-slate-50 drop-shadow-lg"
               >
                 Read the docs
               </Link>

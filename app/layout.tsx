@@ -32,7 +32,7 @@ export default function RootLayout({
         />
         <HeaderInit />
       </head>
-      <body className="home font-sans bg-inngestBlack">
+      <body className="dark font-sans bg-inngestBlack">
         <Header />
 
         <main className="max-w-container-desktop m-auto px-6 md:px-10 lg:px-20">
