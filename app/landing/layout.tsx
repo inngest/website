@@ -9,7 +9,7 @@ export default function LandingPageLayout({
 }) {
   return (
     <SectionProvider sections={[]}>
-      <div className="dark">
+      <div className="dark -mb-36">
         {/* Temp add "dark" class above until we support dark/light mode throughout the site */}
         <main className="mx-auto max-w-[800px] prose dark:prose-invert">
           {children}
