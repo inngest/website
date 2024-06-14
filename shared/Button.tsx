@@ -3,7 +3,7 @@ import classNames from "src/utils/classNames";
 import ArrowRight from "./Icons/ArrowRight";
 
 type ButtonProps = {
-  variant?: "primary" | "secondary" | "tertiary";
+  variant?: "primary" | "secondary" | "tertiary" | "dark";
   size?: "sm" | "md" | "lg";
   className?: string;
   arrow?: "left" | "right";
@@ -34,6 +34,7 @@ export function Button({
     `,
     tertiary:
       "bg-slate-100 hover:bg-slate-300 text-slate-800 dark:bg-slate-800  dark:hover:bg-slate-700 dark:text-slate-100",
+    dark: `bg-carbon-1000 hover:bg-carbon-900 text-white`,
   };
 
   const width = full ? "w-full" : "";
