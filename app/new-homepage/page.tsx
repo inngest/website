@@ -3,10 +3,12 @@ import Image from "next/image";
 import clsx from "clsx";
 
 import Link from "src/components/Link";
-import Heading from "src/components/Heading";
 import Command from "src/components/Command";
 import { Button } from "src/shared/Button";
 import Github from "src/shared/Icons/Github";
+import TabContainer from "./TabContainer";
+import Container from "./Container";
+import Heading from "./Heading";
 
 export const metadata: Metadata = {
   title: "Inngest - TODO",
@@ -20,6 +22,7 @@ export default function Page() {
       {/* Hero */}
       <div
         // negative margin to match layout.tsx's horizontal margin - px-6 md:px-10 lg:px-20
+        // TODO - fix for wide screens
         className={`
         w-[calc(100%+48px)] md:w-[calc(100%+80px)] lg:w-[calc(100%+160px)] -mx-6 md:-mx-10 lg:-mx-20
         bg-[url(/assets/textures/blob-background-1.png)]
@@ -121,12 +124,11 @@ export default function Page() {
           </div>
         </Container>
       </div>
-    </div>
-  );
-}
 
-function Container({ children }) {
-  return (
-    <div className="mx-auto max-w-7xl px-2 md:px-6 lg:px-8">{children}</div>
+      <div className="my-32">
+        <Heading label="APIs for all challenges" className="my-8" />
+        <TabContainer />
+      </div>
+    </div>
   );
 }

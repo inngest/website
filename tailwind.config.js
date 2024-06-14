@@ -21,6 +21,7 @@ module.exports = {
         body: colors.slate[100],
         primary: colors.indigo["500"],
         inngestBlack: theme2024.black,
+        background: theme2024.black, // TODO - Change to carbon-1000
         // Design System 2024
         carbon: {
           0: "#fefefe",

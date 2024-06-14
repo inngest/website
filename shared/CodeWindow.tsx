@@ -21,15 +21,21 @@ const colors = {
   amber400: "rgb(251, 191, 36)",
   sky300: "rgb(125, 211, 252)",
   emerald300: "rgb(110, 231, 183)",
+  // New colors 2024
+  green: "#14b8ac",
+  orange: "#D97706",
+  blue: "#21AFFF",
+  carbon500: "#7c7c7c",
+  purplehaze300: "#8B74F9",
 };
 
 const theme = {
   ...atomOneDark,
-  "hljs-keyword": { color: colors.fuchsia300 },
-  "hljs-attr": { color: colors.amber400 },
-  "hljs-string": { color: colors.emerald300 },
-  "hljs-number": { color: colors.sky300 },
-  "hljs-comment": { color: colors.slate500 },
+  "hljs-keyword": { color: colors.green },
+  "hljs-attr": { color: colors.orange },
+  "hljs-string": { color: colors.blue },
+  "hljs-number": { color: colors.purplehaze300 },
+  "hljs-comment": { color: colors.carbon500 },
 };
 
 const CodeWindow = ({
