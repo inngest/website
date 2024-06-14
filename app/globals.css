@@ -13,6 +13,7 @@
 body {
   -webkit-font-smoothing: antialiased;
 }
-.no-antialiasing {
-  -webkit-font-smoothing: none;
+/* Use the default setting for font smoothing for new font */
+.font-circular {
+  -webkit-font-smoothing: subpixel-antialiased;
 }

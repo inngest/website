@@ -23,6 +23,8 @@ module.exports = {
         inngestBlack: theme2024.black,
         background: theme2024.black, // TODO - Change to carbon-1000
         // Design System 2024
+        cta: "#10B981",
+        ctaHover: "#66bd8b", //matcha-400
         carbon: {
           0: "#fefefe",
           50: "#f6f6f6",

@@ -5,10 +5,15 @@ import Link from "next/link";
 import clsx from "clsx";
 
 import Container from "./Container";
-// import Heading from "./Heading";
 import CodeWindow from "src/shared/CodeWindow";
-import { ArrowDownIcon } from "@heroicons/react/24/outline";
-import { RiBrainLine } from "@remixicon/react";
+import {
+  RiGridLine,
+  RiBrainLine,
+  RiArchiveDrawerLine,
+  RiFlowChart,
+  RiGitForkLine,
+  RiBox1Line,
+} from "@remixicon/react";
 import Card from "./Card";
 
 const snippetDurableWorkflow = `
@@ -139,7 +144,7 @@ export const engine = inngest.createFunction(
 const content = [
   {
     title: "All",
-    // TODO ICON
+    icon: RiGridLine,
     content: "Created for every developer and any use case.", // TODO-COPY
     highlights: [
       {
@@ -163,7 +168,7 @@ const content = [
   },
   {
     title: "AI",
-    // TODO ICON
+    icon: RiBrainLine,
     content: "Created for every developer and every use case.", // TODO-COPY
     highlights: [
       {
@@ -185,7 +190,9 @@ const content = [
   },
   {
     title: "Queuing",
-    // TODO ICON
+    icon: ({ className }) => (
+      <RiGitForkLine className={`${className} -rotate-90`} />
+    ),
     content: "Created for every developer and every use case.", // TODO-COPY
     highlights: [
       {
@@ -207,7 +214,7 @@ const content = [
   },
   {
     title: "Workflows",
-    // TODO ICON
+    icon: RiFlowChart,
     content: "Created for every developer and every use case.", // TODO-COPY
     highlights: [
       {
@@ -229,7 +236,7 @@ const content = [
   },
   {
     title: "Data",
-    // TODO ICON
+    icon: RiArchiveDrawerLine,
     content: "Created for every developer and every use case.", // TODO-COPY
     highlights: [
       {
@@ -251,7 +258,7 @@ const content = [
   },
   {
     title: "Product",
-    // TODO ICON
+    icon: RiBox1Line,
     content: "Created for every developer and every use case.", // TODO-COPY
     highlights: [
       {
@@ -288,13 +295,13 @@ function UseCaseGrid() {
     <div className="max-w-6xl mx-auto my-8">
       <div className="mb-8 border-b border-carbon-800">
         <Container className="mx-auto flex flex-wrap gap-y-2 justify-stretch">
-          {content.map(({ title, content, href }, idx) => (
+          {content.map(({ title, ...tab }, idx) => (
             <Tab
               key={idx}
               isSelected={selected === idx}
               onClick={() => setSelected(idx)}
             >
-              <RiBrainLine className="h-4 w-4" />
+              <tab.icon className="h-6 w-6 fill-[#1CB4D5]" />
               {title}
             </Tab>
           ))}
@@ -302,7 +309,7 @@ function UseCaseGrid() {
       </div>
       <Container className="grid grid-rows-auto grid-cols-1 md:grid-cols-8 gap-2 my-12">
         <div className="flex flex-col md:col-span-4">
-          <div className="flex flex-col gap-8 grow">
+          <div className="flex flex-col gap-8">
             <p className="text-2xl font-bold text-body">
               {selectedContent.content}
             </p>
@@ -318,12 +325,9 @@ function UseCaseGrid() {
           <div className="pt-8">
             <Link
               href={`${selectedContent.href}?ref=homepage-use-cases}`}
-              className="mx-auto rounded-md font-medium px-6 py-2 bg-slate-800 hover:bg-slate-600 transition-all text-white border border-slate-800 hover:border-slate-600 hover:bg-slate-500/10 whitespace-nowrap"
+              className="inline-flex mx-auto rounded-md font-medium px-6 py-2 bg-cta hover:bg-ctaHover transition-all text-carbon-1000 whitespace-nowrap"
             >
-              <span className="hidden md:inline">
-                Learn about {selectedContent.title} with Inngest
-              </span>
-              <span className="md:hidden">Learn more</span> →
+              Learn more
             </Link>
           </div>
         </div>

@@ -11,7 +11,7 @@ import Container from "./Container";
 import Heading from "./Heading";
 
 export const metadata: Metadata = {
-  title: "Inngest - TODO",
+  title: "Inngest - The modern platform for shipping fast, reliable code", // TODO - TBD
   description:
     "Inngest enables your team to develop durable functions in your current codebase with zero new infrastructure. Develop complex, long-running functions without queues, workers, or additional state management.",
 };

@@ -27,7 +27,8 @@ export function Button({
   };
 
   const variants = {
-    primary: "text-white bg-indigo-500 hover:bg-indigo-400 hover:text-white",
+    // primary: "text-white bg-indigo-500 hover:bg-indigo-400 hover:text-white",
+    primary: `bg-cta`,
     secondary: `
       bg-slate-300/80 hover:bg-slate-300/100 text-slate-900 hover:text-slate-900,
       dark:bg-slate-600/80 dark:hover:bg-slate-500/100 dark:text-white dark:hover:text-white
