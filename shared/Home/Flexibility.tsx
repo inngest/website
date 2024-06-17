@@ -75,14 +75,19 @@ export default function Flexibility() {
                 href: "/docs/sdk/serve?ref=homepage-frameworks#framework-next-js",
               },
               {
+                src: "/assets/brand-logos/remix-white.svg",
+                name: "Remix",
+                href: "/docs/sdk/serve?ref=homepage-frameworks#framework-remix",
+              },
+              {
                 src: "/assets/brand-logos/express-js-white.svg",
                 name: "Express.js",
                 href: "/docs/sdk/serve?ref=homepage-frameworks#framework-express",
               },
               {
-                src: "/assets/brand-logos/remix-white.svg",
-                name: "Remix",
-                href: "/docs/sdk/serve?ref=homepage-frameworks#framework-remix",
+                src: "/assets/brand-logos/fastify-white.svg",
+                name: "Fastify",
+                href: "/docs/sdk/serve?ref=homepage-frameworks#framework-fastify",
               },
               {
                 src: "/assets/brand-logos/cloudflare-white.svg",
@@ -90,14 +95,9 @@ export default function Flexibility() {
                 href: "/docs/sdk/serve?ref=homepage-frameworks#framework-cloudflare",
               },
               {
-                src: "/assets/brand-logos/redwoodjs-white.svg",
-                name: "RedwoodJS",
-                href: "/docs/sdk/serve?ref=homepage-frameworks#framework-redwood",
-              },
-              {
-                src: "/assets/brand-logos/fastify-white.svg",
-                name: "Fastify",
-                href: "/docs/sdk/serve?ref=homepage-frameworks#framework-fastify",
+                src: "/assets/brand-logos/fast-api-white.png",
+                name: "FastAPI",
+                href: "/docs/getting-started/quick-start/python?ref=homepage-frameworks",
               },
               // FUTURE - Add other language frameworks like Flask
             ].map(({ src, name, href }, idx) => (
@@ -142,19 +142,17 @@ export default function Flexibility() {
                 src: "/assets/brand-logos/go-logo-blue.svg",
                 name: "Go",
                 size: { h: 60, w: 120 },
-                release: `Q1 2024`,
               },
               {
                 src: "/assets/brand-logos/python-logo-only.svg",
                 name: "Python",
                 size: { h: 60, w: (60 / 101) * 84 },
-                release: `Q1 2024`,
               },
               {
-                src: "/assets/brand-logos/rust-logo.png",
-                name: "Rust",
+                src: "/assets/brand-logos/java.svg",
+                name: "Java",
                 size: { h: 60, w: 60 },
-                release: `Q2 2024`,
+                release: `H2 2024`,
               },
               // FUTURE - Add other language frameworks like Flask
             ].map(({ src, name, size: { h, w }, release }, idx) => (
@@ -168,7 +166,7 @@ export default function Flexibility() {
                   className="max-h-[60px] pointer-events-none transition-all"
                 />
                 {!!release && (
-                  <span className="absolute -bottom-2 sm:-bottom-1 -right-6 md:-right-12 px-3 py-0.5 bg-slate-700 text-slate-50 text-xs font-semibold drop-shadow rounded-full whitespace-nowrap">
+                  <span className="absolute -bottom-6 sm:-bottom-8 right-0 left-0 mx-auto text-center text-slate-300 text-xs font-semibold whitespace-nowrap">
                     {release}
                   </span>
                 )}
