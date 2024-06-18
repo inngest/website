@@ -286,7 +286,7 @@ export default function TabsContainer() {
   return (
     <Container>
       <div className="max-w-6xl mx-auto my-8">
-        <div className="mb-8 border-b border-carbon-800">
+        <div className="mb-8 border-b border-subtle">
           <Container className="mx-auto">
             <div className="relative grid grid-cols-6 gap-y-2 justify-stretch">
               {content.map(({ title, ...tab }, idx) => (
@@ -314,7 +314,7 @@ export default function TabsContainer() {
         <Container className="grid grid-rows-auto grid-cols-1 md:grid-cols-8 gap-4 my-12">
           <div className="flex flex-col md:col-span-4">
             <div className="flex flex-col gap-8">
-              <p className="text-xl font-bold text-body">
+              <p className="text-xl font-bold text-basis">
                 {selectedContent.content}
               </p>
               <div className="flex flex-col grow gap-4">
@@ -339,7 +339,7 @@ export default function TabsContainer() {
           {/* The min height here is for the longest code snippet that we show */}
           <div className="md:col-span-4">
             <div
-              className="md:min-h-[492px] md:max-w-[520px] py-2 px-1 ml-auto border border-carbon-800 rounded-2xl
+              className="md:min-h-[492px] md:max-w-[520px] py-2 px-1 ml-auto border border-subtle rounded-2xl
          shadow-[0_0_220px_16px_rgba(20,284,286,0.2)]"
             >
               <CodeWindow
@@ -360,8 +360,10 @@ function Tab({ isSelected = false, onClick, children }) {
       onClick={onClick}
       className={clsx(
         `flex flex-row grow gap-2 items-center justify-center p-4 -mb-px whitespace-nowrap `,
-        `text-base font-semibold transition-all text-white Xborder-b-2`,
-        isSelected ? "border-[#1CB4D5]" : "border-transparent"
+        `font-semibold transition-all`,
+        isSelected
+          ? "border-[#1CB4D5] text-basis"
+          : "text-muted hover:text-basis border-transparent"
       )}
     >
       {children}

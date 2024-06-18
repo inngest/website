@@ -34,7 +34,7 @@ const theme = {
   "hljs-keyword": { color: colors.green },
   "hljs-attr": { color: colors.orange },
   "hljs-string": { color: colors.blue },
-  "hljs-number": { color: colors.purplehaze300 },
+  "hljs-number": { color: "rgb(var(--color-quaternary-cool-xIntense))" },
   "hljs-comment": { color: colors.carbon500 },
 };
 
@@ -55,7 +55,7 @@ const CodeWindow = ({
 }) => {
   return (
     <div
-      className={`rounded-lg border border-slate-700/30 text-sm leading-relaxed bg-slate-800/50 ${className}`}
+      className={`rounded-lg border border-subtle text-sm leading-relaxed bg-slate-800/50 ${className}`}
       style={style}
     >
       {header && <div className="mb-1 bg-slate-800/50">{header}</div>}
@@ -85,12 +85,12 @@ const CodeWindow = ({
           }}
           lineNumberStyle={{
             minWidth: "3em",
-            color: "rgba(42, 60, 85, 1)",
+            color: "rgb(var(--color-canvas-base))",
           }}
           style={theme}
           customStyle={{
             padding: "0.25rem",
-            color: colors.slate300,
+            color: "rgb(var(--color-foreground-base))",
             background: "transparent",
           }}
           className="!overflow-hidden"
