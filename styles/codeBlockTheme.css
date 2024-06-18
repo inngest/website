@@ -5,17 +5,29 @@
   */
 :root {
   /* See CodeWindow for related color palate */
-   --shiki-color-text: rgb(var(--color-carbon-50));
-   --shiki-color-background: rgb(var(--color-carbon-1000));
-   --shiki-token-constant: rgb(var(--color-honey-300));
+   --shiki-color-text: rgb(var(--color-foreground-base));
+   --shiki-color-background: rgb(var(--color-canvas-base));
+   --shiki-token-constant: rgb(var(--color-honey-500));
    --shiki-token-string: #21AFFF;
    --shiki-token-comment: rgb(var(--color-carbon-400));
-   --shiki-token-keyword: #14b8ac;
+   --shiki-token-keyword: #1a968e;
    --shiki-token-parameter: #D97706;
-   --shiki-token-function: rgb(var(--color-carbon-50));
+   --shiki-token-function: rgb(var(--color-foreground-base));
    --shiki-token-string-expression: var(--shiki-token-string);
    --shiki-token-punctuation: var(--shiki-color-text);
    --shiki-token-link: #4078f2;
+}
+.dark {
+  --shiki-color-text: rgb(var(--color-carbon-50));
+  --shiki-token-constant: rgb(var(--color-honey-300));
+  --shiki-token-string: #21AFFF;
+  --shiki-token-comment: rgb(var(--color-carbon-400));
+  --shiki-token-keyword: #14b8ac;
+  --shiki-token-parameter: #D97706;
+  --shiki-token-function: rgb(var(--color-carbon-50));
+  --shiki-token-string-expression: var(--shiki-token-string);
+  --shiki-token-punctuation: var(--shiki-color-text);
+  --shiki-token-link: #4078f2;
 }
 
 .rehype-code-title {

@@ -3,7 +3,7 @@ import Document, { Html, Head, Main, NextScript } from "next/document";
 export default class MyDocument extends Document {
   render() {
     return (
-      <Html className="scroll-smooth">
+      <Html className="scroll-smooth dark">
         <Head>
           <link
             rel="icon"
@@ -43,7 +43,7 @@ export default class MyDocument extends Document {
             }}
           />
         </Head>
-        <body className="dark">
+        <body>
           <script
             type="text/javascript"
             dangerouslySetInnerHTML={{
