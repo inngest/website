@@ -174,6 +174,23 @@ export default {
 ```
 </CodeGroup>
 
+When developing locally with Wrangler and the `--remote` flag, your code is
+deployed and run remotely. To use this with a local Inngest Dev Server, you must
+use a tool such as [ngrok](https://ngrok.com/) or
+[localtunnel](https://theboroer.github.io/localtunnel-www/) to allow access to
+the Dev Server from the internet.
+
+```sh
+ngrok http 8288
+```
+
+```toml
+# wrangler.toml
+[vars]
+INNGEST_DEV = "https://YOUR_TUNNEL_URL.ngrok.app"
+INNGEST_SERVE_HOST = "http://localhost:3000" # force the Dev Server to access the app at this local URL
+```
+
 ## Framework: DigitalOcean Functions
 
 The DigitalOcean serve function allows you to deploy Inngest to DigitalOcean serverless functions.
