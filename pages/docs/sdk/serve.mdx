@@ -160,7 +160,7 @@ export const onRequest = serve({
 You can export `"inngest/cloudflare"`'s `serve()` as your Cloudflare Worker:
 
 <CodeGroup>
-```ts {{ title: "v3" }}
+```ts
 import { serve } from "inngest/cloudflare";
 import { inngest } from "./client";
 import fnA from "./fnA";
@@ -176,7 +176,7 @@ The `serve()` call can also be spread to allow you to export more handlers
 within the same worker if needed:
 
 <CodeGroup>
-```ts {{ title: "v3" }}
+```ts
 export default {
   ...serve({
     client: inngest,
