@@ -5,7 +5,24 @@ export default class MyDocument extends Document {
     return (
       <Html className="scroll-smooth">
         <Head>
-          <link rel="icon" href={`/${process.env.NEXT_PUBLIC_FAVICON}`} />
+          <link
+            rel="icon"
+            href={
+              process.env.NEXT_PUBLIC_FAVICON
+                ? `/${process.env.NEXT_PUBLIC_FAVICON}`
+                : "/favicon-june-2024-light.png"
+            }
+            media="(prefers-color-scheme: light)"
+          />
+          <link
+            rel="icon"
+            href={
+              process.env.NEXT_PUBLIC_FAVICON
+                ? `/${process.env.NEXT_PUBLIC_FAVICON}`
+                : "/favicon-june-2024-dark.png"
+            }
+            media="(prefers-color-scheme: dark)"
+          />
           <link rel="preconnect" href="https://rsms.me/" />
           <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
           <link

@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import Container from "./Container";
 import Heading from "./Heading";
-import Card from "./Card";
+import Card from "src/components/Card";
 import { RiArrowRightSLine } from "@remixicon/react";
 
 // TODO - Links

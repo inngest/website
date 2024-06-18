@@ -14,7 +14,7 @@ import {
   RiGitForkLine,
   RiBox1Line,
 } from "@remixicon/react";
-import Card from "./Card";
+import Card from "src/components/Card";
 
 const snippetDurableWorkflow = `
 export const processVideo = inngest.createFunction(

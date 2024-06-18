@@ -55,7 +55,7 @@ const CodeWindow = ({
 }) => {
   return (
     <div
-      className={`rounded-lg border border-subtle text-sm leading-relaxed bg-slate-800/50 ${className}`}
+      className={`rounded-lg border border-subtle text-sm leading-relaxed bg-canvasBase ${className}`}
       style={style}
     >
       {header && <div className="mb-1 bg-slate-800/50">{header}</div>}

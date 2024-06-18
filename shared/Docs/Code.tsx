@@ -131,7 +131,7 @@ function CodePanel({ tag, label, code, children }: CodePanelProps) {
   let child = Children.only<any>(children);
 
   return (
-    <div className="group dark:bg-white/2.5">
+    <div className="group bg-carbon-1000">
       <CodePanelHeader
         tag={child.props.tag ?? tag}
         label={child.props.label ?? label}
@@ -168,11 +168,11 @@ function CodeGroupHeader({
   }
 
   return (
-    <div className="px-6 gap-x-4 bg-slate-800 flex min-h-[calc(theme(spacing.10)+1px)] flex-wrap items-center dark:bg-transparent">
+    <div className="px-6 gap-x-4 bg-carbon-900 flex min-h-[calc(theme(spacing.10)+1px)] flex-wrap items-center dark:bg-transparent">
       {heading && (
         <h3
           className={clsx(
-            "mr-auto text-xs font-semibold text-white",
+            "mr-auto text-xs font-semibold text-alwaysWhite",
             !!filename && "font-mono"
           )}
         >
@@ -186,8 +186,8 @@ function CodeGroupHeader({
               className={clsx(
                 "border-b py-3 transition focus:outline-none",
                 childIndex === selectedIndex
-                  ? "border-indigo-500 text-indigo-400"
-                  : "border-transparent text-slate-400 hover:text-slate-300"
+                  ? "border-matcha-400 text-matcha-400"
+                  : "border-transparent text-carbon-300 hover:text-carbon-50"
               )}
             >
               {getPanelTitle(child.props)}
@@ -315,7 +315,7 @@ export function CodeGroup({
     <CodeGroupContext.Provider value={true}>
       <Container
         {...containerProps}
-        className="not-prose my-6 overflow-hidden rounded-lg bg-slate-900 shadow-md"
+        className="not-prose my-6 overflow-hidden rounded-lg bg-carbon-900 shadow-md"
       >
         <CodeGroupHeader
           title={title}

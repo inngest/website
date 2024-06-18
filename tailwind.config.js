@@ -36,7 +36,7 @@ module.exports = {
         // Design System 2024
         carbon: {
           0: "rgb(var(--color-carbon-0) / <alpha-value>)",
-          0: "rgb(var(--color-carbon-50) / <alpha-value>)",
+          50: "rgb(var(--color-carbon-50) / <alpha-value>)",
           100: "rgb(var(--color-carbon-100) / <alpha-value>)",
           200: "rgb(var(--color-carbon-200) / <alpha-value>)",
           300: "rgb(var(--color-carbon-300) / <alpha-value>)",

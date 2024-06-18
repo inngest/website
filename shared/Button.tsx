@@ -46,7 +46,7 @@ export function Button({
       className={`whitespace-nowrap button group inline-flex items-center justify-center gap-0.5 rounded-lg font-medium tracking-tight transition-all ${variants[variant]} ${sizes[size]} ${props.className} ${width}`}
     >
       {arrow && arrow === "left" ? (
-        <RiArrowLeftSLine className="group-hover:-translate-x-1 transition-transform rotate-180 duration-150 -ml-1.5" />
+        <RiArrowLeftSLine className="group-hover:-translate-x-1 transition-transform duration-150 -ml-1.5" />
       ) : null}
       {children}
       {arrow && arrow === "right" ? (

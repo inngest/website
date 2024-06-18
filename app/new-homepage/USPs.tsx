@@ -4,7 +4,7 @@ import clsx from "clsx";
 
 import Container from "./Container";
 import Heading from "./Heading";
-import Card from "./Card";
+import Card from "src/components/Card";
 import { RiAddLine, RiSubtractLine } from "@remixicon/react";
 
 export default function USPs() {

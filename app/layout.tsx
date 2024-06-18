@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
-import Header from "src/shared/Header";
+import Nav from "src/components/Nav";
 import Footer from "src/shared/Footer";
-import { HeaderInit, PageViews } from "../components/InngestClientSDK";
+import { HeaderInit, PageViews } from "src/components/InngestClientSDK";
 
 import "./globals.css";
 
@@ -10,6 +10,18 @@ export const metadata: Metadata = {
   title: {
     default: "Inngest - Ship reliable code, no extra infrastructure",
     template: "%s - Inngest",
+  },
+  icons: {
+    icon: [
+      {
+        url: process.env.NEXT_PUBLIC_FAVICON ?? "/favicon-june-2024-light.png",
+        media: "(prefers-color-scheme: light)",
+      },
+      {
+        url: process.env.NEXT_PUBLIC_FAVICON ?? "/favicon-june-2024-dark.png",
+        media: "(prefers-color-scheme: dark)",
+      },
+    ],
   },
 };
 
@@ -21,7 +33,6 @@ export default function RootLayout({
   return (
     <html>
       <head>
-        <link rel="icon" href={`/${process.env.NEXT_PUBLIC_FAVICON}`} />
         <link rel="preconnect" href="https://fonts-cdn.inngest.com/" />
         <link rel="stylesheet" href="https://fonts-cdn.inngest.com/fonts.css" />
         <link rel="preconnect" href="https://rsms.me/" />
@@ -32,10 +43,11 @@ export default function RootLayout({
         />
         <HeaderInit />
       </head>
-      <body className="dark font-sans bg-inngestBlack">
-        <Header />
+      <body className="dark font-sans">
+        <Nav />
 
-        <main className="max-w-container-desktop m-auto px-6 md:px-10 lg:px-20">
+        <main /*className="max-w-container-desktop m-auto px-6 md:px-10 lg:px-20" */
+        >
           {children}
         </main>
 
