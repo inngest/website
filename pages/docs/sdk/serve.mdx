@@ -35,7 +35,8 @@ We provide framework-specific bindings to make this easy for common platforms:
 - [Astro](#framework-astro)
 - [AWS Lambda](#framework-aws-lambda)
 - [Bun.serve()](#bun-serve)
-- [Cloudflare](#framework-cloudflare)
+- [Cloudflare Pages Functions](#framework-cloudflare-pages-functions)
+- [Cloudflare Workers](#framework-cloudflare-workers)
 - [DigitalOcean functions](#framework-digital-ocean-functions)
 - [Express](#framework-express)
 - [Fastify](#framework-fastify)
@@ -127,9 +128,9 @@ Bun.serve({
 });
 ```
 
-## Framework: Cloudflare
+## Framework: Cloudflare Pages Functions
 
-You can import the Inngest API server when using <a href="https://developers.cloudflare.com/pages/platform/functions/" target="_blank" rel="nofollow">Cloudflare pages functions</a> or workers within `/functions/api/inngest.js`:
+You can import the Inngest API server when using <a href="https://developers.cloudflare.com/pages/platform/functions/" target="_blank" rel="nofollow">Cloudflare pages functions</a>  within `/functions/api/inngest.js`:
 
 <CodeGroup>
 ```ts {{ title: "v3" }}
@@ -147,9 +148,48 @@ import { serve } from "inngest/cloudflare";
 import { inngest } from "../../inngest/client";
 import fnA from "../../inngest/fnA"; // Your own function
 
-export const onRequest = serve(inngest, [fnA]);
+export const onRequest = serve({
+  client: inngest,
+  functions: [fnA],
+});
 ```
 </CodeGroup>
+
+## Framework: Cloudflare Workers <VersionBadge version="v3.19.15+" />
+
+You can export `"inngest/cloudflare"`'s `serve()` as your Cloudflare Worker:
+
+<CodeGroup>
+```ts
+import { serve } from "inngest/cloudflare";
+import { inngest } from "./client";
+import fnA from "./fnA";
+
+export default {
+  fetch: serve({
+    client: inngest,
+    functions: [fnA],
+  }),
+};
+```
+</CodeGroup>
+
+When developing locally with Wrangler and the `--remote` flag, your code is
+deployed and run remotely. To use this with a local Inngest Dev Server, you must
+use a tool such as [ngrok](https://ngrok.com/) or
+[localtunnel](https://theboroer.github.io/localtunnel-www/) to allow access to
+the Dev Server from the internet.
+
+```sh
+ngrok http 8288
+```
+
+```toml
+# wrangler.toml
+[vars]
+INNGEST_DEV = "https://YOUR_TUNNEL_URL.ngrok.app"
+INNGEST_SERVE_HOST = "http://localhost:3000" # force the Dev Server to access the app at this local URL
+```
 
 ## Framework: DigitalOcean Functions
 
