@@ -165,24 +165,11 @@ import { serve } from "inngest/cloudflare";
 import { inngest } from "./client";
 import fnA from "./fnA";
 
-export default serve({
-  client: inngest,
-  functions: [fnA],
-});
-```
-</CodeGroup>
-
-The `serve()` call can also be spread to allow you to export more handlers
-within the same worker if needed:
-
-<CodeGroup>
-```ts
 export default {
-  ...serve({
+  serve({
     client: inngest,
     functions: [fnA],
   }),
-  // ...
 };
 ```
 </CodeGroup>
