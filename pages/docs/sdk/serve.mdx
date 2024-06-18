@@ -166,7 +166,7 @@ import { inngest } from "./client";
 import fnA from "./fnA";
 
 export default {
-  serve({
+  fetch: serve({
     client: inngest,
     functions: [fnA],
   }),
