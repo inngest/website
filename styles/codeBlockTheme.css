@@ -27,7 +27,7 @@
 
 pre.shiki {
   margin: 0.25rem 0;
-  padding: 2rem;
+  padding: 1.75rem;
   position: relative;
   white-space: pre-wrap;
   font-size: 0.8rem;
@@ -45,9 +45,9 @@ pre.shiki .language-id {
   right: 0.5rem;
   font-weight: 600;
   letter-spacing: -0.4px;
-  padding: 0.2rem 0.5rem;
+  padding: 0.1rem 0.5rem;
   font-size: 0.7rem;
-  background: #1e293b;
+  background: rgb(var(--color-carbon-900) / 50);
   border-radius: 4px;
 }
 

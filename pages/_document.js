@@ -43,7 +43,7 @@ export default class MyDocument extends Document {
             }}
           />
         </Head>
-        <body className="light-theme">
+        <body className="dark">
           <script
             type="text/javascript"
             dangerouslySetInnerHTML={{
