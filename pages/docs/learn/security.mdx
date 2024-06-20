@@ -2,6 +2,12 @@
 
 Security is a primary consideration when moving systems into production.  In this section we'll dive into how Inngest handles security, including endpoint security, encryption, standard practices, and how to add SAML authentication to your account.
 
+## Compliance, audits, and reports
+
+Inngest is [SOC 2 Type II compliant](/blog/soc2-compliant?ref=docs-security). Our company and platform is regularly audited to adhere to the standards of SOC 2. This ensures that we have the necessary controls in place to protect our customers' data and ensure the security and privacy of their information. Our platform and SDKs undergo periodic independent security assessments including penetration testing and red-team simulated attacks.
+
+For more information on our security practices, or to request a copy of our SOC 2 report, please [contact our team](/contact?ref=docs-security).
+
 ## Signing keys and SDK security
 
 Firstly, it's important to understand that in production all communication between Inngest and your servers is encrypted via TLS. The SDK also actively mitigates attacks by use of the [signing key](/docs/platform/signing-keys), a secret pre-shared key unique to each environment. By default, the signing key adds the following:
@@ -31,10 +37,6 @@ Inngest runs functions automatically, based off of event data that you send to I
 
 With this enabled, even in the case of unexpected issues your data is encrypted and secure. This greatly improves the security posture for sensitive data.
 
-## Security practices, audits, and reports
-
-Inngest is regularly audited to adhere to standards such as SOC2 Type II, and applies best practices internally to mitigate security risks. We take security seriously, and also undergo routine pentesting and red-team simulated attacks. For more information on our security practices, reach out to security@inngest.com.
-
 ## SAML
 
 Enterprise users can enable SAML authentication to access their account. In order to enable SAML, you must:
@@ -44,4 +46,4 @@ Enterprise users can enable SAML authentication to access their account. In orde
 3. Your account manager will then send you the ACS and Metadata URL used to configure your account.
 4. Your account manager will work with you to correctly map attributes to ensure fully functioning sign in.
 
-It's important to note that once SAML is enabled, users **must** sign in via SAML. If you're not on an enterprise plan, reach out to hello@inngest.com and we'll get you set up. There is no additional charge for SAML authentication below 200 users.
+It's important to note that once SAML is enabled, users **must** sign in via SAML. If you're not on an enterprise plan, [contact us here](/contact?ref=docs-security), and we'll get you set up. There is no additional charge for SAML authentication below 200 users.

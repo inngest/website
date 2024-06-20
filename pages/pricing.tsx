@@ -872,13 +872,36 @@ export default function Pricing() {
               </FAQRow>
               <FAQRow question={`What languages do you support?`}>
                 <p>
-                  We currently have an SDK for JavaScript/TypeScript, but plan
-                  to expand to Go, Python and others in the future.{" "}
+                  We currently have an SDK for JavaScript/TypeScript, Python,
+                  and Go.
+                </p>
+                <p>
+                  Additional SDKs are in development. View, upvote, and add your
+                  name to the list for a particular language SDK on our{" "}
                   <a
                     className="text-indigo-400 hover:text-white hover:underline hover:decoration-white transition-all"
                     href="https://roadmap.inngest.com/roadmap"
                   >
-                    Share your feedback or up vote an specific language SDK here
+                    public roadmap
+                  </a>
+                  .
+                </p>
+              </FAQRow>
+              <FAQRow question="Do you have a SOC 2 report?">
+                <p>
+                  Yes,{" "}
+                  <a
+                    className="text-indigo-400 hover:text-white hover:underline hover:decoration-white transition-all"
+                    href="/blog/soc2-compliant?ref=pricing"
+                  >
+                    Inngest is SOC 2 compliant
+                  </a>
+                  . You can request a report by{" "}
+                  <a
+                    className="text-indigo-400 hover:text-white hover:underline hover:decoration-white transition-all"
+                    href="/contact?ref=pricing-faq-demo"
+                  >
+                    contacting our team here
                   </a>
                   .
                 </p>
