@@ -165,7 +165,15 @@ export default function Contact() {
                 variant="vertical"
                 className="p-4 md:p-4"
               />
-              <p className="mt-16 mb-8 text-lg font-semibold text-indigo-50/80">
+              <div className="flex flex-row gap-4 items-center my-8 text-lg text-indigo-50/80">
+                <img
+                  src="/assets/compliance/soc2.webp"
+                  alt="SOC 2"
+                  className="h-16 w-16"
+                />
+                <p>Inngest is SOC 2 Type II compliant.</p>
+              </div>
+              <p className="mt-8 mb-6 text-lg font-semibold text-indigo-50/80">
                 Trusted by
               </p>
               <div className="flex flex-row flex-wrap gap-8">
