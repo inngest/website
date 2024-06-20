@@ -377,8 +377,13 @@ const platformFeatures = [
 
 const enterpriseFeatures = [
   {
-    title: "SOC 2 Compliance",
-    description: "Regular security audits and compliance with SOC 2.",
+    title: "SOC 2 Compliant",
+    description: (
+      <>
+        Regular security audits and compliance with SOC 2 standards.{" "}
+        <Link href="/blog/soc2-compliant">Read more here</Link>.
+      </>
+    ),
   },
   {
     title: "100k+ executions per second",
