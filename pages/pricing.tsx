@@ -733,7 +733,7 @@ export default function Pricing() {
                   . Read more in our{" "}
                   <a
                     className="text-indigo-400 hover:text-white hover:underline hover:decoration-white transition-all"
-                    href="/docs/learn/inngest-steps"
+                    href="/docs/guides/multi-step-functions"
                   >
                     documentation
                   </a>
