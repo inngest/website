@@ -325,7 +325,7 @@ const FEATURES: Feature[] = [
   {
     name: "Automatic retries",
     all: true,
-    infoUrl: "/docs/functions/retries?ref=pricing",
+    infoUrl: "/docs/reference/typescript/functions/errors?ref=pricing",
   },
   {
     name: "Step functions",
@@ -616,7 +616,7 @@ export default function Pricing() {
 
             <p className="mt-8 text-lg font-medium max-w-4xl mb-16">
               <a
-                href="/docs/guides/multi-step-functions"
+                href="/docs/learn/inngest-steps"
                 className="text-white underline"
               >
                 Steps
@@ -702,7 +702,7 @@ export default function Pricing() {
                   A function is defined with the{" "}
                   <a
                     className="text-indigo-400 hover:text-white hover:underline hover:decoration-white transition-all"
-                    href="/docs/functions"
+                    href="/docs/learn/inngest-functions"
                   >
                     Inngest SDK
                   </a>{" "}
@@ -733,7 +733,7 @@ export default function Pricing() {
                   . Read more in our{" "}
                   <a
                     className="text-indigo-400 hover:text-white hover:underline hover:decoration-white transition-all"
-                    href="/docs/guides/multi-step-functions"
+                    href="/docs/learn/inngest-steps"
                   >
                     documentation
                   </a>
