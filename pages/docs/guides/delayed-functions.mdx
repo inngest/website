@@ -2,7 +2,7 @@ import { CodeGroup } from "src/shared/Docs/mdx";
 
 # Enqueueing future jobs
 
-You can easily enqueue jobs in the future with Inngest. Inngest offers two ways to run jobs in the future: delaying jobs for a specific amount of time (eg. run in 1 day), or running code at a specific date and time. There are some benefits to enqueuing jobs using Inngest:
+You can easily enqueue jobs in the future with Inngest. Inngest offers two ways to run jobs in the future: delaying jobs for a specific amount of time (up to a year, and for free plan up to seven days), or running code at a specific date and time. There are some benefits to enqueuing jobs using Inngest:
 
 - It works across any provider or platform
 - Delaying jobs is durable, and works across server restarts, serverless functions, and redeploys
@@ -38,7 +38,7 @@ export const fn = inngest.createFunction(
 ```
 </CodeGroup>
 
-For more information on `step.sleep()` read [the reference guide](/docs/reference/functions/step-sleep)
+For more information on `step.sleep()` read [the reference](/docs/reference/functions/step-sleep).
 
 
 ## Running at specific times
@@ -69,7 +69,7 @@ export const fn = inngest.createFunction(
 ```
 </CodeGroup>
 
-For more information on `step.sleepUntil()` [read the reference guide](/docs/reference/functions/step-sleep-until).
+For more information on `step.sleepUntil()` [read the reference](/docs/reference/functions/step-sleep-until).
 
 ## How it works
 
