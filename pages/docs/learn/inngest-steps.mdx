@@ -67,7 +67,7 @@ export default inngest.createFunction(
 
 ### <a href="/docs/reference/functions/step-sleep" className="flex items-center gap-4"><IconConcurrency size="2rem"/><pre>step.sleep()</pre></a> {{anchor: false}}
 
-This method pauses execution for a specified duration. Even though it seems like a `setInterval`, your function does not run for that time (you don't use any compute). Inngest handles the scheduling for you. Use it to add delays or to wait for a specific amount of time before proceeding. At maximum, functions can sleep for a year (seven days for the free tier accounts).
+This method pauses execution for a specified duration. Even though it seems like a `setInterval`, your function does not run for that time (you don't use any compute). Inngest handles the scheduling for you. Use it to add delays or to wait for a specific amount of time before proceeding. At maximum, functions can sleep for a year (seven days for the [free tier plans](/pricing)).
 
 ```typescript
 export default inngest.createFunction(
@@ -82,7 +82,7 @@ export default inngest.createFunction(
 
 ### <a href="/docs/reference/functions/step-sleep-until" className="flex items-center gap-4"><IconConcurrency size="2rem"/><pre>step.sleepUntil()</pre></a> {{anchor: false}}
 
-This method pauses execution until a specific date time. Any date time string in the format accepted by the Date object, for example `YYYY-MM-DD` or `YYYY-MM-DDHH:mm:ss`. At maximum, functions can sleep for a year (seven days for the free tier accounts).
+This method pauses execution until a specific date time. Any date time string in the format accepted by the Date object, for example `YYYY-MM-DD` or `YYYY-MM-DDHH:mm:ss`. At maximum, functions can sleep for a year (seven days for the [free tier plans](/pricing)).
 
 ```typescript
 export default inngest.createFunction(
