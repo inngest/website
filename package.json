@@ -47,6 +47,7 @@
     "algoliasearch": "4.14.3",
     "babel-loader": "8.3.0",
     "clsx": "1.2.1",
+    "codehike": "1.0.0-beta.0",
     "cronstrue": "1.125.0",
     "cross-fetch": "3.1.5",
     "deterministic-split": "1.0.4",
