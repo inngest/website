@@ -1,26 +1,30 @@
 ---
-heading: "Optimizing Queueing in Multi-Tenant Systems: Solving the Noisy Neighbor Problem"
+heading: Fixing noisy neighbor problem in multi-tenant queueing systems
 subtitle: How to ensure fair processing in multi-tenant queueing systems
 image: /assets/blog/soc2-compliant/featured-image.png
-date: 2024-06-24
+date: 2024-06-28
 author: Dan Farrelly
 disableCTA: true
 ---
 
-Managing queues in multi-tenant systems can be challenging. Depending on the system, power users can monopolize resources, leading to a poor experience for other users. These "noisy neighbors" can cause delays and slow processing times leaving other users frustrated with a suboptimal experience.
+Multi-tenant queueing systems are complex to manage and prone to noisy neighbor problems. High volume users can monopolize resources, causing delays and perceived performance degradation for other users. Systems need to ensure fairness and consistent performance for all users, regardless of their usage levels.
 
-In these systems it's important to ensure fairness and consistent performance for all users, regardless of their usage levels. This is difficult to do, but we'll break down this problem and potential solutions.
+There are several approaches to solving this problem, but many require complex infrastructure management and custom worker logic.
 
-_If you're a visual learner, check out the video we recorded on this topic:_
+In this post, we'll walk through these approaches and how Inngest is purpose-built to handle multi-tenant queueing systems without the overhead and complexity.
+
+_If you're a visual learner, check out the video:_
 
 <YouTube id="uoXqqMkuiP0" height={300}/>
 
 
 ## Noisy neighbors and queueing systems
 
-In multi-tenant systems, users share the same infrastructure resources. A "[noisy neighbor](https://learn.microsoft.com/en-us/azure/architecture/antipatterns/noisy-neighbor/noisy-neighbor)" refers to a high-usage user consuming excessive resources, thereby affecting other users' performance. This can lead to delays and frustration for users with lower usage levels.
+In multi-tenant systems, users share the same infrastructure resources. A "[noisy neighbor](https://learn.microsoft.com/en-us/azure/architecture/antipatterns/noisy-neighbor/noisy-neighbor)" refers to a high-usage user consuming excessive resources, thereby affecting other users' performance.
 
-Here is a visualization of a single user monopolizing a first-in-first-out (FIFO) queue:
+In queueing systems, a noisy neighbor can monopolize a queue (or multiple queues), causing other users to wait longer for their jobs to be processed. This can lead to delays and frustration for users with lower usage levels. In these systems it's important to ensure fairness and consistent performance for all users, regardless of their usage levels.
+
+Here is a visualization of a single user monopolizing a [first-in-first-out (FIFO) queue](https://en.wikipedia.org/wiki/FIFO_(computing_and_electronics)):
 
 <video controls autoPlay loop muted src="/assets/blog/multi-tenant-queueing-concurrency/noisy-neighbor.mp4" />
 
@@ -36,31 +40,42 @@ Here is a visualization of a fair queueing system where each user receives equal
 
 ### Achieving fairness - A queue per user
 
-An ideal approach to fairness is to provide a queue per user. This way, each user's workloads are isolated, preventing any single user from affecting others. However, this approach introduces several challenges:
-
-* **Infrastructure management**: Creating and maintaining thousands of individual queues is cumbersome and complex. This also might represent a shift towards a single-tenant architecture which may not be desirable.
-* **Smart workers**: Workers need to be designed to scan and pull from multiple queues intelligently to prioritize work effectively. It's not likely that you can afford a worker-per user at scale so workers need to be able to handle multiple queues and re-adjust as more users are added to your system.
-* **Defining queues ahead of time**: Most traditional message queues require pre-configuring your queues either in infrastructure-as-code or programmatically. This may work for a small number of users, but it's not practical at scale. Additionally, you'll need some sort of state management to keep track of all these queues.
+An ideal approach to fairness is to provide a queue per user. This way, each user's workloads are isolated, preventing any single user from affecting others.
 
 <img src="/assets/blog/multi-tenant-queueing-concurrency/queue-per-user.png" alt="A visualization of a single queue fanning out into a queue per user" />
 
+This approach introduces several challenges:
+
+* **Infrastructure overhead and costs**: Creating and maintaining thousands of individual queues is cumbersome and potentially very expensive.
+* **Worker complexity and performance**: Workers need to be designed to scan and pull from multiple queues intelligently to prioritize work effectively. It's not likely that you can afford a worker-per user at scale so workers need to be able to handle multiple queues and re-adjust as more users are added to your system. If not done well, this can lead to poor performance for all users.
+* **Queue configuration and management**: Most traditional message queues require pre-configuring your queues either in infrastructure-as-code or programmatically. This may work for a small number of users, but it's not practical at scale. Additionally, you'll need some sort of state management to keep track of all these queues.
+* **Hybrid of mutli- and single-tenant architecture**: Managing a queue per user represents a shift towards a single-tenant architecture which may be a significant departure from the existing architecture of your multi-tenant system. This can lead to additional architectural complexity which adds to overhead of the engineering team that is maintaining it.
+
 ### Alternative approaches - Priority queues
 
-An alternative approach might be to use low/high priority queues, but to utilize this approach to to solve noisy neighbor problems, the system would have to track the high-usage users and redistribute workloads to low priority queues.
-
-This is similar to API request throttling where a user's rate of requests is tracked and if they exceed a certain threshold, they are pushed into a lower priority queue.
+An alternative approach might be to use low/high priority queues. As usage increases for a particular user, they are moved to a lower priority queue. This approach can help to ensure that high-usage users don't monopolize resources.
 
 <img src="/assets/blog/multi-tenant-queueing-concurrency/priority-queue.png" alt="A visualization of a priority queue that first determines the rate of jobs" />
 
+This approach can be effective, but has other challenges:
+
+* **Implementing rate limiting**: The system needs to track the rate of jobs for each user, for every queue. This is similar to API endpoint rate limiting, but requires additional infrastructure and logic to manage.
+* **Shifting the problem to the low priority queue**: If a user is moved to a low priority queue, they may still flood that queue, causing delays for other users who just narrowly exceed the defined rate.
+* **Fine-tuning the system for efficiency**: Rate limits and worker capacity for high and low priority queues will have to be tuned to ensure that the system is efficient and fair. This takes additional time and must be monitored and adjusted as usage patterns change.
+
 ## Inngest: Concurrency limits for each tenant
 
-The Inngest platform combines event streams, queues, and durable execution into a single system. A core component of the system is built-in flow control which allows you to configure how and when your functions (_jobs_) are executed.
+The Inngest platform has built-in support for easily defining concurrency limits that are automatically applied for each tenant.
 
-In comparison with the previously mentioned methods which require a combination of queueing infrastructure and worker logic, Inngest manages all infrastructure and has embedded flow control logic within the queue itself. This removes the need for custom worker logic and state management. This means:
+Compared to approaches that have to combine queue infrastructure management, custom worker logic, and state management, Inngest manages all infrastructure and has embedded [_flow control_](/docs/guides/flow-control) logic within the queue itself. This allows your system to have the best of both worlds: the simplicity of a multi-tenant system with the fairness of a single-tenant system.
+
+### How it works
+
+Concurrency controls are defined within each Inngest function configuration in just a couple lines of code. Here's how it works:
 
 * You define the concurrency `limit` in your function configuration.
 * Specifying a concurrency `key` will apply this limit to _each unique value of the key_. This key can be anything relevant to your system, such as user ID, organization ID, email, workspace ID, etc.
-* As new runs (aka _jobs_) are created, **Inngest dynamically creates a new queue for each unique key value**. The system internally handles the complexity of managing these queues, so you don't have to.
+* As new runs (aka _jobs_) are created, **Inngest dynamically creates a new queue for each unique key value**. The system internally handles the complexity of managing these queues, and consuming work efficiently off of each queue so you don't have to.
 
 Let's take a look at some example code:
 
