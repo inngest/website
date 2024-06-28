@@ -1,0 +1,73 @@
+import Header from "../Header";
+export const metadata = {
+  description: ''
+};
+
+<Header>
+
+# Managing capacity with concurrency limits for AI-based Apps
+
+If you've integrated AI into your product you must carefully manage and monitor usage to avoid exceeding limits and incurring unexpected costs. Concurrency limits are one flow control method that can help you achieve this.
+
+</Header>
+
+## What are concurrency limits
+
+Concurrency limits are a method of smoothing usage by managing capacity for work that can run in parallel. Concurrency limits are useful for preventing a single user from using disproportionate amounts of capacity (a "noisy neighbor") or controlling the number of concurrent calls that can be made on systems that are not rate limited.
+
+## Methods for limiting concurrency
+
+### Legacy queue and worker systems
+
+In legacy queueing systems, you can limit concurrency by setting a maximum number of workers that can process messages from a queue as a given time. This is often done at the infrastructure level and still is prone to noisy neighbor problems.
+
+To handle noisy neighbor problems, additional queues, worker logic, and state management will be necessary to isolate workloads. This is complex and time intensive to implement, make efficient, and scale.
+
+### Concurrency limits using Inngest
+
+Inngest enables you to specify concurrency limits at the function level, directly in your code.
+
+You can additionally specify a `key` which will apply the concurrency limit to a specific user or group of users. This helps mitigate issues created by noisy neighbors. This will easily prevent a single user from using disproportionate amounts of capacity.
+
+```typescript
+inngest.createFunction(
+ {
+   id: "ai-generate-summary",
+   concurrency: {
+     key: "event.data.user_id",
+     limit: 2,
+   }
+ },
+ { event: "ai/summary.requested" },
+ async ({ event, step }) => {
+   /* call OpenAI */
+ }
+);
+```
+
+Above, the key is the user ID, which limits each user to two concurrent executions of the function. We also can apply multiple levels of concurrency or combine concurrency with throttle controls which can be useful for working around third-party API rate limits:
+
+```typescript
+inngest.createFunction(
+ {
+   id: "ai-generate-summary",
+   throttle: {
+     limit: 30,
+     period: "1m",
+   }
+   concurrency: {
+     key: "event.data.user_id",
+     limit: 2,
+   },
+ },
+ { event: "ai/summary.requested" },
+ async ({ event, step }) => {
+   /* call OpenAI */
+ }
+);
+
+```
+
+## Start adding powerful concurrency controls today
+
+To implement concurrency in your application today, get started with Inngest's free and open source dev server today.
