@@ -1,30 +1,33 @@
----
-heading: Fixing noisy neighbor problems in multi-tenant queueing systems
-subtitle: Ensuring fairness and consistent performance for all users with concurrency controls
-showSubtitle: true
-image: /assets/blog/multi-tenant-queueing-concurrency/featured-image-v2.png
-date: 2024-06-28
-author: Dan Farrelly
-disableCTA: true
----
+import Header from "../Header";
+export const metadata = {
+  description: 'Ensuring fairness and consistent performance for all users with concurrency controls'
+};
+
+<Header>
+
+# Fixing noisy neighbor problems in multi-tenant queueing systems
+
+Ensuring fairness and consistent performance for all users with concurrency controls
+
+</Header>
 
 Multi-tenant queueing systems are complex to manage and prone to noisy neighbor problems. High volume users can monopolize resources, causing delays and perceived performance degradation for other users. Systems need to ensure fairness and consistent performance for all users, regardless of their usage levels.
 
 There are several approaches to solving this problem, but many require complex infrastructure management and custom worker logic.
 
-In this post, we'll walk through these approaches and how Inngest is purpose-built to handle multi-tenant queueing systems without the overhead and complexity.
+Let's compare the approaches and see how Inngest is purpose-built to handle multi-tenant queueing systems without the overhead and complexity.
 
 _If you're a visual learner, check out the video:_
 
-<YouTube id="uoXqqMkuiP0" height={300}/>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/uoXqqMkuiP0?si=pSgy2Q9le28Am5Cn" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
 ## Noisy neighbors and queueing systems
 
-In multi-tenant systems, users share the same infrastructure resources. A "[noisy neighbor](https://learn.microsoft.com/en-us/azure/architecture/antipatterns/noisy-neighbor/noisy-neighbor)" refers to a high-usage user consuming excessive resources, thereby affecting other users' performance.
+In multi-tenant systems, users share the same infrastructure resources. A "noisy neighbor" refers to a high-usage user consuming excessive resources, thereby affecting other users' performance.
 
 In queueing systems, a noisy neighbor can monopolize a queue (or multiple queues), causing other users to wait longer for their jobs to be processed. This can lead to delays and frustration for users with lower usage levels. In these systems it's important to ensure fairness and consistent performance for all users, regardless of their usage levels.
 
-Here is a visualization of a single user monopolizing a [first-in-first-out (FIFO) queue](https://en.wikipedia.org/wiki/FIFO_(computing_and_electronics)):
+Here is a visualization of a single user monopolizing a first-in-first-out (FIFO) queue:
 
 <video controls autoPlay loop muted src="/assets/blog/multi-tenant-queueing-concurrency/noisy-neighbor.mp4" />
 
@@ -67,7 +70,7 @@ This approach can be effective, but has other challenges:
 
 The Inngest platform has built-in support for easily defining concurrency limits that are automatically applied for each tenant.
 
-Compared to approaches that have to combine queue infrastructure management, custom worker logic, and state management, Inngest manages all infrastructure and has embedded [_flow control_](/docs/guides/flow-control) logic within the queue itself. This allows your system to have the best of both worlds: the simplicity of a multi-tenant system with the fairness of a single-tenant system.
+Compared to approaches that have to combine queue infrastructure management, custom worker logic, and state management, Inngest manages all infrastructure and has embedded _flow control_ logic within the queue itself. This allows your system to have the best of both worlds: the simplicity of a multi-tenant system with the fairness of a single-tenant system.
 
 ### How it works
 
@@ -134,9 +137,9 @@ export const combinedConcurrencyLimits = inngest.createFunction(
 
 Beyond using keys and combining concurrency limits, for additional control within your system, you might also consider:
 
-* **Setting concurrency limits that are shared across functions** - Concurrency limits can be shared across multiple functions by [specifying a `scope`](/docs/guides/concurrency#how-global-limits-work) which allows to combine limits across functions.
-* **Combining with other flow control methods** - Inngest's concurrency limits can be combined with other methods like [throttling](/docs/guides/throttling) and [prioritization](/docs/guides/priority), giving you even more control over your system's workload management.
+* **Setting concurrency limits that are shared across functions** - Concurrency limits can be shared across multiple functions by specifying a `scope` which allows to combine limits across functions.
+* **Combining with other flow control methods** - Inngest's concurrency limits can be combined with other methods like throttling and prioritization, giving you even more control over your system's workload management.
 
 ## Give it a try
 
-Managing queues in multi-tenant systems can be complex, but with Inngest's built-in multi-tenant-aware concurrency controls, you can ensure a fair, efficient, and smooth experience in your applications. Learn more about how to implement concurrency limits in your functions by checking out the [Inngest Concurrency Documentation](/docs/guides/concurrency).
+Managing queues in multi-tenant systems can be complex, but with Inngest's built-in multi-tenant-aware concurrency controls, you can ensure a fair, efficient, and smooth experience in your applications.
