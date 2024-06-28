@@ -24,6 +24,17 @@ import remarkGfm from "remark-gfm";
 import { SectionProvider } from "src/shared/Docs/SectionProvider";
 // import { LaunchWeekBanner } from "../index";
 
+// @ts-ignore
+import { remarkCodeHike, recmaCodeHike } from "codehike/mdx";
+import { Code } from "src/shared/Code/CodeHike";
+
+const chConfig = {
+  components: { code: "Code" },
+  syntaxHighlighting: {
+    theme: "dracula-soft",
+  },
+};
+
 const components: MDXComponents = {
   DiscordCTA,
   Button,
@@ -31,6 +42,7 @@ const components: MDXComponents = {
   Blockquote,
   // @ts-ignore this package is older, but it works
   YouTube,
+  Code,
 };
 
 type Props = {
@@ -287,8 +299,9 @@ export async function getStaticProps({ params }) {
         rehypeShiki,
         [rehypeRaw, { passThrough: nodeTypes }],
         rehypeSlug,
-        remarkGfm,
       ],
+      remarkPlugins: [[remarkCodeHike, chConfig], remarkGfm],
+      recmaPlugins: [[recmaCodeHike, chConfig]],
     },
   });
   return {
