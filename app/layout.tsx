@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { GoogleTagManager } from "@next/third-parties/google";
 
 import Header from "src/shared/Header";
 import Footer from "src/shared/Footer";
@@ -41,7 +40,20 @@ export default function RootLayout({
         <Footer disableCta={true} />
 
         <PageViews />
-        <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GTM_ID} />
+        <script
+          async
+          src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GTM_ID}`}
+        ></script>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', '${process.env.NEXT_PUBLIC_GTM_ID}');
+            `,
+          }}
+        />
       </body>
     </html>
   );

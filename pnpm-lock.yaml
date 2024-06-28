@@ -36,8 +36,8 @@ dependencies:
     specifier: 13.5.6
     version: 13.5.6(@mdx-js/loader@2.2.1)(@mdx-js/react@2.2.1)
   '@next/third-parties':
-    specifier: 14.2.3
-    version: 14.2.3(next@13.2.4)(react@18.2.0)
+    specifier: 14.2.4
+    version: 14.2.4(next@13.2.4)(react@18.2.0)
   '@radix-ui/react-accordion':
     specifier: 1.1.2
     version: 1.1.2(@types/react@18.0.26)(react-dom@18.2.0)(react@18.2.0)
@@ -2560,8 +2560,8 @@ packages:
     dev: false
     optional: true
 
-  /@next/third-parties@14.2.3(next@13.2.4)(react@18.2.0):
-    resolution: {integrity: sha512-j4E2xBSsEZq4VX2pVm3LpGltSwCxETic6glJWfHyYQvpoMdplCAYrQKpF+E9Gg3jfsrfmRAIdTE11m+biBCx1Q==}
+  /@next/third-parties@14.2.4(next@13.2.4)(react@18.2.0):
+    resolution: {integrity: sha512-bf5d5m4a+Fh9syLz0Pf9Ax7LdLazlp7ur7DqX0LUMDyIx9Z/F0J/XxieklA9lRqM9KjrCVNT8Tkhg0AvotTBTQ==}
     peerDependencies:
       next: ^13.0.0 || ^14.0.0
       react: ^18.2.0
