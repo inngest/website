@@ -682,7 +682,10 @@ Add the following to `./src/routes/api/inngest/+server.ts`:
 import { functions, inngest } from '$lib/inngest';
 import { serve } from 'inngest/sveltekit';
 
-export const { GET, POST, PUT } = serve({ client: inngest, functions });
+const inngestServe = serve({ client: inngest, functions });
+export const GET = inngestServe.GET;
+export const POST = inngestServe.POST;
+export const PUT = inngestServe.PUT;
 ```
 </CodeGroup>
 
