@@ -114,10 +114,6 @@ export default function Hero() {
             scale: 0.8,
           },
           {
-            src: "/assets/customers/snaplet-dark.svg",
-            name: "Snaplet",
-          },
-          {
             src: "/assets/customers/zamp-logo.svg",
             name: "Zamp",
             scale: 0.9,
