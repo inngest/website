@@ -178,6 +178,11 @@ export default function Contact() {
               </p>
               <div className="flex flex-row flex-wrap gap-8">
                 <img
+                  className="h-8"
+                  src="/assets/customers/soundcloud-logo-white-horizontal.svg"
+                  alt="SoundCloud"
+                />
+                <img
                   className="h-7"
                   src="/assets/customers/tripadvisor.svg"
                   alt="TripAdvisor"
@@ -186,11 +191,6 @@ export default function Contact() {
                   className="h-7"
                   src="/assets/customers/resend.svg"
                   alt="Resend"
-                />
-                <img
-                  className="h-8"
-                  src="/assets/customers/snaplet-dark.svg"
-                  alt="Snaplet"
                 />
               </div>
             </div>
