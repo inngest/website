@@ -57,6 +57,12 @@ const sectionGettingStarted: NavGroup[] = [
       {
         title: "Inngest steps",
         href: `/docs/learn/inngest-steps`,
+        tag: "New",
+      },
+      {
+        title: "Glossary",
+        href: `/docs/learn/glossary`,
+        tag: "New",
       },
       {
         title: "Glossary",
@@ -79,6 +85,7 @@ const sectionGettingStarted: NavGroup[] = [
       {
         title: "Function execution",
         href: `/docs/learn/how-functions-are-executed`,
+        tag: "New",
       },
       {
         title: "Security",
