@@ -147,11 +147,11 @@ export default function Home() {
 
       <div className="my-32">
         <Quote
-          text="We switched from our PostgreSQL backed queue to Inngest in less than a day. Their approach is idiomatic with a great developer experience. Inngest allowed us to stop worrying about scalability and stability."
+          text="For anyone who is building multi-step AI agents (such as AutoGPT type systems), I highly recommend building it on top of Inngest's job queue orchestration framework, the traceability it provides out of the box is super useful, plus you get timeouts & retries for free."
           attribution={{
-            name: "Peter Pistorius",
-            title: "CEO, Snaplet",
-            avatar: "/assets/customers/snaplet-peter-pistorius.png",
+            name: "David Zhang",
+            title: "CEO, Aomni",
+            avatar: "/assets/customers/aomni-david.jpg",
           }}
         />
       </div>
