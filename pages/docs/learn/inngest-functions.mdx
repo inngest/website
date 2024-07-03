@@ -24,10 +24,15 @@ export default inngest.createFunction(
   { event: "shop/product.imported" },
   // handler function
   async ({ event, step }) => {
-    // here goes the business logic
-    return copyAllImagesToS3(event.data.imageURLs);
-    // if you need to perform more than one task,
-    // wrap each one in step.run()
+    // Here goes the business logic
+    // By wrapping code in steps, it will be retried automatically on failure
+    const s3Urls = await step.run("copy-images-to-s3", async () => {
+      return copyAllImagesToS3(event.data.imageURLs);
+    });
+    // You can include numerous steps in your function
+    await step.run('resize-images', async () => {
+      await resizer.bulk({ urls: s3Urls, quality: 0.9, maxWidth: 1024 });
+    })
   };
 );
 ```
