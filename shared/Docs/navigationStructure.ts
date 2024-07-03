@@ -968,7 +968,7 @@ export const menuTabs = [
   {
     title: "Getting started",
     icon: PlayIcon,
-    href: "/docs/quick-start",
+    href: "/docs",
     matcher: matchers.default,
   },
   {
