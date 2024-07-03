@@ -133,6 +133,9 @@ export function Layout({
 }
 
 const modeScript = `
+
+  document.documentElement.classList.add('docs');
+
   // change to "let = darkModeMediaQuery" if/when this moves to the _document
   window.darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
 

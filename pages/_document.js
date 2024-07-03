@@ -26,28 +26,7 @@ export default class MyDocument extends Document {
             }}
           />
         </Head>
-        <body className="light-theme">
-          <script
-            type="text/javascript"
-            dangerouslySetInnerHTML={{
-              __html: `
-               (function(){
-                // Any page with a base path matching this will enable light mode
-                const THEME_SUPPORT = [
-                  "/docs",
-                  "/blog"
-                ];
-                 const hasThemeSupport = !!THEME_SUPPORT.find(function(p) {
-                  return document.location.pathname.indexOf(p) === 0;
-                 });
-                 const theme = window.localStorage.getItem("theme");
-                 if (hasThemeSupport && theme) {
-                  document.body.classList.add(theme + "-theme");
-                 }
-               })();
-              `,
-            }}
-          />
+        <body>
           <Main />
           <NextScript />
         </body>
