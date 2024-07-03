@@ -1,6 +1,13 @@
+import type { Metadata } from "next";
 // Import SectionProvider due to the global MDX components and it's usage in Docs
 import { SectionProvider } from "shared/Docs/SectionProvider";
 import { FullWidthCTA } from "src/components/FullWidthCTA";
+
+export const metadata: Metadata = {
+  // Prevent Google from indexing landing pages which may have
+  // duplicate and/or temporary content
+  robots: "noindex",
+};
 
 export default function LandingPageLayout({
   children,
