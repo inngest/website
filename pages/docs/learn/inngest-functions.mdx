@@ -26,10 +26,13 @@ export default inngest.createFunction(
   async ({ event, step }) => {
     // Here goes the business logic
     // By wrapping code in steps, it will be retried automatically on failure
-    const copyImages = await step.run("copy-images-to-s3", async () => {
+    const s3Urls = await step.run("copy-images-to-s3", async () => {
       return copyAllImagesToS3(event.data.imageURLs);
     });
     // You can include numerous steps in your function
+    await step.run('resize-images', async () => {
+      await resizer.bulk({ urls: s3Urls, quality: 0.9, maxWidth: 1024 });
+    })
   };
 );
 ```
