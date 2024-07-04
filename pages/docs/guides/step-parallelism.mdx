@@ -54,6 +54,70 @@ export const fn = inngest.createFunction(
 
 When each step is finished, Inngest will aggregate each step's state and re-invoke the function with all state available.
 
+### Python
+
+Inngest supports parallel steps regardless of whether you're using asynchronous or synchronous code. For both approaches, you can use `step.parallel`:
+
+```py
+@client.create_function(
+  fn_id="my-fn",
+  trigger=inngest.TriggerEvent(event="my-event"),
+)
+async def fn(
+  ctx: inngest.Context,
+  step: inngest.Step,
+) -> None:
+  user_id = ctx.event.data["user_id"]
+
+  (updated_user, sent_email) = await step.parallel(
+    (
+      lambda: step.run("update-user", update_user, user_id),
+      lambda: step.run("send-email", send_email, user_id),
+    )
+  )
+```
+
+```py
+@client.create_function(
+  fn_id="my-fn",
+  trigger=inngest.TriggerEvent(event="my-event"),
+)
+def fn(
+  ctx: inngest.Context,
+  step: inngest.StepSync,
+) -> None:
+  user_id = ctx.event.data["user_id"]
+
+  (updated_user, sent_email) = step.parallel(
+    (
+      lambda: step.run("update-user", update_user, user_id),
+      lambda: step.run("send-email", send_email, user_id),
+    )
+  )
+```
+
+At this time, Inngest does not have stable support for `asyncio.gather` or `asyncio.wait`. If you'd like to try out experimental support, use the `_experimental_execution` option when creating your function:
+
+```py
+@client.create_function(
+  fn_id="my-fn",
+  trigger=inngest.TriggerEvent(event="my-event"),
+  _experimental_execution=True,
+)
+def fn(
+  ctx: inngest.Context,
+  step: inngest.StepSync,
+) -> None:
+  user_id = ctx.event.data["user_id"]
+
+  (updated_user, sent_email) = asyncio.gather(
+    asyncio.create_task(step.run("update-user", update_user, user_id)),
+    asyncio.create_task(step.run("send-email", send_email, user_id)),
+  )
+```
+
+When using `asyncio.wait`, `asyncio.FIRST_COMPLETED` is supported. However, `asyncio.FIRST_EXCEPTION` is not supported due to the way Inngest interrupts the execution of the function.
+
 ## Chunking jobs
 
 A common use case is to chunk work. For example, when using OpenAI's APIs you might need to chunk a user's input and run the API on many chunks, then aggregate all data:
