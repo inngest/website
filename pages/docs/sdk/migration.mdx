@@ -65,7 +65,7 @@ This is only needed to ensure function runs started on v2 will transition to v3;
           import { serve } from "inngest/next";
 
           const inngest = new Inngest({
-            id: slugify("My App"),
+            id: "My App",
           });
 
           const fn = inngest.createFunction(
@@ -165,10 +165,10 @@ When instantiating a client using `new Inngest()` or creating a function via `in
      <Col>
           <CodeGroup filename="✅ v3">
           ```ts
-          import { Inngest, slugify } from "inngest";
+          import { Inngest } from "inngest";
 
           export const inngest = new Inngest({
-            id: slugify("My App"),
+            id: "My App",
           });
           ```
           </CodeGroup>
