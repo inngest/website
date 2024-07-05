@@ -417,7 +417,7 @@ export const inngest = onRequest(
 
 <Callout>
 
-Firebase Cloud Function requires to configure the `INNGEST_SERVE_PATH` with the custom function path.
+Firebase Cloud Functions require configuring `INNGEST_SERVE_PATH` with the custom function path.
 
 For example, for a project named `inngest-firebase-functions` deployed on the `us-central1` region, the `INNGEST_SERVE_PATH` value will be as follows:
 
@@ -427,13 +427,13 @@ For example, for a project named `inngest-firebase-functions` deployed on the `u
 
 </Callout>
 
-You can now server your Firebase Cloud Function locally using the following command:
+To serve your Firebase Cloud Function locally, use the following command:
 
 ```bash
 firebase emulators:start
 ```
 
-Please note that you'll need to start your Inngest Local Dev Server with the `-u` flag as follows:
+Please note that you'll need to start your Inngest Local Dev Server with the `-u` flag to match our Firebase Cloud Function's custom path  as follows:
 
 ```bash
 npx inngest-cli@latest dev -u http://127.0.0.1:5001/inngest-firebase-functions/us-central1/inngest
