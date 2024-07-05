@@ -29,6 +29,7 @@ const options = {
     "https://platform.openai.com",
     "https://t.co",
     "https://sentry.io",
+    "https://x.com",
   ],
 };
 
