@@ -54,7 +54,7 @@ export const fn = inngest.createFunction(
 
 When each step is finished, Inngest will aggregate each step's state and re-invoke the function with all state available.
 
-### Python
+### Step parallelism in Python
 
 Inngest supports parallel steps regardless of whether you're using asynchronous or synchronous code. For both approaches, you can use `step.parallel`:
 
