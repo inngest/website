@@ -203,6 +203,16 @@ Additionally, you can configure allow/deny lists for event names and IP addresse
 
 Inngest currently does not yet support webhook signature verification. While this means that you cannot use the signature to verify the authenticity of the payload, each webhook URL is unique and can only be used by one producer. This means that you can be confident that the events are coming from the producer that you expect.
 
+## Local development
+
+To test your webhook locally, you can forward events to the [Dev Server](/docs/local-development) from the Inngest dashboard using the "Send to Dev Server" button. This button is found anywhere that an event payload is visible on the Inngest dashboard. This will send a copy of the event to your local machine where you can test your functions.
+
+<img
+  className="max-w-lg"
+  src="/assets/docs/platform/webhooks/send-to-dev-server.png"
+  alt="Send to dev server button in the Inngest cloud dashboard"
+/>
+
 ## Writing functions
 
 Now that you have events flowing into Inngest, you can write functions that that handle the events that you care about. You can also explore the list of events that have been received at any time by heading to the _Events_ tab of the Inngest dashboard.
