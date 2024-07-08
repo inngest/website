@@ -1,4 +1,4 @@
-import { CodeGroup, VersionBadge } from "shared/Docs/mdx";
+import { Callout, CodeGroup, VersionBadge } from "shared/Docs/mdx";
 
 # Serving the Inngest API
 
@@ -396,6 +396,50 @@ ff.http('inngest', serve(inngest, [fnA]));
 </CodeGroup>
 
 You can run this locally with `npx @google-cloud/functions-framework --target=inngest` which will serve your Inngest functions on port `8080`.
+
+## Framework: Firebase Cloud Functions
+
+Based on the Google Cloud Function architecture, the Firebase Cloud Functions provide a different API to serve functions using `onRequest`:
+
+```typescript
+import { onRequest } from "firebase-functions/v2/https";
+
+import { serve } from "inngest/express";
+import { inngest as inngestClient } from "./inngest/client";
+
+export const inngest = onRequest(
+  serve({
+    client: inngestClient,
+    functions: [/* ...functions... */],
+  })
+);
+```
+
+<Callout>
+
+Firebase Cloud Functions require configuring `INNGEST_SERVE_PATH` with the custom function path.
+
+For example, for a project named `inngest-firebase-functions` deployed on the `us-central1` region, the `INNGEST_SERVE_PATH` value will be as follows:
+
+```
+/inngest-firebase-functions/us-central1/inngest/
+```
+
+</Callout>
+
+To serve your Firebase Cloud Function locally, use the following command:
+
+```bash
+firebase emulators:start
+```
+
+Please note that you'll need to start your Inngest Local Dev Server with the `-u` flag to match our Firebase Cloud Function's custom path  as follows:
+
+```bash
+npx inngest-cli@latest dev -u http://127.0.0.1:5001/inngest-firebase-functions/us-central1/inngest
+```
+
+_The above command example features a project named `inngest-firebase-functions` deployed on the `us-central1` region_.
 
 ## Framework: H3 <VersionBadge version="v2.7.0+" />
 
