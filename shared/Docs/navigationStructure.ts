@@ -67,6 +67,7 @@ const sectionGettingStarted: NavGroup[] = [
       {
         title: "Glossary",
         href: `/docs/learn/glossary`,
+        tag: "New",
       },
       { title: "Installing the SDK", href: `/docs/sdk/overview` },
       { title: "Serving the API & Frameworks", href: `/docs/sdk/serve` },
@@ -156,6 +157,7 @@ const sectionGuides: NavGroup[] = [
       {
         title: "Working with loops",
         href: `/docs/guides/working-with-loops`,
+        tag: "New",
       },
     ],
   },
