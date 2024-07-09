@@ -103,8 +103,7 @@ function NavLink({
       aria-current={active ? "page" : undefined}
       target={target}
       className={clsx(
-        "flex justify-between items-center gap-2 py-1 pr-3 text-sm transition group", // group for nested hovers
-        isTopLevel || isAnchorLink ? "pl-0" : "pl-1",
+        "flex justify-between items-center gap-2 py-1 pr-3 text-sm transition group pl-0", // group for nested hovers
         active
           ? "font-semibold text-black dark:text-white bg-slate-700/10 dark:bg-white/10"
           : "font-medium text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white",
@@ -286,7 +285,7 @@ function NavigationGroup({
           <div
             className={clsx(
               "relative overflow-hidden",
-              isNestedGroup ? "mt-2" : "pl-2 mt-3"
+              isNestedGroup ? "mt-2" : "pl-0 mt-3"
             )}
           >
             <motion.ul role="list" className="border-l border-transparent">
