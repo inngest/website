@@ -1,7 +1,7 @@
 import { ResourceGrid, Resource, ExampleGrid } from 'src/shared/Docs/Resources';
 import { Example } from 'src/shared/Docs/Examples';
 
-import { RobotIcon } from "@heroicons/react/24/outline";
+import { BookOpenIcon, VideoCameraIcon, MicrophoneIcon } from "@heroicons/react/24/outline";
 
 export const description = "Learn how to use Inngest for AI automated workflows, AI agents, and RAG."
 
@@ -101,13 +101,12 @@ image: "/assets/docs/examples/ai-agents/pcxi-starter.png",
 ## Resources
 Check the resources below to learn more about working with AI using Inngest:
 
-<ResourceGrid cols={3}>
+<ResourceGrid cols={2}>
 
 <Resource resource={{
 href: "/blog/ai-in-production-managing-capacity-with-flow-control",
 name: 'Blog: "AI in production: Managing capacity with flow control"',
-image: "/assets/docs/examples/ai-agents/ai-in-production-post.png",
-icon: RobotIcon,
+icon: BookOpenIcon,
 description: "Learn how to manage AI capacity in production using Inngest's flow control techniques, including throttling, concurrency, debouncing, and prioritization, to optimize performance and cost-efficiency.",
 pattern: 1,
 }}/>
@@ -115,8 +114,7 @@ pattern: 1,
 <Resource resource={{
 href: "https://a16z.com/podcast/building-production-workflows-for-ai-applications/",
 name: 'Podcast: "Building Production Workflows for AI Applications"',
-image: "/assets/docs/examples/ai-agents/a16z-ai-podcast.png",
-icon: RobotIcon,
+icon: MicrophoneIcon,
 description: "Tony Holdstock-Brown and Yoko Li discuss the reality and complexity of running AI agents and other multistep AI workflows in production.",
 pattern: 1,
 }}/>
@@ -124,17 +122,16 @@ pattern: 1,
 <Resource resource={{
 href: "https://www.youtube.com/watch?v=EoFI_Bmzb4g",
 name: 'Talk: "Automate All of Your Customer Interactions with AI in Next.js"',
-image: "/assets/docs/examples/ai-agents/automate-all-of-your-customer-interactions-video.png",
-icon: RobotIcon,
+icon: VideoCameraIcon,
 description: "Joel Hooks discusses managing long-running processes like generative AI to automate customer interactions effectively.",
 pattern: 1,
 }}/>
 
+
 <Resource resource={{
 href: "/blog/semi-autonomous-ai-agents",
 name: 'Blog: "Semi-Autonomous AI Agents and Collaborative Multiplayer Asynchronous Workflows"',
-image: "/assets/docs/examples/ai-agents/semi-autonomous-agents-post.png",
-icon: RobotIcon,
+icon: BookOpenIcon,
 description: "Build an AI agent that reads from Linear issues, returns relevant issues based on queries, and allows actions on those issues.",
 pattern: 1,
 }}/>
@@ -142,7 +139,7 @@ pattern: 1,
 <Resource resource={{
 href: "https://www.youtube.com/watch?v=PCq6DozV-mY",
 name: 'Video: "Chaining Prompts The Easy Way - Using Inngest Serverless Jobs with OpenAI"',
-icon: RobotIcon,
+icon: VideoCameraIcon,
 description: "Doug Silkstone demonstrates how to chain together prompts and get content in next to no time at all.",
 pattern: 1,
 }}/>

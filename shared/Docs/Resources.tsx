@@ -167,7 +167,7 @@ export function Resource({
     logo?: { dark: string; light: string };
     pattern: 0 | 1 | 2 | 3 | object | null;
     icon?: IconType | ((any) => JSX.Element);
-    image?: string; // Added optional image property
+    image?: string;
   };
 }) {
   let mouseX = useMotionValue(0);
