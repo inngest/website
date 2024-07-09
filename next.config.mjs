@@ -13,7 +13,7 @@ const permanentRedirects = [
   ["/docs/event-format-and-structure", "/docs/reference/events/send"],
   ["/docs/events/event-format-and-structure", "/docs/reference/events/send"],
   ["/docs/writing-and-running-fuctions", "/docs/functions"], //typo
-  ["/docs/cli/steps/", "/docs/functions/multi-step"],
+  ["/docs/cli/steps/", "/docs/guides/multi-step-functions"],
   ["/docs/events/sources/sdks", "/docs/events"],
   ["/docs/deploying-fuctions", "/docs/apps/cloud"],
   ["/docs/deploy", "/docs/apps/cloud"],
@@ -36,6 +36,14 @@ const permanentRedirects = [
   ["/uses/zero-infra-llm-ai", "/ai"],
   ["/uses/internal-tools", "/uses/workflow-engine"],
   ["/uses/user-journey-automation", "/blog/lifecycle-emails-with-resend"],
+
+  // new IA
+  ["/docs/security", "/docs/learn/security"],
+  ["/docs/functions", "/docs/learn/inngest-functions"],
+  ["/docs/functions/multi-step", "/docs/guides/multi-step-functions"],
+  ["/docs/guides/enqueueing-future-jobs", "/docs/guides/delayed-functions"],
+  ["/docs/steps", "/docs/learn/inngest-steps"],
+  ["/blog/banger", "/blog/banger-video-rendering-pipeline"],
 ];
 
 async function redirects() {
@@ -63,7 +71,7 @@ async function redirects() {
     },
     {
       source: "/features/step-functions",
-      destination: "/docs/functions/multi-step",
+      destination: "/docs/guides/multi-step-functions",
       permanent: true,
     },
     ...permanentRedirects.map(([source, destination]) => ({
@@ -100,6 +108,15 @@ const nextConfig = {
   experimental: {
     scrollRestoration: true,
     appDir: true,
+  },
+  webpack: (config, { dev, isServer }) => {
+    // Exclude old-style _prefix directories from being rendered (ex. mdx pages)
+    config.module.rules.push({
+      test: /_\w+\/.+\.mdx?$/,
+      use: "ignore-loader",
+    });
+
+    return config;
   },
 };
 

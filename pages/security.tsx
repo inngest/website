@@ -32,8 +32,28 @@ const Security = () => {
               </Button>
             </header>
 
-            <p className="pt-20">
-              To read how we handle SDK and function security, <a href="/docs/security">read our docs on security</a>.
+            <div className="flex flex-row gap-8 items-center my-16">
+              <img
+                src="/assets/compliance/soc2.webp"
+                alt="SOC 2"
+                className="h-24 w-24"
+              />
+              <div className="flex flex-col gap-4">
+                <p>
+                  Inngest is <strong>SOC 2 Type II</strong> compliant.
+                </p>
+                <p>
+                  Learn more about this{" "}
+                  <a href="/blog/soc2-compliant?ref=security">here</a> or{" "}
+                  <a href="/contact?ref=security">contact us</a> for questions
+                  or to request a report
+                </p>
+              </div>
+            </div>
+
+            <p className="my-16">
+              To read how we handle SDK and function security,{" "}
+              <a href="/docs/learn/security">read our docs on security</a>.
             </p>
             <div className="my-20 mx-auto prose prose-img:rounded-lg prose-code:bg-slate-800 prose-code:tracking-tight text-slate-300 prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline hover:prose-a:text-white prose-a:font-medium prose-a:transition-all prose-invert">
               <h2>Organizational Security</h2>

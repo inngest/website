@@ -90,12 +90,12 @@ export default function Footer({
               </div>
             </div>
           </div>
-          <ul className="flex mt-12 lg:gap-6 flex-col-reverse items-start lg:flex-row">
-            <li className=" text-sm text-center py-1.5 text-slate-300 font-medium">
+          <ul className="flex mt-12 lg:gap-6 flex-col-reverse items-start lg:flex-row text-sm">
+            <li className="text-center py-1.5 text-slate-300 font-medium">
               &copy;
               {new Date().getFullYear()} Inngest Inc.
             </li>
-            <li className=" text-sm text-center">
+            <li>
               <a
                 className="text-slate-400 py-1.5 block hover:text-indigo-400 transition-colors"
                 href="/privacy?ref=footer"
@@ -103,7 +103,7 @@ export default function Footer({
                 Privacy
               </a>
             </li>
-            <li className=" text-sm text-center">
+            <li>
               <a
                 className="text-slate-400 py-1.5 block hover:text-indigo-400 transition-colors"
                 href="/terms?ref=footer"
@@ -111,12 +111,20 @@ export default function Footer({
                 Terms and Conditions
               </a>
             </li>
-            <li className=" text-sm text-center">
+            <li>
               <a
                 className="text-slate-400 py-1.5 block hover:text-indigo-400 transition-colors"
                 href="/security?ref=footer"
               >
                 Security
+              </a>
+            </li>
+            <li>
+              <a
+                className="text-slate-400 py-1.5 block hover:text-indigo-400 transition-colors"
+                href="/blog/soc2-compliant?ref=footer"
+              >
+                Inngest is SOC 2 Compliant
               </a>
             </li>
           </ul>

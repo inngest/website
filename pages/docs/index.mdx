@@ -7,6 +7,7 @@ import { HeroPattern } from 'src/shared/Docs/HeroPattern'
 import EventIcon from 'src/shared/Icons/Event'
 import StepsIcon from 'src/shared/Icons/Steps'
 import TypeScriptIcon from 'src/shared/Icons/TypeScript';
+import PythonIcon from 'src/shared/Icons/Python';
 import GuideIcon from 'src/shared/Icons/Guide';
 
 export const pageTitle = 'Inngest Documentation & Guides'
@@ -14,9 +15,14 @@ export const description =
   'Learn how to use Inngest to deploy reliable background functions to any platform.'
 export const hidePageSidebar = true;
 
-<HeroPattern/>
+## Introduction to Inngest
 
-<Home/>
+Inngest is an event-driven durable workflow engine that enables you to run reliable code on any platform, including serverless.
+
+With any Inngest SDK, you write [<CodeBracketSquareIcon className="h-4 inline" style={{ marginTop: "-2px" }}/> **Functions**](/docs/learn/inngest-functions) in your codebase and make them available to Inngest using an HTTP endpoint. Functions are triggered by [<EventIcon className="inline" style={{ marginTop: "-2px" }}/> **Events**](docs/events) which can be sent with our SDKs, via a regular POST request, or can come from an external source such as webhooks.
+
+Functions are composed of [<StepsIcon className="h-4 inline" style={{ marginTop: "-2px" }}/> **Steps**](/docs/learn/inngest-steps), which decouple parts of your functions into individually retriable blocks. Steps enable you to write complex, durable, long-lived workflows in a single function, on any platform: servers, serverless, or edge.
+
 
 ## Getting Started
 
@@ -38,27 +44,7 @@ Discover how to get set up with Inngest in just a few minutes:
     pattern: 0,
   }}/>
 
-</ResourceGrid>
-
-## Dive in further
-
-<ResourceGrid cols={3} border={false}>
-
-  <Resource resource={{
-    href: "/docs/guides?ref=docs-homepage",
-    name: "Guides",
-    icon: GuideIcon,
-    description: "Learn how to build with Inngest",
-    pattern: 0,
-  }}/>
-
-  <Resource resource={{
-    href: "/docs/apps/cloud?ref=docs-homepage",
-    name: "Going to production",
-    icon: RocketLaunchIcon,
-    description: "How to sync your app with Inngest cloud",
-    pattern: 0,
-  }}/>
+  <div/>
 
   <Resource resource={{
     href: "/docs/reference/typescript?ref=docs-homepage",
@@ -68,15 +54,16 @@ Discover how to get set up with Inngest in just a few minutes:
     pattern: 0,
   }}/>
 
+  <Resource resource={{
+    href: "/docs/reference/python?ref=docs-homepage",
+    name: "Python SDK Reference",
+    icon: PythonIcon,
+    description: "Explore every SDK feature and option",
+    pattern: 0,
+  }}/>
+
 </ResourceGrid>
 
-## Introduction to Inngest
-
-Inngest is an event-driven durable workflow engine that enables you to run reliable code on any platform, including serverless.
-
-With any Inngest SDK, you write <CodeBracketSquareIcon className="h-4 inline" style={{ marginTop: "-2px" }}/> **Functions** in your codebase and make them available to Inngest using an HTTP endpoint. Functions are triggered by <EventIcon className="inline" style={{ marginTop: "-2px" }}/> **Events** which can be sent with our SDKs, via a regular POST request, or can come from an external source such as webhooks.
-
-Functions are composed of <StepsIcon className="h-4 inline" style={{ marginTop: "-2px" }}/> **Steps**, which decouple parts of your functions into individually retriable blocks. Steps enable you to write complex, durable, long-lived workflows in a single function, on any platform: servers, serverless, or edge.
 
 ## Guides
 
@@ -91,7 +78,7 @@ Functions are composed of <StepsIcon className="h-4 inline" style={{ marginTop: 
 }}/>
 
 <Resource resource={{
-  href: "/docs/guides/enqueueing-future-jobs",
+  href: "/docs/guides/delayed-functions",
   name: "Enqueueing future jobs",
   icon: "chevron-double-right",
   description: "Schedule or delay functions to run in the future.",
@@ -136,6 +123,14 @@ Functions are composed of <StepsIcon className="h-4 inline" style={{ marginTop: 
   icon: "rectangle-group",
   description: "Call one function from another across multiple apps.",
   pattern: 0
+}}/>
+
+<Resource resource={{
+  href: "/docs/apps/cloud?ref=docs-homepage",
+  name: "Going to production",
+  icon: RocketLaunchIcon,
+  description: "How to sync your app with Inngest cloud",
+  pattern: 0,
 }}/>
 
 </ResourceGrid>

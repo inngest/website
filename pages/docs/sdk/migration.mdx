@@ -1,3 +1,5 @@
+import { Callout, Row, Col, CodeGroup, VersionBadge } from "src/shared/Docs/mdx";
+
 export const description = "How to migrate your code to the latest version of the Inngest TS SDK."
 
 # Upgrading from Inngest SDK v2 to v3
@@ -63,7 +65,7 @@ This is only needed to ensure function runs started on v2 will transition to v3;
           import { serve } from "inngest/next";
 
           const inngest = new Inngest({
-            id: slugify("My App"),
+            id: "My App",
           });
 
           const fn = inngest.createFunction(
@@ -163,10 +165,10 @@ When instantiating a client using `new Inngest()` or creating a function via `in
      <Col>
           <CodeGroup filename="✅ v3">
           ```ts
-          import { Inngest, slugify } from "inngest";
+          import { Inngest } from "inngest";
 
           export const inngest = new Inngest({
-            id: slugify("My App"),
+            id: "My App",
           });
           ```
           </CodeGroup>
@@ -1017,7 +1019,7 @@ These two examples have the exact same functionality. As above, there are a few 
 When translating code to v1, be aware that not awaiting a step tool will mean it happens in the background, in parallel to the tools that follow. Just like a regular JavaScript async function, `await` halts progress, which is sometimes just what you want!
 </Callout>
 
-Async step functions with v1 of the Inngest TS SDK unlocks a huge `Array<Possibility>`. To explore these further, check out the [multi-step functions](/docs/functions/multi-step?ref=migration) docs.
+Async step functions with v1 of the Inngest TS SDK unlocks a huge `Array<Possibility>`. To explore these further, check out the [multi-step functions](/docs/guides/multi-step-functions?ref=migration) docs.
 
 ## Advanced: Updating custom framework serve handlers
 

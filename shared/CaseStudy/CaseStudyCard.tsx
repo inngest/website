@@ -37,7 +37,7 @@ export default function CaseStudyCard({
         <div className="flex items-end justify-between">
           <div className="flex gap-2 text-sm font-medium text-slate-500">
             {tags.map((tag) => (
-              <span>{tag}</span>
+              <span key={tag}>{tag}</span>
             ))}
           </div>
           <div>

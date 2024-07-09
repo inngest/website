@@ -1,3 +1,5 @@
+import { GuideSelector, GuideSection, Callout, CodeGroup } from "src/shared/Docs/mdx";
+
 export const description =
   `Get started with Inngest in this ten-minute tutorial`
 
@@ -5,12 +7,12 @@ export const description =
 
 In this tutorial you will add Inngest to a Next.js app to see how easy it can be to build complex workflows.
 
-Inngest makes it easy to build, manage, and execute reliable workflows. Some use cases include scheduling drip marketing campaigns and payment flows, or chaining LLM interactions.
+Inngest makes it easy to build, manage, and execute reliable workflows. Some use cases include scheduling drip marketing campaigns, building payment flows, or chaining LLM interactions.
 
 By the end of this ten-minute tutorial you will:
 - Set up and run Inngest on your machine.
 - Write your first Inngest function.
-- Trigger your function from code and Inngest Dev Server.
+- Trigger your function from your app and through Inngest Dev Server.
 
 Let's get started!
 
@@ -29,25 +31,24 @@ Choose your preferred Next.js version for this tutorial:
 In this tutorial you can use any existing Next.js project, or you can create a new one.
 
 <details>
-  <summary><strong>Instructions to create a new Next.js project </strong></summary>
+  <summary><strong>Instructions for creating a new Next.js project </strong></summary>
 
-Run the following command in your terminal to create a new Next.js project:
+  Run the following command in your terminal to create a new Next.js project:
 
-<GuideSection show="nextpages">
-```shell
-npx create-next-app@latest --ts --eslint --tailwind --no-src-dir --no-app --import-alias='@/*' inngest-guide
-```
-</GuideSection>
+  <GuideSection show="nextpages">
+  ```shell
+  npx create-next-app@latest --ts --eslint --tailwind --no-src-dir --no-app --import-alias='@/*' inngest-guide
+  ```
+  </GuideSection>
 
-<GuideSection show="nextappdir">
-```shell
-npx create-next-app@latest --ts --eslint --tailwind --src-dir --app --import-alias='@/*' inngest-guide
-```
-</GuideSection>
-
+  <GuideSection show="nextappdir">
+  ```shell
+  npx create-next-app@latest --ts --eslint --tailwind --src-dir --app --import-alias='@/*' inngest-guide
+  ```
+  </GuideSection>
 </details>
 
-Open the chosen project in your code editor. 
+Once you've chosen a project, open it in a code editor.
 
 Next, start your Next.js app in development mode by running:
 
@@ -97,7 +98,7 @@ inngest-cli dev
 </CodeGroup>
 
 <details>
-  <summary><strong>You should see a similar output:</strong></summary>
+  <summary><strong>You should see a similar output to the following:</strong></summary>
 
 <CodeGroup>
 
@@ -138,7 +139,7 @@ In your browser open [`http://localhost:8288`](http://localhost:8288) to see the
 
 ## 3. Create an Inngest client
 
-Inngest invokes your functions securely via an API endpoint at `/api/inngest`. To enable that, you will create an [Inngest client](/docs/reference/client/create) in your Next.js project, which you will use to send events and create functions.
+Inngest invokes your functions securely via an [API endpoint](/docs/sdk/serve) at `/api/inngest`. To enable that, you will create an [Inngest client](/docs/reference/client/create) in your Next.js project, which you will use to send events and create functions.
 
 <GuideSection show="nextpages">
   Create a new file at `./pages/api/inngest.ts` with the following code:
@@ -162,8 +163,8 @@ Inngest invokes your functions securely via an API endpoint at `/api/inngest`. T
 
 <GuideSection show="nextappdir">
   Make a new directory next to your `app` directory (for example, `src/inngest`) where you'll define your Inngest functions and the client.
-  
-  In this directory create an Inngest client:
+
+  In the `/src/inngest` directory create an Inngest client:
 
   ```ts {{ filename: "src/inngest/client.ts" }}
   import { Inngest } from "inngest";
@@ -195,8 +196,10 @@ In this step, you will write your first reliable serverless function. This funct
 
 ### Define the function
 
+To define the function, use the [`createFunction`](/docs/reference/functions/create) method.
+
 <details>
-  <summary><strong>To define the function, use the [`createFunction`](/docs/reference/functions/create) method.</strong></summary>
+  <summary><strong>Learn more: What is `createFunction` method?</strong></summary>
 
   The `createFunction` method takes three objects as arguments:
     - **Configuration**: `id` is required and it is the default name that will be displayed on the Inngest dashboard to refer to your function. You can also specify [additional options](https://www.inngest.com/docs/reference/functions/create#configuration) such as `concurrency`, `rateLimit`, `retries`, or `batchEvents`, and others.
@@ -219,7 +222,7 @@ Add the following code to the `./pages/api/inngest.ts` file:
     },
   );
   ```
-  
+
 </GuideSection>
 
 <GuideSection show="nextappdir">
@@ -285,8 +288,10 @@ Now, it's time to run your function!
 
 ## 5. Trigger your function from the development UI
 
+Inngest is powered by events.
+
 <details>
-  <summary><strong>Inngest is powered by events.</strong></summary>
+  <summary><strong>Learn more: events in Inngest.</strong></summary>
 
 It is worth mentioning here that an event-driven approach allows you to:
 - Trigger one _or_ multiple functions from one event.
@@ -295,7 +300,7 @@ It is worth mentioning here that an event-driven approach allows you to:
 - Interact with long-running functions by sending new events (cancel, wait for input, and other).
 </details>
 
-You will test your first event in two ways: by sending it directly to the Inngest UI, and then by triggering it from code.
+You will test your first event in two ways: first, by sending it directly to the Inngest UI, and then by triggering it from code.
 
 With your Next.js and Inngest Dev Servers running, head over to Inngest Dev Server ([`http://localhost:8288`](http://localhost:8288)):
 
@@ -306,7 +311,7 @@ With your Next.js and Inngest Dev Servers running, head over to Inngest Dev Serv
   alt="Inngest Dev Server screen with no events recorded"
 />
 
-To send a test event, click on “Test Event” in the top right corner: 
+To send a test event, click on “Test Event” in the top right corner:
 
 <img
   src="/assets/docs/quick-start/dev-server-frame.png"
@@ -315,7 +320,7 @@ To send a test event, click on “Test Event” in the top right corner:
   alt="Inngest Dev Server screen with no events recorded and the test button highlighted"
 />
 
-In the popup console, add the event name (which you defined in the `createFunction` method earlier) and some test metadata like an email address and press the "Send Event" button:
+In the popup console, add the event name (you defined it earlier in the `createFunction` method as `test/hello.world`) and some test metadata like an email address, and press the "Send Event" button:
 
 ```json
 {
@@ -333,7 +338,7 @@ In the popup console, add the event name (which you defined in the `createFuncti
   alt="Event console with test data"
 />
 
-The event is sent to Inngest (which is running locally) and automatically executes your function in the background! You can see the new function run logged in the stream tab:
+The event is sent to Inngest (which is running locally) which automatically executes your function in the background! You can see the new function run logged in the "Stream" tab:
 
 <img
   src="/assets/docs/quick-start/dev-server-event-1.png"
@@ -342,7 +347,7 @@ The event is sent to Inngest (which is running locally) and automatically execut
   alt="Inngest Dev Server screen with one event recorded"
 />
 
-When you click on the run, you will see more information about the event such as which function was triggered, its payload, output, and timeline:
+When you click on the run, you will see more information about the event, such as which function was triggered, its payload, output, and timeline:
 
 <img
   src="/assets/docs/quick-start/event-details-1.png"
@@ -351,7 +356,7 @@ When you click on the run, you will see more information about the event such as
   alt="Event details popup"
 />
 
-In our case, the event triggered the `hello-world` function, which did sleep for a second and then returned `"Hello, World!"`. No surprises here, that's what we expected!
+In this case, the event triggered the `hello-world` function, which did sleep for a second and then returned `"Hello, World!"`. No surprises here, that's what we expected!
 
 <img
   src="/assets/docs/quick-start/event-details-1-frames.png"
@@ -360,7 +365,7 @@ In our case, the event triggered the `hello-world` function, which did sleep for
   alt="Event details popup indicating that hello-world function ran, that it slept for 1s, and that the correct body was returned"
 />
 
-A handy little trick: if your event behaved in an odd way, you can either replay it or edit and replay it. Replaying a function can be really helpful in debugging the function errors locally. To try it, click on the "Replay" button in the top center:
+A handy little trick: if your event behaved in an odd way, you can either just replay it or edit and replay it. Replaying a function can be really helpful in debugging the function errors locally. To try it, click on the "Replay" button in the top center:
 
 <img
   src="/assets/docs/quick-start/event-details-1-replay.png"
@@ -369,7 +374,7 @@ A handy little trick: if your event behaved in an odd way, you can either replay
   alt="Event details popup with replay button highlighted"
 />
 
-After the event was replayed, there are two events recorded in the dashboard:
+After the event was replayed, you will see two events recorded in the dashboard:
 
 <img
   src="/assets/docs/quick-start/dev-server-event-2.png"
@@ -384,8 +389,10 @@ Now you will trigger an event from inside your app.
 
 To run functions reliably in your app, you'll need to send an event to Inngest. Once the event is received, it is forwarded to all functions that listen to it.
 
+To send an event from your code, you can use the `Inngest` client's `send()` method.
+
 <details>
-  <summary><strong>To send an event from your code, you can use the `Inngest` client's `send()` method.</strong></summary>
+  <summary><strong>Learn more: `send()` method.</strong></summary>
 
 Note that with the `send` method used below you now can:
 - Send one or more events within any API route.
@@ -395,7 +402,7 @@ In a real-world app, you might send events from API routes that perform an actio
 
 </details>
 
-You will now send an event from the “hello” Next.js API function. To do so, create a new API handler at the <GuideSection show="nextpages">`./pages/api/hello.ts`</GuideSection><GuideSection show="nextappdir">`src/app/api/hello/route.ts`</GuideSection> file:
+You will now send an event from inside your code: from the “hello” Next.js API function. To do so, create a new API handler at the <GuideSection show="nextpages">`./pages/api/hello.ts`</GuideSection><GuideSection show="nextappdir">`src/app/api/hello/route.ts`</GuideSection> file:
 
 <GuideSection show="nextpages">
   ```ts {{ filename: "src/app/api/hello/route.ts" }}
@@ -476,7 +483,7 @@ However, what happens if you send a different event? Let's see! Change `test/hel
   alt="Inngest Dev Server screen with four events recorded, last one being 'test/hello.bizarro.world' with no functions called"
 />
 
-... but no functions were triggered because there is not a single function in your app that is listening to such a bizarre event:
+... but no functions were triggered because you have not created any function that is listening to this event:
 
 <img
   src="/assets/docs/quick-start/dev-server-event-4-details.png"
@@ -485,15 +492,20 @@ However, what happens if you send a different event? Let's see! Change `test/hel
   alt="Event details for the last event where it's clear that while the event was recorded, no function was called"
 />
 
-And - that's it! You now have learned how to create Inngest functions and you have sent events to trigger those functions. Congratulations 🥳 
+And - that's it! You now have learned how to create Inngest functions and you have sent events to trigger those functions. Congratulations 🥳
 
 ## Next Steps
 
 To continue your exploration, feel free to check out:
-- How to [deploy your app to your platform](/docs/deploy).
+- [Examples](/docs/examples) of what other people built with Inngest.
+- [Case studies](/customers) showcasing a variety of use cases.
+- [Our blog](/blog) where we explain how Inngest works, publish guest blog posts, and share our learnings.
+
+You can also read more:
+- About [Inngest functions](/docs/functions).
+- About [Inngest steps](/docs/steps).
+- About [Durable Execution](/docs/learn/how-functions-are-executed)
 - How to [use Inngest with other frameworks](/docs/sdk/serve).
-- Docs page on [writing functions](/docs/functions).
-- Docs page on [writing scheduled functions](/docs/functions#writing-a-scheduled-function).
-- Docs page on [sending events](/docs/events).
+- How to [deploy your app to your platform](/docs/deploy).
 
 </GuideSelector>

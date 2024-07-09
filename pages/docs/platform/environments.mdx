@@ -1,3 +1,5 @@
+import { CodeGroup } from "src/shared/Docs/mdx";
+
 # Working with Environments
 
 Inngest accounts all have multiple environments that help support your entire software development lifecycle. Inngest has different types of environments:
@@ -34,7 +36,7 @@ It can be helpful to visualize the typical Inngest developer workflow using Bran
 As Branch Environments are created on-demand, all of your Branch Environments share the same Event Keys and Signing Key. This enables you to use the same environment variables in each of your application's deployment preview environments and set the environment dynamically using the `env` option with the `Inngest` client:
 
 <CodeGroup>
-```ts {{ title: "v3" }}
+```ts 
 const inngest = new Inngest({
   id: "my-app",
   env: process.env.BRANCH,
@@ -43,16 +45,6 @@ const inngest = new Inngest({
 
 // Pass the client to the serve handler to complete the setup
 serve({ client: inngest, functions: [myFirstFunction, mySecondFunction] });
-```
-```ts {{ title: "v2" }}
-const inngest = new Inngest({
-  name: "My app",
-  env: process.env.BRANCH,
-});
-// Alternatively, you can set the INNGEST_ENV environment variable in your app
-
-// Pass the client to the serve handler to complete the setup
-serve(inngest, [myFirstFunction, mySecondFunction]);
 ```
 </CodeGroup>
 
@@ -69,15 +61,9 @@ You can always override this using [`INNGEST_ENV`](/docs/sdk/environment-variabl
 Some platforms only pass an environment variable at build time. This means you'll have to explicitly set `env` to the platform's specific environment variable. For example, here's how you would set it on Netlify:
 
 <CodeGroup>
-```ts {{ title: "v3" }}
+```ts 
 const inngest = new Inngest({
   id: "my-app",
-  env: process.env.BRANCH,
-});
-```
-```ts {{ title: "v2" }}
-const inngest = new Inngest({
-  name: "My app",
   env: process.env.BRANCH,
 });
 ```

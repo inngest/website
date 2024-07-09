@@ -8,8 +8,6 @@ author: Igor Samokhovets
 disableCTA: true
 ---
 
-import YouTube from 'react-youtube-embed';
-
 Hi everyone! My name is [Igor Samokhovets](https://twitter.com/IgorSamokhovets) and I'm a music producer who goes by the artist name Tequila Funk. In this blog post I will walk you through our video rendering pipeline built with Inngest, which powers [banger.show](https://banger.show/).
 
 
@@ -26,7 +24,7 @@ At banger.show, we do a lot of background processing. Managing render states, ge
 We chose Inngest because there's no better way to handle background jobs if you're using Next.js **without a custom server**. **It's a primary "flow controller" for us**, even though we have a simple queue solution based on Redis to handle tasks on our infra. It allows us to orchestrate, observe, and abstract away lower-level processes, for example:
 
 - We don't have to delegate every post-render task to the video rendering machine, but have some flow where the main server can receive render results from the workers and do something with it.
-- We can observe each [step](/docs/reference/functions/step-run) and its return data in the dashboard.
+- We can observe each [step](/docs/learn/inngest-steps) and its return data in the dashboard.
 - We can handle emergency cases when all of our infra goes down and we need to spin up some backup workers on AWS.
 
 ![A screenshot of the Banger app](/assets/blog/banger/banger-satisfied-screenshot.png)
@@ -38,7 +36,7 @@ Before we dive in, let's take a high-level look at our video rendering pipeline:
 - The project is then sent to the render machine, which controls the progress, updates statuses, and handles error retries and "stalled render" cases.
 - Finally, when the render is finished, a number of tasks need to run, such as invalidating CDN cache, creating video thumbnails, or sending email to the user when the video is ready.
 
-Let's now dive into some parts of the video rendering pipeline. 
+Let's now dive into some parts of the video rendering pipeline.
 
 ### 1. Updating the render status
 
@@ -375,6 +373,6 @@ export const renderVideo = inngest.createFunction(
 
 Inngest makes the difficult parts easy.
 
-For example, there's no simpler way to put it: I find the [`steps`](/docs/reference/functions/step-run) concept mindblowing. I wished something like this was available back in 2019, when I was just starting out with BullMQ, Agenda.js, and other solutions. It's a really sweet abstraction. I also enjoy observability, so I can track each step and function run in one dashboard.
+For example, there's no simpler way to put it: I find the [`steps`](/docs/learn/inngest-steps) concept mindblowing. I wished something like this was available back in 2019, when I was just starting out with BullMQ, Agenda.js, and other solutions. It's a really sweet abstraction. I also enjoy observability, so I can track each step and function run in one dashboard.
 
 _You can reach out to Igor on [Twitter](https://twitter.com/IgorSamokhovets) or listen to his music on [Spotify](https://open.spotify.com/artist/66PsDRGGiij2rHAK21GUEB)._

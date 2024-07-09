@@ -319,28 +319,18 @@ const FEATURES: Feature[] = [
     },
   },
   {
-    name: "Max sleep duration",
-    plans: {
-      [PLAN_NAMES.free]: "7 days",
-      [PLAN_NAMES.team]: "60 days",
-      [PLAN_NAMES.startup]: "6 months",
-      [PLAN_NAMES.enterprise]: "1 year",
-    },
-    infoUrl: "/docs/guides/enqueueing-future-jobs?ref=pricing",
-  },
-  {
     name: "Features",
     heading: true,
   },
   {
     name: "Automatic retries",
     all: true,
-    infoUrl: "/docs/functions/retries?ref=pricing",
+    infoUrl: "/docs/reference/typescript/functions/errors?ref=pricing",
   },
   {
     name: "Step functions",
     all: true,
-    infoUrl: "/docs/reference/functions/step-run?ref=pricing",
+    infoUrl: "/docs/learn/inngest-steps?ref=pricing",
   },
   {
     name: "Scheduled functions",
@@ -626,7 +616,7 @@ export default function Pricing() {
 
             <p className="mt-8 text-lg font-medium max-w-4xl mb-16">
               <a
-                href="/docs/functions/multi-step"
+                href="/docs/learn/inngest-steps"
                 className="text-white underline"
               >
                 Steps
@@ -712,7 +702,7 @@ export default function Pricing() {
                   A function is defined with the{" "}
                   <a
                     className="text-indigo-400 hover:text-white hover:underline hover:decoration-white transition-all"
-                    href="/docs/functions"
+                    href="/docs/learn/inngest-functions"
                   >
                     Inngest SDK
                   </a>{" "}
@@ -743,7 +733,7 @@ export default function Pricing() {
                   . Read more in our{" "}
                   <a
                     className="text-indigo-400 hover:text-white hover:underline hover:decoration-white transition-all"
-                    href="/docs/functions/multi-step"
+                    href="/docs/guides/multi-step-functions"
                   >
                     documentation
                   </a>
@@ -782,7 +772,7 @@ export default function Pricing() {
                   wait for additional input. Read more about steps{" "}
                   <a
                     className="text-indigo-400 hover:text-white hover:underline hover:decoration-white transition-all"
-                    href="/docs/functions/multi-step"
+                    href="/docs/guides/multi-step-functions"
                   >
                     here
                   </a>
@@ -882,13 +872,36 @@ export default function Pricing() {
               </FAQRow>
               <FAQRow question={`What languages do you support?`}>
                 <p>
-                  We currently have an SDK for JavaScript/TypeScript, but plan
-                  to expand to Go, Python and others in the future.{" "}
+                  We currently have an SDK for JavaScript/TypeScript, Python,
+                  and Go.
+                </p>
+                <p>
+                  Additional SDKs are in development. View, upvote, and add your
+                  name to the list for a particular language SDK on our{" "}
                   <a
                     className="text-indigo-400 hover:text-white hover:underline hover:decoration-white transition-all"
                     href="https://roadmap.inngest.com/roadmap"
                   >
-                    Share your feedback or up vote an specific language SDK here
+                    public roadmap
+                  </a>
+                  .
+                </p>
+              </FAQRow>
+              <FAQRow question="Do you have a SOC 2 report?">
+                <p>
+                  Yes,{" "}
+                  <a
+                    className="text-indigo-400 hover:text-white hover:underline hover:decoration-white transition-all"
+                    href="/blog/soc2-compliant?ref=pricing"
+                  >
+                    Inngest is SOC 2 compliant
+                  </a>
+                  . You can request a report by{" "}
+                  <a
+                    className="text-indigo-400 hover:text-white hover:underline hover:decoration-white transition-all"
+                    href="/contact?ref=pricing-faq-demo"
+                  >
+                    contacting our team here
                   </a>
                   .
                 </p>

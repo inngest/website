@@ -1,3 +1,5 @@
+import { Callout, CodeGroup, Properties, Property, Row, Col, VersionBadge } from "src/shared/Docs/mdx";
+
 # Middleware lifecycle <VersionBadge version="v2.0.0+" />
 
 ## Registering and order
@@ -167,7 +169,7 @@ The `init()` function can return functions for two separate lifecycles to hook i
 
                     <Properties name="Arguments" nested collapse>
                          <Property name="result" type="object" required>
-                              An object containing the data to be sent back to inngest in the `data` key, and an original `error` (if any) that threw.
+                              An object containing the data to be sent back to Inngest in the `data` key, and an original `error` (if any) that threw.
                          </Property>
                          <Property name="step" type="object">
                               If this execution ran a step, will be a step that ran.

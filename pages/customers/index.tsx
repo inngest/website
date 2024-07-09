@@ -123,10 +123,10 @@ const featuredCompanies = [
     type: "company",
   },
   {
-    src: "/assets/customers/snaplet-dark.svg",
-    name: "Snaplet",
-    url: "https://www.snaplet.dev/",
-    scale: 1.1,
+    src: "/assets/customers/leap-logo-white.svg",
+    name: "Leap",
+    url: "https://tryleap.ai/",
+    scale: 1,
     type: "company",
   },
 ];
@@ -152,9 +152,9 @@ const grid = [
     },
   },
   {
-    src: "/assets/customers/leap-logo-white.svg",
-    name: "Leap",
-    url: "https://tryleap.ai/",
+    src: "/assets/customers/elba-logo-white.svg",
+    name: "Elba",
+    url: "https://www.elba.security/",
     scale: 1,
     type: "company",
   },
@@ -180,14 +180,14 @@ const grid = [
   },
   {
     type: "quote",
-    name: "Snaplet",
+    name: "SoundCloud",
     quote: {
-      text: `We switched from our PostgreSQL backed queue to Inngest in less than a day. Their approach is idiomatic with a great developer experience. Inngest allowed us to stop worrying about scalability and stability.`,
+      text: `I wanted to find a solution that would let us just write the code, not manage the infrastructure around queues, concurrency, retries, error handling, prioritization... I don't think that developers should be even configuring and managing queues themselves in 2024.`,
       attribution: {
-        name: "Peter Pistorius",
-        title: "CEO",
+        name: "Matthew Drooker",
+        title: "CTO",
       },
-      avatar: "/assets/customers/snaplet-peter-pistorius.png",
+      avatar: "/assets/customers/soundcloud-matthew-drooker.jpg",
     },
   },
   {

@@ -1,3 +1,5 @@
+import { Callout, CodeGroup, Properties, Property, Row, Col, VersionBadge } from "src/shared/Docs/mdx";
+
 # Create Function
 
 Define your functions using the `create_function` decorator.
@@ -80,6 +82,23 @@ The `create_function` decorator accepts a configuration and wraps a plain functi
 
   <Property name="on_failure" type="function">
     A function that will be called only when this Inngest function fails after all retries have been attempted ([reference](/docs/reference/functions/handling-failures))
+  </Property>
+
+  <Property name="priority" type="Priority" version="0.4.0+">
+    Configure function run prioritization.
+
+    <Properties nested collapse>
+      <Property name="run" type="string">
+        An expression which must return an integer between -600 and 600 (by default), with higher return values resulting in a higher priority.
+
+        Examples:
+        * Return the priority within an event directly: `event.data.priority` (where
+    `event.data.priority` is an int within your account's range)
+        * Rate limit by a string field: `event.data.plan == 'enterprise' ? 180 : 0`
+
+        See [reference](/docs/reference/functions/run-priority) for more information.
+      </Property>
+    </Properties>
   </Property>
 
   <Property name="rate_limit" type="RateLimit">
@@ -210,11 +229,9 @@ async def fn(ctx: inngest.Context, step: inngest.Step):
         The event payload data.
       </Property>
 
-      <Property name="id" type="str" attribute>
-      </Property>
+      <Property name="id" type="str" attribute />
 
-      <Property name="name" type="str" attribute>
-      </Property>
+      <Property name="name" type="str" attribute />
 
       <Property name="ts" type="int" attribute>
         Time (Unix millis) the event was received by the Inngest server.
