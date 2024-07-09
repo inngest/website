@@ -44,6 +44,10 @@ const permanentRedirects = [
   ["/docs/guides/enqueueing-future-jobs", "/docs/guides/delayed-functions"],
   ["/docs/steps", "/docs/learn/inngest-steps"],
   ["/blog/banger", "/blog/banger-video-rendering-pipeline"],
+  [
+    "/docs/reference/serve#custom-frameworks",
+    "/docs/sdk/serve#custom-frameworks",
+  ],
 ];
 
 async function redirects() {
