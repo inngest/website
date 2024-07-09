@@ -651,6 +651,7 @@ const sectionExamples: NavGroup[] = [
       {
         title: "AI Agents and RAG",
         href: `/docs/examples/ai-agents-and-rag`,
+        tag: "New",
       },
       {
         title: "Email Sequence",
