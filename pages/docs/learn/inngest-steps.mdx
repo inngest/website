@@ -1,3 +1,4 @@
+import { Callout } from "shared/Docs/mdx";
 import IconConcurrency from 'src/shared/Icons/FlowControl/Concurrency';
 
 export const description = 'Learn about Inngest steps and their methods.';
@@ -31,7 +32,7 @@ export default inngest.createFunction(
   async ({ event, step }) => {
     const uploadedImageURLs = await step.run(
       // step ID
-      "copy-images-to-s3", 
+      "copy-images-to-s3",
       // other arguments, in this case: a handler
       async () => {
         return copyAllImagesToS3(event.data.imageURLs);
@@ -39,8 +40,12 @@ export default inngest.createFunction(
   }
 );
 ```
- 
+
 The ID is also used to identify the function in the Inngest system.
+
+<Callout>
+Please note that each step is executed as **a separate HTTP request**. To ensure efficient execution, place any non-deterministic logic (such as DB calls or API calls) within a `step.run()` call.
+</Callout>
 
 ## Available Step Methods
 
@@ -62,7 +67,7 @@ export default inngest.createFunction(
 
 ### <a href="/docs/reference/functions/step-sleep" className="flex items-center gap-4"><IconConcurrency size="2rem"/><pre>step.sleep()</pre></a> {{anchor: false}}
 
-This method pauses execution for a specified duration. Even though it seems like a `setInterval`, your function does not run for that time. Inngest handles the scheduling for you. Use it to add delays or to wait for a specific amount of time before proceeding.
+This method pauses execution for a specified duration. Even though it seems like a `setInterval`, your function does not run for that time (you don't use any compute). Inngest handles the scheduling for you. Use it to add delays or to wait for a specific amount of time before proceeding. At maximum, functions can sleep for a year (seven days for the [free tier plans](/pricing)).
 
 ```typescript
 export default inngest.createFunction(
@@ -77,7 +82,7 @@ export default inngest.createFunction(
 
 ### <a href="/docs/reference/functions/step-sleep-until" className="flex items-center gap-4"><IconConcurrency size="2rem"/><pre>step.sleepUntil()</pre></a> {{anchor: false}}
 
-This method pauses execution until a specific date time. Any date time string in the format accepted by the Date object, for example `YYYY-MM-DD` or `YYYY-MM-DDHH:mm:ss`.
+This method pauses execution until a specific date time. Any date time string in the format accepted by the Date object, for example `YYYY-MM-DD` or `YYYY-MM-DDHH:mm:ss`. At maximum, functions can sleep for a year (seven days for the [free tier plans](/pricing)).
 
 ```typescript
 export default inngest.createFunction(
@@ -142,7 +147,7 @@ const mainFunction = inngest.createFunction(
 
 ### <a href="/docs/reference/functions/step-send-event" className="flex items-center gap-4"><IconConcurrency size="2rem"/><pre>step.sendEvent()</pre></a> {{anchor: false}}
 
-This method sends events to Inngest to invoke functions with a matching event. Use `sendEvent()` when you want to trigger other functions, but you do not need to return the result. It is useful for example in [fan-out functions](/docs/guides/fan-out-jobs). 
+This method sends events to Inngest to invoke functions with a matching event. Use `sendEvent()` when you want to trigger other functions, but you do not need to return the result. It is useful for example in [fan-out functions](/docs/guides/fan-out-jobs).
 
 ```typescript
 export default inngest.createFunction(
@@ -162,5 +167,5 @@ export default inngest.createFunction(
 ## Further reading
 
 - [Quick Start](/docs/quick-start): learn how to build complex workflows.
-- Blog post: ["How Inngest functions are executed"](/docs/learn/how-functions-are-executed). Learn more about Inngest's execution model, including how steps are handled.
+- ["How Inngest functions are executed"](/docs/learn/how-functions-are-executed): Learn more about Inngest's execution model, including how steps are handled.
 - Docs guide: ["Multi-step functions"](/docs/guides/multi-step-functions).

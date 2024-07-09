@@ -10,6 +10,7 @@ import {
   loadMarkdownFilesMetadata,
   MDXContent,
 } from "utils/markdown";
+import { SectionProvider } from "src/shared/Docs/SectionProvider";
 import type { Role } from "./index";
 import { AboutInngest, Benefits } from "./index";
 
@@ -105,8 +106,10 @@ export default function Careers(props) {
                 <AboutInngest heading={false} />
 
                 <h2>The role</h2>
-                {/* @ts-ignore */}
-                <MDXRemote compiledSource={role.compiledSource} />
+                <SectionProvider sections={[]}>
+                  {/* @ts-ignore */}
+                  <MDXRemote compiledSource={role.compiledSource} />
+                </SectionProvider>
 
                 <Benefits />
 

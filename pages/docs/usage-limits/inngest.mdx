@@ -1,3 +1,4 @@
+import { Callout, CodeGroup } from "src/shared/Docs/mdx";
 import { Tag } from "src/shared/Docs/Tag";
 
 # Usage Limits
@@ -10,20 +11,23 @@ Some of these limits are customizable, so if you need more than what the current
 
 The following applies to `step` usage.
 
-**Timeout**
+### Sleep duration
 
-Each step has a timeout depending on the hosting provider of your choice ([see more info][provider-docs]),
-but Inngest supports up to `2 hours` at the maximum.
+Sleep (with `step.sleep()` and `step.sleepUntil()`) up to a year, and for free plan up to seven days. Check the [pricing page](/pricing) for more information.
 
-**Concurrency** <Tag>Customizable</Tag>
+### Timeout
+
+Each step has a timeout depending on the hosting provider of your choice ([see more info][provider-docs]), but Inngest supports up to `2 hours` at the maximum.
+
+### Concurrency <Tag>Customizable</Tag>
 
 Our free plan has a concurrency limit of `25`, and paid plans have concurrency limits of `100` (team), `500` (startup), and up to `20,000` (enterprise).
 
-**Payload Size**
+### Payload Size
 
 The limit for data returned by a step is `4MB`.
 
-**# of Steps per Function**
+### Number of Steps per Function
 
 The maximum number of steps allowed per function is `1000`.
 
@@ -37,15 +41,15 @@ The maximum number of steps allowed per function is `1000`.
 
 ## Events
 
-**Name length**
+### Name length
 
 The maximum length allowed for an event name is `256` characters.
 
-**Request Body Size** <Tag>Customizable</Tag>
+### Request Body Size <Tag>Customizable</Tag>
 
 The limit for each event request is `512KB`, though this can be increased up to `3MB` on request.
 
-**# of Events per request** <Tag>Customizable</Tag>
+### Number of events per request <Tag>Customizable</Tag>
 
 Maximum number of events you can send in one request is `5000`.
 If you're doing fan out, you'll need to be aware of this limitation when you run `step.sendEvent(events)`.

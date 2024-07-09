@@ -1,3 +1,4 @@
+import { ImageTheme } from "src/shared/Docs/mdx";
 import ResendLogo from "src/public/assets/docs/guides/resend-webhook-events/featured-image.png";
 
 export const description = 'Set up Resend webhooks with Inngest and use Resend events within Inngest functions.'
@@ -35,7 +36,7 @@ These events can be used to build responsive behavior based on changes in the em
 
 ### Building with Resend webhooks
 
-You can manage webhook events directly in your backend through an endpoint or you could use a tool like [Inngest](/docs) which ensures reliable execution of functions in your codebase. Inngest comes with functionalities such as: 
+You can manage webhook events directly in your backend through an endpoint or you could use a tool like [Inngest](/docs) which ensures reliable execution of functions in your codebase. Inngest comes with functionalities such as:
 
 - a built-in queue to execute longer-running functions reliably
 - [Controlling concurrency](/docs/guides/concurrency) to handle spikes without overwhelming your API or database.
@@ -148,8 +149,8 @@ import { Resend } from 'resend';
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function sendEmail(
-  to: string, 
-  subject: string, 
+  to: string,
+  subject: string,
   content: React.ReactElement
 ) {
   const { data, error } = await resend.emails.send({
@@ -213,10 +214,10 @@ const sendOnboardingEmails = inngest.createFunction(
         </div>
       ));
     })
- 
+
    // wait 3 days before second email
    await step.sleep('wait-3-days', '3 days')
- 
+
    await step.run('trial-offer-email', async () => {
      await sendEmail(email, "Free ACME Pro trial", (
         <div>

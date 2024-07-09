@@ -1,8 +1,9 @@
+import { CodeGroup, Callout } from "shared/Docs/mdx";
 export const description = `Build reliable workflows with event coordination and conditional execution using Inngest's multi-step functions.`
 
 # Multi-Step Functions
 
-Use Inngest's multi-step functions to safely coordinate events, delay execution for hours or _days_, retry [individual steps](/docs/learn/inngest-steps), and conditionally run code based on the result of previous steps and incoming events.
+Use Inngest's multi-step functions to safely coordinate events, delay execution for hours (or up to a year), retry [individual steps](/docs/learn/inngest-steps), and conditionally run code based on the result of previous steps and incoming events.
 
 Critically, multi-step functions are written in code, not config, meaning you create readable, obvious functionality that's easy to maintain.
 
@@ -139,7 +140,12 @@ You can read more about [Inngest steps](/docs/learn/inngest-steps) or jump direc
 - [`step.sleepUntil()`](/docs/reference/functions/step-sleep-until): Sleep until a given time.
 - [`step.invoke()`](/docs/reference/functions/step-invoke): Invoke another Inngest function as a step, receiving the result of the invoked function.
 - [`step.waitForEvent()`](/docs/reference/functions/step-wait-for-event): Pause a function's execution until another event is received.
-- [`step.sendEvent()`](/docs/reference/functions/step-send-event): Send event(s) reliability within your function. Use this instead of `inngest.send()` to ensure reliable event delivery from within functions.
+- [`step.sendEvent()`](/docs/reference/functions/step-send-event): Send event(s) reliably within your function. Use this instead of `inngest.send()` to ensure reliable event delivery from within functions.
+
+<Callout>
+Please note that each step is executed as **a separate HTTP request**. To ensure efficient execution, place any non-deterministic logic (such as DB calls or API calls) within a `step.run()` call. [Learn more](/docs/guides/working-with-loops).
+
+</Callout>
 
 ## Gotchas
 
@@ -232,10 +238,21 @@ const userBirthday = await step.run("get-user-birthday", async () => {
 await sleepUntil("wait-for-user-birthday", userBirthday);
 ```
 
+### Unexpected loop behavior
+
+When using loops within functions, it is recommended to treat each iteration as it's own step or steps.
+
+When [functions are run](/docs/learn/how-functions-are-executed), the function handler is re-executed from the start for each new step and previously completed steps are memoized. This means that iterations of loops will be run every re-execution, but code encapsulated within `step.run()` will not re-run.
+
+If code within a loop is not encapsulated within a step, it will re-run multiple times, which can lead to confusing behavior, debugging, or [logging](/docs/guides/logging). This is why it is recommended to encapsulate non-deterministic code within a `step.run()` when working with loops.
+
+Learn more about [working with loops in Inngest](/docs/guides/working-with-loops).
+
 
 ## Further reading
 
 More information on multi-step functions:
+- Docs guide: [working with loops in Inngest](/docs/guides/working-with-loops).
 - Blog post: ["Building an Event Driven Video Processing Workflow with Next.js, tRPC, and Inngest
 "](/blog/nextjs-trpc-inngest)
 - Blog post: ["Running chained LLMs with TypeScript in production"](/blog/running-chained-llms-typescript-in-production)

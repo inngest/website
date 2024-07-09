@@ -5,6 +5,7 @@ import {
   LifebuoyIcon,
   PlayIcon,
   QuestionMarkCircleIcon,
+  LightBulbIcon,
 } from "@heroicons/react/24/outline";
 import GoIcon from "src/shared/Icons/Go";
 import GuideIcon from "src/shared/Icons/Guide";
@@ -62,6 +63,10 @@ const sectionGettingStarted: NavGroup[] = [
         title: "Glossary",
         href: `/docs/learn/glossary`,
         tag: "New",
+      },
+      {
+        title: "Glossary",
+        href: `/docs/learn/glossary`,
       },
       { title: "Installing the SDK", href: `/docs/sdk/overview` },
       { title: "Serving the API & Frameworks", href: `/docs/sdk/serve` },
@@ -147,6 +152,10 @@ const sectionGuides: NavGroup[] = [
       {
         title: "Invoking functions directly",
         href: `/docs/guides/invoking-functions-directly`,
+      },
+      {
+        title: "Working with loops",
+        href: `/docs/guides/working-with-loops`,
       },
     ],
   },
@@ -966,7 +975,7 @@ export const menuTabs = [
   {
     title: "Getting started",
     icon: PlayIcon,
-    href: "/docs/quick-start",
+    href: "/docs",
     matcher: matchers.default,
   },
   {
@@ -983,7 +992,7 @@ export const menuTabs = [
   },
   {
     title: "Examples",
-    icon: CogIcon,
+    icon: LightBulbIcon,
     href: "/docs/examples",
     matcher: matchers.examples,
   },
@@ -1017,7 +1026,7 @@ export const topLevelNav = [
   },
   {
     title: "Examples",
-    icon: CogIcon,
+    icon: LightBulbIcon,
     href: "/docs/examples",
     matcher: matchers.examples,
     sectionLinks: sectionExamples,

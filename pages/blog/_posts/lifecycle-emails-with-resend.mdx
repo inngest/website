@@ -201,7 +201,7 @@ Inngest greatly simplifies implementing an asynchronous, durable, event-driven w
 
 ```ts
 export const userCreated = inngest.createFunction(
-  { name: "A User Was Created" },
+  { id: "user-created" },
   { event: "user/created" },
   async ({ event, step }) => {
     const { email } = event.user;

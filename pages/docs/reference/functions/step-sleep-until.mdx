@@ -1,8 +1,12 @@
+import { Callout, Properties, Property, Row, Col, CodeGroup, VersionBadge } from "src/shared/Docs/mdx";
+
 export const description = `Sleep until a specific date time with step.sleepUntil()`;
 
 # Sleep until `step.sleepUntil()`
 
 Use `step.sleepUntil()` to pause the execution of your function until a specific date time.
+
+Please note that at maximum, functions can sleep for a year (seven days for the [free tier plans](/pricing)).
 
 <CodeGroup>
 ```ts {{ title: "v3" }}

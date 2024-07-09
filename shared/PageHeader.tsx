@@ -21,7 +21,7 @@ export default function PageHeader(props: PageHeaderProps) {
   const { title, lede, ctas } = props;
 
   return (
-    <div className="py-24 md:py-48 flex flex-col gap-2 justify-between align-center lg:items-center text-center">
+    <div className="py-24 flex flex-col gap-2 justify-between align-center lg:items-center text-center">
       <h1
         className="text-4xl leading-[48px] sm:text-5xl sm:leading-[58px] lg:text-6xl font-semibold lg:leading-[68px] tracking-[-2px] bg-gradient-to-br from-white to-slate-300 bg-clip-text text-transparent mb-5"
         style={
@@ -58,7 +58,7 @@ const LeftAlignedHeader = ({
   ctas = [],
 }: PageHeaderProps) => {
   return (
-    <div className="py-24 md:py-48 flex flex-col lg:flex-row gap-8 justify-between lg:items-center">
+    <div className="py-24 flex flex-col lg:flex-row gap-8 justify-between lg:items-center">
       <div className="lg:w-7/12 max-w-2xl">
         <h1 className="text-4xl leading-[48px] sm:text-5xl sm:leading-[58px] lg:text-6xl font-semibold lg:leading-[68px] tracking-[-2px] text-slate-50 mb-5">
           {title}

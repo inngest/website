@@ -2,6 +2,7 @@ import Head from "next/head";
 import Image from "next/image";
 import rehypeSlug from "rehype-slug";
 import rehypeRaw from "rehype-raw";
+import type { MDXComponents } from "mdx/types";
 import { serialize } from "next-mdx-remote/serialize";
 import { MDXRemote } from "next-mdx-remote";
 import Footer from "../../shared/Footer";
@@ -20,14 +21,28 @@ import Blockquote from "src/shared/Blog/Blockquote";
 import rehypeCodeTitles from "rehype-code-titles";
 import YouTube from "react-youtube-embed";
 import remarkGfm from "remark-gfm";
-import { LaunchWeekBanner } from "../index";
+import { SectionProvider } from "src/shared/Docs/SectionProvider";
+// import { LaunchWeekBanner } from "../index";
 
-const components = {
+// @ts-ignore
+import { remarkCodeHike, recmaCodeHike } from "codehike/mdx";
+import { Code } from "src/shared/Code/CodeHike";
+
+const chConfig = {
+  components: { code: "Code" },
+  syntaxHighlighting: {
+    theme: "dracula-soft",
+  },
+};
+
+const components: MDXComponents = {
   DiscordCTA,
   Button,
   CTACallout,
   Blockquote,
+  // @ts-ignore this package is older, but it works
   YouTube,
+  Code,
 };
 
 type Props = {
@@ -132,7 +147,7 @@ export default function BlogLayout(props) {
 
       <div className="font-sans">
         <Header />
-        <LaunchWeekBanner urlRef="blog-post-banner" />
+        {/* <LaunchWeekBanner urlRef="blog-post-banner" /> */}
         <Container>
           <article>
             <main className="m-auto max-w-3xl pt-16">
@@ -203,14 +218,16 @@ export default function BlogLayout(props) {
                   }}
                 />
               )} */}
-                <div className="prose mt-12 mb-20 Xtext-[18px] Xleading-[30px] prose-img:rounded-lg prose-code:bg-slate-800 prose-code:tracking-tight text-slate-200 prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline hover:prose-a:text-white prose-a:font-medium prose-a:transition-all prose-invert blog-content">
-                  {/* @ts-ignore */}
-                  <MDXRemote
-                    compiledSource={props.post.compiledSource}
-                    scope={scope}
-                    components={components}
-                  />
-                </div>
+                <SectionProvider sections={[]}>
+                  <div className="prose mt-12 mb-20 Xtext-[18px] Xleading-[30px] prose-img:rounded-lg prose-code:bg-slate-800 prose-code:tracking-tight text-slate-200 prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline hover:prose-a:text-white prose-a:font-medium prose-a:transition-all prose-invert blog-content">
+                    {/* @ts-ignore */}
+                    <MDXRemote
+                      compiledSource={props.post.compiledSource}
+                      scope={scope}
+                      components={components}
+                    />
+                  </div>
+                </SectionProvider>
                 <DiscordCTA />
               </div>
             </main>
@@ -282,8 +299,9 @@ export async function getStaticProps({ params }) {
         rehypeShiki,
         [rehypeRaw, { passThrough: nodeTypes }],
         rehypeSlug,
-        remarkGfm,
       ],
+      remarkPlugins: [[remarkCodeHike, chConfig], remarkGfm],
+      recmaPlugins: [[recmaCodeHike, chConfig]],
     },
   });
   return {

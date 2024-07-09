@@ -1,5 +1,9 @@
 const colors = require("tailwindcss/colors");
 
+const theme2024 = {
+  black: "#010101",
+};
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: "class",
@@ -16,6 +20,36 @@ module.exports = {
         // Aliases for ease of re-design
         body: colors.slate[100],
         primary: colors.indigo["500"],
+        inngestBlack: theme2024.black,
+        // Design System 2024
+        carbon: {
+          0: "#fefefe",
+          50: "#f6f6f6",
+          100: "#e2e2e2",
+          200: "#cccccc",
+          300: "#b0b0b0",
+          400: "#9b9b9b",
+          500: "#7c7c7c",
+          600: "#636363",
+          700: "#4b4b4b",
+          800: "#353535",
+          900: "#242424",
+          950: "#121212",
+          1000: "#020202",
+        },
+        matcha: {
+          0: "#eff9f2",
+          100: "#dff5e6",
+          200: "#c4efd4",
+          300: "#9adab3",
+          400: "#66bd8b",
+          500: "#2c9b63",
+          600: "#027a48",
+          700: "#016239",
+          800: "#015430",
+          900: "#004d2b",
+        },
+        // Extend base tailwind colors
         slate: {
           950: "#0C1323",
           1000: "#080D19",

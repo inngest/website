@@ -1,3 +1,5 @@
+import { GuideSelector, GuideSection, Callout, CodeGroup } from "src/shared/Docs/mdx";
+
 export const description =
   `Get started with Inngest in this ten-minute tutorial`
 
@@ -46,7 +48,7 @@ In this tutorial you can use any existing Next.js project, or you can create a n
   </GuideSection>
 </details>
 
-Once you've chosen a project, open it in a code editor. 
+Once you've chosen a project, open it in a code editor.
 
 Next, start your Next.js app in development mode by running:
 
@@ -161,7 +163,7 @@ Inngest invokes your functions securely via an [API endpoint](/docs/sdk/serve) a
 
 <GuideSection show="nextappdir">
   Make a new directory next to your `app` directory (for example, `src/inngest`) where you'll define your Inngest functions and the client.
-  
+
   In the `/src/inngest` directory create an Inngest client:
 
   ```ts {{ filename: "src/inngest/client.ts" }}
@@ -220,7 +222,7 @@ Add the following code to the `./pages/api/inngest.ts` file:
     },
   );
   ```
-  
+
 </GuideSection>
 
 <GuideSection show="nextappdir">
@@ -309,7 +311,7 @@ With your Next.js and Inngest Dev Servers running, head over to Inngest Dev Serv
   alt="Inngest Dev Server screen with no events recorded"
 />
 
-To send a test event, click on “Test Event” in the top right corner: 
+To send a test event, click on “Test Event” in the top right corner:
 
 <img
   src="/assets/docs/quick-start/dev-server-frame.png"
@@ -490,7 +492,7 @@ However, what happens if you send a different event? Let's see! Change `test/hel
   alt="Event details for the last event where it's clear that while the event was recorded, no function was called"
 />
 
-And - that's it! You now have learned how to create Inngest functions and you have sent events to trigger those functions. Congratulations 🥳 
+And - that's it! You now have learned how to create Inngest functions and you have sent events to trigger those functions. Congratulations 🥳
 
 ## Next Steps
 
@@ -500,7 +502,7 @@ To continue your exploration, feel free to check out:
 - [Our blog](/blog) where we explain how Inngest works, publish guest blog posts, and share our learnings.
 
 You can also read more:
-- About[Inngest functions](/docs/functions).
+- About [Inngest functions](/docs/functions).
 - About [Inngest steps](/docs/steps).
 - About [Durable Execution](/docs/learn/how-functions-are-executed)
 - How to [use Inngest with other frameworks](/docs/sdk/serve).

@@ -9,6 +9,7 @@ const options = {
     `${SITE_URL}/test/`,
     "https://www.iubenda.com",
     "https://stripe.com/docs/api",
+    "https://docs.stripe.com",
     "https://docs.github.com",
     "https://docs.retool.com",
     "https://youtu.be",
@@ -28,6 +29,7 @@ const options = {
     "https://platform.openai.com",
     "https://t.co",
     "https://sentry.io",
+    "https://x.com",
   ],
 };
 
