@@ -649,8 +649,8 @@ const sectionExamples: NavGroup[] = [
     links: [
       { title: "All examples", href: `/docs/examples/` },
       {
-        title: "AI agents",
-        href: `/docs/examples/ai-agents`,
+        title: "AI Agents and RAG",
+        href: `/docs/examples/ai-agents-and-rag`,
       },
       {
         title: "Email Sequence",
