@@ -152,7 +152,7 @@ export const data: UseCase = {
         description:
           "A step-by-step guide to learn how to build with Inngest in less than 5 minutes.",
         type: "Tutorial",
-        href: "/docs/quick-start",
+        href: "/docs/getting-started/nextjs-quick-start",
       },
       {
         title: "Running tasks in parallel",

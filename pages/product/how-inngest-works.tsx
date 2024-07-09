@@ -42,7 +42,7 @@ export default function HowInngestWorks() {
           <div className="my-12 max-w-2xl">
             <p>
               Using the{" "}
-              <a href="/docs/quick-start?ref=product-how-it-works">
+              <a href="/docs/getting-started/nextjs-quick-start?ref=product-how-it-works">
                 Inngest SDK
               </a>
               , you define your functions within your existing codebase and

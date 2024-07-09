@@ -1004,7 +1004,7 @@ export const topLevelNav = [
   {
     title: "Getting started",
     icon: PlayIcon,
-    href: "/docs/quick-start",
+    href: "/docs/getting-started/nextjs-quick-start",
     sectionLinks: sectionGettingStarted,
   },
   {
