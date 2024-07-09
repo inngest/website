@@ -195,7 +195,7 @@ export function Resource({
     <div
       key={resource.href}
       onMouseMove={onMouseMove}
-      className="group relative flex flex-col rounded-lg bg-slate-50 transition-shadow hover:shadow-md hover:shadow-slate-900/5 dark:bg-white/2.5 dark:hover:shadow-black/5"
+      className="group relative flex flex-col rounded-lg bg-slate-50 transition-shadow hover:shadow-md hover:shadow-slate-900/5 dark:bg-white/2.5 dark:hover:shadow-black/5 p-4"
     >
       <ResourcePattern {...pattern} mouseX={mouseX} mouseY={mouseY} />
       <div className="absolute inset-0 rounded-lg ring-1 ring-inset ring-slate-900/7.5 group-hover:ring-slate-900/10 dark:ring-white/10 dark:group-hover:ring-white/20" />
@@ -203,17 +203,13 @@ export function Resource({
         href={resource.href}
         className="w-full text-slate-900 dark:text-slate-200 hover:text-slate-700 hover:dark:text-slate-50"
       >
-        <div
-          className={`relative rounded-lg px-4 ${
-            resource.logo || resource.image ? "py-4" : "pt-16 pb-4"
-          }`}
-        >
+        <div className="relative rounded-lg px-4 py-4">
           {!!resource.image && (
             <div className="flex justify-center mb-4">
               <img
                 src={resource.image}
                 alt={resource.name}
-                className="rounded-lg h-48 object-cover filter grayscale transition duration-300 ease-in-out group-hover:filter-none"
+                className="rounded-lg h-32 w-3/4 object-cover filter saturate-50 transition duration-300 ease-in-out group-hover:saturate-100"
               />
             </div>
           )}
@@ -232,8 +228,7 @@ export function Resource({
             </>
           )}
           {!!icon && <ResourceIcon icon={icon} />}
-          <h3 className="mt-4 text-sm font-semibold leading-6 text-center pb-3">
-            <span className="absolute inset-0 rounded-lg" />
+          <h3 className="mt-4 text-m font-semibold leading-6">
             {resource.name}
           </h3>
           {resource.description && (

@@ -33,17 +33,18 @@ export function Example({
   };
 }) {
   return (
-    <div className="group relative flex flex-col sm:flex-col rounded-lg bg-slate-50 transition-shadow hover:shadow-md hover:shadow-slate-900/5 dark:bg-white/2.5 dark:hover:shadow-black/5 ring-1 ring-inset ring-slate-900/7.5 group-hover:ring-slate-900/10 dark:ring-white/10 dark:group-hover:ring-white/20 p-4">
-      <div className="flex justify-center mb-4">
-        <img
-          className="relative flex rounded-lg h-48 w-full object-cover"
-          src={example.image}
-        />
-      </div>
+    <div className="group relative flex flex-col rounded-lg bg-slate-50 transition-shadow hover:shadow-md hover:shadow-slate-900/5 dark:bg-white/2.5 dark:hover:shadow-black/5 ring-1 ring-inset ring-slate-900/7.5 group-hover:ring-slate-900/10 dark:ring-white/10 dark:group-hover:ring-white/20 p-4">
+      {!!example.image && (
+        <div className="flex justify-center mb-4">
+          <img
+            src={example.image}
+            alt={example.title}
+            className="rounded-lg h-32 w-3/4 object-cover filter grayscale transition duration-500 ease-in-out group-hover:filter-none"
+          />
+        </div>
+      )}
       <div className="relative">
-        <h3 className="mt-4 text-m font-semibold text-center">
-          {example.title}
-        </h3>
+        <h3 className="mt-4 text-m font-semibold leading-6">{example.title}</h3>
         {example.description && (
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
             {example.description}
