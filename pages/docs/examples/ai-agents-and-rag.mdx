@@ -11,63 +11,82 @@ Inngest offers tools to support the development of AI-powered applications. Whet
 
 ## Quick Snippet
 
-Below is an example of a RAG workflow (from the ["AI in production"](/blog/ai-in-production-managing-capacity-with-flow-control) blog post), which uses [Inngest steps](/docs/learn/inngest-steps) to guarantee automatic retries on failure.
+Below is an example of a RAG workflow (from this [example app](https://github.com/inngest/inngest-demo-app/)). This asynchronous Inngest function summarizes content via GPT-4 by following these steps:
+- Query a vector database for relevant content.
+- Retrieve a transcript from an S3 file.
+- Combine the transcript and queried content to generate a summary using GPT-4.
+- Save the summary to a database and sends a notification to the client.
+
+The function uses [Inngest steps](/docs/learn/inngest-steps) to guarantee automatic retries on failure.
 
 ```typescript {{ title: "./inngest/functions.ts" }}
-export const userWorkflow = inngest.createFunction(
-  fnOptions,
-  fnListener,
-  async ({ event, step }) => {
-    const similar = await step.run("query-vectordb", async () => {
-      // Query a vectorDB for similar results given input
-      const embedding = createEmbedding(event.data.input)
-      return await index.query({ vector: embedding, topK: 3 }).matches
-    })
+export const summarizeContent = inngest.createFunction(
+  { name: 'Summarize content via GPT-4', id: 'summarize-content' },
+  { event: 'ai/summarize.content' },
+  async ({ event, step, attempt }) => {
+    const results = await step.run('query-vectordb', async () => {
+      return {
+        matches: [
+          {
+            id: 'vec3',
+            score: 0,
+            values: [0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3],
+            text: casual.sentences(3),
+          },
+          {
+            id: 'vec4',
+            score: 0.0799999237,
+            values: [0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4],
+            text: casual.sentences(3),
+          },
+          {
+            id: 'vec2',
+            score: 0.0800000429,
+            values: [0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2],
+            text: casual.sentences(3),
+          },
+        ],
+        namespace: 'ns1',
+        usage: { readUnits: 6 },
+      };
+    });
 
-    const response = await step.run("generate-llm-response", async () => {
-      // Inject our prompt given similar search results and event.data.input
-      const prompt = createAgentPrompt(similar, event.data.input)
-      return await llm.createCompletion({
-        model: "gpt-3.5-turbo",
-        prompt,
-      })
-    })
+    const transcript = await step.run('read-s3-file', async () => {
+      return casual.sentences(10);
+    });
 
-    const entities = await step.run("extract-entities-hf", async () => {
-      // Extract entities from the generated response using Hugging Face's named entity recognition model
-      let pipe = await pipeline(
-        "entity-extraction",
-        "Xenova/bert-base-multilingual-uncased-sentiment"
-      )
-      return await pipe(response)
-    })
+    // We can globally share throttle limited functions like this using invoke
+    const completion = await step.invoke('generate-summary-via-gpt-4', {
+      function: chatCompletion,
+      data: {
+        messages: [
+          {
+            role: 'system',
+            content:
+              'You are a helpful assistant that summaries content for product launches.',
+          },
+          {
+            role: 'user',
+            content: `Question: Summarize my content: \n${transcript}. \nInformation: ${results.matches
+              .map((m) => m.text)
+              .join('. ')}`,
+          },
+        ],
+      },
+    });
+    // You might use the response like this:
+    const summary = completion.choices[0].message.content;
 
-    const summary = await step.run("generate-summary-anthropic", async () => {
-      // Generate a summary document using the extracted entities and the Anthropic API
-      const anthropic = new Anthropic()
+    await step.run('save-to-db', async () => {
+      return casual.uuid;
+    });
 
-      const anthropicPrompt = `The following entities were mentioned in the response: ${entities.join(
-        ", "
-      )}. Please generate a summary document based on these entities and the original response:\n\nResponse: ${response}`
-
-      return await anthropic.messages.create({
-        model: "claude-3-opus-20240229",
-        max_tokens: 1024,
-        messages: [{ role: "user", content: anthropicPrompt }],
-      })
-    })
-
-    await step.run("save-to-db", async () => {
-      // Save the generated response, extracted entities, and summary to the database
-      await db.summaries.create({
-        requestID: event.data.requestID,
-        response,
-        entities,
-        summary,
-      })
-    })
+    await step.run('websocket-push-to-client', async () => {
+      return casual.uuid;
+    });
+    return { success: true, summaryId: casual.uuid };
   }
-)
+);
 ```
 
 ## App examples
