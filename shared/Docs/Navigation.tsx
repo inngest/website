@@ -189,7 +189,7 @@ export function PageSidebar() {
   return (
     <div>
       <h4 className="text-base font-medium pb-2">On this page</h4>
-      <div className="relative max-h-[600px] overflow-y-auto">
+      <div className="relative">
         <AnimatePresence initial={!isInsideMobileNavigation}>
           {pageSectionListItems && (
             <VisibleSectionHighlight listItems={pageSectionListItems} />
