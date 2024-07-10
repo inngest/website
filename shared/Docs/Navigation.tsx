@@ -103,17 +103,14 @@ function NavLink({
       aria-current={active ? "page" : undefined}
       target={target}
       className={clsx(
-        "flex justify-between items-center gap-2 py-1 pr-3 text-sm transition group", // group for nested hovers
-        isTopLevel || isAnchorLink ? "pl-0" : "pl-4",
+        "flex justify-between items-center gap-2 py-1 pr-3 text-sm transition group pl-0", // group for nested hovers
         active
-          ? "font-semibold text-black dark:text-white"
+          ? "font-semibold text-black dark:text-white bg-slate-700/10 dark:bg-white/10"
           : "font-medium text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white",
         className
       )}
     >
-      {!isAnchorLink && (
-        <span className="absolute inset-y-0 left-0 w-px bg-slate-900/10 dark:bg-white/15" />
-      )}
+      {!isAnchorLink && <span className="absolute inset-y-0 left-0 w-px" />}
 
       <span>{children}</span>
       {tag && <Tag color="indigo">{tag}</Tag>}
@@ -288,7 +285,7 @@ function NavigationGroup({
           <div
             className={clsx(
               "relative overflow-hidden",
-              isNestedGroup ? "mt-2" : "pl-2 mt-3"
+              isNestedGroup ? "mt-2" : "pl-0 mt-3"
             )}
           >
             <motion.ul role="list" className="border-l border-transparent">
@@ -306,7 +303,9 @@ function NavigationGroup({
                   <motion.li
                     key={link.href}
                     layout="position"
-                    className={clsx("relative", { "ml-3": isNestedGroup })}
+                    className={clsx("relative", {
+                      "ml-3": isNestedGroup,
+                    })}
                   >
                     <NavLink
                       href={link.href}
@@ -314,7 +313,7 @@ function NavigationGroup({
                       className={link.className}
                       tag={link.tag}
                     >
-                      {link.title}
+                      <span className="ml-1">{link.title}</span>
                     </NavLink>
                   </motion.li>
                 )
