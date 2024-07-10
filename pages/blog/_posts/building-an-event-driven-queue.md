@@ -64,7 +64,7 @@ And what about functions? We also added indirection here, too. Each function has
 <aside className="max-w-[65ch] m-auto bg-indigo-900/20 text-indigo-100 leading-relaxed rounded-lg py-0 px-6  my-12 border border-indigo-900/50">
   👋 **Note** - This approach has been deprecated in favor of the Inngest SDK.
 
-[Check out the quick start guide for an even better experience](/docs/quick-start).
+[Check out the quick start guide for an even better experience](/docs/getting-started/nextjs-quick-start).
 
 </aside>
 

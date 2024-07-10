@@ -43,6 +43,20 @@ export type NavSection = NavLink & {
 
 const sectionGettingStarted: NavGroup[] = [
   {
+    title: "Quick start tutorials",
+    defaultOpen: true,
+    links: [
+      {
+        title: "Next.js",
+        href: "/docs/getting-started/nextjs-quick-start",
+      },
+      {
+        title: "Python",
+        href: "/docs/getting-started/python-quick-start",
+      },
+    ],
+  },
+  {
     title: "Learn the basics",
     defaultOpen: true,
     links: [
@@ -90,20 +104,6 @@ const sectionGettingStarted: NavGroup[] = [
       {
         title: "Versioning",
         href: `/docs/learn/versioning`,
-      },
-    ],
-  },
-  {
-    title: "Quick start tutorials",
-    defaultOpen: true,
-    links: [
-      {
-        title: "Next.js",
-        href: "/docs/quick-start",
-      },
-      {
-        title: "Python",
-        href: "/docs/getting-started/quick-start/python",
       },
     ],
   },
@@ -1004,7 +1004,7 @@ export const topLevelNav = [
   {
     title: "Getting started",
     icon: PlayIcon,
-    href: "/docs/quick-start",
+    href: "/docs/getting-started/nextjs-quick-start",
     sectionLinks: sectionGettingStarted,
   },
   {

@@ -85,7 +85,7 @@ const learnLinks = {
   links: [
     {
       title: "Quick start tutorial",
-      url: "/docs/quick-start?ref=nav",
+      url: "/docs/getting-started/nextjs-quick-start?ref=nav",
       icon: IconCompiling,
     },
     {

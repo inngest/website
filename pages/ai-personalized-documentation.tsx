@@ -358,7 +358,7 @@ const Output = ({ selected }: { selected: Selected }) => {
             <p className="text-white">Want to learn more?</p>
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
               <a
-                href="/docs/quick-start"
+                href="/docs/getting-started/nextjs-quick-start"
                 className="bg-slate-800 rounded-lg px-6 py-5 hover:bg-slate-700/80 group block"
               >
                 <h4 className="text-white">Quick start guide</h4>

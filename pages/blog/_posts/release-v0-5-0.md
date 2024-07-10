@@ -27,7 +27,7 @@ inngest run --replay
 
 How is this possible? Inngest is event-driven, and we store all of the events that flow through your system. This lets us take those historic events and pipe them through to your local functions. It’s a completely different approach than you might be used to with eg. SQS or RabbitMQ, which enables much better development practices than previously available.
 
-You can ~~read the documentation for historic replay here~~ (**NOTE** - This has been deprecated in favor of [the Inngest SDK](/docs/quick-start)).
+You can ~~read the documentation for historic replay here~~ (**NOTE** - This has been deprecated in favor of [the Inngest SDK](/docs/getting-started/nextjs-quick-start)).
 
 ## Self hosting beta
 
