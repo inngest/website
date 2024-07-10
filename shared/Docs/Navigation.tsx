@@ -161,7 +161,6 @@ function VisibleSectionHighlight({ listItems }) {
     />
   );
 }
-
 export function PageSidebar() {
   let isInsideMobileNavigation = useIsInsideMobileNavigation();
   let router = useRouter();
@@ -190,7 +189,10 @@ export function PageSidebar() {
   return (
     <div>
       <h4 className="text-base font-medium pb-2">On this page</h4>
-      <div className="relative">
+      <div
+        className="relative"
+        style={{ maxHeight: "600px", overflowY: "auto" }}
+      >
         <AnimatePresence initial={!isInsideMobileNavigation}>
           {pageSectionListItems && (
             <VisibleSectionHighlight listItems={pageSectionListItems} />
@@ -233,6 +235,7 @@ export function PageSidebar() {
     </div>
   );
 }
+
 // A nested navigation group of links that expand and follow
 function NavigationGroup({
   group,
