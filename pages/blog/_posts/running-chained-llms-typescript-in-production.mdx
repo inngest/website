@@ -48,7 +48,7 @@ Here’s an example:
 
 ```js
 import { Inngest } from "inngest";
-// https://www.inngest.com/docs/sdk/serve#setting-up-the-api
+// https://www.inngest.com/docs/learn/serving-inngest-functions#setting-up-the-api
 import { serve } from "inngest/next";
 
 const inngest = new Inngest({ name: "Chained LLM app" });
@@ -111,7 +111,7 @@ await inngest.send({
 });
 ```
 
-In this example, we’re defining a function which automatically runs when you send a specific event to Inngest.  [It’s served via HTTP, and can be hosted on **any** platform](/docs/sdk/serve?ref=blog-chained-llms).  Under the hood, whenever we receive a new `api/chat.submitted` event we:
+In this example, we’re defining a function which automatically runs when you send a specific event to Inngest.  [It’s served via HTTP, and can be hosted on **any** platform](/docs/learn/serving-inngest-functions?ref=blog-chained-llms).  Under the hood, whenever we receive a new `api/chat.submitted` event we:
 
 - Create a new blank function run, with empty state
 - Call your function with empty state.

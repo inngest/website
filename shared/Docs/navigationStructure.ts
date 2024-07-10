@@ -502,7 +502,7 @@ const sectionTypeScriptReference: NavGroup[] = [
     links: [
       // {
       //   title: "Framework handlers",
-      //   href: `/docs/sdk/serve`,
+      //   href: `/docs/learn/serving-inngest-functions`,
       // },
       {
         title: "Configuration",
@@ -769,7 +769,7 @@ const sectionReference: NavGroup[] = [
         links: [
           // {
           //   title: "Framework handlers",
-          //   href: `/docs/sdk/serve`,
+          //   href: `/docs/learn/serving-inngest-functions`,
           // },
           {
             title: "Configuration",

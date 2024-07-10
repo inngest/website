@@ -272,27 +272,27 @@ export default function AI() {
           {
             src: "/assets/brand-logos/next-js-white.svg",
             name: "Next.js",
-            href: "/docs/sdk/serve?ref=homepage-frameworks#framework-next-js",
+            href: "/docs/learn/serving-inngest-functions?ref=homepage-frameworks#framework-next-js",
           },
           {
             src: "/assets/brand-logos/express-js-white.svg",
             name: "Express.js",
-            href: "/docs/sdk/serve?ref=homepage-frameworks#framework-express",
+            href: "/docs/learn/serving-inngest-functions?ref=homepage-frameworks#framework-express",
           },
           {
             src: "/assets/brand-logos/redwoodjs-white.svg",
             name: "RedwoodJS",
-            href: "/docs/sdk/serve?ref=homepage-frameworks#framework-redwood",
+            href: "/docs/learn/serving-inngest-functions?ref=homepage-frameworks#framework-redwood",
           },
           {
             src: "/assets/brand-logos/remix-white.svg",
             name: "Remix",
-            href: "/docs/sdk/serve?ref=homepage-frameworks#framework-remix",
+            href: "/docs/learn/serving-inngest-functions?ref=homepage-frameworks#framework-remix",
           },
           {
             src: "/assets/brand-logos/deno-white.svg",
             name: "Deno",
-            href: "/docs/sdk/serve?ref=homepage-frameworks#framework-fresh-deno",
+            href: "/docs/learn/serving-inngest-functions?ref=homepage-frameworks#framework-fresh-deno",
           },
         ]}
       />
