@@ -303,7 +303,9 @@ function NavigationGroup({
                   <motion.li
                     key={link.href}
                     layout="position"
-                    className={clsx("relative", { "ml-3": isNestedGroup })}
+                    className={clsx("relative", {
+                      "ml-3": isNestedGroup,
+                    })}
                   >
                     <NavLink
                       href={link.href}
@@ -311,7 +313,7 @@ function NavigationGroup({
                       className={link.className}
                       tag={link.tag}
                     >
-                      {link.title}
+                      <span className="ml-1">{link.title}</span>
                     </NavLink>
                   </motion.li>
                 )
