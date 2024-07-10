@@ -2,15 +2,15 @@ import { Callout, CodeGroup, VersionBadge } from "shared/Docs/mdx";
 
 export const description = `Serve the Inngest API as an HTTP endpoint in your application.`
 
-# Serving the Inngest API
+# Serving Inngest Functions
 
 With Inngest, you define functions or workflows using its SDK right in your codebase and serve them through an HTTP endpoint in your application. Inngest uses this endpoint to reliably execute functions in response to an event.
 
 This page covers how to serve the Inngest API in your project.
 
-## Setting up the API
+## Exposing Inngest Functions
 
-Inngest provides a `serve()` handler which adds an API endpoint to your router. To make automated deploys much easier, **the endpoint needs to be defined at `/api/inngest`** (though you can [change the API path](/docs/reference/serve#serve-client-functions-options)).
+Inngest provides a `serve()` handler which adds an API endpoint to your router. You expose your functions to Inngest through this HTTP endpoint. To make automated deploys much easier, **the endpoint needs to be defined at `/api/inngest`** (though you can [change the API path](/docs/reference/serve#serve-client-functions-options)).
 
 ```ts {{ title: "./api/inngest" }}
 // All serve handlers have the same arguments:

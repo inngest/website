@@ -48,6 +48,7 @@ const permanentRedirects = [
     "/docs/reference/serve#custom-frameworks",
     "/docs/sdk/serve#custom-frameworks",
   ],
+  ["/docs/sdk/serve", "/docs/learn/serving-inngest-functions"],
 ];
 
 async function redirects() {

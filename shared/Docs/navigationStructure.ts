@@ -65,7 +65,10 @@ const sectionGettingStarted: NavGroup[] = [
         tag: "New",
       },
       { title: "Installing the SDK", href: `/docs/sdk/overview` },
-      { title: "Serving the API & Frameworks", href: `/docs/sdk/serve` },
+      {
+        title: "Serving Inngest Functions",
+        href: `/docs/learn/serving-inngest-functions`,
+      },
       { title: "Sending Events", href: `/docs/events` },
       { title: "Inngest Apps", href: `/docs/apps` },
       {
