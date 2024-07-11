@@ -158,7 +158,6 @@ function VisibleSectionHighlight({ listItems }) {
     />
   );
 }
-
 export function PageSidebar() {
   let isInsideMobileNavigation = useIsInsideMobileNavigation();
   let router = useRouter();
@@ -230,6 +229,7 @@ export function PageSidebar() {
     </div>
   );
 }
+
 // A nested navigation group of links that expand and follow
 function NavigationGroup({
   group,
