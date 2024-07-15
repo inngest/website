@@ -20,7 +20,7 @@ Until now, this immense volume of queue and state data was stored in our highly-
 
 To alleviate the limitations of running a single Redis cluster, we planned medium to long-term infrastructure improvements based on Q2 growth estimates. However, we did not anticipate the uptick in product usage caused by onboarding many new enterprise users in June. This “sudden success” overwhelmed all our forecasts and gave us a reason to act swiftly. Luckily, we had been working on adjacent projects since May, allowing us to switch gears and shift our focus to immediate remedies.
 
-However, there's a catch: Because Inngest is a reliable layer for so many applications, we can't introduce downtime for migrations so shutting down parts of our system even for a few minutes is out of the question. So, what can we do?
+However, there's a catch: Because Inngest is a reliable foundation for so many applications, we can't introduce downtime for migrations so shutting down parts of our system even for a few minutes is out of the question. So, what can we do?
 
 Let's start by going over the previous work on the State Coordinator, which validated the system design and rollout strategy to be used in our sharding efforts.
 
