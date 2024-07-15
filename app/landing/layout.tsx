@@ -16,7 +16,7 @@ export default function LandingPageLayout({
         </main>
         <FullWidthCTA
           ctaText="Read the quick start guide"
-          ctaHref="/docs/quick-start"
+          ctaHref="/docs/getting-started/nextjs-quick-start"
         />
       </div>
     </SectionProvider>

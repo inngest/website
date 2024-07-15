@@ -560,7 +560,7 @@ const DevelopmentCopy = () => {
           </div>
         </div>
         <Link
-          href="/docs/quick-start?ref=homepage-dev-tools"
+          href="/docs/getting-started/nextjs-quick-start?ref=homepage-dev-tools"
           className="rounded-md px-3 py-1.5 text-sm bg-transparent transition-all text-white border border-slate-800 hover:border-slate-600 hover:bg-slate-500/10 whitespace-nowrap"
         >
           Get Started

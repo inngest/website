@@ -44,7 +44,7 @@ export default inngest.createFunction(
 The ID is also used to identify the function in the Inngest system.
 
 <Callout>
-Please note that each step is executed as **a separate HTTP request**. To ensure efficient execution, place any non-deterministic logic (such as DB calls or API calls) within a `step.run()` call.
+Please note that each step is executed as **a separate HTTP request**. To ensure efficient and correct execution, place any non-deterministic logic (such as DB calls or API calls) within a `step.run()` call.
 </Callout>
 
 ## Available Step Methods
@@ -166,6 +166,6 @@ export default inngest.createFunction(
 
 ## Further reading
 
-- [Quick Start](/docs/quick-start): learn how to build complex workflows.
+- [Quick Start](/docs/getting-started/nextjs-quick-start): learn how to build complex workflows.
 - ["How Inngest functions are executed"](/docs/learn/how-functions-are-executed): Learn more about Inngest's execution model, including how steps are handled.
 - Docs guide: ["Multi-step functions"](/docs/guides/multi-step-functions).

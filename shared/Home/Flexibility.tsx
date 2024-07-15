@@ -97,7 +97,7 @@ export default function Flexibility() {
               {
                 src: "/assets/brand-logos/fast-api-white.png",
                 name: "FastAPI",
-                href: "/docs/getting-started/quick-start/python?ref=homepage-frameworks",
+                href: "/docs/getting-started/python-quick-start?ref=homepage-frameworks",
               },
               // FUTURE - Add other language frameworks like Flask
             ].map(({ src, name, href }, idx) => (

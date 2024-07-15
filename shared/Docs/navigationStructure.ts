@@ -43,6 +43,20 @@ export type NavSection = NavLink & {
 
 const sectionGettingStarted: NavGroup[] = [
   {
+    title: "Quick start tutorials",
+    defaultOpen: true,
+    links: [
+      {
+        title: "Next.js",
+        href: "/docs/getting-started/nextjs-quick-start",
+      },
+      {
+        title: "Python",
+        href: "/docs/getting-started/python-quick-start",
+      },
+    ],
+  },
+  {
     title: "Learn the basics",
     defaultOpen: true,
     links: [
@@ -57,12 +71,10 @@ const sectionGettingStarted: NavGroup[] = [
       {
         title: "Inngest steps",
         href: `/docs/learn/inngest-steps`,
-        tag: "New",
       },
       {
         title: "Glossary",
         href: `/docs/learn/glossary`,
-        tag: "New",
       },
       { title: "Installing the SDK", href: `/docs/sdk/overview` },
       {
@@ -93,20 +105,6 @@ const sectionGettingStarted: NavGroup[] = [
       {
         title: "Versioning",
         href: `/docs/learn/versioning`,
-      },
-    ],
-  },
-  {
-    title: "Quick start tutorials",
-    defaultOpen: true,
-    links: [
-      {
-        title: "Next.js",
-        href: "/docs/quick-start",
-      },
-      {
-        title: "Python",
-        href: "/docs/getting-started/quick-start/python",
       },
     ],
   },
@@ -652,6 +650,11 @@ const sectionExamples: NavGroup[] = [
     links: [
       { title: "All examples", href: `/docs/examples/` },
       {
+        title: "AI Agents and RAG",
+        href: `/docs/examples/ai-agents-and-rag`,
+        tag: "New",
+      },
+      {
         title: "Email Sequence",
         href: `/docs/examples/email-sequence`,
       },
@@ -1007,7 +1010,7 @@ export const topLevelNav = [
   {
     title: "Getting started",
     icon: PlayIcon,
-    href: "/docs/quick-start",
+    href: "/docs/getting-started/nextjs-quick-start",
     sectionLinks: sectionGettingStarted,
   },
   {
