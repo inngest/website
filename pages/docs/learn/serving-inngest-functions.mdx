@@ -1,18 +1,18 @@
 import { Callout, CodeGroup, VersionBadge } from "shared/Docs/mdx";
 
-# Serving the Inngest API
+export const description = `Serve the Inngest API as an HTTP endpoint in your application.`
 
-Inngest works by serving an HTTP API endpoint which exposes your functions for us to call on-demand.
-The first thing you'll need to do is to add and serve the Inngest API in your project.
+# Serving Inngest Functions
 
-## Setting up the API
+With Inngest, you define functions or workflows using its SDK right in your codebase and serve them through an HTTP endpoint in your application. Inngest uses this endpoint to reliably execute functions in response to an event.
 
-Inngest provides a `serve()` handler which adds an API endpoint to your router.  **You should always
-serve our API at `/api/inngest`**, as this makes automated deploys much easier.  If you need to
-change the API URL skip to [configuring the API Path](/docs/reference/serve#serve-client-functions-options).
+This page covers how to serve the Inngest API in your project.
 
-<CodeGroup>
-```ts {{ title: "v3" }}
+## Exposing Inngest Functions
+
+Inngest provides a `serve()` handler which adds an API endpoint to your router. You expose your functions to Inngest through this HTTP endpoint. To make automated deploys much easier, **the endpoint needs to be defined at `/api/inngest`** (though you can [change the API path](/docs/reference/serve#serve-client-functions-options)).
+
+```ts {{ title: "./api/inngest" }}
 // All serve handlers have the same arguments:
 serve({
   client: inngest, // a client created with new Inngest()
@@ -20,48 +20,23 @@ serve({
   /* Optional extra configuration */
 });
 ```
-```ts {{ title: "v2" }}
-// All serve handlers have the same arguments:
-serve(
-  inngest, // a client created with new Inngest()
-  [fnA, fnB], // an array of Inngest functions to serve, created with inngest.createFunction()
-  {/* Optional extra configuration */}
-);
-```
-</CodeGroup>
 
-We provide framework-specific bindings to make this easy for common platforms:
-
-- [Astro](#framework-astro)
-- [AWS Lambda](#framework-aws-lambda)
-- [Bun.serve()](#bun-serve)
-- [Cloudflare Pages Functions](#framework-cloudflare-pages-functions)
-- [Cloudflare Workers](#framework-cloudflare-workers)
-- [DigitalOcean functions](#framework-digital-ocean-functions)
-- [Express](#framework-express)
-- [Fastify](#framework-fastify)
-- [Fresh (Deno)](#framework-fresh-deno)
-- [Google Cloud Functions](#framework-google-cloud-functions)
-- [H3](#framework-h3)
-- [Koa](#framework-koa)
-- [Next.js](#framework-next-js)
-- [Redwood](#framework-redwood)
-- [Remix](#framework-remix)
-- [SvelteKit](#framework-svelte-kit)
-- [Custom](#custom-frameworks)
-
-Each of these bindings wrap our base API which implemnts the core logic, so adding support for new
-frameworks is easy.  [Want us to add support for another platform?  Come say hi in our discord](/discord)
-or [drop us a note](/contact).
-
-## Signing key
+### Signing key
 
 You'll need to assign your [signing key](/docs/platform/signing-keys) to an [`INNGEST_SIGNING_KEY`](/docs/sdk/environment-variables#inngest-signing-key) environment variable in your hosting
-provider or `.env` file locally.  This lets the SDK securely communicate with Inngest.  If you can't
-provide this as a signing key, you can pass it in to `serve` when setting up your framework.  [Read
+provider or `.env` file locally, which lets the SDK securely communicate with Inngest. If you can't
+provide this as a signing key, you can pass it in to `serve` when setting up your framework. [Read
 the reference for more information](/docs/sdk/reference/serve#reference).
 
-## Framework: Astro <VersionBadge version="v3.8.0+" />
+## Supported Platforms
+
+Below you will find a list of framework-specific bindings, as well as instructions on adding bindings to [custom platforms](#custom-frameworks)!
+
+<Callout variant="info">
+  Want us to add support for another framework? Open an issue on [GitHub](https://github.com/inngest/website) or tell us about it on our [Discord](/discord).
+</Callout>
+
+### Framework: Astro <VersionBadge version="v3.8.0+" />
 
 Add the following to `./src/pages/api/inngest.ts`:
 
@@ -79,7 +54,7 @@ export const { GET, POST, PUT } = serve({
 
 See the [Astro example](https://github.com/inngest/inngest-js/tree/main/examples/framework-astro) for more information.
 
-## Framework: AWS Lambda <VersionBadge version="v1.5.0+" />
+### Framework: AWS Lambda <VersionBadge version="v1.5.0+" />
 
 We recommend using [Lambda function URLs](https://docs.aws.amazon.com/lambda/latest/dg/lambda-urls.html) to trigger your functions, as these require no other configuration or cost.
 
@@ -105,10 +80,10 @@ export const handler = serve(inngest, [fnA]);
 ```
 </CodeGroup>
 
-## Bun.serve()
+### Bun.serve()
 
 You can use the `inngest/bun` handler with `Bun.serve()` for a lightweight
-Inngest server.
+Inngest server:
 
 ```ts
 import { serve } from "inngest/bun";
@@ -128,7 +103,10 @@ Bun.serve({
 });
 ```
 
-## Framework: Cloudflare Pages Functions
+See the [Astro example](https://github.com/inngest/inngest-js/tree/main/examples/bun) for more information.
+
+
+### Framework: Cloudflare Pages Functions
 
 You can import the Inngest API server when using <a href="https://developers.cloudflare.com/pages/platform/functions/" target="_blank" rel="nofollow">Cloudflare pages functions</a>  within `/functions/api/inngest.js`:
 
@@ -155,7 +133,7 @@ export const onRequest = serve({
 ```
 </CodeGroup>
 
-## Framework: Cloudflare Workers <VersionBadge version="v3.19.15+" />
+### Framework: Cloudflare Workers <VersionBadge version="v3.19.15+" />
 
 You can export `"inngest/cloudflare"`'s `serve()` as your Cloudflare Worker:
 
@@ -191,10 +169,10 @@ INNGEST_DEV = "https://YOUR_TUNNEL_URL.ngrok.app"
 INNGEST_SERVE_HOST = "http://localhost:3000" # force the Dev Server to access the app at this local URL
 ```
 
-## Framework: DigitalOcean Functions
+### Framework: DigitalOcean Functions
 
 The DigitalOcean serve function allows you to deploy Inngest to DigitalOcean serverless functions.
-Because DigitalOcean doesn't provide the request URL in its function arguments, you **must** include
+Because DigitalOcean does not provide the request URL in its function arguments, you **must** include
 the function URL and path when configuring your handler:
 
 <CodeGroup>
@@ -234,10 +212,10 @@ module.exports.main = main;
 ```
 </CodeGroup>
 
-## Framework: Express
+### Framework: Express
 
 You can serve Inngest functions within your existing Express app, deployed to any hosting provider
-like render, fly, AWS, K8S, etc:
+like Render, Fly, AWS, K8S, and others:
 
 <CodeGroup>
 ```ts {{ title: "v3" }}
@@ -269,10 +247,12 @@ app.use(
 </CodeGroup>
 
 You must ensure you're using the `express.json()` middleware otherwise your functions won't be
-executed. **Note** - You may need to set [`express.json()`'s `limit` option](https://expressjs.com/en/5x/api.html#express.json) to something higher than the default
-`100kb` to support larger event payloads and function state.
+executed. **Note** - You may need to set [`express.json()`'s `limit` option](https://expressjs.com/en/5x/api.html#express.json) to something higher than the default `100kb` to support larger event payloads and function state.
 
-## Framework: Fastify <VersionBadge version="v2.6.0+" />
+See the [Express example](https://github.com/inngest/inngest-js/tree/main/examples/framework-express) for more information.
+
+
+### Framework: Fastify <VersionBadge version="v2.6.0+" />
 
 You can serve Inngest functions within your existing Fastify app.
 
@@ -341,7 +321,9 @@ fastify.listen({ port: 3000 }, function (err, address) {
 ```
 </CodeGroup>
 
-## Framework: Fresh (Deno)
+See the [Fastify example](https://github.com/inngest/inngest-js/tree/main/examples/framework-fastify) for more information.
+
+### Framework: Fresh (Deno)
 
 Inngest works with Deno's <a href="https://fresh.deno.dev/" target="_blank" rel="nofollow">Fresh
 framework</a> via the `esm.sh` CDN.  Add the serve handler to `./api/inngest.ts` as follows:
@@ -366,7 +348,7 @@ export const handler = serve(inngest, [fnA]);
 ```
 </CodeGroup>
 
-## Framework: Google Cloud Functions
+### Framework: Google Cloud Functions
 
 Google's [Functions Framework](https://github.com/GoogleCloudPlatform/functions-framework-nodejs) has an Express-compatible API which enables you to use the Express serve handler to deploy your functions to Google's Cloud Functions or Cloud Run. This is an example of a function
 
@@ -397,7 +379,9 @@ ff.http('inngest', serve(inngest, [fnA]));
 
 You can run this locally with `npx @google-cloud/functions-framework --target=inngest` which will serve your Inngest functions on port `8080`.
 
-## Framework: Firebase Cloud Functions
+See the [Google Cloud Functions example](https://github.com/inngest/inngest-js/tree/main/examples/framework-google-functions-framework) for more information.
+
+### Framework: Firebase Cloud Functions
 
 Based on the Google Cloud Function architecture, the Firebase Cloud Functions provide a different API to serve functions using `onRequest`:
 
@@ -441,7 +425,7 @@ npx inngest-cli@latest dev -u http://127.0.0.1:5001/inngest-firebase-functions/u
 
 _The above command example features a project named `inngest-firebase-functions` deployed on the `us-central1` region_.
 
-## Framework: H3 <VersionBadge version="v2.7.0+" />
+### Framework: H3 <VersionBadge version="v2.7.0+" />
 
 Inngest supports [H3](https://github.com/unjs/h3) and frameworks built upon it. Here's a simple H3 server that hosts serves an Inngest function.
 
@@ -482,7 +466,34 @@ createServer(toNodeListener(app)).listen(process.env.PORT || 3000);
 
 See the [github.com/unjs/h3](https://github.com/unjs/h3) repository for more information about how to host an H3 endpoint.
 
-## Framework: Koa <VersionBadge version="v3.6.0+" />
+### Framework: Hono
+
+Add the following to `./src/index.ts`:
+
+<CodeGroup>
+```ts
+import { Hono } from "hono";
+import { serve } from "inngest/hono";
+import { functions, inngest } from "./inngest";
+
+const app = new Hono();
+
+app.on(
+  ["GET", "PUT", "POST"],
+  "/api/inngest",
+  serve({
+    client: inngest,
+    functions,
+  })
+);
+
+export default app;
+```
+</CodeGroup>
+
+See the [Hono example](https://github.com/inngest/inngest-js/blob/main/examples/framework-hono) for more information.
+
+### Framework: Koa <VersionBadge version="v3.6.0+" />
 
 Add the following to your routing file:
 
@@ -511,7 +522,63 @@ app.use((ctx) => {
 
 See the [Koa example](https://github.com/inngest/inngest-js/tree/main/examples/framework-koa) for more information.
 
-## Framework: Next.js
+### Framework: NestJS
+
+Add the following to `./src/main.ts`:
+
+<CodeGroup>
+```ts
+import { Logger } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { serve } from 'inngest/express';
+
+import { inngest } from '@modules/common/inngest/client';
+import { getInngestFunctions } from '@modules/common/inngest/functions';
+
+import { AppModule } from './app.module';
+import { AppService } from './app.service';
+
+async function bootstrap() {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    bodyParser: true,
+  });
+
+  // Setup inngest
+  app.useBodyParser('json', { limit: '10mb' });
+
+  // Inject Dependencies into inngest functions
+
+  const logger = app.get(Logger);
+  const appService = app.get(AppService);
+
+  // Pass dependencies into this function
+  const inngestFunctions = getInngestFunctions({
+    appService,
+    logger,
+  });
+
+  // Register inngest endpoint
+  app.use(
+    '/api/inngest',
+    serve({
+      client: inngest,
+      functions: inngestFunctions,
+    }),
+  );
+
+  // Start listening for http requests
+  await app.listen(3000);
+}
+
+bootstrap();
+```
+</CodeGroup>
+
+See the [NestJS example](https://github.com/inngest/inngest-js/tree/main/examples/framework-nestjs) for more information.
+
+
+### Framework: Next.js
 
 Inngest has first class support for Next.js API routes, allowing you to easily create the Inngest API. Both the App Router and the Pages Router are supported. For the App Router, Inngest requires `GET`, `POST`, and `PUT` methods.
 
@@ -540,7 +607,7 @@ export default serve({
 ```
 </CodeGroup>
 
-### Streaming <VersionBadge version="v1.8.0+" />
+#### Streaming <VersionBadge version="v1.8.0+" />
 
 Next.js Edge Functions hosted on [Vercel](/docs/deploy/vercel) can also stream responses back to Inngest, giving you a much higher request timeout of 15 minutes (up from 10 seconds on the Vercel Hobby plan!).
 
@@ -594,9 +661,10 @@ export default serve(inngest, [...fns], {
 
 For more information, check out the [Streaming](/docs/streaming) page.
 
-## Framework: Nuxt <VersionBadge version="v0.9.2+" />
+### Framework: Nuxt <VersionBadge version="v0.9.2+" />
 
 Inngest has first class support for [Nuxt server routes](https://nuxt.com/docs/guide/directory-structure/server#server-routes), allowing you to easily create the Inngest API.
+
 Add the following within `./server/api/inngest.ts`:
 
 <CodeGroup>
@@ -623,10 +691,12 @@ export default defineEventHandler(
 ```
 </CodeGroup>
 
-## Framework: Redwood
+See the [Nuxt example](https://github.com/inngest/inngest-js/tree/main/examples/framework-nuxt) for more information.
 
-You can add Inngest to [Redwood](https://redwoodjs.com/) easily.  Add the following to
-`api/src/functions/inngest.ts`:
+
+### Framework: Redwood
+
+Add the following to `api/src/functions/inngest.ts`:
 
 <CodeGroup>
 ```ts {{ title: "v3" }}
@@ -656,9 +726,9 @@ export const handler = serve(
 You should also update your `redwood.toml` to add `apiUrl = "/api"`, ensuring your API is served
 at the `/api` root.
 
-## Framework: Remix
+### Framework: Remix
 
-You can add Inngest to Remix easily.  Add the following to `./app/routes/api.inngest.ts` for Remix:
+Add the following to `./app/routes/api.inngest.ts`:
 
 <CodeGroup>
 ```ts {{ title: "v3" }}
@@ -686,7 +756,9 @@ export { handler as loader, handler as action };
 ```
 </CodeGroup>
 
-### Streaming <VersionBadge version="v2.3.0+" />
+See the [Remix example](https://github.com/inngest/inngest-js/tree/main/examples/framework-remix) for more information.
+
+#### Streaming <VersionBadge version="v2.3.0+" />
 
 Remix Edge Functions hosted on [Vercel](/docs/deploy/vercel) can also stream responses back to Inngest, giving you a much higher request timeout of 15 minutes (up from 10 seconds on the Vercel Hobby plan!).
 
@@ -717,7 +789,7 @@ const handler = serve(inngest, [...fns], {
 
 For more information, check out the [Streaming](/docs/streaming) page.
 
-## Framework: SvelteKit <VersionBadge version="v3.5.0+" />
+### Framework: SvelteKit <VersionBadge version="v3.5.0+" />
 
 Add the following to `./src/routes/api/inngest/+server.ts`:
 
@@ -735,10 +807,50 @@ export const PUT = inngestServe.PUT;
 
 See the [SvelteKit example](https://github.com/inngest/inngest-js/tree/main/examples/framework-sveltekit) for more information.
 
+### Custom frameworks
+
+If the framework that your application uses is not included in the above list of first-party supported frameworks, you can create a custom `serve` handler.
+
+To create your own handler, check out the [example handler](https://github.com/inngest/inngest-js/blob/main/packages/inngest/src/test/functions/handler.ts) in our SDK's open source repository to understand how it works. Here's an example of a custom handler being created and used:
+
+```ts
+import { Inngest, InngestCommHandler, type ServeHandlerOptions } from "inngest";
+
+const serve = (options: ServeHandlerOptions) => {
+  const handler = new InngestCommHandler({
+    frameworkName: "edge",
+    fetch: fetch.bind(globalThis),
+    ...options,
+    handler: (req: Request) => {
+      return {
+        body: () => req.json(),
+        headers: (key) => req.headers.get(key),
+        method: () => req.method,
+        url: () => new URL(req.url, `https://${req.headers.get("host") || ""}`),
+        transformResponse: ({ body, status, headers }) => {
+          return new Response(body, { status, headers });
+        },
+      };
+    },
+  });
+
+  return handler.createHandler();
+};
+
+const inngest = new Inngest({ id: "example-edge-app" });
+
+const fn = inngest.createFunction(
+  { id: "hello-world" },
+  { event: "test/hello.world" },
+  () => "Hello, World!"
+);
+
+export default serve({ client: inngest, functions: [fn] });
+```
+
 ## Reference
 
 For more information about the `serve` handler, read the [the reference guide](/docs/reference/serve), which includes:
 
-* [Configuration options](/docs/reference/serve#serve-client-functions-options)
+* [`server()` configuration options](/docs/reference/serve#serve-client-functions-options)
 * [How the serve handler works](/docs/reference/serve#how-the-serve-api-handler-works)
-* [Custom framework handlers](/docs/reference/serve#custom-frameworks)

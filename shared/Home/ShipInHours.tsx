@@ -24,44 +24,66 @@ export default function ShipInHours() {
 
           <div className="flex justify-center">
             <p className="text-center max-w-md lg:max-w-xl mt-4 text-slate-200">
-            Using Inngest, you can build background jobs, scheduled jobs, and workflows in minutes.  Drop our SDK into your code to get production-grade systems out of the box.
-            {/*Build background jobs, scheduled jobs, and workflows by adding our SDK to your existing codebase and redeploying to your current platform.  Think in code without worrying about infra, queues, and config.*/}
+              Using Inngest, you can build background jobs, scheduled jobs, and
+              workflows in minutes. Drop our SDK into your code to get
+              production-grade systems out of the box.
+              {/*Build background jobs, scheduled jobs, and workflows by adding our SDK to your existing codebase and redeploying to your current platform.  Think in code without worrying about infra, queues, and config.*/}
             </p>
           </div>
 
-          <div className={`
+          <div
+            className={`
             grid xl:grid-cols-11 grid-cols-1
             mt-20 mb-6 lg:mb-32
             relative z-10
             bg-slate-900/70 backdrop-blur-sm rounded-xl
-          `}>
+          `}
+          >
             {/*
               pt-20 xl:pl-20 px-6 lg:pb-0 pb-8
             */}
-            <div className={`
+            <div
+              className={`
               px-12 pt-20
               xl:col-span-6
               flex flex-col justify-stretch items-center h-full lg:border-r-[1px] border-slate-700
-              `}>
+              `}
+            >
               <div className="text-center lg:pb-16 pb-6">
                 <p className="font-semibold text-xl mb-4">With Inngest</p>
-                <p>Write and deploy workflows as functions — everything else is done for you.</p>
+                <p>
+                  Write and deploy workflows as functions — everything else is
+                  done for you.
+                </p>
               </div>
               <div className="flex items-center flex-1">
-                <img src="/assets/payment-flow.png" alt="With Inngest"  className="max-w-[600px] lg:-mb-[50px] pointer-events-none" />
+                <img
+                  src="/assets/payment-flow.png"
+                  alt="With Inngest"
+                  className="max-w-[600px] lg:-mb-[50px] pointer-events-none"
+                />
               </div>
             </div>
 
-            <div className="flex flex-col
+            <div
+              className="flex flex-col
               px-12 pt-20
               xl:col-span-5
-            ">
+            "
+            >
               <div className="text-center max-w-[400px] m-auto lg:pb-20 pb-8">
                 <p className="font-semibold text-xl mb-4">Without Inngest</p>
-                <p>Provision queues, handlers, and glue code for each background job, with state over many jobs.</p>
+                <p>
+                  Provision queues, handlers, and glue code for each background
+                  job, with state over many jobs.
+                </p>
               </div>
               <div className="flex items-center justify-center flex-1">
-                <img src="/assets/without-inngest.svg" alt="Without Inngest" className="lg:max-w-full max-w-full pointer-events-none"/>
+                <img
+                  src="/assets/without-inngest.svg"
+                  alt="Without Inngest"
+                  className="lg:max-w-full max-w-full pointer-events-none"
+                />
               </div>
             </div>
           </div>
@@ -79,25 +101,42 @@ export default function ShipInHours() {
           <div className="grid xl:grid-cols-3 xl:gap-20 gap-y-20 mb-20 lg:grid-cols-1 mt-20 xl:px-32">
             <div>
               <h3 className="font-semibold text-xl mb-4">Focus on functions</h3>
-              <p className="text-slate-200">Develop faster by working only on your business logic.  We take care of the hard stuff for you, including retries, concurrency, throttling, rate limiting, and failure replay.</p>
+              <p className="text-slate-200">
+                Develop faster by working only on your business logic. We take
+                care of the hard stuff for you, including retries, concurrency,
+                throttling, rate limiting, and failure replay.
+              </p>
             </div>
             <div>
-              <h3 className="font-semibold text-xl mb-4">Simple and powerful primitives</h3>
-              <p className="text-slate-200">Write long-running workflows with multiple steps and sleeps as a single function.  Deploy to any platform – even serverless functions.</p>
+              <h3 className="font-semibold text-xl mb-4">
+                Simple and powerful primitives
+              </h3>
+              <p className="text-slate-200">
+                Write long-running workflows with multiple steps and sleeps as a
+                single function. Deploy to any platform – even serverless
+                functions.
+              </p>
             </div>
             <div>
-              <h3 className="font-semibold text-xl mb-4">Any framework, any platform</h3>
-              <p className="text-slate-200">Drop the SDK into your existing codebase and deploy to your current cloud, using your current CI/CD process.</p>
+              <h3 className="font-semibold text-xl mb-4">
+                Any framework, any platform
+              </h3>
+              <p className="text-slate-200">
+                Drop the SDK into your existing codebase and deploy to your
+                current cloud, using your current CI/CD process.
+              </p>
             </div>
           </div>
 
           <div className="pt-12">
-            <p className="text-sm text-center text-gray-400">Works with all the frameworks and platforms you already use:</p>
+            <p className="text-sm text-center text-gray-400">
+              Works with all the frameworks and platforms you already use:
+            </p>
           </div>
 
           <div className="flex items-end lg:flex-row justify-evenly xl:justify-center w-full m-auto flex-wrap my-8">
             <a
-              href="/docs/sdk/serve?ref=homepage-fits-your-workflow#framework-next-js"
+              href="/docs/learn/serving-inngest-functions?ref=homepage-fits-your-workflow#framework-next-js"
               className="flex w-1/2 max-w-[140px] hover:scale-110 transition-all duration-150 opacity-50 hover:opacity-100"
             >
               <img
@@ -106,7 +145,7 @@ export default function ShipInHours() {
               />
             </a>
             <a
-              href="/docs/sdk/serve?ref=homepage-fits-your-workflow#framework-express"
+              href="/docs/learn/serving-inngest-functions?ref=homepage-fits-your-workflow#framework-express"
               className="flex w-1/2 max-w-[140px] hover:scale-110 transition-all duration-150 opacity-50 hover:opacity-100"
             >
               <img
@@ -115,7 +154,7 @@ export default function ShipInHours() {
               />
             </a>
             <a
-              href="/docs/sdk/serve?ref=homepage-fits-your-workflow#framework-redwood"
+              href="/docs/learn/serving-inngest-functions?ref=homepage-fits-your-workflow#framework-redwood"
               className="flex w-1/2 max-w-[140px] hover:scale-110 transition-all duration-150 opacity-50 hover:opacity-100"
             >
               <img
@@ -151,11 +190,9 @@ export default function ShipInHours() {
                 src="/assets/homepage/send-events/cloudflare-pages.png"
               />
             </a>
-
           </div>
-
         </Container>
       </div>
     </div>
-  )
+  );
 }

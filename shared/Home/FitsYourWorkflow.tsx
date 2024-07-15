@@ -71,7 +71,7 @@ export default function EventDriven() {
             <div className="flex items-center justify-evenly xl:justify-between mt-6 mb-8 flex-wrap m-auto px-8">
               <div className="flex items-end lg:flex-row justify-evenly xl:justify-between w-full m-auto xl:w-1/2">
                 <a
-                  href="/docs/sdk/serve?ref=homepage-fits-your-workflow#framework-next-js"
+                  href="/docs/learn/serving-inngest-functions?ref=homepage-fits-your-workflow#framework-next-js"
                   className="flex w-1/2 max-w-[140px] hover:scale-110 transition-all duration-150"
                 >
                   <img
@@ -80,7 +80,7 @@ export default function EventDriven() {
                   />
                 </a>
                 <a
-                  href="/docs/sdk/serve?ref=homepage-fits-your-workflow#framework-express"
+                  href="/docs/learn/serving-inngest-functions?ref=homepage-fits-your-workflow#framework-express"
                   className="flex w-1/2 max-w-[140px] hover:scale-110 transition-all duration-150"
                 >
                   <img
@@ -91,7 +91,7 @@ export default function EventDriven() {
               </div>
               <div className="flex items-start lg:flex-row justify-evenly xl:justify-between w-full m-auto xl:w-1/2">
                 <a
-                  href="/docs/sdk/serve?ref=homepage-fits-your-workflow#framework-redwood"
+                  href="/docs/learn/serving-inngest-functions?ref=homepage-fits-your-workflow#framework-redwood"
                   className="flex w-1/2 max-w-[140px] hover:scale-110 transition-all duration-150"
                 >
                   <img
@@ -100,7 +100,7 @@ export default function EventDriven() {
                   />
                 </a>
                 <a
-                  href="/docs/sdk/serve?ref=homepage-fits-your-workflow#framework-cloudflare"
+                  href="/docs/learn/serving-inngest-functions?ref=homepage-fits-your-workflow#framework-cloudflare"
                   className="flex w-1/2 max-w-[140px] hover:scale-110 transition-all duration-150"
                 >
                   <img

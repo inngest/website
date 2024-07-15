@@ -89,7 +89,7 @@ bot.events.messageCreate = async (_b, message) => {
 };
 ```
 
-We then have a tiny Inngest function, again hosted on [Deno Deploy](https://deno.com/deploy) using our [Deno integration](https://www.inngest.com/docs/sdk/serve#framework-fresh-deno), which handles these messages in the background, generating replies and sending them back to Discord. OpenAI responses can be slow, and the Discord bot can get busy, so it’s critical to pull this work to somewhere more scalable using Inngest.
+We then have a tiny Inngest function, again hosted on [Deno Deploy](https://deno.com/deploy) using our [Deno integration](/docs/learn/serving-inngest-functions#framework-fresh-deno), which handles these messages in the background, generating replies and sending them back to Discord. OpenAI responses can be slow, and the Discord bot can get busy, so it’s critical to pull this work to somewhere more scalable using Inngest.
 
 ```ts
 inngest.createFunction(

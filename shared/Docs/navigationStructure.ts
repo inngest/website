@@ -77,7 +77,10 @@ const sectionGettingStarted: NavGroup[] = [
         href: `/docs/learn/glossary`,
       },
       { title: "Installing the SDK", href: `/docs/sdk/overview` },
-      { title: "Serving the API & Frameworks", href: `/docs/sdk/serve` },
+      {
+        title: "Serving Inngest Functions",
+        href: `/docs/learn/serving-inngest-functions`,
+      },
       { title: "Sending Events", href: `/docs/events` },
       { title: "Inngest Apps", href: `/docs/apps` },
       {
@@ -497,7 +500,7 @@ const sectionTypeScriptReference: NavGroup[] = [
     links: [
       // {
       //   title: "Framework handlers",
-      //   href: `/docs/sdk/serve`,
+      //   href: `/docs/learn/serving-inngest-functions`,
       // },
       {
         title: "Configuration",
@@ -769,7 +772,7 @@ const sectionReference: NavGroup[] = [
         links: [
           // {
           //   title: "Framework handlers",
-          //   href: `/docs/sdk/serve`,
+          //   href: `/docs/learn/serving-inngest-functions`,
           // },
           {
             title: "Configuration",
