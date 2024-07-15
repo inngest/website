@@ -25,11 +25,11 @@ Let's start by going over the previous work on the State Coordinator, which vali
 
 ![The State Coordinator decouples existing services from the primary cluster](/assets/blog/sharding-inngest/state-coordinator.jpg)
 
-Two weeks after starting at Inngest, I joined forces with Jack Williams, our founding engineer, and kicked off work on a coordinator service mediating access to the state store. The state store persists events, step outputs, and other metadata on every function run. As users can return blobs and other data from their function run steps, we need to ensure incredibly fast reads and writes to the state store to keep latency as low as possible. With the new state coordinator service, we consolidated access to the state store in a single place, pooling Redis connections for a subset of operations. If you're interested in our work on the state coordinator, please check out my recent post on the design decisions and rollout strategy we chose.
+Two weeks after starting at Inngest, I joined forces with Jack Williams, our founding engineer, and kicked off work on a coordinator service mediating access to the state store. The state store persists events, step outputs, and other metadata on every function run. As users can return blobs and other data from their function run steps, we need to ensure incredibly fast reads and writes to the state store to keep latency as low as possible. With the new state coordinator service, we consolidated access to the state store in a single place, pooling Redis connections for a subset of operations. If you're interested in our work on the state coordinator, please check out [my recent post](https://brunoscheufler.com/blog/2024-07-04-enhancing-scalability-and-reducing-latency-without-missing-a-beat) on the design decisions and rollout strategy we chose.
 
 ## Sharding Redis
 
-Having rolled out the state coordinator to production without further issues, Jack and I moved our attention onto addressing the two big limitations of our previous single-cluster architecture: running out of storage capacity and blocking Redis' processing loop by handling too many queries per second.
+Having swiftly rolled out the state coordinator to production, Jack and I moved our attention onto addressing the two big limitations of our previous single-cluster architecture: running out of storage capacity and blocking Redis' processing loop by handling too many queries per second.
 
 ![Scaling allows to increase capacity of an existing cluster while sharding distributes data across clusters](/assets/blog/sharding-inngest/scaling-vs-sharding.jpg)
 
