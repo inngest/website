@@ -141,6 +141,14 @@ The `createFunction` method accepts a series of arguments to define your functio
         How long to wait before invoking the function with the batch even if it's not full.
         Current permitted values are from `1s` to `60s`.
       </Property>
+      <Property name="key" type="string">
+        A unique key expression to apply the batching to. The expression is evaluated for each triggering event.
+
+        Expressions are defined using the Common Expression Language (CEL) with the original event accessible using dot-notation. Read [our guide to writing expressions](/docs/guides/writing-expressions) for more info. Examples:
+
+        * Batch events per customer id: `'event.data.customer_id'`
+        * Batch events per account and email address: `'event.data.account_id + "-" + event.user.email'`
+      </Property>
     </Properties>
   </Property>
   <Property name="retries" type="number">
