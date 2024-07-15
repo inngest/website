@@ -46,7 +46,7 @@ const permanentRedirects = [
   ["/blog/banger", "/blog/banger-video-rendering-pipeline"],
   [
     "/docs/reference/serve#custom-frameworks",
-    "/docs/sdk/serve#custom-frameworks",
+    "/docs/learn/serving-inngest-functions#custom-frameworks",
   ],
   ["/docs/sdk/serve", "/docs/learn/serving-inngest-functions"],
   [
