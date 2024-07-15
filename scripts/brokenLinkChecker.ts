@@ -30,6 +30,7 @@ const options = {
     "https://t.co",
     "https://sentry.io",
     "https://x.com",
+    "https://devjobs.at/",
   ],
 };
 
