@@ -41,7 +41,7 @@ Designing, implementing, rolling out, and operating a proper sharding infrastruc
 
 Reading the Redis Clustering docs gave us the inspiration for a solution that could combine the best of both worlds: **What if we could keep using our existing cluster as is, while routing new data to a multi-shard Redis cluster?** In this scenario, we could extend storage capacity to serve for the next months and beyond, while avoiding any downtime. The new cluster would run multiple nodes to distribute CPU load, and we could easily add or remove nodes over time with minimal impact.
 
-![Sharding new data only ](/assets/blog/sharding-inngest/sharding-new-data.jpg)
+![Flowchart depicting the process of sharding new data. Starts with the 'Run Executor' service, which checks 'Is new run?'. If yes, data is forwarded to a cluster consisting of three nodes (Node 1, Node 2, Node 3). If no, data is forwarded to the old cluster.](/assets/blog/sharding-inngest/sharding-new-data.jpg)
 
 From [Redis Clustering best practices](https://redis.io/blog/redis-clustering-best-practices-with-keys/):
 > Redis supports multi-cluster operations by partitioning data across multiple Redis nodes, where each node holds a portion of the total data set. This allows the cluster to scale horizontally and handle increased load by adding additional nodes. In Redis, data resides in one place in a cluster, and each node or shard has a portion of the keyspace. A cluster is divided up among 16,384 slots — the maximum number of nodes or shards in a Redis cluster.
@@ -64,7 +64,7 @@ To prevent facing any locking delays, we decided against migrating any existing 
 
 ## Implementing Sharding
 
-![Strategy to selecting client and key generator](/assets/blog/sharding-inngest/decision-tree.jpg)
+![Strategy to selecting client and key generator: the flowchart starts with 'Can this key be sharded?' If yes, checks 'Is the Run ID past switchover?' If yes, forwards to sharded cluster with dynamic prefix. If no to either, forwards to old cluster with fixed prefix.](/assets/blog/sharding-inngest/decision-tree.jpg)
 
 Once we were confident sharding would work, we started refactoring our production codebase to support sharding for function run state, the biggest contributor of large values in Redis. We updated our key generation logic to include a dynamic shard key for compatible keys as soon as the sharding condition was met. This was defined by passing a predefined switchover date, more on that later.
 
@@ -84,7 +84,7 @@ Because deployments in a distributed system aren’t predictable and old contain
 
 We considered using a feature flag to provide the time at which runs should be written to and read from the new instance. Unfortunately, failing to connect to the feature flags backend would result in us using default values, drifting apart from previous state. This issue was inherent in loading any external data to determine the switchover date.
 
-![Rollout policy stored as code](/assets/blog/sharding-inngest/rollout-policy.jpg)
+![Rollout policy stored as code: code snippets showing Go functions for handling client sharding. The 'Client' function checks if an account is sharded and returns the appropriate client. The 'RollOutSharding' function determines if the sharding rollout applies to a given account based on time and account ID.](/assets/blog/sharding-inngest/rollout-policy.jpg)
 
 To solve the issue of aligning switchover times and reduce the risk of enabling sharding for everyone at the same time, we wrote a rollout policy as part of the codebase. Compiled into the same binary as the production services, the policy would be immediately available on rollout.
 
@@ -98,7 +98,7 @@ Considering sharding efforts early and working on surrounding areas when the pri
 
 ## Outcomes
 
-![A graph showing recovering system](/assets/blog/sharding-inngest/recovering-system.jpg)
+![Line graph of recovering system showing percentage data from June 10 to July 6. The graph starts around 50%, rises steadily with fluctuations, peaks near 78% around June 28, and then declines to around 62% by July 6.](/assets/blog/sharding-inngest/recovering-system.jpg)
 
 Within minutes of rolling out, our memory utilization stopped increasing. While CPU utilization stayed high during rollout, it decreased over the week, likely due to old function runs completing.
 
