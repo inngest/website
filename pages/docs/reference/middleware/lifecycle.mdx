@@ -183,13 +183,13 @@ The `init()` function can return functions for two separate lifecycles to hook i
                     </Properties>
                </Property>
                <Property name="finished" type="function" version="v3.21.0+">
-                    Called when the function has finished executing and has returned a final response that will end the run which could be either a successful or erroring response.
+                    Called when execution is complete and a final response is returned (success or an error), which will end the run.
 
-                    This is not guaranteed to be called on every execution, and may be called multiple times if many parallel executions reach the end of the function or during retries.
+                    This function is not guaranteed to be called on every execution. It may be called multiple times if there are many parallel executions or during retries.
 
                     <Properties name="Arguments" nested collapse>
                           <Property name="result" type="object" required>
-                              An object containing either the successful `data` that is ending the run or the `error` that has been thrown. Both outputs will have already been affected by `transformOutput`.
+                              An object that contains either the successful `data` ending the run or the `error` that has been thrown. Both outputs have already been affected by `transformOutput`.
                           </Property>
                     </Properties>
                </Property>
