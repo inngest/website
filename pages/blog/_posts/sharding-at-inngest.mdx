@@ -1,5 +1,5 @@
 ---
-heading: "Sharding at Inngest: building and rolling out our new state coordinator"
+heading: "Sharding high-throughput Redis without downtime"
 image: /assets/blog/sharding-inngest/featured-image.png
 showSubtitle: true
 subtitle: Read about how we rolled our new sharded infrastructure out to production without a millisecond of downtime and how it improved Inngest's overall performance.
@@ -8,7 +8,7 @@ author: Bruno Scheufler
 disableCTA: true
 ---
 
-**In June, we completed our rollout to a sharded infrastructure at Inngest, paving the way for continued growth in the months to come. As our customers use Inngest in their critical applications, we designed an effective rollout strategy to minimize risk, switching to the new infrastructure without a second of downtime. In this post, we'll walk through the decisions we made along the way, hoping that we can help engineering teams in similar situations.**
+**Every day, more and more software teams rely on Inngest for their core infrastructure which results in increased load on our core systems. When building distributed systems, vertical scaling can only get you so far, so after I joined the Inngest team this year, we took on a project to horizontally scale by sharding our most crucial database, which serves more than 50,000 requests per second at low latency. As Inngest is critical infrastructure for many customers, we aim to avoid maintenance windows at all costs. In this post we’ll walk through how we sharded our function state database with zero downtime.**
 
 Inngest enables developers to write [durable functions](/docs/learn/how-functions-are-executed) with [flow control](/docs/guides/flow-control). To reliably execute long-running functions, function state is stored within Inngest to resume and retry functions without losing execution progress. This state must be stored at low latency, but persisted indefinitely. Functions might execute for seconds or months. Function state, including user-generated output, can grow over time, yet we need to ensure consistently high performance. **On an average day, we serve hundreds of millions of events.**
 
@@ -22,13 +22,15 @@ To alleviate the limitations of running a single Redis cluster, we planned mediu
 
 However, there's a catch: Because Inngest is a reliable foundation for so many applications, we can't introduce downtime for migrations so shutting down parts of our system even for a few minutes is out of the question. So, what can we do?
 
-Let's start by going over the previous work on the State Coordinator, which validated the system design and rollout strategy to be used in our sharding efforts.
+Our first phase was to create a new interface layer that would coordinate how our core system interacts with the function state database. This groundwork would enable our new system design and sharding rollout strategy.
 
 ## Launching the State Coordinator
 
 ![The State Coordinator decouples existing services from the primary cluster](/assets/blog/sharding-inngest/state-coordinator.jpg)
 
-Two weeks after starting at Inngest, I joined forces with Jack Williams, our founding engineer, and kicked off work on a coordinator service mediating access to the state store. The state store persists events, step outputs, and other metadata on every function run. As users can return blobs and other data from their function run steps, we need to ensure incredibly fast reads and writes to the state store to keep latency as low as possible. With the new state coordinator service, we consolidated access to the state store in a single place, pooling Redis connections for a subset of operations. If you're interested in our work on the state coordinator, please check out [my recent post](https://brunoscheufler.com/blog/2024-07-04-enhancing-scalability-and-reducing-latency-without-missing-a-beat) on the design decisions and rollout strategy we chose.
+Two weeks after starting at Inngest, I joined forces with Jack Williams, our founding engineer, and kicked off work on a coordinator service mediating access to the state store. The state store persists events, step outputs, and other metadata on every function run. As users can return blobs and other data from their function run steps, we need to ensure incredibly fast reads and writes to the state store to keep latency as low as possible.
+
+Adding this service boundary would enable connection pooling, centralized instrumentation for observability, and a single cut-over point to roll out changes across different user segments. Long-term, this also allows us to replace the Redis-based storage backend with a more scalable system tailored to our access patterns. If you're interested in our work on the state coordinator, please check out [my recent post](https://brunoscheufler.com/blog/2024-07-04-enhancing-scalability-and-reducing-latency-without-missing-a-beat) on the design decisions and rollout strategy we chose.
 
 ## Sharding Redis
 
@@ -38,11 +40,13 @@ Having swiftly rolled out the state coordinator to production, Jack and I moved 
 
 Our primary cluster contained state powering various features, including function scheduling, control flow logic, and function run state. To support future usage growth, we had to make room for new data, either by scaling the existing cluster or spinning up new instances and sharding. Scaling by adding more machines to the cluster (horizontal scaling) or resizing the existing cluster (vertical scaling) was our preferred option to reduce implementation complexity.
 
-Unfortunately, scaling the existing cluster was impossible without downtime. Resizing the machine would have incurred at least 20 minutes of system-wide downtime while adding another node could have caused automatic key rebalancing of critical system state, blocking the entire system for an unknown duration. Accordingly, scaling the existing cluster was off the table.
+Unfortunately, scaling the existing cluster was impossible without downtime. Resizing the machine would have incurred at least 20 minutes of system-wide downtime while adding another node could have caused automatic key rebalancing of critical system state, [blocking the entire system](https://redis.io/docs/latest/operate/oss_and_stack/reference/cluster-spec/#live-reconfiguration) for an unknown duration. Accordingly, scaling the existing cluster was off the table.
 
 Designing, implementing, rolling out, and operating a proper sharding infrastructure takes time, usually multiple months. While we could have built medium-term plans for sharding, we weren't excited about the added complexity. Following the idea of “[The Best Code is No Code At All](https://blog.codinghorror.com/the-best-code-is-no-code-at-all/)”, we strived to use the tools we already had at our disposal instead of introducing even more potential points of failure.
 
-Reading the Redis Clustering docs gave us the inspiration for a solution that could combine the best of both worlds: **What if we could keep using our existing cluster as is, while routing new data to a multi-shard Redis cluster?** In this scenario, we could extend storage capacity to serve for the next months and beyond, while avoiding any downtime. The new cluster would run multiple nodes to distribute CPU load, and we could easily add or remove nodes over time with minimal impact.
+### The broker architecture pattern
+
+Reading the Redis Clustering docs gave us the inspiration for a solution that could combine the best of both worlds: **What if we could keep using our existing cluster as is, while routing new data to a multi-shard Redis cluster, effectively applying the broker pattern?** In this scenario, we could extend storage capacity to serve for the next months and beyond, while avoiding any downtime. The new cluster would run multiple nodes to distribute CPU load, and we could easily add or remove nodes over time with minimal impact.
 
 ![Flowchart depicting the process of sharding new data. Starts with the 'Run Executor' service, which checks 'Is new run?'. If yes, data is forwarded to a cluster consisting of three nodes (Node 1, Node 2, Node 3). If no, data is forwarded to the old cluster.](/assets/blog/sharding-inngest/sharding-new-data.jpg)
 
@@ -70,6 +74,8 @@ To prevent facing any locking delays, we decided against migrating any existing 
 ![Strategy to selecting client and key generator: the flowchart starts with 'Can this key be sharded?' If yes, checks 'Is the Run ID past switchover?' If yes, forwards to sharded cluster with dynamic prefix. If no to either, forwards to old cluster with fixed prefix.](/assets/blog/sharding-inngest/decision-tree.jpg)
 
 Once we were confident sharding would work, we started refactoring our production codebase to support sharding for function run state, the biggest contributor of large values in Redis. We updated our key generation logic to include a dynamic shard key for compatible keys as soon as the sharding condition was met. This was defined by passing a predefined switchover date, more on that later.
+
+To ensure uniform data distribution across nodes in a cluster, sharding requires a suitable sharding key. The associated data should be as close to equal in size as possible to prevent hotspots, which lead to unbalanced utilization of available hardware. For instance, the [Notion](https://www.notion.so/blog/sharding-postgres-at-notion#decision-2-partition-block-data-by-workspace-id) engineering team implemented sharding on workspace identifiers, while [Figma](https://www.figma.com/blog/how-figmas-databases-team-lived-to-tell-the-scale/#our-sharding-implementation) uses multiple sharding keys for different product features. We decided to shard function run state by run identifier, which is available in all relevant access locations as part of the function run metadata. This is the most granular identifier we can use for sharding, which should yield the most uniform distribution of function run state.
 
 To rule out any inconsistencies, we wrote tests to confirm key generation behavior would match the old codebase, when sharding was disabled.
 
