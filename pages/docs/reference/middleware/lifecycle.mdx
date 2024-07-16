@@ -182,6 +182,17 @@ The `init()` function can return functions for two separate lifecycles to hook i
                          </Property>
                     </Properties>
                </Property>
+               <Property name="finished" type="function" version="v3.21.0+">
+                    Called when the function has finished executing and has returned a final response that will end the run which could be either a successful or erroring response.
+
+                    This is not guaranteed to be called on every execution, and may be called multiple times if many parallel executions reach the end of the function or during retries.
+
+                    <Properties name="Arguments" nested collapse>
+                          <Property name="result" type="object" required>
+                              An object containing either the successful `data` that is ending the run or the `error` that has been thrown. Both outputs will have already been affected by `transformOutput`.
+                          </Property>
+                    </Properties>
+               </Property>
                <Property name="beforeResponse" type="function">
                     Called after the output has been set and before the response has been sent back to Inngest. Use this to perform any final actions before the request closes.
                </Property>
@@ -224,6 +235,9 @@ The `init()` function can return functions for two separate lifecycles to hook i
                           data: transformData(result.data)
                         }
                       }
+                    },
+                    finished({ result }) {
+                      // ...
                     },
                     beforeResponse() {
                       // ...
