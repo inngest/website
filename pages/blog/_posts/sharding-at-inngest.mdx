@@ -81,7 +81,7 @@ To rule out any inconsistencies, we wrote tests to confirm key generation behavi
 
 We also refactored our services to use multiple Redis clients where necessary and retrieve the correct client for a given entity based on the sharding policy. We associated Redis clients with product features to roll out sharding to other features in the near future. To prevent accidentally using invalid keys for a given client, we colocated key generation with client retrieval logic. This gives us compile-time guarantees about using the right keys with a client, while making it hard to use single-node keys on a multi-node cluster.
 
-To avoid running into errors when using atomic Lua scripts with keys associated with different slots, we refactored existing scripts to operate on a single slot. For the majority of our operations, this was already the case. On a few occasions, we needed to introduce idempotency checks to prevent race conditions from performing the same instructions more than once.
+To avoid running into errors when using atomic Lua scripts with keys associated with different slots, we refactored existing scripts to [operate on a single slot](https://redis.io/docs/latest/operate/oss_and_stack/management/scaling/#migrate-to-redis-cluster). For the majority of our operations, this was already the case. On a few occasions, we needed to introduce idempotency checks to prevent race conditions from performing the same instructions more than once.
 
 Finally, we implemented special handling for transient errors encountered during scaling operations. This laid the groundwork to expanding compute and storage capacity whenever required.
 
@@ -107,13 +107,16 @@ Considering sharding efforts early and working on surrounding areas when the pri
 
 ## Outcomes
 
-![Line graph of recovering system showing percentage data from June 10 to July 6. The graph starts around 50%, rises steadily with fluctuations, peaks near 78% around June 28, and then declines to around 62% by July 6.](/assets/blog/sharding-inngest/recovering-system.jpg)
+![Line graph of recovering system showing percentage data from June 10 to July 6. The graph starts around 50%, rises steadily with fluctuations, peaks near 78% around June 28, and then declines to around 62% by July 6.](/assets/blog/sharding-inngest/cluster-memory-utilization.jpg)
 
 Within minutes of rolling out, our memory utilization stopped increasing. While CPU utilization stayed high during rollout, it decreased over the week, likely due to old function runs completing.
 
+![Line graph of recovering system showing percentage data from June 25 to July 3. The graph starts around 40ms, rises with strong volatility, and then declines to around 15ms by July 3.](/assets/blog/sharding-inngest/state-interface-latency.jpg)
+
+
 We are seeing **80% fewer timeouts during traffic peaks**, and latency has progressively dropped from a volatile 35-50ms down to 7ms without any spike, presumably due to lower CPU utilization. As we continue to offload the previous instance and utilize the new cluster instead, we see higher performance and stability across the board.
 
-These improvements extend to the entire system, so end-to-end operations will be consistently faster for all customers. And we didn't have to ship a custom sharding implementation with error-prone code to production. All things considered, this effort was a massive success, preparing the grounds for more extensive infrastructure upgrades in the weeks to come.
+These improvements extend to the entire system, so end-to-end operations will be consistently faster for all customers. And we didn't have to deliver a custom sharding implementation which had a higher probability for error-prone logic. All things considered, this effort was a massive success, preparing the grounds for more extensive infrastructure upgrades in the weeks to come.
 
 ## Credits
 
