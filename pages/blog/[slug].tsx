@@ -18,6 +18,8 @@ import { Button } from "src/shared/Button";
 import IconCalendar from "src/shared/Icons/Calendar";
 import CTACallout from "src/shared/CTACallout";
 import Blockquote from "src/shared/Blog/Blockquote";
+import CImage from "src/shared/Image";
+import LinkCard from "src/shared/LinkCard";
 import rehypeCodeTitles from "rehype-code-titles";
 import YouTube from "react-youtube-embed";
 import remarkGfm from "remark-gfm";
@@ -43,6 +45,8 @@ const components: MDXComponents = {
   // @ts-ignore this package is older, but it works
   YouTube,
   Code,
+  CImage,
+  LinkCard
 };
 
 type Props = {
