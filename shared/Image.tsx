@@ -9,7 +9,7 @@ export default function Image({
   caption
 }: ImageProps) {
   return (
-    <div class="mb-4">
+    <div className="mb-4">
       <img src={src} alt={caption} className="mb-0" />
       {
         caption && (
