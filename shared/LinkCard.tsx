@@ -49,7 +49,7 @@ const fetchLinkDesc = async (link: string): Promise<Description> => {
   })
 }
 
-const isDescEmpty = (desc: Description): bool => {
+const isDescEmpty = (desc: Description): boolean => {
   return desc.title === null && desc.img === null && desc.text === null;
 }
 
