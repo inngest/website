@@ -9,13 +9,13 @@ export default function Image({
   caption
 }: ImageProps) {
   return (
-    <fig>
+    <div class="mb-4">
       <img src={src} alt={caption} className="mb-0" />
       {
         caption && (
-          <figcaption className="text-sm text-center italic">{caption}</figcaption>
+          <p className="text-sm text-center italic mt-1 mb-0">{caption}</p>
         )
       }
-    </fig>
+    </div>
   )
 }
