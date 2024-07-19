@@ -334,6 +334,14 @@ function hasPath(links: { href?: string }[], pathname: string) {
   return findPathIndex(links, pathname) !== -1;
 }
 
+function hasNavGroupPath(links: NavGroup[], pathname: string) {
+  return links.some((link) =>
+    link.links
+      ? hasPath(link.links, pathname)
+      : link.href && link.href === pathname
+  );
+}
+
 // Flatten the nested nav and get all nav sections w/ sectionLinks
 function getAllSections(nav) {
   return nav.reduce((acc, item) => {
@@ -384,7 +392,7 @@ export function Navigation(props) {
   const activeGroup = useMemo(
     () =>
       nestedNavigation?.sectionLinks.find((group) =>
-        hasPath(group.links, router.pathname)
+        hasNavGroupPath(group.links, router.pathname)
       ),
     [router.pathname, nestedNavigation]
   );
