@@ -44,7 +44,7 @@ So, whether you’re skimming through the dashboard for regular manual health ch
 
 We noticed that distributed tracing already encapsulates most of what we want to do and deliver, so using that as a reference was a no-brainer for us.
 
-## OTEL falling short
+## OTel falling short
 
 If you’ve been around for a while, you probably know the term **Application Performance Management (APM)**. It’s been around since the 1990s, and there have been a couple of changes, with Open Telemetry being one of the latest additions to the mix.
 
@@ -87,7 +87,7 @@ The executor will continue 1→4 over and over until the SDK says there’s noth
 
 <CImage src="/assets/blog/new-runs-and-otel/fn-run.png" caption="Lifecycle of an Inngest function run" />
 
-So in reality, if the trace follows the execution, it end up looking like a linked list instead of a function stack. Because Inngest backs your execution with a queue for idempotency and reliability, the data will show that if we let OTEL tracing run its course.
+So in reality, if the trace follows the execution, it end up looking like a linked list instead of a function stack. Because Inngest backs your execution with a queue for idempotency and reliability, the data will show that if we let OTel tracing run its course.
 
 <CImage
   src="/assets/blog/new-runs-and-otel/fn-run-queue.png"
@@ -109,7 +109,7 @@ The quick answer to that question is we can’t.
 At least not with what OpenTelemetry provides out of the box. There’s no way for us to replace or modify previously reported spans, and it’s not included in the spec of OpenTelemetry either.
 Therefore, there are no interfaces to allow such actions.
 
-## Bending OTEL
+## Bending OTel
 
 Well, we obviously were able to do it, but most of what we’ve done didn’t comply with how OTel functions in general.
 
@@ -145,7 +145,7 @@ We need some level of access to modify a previously reported span.
 
 > Vendors may implement the `Span` interface to effect vendor-specific logic. However, alternative implementations MUST NOT allow callers to create `Span`s directly. All `Span`s MUST be created via a `Tracer`.
 
-The easiest way to construct a custom Span, while still being able to reuse most of OTEL’s plumbing turns out to be to create the Span *directly*. Ironic.
+The easiest way to construct a custom Span, while still being able to reuse most of OTel’s plumbing turns out to be to create the Span *directly*. Ironic.
 
 To accomplish the above goals, we end up creating a `Span` struct in Inngest’s code base that implements multiple `Span` interfaces within OTel’s Go library.
 
