@@ -69,16 +69,16 @@ export default function LinkCard({
   if (isDescEmpty(desc)) return null;
 
   return (
-    <a href={href} className="flex flex-row border rounded-lg shadow md:flex-row hover:bg-slate-900 w-full h-40" target="_blank">
-      <div className="p-4 leading-normal w-2/3 flex flex-col justify-between">
+    <a href={href} className="flex md:flex-row-reverse border rounded-lg shadow md:flex-row hover:bg-slate-900 w-full h-40" target="_blank">
+      <img src={desc.img} alt={desc.text} className="object-cover hidden md:inline-block rounded-t-lg md:h-audo md:rounded-none md:rounded-r-lg m-0 md:w-1/3" />
+
+      <div className="p-2 md:p-4 leading-normal md:w-2/3 flex flex-col justify-between">
         <div>
         { desc.title && <p className="mt-0 mb-2">{ desc.title }</p> }
         { desc.text && <p className="text-sm m-0">{ desc.text }</p> }
         </div>
-
         <small className="text-xs">{ href }</small>
       </div>
-      <img src={desc.img} alt={desc.text} className="object-cover w-full rounded-t-lg md:h-audo md:rounded-none md:rounded-r-lg m-0 w-1/3" />
     </a>
   )
 }
