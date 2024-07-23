@@ -8,7 +8,11 @@ author: Bruno Scheufler
 disableCTA: true
 ---
 
-**Every day, more and more software teams rely on Inngest for their core infrastructure which results in increased load on our core systems. When building distributed systems, vertical scaling can only get you so far, so after I joined the Inngest team this year, we took on a project to horizontally scale by sharding our most crucial database, which serves more than 50,000 requests per second at low latency. As Inngest is critical infrastructure for many customers, we aim to avoid maintenance windows at all costs. In this post we’ll walk through how we sharded our function state database with zero downtime.**
+**Every day, more and more software teams rely on Inngest for their core infrastructure which results in increased load on our core systems. When building distributed systems, vertical scaling can only get you so far. Because of that, we took on a project to horizontally scale by sharding our most crucial database, which serves more than 50,000 requests per second at low latency. As Inngest is critical infrastructure for many customers, we aim to avoid maintenance windows at all costs. In this post we’ll walk through how we sharded our function state database with zero downtime.**
+
+Before I go into the details of this project, let me explain how Inngest is built.
+
+## Inngest Architecture Primer
 
 Inngest enables developers to write [durable functions](/docs/learn/how-functions-are-executed) with [flow control](/docs/guides/flow-control). To reliably execute long-running functions, function state is stored within Inngest to resume and retry functions without losing execution progress. This state must be stored at low latency, but persisted indefinitely. Functions might execute for seconds or months. Function state, including user-generated output, can grow over time, yet we need to ensure consistently high performance. **On an average day, we serve hundreds of millions of events.**
 
@@ -87,7 +91,7 @@ Finally, we implemented special handling for transient errors encountered during
 
 ## Sharding Rollout
 
-We provisioned a new multi-node cluster instance to serve as the data store for new function runs. The hard part wasn't making the old or new Redis code work. It was handling the state in between: We started by sharding function run state based on the run identifier. New runs should be created in the multi-node cluster, while old runs should be allowed to complete and get deleted from the old single-node cluster. All other data would remain on the old cluster.
+We provisioned a new multi-node cluster instance to serve as the data store for new function runs. The hard part wasn't making the old or new Redis code work; it was handling the state in between: We started by sharding function run state based on the run identifier. New runs should be created in the multi-node cluster, while old runs should be allowed to complete and get deleted from the old single-node cluster. All other data would remain on the old cluster.
 
 Because deployments in a distributed system aren't predictable and old containers can run for several hours after rolling out a new release, we needed to ensure sharding would kick off as soon as every container was informed about the policy. Without perfect alignment, we could potentially flip the switch *back* for runs placed on the new instance, effectively breaking new runs.
 
@@ -101,11 +105,11 @@ Similar to our state coordinator rollout, we designed the rollout to occur in mu
 
 Once we successfully deployed the new code and monitored the system for potential issues, we felt confident to enroll Inngest's own production account for sharding on the same day. On the minute of hitting the switchover, new data appeared in the newly-created cluster. We were ecstatic.
 
-We continued rolled out sharding for all non-enterprise users and decided to keep monitoring the system for any unforeseen issues before completing the rollout. A day later, we enrolled all enterprise customers to use sharding. The rollout was complete.
-
 Considering sharding efforts early and working on surrounding areas when the priorities shifted to delivering immediate improvements allowed us to kickstart efforts without a context switch.
 
 ## Outcomes
+
+We continued rolling out sharding for all non-enterprise users and decided to keep monitoring the system for any unforeseen issues before completing the rollout. A day later, we enrolled all enterprise customers to use sharding. The rollout was complete.
 
 ![Line graph of recovering system showing percentage data from June 10 to July 6. The graph starts around 50%, rises steadily with fluctuations, peaks near 78% around June 28, and then declines to around 62% by July 6.](/assets/blog/sharding-inngest/cluster-memory-utilization.jpg)
 
