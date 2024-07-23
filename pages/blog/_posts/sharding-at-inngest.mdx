@@ -10,8 +10,6 @@ disableCTA: true
 
 **Every day, more and more software teams rely on Inngest for their core infrastructure which results in increased load on our core systems. When building distributed systems, vertical scaling can only get you so far. Because of that, we took on a project to horizontally scale by sharding our most crucial database, which serves more than 50,000 requests per second at low latency. As Inngest is critical infrastructure for many customers, we aim to avoid maintenance windows at all costs. In this post we’ll walk through how we sharded our function state database with zero downtime.**
 
-Before I go into the details of this project, let me explain how Inngest is built.
-
 ## Inngest Architecture Primer
 
 Inngest enables developers to write [durable functions](/docs/learn/how-functions-are-executed) with [flow control](/docs/guides/flow-control). To reliably execute long-running functions, function state is stored within Inngest to resume and retry functions without losing execution progress. This state must be stored at low latency, but persisted indefinitely. Functions might execute for seconds or months. Function state, including user-generated output, can grow over time, yet we need to ensure consistently high performance. **On an average day, we serve hundreds of millions of events.**
