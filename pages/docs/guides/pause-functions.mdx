@@ -1,0 +1,52 @@
+export const description = 'Learn how to pause an Inngest function.'
+
+# Pausing functions
+
+Inngest allows you to pause a function indefinitely. This is a powerful feature that can be useful if you are planning downtime for a database migration, for example, or if a user reports a bug and you want to stop processing events until you've fixed it.
+
+## When a function is paused
+
+It's important to understand what happens when a function is paused.
+
+**No data will be lost.** Inngest will continue receiving and storing your events, but the events won't trigger the paused function.
+
+**You can resume the function at any time.** No deployment or sync is required to un-pause your function.
+
+**Events received while the function was paused won't be reprocessed automatically** after you resume the function. You can use a [replay](/docs/platform/replay) to process events that were received while the function was paused.
+
+## How to pause a function
+
+Navigate to the function's page in Inngest Cloud, and click the Pause button near the top right corner:
+
+![Pause button in Inngest Cloud.](/assets/docs/guides/pause-functions/pause-btn.png)
+
+## Handling running invocations
+
+When you pause a function, you can choose how any currently-running invocations of that function should be handled:
+
+- "Pause immediately, then cancel after 7 days:" This is the default behavior. No further steps will be executed while the function is paused. If you resume the function within 7 days, these invocations will continue with the next step. Otherwise, they'll be cancelled.
+- "Cancel immediately:" All currently-running invocations of the function will be cancelled. They do not continue running or restart when you resume the function.
+
+In both cases, all currently-running functions invocations are allowed to complete whatever step they're currently running.
+
+![Options for handling running invocations when pausing a function.](/assets/docs/guides/pause-functions/pause-modal.png)
+
+## Viewing skipped function triggers
+
+On an individual event's page in Inngest Cloud, you can see skipped function triggers in the right sidebar. This shows you what functions the event would have triggered and explains that the function was skipped because it was paused:
+
+![The event page shows skipped and triggered functions.](/assets/docs/guides/pause-functions/event-page.png)
+
+## Resuming a function
+
+To resume a paused function, navigate to the function's page in Inngest Cloud, and click the Resume button near the top right corner:
+
+![Resume button in Inngest Cloud.](/assets/docs/guides/pause-functions/resume-btn.png)
+
+## Replaying skipped events
+
+After resuming a paused function, you may wish to replay the runs for that function that would otherwise have run while it was paused. Navigate to the function's Replay tab and click the New Replay button to create a new replay. Select an appropriate date window and enable the "Skipped" status. You'll see a preview of the number of runs to be replayed:
+
+![Creating a replay for skipped function runs.](/assets/docs/guides/pause-functions/replay-modal.png)
+
+See our guide on [replays](/docs/platform/replay) for more information.
