@@ -20,7 +20,7 @@ Until now, this immense volume of queue and state data was stored in our highly-
 
 ![Our primary cluster is used by most services in the critical path](/assets/blog/sharding-inngest/architecture.jpg)
 
-To alleviate the limitations of running a single Redis cluster, we planned medium to long-term infrastructure improvements based on Q2 growth estimates. However, we did not anticipate the uptick in product usage caused by onboarding many new enterprise users in June. This sudden success overwhelmed all our forecasts and gave us a reason to act swiftly. Luckily, we had been working on adjacent projects since May, allowing us to switch gears and shift our focus to immediate remedies.
+To alleviate the limitations of running a single Redis cluster, we planned medium to long-term infrastructure improvements based on Q2 growth estimates. However, we did not anticipate the uptick in product usage caused by onboarding many new enterprise users in June. This sudden success overwhelmed all our forecasts and gave us a reason to act swiftly. Luckily, we had been working on adjacent projects since May, allowing us to switch gears and shift our focus to immediate improvements.
 
 However, there's a catch: Because Inngest is a reliable foundation for so many applications, we can't introduce downtime for migrations so shutting down parts of our system even for a few minutes is out of the question. So, what can we do?
 
