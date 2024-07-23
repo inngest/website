@@ -68,6 +68,7 @@ const authorURLs = {
   "Taylor Facen": "https://twitter.com/ItsTayFay",
   "Igor Samokhovets": "https://twitter.com/IgorSamokhovets",
   "Dave Kiss": "https://twitter.com/davekiss",
+  "Bruno Scheufler": "https://brunoscheufler.com",
 };
 
 export default function BlogLayout(props) {
