@@ -29,7 +29,7 @@ When you pause a function, you can choose how any currently-running invocations 
 - **"Pause immediately, then cancel after 7 days:"** This is the default behavior. No further steps will be executed while the function is paused. If you resume the function within 7 days, these invocations will continue with the next step. Otherwise, they will be cancelled.
 - **"Cancel immediately:"** All currently-running invocations of the function will be cancelled. They do not continue running or restart when you resume the function.
 
-In both cases, all currently-running function invocations are allowed to complete whatever step they are currently running.
+In both cases, all currently-running function invocations will complete whatever step they are currently running.
 
 ![Options for handling running invocations when pausing a function.](/assets/docs/guides/pause-functions/pause-modal.png)
 
