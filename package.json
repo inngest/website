@@ -5,19 +5,19 @@
   "homepage": "https://inngest.com/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/inngest/web-monorepo.git",
+    "url": "https://github.com/inngest/website.git",
     "directory": "apps/website"
   },
   "bugs": "https://linear.app/inngest/team/INN",
   "author": "Inngest Inc. <info@inngest.com> (https://inngest.com/)",
   "main": "n/a",
   "scripts": {
-    "dev": "next dev -p 3001",
+    "dev": "PORT=${PORT:=3001} next dev -p ${PORT}",
     "build": "next build && next-sitemap",
     "start": "next start",
     "broken-link-checker": "pnpm dlx ts-node ./scripts/brokenLinkChecker.ts",
     "prettier": "prettier --write --trailing-comma es5 \"pages/**/*.tsx\" \"pages/**/*.js\" \"shared/*.tsx\" \"shared/*.js\"",
-    "storybook": "start-storybook -p 6006",
+    "storybook": "PORT=${PORT:=6006} start-storybook -p ${PORT}",
     "build-storybook": "build-storybook",
     "env:pull": "vercel env pull",
     "env:add": "vercel env add",
