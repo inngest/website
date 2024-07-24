@@ -14,6 +14,8 @@ It's important to understand what happens when a function is paused.
 
 **Events received while the function was paused will not be reprocessed automatically** after you resume the function. Use [Replay](/docs/platform/replay) to process events that were received while the function was paused.
 
+**Paused functions do not count toward your plan's concurrency limit.** Note that events received while a function is paused are still subject to your plan's history limit.
+
 ## How to pause a function
 
 Navigate to the function's page in Inngest Cloud, and click the Pause button near the top right corner:
@@ -54,5 +56,7 @@ After resuming a paused function, you may wish to replay the runs for that funct
 You'll see a preview of the number of runs to be replayed:
 
 ![Creating a replay for skipped function runs.](/assets/docs/guides/pause-functions/replay-modal.png)
+
+Remember that your plan's history limit still applies to events received while a function is paused. This means that if, for example, you're using Inngest's free plan, you will only be able to replay events from the last 3 days, regardless of how long your function was paused.
 
 See our [Replay guide](/docs/platform/replay) for more information.
