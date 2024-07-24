@@ -5,7 +5,7 @@
   "homepage": "https://inngest.com/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/inngest/web-monorepo.git",
+    "url": "https://github.com/inngest/website.git",
     "directory": "apps/website"
   },
   "bugs": "https://linear.app/inngest/team/INN",
