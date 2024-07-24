@@ -10,7 +10,7 @@ It's important to understand what happens when a function is paused.
 
 **No data will be lost.** Inngest will continue receiving and storing your events, but the events will not trigger the paused function. The function will be marked as "skipped" on the event's page in Inngest Cloud.
 
-**You can resume the function at any time.** No deployment or sync is required to resume your function.
+**You can resume the function at any time.** No deployment or sync is required to resume your function. After you resume the function, new events will trigger it as usual.
 
 **Events received while the function was paused will not be reprocessed automatically** after you resume the function. Use [Replay](/docs/platform/replay) to process events that were received while the function was paused.
 
