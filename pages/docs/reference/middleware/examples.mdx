@@ -22,13 +22,12 @@ To use the `@cloudflare/ai` package, you need access to the `env` object passed 
 Use this along with [mutating function input](/docs/reference/middleware/typescript#mutating-input) to set a new `ai` property that you can use within functions, like in the following example:
 
 ```ts
-import { Ai } from "@cloudflare/ai";
 import { InngestMiddleware } from "inngest";
 
 interface Env {
   // If you set another name in wrangler.toml as the value for 'binding',
   // replace "AI" with the variable name you defined.
-  AI: any;
+  AI: Ai;
 }
 
 export const cloudflareMiddleware = new InngestMiddleware({
@@ -36,8 +35,8 @@ export const cloudflareMiddleware = new InngestMiddleware({
   init: () => {
     return {
       onFunctionRun: ({ reqArgs }) => {
-        const [, env] = reqArgs as [Request, Env];
-        const ai = new Ai(env.AI);
+        const [ctx] = reqArgs as [Request, Env];
+        const ai = ctx.env.AI
 
         return {
           transformInput: () => {
