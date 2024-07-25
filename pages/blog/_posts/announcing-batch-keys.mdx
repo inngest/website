@@ -12,7 +12,7 @@ We are thrilled to release Batch Keys, a powerful addition to _Event Batching_. 
 
 [*Event Batching*](https://www.inngest.com/docs/guides/batching), released a few months ago, has been widely adopted by developers and teams using Inngest to build highly scalable features such as ETL, notification systems, and third-party integrations. This feature enabled applications dealing with considerable throughput of events to group similar events in batches to create aggregates, reducing the number of requests to third-party APIs.
 
-![Without and with Event Batching](/assets/blog/announcing-batch-keys/batch-keys-1.jpg)
+![Diagram comparing event processing without and with event batching. Without event batching: multiple function runs trigger the external API, causing a "429 Too Many Requests" error. With event batching: events are grouped into a single function run, successfully sending one request to the external API, resulting in a "200 OK" response.](/assets/blog/announcing-batch-keys/batch-keys-1.jpg)
 
 Developers quickly started to apply *Event Batching* to product-oriented use cases, such as “Grouping similar notifications”, resulting in added complexity in the Functions' body to partition the group events based on event properties, for example, when sending post likes notifications:
 
@@ -80,7 +80,7 @@ export const sendPostLikesNotifications = inngest.createFunction(
 
 The `sendPostLikesNotifications()` is now called with post-specific batches, as displayed below:
 
-![Event Batching vs. Event Batching with keys](/assets/blog/announcing-batch-keys/batch-keys-2.jpg)
+![Diagram comparing event batching without and with a key. Without a key: all events (post.liked) are grouped into a single function run, regardless of the post ID. With a key: events are grouped into separate function runs based on the post ID, ensuring events with different post IDs are processed separately.](/assets/blog/announcing-batch-keys/batch-keys-2.jpg)
 
 Developers can now rely on Inngest to compose batches that better match their product needs, removing the need for custom logic and the risks of fairness issues.
 
