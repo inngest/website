@@ -1,0 +1,34 @@
+# Encryption middleware
+
+Encryption middleware provides end-to-end encryption for events, step output, and function output. **Only encrypted data is sent to Inngest servers**: encryption and decryption happen within your infrastructure.
+
+```py
+import inngest
+from inngest.experimental.encryption_middleware import EncryptionMiddleware
+
+inngest_client = inngest.Inngest(
+    app_id="my-app",
+    middleware=[EncryptionMiddleware.factory("my-secret-key")],
+)
+```
+
+The following data is encrypted by default:
+- The `encrypted` field in `event.data`.
+- `step.run` return values.
+- Function return values.
+
+## Changing the encrypted `event.data` field
+
+By default, `event.data.encrypted` is encrypted. All other fields are sent in plaintext. To encrypt a different field, set the `event_encryption_field` parameter.
+
+## Decrypt only mode
+
+To disable encryption but continue decrypting, set `decrypt_only=True`. This is useful when you want to migrate away from encryption but still need to process older events.
+
+## Fallback decryption keys
+
+To attempt decryption with multiple keys, set the `fallback_decryption_keys` parameter. This is useful when rotating keys, since older events may have been encrypted with a different key.
+
+## Cross-language support
+
+This middleware is compatible with our encryption middleware in our TypeScript SDK. Encrypted events can be sent from Python and decrypted in TypeScript, and vice versa.
