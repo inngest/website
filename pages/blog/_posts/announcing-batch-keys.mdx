@@ -49,7 +49,7 @@ export const sendPostLikesNotifications = inngest.createFunction(
 
 The above implementation comes with some drawbacks:
 
-- **Fairness issues:** By batching by events, a post getting significantly more likes than others will benefit from a better grouping, impacting the end-user experience.
+- **Fairness issues:** When batching by events, a post getting significantly more likes than others will benefit from a better grouping, impacting the end-user experience.
 - **Reliability:** Introducing custom logic to cope with event partitioning makes it harder to retry or replay batches based on specific users.
 - **Developer Experience:** The regrouping of events makes the code harder to read and maintain.
 
