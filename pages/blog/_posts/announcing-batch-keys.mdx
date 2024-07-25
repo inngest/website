@@ -1,0 +1,87 @@
+---
+heading: "Announcing: Batch Keys"
+image: /assets/blog/announcing-batch-keys/featured-image.png
+showSubtitle: true
+subtitle: Batch keys allows developers to group work units by leveraging Inngest's efficient event-matching engine.
+date: 2024-07-25
+author: Charly Poly
+disableCTA: false
+---
+
+We are thrilled to release Batch Keys, a powerful addition to _Event Batching_. This new feature allows developers to group work units by leveraging [Inngest's efficient event-matching engine](https://www.inngest.com/blog/accidentally-quadratic-evaluating-trillions-of-event-matches-in-real-time), unlocking new advanced use cases such as Batch User Notifications or more efficient processing of large volumes of events.
+
+[*Event Batching*](https://www.inngest.com/docs/guides/batching), released a few months ago, has been widely adopted by developers and teams using Inngest to build highly scalable features such as ETL, notification systems, and third-party integrations. This feature enabled applications dealing with considerable throughput of events to group similar events in batches to create aggregates, reducing the number of requests to third-party APIs.
+
+![Without and with Event Batching](/assets/blog/announcing-batch-keys/batch-keys-1.jpg)
+
+Developers quickly started to apply *Event Batching* to product-oriented use cases, such as “Grouping similar notifications”, resulting in added complexity in the Functions' body to partition the group events based on event properties, for example, when sending post likes notifications:
+
+```tsx
+export const sendPostLikesNotifications = inngest.createFunction(
+  {
+    id: "send-post-likes-notification",
+    batchEvents: {
+      maxSize: 100, // let's group up to 100 post likes
+      timeout: "60s", // we want to group likes from the same 1min window
+    },
+  },
+  { event: "post.liked" },
+  async ({ events }) => {
+    // let's count the number of likes per post
+    const likes: Record<string, number> = events.reduce(
+      (acc, event) => {
+        if (!acc[event.data.post_id]) {
+          acc[event.data.post_id] = 1;
+        } else {
+          acc[event.data.post_id] += 1;
+        }
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
+
+    for (let [postId, likesCount] of Object.entries(likes)) {
+	    await notifyPostLikesCount(postId, likesCount);
+    }
+  },
+);
+```
+
+The above implementation comes with multiple drawbacks:
+
+- **Fairness issues:** By batching by events, a post getting significantly more likes than others will benefit from a better grouping, impacting the end-user experience.
+- **Reliability:** Introducing custom logic to cope with event partitioning makes it harder to retry or replay batches based on specific users.
+- **Developer Experience:** The regrouping of events makes the code harder to read and maintain.
+
+Based on these observations and following multiple community requests, we introduce *Batch keys* to improve the *Event Batching* experience.
+
+## Introducing Batch Keys
+
+Batch Keys, introduced with the [new `batchEvents.key` option](https://www.inngest.com/docs/reference/functions/create#batchEvents), enables developers to configure how the batches are composed by leveraging event properties.
+
+See below our updated “sending post likes notifications” example. Now, batching events by `post_id`:
+
+```tsx
+export const sendPostLikesNotifications = inngest.createFunction(
+  {
+    id: "send-post-likes-notification",
+    batchEvents: {
+      maxSize: 100,
+      timeout: "60s",
+      key: "event.data.post_id",
+    },
+  },
+  { event: "post.liked" },
+  async ({ events }) => {
+    await notifyPostLikesCount(events[0].data.post_id, events.length);
+  },
+);
+```
+
+The `sendPostLikesNotifications()` is now called with post-specific batches, as displayed below:
+
+![Event Batching vs. Event Batching with keys](/assets/blog/announcing-batch-keys/batch-keys-2.jpg)
+
+Developers can now rely on Inngest to compose batches that better match their product needs, removing the need for custom logic and the risks of fairness issues.
+
+Batch keys is a unique feature that tackles complex use cases while improving the developer experience. Take a [look and participate in our roadmap](https://roadmap.inngest.com/roadmap?ref=footer) as we continue to push the limits of Inngest's Flow Control capabilities!
