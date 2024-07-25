@@ -14,7 +14,7 @@ We are thrilled to release Batch Keys, a powerful addition to _Event Batching_. 
 
 ![Diagram comparing event processing without and with event batching. Without event batching: multiple function runs trigger the external API, causing a "429 Too Many Requests" error. With event batching: events are grouped into a single function run, successfully sending one request to the external API, resulting in a "200 OK" response.](/assets/blog/announcing-batch-keys/batch-keys-1.jpg)
 
-Developers quickly started to apply *Event Batching* to product-oriented use cases, such as “Grouping similar notifications”, resulting in added complexity in the Functions' body to partition the group events based on event properties, for example, when sending post likes notifications:
+Developers quickly started to apply *Event Batching* to product-oriented use cases, such as grouping similar notifications. This resulted in added complexity in the function body to partition group events based on event properties. For example, sending post likes notifications would look as follows:
 
 ```tsx
 export const sendPostLikesNotifications = inngest.createFunction(
@@ -53,7 +53,7 @@ The above implementation comes with multiple drawbacks:
 - **Reliability:** Introducing custom logic to cope with event partitioning makes it harder to retry or replay batches based on specific users.
 - **Developer Experience:** The regrouping of events makes the code harder to read and maintain.
 
-Based on these observations and following multiple community requests, we introduce *Batch keys* to improve the *Event Batching* experience.
+In response to community feedback, we are excited to introduce Batch Keys to enhance the Event Batching experience.
 
 ## Introducing Batch Keys
 
@@ -82,6 +82,6 @@ The `sendPostLikesNotifications()` is now called with post-specific batches, as 
 
 ![Diagram comparing event batching without and with a key. Without a key: all events (post.liked) are grouped into a single function run, regardless of the post ID. With a key: events are grouped into separate function runs based on the post ID, ensuring events with different post IDs are processed separately.](/assets/blog/announcing-batch-keys/batch-keys-2.jpg)
 
-Developers can now rely on Inngest to compose batches that better match their product needs, removing the need for custom logic and the risks of fairness issues.
+With enhanced batch composition, you can now create batches that perfectly match your product needs. No custom logic, no fairness issues. Keep building great features with confidence.
 
-Batch keys is a unique feature that tackles complex use cases while improving the developer experience. Take a [look and participate in our roadmap](https://roadmap.inngest.com/roadmap?ref=footer) as we continue to push the limits of Inngest's Flow Control capabilities!
+Batch Keys is a unique feature that tackles complex use cases while improving the developer experience. Take a [look and participate in our roadmap](https://roadmap.inngest.com/roadmap?ref=footer) as we continue to push the limits of Inngest's Flow Control capabilities!
