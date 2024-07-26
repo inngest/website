@@ -29,7 +29,7 @@ When you pause a function, no new events will trigger it. You can choose what to
 - **"Pause immediately, then cancel after 7 days:"** No further steps will be executed while the function is paused. If you resume the function within 7 days, these invocations will continue with the next step. Otherwise, they will be canceled. (This is the default behavior.)
 - **"Cancel immediately:"** All currently-running invocations of the function will be canceled. They will not continue running or restart when you resume the function.
 
-In both cases, all running invocations will complete whatever step they are currently running before being paused or canceled; Inngest cannot interrupt your function mid-step.
+In both cases, all running invocations will complete their current step before being paused or canceled. Inngest cannot interrupt your function mid-step.
 
 ![Options for handling running invocations when pausing a function.](/assets/docs/guides/pause-functions/pause-modal.png)
 
