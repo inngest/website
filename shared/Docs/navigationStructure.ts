@@ -204,6 +204,11 @@ const sectionGuides: NavGroup[] = [
         href: "/docs/guides/error-handling",
       },
       {
+        title: "Pausing functions",
+        href: `/docs/guides/pause-functions`,
+        tag: "New",
+      },
+      {
         title: "Cancel running functions",
         href: `/docs/guides/cancel-running-functions`,
       },
