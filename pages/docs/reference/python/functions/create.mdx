@@ -152,7 +152,9 @@ The `create_function` decorator accepts a configuration and wraps a plain functi
   </Property>
 
   <Property name="idempotency" type="string">
-    A key expression which is used to prevent duplicate events from triggering a function over 24 hours. ([reference](/docs/guides/handling-idempotency))
+    A key expression used to prevent duplicate events from triggering a function more than once in 24 hours. [Read the idempotency guide here](/docs/guides/handling-idempotency).
+
+    Expressions are defined using the Common Expression Language (CEL) with the original event accessible using dot-notation. Read [our guide to writing expressions](/docs/guides/writing-expressions) for more information.
   </Property>
 
   <Property name="trigger" type="TriggerEvent | TriggerCron | list[TriggerEvent | TriggerCron]" required>
