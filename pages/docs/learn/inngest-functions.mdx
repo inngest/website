@@ -24,10 +24,15 @@ export default inngest.createFunction(
   { event: "shop/product.imported" },
   // handler function
   async ({ event, step }) => {
-    // here goes the business logic
-    return copyAllImagesToS3(event.data.imageURLs);
-    // if you need to perform more than one task,
-    // wrap each one in step.run()
+    // Here goes the business logic
+    // By wrapping code in steps, it will be retried automatically on failure
+    const s3Urls = await step.run("copy-images-to-s3", async () => {
+      return copyAllImagesToS3(event.data.imageURLs);
+    });
+    // You can include numerous steps in your function
+    await step.run('resize-images', async () => {
+      await resizer.bulk({ urls: s3Urls, quality: 0.9, maxWidth: 1024 });
+    })
   };
 );
 ```
@@ -55,7 +60,7 @@ You can see this ID in the [Inngest Dev Server's](/docs/local-development) funct
   alt="Screenshot of the Inngest Dev Server interface showing three functions listed under the 'Functions' tab. The functions are: 'store-events,' 'Generate monthly report,' and 'Customer Onboarding,' each with their respective triggers and App URLs."
 />
 
-You can also provide other configuration options](/docs/reference/functions/create#configuration), such as `concurrency`, `throttle`, `debounce`, `rateLimit`, `priority`, `batchEvents`, or `idempotency` (learn more about [Flow Control](/docs/guides/flow-control)). You can also specify how many times the function will retry, what callback function will run on failure, and when to cancel the function.
+You can also provide other [configuration options](/docs/reference/functions/create#configuration), such as `concurrency`, `throttle`, `debounce`, `rateLimit`, `priority`, `batchEvents`, or `idempotency` (learn more about [Flow Control](/docs/guides/flow-control)). You can also specify how many times the function will retry, what callback function will run on failure, and when to cancel the function.
 
 ### Trigger
 
@@ -113,7 +118,7 @@ This is useful when you need to break down complex workflows into simpler, manag
 
 ## Further reading
 
-- [Quick Start guide](/docs/quick-start): learn how to build complex workflows.
+- [Quick Start guide](/docs/getting-started/nextjs-quick-start): learn how to build complex workflows.
 - ["How Inngest functions are executed"](/docs/learn/how-functions-are-executed): learn more about Inngest's execution model.
 - ["Inngest steps"](/docs/learn/inngest-steps): understand building Inngest's blocks.
 - ["Flow Control"](/docs/guides/flow-control): learn how to manage execution within Inngest functions.

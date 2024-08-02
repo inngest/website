@@ -33,7 +33,7 @@ It's possible to disable the auto archive functionality for each active environm
 
 
 ## How do I specify multiple serve paths for a same Vercel application on the dashboard?
-You can pass multiple paths as comma-delimited values under the Vercel app in the [Vercel Integration’s settings](https://app.inngest.com/settings/integrations/vercel).
+You can pass multiple paths by adding their path information to each Vercel project in the [Vercel Integration’s settings](https://app.inngest.com/settings/integrations/vercel).
 
 ## What's the recommended way to redact data from step outputs?
 We recommend doing [E2E encryption](/docs/reference/middleware/examples#e2-e-encryption) instead, as it's more secure and plaintext data never leaves your servers.
@@ -44,11 +44,11 @@ This is a Vercel error that means your function timed out within Vercel's infras
 If you're unable to sufficiently extend the timeout within Vercel, our [streaming feature](/docs/streaming) can help.
 
 ## My app's serve endpoint requires authentication. What should I do?
-Your app's [serve endpoint](/docs/sdk/serve) needs to be accessible by our
+Your app's [serve endpoint](/docs/learn/serving-inngest-functions) needs to be accessible by our
 servers, so we can trigger your functions. For this reason, we recommend disabling authentication
 for the serve endpoint.
 
-Our servers communicate securely with your app's serve endpoint using your [signing key](/docs/sdk/serve#signing-key).
+Our servers communicate securely with your app's serve endpoint using your [signing key](/docs/learn/serving-inngest-functions#signing-key).
 
 ### Vercel
 By default, Vercel enables [Deployment Protection](https://vercel.com/docs/security/deployment-protection)

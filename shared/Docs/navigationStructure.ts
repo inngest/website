@@ -43,6 +43,20 @@ export type NavSection = NavLink & {
 
 const sectionGettingStarted: NavGroup[] = [
   {
+    title: "Quick start tutorials",
+    defaultOpen: true,
+    links: [
+      {
+        title: "Next.js",
+        href: "/docs/getting-started/nextjs-quick-start",
+      },
+      {
+        title: "Python",
+        href: "/docs/getting-started/python-quick-start",
+      },
+    ],
+  },
+  {
     title: "Learn the basics",
     defaultOpen: true,
     links: [
@@ -63,7 +77,10 @@ const sectionGettingStarted: NavGroup[] = [
         href: `/docs/learn/glossary`,
       },
       { title: "Installing the SDK", href: `/docs/sdk/overview` },
-      { title: "Serving the API & Frameworks", href: `/docs/sdk/serve` },
+      {
+        title: "Serving Inngest Functions",
+        href: `/docs/learn/serving-inngest-functions`,
+      },
       { title: "Sending Events", href: `/docs/events` },
       { title: "Inngest Apps", href: `/docs/apps` },
       {
@@ -79,6 +96,7 @@ const sectionGettingStarted: NavGroup[] = [
       {
         title: "Function execution",
         href: `/docs/learn/how-functions-are-executed`,
+        tag: "New",
       },
       {
         title: "Security",
@@ -87,20 +105,6 @@ const sectionGettingStarted: NavGroup[] = [
       {
         title: "Versioning",
         href: `/docs/learn/versioning`,
-      },
-    ],
-  },
-  {
-    title: "Quick start tutorials",
-    defaultOpen: true,
-    links: [
-      {
-        title: "Next.js",
-        href: "/docs/quick-start",
-      },
-      {
-        title: "Python",
-        href: "/docs/getting-started/quick-start/python",
       },
     ],
   },
@@ -149,6 +153,7 @@ const sectionGuides: NavGroup[] = [
       {
         title: "Working with loops",
         href: `/docs/guides/working-with-loops`,
+        tag: "New",
       },
     ],
   },
@@ -197,6 +202,11 @@ const sectionGuides: NavGroup[] = [
       {
         title: "Error handling",
         href: "/docs/guides/error-handling",
+      },
+      {
+        title: "Pausing functions",
+        href: `/docs/guides/pause-functions`,
+        tag: "New",
       },
       {
         title: "Cancel running functions",
@@ -495,7 +505,7 @@ const sectionTypeScriptReference: NavGroup[] = [
     links: [
       // {
       //   title: "Framework handlers",
-      //   href: `/docs/sdk/serve`,
+      //   href: `/docs/learn/serving-inngest-functions`,
       // },
       {
         title: "Configuration",
@@ -645,6 +655,11 @@ const sectionExamples: NavGroup[] = [
     links: [
       { title: "All examples", href: `/docs/examples/` },
       {
+        title: "AI Agents and RAG",
+        href: `/docs/examples/ai-agents-and-rag`,
+        tag: "New",
+      },
+      {
         title: "Email Sequence",
         href: `/docs/examples/email-sequence`,
       },
@@ -762,7 +777,7 @@ const sectionReference: NavGroup[] = [
         links: [
           // {
           //   title: "Framework handlers",
-          //   href: `/docs/sdk/serve`,
+          //   href: `/docs/learn/serving-inngest-functions`,
           // },
           {
             title: "Configuration",
@@ -891,6 +906,10 @@ const sectionReference: NavGroup[] = [
             title: "Overview",
             href: `/docs/reference/python/middleware/overview`,
           },
+          {
+            title: "Encryption",
+            href: `/docs/reference/python/middleware/encryption`,
+          },
         ],
       },
       {
@@ -968,7 +987,7 @@ export const menuTabs = [
   {
     title: "Getting started",
     icon: PlayIcon,
-    href: "/docs/quick-start",
+    href: "/docs",
     matcher: matchers.default,
   },
   {
@@ -1000,7 +1019,7 @@ export const topLevelNav = [
   {
     title: "Getting started",
     icon: PlayIcon,
-    href: "/docs/quick-start",
+    href: "/docs/getting-started/nextjs-quick-start",
     sectionLinks: sectionGettingStarted,
   },
   {

@@ -1,5 +1,5 @@
 import { CodeGroup, Callout } from "shared/Docs/mdx";
-export const description = 'Each step is executed as a separate HTTP request.';
+export const description = 'Implement loops in your Inngest functions and avoid common pitfalls.';
 
 # Working with Loops in Inngest
 
@@ -101,6 +101,8 @@ export default inngest.createFunction(
     let hasMore = true
 
     // Use the event's "data" to pass key info like IDs
+    // Note: in this example is deterministic across multiple requests
+    // If the returned results must stay in the same order, wrap the db call in step.run()
     const session = await database.getShopifySession(event.data.storeId)
 
     while (hasMore) {
@@ -124,7 +126,9 @@ export default inngest.createFunction(
 )
 ```
 
-In the example above, each iteration of the loop is managed using `step.run()`, ensuring that **all non-deterministic logic (like fetching products from Shopify) is encapsulated within a step**. This approach guarantees that if the request fails, it will be retried automatically. This structure aligns with Inngest's execution model, where each step is a separate HTTP request, ensuring robust and consistent loop behavior.
+In the example above, each iteration of the loop is managed using `step.run()`, ensuring that **all non-deterministic logic (like fetching products from Shopify) is encapsulated within a step**. This approach guarantees that if the request fails, it will be retried automatically, in the correct order. This structure aligns with Inngest's execution model, where each step is a separate HTTP request, ensuring robust and consistent loop behavior.
+
+Note that in the example above `getShopifySession` is deterministic across multiple requests (and it's added to all API calls for authorization). If the returned results must stay in the same order, wrap the database call in `step.run()`.
 
 Read more about this use case in the [blog post](/blog/import-ecommerce-api-data-in-seconds).
 

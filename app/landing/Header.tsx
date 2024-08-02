@@ -6,6 +6,7 @@ export default function Header({ children }) {
       header
       relative mb-24
       flex flex-col items-center text-center justify-center
+      text-balance
     `}
     >
       <div

@@ -3,7 +3,7 @@ import Head from "next/head";
 import type { AppProps } from "next/app";
 import { useRouter } from "next/router";
 import Script from "next/script";
-import { GoogleTagManager } from "@next/third-parties/google";
+import GoogleTagManager from "@/components/GoogleTagManager";
 
 import { trackPageView } from "../utils/tracking";
 import { getOpenGraphImageURL } from "../utils/social";
@@ -219,7 +219,7 @@ function MyApp({ Component, pageProps }: AppProps<DefaultProps>) {
           }
         }}
       />
-      <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GTM_ID} />
+      <GoogleTagManager />
     </>
   );
 }

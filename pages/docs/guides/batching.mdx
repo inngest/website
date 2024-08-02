@@ -21,6 +21,7 @@ inngest.createFunction(
     batchEvents: {
       maxSize: 100,
       timeout: "5s",
+      key: "event.data.user_id", // Optional: batch events by user ID
     },
   },
   { event: "log/api.call" },
@@ -48,6 +49,8 @@ inngest.createFunction(
 
 * `maxSize` - The maximum number of events to add to a single batch.
 * `timeout` - The duration of time to wait to add events to a batch. If the batch is not full after this time, the function will be invoked with whatever events are in the current batch, regardless of size.
+* `key` - An optional [expression](/docs/guides/writing-expressions) using event data to batch events by. Each unique value of the `key` will receive its own batch, enabling you to batch events by any particular key, like a user ID.
+
 
 <Callout>
   It is recommended to consider the overall batch size that you will need to process including the typical event payload size. Processing large batches can lead to memory or performance issues in your application.
@@ -55,7 +58,7 @@ inngest.createFunction(
 
 ## How batching works
 
-When batching is enabled, Inngest creates a new batch when the first event is received. The batch is filled with events until the `maxSize` is reached _or_ the `timeout` is up. The function is then invoked with the full list of events in the batch.
+When batching is enabled, Inngest creates a new batch when the first event is received. The batch is filled with events until the `maxSize` is reached _or_ the `timeout` is up. The function is then invoked with the full list of events in the batch. When `key` is set, Inngest will maintain a batch for each unique key, which allows you to batch events belonging to a single entity, for example a customer.
 
 Depending on your SDK, the `events` argument will contain the full list of events within a batch. This allows you to operate on all of them within a single function.
 

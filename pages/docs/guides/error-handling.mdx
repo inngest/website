@@ -365,7 +365,7 @@ inngest.createFunction(
     id: "update-subscription",
     retries: 5,
     onFailure: async ({ event, error }) => {
-      // if the susbcription check fails after all retries, unsubscribe the user
+      // if the subscription check fails after all retries, unsubscribe the user
       await unsubscribeUser(event.data.userId);
     },
   },

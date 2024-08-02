@@ -89,7 +89,7 @@ bot.events.messageCreate = async (_b, message) => {
 };
 ```
 
-We then have a tiny Inngest function, again hosted on [Deno Deploy](https://deno.com/deploy) using our [Deno integration](https://www.inngest.com/docs/sdk/serve#framework-fresh-deno), which handles these messages in the background, generating replies and sending them back to Discord. OpenAI responses can be slow, and the Discord bot can get busy, so it’s critical to pull this work to somewhere more scalable using Inngest.
+We then have a tiny Inngest function, again hosted on [Deno Deploy](https://deno.com/deploy) using our [Deno integration](/docs/learn/serving-inngest-functions#framework-fresh-deno), which handles these messages in the background, generating replies and sending them back to Discord. OpenAI responses can be slow, and the Discord bot can get busy, so it’s critical to pull this work to somewhere more scalable using Inngest.
 
 ```ts
 inngest.createFunction(
@@ -124,7 +124,7 @@ We make sure to use Inngest’s step tooling here to provide retries to the repl
 
 ## Future
 
-AI’s here to stay, and more obvious patterns are emerging for how it can help us. There are fantastic examples of AI helping us learn already being demonstrated, such as [Supabase's Clippy](https://supabase.com/blog/chatgpt-supabase-docs?ref=inngest), [Astro's Houston](https://houston.astro.build/) and [Dagster's support bot](https://dagster.io/blog/chatgpt-langchain).
+AI’s here to stay, and more obvious patterns are emerging for how it can help us. There are fantastic examples of AI helping us learn already being demonstrated, such as [Supabase's Clippy](https://supabase.com/blog/chatgpt-supabase-docs?ref=inngest), [Astro's Houston](https://github.com/withastro/houston.astro.build) and [Dagster's support bot](https://dagster.io/blog/chatgpt-langchain).
 
 Even specific to just software, personalizing learning experiences will accelerate the pace at which we can build and communicate concepts across the entire community; examples such as this one are just the beginning.
 

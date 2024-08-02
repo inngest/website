@@ -50,7 +50,7 @@ All in, this could take days to weeks, depending on how comfortable you are with
 <aside className="max-w-[65ch] m-auto bg-indigo-900/20 text-indigo-100 leading-relaxed rounded-lg py-0 px-6  my-12 border border-indigo-900/50">
   👋 **Note** - This approach has been deprecated in favor of the Inngest SDK.
 
-  [Check out the quick start guide for an even better experience](/docs/quick-start).
+  [Check out the quick start guide for an even better experience](/docs/getting-started/nextjs-quick-start).
 </aside>
 
 As we mentioned, this is a perfect use case for Inngest.  Instead of creating and maintaining a complex web of services, config, and code, you set up GitHub to push webhook events to Inngest, deploy simple functions for each event with one command with the Inngest CLI, and we handle everything else.  In effect, this is the diagram:
@@ -84,7 +84,7 @@ You can view the full code for the discord PR management tool here: [https://git
     - When the PR is updated (eg. it switches from draft to ready to review, or the title is changed), we need to udpate the thread and send messages accordingly.
 - Other functions, such as `issue-comment`, handle sending messages to discord when reviews or comments are published.
 
-In order to create these functions we run `inngest init` (**NOTE** - This has been deprecated in favor of [the Inngest SDK](/docs/quick-start)), then walk through the init process to create new functions that are automatically triggered by their respective events.
+In order to create these functions we run `inngest init` (**NOTE** - This has been deprecated in favor of [the Inngest SDK](/docs/getting-started/nextjs-quick-start)), then walk through the init process to create new functions that are automatically triggered by their respective events.
 
 This generates a scaffold using your language of choice (eg. Typescript, Golang, Python, or Ruby), and allows you to dive into coding immediately.
 

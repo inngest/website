@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 
 import Nav from "src/components/Nav";
 import Footer from "src/shared/Footer";
-import { HeaderInit, PageViews } from "src/components/InngestClientSDK";
+import { HeaderInit, PageViews } from "@/components/InngestClientSDK";
+import GoogleTagManger from "@/components/GoogleTagManager";
 
 import "./globals.css";
 
@@ -54,20 +55,7 @@ export default function RootLayout({
         <Footer disableCta={true} />
 
         <PageViews />
-        <script
-          async
-          src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GTAG_ID}`}
-        ></script>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', '${process.env.NEXT_PUBLIC_GTAG_ID}');
-      `,
-          }}
-        />
+        <GoogleTagManger />
       </body>
     </html>
   );

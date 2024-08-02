@@ -272,27 +272,27 @@ export default function AI() {
           {
             src: "/assets/brand-logos/next-js-white.svg",
             name: "Next.js",
-            href: "/docs/sdk/serve?ref=homepage-frameworks#framework-next-js",
+            href: "/docs/learn/serving-inngest-functions?ref=homepage-frameworks#framework-next-js",
           },
           {
             src: "/assets/brand-logos/express-js-white.svg",
             name: "Express.js",
-            href: "/docs/sdk/serve?ref=homepage-frameworks#framework-express",
+            href: "/docs/learn/serving-inngest-functions?ref=homepage-frameworks#framework-express",
           },
           {
             src: "/assets/brand-logos/redwoodjs-white.svg",
             name: "RedwoodJS",
-            href: "/docs/sdk/serve?ref=homepage-frameworks#framework-redwood",
+            href: "/docs/learn/serving-inngest-functions?ref=homepage-frameworks#framework-redwood",
           },
           {
             src: "/assets/brand-logos/remix-white.svg",
             name: "Remix",
-            href: "/docs/sdk/serve?ref=homepage-frameworks#framework-remix",
+            href: "/docs/learn/serving-inngest-functions?ref=homepage-frameworks#framework-remix",
           },
           {
             src: "/assets/brand-logos/deno-white.svg",
             name: "Deno",
-            href: "/docs/sdk/serve?ref=homepage-frameworks#framework-fresh-deno",
+            href: "/docs/learn/serving-inngest-functions?ref=homepage-frameworks#framework-fresh-deno",
           },
         ]}
       />
@@ -560,7 +560,7 @@ const DevelopmentCopy = () => {
           </div>
         </div>
         <Link
-          href="/docs/quick-start?ref=homepage-dev-tools"
+          href="/docs/getting-started/nextjs-quick-start?ref=homepage-dev-tools"
           className="rounded-md px-3 py-1.5 text-sm bg-transparent transition-all text-white border border-slate-800 hover:border-slate-600 hover:bg-slate-500/10 whitespace-nowrap"
         >
           Get Started

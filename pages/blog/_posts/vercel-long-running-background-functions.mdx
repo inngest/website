@@ -72,7 +72,7 @@ Your code all runs on Vercel - you keep the same repo, the same platform, and th
 
 ![A diagram showing how Inngest works via HTTP](/assets/blog/vercel-long-running-background-functions/how-inngest-works.png)
 
-Your functions are “served” to Inngest using a `serve` handler for your particular framework. Inngest has several handlers including [Next.js, Remix, Nuxt, RedwoodJS](/docs/sdk/serve?ref=blog-long-running-functions-vercel), amongst others. Inngest also supports Vercel's edge runtime.
+Your functions are “served” to Inngest using a `serve` handler for your particular framework. Inngest has several handlers including [Next.js, Remix, Nuxt, RedwoodJS](/docs/learn/serving-inngest-functions?ref=blog-long-running-functions-vercel), amongst others. Inngest also supports Vercel's edge runtime.
 
 Lastly, to trigger your functions, you send an event payload via the Inngest SDK's `inngest.send()` function. This then tells Inngest to invoke your function.
 
@@ -229,4 +229,4 @@ Now that you have learned how to create long-running background jobs on Vercel, 
 - OpenAI / GPT4 processing
 - Schedule emails or reminders
 
-[Get started with our quick start guide on how to start building locally →](/docs/quick-start?ref=blog-long-running-functions-vercel)
+[Get started with our quick start guide on how to start building locally →](/docs/getting-started/nextjs-quick-start?ref=blog-long-running-functions-vercel)

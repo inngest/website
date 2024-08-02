@@ -32,7 +32,7 @@ serve(inngest, [sendSignupEmail, summarizeText, importProductImages]);
 ```
 </CodeGroup>
 
-`serve` handlers are imported from convenient framework-specific packages like `"inngest/next"`, `"inngest/express"`, or `"inngest/lambda"`. [Click here for a full list of officially supported frameworks](/docs/sdk/serve). For any framework that is not support, you can [create a custom handler](#custom-frameworks).
+`serve` handlers are imported from convenient framework-specific packages like `"inngest/next"`, `"inngest/express"`, or `"inngest/lambda"`. [Click here for a full list of officially supported frameworks](/docs/learn/serving-inngest-functions). For any framework that is not support, you can [create a custom handler](#custom-frameworks).
 
 ---
 
@@ -82,44 +82,3 @@ The API works by exposing a single endpoint at `/api/inngest` which handles diff
 - `GET`: Return function metadata and render a debug page in in **development only**. See [`landingPage`](#landingPage).
 - `POST`: Invoke functions with the request body as incoming function state.
 - `PUT`: Trigger the SDK to register all functions with Inngest using the signing key.
-
-## Custom frameworks
-
-If the framework that your application uses is not included in our list of [first-party supported frameworks](/docs/sdk/serve), you can create a custom `serve` handler.
-
-To create your own handler, check out the [example handler](https://github.com/inngest/inngest-js/blob/main/packages/inngest/src/test/functions/handler.ts) in our SDK's open source repository to understand how it works. Here's an example of a custom handler being created and used:
-
-```ts
-import { Inngest, InngestCommHandler, type ServeHandlerOptions } from "inngest";
-
-const serve = (options: ServeHandlerOptions) => {
-  const handler = new InngestCommHandler({
-    frameworkName: "edge",
-    fetch: fetch.bind(globalThis),
-    ...options,
-    handler: (req: Request) => {
-      return {
-        body: () => req.json(),
-        headers: (key) => req.headers.get(key),
-        method: () => req.method,
-        url: () => new URL(req.url, `https://${req.headers.get("host") || ""}`),
-        transformResponse: ({ body, status, headers }) => {
-          return new Response(body, { status, headers });
-        },
-      };
-    },
-  });
-
-  return handler.createHandler();
-};
-
-const inngest = new Inngest({ id: "example-edge-app" });
-
-const fn = inngest.createFunction(
-  { id: "hello-world" },
-  { event: "test/hello.world" },
-  () => "Hello, World!"
-);
-
-export default serve({ client: inngest, functions: [fn] });
-```

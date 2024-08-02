@@ -45,17 +45,17 @@ export default function Flexibility() {
               {
                 src: "/assets/brand-logos/aws-white.svg",
                 name: "AWS Lambda",
-                href: "/docs/sdk/serve?ref=homepage-frameworks#framework-aws-lambda",
+                href: "/docs/learn/serving-inngest-functions?ref=homepage-frameworks#framework-aws-lambda",
               },
               {
                 src: "/assets/brand-logos/google-cloud-white.svg",
                 name: "Google Cloud Functions",
-                href: "/docs/sdk/serve?ref=homepage-frameworks#framework-google-cloud-functions",
+                href: "/docs/learn/serving-inngest-functions?ref=homepage-frameworks#framework-google-cloud-functions",
               },
               {
                 src: "/assets/brand-logos/cloudflare-white.svg",
                 name: "Cloudflare Pages",
-                href: "/docs/sdk/serve?ref=homepage-frameworks#framework-cloudflare",
+                href: "/docs/learn/serving-inngest-functions?ref=homepage-frameworks#framework-cloudflare",
               },
             ]}
           />
@@ -72,32 +72,32 @@ export default function Flexibility() {
               {
                 src: "/assets/brand-logos/next-js-white.svg",
                 name: "Next.js",
-                href: "/docs/sdk/serve?ref=homepage-frameworks#framework-next-js",
-              },
-              {
-                src: "/assets/brand-logos/express-js-white.svg",
-                name: "Express.js",
-                href: "/docs/sdk/serve?ref=homepage-frameworks#framework-express",
+                href: "/docs/learn/serving-inngest-functions?ref=homepage-frameworks#framework-next-js",
               },
               {
                 src: "/assets/brand-logos/remix-white.svg",
                 name: "Remix",
-                href: "/docs/sdk/serve?ref=homepage-frameworks#framework-remix",
+                href: "/docs/learn/serving-inngest-functions?ref=homepage-frameworks#framework-remix",
               },
               {
-                src: "/assets/brand-logos/cloudflare-white.svg",
-                name: "Cloudflare Pages",
-                href: "/docs/sdk/serve?ref=homepage-frameworks#framework-cloudflare",
-              },
-              {
-                src: "/assets/brand-logos/redwoodjs-white.svg",
-                name: "RedwoodJS",
-                href: "/docs/sdk/serve?ref=homepage-frameworks#framework-redwood",
+                src: "/assets/brand-logos/express-js-white.svg",
+                name: "Express.js",
+                href: "/docs/learn/serving-inngest-functions?ref=homepage-frameworks#framework-express",
               },
               {
                 src: "/assets/brand-logos/fastify-white.svg",
                 name: "Fastify",
-                href: "/docs/sdk/serve?ref=homepage-frameworks#framework-fastify",
+                href: "/docs/learn/serving-inngest-functions?ref=homepage-frameworks#framework-fastify",
+              },
+              {
+                src: "/assets/brand-logos/cloudflare-white.svg",
+                name: "Cloudflare Pages",
+                href: "/docs/learn/serving-inngest-functions?ref=homepage-frameworks#framework-cloudflare",
+              },
+              {
+                src: "/assets/brand-logos/fast-api-white.png",
+                name: "FastAPI",
+                href: "/docs/getting-started/python-quick-start?ref=homepage-frameworks",
               },
               // FUTURE - Add other language frameworks like Flask
             ].map(({ src, name, href }, idx) => (
@@ -116,7 +116,7 @@ export default function Flexibility() {
 
           <div className="flex items-center">
             <Link
-              href="/docs/sdk/serve?ref=homepage-frameworks"
+              href="/docs/learn/serving-inngest-functions?ref=homepage-frameworks"
               className="mx-auto rounded-md font-medium px-6 py-2 bg-slate-800 hover:bg-slate-600 transition-all text-white border border-slate-800 hover:border-slate-600 hover:bg-slate-500/10 whitespace-nowrap"
             >
               Find your framework →
@@ -142,19 +142,17 @@ export default function Flexibility() {
                 src: "/assets/brand-logos/go-logo-blue.svg",
                 name: "Go",
                 size: { h: 60, w: 120 },
-                release: `Q1 2024`,
               },
               {
                 src: "/assets/brand-logos/python-logo-only.svg",
                 name: "Python",
                 size: { h: 60, w: (60 / 101) * 84 },
-                release: `Q1 2024`,
               },
               {
-                src: "/assets/brand-logos/rust-logo.png",
-                name: "Rust",
+                src: "/assets/brand-logos/java.svg",
+                name: "Java",
                 size: { h: 60, w: 60 },
-                release: `Q2 2024`,
+                release: `H2 2024`,
               },
               // FUTURE - Add other language frameworks like Flask
             ].map(({ src, name, size: { h, w }, release }, idx) => (
@@ -168,7 +166,7 @@ export default function Flexibility() {
                   className="max-h-[60px] pointer-events-none transition-all"
                 />
                 {!!release && (
-                  <span className="absolute -bottom-2 sm:-bottom-1 -right-6 md:-right-12 px-3 py-0.5 bg-slate-700 text-slate-50 text-xs font-semibold drop-shadow rounded-full whitespace-nowrap">
+                  <span className="absolute -bottom-6 sm:-bottom-8 right-0 left-0 mx-auto text-center text-slate-300 text-xs font-semibold whitespace-nowrap">
                     {release}
                   </span>
                 )}

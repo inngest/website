@@ -24,7 +24,7 @@ jobs:
       - uses: actions/checkout@v2.1.0
 
       - name: Install dependencies
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
         with:
           run_install: true
 
@@ -47,4 +47,4 @@ jobs:
           crawler-name: ${{ secrets.CRAWLER_NAME }}
           algolia-app-id: ${{ secrets.ALGOLIA_APP_ID }}
           algolia-api-key: ${{ secrets.ALGOLIA_API_KEY }}
-          site-url: 'https://www.inngest.com/docs'
+          site-url: "https://www.inngest.com/docs"

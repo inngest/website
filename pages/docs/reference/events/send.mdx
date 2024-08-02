@@ -27,7 +27,7 @@ To send events from within of the context of a function, use [`step.sendEvent()`
 ---
 
 
-## `inngest.send(eventPayload | eventPayload[]): Promise<{ ids: string[] }>`
+## `inngest.send(eventPayload | eventPayload[], options): Promise<{ ids: string[] }>`
 
 <Row>
   <Col>
@@ -62,6 +62,13 @@ To send events from within of the context of a function, use [`step.sendEvent()`
           </Property>
           <Property name="v" type="string">
             A version identifier for a particular event payload. e.g. `"2023-04-14.1"`
+          </Property>
+        </Properties>
+      </Property>
+      <Property name="options" type="object" version="v3.21.0+">
+        <Properties nested={true}>
+          <Property name="env" type="string">
+            The [environment](/docs/platform/environments) to send the events to.
           </Property>
         </Properties>
       </Property>
@@ -139,7 +146,7 @@ const { ids } = await inngest.send([
 All data sent in the `user` object is fully encrypted at rest.
 
 <Callout variant="warning">
-  <span className="text-yellow-300">⚠️</span> When rerunning a function, `event.user` will be empty. This will be fixed in the future, but for now assume that you cannot rerun functions that rely on `event.user` data.
+  <span className="text-yellow-300">⚠️</span> When [replaying a function](/docs/platform/replay), `event.user` will be empty. This will be fixed in the future, but for now assume that you cannot replay functions that rely on `event.user` data.
 </Callout>
 
 In the future, this object will be used to support programmatic deletion via API endpoint to support certain right-to-be-forgotten flows in your system. This will use the `user.external_id` property for lookup.

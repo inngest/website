@@ -29,7 +29,7 @@ const permanentRedirects = [
   ["/docs/functions/cancellation", "/docs/guides/cancel-running-functions"],
   [
     "/docs/reference/python/overview/quick-start",
-    "/docs/getting-started/quick-start/python",
+    "/docs/getting-started/python-quick-start",
   ],
 
   // Other pages
@@ -44,6 +44,16 @@ const permanentRedirects = [
   ["/docs/guides/enqueueing-future-jobs", "/docs/guides/delayed-functions"],
   ["/docs/steps", "/docs/learn/inngest-steps"],
   ["/blog/banger", "/blog/banger-video-rendering-pipeline"],
+  [
+    "/docs/reference/serve#custom-frameworks",
+    "/docs/learn/serving-inngest-functions#custom-frameworks",
+  ],
+  ["/docs/sdk/serve", "/docs/learn/serving-inngest-functions"],
+  [
+    "/docs/getting-started/quick-start/python",
+    "/docs/getting-started/python-quick-start",
+  ],
+  ["/docs/quick-start", "/docs/getting-started/nextjs-quick-start"],
 ];
 
 async function redirects() {

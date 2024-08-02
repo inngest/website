@@ -22,7 +22,18 @@ import rehypeCodeTitles from "rehype-code-titles";
 import YouTube from "react-youtube-embed";
 import remarkGfm from "remark-gfm";
 import { SectionProvider } from "src/shared/Docs/SectionProvider";
-import { LaunchWeekBanner } from "../index";
+// import { LaunchWeekBanner } from "../index";
+
+// @ts-ignore
+import { remarkCodeHike, recmaCodeHike } from "codehike/mdx";
+import { Code } from "src/shared/Code/CodeHike";
+
+const chConfig = {
+  components: { code: "Code" },
+  syntaxHighlighting: {
+    theme: "dracula-soft",
+  },
+};
 
 const components: MDXComponents = {
   DiscordCTA,
@@ -31,6 +42,7 @@ const components: MDXComponents = {
   Blockquote,
   // @ts-ignore this package is older, but it works
   YouTube,
+  Code,
 };
 
 type Props = {
@@ -56,6 +68,7 @@ const authorURLs = {
   "Taylor Facen": "https://twitter.com/ItsTayFay",
   "Igor Samokhovets": "https://twitter.com/IgorSamokhovets",
   "Dave Kiss": "https://twitter.com/davekiss",
+  "Bruno Scheufler": "https://brunoscheufler.com",
 };
 
 export default function BlogLayout(props) {
@@ -135,7 +148,7 @@ export default function BlogLayout(props) {
 
       <div className="font-sans">
         <Header />
-        <LaunchWeekBanner urlRef="blog-post-banner" />
+        {/* <LaunchWeekBanner urlRef="blog-post-banner" /> */}
         <Container>
           <article>
             <main className="m-auto max-w-3xl pt-16">
@@ -287,8 +300,9 @@ export async function getStaticProps({ params }) {
         rehypeShiki,
         [rehypeRaw, { passThrough: nodeTypes }],
         rehypeSlug,
-        remarkGfm,
       ],
+      remarkPlugins: [[remarkCodeHike, chConfig], remarkGfm],
+      recmaPlugins: [[recmaCodeHike, chConfig]],
     },
   });
   return {

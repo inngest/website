@@ -14,6 +14,26 @@ We'll look at all available environment variables here, what to set them to, and
 - [INNGEST_SIGNING_KEY](#inngest-signing-key)
 - [INNGEST_STREAMING](#inngest-streaming)
 
+Within some frameworks and platforms such as Cloudflare Workers, environment
+variables are not available in the global scope and are instead passed as
+runtime arguments to your handler. In this case, you can use
+`inngest.setEnvVars()` to ensure your client has the correct configuration
+before communicating with Inngest.
+
+```ts
+// For example, in Hono on Cloudflare Workers
+app.on("POST", "/my-api/send-some-event", async (c) => {
+  inngest.setEnvVars(c.env);
+
+  await inngest.send({ name: "test/event" });
+
+  return c.json({ message: "Done!" });
+});
+
+// You can also chain the call to be succinct
+await inngest.setEnvVars(c.env).send({ name: "test/event" });
+```
+
 ---
 
 ## INNGEST_BASE_URL
@@ -96,7 +116,7 @@ By default, an SDK will try to infer this using request details, but sometimes t
 
 ## INNGEST_SIGNING_KEY
 
-The key used to sign requests to and from Inngest to ensure secure communication. See [Serve - Signing Key](/docs/sdk/serve#signing-key?ref=environment-variables) for more information.
+The key used to sign requests to and from Inngest to ensure secure communication. See [Serve - Signing Key](/docs/learn/serving-inngest-functions#signing-key?ref=environment-variables) for more information.
 
 Can be overwritten by manually specifying `signingKey` in `serve()`.
 

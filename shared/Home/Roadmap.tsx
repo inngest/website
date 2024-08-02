@@ -82,42 +82,42 @@ export default function Roadmap() {
               <div>
                 <a
                   className="text-indigo-400"
-                  href="/docs/sdk/serve?ref=features-sdk-roadmap#framework-next-js"
+                  href="/docs/learn/serving-inngest-functions?ref=features-sdk-roadmap#framework-next-js"
                 >
                   Next.js
                 </a>
                 ,{" "}
                 <a
                   className="text-indigo-400"
-                  href="/docs/sdk/serve?ref=features-sdk-roadmap#framework-express"
+                  href="/docs/learn/serving-inngest-functions?ref=features-sdk-roadmap#framework-express"
                 >
                   Express.js
                 </a>
                 ,{" "}
                 <a
                   className="text-indigo-400"
-                  href="/docs/sdk/serve?ref=features-sdk-roadmap#framework-aws-lambda"
+                  href="/docs/learn/serving-inngest-functions?ref=features-sdk-roadmap#framework-aws-lambda"
                 >
                   AWS Lambda
                 </a>
                 ,{" "}
                 <a
                   className="text-indigo-400"
-                  href="/docs/sdk/serve?ref=features-sdk-roadmap#framework-redwood"
+                  href="/docs/learn/serving-inngest-functions?ref=features-sdk-roadmap#framework-redwood"
                 >
                   RedwoodJS
                 </a>
                 ,{" "}
                 <a
                   className="text-indigo-400"
-                  href="/docs/sdk/serve?ref=features-sdk-roadmap#framework-remix"
+                  href="/docs/learn/serving-inngest-functions?ref=features-sdk-roadmap#framework-remix"
                 >
                   Remix
                 </a>
                 , &amp;{" "}
                 <a
                   className="text-indigo-400"
-                  href="/docs/sdk/serve?ref=features-sdk-roadmap#framework-fresh-deno"
+                  href="/docs/learn/serving-inngest-functions?ref=features-sdk-roadmap#framework-fresh-deno"
                 >
                   Fresh (Deno)
                 </a>{" "}

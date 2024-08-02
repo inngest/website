@@ -1,9 +1,9 @@
 import { GuideSelector, GuideSection, Callout, CodeGroup } from "src/shared/Docs/mdx";
 
 export const description =
-  `Get started with Inngest in this ten-minute tutorial`
+  `Get started with Inngest in this ten-minute Next.js tutorial`
 
-# Quick start
+# Next.js Quick Start
 
 In this tutorial you will add Inngest to a Next.js app to see how easy it can be to build complex workflows.
 
@@ -131,7 +131,7 @@ $ npx inngest-cli@latest dev
 In your browser open [`http://localhost:8288`](http://localhost:8288) to see the development UI where later you will test the functions you write:
 
 <img
-  src="/assets/docs/quick-start/dev-server.png"
+  src="/assets/docs/getting-started/nextjs-quick-start/dev-server.png"
   width="800" height={800/2762*1868} quality="95"
   className="rounded-md"
   alt="Inngest Dev Server screen with no events recorded"
@@ -139,7 +139,7 @@ In your browser open [`http://localhost:8288`](http://localhost:8288) to see the
 
 ## 3. Create an Inngest client
 
-Inngest invokes your functions securely via an [API endpoint](/docs/sdk/serve) at `/api/inngest`. To enable that, you will create an [Inngest client](/docs/reference/client/create) in your Next.js project, which you will use to send events and create functions.
+Inngest invokes your functions securely via an [API endpoint](/docs/learn/serving-inngest-functions) at `/api/inngest`. To enable that, you will create an [Inngest client](/docs/reference/client/create) in your Next.js project, which you will use to send events and create functions.
 
 <GuideSection show="nextpages">
   Create a new file at `./pages/api/inngest.ts` with the following code:
@@ -305,7 +305,7 @@ You will test your first event in two ways: first, by sending it directly to the
 With your Next.js and Inngest Dev Servers running, head over to Inngest Dev Server ([`http://localhost:8288`](http://localhost:8288)):
 
 <img
-  src="/assets/docs/quick-start/dev-server.png"
+  src="/assets/docs/getting-started/nextjs-quick-start/dev-server.png"
   width="800" height={800/2762*1868} quality="95"
   className="rounded-md"
   alt="Inngest Dev Server screen with no events recorded"
@@ -314,7 +314,7 @@ With your Next.js and Inngest Dev Servers running, head over to Inngest Dev Serv
 To send a test event, click on “Test Event” in the top right corner:
 
 <img
-  src="/assets/docs/quick-start/dev-server-frame.png"
+  src="/assets/docs/getting-started/nextjs-quick-start/dev-server-frame.png"
   width="800" height={800/2762*1868} quality="95"
   className="rounded-md"
   alt="Inngest Dev Server screen with no events recorded and the test button highlighted"
@@ -332,7 +332,7 @@ In the popup console, add the event name (you defined it earlier in the `createF
 ```
 
 <img
-  src="/assets/docs/quick-start/dev-server-test-event-console.png"
+  src="/assets/docs/getting-started/nextjs-quick-start/dev-server-test-event-console.png"
   width="800" height={800/2762*1868} quality="95"
   className="rounded-md"
   alt="Event console with test data"
@@ -341,7 +341,7 @@ In the popup console, add the event name (you defined it earlier in the `createF
 The event is sent to Inngest (which is running locally) which automatically executes your function in the background! You can see the new function run logged in the "Stream" tab:
 
 <img
-  src="/assets/docs/quick-start/dev-server-event-1.png"
+  src="/assets/docs/getting-started/nextjs-quick-start/dev-server-event-1.png"
   width="800" height={800/2762*1868} quality="95"
   className="rounded-md"
   alt="Inngest Dev Server screen with one event recorded"
@@ -350,7 +350,7 @@ The event is sent to Inngest (which is running locally) which automatically exec
 When you click on the run, you will see more information about the event, such as which function was triggered, its payload, output, and timeline:
 
 <img
-  src="/assets/docs/quick-start/event-details-1.png"
+  src="/assets/docs/getting-started/nextjs-quick-start/event-details-1.png"
   width="800" height={800/2762*1868} quality="95"
   className="rounded-md"
   alt="Event details popup"
@@ -359,7 +359,7 @@ When you click on the run, you will see more information about the event, such a
 In this case, the event triggered the `hello-world` function, which did sleep for a second and then returned `"Hello, World!"`. No surprises here, that's what we expected!
 
 <img
-  src="/assets/docs/quick-start/event-details-1-frames.png"
+  src="/assets/docs/getting-started/nextjs-quick-start/event-details-1-frames.png"
   width="800" height={800/2762*1868} quality="95"
   className="rounded-md"
   alt="Event details popup indicating that hello-world function ran, that it slept for 1s, and that the correct body was returned"
@@ -368,7 +368,7 @@ In this case, the event triggered the `hello-world` function, which did sleep fo
 A handy little trick: if your event behaved in an odd way, you can either just replay it or edit and replay it. Replaying a function can be really helpful in debugging the function errors locally. To try it, click on the "Replay" button in the top center:
 
 <img
-  src="/assets/docs/quick-start/event-details-1-replay.png"
+  src="/assets/docs/getting-started/nextjs-quick-start/event-details-1-replay.png"
   width="800" height={800/2762*1868} quality="95"
   className="rounded-md"
   alt="Event details popup with replay button highlighted"
@@ -377,7 +377,7 @@ A handy little trick: if your event behaved in an odd way, you can either just r
 After the event was replayed, you will see two events recorded in the dashboard:
 
 <img
-  src="/assets/docs/quick-start/dev-server-event-2.png"
+  src="/assets/docs/getting-started/nextjs-quick-start/dev-server-event-2.png"
   width="800" height={800/2762*1868} quality="95"
   className="rounded-md"
   alt="Inngest Dev Server screen with two events recorded"
@@ -459,7 +459,7 @@ You will now send an event from inside your code: from the “hello” Next.js A
 Every time this API route is requested, an event is sent to Inngest. To test it, open [`http://localhost:3000/api/hello`](http://localhost:3000/api/hello) (change your port if your Next.js app is running elsewhere). You should see the following output: `{"name":"Hello Inngest from Next!"}`
 
 <img
-  src="/assets/docs/quick-start/hello-from-next.png"
+  src="/assets/docs/getting-started/nextjs-quick-start/hello-from-next.png"
   width="800" height={800/2762*1868} quality="95"
   className="rounded-md"
   alt="Black screen with the JSON statement"
@@ -468,7 +468,7 @@ Every time this API route is requested, an event is sent to Inngest. To test it,
 If you go back to the Inngest Dev Server, you will see this new event appear there as well:
 
 <img
-  src="/assets/docs/quick-start/dev-server-event-3.png"
+  src="/assets/docs/getting-started/nextjs-quick-start/dev-server-event-3.png"
   width="800" height={800/2762*1868} quality="95"
   className="rounded-md"
   alt="Inngest Dev Server screen with three events recorded"
@@ -477,7 +477,7 @@ If you go back to the Inngest Dev Server, you will see this new event appear the
 However, what happens if you send a different event? Let's see! Change `test/hello.world` to `test/hello.bizarro.world` and refresh [`http://localhost:3000/api/hello`](http://localhost:3000/api/hello). You will see that the event was sent and received:
 
 <img
-  src="/assets/docs/quick-start/dev-server-event-4.png"
+  src="/assets/docs/getting-started/nextjs-quick-start/dev-server-event-4.png"
   width="800" height={800/2762*1868} quality="95"
   className="rounded-md"
   alt="Inngest Dev Server screen with four events recorded, last one being 'test/hello.bizarro.world' with no functions called"
@@ -486,7 +486,7 @@ However, what happens if you send a different event? Let's see! Change `test/hel
 ... but no functions were triggered because you have not created any function that is listening to this event:
 
 <img
-  src="/assets/docs/quick-start/dev-server-event-4-details.png"
+  src="/assets/docs/getting-started/nextjs-quick-start/dev-server-event-4-details.png"
   width="800" height={800/2762*1868} quality="95"
   className="rounded-md"
   alt="Event details for the last event where it's clear that while the event was recorded, no function was called"
@@ -502,10 +502,10 @@ To continue your exploration, feel free to check out:
 - [Our blog](/blog) where we explain how Inngest works, publish guest blog posts, and share our learnings.
 
 You can also read more:
-- About[Inngest functions](/docs/functions).
+- About [Inngest functions](/docs/functions).
 - About [Inngest steps](/docs/steps).
 - About [Durable Execution](/docs/learn/how-functions-are-executed)
-- How to [use Inngest with other frameworks](/docs/sdk/serve).
+- How to [use Inngest with other frameworks](/docs/learn/serving-inngest-functions).
 - How to [deploy your app to your platform](/docs/deploy).
 
 </GuideSelector>

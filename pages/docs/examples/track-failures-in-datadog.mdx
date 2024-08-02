@@ -14,7 +14,7 @@ This page provides an example of tracking all function failures using [Datadog's
 
 ## Quick Snippet
 
-Here is a basic function that uses the internal [`"inngest/function.failed"`](/docs/reference/system-events/inngest-function-failed) event. This event is triggered whenever any single function fails in your Inngest [environment](/docs/platform/environments).
+Here is a basic function that uses the internal [`"inngest/function.failed"`](/docs/reference/system-events/inngest-function-failed) event. This event is triggered whenever any single function fails in your [Inngest environment](/docs/platform/environments).
 
 ```ts
 import { client, v1 } from "@datadog/datadog-api-client";
@@ -102,7 +102,7 @@ Check the resources below to learn more about building email sequences with Inng
 <Resource resource={{
   href: "/docs/reference/functions/handling-failures",
   name: "Reference: TypeScript SDK failure handlers",
-  icon: RiErrorWarningFill,
+  icon: RiBracesFill,
   description: "Learn how to use the onFailure handler to handle failures for a specific function.",
   pattern: 2,
 }}/>
