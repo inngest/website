@@ -907,6 +907,10 @@ const sectionReference: NavGroup[] = [
             href: `/docs/reference/python/middleware/overview`,
           },
           {
+            title: "Lifecycle",
+            href: `/docs/reference/python/middleware/lifecycle`,
+          },
+          {
             title: "Encryption",
             href: `/docs/reference/python/middleware/encryption`,
           },
