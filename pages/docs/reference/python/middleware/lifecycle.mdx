@@ -13,7 +13,7 @@ The order of middleware lifecycle hooks is as follows:
 
 All of these functions may be called multiple times in a single function run. For example, if your function has 2 steps then all of the hooks will run 3 times (once for each step and once for the function).
 
-Additionally, there are 2 hooks when sending events:
+Additionally, there are two hooks when sending events:
 1. `before_send_events`
 2. `after_send_events`
 
@@ -72,10 +72,10 @@ Called after a step or function returns. Commonly used to mutate data before sen
             Step ID.
           </Property>
           <Property name="op" type="object">
-            Step type enum. Likely not useful to you.
+            Step type enum. Useful in very rare cases.
           </Property>
           <Property name="opts" type="dict[str, object]">
-            Step options. Likely not useful to you.
+            Step options. Useful in very rare cases.
           </Property>
         </Properties>
       </Property>
