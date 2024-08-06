@@ -3,19 +3,19 @@ import { Callout, CodeGroup, Properties, Property, Row, Col, VersionBadge } from
 # Python middleware lifecycle
 
 The order of middleware lifecycle hooks is as follows:
-1. `transform_input`
-2. `before_memoization`
-3. `after_memoization`
-4. `before_execution`
-5. `after_execution`
-6. `transform_output`
-7. `before_response`
+1. [`transform_input`](#transform-input)
+2. [`before_memoization`](#before-memoization)
+3. [`after_memoization`](#after-memoization)
+4. [`before_execution`](#before-execution)
+5. [`after_execution`](#after-execution)
+6. [`transform_output`](#transform-output)
+7. [`before_response`](#before-response)
 
 All of these functions may be called multiple times in a single function run. For example, if your function has 2 steps then all of the hooks will run 3 times (once for each step and once for the function).
 
 Additionally, there are two hooks when sending events:
-1. `before_send_events`
-2. `after_send_events`
+1. [`before_send_events`](#before-send-events)
+2. [`after_send_events`](#after-send-events)
 
 ## Hook reference
 
