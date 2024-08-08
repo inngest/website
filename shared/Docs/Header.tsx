@@ -23,9 +23,9 @@ function Separator() {
 
 function DocsLogo() {
   return (
-    <a href="/docs" className="flex gap-1.5 group/logo items-center pt-1">
-      <Logo className="w-20 text-indigo-500 dark:text-white" />
-      <span className="mb-0.5 text-slate-700 dark:text-indigo-400 text-base group-hover/logo:text-slate-500 dark:group-hover/logo:text-white transition-color font-semibold">
+    <a href="/docs" className="flex gap-2 group/logo items-center pt-1">
+      <Logo className="w-20 text-basis" />
+      <span className="mb-0.5 text-basis text-base group-hover/logo:text-slate-500 dark:group-hover/logo:text-white transition-color font-semibold">
         Docs
       </span>
     </a>
@@ -52,8 +52,8 @@ export const Header = forwardRef<HTMLDivElement>(function Header(
         "fixed inset-x-0 top-0 z-50 flex h-14 items-center justify-between gap-12 px-4 transition lg:z-30",
         !isInsideMobileNavigation && "backdrop-blur-sm dark:backdrop-blur",
         isInsideMobileNavigation
-          ? "bg-white dark:bg-slate-900"
-          : "bg-white/[var(--bg-opacity-light)] dark:bg-slate-950/[var(--bg-opacity-dark)]"
+          ? "bg-canvasBase"
+          : "bg-canvasBase/[var(--bg-opacity-light)] dark:bg-canvasBase/[var(--bg-opacity-dark)]"
       )}
       style={
         {

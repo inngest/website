@@ -118,12 +118,11 @@ export function Callout({
       className={clsx(
         "my-6 border border-transparent rounded-lg p-6",
         !Icon && "[&>:first-child]:mt-0 [&>:last-child]:mb-0",
-        variant === "default" &&
-          "dark:border-indigo-600/20 text-indigo-600 dark:text-indigo-200 bg-indigo-600/10",
-        variant === "info" &&
-          "dark:border-sky-600/20 text-sky-600 dark:text-sky-100 bg-sky-300/10",
-        variant === "warning" &&
-          "dark:border-amber-700/20 text-amber-900 dark:text-amber-50 bg-amber-300/10",
+        variant === "default" && "bg-success dark:bg-success/40 text-success",
+        variant === "info" && "bg-info dark:bg-info/40 text-info",
+        // "dark:border-infoContrast/20 text-sky-600 dark:text-sky-100 bg-sky-300/10",
+        variant === "warning" && "bg-warning dark:bg-warning/40 text-warning",
+        // "dark:border-amber-700/20 text-amber-900 dark:text-amber-50 bg-amber-300/10",
         Icon && "flex gap-2.5"
       )}
     >

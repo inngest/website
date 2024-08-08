@@ -1,0 +1,30 @@
+<svg width="301" height="300" viewBox="0 0 301 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <g clip-path="url(#clip0_3430_2050)">
+    <path d="M39.6665 33H301.667" stroke="#353535" />
+    <path d="M85.6665 85H300.667" stroke="#353535" />
+    <path d="M1.6665 137H149.667" stroke="#353535" />
+    <path d="M1.6665 85H49.6665" stroke="#353535" />
+    <path d="M202.667 137H301.667" stroke="#353535" />
+    <circle cx="66.6665" cy="85" r="12" fill="#DFF5E6" />
+    <circle cx="66.6665" cy="85" r="8" fill="#027A48" />
+    <circle cx="136.667" cy="113" r="12" fill="#DFF5E6" />
+    <circle cx="136.667" cy="113" r="8" fill="#027A48" />
+    <circle cx="17.6665" cy="27" r="12" fill="#DFF5E6" />
+    <circle cx="17.6665" cy="27" r="8" fill="#027A48" />
+    <path d="M227.667 189L300.667 189" stroke="#353535" />
+    <path d="M1.6665 242H214.666" stroke="#353535" />
+    <path d="M1.6665 189H191.667" stroke="#353535" />
+    <path d="M261.667 241L301.667 241" stroke="#353535" />
+    <circle cx="174.667" cy="163" r="12" fill="#DFF5E6" />
+    <circle cx="174.667" cy="163" r="8" fill="#027A48" />
+    <circle cx="236.667" cy="232" r="12" fill="#DFF5E6" />
+    <circle cx="236.667" cy="232" r="8" fill="#027A48" />
+    <circle cx="298.667" cy="287" r="12" fill="#DFF5E6" />
+    <circle cx="298.667" cy="287" r="8" fill="#027A48" />
+  </g>
+  <defs>
+    <clipPath id="clip0_3430_2050">
+      <rect width="300" height="300" fill="white" transform="translate(0.666504)" />
+    </clipPath>
+  </defs>
+</svg>

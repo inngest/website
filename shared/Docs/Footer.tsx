@@ -204,7 +204,7 @@ function EditPageLink({ url }: { url: string }) {
     <div className="flex justify-center md:justify-start">
       <Link
         href={url}
-        className="flex space-x-2 font-medium text-indigo-600 hover:text-slate-800 hover:underline transition-all duration-150 dark:hover:text-white dark:text-indigo-400"
+        className="flex items-center space-x-2 font-medium text-link hover:underline transition-all duration-150"
       >
         <PencilSquareIcon className="h-5" />
         <span>Edit this page on GitHub</span>

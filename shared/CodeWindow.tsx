@@ -21,15 +21,21 @@ const colors = {
   amber400: "rgb(251, 191, 36)",
   sky300: "rgb(125, 211, 252)",
   emerald300: "rgb(110, 231, 183)",
+  // New colors 2024
+  green: "#14b8ac",
+  orange: "#D97706",
+  blue: "#21AFFF",
+  carbon500: "#7c7c7c",
+  purplehaze300: "#8B74F9",
 };
 
 const theme = {
   ...atomOneDark,
-  "hljs-keyword": { color: colors.fuchsia300 },
-  "hljs-attr": { color: colors.amber400 },
-  "hljs-string": { color: colors.emerald300 },
-  "hljs-number": { color: colors.sky300 },
-  "hljs-comment": { color: colors.slate500 },
+  "hljs-keyword": { color: colors.green },
+  "hljs-attr": { color: colors.orange },
+  "hljs-string": { color: colors.blue },
+  "hljs-number": { color: "rgb(var(--color-quaternary-cool-xIntense))" },
+  "hljs-comment": { color: colors.carbon500 },
 };
 
 const CodeWindow = ({
@@ -49,7 +55,7 @@ const CodeWindow = ({
 }) => {
   return (
     <div
-      className={`rounded-lg border border-slate-700/30 text-xs leading-relaxed bg-slate-800/50 ${className}`}
+      className={`rounded-lg border border-subtle text-sm leading-relaxed bg-canvasBase ${className}`}
       style={style}
     >
       {header && <div className="mb-1 bg-slate-800/50">{header}</div>}
@@ -79,12 +85,12 @@ const CodeWindow = ({
           }}
           lineNumberStyle={{
             minWidth: "3em",
-            color: "rgba(42, 60, 85, 1)",
+            color: "rgb(var(--color-canvas-base))",
           }}
           style={theme}
           customStyle={{
             padding: "0.25rem",
-            color: colors.slate300,
+            color: "rgb(var(--color-foreground-base))",
             background: "transparent",
           }}
           className="!overflow-hidden"

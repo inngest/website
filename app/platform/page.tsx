@@ -6,8 +6,9 @@ import Heading from "src/components/Heading";
 import Command from "src/components/Command";
 import { Button } from "src/shared/Button";
 import Github from "src/shared/Icons/Github";
-import Card from "./Card";
+import HeaderCard from "./Card";
 import PlatformComparison from "./PlatformComparison";
+import Card from "src/components/Card";
 
 export const metadata: Metadata = {
   title: "Inngest - Platform overview",
@@ -34,12 +35,12 @@ export default function Page() {
           }
         />
         <div className="mt-8 grid grid-cols-3 gap-2 sm:gap-4 md:gap-8">
-          <Card title={"Events"} img="/assets/platform/events.png" />
-          <Card
+          <HeaderCard title={"Events"} img="/assets/platform/events.png" />
+          <HeaderCard
             title={"Flow control"}
             img="/assets/platform/flow-control.png"
           />
-          <Card
+          <HeaderCard
             title={"Durable execution"}
             img="/assets/platform/durable-execution.png"
           />

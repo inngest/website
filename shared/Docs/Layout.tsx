@@ -67,7 +67,7 @@ export function Layout({
     : undefined;
 
   return (
-    <div className="dark:bg-slate-1000">
+    <div className="bg-canvas-base">
       <MDXProvider components={mdxComponents as any}>
         <Head>
           <title>{pageTitle}</title>
