@@ -27,6 +27,14 @@ Our free plan has a concurrency limit of `25`, and paid plans have concurrency l
 
 The limit for data returned by a step is `4MB`.
 
+### Function run state size
+
+Function run state cannot exceed `32MB`. Its state includes:
+- Event data (multiple events if using batching)
+- Step-returned data
+- Function-returned data
+- Internal metadata (rarely a noticeable size)
+
 ### Number of Steps per Function
 
 The maximum number of steps allowed per function is `1000`.
