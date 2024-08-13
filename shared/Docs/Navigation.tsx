@@ -354,57 +354,63 @@ function NavigationGroup({
             )}
           >
             <motion.ul role="list" className="border-l border-transparent">
-              {group.links.map((link) =>
-                "links" in link ? (
-                  <Accordion.Root
-                    type="multiple"
-                    defaultValue={
-                      hasPath(link.links, router.pathname)
-                        ? [...defaultOpenGroupTitles, link.title]
-                        : defaultOpenGroupTitles
-                    }
-                  >
-                    <NavigationGroup
-                      group={link}
-                      nestingLevel={nestingLevel + 1}
-                    />
-                  </Accordion.Root>
-                ) : isNavLinkGroup(link) ? (
-                  <motion.li
-                    key={link.title}
-                    layout="position"
-                    className={clsx("relative", `ml-${nestingLevel * 4}`)}
-                  >
-                    <span
-                      className={clsx(
-                        "ml-1 mt-1 flex justify-between items-center gap-2 py-1 pr-3 text-sm transition group pl-0", // group for nested hovers
-                        "font-bold text-black hover:text-slate-900 dark:text-slate-400 dark:hover:text-white",
-                        className,
-                        `ml-${nestingLevel * 4}`
-                      )}
+              {group.links.map((link) => {
+                if (isNavGroup(link)) {
+                  return (
+                    <Accordion.Root
+                      type="multiple"
+                      defaultValue={
+                        hasNavGroupPath(link, router.pathname)
+                          ? [...defaultOpenGroupTitles, link.title]
+                          : defaultOpenGroupTitles
+                      }
                     >
-                      {link.title}
-                    </span>
-                  </motion.li>
-                ) : (
-                  <motion.li
-                    key={link.href}
-                    layout="position"
-                    className={clsx("relative", `ml-${nestingLevel * 4}`)}
-                  >
-                    <NavLink
-                      href={link.href}
-                      active={link.href === router.pathname}
-                      className={link.className}
-                      tag={link.tag}
+                      <NavigationGroup
+                        group={link}
+                        nestingLevel={nestingLevel + 1}
+                      />
+                    </Accordion.Root>
+                  );
+                } else if (isNavLink(link)) {
+                  return (
+                    <motion.li
+                      key={link.href}
+                      layout="position"
+                      className={clsx("relative", `ml-${nestingLevel * 4}`)}
                     >
-                      <span className={`ml-${nestingLevel * 4}`}>
+                      <NavLink
+                        href={link.href}
+                        active={link.href === router.pathname}
+                        className={link.className}
+                        tag={link.tag}
+                      >
+                        <span className={`ml-${nestingLevel * 4}`}>
+                          {link.title}
+                        </span>
+                      </NavLink>
+                    </motion.li>
+                  );
+                } else {
+                  return (
+                    <motion.li
+                      key={link.title}
+                      layout="position"
+                      className={clsx("relative", `ml-${nestingLevel * 4}`)}
+                    >
+                      <span
+                        className={clsx(
+                          "ml-1 mt-1 flex justify-between items-center gap-2 py-1 pr-3 text-sm transition group pl-0", // group for nested hovers
+                          "font-bold text-black hover:text-slate-900 dark:text-slate-400 dark:hover:text-white",
+                          className,
+                          `ml-${nestingLevel * 4}`
+                        )}
+                      >
                         {link.title}
                       </span>
-                    </NavLink>
-                  </motion.li>
-                )
-              )}
+                    </motion.li>
+                  );
+                }
+              })}
             </motion.ul>
           </div>
         </NavigationGroupStructure.Content>

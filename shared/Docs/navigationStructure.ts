@@ -1336,14 +1336,20 @@ const sectionExamples: NavGroup[] = [
   },
 ];
 
-export const isNavGroup = (item: any): item is NavGroup => {
-  return !!item.links;
+export const isNavGroup = (
+  item: NavGroup | NavLink | NavSection | NavLinkGroup
+): item is NavGroup => {
+  return !!(item as NavGroup).links;
 };
-export const isNavLinkGroup = (item: any): item is NavLinkGroup => {
-  return item.title && !item.links && !item.href;
+export const isNavLinkGroup = (
+  item: NavGroup | NavLink | NavSection | NavLinkGroup
+): item is NavLinkGroup => {
+  return item.title && !(item as NavGroup).links && !(item as NavLink).href;
 };
-export const isNavLink = (item: any): item is NavLink => {
-  return !!item.title && !!item.href;
+export const isNavLink = (
+  item: NavGroup | NavLink | NavSection | NavLinkGroup
+): item is NavLink => {
+  return !!item.title && !!(item as NavLink).href;
 };
 
 function linkSearch(groups: (NavGroup | NavLink)[], pathname) {
@@ -1359,7 +1365,7 @@ function recursiveLinkSearch(group: NavGroup, pathname) {
     return true;
   }
   return group.links.find((link) => {
-    return link.href
+    return isNavLink(link)
       ? link.href === pathname
       : "links" in link && recursiveLinkSearch(link, pathname);
   });
