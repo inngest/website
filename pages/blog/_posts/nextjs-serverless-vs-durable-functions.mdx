@@ -1,0 +1,352 @@
+---
+heading: "Next.js Serverless Functions vs Durable Functions"
+image: /assets/blog/nextjs-serverless-vs-durable-functions/featured-image.png
+showSubtitle: true
+subtitle: Learn how Durable Functions extends your Next.js experience by powering integrations, email scheduling, or AI workflows without timeouts.
+date: 2024-08-13
+author: Charly Poly
+disableCTA: true
+---
+
+
+Next.js makes using Serverless Functions easy for developers, but running code on a schedule or over a long time span requires managing queues, state, or handling the recovery from external failures.
+
+A Durable Function helps with such code, powering core features such as integrations, email scheduling, or AI workflows.
+
+Teams at [Resend](https://resend.com/) and [Mintlify](https://mintlify.com/) built their own back-end workflow parts on top of Next.js to power core features:
+
+![Diagram illustrating Resend and Mintlify Next.js applications architecture overview. Both applications rely on some backend parts responsible for either scheduling emails or sync with third party services like GitHub or Algolia.](/assets/blog/nextjs-serverless-vs-durable-functions/image1.jpg)
+
+- **Resend's** core relies on backend scheduling elements to send emails and verify email domains with workflows.
+- **Mintlify** integrates with GitHub, Algolia, and Vercel APIs and webhooks to provide the best documentation platform. The back-end services orchestrate tasks that power integrations with 3rd party APIs, analytics, and AI features.
+
+The backend parts orchestrating the syncs, email batches, or AI features cannot be built solely with Next.js features or end up limited when deployed on Serverless platforms due to timeouts.
+
+This dilemma requires us to seek “good-old” back-end solutions (*queueing libraries, SQS, Kafka*), often based on plumbing around queues or background jobs, pushing us outside our Next.js application's code and its associated DX.
+
+Durable Functions allow you to build such backend workflow parts faster from within your Next.js application.
+
+## Durable Functions
+
+### From Serverless to Durable Functions
+
+First of all, why “*Durable*” Functions?
+
+[As defined by Lee Robinson](https://vercel.com/blog/understanding-vercel-functions), Serverless Functions are used to:
+
+> “*run code in response to user traffic without the need to manage your own infrastructure, provision servers.”*
+> 
+
+In comparison, we can define Durable Functions as enabling us to:
+
+> “*run code on a schedule or multiple steps without the need to manage queues, state or handle the recovery from external failures.*”
+> 
+
+In short, Durable Functions help us to run workflows that, as shown below, can perform onboarding steps (importing 3rd party data, enriching it, and notifying the user) upon a user account creation:
+
+![This illustration compares two diagrams. The first shows that a Serverless Function is meant to deal with direct user interactions while the second diagram showcases a Serverless Function calling a Durable Function to handle an onboarding workflow performing multiple steps and sending an email to the end user.](/assets/blog/nextjs-serverless-vs-durable-functions/image2.jpg)
+
+Let's see how Durable Functions works in detail with a code walk of a workflow inspired by Resend's domain verification use case.
+
+### Durable Functions by example: Resend's domain verification workflow
+
+Let's write a workflow inspired by Resend's domain verification mechanism, performing the following action upon a user account creation to ensure that the provided domain ownership is legit:
+
+1. Using the domain provided by the user, regularly check if the domain's DNS records are properly configured by querying the DNS server every 5 minutes over a 72 hours period (giving time for [DNS propagation](https://www.digicert.com/faq/dns/what-is-dns-propagation))
+2. As soon as the domain is properly configured, inform the user via email
+3. After 72 hours, if the domain is not configured, ping the engineering team via Slack and inform the user of the misconfiguration
+
+A pragmatic way of implementing such flow in Next.js would be to rely on a CRON (either Vercel CRON or equivalent) to call a Serverless function every 5 minutes:
+
+![This illustration explains how the domain verification workflow works with a CRON. First, the domain get registered as pending in database upon each account creation. Then, a CRON triggers, every 5 minnutes, a second Serverless Function that gathers all pending domains to check their record and notify user when the domain check is complete.](/assets/blog/nextjs-serverless-vs-durable-functions/image3.jpg)
+
+The Serverless Function would retrieve all the `"pending"` domains from the database, query the DNS servers, and send emails, all in a single loop while handling most failure cases:
+
+```tsx
+// src/api/domain-verification/route.tsx
+import { intervalToDuration } from "date-fns";
+
+import prisma from "./prisma-client";
+import {
+  resend,
+  FROM,
+  DomainConfiguredEmailTemplate,
+  DomainFailedConfigureEmailTemplate,
+} from "./resend";
+import { notifyFailureToTeam } from "./slack";
+import { checkDNSRecord } from "./domain-verification";
+
+export async function GET(_request: Request) {
+  const domains = await prisma.domains.findMany({
+    where: {
+      status: "pending",
+    },
+    include: {
+       account: true
+    }
+  });
+
+  for (let index = 0; index < domains.length; index++) {
+    const domain = domains[index];
+
+    const {
+	    configured,
+	    error: domainConfigurationError
+	  } = await checkDNSRecord(domain.domain);
+
+    if (configured) {
+      const { error } = await resend.emails.send({
+        from: FROM,
+        to: [domain.account.email],
+        subject: "Start sending emails now!",
+        react: DomainConfiguredEmailTemplate({ account: domain.account }),
+      });
+
+      if (!error) {
+        await prisma.domains.update({
+          where: {
+            id: domain.id,
+          },
+          data: {
+            status: "configured",
+          },
+        });
+      } else {
+        await notifyFailureToTeam(domain, error);
+      }
+    } else {
+      const { hours } = intervalToDuration({
+        start: domain.createdAt,
+        end: domain.lastCheckedAt,
+      });
+	
+			// we stop checking a domain after 72h as DNS is probably
+			//  up to date but misconfigured.
+      if (hours >= 72) {
+        await notifyFailureToTeam(domain, domainConfigurationError);
+
+        const { error } = await resend.emails.send({
+          from: FROM,
+          to: [domain.account.email],
+          subject: "We coudn't configure your domain.",
+          react: DomainFailedConfigureEmailTemplate({ account: domain.account }),
+        });
+
+        if (!error) {
+          await prisma.domains.update({
+            where: {
+              id: domain.id,
+            },
+            data: {
+              status: "configured",
+            },
+          });
+        } else {
+          await notifyFailureToTeam(domain, error);
+        }
+      } else {
+	      await prisma.domains.update({
+            where: {
+              id: domain.id,
+            },
+            data: {
+              lastCheckedAt: new Date(),
+            },
+          });
+      }
+    }
+  }
+
+  return new Response(`done.`);
+}
+
+export const dynamic = "force-dynamic";
+```
+
+Getting your head around such code takes a few minutes, right?
+
+Beyond being hard to decipher, the above code also has many drawbacks:
+
+- **Any unhandled error will cause the whole workflow to fail** (ex, the Slack notification), and retrying a single domain verification is not possible.
+- Finally, our **Serverless Function is prone to timeouts**, the time spent to verify domains being linearly proportional to the number of domains to verify and user signups.
+
+This is where Durable Functions get interesting; let's look at our refactored workflow:
+
+```tsx
+// src/inngest/domain-verification.tsx
+import { intervalToDuration } from "date-fns";
+
+import inngest from "./inngest-client";
+import prisma from "./prisma-client";
+import {
+  resend,
+  FROM,
+  DomainConfiguredEmailTemplate,
+  DomainFailedConfigureEmailTemplate,
+} from "./resend";
+import { checkDNSRecord } from "./domain-verification";
+
+export default inngest.createFunction(
+  { id: "account-verify-domain" },
+  { event: "account/verify-domain" },
+  async ({ event, step }) => {
+    let domainConfigured = false;
+
+    const { domain, account } = event.data;
+
+    const { hours: hoursSinceStarted } = intervalToDuration(
+      event.ts,
+      new Date()
+    );
+
+    while (!domainConfigured && hoursSinceStarted < 72) {
+      const { error } = await step.run("check-domain", async () => {
+        return checkDNSRecord(domain.domain);
+      });
+
+      if (!error) {
+        domainConfigured = true;
+      } else {
+        await step.sleep('wait-5min-for-next-check', '5m')
+      }
+    }
+
+    if (domainConfigured) {
+      await step.run("send-domain-configured-email", async () => {
+        await resend.emails.send({
+          from: FROM,
+          to: [account.email],
+          subject: "Start sending emails now!",
+          react: DomainConfiguredEmailTemplate({ account }),
+        });
+      });
+    } else {
+      await step.run("send-domain-failed-configured", async () => {
+        await resend.emails.send({
+          from: FROM,
+          to: [domain.account.email],
+          subject: "We coudn't configure your domain.",
+          react: DomainFailedConfigureEmailTemplate({
+            account: domain.account,
+          }),
+        });
+      });
+    }
+
+    await step.run("update-domain-status-for-dashboard", async () => {
+      await prisma.domains.update({
+        where: {
+          id: domain.id,
+        },
+        data: {
+          status: status: domainConfigured ? "configured" : "error",
+        },
+      });
+    });
+  }
+);
+
+```
+
+**All the plumbing is now removed**: no more custom states stored in the database (domain statuses), loop over multiple domains, or error-catching logic.
+
+Also, each Durable Function run gets assigned a single domain to process, **removing the risks of timeouts**. The workflow is now divided into logical steps that follow each other: check domain and notifications.
+
+![This diagram illustrates how the domain verification workflow get streamlined when developed with a Durable Function. The account creation endpoint triggers the workflow which run its steps for each domain.](/assets/blog/nextjs-serverless-vs-durable-functions/image4.jpg)
+
+Steps are a powerful feature of Durable Functions:
+
+- They enable isolated retries in case of failures with a point-in-time recovery (*only failed steps reruns*)
+- The add waits capabilities, such as pausing a workflow for hours up to months
+- They unlock longer execution time, removing timeouts
+- Finally, they can be run in loops and in parallel with `Promise.all()`
+
+Now, you might wonder: how do Durable Functions work? What do steps do? Why doesn't a Durable Function get timed out?
+
+To answer those questions, let's have a look under the hood.
+
+## Durable Functions: under the hood
+
+Durable Function are composed of 2 main components: Triggers and Steps.
+
+Let's start with how Durable Functions get triggered.
+
+**Triggers: invoking or scheduling a Durable Function**
+
+Serverless Functions are synchronous and triggered by HTTP Requests, while Durable Functions are asynchronous and can be invoked by multiple sources: Serverless Functions, CRON schedules, or other Durable Functions.
+
+For this reason, Durable Functions rely on Events as triggers. Events are a great glue to connect Serverless Functions, cron timers, or other sources to Durable Functions.
+
+Even Durable Functions can send events, triggering other Durable Functions:
+
+![Durable Functions are run using four main triggers: an event sent from a Serverless Function or another Durable Function, a webhook or a CRON event.](/assets/blog/nextjs-serverless-vs-durable-functions/image5.jpg)
+
+Our domain verification Durable Function starts when an `account/verify-domain` event is sent from a Serverless function (for example a `/api/account` API Route). The `event` argument includes the `domain` and `account` objects, removing unnecessary database calls.
+
+**The Durable Execution Engine:  how events trigger Durable Functions runs**
+
+Events are sent to a Durable Execution Engine (for example, Inngest), which triggers Durable Function runs and manages their steps (like React manages Components and their state).
+
+To be managed by the Durable Execution Engine, the Durable Functions are exposed over HTTP via a dedicated Next.js API Route:
+
+![This diagram illustrates how an event sent from a Serverless Function triggers a Durable Function run. The event is first sent to the Durable Execution Engine which requests the Next.js application at a dedicated API Routes where all Durable Funtions are registred.](/assets/blog/nextjs-serverless-vs-durable-functions/image6.jpg)
+
+Let's continue to explore this concept with Steps that enable retrying failures, adding waits, and overcoming timeouts.
+
+**Steps: handling state over time and overcoming timeouts**
+
+Our email verification workflow features some steps: a repeated check domain step and notification steps.
+
+You can think of steps as an API for expressing checkpoints in your workflow, such as waits or work that might benefit from retries or parallelism.
+
+We just covered how Durable Functions are triggered by the Durable Execution Engine, which calls your Next.js application's dedicated API Route over HTTP.
+
+The same principles apply to steps: each step results in communication with the Durable Execution Engine, where a request triggers a step to run, receiving the step's state in the response:
+
+![This diagram illustrates how the Durable Execution Engine interact with the Next.js applications. Each step of a Durable Function results in a communication between the Durable Execution Engine and the Next.js application where the Durable Execution Engine sends state and instructions (ex: "run step 1") and the response contains the state of the executed step.](/assets/blog/nextjs-serverless-vs-durable-functions/image7.jpg)
+
+In short, the Durable Execution Engine is responsible for keeping the state of Durable Functions and their states up to date while communicating with the Next.js application.
+
+This architecture powers the durability of Durable Functions with retriable steps and waits from hours to months. Also, a nice collateral effect of Durable Functions resides in steps getting a max duration equivalent to a regular Serverless Functions run, enabling workflows that both span over months and run for more than 5 minutes!
+
+### Improving the reliability of our domain verification workflow with Flow Control
+
+Our pragmatic CRON-based domain verification workflow had many flaws, all solved with built-in Durable Functions features with a cleaner code.
+
+Yet, our workflow still has a last blindspot: a high number of domain verifications might result in rate limit errors from the Resend Email API ([2 requests per second](https://resend.com/docs/api-reference/introduction#rate-limit)).
+
+Adding logic to handle this scenario with the CRON code would result in more complexity, not with a Durable Function.
+
+Durable Functions provide [Flow Control](https://www.inngest.com/docs/guides/flow-control) features such as [Rate Limit](https://www.inngest.com/docs/guides/rate-limiting), [Priority](https://www.inngest.com/docs/guides/priority), or [Throttle](https://www.inngest.com/docs/guides/throttling) configuration to help control how runs span in time and avoid reaching the rate limit of third-party API.
+
+Let's add the following line to our Durable Function to add some Throttling configuration:
+
+```tsx
+// src/inngest/domain-verification.tsx
+
+// ...
+
+export default inngest.createFunction(
+  {
+    id: "account-verify-domain",
+    // we limit this Durable Function to 2 call/s
+    throttle: {
+      limit: 2,
+      period: "1s",
+    },
+  },
+  { event: "account/verify-domain" },
+  async ({ event, step }) => {
+    // ...
+  }
+)
+```
+
+Our workflow is now guaranteed to run a maximum of 2 times per second!
+
+## Conclusion
+
+
+Durable Functions are a powerful Next.js pattern. Adding workflows or long-running functions to your Next.js application no longer leads to timeout issues or plumbing with queueing solutions involving infrastructure work. This enables you to build fully featured SaaSs that integrate with other applications or APIs and provide advanced AI features or automation.
+
+So, what would you like to build?
