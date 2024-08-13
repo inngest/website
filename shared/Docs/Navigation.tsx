@@ -26,6 +26,7 @@ import {
   isNavLinkGroup,
   NavSection,
   NavLinkGroup,
+  isNavLink,
 } from "./navigationStructure";
 import * as Accordion from "@radix-ui/react-accordion";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
@@ -420,12 +421,14 @@ function hasPath(links: { href?: string }[], pathname: string) {
   return findPathIndex(links, pathname) !== -1;
 }
 
-function hasNavGroupPath(links: NavGroup[], pathname: string) {
-  return links.some((link) =>
-    link.links
-      ? hasPath(link.links, pathname)
-      : link.href && link.href === pathname
-  );
+function hasNavGroupPath(group: NavGroup, pathname: string) {
+  return group.links.find((link) => {
+    return isNavGroup(link)
+      ? hasNavGroupPath(link, pathname)
+      : isNavLink(link)
+      ? link.href && link.href === pathname
+      : false;
+  });
 }
 
 // Flatten the nested nav and get all nav sections w/ sectionLinks
@@ -442,43 +445,35 @@ function getAllSections(nav) {
 }
 
 function getAllOpenedByDefaultSections(
-  sections: (NavGroup | NavLink | NavSection | NavLinkGroup)[]
+  sections: (NavGroup | NavLink | NavSection | NavLinkGroup)[],
+  currentPath: string
 ) {
   return sections.reduce((acc, section) => {
     if (isNavGroup(section)) {
       if (section.defaultOpen) {
         acc.push(section.title);
+      } else if (hasNavGroupPath(section, currentPath)) {
+        acc.push(section.title);
       }
       if (section.links) {
-        acc.push(...getAllOpenedByDefaultSections(section.links));
+        acc.push(...getAllOpenedByDefaultSections(section.links, currentPath));
       }
     }
     return acc;
   }, []);
 }
 
-function findRecursiveSectionLinkMatch(nav, pathname) {
-  const sections = getAllSections(nav);
+function findRecursiveSectionLinkMatch(sections, pathname) {
   return sections.find(({ matcher, sectionLinks }) => {
     if (matcher && isMatch(matcher, pathname)) {
       return true;
     }
 
-    if (
-      sectionLinks?.find((item) => {
-        return isNavGroup(item)
-          ? hasPath(item.links, pathname) ||
-              item.links?.some(
-                (subgroup) =>
-                  subgroup.links && hasPath(subgroup.links, pathname)
-              )
-          : item.href === pathname;
-      })
-    ) {
-      return true;
-    }
-
-    return false;
+    return sectionLinks?.find((item) => {
+      return isNavGroup(item)
+        ? hasNavGroupPath(item, pathname)
+        : item.href === pathname;
+    });
   });
 }
 // todo fix active on top level
@@ -490,26 +485,32 @@ export function Navigation(props) {
   // Remove query params and hash from pathname
   const pathname = router.asPath.replace(/(\?|#).+$/, "");
 
-  const nestedSection = findRecursiveSectionLinkMatch(topLevelNav, pathname);
+  const nestedSection = findRecursiveSectionLinkMatch(
+    getAllSections(topLevelNav),
+    pathname
+  );
+
   const isNested = !!nestedSection;
   const nestedNavigation = nestedSection;
 
   const activeGroup = useMemo(
     () =>
       nestedNavigation?.sectionLinks.find(
-        (group) =>
-          isNavGroup(group) && hasNavGroupPath(group.links, router.pathname)
+        (group) => isNavGroup(group) && hasNavGroupPath(group, router.pathname)
       ),
     [router.pathname, nestedNavigation]
   );
 
   const defaultOpenGroupTitles = useMemo(
     () =>
-      getAllOpenedByDefaultSections([
-        ...(activeGroup ? [activeGroup] : []),
-        ...nestedNavigation.sectionLinks,
-      ]),
-    [activeGroup, nestedNavigation]
+      getAllOpenedByDefaultSections(
+        [
+          ...(activeGroup ? [activeGroup] : []),
+          ...nestedNavigation.sectionLinks,
+        ],
+        router.pathname
+      ),
+    [activeGroup, nestedNavigation, router.pathname]
   );
 
   return (

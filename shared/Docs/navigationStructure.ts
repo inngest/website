@@ -403,6 +403,7 @@ const sectionHome: (NavGroup | NavLink)[] = [
           {
             title: "CRONs",
             href: `/todo`, // TODO
+            tag: "new",
           },
           {
             title: "Direct invocation",
@@ -559,10 +560,12 @@ const sectionHome: (NavGroup | NavLink)[] = [
               {
                 title: "Migrating Events",
                 href: `/todo`, // TODO
+                tag: "new",
               },
               {
                 title: "Migrating Functions",
                 href: `/todo`, // TODO
+                tag: "new",
               },
             ],
           },
@@ -663,10 +666,12 @@ const sectionHome: (NavGroup | NavLink)[] = [
           {
             title: "Migrating across clouds",
             href: "/todo", // TODO
+            tag: "new",
           },
           {
             title: "Self-hosting",
             href: "/todo", // TODO
+            tag: "new",
           },
         ],
       },
@@ -1337,6 +1342,9 @@ export const isNavGroup = (item: any): item is NavGroup => {
 export const isNavLinkGroup = (item: any): item is NavLinkGroup => {
   return item.title && !item.links && !item.href;
 };
+export const isNavLink = (item: any): item is NavLink => {
+  return !!item.title && !!item.href;
+};
 
 function linkSearch(groups: (NavGroup | NavLink)[], pathname) {
   return groups.find((item) =>
@@ -1405,6 +1413,7 @@ export const topLevelNav = [
     icon: HomeIcon,
     href: `/docs`,
     sectionLinks: sectionHome,
+    matcher: matchers.default,
   },
   // {
   //   title: "Getting started",
@@ -1433,73 +1442,73 @@ export const topLevelNav = [
     matcher: matchers.examples,
     sectionLinks: sectionExamples,
   },
-  {
-    title: "Platform",
-    icon: CogIcon,
-    href: "/docs/platform",
-    matcher: /\/platform/,
-    sectionLinks: sectionPlatform,
-  },
-  {
-    title: "SDK Reference",
-    links: [
-      {
-        title: "TypeScript",
-        icon: TypeScriptIcon,
-        href: `/docs/reference/typescript`,
-        sectionLinks: sectionTypeScriptReference,
-      },
-      {
-        title: "Python",
-        icon: PythonIcon,
-        href: `/docs/reference/python`,
-        tag: "Beta",
-        sectionLinks: sectionPythonReference,
-      },
-      {
-        title: "Go",
-        icon: GoIcon,
-        href: `https://pkg.go.dev/github.com/inngest/inngestgo`,
-        tag: "Beta",
-        target: "_blank",
-      },
-    ],
-  },
-  {
-    title: "API",
-    links: [
-      {
-        title: "REST API",
-        icon: CommandLineIcon,
-        href: `https://api-docs.inngest.com/docs/inngest-api`,
-        tag: "In progress",
-        target: "_blank",
-      },
-    ],
-  },
-  {
-    title: "Help",
-    links: [
-      {
-        title: "FAQs",
-        icon: QuestionMarkCircleIcon,
-        href: `/docs/faq`,
-      },
-      {
-        title: "Security",
-        icon: CogIcon,
-        href: `/docs/security`,
-      },
-      {
-        title: "Status Page",
-        icon: StatusIcon,
-        href: "https://status.inngest.com",
-      },
-      {
-        title: "Support Center",
-        icon: LifebuoyIcon,
-        href: "https://app.inngest.com/support",
-      },
-    ],
-  },
+  // {
+  //   title: "Platform",
+  //   icon: CogIcon,
+  //   href: "/docs/platform",
+  //   matcher: /\/platform/,
+  //   sectionLinks: sectionPlatform,
+  // },
+  // {
+  //   title: "SDK Reference",
+  //   links: [
+  //     {
+  //       title: "TypeScript",
+  //       icon: TypeScriptIcon,
+  //       href: `/docs/reference/typescript`,
+  //       sectionLinks: sectionTypeScriptReference,
+  //     },
+  //     {
+  //       title: "Python",
+  //       icon: PythonIcon,
+  //       href: `/docs/reference/python`,
+  //       tag: "Beta",
+  //       sectionLinks: sectionPythonReference,
+  //     },
+  //     {
+  //       title: "Go",
+  //       icon: GoIcon,
+  //       href: `https://pkg.go.dev/github.com/inngest/inngestgo`,
+  //       tag: "Beta",
+  //       target: "_blank",
+  //     },
+  //   ],
+  // },
+  // {
+  //   title: "API",
+  //   links: [
+  //     {
+  //       title: "REST API",
+  //       icon: CommandLineIcon,
+  //       href: `https://api-docs.inngest.com/docs/inngest-api`,
+  //       tag: "In progress",
+  //       target: "_blank",
+  //     },
+  //   ],
+  // },
+  // {
+  //   title: "Help",
+  //   links: [
+  //     {
+  //       title: "FAQs",
+  //       icon: QuestionMarkCircleIcon,
+  //       href: `/docs/faq`,
+  //     },
+  //     {
+  //       title: "Security",
+  //       icon: CogIcon,
+  //       href: `/docs/security`,
+  //     },
+  //     {
+  //       title: "Status Page",
+  //       icon: StatusIcon,
+  //       href: "https://status.inngest.com",
+  //     },
+  //     {
+  //       title: "Support Center",
+  //       icon: LifebuoyIcon,
+  //       href: "https://app.inngest.com/support",
+  //     },
+  //   ],
+  // },
 ];
