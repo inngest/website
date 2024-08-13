@@ -13,6 +13,8 @@ module.exports = {
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./shared/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  // navigation dynamic nested groups support
+  safelist: ["ml-4", "ml-8"],
   theme: {
     typography: require("./typography"),
     extend: {

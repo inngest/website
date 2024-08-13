@@ -1,4 +1,12 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  ComponentProps,
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import clsx from "clsx";
@@ -9,7 +17,16 @@ import { useIsInsideMobileNavigation } from "./MobileNavigation";
 import { useSectionStore } from "./SectionProvider";
 import { Tag } from "./Tag";
 import { remToPx } from "../../utils/remToPx";
-import { topLevelNav, menuTabs, type NavGroup } from "./navigationStructure";
+import {
+  topLevelNav,
+  menuTabs,
+  type NavGroup,
+  type NavLink,
+  isNavGroup,
+  isNavLinkGroup,
+  NavSection,
+  NavLinkGroup,
+} from "./navigationStructure";
 import * as Accordion from "@radix-ui/react-accordion";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import { MobileSearch } from "./Search";
@@ -230,18 +247,65 @@ export function PageSidebar() {
   );
 }
 
+const NavigationGroupStructureContext = createContext(0);
+
+function NavigationGroupStructure({
+  nestingLevel,
+  children,
+  ...props
+}: { nestingLevel?: number; children: React.ReactNode } & ComponentProps<
+  typeof Accordion.Item
+>) {
+  return (
+    <NavigationGroupStructureContext.Provider value={nestingLevel}>
+      {nestingLevel > 0 ? (
+        <Accordion.Item {...props}>{children}</Accordion.Item>
+      ) : (
+        <div>{children}</div>
+      )}
+    </NavigationGroupStructureContext.Provider>
+  );
+}
+
+NavigationGroupStructure.Trigger = function NavigationGroupStructureItem({
+  children,
+  ...props
+}: { children: React.ReactNode } & ComponentProps<typeof Accordion.Trigger>) {
+  const nestingLevel = useContext(NavigationGroupStructureContext);
+
+  return nestingLevel > 0 ? (
+    <Accordion.Trigger {...props}>{children}</Accordion.Trigger>
+  ) : (
+    <div>{children}</div>
+  );
+};
+
+NavigationGroupStructure.Content = function NavigationGroupStructureItem({
+  children,
+  ...props
+}: { children: React.ReactNode } & ComponentProps<typeof Accordion.Content>) {
+  const nestingLevel = useContext(NavigationGroupStructureContext);
+
+  return nestingLevel > 0 ? (
+    <Accordion.Content {...props}>{children}</Accordion.Content>
+  ) : (
+    <div>{children}</div>
+  );
+};
+
 // A nested navigation group of links that expand and follow
 function NavigationGroup({
   group,
   isActiveGroup = false,
-  isNestedGroup = false,
+  nestingLevel = 0,
   className = "",
 }: {
   group: NavGroup;
   isActiveGroup?: boolean;
-  isNestedGroup?: boolean;
+  nestingLevel?: number;
   className?: string;
 }) {
+  const defaultOpenGroupTitles = useContext(DefaultOpenSectionsContext);
   // If this is the mobile navigation then we always render the initial
   // state, so that the state does not change during the close animation.
   // The state will still update when we re-open (re-render) the navigation.
@@ -255,37 +319,37 @@ function NavigationGroup({
   }, []);
 
   return (
-    <Accordion.Item value={group.title}>
+    <NavigationGroupStructure value={group.title} nestingLevel={nestingLevel}>
       <li
         className={clsx("relative", className, {
-          "mt-2": isNestedGroup,
-          "mt-4": !isNestedGroup,
+          "mt-2": nestingLevel > 0,
+          "mt-4": nestingLevel == 0,
         })}
       >
-        <Accordion.Trigger className="w-full animate-accordion-trigger">
+        <NavigationGroupStructure.Trigger className="w-full animate-accordion-trigger">
           <h2
-            className={clsx("flex justify-between", { "ml-4": isNestedGroup })}
+            className={clsx("flex justify-between", `ml-${nestingLevel * 4}`)}
           >
             <span
               className={clsx("text-slate-900 dark:text-white", {
-                "text-sm font-medium": isNestedGroup,
-                "text-xs font-semibold uppercase font-mono": !isNestedGroup,
+                "text-sm font-medium": nestingLevel > 0,
+                "text-xs font-semibold uppercase font-mono": nestingLevel == 0,
               })}
             >
               {/* TODO: Make group title a link to group landing page */}
               {group.title}
             </span>
-            <ChevronDownIcon className="h-4 w-4" />
+            {nestingLevel > 0 && <ChevronDownIcon className="h-4 w-4" />}
           </h2>
-        </Accordion.Trigger>
+        </NavigationGroupStructure.Trigger>
 
-        <Accordion.Content
+        <NavigationGroupStructure.Content
           className={animateAccordion ? "animate-accordion" : ""}
         >
           <div
             className={clsx(
               "relative overflow-hidden",
-              isNestedGroup ? "mt-2" : "pl-0 mt-3"
+              nestingLevel > 0 ? "mt-2" : "pl-0 mt-3"
             )}
           >
             <motion.ul role="list" className="border-l border-transparent">
@@ -294,18 +358,38 @@ function NavigationGroup({
                   <Accordion.Root
                     type="multiple"
                     defaultValue={
-                      hasPath(link.links, router.pathname) ? [link.title] : []
+                      hasPath(link.links, router.pathname)
+                        ? [...defaultOpenGroupTitles, link.title]
+                        : defaultOpenGroupTitles
                     }
                   >
-                    <NavigationGroup group={link} isNestedGroup />
+                    <NavigationGroup
+                      group={link}
+                      nestingLevel={nestingLevel + 1}
+                    />
                   </Accordion.Root>
+                ) : isNavLinkGroup(link) ? (
+                  <motion.li
+                    key={link.title}
+                    layout="position"
+                    className={clsx("relative", `ml-${nestingLevel * 4}`)}
+                  >
+                    <span
+                      className={clsx(
+                        "ml-1 mt-1 flex justify-between items-center gap-2 py-1 pr-3 text-sm transition group pl-0", // group for nested hovers
+                        "font-bold text-black hover:text-slate-900 dark:text-slate-400 dark:hover:text-white",
+                        className,
+                        `ml-${nestingLevel * 4}`
+                      )}
+                    >
+                      {link.title}
+                    </span>
+                  </motion.li>
                 ) : (
                   <motion.li
                     key={link.href}
                     layout="position"
-                    className={clsx("relative", {
-                      "ml-3": isNestedGroup,
-                    })}
+                    className={clsx("relative", `ml-${nestingLevel * 4}`)}
                   >
                     <NavLink
                       href={link.href}
@@ -313,16 +397,18 @@ function NavigationGroup({
                       className={link.className}
                       tag={link.tag}
                     >
-                      <span className="ml-1">{link.title}</span>
+                      <span className={`ml-${nestingLevel * 4}`}>
+                        {link.title}
+                      </span>
                     </NavLink>
                   </motion.li>
                 )
               )}
             </motion.ul>
           </div>
-        </Accordion.Content>
+        </NavigationGroupStructure.Content>
       </li>
-    </Accordion.Item>
+    </NavigationGroupStructure>
   );
 }
 
@@ -355,6 +441,22 @@ function getAllSections(nav) {
   }, []);
 }
 
+function getAllOpenedByDefaultSections(
+  sections: (NavGroup | NavLink | NavSection | NavLinkGroup)[]
+) {
+  return sections.reduce((acc, section) => {
+    if (isNavGroup(section)) {
+      if (section.defaultOpen) {
+        acc.push(section.title);
+      }
+      if (section.links) {
+        acc.push(...getAllOpenedByDefaultSections(section.links));
+      }
+    }
+    return acc;
+  }, []);
+}
+
 function findRecursiveSectionLinkMatch(nav, pathname) {
   const sections = getAllSections(nav);
   return sections.find(({ matcher, sectionLinks }) => {
@@ -364,12 +466,13 @@ function findRecursiveSectionLinkMatch(nav, pathname) {
 
     if (
       sectionLinks?.find((item) => {
-        return (
-          hasPath(item.links, pathname) ||
-          item.links?.some(
-            (subgroup) => subgroup.links && hasPath(subgroup.links, pathname)
-          )
-        );
+        return isNavGroup(item)
+          ? hasPath(item.links, pathname) ||
+              item.links?.some(
+                (subgroup) =>
+                  subgroup.links && hasPath(subgroup.links, pathname)
+              )
+          : item.href === pathname;
       })
     ) {
       return true;
@@ -379,6 +482,8 @@ function findRecursiveSectionLinkMatch(nav, pathname) {
   });
 }
 // todo fix active on top level
+
+export const DefaultOpenSectionsContext = createContext([]);
 
 export function Navigation(props) {
   const router = useRouter();
@@ -391,82 +496,95 @@ export function Navigation(props) {
 
   const activeGroup = useMemo(
     () =>
-      nestedNavigation?.sectionLinks.find((group) =>
-        hasNavGroupPath(group.links, router.pathname)
+      nestedNavigation?.sectionLinks.find(
+        (group) =>
+          isNavGroup(group) && hasNavGroupPath(group.links, router.pathname)
       ),
     [router.pathname, nestedNavigation]
   );
 
   const defaultOpenGroupTitles = useMemo(
     () =>
-      [
-        activeGroup,
-        ...(nestedNavigation?.sectionLinks.filter(
-          (group) => group.defaultOpen
-        ) ?? []),
-      ]
-        .filter(Boolean)
-        .map((group) => group.title),
+      getAllOpenedByDefaultSections([
+        ...(activeGroup ? [activeGroup] : []),
+        ...nestedNavigation.sectionLinks,
+      ]),
     [activeGroup, nestedNavigation]
   );
 
   return (
-    <nav {...props}>
-      <MobileSearch />
+    <DefaultOpenSectionsContext.Provider value={defaultOpenGroupTitles}>
+      <nav {...props}>
+        <MobileSearch />
 
-      <ul role="list" className="flex lg:hidden flex-col">
-        {menuTabs.map((tab, idx) => (
-          <li key={idx}>
-            <TopLevelNavItem
-              href={tab.href}
-              matcher={tab.matcher}
-              icon={tab.icon}
-              title={tab.title}
-            />
-          </li>
-        ))}
-      </ul>
+        <ul role="list" className="flex lg:hidden flex-col">
+          {menuTabs.map((tab, idx) => (
+            <li key={idx}>
+              <TopLevelNavItem
+                href={tab.href}
+                matcher={tab.matcher}
+                icon={tab.icon}
+                title={tab.title}
+              />
+            </li>
+          ))}
+        </ul>
 
-      <ul role="list" className={!isNested ? "flex flex-col gap-2" : undefined}>
-        {nestedNavigation ? (
-          <>
-            <Accordion.Root
-              key={
-                // re-mount on page navigation
-                router.pathname
-              }
-              type="multiple"
-              defaultValue={defaultOpenGroupTitles}
+        <ul
+          role="list"
+          className={!isNested ? "flex flex-col gap-2" : undefined}
+        >
+          {nestedNavigation ? (
+            <>
+              <Accordion.Root
+                key={
+                  // re-mount on page navigation
+                  router.pathname
+                }
+                type="multiple"
+                defaultValue={defaultOpenGroupTitles}
+              >
+                {nestedNavigation.sectionLinks.map((item, groupIndex) =>
+                  isNavGroup(item) ? (
+                    <NavigationGroup
+                      key={item.title}
+                      group={item}
+                      isActiveGroup={item.title === activeGroup?.title}
+                    />
+                  ) : (
+                    <NavLink
+                      isTopLevel={true}
+                      href={item.href}
+                      active={pathname === item.href}
+                    >
+                      {" "}
+                      {item.title}{" "}
+                    </NavLink>
+                  )
+                )}
+              </Accordion.Root>
+            </>
+          ) : null}
+
+          <li className="sticky bottom-0 z-10 mt-6 sm:hidden gap-2 flex dark:bg-slate-900">
+            <Button
+              href={process.env.NEXT_PUBLIC_SIGNIN_URL}
+              variant="secondary"
+              className="w-full"
             >
-              {nestedNavigation.sectionLinks.map((group, groupIndex) => (
-                <NavigationGroup
-                  key={group.title}
-                  group={group}
-                  isActiveGroup={group.title === activeGroup?.title}
-                />
-              ))}
-            </Accordion.Root>
-          </>
-        ) : null}
-
-        <li className="sticky bottom-0 z-10 mt-6 sm:hidden gap-2 flex dark:bg-slate-900">
-          <Button
-            href={process.env.NEXT_PUBLIC_SIGNIN_URL}
-            variant="secondary"
-            className="w-full"
-          >
-            Sign In
-          </Button>
-          <Button
-            href={`${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=docs-mobile-nav`}
-            variant="primary"
-            arrow="right"
-            className="w-full"
-          >
-            Sign Up
-          </Button>
-        </li>
-      </ul>
-    </nav>
+              Sign In
+            </Button>
+            <Button
+              href={`${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=docs-mobile-nav`}
+              variant="primary"
+              arrow="right"
+              className="w-full"
+            >
+              Sign Up
+            </Button>
+          </li>
+        </ul>
+      </nav>
+    </DefaultOpenSectionsContext.Provider>
   );
 }

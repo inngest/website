@@ -20,12 +20,17 @@ export type NavLink = {
   className?: string;
   tag?: string;
 };
+
+export type NavLinkGroup = {
+  title: string;
+  className?: string;
+};
 // A group nested of nav links with a header
 export type NavGroup = {
   title: string;
   href?: string;
   icon?: React.FC<React.SVGProps<SVGSVGElement>>;
-  links: (NavGroup | NavLink | NavSection)[];
+  links: (NavGroup | NavLink | NavSection | NavLinkGroup)[];
   /* Whether group should be open when there is no active group */
   defaultOpen?: boolean;
 };
@@ -41,9 +46,287 @@ export type NavSection = NavLink & {
   }[];
 };
 
-const sectionGettingStarted: NavGroup[] = [
+const sectionReference: NavGroup[] = [
   {
-    title: "Quick start tutorials",
+    title: "TypeScript SDK",
+    links: [
+      {
+        title: "Introduction",
+        href: `/docs/reference/typescript`,
+      },
+      {
+        title: "Create the client",
+        href: `/docs/reference/client/create`,
+      },
+      {
+        title: "Create a function",
+        href: `/docs/reference/functions/create`,
+      },
+      {
+        title: "Send events",
+        href: `/docs/reference/events/send`,
+      },
+      {
+        title: "Errors",
+        href: `/docs/reference/typescript/functions/errors`,
+      },
+      {
+        title: "Handling failures",
+        href: `/docs/reference/functions/handling-failures`,
+      },
+      {
+        title: "Cancel on",
+        href: `/docs/reference/typescript/functions/cancel-on`,
+      },
+      {
+        title: "Concurrency",
+        href: `/docs/functions/concurrency`,
+        // href: `/docs/reference/functions/concurrency`,
+      },
+      {
+        title: "Rate limit",
+        href: `/docs/reference/functions/rate-limit`,
+      },
+      {
+        title: "Debounce",
+        href: `/docs/reference/functions/debounce`,
+      },
+      {
+        title: "Function run priority",
+        href: `/docs/reference/functions/run-priority`,
+      },
+      // {
+      //   title: "Logging",
+      //   href: `/docs/reference/functions/logging`,
+      // },
+      {
+        title: "Referencing functions",
+        href: `/docs/functions/references`,
+      },
+      {
+        title: "Steps",
+        links: [
+          {
+            title: "step.run()",
+            href: `/docs/reference/functions/step-run`,
+            className: "font-mono",
+          },
+          {
+            title: "step.sleep()",
+            href: `/docs/reference/functions/step-sleep`,
+            className: "font-mono",
+          },
+          {
+            title: "step.sleepUntil()",
+            href: `/docs/reference/functions/step-sleep-until`,
+            className: "font-mono",
+          },
+          {
+            title: "step.invoke()",
+            href: `/docs/reference/functions/step-invoke`,
+            className: "font-mono",
+          },
+          {
+            title: "step.waitForEvent()",
+            href: `/docs/reference/functions/step-wait-for-event`,
+            className: "font-mono",
+          },
+          {
+            title: "step.sendEvent()",
+            href: `/docs/reference/functions/step-send-event`,
+            className: "font-mono",
+          },
+        ],
+      },
+      {
+        title: "Serve",
+        links: [
+          // {
+          //   title: "Framework handlers",
+          //   href: `/docs/learn/serving-inngest-functions`,
+          // },
+          {
+            title: "Configuration",
+            href: `/docs/reference/serve`,
+          },
+          { title: "Streaming", href: `/docs/streaming` },
+        ],
+      },
+      {
+        title: "Middleware",
+        links: [
+          {
+            title: "Overview",
+            href: `/docs/reference/middleware/overview`,
+          },
+          {
+            title: "Creating middleware",
+            href: `/docs/reference/middleware/create`,
+          },
+          {
+            title: "Lifecycle",
+            href: `/docs/reference/middleware/lifecycle`,
+          },
+          {
+            title: "Examples",
+            href: `/docs/reference/middleware/examples`,
+          },
+          {
+            title: "TypeScript",
+            href: `/docs/reference/middleware/typescript`,
+          },
+        ],
+      },
+      {
+        title: "Using the SDK",
+        links: [
+          {
+            title: "Environment variables",
+            href: `/docs/sdk/environment-variables`,
+          },
+          {
+            title: "Using TypeScript",
+            href: `/docs/typescript`,
+          },
+          {
+            title: "ESLint plugin",
+            href: `/docs/sdk/eslint`,
+          },
+          { title: "Upgrading to v3", href: `/docs/sdk/migration` },
+        ],
+      },
+    ],
+  },
+  {
+    title: "Python SDK",
+    links: [
+      {
+        title: "Introduction",
+        href: `/docs/reference/python`,
+      },
+      {
+        title: "Quick start",
+        href: `/docs/reference/python/overview/quick-start`,
+      },
+      {
+        title: "Inngest Client",
+        href: `/docs/reference/python/client/overview`,
+      },
+      {
+        title: "Create function",
+        href: `/docs/reference/python/functions/create`,
+      },
+      {
+        title: "Send events",
+        href: `/docs/reference/python/client/send`,
+      },
+      {
+        title: "Environment variables",
+        href: `/docs/reference/python/overview/env-vars`,
+      },
+      {
+        title: "Production mode",
+        href: `/docs/reference/python/overview/prod-mode`,
+      },
+      {
+        title: "Steps",
+        links: [
+          {
+            title: "invoke",
+            href: `/docs/reference/python/steps/invoke`,
+          },
+          {
+            title: "invoke_by_id",
+            href: `/docs/reference/python/steps/invoke_by_id`,
+          },
+          {
+            title: "parallel",
+            href: `/docs/reference/python/steps/parallel`,
+          },
+          {
+            title: "run",
+            href: `/docs/reference/python/steps/run`,
+          },
+          {
+            title: "send_event",
+            href: `/docs/reference/python/steps/send-event`,
+          },
+          {
+            title: "sleep",
+            href: `/docs/reference/python/steps/sleep`,
+          },
+          {
+            title: "sleep_until",
+            href: `/docs/reference/python/steps/sleep-until`,
+          },
+          {
+            title: "wait_for_event",
+            href: `/docs/reference/python/steps/wait-for-event`,
+          },
+        ],
+      },
+      {
+        title: "Middleware",
+        links: [
+          {
+            title: "Overview",
+            href: `/docs/reference/python/middleware/overview`,
+          },
+          {
+            title: "Lifecycle",
+            href: `/docs/reference/python/middleware/lifecycle`,
+          },
+          {
+            title: "Encryption",
+            href: `/docs/reference/python/middleware/encryption`,
+          },
+        ],
+      },
+      {
+        title: "Migrations",
+        links: [
+          {
+            title: "v0.3 to v0.4",
+            href: `/docs/reference/python/migrations/v0.3-to-v0.4`,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    title: "Go SDK",
+    links: [
+      {
+        title: "Documentation",
+        href: "https://pkg.go.dev/github.com/inngest/inngestgo",
+      },
+    ],
+  },
+  {
+    title: "REST API",
+    links: [
+      {
+        title: "Documentation",
+        href: "https://api-docs.inngest.com/docs/inngest-api/1j9i5603g5768-introduction",
+      },
+    ],
+  },
+  {
+    title: "System events",
+    links: [
+      {
+        title: "inngest/function.failed",
+        href: "/docs/reference/system-events/inngest-function-failed",
+        className: "font-mono",
+      },
+    ],
+  },
+];
+
+const sectionHome: (NavGroup | NavLink)[] = [
+  { title: "Home", href: "/docs" },
+  {
+    title: "Quick start",
     defaultOpen: true,
     links: [
       {
@@ -57,13 +340,9 @@ const sectionGettingStarted: NavGroup[] = [
     ],
   },
   {
-    title: "Learn the basics",
+    title: "Inngest tour",
     defaultOpen: true,
     links: [
-      {
-        title: "Overview",
-        href: "/docs",
-      },
       {
         title: "Inngest functions",
         href: `/docs/learn/inngest-functions`,
@@ -71,10 +350,6 @@ const sectionGettingStarted: NavGroup[] = [
       {
         title: "Inngest steps",
         href: `/docs/learn/inngest-steps`,
-      },
-      {
-        title: "Glossary",
-        href: `/docs/learn/glossary`,
       },
       { title: "Installing the SDK", href: `/docs/sdk/overview` },
       {
@@ -90,24 +365,401 @@ const sectionGettingStarted: NavGroup[] = [
     ],
   },
   {
-    title: "How Inngest works",
+    title: "Features",
     defaultOpen: true,
     links: [
       {
-        title: "Function execution",
-        href: `/docs/learn/how-functions-are-executed`,
-        tag: "New",
+        title: "Local Development",
+        links: [
+          {
+            title: "Overview",
+            href: `/todo`, // TODO
+          },
+          {
+            title: "Guides",
+          },
+          {
+            title: "Inngest Dev Server",
+            href: `/docs/local-development`,
+          },
+          {
+            title: "Development with Docker",
+            href: `/docs/guides/development-with-docker`,
+          },
+        ],
       },
       {
-        title: "Security",
-        href: `/docs/learn/security`,
+        title: "Events & Triggers",
+        links: [
+          {
+            title: "Overview",
+            href: `/todo`, // TODO
+          },
+          { title: "Essentials" },
+          {
+            title: "Triggering Functions",
+            href: `/todo`, // TODO
+          },
+          {
+            title: "CRONs",
+            href: `/todo`, // TODO
+          },
+          {
+            title: "Direct invocation",
+            href: `/docs/guides/invoking-functions-directly`,
+          },
+          {
+            title: "Writing expression",
+            href: `/docs/guides/writing-expressions`,
+          },
+          { title: "Patterns" },
+          {
+            title: "Delayed Functions",
+            href: `/docs/guides/delayed-functions`,
+          },
+          {
+            title: "Fan out",
+            href: `/docs/guides/fan-out-jobs`,
+          },
+          {
+            title: "Multiple Triggers",
+            href: `/docs/guides/multiple-triggers`,
+          },
+          {
+            title: "Batching events",
+            href: `/docs/guides/batching`,
+          },
+          {
+            title: "Webhooks",
+            href: `/docs/platform/webhooks`,
+          },
+          { title: "Best practices" },
+          {
+            title: "Batching events",
+            href: `/docs/guides/batching`,
+          },
+        ],
       },
       {
-        title: "Versioning",
-        href: `/docs/learn/versioning`,
+        title: "Inngest Functions",
+        defaultOpen: true,
+        links: [
+          {
+            title: "Overview",
+            href: `/todo`, // TODO
+          },
+          {
+            title: "Steps & Workflows",
+            links: [
+              {
+                title: "Overview",
+                href: `/todo`, // TODO
+              },
+              {
+                title: "Function steps",
+                href: "/docs/guides/multi-step-functions",
+              },
+              {
+                title: "Wait for events",
+                href: "/docs/reference/functions/step-wait-for-event", // TODO
+              },
+              { title: "Guides" },
+              {
+                title: "Parallel steps",
+                href: "/docs/guides/step-parallelism",
+              },
+              {
+                title: "Loops over steps",
+                href: "/docs/guides/working-with-loops",
+              },
+            ],
+          },
+          {
+            title: "Flow Control",
+            links: [
+              {
+                title: "Overview",
+                href: `/docs/guides/flow-control`,
+              },
+              {
+                title: "Concurrency",
+                href: `/docs/guides/concurrency`,
+              },
+              {
+                title: "Throttling",
+                href: `/docs/guides/throttling`,
+              },
+              {
+                title: "Rate limiting",
+                href: `/docs/guides/rate-limiting`,
+              },
+              {
+                title: "Debouncing",
+                href: `/docs/guides/debounce`,
+              },
+              {
+                title: "Priority",
+                href: `/docs/guides/priority`,
+              },
+            ],
+          },
+          {
+            title: "Errors & Retries",
+            links: [
+              {
+                title: "Overview",
+                href: `/todo`, // TODO
+              },
+              {
+                title: "Retries",
+                href: "/docs/guides/error-handling#retries",
+              },
+              {
+                title: "Callbacks",
+                href: "/docs/reference/functions/handling-failures",
+              },
+              {
+                title: "Inngest Errors",
+                href: "/docs/reference/typescript/functions/errors",
+              },
+              {
+                title: "Guides",
+              },
+              {
+                title: "Handling idempotency",
+                href: "/docs/guides/handling-idempotency",
+              },
+            ],
+          },
+          {
+            title: "Cancelation",
+            links: [
+              {
+                title: "Overview",
+                href: `/todo`, // TODO
+              },
+              {
+                title: "Cancel on Events",
+                href: `/docs/reference/typescript/functions/cancel-on#how-to-use-cancel-on`, // TODO
+              },
+              {
+                title: "Live Cancelation",
+                href: `docs/guides/cancel-running-functions`,
+              },
+            ],
+          },
+          {
+            title: "Versioning",
+            links: [
+              {
+                title: "Overview",
+                href: `/docs/learn/versioning`, // TODO
+              },
+              { title: "Guides" },
+              {
+                title: "Migrating Events",
+                href: `/todo`, // TODO
+              },
+              {
+                title: "Migrating Functions",
+                href: `/todo`, // TODO
+              },
+            ],
+          },
+        ],
+      },
+      {
+        title: "Middleware",
+        links: [
+          {
+            title: "Overview",
+            href: `/todo`, // TODO
+          },
+          {
+            title: "Guides",
+          },
+          {
+            title: "Custom middleware",
+            href: `/docs/reference/middleware/create`,
+          },
+          {
+            title: "Best practices",
+          },
+          {
+            title: "Enrich Function's Context",
+            href: `/todo`, // TODO
+          },
+          {
+            title: "Encryption Middleware",
+            href: `/docs/reference/middleware/examples#e2-e-encryption`, // TODO
+          },
+          {
+            title: "Sentry Middleware",
+            href: `/docs/reference/middleware/examples#sentry-error-reporting-and-tracing`, // TODO
+          },
+          {
+            title: "Datadog Middleware",
+            href: `/docs/examples/track-failures-in-datadog`, // TODO
+          },
+        ],
       },
     ],
   },
+  {
+    title: "Platform",
+    links: [
+      {
+        title: "Deployment",
+        links: [
+          {
+            title: "Overview",
+            href: `/todo`, // TODO
+          },
+          {
+            title: "Environments & Apps",
+            href: `/docs/apps`,
+          },
+          {
+            title: "Syncing",
+            href: `/docs/apps/cloud`,
+          },
+          {
+            title: "Event keys",
+            href: `/docs/events/creating-an-event-key`,
+          },
+          {
+            title: "Signing keys",
+            href: `/docs/platform/signing-keys`,
+          },
+          {
+            title: "Clouds Setup",
+            links: [
+              {
+                title: "Vercel",
+                href: "/docs/deploy/vercel",
+              },
+              {
+                title: "Netlify",
+                href: `/docs/deploy/netlify`,
+              },
+              {
+                title: "Cloudflare Pages",
+                href: `/docs/deploy/cloudflare`,
+              },
+              // Fly, Render, Railway, Google Functions, Firebase Functions, Cloudflare Workers
+            ],
+          },
+          {
+            title: "Limitations",
+            href: `/docs/usage-limits/inngest`,
+          },
+          {
+            title: "Guides",
+          },
+          {
+            title: "Streaming",
+            href: `/docs/streaming`,
+          },
+          {
+            title: "Migrating across clouds",
+            href: "/todo", // TODO
+          },
+          {
+            title: "Self-hosting",
+            href: "/todo", // TODO
+          },
+        ],
+      },
+      {
+        title: "Manage",
+        links: [
+          {
+            title: "Dashboard",
+            href: "/todo", // TODO
+          },
+          {
+            title: "Bulk Replay",
+            href: "/docs/platform/replay",
+          },
+          {
+            title: "Function Pausing",
+            href: "/docs/guides/pause-functions",
+          },
+          {
+            title: "Logs",
+            href: "/todo", // TODO
+          },
+        ],
+      },
+      {
+        title: "Monitor",
+        links: [
+          {
+            title: "Observability & Metrics",
+            href: "/todo", // TODO
+          },
+          {
+            title: "Searching Events",
+            href: "/todo", // TODO
+          },
+          {
+            title: "Inspecting Runs",
+            href: "/todo", // TODO
+          },
+        ],
+      },
+      {
+        title: "Security",
+        links: [
+          {
+            title: "Overview",
+            href: "/docs/learn/security", // TODO
+          },
+          {
+            title: "RBAC & Audit Logs",
+            href: "/todo", // TODO
+          },
+          {
+            title: "SOC2 & HIPAA",
+            href: "/todo", // TODO
+          },
+          {
+            title: "Data governance",
+            href: "/todo", // TODO
+          },
+          { title: "Guides" },
+          {
+            title: "End-to-end encryption",
+            href: "/docs/reference/python/middleware/encryption",
+          },
+        ],
+      },
+    ],
+  },
+  { title: "References", links: sectionReference },
+  // {
+  //   title: "Glossary",
+  //   href: `/docs/learn/glossary`,
+  // },
+  // {
+  //   title: "How Inngest works",
+  //   defaultOpen: true,
+  //   links: [
+  //     {
+  //       title: "Function execution",
+  //       href: `/docs/learn/how-functions-are-executed`,
+  //       tag: "New",
+  //     },
+  //     {
+  //       title: "Security",
+  //       href: `/docs/learn/security`,
+  //     },
+  //     {
+  //       title: "Versioning",
+  //       href: `/docs/learn/versioning`,
+  //     },
+  //   ],
+  // },
 ];
 const sectionGuides: NavGroup[] = [
   {
@@ -679,286 +1331,19 @@ const sectionExamples: NavGroup[] = [
   },
 ];
 
-const sectionReference: NavGroup[] = [
-  {
-    title: "TypeScript SDK",
-    defaultOpen: true,
-    links: [
-      {
-        title: "Introduction",
-        href: `/docs/reference/typescript`,
-      },
-      {
-        title: "Create the client",
-        href: `/docs/reference/client/create`,
-      },
-      {
-        title: "Create a function",
-        href: `/docs/reference/functions/create`,
-      },
-      {
-        title: "Send events",
-        href: `/docs/reference/events/send`,
-      },
-      {
-        title: "Errors",
-        href: `/docs/reference/typescript/functions/errors`,
-      },
-      {
-        title: "Handling failures",
-        href: `/docs/reference/functions/handling-failures`,
-      },
-      {
-        title: "Cancel on",
-        href: `/docs/reference/typescript/functions/cancel-on`,
-      },
-      {
-        title: "Concurrency",
-        href: `/docs/functions/concurrency`,
-        // href: `/docs/reference/functions/concurrency`,
-      },
-      {
-        title: "Rate limit",
-        href: `/docs/reference/functions/rate-limit`,
-      },
-      {
-        title: "Debounce",
-        href: `/docs/reference/functions/debounce`,
-      },
-      {
-        title: "Function run priority",
-        href: `/docs/reference/functions/run-priority`,
-      },
-      // {
-      //   title: "Logging",
-      //   href: `/docs/reference/functions/logging`,
-      // },
-      {
-        title: "Referencing functions",
-        href: `/docs/functions/references`,
-      },
-      {
-        title: "Steps",
-        links: [
-          {
-            title: "step.run()",
-            href: `/docs/reference/functions/step-run`,
-            className: "font-mono",
-          },
-          {
-            title: "step.sleep()",
-            href: `/docs/reference/functions/step-sleep`,
-            className: "font-mono",
-          },
-          {
-            title: "step.sleepUntil()",
-            href: `/docs/reference/functions/step-sleep-until`,
-            className: "font-mono",
-          },
-          {
-            title: "step.invoke()",
-            href: `/docs/reference/functions/step-invoke`,
-            className: "font-mono",
-          },
-          {
-            title: "step.waitForEvent()",
-            href: `/docs/reference/functions/step-wait-for-event`,
-            className: "font-mono",
-          },
-          {
-            title: "step.sendEvent()",
-            href: `/docs/reference/functions/step-send-event`,
-            className: "font-mono",
-          },
-        ],
-      },
-      {
-        title: "Serve",
-        links: [
-          // {
-          //   title: "Framework handlers",
-          //   href: `/docs/learn/serving-inngest-functions`,
-          // },
-          {
-            title: "Configuration",
-            href: `/docs/reference/serve`,
-          },
-          { title: "Streaming", href: `/docs/streaming` },
-        ],
-      },
-      {
-        title: "Middleware",
-        links: [
-          {
-            title: "Overview",
-            href: `/docs/reference/middleware/overview`,
-          },
-          {
-            title: "Creating middleware",
-            href: `/docs/reference/middleware/create`,
-          },
-          {
-            title: "Lifecycle",
-            href: `/docs/reference/middleware/lifecycle`,
-          },
-          {
-            title: "Examples",
-            href: `/docs/reference/middleware/examples`,
-          },
-          {
-            title: "TypeScript",
-            href: `/docs/reference/middleware/typescript`,
-          },
-        ],
-      },
-      {
-        title: "Using the SDK",
-        links: [
-          {
-            title: "Environment variables",
-            href: `/docs/sdk/environment-variables`,
-          },
-          {
-            title: "Using TypeScript",
-            href: `/docs/typescript`,
-          },
-          {
-            title: "ESLint plugin",
-            href: `/docs/sdk/eslint`,
-          },
-          { title: "Upgrading to v3", href: `/docs/sdk/migration` },
-        ],
-      },
-    ],
-  },
-  {
-    title: "Python SDK",
-    links: [
-      {
-        title: "Introduction",
-        href: `/docs/reference/python`,
-      },
-      {
-        title: "Quick start",
-        href: `/docs/reference/python/overview/quick-start`,
-      },
-      {
-        title: "Inngest Client",
-        href: `/docs/reference/python/client/overview`,
-      },
-      {
-        title: "Create function",
-        href: `/docs/reference/python/functions/create`,
-      },
-      {
-        title: "Send events",
-        href: `/docs/reference/python/client/send`,
-      },
-      {
-        title: "Environment variables",
-        href: `/docs/reference/python/overview/env-vars`,
-      },
-      {
-        title: "Production mode",
-        href: `/docs/reference/python/overview/prod-mode`,
-      },
-      {
-        title: "Steps",
-        links: [
-          {
-            title: "invoke",
-            href: `/docs/reference/python/steps/invoke`,
-          },
-          {
-            title: "invoke_by_id",
-            href: `/docs/reference/python/steps/invoke_by_id`,
-          },
-          {
-            title: "parallel",
-            href: `/docs/reference/python/steps/parallel`,
-          },
-          {
-            title: "run",
-            href: `/docs/reference/python/steps/run`,
-          },
-          {
-            title: "send_event",
-            href: `/docs/reference/python/steps/send-event`,
-          },
-          {
-            title: "sleep",
-            href: `/docs/reference/python/steps/sleep`,
-          },
-          {
-            title: "sleep_until",
-            href: `/docs/reference/python/steps/sleep-until`,
-          },
-          {
-            title: "wait_for_event",
-            href: `/docs/reference/python/steps/wait-for-event`,
-          },
-        ],
-      },
-      {
-        title: "Middleware",
-        links: [
-          {
-            title: "Overview",
-            href: `/docs/reference/python/middleware/overview`,
-          },
-          {
-            title: "Lifecycle",
-            href: `/docs/reference/python/middleware/lifecycle`,
-          },
-          {
-            title: "Encryption",
-            href: `/docs/reference/python/middleware/encryption`,
-          },
-        ],
-      },
-      {
-        title: "Migrations",
-        links: [
-          {
-            title: "v0.3 to v0.4",
-            href: `/docs/reference/python/migrations/v0.3-to-v0.4`,
-          },
-        ],
-      },
-    ],
-  },
-  {
-    title: "Go SDK",
-    links: [
-      {
-        title: "Documentation",
-        href: "https://pkg.go.dev/github.com/inngest/inngestgo",
-      },
-    ],
-  },
-  {
-    title: "REST API",
-    links: [
-      {
-        title: "Documentation",
-        href: "https://api-docs.inngest.com/docs/inngest-api/1j9i5603g5768-introduction",
-      },
-    ],
-  },
-  {
-    title: "System events",
-    links: [
-      {
-        title: "inngest/function.failed",
-        href: "/docs/reference/system-events/inngest-function-failed",
-        className: "font-mono",
-      },
-    ],
-  },
-];
+export const isNavGroup = (item: any): item is NavGroup => {
+  return !!item.links;
+};
+export const isNavLinkGroup = (item: any): item is NavLinkGroup => {
+  return item.title && !item.links && !item.href;
+};
 
-function linkSearch(groups: NavGroup[], pathname) {
-  return groups.find((group) => recursiveLinkSearch(group, pathname));
+function linkSearch(groups: (NavGroup | NavLink)[], pathname) {
+  return groups.find((item) =>
+    isNavGroup(item)
+      ? recursiveLinkSearch(item, pathname)
+      : item.href === pathname
+  );
 }
 
 function recursiveLinkSearch(group: NavGroup, pathname) {
@@ -984,28 +1369,28 @@ const matchers = {
     /^\/docs\/examples/.test(pathname) || linkSearch(sectionExamples, pathname),
   // should match everything except above
   // default: /^\/docs(?!\/guides|\/reference|\/examples)/,
-  default: (pathname) => linkSearch(sectionGettingStarted, pathname),
+  default: (pathname) => linkSearch(sectionHome, pathname),
 };
 
 export const menuTabs = [
   {
-    title: "Getting started",
+    title: "Documentation",
     icon: PlayIcon,
     href: "/docs",
     matcher: matchers.default,
   },
-  {
-    title: "Guides",
-    icon: GuideIcon,
-    href: "/docs/guides",
-    matcher: matchers.guides,
-  },
-  {
-    title: "Reference",
-    icon: CogIcon,
-    href: "/docs/reference",
-    matcher: matchers.reference,
-  },
+  // {
+  //   title: "Guides",
+  //   icon: GuideIcon,
+  //   href: "/docs/guides",
+  //   matcher: matchers.guides,
+  // },
+  // {
+  //   title: "Reference",
+  //   icon: CogIcon,
+  //   href: "/docs/reference",
+  //   matcher: matchers.reference,
+  // },
   {
     title: "Examples",
     icon: LightBulbIcon,
@@ -1018,28 +1403,29 @@ export const topLevelNav = [
   {
     title: "Home",
     icon: HomeIcon,
-    href: `/docs/`,
+    href: `/docs`,
+    sectionLinks: sectionHome,
   },
-  {
-    title: "Getting started",
-    icon: PlayIcon,
-    href: "/docs/getting-started/nextjs-quick-start",
-    sectionLinks: sectionGettingStarted,
-  },
-  {
-    title: "Guides",
-    icon: GuideIcon,
-    href: "/docs/guides",
-    matcher: matchers.guides,
-    sectionLinks: sectionGuides,
-  },
-  {
-    title: "Reference",
-    icon: CogIcon,
-    href: "/docs/reference",
-    matcher: matchers.reference,
-    sectionLinks: sectionReference,
-  },
+  // {
+  //   title: "Getting started",
+  //   icon: PlayIcon,
+  //   href: "/docs/getting-started/nextjs-quick-start",
+  //   sectionLinks: [...sectionHome, ...sectionGuides, ...sectionReference],
+  // },
+  // {
+  //   title: "Guides",
+  //   icon: GuideIcon,
+  //   href: "/docs/guides",
+  //   matcher: matchers.default,
+  //   sectionLinks: sectionGuides,
+  // },
+  // {
+  //   title: "Reference",
+  //   icon: CogIcon,
+  //   href: "/docs/reference",
+  //   matcher: matchers.reference,
+  //   sectionLinks: sectionReference,
+  // },
   {
     title: "Examples",
     icon: LightBulbIcon,
