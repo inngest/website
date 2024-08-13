@@ -512,7 +512,9 @@ export function Navigation(props) {
       getAllOpenedByDefaultSections(
         [
           ...(activeGroup ? [activeGroup] : []),
-          ...nestedNavigation?.sectionLinks,
+          ...(nestedNavigation?.sectionLinks
+            ? nestedNavigation?.sectionLinks
+            : []),
         ],
         router.pathname
       ),

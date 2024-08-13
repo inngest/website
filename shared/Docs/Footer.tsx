@@ -167,7 +167,7 @@ function PageNavigation() {
   let nextPage = allPages[currentPageIndex + 1];
 
   // Skip next page if it's an external link
-  if (!nextPage?.href.match(/^\//)) {
+  if (!nextPage?.href?.match(/^\//)) {
     nextPage = null;
   }
 
