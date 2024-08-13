@@ -2,7 +2,7 @@
 heading: "Next.js Serverless Functions vs Durable Functions"
 image: /assets/blog/nextjs-serverless-vs-durable-functions/featured-image.png
 showSubtitle: true
-subtitle: How your favorite products use workflows to power their core features.
+subtitle: Learn how Durable Functions extends your Next.js experience by powering integrations, email scheduling, or AI workflows without timeouts.
 date: 2024-08-13
 author: Charly Poly
 disableCTA: true
@@ -167,7 +167,6 @@ Getting your head around such code takes a few minutes, right?
 
 Beyond being hard to decipher, the above code also has many drawbacks:
 
-- **The code covers many things at once** by handling the DNS verification and sending of emails. Separating the sending of emails in another CRON would require an additional state in the database, which only adds to the complexity.
 - **Any unhandled error will cause the whole workflow to fail** (ex, the Slack notification), and retrying a single domain verification is not possible.
 - Finally, our **Serverless Function is prone to timeouts**, the time spent to verify domains being linearly proportional to the number of domains to verify and user signups.
 
@@ -282,11 +281,11 @@ Even Durable Functions can send events, triggering other Durable Functions:
 
 ![Durable Functions are run using four main triggers: an event sent from a Serverless Function or another Durable Function, a webhook or a CRON event.](/assets/blog/nextjs-serverless-vs-durable-functions/image5.jpg)
 
-Our domain verification Durable Function starts when an `account/verify-domain` event is sent from a Serverless function (for example a `/api/account` API Route). The `event` argument carries the `domain` and `account` objects, removing unnecessary database calls.
+Our domain verification Durable Function starts when an `account/verify-domain` event is sent from a Serverless function (for example a `/api/account` API Route). The `event` argument includes the `domain` and `account` objects, removing unnecessary database calls.
 
 **The Durable Execution Engine:  how events trigger Durable Functions runs**
 
-Events are sent to a Durable Execution Engine (for example, Inngest), which triggers Durable Functions runs and manages their steps (like React manages Components and their state).
+Events are sent to a Durable Execution Engine (for example, Inngest), which triggers Durable Function runs and manages their steps (like React manages Components and their state).
 
 To be managed by the Durable Execution Engine, the Durable Functions are exposed over HTTP via a dedicated Next.js API Route:
 
@@ -305,6 +304,8 @@ We just covered how Durable Functions are triggered by the Durable Execution Eng
 The same principles apply to steps: each step results in communication with the Durable Execution Engine, where a request triggers a step to run, receiving the step's state in the response:
 
 ![This diagram illustrates how the Durable Execution Engine interact with the Next.js applications. Each step of a Durable Function results in a communication between the Durable Execution Engine and the Next.js application where the Durable Execution Engine sends state and instructions (ex: "run step 1") and the response contains the state of the executed step.](/assets/blog/nextjs-serverless-vs-durable-functions/image7.jpg)
+
+In short, the Durable Execution Engine is responsible for keeping the state of Durable Functions and their states up to date while communicating with the Next.js application.
 
 This architecture powers the durability of Durable Functions with retriable steps and waits from hours to months. Also, a nice collateral effect of Durable Functions resides in steps getting a max duration equivalent to a regular Serverless Functions run, enabling workflows that both span over months and run for more than 5 minutes!
 
@@ -345,6 +346,7 @@ Our workflow is now guaranteed to run a maximum of 2 times per second!
 
 ## Conclusion
 
-Durable Functions are a powerful Next.js pattern. Adding workflows or long-running functions that power integrations, AI workflows, or email scheduling no longer leads to timeout issues or infrastructure work.
 
-So, now, what would you build?
+Durable Functions are a powerful Next.js pattern. Adding workflows or long-running functions to your Next.js application no longer leads to timeout issues or plumbing with queueing solutions involving infrastructure work. This enables you to build fully featured SaaSs that integrate with other applications or APIs and provide advanced AI features or automation.
+
+So, what would you like to build?
