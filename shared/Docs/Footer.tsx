@@ -4,7 +4,12 @@ import { useRouter } from "next/router";
 import { Transition } from "@headlessui/react";
 import { PencilSquareIcon } from "@heroicons/react/24/outline";
 import { Button } from "../Button";
-import { topLevelNav } from "./navigationStructure";
+import {
+  isNavLink,
+  NavLink,
+  NavSection,
+  topLevelNav,
+} from "./navigationStructure";
 import SocialBadges from "./SocialBadges";
 
 function CheckIcon(props) {
@@ -142,14 +147,16 @@ function PageLink({ label, page, previous = false }) {
   );
 }
 
-function flattenNav(nav) {
-  return nav.flatMap((group) => {
-    return group.sectionLinks
-      ? flattenNav(group.sectionLinks)
-      : group.links
-      ? flattenNav(group.links)
-      : group;
-  });
+function flattenNav(nav: any): NavLink[] {
+  return nav
+    .flatMap((group) => {
+      return group.sectionLinks
+        ? flattenNav(group.sectionLinks)
+        : group.links
+        ? flattenNav(group.links)
+        : group;
+    })
+    .filter((link) => !!link.href);
 }
 
 function PageNavigation() {

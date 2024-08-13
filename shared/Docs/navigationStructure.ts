@@ -37,7 +37,7 @@ export type NavGroup = {
 // A nav section with a nested navigation section
 export type NavSection = NavLink & {
   icon?: React.FC<React.SVGProps<SVGSVGElement>>;
-  matcher?: RegExp;
+  matcher?: RegExp | Function;
   tag?: string;
   target?: string;
   sectionLinks: {
