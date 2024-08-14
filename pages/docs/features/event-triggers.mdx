@@ -1,0 +1,107 @@
+import { ResourceGrid, Resource } from 'src/shared/Docs/Resources'
+import EventIcon from 'src/shared/Icons/Event'
+import GuideIcon from 'src/shared/Icons/Guide';
+import { Callout, CodeGroup, ImageTheme, Col, Row } from "src/shared/Docs/mdx";
+
+# Events & Triggers
+
+
+<Row>
+
+  <Col>
+  
+    <div className='md:py-3'>
+
+      Inngest uses Events to trigger Function runs.
+
+      This enables Inngest Functions to be triggered from various sources: your application, another Inngest Function, CRON schedule, or webhooks.
+
+      An Inngest Function can be triggered based on one or multiple events or on some specific Event attributes by leveraging [Event expressions](https://www.notion.so/docs/guides/writing-expressions).
+
+      Beyond triggering Functions, Events can also be used to sync multiple runs together by using [Event Waiting](https://www.notion.so/docs/reference/functions/step-wait-for-event).
+
+    </div>
+
+    Explore the below guides for more information.
+  </Col>
+
+  <Col>
+    <ImageTheme
+      dark={'/assets/docs/features/events-triggers/inngest-function-triggers-dark.jpg'}
+      light={'/assets/docs/features/events-triggers/inngest-function-triggers-light.jpg'}
+      alt={''}
+    />
+  </Col>
+
+</Row>
+
+
+
+## Triggering Functions
+
+<ResourceGrid cols={4}>
+
+<Resource resource={{
+  href: "/todo",
+  name: "Sending events",
+  icon: EventIcon,
+  description: "Trigger a Function by sending an event.",
+  pattern: 0,
+}}/>
+
+<Resource resource={{
+  href: "/docs/guides/scheduled-functions",
+  name: "Scheduled Functions",
+  icon: EventIcon,
+  description: "Trigger a Function using a CRON schedule.",
+  pattern: 0,
+}}/>
+
+<Resource resource={{
+  href: "/docs/guides/delayed-functions",
+  name: "Delayed Functions",
+  icon: EventIcon,
+  description: "Trigger a future Function run.",
+  pattern: 0,
+}}/>
+
+<Resource resource={{
+  href: "/docs/guides/invoking-functions-directly",
+  name: "Direct invocation",
+  icon: EventIcon,
+  description: "Invoke a Function without Events.",
+  pattern: 0,
+}}/>
+
+</ResourceGrid>
+
+## Patterns
+
+<ResourceGrid cols={3}>
+
+<Resource resource={{
+  href: "/docs/guides/fan-out-jobs",
+  name: "Fan out",
+  icon: EventIcon,
+  description: "Trigger multiple Functions from a single Event.",
+  pattern: 0,
+}}/>
+
+<Resource resource={{
+  href: "/docs/guides/batching",
+  name: "Batching Events",
+  icon: EventIcon,
+  description: "Merge similar Events for faster processing.",
+  pattern: 0,
+}}/>
+
+<Resource resource={{
+  href: "/docs/guides/writing-expressions",
+  name: "Writing Event expressions",
+  icon: EventIcon,
+  description: "Trigger Functions based on advanced Event matching.",
+  pattern: 0,
+}}/>
+
+
+</ResourceGrid>

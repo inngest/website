@@ -7,6 +7,9 @@ import React, { useState } from "react";
 import { ChevronDown, ChevronUp } from "react-feather";
 import Image, { ImageProps } from "next/image";
 
+import Zoom from "react-medium-image-zoom";
+import "react-medium-image-zoom/dist/styles.css";
+
 export { default as YouTube } from "react-youtube-embed";
 
 // export const a: React.FunctionComponent<LinkProps> = (props) => (
@@ -331,6 +334,7 @@ export function ImageTheme({
   light,
   dark,
   alt,
+  className,
   ...imageProps
 }: ImageProps & {
   light: string;
@@ -339,30 +343,48 @@ export function ImageTheme({
   // if there's no dark mode image provided, invert the light mode
   if (!dark) {
     return (
-      <div>
+      <Zoom wrapElement="span" zoomMargin={25}>
         <Image
           src={light}
-          className="block dark:invert"
+          className={`${className} block dark:invert`}
           alt={alt}
+          width={0}
+          height={0}
+          sizes="100vw"
+          style={{ width: "100%", height: "auto" }}
           {...imageProps}
         />
-      </div>
+      </Zoom>
     );
   }
   return (
-    <div>
-      <Image
-        src={light}
-        className="block dark:hidden"
-        alt={alt}
-        {...imageProps}
-      />
-      <Image
-        src={dark}
-        className="hidden dark:block"
-        alt={alt}
-        {...imageProps}
-      />
-    </div>
+    <>
+      <Zoom wrapElement="span" zoomMargin={25}>
+        <Image
+          src={light}
+          className="block dark:hidden"
+          alt={alt}
+          width={0}
+          loading="eager"
+          height={0}
+          sizes="100vw"
+          style={{ width: "100%", height: "auto" }}
+          {...imageProps}
+        />
+      </Zoom>
+      <Zoom wrapElement="span" zoomMargin={25}>
+        <Image
+          src={dark}
+          className="hidden dark:block"
+          alt={alt}
+          width={0}
+          loading="eager"
+          height={0}
+          sizes="100vw"
+          style={{ width: "100%", height: "auto" }}
+          {...imageProps}
+        />
+      </Zoom>
+    </>
   );
 }

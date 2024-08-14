@@ -427,7 +427,7 @@ function hasPath(links: { href?: string }[], pathname: string) {
   return findPathIndex(links, pathname) !== -1;
 }
 
-function hasNavGroupPath(group: NavGroup, pathname: string) {
+export function hasNavGroupPath(group: NavGroup, pathname: string) {
   return group.links.find((link) => {
     return isNavGroup(link)
       ? hasNavGroupPath(link, pathname)
@@ -438,7 +438,7 @@ function hasNavGroupPath(group: NavGroup, pathname: string) {
 }
 
 // Flatten the nested nav and get all nav sections w/ sectionLinks
-function getAllSections(nav) {
+export function getAllSections(nav) {
   return nav.reduce((acc, item) => {
     if (item.sectionLinks) {
       acc.push(item);

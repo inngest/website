@@ -1,3 +1,5 @@
+import { ImageTheme } from "src/shared/Docs/mdx";
+
 export const description = 'How to use the fan-out pattern with Inngest to trigger multiple functions from a single event.'
 
 # Fan-out (one-to-many)
@@ -7,14 +9,13 @@ The fan-out pattern enables you to send a single event and trigger multiple func
 * **Reliability**: Logic from each function runs independently, meaning an issue with one function will not affect the other(s).
 * **Performance**: As functions area run in parallel, all of the work will execute faster than running in sequence.
 
-<img
-  src="/assets/docs/guides/fan-out-diagram.png"
-  width="800"
-  height={224}
-  quality="95"
+
+<ImageTheme
+  light={'/assets/docs/guides/fan-out-diagram.png'}
+  alt={'A diagram showing how to fan-out to multiple functions'}
   className="rounded-md"
-  alt="A diagram showing how to fan-out to multiple functions"
 />
+
 
 A use case for fan-out is, for example, when a user signs up for your product. In this scenario, you may want to:
 1. Send a welcome email
