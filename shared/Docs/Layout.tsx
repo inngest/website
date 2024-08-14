@@ -16,6 +16,7 @@ import { useMobileNavigationStore } from "./MobileNavigation";
 import { getOpenGraphImageURL } from "../../utils/social";
 import clsx from "clsx";
 import { MDXComponents } from "mdx/types";
+import { Breadcrumb } from "./Breadcrumb";
 
 const GITHUB_BRANCH = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_REF || "main";
 const GITHUB_PREFIX = `https://github.com/inngest/website/tree/${GITHUB_BRANCH}/`;
@@ -113,6 +114,7 @@ export function Layout({
               )}
             >
               <main className="pt-6 lg:pt-8 xl:pr-8">
+                <Breadcrumb />
                 <Prose as="article">
                   {children}
                   <div
