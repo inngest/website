@@ -362,7 +362,7 @@ export function ImageTheme({
       <Zoom wrapElement="span" zoomMargin={25}>
         <Image
           src={light}
-          className="block dark:hidden"
+          className={`${className} block dark:hidden`}
           alt={alt}
           width={0}
           loading="eager"
@@ -375,7 +375,7 @@ export function ImageTheme({
       <Zoom wrapElement="span" zoomMargin={25}>
         <Image
           src={dark}
-          className="hidden dark:block"
+          className={`${className} hidden dark:block`}
           alt={alt}
           width={0}
           loading="eager"
@@ -386,5 +386,77 @@ export function ImageTheme({
         />
       </Zoom>
     </>
+  );
+}
+
+export function CardGroup({
+  children,
+  cols = 2,
+  className,
+}: {
+  children: React.ReactNode;
+  cols?: 1 | 2 | 3 | 4;
+  className?: string;
+}) {
+  return (
+    <div
+      className={clsx(`not-prose grid sm:grid-cols-${cols} gap-x-4`, className)}
+    >
+      {children}
+    </div>
+  );
+}
+
+export interface CardProps<T> {
+  title?: string;
+  icon?: React.ReactNode;
+
+  className?: string;
+  as?: T;
+  href?: string;
+  children: React.ReactNode;
+}
+
+export function Card<T extends React.ElementType = "div">({
+  title,
+  icon,
+
+  className,
+  children,
+  as,
+  ...props
+}: CardProps<T>) {
+  return (
+    <a
+      className={clsx(
+        "not-prose font-normal group relative my-2 ring-2 ring-transparent rounded-xl border border-zinc-200 hover:border-zinc-300 dark:border-zinc-800 dark:hover:border-zinc-600 overflow-hidden w-full",
+        props.href && "cursor-pointer",
+        className
+      )}
+      {...props}
+    >
+      <div className="px-6 py-4 flex flex-row gap-2 items-start">
+        <div className="min-w-7 flex justify-start mt-1">{icon}</div>
+        <div>
+          <h2
+            className={clsx(
+              "font-semibold text-base text-slate-800 dark:text-white"
+            )}
+          >
+            {title}
+          </h2>
+          <span
+            className={clsx(
+              "mt-1 font-normal",
+              title
+                ? "text-slate-600 dark:text-slate-400"
+                : "text-slate-700 dark:text-slate-300"
+            )}
+          >
+            {children}
+          </span>
+        </div>
+      </div>
+    </a>
   );
 }

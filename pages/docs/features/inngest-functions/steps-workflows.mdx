@@ -1,6 +1,20 @@
-import { Callout, CodeGroup } from "src/shared/Docs/mdx";
+import { Callout, CodeGroup, ImageTheme } from "src/shared/Docs/mdx";
 
 # Steps & Workflows
 
-- Why steps (architecture)
-- Steps features overview (waits, waitForEvent, etc)
+Steps are the building blocks of Inngest Functions:
+
+- They enable isolated retries in case of failures with a point-in-time recovery (*only failed steps reruns*)
+- They add waits capabilities, such as pausing a workflow for hours up to months
+- They can be run in loops and parallel with **`Promise.all()`**, enabling faster processing
+- They support waiting for events, enabling cross Functions synchronization
+- Finally, when running on Serverless environments, they unlock longer execution time, removing timeouts
+
+All those capabilities make Inngest Functions a perfect fit for building workflows.
+
+
+<ImageTheme
+  dark={'/assets/docs/features/inngest-functions/steps-workflows/Durable-Execution-Engine-steps-dark.jpg'}
+  light={'/assets/docs/features/inngest-functions/steps-workflows/Durable-Execution-Engine-steps-light.jpg'}
+  alt={''}
+/>

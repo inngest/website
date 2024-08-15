@@ -389,7 +389,7 @@ const sectionHome: (NavGroup | NavLink)[] = [
         links: [
           {
             title: "Overview",
-            href: `/docs/features/event-triggers`, // TODO
+            href: `/docs/features/event-triggers`,
           },
           { title: "Essentials" },
           {

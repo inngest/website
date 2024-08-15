@@ -1,6 +1,69 @@
-import { Callout, CodeGroup } from "src/shared/Docs/mdx";
+import { Callout, CodeGroup, ImageTheme, Col, Row } from "src/shared/Docs/mdx";
+import { ResourceGrid, Resource } from 'src/shared/Docs/Resources';
+import TypeScriptIcon from 'src/shared/Icons/TypeScript';
+import PythonIcon from 'src/shared/Icons/Python';
+import GoIcon from 'src/shared/Icons/Go';
 
 # Inngest Functions
 
-- capabilities/concepts overview (Steps, Flow Control, etc)
-- Functions parts (Config, Trigger, Context [Logging]) that points to the SDK references
+Inngest functions enable developers to run reliable background logic, from background jobs to complex workflows. They provide robust tools for retrying, scheduling, and coordinating complex sequences of operations.
+
+
+## Anatomy of an Inngest Function
+
+<Row>
+
+  <Col>
+
+       An Inngest Function is composed of 3 main parts:
+
+       - A unique or list of Events, Cron schedules or webhooks that [can Trigger the Function](/docs/features/event-triggers)
+       - [Steps](/docs/features/steps-workflows) to transform your Inngest Function in a workflows with durable checkpoints that can be parallelized
+       - [Flow Control](/docs/guides/flow-control) configuration to control how runs get distributed in time with concurrency, throttling and more
+
+  </Col>
+
+  <Col>
+    
+<ImageTheme
+  dark={'/assets/docs/features/inngest-functions/inngest-function-components-dark.jpg'}
+  light={'/assets/docs/features/inngest-functions/inngest-function-components-light.jpg'}
+  className="my-0"
+  alt={''}
+/>
+  </Col>
+
+</Row>
+
+
+## Writing Inngest Functions
+
+
+<ResourceGrid cols={3} border={false}>
+
+  <Resource resource={{
+    href: "/docs/reference/typescript?ref=docs-homepage",
+    name: "TypeScript SDK",
+    icon: TypeScriptIcon,
+    description: "Write Inngest Functions in Python",
+    pattern: 0,
+  }}/>
+
+  <Resource resource={{
+    href: "/docs/reference/python",
+    name: "Python SDK",
+    description: "Write Inngest Functions in TypeScript",
+    logo: PythonIcon,
+    pattern: 0,
+  }}/>
+
+
+  <Resource resource={{
+    href: "/docs/reference/python?ref=docs-homepage",
+    name: "Go SDK",
+    icon: GoIcon,
+    description: "Write Inngest Functions in Go",
+    pattern: 0,
+  }}/>
+
+</ResourceGrid>

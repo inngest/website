@@ -1,107 +1,67 @@
-import { ResourceGrid, Resource } from 'src/shared/Docs/Resources'
 import EventIcon from 'src/shared/Icons/Event'
-import GuideIcon from 'src/shared/Icons/Guide';
-import { Callout, CodeGroup, ImageTheme, Col, Row } from "src/shared/Docs/mdx";
+import ClockIcon from 'src/shared/Icons/Clock';
+import WebhookIcon from 'src/shared/Icons/Webhook';
+import CloudIcon from 'src/shared/Icons/Cloud';
+import BranchIcon from 'src/shared/Icons/Branch';
+import NewspaperIcon from 'src/shared/Icons/Newspaper';
+import { CardGroup, Card, ImageTheme } from "src/shared/Docs/mdx";
 
 # Events & Triggers
 
+Inngest functions are triggered asynchronously by **events** or on a **cron schedule**.
 
-<Row>
-
-  <Col>
-  
-    <div className='md:py-3'>
-
-      Inngest uses Events to trigger Function runs.
-
-      This enables Inngest Functions to be triggered from various sources: your application, another Inngest Function, CRON schedule, or webhooks.
-
-      An Inngest Function can be triggered based on one or multiple events or on some specific Event attributes by leveraging [Event expressions](https://www.notion.so/docs/guides/writing-expressions).
-
-      Beyond triggering Functions, Events can also be used to sync multiple runs together by using [Event Waiting](https://www.notion.so/docs/reference/functions/step-wait-for-event).
-
-    </div>
-
-    Explore the below guides for more information.
-  </Col>
-
-  <Col>
-    <ImageTheme
-      dark={'/assets/docs/features/events-triggers/inngest-function-triggers-dark.jpg'}
-      light={'/assets/docs/features/events-triggers/inngest-function-triggers-light.jpg'}
-      alt={''}
-    />
-  </Col>
-
-</Row>
+Inngest functions can be triggered from various sources, including:
 
 
+<CardGroup cols={2}>
+  <Card title="Your application" icon={<CloudIcon />} href={'/docs/features/event-triggers/send-events'}>
+    Send an event from your application’s backend with the Inngest SDK.
+  </Card>
+  <Card title="Cron schedule" icon={<ClockIcon />} href={'/docs/guides/scheduled-functions'}>
+    Run an Inngest function periodically with a trigger using cron syntax.
+  </Card>
+  <Card title="Webhook events" icon={<WebhookIcon />} href={'/docs/platform/webhooks'}>
+    Use Inngest as a webhook consumer for any service to trigger functions.
+  </Card>
+  <Card title="Another Inngest function" icon={<BranchIcon />} href={'/docs/guides/invoking-functions-directly'}>
+    Directly invoke other functions to compose more powerful functions.
+  </Card>
+</CardGroup>
 
-## Triggering Functions
+You can customize each of these triggers in multiple ways:
 
-<ResourceGrid cols={4}>
-
-<Resource resource={{
-  href: "/todo",
-  name: "Sending events",
-  icon: EventIcon,
-  description: "Trigger a Function by sending an event.",
-  pattern: 0,
-}}/>
-
-<Resource resource={{
-  href: "/docs/guides/scheduled-functions",
-  name: "Scheduled Functions",
-  icon: EventIcon,
-  description: "Trigger a Function using a CRON schedule.",
-  pattern: 0,
-}}/>
-
-<Resource resource={{
-  href: "/docs/guides/delayed-functions",
-  name: "Delayed Functions",
-  icon: EventIcon,
-  description: "Trigger a future Function run.",
-  pattern: 0,
-}}/>
-
-<Resource resource={{
-  href: "/docs/guides/invoking-functions-directly",
-  name: "Direct invocation",
-  icon: EventIcon,
-  description: "Invoke a Function without Events.",
-  pattern: 0,
-}}/>
-
-</ResourceGrid>
-
-## Patterns
-
-<ResourceGrid cols={3}>
-
-<Resource resource={{
-  href: "/docs/guides/fan-out-jobs",
-  name: "Fan out",
-  icon: EventIcon,
-  description: "Trigger multiple Functions from a single Event.",
-  pattern: 0,
-}}/>
-
-<Resource resource={{
-  href: "/docs/guides/batching",
-  name: "Batching Events",
-  icon: EventIcon,
-  description: "Merge similar Events for faster processing.",
-  pattern: 0,
-}}/>
-
-<Resource resource={{
-  href: "/docs/guides/writing-expressions",
-  name: "Writing Event expressions",
-  icon: EventIcon,
-  description: "Trigger Functions based on advanced Event matching.",
-  pattern: 0,
-}}/>
+- **[Filtering event triggers](/docs/guides/writing-expressions)** - Trigger a function for a subset of matching events sent.
+- **[Delaying execution](/docs/guides/delayed-functions)** - Trigger a function to run at a specific timestamp in the future.
+- **[Batching events](/docs/guides/batching)** - Process multiple events in a single function for more efficient systems.
+- **[Multiple triggers](/docs/guides/multiple-triggers)** - Use a single function to handle multiple event types.
 
 
-</ResourceGrid>
+## Why events?
+
+Using Events to trigger Inngest Functions instead of direct invocations offers a lot of flexibility:
+
+- Events can trigger multiple Inngest Functions.
+- Events can be used to synchronize Inngest Function runs with [cancelation](/docs/features/cancelation) and [“wait for event” step](/docs/reference/functions/step-wait-for-event).
+- Events can be leveraged to trigger Functions across multiple applications.
+- Similar Events can be grouped together for faster processing.
+
+Events act as a convenient mapping between your application actions (ex, `user.signup`) and your application's code (ex, `sendWelcomeEmail()` and `importContacts()`):
+
+<ImageTheme
+  dark={'/assets/docs/features/events-triggers/inngest-function-triggers-dark.jpg'}
+  light={'/assets/docs/features/events-triggers/inngest-function-triggers-light.jpg'}
+  className="my-0"
+  alt={''}
+/>
+
+### Learn more about Events
+
+
+<CardGroup cols={2}>
+  <Card title="Blog post: How event Filtering works" icon={<NewspaperIcon />} href={'https://www.inngest.com/blog/accidentally-quadratic-evaluating-trillions-of-event-matches-in-real-time'}>
+    Accidentally Quadratic: Evaluating trillions of event matches in real-time
+  </Card>
+  <Card title="Blog post: Events in practice" icon={<NewspaperIcon />} href={'https://www.inngest.com/blog/nextjs-trpc-inngest'}>
+    Building an Event Driven Video Processing Workflow with Next.js, tRPC, and Inngest
+  </Card>
+</CardGroup>
