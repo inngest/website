@@ -1,10 +1,84 @@
-import { Callout, CodeGroup } from "src/shared/Docs/mdx";
+import { CardGroup, Card, ImageTheme } from "src/shared/Docs/mdx";
+import RunsIcon from 'src/shared/Icons/Runs';
+import SquaresIcon from 'src/shared/Icons/Squares';
+import CLIIcon from 'src/shared/Icons/CLI';
+import TypeScriptIcon from 'src/shared/Icons/TypeScript';
+import PythonIcon from 'src/shared/Icons/Python';
+import GoIcon from 'src/shared/Icons/Go';
+import QuestionIcon from 'src/shared/Icons/Question';
 
 # Local development
 
-Inngest's tooling makes it easy to test your functions locally with any framework using the Inngest dev server.
+Inngest's tooling makes it easy to develop your functions locally with any framework using the Inngest Dev Server.
 
-- Local first DX at its best
-- supports all features and languages
-- overview of the UI (link to the guide)
-- link to the Inngest CLI reference
+The [Inngest Dev Server](/docs/dev-server) is a fully-featured local version of the [Inngest Platform](/docs/platform/deployment) enabling a seamless transition from your local development to feature, staging and production environments.
+
+![The Inngest Dev Server on the Functions page](/assets/docs/features/local-development/DevServer-functions.jpg)
+
+
+Get started with your favorite setup:
+
+
+<CardGroup cols={2}>
+  <Card title="Inngest Dev Server" icon={<RunsIcon />} href={'/docs/features/event-triggers/send-events'}>
+    Send an event from your application’s backend with the Inngest SDK.
+  </Card>
+  <Card title="Development with Docker" icon={<SquaresIcon />} href={'/docs/guides/scheduled-functions'}>
+    Run an Inngest function periodically with a trigger using cron syntax.
+  </Card>
+</CardGroup>
+
+## Development Flow with Inngest
+
+The Inngest Dev Server provides all the features available in the Inngest Platform, guaranteeing a smooth transition from local dev to production environments.
+
+Developing with Inngest looks as it follows:
+
+1. [Configure the Inngest SDK in your application](/docs/inngest-tour/1-setup-inngest)
+2. [Connecting the Inngest Dev Server to your local application](/docs/inngest-tour/2-your-first-function)
+3. Develop your Inngest Functions with [Steps](/docs/features/inngest-functions/steps-workflows), [Flow Control](/docs/guides/flow-control) and [more](/docs/features/inngest-functions)
+5. _(Optional) - Configure Preview environments with [our Vercel Integration](/docs/deploy/vercel)_
+6. [Create an Inngest App](/docs/apps) on the Inngest Platform and [configure its Event and Signing Keys on your Cloud](/pages/docs/platform/clouds-setup).
+7. Leverage the Inngest Platform to [manage](/docs/platform/manage) and [monitor](/docs/platform/monitor) Events and Function Runs
+
+
+## CLI and SDKs
+
+<CardGroup cols={2}>
+  <Card title="Inngest CLI" icon={<CLIIcon />} href={'/todo'}>
+    Explore the options to configure the Inngest Dev Server
+  </Card>
+  <Card title="TypeScript SDK" icon={<TypeScriptIcon />} href={'/docs/reference/typescript'}>
+    Setup the Inngest SDK in your TypeScript application.
+  </Card>
+  <Card title="Python SDK" icon={<PythonIcon />} href={'/docs/reference/python'}>
+    Setup the Inngest SDK in your Python application.
+  </Card>
+  <Card title="Go SDK" icon={<GoIcon />} href={'https://pkg.go.dev/github.com/inngest/inngestgo'}>
+    Setup the Inngest SDK in your Go application.
+  </Card>
+</CardGroup>
+
+
+## FAQs
+
+<CardGroup cols={1}>
+  <Card title="Can I run the Inngest Dev Server in production?" icon={<QuestionIcon />}>
+    The Inngest Dev Server, when started in Lite mode can be used for simple production applications.
+    Please refer to [Inngest Lite limitations](#).
+  </Card>
+  <Card title="How do I test webhooks locally?" icon={<QuestionIcon />}>
+    Webhooks configured on the Platform [can be sent to the Dev Server](/docs/platform/webhooks#local-development).
+  </Card>
+  <Card title="How do I work with Stripe or Clerk webhooks locally?" icon={<QuestionIcon />}>
+    External webhooks from Stripe and Clerk must go through a tunnel solution (such as [ngrok](https://ngrok.com/) or [localtunnel](https://theboroer.github.io/localtunnel-www/)) to reach the Dev Server.
+  </Card>
+  <Card title="Are CRONs supported locally?" icon={<QuestionIcon />}>
+    Yes. You can also trigger a function at any time by [using the "Invoke" button from the Dev Server Functions list view](#).
+  </Card>
+  <Card title="The Dev Server does not locate my local application" icon={<QuestionIcon />}>
+    Please take a look at our [Dev Server Troubleshooting guide](#).
+  </Card>
+</CardGroup>
+
+Find more answers in our [Discord community](/discord).

@@ -2,7 +2,7 @@ import React from "react";
 import type { IconProps } from "./props";
 
 const TypeScript = ({
-  size = "1em",
+  size = 32,
   fill = "currentColor",
   className,
 }: IconProps) => {

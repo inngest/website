@@ -1,7 +1,7 @@
 import React from "react";
 import type { IconProps } from "./props";
 
-const Go = ({ size = "1em", fill = "currentColor", className }: IconProps) => {
+const Go = ({ size = 32, fill = "currentColor", className }: IconProps) => {
   return (
     <svg
       viewBox="0 0 72 72"
