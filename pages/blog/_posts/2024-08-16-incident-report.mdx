@@ -35,9 +35,9 @@ Full timeline, root cause and corrective actions are included below with additio
 
 The SDK Gateway forward proxy handles all egress HTTPS traffic from our function “executor” service to ensure consistent IP addresses are used for outbound traffic to our various cloud provider partners, such as Vercel. Our “executors” are responsible for pulling work off internal queues to invoke user functions at whatever URL they may be hosted at. These executors run within our Kubernetes cluster, scale depending on load, and IPs are ephemeral, so the SDK Gateway is used as a proxy for outbound requests. The SDK Gateway runs a group of machines, each with static IPs assigned.
 
-![System architecture showing executors and SDK Gateway](/assets/blog/2024-08-15-incident-report/architecture.png)
+![System architecture showing executors and SDK Gateway](/assets/blog/2024-08-16-incident-report/architecture.png)
 
-For audit purposes, the SDK Gateway logs details on every request it makes.  Due to increased throughput beginning the morning of Thursday 15th, instances started running our of disk space.  The lack of disk space prevented logging, which caused the processes running on the instances to hang. Log rotation was not properly configured on these instances. Fixing this issue immediately require manual intervention. Log rotation has since been configured to run hourly on these instances.
+For audit purposes, the SDK Gateway logs details on every request it makes.  Due to increased throughput beginning the morning of Thursday 15th, instances started running out of disk space.  The lack of disk space prevented logging, which caused the processes running on the instances to hang. Log rotation was not properly configured on these instances. Fixing this issue immediately require manual intervention. Log rotation has since been configured to run hourly on these instances.
 
 Each SDK Gateway was rebooted which released each of their public IP addresses. The SDK Gateways were fully functional again, but our public IP addresses were now out of date. Execution resumed for many customers, but customers hosting functions on Vercel continued to see issues due to the new IPs being blocked by Vercel's firewall.
 
