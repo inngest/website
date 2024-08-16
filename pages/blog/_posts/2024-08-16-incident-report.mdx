@@ -8,7 +8,7 @@ author: Dan Farrelly
 disableCTA: true
 ---
 
-On August 16, 2024 (UTC), Inngest experienced an outage that prevent functions execution from successfully running. Specifically, our forward proxy for all function invocation requests, internally known as the “SDK Gateway,” stopped handling requests properly. 
+On August 16, 2024 (UTC), Inngest experienced an outage that prevent functions execution from successfully running. Specifically, our forward proxy for all function invocation requests, internally known as the “SDK Gateway,” stopped handling requests properly.
 
 The SDK Gateway services log each request for audit purposes and ran out of disk space due to increased load and logrotate running too infrequently, causing the service to stall. The issue was fixed on each instance to bring them back online and prevent future failures of this type.
 
@@ -72,4 +72,4 @@ We sincerely apologize for this incident. System reliability is our top priority
 
 We do not take this matter lightly. In addition to implementing corrective actions, we will conduct an additional audit to identify and address potential points of failure in our system. Our commitment to investing in reliability and resilience remains steadfast to prevent future issues.
 
-Thank you for your understanding. If you have any questions, please don't hesitate to reach out to [our support team here](https://app.inngest.com/support).
+Thank you for your understanding. If you have any questions, please don't hesitate to reach out to [our support team](https://app.inngest.com/support).
