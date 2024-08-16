@@ -122,6 +122,7 @@ export default function HeroScreenshot() {
           </div>
         </div>
         <Image
+          alt="Screenshot of Inngest's dashboard"
           className="mt-8 rounded-t-md"
           src="/assets/homepage/hero/2024-08-function-dashboard.png"
           width={3060 * 0.5}
