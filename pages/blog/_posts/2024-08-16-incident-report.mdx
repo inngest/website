@@ -8,13 +8,13 @@ author: Dan Farrelly
 disableCTA: true
 ---
 
-On August 15, 2024, Inngest experienced an outage that prevent functions execution from successfully running. Specifically, our forward proxy for all function invocation requests, internally known as the “SDK Gateway,” stopped handling requests properly.
+On August 15, 2024, Inngest experienced an outage that prevent functions execution from successfully running. Specifically, our forward proxy for all function invocation requests, internally known as the “SDK Gateway,” stopped handling requests properly. 
 
-The SDK Gateway services log each request for audit purposes, and ran out of disk space at roughly the same time due to increased load and logrotate running too infrequently, causing the service to stall. The issue was fixed on each instance to bring them back online and prevent future failures of this type.
+The SDK Gateway services log each request for audit purposes and ran out of disk space due to increased load and logrotate running too infrequently, causing the service to stall. The issue was fixed on each instance to bring them back online and prevent future failures of this type.
 
-We apologize for incurring this downtime for all Inngest customers. System reliability is of the utmost importance for us, and we will ensure this type of failure does not happen again.
+We sincerely apologize for incurring this downtime. System reliability is of the utmost importance for us, and we will ensure this type of failure does not happen again.
 
-Full timeline, root cause and corrective actions are included below with additional detail.
+Full timeline, root cause and corrective actions are detailed below.
 
 ## Timeline
 
@@ -51,14 +51,14 @@ As the service returned to normal capacity, users with large backlogs started ex
 
 ## Impact
 
-Function execution was down fully for 46 minutes, degraded for 4 hours 54 minutes.
+Function execution was down for 46 minutes, and degraded on Vercel for 4 hours 54 minutes.
 
 Inbound events sent to Inngest were not lost. The Inngest Event API and event ingestion services are decoupled from function execution.  All functions can be replayed.
 
 For more information about replaying failed functions during the outage, please read [our Replay guide](/docs/platform/replay). Users can select to only place failed functions during this timeline.
 
 ## Corrective actions
-
+on Vercel 
 - Improve alerting via Datadog.  We currently have liveness checks, and will add alerts on:
     - Network packets, CPU, disk space
 - Add improved log rotation in the instance AMI.
@@ -69,6 +69,8 @@ For more information about replaying failed functions during the outage, please 
 
 ## In closing
 
-We apologize for incurring downtime causing issues for Inngest customers. System reliability is the most important goal for our company and we acknowledge that is the most significant outage over the last three years.
+We sincerely apologize for this incident. System reliability is our top priority, and we recognize that this downtime represents the most significant outage in the last three years.
 
-This is not something we take lightly and, in addition to the corrective actions, we will do an additional audit of potential points of failure in our system to prevent future issues. We will will continue to invest in reliability and resiliency to prevent future issues. Thank you for reading - if you have any questions on the above, please reach out to [our support team here](https://app.inngest.com/support).
+We do not take this matter lightly. In addition to implementing corrective actions, we will conduct an additional audit to identify and address potential points of failure in our system. Our commitment to investing in reliability and resilience remains steadfast to prevent future issues.
+
+Thank you for your understanding. If you have any questions, please don't hesitate to reach out to [our support team here](https://app.inngest.com/support).
