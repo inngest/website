@@ -1,4 +1,5 @@
 ---
+focus: true
 heading: "Next.js Serverless Functions vs Durable Functions"
 image: /assets/blog/nextjs-serverless-vs-durable-functions/featured-image.png
 showSubtitle: true
@@ -35,12 +36,12 @@ First of all, why “*Durable*” Functions?
 [As defined by Lee Robinson](https://vercel.com/blog/understanding-vercel-functions), Serverless Functions are used to:
 
 > “*run code in response to user traffic without the need to manage your own infrastructure, provision servers.”*
-> 
+>
 
 In comparison, we can define Durable Functions as enabling us to:
 
 > “*run code on a schedule or multiple steps without the need to manage queues, state or handle the recovery from external failures.*”
-> 
+>
 
 In short, Durable Functions help us to run workflows that, as shown below, can perform onboarding steps (importing 3rd party data, enriching it, and notifying the user) upon a user account creation:
 
@@ -119,7 +120,7 @@ export async function GET(_request: Request) {
         start: domain.createdAt,
         end: domain.lastCheckedAt,
       });
-	
+
 			// we stop checking a domain after 72h as DNS is probably
 			//  up to date but misconfigured.
       if (hours >= 72) {
