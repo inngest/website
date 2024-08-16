@@ -55,7 +55,7 @@ Function execution was down for 46 minutes, and degraded on Vercel for 4 hours 5
 
 Inbound events sent to Inngest were not lost. The Inngest Event API and event ingestion services are decoupled from function execution.  All functions can be replayed.
 
-For more information about replaying failed functions during the outage, please read [our Replay guide](/docs/platform/replay). Users can select to only place failed functions during this timeline.
+For more information about replaying failed functions during the outage, please read [our Replay guide](/docs/platform/replay). Users can select to only replay functions that failed during this time range.
 
 ## Corrective actions
 - Improve alerting via Datadog.  We currently have liveness checks, and will add alerts on:
