@@ -5,8 +5,10 @@ import clsx from "clsx";
 import Link from "src/components/Link";
 import Command from "src/components/Command";
 import { Button } from "src/shared/Button";
+import Quote from "src/components/Quote";
 import TabContainer from "./TabContainer";
 import Container from "./Container";
+import HeroScreenshot from "./HeroScreenshot";
 import Heading from "./Heading";
 import USPs from "./USPs";
 import PlatformsLanguages from "./PlatformsLanguages";
@@ -22,8 +24,9 @@ export const metadata: Metadata = {
 export default function Page() {
   return (
     <div className="font-circular no-antialiasing">
+      <HeroScreenshot />
       {/* Hero */}
-      <div
+      {/* <div
         // negative margin to match layout.tsx's horizontal margin - px-6 md:px-10 lg:px-20
         // TODO - fix for wide screens
         // w-[calc(100%+48px)] md:w-[calc(100%+80px)] lg:w-[calc(100%+160px)] -mx-6 md:-mx-10 lg:-mx-20
@@ -130,13 +133,9 @@ export default function Page() {
             </div>
           </div>
         </Container>
-      </div>
+      </div> */}
 
       <div className="my-32">
-        <USPs />
-      </div>
-
-      <div className="my-32 lg:mt-64">
         <Heading label="APIs for all challenges" className="my-8" />
         <TabContainer />
       </div>
@@ -145,12 +144,65 @@ export default function Page() {
         <PlatformsLanguages />
       </div>
 
-      <div className="my-32 lg:my-64">
+      <div className="my-24">
+        <Quote
+          text={`I wanted to find a solution that would let us just write the code, not manage the infrastructure around queues, concurrency, retries, error handling, prioritization... I don't think that developers should be even configuring and managing queues themselves in 2024.`}
+          attribution={{
+            name: "Matthew Drooker",
+            title: <span>CTO</span>,
+            logo: "/assets/customers/soundcloud-logo-white-horizontal.svg",
+            avatar: "/assets/customers/soundcloud-matthew-drooker.jpg",
+          }}
+          caseStudy="/customers/soundcloud?ref=homepage"
+        />
+      </div>
+
+      <div className="my-32">
+        <USPs />
+      </div>
+
+      <div className="my-32">
+        <Quote
+          text="The DX and visibility with Inngest is really incredible. We are able to develop functions locally easier and faster that with our previous queue. Also, Inngest's tools give us the visibility to debug issues much quicker than before."
+          attribution={{
+            name: "Bu Kinoshita",
+            title: "Co-founder, Resend",
+            logo: "/assets/customers/resend.svg",
+          }}
+          caseStudy="/customers/resend?ref=homepage"
+        />
+      </div>
+
+      <div className="my-32">
         <FlowControl />
+      </div>
+
+      <div className="mt-32 mb-48">
+        <Quote
+          text="The DX and code simplicity it brings is unmatched, especially around local development. We're currently working to migrate some of our larger systems over and it’s a joy to see all the complexity it replaces, and with a much better story around partial failures and retries."
+          attribution={{
+            name: "Justin Cypret",
+            title: "Director of Engineering, Zamp",
+            logo: "/assets/customers/zamp-logo.svg",
+          }}
+        />
       </div>
 
       <div className="my-32 lg:my-64">
         <Enterprise />
+      </div>
+
+      <div className="my-32">
+        <Quote
+          text={`Configuration with Inngest is really easy. When we read our code base, we can immediately understand what it is and what it does. We are going to be gradually migrating most features to Inngest.`}
+          attribution={{
+            name: "Johan Preynat",
+            title: "Engineering Lead, GitBook",
+            avatar: "/assets/customers/gitbook/johan-preynat.jpeg",
+            logo: "/assets/customers/gitbook-logo-white.svg",
+          }}
+          caseStudy="/customers/gitbook?ref=homepage"
+        />
       </div>
     </div>
   );

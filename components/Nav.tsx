@@ -55,8 +55,8 @@ const iconLinks: {
     iconClassName: "scale-110",
   },
   {
-    title: "/discord",
-    url: "https://github.com/inngest/inngest",
+    title: "Discord",
+    url: "/discord",
     icon: Discord,
     iconClassName: "scale-125",
   },

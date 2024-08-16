@@ -2,7 +2,7 @@ import { AnchorHTMLAttributes } from "react";
 import { RiArrowRightSLine, RiArrowLeftSLine } from "@remixicon/react";
 
 type ButtonProps = {
-  variant?: "primary" | "secondary" | "tertiary" | "dark";
+  variant?: "primary" | "secondary" | "tertiary" | "outline" | "dark";
   size?: "sm" | "md" | "lg";
   className?: string;
   arrow?: "left" | "right";
@@ -34,6 +34,7 @@ export function Button({
     `,
     tertiary:
       "bg-slate-100 hover:bg-slate-300 text-slate-800 dark:bg-slate-800  dark:hover:bg-slate-700 dark:text-slate-100",
+    outline: `text-carbon-50 border border-carbon-50 text-carbon-1000 hover:bg-carbon-50/10`,
     dark: `bg-carbon-1000 hover:bg-carbon-900 text-white`,
   };
 

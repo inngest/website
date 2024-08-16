@@ -1,4 +1,4 @@
-import Link from "next/link";
+import NextLink from "next/link";
 
 import Container from "./Container";
 import Heading from "./Heading";
@@ -11,6 +11,7 @@ import {
   RiHealthBookLine, // replace with DNA in 4.3
 } from "@remixicon/react";
 import { Button } from "src/shared/Button";
+import Link from "src/components/Link";
 
 export default function Enterprise() {
   return (
@@ -31,14 +32,14 @@ export default function Enterprise() {
           <div className="flex flex-col gap-2 justify-between">
             <div className="flex flex-col gap-2">
               <h3 className="font-bold">
-                <Link
-                  href={`/security?ref=homepage-enterprise`}
+                <NextLink
+                  href={`/docs/learn/security?ref=homepage-enterprise`}
                   className="flex flex-row gap-3 items-center group hover:underline underline-offset-2 transition-all cursor-pointer"
                 >
                   <RiLock2Line className="w-5 text-muted" />
                   SOC 2 Compliant{" "}
                   <RiArrowRightSLine className="group-hover:translate-x-1.5 relative top-px transition-transform duration-150 " />
-                </Link>
+                </NextLink>
               </h3>
               <p className="text-balance">
                 Audited regularly for compliance with your B2B solution.
@@ -65,8 +66,11 @@ export default function Enterprise() {
               </h3>
               <p className="text-balance">
                 Data is encrypted in transit and at rest, so you can trust that
-                your data is safe. Use our encryption middleware for additional
-                layers of security.
+                your data is safe. Use our{" "}
+                <Link href="/docs/learn/security?ref=homepage-enterprise">
+                  encryption middleware
+                </Link>{" "}
+                for additional control.
               </p>
             </div>
           </div>
