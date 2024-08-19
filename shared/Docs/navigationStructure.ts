@@ -527,37 +527,37 @@ const sectionHome: (NavGroup | NavLink)[] = [
             links: [
               {
                 title: "Overview",
-                href: `/todo`, // TODO
+                href: `/docs/features/inngest-functions/cancelation`,
               },
               {
                 title: "Cancel on Events",
-                href: `/docs/reference/typescript/functions/cancel-on#how-to-use-cancel-on`, // TODO
+                href: `/docs/features/inngest-functions/cancelation/cancel-on-events`, // TODO
               },
               {
-                title: "Live Cancelation",
-                href: `docs/guides/cancel-running-functions`,
+                title: "Cancel running functions",
+                href: `/docs/guides/cancel-running-functions`,
               },
             ],
           },
           {
             title: "Versioning",
-            links: [
-              {
-                title: "Overview",
-                href: `/docs/learn/versioning`, // TODO
-              },
-              { title: "Guides" },
-              {
-                title: "Migrating Events",
-                href: `/todo`, // TODO later
-                tag: "new",
-              },
-              {
-                title: "Migrating Functions",
-                href: `/todo`, // TODO later
-                tag: "new",
-              },
-            ],
+            href: `/docs/learn/versioning`, // TODO
+            // links: [
+            //   {
+            //     title: "Overview",
+            //   },
+            // { title: "Guides" },
+            // {
+            //   title: "Migrating Events",
+            //   href: `/todo`, // TODO later
+            //   tag: "new",
+            // },
+            // {
+            //   title: "Migrating Functions",
+            //   href: `/todo`, // TODO later
+            //   tag: "new",
+            // },
+            // ],
           },
         ],
       },
@@ -565,7 +565,7 @@ const sectionHome: (NavGroup | NavLink)[] = [
         title: "Middlewares",
         links: [
           {
-            title: "Overview",
+            title: "Overview", // TODO
             href: `/docs/features/middlewares`,
           },
           {
@@ -578,10 +578,10 @@ const sectionHome: (NavGroup | NavLink)[] = [
           {
             title: "Best practices",
           },
-          {
-            title: "Enrich Function's Context",
-            href: `/todo`, // TODO later
-          },
+          // {
+          //   title: "Enrich Function's Context",
+          //   href: `/todo`, // TODO later
+          // },
           {
             title: "Encryption Middleware",
             href: `/docs/reference/middleware/examples#e2-e-encryption`, // TODO: should be a guide that leads to the example
@@ -606,7 +606,7 @@ const sectionHome: (NavGroup | NavLink)[] = [
         links: [
           {
             title: "Overview",
-            href: `/platform/deployment`,
+            href: `/platform/deployment`, // TODO
           },
           {
             title: "Environments & Apps",
@@ -649,16 +649,16 @@ const sectionHome: (NavGroup | NavLink)[] = [
             title: "Streaming",
             href: `/docs/streaming`,
           },
-          {
-            title: "Migrating across clouds",
-            href: "/todo", // TODO later
-            tag: "new",
-          },
-          {
-            title: "Self-hosting",
-            href: "/todo", // TODO later
-            tag: "new",
-          },
+          // {
+          //   title: "Migrating across clouds",
+          //   href: "/todo", // TODO later
+          //   tag: "new",
+          // },
+          // {
+          //   title: "Self-hosting",
+          //   href: "/todo", // TODO later
+          //   tag: "new",
+          // },
         ],
       },
       {

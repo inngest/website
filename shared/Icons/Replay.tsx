@@ -1,11 +1,7 @@
 import React from "react";
 import type { IconProps } from "./props";
 
-const Replay = ({
-  size = "1em",
-  fill = "currentColor",
-  className,
-}: IconProps) => (
+const Replay = ({ size = 24, fill = "currentColor", className }: IconProps) => (
   <svg
     viewBox="0 0 16 13"
     fill="none"
