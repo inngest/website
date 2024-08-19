@@ -369,7 +369,7 @@ const sectionHome: (NavGroup | NavLink)[] = [
         links: [
           {
             title: "Overview",
-            href: `/docs/local-development`, // TODO
+            href: `/docs/local-development`,
           },
           {
             title: "Guides",
@@ -549,12 +549,12 @@ const sectionHome: (NavGroup | NavLink)[] = [
               { title: "Guides" },
               {
                 title: "Migrating Events",
-                href: `/todo`, // TODO
+                href: `/todo`, // TODO later
                 tag: "new",
               },
               {
                 title: "Migrating Functions",
-                href: `/todo`, // TODO
+                href: `/todo`, // TODO later
                 tag: "new",
               },
             ],
@@ -580,11 +580,11 @@ const sectionHome: (NavGroup | NavLink)[] = [
           },
           {
             title: "Enrich Function's Context",
-            href: `/todo`, // TODO
+            href: `/todo`, // TODO later
           },
           {
             title: "Encryption Middleware",
-            href: `/docs/reference/middleware/examples#e2-e-encryption`, // TODO
+            href: `/docs/reference/middleware/examples#e2-e-encryption`, // TODO: should be a guide that leads to the example
           },
           {
             title: "Sentry Middleware",
@@ -643,10 +643,6 @@ const sectionHome: (NavGroup | NavLink)[] = [
             ],
           },
           {
-            title: "Limitations",
-            href: `/docs/usage-limits/inngest`,
-          },
-          {
             title: "Guides",
           },
           {
@@ -655,12 +651,12 @@ const sectionHome: (NavGroup | NavLink)[] = [
           },
           {
             title: "Migrating across clouds",
-            href: "/todo", // TODO
+            href: "/todo", // TODO later
             tag: "new",
           },
           {
             title: "Self-hosting",
-            href: "/todo", // TODO
+            href: "/todo", // TODO later
             tag: "new",
           },
         ],
@@ -705,37 +701,19 @@ const sectionHome: (NavGroup | NavLink)[] = [
       },
       {
         title: "Security",
-        links: [
-          {
-            title: "Overview",
-            href: "/docs/learn/security",
-          },
-          // {
-          //   title: "RBAC & Audit Logs",
-          //   href: "/todo",
-          // },
-          // {
-          //   title: "SOC2 & HIPAA",
-          //   href: "/todo",
-          // },
-          // {
-          //   title: "Data governance",
-          //   href: "/todo",
-          // },
-          { title: "Guides" },
-          {
-            title: "End-to-end encryption",
-            href: "/docs/reference/python/middleware/encryption",
-          },
-        ],
+        href: "/docs/learn/security",
+      },
+      {
+        title: "Limitations",
+        href: `/docs/usage-limits/inngest`,
       },
     ],
   },
   { title: "References", links: sectionReference },
-  // {
-  //   title: "Glossary",
-  //   href: `/docs/learn/glossary`,
-  // },
+  {
+    title: "Glossary",
+    href: `/docs/learn/glossary`,
+  },
   // {
   //   title: "How Inngest works",
   //   defaultOpen: true,
