@@ -1,16 +1,12 @@
 import { Callout, CodeGroup, Properties, Property, Row, Col, VersionBadge } from "src/shared/Docs/mdx";
 
-export const description = 'Error reference for the Inngest TypeScript SDK'
-
-# Errors
+# Inngest Errors
 
 Inngest automatically handles errors and retries for you. You can use standard errors or use included Inngest errors to control how Inngest handles errors.
 
-Read more about the approaches to [handling errors in our guide](/docs/guides/error-handling).
-
 ## Standard errors
 
-All `Error` objects are handled by Inngest and [retried automatically](/docs/guides/error-handling#retries). This includes all standard errors like `TypeError` and custom errors that extend the `Error` class. You can throw errors in the function handler or within a step.
+All `Error` objects are handled by Inngest and [retried automatically](/docs/features/inngest-functions/error-retries/retries). This includes all standard errors like `TypeError` and custom errors that extend the `Error` class. You can throw errors in the function handler or within a step.
 
 ```typescript
 export default inngest.createFunction(
@@ -255,12 +251,3 @@ When calling functions that return Promises, await the Promise to ensure that th
 </CodeGroup>
 
 Please note that immediately returning the Promise will not include a pointer to the calling function in the stack trace. Awaiting the Promise will ensure that the stack trace includes the calling function.
-
-## Learn more
-
-* Guide: [Error handling](/docs/guides/error-handling)
-* TypeScript SDK Reference: [`onFailure`](/docs/reference/functions/handling-failures)
-
-
-
-

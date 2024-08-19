@@ -456,6 +456,10 @@ const sectionHome: (NavGroup | NavLink)[] = [
               },
               { title: "Guides" },
               {
+                title: "How Functions are executed",
+                href: `/docs/learn/how-functions-are-executed`,
+              },
+              {
                 title: "Parallel steps",
                 href: "/docs/guides/step-parallelism",
               },
@@ -499,19 +503,23 @@ const sectionHome: (NavGroup | NavLink)[] = [
             links: [
               {
                 title: "Overview",
-                href: `/docs/guides/error-handling`, // rework as overview
+                href: `/docs/guides/error-handling`,
               },
               {
                 title: "Retries",
-                href: "/docs/guides/error-handling", // TODO: extract the retries section
+                href: "/docs/features/inngest-functions/error-retries/retries",
               },
               {
-                title: "Callbacks",
-                href: "/docs/reference/functions/handling-failures",
+                title: "Rollbacks",
+                href: "/docs/features/inngest-functions/error-retries/rollbacks",
+              },
+              {
+                title: "Failure handlers",
+                href: "/docs/features/inngest-functions/error-retries/failure-handlers",
               },
               {
                 title: "Inngest Errors",
-                href: "/docs/reference/typescript/functions/errors",
+                href: "/docs/features/inngest-functions/error-retries/inngest-errors",
               },
               {
                 title: "Guides",
@@ -531,7 +539,7 @@ const sectionHome: (NavGroup | NavLink)[] = [
               },
               {
                 title: "Cancel on Events",
-                href: `/docs/features/inngest-functions/cancelation/cancel-on-events`, // TODO
+                href: `/docs/features/inngest-functions/cancelation/cancel-on-events`,
               },
               {
                 title: "Bulk Cancelation",

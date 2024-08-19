@@ -54,6 +54,10 @@ const permanentRedirects = [
     "/docs/getting-started/python-quick-start",
   ],
   ["/docs/quick-start", "/docs/getting-started/nextjs-quick-start"],
+  [
+    "/docs/reference/typescript/functions/errors",
+    "/docs/features/inngest-functions/error-retries/inngest-errors",
+  ],
 ];
 
 async function redirects() {
