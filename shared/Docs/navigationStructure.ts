@@ -534,7 +534,7 @@ const sectionHome: (NavGroup | NavLink)[] = [
                 href: `/docs/features/inngest-functions/cancelation/cancel-on-events`, // TODO
               },
               {
-                title: "Cancel running functions",
+                title: "Bulk Cancelation",
                 href: `/docs/guides/cancel-running-functions`,
               },
             ],

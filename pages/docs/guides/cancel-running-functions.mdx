@@ -1,11 +1,13 @@
 import { CodeGroup, Row, Col } from "src/shared/Docs/mdx";
 export const description = 'Learn how to cancel long running functions with our API.'
 
-# Cancel running functions
+# Bulk Cancelation
 
 {/* TODO - Link the sleeps and waits to guides when we move those from references to guides */}
 With Inngest, your functions can be running or paused for long periods of time. You may have function with hundreds of steps, or you may be using [`step.sleep`](/docs/reference/functions/step-sleep), [`step.sleepUntil`](/docs/reference/functions/step-sleep-until), or [`step.waitForEvent`](/docs/reference/functions/step-wait-for-event). Sometimes, things happen in your system that make it no longer necessary to complete running the function, which is when cancelling is necessary.
 
+Inngest provides both a Bulk Cancellation API and UI. The Bulk Cancellation API offers more flexiblity with the support of event expression matching
+while the [Bulk Cancellation UI](/docs/platform/manage/bulk-cancelation), available from the Platform, provides a quick way to cancel unwanted Function runs.
 
 {/* TODO
 ## Cancel in the Inngest dashboard
