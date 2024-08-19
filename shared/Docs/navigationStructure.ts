@@ -389,7 +389,7 @@ const sectionHome: (NavGroup | NavLink)[] = [
         links: [
           {
             title: "Overview",
-            href: `/docs/features/event-triggers`,
+            href: `/docs/features/events-triggers`,
           },
           { title: "Essentials" },
           {
@@ -397,7 +397,11 @@ const sectionHome: (NavGroup | NavLink)[] = [
             href: `/todo`, // TODO
           },
           {
-            title: "Scheduled Functions",
+            title: "Event payload format",
+            href: `/docs/features/events-triggers/event-format`, // TODO
+          },
+          {
+            title: "CRONs",
             href: `/docs/guides/scheduled-functions`,
           },
           {
@@ -428,6 +432,15 @@ const sectionHome: (NavGroup | NavLink)[] = [
           {
             title: "Writing expression",
             href: `/docs/guides/writing-expressions`,
+          },
+          { title: "Use cases" },
+          {
+            title: "Handle Clerk webhooks",
+            href: `/docs/guides/clerk-webhook-events`,
+          },
+          {
+            title: "Handle Resend webhooks",
+            href: `/docs/guides/resend-webhook-events`,
           },
         ],
       },
@@ -466,6 +479,15 @@ const sectionHome: (NavGroup | NavLink)[] = [
               {
                 title: "Loops over steps",
                 href: "/docs/guides/working-with-loops",
+              },
+              { title: "Use cases" },
+              {
+                title: "User-defined Workflows",
+                href: `/docs/guides/user-defined-workflows`,
+              },
+              {
+                title: "Trigger workflows from Retool",
+                href: `/docs/guides/trigger-your-code-from-retool`,
               },
             ],
           },
@@ -633,7 +655,7 @@ const sectionHome: (NavGroup | NavLink)[] = [
             href: `/docs/platform/signing-keys`,
           },
           {
-            title: "Clouds Setup",
+            title: "Cloud Providers Setup",
             links: [
               {
                 title: "Vercel",
@@ -646,6 +668,10 @@ const sectionHome: (NavGroup | NavLink)[] = [
               {
                 title: "Cloudflare Pages",
                 href: `/docs/deploy/cloudflare`,
+              },
+              {
+                title: "Cloud Provider Usage Limits",
+                href: `/docs/usage-limits/providers`,
               },
               // Fly, Render, Railway, Google Functions, Firebase Functions, Cloudflare Workers
             ],
@@ -722,247 +748,7 @@ const sectionHome: (NavGroup | NavLink)[] = [
     title: "Glossary",
     href: `/docs/learn/glossary`,
   },
-  // {
-  //   title: "How Inngest works",
-  //   defaultOpen: true,
-  //   links: [
-  //     {
-  //       title: "Function execution",
-  //       href: `/docs/learn/how-functions-are-executed`,
-  //       tag: "New",
-  //     },
-  //     {
-  //       title: "Security",
-  //       href: `/docs/learn/security`,
-  //     },
-  //     {
-  //       title: "Versioning",
-  //       href: `/docs/learn/versioning`,
-  //     },
-  //   ],
-  // },
 ];
-
-// const sectionGuides: NavGroup[] = [
-//   {
-//     title: "Functions",
-//     defaultOpen: true,
-//     links: [
-//       {
-//         title: "Background jobs",
-//         href: `/docs/guides/background-jobs`,
-//       },
-//       {
-//         title: "Scheduled functions",
-//         href: `/docs/guides/scheduled-functions`,
-//       },
-//       {
-//         title: "Delayed functions",
-//         href: `/docs/guides/delayed-functions`,
-//       },
-//       {
-//         title: "Fan-out (one-to-many)",
-//         href: `/docs/guides/fan-out-jobs`,
-//       },
-//       {
-//         title: "Multi-step functions",
-//         href: `/docs/guides/multi-step-functions`,
-//       },
-//       {
-//         title: "Parallelizing steps",
-//         href: `/docs/guides/step-parallelism`,
-//       },
-//       {
-//         title: "Sending events from functions",
-//         href: `/docs/guides/sending-events-from-functions`,
-//       },
-//       {
-//         title: "Using multiple triggers",
-//         href: `/docs/guides/multiple-triggers`,
-//       },
-//       {
-//         title: "Invoking functions directly",
-//         href: `/docs/guides/invoking-functions-directly`,
-//       },
-//       {
-//         title: "Working with loops",
-//         href: `/docs/guides/working-with-loops`,
-//         tag: "New",
-//       },
-//     ],
-//   },
-//   {
-//     title: "Flow control",
-//     defaultOpen: true,
-//     links: [
-//       {
-//         title: "Overview",
-//         href: `/docs/guides/flow-control`,
-//       },
-//       {
-//         title: "Concurrency",
-//         href: `/docs/guides/concurrency`,
-//       },
-//       {
-//         title: "Throttling",
-//         href: `/docs/guides/throttling`,
-//       },
-//       {
-//         title: "Rate limiting",
-//         href: `/docs/guides/rate-limiting`,
-//       },
-//       {
-//         title: "Debouncing",
-//         href: `/docs/guides/debounce`,
-//       },
-//       {
-//         title: "Priority",
-//         href: `/docs/guides/priority`,
-//       },
-//       {
-//         title: "Handling idempotency",
-//         href: `/docs/guides/handling-idempotency`,
-//       },
-//       {
-//         title: "Batching events",
-//         href: `/docs/guides/batching`,
-//       },
-//     ],
-//   },
-//   {
-//     title: "How to",
-//     defaultOpen: true,
-//     links: [
-//       {
-//         title: "Error handling",
-//         href: "/docs/guides/error-handling",
-//       },
-//       {
-//         title: "Pausing functions",
-//         href: `/docs/guides/pause-functions`,
-//         tag: "New",
-//       },
-//       {
-//         title: "Cancel running functions",
-//         href: `/docs/guides/cancel-running-functions`,
-//       },
-//       {
-//         title: "Logging",
-//         href: `/docs/guides/logging`,
-//       },
-//       {
-//         title: "Writing expressions",
-//         href: `/docs/guides/writing-expressions`,
-//       },
-//       {
-//         title: "FAQs",
-//         href: `/docs/faq`,
-//       },
-//     ],
-//   },
-//   {
-//     title: "Use cases",
-//     defaultOpen: true,
-//     links: [
-//       {
-//         title: "User-defined Workflows",
-//         href: `/docs/guides/user-defined-workflows`,
-//       },
-//       {
-//         title: "Handle Clerk webhook events",
-//         href: `/docs/guides/clerk-webhook-events`,
-//       },
-//       {
-//         title: "Handle email events with Resend webhooks",
-//         href: `/docs/guides/resend-webhook-events`,
-//       },
-//       {
-//         title: "Trigger code from Retool",
-//         href: `/docs/guides/trigger-your-code-from-retool`,
-//       },
-//       {
-//         title: "Instrumenting GraphQL",
-//         href: `/docs/guides/instrumenting-graphql`,
-//       },
-//     ],
-//   },
-//   {
-//     title: "Going to production",
-//     defaultOpen: true,
-//     links: [
-//       {
-//         title: "Working with apps",
-//         href: `/docs/apps/cloud`,
-//       },
-//       {
-//         title: "Platform",
-//         defaultOpen: true,
-//         links: [
-//           { title: "Deploy: Vercel", href: `/docs/deploy/vercel` },
-//           { title: "Deploy: Netlify", href: `/docs/deploy/netlify` },
-//           {
-//             title: "Deploy: Cloudflare Pages",
-//             href: `/docs/deploy/cloudflare`,
-//           },
-//         ],
-//       },
-//     ],
-//   },
-//   {
-//     title: "Local development",
-//     defaultOpen: false,
-//     links: [
-//       // {
-//       //   title: "Inngest Dev Server",
-//       //   href: `/docs/local-development`,
-//       // },
-//       {
-//         title: "Development with Docker",
-//         href: `/docs/guides/development-with-docker`,
-//       },
-//     ],
-//   },
-//   {
-//     title: "Inngest Cloud",
-//     defaultOpen: true,
-//     links: [
-//       {
-//         title: "Working with environments",
-//         href: `/docs/platform/environments`,
-//       },
-//       {
-//         title: "Creating an event key",
-//         href: `/docs/events/creating-an-event-key`,
-//       },
-//       {
-//         title: "Signing keys",
-//         href: `/docs/platform/signing-keys`,
-//       },
-//       {
-//         title: "Consuming webhook events",
-//         href: `/docs/platform/webhooks`,
-//       },
-//       {
-//         title: "Replaying functions",
-//         href: `/docs/platform/replay`,
-//       },
-//     ],
-//   },
-//   {
-//     title: "Usage Limits",
-//     defaultOpen: true,
-//     links: [
-//       {
-//         title: "Inngest Cloud",
-//         href: `/docs/usage-limits/inngest`,
-//       },
-//       {
-//         title: "Serverless providers",
-//         href: `/docs/usage-limits/providers`,
-//       },
-//     ],
-//   },
-// ];
 
 const sectionExamples: NavGroup[] = [
   {
