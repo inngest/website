@@ -1,13 +1,99 @@
-import { Callout, CodeGroup, ImageTheme } from "src/shared/Docs/mdx";
+import { CardGroup, Card, ImageTheme } from "src/shared/Docs/mdx";
+import EventIcon from 'src/shared/Icons/Event';
+import CalendarIcon from 'src/shared/Icons/Calendar';
+import BranchIcon from 'src/shared/Icons/Branch';
+import RunsIcon from 'src/shared/Icons/Runs';
+import StepsIcon from 'src/shared/Icons/Steps';
+import TypeScriptIcon from 'src/shared/Icons/TypeScript';
+import PythonIcon from 'src/shared/Icons/Python';
+import GoIcon from 'src/shared/Icons/Go';
 
 # Steps & Workflows
 
-Steps are the building blocks of Inngest Functions:
+Steps are fundamental building blocks of Inngest, turning your Inngest Functions into reliable worflows that can runs for months and recover from failures.
 
-- They enable isolated retries in case of failures with a point-in-time recovery (*only failed steps reruns*)
-- They add waits capabilities, such as pausing a workflow for hours up to months
-- They can be run in loops and parallel with **`Promise.all()`**, enabling faster processing
-- They support waiting for events, enabling cross Functions synchronization
-- Finally, when running on Serverless environments, they unlock longer execution time, removing timeouts
+<CardGroup cols={1}>
+  <Card title="Thinking in Steps" icon={<StepsIcon />} href={'/docs/guides/multi-step-functions'}>
+    Discover by example how steps enable more reliable and flexible functions with step-level error handling, conditional steps and waits.
+  </Card>
+</CardGroup>
 
-All those capabilities make Inngest Functions a perfect fit for building workflows.
+
+Once you are familiar with Steps, start adding new capabilities to your Inngest Functions: 
+
+<CardGroup cols={2}>
+  <Card title="Add sleeps" icon={<CalendarIcon />} href={'/docs/features/inngest-functions/steps-workflows/sleeps'}>
+    Enable your Inngest Functions to pause by waiting from minutes to months.
+  </Card>
+  <Card title="Wait for events" icon={<EventIcon />} href={'/docs/features/inngest-functions/steps-workflows/wait-for-event'}>
+    Synchronize your Inngest Functions with incoming events.
+  </Card>
+  <Card title="Loop over steps" icon={<RunsIcon />} href={'/docs/guides/working-with-loops'}>
+    Iterate over large datasets by looping with steps in parallel.
+  </Card>
+  <Card title="Parallelize steps" icon={<BranchIcon />} href={'/docs/guides/step-parallelism'}>
+    Discover how to apply the map-reduce pattern with Steps.
+  </Card>
+</CardGroup>
+
+
+## How Steps works?
+
+You might wonder: how do Steps work? Why doesn't an Inngest Function get timed out when running on a Serverless environment?
+
+You can think of steps as an API for expressing checkpoints in your workflow, such as waits or work that might benefit from retries or parallelism.
+
+Each step execution relies on a communication with Inngest's Durable Execution Engine which is responsible to:
+
+- Invoking Functions with the correct steps state (current step + previous steps data)
+- Gather each step result and schedule the next step to perform
+
+
+<ImageTheme
+  dark={'/assets/docs/features/inngest-functions/steps-workflows/Durable-Execution-Engine-steps-dark.jpg'}
+  light={'/assets/docs/features/inngest-functions/steps-workflows/Durable-Execution-Engine-steps-light.jpg'}
+  className="my-0"
+  alt={''}
+/>
+
+This architecture powers the durability of Inngest Functions with retriable steps and waits from hours to months. Also, when used in a serverless environment, steps benefit from an extended max duration, enabling workflows that both span over months and run for more than 5 minutes!
+
+Explore the following guide for a step-by-step overview of a complete workflow run:
+
+<CardGroup cols={1}>
+  <Card title="How Functions are executed" icon={<StepsIcon />} href={'/docs/learn/how-functions-are-executed'}>
+    A deep dive into Inngest's Durable Execution Engine with a step-by-step workflow run example.
+  </Card>
+</CardGroup>
+
+## SDK References
+
+
+<CardGroup cols={3}>
+
+  <Card 
+    href={"/docs/reference/functions/step-run"}
+    title={"TypeScript SDK - Steps API"}
+    icon={<TypeScriptIcon />}
+  >
+  Explore the Steps API available for TypeScript applications.
+  </Card>
+
+  <Card 
+    href={"/docs/reference/python/steps/invoke"}
+    title={"Python SDK - Steps API"}
+    icon={<PythonIcon />}
+  >
+    Use Steps in Python
+  </Card>
+
+
+  <Card 
+    href={"https://pkg.go.dev/github.com/inngest/inngestgo@v0.7.2/step"}
+    title={"Go SDK - Steps API"}
+    icon={<GoIcon />}
+  >
+    Write Inngest Functions in Go
+  </Card>
+
+</CardGroup>

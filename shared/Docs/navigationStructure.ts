@@ -452,7 +452,12 @@ const sectionHome: (NavGroup | NavLink)[] = [
                 href: "/docs/guides/multi-step-functions",
               },
               {
+                title: "Sleeps",
+                href: "/docs/features/inngest-functions/steps-workflows/sleeps", // TODO
+              },
+              {
                 title: "Wait for events",
+                // href: "/docs/features/inngest-functions/steps-workflows/wait-for-event",
                 href: "/docs/reference/functions/step-wait-for-event", // TODO
               },
               { title: "Guides" },
@@ -460,6 +465,7 @@ const sectionHome: (NavGroup | NavLink)[] = [
                 title: "How Functions are executed",
                 href: `/docs/learn/how-functions-are-executed`,
               },
+              { title: "Patterns" },
               {
                 title: "Parallel steps",
                 href: "/docs/guides/step-parallelism",
