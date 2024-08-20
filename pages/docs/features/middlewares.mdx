@@ -8,15 +8,7 @@ import RunsIcon from 'src/shared/Icons/Runs';
 
 Middleware allows you code to run at various points in an Inngest client's lifecycle, such as during a function's execution or when sending an event. 
 
-This can be used for a wide range of uses, for example:
-
-- Utilizing error-monitoring libraries (e.g. [**Sentry**](https://sentry.io/))
-- Adding logging support
-- Transforming input and output data (e.g. [**superjson**](https://github.com/blitz-js/superjson))
-- Setting up DB connections before starting a function's execution
-- Share a client instance across multiple functions (ex, OpenAI client)
-
-<br/ >
+This can be used for a wide range of uses:
 
 <CardGroup cols={2}>
   <Card title="Create a middleware" icon={<CLIIcon />} href={'/docs/features/middlewares/create'}>
