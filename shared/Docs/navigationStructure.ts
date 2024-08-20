@@ -546,18 +546,18 @@ const sectionHome: (NavGroup | NavLink)[] = [
             ],
           },
           {
-            title: "Cancelation",
+            title: "Cancellation",
             links: [
               {
                 title: "Overview",
-                href: `/docs/features/inngest-functions/cancelation`,
+                href: `/docs/features/inngest-functions/cancellation`,
               },
               {
                 title: "Cancel on Events",
-                href: `/docs/features/inngest-functions/cancelation/cancel-on-events`,
+                href: `/docs/features/inngest-functions/cancellation/cancel-on-events`,
               },
               {
-                title: "Bulk Cancelation",
+                title: "Bulk Cancellation",
                 href: `/docs/guides/cancel-running-functions`,
               },
             ],
@@ -585,37 +585,37 @@ const sectionHome: (NavGroup | NavLink)[] = [
         ],
       },
       {
-        title: "Middlewares",
+        title: "Middleware",
         links: [
           {
             title: "Overview",
-            href: `/docs/features/middlewares`,
+            href: `/docs/features/middleware`,
           },
           {
             title: "Creating a middleware",
-            href: `/docs/features/middlewares/create`,
+            href: `/docs/features/middleware/create`,
           },
           {
             title: "Patterns",
           },
           {
             title: "Dependency Injection",
-            href: "/docs/features/middlewares/dependency-injection",
+            href: "/docs/features/middleware/dependency-injection",
           },
           {
             title: "Built-in middlewares",
           },
           {
             title: "Encryption Middleware",
-            href: "/docs/features/middlewares/encryption-middleware",
+            href: "/docs/features/middleware/encryption-middleware",
           },
           {
             title: "Sentry Middleware",
-            href: "/docs/features/middlewares/sentry-middleware",
+            href: "/docs/features/middleware/sentry-middleware",
           },
           // {
           //   title: "Datadog Middleware",
-          //   // href: '/docs/features/middlewares/datadog-middleware',
+          //   // href: '/docs/features/middleware/datadog-middleware',
           //   href: `/docs/examples/track-failures-in-datadog`,
           // },
         ],
@@ -630,7 +630,7 @@ const sectionHome: (NavGroup | NavLink)[] = [
         links: [
           {
             title: "Overview",
-            href: `/platform/deployment`, // TODO
+            href: `/docs/platform/deployment`,
           },
           {
             title: "Environments & Apps",
@@ -694,7 +694,7 @@ const sectionHome: (NavGroup | NavLink)[] = [
         links: [
           {
             title: "Dashboard",
-            href: "/todo", // TODO
+            href: "/docs/platform/manage/dashboard", // TODO
           },
           {
             title: "Function Replay",
@@ -706,7 +706,7 @@ const sectionHome: (NavGroup | NavLink)[] = [
           },
           {
             title: "Logs",
-            href: "/todo", // TODO
+            href: "/docs/platform/manage/logs", // TODO
           },
         ],
       },
@@ -715,15 +715,15 @@ const sectionHome: (NavGroup | NavLink)[] = [
         links: [
           {
             title: "Observability & Metrics",
-            href: "/todo", // TODO
+            href: "/docs/platform/monitor/observability-metrics", // TODO
           },
           {
             title: "Searching Events",
-            href: "/todo", // TODO
+            href: "//docs/platform/monitor/searching-events", // TODO
           },
           {
             title: "Inspecting Runs",
-            href: "/todo", // TODO
+            href: "//docs/platform/monitor/inspecting-runs", // TODO
           },
         ],
       },

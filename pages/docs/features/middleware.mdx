@@ -4,23 +4,23 @@ import CLIIcon from 'src/shared/Icons/CLI';
 import EyeOffIcon from 'src/shared/Icons/EyeOff';
 import RunsIcon from 'src/shared/Icons/Runs';
 
-# Middlewares
+# Middleware
 
-Middleware allows you code to run at various points in an Inngest client's lifecycle, such as during a function's execution or when sending an event. 
+A Middleware allows you code to run at various points in an Inngest client's lifecycle, such as during a function's execution or when sending an event. 
 
 This can be used for a wide range of uses:
 
 <CardGroup cols={2}>
-  <Card title="Create a middleware" icon={<CLIIcon />} href={'/docs/features/middlewares/create'}>
+  <Card title="Create a middleware" icon={<CLIIcon />} href={'/docs/features/middleware/create'}>
     Add custom logging, tracing or helpers to your Inngest Functions.
   </Card>
-  <Card title="Dependency Injection" icon={<IntegrationsIcon />} href={'/docs/features/middlewares/dependency-injection'}>
+  <Card title="Dependency Injection" icon={<IntegrationsIcon />} href={'/docs/features/middleware/dependency-injection'}>
     Provide shared client instances (ex, OpenAI) to your Inngest Functions.
   </Card>
-  <Card title="Encryption Middleware" icon={<EyeOffIcon />} href={'/docs/features/middlewares/encryption-middleware'}>
+  <Card title="Encryption Middleware" icon={<EyeOffIcon />} href={'/docs/features/middleware/encryption-middleware'}>
     End-to-end encryption for events, step output, and function output.
   </Card>
-  <Card title="Sentry Middleware" icon={<RunsIcon />} href={'/docs/features/middlewares/sentry-middleware'}>
+  <Card title="Sentry Middleware" icon={<RunsIcon />} href={'/docs/features/middleware/sentry-middleware'}>
     Quickly setup Sentry for your Inngest Functions.
   </Card>
 </CardGroup>
@@ -94,4 +94,4 @@ async def fn(ctx: inngest.Context, step: inngest.Step):
 ```
 </CodeGroup>
 
-Learn more about the Middleware hooks and their execution order in ["Creating a Middleware"](/docs/features/middlewares/create).
+Learn more about the Middleware hooks and their execution order in ["Creating a Middleware"](/docs/features/middleware/create).

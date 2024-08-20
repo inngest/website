@@ -6,19 +6,19 @@ import BranchIcon from 'src/shared/Icons/Branch';
 import ReplayIcon from 'src/shared/Icons/Replay';
 import { CardGroup, Card, ImageTheme, Col, Row } from "src/shared/Docs/mdx";
 
-# Cancelation
+# Cancellation
 
-Cancelation is a useful mechanism for preventing unnecessary actions based on previous actions (ex, skipping a report generation upon an account deletion) or stopping an unwanted function run composed of multiple steps (ex, deployment mistake, duplicates).
+Cancellation is a useful mechanism for preventing unnecessary actions based on previous actions (ex, skipping a report generation upon an account deletion) or stopping an unwanted function run composed of multiple steps (ex, deployment mistake, duplicates).
 
 Inngest enables you to cancel running Functions via the API, Dashboard, or based on events:
 
 
 
 <CardGroup cols={2}>
-  <Card title="Cancel with events" icon={<EventIcon />} href={'/docs/features/inngest-functions/cancelation/cancel-on'}>
+  <Card title="Cancel on events" icon={<EventIcon />} href={'/docs/features/inngest-functions/cancellation/cancel-on-events'}>
     Cancel scheduled or sleeping Functions based on incoming events.
   </Card>
-  <Card title="Bulk cancel via the Platform Dashboard" icon={<CloseCircleIcon />} href={'/docs/platform/manage/bulk-cancel'}>
+  <Card title="Bulk cancel via the Platform Dashboard" icon={<CloseCircleIcon />} href={'/docs/guides/cancel-running-functions'}>
     The quickest way to cancel the Function runs within a given time range.
   </Card>
   <Card title="Bulk cancel via the REST API" icon={<CLIIcon />} href={'/docs/guides/cancel-running-functions#bulk-cancel-via-the-rest-api'}>
@@ -29,9 +29,9 @@ Inngest enables you to cancel running Functions via the API, Dashboard, or based
   </Card>
 </CardGroup>
 
-## Anatomy of a cancelation
+## Anatomy of a cancellation
 
-Inngest cancelation mechanisms prevent a Function from running or stop an ongoing Function run between some following steps (sleep or action steps).
+Inngest cancellation mechanisms prevent a Function from running or stop an ongoing Function run between some following steps (sleep or action steps).
 
 Please note that:
 
@@ -58,7 +58,7 @@ const scheduleReminder = inngest.createFunction(
 );
 ```
 
-Let's now look at two different cancellations triggered from the Dashboard Bulk Cancelation UI:
+Let's now look at two different cancellations triggered from the Dashboard Bulk Cancellation UI:
 
 <Row>
   <Col>
@@ -67,7 +67,7 @@ Let's now look at two different cancellations triggered from the Dashboard Bulk 
 
     1. The Function Run gets picked up by Inngest
     2. The Step 1 is processed, triggering a sleep until the following week
-    3. Three days after, a cancelation is received
+    3. Three days after, a cancellation is received
     4. The Function run is canceled (Step 2 is skipped)
 
 
@@ -78,7 +78,7 @@ Let's now look at two different cancellations triggered from the Dashboard Bulk 
 
     1. The Function Run gets picked up by Inngest
     2. The Step 1 is processed, triggering a sleep until a next week
-    3. A week after, a cancelation is received but the Step 2 is already started
+    3. A week after, a cancellation is received but the Step 2 is already started
     4. The Step 2 runs until completion
     5. The Function run is marked as "canceled"
 

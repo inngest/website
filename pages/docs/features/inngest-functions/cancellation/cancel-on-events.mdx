@@ -20,7 +20,7 @@ const scheduleReminder = inngest.createFunction(
     id: "schedule-reminder",
     cancelOn: [{
       event: "tasks/reminder.deleted", // The event name that cancels this function
-      // Ensure the cancelation event (async) and the triggering event (event)'s reminderId are the same:
+      // Ensure the cancellation event (async) and the triggering event (event)'s reminderId are the same:
       if: "async.data.reminderId == event.data.reminderId",
     }],
   }
@@ -37,8 +37,8 @@ const scheduleReminder = inngest.createFunction(
 
 Let's break down how this works:
 
-1. Whenever the function is triggered, a cancelation listener is created which waits for an `"tasks/reminder.deleted"` event to be received.
-2. The `if` statement tells Inngest that both the triggering event (`"tasks/reminder.created"`) and the cancelation event (`"tasks/reminder.deleted"`) have the same exact value for `data.reminderId` in each event payload. This makes sure that an event does not cancel a different reminder.
+1. Whenever the function is triggered, a cancellation listener is created which waits for an `"tasks/reminder.deleted"` event to be received.
+2. The `if` statement tells Inngest that both the triggering event (`"tasks/reminder.created"`) and the cancellation event (`"tasks/reminder.deleted"`) have the same exact value for `data.reminderId` in each event payload. This makes sure that an event does not cancel a different reminder.
 
 For more information on writing events, read our guide [on writing expressions](/docs/guides/writing-expressions).
 
@@ -77,7 +77,7 @@ Here is an example of these two events which will be matched on the `data.remind
 
 ### Tips
 
-* You can also optionally specify a `timeout` to only enable cancelation for a period of time.
+* You can also optionally specify a `timeout` to only enable cancellation for a period of time.
 * You can configure multiple events to cancel a function, up to five.
 * You can write a more complex matching statement using the `if` field.
 
