@@ -1,69 +1,101 @@
-import { Callout, CodeGroup, ImageTheme, Col, Row } from "src/shared/Docs/mdx";
-import { ResourceGrid, Resource } from 'src/shared/Docs/Resources';
+import { CardGroup, Card, ImageTheme } from "src/shared/Docs/mdx";
+import EventIcon from 'src/shared/Icons/Event';
+import IconPriority from 'src/shared/Icons/FlowControl/Priority';
+import BranchIcon from 'src/shared/Icons/Branch';
+import RunsIcon from 'src/shared/Icons/Runs';
+import StepsIcon from 'src/shared/Icons/Steps';
 import TypeScriptIcon from 'src/shared/Icons/TypeScript';
 import PythonIcon from 'src/shared/Icons/Python';
 import GoIcon from 'src/shared/Icons/Go';
 
 # Inngest Functions
 
-Inngest functions enable developers to run reliable background logic, from background jobs to complex workflows. They provide robust tools for retrying, scheduling, and coordinating complex sequences of operations.
+Inngest functions enable developers to run reliable background logic, from background jobs to complex workflows.
+An Inngest Function is composed of 3 main parts that provide robust tools for retrying, scheduling, and coordinating complex sequences of operations:
+
+<CardGroup cols={1}>
+  <Card title="Triggers" icon={<EventIcon />} href={'/docs/features/events-triggers'}>
+    A list of Events, CRON schedules or webhooks that trigger Function runs.
+  </Card>
+  <Card title="Flow Control" icon={<IconPriority size={24} />} href={'/docs/guides/flow-control'}>
+    Control how Function runs get distributed in time with Concurrency, Throttling and more.
+  </Card>
+  <Card title="Steps" icon={<StepsIcon />} href={'/docs/features/inngest-functions/steps-workflows'}>
+    Transform your Inngest Function into a workflow with retriable and parallelizable checkpoints.
+  </Card>
+</CardGroup>
 
 
-## Anatomy of an Inngest Function
+Increase your Inngest Functions durability by leveraging:
 
-<Row>
-
-  <Col>
-
-       An Inngest Function is composed of 3 main parts:
-
-       - A unique or list of Events, Cron schedules or webhooks that [can Trigger the Function](/docs/features/event-triggers)
-       - [Steps](/docs/features/steps-workflows) to transform your Inngest Function in a workflows with durable checkpoints that can be parallelized
-       - [Flow Control](/docs/guides/flow-control) configuration to control how runs get distributed in time with concurrency, throttling and more
-
-  </Col>
-
-  <Col>
-    
-<ImageTheme
-  dark={'/assets/docs/features/inngest-functions/inngest-function-components-dark.jpg'}
-  light={'/assets/docs/features/inngest-functions/inngest-function-components-light.jpg'}
-  className="my-0"
-  alt={''}
-/>
-  </Col>
-
-</Row>
+- **[Retries features](/docs/features/inngest-functions/errors-retries)** - Configure a custom retry policy, handle rollbacks and idempotency.
+- **[Cancelation features](/docs/features/inngest-functions/cancelation)** - Automatically or manually prevent any unnecessary or unwanted runs.
+- **[Versioning best practices](/docs/learn/versioning)** - Strategies to gracefully introducing changes in your Inngest Functions.
 
 
-## Writing Inngest Functions
+## Using Inngest Functions
+
+Start using Inngest Functions by using the pattern that fits your use case:
+
+<CardGroup cols={2}>
+  <Card title="Background jobs" icon={<StepsIcon />} href={'/docs/guides/multi-step-functions'}>
+    Run long-running tasks  out of the critical path of a request.
+  </Card>
+  <Card title="Delayed Functions" icon={<RunsIcon />} href={'/docs/learn/how-functions-are-executed'}>
+    Schedule Functions that run in the future.
+  </Card>
+  <Card title="CRON Functions" icon={<RunsIcon />} href={'/docs/guides/scheduled-functions'}>
+    Build Inngest Functions as CRONs.
+  </Card>
+  <Card title="Workflows" icon={<RunsIcon />} href={'/docs/features/inngest-functions/steps-workflows'}>
+    Start creating worflows by leveraging Inngest Function Steps.
+  </Card>
+</CardGroup>
 
 
-<ResourceGrid cols={3} border={false}>
 
-  <Resource resource={{
-    href: "/docs/reference/typescript?ref=docs-homepage",
-    name: "TypeScript SDK",
-    icon: TypeScriptIcon,
-    description: "Write Inngest Functions in Python",
-    pattern: 0,
-  }}/>
+## Learn more about Functions and Steps
 
-  <Resource resource={{
-    href: "/docs/reference/python",
-    name: "Python SDK",
-    description: "Write Inngest Functions in TypeScript",
-    logo: PythonIcon,
-    pattern: 0,
-  }}/>
+Functions and Steps are powered by Inngest's Durable Execution Engine. Learn about its inner working by reading the following guides:
+
+<CardGroup cols={1}>
+  <Card title="How Functions are executed" icon={<RunsIcon />} href={'/docs/learn/how-functions-are-executed'}>
+    A deep dive into Inngest's Durable Execution Engine with a step-by-step workflow run example.
+  </Card>
+  <Card title="Thinking in Steps" icon={<StepsIcon />} href={'/docs/guides/multi-step-functions'}>
+    Discover by example how steps enable more reliable and flexible functions with step-level error handling, conditional steps and waits.
+  </Card>
+</CardGroup>
 
 
-  <Resource resource={{
-    href: "/docs/reference/python?ref=docs-homepage",
-    name: "Go SDK",
-    icon: GoIcon,
-    description: "Write Inngest Functions in Go",
-    pattern: 0,
-  }}/>
+## SDK References
 
-</ResourceGrid>
+
+<CardGroup cols={3}>
+
+  <Card 
+    href={"/docs/reference/overview"}
+    title={"TypeScript SDK"}
+    icon={<TypeScriptIcon size={24} />}
+  >
+  API reference
+  </Card>
+
+  <Card 
+    href={"/docs/reference/python"}
+    title={"Python SDK"}
+    icon={<PythonIcon size={24} />}
+  >
+    API reference
+  </Card>
+
+
+  <Card 
+    href={"https://pkg.go.dev/github.com/inngest/inngestgo@v0.7.2/step"}
+    title={"Go SDK"}
+    icon={<GoIcon size={24} />}
+  >
+    Go API reference
+  </Card>
+
+</CardGroup>

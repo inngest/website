@@ -400,7 +400,12 @@ export function CardGroup({
 }) {
   return (
     <div
-      className={clsx(`not-prose grid sm:grid-cols-${cols} gap-x-4`, className)}
+      className={clsx(
+        `not-prose grid sm:grid-cols-${
+          cols >= 2 ? 2 : cols
+        } xl:grid-cols-${cols} gap-x-4`,
+        className
+      )}
     >
       {children}
     </div>

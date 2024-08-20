@@ -344,7 +344,6 @@ const sectionHome: (NavGroup | NavLink)[] = [
         title: "Serving Inngest Functions",
         href: `/docs/learn/serving-inngest-functions`,
       },
-      { title: "Sending Events", href: `/docs/events` },
       { title: "Inngest Apps", href: `/docs/apps` },
     ],
   },
@@ -380,13 +379,10 @@ const sectionHome: (NavGroup | NavLink)[] = [
             href: `/docs/features/events-triggers`,
           },
           { title: "Essentials" },
-          {
-            title: "Triggering Functions",
-            href: `/todo`, // TODO
-          },
+          { title: "Sending Events", href: `/docs/events` },
           {
             title: "Event payload format",
-            href: `/docs/features/events-triggers/event-format`, // TODO
+            href: `/docs/features/events-triggers/event-format`,
           },
           {
             title: "CRONs",
@@ -405,6 +401,10 @@ const sectionHome: (NavGroup | NavLink)[] = [
             href: `/docs/platform/webhooks`,
           },
           { title: "Patterns" },
+          {
+            title: "Background jobs",
+            href: `/docs/guides/background-jobs`,
+          },
           {
             title: "Fan out",
             href: `/docs/guides/fan-out-jobs`,
@@ -564,7 +564,7 @@ const sectionHome: (NavGroup | NavLink)[] = [
           },
           {
             title: "Versioning",
-            href: `/docs/learn/versioning`, // TODO
+            href: `/docs/learn/versioning`,
             // links: [
             //   {
             //     title: "Overview",
@@ -588,7 +588,7 @@ const sectionHome: (NavGroup | NavLink)[] = [
         title: "Middlewares",
         links: [
           {
-            title: "Overview", // TODO
+            title: "Overview",
             href: `/docs/features/middlewares`,
           },
           {
@@ -600,7 +600,7 @@ const sectionHome: (NavGroup | NavLink)[] = [
           },
           {
             title: "Dependency Injection",
-            href: "/docs/features/middlewares/dependency-injection", // TODO
+            href: "/docs/features/middlewares/dependency-injection",
           },
           {
             title: "Built-in middlewares",
@@ -616,7 +616,7 @@ const sectionHome: (NavGroup | NavLink)[] = [
           // {
           //   title: "Datadog Middleware",
           //   // href: '/docs/features/middlewares/datadog-middleware',
-          //   href: `/docs/examples/track-failures-in-datadog`, // TODO
+          //   href: `/docs/examples/track-failures-in-datadog`,
           // },
         ],
       },
