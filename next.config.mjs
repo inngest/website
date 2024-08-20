@@ -58,6 +58,19 @@ const permanentRedirects = [
     "/docs/reference/typescript/functions/errors",
     "/docs/features/inngest-functions/error-retries/inngest-errors",
   ],
+  ["/docs/reference/middleware/overview", "/docs/features/middlewares"],
+  [
+    "/docs/reference/middleware/create",
+    "/docs/features/middlewares/create?guide=typescript",
+  ],
+  [
+    "/docs/reference/middleware/typescript",
+    "/docs/features/middlewares/dependency-injection?guide=typescript",
+  ],
+  [
+    "/docs/reference/python/middleware/encryption",
+    "/docs/features/middlewares/encryption-middleware?guide=python",
+  ],
 ];
 
 async function redirects() {

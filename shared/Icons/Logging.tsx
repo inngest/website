@@ -1,4 +1,4 @@
-import * as React from "react"
+import * as React from "react";
 
 function SvgComponent(props) {
   return (
@@ -12,11 +12,10 @@ function SvgComponent(props) {
     >
       <path
         d="M5 .5h13v2H5v-2zM0 0h3v3H0V0zm0 6h3v3H0V6zm0 6h3v3H0v-3zm5-5.5h13v2H5v-2zm0 6h13v2H5v-2z"
-        fill="#fff"
+        className="fill-primary"
       />
     </svg>
-  )
+  );
 }
 
-export default SvgComponent
-
+export default SvgComponent;

@@ -1,6 +1,105 @@
-import { Callout, CodeGroup } from "src/shared/Docs/mdx";
+import { Callout, CodeGroup, VersionBadge, CardGroup, Card } from "src/shared/Docs/mdx";
+import IntegrationsIcon from 'src/shared/Icons/Integrations';
+import CLIIcon from 'src/shared/Icons/CLI';
+import EyeOffIcon from 'src/shared/Icons/EyeOff';
+import RunsIcon from 'src/shared/Icons/Runs';
 
 # Middlewares
 
-- reminder of the Function lifecycle
-- How to leverage middlewares
+Middleware allows you code to run at various points in an Inngest client's lifecycle, such as during a function's execution or when sending an event. 
+
+This can be used for a wide range of uses, for example:
+
+- Utilizing error-monitoring libraries (e.g. [**Sentry**](https://sentry.io/))
+- Adding logging support
+- Transforming input and output data (e.g. [**superjson**](https://github.com/blitz-js/superjson))
+- Setting up DB connections before starting a function's execution
+- Share a client instance across multiple functions (ex, OpenAI client)
+
+<br/ >
+
+<CardGroup cols={2}>
+  <Card title="Create a middleware" icon={<CLIIcon />} href={'/docs/features/middlewares/create'}>
+    Add custom logging, tracing or helpers to your Inngest Functions.
+  </Card>
+  <Card title="Dependency Injection" icon={<IntegrationsIcon />} href={'/docs/features/middlewares/dependency-injection'}>
+    Provide shared client instances (ex, OpenAI) to your Inngest Functions.
+  </Card>
+  <Card title="Encryption Middleware" icon={<EyeOffIcon />} href={'/docs/features/middlewares/encryption-middleware'}>
+    End-to-end encryption for events, step output, and function output.
+  </Card>
+  <Card title="Sentry Middleware" icon={<RunsIcon />} href={'/docs/features/middlewares/sentry-middleware'}>
+    Quickly setup Sentry for your Inngest Functions.
+  </Card>
+</CardGroup>
+
+
+
+## Middleware SDKs support
+
+Middleware are available in the [TypeScript SDK](/docs/reference/middleware/typescript) <VersionBadge version={'v2.0.0+'} /> and [Python SDK](/docs/reference/python/middleware/lifecycle) <VersionBadge version={'v0.3.0+'} />.
+
+Support in the Go SDK in planned.
+
+## Middleware lifecycle
+
+Middleware can be registered at the Inngest clients or functions level.
+
+Adding middleware contributes to an overall "stack" of middleware. If you register multiple middlewares, the SDK will group and run hooks for each middleware in the following order:
+
+1. Middleware registered on the **client**, in descending order
+2. Middleware registered on the **function**, in descending order
+
+For example:
+
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
+const inngest = new Inngest({
+  id: "my-app",
+  middleware: [
+    logMiddleware, // This is executed first
+    errorMiddleware, // This is executed second
+  ],
+});
+
+inngest.createFunction(
+  {
+    id: "example",
+    middleware: [
+      dbSetupMiddleware, // This is executed third
+      datadogMiddleware, // This is executed fourth
+    ],
+  },
+  { event: "test" },
+  async () => {
+    // ...
+  }
+);
+```
+```py {{ title: "Python" }}
+inngest_client = inngest.Inngest(
+    app_id="my_app",
+    middleware=[
+        LogMiddleware, # This is executed first
+        ErrorMiddleware # This is executed second
+    ],
+)
+
+# ...
+
+
+@inngest_client.create_function(
+    fn_id="import-product-images",
+    trigger=inngest.TriggerEvent(event="shop/product.imported"),
+    middleware=[
+        DbSetupMiddleware, # This is executed third
+        DatadogMiddleware # This is executed fourth
+    ],
+)
+async def fn(ctx: inngest.Context, step: inngest.Step):
+    # ...
+
+```
+</CodeGroup>
+
+Learn more about the Middleware hooks and their execution order in ["Creating a Middleware"](/docs/features/middlewares/create).

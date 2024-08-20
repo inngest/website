@@ -156,14 +156,6 @@ const sectionReference: NavGroup[] = [
         title: "Middleware",
         links: [
           {
-            title: "Overview",
-            href: `/docs/reference/middleware/overview`,
-          },
-          {
-            title: "Creating middleware",
-            href: `/docs/reference/middleware/create`,
-          },
-          {
             title: "Lifecycle",
             href: `/docs/reference/middleware/lifecycle`,
           },
@@ -275,10 +267,6 @@ const sectionReference: NavGroup[] = [
           {
             title: "Lifecycle",
             href: `/docs/reference/python/middleware/lifecycle`,
-          },
-          {
-            title: "Encryption",
-            href: `/docs/reference/python/middleware/encryption`,
           },
         ],
       },
@@ -599,31 +587,32 @@ const sectionHome: (NavGroup | NavLink)[] = [
             href: `/docs/features/middlewares`,
           },
           {
-            title: "Guides",
+            title: "Creating a middleware",
+            href: `/docs/features/middlewares/create`,
           },
           {
-            title: "Custom middleware",
-            href: `/docs/reference/middleware/create`,
+            title: "Patterns",
           },
           {
-            title: "Best practices",
+            title: "Dependency Injection",
+            href: "/docs/features/middlewares/dependency-injection", // TODO
           },
-          // {
-          //   title: "Enrich Function's Context",
-          //   href: `/todo`, // TODO later
-          // },
+          {
+            title: "Built-in middlewares",
+          },
           {
             title: "Encryption Middleware",
-            href: `/docs/reference/middleware/examples#e2-e-encryption`, // TODO: should be a guide that leads to the example
+            href: "/docs/features/middlewares/encryption-middleware",
           },
           {
             title: "Sentry Middleware",
-            href: `/docs/reference/middleware/examples#sentry-error-reporting-and-tracing`, // TODO
+            href: "/docs/features/middlewares/sentry-middleware",
           },
-          {
-            title: "Datadog Middleware",
-            href: `/docs/examples/track-failures-in-datadog`, // TODO
-          },
+          // {
+          //   title: "Datadog Middleware",
+          //   // href: '/docs/features/middlewares/datadog-middleware',
+          //   href: `/docs/examples/track-failures-in-datadog`, // TODO
+          // },
         ],
       },
     ],

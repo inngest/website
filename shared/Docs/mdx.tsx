@@ -324,9 +324,9 @@ export function Property({
 
 export function VersionBadge({ version }: { version: `v${string}` }) {
   return (
-    <div className="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-medium leading-4 bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-200">
+    <span className="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-medium leading-4 bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-200">
       <span>{version}</span>
-    </div>
+    </span>
   );
 }
 
