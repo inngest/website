@@ -1,6 +1,41 @@
-import { Callout, CodeGroup } from "src/shared/Docs/mdx";
+import { Callout, CodeGroup, Card, CardGroup, ImageTheme } from "src/shared/Docs/mdx";
+import VercelIcon from 'src/shared/Icons/VercelIcon';
+import NetlifyIcon from 'src/shared/Icons/NetlifyIcon';
+import CloudflareIcon from 'src/shared/Icons/CloudflareIcon';
+import CloudIcon from 'src/shared/Icons/Cloud';
 
 # Deployment
 
-- reminder of the that Inngest do not run Functions but invoke them
-- Overview of supported clouds
+Moving to production requires deploying your Inngest Functions on your favorite Cloud Provider and configuring it to allow the Inngest Platform to orchestrate runs: 
+
+
+<CardGroup cols={2}>
+  <Card title="Deploy with Vercel" icon={<VercelIcon />} href={'/docs/deploy/vercel'}>
+    Send an event from your application’s backend with the Inngest SDK.
+  </Card>
+  <Card title="Deploy with Cloudflare Pages" icon={<CloudflareIcon />} href={'/docs/deploy/cloudflare'}>
+    Run an Inngest function periodically with a trigger using cron syntax.
+  </Card>
+  <Card title="Deploy with Netlify" icon={<NetlifyIcon />} href={'/docs/platform/netlify'}>
+    Use Inngest as a webhook consumer for any service to trigger functions.
+  </Card>
+  <Card title="Deploy your application" icon={<CloudIcon fill={'black'} />} href={'/docs/apps/cloud#sync-a-new-app-in-inngest-cloud'}>
+    Directly invoke other functions to compose more powerful functions.
+  </Card>
+</CardGroup>
+
+## How Inngest handles deployments
+
+
+The Inngest Platform hosts the Inngest Durable Execution Engine, responsible for triggering and maintaining the state of Function runs happening on your Cloud Provider:
+
+<ImageTheme
+  dark={'/assets/docs/platform/deployment/Durable-Execution-Engine-triggers-overview-dark.jpg'}
+  light={'/assets/docs/platform/deployment/Durable-Execution-Engine-triggers-overview-light.jpg'}
+  className="my-0"
+  alt={''}
+/>
+
+The Inngest Platform relies on [Event](/docs/events/creating-an-event-key) and [Signing Keys](/docs/platform/signing-keys), as well as [other security mechanisms](/docs/learn/security), to communicate securely and reliably with the Inngest SDK.
+
+Learn more on Inngest's Durable Execution Engine in our ["How Inngest Functions are executed" guide](/docs/learn/how-functions-are-executed).
