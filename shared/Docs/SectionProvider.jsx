@@ -39,7 +39,7 @@ function createSectionStore(sections) {
               return {
                 ...section,
                 headingRef: ref,
-                level: +(ref.current?.tagName.replace('H', '') ?? 0),
+                level: +(ref.current?.tagName.replace("H", "") ?? 0),
                 offsetRem,
               };
             }
@@ -65,14 +65,15 @@ function useVisibleSections(sectionStore) {
         sectionIndex++
       ) {
         let { id, headingRef } = sections[sectionIndex];
-        let top = headingRef?.current.getBoundingClientRect().top + scrollY;
+        let top = headingRef?.current?.getBoundingClientRect().top + scrollY;
 
         let nextSection = sections[sectionIndex + 1];
         let bottom =
-          (nextSection?.headingRef?.current.getBoundingClientRect().top ??
+          (nextSection?.headingRef?.current?.getBoundingClientRect().top ??
             Infinity) +
           scrollY -
-          remToPx(nextSection?.offsetRem ?? 0) - PAGE_HEADER_OFFSET_REM;
+          remToPx(nextSection?.offsetRem ?? 0) -
+          PAGE_HEADER_OFFSET_REM;
 
         if (
           (top > scrollY && top < scrollY + innerHeight) ||
@@ -122,7 +123,7 @@ export function SectionProvider({ sections, children }) {
 export function useSectionStore(selector) {
   let store = useContext(SectionStoreContext);
   if (!store) {
-    throw new Error('Include SectionProvider within your page component')
+    throw new Error("Include SectionProvider within your page component");
   }
   return useStore(store, selector);
 }

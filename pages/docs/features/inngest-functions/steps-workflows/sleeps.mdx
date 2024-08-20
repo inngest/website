@@ -1,0 +1,181 @@
+import { Callout, GuideSelector, GuideSection, CodeGroup } from "src/shared/Docs/mdx";
+import InformationCircle from 'src/shared/Icons/InformationCircle';
+import TypeScriptIcon from 'src/shared/Icons/TypeScript';
+import PythonIcon from 'src/shared/Icons/Python';
+import GoIcon from 'src/shared/Icons/Go';
+
+
+# Sleeps
+
+The Steps API provide 2 methods to pause the execution of your function for a specific amount of time.
+
+Pausing an execution is useful, for example, to sequence multiple actions in time in a user onboarding workflow: first send a welcome email, then send a tutorial everyday during the first week.
+
+<Callout variant={'info'}>
+**About: Sleeps and Concurrency**
+
+Function being paused by a sleeping Step won't affect your account capacity, it also applies when concurrency is configured on a Function.
+</Callout>
+
+
+<GuideSelector
+  options={[
+    { key: "typescript", title: "TypeScript" },
+    { key: "python", title: "Python" },
+    { key: "go", title: "Go" }
+  ]}>
+
+
+## Pausing an execution for a given time
+
+
+<GuideSection show="typescript">
+
+  Use `step.sleep()` to pause the execution of your function for a specific amount of time.
+
+  <CodeGroup>
+  ```ts {{ title: "v3" }}
+  export default inngest.createFunction(
+    { id: "send-delayed-email" },
+    { event: "app/user.signup" },
+    async ({ event, step }) => {
+      await step.sleep("wait-a-couple-of-days", "2d");
+      // Do something else
+    }
+  );
+  ```
+  ```ts {{ title: "v2" }}
+  export default inngest.createFunction(
+    { name: "Send delayed email" },
+    { event: "app/user.signup" },
+    async ({ event, step }) => {
+      await step.sleep("2d");
+      // Do something else
+    }
+  );
+  ```
+  </CodeGroup>
+
+
+Check out the [`step.sleep()` TypeScript reference.](/docs/reference/functions/step-sleep)
+
+</GuideSection>
+
+<GuideSection show="python">
+
+  Use `step.sleep()` to pause the execution of your function for a specific amount of time.
+
+  ```py
+  @inngest_client.create_function(
+      fn_id="my_function",
+      trigger=inngest.TriggerEvent(event="app/my_function"),
+  )
+  async def fn(
+      ctx: inngest.Context,
+      step: inngest.Step,
+  ) -> None:
+      await step.sleep("zzz", datetime.timedelta(seconds=2))
+  ```
+
+Check out the [`step.sleep()` Python reference.](/docs/reference/python/steps/sleep)
+
+</GuideSection>
+
+<GuideSection show="go">
+
+  Use `step.Sleep()` to pause the execution of your function for a specific amount of time.
+
+  ```go
+  func AccountCreated(ctx context.Context, input inngestgo.Input[AccountCreatedEvent]) (any, error) {
+    // Sleep for a second, minute, hour, week across server restarts.
+    step.Sleep(ctx, "initial-delay", time.Second)
+
+    // ...
+
+    return nil, nil
+  }
+  ```
+
+  Check out the [`step.Sleep()` Go reference.](https://pkg.go.dev/github.com/inngest/inngestgo@v0.7.2/step#Sleep)
+
+</GuideSection>
+
+
+## Pausing an execution until a given date
+
+
+<GuideSection show="typescript">
+
+Use `step.sleepUntil()` to pause the execution of your function until a specific date time.
+
+<CodeGroup>
+```ts {{ title: "v3" }}
+export default inngest.createFunction(
+  { id: "send-scheduled-reminder" },
+  { event: "app/reminder.scheduled" },
+  async ({ event, step }) => {
+    const date = new Date(event.data.remind_at);
+    await step.sleepUntil("wait-for-scheduled-reminder", date);
+    // Do something else
+  }
+);
+```
+```ts {{ title: "v2" }}
+export default inngest.createFunction(
+  { name: "Send scheduled reminder" },
+  { event: "app/reminder.scheduled" },
+  async ({ event, step }) => {
+    const date = new Date(event.data.remind_at)
+    await step.sleepUntil(date);
+    // Do something else
+  }
+);
+```
+</CodeGroup>
+
+Check out the [`step.sleepUntil()` TypeScript reference.](/docs/reference/functions/step-sleep-until)
+
+</GuideSection>
+
+<GuideSection show="python">
+
+  Use `step.sleep_until()` to pause the execution of your function until a specific date time.
+
+```py
+@inngest_client.create_function(
+    fn_id="my_function",
+    trigger=inngest.TriggerEvent(event="app/my_function"),
+)
+async def fn(
+    ctx: inngest.Context,
+    step: inngest.Step,
+) -> None:
+    await step.sleep_until(
+        "zzz",
+        datetime.datetime.now() + datetime.timedelta(seconds=2),
+    )
+```
+Check out the [`step.sleep_until()` Python reference.](/docs/reference/python/steps/sleep-until)
+
+</GuideSection>
+
+<GuideSection show="go">
+
+  _Sleep until a given date is not yet available in the Go SDK._
+
+</GuideSection>
+
+
+
+</GuideSelector>
+
+
+
+
+<Callout variant={'info'}>
+**About: Maximum sleep duration**
+
+Functions can sleep for a year (seven days for the [free tier plans](/pricing)).
+</Callout>
+
+

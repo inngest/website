@@ -453,12 +453,11 @@ const sectionHome: (NavGroup | NavLink)[] = [
               },
               {
                 title: "Sleeps",
-                href: "/docs/features/inngest-functions/steps-workflows/sleeps", // TODO
+                href: "/docs/features/inngest-functions/steps-workflows/sleeps",
               },
               {
                 title: "Wait for events",
-                // href: "/docs/features/inngest-functions/steps-workflows/wait-for-event",
-                href: "/docs/reference/functions/step-wait-for-event", // TODO
+                href: "/docs/features/inngest-functions/steps-workflows/wait-for-event",
               },
               { title: "Guides" },
               {

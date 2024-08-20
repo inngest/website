@@ -2,37 +2,6 @@ import { Callout, Properties, Property, Row, Col, CodeGroup, VersionBadge } from
 
 # Sleep `step.sleep()`
 
-Use `step.sleep()` to pause the execution of your function for a specific amount of time. At maximum, functions can sleep for a year (seven days for the [free tier plans](/pricing)).
-
-Functions that are sleeping do not count towards [concurrency](/docs/functions/concurrency) limits.
-
-<CodeGroup>
-```ts {{ title: "v3" }}
-export default inngest.createFunction(
-  { id: "send-delayed-email" },
-  { event: "app/user.signup" },
-  async ({ event, step }) => {
-    await step.sleep("wait-a-couple-of-days", "2d");
-    // Do something else
-  }
-);
-```
-```ts {{ title: "v2" }}
-export default inngest.createFunction(
-  { name: "Send delayed email" },
-  { event: "app/user.signup" },
-  async ({ event, step }) => {
-    await step.sleep("2d");
-    // Do something else
-  }
-);
-```
-</CodeGroup>
-
-To sleep until a particular date time, use [`step.sleepUntil()`](/docs/reference/functions/step-sleep-until) instead.
-
----
-
 ## `step.sleep(id, duration): Promise`
 
 <Row>
