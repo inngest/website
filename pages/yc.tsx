@@ -74,7 +74,7 @@ export default function Contact() {
             </h1>
             <p>
               YC company or alumni?  Let us know here for access to the YC deal:
-              a free startup/pro plan and discounted usage based billing for the first 2 years.
+              The pro plan free for the first year, with discounts in year 2.
             </p>
           </header>
 
