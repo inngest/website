@@ -1,0 +1,76 @@
+import { Callout, Row, Col } from "src/shared/Docs/mdx";
+
+# Inspecting a Function run
+
+You identified a failed Function run and want to identify the root cause? Or simply want to dig into this run's timings?
+
+The Function Run Logs will provide all the information to understand how this run ran and the tools to reproduce it locally.
+
+
+## The Function Run Logs
+
+Our _Handle failed payments_ function failed after retrying 5 times:
+
+
+![](/assets/docs/platform/monitor/inspecting-function-runs/handle-failed-payments-function-run-failed.png)
+
+Clicking on the failed Function Runs open the Function Run Logs panel:
+
+![](/assets/docs/platform/monitor/inspecting-function-runs/function-run-logs.png)
+
+The Function Run Logs panel is divided in 3 parts:
+
+- On the left: the **Event payload** that triggered the Function run
+- On the top right: **Timings and other technical information** helpful when exchanging with Support
+- On the bottom right: the **Timeline of execution** of the Function's steps
+
+
+The Function logs informs us that our Function run failed because of an `Error: Failed to downgrade user` error.
+
+This is a first clue, let's have a closer look at the Timeline to identify the root cause:
+
+<Row>
+
+<Col>
+
+<br/>
+
+We can now spot that the `downgrade-account-billing-plan` failed.
+
+Let's expand this step to look at the retries and errors.
+</Col>
+<Col>
+![](/assets/docs/platform/monitor/inspecting-function-runs/function-run-logs-timeline-1.png)
+</Col>
+
+</Row>
+
+<Row>
+
+<Col>
+
+![](/assets/docs/platform/monitor/inspecting-function-runs/function-run-logs-timeline-2.png)
+
+</Col>
+<Col>
+
+<br/>
+<br/>
+
+Expanding a step provides the same level of details (the error message and timings) along with retries information.
+
+It seems that our `downgrade-account-billing-plan` step raised the same error during the following 5 retries, we might have to perform a fix in the database.
+
+</Col>
+
+</Row>
+
+
+
+## Performing actions from the Function Run Logs
+
+The Function Run Logs provides two main actions: replay the Function Run or sending the trigger event to your local Inngest Dev Server.
+
+Sending the trigger Event to your local Inngest Dev Server provides a quick way to reproduce issues that are not linked to external factors (ex: new function version recently deployed, data issues).
+
+After looking at the Function Run Logs, the failure is judged temporary or fixed by a recent deployment, you can replay the Function run by using the "Rerun" button at the top right of the screen.

@@ -693,8 +693,8 @@ const sectionHome: (NavGroup | NavLink)[] = [
         title: "Manage",
         links: [
           {
-            title: "Dashboard",
-            href: "/docs/platform/manage/dashboard", // TODO
+            title: "Environments & Apps",
+            href: "/docs/platform/manage/environments-apps",
           },
           {
             title: "Function Replay",
@@ -705,8 +705,8 @@ const sectionHome: (NavGroup | NavLink)[] = [
             href: "/docs/guides/pause-functions",
           },
           {
-            title: "Logs",
-            href: "/docs/platform/manage/logs", // TODO
+            title: "Bulk Cancellation",
+            href: "/docs/platform/manage/bulk-cancellation",
           },
         ],
       },
@@ -715,15 +715,15 @@ const sectionHome: (NavGroup | NavLink)[] = [
         links: [
           {
             title: "Observability & Metrics",
-            href: "/docs/platform/monitor/observability-metrics", // TODO
+            href: "/docs/platform/monitor/observability-metrics",
           },
           {
-            title: "Searching Events",
-            href: "//docs/platform/monitor/searching-events", // TODO
+            title: "Searching for Events",
+            href: "/docs/platform/monitor/searching-events",
           },
           {
-            title: "Inspecting Runs",
-            href: "//docs/platform/monitor/inspecting-runs", // TODO
+            title: "Inspecting Function Runs",
+            href: "/docs/platform/monitor/inspecting-function-runs",
           },
         ],
       },

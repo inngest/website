@@ -1,0 +1,39 @@
+import { Callout } from "src/shared/Docs/mdx";
+
+# Searching for Events
+
+Inngest's Engine matches [trillions of events everyday](https://www.inngest.com/blog/accidentally-quadratic-evaluating-trillions-of-event-matches-in-real-time), powering features such as [Cancellation](/docs/features/inngest-functions/cancellation/cancel-on-events), [Concurrency](/docs/guides/concurrency) and [Batching](/docs/guides/batching) keys.
+
+The Inngest Platform provides an Event Search feature to help you navigate through all your events.
+
+<Callout variant="warning">
+This feature is currently in private beta. Please reach out to us to join the Beta program.
+</Callout>
+
+You can access the Event Search from the Events page:
+
+![](/assets/docs/platform/monitor/searching-events/events-search.png)
+
+
+## Writing an Event Search query
+
+The Event Search relies on [a CEL expression](/docs/guides/writing-expressions), already used in the Inngest SDK to match events when ["waiting for events"](/docs/features/inngest-functions/steps-workflows/wait-for-event) or writing a [custom concurrency key](/docs/guides/concurrency).
+
+Considering the following `"billing/payment.failed"` events list:
+
+![](/assets/docs/platform/monitor/searching-events/payment-events.png)
+
+Let's narrow down events of failed Enterprise payments using the `event.name == 'billing/payment.failed' && event.data.billingPlan == 'Enterprise'` query:
+
+![](/assets/docs/platform/monitor/searching-events/payment-events-search.png)
+
+<Callout variant='info'>
+
+**Searching events tips**
+
+- The search only returns events from the last 3 days
+- The query is case sensitive
+- Logical operators are written using `&&` and `||`, not words
+- String values should be provided with single quotes, ex: `event.name == 'billing/payment.failed'`
+
+</Callout>
