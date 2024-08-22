@@ -17,19 +17,19 @@ There are several methods to manage flow control for each Inngest function. Lear
 
 
 <CardGroup cols={1}>
-  <Card title="Concurrency" icon={<IconConcurrency size={24} />} href={'/docs/guides/concurrency'}>
+  <Card title="Concurrency" icon={<IconConcurrency size={24} fill='primary' />} href={'/docs/guides/concurrency'}>
     Limit the number of executing steps across your function runs. Ideal for limiting concurrent workloads by user, resource, or in general.
   </Card>
-  <Card title="Throttling" icon={<IconThrottle size={24} />} href={'/docs/guides/throttling'}>
+  <Card title="Throttling" icon={<IconThrottle size={24} fill='primary' />} href={'/docs/guides/throttling'}>
     Limit the throughput of function execution over a period of time. Ideal for working around third-party API rate limits.
   </Card>
-  <Card title="Rate Limiting" icon={<IconRateLimit size={24} />} href={'/docs/guides/rate-limiting'}>
+  <Card title="Rate Limiting" icon={<IconRateLimit size={24} fill='primary' />} href={'/docs/guides/rate-limiting'}>
     Prevent excessive function runs over a given time period by _skipping_ events beyond a specific limit. Ideal for protecting against abuse.
   </Card>
-  <Card title="Debounce" icon={<IconDebounce size={24} />} href={'/docs/guides/debounce'}>
+  <Card title="Debounce" icon={<IconDebounce size={24} fill='primary' />} href={'/docs/guides/debounce'}>
     Avoid unnecessary function invocations by de-duplicating events over a sliding time window. Ideal for preventing wasted work when a function might be triggered in quick succession.
   </Card>
-  <Card title="Priority" icon={<IconPriority size={24} />} href={'/docs/guides/priority'}>
+  <Card title="Priority" icon={<IconPriority size={24} fill='primary' />} href={'/docs/guides/priority'}>
     Dynamically adjust the execution order of functions based on any data. Ideal for pushing critical work to the front of the queue.
   </Card>
 </CardGroup>

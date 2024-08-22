@@ -24,7 +24,7 @@ export const a: React.FunctionComponent<
     target={target}
     rel={rel}
     download={download}
-    className="text-breeze-600 dark:text-breeze-300"
+    className="text-breeze-600 dark:text-breeze-300 hover:text-breeze-500 hover:dark:text-breeze-400 hover:dark:decoration-breeze-400 hover:decoration-breeze-500"
   >
     {children}
   </Link>
