@@ -130,6 +130,8 @@ module.exports = {
           "2xIntense": "rgb(var(--color-primary-2xIntense) / <alpha-value>)",
         },
         secondary: {
+          "4xSubtle": "rgb(var(--color-secondary-4xSubtle) / <alpha-value>)",
+          "3xSubtle": "rgb(var(--color-secondary-3xSubtle) / <alpha-value>)",
           "2xSubtle": "rgb(var(--color-secondary-2xSubtle) / <alpha-value>)",
           xSubtle: "rgb(var(--color-secondary-xSubtle) / <alpha-value>)",
           subtle: "rgb(var(--color-secondary-subtle) / <alpha-value>)",
@@ -154,6 +156,15 @@ module.exports = {
             "rgb(var(--color-quaternary-cool-moderate) / <alpha-value>)",
           coolxIntense:
             "rgb(var(--color-quaternary-cool-xIntense) / <alpha-value>)",
+        },
+        accent: {
+          "2xSubtle": "rgb(var(--color-accent-2xSubtle) / <alpha-value>)",
+          xSubtle: "rgb(var(--color-accent-xSubtle) / <alpha-value>)",
+          subtle: "rgb(var(--color-accent-subtle) / <alpha-value>)",
+          moderate: "rgb(var(--color-accent-moderate) / <alpha-value>)",
+          intense: "rgb(var(--color-accent-intense) / <alpha-value>)",
+          xIntense: "rgb(var(--color-accent-xIntense) / <alpha-value>)",
+          "2xIntense": "rgb(var(--color-accent-2xIntense) / <alpha-value>)",
         },
         status: {
           failed: "rgb(var(--color-tertiary-intense) / <alpha-value>)",
@@ -237,6 +248,23 @@ module.exports = {
         btnDanger: "rgb(var(--color-foreground-btn-danger) / <alpha-value>)",
         btnDangerDisabled:
           "rgb(var(--color-foreground-btn-dangerDisabled) / <alpha-value>)",
+        codeDelimiterBracketJson:
+          "rgb(var(--color-foreground-code-delimiterBracketJson) / <alpha-value>)",
+        codeStringKeyJson:
+          "rgb(var(--color-foreground-code-stringKeyJson) / <alpha-value>)",
+        codeNumberJson:
+          "rgb(var(--color-foreground-code-numberJson) / <alpha-value>)",
+        codeStringValueJson:
+          "rgb(var(--color-foreground-code-stringValueJson) / <alpha-value>)",
+        codeKeywordJson:
+          "rgb(var(--color-foreground-code-keywordJson) / <alpha-value>)",
+        codeComment:
+          "rgb(var(--color-foreground-code-comment) / <alpha-value>)",
+        codeString: "rgb(var(--color-foreground-code-string) / <alpha-value>)",
+        codeKeyword:
+          "rgb(var(--color-foreground-code-keyword) / <alpha-value>)",
+        codeEntityNameFunction:
+          "rgb(var(--color-foreground-code-entityNameFunction) / <alpha-value>)",
       },
       fontSize: {
         "5xl": ["3rem", "1.3"],
