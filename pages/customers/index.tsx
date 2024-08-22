@@ -257,7 +257,7 @@ const grid = [
 
 export default function Customers() {
   return (
-    <div className="bg-slate-1000">
+    <div>
       <Header />
       <Container className="py-8">
         <div className="my-12 tracking-tight">
@@ -265,7 +265,7 @@ export default function Customers() {
             <em>Our</em> customers deliver reliable products <br />
             for <em>their</em> customers
           </h1>
-          <p className="mx-auto my-8 text-slate-300 text-center text-lg">
+          <p className="mx-auto my-8 text-subtle text-center text-lg">
             From startups to public companies, our customers chose Inngest to
             power their products.
           </p>
@@ -279,7 +279,7 @@ export default function Customers() {
 
           <div className="my-20 grid md:grid-cols-3 gap-6 md:gap-12">
             {featuredCompanies.map(({ src, name, scale = 1, url }, idx) => (
-              <div className="group relative p-6 flex flex-col justify-items-start items-center border border-slate-100/10 rounded-2xl bg-slate-800/10 bg-[url(/assets/textures/wave.svg)]">
+              <div className="group relative p-6 flex flex-col justify-items-start items-center border border-subtle rounded-2xl">
                 <div className="my-10 md:my-20 h-20 md:h-24 flex items-center">
                   <Image
                     key={idx}
@@ -333,11 +333,11 @@ export default function Customers() {
                         width="72"
                         className="rounded-full h-12 w-12"
                       />
-                      <cite className="text-slate-300 leading-8 not-italic">
-                        <div className="text-base">
+                      <cite className="leading-8 not-italic">
+                        <div className="text-basis text-base">
                           {quote.attribution.name}
                         </div>
-                        <div className="text-sm text-slate-400">
+                        <div className="text-sm text-subtle">
                           {quote.attribution.title} - {name}
                         </div>
                       </cite>
@@ -347,7 +347,7 @@ export default function Customers() {
               }
               const { src, scale = 0.8 } = item;
               return (
-                <div className="group relative px-6 py-8 h-full min-h-[148px] border border-slate-100/10 rounded-2xl flex items-center">
+                <div className="group relative px-6 py-8 h-full min-h-[148px] border border-subtle rounded-2xl flex items-center">
                   {!!src && (
                     <Image
                       key={idx}
@@ -366,7 +366,7 @@ export default function Customers() {
                     <a
                       href={item.url}
                       target="_blank"
-                      className="absolute hidden group-hover:flex flex-row gap-1 items-center bottom-2 right-2  px-3 py-1.5 text-xs bg-slate-400/10 hover:bg-slate-400/40 rounded-xl text-slate-50"
+                      className="absolute hidden group-hover:flex flex-row gap-1 items-center bottom-2 right-2  px-3 py-1.5 text-xs bg-surfaceSubtle hover:bg-canvasSubtle rounded-xl text-link"
                     >
                       Visit website{" "}
                       <ArrowTopRightOnSquareIcon className="h-3" />
