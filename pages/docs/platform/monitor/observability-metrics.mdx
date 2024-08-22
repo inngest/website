@@ -13,7 +13,7 @@ Events volume and which functions they trigger can become hard to visualize.
 
 Thankfully, the Events page gives you a quick overview of the volume of Events going through your Apps:
 
-![](/assets/docs/platform/monitor/observability-metrics/events-list.png)
+![The Events page lists the available Event type. Each list item features the event name along with its associated Functions and a events volume indicator.](/assets/docs/platform/monitor/observability-metrics/events-list.png)
 
 Get more detailed metrics for a dedicated event by navigating to it from the list:
 
@@ -23,7 +23,7 @@ The Event page helps quickly visualize the throughput (the rate of event over ti
 
 The event occurrences feature a “Source” column, which is helpful when an event is triggered from multiple Apps (ex, using different languages):
 
-![](/assets/docs/platform/monitor/observability-metrics/event-view.png)
+![Clicking on an Events leads us to the Event page that displays, at the top, a chart of events occurrences over the last 24 hours and at the list of associated events.](/assets/docs/platform/monitor/observability-metrics/event-view.png)
 
 Clicking on a specific event will redirect you to its Logs.
 
@@ -31,7 +31,7 @@ The Event Logs view provides the most precise information, with the linked Funct
 
 Such information, combined with the ability to forward the event to your Local Dev Server instance, makes debugging events much quicker:
 
-![](/assets/docs/platform/monitor/observability-metrics/event-logs-view.png)
+![Clicking on an event of the below list open the Event Logs view, providing much detailed information such as the Event Payload and triggered Functions.](/assets/docs/platform/monitor/observability-metrics/event-logs-view.png)
 
 ## Function runs observability
 
@@ -41,7 +41,7 @@ The Functions list page provides the first round of essential information in one
 - **Failure** rate: enabling you to quickly identify a surge of errors
 - **Volume**: helping in identifying possible drops in processing
 
-![](/assets/docs/platform/monitor/observability-metrics/functions-list.png)
+![The Functions list page lists all available Functions with essential information such as associated Events, Failure rate and Volume.](/assets/docs/platform/monitor/observability-metrics/functions-list.png)
 
 Navigating to a Function displays an overview composed of three main parts:
 
@@ -49,7 +49,7 @@ Navigating to a Function displays an overview composed of three main parts:
 2. Metrics - at the center
 3. Configuration - on the right
 
-![](/assets/docs/platform/monitor/observability-metrics/function-view.png)
+![Clicking on a Function leads us to the Function view, composed of three main parts, KPIs, metrics (as charts) and Configuration information.](/assets/docs/platform/monitor/observability-metrics/function-view.png)
 
 ### Function KPIs
 
@@ -63,7 +63,7 @@ The Function KPIs are composed of two essential numbers for the selected time ra
 - **Failure rate**: the number of Functions runs that failed after reaching their maximum retry policy
 </Col>
 <Col>
-![](/assets/docs/platform/monitor/observability-metrics/function-kpis.png)
+![The KPIs are composed of two metrics: the Volume and the Failure rate.](/assets/docs/platform/monitor/observability-metrics/function-kpis.png)
 </Col>
 
 </Row>
@@ -80,7 +80,7 @@ The Function overview page showcases many charts featuring metrics that can help
 
 **Function Runs**
 
-![](/assets/docs/platform/monitor/observability-metrics/function-metrics-runs.png)
+![The Function Runs chat is a bar chat where each bar represents a variable time bucket and each bar's stack a function status (failed, succeed or cancelled).](/assets/docs/platform/monitor/observability-metrics/function-metrics-runs.png)
 
 The Function Runs charts provide a snapshot of the number of finished Function runs in buckets (from 1 minute to 1 hour).
 
@@ -94,7 +94,7 @@ You can leverage this chart to identify a possible recurrence or surge in failur
 
 **Function Throughput**
 
-![](/assets/docs/platform/monitor/observability-metrics/function-metrics-throughput.png)
+![The Function Throughput is a line chart featuring 3 series: queued, started and ended Function runs.](/assets/docs/platform/monitor/observability-metrics/function-metrics-throughput.png)
 
 _TODO_
 
@@ -108,8 +108,8 @@ _TODO_
 
 **Step Running & Step Backlog  - Point in Time**
 
-![](/assets/docs/platform/monitor/observability-metrics/function-metrics-step-backlog.png)
-![](/assets/docs/platform/monitor/observability-metrics/function-metrics-step-running.png)
+![The Step Running is a line chart featuring two series: queues and sleeping steps.](/assets/docs/platform/monitor/observability-metrics/function-metrics-step-backlog.png)
+![The Step Backlog is a line chart featuring a single series: running steps and some colored bar indicating concurrency capacity exhaust events.](/assets/docs/platform/monitor/observability-metrics/function-metrics-step-running.png)
 
 Both charts represents Step activity at a given point in time. Unlike other charts present on this page, these charts are not
 aggregating the number of running or started steps in a given time bucket.
@@ -126,7 +126,7 @@ For example, a low _Function Throughput_ might be linked to a high number of con
 
 **SDK Request Throughput**
 
-![](/assets/docs/platform/monitor/observability-metrics/function-metrics-sdk-request-throughput.png)
+![The SDK Request Throughput is a line chart featuring three series: queued, started and ended Function runs.](/assets/docs/platform/monitor/observability-metrics/function-metrics-sdk-request-throughput.png)
 
 _TODO_
 
@@ -162,7 +162,7 @@ Updating your Function's retry configuration can solve a high failure rate. Also
 </Col>
 
 <Col>
-![](/assets/docs/platform/monitor/observability-metrics/function-configuration.png)
+![The Function Configuration side section features the retries and concurrency information.](/assets/docs/platform/monitor/observability-metrics/function-configuration.png)
 </Col>
 
 </Row>

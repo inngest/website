@@ -352,7 +352,7 @@ export function ImageTheme({
       <Zoom wrapElement="span" zoomMargin={25}>
         <Image
           src={light}
-          className={`${className} block dark:invert`}
+          className={`${className} block dark:invert rounded`}
           alt={alt}
           width={0}
           height={0}
@@ -368,7 +368,7 @@ export function ImageTheme({
       <Zoom wrapElement="span" zoomMargin={25}>
         <Image
           src={light}
-          className={`${className} block dark:hidden`}
+          className={`${className} block dark:hidden rounded`}
           alt={alt}
           width={0}
           loading="eager"
@@ -381,7 +381,7 @@ export function ImageTheme({
       <Zoom wrapElement="span" zoomMargin={25}>
         <Image
           src={dark}
-          className={`${className} hidden dark:block`}
+          className={`${className} hidden dark:block rounded`}
           alt={alt}
           width={0}
           loading="eager"

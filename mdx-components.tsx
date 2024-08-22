@@ -19,6 +19,7 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
           height={0}
           sizes="100vw"
           style={{ width: "100%", height: "auto" }}
+          className="rounded"
           {...(props as ImageProps)}
         />
       </Zoom>
