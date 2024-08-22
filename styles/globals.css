@@ -91,6 +91,7 @@
 
 
 html.docs {
+  --primary-color: #1365d6;
   color: var(--font-color-primary);
   background: var(--bg-color);
   scroll-behavior: smooth;

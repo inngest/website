@@ -19,7 +19,13 @@ export { default as YouTube } from "react-youtube-embed";
 export const a: React.FunctionComponent<
   React.AnchorHTMLAttributes<HTMLAnchorElement>
 > = ({ children, href, target, rel, download }) => (
-  <Link href={href} target={target} rel={rel} download={download}>
+  <Link
+    href={href}
+    target={target}
+    rel={rel}
+    download={download}
+    className="text-breeze-600 dark:text-breeze-300"
+  >
     {children}
   </Link>
 );
@@ -122,7 +128,7 @@ export function Callout({
         "my-6 border border-transparent rounded-lg p-6",
         !Icon && "[&>:first-child]:mt-0 [&>:last-child]:mb-0",
         variant === "default" &&
-          "dark:border-indigo-600/20 text-indigo-600 dark:text-indigo-200 bg-indigo-600/10",
+          "dark:border-breeze-600/20 text-breeze-600 dark:text-breeze-200 bg-breeze-100",
         variant === "info" &&
           "dark:border-sky-600/20 text-sky-600 dark:text-sky-100 bg-sky-300/10",
         variant === "warning" &&

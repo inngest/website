@@ -131,7 +131,7 @@ function NavLink({
       {!isAnchorLink && <span className="absolute inset-y-0 left-0 w-px" />}
 
       <span>{children}</span>
-      {tag && <Tag color="indigo">{tag}</Tag>}
+      {tag && <Tag color="breeze">{tag}</Tag>}
     </LinkOrHref>
   );
 }

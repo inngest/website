@@ -68,8 +68,8 @@ const FeedbackThanks = forwardRef<HTMLDivElement, {}>(function FeedbackThanks(
       ref={ref}
       className="absolute inset-0 flex justify-center md:justify-start"
     >
-      <div className="flex items-center gap-3 rounded-full bg-indigo-50/50 py-1 pr-3 pl-1.5 text-sm text-indigo-900 ring-1 ring-inset ring-indigo-500/20 dark:bg-indigo-500/5 dark:text-indigo-200 dark:ring-indigo-500/30">
-        <CheckIcon className="h-5 w-5 flex-none fill-indigo-500 stroke-white dark:fill-indigo-200/20 dark:stroke-indigo-200" />
+      <div className="flex items-center gap-3 rounded-full bg-breeze-50/50 py-1 pr-3 pl-1.5 text-sm text-breeze-900 ring-1 ring-inset ring-breeze-500/20 dark:bg-breeze-500/5 dark:text-breeze-200 dark:ring-breeze-500/30">
+        <CheckIcon className="h-5 w-5 flex-none fill-breeze-500 stroke-white dark:fill-breeze-200/20 dark:stroke-breeze-200" />
         Thanks for your feedback!
       </div>
     </div>
@@ -211,7 +211,7 @@ function EditPageLink({ url }: { url: string }) {
     <div className="flex justify-center md:justify-start">
       <Link
         href={url}
-        className="flex space-x-2 font-medium text-indigo-600 hover:text-slate-800 hover:underline transition-all duration-150 dark:hover:text-white dark:text-indigo-400"
+        className="flex space-x-2 font-medium text-breeze-600 hover:text-slate-800 hover:underline transition-all duration-150 dark:hover:text-white dark:text-breeze-400"
       >
         <PencilSquareIcon className="h-5" />
         <span>Edit this page on GitHub</span>

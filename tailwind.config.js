@@ -21,7 +21,8 @@ module.exports = {
       colors: {
         // Aliases for ease of re-design
         body: colors.slate[100],
-        primary: colors.indigo["500"],
+        // compat of different primary color for website and docs
+        primary: "var(--primary-color)",
         inngestBlack: theme2024.black,
         // Design System 2024
         carbon: {
