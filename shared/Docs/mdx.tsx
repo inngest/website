@@ -127,9 +127,8 @@ export function Callout({
       className={clsx(
         "my-6 border border-transparent rounded-lg p-6",
         !Icon && "[&>:first-child]:mt-0 [&>:last-child]:mb-0",
-        variant === "default" &&
-          "dark:border-breeze-600/20 text-breeze-600 dark:text-breeze-200 bg-breeze-100",
-        variant === "info" &&
+
+        (variant === "default" || variant === "info") &&
           "dark:border-sky-600/20 text-sky-600 dark:text-sky-100 bg-sky-300/10",
         variant === "warning" &&
           "dark:border-amber-700/20 text-amber-900 dark:text-amber-50 bg-amber-300/10",
