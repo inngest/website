@@ -22,30 +22,30 @@ export default function Footer({
       {!disableCta && <FooterCallout ctaRef={ctaRef} />}
       <footer
         className={clsx(
-          "border-t border-slate-800 bg-slate-1000",
+          "border-t border-subtle",
           disableCta ? "mt-36" : "mt-12"
         )}
       >
         <Container className="pb-12 pt-12 lg:pt-24">
           <div className="xl:flex xl:gap-12 w-full rounded-lg relative ">
             <div className="mb-12 flex gap-6 items-start">
-              <Logo className="text-white w-20 relative top-[3px]" />
+              <Logo className="text-basis w-20 relative top-[3px]" />
               <StatusWidget />
             </div>
             <div className="flex flex-wrap gap-8 lg:gap-12 xl:gap-20">
               {footerLinks.map((footerLink, i) => (
-                <div className=" lg:w-auto  flex-shrink-0" key={i}>
-                  <h4 className="text-slate-400 text-xs uppercase font-semibold mb-6">
+                <div className="lg:w-auto flex-shrink-0" key={i}>
+                  <h4 className="text-subtle text-sm font-semibold mb-6">
                     {footerLink.name}
                   </h4>
                   <ul className="flex flex-col gap-4">
                     {footerLink.links.map((link, j) => (
                       <li key={j}>
                         <a
-                          className="text-white text-sm flex items-center group gap-1.5 hover:text-indigo-400 transition-all"
+                          className="text-basis text-sm font-medium flex items-center group gap-1.5 hover:text-primary-intense transition-all"
                           href={link.url}
                         >
-                          {link.icon && <link.icon size={22} color="indigo" />}
+                          {link.icon && <link.icon size={22} />}
                           {link.label}
                         </a>
                       </li>
@@ -55,13 +55,13 @@ export default function Footer({
               ))}
 
               <div>
-                <h4 className="text-slate-400 text-xs uppercase font-semibold mb-6">
+                <h4 className="text-subtle text-sm font-semibold mb-6">
                   Community
                 </h4>
                 <ul className="flex flex-col gap-4">
                   <li>
                     <a
-                      className="text-white text-sm flex items-center group gap-2 hover:text-indigo-400 transition-all"
+                      className="text-basis text-sm font-medium flex items-center group gap-2 hover:text-primary-intense transition-all"
                       href="https://www.inngest.com/discord"
                     >
                       <Discord />
@@ -70,8 +70,8 @@ export default function Footer({
                   </li>
                   <li>
                     <a
-                      className="text-white text-sm flex items-center group gap-2 hover:text-indigo-400 transition-all"
-                      href="https://github.com/inngest/inngest-js"
+                      className="text-basis text-sm font-medium flex items-center group gap-2 hover:text-primary-intense transition-all"
+                      href="https://github.com/inngest/inngest"
                     >
                       <Github />
                       GitHub
@@ -79,8 +79,8 @@ export default function Footer({
                   </li>
                   <li>
                     <a
-                      className="text-white text-sm flex items-center group gap-2 hover:text-indigo-400 transition-all"
-                      href="https://twitter.com/inngest"
+                      className="text-basis text-sm font-medium flex items-center group gap-2 hover:text-primary-intense transition-all"
+                      href="https://x.com/inngest"
                     >
                       <XSocialIcon />
                       X.com
@@ -91,13 +91,13 @@ export default function Footer({
             </div>
           </div>
           <ul className="flex mt-12 lg:gap-6 flex-col-reverse items-start lg:flex-row text-sm">
-            <li className="text-center py-1.5 text-slate-300 font-medium">
+            <li className="text-center py-1.5 text-subtle font-medium">
               &copy;
               {new Date().getFullYear()} Inngest Inc.
             </li>
             <li>
               <a
-                className="text-slate-400 py-1.5 block hover:text-indigo-400 transition-colors"
+                className="text-muted py-1.5 block hover:text-primary-intense transition-colors"
                 href="/privacy?ref=footer"
               >
                 Privacy
@@ -105,7 +105,7 @@ export default function Footer({
             </li>
             <li>
               <a
-                className="text-slate-400 py-1.5 block hover:text-indigo-400 transition-colors"
+                className="text-muted py-1.5 block hover:text-primary-intense transition-colors"
                 href="/terms?ref=footer"
               >
                 Terms and Conditions
@@ -113,7 +113,7 @@ export default function Footer({
             </li>
             <li>
               <a
-                className="text-slate-400 py-1.5 block hover:text-indigo-400 transition-colors"
+                className="text-muted py-1.5 block hover:text-primary-intense transition-colors"
                 href="/security?ref=footer"
               >
                 Security
@@ -121,7 +121,7 @@ export default function Footer({
             </li>
             <li>
               <a
-                className="text-slate-400 py-1.5 block hover:text-indigo-400 transition-colors"
+                className="text-muted py-1.5 block hover:text-primary-intense transition-colors"
                 href="/blog/soc2-compliant?ref=footer"
               >
                 Inngest is SOC 2 Compliant

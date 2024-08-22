@@ -80,7 +80,7 @@ export default function StatusWidget({
       href={status.url}
       target="_blank"
       rel="noopener noreferrer"
-      className={`${className} text-slate-200 font-medium bg-slate-900 hover:bg-slate-800 transition-all rounded text-sm px-4 py-2 inline-flex items-center`}
+      className={`${className} text-slate-200 font-medium bg-canvasSubtle hover:bg-canvasMuted transition-all rounded text-sm px-4 py-2 inline-flex items-center`}
       title={`Status updated at ${status.updated_at}`}
     >
       <span
