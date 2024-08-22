@@ -333,7 +333,7 @@ function NavigationGroup({
               className={clsx("pl-2", {
                 "text-sm font-medium text-[#2E2E2E] dark:text-carbon-100":
                   nestingLevel > 0,
-                "text-xs font-semibold text-carbon-300 dark:text-carbon-600":
+                "text-xs font-semibold uppercase text-carbon-300 dark:text-carbon-600":
                   nestingLevel == 0,
               })}
             >
