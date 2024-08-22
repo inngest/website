@@ -56,9 +56,11 @@ export function Breadcrumb() {
         <React.Fragment key={index}>
           {!!index && <span className="mx-1 text-gray-500">{"/"}</span>}
           {href ? (
-            <Link href={href}>{title}</Link>
+            <Link href={href} className="text-breeze-600 dark:text-breeze-300">
+              {title}
+            </Link>
           ) : (
-            <span className="text-gray-500">{title}</span>
+            <span className="text-[#2E2E2E] dark:text-carbon-100">{title}</span>
           )}
         </React.Fragment>
       ))}

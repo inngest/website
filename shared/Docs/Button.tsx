@@ -24,10 +24,21 @@ const variantStyles = {
   outline:
     "rounded-full py-1 px-3 text-slate-700 ring-1 ring-inset ring-slate-900/10 hover:bg-slate-900/2.5 hover:text-slate-900 dark:text-slate-400 dark:ring-white/10 dark:hover:bg-white/5 dark:hover:text-white",
   text: "text-indigo-500 hover:text-indigo-600 dark:text-indigo-400 dark:hover:text-indigo-500",
+  primaryV2:
+    "text-white bg-matcha-600 hover:bg-matcha-700 hover:text-white rounded-full",
+  secondaryV2:
+    "rounded-full bg-carbon-100 py-1 px-3 text-carbon-900 hover:bg-carbon-200 dark:bg-carbon-800/40 dark:text-carbon-400 dark:ring-1 dark:ring-inset dark:ring-carbon-800 dark:hover:bg-carbon-800 dark:hover:text-carbon-300",
 };
 
 type ButtonProps = {
-  variant?: "primary" | "secondary" | "filled" | "outline" | "text";
+  variant?:
+    | "primary"
+    | "secondary"
+    | "filled"
+    | "outline"
+    | "text"
+    | "primaryV2"
+    | "secondaryV2";
   className?: string;
   arrow?: "left" | "right";
   children?: React.ReactNode;

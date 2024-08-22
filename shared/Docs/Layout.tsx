@@ -96,7 +96,7 @@ export function Layout({
           <div className="lg:ml-72 xl:ml-80">
             <motion.header
               layoutScroll
-              className="fixed inset-y-0 mt-14 left-0 z-40 contents w-72 overflow-y-auto border-r border-slate-900/10 px-6 pt-4 pb-8 dark:border-white/10 lg:block xl:w-80"
+              className="fixed inset-y-0 mt-14 left-0 z-40 contents w-72 overflow-y-auto border-r border-slate-900/10 pl-4 pr-3 py-4 pb-8 dark:border-white/10 lg:block xl:w-80"
             >
               <Navigation className="hidden lg:block" />
             </motion.header>

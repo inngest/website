@@ -739,8 +739,13 @@ const sectionHome: (NavGroup | NavLink)[] = [
   },
   { title: "References", links: sectionReference },
   {
-    title: "Glossary",
-    href: `/docs/learn/glossary`,
+    title: "",
+    links: [
+      {
+        title: "Glossary",
+        href: `/docs/learn/glossary`,
+      },
+    ],
   },
 ];
 

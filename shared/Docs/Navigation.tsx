@@ -59,7 +59,7 @@ function TopLevelNavItem({ href, matcher, title, icon: Icon }) {
       <span
         className={clsx(
           "flex flex-row py-1 gap-4 items-center",
-          isActive && "font-bold text-indigo-600"
+          isActive && "font-bold text-breeze-600 dark:text-breeze-300"
         )}
       >
         {Icon && (
@@ -121,10 +121,10 @@ function NavLink({
       aria-current={active ? "page" : undefined}
       target={target}
       className={clsx(
-        "flex justify-between items-center gap-2 py-1 pr-3 text-sm transition group pl-0", // group for nested hovers
+        "flex rounded justify-between items-center gap-2 py-2 pl-2 text-sm transition group", // group for nested hovers
         active
-          ? "font-semibold text-black dark:text-white bg-slate-700/10 dark:bg-white/10"
-          : "font-medium text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white",
+          ? "font-medium rounded bg-breeze-0 text-breeze-600 dark:bg-breeze-1000 dark:text-breeze-300"
+          : "font-medium hover:text-[#2E2E2E] text-carbon-700 hover:bg-carbon-50 dark:text-carbon-400 dark:hover:text-carbon-100 dark:hover:bg-[#2E2E2E]",
         className
       )}
     >
@@ -321,23 +321,22 @@ function NavigationGroup({
 
   return (
     <NavigationGroupStructure value={group.title} nestingLevel={nestingLevel}>
-      <li
-        className={clsx("relative", className, {
-          "mt-2": nestingLevel > 0,
-          "mt-4": nestingLevel == 0,
-        })}
-      >
+      <li className={clsx("relative", className)}>
         <NavigationGroupStructure.Trigger className="w-full animate-accordion-trigger">
           <h2
-            className={clsx("flex justify-between", `ml-${nestingLevel * 4}`)}
+            className={clsx("flex justify-between m-0", {
+              "py-2": nestingLevel > 0,
+              "mt-4 mb-1": nestingLevel === 0,
+            })}
           >
             <span
-              className={clsx("text-slate-900 dark:text-white", {
-                "text-sm font-medium": nestingLevel > 0,
-                "text-xs font-semibold uppercase font-mono": nestingLevel == 0,
+              className={clsx("pl-2", {
+                "text-sm font-medium text-[#2E2E2E] dark:text-carbon-100":
+                  nestingLevel > 0,
+                "text-xs font-semibold text-carbon-300 dark:text-carbon-600":
+                  nestingLevel == 0,
               })}
             >
-              {/* TODO: Make group title a link to group landing page */}
               {group.title}
             </span>
             {nestingLevel > 0 && <ChevronDownIcon className="h-4 w-4" />}
@@ -347,13 +346,13 @@ function NavigationGroup({
         <NavigationGroupStructure.Content
           className={animateAccordion ? "animate-accordion" : ""}
         >
-          <div
-            className={clsx(
-              "relative overflow-hidden",
-              nestingLevel > 0 ? "mt-2" : "pl-0 mt-3"
-            )}
-          >
-            <motion.ul role="list" className="border-l border-transparent">
+          <div className={clsx("relative overflow-hidden")}>
+            <motion.ul
+              role="list"
+              className={clsx("border-l border-transparent", {
+                "ml-4": nestingLevel > 0,
+              })}
+            >
               {group.links.map((link) => {
                 if (isNavGroup(link)) {
                   return (
@@ -376,7 +375,7 @@ function NavigationGroup({
                     <motion.li
                       key={link.href}
                       layout="position"
-                      className={clsx("relative", `ml-${nestingLevel * 4}`)}
+                      className={"relative"}
                     >
                       <NavLink
                         href={link.href}
@@ -384,9 +383,7 @@ function NavigationGroup({
                         className={link.className}
                         tag={link.tag}
                       >
-                        <span className={`ml-${nestingLevel * 4}`}>
-                          {link.title}
-                        </span>
+                        <span>{link.title}</span>
                       </NavLink>
                     </motion.li>
                   );
@@ -395,14 +392,13 @@ function NavigationGroup({
                     <motion.li
                       key={link.title}
                       layout="position"
-                      className={clsx("relative", `ml-${nestingLevel * 4}`)}
+                      className={"relative"}
                     >
                       <span
                         className={clsx(
-                          "ml-1 mt-1 flex justify-between items-center gap-2 py-1 pr-3 text-sm transition group pl-0", // group for nested hovers
-                          "font-bold text-black hover:text-slate-900 dark:text-slate-400 dark:hover:text-white",
-                          className,
-                          `ml-${nestingLevel * 4}`
+                          "flex justify-between items-center text-sm transition group py-2 pl-2",
+                          "text-xs font-semibold text-carbon-300 dark:text-carbon-600",
+                          className
                         )}
                       >
                         {link.title}
@@ -575,17 +571,17 @@ export function Navigation(props) {
             </>
           ) : null}
 
-          <li className="sticky bottom-0 z-10 mt-6 sm:hidden gap-2 flex dark:bg-slate-900">
+          <li className="sticky bottom-0 z-10 mt-6 sm:hidden gap-2 flex dark:bg-carbon-900">
             <Button
               href={process.env.NEXT_PUBLIC_SIGNIN_URL}
-              variant="secondary"
+              variant="secondaryV2"
               className="w-full"
             >
               Sign In
             </Button>
             <Button
               href={`${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=docs-mobile-nav`}
-              variant="primary"
+              variant="primaryV2"
               arrow="right"
               className="w-full"
             >
