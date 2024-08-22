@@ -1,15 +1,19 @@
 import React from "react";
 import type { IconProps } from "./props";
+import clsx from "clsx";
 
-const TypeScript = ({ size = 32, fill = "primary", className }: IconProps) => {
+const TypeScript = ({ size = 8, fill = "primary", className }: IconProps) => {
   return (
     <svg
       fill="none"
+      className={clsx(
+        `h-${size} w-${size} fill-${fill ? fill : "primary"}`,
+        className
+      )}
       height={size}
-      viewBox="0 0 512 512"
       width={size}
+      viewBox="0 0 512 512"
       xmlns="http://www.w3.org/2000/svg"
-      className={className}
     >
       <g clipPath="url(#clip0_1493_137)">
         <path

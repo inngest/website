@@ -250,7 +250,7 @@ function SearchResult({ result, resultIndex, autocomplete, collection }) {
       />
       {SdkLanguageIcon && (
         <span className="absolute px-1.5 top-3 right-2">
-          <SdkLanguageIcon className="w-5 h-5 text-carbon-400" />
+          <SdkLanguageIcon className="w-5 h-5 text-carbon-400" size={6} />
         </span>
       )}
 

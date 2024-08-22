@@ -1,17 +1,4 @@
-import {
-  CogIcon,
-  CommandLineIcon,
-  HomeIcon,
-  LifebuoyIcon,
-  PlayIcon,
-  QuestionMarkCircleIcon,
-  LightBulbIcon,
-} from "@heroicons/react/24/outline";
-import GoIcon from "src/shared/Icons/Go";
-import GuideIcon from "src/shared/Icons/Guide";
-import PythonIcon from "src/shared/Icons/Python";
-import TypeScriptIcon from "src/shared/Icons/TypeScript";
-import { StatusIcon } from "src/shared/StatusWidget";
+import { HomeIcon, PlayIcon, LightBulbIcon } from "@heroicons/react/24/outline";
 
 // A basic link in the nav
 export type NavLink = {

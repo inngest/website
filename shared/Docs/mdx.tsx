@@ -421,7 +421,7 @@ export function CardGroup({
 export interface CardProps<T> {
   title?: string;
   icon?: React.ReactNode;
-
+  iconPlacement?: "left" | "top";
   className?: string;
   as?: T;
   href?: string;
@@ -431,6 +431,7 @@ export interface CardProps<T> {
 export function Card<T extends React.ElementType = "div">({
   title,
   icon,
+  iconPlacement = "left",
   className,
   children,
   as,
@@ -446,13 +447,19 @@ export function Card<T extends React.ElementType = "div">({
       )}
       {...props}
     >
-      <div className="px-6 py-4 flex flex-row gap-2 items-start">
-        <div className="min-w-7 flex justify-start mt-1">{icon}</div>
+      <div
+        className={clsx("px-6 py-4 flex gap-2 items-start", {
+          "flex-row": iconPlacement === "left",
+          "flex-col": iconPlacement === "top",
+        })}
+      >
+        {icon && <div className="min-w-7 flex justify-start mt-1">{icon}</div>}
         <div>
           <h2
-            className={clsx(
-              "font-semibold text-base text-slate-800 dark:text-white"
-            )}
+            className={clsx("font-semibold text-slate-800 dark:text-white", {
+              "text-base": !!props.href,
+              "text-xl": !props.href,
+            })}
           >
             {title}
           </h2>
