@@ -2,6 +2,7 @@ import Header from "src/shared/Header";
 import Container from "src/shared/layout/Container";
 import ComparisonTable from "src/shared/Pricing/ComparisionTable";
 import PlanCard from "src/shared/Pricing/PlanCard";
+import CaseStudies from "src/shared/Pricing/CaseStudies";
 import Footer from "../shared/Footer";
 
 export type Plan = {
@@ -441,6 +442,7 @@ export default function Pricing() {
               <PlanCard key={p.name} content={p} />
             ))}
           </div>
+          <CaseStudies />
 
           {/* <ComparisonTable plans={PLANS} features={FEATURES} /> */}
         </Container>
