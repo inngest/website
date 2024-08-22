@@ -144,11 +144,18 @@ function resolveResult(result: Result): {
 
 function SearchIcon(props) {
   return (
-    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" {...props}>
+    <svg
+      {...props}
+      width="19"
+      height="18"
+      viewBox="0 0 19 18"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
       <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M12.01 12a4.25 4.25 0 1 0-6.02-6 4.25 4.25 0 0 0 6.02 6Zm0 0 3.24 3.25"
+        d="M13.5131 12.1165L16.4041 15.0068L15.449 15.9619L12.5586 13.0709C11.4832 13.933 10.1455 14.402 8.76714 14.4C5.41374 14.4 2.69214 11.6784 2.69214 8.325C2.69214 4.9716 5.41374 2.25 8.76714 2.25C12.1205 2.25 14.8421 4.9716 14.8421 8.325C14.8441 9.70335 14.3752 11.041 13.5131 12.1165ZM12.159 11.6156C13.0157 10.7347 13.4941 9.55379 13.4921 8.325C13.4921 5.7141 11.3774 3.6 8.76714 3.6C6.15624 3.6 4.04214 5.7141 4.04214 8.325C4.04214 10.9352 6.15624 13.05 8.76714 13.05C9.99593 13.0519 11.1768 12.5735 12.0578 11.7169L12.159 11.6156Z"
+        strokeWidth={0}
+        className="fill-carbon-700 dark:fill-carbon-400 stroke-carbon-700 dark:stroke-carbon-400"
       />
     </svg>
   );
@@ -522,13 +529,13 @@ function SearchButton({ shortcutKey = null, ...buttonProps }) {
   return (
     <button
       type="button"
-      className="flex h-8 w-full items-center gap-2 rounded-full bg-white pl-2 pr-3 text-sm text-slate-500 ring-1 ring-slate-900/10 transition hover:ring-slate-900/20 dark:bg-white/5 dark:text-slate-400 dark:ring-inset dark:ring-white/10 dark:hover:ring-white/20 focus:outline-none"
+      className="flex h-8 w-full items-center gap-2 rounded bg-white pl-2 pr-3 text-sm text-carbon-300 ring-1 ring-carbon-200 transition hover:ring-carbon-300 dark:bg-white/5 dark:text-carbon-600 dark:ring-inset hover:dark:ring-carbon-600 dark:ring-carbon-700 dark:hover:carbon-300 focus:outline-none"
       {...buttonProps}
     >
-      <SearchIcon className="h-5 w-5 stroke-current" />
+      <SearchIcon className="h-5 w-5" />
       Search...
       {shortcutKey ? (
-        <kbd className="ml-auto text-xs font-sans text-slate-500 dark:text-slate-400">
+        <kbd className="ml-auto text-xs font-sans text-carbon-600 dark:text-carbon-100 ring-1 ring-carbon-200 transition dark:bg-white/5 dark:ring-inset dark:ring-carbon-700">
           {shortcutKey}
         </kbd>
       ) : null}

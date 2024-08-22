@@ -3,7 +3,7 @@ import classNames from "src/utils/classNames";
 import ArrowRight from "./Icons/ArrowRight";
 
 type ButtonProps = {
-  variant?: "primary" | "secondary" | "tertiary";
+  variant?: "primary" | "secondary" | "tertiary" | "primaryV2";
   size?: "sm" | "md" | "lg";
   className?: string;
   arrow?: "left" | "right";
@@ -27,6 +27,7 @@ export function Button({
   };
 
   const variants = {
+    primaryV2: "text-white bg-matcha-600 hover:bg-matcha-700 hover:text-white",
     primary: "text-white bg-indigo-500 hover:bg-indigo-400 hover:text-white",
     secondary: `
       bg-slate-300/80 hover:bg-slate-300/100 text-slate-900 hover:text-slate-900,

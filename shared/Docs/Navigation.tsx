@@ -82,9 +82,9 @@ export function TabItem({ href, children, matcher }) {
         className={clsx(
           "font-medium text-sm leading-5 transition whitespace-nowrap px-3 py-4 relative top-0.5",
           isActive &&
-            "text-indigo-700 dark:text-white border-b dark:border-b-white border-b-indigo-700  hover:text-indigo-900",
+            "text-black dark:text-carbon-100 border-b-2 dark:border-b-carbon-300 border-b-black  hover:text-black",
           !isActive &&
-            "text-slate-600  dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+            "text-carbon-600  dark:text-carbon-400 hover:text-carbon-900 dark:hover:text-white"
         )}
       >
         <span className="relative -top-0.5">{children}</span>
