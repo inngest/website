@@ -664,6 +664,10 @@ const sectionHome: (NavGroup | NavLink)[] = [
             title: "Streaming",
             href: `/docs/streaming`,
           },
+          {
+            title: "Self hosting",
+            href: `/docs/self-hosting`,
+          },
           // {
           //   title: "Migrating across clouds",
           //   href: "/todo", // TODO later
@@ -728,6 +732,10 @@ const sectionHome: (NavGroup | NavLink)[] = [
   {
     title: "",
     links: [
+      {
+        title: "FAQ",
+        href: `/docs/faq`,
+      },
       {
         title: "Glossary",
         href: `/docs/learn/glossary`,
