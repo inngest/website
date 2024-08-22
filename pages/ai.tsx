@@ -12,6 +12,8 @@ import { ChevronRightIcon } from "@heroicons/react/20/solid";
 import CodeWindow from "src/shared/CodeWindow";
 import Footer from "src/shared/Footer";
 import CaseStudyCard from "src/shared/CaseStudy/CaseStudyCard";
+import { Button } from "src/shared/Button";
+import Card from "src/components/Card";
 
 export const getStaticProps: GetStaticProps = async () => {
   return {
@@ -28,14 +30,6 @@ export default function AI() {
 
       <AIHero />
 
-      {/*
-      <Container className="pt-4 pb-36">
-        <p className="text-zinc-400 text-center">
-          Companies of all sizes trust Inngest to power their AI functionality.
-        </p>
-      </Container>
-      */}
-
       {/* Code example */}
       <Container>
         <h2
@@ -45,7 +39,7 @@ export default function AI() {
         >
           Focus on what matters: <span className="font-extrabold">AI</span>.
         </h2>
-        <p className="text-center mb-20 opacity-60">
+        <p className="text-center mb-20 text-subtle">
           Spend time developing what's important. Scale from day 0 by leaving
           the complex orchestration to us.
         </p>
@@ -79,21 +73,14 @@ export default function AI() {
       {/* Call out box:  rapid development */}
 
       <Container className="pt-6">
-        <GradientBox
-          className="my-24 shadow-[0_10px_100px_0_rgba(52,211,153,0.2)]"
-          border="2px"
-        >
+        <GradientBox className="my-24 shadow-[0_10px_100px_0_rgba(52,211,153,0.2)]">
           <div
-            className={`flex items-center justify-center bg-[#0a0a12] back rounded-t-md flex-col`}
+            className={`flex items-center justify-center back rounded-t-md flex-col`}
           >
-            <DevIcon className="mt-[-47px] mb-24" />
+            <DevIcon className="mt-[-64px] mb-24" />
 
             <div className="flex flex-col items-center justify-center pb-24">
-              <h2
-                className="
-                text-4xl text-center font-bold mb-8
-              "
-              >
+              <h2 className="text-4xl text-center font-bold mb-8">
                 Rapidly iterate on complex AI chains,
                 <br />
                 directly&nbsp;in&nbsp;code.
@@ -118,15 +105,13 @@ export default function AI() {
                 gap-8 pt-16 items-center justify-center
               "
               >
-                <Link
+                <Button
                   href={`${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=ai-hero`}
-                  className="rounded-md font-medium px-11 pr-9 py-3.5 bg-indigo-500 hover:bg-indigo-400 transition-all text-white whitespace-nowrap flex flex-row items-center
-                  bg-emerald-400 text-[#050911]
-                  "
+                  size="lg"
                 >
                   Get started{" "}
                   <ChevronRightIcon className="h-5 group-hover:translate-x-1 relative top-px transition-transform duration-150" />
-                </Link>
+                </Button>
               </div>
             </div>
           </div>
@@ -134,7 +119,7 @@ export default function AI() {
           <div className="grid lg:grid-cols-2 mt-[1px]">
             <div
               className="
-                pt-14 pb-10 px-10 bg-[#0a0a12] flex flex-col items-center
+                pt-14 pb-10 px-10 flex flex-col items-center
                 lg:rounded-bl-md lg:mr-[1px]
                 sm:m-0
               "
@@ -157,7 +142,7 @@ export default function AI() {
             </div>
             <div
               className="
-              py-14 px-10 bg-[#0a0a12] flex flex-col items-center
+              py-14 px-10 flex flex-col items-center
               mt-[1px]
               lg:mt-0
               lg:rounded-br-md
@@ -193,25 +178,25 @@ export default function AI() {
         >
           <div className="grid lg:grid-cols-2">
             <div
-              className={`flex items-center justify-center bg-[#0a0a12] back flex-col p-8 text-center
+              className={`flex items-center justify-center back flex-col p-8 text-center
               rounded
               m-[1px]
               lg:rounded-none lg:rounded-l-md`}
             >
               <span className="text-4xl">12x</span>
               <span>development speedup</span>
-              <span className="text-xs opacity-40 mt-1">
+              <span className="text-xs text-subtle mt-1">
                 compared to traditional infrastructure
               </span>
             </div>
             <div
-              className={`flex items-center justify-center bg-[#0a0a12] back flex-col m-[1px] p-8
+              className={`flex items-center justify-center back flex-col m-[1px] p-8
               rounded
               lg:rounded-none lg:rounded-r-md lg:ml-0`}
             >
               <span className="text-4xl">75%</span>
               <span>total cost reduction</span>
-              <span className="text-xs opacity-40 mt-1">
+              <span className="text-xs text-subtle mt-1">
                 on infrastructure and time spent
               </span>
             </div>
@@ -267,7 +252,7 @@ export default function AI() {
         Use with any framework, on any cloud:
       </p>
       <Logos
-        className="opacity-60 my-1 lg:my-1 pb-20"
+        className="text-subtle my-1 lg:my-1 pb-20"
         logos={[
           {
             src: "/assets/brand-logos/next-js-white.svg",
@@ -339,21 +324,16 @@ const AIHero = () => (
         gap-8 pt-16 items-center justify-center
       "
       >
-        <Link
+        <Button
           href={`${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=ai-hero`}
-          className="rounded-md font-medium px-11 py-3.5 bg-indigo-500 hover:bg-indigo-400 transition-all text-white whitespace-nowrap flex flex-row items-center
-          bg-emerald-400 text-[#050911]
-          "
+          size="lg"
         >
           Get started{" "}
           <ChevronRightIcon className="h-5 group-hover:translate-x-1 relative top-px transition-transform duration-150" />
-        </Link>
-        <Link
-          href="/docs?ref=homepage-hero"
-          className="group flex items-center gap-1 rounded-md px-11 py-3.5 bg-transparent transition-all text-indigo-100 border border-slate-800 hover:border-slate-600 whitespace-nowrap"
-        >
+        </Button>
+        <Button href="/docs?ref=homepage-hero" size="lg" variant="secondary">
           Read the docs
-        </Link>
+        </Button>
       </div>
     </div>
   </Container>
@@ -373,7 +353,7 @@ const AIScroll = () => {
   ];
   return (
     <Marquee>
-      <div className="font-mono text-sm text-zinc-500 py-8">
+      <div className="font-mono text-sm text-muted py-8">
         {list.map((item, n) => (
           <span className="mx-14" key={n}>
             {item}
@@ -385,13 +365,8 @@ const AIScroll = () => {
 };
 
 const GradientBox = ({ children, className = "", border = "2px" }) => (
-  <div className={`mx-auto flex items-center justify-center ${className}`}>
-    <div
-      className={`w-full rounded-md bg-gradient-to-tl from-[#596555] via-[#D4FF8D] to-[#814828]`}
-      style={{ padding: border }}
-    >
-      {children}
-    </div>
+  <div className={className}>
+    <Card>{children}</Card>
   </div>
 );
 
@@ -401,7 +376,7 @@ const DevelopmentCopy = () => {
   };
   return (
     <Container className="pb-8">
-      <div className="grid lg:grid-cols-3 gap-20 pt-10 pb-20 px-10 opacity-80">
+      <div className="grid lg:grid-cols-3 gap-20 pt-10 pb-20 px-10">
         <div>
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -434,7 +409,7 @@ const DevelopmentCopy = () => {
             everything you need to scale, while respecting rate limits, built in
             from the beginning.
           </p>
-          <ul className="my-6 leading-8 opacity-70 leading-snug">
+          <ul className="my-6 leading-8 leading-snug text-subtle">
             <li className="flex items-center mb-4">
               <Check size={14} className="mr-2" /> Global and per-user
               concurrency limits
@@ -479,7 +454,7 @@ const DevelopmentCopy = () => {
             Iterate on AI flows in your existing code base and test things
             locally using our dev server, with full production parity.
           </p>
-          <ul className="my-6 leading-8 opacity-70 leading-snug">
+          <ul className="my-6 leading-8 text-subtle leading-snug">
             <li className="flex items-center mb-4">
               <Check size={14} className="mr-2" /> One-command setup for local
               dev
@@ -524,7 +499,7 @@ const DevelopmentCopy = () => {
             Easily create AI workflows with regular code, using any library or
             integrations you need without learning anything new.
           </p>
-          <ul className="my-6 leading-8 opacity-70 leading-snug">
+          <ul className="my-6 leading-8 text-subtle leading-snug">
             <li className="flex items-center mb-4">
               <Check size={14} className="mr-2" /> No constraints on what you
               can use
@@ -541,9 +516,7 @@ const DevelopmentCopy = () => {
         </div>
       </div>
 
-      <p className="text-center mt-4 opacity-70">
-        Get started locally in one command:
-      </p>
+      <p className="text-center mt-4">Get started locally in one command:</p>
 
       <div className="mt-4 mb-20 flex gap-4 flex-col md:flex-row items-center justify-center">
         <div className="bg-white/10 backdrop-blur-md flex rounded text-sm text-slate-200 shadow-lg">
@@ -576,7 +549,7 @@ const ProductionCopy = () => {
   };
   return (
     <Container className="py-8">
-      <div className="grid lg:grid-cols-3 gap-20 pt-10 pb-20 px-10 opacity-80">
+      <div className="grid lg:grid-cols-3 gap-20 pt-10 pb-20 px-10">
         <div>
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -608,7 +581,7 @@ const ProductionCopy = () => {
             up new infra or provisioning new services — whether you use servers
             or serverless.
           </p>
-          <ul className="my-6 leading-8 opacity-70 leading-snug">
+          <ul className="my-6 leading-8 text-subtle leading-snug">
             <li className="flex items-center mb-4">
               <Check size={14} className="mr-2" /> Hosted in your existing API
             </li>
@@ -652,7 +625,7 @@ const ProductionCopy = () => {
             Hassle free development with preview environments, logging,
             one-click replay, and error reporting built in.
           </p>
-          <ul className="my-6 leading-8 opacity-70 leading-snug">
+          <ul className="my-6 leading-8 text-subtle leading-snug">
             <li className="flex items-center mb-4">
               <Check size={14} className="mr-2" /> Preview & branch envs built
               in
@@ -696,7 +669,7 @@ const ProductionCopy = () => {
             Full insight without the fuss. Tag functions by user, account,
             context length, prompt rating, and see any data on any metric.
           </p>
-          <ul className="my-6 leading-8 opacity-70 leading-snug">
+          <ul className="my-6 leading-8 text-subtle leading-snug">
             <li className="flex items-center mb-4">
               <Check size={14} className="mr-2" /> Real-time metrics
             </li>
@@ -767,7 +740,7 @@ const DevIcon = (props) => (
       <path d="M57.293 40.897C55.402 34.454 63.04 30.876 68.8 33.57c4.17 1.919 7.715-1.081 11.62.331 6.353 2.3 2.018 5.796 7.462 8.9 5.828 3.473 5.056 15.174-3.097 15.247-7.277.072-5.178 3.102-11.435 6.395-6.257 3.294-15.124-1.555-13.777-9.021 1.348-5.02.143-6.421-2.281-14.524Z" />
       <path d="M60.755 42.755c-1.34-4.403 4.328-8.098 8.696-5.938 3.448 1.705 6.607-.298 9.476.74 5.589 2.024 2.534 4.235 6.335 6.825 4.226 3 4.466 12.159-2.628 12.195-6.12.036-4.328 2.757-9.314 4.937-4.987 2.18-11.527-1.152-10.854-7.278.674-3.41.158-5.462-1.711-11.48Z" />
     </g>
-    <rect width={146} height={29} y={33} fill="#050911" rx={4} />
+    <rect width={146} height={29} y={33} fill="#020202" rx={4} />
     <path
       fill="#fff"
       d="M22.27 52v-8.531h1.974c.332.004.645.039.938.105.297.063.57.153.82.27.348.16.654.37.92.633a3 3 0 0 1 .644.896c.145.29.254.605.329.95.078.343.119.71.123 1.1v.628c0 .375-.038.73-.112 1.066a3.97 3.97 0 0 1-.31.926 3.45 3.45 0 0 1-1.254 1.406c-.282.176-.6.31-.955.404a4.591 4.591 0 0 1-1.143.147H22.27Zm1.101-7.64v6.755h.873c.313-.004.596-.043.85-.117.258-.074.486-.18.685-.316.211-.141.393-.313.545-.516.156-.207.28-.438.37-.691.078-.207.136-.43.175-.668.04-.242.06-.495.065-.756v-.639a4.765 4.765 0 0 0-.07-.762c-.04-.246-.1-.474-.182-.685a2.662 2.662 0 0 0-.428-.738 2.029 2.029 0 0 0-.65-.54 2.454 2.454 0 0 0-.616-.234 3.152 3.152 0 0 0-.744-.094h-.873Zm13.31 3.697H33.12v3.023h4.154V52h-5.238v-8.531h5.185v.925H33.12v2.743h3.562v.92ZM43.687 52l-2.696-8.531h1.16l1.876 6.369.123.416.129-.428 1.886-6.357h1.154L44.63 52h-.943Zm12.208-3.943h-3.562v3.023h4.154V52H51.25v-8.531h5.185v.925h-4.101v2.743h3.562v.92Zm6.139 3.023h4.172V52H60.95v-8.531h1.084v7.611Zm13.93-2.853a6.264 6.264 0 0 1-.081.925 4.939 4.939 0 0 1-.223.897c-.101.289-.232.558-.392.808-.157.25-.344.47-.563.657-.219.187-.47.336-.756.445a2.687 2.687 0 0 1-.949.158c-.352 0-.67-.052-.955-.158a2.58 2.58 0 0 1-.75-.445 2.964 2.964 0 0 1-.568-.657 4.012 4.012 0 0 1-.393-.814 4.958 4.958 0 0 1-.234-.896 6.141 6.141 0 0 1-.082-.92v-.973c.004-.305.029-.611.076-.92.05-.313.129-.613.234-.902.102-.29.23-.559.387-.809.16-.254.35-.476.568-.668.219-.187.469-.334.75-.44.285-.109.604-.163.955-.163.352 0 .67.054.955.164.285.105.538.252.756.44.219.187.407.407.563.661.16.25.293.52.398.809.102.289.176.59.223.902.05.313.078.621.082.926v.973Zm-1.071-.985a7.265 7.265 0 0 0-.041-.633 4.802 4.802 0 0 0-.118-.662 3.622 3.622 0 0 0-.228-.615 2.073 2.073 0 0 0-.352-.527 1.556 1.556 0 0 0-1.166-.487 1.542 1.542 0 0 0-1.16.492c-.14.153-.258.329-.351.528-.094.195-.168.4-.223.615-.059.219-.102.44-.129.662a7.238 7.238 0 0 0-.041.627v.985c.004.199.018.41.041.632.027.223.07.442.129.657.058.218.135.427.228.627.094.199.211.373.352.521.14.152.307.273.498.363.191.09.414.135.668.135a1.556 1.556 0 0 0 1.172-.498c.137-.148.25-.32.34-.516.094-.199.17-.408.228-.627a4.12 4.12 0 0 0 .112-.656c.023-.222.037-.435.04-.638v-.985Zm6.314 1.336V52h-1.084v-8.531h2.765c.383.008.744.068 1.084.181.344.114.645.278.903.493.257.214.46.48.609.797.152.316.229.68.229 1.09 0 .41-.077.773-.229 1.09a2.302 2.302 0 0 1-.61.79 2.725 2.725 0 0 1-.902.492 3.52 3.52 0 0 1-1.084.176h-1.681Zm0-.89h1.681c.25-.004.48-.044.692-.118.21-.078.394-.187.55-.328.157-.14.278-.31.364-.51.09-.203.135-.433.135-.691 0-.258-.045-.49-.135-.697a1.519 1.519 0 0 0-.358-.528 1.629 1.629 0 0 0-.556-.334 2.07 2.07 0 0 0-.692-.123h-1.681v3.328Zm9.613-4.22 1.388 4.266 1.5-4.265h1.348V52H94v-3.404l.088-3.563-1.576 4.594h-.621l-1.447-4.47.087 3.439V52h-1.054v-8.531h1.342Zm13.11 4.589h-3.562v3.023h4.154V52h-5.238v-8.531h5.186v.925h-4.102v2.743h3.562v.92ZM114.188 52h-1.102l-3.31-6.375-.018 6.375h-1.096v-8.531h1.102l3.311 6.363.017-6.363h1.096V52Zm10.017-7.605h-2.637V52h-1.054v-7.605h-2.637v-.926h6.328v.925Z"
@@ -797,7 +770,7 @@ const ProdIcon = (props) => (
       <path d="M70.051 37.145c.041-2.51 2.835-1.748 3.47-.099 1.88 4.796 3.957 5.041 6.773 4.948.898.35 1.37-1.548 2.82-1.951 1.45-.404 2.204 1.092 3.08.37 1.448-1.093 2.715-1.208 3.629-.726.809.233 1.415 1.042 1.582 2.068.15.981-.106 2.153-.982 3.198-2.86 1.888-1.078 7.618-1.552 9.494-.722 1.115.01 2.082-.562 3.625-.571 1.542-2.252 1.314-2.252 2.052.19 1.336.035 2.148-.386 2.602-.468 1.557-2.55 1.07-4.416-.315-1.302-.843-2.495-1.49-3.644-1.6-.96-.61-2.165 1.149-3.382 1.408-1.877.267-1.964-1.26-3.524-.378-.828.429-1.67.84-2.537 1.258-2.423.91-3.878.118-4.46-1.022-1.539-.396-2.007-2.383-1.526-4.263.343-1.19 1.028-2.326 2.03-3.07 2.218-1.647 4.367-2.685 4.953-5.771.388-1.341-1.975-3.028-1.488-5.188.27-1.593 1.407-2.613 1.514-3.903.107-1.297.497-2.271.86-2.737Z" />
       <path d="M72.318 40.092c.28-1.294 1.954-.819 2.37.263 1.747 4.446 3.678 4.28 6.086 3.673.584.099 1.012-1.01 1.932-1.353.92-.342 1.496.285 2.084-.073 1.023-.54 1.885-.404 2.46.12.458.25.794.867.808 1.592.005.702-.295 1.499-1.09 2.15-2.964 1.5-.605 7.556-.774 9.348-.337.86-.167 1.512-.722 2.31-.555.798-1.739.57-2.013.675-.218.367-.513.481-.914.468-.377.631-1.684.203-2.955-.565-.988-.498-1.991-.79-2.987-.562-.673-.185-1.493.843-2.349 1.154-1.214.336-1.506-.289-2.506.238-.635.3-1.249.539-1.85.739-1.877.42-2.846-.679-3.003-1.918-.73-.39-.895-1.571-.557-2.68.27-.765.739-1.483 1.395-1.97 1.977-1.471 3.486-2.34 3.85-5.11.213-.988-1.038-2.197-.864-3.642.065-1.162.565-2.037.645-2.999.077-.927.512-1.587.954-1.858Z" />
     </g>
-    <rect width={146} height={29} y={41} fill="#050911" rx={4} />
+    <rect width={146} height={29} y={41} fill="#020202" rx={4} />
     <path
       fill="#fff"
       d="M28.368 56.578V60h-1.084v-8.531h2.766c.382.008.744.068 1.084.181.343.114.644.278.902.493.258.214.46.48.61.797.152.316.228.68.228 1.09 0 .41-.076.773-.229 1.09a2.3 2.3 0 0 1-.61.79 2.725 2.725 0 0 1-.901.492 3.52 3.52 0 0 1-1.084.176h-1.682Zm0-.89h1.682c.25-.004.48-.044.691-.118.211-.078.395-.187.55-.328.157-.14.278-.31.364-.51.09-.203.135-.433.135-.691 0-.258-.045-.49-.135-.697a1.52 1.52 0 0 0-.357-.528 1.629 1.629 0 0 0-.557-.334 2.07 2.07 0 0 0-.691-.123h-1.682v3.328Zm11.248.831H37.91V60h-1.078v-8.531h2.502c.399.008.774.064 1.125.17.352.105.66.263.926.474.262.211.467.477.615.797.153.317.229.69.229 1.12 0 .277-.041.53-.123.761a2.23 2.23 0 0 1-.328.627c-.14.188-.309.354-.504.498-.196.145-.41.268-.645.37l1.81 3.644-.005.07h-1.143l-1.675-3.48Zm-1.706-.89h1.454c.242-.004.47-.041.685-.111.215-.075.404-.18.569-.317a1.5 1.5 0 0 0 .38-.498c.094-.2.141-.428.141-.685 0-.274-.045-.512-.135-.715a1.452 1.452 0 0 0-.375-.522 1.628 1.628 0 0 0-.574-.31 2.467 2.467 0 0 0-.72-.112H37.91v3.27Zm14.037.598a6.264 6.264 0 0 1-.082.925 4.93 4.93 0 0 1-.222.897c-.102.289-.233.558-.393.808-.156.25-.344.47-.563.657-.218.187-.47.336-.755.445a2.687 2.687 0 0 1-.95.158c-.351 0-.67-.052-.955-.158a2.58 2.58 0 0 1-.75-.445 2.964 2.964 0 0 1-.568-.657 4.018 4.018 0 0 1-.393-.814 4.958 4.958 0 0 1-.234-.896 6.141 6.141 0 0 1-.082-.92v-.973c.004-.305.03-.611.076-.92.051-.313.13-.613.234-.902a4.06 4.06 0 0 1 .387-.809c.16-.254.35-.476.569-.668.218-.187.468-.334.75-.44.285-.109.603-.163.955-.163.351 0 .67.054.955.164.285.105.537.252.756.44.218.187.406.407.562.661.16.25.293.52.399.809.101.289.175.59.222.902.051.313.078.621.082.926v.973Zm-1.072-.985a7.265 7.265 0 0 0-.041-.633 4.802 4.802 0 0 0-.117-.662 3.622 3.622 0 0 0-.229-.615 2.073 2.073 0 0 0-.351-.527 1.557 1.557 0 0 0-1.166-.487 1.542 1.542 0 0 0-1.16.492c-.141.153-.258.329-.352.528-.094.195-.168.4-.223.615-.058.219-.101.44-.129.662a7.238 7.238 0 0 0-.04.627v.985c.003.199.017.41.04.632.028.223.07.442.13.657.058.218.134.427.228.627.094.199.21.373.351.521.141.152.307.273.498.363.192.09.414.135.668.135a1.556 1.556 0 0 0 1.172-.498c.137-.148.25-.32.34-.516.094-.199.17-.408.229-.627a4.12 4.12 0 0 0 .111-.656c.023-.222.037-.435.041-.638v-.985ZM55.895 60v-8.531h1.974c.332.004.644.039.937.105.297.063.57.153.82.27.348.16.655.37.92.633.27.257.485.556.645.896.145.29.254.605.328.95.078.343.12.71.123 1.1v.628c0 .375-.037.73-.111 1.066-.07.336-.174.645-.31.926a3.45 3.45 0 0 1-1.254 1.406c-.282.176-.6.31-.956.404A4.591 4.591 0 0 1 57.87 60h-1.975Zm1.1-7.64v6.755h.874c.312-.004.596-.043.85-.117.257-.074.486-.18.685-.316.21-.141.392-.313.545-.516.156-.207.28-.438.369-.691.078-.207.137-.43.176-.668a5.24 5.24 0 0 0 .064-.756v-.639a4.753 4.753 0 0 0-.07-.762 3.33 3.33 0 0 0-.182-.685 2.665 2.665 0 0 0-.427-.738 2.029 2.029 0 0 0-.65-.54 2.452 2.452 0 0 0-.616-.234 3.151 3.151 0 0 0-.744-.094h-.873Zm13.973-.891.012 5.777c0 .398-.07.772-.211 1.12-.14.347-.334.65-.58.907-.246.262-.54.47-.88.621-.34.149-.712.223-1.118.223-.414 0-.791-.074-1.131-.222a2.582 2.582 0 0 1-.873-.616 2.815 2.815 0 0 1-.569-.908 3.162 3.162 0 0 1-.21-1.125l.011-5.777h1.031l.024 5.777c.004.254.043.498.117.732.078.235.19.442.334.622.14.18.316.324.527.433.215.11.461.164.739.164.277 0 .521-.053.732-.158.211-.11.389-.256.533-.44.14-.18.248-.386.322-.62.075-.235.116-.479.124-.733l.017-5.777h1.049Zm9.777 5.965c-.05.394-.152.757-.305 1.09a2.8 2.8 0 0 1-.592.843 2.629 2.629 0 0 1-.873.557 3.054 3.054 0 0 1-1.113.193c-.352 0-.672-.049-.96-.146a2.768 2.768 0 0 1-1.348-1.037 3.755 3.755 0 0 1-.399-.78 4.695 4.695 0 0 1-.246-.885 6.237 6.237 0 0 1-.082-.937v-1.19c.004-.316.031-.628.082-.937.055-.308.137-.603.246-.885.105-.28.238-.54.398-.779.165-.242.36-.451.587-.627.222-.176.476-.312.761-.41a2.85 2.85 0 0 1 .961-.152c.426 0 .807.066 1.143.199.336.129.625.312.867.55.242.243.435.532.58.868.148.336.246.707.293 1.113H79.66a3.193 3.193 0 0 0-.182-.72 1.986 1.986 0 0 0-.345-.587 1.493 1.493 0 0 0-.534-.392 1.717 1.717 0 0 0-.738-.147c-.258 0-.486.043-.685.13a1.51 1.51 0 0 0-.504.34 1.974 1.974 0 0 0-.364.503c-.093.191-.17.394-.228.61a4.605 4.605 0 0 0-.129.661c-.023.223-.035.44-.035.65v1.202a4.633 4.633 0 0 0 .164 1.313c.058.218.135.423.228.615.094.191.213.36.358.504.144.148.314.265.51.351.195.082.423.123.685.123.285 0 .531-.045.738-.135.211-.09.39-.216.534-.38.144-.16.26-.35.345-.569.086-.222.147-.463.182-.72h1.084Zm9.835-5.04h-2.636V60h-1.055v-7.605h-2.637v-.926h6.329v.925Zm3.854-.925h5.156v.943h-2.045v6.65h2.045V60h-5.156v-.938h1.998v-6.65h-1.998v-.943Zm15.155 4.758a6.118 6.118 0 0 1-.082.925 4.905 4.905 0 0 1-.222.897c-.102.289-.233.558-.393.808-.156.25-.344.47-.562.657a2.564 2.564 0 0 1-.756.445 2.687 2.687 0 0 1-.949.158c-.352 0-.67-.052-.955-.158a2.559 2.559 0 0 1-.75-.445 2.957 2.957 0 0 1-.569-.657 3.995 3.995 0 0 1-.392-.814 4.935 4.935 0 0 1-.235-.896 6.128 6.128 0 0 1-.082-.92v-.973c.004-.305.029-.611.076-.92.051-.313.129-.613.235-.902a4.04 4.04 0 0 1 .386-.809c.161-.254.35-.476.569-.668.219-.187.469-.334.75-.44.285-.109.603-.163.955-.163.351 0 .67.054.955.164.285.105.537.252.756.44.219.187.406.407.562.661.16.25.293.52.399.809.101.289.176.59.222.902.051.313.079.621.082.926v.973Zm-1.072-.985a7.074 7.074 0 0 0-.041-.633 4.685 4.685 0 0 0-.117-.662 3.632 3.632 0 0 0-.229-.615 2.04 2.04 0 0 0-.351-.527 1.565 1.565 0 0 0-1.166-.487 1.54 1.54 0 0 0-1.16.492 2.071 2.071 0 0 0-.352.528 3.23 3.23 0 0 0-.222.615c-.059.219-.102.44-.129.662a6.688 6.688 0 0 0-.041.627v.985c.003.199.017.41.041.632.027.223.07.442.129.657.058.218.134.427.228.627.094.199.211.373.352.521.14.152.306.273.498.363.191.09.414.135.668.135.254 0 .476-.045.668-.135.195-.09.363-.21.503-.363.137-.148.25-.32.34-.516.094-.199.17-.408.229-.627a4.02 4.02 0 0 0 .111-.656c.024-.222.037-.435.041-.638v-.985ZM118.991 60h-1.101l-3.311-6.375-.017 6.375h-1.096v-8.531h1.102l3.31 6.363.018-6.363h1.095V60Z"

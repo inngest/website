@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import clsx from "clsx";
 
 import Container from "./Container";
 import CodeWindow from "src/shared/CodeWindow";
@@ -15,6 +14,7 @@ import {
   RiBox1Line,
 } from "@remixicon/react";
 import Card from "src/components/Card";
+import { Tabs } from "src/components/Tabs";
 
 const snippetDurableWorkflow = `
 export const processVideo = inngest.createFunction(
@@ -288,27 +288,11 @@ export default function TabsContainer() {
       <div className="max-w-6xl mx-auto my-8">
         <div className="mb-8 border-b border-subtle">
           <Container className="mx-auto">
-            <div className="relative grid grid-cols-6 gap-y-2 justify-stretch">
-              {content.map(({ title, ...tab }, idx) => (
-                <Tab
-                  key={idx}
-                  isSelected={selected === idx}
-                  onClick={() => setSelected(idx)}
-                >
-                  <tab.icon className="hidden md:inline-block sm:h-4 sm:w-4 md:h-6 md:w-6 fill-[#1CB4D5]" />
-                  {title}
-                </Tab>
-              ))}
-              <div
-                className={clsx(
-                  `absolute -bottom-px left-0 w-1/6 h-0.5 bg-[#1CB4D5] bg-gradient-to-b from-cyan-500 to-blue-500`,
-                  `transform transition-transform duration-300`
-                )}
-                style={{
-                  transform: `translateX(${selected * 100}%)`,
-                }}
-              ></div>
-            </div>
+            <Tabs
+              content={content}
+              setSelected={setSelected}
+              selected={selected}
+            />
           </Container>
         </div>
         <Container className="grid grid-rows-auto grid-cols-1 md:grid-cols-8 gap-4 my-12">
@@ -351,22 +335,5 @@ export default function TabsContainer() {
         </Container>
       </div>
     </Container>
-  );
-}
-
-function Tab({ isSelected = false, onClick, children }) {
-  return (
-    <button
-      onClick={onClick}
-      className={clsx(
-        `flex flex-row grow gap-2 items-center justify-center p-4 -mb-px whitespace-nowrap `,
-        `font-semibold transition-all`,
-        isSelected
-          ? "border-[#1CB4D5] text-basis"
-          : "text-muted hover:text-basis border-transparent"
-      )}
-    >
-      {children}
-    </button>
   );
 }

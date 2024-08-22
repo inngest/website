@@ -205,12 +205,8 @@ export default function Page() {
         </div>
       </section>
 
-      <section
-        className={`my-32 p-px
-        rounded-md bg-gradient-to-tl from-green-800/60 via-orange-300/60 to-rose-900/60
-      shadow-[0_10px_100px_0_rgba(52,211,153,0.20)]`}
-      >
-        <div className="px-8 py-8 rounded-md bg-slate-1000">
+      <section>
+        <Card className="px-8 py-8">
           <Heading
             level={2}
             title="Enterprise ready"
@@ -229,7 +225,7 @@ export default function Page() {
               <FeatureCard title={title} description={description} key={idx} />
             ))}
           </div>
-        </div>
+        </Card>
       </section>
 
       <section className="my-32">

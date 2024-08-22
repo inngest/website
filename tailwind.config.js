@@ -13,6 +13,10 @@ module.exports = {
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./shared/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  safelist: [
+    // For Tabs.tsx
+    ...[1, 2, 3, 4, 5, 6].map((i) => [`grid-cols-${i}`, `w-1/${i}`]).flat(),
+  ],
   theme: {
     typography: require("./typography"),
     extend: {
@@ -285,8 +289,9 @@ module.exports = {
       },
     },
     fontFamily: {
-      sans: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
-      heading: `Inter -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"`,
+      sans: 'CircularXX, "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto',
+      heading:
+        'CircularXX, "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto',
       mono: 'CircularXXMono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
       // We can use these temporary classes while we transition to the new fonts
       circular:
