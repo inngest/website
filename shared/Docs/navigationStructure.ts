@@ -136,7 +136,6 @@ const sectionReference: NavGroup[] = [
             title: "Configuration",
             href: `/docs/reference/serve`,
           },
-          { title: "Streaming", href: `/docs/streaming` },
         ],
       },
       {
@@ -331,7 +330,6 @@ const sectionHome: (NavGroup | NavLink)[] = [
         title: "Serving Inngest Functions",
         href: `/docs/learn/serving-inngest-functions`,
       },
-      { title: "Inngest Apps", href: `/docs/apps` },
     ],
   },
   {
