@@ -86,7 +86,7 @@ function useAutocomplete() {
                     params: {
                       hitsPerPage: 5,
                       highlightPreTag:
-                        '<mark class="underline bg-transparent text-indigo-500">',
+                        '<mark class="underline bg-transparent text-breeze-600 dark:text-breeze-300">',
                       highlightPostTag: "</mark>",
                     },
                   },
@@ -233,8 +233,8 @@ function SearchResult({ result, resultIndex, autocomplete, collection }) {
   return (
     <li
       className={clsx(
-        "group block relative cursor-default px-4 py-3 aria-selected:bg-slate-50 dark:aria-selected:bg-slate-800/50",
-        resultIndex > 0 && "border-t border-slate-100 dark:border-slate-800"
+        "group block relative cursor-default px-4 py-3 aria-selected:bg-breeze-0 dark:aria-selected:bg-carbon-800",
+        resultIndex > 0 && "border-t border-carbon-100 dark:border-carbon-800"
       )}
       aria-labelledby={`${id}-hierarchy ${id}-title`}
       {...autocomplete.getItemProps({
@@ -245,12 +245,12 @@ function SearchResult({ result, resultIndex, autocomplete, collection }) {
       <div
         id={`${id}-title`}
         aria-hidden="true"
-        className="text-sm font-medium text-slate-900 group-aria-selected:text-indigo-500 dark:text-white"
+        className="text-sm font-medium text-carbon-900 group-aria-selected:text-breeze-600 dark:group-aria-selected:text-breeze-300 dark:text-white"
         dangerouslySetInnerHTML={{ __html: titleHtml }}
       />
       {SdkLanguageIcon && (
         <span className="absolute px-1.5 top-3 right-2">
-          <SdkLanguageIcon className="w-5 h-5 text-slate-400" />
+          <SdkLanguageIcon className="w-5 h-5 text-carbon-400" />
         </span>
       )}
 
@@ -258,7 +258,7 @@ function SearchResult({ result, resultIndex, autocomplete, collection }) {
         <div
           id={`${id}-hierarchy`}
           aria-hidden="true"
-          className="mt-1 truncate whitespace-nowrap text-2xs text-slate-500"
+          className="mt-1 truncate whitespace-nowrap text-2xs text-carbon-500"
         >
           {hierarchyHtml.map((item, itemIndex, items) => (
             <Fragment key={itemIndex}>
@@ -267,7 +267,7 @@ function SearchResult({ result, resultIndex, autocomplete, collection }) {
                 className={
                   itemIndex === items.length - 1
                     ? "sr-only"
-                    : "mx-2 text-slate-300 dark:text-slate-700"
+                    : "mx-2 text-breeze-600 dark:text-breeze-300"
                 }
               >
                 /
@@ -284,10 +284,10 @@ function SearchResults({ autocomplete, query, collection }) {
   if (collection.items.length === 0) {
     return (
       <div className="p-6 text-center">
-        <NoResultsIcon className="mx-auto h-5 w-5 stroke-slate-900 dark:stroke-slate-600" />
-        <p className="mt-2 text-xs text-slate-700 dark:text-slate-400">
+        <NoResultsIcon className="mx-auto h-5 w-5 stroke-carbon-900 dark:stroke-carbon-600" />
+        <p className="mt-2 text-xs text-carbon-700 dark:text-carbon-400">
           Nothing found for{" "}
-          <strong className="break-words font-semibold text-slate-900 dark:text-white">
+          <strong className="break-words font-semibold text-carbon-900 dark:text-white">
             &lsquo;{query}&rsquo;
           </strong>
           . Please try again.
@@ -337,7 +337,7 @@ const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
         <input
           ref={inputRef}
           className={clsx(
-            "flex-auto appearance-none bg-transparent pl-10 text-slate-900 outline-none placeholder:text-slate-500 focus:w-full focus:flex-none dark:text-white sm:text-sm [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden [&::-webkit-search-results-button]:hidden [&::-webkit-search-results-decoration]:hidden",
+            "flex-auto appearance-none bg-transparent pl-10 text-slate-900 outline-none placeholder:text-carbon-600 focus:w-full focus:flex-none dark:text-white sm:text-sm [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden [&::-webkit-search-results-button]:hidden [&::-webkit-search-results-decoration]:hidden",
             autocompleteState.status === "stalled" ? "pr-11" : "pr-4"
           )}
           {...inputProps}
@@ -356,7 +356,7 @@ const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
         />
         {autocompleteState.status === "stalled" && (
           <div className="absolute inset-y-0 right-3 flex items-center">
-            <LoadingIcon className="h-5 w-5 animate-spin stroke-slate-200 text-slate-900 dark:stroke-slate-800 dark:text-indigo-400" />
+            <LoadingIcon className="h-5 w-5 animate-spin stroke-slate-200 text-slate-900 dark:stroke-slate-800 dark:text-breeze-400" />
           </div>
         )}
       </div>
@@ -436,7 +436,7 @@ function SearchDialog({
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-slate-400/25 backdrop-blur-sm dark:bg-black/40" />
+          <div className="fixed inset-0 bg-carbon-400/40 backdrop-blur-sm dark:bg-black/40" />
         </Transition.Child>
 
         <div className="fixed inset-0 overflow-y-auto px-4 py-4 sm:py-20 sm:px-6 md:py-32 lg:px-8 lg:py-[15vh]">
@@ -449,7 +449,7 @@ function SearchDialog({
             leaveFrom="opacity-100 scale-100"
             leaveTo="opacity-0 scale-95"
           >
-            <Dialog.Panel className="mx-auto overflow-hidden rounded-lg bg-slate-50 shadow-xl ring-1 ring-slate-900/7.5 dark:bg-slate-900 dark:ring-slate-800 sm:max-w-xl">
+            <Dialog.Panel className="mx-auto overflow-hidden rounded-lg bg-carbon-50 shadow-xl ring-1 ring-carbon-900/7.5 dark:bg-carbon-900 dark:ring-carbon-800 sm:max-w-xl">
               <div {...autocomplete.getRootProps({})}>
                 {/* @ts-ignore */}
                 <form
@@ -589,7 +589,7 @@ export function HeaderSearchIcon() {
     <div className="contents lg:hidden">
       <button
         type="button"
-        className="flex h-6 w-6 items-center justify-center rounded-md transition hover:bg-slate-900/5 dark:hover:bg-white/5 lg:hidden focus:[&:not(:focus-visible)]:outline-none"
+        className="flex h-6 w-6 items-center justify-center rounded-md transition hover:bg-carbon-900/5 dark:hover:bg-white/5 lg:hidden focus:[&:not(:focus-visible)]:outline-none"
         aria-label="Find something..."
         {...buttonProps}
       >

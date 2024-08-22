@@ -82,6 +82,12 @@ export function Layout({
           <meta name="twitter:title" content={pageTitle} />
           <meta name="twitter:image" content={metaImage} />
 
+          <link rel="preconnect" href="https://fonts-cdn.inngest.com/" />
+          <link
+            rel="stylesheet"
+            href="https://fonts-cdn.inngest.com/fonts.css"
+          />
+
           <script dangerouslySetInnerHTML={{ __html: modeScript }} />
         </Head>
         <SectionProvider sections={sections}>
