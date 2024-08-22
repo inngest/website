@@ -172,7 +172,7 @@ function VisibleSectionHighlight({ listItems }) {
       animate={{ opacity: 1, transition: { delay: 0.2 } }}
       exit={{ opacity: 0 }}
       className="absolute -left-2 right-0 top-0 bg-slate-500/10 will-change-transform dark:bg-white/10"
-      style={{ borderRadius: 8, height, top }}
+      style={{ borderRadius: 4, height, top }}
     />
   );
 }
@@ -349,8 +349,9 @@ function NavigationGroup({
           <div className={clsx("relative overflow-hidden")}>
             <motion.ul
               role="list"
-              className={clsx("border-l border-transparent", {
-                "ml-4": nestingLevel > 0,
+              className={clsx({
+                "ml-2.5 pl-2 border-l border-carbon-100 dark:border-[#3D3D3D]":
+                  nestingLevel > 0,
               })}
             >
               {group.links.map((link) => {
