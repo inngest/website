@@ -23,6 +23,9 @@ export type Plan = {
     includedConcurrency: number | string;
     additionalConcurrencyPrice: number | string | null;
     additionalConcurrencyRate?: number;
+    includedUsers: number | string;
+    additionalUsersPrice: number | string | null;
+    additionalUsersRate?: number;
     period?: string;
   };
   description: React.ReactFragment | string;
@@ -52,7 +55,7 @@ type Feature = {
     | "organization";
   all?: boolean | string; // All plans offer this
   plans?: {
-    [key: string]: string | boolean;
+    [key: string]: string | boolean | { value: string; description?: string };
   };
   infoUrl?: string;
 };
@@ -92,6 +95,9 @@ const PLANS: Plan[] = [
       includedConcurrency: 5,
       additionalConcurrencyPrice: 10,
       additionalConcurrencyRate: 10,
+      includedUsers: 5,
+      additionalUsersPrice: 10,
+      additionalUsersRate: 1,
       period: "mo",
     },
     description:
@@ -126,6 +132,9 @@ const PLANS: Plan[] = [
       includedConcurrency: 200,
       additionalConcurrencyPrice: 10,
       additionalConcurrencyRate: 10,
+      includedUsers: 20,
+      additionalUsersPrice: 10,
+      additionalUsersRate: 1,
       period: "mo",
     },
     description:
@@ -160,6 +169,9 @@ const PLANS: Plan[] = [
       includedConcurrency: "Custom",
       additionalConcurrencyPrice: "Custom",
       additionalConcurrencyRate: null,
+      includedUsers: "Custom",
+      additionalUsersPrice: "Custom",
+      additionalUsersRate: null,
     },
     description:
       "For critical products with additional scale, security, observability, latency, and support",
@@ -208,18 +220,41 @@ const FEATURES: Feature[] = [
     name: "Runs",
     description: "A single durable function execution",
     plans: {
-      [PLAN_NAMES.basic]: `${getPlan(
-        PLAN_NAMES.basic
-      ).cost.includedRuns.toLocaleString(undefined, {
-        notation: "compact",
-        compactDisplay: "short",
-      })} /${getPlan(PLAN_NAMES.basic).cost.period} included`,
-      [PLAN_NAMES.pro]: `${getPlan(
-        PLAN_NAMES.pro
-      ).cost.includedRuns.toLocaleString(undefined, {
-        notation: "compact",
-        compactDisplay: "short",
-      })} /${getPlan(PLAN_NAMES.pro).cost.period} included`,
+      [PLAN_NAMES.basic]: {
+        value: `${getPlan(PLAN_NAMES.basic).cost.includedRuns.toLocaleString(
+          undefined,
+          {
+            notation: "compact",
+            compactDisplay: "short",
+          }
+        )} /${getPlan(PLAN_NAMES.basic).cost.period} included`,
+        description: `then $${
+          getPlan(PLAN_NAMES.basic).cost.additionalRunsPrice
+        } per ${getPlan(
+          PLAN_NAMES.basic
+        ).cost.additionalRunsRate.toLocaleString(undefined, {
+          notation: "compact",
+          compactDisplay: "short",
+        })}`,
+      },
+      [PLAN_NAMES.pro]: {
+        value: `${getPlan(PLAN_NAMES.pro).cost.includedRuns.toLocaleString(
+          undefined,
+          {
+            notation: "compact",
+            compactDisplay: "short",
+          }
+        )} /${getPlan(PLAN_NAMES.pro).cost.period} included`,
+        description: `then $${
+          getPlan(PLAN_NAMES.pro).cost.additionalRunsPrice
+        } per ${getPlan(PLAN_NAMES.pro).cost.additionalRunsRate.toLocaleString(
+          undefined,
+          {
+            notation: "compact",
+            compactDisplay: "short",
+          }
+        )}`,
+      },
       [PLAN_NAMES.enterprise]: `${
         getPlan(PLAN_NAMES.enterprise).cost.includedRuns
       }`,
@@ -437,8 +472,18 @@ const FEATURES: Feature[] = [
     name: "Users",
     description: "Develop with your entire team",
     plans: {
-      [PLAN_NAMES.basic]: "5",
-      [PLAN_NAMES.pro]: "20",
+      [PLAN_NAMES.basic]: {
+        value: `${getPlan(PLAN_NAMES.basic).cost.includedUsers}`,
+        description: `then $${
+          getPlan(PLAN_NAMES.basic).cost.additionalUsersPrice
+        }/user`,
+      },
+      [PLAN_NAMES.pro]: {
+        value: `${getPlan(PLAN_NAMES.pro).cost.includedUsers}`,
+        description: `then $${
+          getPlan(PLAN_NAMES.pro).cost.additionalUsersPrice
+        }/user`,
+      },
       [PLAN_NAMES.enterprise]: "Custom",
     },
     section: "organization",
@@ -467,9 +512,12 @@ const FEATURES: Feature[] = [
     name: "Support",
     description: "Dedicated support direct from our engineers",
     plans: {
-      [PLAN_NAMES.basic]: "Email, community",
-      [PLAN_NAMES.pro]: "Email, tickets",
-      [PLAN_NAMES.enterprise]: "Email, tickets, slack",
+      [PLAN_NAMES.basic]: { value: "Email, community", description: "No SLA" },
+      [PLAN_NAMES.pro]: { value: "Email, tickets", description: "48h SLA" },
+      [PLAN_NAMES.enterprise]: {
+        value: "Email, tickets, slack",
+        description: "1h SLA",
+      },
     },
     section: "organization",
   },

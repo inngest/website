@@ -75,30 +75,39 @@ const renderTable = (sectionFeatures, sectionName, plans) => (
             )}
           </td>
           {plans.map((plan, j) => {
-            const value =
-              typeof feature.plans?.[plan.name] === "string"
-                ? feature.plans?.[plan.name]
-                : typeof feature.all === "string"
-                ? feature.all
-                : null;
-            const bool =
-              typeof feature.plans?.[plan.name] === "boolean"
-                ? feature.plans?.[plan.name]
-                : typeof feature.all === "boolean"
-                ? feature.all
-                : null;
+            const planValue = feature.plans?.[plan.name] ?? feature.all;
 
-            return typeof value === "string" ? (
+            let value = null;
+            let description = null;
+            let bool = null;
+
+            if (typeof planValue === "string") {
+              value = planValue;
+            } else if (typeof planValue === "boolean") {
+              bool = planValue;
+            } else if (planValue && typeof planValue === "object") {
+              value = planValue.value;
+              description = planValue.description;
+            }
+
+            return (
               <td key={j} className="px-6 text-sm font-medium">
-                {value}
-              </td>
-            ) : (
-              <td className="px-6" key={j}>
-                {bool ? (
-                  <RiCheckboxCircleFill className="text-primary-xSubtle h-5 w-5" />
-                ) : (
-                  <RiCloseCircleFill className="text-disabled h-5 w-5" />
-                )}
+                {value ? (
+                  <>
+                    {value}
+                    {description && (
+                      <div className="text-muted mt-0.5">
+                        {description}
+                      </div>
+                    )}
+                  </>
+                ) : bool !== null ? (
+                  bool ? (
+                    <RiCheckboxCircleFill className="text-primary-xSubtle h-5 w-5" />
+                  ) : (
+                    <RiCloseCircleFill className="text-disabled h-5 w-5" />
+                  )
+                ) : null}
               </td>
             );
           })}
