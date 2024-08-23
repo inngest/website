@@ -12,7 +12,8 @@ import {
 } from "./navigationStructure";
 import { getAllSections, hasNavGroupPath } from "./Navigation";
 import Link from "next/link";
-import ChevronRight from "shared/icons/ChevronRight";
+import ChevronRight from "../Icons/ChevronRight";
+
 import clsx from "clsx";
 
 function getHierarchyLinks(
