@@ -33,7 +33,7 @@ const content = [
     ),
     ctas: [
       {
-        href: "/docs/functions/retries",
+        href: "/docs/guides/error-handling",
         text: "Learn about retries",
       },
     ],
@@ -51,7 +51,7 @@ const content = [
     ),
     ctas: [
       {
-        href: "/docs/reference/functions/step-sleep",
+        href: "/docs/features/inngest-functions/steps-workflows/sleeps",
         text: "Learn about sleep",
       },
       {
@@ -112,7 +112,7 @@ const content = [
     ),
     ctas: [
       {
-        href: "/docs/functions/cancellation",
+        href: "/docs/features/inngest-functions/cancellation",
         text: "Learn about cancellation",
       },
     ],
@@ -129,7 +129,7 @@ const content = [
     ),
     ctas: [
       {
-        href: "/docs/reference/functions/handling-failures",
+        href: "/docs/guides/error-handling",
         text: "Learn about handling failures",
       },
     ],
@@ -146,7 +146,7 @@ const content = [
     ),
     ctas: [
       {
-        href: "/docs/reference/functions/step-wait-for-event",
+        href: "/docs/features/inngest-functions/steps-workflows/wait-for-event",
         text: "Learn about waiting for events",
       },
     ],

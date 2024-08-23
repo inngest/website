@@ -368,7 +368,7 @@ const Output = ({ selected }: { selected: Selected }) => {
                 </span>
               </a>
               <a
-                href="/docs/functions"
+                href="/docs/features/inngest-functions"
                 className="bg-slate-800 rounded-lg px-6 py-5 hover:bg-slate-700/80 group block"
               >
                 <h4 className="text-white">Writing functions</h4>
@@ -378,7 +378,7 @@ const Output = ({ selected }: { selected: Selected }) => {
                 </span>
               </a>
               <a
-                href="/docs/events"
+                href="/docs/features/events-triggers"
                 className="bg-slate-800 rounded-lg px-6 py-5 hover:bg-slate-700/80 group block"
               >
                 <h4 className="text-white">Sending Events</h4>
