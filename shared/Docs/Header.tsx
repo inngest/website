@@ -96,16 +96,6 @@ export const Header = forwardRef<HTMLDivElement>(function Header(
         {!isInsideMobileNavigation && <Search />}
 
         <div className="flex items-center gap-4">
-          <div className="hidden sm:flex items-center gap-4">
-            <Button
-              href={`${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=docs-header`}
-              size="sm"
-              variant="primaryV2"
-              // arrow="right"
-            >
-              Sign Up
-            </Button>
-          </div>
           <Separator />
           <div className="flex gap-4 justify-center items-center">
             <a href="/discord" target="_blank" className="group">
@@ -155,6 +145,17 @@ export const Header = forwardRef<HTMLDivElement>(function Header(
           <div className="flex gap-2">
             <HeaderSearchIcon />
             <ModeToggle />
+          </div>
+          <Separator />
+          <div className="hidden sm:flex items-center gap-4">
+            <Button
+              href={`${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=docs-header`}
+              size="sm"
+              variant="primaryV2"
+              // arrow="right"
+            >
+              Sign Up
+            </Button>
           </div>
         </div>
       </div>
