@@ -13,9 +13,11 @@ import FooterCallout from "./FooterCallout";
 export default function Footer({
   ctaRef,
   disableCta = false,
+  className,
 }: {
   ctaRef?: string;
   disableCta?: boolean;
+  className?: string;
 }) {
   return (
     <>
@@ -23,7 +25,8 @@ export default function Footer({
       <footer
         className={clsx(
           "border-t border-slate-800 bg-slate-1000",
-          disableCta ? "mt-36" : "mt-12"
+          disableCta ? "mt-36" : "mt-12",
+          className,
         )}
       >
         <Container className="pb-12 pt-12 lg:pt-24">

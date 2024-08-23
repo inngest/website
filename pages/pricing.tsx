@@ -609,8 +609,15 @@ export default function Pricing() {
           />
         </Container>
       </div>
-
-      <div className="text-center my-24">
+      <div
+        className="text-center py-24"
+        style={{
+          backgroundImage: "url(/assets/pricing/blob.svg)",
+          backgroundPosition: "center 40%",
+          backgroundRepeat: "no-repeat",
+          backgroundSize: "cover",
+        }}
+      >
         <p className="text-2xl lg:text-3xl font-bold mb-12">
           Need help deciding which plan to choose?
         </p>
@@ -619,7 +626,7 @@ export default function Pricing() {
         </Button>
       </div>
 
-      <Footer disableCta />
+      <Footer className="!mt-0" disableCta />
     </div>
   );
 }
