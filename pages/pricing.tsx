@@ -97,7 +97,7 @@ const PLANS: Plan[] = [
     description:
       "Everything you need to start building and scaling reliable systems for free",
     cta: {
-      href: `${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=pricing-team`,
+      href: `${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=pricing-card-basic`,
       text: "Get started for free",
     },
     highlights: {
@@ -132,7 +132,7 @@ const PLANS: Plan[] = [
       "Production-ready systems with extended features for mid-sized products",
     recommended: true,
     cta: {
-      href: `${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=pricing-startup`,
+      href: `${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=pricing-card-pro`,
       text: "Get started for free",
     },
     highlights: {
@@ -164,7 +164,7 @@ const PLANS: Plan[] = [
     description:
       "For critical products with additional scale, security, observability, latency, and support",
     cta: {
-      href: "/contact?ref=pricing-enterprise",
+      href: "/contact?ref=pricing-card-enterprise",
       text: "Request demo",
     },
     highlights: {
@@ -529,14 +529,14 @@ export async function getStaticProps() {
 
 export default function Pricing() {
   return (
-    <div className="font-sans">
+    <div className="font-sans bg-canvasBase">
       <Header />
       <div
         style={{
-          backgroundImage: "url(/assets/pricing/table-bg.png)",
-          backgroundPosition: "center -30px",
+          backgroundImage: "url(/assets/pricing/background-pricing.svg)",
+          backgroundPosition: "center -100px",
           backgroundRepeat: "no-repeat",
-          backgroundSize: "1800px 1200px",
+          backgroundSize: "1100px 1650px",
         }}
       >
         <Container className="text-center">
@@ -563,7 +563,7 @@ export default function Pricing() {
       </div>
 
       <div className="text-center my-24">
-        <p className="text-3xl font-bold mb-12">
+        <p className="text-2xl lg:text-3xl font-bold mb-12">
           Need help deciding which plan to choose?
         </p>
         <Button href="/contact?ref=pricing-help" variant="dark">

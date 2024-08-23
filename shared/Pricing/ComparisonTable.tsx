@@ -14,15 +14,21 @@ export default function ComparisonTable({ plans, features, sections }) {
           (feature) => feature.section === section.key
         );
         if (section.key === "recovery") {
-          return renderHighlightGrid(
-            sectionFeatures,
-            section.name,
-            section.description
+          return (
+            <div key={section.key}>
+              {renderHighlightGrid(
+                sectionFeatures,
+                section.name,
+                section.description
+              )}
+            </div>
           );
         }
-        return sectionFeatures.length > 0
-          ? renderTable(sectionFeatures, section.name, plans)
-          : null;
+        return sectionFeatures.length > 0 ? (
+          <div key={section.key}>
+            {renderTable(sectionFeatures, section.name, plans)}
+          </div>
+        ) : null;
       })}
     </div>
   );
@@ -35,7 +41,15 @@ const renderTable = (sectionFeatures, sectionName, plans) => (
       <tr className="border-b border-muted md:sticky top-[84px] bg-canvasBase">
         <th className="py-4 text-lg font-bold">{sectionName}</th>
         {plans.map((plan, i) => (
-          <th className="px-6 py-4" key={i}>
+          <th
+            className={`px-6 py-4 ${
+              plan.name === "Pro" && "text-primary-intense"
+            } ${
+              plan.name === "Enterprise" &&
+              "bg-gradient-to-b from-matcha-400 to-breeze-400 bg-clip-text text-transparent"
+            }`}
+            key={i}
+          >
             <h2 className="text-sm font-medium">{plan.name} </h2>
           </th>
         ))}
@@ -43,8 +57,8 @@ const renderTable = (sectionFeatures, sectionName, plans) => (
     </thead>
     <tbody>
       {sectionFeatures.map((feature, i) => (
-        <tr key={i} className="h-11 border-t border-subtle">
-          <td className="h-14 text-sm">
+        <tr key={i} className="h-11 border-t last:border-b border-subtle">
+          <td className="py-3 text-sm">
             <div className="flex items-center font-medium gap-1">
               {feature.name}
               {Boolean(feature.infoUrl) && (
@@ -99,7 +113,7 @@ const renderHighlightGrid = (
   sectionName,
   sectionDescription
 ) => (
-  <div className="w-full my-8 text-center bg-gradient-to-b from-matcha-400 to-breeze-400 rounded-2xl p-px">
+  <div className="w-full my-16 text-center bg-gradient-to-b from-matcha-400 to-breeze-400 rounded-2xl p-px">
     <div className="bg-canvasBase px-6 py-8 rounded-2xl">
       <div className="pb-6 text-lg font-bold">
         {sectionName}
