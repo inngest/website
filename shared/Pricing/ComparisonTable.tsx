@@ -13,6 +13,13 @@ export default function ComparisonTable({ plans, features, sections }) {
         const sectionFeatures = features.filter(
           (feature) => feature.section === section.key
         );
+        if (section.key === "recovery") {
+          return renderHighlightGrid(
+            sectionFeatures,
+            section.name,
+            section.description
+          );
+        }
         return sectionFeatures.length > 0
           ? renderTable(sectionFeatures, section.name, plans)
           : null;
@@ -85,4 +92,40 @@ const renderTable = (sectionFeatures, sectionName, plans) => (
       ))}
     </tbody>
   </table>
+);
+
+const renderHighlightGrid = (
+  sectionFeatures,
+  sectionName,
+  sectionDescription
+) => (
+  <div className="w-full my-8 text-center bg-gradient-to-b from-matcha-400 to-breeze-400 rounded-2xl p-px">
+    <div className="bg-canvasBase px-6 py-8 rounded-2xl">
+      <div className="pb-6 text-lg font-bold">
+        {sectionName}
+        <div className="text-sm font-normal">{sectionDescription}</div>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 text-sm gap-6 lg:gap-10">
+        {sectionFeatures.map((feature, i) => (
+          <div key={i} className="flex flex-col items-center">
+            <div className="flex items-center font-medium gap-1">
+              {feature.name}
+              {Boolean(feature.infoUrl) && (
+                <Link
+                  href={feature.infoUrl}
+                  className="transition-all text-muted hover:text-white"
+                >
+                  <RiExternalLinkLine className="h-4 w-4" />
+                </Link>
+              )}
+            </div>
+            {feature.description && (
+              <div className="text-muted mt-0.5">{feature.description}</div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
 );

@@ -45,6 +45,7 @@ type Feature = {
   description?: string;
   section:
     | "platform"
+    | "recovery"
     | "observability"
     | "data"
     | "connectivity"
@@ -56,8 +57,13 @@ type Feature = {
   infoUrl?: string;
 };
 
-export const sections = [
+export const sections: { key: string; name: string; description?: string }[] = [
   { key: "platform", name: "Platform" },
+  {
+    key: "recovery",
+    name: "Recovery & management",
+    description: "Included with every plan at your fingertips",
+  },
   { key: "observability", name: "Observability" },
   { key: "data", name: "Time-based data management" },
   { key: "connectivity", name: "Connectivity" },
@@ -308,6 +314,33 @@ const FEATURES: Feature[] = [
       [PLAN_NAMES.enterprise]: "Custom",
     },
     section: "platform",
+  },
+  {
+    name: "Function pausing",
+    description: "Easily prevent issues during incidents",
+    section: "recovery",
+    infoUrl: "/docs/guides/pause-functions?ref=pricing",
+    all: true,
+  },
+  {
+    name: "Function replay",
+    description: "Replay paused or failed runs, in bulk, effortlessly",
+    section: "recovery",
+    infoUrl: "/docs/platform/replay?ref=pricing",
+    all: true,
+  },
+  {
+    name: "Event replay",
+    description: "Redrive events through one or more functions",
+    section: "recovery",
+    all: true,
+  },
+  {
+    name: "Bulk cancellation",
+    description: "Easily manage issues across in progress runs",
+    section: "recovery",
+    infoUrl: "/docs/guides/cancel-running-functions?ref=pricing",
+    all: true,
   },
   {
     name: "Metrics granularity",
