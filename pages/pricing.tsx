@@ -4,6 +4,7 @@ import ComparisonTable from "src/shared/Pricing/ComparisionTable";
 import PlanCard from "src/shared/Pricing/PlanCard";
 import CaseStudies from "src/shared/Pricing/CaseStudies";
 import Footer from "../shared/Footer";
+import { Button } from "src/shared/Button";
 
 export type Plan = {
   name: string;
@@ -448,7 +449,16 @@ export default function Pricing() {
         </Container>
       </div>
 
-      <Footer />
+      <div className="text-center my-24">
+        <p className="text-3xl font-bold mb-12">
+          Need help deciding which plan to choose?
+        </p>
+        <Button href="/contact?ref=pricing-help" variant="dark">
+          Let's talk
+        </Button>
+      </div>
+
+      <Footer disableCta />
     </div>
   );
 }
