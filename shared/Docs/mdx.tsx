@@ -447,7 +447,7 @@ export function Card<T extends React.ElementType = "div">({
       {...props}
     >
       <div
-        className={clsx("px-6 py-4 flex gap-2 items-start", {
+        className={clsx("px-4 py-4 flex gap-2 items-start", {
           "flex-row": iconPlacement === "left",
           "flex-col": iconPlacement === "top",
         })}
