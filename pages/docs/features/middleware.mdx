@@ -1,17 +1,17 @@
 import { Callout, CodeGroup, VersionBadge, CardGroup, Card } from "src/shared/Docs/mdx";
 import IntegrationsIcon from 'src/shared/Icons/Integrations';
-import CLIIcon from 'src/shared/Icons/CLI';
+import EventLogsIcon from 'src/shared/Icons/EventLogs';
 import EyeOffIcon from 'src/shared/Icons/EyeOff';
 import RunsIcon from 'src/shared/Icons/Runs';
 
 # Middleware
 
-A Middleware allows you code to run at various points in an Inngest client's lifecycle, such as during a function's execution or when sending an event. 
+Middleware allows you code to run at various points in an Inngest client's lifecycle, such as during a function's execution or when sending an event. 
 
 This can be used for a wide range of uses:
 
 <CardGroup cols={2}>
-  <Card title="Create a middleware" icon={<CLIIcon />} href={'/docs/features/middleware/create'}>
+  <Card title="Custom observability" icon={<EventLogsIcon />} href={'/docs/features/middleware/create'}>
     Add custom logging, tracing or helpers to your Inngest Functions.
   </Card>
   <Card title="Dependency Injection" icon={<IntegrationsIcon />} href={'/docs/features/middleware/dependency-injection'}>

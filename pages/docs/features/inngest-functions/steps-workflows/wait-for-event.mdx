@@ -6,9 +6,9 @@ export const hidePageSidebar = true;
 
 # Wait for an Event
 
-The Steps API enable Inngest Functins to wait for pause until a given event arrives.
+One step method is available to pause a Function's run until a given event is sent.
 
-This is a useful pattern to synchronize workflows with specific user actions or to implement "Human in the loop" in AI Agent workflows.
+This is a useful pattern to react to specific user actions (for example, implement "Human in the loop" in AI Agent workflows).
 
 
 <GuideSelector
@@ -329,8 +329,7 @@ Check out the [`step.wait_for_event()` Python reference.](/docs/reference/python
 <Callout variant={'warning'}>
 **Preventing race conditions**
 
-The "Wait for event" Steps method listens for new events. This means that events triggered before the Function get deployed or started
-will not be "catched" by your Step.
+The "wait for event" method begins listening for new events from when the code is executed. This means that events sent before the function is executed will not be handled by the wait.
 
 To avoid race condition, always double-check the flow of events going through your functions.
 

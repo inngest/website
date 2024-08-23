@@ -3,14 +3,16 @@ import { Callout, GuideSelector, GuideSection, CodeGroup } from "src/shared/Docs
 
 # Sleeps
 
-The Steps API provide 2 methods to pause the execution of your function for a specific amount of time.
+Two step methods are available to pause the execution of your function for a specific amount of time.
 
-Pausing an execution is useful, for example, to sequence multiple actions in time in a user onboarding workflow: first send a welcome email, then send a tutorial everyday during the first week.
+Using sleep methods can save the need for running multiple cron jobs and additional queues. For example, Step Pauses enables you to create a user onboarding workflow that sequences multiple actions in time: first send a welcome email, then send a tutorial everyday during the first week.
 
 <Callout variant={'info'}>
-**About: Sleeps and Concurrency**
+**How sleeps works**
 
-Function being paused by a sleeping Step won't affect your account capacity, it also applies when concurrency is configured on a Function.
+Each step method informs Inngest to resume execution at a future time. Your code does not need to be running during this enabling sleeps to be used in any environment, even serverless.
+
+This implies that Function being paused by a sleeping Step won't affect your account capacity (ex, your Function's concurrency capacity).
 </Callout>
 
 

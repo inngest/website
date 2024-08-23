@@ -21,7 +21,7 @@ Inngest enables you to cancel running Functions via the API, Dashboard, or based
   <Card title="Bulk cancel via the Platform Dashboard" icon={<CloseCircleIcon />} href={'/docs/platform/manage/bulk-cancellation'}>
     The quickest way to cancel the Function runs within a given time range.
   </Card>
-  <Card title="Bulk cancel via the REST API" icon={<CLIIcon />} href={'/docs/guides/cancel-running-functions#bulk-cancel-via-the-rest-api'}>
+  <Card title="Cancel or bulk cancel via the REST API" icon={<CLIIcon />} href={'/docs/guides/cancel-running-functions#bulk-cancel-via-the-rest-api'}>
     Useful to cancel a large number of Function runs within a specific range.
   </Card>
   <Card title="Replay canceled Function runs" icon={<ReplayIcon />} href={'/docs/platform/replay'}>
@@ -31,11 +31,11 @@ Inngest enables you to cancel running Functions via the API, Dashboard, or based
 
 ## Anatomy of a cancellation
 
-Inngest cancellation mechanisms prevent a Function from running or stop an ongoing Function run between some following steps (sleep or action steps).
+Inngest cancellation mechanisms prevent a scheduled Function run from running or stop an ongoing Function run between some following steps (sleep or action steps).
 
 Please note that:
 
-- Canceling a Function run currently having a step running for multiple minutes or hanging on your cloud provider side won't stop its execution.
+- Cancelling a function that has a currently executing step will not stop the step's execution. Any actively executing steps will run to completion.
 - Canceling a set of Function runs does not prevent new Function runs from being enqueued (ex, in case of loop issues). Consider using [Functions Pausing](/docs/guides/pause-functions) instead.
 
 Consider the below Inngest Function:

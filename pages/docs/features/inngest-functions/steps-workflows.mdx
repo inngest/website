@@ -26,10 +26,10 @@ Once you are familiar with Steps, start adding new capabilities to your Inngest 
     Enable your Inngest Functions to pause by waiting from minutes to months.
   </Card>
   <Card title="Wait for events" icon={<EventIcon />} href={'/docs/features/inngest-functions/steps-workflows/wait-for-event'}>
-    Synchronize your Inngest Functions with incoming events.
+    Write functions that react to incoming events.
   </Card>
   <Card title="Loop over steps" icon={<RunsIcon />} href={'/docs/guides/working-with-loops'}>
-    Iterate over large datasets by looping with steps in parallel.
+    Iterate over large datasets by looping with steps.
   </Card>
   <Card title="Parallelize steps" icon={<BranchIcon />} href={'/docs/guides/step-parallelism'}>
     Discover how to apply the map-reduce pattern with Steps.
@@ -43,7 +43,7 @@ You might wonder: how do Steps work? Why doesn't an Inngest Function get timed o
 
 You can think of steps as an API for expressing checkpoints in your workflow, such as waits or work that might benefit from retries or parallelism.
 
-Each step execution relies on a communication with Inngest's Durable Execution Engine which is responsible to:
+Each step execution relies on a communication with Inngest's [Durable Execution Engine](/docs/learn/how-functions-are-executed) which is responsible to:
 
 - Invoking Functions with the correct steps state (current step + previous steps data)
 - Gather each step result and schedule the next step to perform

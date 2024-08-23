@@ -42,14 +42,15 @@ Encryption middleware provides end-to-end encryption for events, step output, an
 
   <GuideSection show="typescript">
 
-    Install the [`@inngest/middleware-encryption` package](https://www.npmjs.com/package/@inngest/middleware-encryption) and configure it as follows:
+    Install the [`@inngest/middleware-encryption` package](https://www.npmjs.com/package/@inngest/middleware-encryption) ([GitHub](https://github.com/inngest/inngest-js/tree/main/packages/middleware-encryption#readme)) and configure it as follows:
 
     ```ts
     import { encryptionMiddleware } from "@inngest/middleware-encryption";
 
     // Initialize the middleware
     const mw = encryptionMiddleware({
-      key: "your-encryption-key",
+      // your encryption key string should not be hard coded
+      key: process.env.MY_ENCRYPTION_KEY,
     });
 
     // Use the middleware with Inngest
@@ -102,24 +103,24 @@ Encryption middleware provides end-to-end encryption for events, step output, an
     ```ts
     // start out with the current key
     encryptionMiddleware({
-      key: "current",
+      key: process.env.MY_ENCRYPTION_KEY,
     });
 
     // deploy all services with the new key as a decryption fallback
     encryptionMiddleware({
-      key: "current",
+      key: process.env.MY_ENCRYPTION_KEY,
       fallbackDecryptionKeys: ["new"],
     });
 
     // deploy all services using the new key for encryption
     encryptionMiddleware({
-      key: "new",
+      key: process.env.MY_ENCRYPTION_KEY_V2,
       fallbackDecryptionKeys: ["current"],
     });
 
     // once you are sure all data using the "current" key has passed, phase it out
     encryptionMiddleware({
-      key: "new",
+      key: process.env.MY_ENCRYPTION_KEY_V2,
     });
     ```
   </GuideSection>
