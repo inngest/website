@@ -22,6 +22,8 @@ type Status = {
   updated_at: string;
 };
 
+const STATUS_PAGE_URL = "http://status.inngest.com"; // Not https
+
 const fetchStatus = async (): Promise<StatusPageStatusResponse> => {
   return await fetch("https://inngest.statuspage.io/api/v2/status.json").then(
     (r) => r.json()
@@ -30,19 +32,28 @@ const fetchStatus = async (): Promise<StatusPageStatusResponse> => {
 
 const useStatus = (): Status => {
   const [status, setStatus] = useState<Status>({
-    url: "http://status.inngest.com", // Not https
+    url: STATUS_PAGE_URL,
     description: "Fetching status...",
     indicator: "none",
     updated_at: "",
   });
   useEffect(() => {
     (async function () {
-      const res = await fetchStatus();
-      setStatus({
-        ...res.status,
-        updated_at: res.page.updated_at,
-        url: res.page.url,
-      });
+      try {
+        const res = await fetchStatus();
+        setStatus({
+          ...res.status,
+          updated_at: res.page.updated_at,
+          url: res.page.url,
+        });
+      } catch (e) {
+        setStatus({
+          description: "Status page",
+          indicator: "none",
+          updated_at: "",
+          url: STATUS_PAGE_URL,
+        });
+      }
     })();
   }, []);
   return status;
