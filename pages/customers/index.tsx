@@ -294,15 +294,7 @@ export default function Customers() {
                     )}
                   />
                 </div>
-                {!!url && (
-                  <a
-                    href={url}
-                    target="_blank"
-                    className="absolute hidden group-hover:flex flex-row gap-1 items-center bottom-2 right-2  px-3 py-1.5 text-xs bg-slate-400/10 hover:bg-slate-400/40 rounded-xl text-slate-50"
-                  >
-                    Visit website <ArrowTopRightOnSquareIcon className="h-3" />
-                  </a>
-                )}
+                {!!url && <VisitWebsite url={url} />}
               </div>
             ))}
           </div>
@@ -362,16 +354,7 @@ export default function Customers() {
                       )}
                     />
                   )}
-                  {!!item.url && (
-                    <a
-                      href={item.url}
-                      target="_blank"
-                      className="absolute hidden group-hover:flex flex-row gap-1 items-center bottom-2 right-2  px-3 py-1.5 text-xs bg-surfaceSubtle hover:bg-canvasSubtle rounded-xl text-link"
-                    >
-                      Visit website{" "}
-                      <ArrowTopRightOnSquareIcon className="h-3" />
-                    </a>
-                  )}
+                  {!!item.url && <VisitWebsite url={item.url} />}
                 </div>
               );
             })}
@@ -382,7 +365,7 @@ export default function Customers() {
       <FooterCallout
         title="Talk to a product expert"
         description="Chat with sales engineering to learn how Inngest can help your team ship more reliable products, faster"
-        ctaHref="/contact?ref=customers"
+        ctaHref="/contact"
         ctaText="Contact sales engineering"
         ctaRef={"customers"}
         showCliCmd={false}
@@ -390,5 +373,17 @@ export default function Customers() {
 
       <Footer disableCta={true} />
     </div>
+  );
+}
+
+function VisitWebsite({ url }) {
+  return (
+    <a
+      href={url}
+      target="_blank"
+      className="absolute hidden group-hover:flex flex-row gap-1 items-center bottom-2 right-2  px-3 py-1.5 text-xs bg-surfaceSubtle hover:bg-canvasSubtle rounded-xl text-link"
+    >
+      Visit website <ArrowTopRightOnSquareIcon className="h-3" />
+    </a>
   );
 }

@@ -47,7 +47,7 @@ export function Layout({
   const metaTitle = `Case Study - ${companyName}`;
   const description = title;
   return (
-    <div className="bg-slate-1000 font-sans">
+    <div>
       <Head>
         <title>{metaTitle}</title>
         <meta name="description" content={description}></meta>
@@ -71,7 +71,7 @@ export function Layout({
         <div className="mx-auto my-12 flex flex-col lg:flex-row items-start justify-between gap-8 max-w-[1200px]">
           <div>
             <article className="w-full lg:max-w-[80ch]">
-              <div className="mb-4 text-sm font-medium text-slate-500">
+              <div className="mb-4 text-sm font-medium text-subtle">
                 Case Study - {companyName}
               </div>
               <h1 className="mr-8 text-4xl leading-[3rem] font-medium">
@@ -81,11 +81,11 @@ export function Layout({
               {quote && (
                 <blockquote className="mx-auto my-8 max-w-3xl px-8 md:p-16 flex flex-col md:flex-row gap-8 bg-[url(/assets/textures/wave.svg)] bg-[length:auto_80%] bg-center bg-no-repeat">
                   <p className="text-lg leading-7 relative">
-                    <span className="absolute top-1 -left-4 text-2xl leading-3 text-slate-400/80">
+                    <span className="absolute top-1 -left-4 text-2xl leading-3 text-muted">
                       &ldquo;
                     </span>
                     {quote.text}
-                    <span className="ml-1 text-2xl leading-3 text-slate-400/80">
+                    <span className="ml-1 text-2xl leading-3 text-muted">
                       &rdquo;
                     </span>
                   </p>
@@ -97,7 +97,7 @@ export function Layout({
                       width="72"
                       className="rounded-full h-12 w-12 lg:h-20 lg:w-20"
                     />
-                    <cite className="text-slate-300 leading-8 not-italic">
+                    <cite className="text-subtle leading-8 not-italic">
                       <span className="text-lg">{quote.attribution.name}</span>
                       <br />
                       <span className="text-sm">{quote.attribution.title}</span>
@@ -107,7 +107,7 @@ export function Layout({
               )}
 
               <SectionProvider sections={[]}>
-                <div className="md:max-w-[70ch] prose mt-12 mb-20 prose-img:rounded-lg prose-code:bg-slate-800 prose-code:tracking-tight text-slate-300 prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline hover:prose-a:text-white prose-a:font-medium prose-a:transition-all prose-invert blog-content">
+                <div className="md:max-w-[70ch] prose mt-12 mb-20 prose-img:rounded-lg prose-code:bg-slate-800 prose-code:tracking-tight text-basis prose-invert blog-content">
                   {children}
                 </div>
               </SectionProvider>
@@ -115,7 +115,7 @@ export function Layout({
             <p>
               <Link
                 href="/customers"
-                className="hover:underline underline-offset-2	text-indigo-400 hover:text-slate-50 font-medium"
+                className="hover:underline underline-offset-2 font-medium"
               >
                 Read more customer success stories →
               </Link>
@@ -130,11 +130,7 @@ export function Layout({
             />
             <p>{companyDescription}</p>
             <p>
-              <a
-                href={companyURL}
-                target="_blank"
-                className="text-slate-400 hover:text-indigo-400"
-              >
+              <a href={companyURL} target="_blank" className="hover:underline">
                 {companyURL.replace(/https\:\/\//, "")}
               </a>
             </p>

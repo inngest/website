@@ -1,5 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
+import { RiArrowRightSLine } from "@remixicon/react";
+
 import Card from "src/components/Card";
 
 export default function CaseStudyCard({
@@ -40,11 +42,9 @@ export default function CaseStudyCard({
                 <span key={tag}>{tag}</span>
               ))}
             </div>
-            <div>
+            <div className="flex flex-row text-link">
               Read the case study{" "}
-              <span className="ml-1 transition-all group-hover:translate-x-0.5">
-                →
-              </span>
+              <RiArrowRightSLine className="group-hover:translate-x-1 relative top-px transition-transform duration-150 " />
             </div>
           </div>
         </div>

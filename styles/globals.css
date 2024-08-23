@@ -121,7 +121,7 @@ body.dark-theme {
 
 
 a {
-  color: var(--link-color);
+  color: rgba(var(--color-foreground-link) /1);
 }
 
 .color-inherit {
