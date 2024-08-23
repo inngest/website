@@ -1,4 +1,4 @@
-import { CardGroup, Card, ImageTheme } from "src/shared/Docs/mdx";
+import { CardGroup, Card, ImageTheme, CodeGroup } from "src/shared/Docs/mdx";
 import EventIcon from 'src/shared/Icons/Event';
 import CalendarIcon from 'src/shared/Icons/Calendar';
 import BranchIcon from 'src/shared/Icons/Branch';
@@ -41,7 +41,67 @@ Once you are familiar with Steps, start adding new capabilities to your Inngest 
 
 You might wonder: how do Steps work? Why doesn't an Inngest Function get timed out when running on a Serverless environment?
 
-You can think of steps as an API for expressing checkpoints in your workflow, such as waits or work that might benefit from retries or parallelism.
+You can think of steps as an API for expressing checkpoints in your workflow, such as waits or work that might benefit from retries or parallelism:
+
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
+inngest.createFunction(
+  { id: "sync-systems" },
+  { event: "auto/sync.request" },
+  async ({ step }) => {
+    // By wrapping code in step.run, the code will be retried if it throws an error and when successfuly.
+    // It's result is saved to prevent unnecessary re-execution
+    const data = await step.run("get-data", async () => {
+      return getDataFromExternalSource();
+    });
+
+    // Can also be retried up to 4 times
+    await step.run("save-data", async () => {
+      return db.syncs.insertOne(data);
+    });
+  },
+);
+```
+```py {{ title: "Python" }}
+@inngest_client.create_function(
+    fn_id="sync-systems",
+    trigger=inngest.TriggerEvent(event="auto/sync.request"),
+)
+def sync_systems(ctx: inngest.Context, step: inngest.StepSync) -> None:
+    # By wrapping code in step.run, the code will be retried if it throws an error and when successfuly.
+    # It's result is saved to prevent unnecessary re-execution
+    data = step.run("Get data", get_data_from_external_source)
+
+    # Can also be retried up to 4 times
+    step.run("Save data", db.syncs.insert_one, data)
+```
+```go {{ title: "Go" }}
+inngestgo.CreateFunction(
+	inngestgo.FunctionOpts{ID: "sync-systems"},
+	inngestgo.EventTrigger("auto/sync.request", nil),
+	func(ctx context.Context, input inngestgo.Input[SyncRequestEvent]) (any, error) {
+		// By wrapping code in step.run, the code will be retried if it throws an error and when successfuly.
+		// It's result is saved to prevent unnecessary re-execution
+		data, err := step.Run(ctx, "get-data", func(ctx context.Context) (any, error) {
+			return getDataFromExternalSource()
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		// can also be retried up to 4 times
+		_, err = step.Run(ctx, "save-data", func(ctx context.Context) (any, error) {
+			return db.Syncs.InsertOne(data.(DataType))
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		return nil, nil
+	},
+)
+```
+</CodeGroup>
 
 Each step execution relies on a communication with Inngest's [Durable Execution Engine](/docs/learn/how-functions-are-executed) which is responsible to:
 

@@ -10,24 +10,24 @@ Moving to production requires deploying your Inngest Functions on your favorite 
 
 
 <CardGroup cols={2}>
+  <Card title="Deploy on any platform or runtime" icon={<CloudIcon fill={'black'} />} href={'/docs/apps/cloud#sync-a-new-app-in-inngest-cloud'}>
+    Inngest Functions can be deployed to any serverless cloud or container running on any server.
+  </Card>
   <Card title="Deploy with Vercel" icon={<VercelIcon />} href={'/docs/deploy/vercel'}>
-    Send an event from your application’s backend with the Inngest SDK.
+    Use our Vercel Integration to deploy your Inngest Functions.
   </Card>
   <Card title="Deploy with Cloudflare Pages" icon={<CloudflareIcon />} href={'/docs/deploy/cloudflare'}>
-    Run an Inngest function periodically with a trigger using cron syntax.
+    Deploy your Inngest Functions on Cloudflare Pages.
   </Card>
   <Card title="Deploy with Netlify" icon={<NetlifyIcon />} href={'/docs/deploy/netlify'}>
-    Use Inngest as a webhook consumer for any service to trigger functions.
-  </Card>
-  <Card title="Deploy your application" icon={<CloudIcon fill={'black'} />} href={'/docs/apps/cloud#sync-a-new-app-in-inngest-cloud'}>
-    Directly invoke other functions to compose more powerful functions.
+    Deploy your Inngest Functions on Netlify.
   </Card>
 </CardGroup>
 
-## How Inngest handles deployments
+## How Inngest handles Function Runs
 
 
-The Inngest Platform hosts the Inngest Durable Execution Engine, responsible for triggering and maintaining the state of Function runs happening on your Cloud Provider:
+The Inngest Platform hosts the Inngest Durable Execution Engine, responsible for triggering and maintaining the state of **Function runs happening on your Cloud Provider**:
 
 <ImageTheme
   dark={'/assets/docs/platform/deployment/Durable-Execution-Engine-triggers-overview-dark.jpg'}

@@ -136,6 +136,10 @@ const sectionReference: NavGroup[] = [
             title: "Configuration",
             href: `/docs/reference/serve`,
           },
+          {
+            title: "Streaming",
+            href: `/docs/streaming`,
+          },
         ],
       },
       {
@@ -317,15 +321,15 @@ const sectionHome: (NavGroup | NavLink)[] = [
     title: "Inngest tour",
     defaultOpen: true,
     links: [
+      { title: "Install the SDK", href: `/docs/sdk/overview` },
       {
-        title: "Inngest functions",
+        title: "Your first Functions",
         href: `/docs/learn/inngest-functions`,
       },
       {
-        title: "Inngest steps",
+        title: "Inngest Steps",
         href: `/docs/learn/inngest-steps`,
       },
-      { title: "Installing the SDK", href: `/docs/sdk/overview` },
       {
         title: "Serving Inngest Functions",
         href: `/docs/learn/serving-inngest-functions`,
@@ -659,10 +663,6 @@ const sectionHome: (NavGroup | NavLink)[] = [
             title: "Guides",
           },
           {
-            title: "Streaming",
-            href: `/docs/streaming`,
-          },
-          {
             title: "Self hosting",
             href: `/docs/self-hosting`,
           },
@@ -682,8 +682,12 @@ const sectionHome: (NavGroup | NavLink)[] = [
         title: "Manage",
         links: [
           {
-            title: "Environments & Apps",
-            href: "/docs/platform/manage/environments-apps",
+            title: "Environments",
+            href: "/docs/platform/environments",
+          },
+          {
+            title: "Apps",
+            href: "/docs/platform/manage/apps",
           },
           {
             title: "Function Replay",
@@ -707,12 +711,12 @@ const sectionHome: (NavGroup | NavLink)[] = [
             href: "/docs/platform/monitor/observability-metrics",
           },
           {
-            title: "Searching for Events",
-            href: "/docs/platform/monitor/searching-events",
-          },
-          {
             title: "Inspecting Function Runs",
             href: "/docs/platform/monitor/inspecting-function-runs",
+          },
+          {
+            title: "Searching for Events",
+            href: "/docs/platform/monitor/searching-events",
           },
         ],
       },

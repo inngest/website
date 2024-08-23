@@ -4,7 +4,7 @@ import CloseCircleIcon from 'src/shared/Icons/CloseCircle';
 import CLIIcon from 'src/shared/Icons/CLI';
 import BranchIcon from 'src/shared/Icons/Branch';
 import ReplayIcon from 'src/shared/Icons/Replay';
-import { CardGroup, Card, ImageTheme, Col, Row } from "src/shared/Docs/mdx";
+import { CardGroup, Card, ImageTheme, Col, Row, CodeGroup } from "src/shared/Docs/mdx";
 
 # Cancellation
 
@@ -40,10 +40,13 @@ Please note that:
 
 Consider the below Inngest Function:
 
-```ts {{ title: "inngest/syncContacts.ts" }}
+<CodeGroup>
+
+```ts {{ title: "inngest/scheduleReminder.ts" }}
 const scheduleReminder = inngest.createFunction(
   {
     id: "schedule-reminder",
+    cancelOn: [{ event: "tasks/deleted", if: "event.data.id == async.data.id" }],
   }
   { event: "tasks/reminder.created" },
   async ({ event, step }) => {
@@ -57,6 +60,36 @@ const scheduleReminder = inngest.createFunction(
   // ...
 );
 ```
+
+```py {{ title: "inngest/schedule_reminder.py" }}
+@inngest_client.create_function(
+    fn_id="schedule-reminder",
+    trigger=inngest.TriggerEvent(event="tasks/reminder.created"),
+    cancel=[inngest.Cancel(
+                event="tasks/deleted",
+                if_exp="event.data.id == async.data.id"
+            )],
+)
+async def fn(
+    ctx: inngest.Context,
+    step: inngest.Step,
+) -> None:
+    # Step 1
+    await step.sleep_until(
+        "sleep-until-remind-at-time",
+         ctx.event.data["remind_at"],
+    )
+
+    # Step 2
+    await step.run("send-reminder-push", send_reminder_push)
+
+
+
+async def send_reminder_push() -> None:
+    pass
+```
+
+</CodeGroup>
 
 Let's now look at two different cancellations triggered from the Dashboard Bulk Cancellation UI:
 

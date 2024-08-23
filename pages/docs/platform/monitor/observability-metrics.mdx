@@ -7,32 +7,6 @@ With hundreds to thousands of events going through your Inngest Apps, triggering
 
 The Inngest Platform provides observability features for both Events and Function runs, coupled with Event logs and [a detailed Function Run Logs to inspect arguments and steps timings](/docs/platform/monitor/inspecting-function-runs).
 
-## Events observability
-
-Events volume and which functions they trigger can become hard to visualize.
-
-Thankfully, the Events page gives you a quick overview of the volume of Events going through your Apps:
-
-![The Events page lists the available Event type. Each list item features the event name along with its associated Functions and a events volume indicator.](/assets/docs/platform/monitor/observability-metrics/events-list.png)
-
-Get more detailed metrics for a dedicated event by navigating to it from the list:
-
-## Event Metrics and Logs
-
-The Event page helps quickly visualize the throughput (the rate of event over time) and functions associated with this event.
-
-The event occurrences feature a “Source” column, which is helpful when an event is triggered from multiple Apps (ex, using different languages):
-
-![Clicking on an Events leads us to the Event page that displays, at the top, a chart of events occurrences over the last 24 hours and at the list of associated events.](/assets/docs/platform/monitor/observability-metrics/event-view.png)
-
-Clicking on a specific event will redirect you to its Logs.
-
-The Event Logs view provides the most precise information, with the linked Function run and raw event data.
-
-Such information, combined with the ability to forward the event to your Local Dev Server instance, makes debugging events much quicker:
-
-![Clicking on an event of the below list open the Event Logs view, providing much detailed information such as the Event Payload and triggered Functions.](/assets/docs/platform/monitor/observability-metrics/event-logs-view.png)
-
 ## Function runs observability
 
 The Functions list page provides the first round of essential information in one place with:
@@ -96,13 +70,13 @@ You can leverage this chart to identify a possible recurrence or surge in failur
 
 ![The Function Throughput is a line chart featuring 3 series: queued, started and ended Function runs.](/assets/docs/platform/monitor/observability-metrics/function-metrics-throughput.png)
 
-_TODO_
+The _Function Throughput_ chart shows the rate of which new function runs are queued, started and ended with flow control in mind. This shows the performance of the system of how fast new runs are created and are being handled.
 
 <Callout variant="info">
 
 **How to use this chart?**
 
-_TODO_
+Flow control might intentionally limit throughput, this chart is a great way to visualize how flow control may be able to limit throughput.
 
 </Callout>
 
@@ -120,7 +94,7 @@ aggregating the number of running or started steps in a given time bucket.
 
 The _Step Backlog_ and _Step Running_ charts are helpful to assess the configuration of your Inngest Functions.
 
-For example, a low _Function Throughput_ might be linked to a high number of concurrent steps combined with a too restrictive concurrency configuration.
+For example, a low _Function Throughput_ might be linked to a high number of concurrent steps combined with a restrictive concurrency configuration.
 
 </Callout>
 
@@ -128,25 +102,27 @@ For example, a low _Function Throughput_ might be linked to a high number of con
 
 ![The SDK Request Throughput is a line chart featuring three series: queued, started and ended Function runs.](/assets/docs/platform/monitor/observability-metrics/function-metrics-sdk-request-throughput.png)
 
-_TODO_
+This charts indicates the throughput at which SDK requests (or steps) are queued and executed.
 
 <Callout variant="info">
 
 **How to use this chart?**
 
-_TODO_
+This chart is a useful tool to evaluate in the requests sent by the Inngest Platform matches the number of steps created by Functions runs.
+
+The SDK Request Throughput is also useful to evaluate the number of requests sent to your application over time.
 
 </Callout>
 
 **Function RateLimit**
 
-_TODO_
+The _Function RateLimit_ chart indicates occurrences where the Flow Control [Rate Limit](/docs/guides/rate-limiting) mechanism had to prevent Function runs.
 
 <Callout variant="info">
 
 **How to use this chart?**
 
-_TODO_
+This chart is useful to assess the overall Rate Limit rate of an Inngest Function. For example, a lack of data might indicate that this Inngest Function might not require Rate limiting.
 
 </Callout>
 
@@ -156,7 +132,7 @@ _TODO_
 <Row>
 
 <Col>
-The Function Configuration right panel is meant to be used as a reference for the KPIs and Function Metrics.
+The Function Configuration right panel is meant to be used as a reference for the KPIs and Function Metrics. This panel features information on the [retries policy](/docs/guides/error-handling) and [Flow Control](//docs/guides/flow-control) configuration.
 
 Updating your Function's retry configuration can solve a high failure rate. Also, increasing your Function's concurrency can help deal with Function Throughput issues.
 </Col>
@@ -167,4 +143,30 @@ Updating your Function's retry configuration can solve a high failure rate. Also
 
 </Row>
 
+
+## Events observability
+
+Events volume and which functions they trigger can become hard to visualize.
+
+Thankfully, the Events page gives you a quick overview of the volume of Events being sent to your Inngest account:
+
+![The Events page lists the available Event type. Each list item features the event name along with its associated Functions and a events volume indicator.](/assets/docs/platform/monitor/observability-metrics/events-list.png)
+
+Get more detailed metrics for a dedicated event by navigating to it from the list:
+
+## Event Metrics and Logs
+
+The Event page helps quickly visualize the throughput (the rate of event over time) and functions associated with this event.
+
+The event occurrences feature a “Source” column, which is helpful when an event is triggered from multiple Apps (ex, using different languages):
+
+![Clicking on an Events leads us to the Event page that displays, at the top, a chart of events occurrences over the last 24 hours and at the list of associated events.](/assets/docs/platform/monitor/observability-metrics/event-view.png)
+
+Clicking on a specific event will redirect you to its Logs.
+
+The Event Logs view provides the most precise information, with the linked Function run and raw event data.
+
+Such information, combined with the ability to forward the event to your Local Dev Server instance, makes debugging events much quicker:
+
+![Clicking on an event of the below list open the Event Logs view, providing much detailed information such as the Event Payload and triggered Functions.](/assets/docs/platform/monitor/observability-metrics/event-logs-view.png)
 

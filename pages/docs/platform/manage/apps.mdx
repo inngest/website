@@ -1,6 +1,6 @@
 import { Callout } from "src/shared/Docs/mdx";
 
-# Environments & Apps
+# Apps
 
 Inngest enables you to manage your Inngest Functions deployments via [Inngest Environments and Apps](/docs/apps). Inngest Environments (ex, production, testing) can contain multiple Apps that can be managed using:
 
@@ -41,11 +41,11 @@ You will also find quick access to all active functions and their associated tri
 
 ### Syncs
 
-The Inngest Platform regularly sends requests to your app (syncs) to stay updated with the deployed functions and their configuration. At any time, access the history of all syncs to inspect the changes detected by the Inngest Platform:
+Triggering a Manual Sync from the Inngest Platform sends requests to your app to fetch the up-to-date configuration of your applications's functions. At any time, access the history of all syncs from the App page:
 
 ![The list of an App Syncs provide helpful information to navigate through recent deployments and their associated Functions changes.](/assets/docs/platform/manage/environments-apps/app-syncs.png)
 
-If you feel like the Inngest Platform missed an update on your side, go back to the App Overview and try triggering a “Resync”. If the issue persists, try running an App Diagnostic before reaching out to Support:
+If a sync fails, try running an App Diagnostic before reaching out to Support:
 
 ![A App Diagnostic tool is available to help mitigating any sync issues. You can access it by opening the top left menu from the App Syncs listing page.](/assets/docs/platform/manage/environments-apps/check-app-health.png)
 

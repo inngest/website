@@ -34,7 +34,11 @@ export default inngest.createFunction(
       "wait-for-onboarding-completion",
       { event: "app/onboarding.completed", timeout: "3d", match: "data.userId" }
     );
-    // Do something else
+    if (!onboardingCompleted) {
+      // if no event is received within 3 days, onboardingCompleted will be null
+    } else {
+      // if the event is received, onboardingCompleted will be the event payload object
+    }
   }
 );
 ```
