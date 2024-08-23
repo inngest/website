@@ -349,6 +349,137 @@ const FEATURES: Feature[] = [
     },
     section: "observability",
   },
+  {
+    name: "Batch size",
+    description: "Process high-throughput events in batches",
+    plans: {
+      [PLAN_NAMES.basic]: "5",
+      [PLAN_NAMES.pro]: "100",
+      [PLAN_NAMES.enterprise]: "Custom",
+    },
+    section: "data",
+  },
+  {
+    name: "Batch timeout",
+    description: "Configure micro batching timeouts",
+    plans: {
+      [PLAN_NAMES.basic]: "30 seconds",
+      [PLAN_NAMES.pro]: "120 seconds",
+      [PLAN_NAMES.enterprise]: "20 minutes",
+    },
+    section: "data",
+  },
+  {
+    name: "Lookback period",
+    description: "Easily search and match on past events within functions",
+    plans: {
+      [PLAN_NAMES.basic]: "1 hour",
+      [PLAN_NAMES.pro]: "3 days",
+      [PLAN_NAMES.enterprise]: "Custom",
+    },
+    section: "data",
+  },
+  {
+    name: "Maximum run length",
+    description: "The lifetime of a function, including sleeps",
+    plans: {
+      [PLAN_NAMES.basic]: "95 days",
+      [PLAN_NAMES.pro]: "366 days",
+      [PLAN_NAMES.enterprise]: "Custom",
+    },
+    section: "data",
+  },
+  {
+    name: "Dedicated execution capacity",
+    description:
+      "Dedicated Inngest infrastructure for low latency, high throughput execution",
+    plans: {
+      [PLAN_NAMES.basic]: false,
+      [PLAN_NAMES.pro]: false,
+      [PLAN_NAMES.enterprise]: "$500 per 1,000 concurrent steps",
+    },
+    section: "connectivity",
+  },
+  {
+    name: "Users",
+    description: "Develop with your entire team",
+    plans: {
+      [PLAN_NAMES.basic]: "5",
+      [PLAN_NAMES.pro]: "20",
+      [PLAN_NAMES.enterprise]: "Custom",
+    },
+    section: "organization",
+  },
+  {
+    name: "SSO/SAML",
+    description: "Configure SAML for simple and secure user management",
+    plans: {
+      [PLAN_NAMES.basic]: false,
+      [PLAN_NAMES.pro]: false,
+      [PLAN_NAMES.enterprise]: true,
+    },
+    section: "organization",
+  },
+  {
+    name: "SLA",
+    description: "Event and execution SLAs",
+    plans: {
+      [PLAN_NAMES.basic]: false,
+      [PLAN_NAMES.pro]: false,
+      [PLAN_NAMES.enterprise]: "99.99%",
+    },
+    section: "organization",
+  },
+  {
+    name: "Support",
+    description: "Dedicated support direct from our engineers",
+    plans: {
+      [PLAN_NAMES.basic]: "Email, community",
+      [PLAN_NAMES.pro]: "Email, tickets",
+      [PLAN_NAMES.enterprise]: "Email, tickets, slack",
+    },
+    section: "organization",
+  },
+  {
+    name: "HIPAA",
+    description: "Sign BAAs for healthcare services",
+    plans: {
+      [PLAN_NAMES.basic]: false,
+      [PLAN_NAMES.pro]: "$500 / mo",
+      [PLAN_NAMES.enterprise]: true,
+    },
+    section: "organization",
+  },
+  {
+    name: "RBAC",
+    description: "Assign roles to manage and protect your data",
+    plans: {
+      [PLAN_NAMES.basic]: false,
+      [PLAN_NAMES.pro]: false,
+      [PLAN_NAMES.enterprise]: true,
+    },
+    section: "organization",
+  },
+  {
+    name: "Audit trails",
+    description: "Comprehensive tracking for simple security",
+    plans: {
+      [PLAN_NAMES.basic]: false,
+      [PLAN_NAMES.pro]: false,
+      [PLAN_NAMES.enterprise]: true,
+    },
+    section: "organization",
+  },
+  {
+    name: "PII prevention & masking",
+    description: "Protect sensitive data directly in events",
+    plans: {
+      [PLAN_NAMES.basic]: false,
+      [PLAN_NAMES.pro]: false,
+      [PLAN_NAMES.enterprise]: "$750 / mo",
+    },
+    section: "organization",
+  },
 ];
 
 export async function getStaticProps() {
