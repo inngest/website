@@ -15,7 +15,7 @@ An Inngest Function is composed of 3 main parts that provide robust tools for re
 
 <CardGroup cols={1}>
   <Card title="Triggers" icon={<EventIcon fill={'primary'} />} href={'/docs/features/events-triggers'}>
-    A list of Events, CRON schedules or webhooks that trigger Function runs.
+    A list of Events, Cron schedules or webhook events that trigger Function runs.
   </Card>
   <Card title="Flow Control" icon={<IconPriority size={24}  fill={'primary'} />} href={'/docs/guides/flow-control'}>
     Control how Function runs get distributed in time with Concurrency, Throttling and more.
@@ -29,7 +29,7 @@ An Inngest Function is composed of 3 main parts that provide robust tools for re
 Increase your Inngest Functions durability by leveraging:
 
 - **[Retries features](/docs/guides/error-handling)** - Configure a custom retry policy, handle rollbacks and idempotency.
-- **[Cancellation features](/docs/features/inngest-functions/cancellation)** - Automatically or manually prevent any unnecessary or unwanted runs.
+- **[Cancellation features](/docs/features/inngest-functions/cancellation)** - Dynamically or manually cancel in-progress runs to prevent unnecessary work.
 - **[Versioning best practices](/docs/learn/versioning)** - Strategies to gracefully introducing changes in your Inngest Functions.
 
 
@@ -44,7 +44,7 @@ Start using Inngest Functions by using the pattern that fits your use case:
   <Card title="Delayed Functions" icon={<RunsIcon />} href={'/docs/learn/how-functions-are-executed'}>
     Schedule Functions that run in the future.
   </Card>
-  <Card title="CRON Functions" icon={<RunsIcon />} href={'/docs/guides/scheduled-functions'}>
+  <Card title="Cron Functions" icon={<RunsIcon />} href={'/docs/guides/scheduled-functions'}>
     Build Inngest Functions as CRONs.
   </Card>
   <Card title="Workflows" icon={<RunsIcon />} href={'/docs/features/inngest-functions/steps-workflows'}>

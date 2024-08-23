@@ -370,7 +370,7 @@ const sectionHome: (NavGroup | NavLink)[] = [
             href: `/docs/features/events-triggers/event-format`,
           },
           {
-            title: "CRONs",
+            title: "Crons",
             href: `/docs/guides/scheduled-functions`,
           },
           {
