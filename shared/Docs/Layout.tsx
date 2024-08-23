@@ -120,8 +120,8 @@ export function Layout({
               )}
             >
               <main className="pt-6 lg:pt-8 xl:pr-8">
-                <Breadcrumb />
                 <Prose as="article">
+                  <Breadcrumb />
                   {children}
                   <div
                     className={
