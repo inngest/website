@@ -1,5 +1,9 @@
-import { Button } from "../Button";
-import { RiExternalLinkLine } from "@remixicon/react";
+import Link from "next/link";
+import {
+  RiExternalLinkLine,
+  RiCloseCircleFill,
+  RiCheckboxCircleFill,
+} from "@remixicon/react";
 
 export default function ComparisonTable({ plans, features, sections }) {
   return (
@@ -22,7 +26,7 @@ const renderTable = (sectionFeatures, sectionName, plans) => (
     <thead>
       {/* Sticky header height */}
       <tr className="border-b border-muted md:sticky top-[84px] bg-canvasBase">
-        <th className="pr-6 py-4 text-lg font-bold">{sectionName}</th>
+        <th className="py-4 text-lg font-bold">{sectionName}</th>
         {plans.map((plan, i) => (
           <th className="px-6 py-4" key={i}>
             <h2 className="text-sm font-medium">{plan.name} </h2>
@@ -37,12 +41,12 @@ const renderTable = (sectionFeatures, sectionName, plans) => (
             <div className="flex items-center font-medium gap-1">
               {feature.name}
               {Boolean(feature.infoUrl) && (
-                <a
+                <Link
                   href={feature.infoUrl}
                   className="transition-all text-muted hover:text-white"
                 >
                   <RiExternalLinkLine className="h-4 w-4" />
-                </a>
+                </Link>
               )}
             </div>
             {feature.description && (
@@ -50,13 +54,12 @@ const renderTable = (sectionFeatures, sectionName, plans) => (
             )}
           </td>
           {plans.map((plan, j) => {
-            const value = feature.heading
-              ? ""
-              : typeof feature.plans?.[plan.name] === "string"
-              ? feature.plans?.[plan.name]
-              : typeof feature.all === "string"
-              ? feature.all
-              : null;
+            const value =
+              typeof feature.plans?.[plan.name] === "string"
+                ? feature.plans?.[plan.name]
+                : typeof feature.all === "string"
+                ? feature.all
+                : null;
             const bool =
               typeof feature.plans?.[plan.name] === "boolean"
                 ? feature.plans?.[plan.name]
@@ -71,20 +74,9 @@ const renderTable = (sectionFeatures, sectionName, plans) => (
             ) : (
               <td className="px-6" key={j}>
                 {bool ? (
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                    className="w-5 h-5 text-green-400"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
+                  <RiCheckboxCircleFill className="text-primary-xSubtle h-5 w-5" />
                 ) : (
-                  <span className="text-slate-800">-</span>
+                  <RiCloseCircleFill className="text-disabled h-5 w-5" />
                 )}
               </td>
             );

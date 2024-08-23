@@ -1,6 +1,6 @@
 import Header from "src/shared/Header";
 import Container from "src/shared/layout/Container";
-import ComparisonTable from "src/shared/Pricing/ComparisionTable";
+import ComparisonTable from "src/shared/Pricing/ComparisonTable";
 import PlanCard from "src/shared/Pricing/PlanCard";
 import CaseStudies from "src/shared/Pricing/CaseStudies";
 import Footer from "../shared/Footer";
@@ -310,16 +310,44 @@ const FEATURES: Feature[] = [
     section: "platform",
   },
   {
-    name: "Automatic retries",
-    all: true,
-    infoUrl: "/docs/reference/typescript/functions/errors?ref=pricing",
+    name: "Metrics granularity",
+    description: "Real-time function metrics",
+    plans: {
+      [PLAN_NAMES.basic]: "15 minutes",
+      [PLAN_NAMES.pro]: "5 minutes",
+      [PLAN_NAMES.enterprise]: "20 seconds",
+    },
+    section: "observability",
   },
   {
-    name: "SOC2 report",
+    name: "Trace and log history",
+    description: "Tracing for every function run",
     plans: {
-      [PLAN_NAMES.pro]: false,
+      [PLAN_NAMES.basic]: "7 days",
+      [PLAN_NAMES.pro]: "14 days",
+      [PLAN_NAMES.enterprise]: "90 days",
+    },
+    section: "observability",
+  },
+  {
+    name: "Exportable and scrapable metrics",
+    description: "Pushable and prom scrapable metrics",
+    plans: {
+      [PLAN_NAMES.basic]: false,
+      [PLAN_NAMES.pro]: "$200/mo",
       [PLAN_NAMES.enterprise]: true,
     },
+    section: "observability",
+  },
+  {
+    name: "Trace and log exports",
+    description: "Push traces and logs to other systems",
+    plans: {
+      [PLAN_NAMES.basic]: false,
+      [PLAN_NAMES.pro]: "$2 per 1m steps",
+      [PLAN_NAMES.enterprise]: "Contact us",
+    },
+    section: "observability",
   },
 ];
 
