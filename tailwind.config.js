@@ -266,6 +266,9 @@ module.exports = {
         codeEntityNameFunction:
           "rgb(var(--color-foreground-code-entityNameFunction) / <alpha-value>)",
       },
+      textDecorationColor: {
+        link: 'rgb(var(--color-foreground-link) / <alpha-value>)',
+      },
       fontSize: {
         "5xl": ["3rem", "1.3"],
         "2xs": "0.625rem",

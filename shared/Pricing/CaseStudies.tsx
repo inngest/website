@@ -56,7 +56,7 @@ export default function CaseStudies() {
             />
             {caseStudy.snippet}
             <Link
-              className="flex items-center gap-0.5 text-link text-sm pt-1"
+              className="flex items-center gap-0.5 text-link text-sm pt-1 hover:decoration-link decoration-transparent decoration-1 underline underline-offset-2 cursor-pointer transition-color duration-300"
               href={caseStudy.href}
             >
               Read the case study
