@@ -7,6 +7,8 @@ import StepsIcon from 'src/shared/Icons/Steps';
 import TypeScriptIcon from 'src/shared/Icons/TypeScript';
 import PythonIcon from 'src/shared/Icons/Python';
 import GoIcon from 'src/shared/Icons/Go';
+import ClockIcon from 'src/shared/Icons/Clock';
+import CalendarIcon from 'src/shared/Icons/Calendar';
 
 # Inngest Functions
 
@@ -109,13 +111,13 @@ Start using Inngest Functions by using the pattern that fits your use case:
   <Card title="Background jobs" icon={<StepsIcon fill={'primary'} />} href={'/docs/guides/multi-step-functions'}>
     Run long-running tasks  out of the critical path of a request.
   </Card>
-  <Card title="Delayed Functions" icon={<RunsIcon />} href={'/docs/learn/how-functions-are-executed'}>
+  <Card title="Delayed Functions" icon={<CalendarIcon />} href={'/docs/learn/how-functions-are-executed'}>
     Schedule Functions that run in the future.
   </Card>
-  <Card title="Cron Functions" icon={<RunsIcon />} href={'/docs/guides/scheduled-functions'}>
+  <Card title="Cron Functions" icon={<ClockIcon />} href={'/docs/guides/scheduled-functions'}>
     Build Inngest Functions as CRONs.
   </Card>
-  <Card title="Workflows" icon={<RunsIcon />} href={'/docs/features/inngest-functions/steps-workflows'}>
+  <Card title="Workflows" icon={<RunsIcon fill="black" />} href={'/docs/features/inngest-functions/steps-workflows'}>
     Start creating worflows by leveraging Inngest Function Steps.
   </Card>
 </CardGroup>
