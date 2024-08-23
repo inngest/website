@@ -407,8 +407,8 @@ export function CardGroup({
     <div
       className={clsx(
         `not-prose grid sm:grid-cols-${
-          cols >= 2 ? 2 : cols
-        } xl:grid-cols-${cols} gap-x-4`,
+          cols >= 3 ? 3 : cols
+        } xl:grid-cols-${cols} gap-x-2`,
         className
       )}
     >
@@ -440,35 +440,42 @@ export function Card<T extends React.ElementType = "div">({
   return (
     <Component
       className={clsx(
-        "not-prose font-normal group relative my-2 ring-2 ring-transparent rounded-xl border border-zinc-200 hover:border-zinc-300 dark:border-zinc-800 dark:hover:border-zinc-600 overflow-hidden w-full hover:bg-carbon-50/50 dark:hover:bg-carbon-900",
+        "not-prose font-normal group relative my-2 ring-2 ring-transparent rounded border border-carbon-200 hover:border-carbon-300 dark:border-carbon-700 dark:hover:border-carbon-600 overflow-hidden w-full hover:bg-carbon-50/50 dark:hover:bg-carbon-900",
         props.href && "cursor-pointer",
         className
       )}
       {...props}
     >
       <div
-        className={clsx("px-4 py-4 flex gap-2 items-start", {
+        className={clsx("px-6 py-6 flex gap-1 items-start", {
           "flex-row": iconPlacement === "left",
           "flex-col": iconPlacement === "top",
         })}
       >
-        {icon && <div className="min-w-7 flex justify-start mt-1">{icon}</div>}
+        {icon && iconPlacement === "top" && (
+          <div className="min-w-7 flex justify-start my-1">{icon}</div>
+        )}
         <div>
-          <h2
-            className={clsx("font-semibold text-slate-800 dark:text-white", {
-              "text-base": !!props.href,
-              "text-xl": !props.href,
-            })}
-          >
-            {title}
-          </h2>
-          <span
-            className={clsx(
-              "mt-1 font-normal",
-              title
-                ? "text-slate-600 dark:text-slate-400"
-                : "text-slate-700 dark:text-slate-300"
+          <div className="flex items-center mb-1">
+            {icon && iconPlacement === "left" && (
+              <div className="min-w-7 flex justify-start mr-1">{icon}</div>
             )}
+            <h2
+              className={clsx(
+                "font-semibold text-[#2E2E2E] text-sm dark:text-carbon-50",
+                {
+                  "text-base": !!props.href,
+                  "text-xl": !props.href,
+                }
+              )}
+            >
+              {title}
+            </h2>
+          </div>
+          <span
+            className={
+              "mt-1 font-medium text-sm text-carbon-700 dark:text-carbon-200"
+            }
           >
             {children}
           </span>

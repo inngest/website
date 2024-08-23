@@ -128,7 +128,7 @@ function PageLink({ label, page, previous = false }) {
       <Button
         href={page.href}
         aria-label={`${label}: ${page.title}`}
-        variant="secondary"
+        variant="secondaryV2"
         arrow={previous ? "left" : "right"}
         size="sm"
         className="not-prose"
@@ -139,7 +139,7 @@ function PageLink({ label, page, previous = false }) {
         href={page.href}
         tabIndex={-1}
         aria-hidden="true"
-        className="text-base font-semibold text-slate-900 transition hover:text-slate-600 dark:text-white dark:hover:text-slate-300"
+        className="mx-4 no-underline text-lg font-medium text-slate-900 transition hover:text-slate-600 dark:text-white dark:hover:text-slate-300"
       >
         {page.title}
       </Link>

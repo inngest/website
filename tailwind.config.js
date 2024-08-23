@@ -14,7 +14,14 @@ module.exports = {
     "./shared/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   // navigation dynamic nested groups support
-  safelist: ["ml-4", "ml-8", "stroke-black", "fill-black", "stroke-primary"],
+  safelist: [
+    "ml-4",
+    "ml-8",
+    "stroke-black",
+    "fill-black",
+    "stroke-primary",
+    "sm:grid-cols-3",
+  ],
   theme: {
     typography: require("./typography"),
     extend: {

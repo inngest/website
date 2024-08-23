@@ -12,6 +12,8 @@ import {
 } from "./navigationStructure";
 import { getAllSections, hasNavGroupPath } from "./Navigation";
 import Link from "next/link";
+import ChevronRight from "shared/icons/ChevronRight";
+import clsx from "clsx";
 
 function getHierarchyLinks(
   currentPath: string,
@@ -51,16 +53,31 @@ export function Breadcrumb() {
   );
 
   return hierarchyLinks ? (
-    <div className="my-1 text-sm">
+    <div className="text-sm flex flex-row mb-6">
       {hierarchyLinks.map(({ title, href }, index) => (
         <React.Fragment key={index}>
-          {!!index && <span className="mx-1 text-gray-500">{"/"}</span>}
+          {!!index && (
+            <span className="mx-1 text-gray-500">
+              <ChevronRight
+                className={
+                  "dark:stroke-carbon-700 dark:fill-carbon-700 stroke-carbon-200 fill-carbon-200"
+                }
+              />
+            </span>
+          )}
           {href ? (
-            <Link href={href} className="text-breeze-600 dark:text-breeze-300">
+            <Link
+              href={href}
+              className={
+                "text-carbon-600 dark:text-[#9B9B9B] dark:hover:text-carbon-50 no-underline font-normal"
+              }
+            >
               {title}
             </Link>
           ) : (
-            <span className="text-[#2E2E2E] dark:text-carbon-100">{title}</span>
+            <span className={"text-[#2E2E2E] dark:text-carbon-50 font-medium"}>
+              {title}
+            </span>
           )}
         </React.Fragment>
       ))}
