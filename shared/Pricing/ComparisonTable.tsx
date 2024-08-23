@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { useState } from "react";
 import {
   RiExternalLinkLine,
   RiCloseCircleFill,
@@ -6,9 +7,31 @@ import {
 } from "@remixicon/react";
 
 export default function ComparisonTable({ plans, features, sections }) {
+  const [selectedPlan, setSelectedPlan] = useState(plans[0].name);
+
+  const renderPlanTabs = () => (
+    <div className="grid grid-cols-3 mb-4 md:hidden pt-4 sticky top-14 bg-canvasBase">
+      {plans.map((plan, i) => (
+        <button
+          key={i}
+          className={`px-4 py-2 text-sm font-medium text-basis border-b-2 border-disabled ${
+            plan.name === "Pro" && "text-primary-intense"
+          } ${
+            plan.name === "Enterprise" &&
+            "bg-gradient-to-b from-matcha-400 to-breeze-400 bg-clip-text text-transparent"
+          } ${selectedPlan === plan.name && "border-b-carbon-0"}`}
+          onClick={() => setSelectedPlan(plan.name)}
+        >
+          {plan.name}
+        </button>
+      ))}
+    </div>
+  );
+
   return (
     <div className="text-basis">
       <h2 className="mt-4 text-2xl font-semibold">Plan features</h2>
+      {renderPlanTabs()}
       {sections.map((section) => {
         const sectionFeatures = features.filter(
           (feature) => feature.section === section.key
@@ -26,7 +49,7 @@ export default function ComparisonTable({ plans, features, sections }) {
         }
         return sectionFeatures.length > 0 ? (
           <div key={section.key}>
-            {renderTable(sectionFeatures, section.name, plans)}
+            {renderTable(sectionFeatures, section.name, plans, selectedPlan)}
           </div>
         ) : null;
       })}
@@ -34,7 +57,7 @@ export default function ComparisonTable({ plans, features, sections }) {
   );
 }
 
-const renderTable = (sectionFeatures, sectionName, plans) => (
+const renderTable = (sectionFeatures, sectionName, plans, selectedPlan) => (
   <table className="w-full table-fixed my-8 text-left">
     <thead>
       {/* Sticky header height */}
@@ -42,7 +65,7 @@ const renderTable = (sectionFeatures, sectionName, plans) => (
         <th className="py-4 text-lg font-bold">{sectionName}</th>
         {plans.map((plan, i) => (
           <th
-            className={`px-6 py-4 ${
+            className={`px-6 py-4 hidden md:table-cell ${
               plan.name === "Pro" && "text-primary-intense"
             } ${
               plan.name === "Enterprise" &&
@@ -91,14 +114,17 @@ const renderTable = (sectionFeatures, sectionName, plans) => (
             }
 
             return (
-              <td key={j} className="px-6 text-sm font-medium">
+              <td
+                key={j}
+                className={`px-6 text-sm font-medium ${
+                  plan.name !== selectedPlan ? "hidden md:table-cell" : ""
+                }`}
+              >
                 {value ? (
                   <>
                     {value}
                     {description && (
-                      <div className="text-muted mt-0.5">
-                        {description}
-                      </div>
+                      <div className="text-muted mt-0.5">{description}</div>
                     )}
                   </>
                 ) : bool !== null ? (
