@@ -43,6 +43,8 @@ export default inngest.createFunction(
 
 The ID is also used to identify the function in the Inngest system.
 
+Inngest's SDK also records a counter for each unique step ID.  The counter increases every time the same step is called.  This allows you to run the same step in a loop, without changing the ID.
+
 <Callout>
 Please note that each step is executed as **a separate HTTP request**. To ensure efficient and correct execution, place any non-deterministic logic (such as DB calls or API calls) within a `step.run()` call.
 </Callout>
@@ -51,7 +53,10 @@ Please note that each step is executed as **a separate HTTP request**. To ensure
 
 ### <a href="/docs/reference/functions/step-run" className="flex items-center gap-4"><IconConcurrency size="2rem"/><pre>step.run()</pre></a> {{anchor: false}}
 
-This method executes a defined piece of code. Code within `step.run()` is automatically retried when it throws an error and does not re-run when another step throws an error. Use it to run synchronous or asynchronous code as a retriable step in your function.
+This method executes a defined piece of code.
+Code within `step.run()` is automatically retried if it throws an error. When `step.run()` finishes successfully, the response is saved in the function run state  and the step will not re-run.
+
+Use it to run synchronous or asynchronous code as a retriable step in your function.
 
 ```typescript
 export default inngest.createFunction(
@@ -64,6 +69,10 @@ export default inngest.createFunction(
   }
 );
 ```
+
+<Callout>
+`step.run()` acts as a code-level transaction.  The entire step must succeed to complete.
+</Callout>
 
 ### <a href="/docs/reference/functions/step-sleep" className="flex items-center gap-4"><IconConcurrency size="2rem"/><pre>step.sleep()</pre></a> {{anchor: false}}
 
@@ -107,7 +116,7 @@ export default inngest.createFunction(
   async ({ event, step }) => {
     const onboardingCompleted = await step.waitForEvent(
       "wait-for-onboarding-completion",
-      { event: "app/onboarding.completed", timeout: "3d", match: "data.userId" }
+      { event: "app/onboarding.completed", timeout: "3d", if: "event.data.userId == async.data.userId" }
     );
     // Do something else
   }

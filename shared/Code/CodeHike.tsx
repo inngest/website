@@ -9,9 +9,11 @@ import {
 
 import TypeScript from "shared/Icons/TypeScript";
 import ReactIcon from "shared/Icons/React";
+import Python from "../Icons/Python";
 
 const languageIcons = {
   typescript: TypeScript,
+  python: Python,
   jsx: ReactIcon,
 };
 
@@ -28,7 +30,7 @@ export function Code({ codeblock }: { codeblock: HighlightedCode }) {
   );
   const LanguageIcon = languageIcons[lang];
   const language = LanguageIcon ? (
-    <LanguageIcon />
+    <LanguageIcon size={5} fill={"white"} />
   ) : (
     <span className="p-1.5 rounded-sm bg-slate-700/50 font-mono text-xs">
       {lang}

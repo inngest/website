@@ -13,13 +13,23 @@ module.exports = {
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./shared/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  // navigation dynamic nested groups support
+  safelist: [
+    "ml-4",
+    "ml-8",
+    "stroke-black",
+    "fill-black",
+    "stroke-primary",
+    "sm:grid-cols-3",
+  ],
   theme: {
     typography: require("./typography"),
     extend: {
       colors: {
         // Aliases for ease of re-design
         body: colors.slate[100],
-        primary: colors.indigo["500"],
+        // compat of different primary color for website and docs
+        primary: "var(--primary-color)",
         inngestBlack: theme2024.black,
         // Design System 2024
         carbon: {
@@ -48,6 +58,19 @@ module.exports = {
           700: "#016239",
           800: "#015430",
           900: "#004d2b",
+        },
+        breeze: {
+          0: "#eff7ff",
+          100: "#e0f2ff",
+          200: "#c4efd4",
+          300: "#9cd2ff",
+          400: "#52b2fd",
+          500: "#2389f1",
+          600: "#1365d6",
+          700: "#1450b1",
+          800: "#17439b",
+          900: "#134085",
+          1000: "#00050B",
         },
         // Extend base tailwind colors
         slate: {

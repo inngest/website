@@ -66,7 +66,7 @@ function CopyButton({ code }) {
       className={clsx(
         "group/button absolute top-3 right-4 overflow-hidden rounded-full py-1 pl-2 pr-3 text-2xs font-medium opacity-0 backdrop-blur transition focus:opacity-100 group-hover:opacity-100",
         copied
-          ? "bg-indigo-400/10 ring-1 ring-inset ring-indigo-400/20"
+          ? "bg-breeze-400/10 ring-1 ring-inset ring-breeze-400/20"
           : "bg-white/5 hover:bg-white/7.5 dark:bg-white/2.5 dark:hover:bg-white/5"
       )}
       onClick={() => {
@@ -88,7 +88,7 @@ function CopyButton({ code }) {
       <span
         aria-hidden={!copied}
         className={clsx(
-          "pointer-events-none absolute inset-0 flex items-center justify-center text-indigo-400 transition duration-300",
+          "pointer-events-none absolute inset-0 flex items-center justify-center text-breeze-400 transition duration-300",
           !copied && "translate-y-1.5 opacity-0"
         )}
       >
@@ -104,7 +104,7 @@ function CodePanelHeader({ tag, label }) {
   }
 
   return (
-    <div className="flex h-9 items-center gap-2 border-y border-t-transparent border-b-white/7.5 bg-slate-900 bg-white/2.5 px-4 dark:border-b-white/5 dark:bg-white/1">
+    <div className="flex h-9 items-center gap-2 border-y border-t-transparent border-b-white/7.5 bg-carbon-900 bg-white/2.5 px-4 dark:border-b-white/5 dark:bg-white/1">
       {tag && (
         <div className="dark flex">
           <Tag variant="small">{tag}</Tag>
@@ -168,7 +168,7 @@ function CodeGroupHeader({
   }
 
   return (
-    <div className="px-6 gap-x-4 bg-slate-800 flex min-h-[calc(theme(spacing.10)+1px)] flex-wrap items-center dark:bg-transparent">
+    <div className="px-6 gap-x-4 bg-carbon-800 flex min-h-[calc(theme(spacing.10)+1px)] flex-wrap items-center dark:bg-transparent">
       {heading && (
         <h3
           className={clsx(
@@ -186,7 +186,7 @@ function CodeGroupHeader({
               className={clsx(
                 "border-b py-3 transition focus:outline-none",
                 childIndex === selectedIndex
-                  ? "border-indigo-500 text-indigo-400"
+                  ? "border-breeze-500 text-breeze-400"
                   : "border-transparent text-slate-400 hover:text-slate-300"
               )}
             >
@@ -315,7 +315,7 @@ export function CodeGroup({
     <CodeGroupContext.Provider value={true}>
       <Container
         {...containerProps}
-        className="not-prose my-6 overflow-hidden rounded-lg bg-slate-900 shadow-md"
+        className="not-prose my-6 overflow-hidden rounded-lg bg-carbon-900 shadow-md"
       >
         <CodeGroupHeader
           title={title}
@@ -403,8 +403,8 @@ export function GuideSelector({
               className={clsx(
                 "border-b py-3 transition focus:outline-none",
                 option.key === selected
-                  ? "border-indigo-500 text-indigo-700 dark:text-indigo-300 dark:border-indigo-300"
-                  : "border-transparent text-slate-600 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-300"
+                  ? "border-breeze-500 text-breeze-700 dark:text-breeze-300 dark:border-breeze-300"
+                  : "border-transparent text-slate-600 hover:text-breeze-600 dark:text-slate-400 dark:hover:text-breeze-300"
               )}
             >
               {option.title}

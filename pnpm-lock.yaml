@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  react-medium-image-zoom@5.2.8:
+    hash: thcvsyuvlkgjj76oyq75ciitoy
+    path: patches/react-medium-image-zoom@5.2.8.patch
+
 dependencies:
   '@algolia/autocomplete-core':
     specifier: 1.7.4
@@ -170,6 +175,9 @@ dependencies:
   react-feather:
     specifier: 2.0.10
     version: 2.0.10(react@18.2.0)
+  react-medium-image-zoom:
+    specifier: 5.2.8
+    version: 5.2.8(patch_hash=thcvsyuvlkgjj76oyq75ciitoy)(react-dom@18.2.0)(react@18.2.0)
   react-syntax-highlighter:
     specifier: 15.5.0
     version: 15.5.0(react@18.2.0)
@@ -13454,6 +13462,17 @@ packages:
   /react-is@17.0.2:
     resolution: {integrity: sha512-w2GsyukL62IJnlaff/nRegPQR94C/XXamvMWmSHRJ4y7Ts/4ocGRmTHvOs8PSE6pB3dWOrD/nueuU5sduBsQ4w==}
     dev: true
+
+  /react-medium-image-zoom@5.2.8(patch_hash=thcvsyuvlkgjj76oyq75ciitoy)(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-ivnubZi/2GQcMTneQy5gjLxEQLenKu081844qqZ7/JvLxSh5YPF1TLq7s+5rc54dKa0jjPT8Zm2tiC0Sda6eIA==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0
+      react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
+    dependencies:
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+    dev: false
+    patched: true
 
   /react-merge-refs@1.1.0:
     resolution: {integrity: sha512-alTKsjEL0dKH/ru1Iyn7vliS2QRcBp9zZPGoWxUOvRGWPUYgjo+V01is7p04It6KhgrzhJGnIj9GgX8W4bZoCQ==}

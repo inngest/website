@@ -4,38 +4,6 @@ export const description = `Sleep until a specific date time with step.sleepUnti
 
 # Sleep until `step.sleepUntil()`
 
-Use `step.sleepUntil()` to pause the execution of your function until a specific date time.
-
-Please note that at maximum, functions can sleep for a year (seven days for the [free tier plans](/pricing)).
-
-<CodeGroup>
-```ts {{ title: "v3" }}
-export default inngest.createFunction(
-  { id: "send-scheduled-reminder" },
-  { event: "app/reminder.scheduled" },
-  async ({ event, step }) => {
-    const date = new Date(event.data.remind_at);
-    await step.sleepUntil("wait-for-scheduled-reminder", date);
-    // Do something else
-  }
-);
-```
-```ts {{ title: "v2" }}
-export default inngest.createFunction(
-  { name: "Send scheduled reminder" },
-  { event: "app/reminder.scheduled" },
-  async ({ event, step }) => {
-    const date = new Date(event.data.remind_at)
-    await step.sleepUntil(date);
-    // Do something else
-  }
-);
-```
-</CodeGroup>
-
-To sleep until a particular amount of time from now, use [`step.sleep()`](/docs/reference/functions/step-sleep) instead.
-
----
 
 ## `step.sleepUntil(id, datetime): Promise`
 

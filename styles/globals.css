@@ -39,7 +39,7 @@
   --color-dark-purple: #525398;
 
   --bg-color-d: #0a0a12;
-  --bg-color-l: var(--color-almost-white);
+  --bg-color-l: var(--color-white);
   --bg-color: var(--bg-color-l);
 
   --bg-primary-highlight: #12112b; /* A color that is used in gradients w/ the bg color to add depth */
@@ -91,9 +91,11 @@
 
 
 html.docs {
+  --primary-color: #1365d6;
   color: var(--font-color-primary);
   background: var(--bg-color);
   scroll-behavior: smooth;
+  font-family: CircularXX, -apple-system, Helvetica, sans-serif;
 }
 
 * {
@@ -103,7 +105,7 @@ html.docs {
 /** Themes - Light is default */
 :root.dark,
 body.dark-theme {
-  --bg-color: #080d19;
+  --bg-color: #020202;
   --highlight-color: var(--black);
   --stroke-color: #525661;
   --font-color-primary: var(--color-white);

@@ -1,120 +1,102 @@
-import { Callout, CodeGroup } from "src/shared/Docs/mdx";
+import { CardGroup, Card, ImageTheme } from "src/shared/Docs/mdx";
+import RunsIcon from 'src/shared/Icons/Runs';
+import SquaresIcon from 'src/shared/Icons/Squares';
+import CLIIcon from 'src/shared/Icons/CLI';
+import TypeScriptIcon from 'src/shared/Icons/TypeScript';
+import PythonIcon from 'src/shared/Icons/Python';
+import GoIcon from 'src/shared/Icons/Go';
+import QuestionIcon from 'src/shared/Icons/Question';
 
 # Local development
 
-Inngest's tooling makes it easy to test your functions locally with any framework using the Inngest dev server.
+Inngest's tooling makes it easy to develop your functions locally with any framework using the Inngest Dev Server.
 
-## Inngest Dev Server
+The [Inngest Dev Server](/docs/dev-server) is a fully-featured and [open-source](https://github.com/inngest/inngest) local version of the [Inngest Platform](/docs/platform/deployment) enabling a seamless transition from your local development to feature, staging and production environments.
 
-The Inngest dev server is an [open source](https://github.com/inngest/inngest) environment that:
+![The Inngest Dev Server on the Functions page](/assets/docs/features/local-development/DevServer-functions.png)
 
-1. Runs a fast, in-memory version of Inngest on your machine
-2. Provides a browser interface for sending events and viewing events and function runs
 
-![Dev Server Demo](/assets/docs/local-development/dev-server-demo.gif)
+Get started with your favorite setup:
 
-To start the dev server is a single command. It will scan for ports and common endpoints for an Inngest `serve` API endpoint ([list of ports](https://github.com/inngest/inngest/blob/ea67219e7e7c33451416249f98fd5ca48e99ba28/pkg/devserver/discovery.go#L15-L28)):
 
-<CodeGroup>
-```shell {{ title: "npx (npm)" }}
-npx inngest-cli@latest dev
-# You can also tell the local URL for the dev server to check
-npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
-```
-```shell {{ title: "Docker" }}
-docker run -p 8288:8288 inngest/inngest \
-  inngest dev -u http://host.docker.internal:3000/api/inngest
-```
-</CodeGroup>
+<CardGroup cols={2}>
+  <Card title="Inngest Dev Server" icon={<RunsIcon />} href={'/docs/dev-server'}>
+    Start Inngest locally with a single command.
+  </Card>
+  <Card title="Development with Docker" icon={<SquaresIcon />} href={'/docs/guides/development-with-docker'}>
+    Run Inngest locally using Docker or Docker Compose.
+  </Card>
+</CardGroup>
 
-You can now open the dev server's browser interface on [`http://localhost:8288`](http://localhost:8288). For more information about developing with Docker, see the [Docker guide](/docs/guides/development-with-docker).
+## Development Flow with Inngest
 
-### Connecting apps to the Dev Server
+The Inngest Dev Server provides all the features available in the Inngest Platform, guaranteeing a smooth transition from local dev to production environments.
 
-There are two ways to connect apps to the Dev Server:
+Developing with Inngest looks as it follows:
 
-1. Automatically. The Dev Server will keep detecting and attempting to connect to apps running in [common ports](https://github.com/inngest/inngest/blob/ea67219e7e7c33451416249f98fd5ca48e99ba28/pkg/devserver/discovery.go#L15-L30).
-2. Manually. For apps running in other ports, you’ll need to paste the local URL to connect the app selecting one of two options:
-    - Using the CLI -u param
-    - Adding the URL in the Dev Server Apps page. You can edit the URL or delete a manually added app at any point in time
+1. [Configure the Inngest SDK in your application](/docs/sdk/overview)
+2. [Connecting the Inngest Dev Server to your local application](/docs/learn/inngest-functions)
+3. Develop your Inngest Functions with [Steps](/docs/learn/inngest-steps), [Flow Control](/docs/guides/flow-control) and [more](/docs/features/inngest-functions)
+5. _(Optional) - Configure Preview environments with [our Vercel Integration](/docs/deploy/vercel)_
 
-![Dev Server Apps Demo](/assets/docs/local-development/dev-server-apps-demo.gif)
+<ImageTheme
+  dark={'/assets/docs/features/local-development/Durable-Execution-Engine-local-dev-dark.jpg'}
+  light={'/assets/docs/features/local-development/Durable-Execution-Engine-local-dev-light.jpg'}
+  className="my-0"
+  alt={'The Inngest Dev Server runs locally on your machine and communicates with your local application.'}
+/>
 
-### How functions are loaded by the Dev Server
+**Moving to production environments (preview envs, staging or production)**
 
-The dev server polls your app locally for any new or changed functions. Then as events are sent, the dev server calls your functions directly, just as Inngest would do in production over the public internet.
+Deploying your application to preview, staging and production environments does not require any code change:
 
-<img
-  src="/assets/docs/local-development/dev-server-diagram-v2.png"
-  width="800"
-  height={800/1800*674}
-  quality="95"
+6. [Create an Inngest App](/docs/apps) on the Inngest Platform and [configure its Event and Signing Keys on your Cloud](/docs/platform/deployment).
+7. Leverage the Inngest Platform to manage and monitor Events and Function Runs
+
+<ImageTheme
+  dark={'/assets/docs/features/local-development/Durable-Execution-Engine-staging-prod-dark.jpg'}
+  light={'/assets/docs/features/local-development/Durable-Execution-Engine-staging-prod-light.jpg'}
+  className="my-0"
+  alt={'When deployed, your application communicates with the Inngest Platform.'}
 />
 
 
-### Sending events to the Dev Server
+## CLI and SDKs
 
-There are different ways that you can send events to the dev server when testing locally:
-
-1. Using the Inngest SDK
-2. Using the "Test Event" button in the Dev Server's interface
-3. Via HTTP request (e.g. curl)
-
-#### Using the Inngest SDK
-
-When using the Inngest SDK locally, it tries to detect if the dev server is running on your machine. If it's running, the event will be sent there.
-
-```ts
-const inngest = new Inngest({ id: "my-app" });
-await inngest.send({
-  name: "user.avatar.uploaded",
-  data: { url: "https://a-bucket.s3.us-west-2.amazonaws.com/..." },
-});
-```
-
-**Note** - During local development, you can use a dummy value for your [`INNGEST_EVENT_KEY`](/docs/sdk/environment-variables#inngest-event-key?ref=local-development) environment variable. The dev server does not validate keys locally.
-
-#### Using the "Test Event" button
-
-The dev server's interface also has a "Test Event" button on the top right that enables you to enter any JSON event payload and send it manually. This is useful for testing out different variants of event payloads with your functions.
-
-<img
-  src="/assets/docs/local-development/dev-server-send-event-modal.jpg"
-  width="600"
-  height={600/2288*1310}
-  className="max-w-2xl rounded-md"
-  quality="95"
-/>
-
-#### Via HTTP request
-
-All events are sent to Inngest using a simple HTTP API with a JSON body. Here is an example of a curl request to the local dev server's `/e/<EVENT_KEY>` endpoint running on the default port of `8228` using a dummy event key of `123`:
-
-```shell
-curl -X POST -v "http://localhost:8288/e/123" \
-  -d '{
-    "name": "user.avatar.uploaded",
-    "data": { "url": "https://a-bucket.s3.us-west-2.amazonaws.com/..." }
-  }'
-```
-
-<Callout>
-  💡 Since you can send events via HTTP, this means you can send events with any programming language or from your favorite testing tools like Postman.
-</Callout>
+<CardGroup cols={1}>
+  {/* <Card title="Inngest CLI" icon={<CLIIcon />} href={'/todo'}>
+    Explore the options to configure the Inngest Dev Server
+  </Card> */}
+  <Card title="TypeScript SDK" icon={<TypeScriptIcon />} href={'/docs/reference/typescript'}>
+    Setup the Inngest SDK in your TypeScript application.
+  </Card>
+  <Card title="Python SDK" icon={<PythonIcon />} href={'/docs/reference/python'}>
+    Setup the Inngest SDK in your Python application.
+  </Card>
+  <Card title="Go SDK" icon={<GoIcon />} href={'https://pkg.go.dev/github.com/inngest/inngestgo'}>
+    Setup the Inngest SDK in your Go application.
+  </Card>
+</CardGroup>
 
 
-## Inngest SDK Debug page
+## FAQs
 
-The [SDK's `serve` API endpoint](/docs/learn/serving-inngest-functions) will display a landing page that allows you to check that your functions have been successfully served and the endpoint is accessible.
+<CardGroup cols={1}>
+  <Card title="Can I run the Inngest Dev Server in production?" icon={<QuestionIcon />}>
+    The Inngest Dev Server is not designed to be run in production, but you can run it anywhere that you want including testing environments or CI/CD pipelines.
+  </Card>
+  <Card title="How do I test webhooks locally?" icon={<QuestionIcon />}>
+    Webhooks configured on the Platform [can be sent to the Dev Server](/docs/platform/webhooks#local-development).
+  </Card>
+  <Card title="How do I work with Stripe or Clerk webhooks locally?" icon={<QuestionIcon />}>
+    External webhooks from Stripe and Clerk must go through a tunnel solution (such as [ngrok](https://ngrok.com/) or [localtunnel](https://theboroer.github.io/localtunnel-www/)) to reach the Dev Server.
+  </Card>
+  <Card title="Are Crons supported locally?" icon={<QuestionIcon />}>
+    Yes. You can also trigger a function at any time by [using the "Invoke" button from the Dev Server Functions list view](/docs/dev-server).
+  </Card>
+  {/* <Card title="The Dev Server does not locate my local application" icon={<QuestionIcon />}>
+    Please take a look at our [Dev Server Troubleshooting guide](#).
+  </Card> */}
+</CardGroup>
 
-To view this, you can visit the route where (default `/api/inngest`) on your local serve, e.g. `http://localhost:3000/api/inngest`. Here we cURL a local app to see some basic health check data.
-
-```sh
-$ curl -s http://localhost:3000/api/inngest | jq
-{
-  "message": "Inngest endpoint configured correctly.",
-  "hasEventKey": false,
-  "hasSigningKey": false,
-  "functionsFound": 1
-}
-```
+Find more answers in our [Discord community](/discord).

@@ -5,6 +5,7 @@ import IconDebounce from 'src/shared/Icons/FlowControl/Debounce';
 import IconPriority from 'src/shared/Icons/FlowControl/Priority';
 import IconIdempotency from 'src/shared/Icons/FlowControl/Idempotency';
 import IconBatching from 'src/shared/Icons/FlowControl/Batching';
+import { CardGroup, Card, ImageTheme } from "src/shared/Docs/mdx";
 
 export const description = 'Learn how to manage how functions are executed with flow control.';
 
@@ -15,34 +16,23 @@ Flow control is a critical part of building robust applications. It allows you t
 There are several methods to manage flow control for each Inngest function. Learn about each method and how to use them in your functions:
 
 
-### <a href="/docs/guides/concurrency" className="flex items-center gap-4"><IconConcurrency size="2rem"/> Concurrency</a> {{anchor: false}}
-
-Limit the number of executing steps across your function runs. Ideal for limiting concurrent workloads by user, resource, or in general.
-
-### <a href="/docs/guides/throttling" className="flex items-center gap-4"><IconThrottle size="2rem"/> Throttle</a> {{anchor: false}}
-
-Limit the throughput of function execution over a period of time. Ideal for working around third-party API rate limits.
-
-### <a href="/docs/guides/rate-limiting" className="flex items-center gap-4"><IconRateLimit size="2rem" /> Rate Limiting</a> {{anchor: false}}
-
-Prevent excessive function runs over a given time period by _skipping_ events beyond a specific limit. Ideal for protecting against abuse.
-
-### <a href="/docs/guides/debounce" className="flex items-center gap-4"><IconDebounce size="2rem"/> Debounce</a> {{anchor: false}}
-
-Avoid unnecessary function invocations by de-duplicating events over a sliding time window. Ideal for preventing wasted work when a function might be triggered in quick succession.
-
-### <a href="/docs/guides/priority" className="flex items-center gap-4"><IconPriority size="2rem"/> Priority</a> {{anchor: false}}
-
-Dynamically adjust the execution order of functions based on any data. Ideal for pushing critical work to the front of the queue.
-
-### <a href="/docs/guides/handling-idempotency" className="flex items-center gap-4"><IconIdempotency size="2rem"/> Idempotency</a> {{anchor: false}}
-
-Prevent duplicate work with two different approaches to ensure functions run only once.
-
-### <a href="/docs/guides/batching" className="flex items-center gap-4"><IconBatching size="2rem"/> Batch processing</a> {{anchor: false}}
-
-Handle high load by processing events in batches. Ideal for bulk operations.
-
+<CardGroup cols={1}>
+  <Card title="Concurrency" icon={<IconConcurrency size={24} fill='primary' />} href={'/docs/guides/concurrency'}>
+    Limit the number of executing steps across your function runs. Ideal for limiting concurrent workloads by user, resource, or in general.
+  </Card>
+  <Card title="Throttling" icon={<IconThrottle size={24} fill='primary' />} href={'/docs/guides/throttling'}>
+    Limit the throughput of function execution over a period of time. Ideal for working around third-party API rate limits.
+  </Card>
+  <Card title="Rate Limiting" icon={<IconRateLimit size={24} fill='primary' />} href={'/docs/guides/rate-limiting'}>
+    Prevent excessive function runs over a given time period by _skipping_ events beyond a specific limit. Ideal for protecting against abuse.
+  </Card>
+  <Card title="Debounce" icon={<IconDebounce size={24} fill='primary' />} href={'/docs/guides/debounce'}>
+    Avoid unnecessary function invocations by de-duplicating events over a sliding time window. Ideal for preventing wasted work when a function might be triggered in quick succession.
+  </Card>
+  <Card title="Priority" icon={<IconPriority size={24} fill='primary' />} href={'/docs/guides/priority'}>
+    Dynamically adjust the execution order of functions based on any data. Ideal for pushing critical work to the front of the queue.
+  </Card>
+</CardGroup>
 
 
 {/* NOTE - Should we include 'delaying for flow control - e.g. using the ts' */}
