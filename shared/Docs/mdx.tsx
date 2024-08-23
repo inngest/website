@@ -440,7 +440,7 @@ export function Card<T extends React.ElementType = "div">({
   return (
     <Component
       className={clsx(
-        "not-prose font-normal group relative my-2 ring-2 ring-transparent rounded-xl border border-zinc-200 hover:border-zinc-300 dark:border-zinc-800 dark:hover:border-zinc-600 overflow-hidden w-full",
+        "not-prose font-normal group relative my-2 ring-2 ring-transparent rounded-xl border border-zinc-200 hover:border-zinc-300 dark:border-zinc-800 dark:hover:border-zinc-600 overflow-hidden w-full hover:bg-carbon-50/50 dark:hover:bg-carbon-900",
         props.href && "cursor-pointer",
         className
       )}

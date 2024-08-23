@@ -11,7 +11,7 @@ import QuestionIcon from 'src/shared/Icons/Question';
 
 Inngest's tooling makes it easy to develop your functions locally with any framework using the Inngest Dev Server.
 
-The [Inngest Dev Server](/docs/dev-server) is a fully-featured local version of the [Inngest Platform](/docs/platform/deployment) enabling a seamless transition from your local development to feature, staging and production environments.
+The [Inngest Dev Server](/docs/dev-server) is a fully-featured and [open-source](https://github.com/inngest/inngest) local version of the [Inngest Platform](/docs/platform/deployment) enabling a seamless transition from your local development to feature, staging and production environments.
 
 ![The Inngest Dev Server on the Functions page](/assets/docs/features/local-development/DevServer-functions.jpg)
 
@@ -83,8 +83,7 @@ Deploying your application to preview, staging and production environments does 
 
 <CardGroup cols={1}>
   <Card title="Can I run the Inngest Dev Server in production?" icon={<QuestionIcon />}>
-    The Inngest Dev Server, when started in Lite mode can be used for simple production applications.
-    Please refer to [Inngest Lite limitations](#).
+    The Inngest Dev Server is not designed to be run in production, but you can run it anywhere that you want including testing environments or CI/CD pipelines.
   </Card>
   <Card title="How do I test webhooks locally?" icon={<QuestionIcon />}>
     Webhooks configured on the Platform [can be sent to the Dev Server](/docs/platform/webhooks#local-development).
@@ -93,11 +92,11 @@ Deploying your application to preview, staging and production environments does 
     External webhooks from Stripe and Clerk must go through a tunnel solution (such as [ngrok](https://ngrok.com/) or [localtunnel](https://theboroer.github.io/localtunnel-www/)) to reach the Dev Server.
   </Card>
   <Card title="Are CRONs supported locally?" icon={<QuestionIcon />}>
-    Yes. You can also trigger a function at any time by [using the "Invoke" button from the Dev Server Functions list view](#).
+    Yes. You can also trigger a function at any time by [using the "Invoke" button from the Dev Server Functions list view](/docs/dev-server).
   </Card>
-  <Card title="The Dev Server does not locate my local application" icon={<QuestionIcon />}>
+  {/* <Card title="The Dev Server does not locate my local application" icon={<QuestionIcon />}>
     Please take a look at our [Dev Server Troubleshooting guide](#).
-  </Card>
+  </Card> */}
 </CardGroup>
 
 Find more answers in our [Discord community](/discord).

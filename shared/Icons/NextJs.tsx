@@ -3,9 +3,13 @@ import type { IconProps } from "./props";
 import clsx from "clsx";
 
 const NextJs = ({ size = 32, fill = "primary", className }: IconProps) => {
+  const twClass =
+    fill && fill === "black"
+      ? `fill-${fill} dark:invert`
+      : `fill-${fill ? fill : "primary"}`;
   return (
     <svg
-      className={clsx(`h-${size} w-${size}`, className)}
+      className={clsx(`h-${size} w-${size}`, className, twClass)}
       height={size}
       width={size}
       viewBox=".5 -.2 1023 1024.1"
