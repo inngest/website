@@ -42,7 +42,7 @@ async def fn_2(
     ctx: inngest.Context,
     step: inngest.Step,
 ) -> None:
-    output = step.invoke(
+    output = await step.invoke(
         "invoke",
         function=fn_1,
     )
