@@ -46,7 +46,7 @@ export default function Careers(props) {
                   See Our Open Positions
                 </Button>
               </header>
-              <div className="my-20 mx-auto prose prose-img:rounded-lg prose-code:bg-slate-800 prose-code:tracking-tight text-slate-300 prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline hover:prose-a:text-white prose-a:font-medium prose-a:transition-all prose-invert">
+              <div className="my-20 mx-auto prose prose-img:rounded-lg prose-code:bg-canvasMuted prose-code:tracking-tight text-basis prose-a:text-link prose-a:no-underline hover:prose-a:underline prose-a:font-medium prose-a:transition-all prose-invert">
                 <AboutInngest heading={true} />
 
                 <h2 id="how-we-work">How we work</h2>
@@ -156,11 +156,15 @@ export default function Careers(props) {
               <Button href="https://jobs.ashbyhq.com/inngest" arrow="right">
                 See Our Open Positions
               </Button>
-              <aside className=" max-w-[65ch] m-auto bg-indigo-900/20 text-indigo-100 flex flex-col items-start gap-4 leading-relaxed rounded-lg py-5 px-6  my-12 border border-indigo-900/50">
+              <aside className="max-w-[65ch] m-auto flex flex-col items-start gap-4 leading-relaxed py-5 my-12">
                 <p className="text-sm lg:text-base">
                   Have any questions about a role?
                 </p>
-                <Button href="mailto:careers@inngest.com" arrow="right">
+                <Button
+                  href="mailto:careers@inngest.com"
+                  variant="secondary"
+                  arrow="right"
+                >
                   Email us
                 </Button>
               </aside>

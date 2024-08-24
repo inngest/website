@@ -21,13 +21,12 @@ export default function Footer({
 }) {
   return (
     <>
-      {!disableCta && <FooterCallout ctaRef={ctaRef} />}
-      <footer
-        className={clsx(
-          "border-t border-subtle",
-          disableCta ? "mt-0" : "mt-12"
-        )}
-      >
+      {!disableCta && (
+        <div className="mt-24">
+          <FooterCallout ctaRef={ctaRef} />
+        </div>
+      )}
+      <footer className="border-t border-subtle">
         <Container className="pb-12 pt-12 lg:pt-24">
           <div className="xl:flex xl:gap-12 w-full rounded-lg relative ">
             <div className="mb-12 flex gap-6 items-start">
@@ -47,7 +46,7 @@ export default function Footer({
                           className="text-basis text-sm font-medium flex items-center group gap-1.5 hover:text-primary-intense transition-all"
                           href={link.url}
                         >
-                          {link.icon && <link.icon size={22} />}
+                          {link.icon && <link.icon size={22} color="matcha" />}
                           {link.label}
                         </a>
                       </li>

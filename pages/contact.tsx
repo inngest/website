@@ -4,6 +4,7 @@ import Header from "src/shared/Header";
 import Container from "src/shared/layout/Container";
 import Footer from "src/shared/Footer";
 import Quote from "src/shared/Home/Quote";
+import Card from "src/components/Card";
 
 const CONTACT_KEY =
   "Z-ymc97Dae8u4HHybHknc4DGRb51u6NnTOUaW-qG71ah1ZqsJfRcI6SaHg5APWutNcnMcaN3oZrZky-VQxBIyw";
@@ -65,7 +66,7 @@ export default function Contact() {
   };
 
   return (
-    <div className="font-sans text-slate-200">
+    <div className="font-sans text-basis">
       <Header />
       <Container>
         <main className="m-auto max-w-5xl pt-16 pb-8">
@@ -80,8 +81,14 @@ export default function Contact() {
             <div className="flex place-content-center">
               <p className="mt-4 py-4 px-6 rounded-full bg-white/10 flex gap-2 items-center">
                 👋&nbsp;&nbsp; Looking for support?{" "}
-                <a href="/discord">Chat on Discord</a> or{" "}
-                <a href={process.env.NEXT_PUBLIC_SUPPORT_URL}>
+                <a href="/discord" className="font-medium hover:underline">
+                  Chat on Discord
+                </a>{" "}
+                or{" "}
+                <a
+                  href={process.env.NEXT_PUBLIC_SUPPORT_URL}
+                  className="font-medium hover:underline"
+                >
                   create a support ticket
                 </a>{" "}
               </p>
@@ -91,7 +98,7 @@ export default function Contact() {
           <div className="my-12 grid lg:grid-cols-2 gap-24">
             <form
               onSubmit={onSubmit}
-              className="p-6 bg-indigo-900/10 text-indigo-100 flex flex-col items-start gap-4 rounded-lg border border-indigo-900/20"
+              className="p-6 bg-surfaceSubtle flex flex-col items-start gap-4 rounded-lg border border-subtle"
             >
               <label className="w-full flex flex-col gap-2">
                 Your name
@@ -100,7 +107,7 @@ export default function Contact() {
                   name="name"
                   onChange={(e) => setName(e.target.value)}
                   required
-                  className="w-full p-3 bg-slate-1000/40 border border-indigo-900/50 outline-none rounded-md"
+                  className="w-full p-3 bg-canvasBase border border-muted outline-none rounded-md"
                 />
               </label>
               <label className="w-full flex flex-col gap-2">
@@ -110,7 +117,7 @@ export default function Contact() {
                   name="email"
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full p-3 bg-slate-1000/40 border border-indigo-900/50 outline-none rounded-md"
+                  className="w-full p-3 bg-canvasBase border border-muted outline-none rounded-md"
                 />
               </label>
               <label className="w-full flex flex-col gap-2">
@@ -119,7 +126,7 @@ export default function Contact() {
                   name="message"
                   required
                   onChange={(e) => setMessage(e.target.value)}
-                  className="w-full min-h-[10rem] p-3 bg-slate-1000/40 border border-indigo-900/50 outline-none rounded-md"
+                  className="w-full min-h-[10rem] p-3 bg-canvasBase border border-muted outline-none rounded-md"
                 />
               </label>
               <label className="w-full flex flex-col gap-2">
@@ -129,7 +136,7 @@ export default function Contact() {
                   defaultValue=""
                   required
                   onChange={(e) => setTeamSize(e.target.value)}
-                  className="px-3 py-3 bg-slate-1000/40 border border-indigo-900/50 outline-none rounded-md"
+                  className="px-3 py-3 bg-canvasBase border border-muted outline-none rounded-md"
                 >
                   <option value="" disabled>
                     Select an option
@@ -145,7 +152,7 @@ export default function Contact() {
                 <button
                   type="submit"
                   disabled={disabled}
-                  className={`button group inline-flex items-center justify-center gap-0.5 rounded-full font-medium tracking-tight transition-all text-sm px-10 py-2.5 text-white bg-indigo-500 hover:bg-indigo-400 ${
+                  className={`button group inline-flex items-center justify-center gap-0.5 rounded-lg text-base font-medium tracking-tight transition-all px-10 py-2.5 bg-cta hover:bg-ctaHover text-carbon-1000 font-medium ${
                     disabled ? "opacity-50" : ""
                   }`}
                 >
