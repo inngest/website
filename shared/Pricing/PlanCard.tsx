@@ -1,9 +1,42 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "../Button";
 import { type Plan } from "../../pages/pricing";
-import { RiGitPrDraftLine, RiMistLine, RiCheckLine } from "@remixicon/react";
+import {
+  RiGitPrDraftLine,
+  RiMistLine,
+  RiCheckLine,
+  RiArrowDownSLine,
+} from "@remixicon/react";
+import * as Accordion from "@radix-ui/react-accordion";
 
+const CLOSED_VALUE = "CLOSED";
 export default function PlanCard({ content }: { content: Plan }) {
+  // Solves the radix bug on undefined values in single accordions https://github.com/radix-ui/primitives/discussions/824
+  const [accordionValue, setAccordionValue] = useState(CLOSED_VALUE);
+  const [isMediumScreen, setIsMediumScreen] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(min-width: 768px)");
+
+    const handleMediaQueryChange = (e) => {
+      setIsMediumScreen(e.matches);
+      if (e.matches) {
+        setAccordionValue(content.name);
+      }
+    };
+
+    setIsMediumScreen(mediaQuery.matches);
+    if (mediaQuery.matches) {
+      setAccordionValue(content.name);
+    }
+
+    mediaQuery.addEventListener("change", handleMediaQueryChange);
+
+    return () => {
+      mediaQuery.removeEventListener("change", handleMediaQueryChange);
+    };
+  }, [content.name]);
+
   const price = content.cost.between
     ? `$${content.cost.basePrice}-${content.cost.endPrice}`
     : content.cost.basePrice;
@@ -74,17 +107,41 @@ export default function PlanCard({ content }: { content: Plan }) {
 
         <hr className="border-subtle my-8" />
 
-        <p className="font-medium text-xs bg-gradient-to-b from-matcha-400 to-breeze-400 bg-clip-text text-transparent">
-          {content.planIncludes}
-        </p>
-        <ul className="flex flex-col">
-          {content.features.map((feature, i) => (
-            <li key={i} className={`flex gap-2 py-3 last:pb-0`}>
-              <RiCheckLine className="text-muted" />
-              {feature}
-            </li>
-          ))}
-        </ul>
+        <Accordion.Root
+          type="single"
+          value={accordionValue}
+          onValueChange={(value) => {
+            if (!isMediumScreen) {
+              setAccordionValue(value || CLOSED_VALUE);
+            }
+          }}
+          collapsible
+        >
+          <Accordion.Item
+            value={content.name}
+            disabled={isMediumScreen}
+            className={isMediumScreen ? "pointer-events-none" : ""}
+          >
+            <Accordion.Header className="flex items-center justify-between">
+              <p className="font-medium text-xs bg-gradient-to-b from-matcha-400 to-breeze-400 bg-clip-text text-transparent">
+                {content.planIncludes}
+              </p>
+              <Accordion.Trigger className="group border border-contrast rounded-full overflow-hidden md:hidden">
+                <RiArrowDownSLine className="transform-90 bg-canvasBase text-muted group-hover:bg-canvasSubtle transition-transform duration-500 group-data-[state=open]:-rotate-180" />
+              </Accordion.Trigger>
+            </Accordion.Header>
+            <Accordion.Content>
+              <ul className="flex flex-col">
+                {content.features.map((feature, i) => (
+                  <li key={i} className={`flex gap-2 py-3 last:pb-0`}>
+                    <RiCheckLine className="text-muted" />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+            </Accordion.Content>
+          </Accordion.Item>
+        </Accordion.Root>
       </div>
     </div>
   );
