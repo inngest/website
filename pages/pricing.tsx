@@ -64,7 +64,7 @@ export const sections: { key: string; name: string; description?: string }[] = [
   { key: "platform", name: "Platform" },
   {
     key: "recovery",
-    name: "Recovery & management",
+    name: "Recovery and management",
     description: "Included with every plan at your fingertips",
   },
   { key: "observability", name: "Observability" },
@@ -113,9 +113,9 @@ const PLANS: Plan[] = [
     planIncludes: "Basic plan includes:",
     features: [
       "Unlimited functions and apps",
-      "Unlimited branch & staging envs",
+      "Unlimited branch and staging envs",
       "Logs, traces, and observability",
-      "Basic support & alerting",
+      "Basic support and alerting",
     ],
   },
   {
@@ -552,7 +552,7 @@ const FEATURES: Feature[] = [
     section: "organization",
   },
   {
-    name: "PII prevention & masking",
+    name: "PII prevention and masking",
     description: "Protect sensitive data directly in events",
     plans: {
       [PLAN_NAMES.basic]: false,
