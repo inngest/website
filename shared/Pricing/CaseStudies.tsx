@@ -42,9 +42,12 @@ export default function CaseStudies() {
       <p className="text-2xl font-bold py-8">
         Trusted and used in production by companies across the world{" "}
       </p>
-      <div className="pt-4 pb-10 grid md:grid-cols-3 md:gap-12 text-left gap-8">
+      <div className="pt-4 pb-10 grid md:grid-cols-3 md:gap-12 text-left">
         {caseStudies.map((caseStudy, idx) => (
-          <div key={idx}>
+          <div
+            key={idx}
+            className="py-6 border-subtle border-b last:border-b-0 md:border-b-0 md:py-0"
+          >
             <Image
               src={caseStudy.logo}
               alt={`${caseStudy.name} logo`}
