@@ -53,7 +53,7 @@ export const workflowExecutor = inngest.createFunction(
           { "type": "filter", "data": { "field": "status", "value": "proposal_created" } }
           { "type": "email", "data": { "template": "proposal", "to": "leadEmail" } },
           { "type": "slack", "data": { "channel": "C12345" } },
-          { "type": "wait", "data": { "duration": "2 days" } },
+          { "type": "sleep", "data": { "duration": "2 days" } },
           { "type": "email", "data": { "template": "proposal_follow_up", "to": "salespersonEmail" } },
         ]
       }
@@ -64,7 +64,7 @@ export const workflowExecutor = inngest.createFunction(
 
     // We loop over all actions as long as there are any remaining and no filter has exited
     while (shouldContinue && workflow.actions.length) {
-      const action = workflow.actions.unshift();
+      const action = workflow.actions.shift();
 
       // We now run one of our pre-build actions:
       switch (action.type) {
