@@ -123,8 +123,8 @@ function NavLink({
       className={clsx(
         "flex rounded justify-between items-center gap-2 py-2 pl-2 text-sm transition group", // group for nested hovers
         active
-          ? "font-medium rounded bg-breeze-0 text-breeze-600 dark:bg-breeze-1000 dark:text-breeze-300"
-          : "font-medium hover:text-[#2E2E2E] text-carbon-700 hover:bg-carbon-50 dark:text-carbon-400 dark:hover:text-carbon-100 dark:hover:bg-[#2E2E2E]",
+          ? "font-medium rounded bg-secondary-3xSubtle text-info hover:bg-secondary-2xSubtle"
+          : "font-medium hover:bg-canvasSubtle text-muted hover:text-basis",
         className
       )}
     >
