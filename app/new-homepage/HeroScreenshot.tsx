@@ -39,7 +39,7 @@ export default function HeroScreenshot() {
             code faster without touching infrastructure.
           </p>
 
-          <div className="mt-8 flex flex-row justify-center items-center gap-4">
+          <div className="mt-8 flex flex-col sm:flex-row justify-center items-center gap-4">
             <Button
               variant="primary"
               size="md"
@@ -57,22 +57,13 @@ export default function HeroScreenshot() {
             >
               Chat with solutions engineering
             </Button>
-
-            {/* <Link
-              href="/docs?ref=homepage-hero"
-              className="p-2 font-semibold transition-all drop-shadow-lg"
-              color="text-basis/90 hover:text-basis"
-            >
-              Read the docs
-            </Link> */}
           </div>
         </header>
         <div className="flex flex-col gap-6 items-center pb-8">
-          {/* <span className="p-[1px] bg-carbon-1000 dark:bg-carbon-0 w-96"></span> */}
           <p className="text-sm">
             Trusted by modern software companies at scale worldwide:
           </p>
-          <div className="flex flex-wrap lg:flex-nowrap gap-x-8 gap-y-8">
+          <div className="flex flex-wrap lg:flex-nowrap gap-x-8 gap-y-8 mx-8">
             {[
               {
                 src: "/assets/customers/soundcloud-logo-white-horizontal.svg",
@@ -121,13 +112,15 @@ export default function HeroScreenshot() {
             ))}
           </div>
         </div>
-        <Image
-          alt="Screenshot of Inngest's dashboard"
-          className="mt-8 rounded-t-md"
-          src="/assets/homepage/hero/2024-08-function-dashboard.png"
-          width={3060 * 0.5}
-          height={1680 * 0.5}
-        />
+        <div className="flex items-center mt-8 mx-4">
+          <Image
+            alt="Screenshot of Inngest's dashboard"
+            className="rounded-t-md"
+            src="/assets/homepage/hero/2024-08-function-dashboard.png"
+            width={3060 * 0.5}
+            height={1680 * 0.5}
+          />
+        </div>
       </Container>
     </div>
   );

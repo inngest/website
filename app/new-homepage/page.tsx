@@ -14,6 +14,7 @@ import USPs from "./USPs";
 import PlatformsLanguages from "./PlatformsLanguages";
 import FlowControl from "./FlowControl";
 import Enterprise from "./Enterprise";
+import Observability from "./Observability";
 
 export const metadata: Metadata = {
   title: "Inngest - The modern platform for shipping fast, reliable code", // TODO - TBD
@@ -177,7 +178,7 @@ export default function Page() {
         <FlowControl />
       </div>
 
-      <div className="mt-32 mb-48">
+      <div className="mt-32">
         <Quote
           text="The DX and code simplicity it brings is unmatched, especially around local development. We're currently working to migrate some of our larger systems over and it’s a joy to see all the complexity it replaces, and with a much better story around partial failures and retries."
           attribution={{
@@ -188,8 +189,8 @@ export default function Page() {
         />
       </div>
 
-      <div className="my-32 lg:my-64">
-        <Enterprise />
+      <div className="my-32">
+        <Observability />
       </div>
 
       <div className="my-32">
@@ -203,6 +204,10 @@ export default function Page() {
           }}
           caseStudy="/customers/gitbook?ref=homepage"
         />
+      </div>
+
+      <div className="my-32">
+        <Enterprise />
       </div>
     </div>
   );

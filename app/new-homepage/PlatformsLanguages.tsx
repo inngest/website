@@ -9,7 +9,7 @@ export default function PlatformsLanguages() {
             Functions run on your own infrastructure: serverless, servers, or
             edge.
           </p>
-          <div className="flex flex-row justify-between grow">
+          <div className="flex flex-row justify-between grow gap-6">
             {[
               {
                 title: "Vercel",
@@ -48,7 +48,7 @@ export default function PlatformsLanguages() {
             Write functions in any language.
           </p>
           {/* TODO - These vectors look terrible */}
-          <div className="flex flex-row justify-between grow">
+          <div className="flex flex-row justify-between grow gap-6">
             {[
               {
                 title: "TypeScript",
