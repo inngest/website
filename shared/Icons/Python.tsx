@@ -1,4 +1,4 @@
-export default function IconPython({ className, size = 18 }: { className?: string; size?: number }) {
+export default function IconPython({ className, size = 24 }: { className?: string; size?: number }) {
   return (
     <svg className={className} height={size} viewBox="0 0 128 128" width={size}>
       <path

@@ -1,8 +1,7 @@
 import React from "react";
 import type { IconProps } from "./props";
-import clsx from "clsx";
 
-const TypeScript = ({ size = 18 }: IconProps) => {
+const TypeScript = ({ size = 24, className }: IconProps) => {
   return (
     <svg
       fill="none"
@@ -10,6 +9,7 @@ const TypeScript = ({ size = 18 }: IconProps) => {
       width={size}
       viewBox="0 0 512 512"
       xmlns="http://www.w3.org/2000/svg"
+      className={className}
     >
       <g clipPath="url(#clip0_1493_137)">
         <path
