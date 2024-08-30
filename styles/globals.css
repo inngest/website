@@ -93,7 +93,7 @@
 html.docs {
   --primary-color: #1365d6;
   color: var(--font-color-primary);
-  background: var(--bg-color);
+  background: #FFF;
   scroll-behavior: smooth;
   font-family: CircularXX, -apple-system, Helvetica, sans-serif;
 }
