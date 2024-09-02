@@ -410,6 +410,11 @@ const sectionHome: (NavGroup | NavLink)[] = [
             title: "Writing expression",
             href: `/docs/guides/writing-expressions`,
           },
+          { title: "Integrations" },
+          {
+            title: "Prisma Pulse",
+            href: `/docs/features/events-triggers/prisma-pulse`,
+          },
           { title: "Use cases" },
           {
             title: "Handle Clerk webhooks",
