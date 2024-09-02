@@ -1,7 +1,7 @@
 import { CardGroup, Card, ImageTheme } from "src/shared/Docs/mdx";
 import {
-  RiFunctionFill,
-  RiQuestionFill,
+  RiFunctionLine,
+  RiQuestionLine,
 } from "@remixicon/react";
 import InngestIcon from 'src/shared/Icons/InngestIcon';
 import CLIIcon from 'src/shared/Icons/CLI';
@@ -22,10 +22,10 @@ Get started with your favorite setup:
 
 
 <CardGroup cols={2}>
-  <Card title="Inngest Dev Server" icon={<InngestIcon className="text-basis"/>} href={'/docs/dev-server'}>
+  <Card title="Inngest Dev Server" icon={<InngestIcon className="text-basis h-4 w-4"/>} href={'/docs/dev-server'}>
     Start Inngest locally with a single command.
   </Card>
-  <Card title="Development with Docker" icon={<RiFunctionFill className="text-basis"/>} href={'/docs/guides/development-with-docker'}>
+  <Card title="Development with Docker" icon={<RiFunctionLine className="text-basis h-4 w-4"/>} href={'/docs/guides/development-with-docker'}>
     Run Inngest locally using Docker or Docker Compose.
   </Card>
 </CardGroup>
@@ -84,19 +84,19 @@ Deploying your application to preview, staging and production environments does 
 ## FAQs
 
 <CardGroup cols={1}>
-  <Card title="Can I run the Inngest Dev Server in production?" icon={<RiQuestionFill />}>
+  <Card title="Can I run the Inngest Dev Server in production?" icon={<RiQuestionLine />}>
     The Inngest Dev Server is not designed to be run in production, but you can run it anywhere that you want including testing environments or CI/CD pipelines.
   </Card>
-  <Card title="How do I test webhooks locally?" icon={<RiQuestionFill />}>
+  <Card title="How do I test webhooks locally?" icon={<RiQuestionLine />}>
     Webhooks configured on the Platform [can be sent to the Dev Server](/docs/platform/webhooks#local-development).
   </Card>
-  <Card title="How do I work with Stripe or Clerk webhooks locally?" icon={<RiQuestionFill />}>
+  <Card title="How do I work with Stripe or Clerk webhooks locally?" icon={<RiQuestionLine />}>
     External webhooks from Stripe and Clerk must go through a tunnel solution (such as [ngrok](https://ngrok.com/) or [localtunnel](https://theboroer.github.io/localtunnel-www/)) to reach the Dev Server.
   </Card>
-  <Card title="Are Crons supported locally?" icon={<RiQuestionFill />}>
+  <Card title="Are Crons supported locally?" icon={<RiQuestionLine />}>
     Yes. You can also trigger a function at any time by [using the "Invoke" button from the Dev Server Functions list view](/docs/dev-server).
   </Card>
-  {/* <Card title="The Dev Server does not locate my local application" icon={<RiQuestionFill />}>
+  {/* <Card title="The Dev Server does not locate my local application" icon={<RiQuestionLine />}>
     Please take a look at our [Dev Server Troubleshooting guide](#).
   </Card> */}
 </CardGroup>

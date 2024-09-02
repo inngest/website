@@ -3,8 +3,8 @@ import EventIcon from 'src/shared/Icons/Event';
 import {
   RiGitPullRequestFill,
   RiGuideFill,
-  RiTimeFill,
-  RiCalendarFill,
+  RiTimeLine,
+  RiCalendarLine,
   RiMistFill,
 } from "@remixicon/react";
 import TypeScriptIcon from 'src/shared/Icons/TypeScript';
@@ -17,13 +17,13 @@ Inngest functions enable developers to run reliable background logic, from backg
 An Inngest Function is composed of 3 main parts that provide robust tools for retrying, scheduling, and coordinating complex sequences of operations:
 
 <CardGroup cols={3}>
-  <Card title="Triggers" icon={<EventIcon className="text-basis"/>} href={'/docs/features/events-triggers'}>
+  <Card title="Triggers" icon={<EventIcon className="text-basis h-4 w-4"/>} href={'/docs/features/events-triggers'}>
     A list of Events, Cron schedules or webhook events that trigger Function runs.
   </Card>
-  <Card title="Flow Control" icon={<RiGitPullRequestFill className="rotate-90 text-basis" />} href={'/docs/guides/flow-control'}>
+  <Card title="Flow Control" icon={<RiGitPullRequestFill className="rotate-90 text-basis h-4 w-4" />} href={'/docs/guides/flow-control'}>
     Control how Function runs get distributed in time with Concurrency, Throttling and more.
   </Card>
-  <Card title="Steps" icon={<RiGuideFill className="text-basis"/>} href={'/docs/features/inngest-functions/steps-workflows'}>
+  <Card title="Steps" icon={<RiGuideFill className="text-basis h-4 w-4"/>} href={'/docs/features/inngest-functions/steps-workflows'}>
     Transform your Inngest Function into a workflow with retriable checkpoints.
   </Card>
 </CardGroup>
@@ -109,16 +109,16 @@ Increase your Inngest Functions durability by leveraging:
 Start using Inngest Functions by using the pattern that fits your use case:
 
 <CardGroup cols={2}>
-  <Card title="Background jobs" icon={<RiGuideFill className="text-basis"/>} href={'/docs/guides/multi-step-functions'}>
+  <Card title="Background jobs" icon={<RiGuideFill className="text-basis h-4 w-4"/>} href={'/docs/guides/multi-step-functions'}>
     Run long-running tasks  out of the critical path of a request.
   </Card>
-  <Card title="Delayed Functions" icon={<RiCalendarFill className="text-basis"/>} href={'/docs/learn/how-functions-are-executed'}>
+  <Card title="Delayed Functions" icon={<RiCalendarLine className="text-basis h-4 w-4"/>} href={'/docs/learn/how-functions-are-executed'}>
     Schedule Functions that run in the future.
   </Card>
-  <Card title="Cron Functions" icon={<RiTimeFill className="text-basis"/>} href={'/docs/guides/scheduled-functions'}>
+  <Card title="Cron Functions" icon={<RiTimeLine className="text-basis h-4 w-4"/>} href={'/docs/guides/scheduled-functions'}>
     Build Inngest Functions as CRONs.
   </Card>
-  <Card title="Workflows" icon={<RiMistFill className="text-basis"/>} href={'/docs/features/inngest-functions/steps-workflows'}>
+  <Card title="Workflows" icon={<RiMistFill className="text-basis h-4 w-4"/>} href={'/docs/features/inngest-functions/steps-workflows'}>
     Start creating worflows by leveraging Inngest Function Steps.
   </Card>
 </CardGroup>
@@ -129,10 +129,10 @@ Start using Inngest Functions by using the pattern that fits your use case:
 Functions and Steps are powered by Inngest's Durable Execution Engine. Learn about its inner working by reading the following guides:
 
 <CardGroup cols={1}>
-  <Card title="How Functions are executed" icon={<RiMistFill className="text-basis"/>} href={'/docs/learn/how-functions-are-executed'}>
+  <Card title="How Functions are executed" icon={<RiMistFill className="text-basis h-4 w-4"/>} href={'/docs/learn/how-functions-are-executed'}>
     A deep dive into Inngest's Durable Execution Engine with a step-by-step workflow run example.
   </Card>
-  <Card title="Thinking in Steps" icon={<RiGuideFill className="text-basis"/>} href={'/docs/guides/multi-step-functions'}>
+  <Card title="Thinking in Steps" icon={<RiGuideFill className="text-basis h-4 w-4"/>} href={'/docs/guides/multi-step-functions'}>
     Discover by example how steps enable more reliable and flexible functions with step-level error handling, conditional steps and waits.
   </Card>
 </CardGroup>

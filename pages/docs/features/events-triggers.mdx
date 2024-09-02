@@ -1,10 +1,11 @@
 import { CardGroup, Card, ImageTheme } from "src/shared/Docs/mdx";
-import EventIcon from 'src/shared/Icons/Event'
-import ClockIcon from 'src/shared/Icons/Clock';
-import WebhookIcon from 'src/shared/Icons/Webhook';
-import CloudIcon from 'src/shared/Icons/Cloud';
-import BranchIcon from 'src/shared/Icons/Branch';
-import NewspaperIcon from 'src/shared/Icons/Newspaper';
+import {
+  RiTimeLine,
+  RiCloudLine,
+  RiGitForkFill,
+  RiWebhookFill,
+  RiNewspaperLine,
+} from "@remixicon/react";
 
 # Events & Triggers
 
@@ -12,16 +13,16 @@ Inngest functions are triggered asynchronously by **events** coming from various
 
 
 <CardGroup cols={2}>
-  <Card title="Your application" icon={<CloudIcon />} href={'/docs/events'}>
+  <Card title="Your application" icon={<RiCloudLine className="text-basis h-4 w-4" />} href={'/docs/events'}>
     Send an event from your application’s backend with the Inngest SDK.
   </Card>
-  <Card title="Cron schedule" icon={<ClockIcon />} href={'/docs/guides/scheduled-functions'}>
+  <Card title="Cron schedule" icon={<RiTimeLine className="text-basis h-4 w-4" />} href={'/docs/guides/scheduled-functions'}>
     Run an Inngest function periodically with a trigger using cron syntax.
   </Card>
-  <Card title="Webhook events" icon={<WebhookIcon />} href={'/docs/platform/webhooks'}>
+  <Card title="Webhook events" icon={<RiWebhookFill className="text-basis h-4 w-4"/>} href={'/docs/platform/webhooks'}>
     Use Inngest as a webhook consumer for any service to trigger functions.
   </Card>
-  <Card title="Another Inngest function" icon={<BranchIcon />} href={'/docs/guides/invoking-functions-directly'}>
+  <Card title="Another Inngest function" icon={<RiGitForkFill className="rotate-90 text-basis h-4 w-4" />} href={'/docs/guides/invoking-functions-directly'}>
     Directly invoke other functions to compose more powerful functions.
   </Card>
 </CardGroup>
@@ -56,10 +57,10 @@ Events act as a convenient mapping between your application actions (ex, `user.s
 
 
 <CardGroup cols={2}>
-  <Card title="Blog post: How event Filtering works" icon={<NewspaperIcon />} href={'https://www.inngest.com/blog/accidentally-quadratic-evaluating-trillions-of-event-matches-in-real-time'}>
+  <Card title="Blog post: How event Filtering works" icon={<RiNewspaperLine className="text-basis h-4 w-4"/>} href={'https://www.inngest.com/blog/accidentally-quadratic-evaluating-trillions-of-event-matches-in-real-time'}>
     Accidentally Quadratic: Evaluating trillions of event matches in real-time
   </Card>
-  <Card title="Blog post: Events in practice" icon={<NewspaperIcon />} href={'https://www.inngest.com/blog/nextjs-trpc-inngest'}>
+  <Card title="Blog post: Events in practice" icon={<RiNewspaperLine className="text-basis h-4 w-4"/>} href={'https://www.inngest.com/blog/nextjs-trpc-inngest'}>
     Building an Event Driven Video Processing Workflow with Next.js, tRPC, and Inngest
   </Card>
 </CardGroup>

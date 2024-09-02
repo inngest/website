@@ -1,5 +1,5 @@
 import { CardGroup, Card, CodeGroup, Callout } from "src/shared/Docs/mdx";
-import { RiArrowGoBackLine, RiErrorWarningFill } from "@remixicon/react";
+import { RiArrowGoBackLine, RiErrorWarningLine } from "@remixicon/react";
 
 import ReplayIcon from 'src/shared/Icons/Replay';
 
@@ -12,13 +12,13 @@ Inngest Functions are designed to handle errors or exceptions gracefully and wil
 Inngest Functions come with:
 
 <CardGroup cols={1}>
-  <Card title="Automatic Retries" icon={<ReplayIcon fill="primary" />} href={'/docs/features/inngest-functions/error-retries/retries'}>
+  <Card title="Automatic Retries" icon={<ReplayIcon className="text-basis h-4 w-4" />} href={'/docs/features/inngest-functions/error-retries/retries'}>
     Configurable with a custom retry policies to suit your specific use case.
   </Card>
-  <Card title="Failure handlers" icon={<RiErrorWarningFill />} href={'/docs/features/inngest-functions/error-retries/failure-handlers'}>
+  <Card title="Failure handlers" icon={<RiErrorWarningLine className="text-basis h-4 w-4"/>} href={'/docs/features/inngest-functions/error-retries/failure-handlers'}>
     Utilize callbacks to handle all failing retries.
   </Card>
-  <Card title="Rollbacks support" icon={<RiArrowGoBackLine />} href={'/docs/features/inngest-functions/error-retries/rollbacks'}>
+  <Card title="Rollbacks support" icon={<RiArrowGoBackLine className="text-basis h-4 w-4"/>} href={'/docs/features/inngest-functions/error-retries/rollbacks'}>
     Each step within a function can have its own retry logic and be handled individually.
   </Card>
 </CardGroup>
