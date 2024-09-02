@@ -2,7 +2,9 @@ import { Callout, CodeGroup, Card, CardGroup, ImageTheme } from "src/shared/Docs
 import VercelIcon from 'src/shared/Icons/VercelIcon';
 import NetlifyIcon from 'src/shared/Icons/NetlifyIcon';
 import CloudflareIcon from 'src/shared/Icons/CloudflareIcon';
-import CloudIcon from 'src/shared/Icons/Cloud';
+import {
+  RiCloudLine,
+} from "@remixicon/react";
 
 # Deployment
 
@@ -10,16 +12,16 @@ Moving to production requires deploying your Inngest Functions on your favorite 
 
 
 <CardGroup cols={2}>
-  <Card title="Deploy on any platform or runtime" icon={<CloudIcon fill={'black'} />} href={'/docs/apps/cloud#sync-a-new-app-in-inngest-cloud'}>
+  <Card title="Deploy on any platform or runtime" icon={<RiCloudLine className="text-basis h-4 w-4" />} href={'/docs/apps/cloud#sync-a-new-app-in-inngest-cloud'}>
     Inngest Functions can be deployed to any serverless cloud or container running on any server.
   </Card>
-  <Card title="Deploy with Vercel" icon={<VercelIcon />} href={'/docs/deploy/vercel'}>
+  <Card title="Deploy with Vercel" icon={<VercelIcon className="text-basis"/>} href={'/docs/deploy/vercel'}>
     Use our Vercel Integration to deploy your Inngest Functions.
   </Card>
-  <Card title="Deploy with Cloudflare Pages" icon={<CloudflareIcon />} href={'/docs/deploy/cloudflare'}>
+  <Card title="Deploy with Cloudflare Pages" icon={<CloudflareIcon className="text-basis"/>} href={'/docs/deploy/cloudflare'}>
     Deploy your Inngest Functions on Cloudflare Pages.
   </Card>
-  <Card title="Deploy with Netlify" icon={<NetlifyIcon />} href={'/docs/deploy/netlify'}>
+  <Card title="Deploy with Netlify" icon={<NetlifyIcon className="text-basis"/>} href={'/docs/deploy/netlify'}>
     Deploy your Inngest Functions on Netlify.
   </Card>
 </CardGroup>
