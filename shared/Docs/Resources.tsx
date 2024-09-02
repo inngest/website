@@ -3,10 +3,12 @@ import { motion, useMotionTemplate, useMotionValue } from "framer-motion";
 
 import { GridPattern } from "./GridPattern";
 import { Heading } from "./Heading";
-import { ChatBubbleIcon } from "./icons/ChatBubbleIcon";
-import { EnvelopeIcon } from "./icons/EnvelopeIcon";
-import { UserIcon } from "./icons/UserIcon";
-import { UsersIcon } from "./icons/UsersIcon";
+import {
+  RiChat3Line,
+  RiUserLine,
+  RiGroupLine,
+  RiMailLine,
+} from "@remixicon/react";
 import {
   PaperAirplaneIcon,
   ClockIcon,
@@ -64,7 +66,7 @@ const resources = [
     name: "Contacts",
     description:
       "Learn about the contact model and how to create, retrieve, update, delete, and list contacts.",
-    icon: UserIcon,
+    icon: RiUserLine,
     pattern: {
       y: 16,
       squares: [
@@ -78,7 +80,7 @@ const resources = [
     name: "Conversations",
     description:
       "Learn about the conversation model and how to create, retrieve, update, delete, and list conversations.",
-    icon: ChatBubbleIcon,
+    icon: RiChat3Line,
     pattern: {
       y: -6,
       squares: [
@@ -92,7 +94,7 @@ const resources = [
     name: "Messages",
     description:
       "Learn about the message model and how to create, retrieve, update, delete, and list messages.",
-    icon: EnvelopeIcon,
+    icon: RiMailLine,
     pattern: {
       y: 32,
       squares: [
@@ -106,7 +108,7 @@ const resources = [
     name: "Groups",
     description:
       "Learn about the group model and how to create, retrieve, update, delete, and list groups.",
-    icon: UsersIcon,
+    icon: RiGroupLine,
     pattern: {
       y: 22,
       squares: [[0, 1]],
