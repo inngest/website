@@ -14,8 +14,6 @@ import { ModeToggle } from "./ModeToggle";
 import { HeaderSearchIcon, Search } from "./Search";
 import { menuTabs } from "./navigationStructure";
 import { TabItem } from "./Navigation";
-import Github from "../Icons/Github";
-import Discord from "../Icons/Discord";
 
 function Separator() {
   return (

@@ -1,5 +1,4 @@
 import { AnchorHTMLAttributes } from "react";
-import classNames from "src/utils/classNames";
 import ArrowRight from "./Icons/ArrowRight";
 
 type ButtonProps = {
