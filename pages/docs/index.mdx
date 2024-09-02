@@ -1,11 +1,13 @@
 import { CardGroup, Card, Button } from "src/shared/Docs/mdx";
-import NextJsIcon from 'src/shared/Icons/NextJs';
 import PythonIcon from 'src/shared/Icons/Python';
 import GoIcon from 'src/shared/Icons/Go';
-import CloudIcon from 'src/shared/Icons/Cloud';
+import {
+  RiCloudLine,
+  RiNextjsFill,
+  RiGitPullRequestFill,
+  RiGuideFill,
+} from "@remixicon/react";
 import InngestIcon from 'src/shared/Icons/InngestIcon';
-import StepsIcon from 'src/shared/Icons/Steps';
-import IconPriority from 'src/shared/Icons/FlowControl/Priority';
 
 export const hidePageSidebar = true;
 
@@ -24,7 +26,7 @@ Write functions in TypeScript, Python or Go to power background and scheduled jo
   <Card 
     href={"/docs/getting-started/nextjs-quick-start"}
     title={"Next.js"}
-    icon={<NextJsIcon size={8} fill="black" />}
+    icon={<RiNextjsFill className="text-basis h-8 w-8"/>}
     iconPlacement="top"
   >
   Add queueing, events, crons, and step functions to your Next app on any cloud provider.
@@ -33,7 +35,7 @@ Write functions in TypeScript, Python or Go to power background and scheduled jo
   <Card 
     href={"/docs/getting-started/python-quick-start"}
     title={"Python"}
-    icon={<PythonIcon size={8} fill="black" />}
+    icon={<PythonIcon className="text-basis h-8 w-8"/>}
     iconPlacement="top"
   >
     Develop reliable step functions in Python without managing queueing systems or DAG based workflows.
@@ -43,7 +45,7 @@ Write functions in TypeScript, Python or Go to power background and scheduled jo
   <Card 
     href={"https://pkg.go.dev/github.com/inngest/inngestgo@v0.7.2"}
     title={"Go"}
-    icon={<GoIcon size={8}  fill="black" />}
+    icon={<GoIcon className="text-basis h-8 w-8"/>}
     iconPlacement="top"
   >
     Write fast, durable step functions in your Go application using the standard library.
@@ -116,7 +118,7 @@ Write functions in TypeScript, Python or Go to power background and scheduled jo
   <Card 
     href={"/docs/features/inngest-functions/steps-workflows"}
     title={"Function steps"}
-    icon={<StepsIcon fill={'primary'} />}
+    icon={<RiGuideFill className="text-basis h-4 w-4"/>}
   >
     Learn how to leverage Function steps to build reliable workflows.
   </Card>
@@ -125,7 +127,7 @@ Write functions in TypeScript, Python or Go to power background and scheduled jo
   <Card 
     href={"/docs/guides/flow-control"}
     title={"Flow Control"}
-    icon={<IconPriority size={24}  fill={'primary'} />}
+    icon={<RiGitPullRequestFill className="rotate-90 text-basis h-4 w-4" />}
   >
     Add multi-tenant aware prioritization, concurrency, throttling, batching, and rate limiting capabilities to your Inngest Functions.
   </Card>
@@ -133,7 +135,7 @@ Write functions in TypeScript, Python or Go to power background and scheduled jo
   <Card 
     href={"/docs/platform/monitor/observability-metrics"}
     title={"Inngest Platform"}
-    icon={<InngestIcon />}
+    icon={<InngestIcon className="text-basis h-4 w-4"/>}
   >
     Monitor your deployments with Metrics and Function & Events Logs.
   </Card>
@@ -141,7 +143,7 @@ Write functions in TypeScript, Python or Go to power background and scheduled jo
   <Card 
     href={"/docs/platform/deployment"}
     title={"Deploy your Inngest Functions"}
-    icon={<CloudIcon />}
+    icon={<RiCloudLine className="text-basis h-4 w-4"/>}
   >
     Deploy your Inngest Functions to Vercel, Netlify, Cloudflare Pages and other Cloud Providers.
   </Card>

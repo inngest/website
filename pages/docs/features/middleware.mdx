@@ -1,8 +1,10 @@
 import { Callout, CodeGroup, VersionBadge, CardGroup, Card } from "src/shared/Docs/mdx";
-import IntegrationsIcon from 'src/shared/Icons/Integrations';
-import EventLogsIcon from 'src/shared/Icons/EventLogs';
-import EyeOffIcon from 'src/shared/Icons/EyeOff';
-import RunsIcon from 'src/shared/Icons/Runs';
+import {
+  RiEyeOffLine,
+  RiMistFill,
+  RiPlugLine,
+  RiFileSearchLine,
+} from "@remixicon/react";
 
 # Middleware
 
@@ -11,16 +13,16 @@ Middleware allows you code to run at various points in an Inngest client's lifec
 This can be used for a wide range of uses:
 
 <CardGroup cols={2}>
-  <Card title="Custom observability" icon={<EventLogsIcon />} href={'/docs/features/middleware/create'}>
+  <Card title="Custom observability" icon={<RiFileSearchLine className="text-basis h-4 w-4"/>} href={'/docs/features/middleware/create'}>
     Add custom logging, tracing or helpers to your Inngest Functions.
   </Card>
-  <Card title="Dependency Injection" icon={<IntegrationsIcon />} href={'/docs/features/middleware/dependency-injection'}>
+  <Card title="Dependency Injection" icon={<RiPlugLine className="text-basis h-4 w-4" />} href={'/docs/features/middleware/dependency-injection'}>
     Provide shared client instances (ex, OpenAI) to your Inngest Functions.
   </Card>
-  <Card title="Encryption Middleware" icon={<EyeOffIcon />} href={'/docs/features/middleware/encryption-middleware'}>
+  <Card title="Encryption Middleware" icon={<RiEyeOffLine className="text-basis h-4 w-4" />} href={'/docs/features/middleware/encryption-middleware'}>
     End-to-end encryption for events, step output, and function output.
   </Card>
-  <Card title="Sentry Middleware" icon={<RunsIcon />} href={'/docs/features/middleware/sentry-middleware'}>
+  <Card title="Sentry Middleware" icon={<RiMistFill className="text-basis h-4 w-4"/>} href={'/docs/features/middleware/sentry-middleware'}>
     Quickly setup Sentry for your Inngest Functions.
   </Card>
 </CardGroup>
