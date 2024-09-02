@@ -1,9 +1,11 @@
 import { Callout, CodeGroup, Properties, Property, Row, Col, VersionBadge, GuideSelector, GuideSection, Card, CardGroup } from "src/shared/Docs/mdx";
-import IntegrationsIcon from 'src/shared/Icons/Integrations';
-import EyeOffIcon from 'src/shared/Icons/EyeOff';
-import CLIIcon from 'src/shared/Icons/CLI';
-import EventLogsIcon from 'src/shared/Icons/EventLogs';
-import RunsIcon from 'src/shared/Icons/Runs';
+
+import {
+  RiEyeOffLine,
+  RiMistFill,
+  RiPlugLine,
+  RiTerminalBoxLine,
+} from "@remixicon/react";
 
 # Creating a middleware
 
@@ -369,16 +371,16 @@ It's common for middleware to require additional customization or options from d
 Check out our pre-build middleware and examples:
 
 <CardGroup cols={2}>
-  <Card title="Dependency Injection" icon={<IntegrationsIcon />} href={'/docs/features/middleware/dependency-injection'}>
+  <Card title="Dependency Injection" icon={<RiPlugLine className="text-basis h-4 w-4" />} href={'/docs/features/middleware/dependency-injection'}>
     Provide shared client instances (ex, OpenAI) to your Inngest Functions.
   </Card>
-  <Card title="Encryption Middleware" icon={<EyeOffIcon />} href={'/docs/features/middleware/encryption-middleware'}>
+  <Card title="Encryption Middleware" icon={<RiEyeOffLine className="text-basis h-4 w-4" />} href={'/docs/features/middleware/encryption-middleware'}>
     End-to-end encryption for events, step output, and function output.
   </Card>
-  <Card title="Sentry Middleware" icon={<RunsIcon />} href={'/docs/features/middleware/sentry-middleware'}>
+  <Card title="Sentry Middleware" icon={<RiMistFill className="text-basis h-4 w-4"/>} href={'/docs/features/middleware/sentry-middleware'}>
     Quickly setup Sentry for your Inngest Functions.
   </Card>
-  <Card title="Datadog middleware" icon={<CLIIcon />} href={'/docs/examples/track-failures-in-datadog'}>
+  <Card title="Datadog middleware" icon={<RiTerminalBoxLine className="text-basis h-4 w-4"/>} href={'/docs/examples/track-failures-in-datadog'}>
     Add tracing with Datadog under a few minutes.
   </Card>
 </CardGroup>
