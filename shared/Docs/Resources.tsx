@@ -8,6 +8,7 @@ import {
   RiUserLine,
   RiGroupLine,
   RiMailLine,
+  type RemixiconComponentType
 } from "@remixicon/react";
 import {
   PaperAirplaneIcon,
@@ -30,7 +31,7 @@ const icons = {
   "rectangle-group": RectangleGroupIcon,
 } as const;
 
-type IconType = keyof typeof icons;
+type IconType = keyof typeof icons | RemixiconComponentType;
 
 const patterns = [
   {
