@@ -337,7 +337,7 @@ const durableExecutionFeatures = [
     title: "Pause for additional data",
     description:
       "Create human-in-the-middle flows that wait for additional input.",
-    href: "/docs/reference/functions/step-wait-for-event",
+    href: "/docs/features/inngest-functions/steps-workflows/wait-for-event",
   },
   {
     title: "Automatically retry on errors",

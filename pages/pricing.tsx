@@ -325,12 +325,12 @@ const FEATURES: Feature[] = [
   {
     name: "Automatic retries",
     all: true,
-    infoUrl: "/docs/reference/typescript/functions/errors?ref=pricing",
+    infoUrl: "/docs/guides/error-handling?ref=pricing",
   },
   {
     name: "Step functions",
     all: true,
-    infoUrl: "/docs/learn/inngest-steps?ref=pricing",
+    infoUrl: "/docs/features/inngest-functions/steps-workflows?ref=pricing",
   },
   {
     name: "Scheduled functions",
@@ -345,7 +345,7 @@ const FEATURES: Feature[] = [
   {
     name: "Custom failure handlers",
     all: true,
-    infoUrl: "/docs/reference/functions/handling-failures?ref=pricing",
+    infoUrl: "/docs/guides/error-handling?ref=pricing",
   },
   {
     name: "Parallel steps",

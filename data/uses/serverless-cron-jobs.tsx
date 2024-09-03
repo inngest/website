@@ -109,7 +109,7 @@ inngest.createFunction(
         title: "Writing scheduled functions",
         description: "Learn how to define scheduled functions.",
         type: "Docs",
-        href: "/docs/functions#writing-a-scheduled-function",
+        href: "/docs/learn/inngest-functions#writing-a-scheduled-function",
       },
     ],
   },
