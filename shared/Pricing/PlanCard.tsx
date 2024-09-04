@@ -38,8 +38,10 @@ export default function PlanCard({ content }: { content: Plan }) {
   }, [content.name]);
 
   const price = content.cost.between
-    ? `$${content.cost.basePrice}-${content.cost.endPrice}`
-    : content.cost.basePrice;
+    ? // Note: If we start showing basic free tier on PlanCard, we should use the following commented line instead
+      `$0-${content.cost.endPrice}`
+    : // ? `$${content.cost.basePrice}-${content.cost.endPrice}`
+      content.cost.basePrice;
 
   return (
     <div

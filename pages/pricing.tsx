@@ -1,4 +1,4 @@
-import dynamic from 'next/dynamic';
+import dynamic from "next/dynamic";
 import Header from "src/shared/Header";
 import Container from "src/shared/layout/Container";
 import PlanCard from "src/shared/Pricing/PlanCard";
@@ -7,9 +7,12 @@ import Footer from "../shared/Footer";
 import { Button } from "src/shared/Button";
 
 // Disable SSR in ComparisonTable, to prevent hydration errors. It requires windows info on accordions
-const ComparisonTable = dynamic(() => import('src/shared/Pricing/ComparisonTable'), {
-  ssr: false,
-});
+const ComparisonTable = dynamic(
+  () => import("src/shared/Pricing/ComparisonTable"),
+  {
+    ssr: false,
+  }
+);
 
 export type Plan = {
   name: string;
@@ -79,6 +82,7 @@ export const sections: { key: string; name: string; description?: string }[] = [
 ];
 
 const PLAN_NAMES = {
+  basicFree: "Basic (free tier)",
   basic: "Basic",
   pro: "Pro",
   enterprise: "Enterprise",
@@ -86,10 +90,46 @@ const PLAN_NAMES = {
 
 const PLANS: Plan[] = [
   {
+    name: PLAN_NAMES.basicFree,
+    cost: {
+      basePrice: 0,
+      includedRuns: 25_000,
+      additionalRunsPrice: "-",
+      additionalRunsRate: null,
+      includedSteps: 5,
+      additionalStepsPrice: "-",
+      additionalStepsRate: null,
+      includedConcurrency: 5,
+      additionalConcurrencyPrice: "-",
+      additionalConcurrencyRate: null,
+      includedUsers: 5,
+      additionalUsersPrice: "-",
+      additionalUsersRate: null,
+      period: "mo",
+    },
+    hideFromCards: true,
+    description:
+      "Everything you need to start building and scaling reliable systems for free",
+    cta: {
+      href: `${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=pricing-card-basic`,
+      text: "Get started for free",
+    },
+    highlights: {
+      runs: "Starts at 25K runs/mo",
+      concurrency: "Starts at 5 concurrent runs",
+    },
+    planIncludes: "Basic (free tier) plan includes:",
+    features: [
+      "Unlimited branch and staging envs",
+      "Logs, traces, and observability",
+      "Basic support and alerting",
+    ],
+  },
+  {
     name: PLAN_NAMES.basic,
     cost: {
       between: true,
-      basePrice: 0,
+      basePrice: 50,
       endPrice: 300,
       includedRuns: 50_000,
       additionalRunsPrice: 5,
@@ -112,7 +152,8 @@ const PLANS: Plan[] = [
       text: "Get started for free",
     },
     highlights: {
-      runs: "Starts at 50K runs/mo",
+      // Note: If we start showing basic free tier on PlanCard, this should go to 50K runs/mo instead
+      runs: "Starts at 25K runs/mo",
       concurrency: "Starts at 5 concurrent runs",
     },
     planIncludes: "Basic plan includes:",
@@ -121,6 +162,7 @@ const PLANS: Plan[] = [
       "Unlimited branch and staging envs",
       "Logs, traces, and observability",
       "Basic support and alerting",
+      "Free plan limited to 25K runs/mo",
     ],
   },
   {
@@ -209,6 +251,9 @@ const FEATURES: Feature[] = [
   {
     name: "Base price",
     plans: {
+      [PLAN_NAMES.basicFree]: `$${
+        getPlan(PLAN_NAMES.basicFree).cost.basePrice
+      } /${getPlan(PLAN_NAMES.basic).cost.period}`,
       [PLAN_NAMES.basic]: `$${getPlan(PLAN_NAMES.basic).cost.basePrice} /${
         getPlan(PLAN_NAMES.basic).cost.period
       }`,
@@ -225,6 +270,12 @@ const FEATURES: Feature[] = [
     name: "Runs",
     description: "A single durable function execution",
     plans: {
+      [PLAN_NAMES.basicFree]: `${getPlan(
+        PLAN_NAMES.basicFree
+      ).cost.includedRuns.toLocaleString(undefined, {
+        notation: "compact",
+        compactDisplay: "short",
+      })} /${getPlan(PLAN_NAMES.basicFree).cost.period} included`,
       [PLAN_NAMES.basic]: {
         value: `${getPlan(PLAN_NAMES.basic).cost.includedRuns.toLocaleString(
           undefined,
@@ -271,6 +322,9 @@ const FEATURES: Feature[] = [
     name: "Additional steps",
     description: "After the first 5 steps in every run",
     plans: {
+      [PLAN_NAMES.basicFree]: `${
+        getPlan(PLAN_NAMES.basicFree).cost.additionalStepsPrice
+      }`,
       [PLAN_NAMES.basic]: `$${
         getPlan(PLAN_NAMES.basic).cost.additionalStepsPrice
       } per ${getPlan(PLAN_NAMES.basic).cost.additionalStepsRate.toLocaleString(
@@ -300,6 +354,9 @@ const FEATURES: Feature[] = [
     name: "Concurrency",
     description: "Process steps in parallel whilesmoothing load",
     plans: {
+      [PLAN_NAMES.basicFree]: `${
+        getPlan(PLAN_NAMES.basicFree).cost.includedConcurrency
+      }`,
       [PLAN_NAMES.basic]: `${
         getPlan(PLAN_NAMES.basic).cost.includedConcurrency
       }`,
@@ -315,6 +372,9 @@ const FEATURES: Feature[] = [
     name: "Additional concurrency (per 10)",
     description: "Customizable throughput for any scale",
     plans: {
+      [PLAN_NAMES.basicFree]: `${
+        getPlan(PLAN_NAMES.basicFree).cost.additionalConcurrencyPrice
+      }`,
       [PLAN_NAMES.basic]: `$${
         getPlan(PLAN_NAMES.basic).cost.additionalConcurrencyPrice
       } per ${getPlan(
@@ -341,6 +401,7 @@ const FEATURES: Feature[] = [
     name: "Event size",
     description: "The maximum size for a single event",
     plans: {
+      [PLAN_NAMES.basicFree]: "256KB",
       [PLAN_NAMES.basic]: "256KB",
       [PLAN_NAMES.pro]: "3MB",
       [PLAN_NAMES.enterprise]: "Custom",
@@ -352,6 +413,7 @@ const FEATURES: Feature[] = [
     name: "Backpressure(per account)",
     description: "Prevent spikes and runaway executions",
     plans: {
+      [PLAN_NAMES.basicFree]: "1M",
       [PLAN_NAMES.basic]: "1M",
       [PLAN_NAMES.pro]: "Starts at 10M",
       [PLAN_NAMES.enterprise]: "Custom",
@@ -389,6 +451,7 @@ const FEATURES: Feature[] = [
     name: "Metrics granularity",
     description: "Real-time function metrics",
     plans: {
+      [PLAN_NAMES.basicFree]: "15 minutes",
       [PLAN_NAMES.basic]: "15 minutes",
       [PLAN_NAMES.pro]: "5 minutes",
       [PLAN_NAMES.enterprise]: "20 seconds",
@@ -400,6 +463,7 @@ const FEATURES: Feature[] = [
     name: "Trace and log history",
     description: "Tracing for every function run",
     plans: {
+      [PLAN_NAMES.basicFree]: "24 hours",
       [PLAN_NAMES.basic]: "7 days",
       [PLAN_NAMES.pro]: "14 days",
       [PLAN_NAMES.enterprise]: "90 days",
@@ -411,6 +475,7 @@ const FEATURES: Feature[] = [
     name: "Exportable and scrapable metrics",
     description: "Pushable and prom scrapable metrics",
     plans: {
+      [PLAN_NAMES.basicFree]: false,
       [PLAN_NAMES.basic]: false,
       [PLAN_NAMES.pro]: "$200/mo",
       [PLAN_NAMES.enterprise]: true,
@@ -422,6 +487,7 @@ const FEATURES: Feature[] = [
     name: "Trace and log exports",
     description: "Push traces and logs to other systems",
     plans: {
+      [PLAN_NAMES.basicFree]: false,
       [PLAN_NAMES.basic]: false,
       [PLAN_NAMES.pro]: "$2 per 1m steps",
       [PLAN_NAMES.enterprise]: "Contact us",
@@ -432,6 +498,7 @@ const FEATURES: Feature[] = [
     name: "Batch size",
     description: "Process high-throughput events in batches",
     plans: {
+      [PLAN_NAMES.basicFree]: "5",
       [PLAN_NAMES.basic]: "5",
       [PLAN_NAMES.pro]: "100",
       [PLAN_NAMES.enterprise]: "Custom",
@@ -443,6 +510,7 @@ const FEATURES: Feature[] = [
     name: "Batch timeout",
     description: "Configure micro batching timeouts",
     plans: {
+      [PLAN_NAMES.basicFree]: "30 seconds",
       [PLAN_NAMES.basic]: "30 seconds",
       [PLAN_NAMES.pro]: "120 seconds",
       [PLAN_NAMES.enterprise]: "20 minutes",
@@ -454,6 +522,7 @@ const FEATURES: Feature[] = [
     name: "Lookback period",
     description: "Easily search and match on past events within functions",
     plans: {
+      [PLAN_NAMES.basicFree]: "1 hour",
       [PLAN_NAMES.basic]: "1 hour",
       [PLAN_NAMES.pro]: "3 days",
       [PLAN_NAMES.enterprise]: "Custom",
@@ -464,7 +533,8 @@ const FEATURES: Feature[] = [
     name: "Maximum run length",
     description: "The lifetime of a function, including sleeps",
     plans: {
-      [PLAN_NAMES.basic]: "95 days",
+      [PLAN_NAMES.basicFree]: "30 days",
+      [PLAN_NAMES.basic]: "90 days",
       [PLAN_NAMES.pro]: "366 days",
       [PLAN_NAMES.enterprise]: "Custom",
     },
@@ -475,6 +545,7 @@ const FEATURES: Feature[] = [
     description:
       "Dedicated Inngest infrastructure for low latency, high throughput execution",
     plans: {
+      [PLAN_NAMES.basicFree]: false,
       [PLAN_NAMES.basic]: false,
       [PLAN_NAMES.pro]: false,
       [PLAN_NAMES.enterprise]: "$500 per 1,000 concurrent steps",
@@ -485,6 +556,9 @@ const FEATURES: Feature[] = [
     name: "Users",
     description: "Develop with your entire team",
     plans: {
+      [PLAN_NAMES.basicFree]: `${
+        getPlan(PLAN_NAMES.basicFree).cost.includedUsers
+      }`,
       [PLAN_NAMES.basic]: {
         value: `${getPlan(PLAN_NAMES.basic).cost.includedUsers}`,
         description: `then $${
@@ -505,6 +579,7 @@ const FEATURES: Feature[] = [
     name: "SSO/SAML",
     description: "Configure SAML for simple and secure user management",
     plans: {
+      [PLAN_NAMES.basicFree]: false,
       [PLAN_NAMES.basic]: false,
       [PLAN_NAMES.pro]: false,
       [PLAN_NAMES.enterprise]: true,
@@ -515,6 +590,7 @@ const FEATURES: Feature[] = [
     name: "SLA",
     description: "Event and execution SLAs",
     plans: {
+      [PLAN_NAMES.basicFree]: false,
       [PLAN_NAMES.basic]: false,
       [PLAN_NAMES.pro]: false,
       [PLAN_NAMES.enterprise]: "99.99%",
@@ -525,6 +601,10 @@ const FEATURES: Feature[] = [
     name: "Support",
     description: "Dedicated support direct from our engineers",
     plans: {
+      [PLAN_NAMES.basicFree]: {
+        value: "Email, community",
+        description: "No SLA",
+      },
       [PLAN_NAMES.basic]: { value: "Email, community", description: "No SLA" },
       [PLAN_NAMES.pro]: { value: "Email, tickets", description: "48h SLA" },
       [PLAN_NAMES.enterprise]: {
@@ -538,6 +618,7 @@ const FEATURES: Feature[] = [
     name: "HIPAA",
     description: "Sign BAAs for healthcare services",
     plans: {
+      [PLAN_NAMES.basicFree]: false,
       [PLAN_NAMES.basic]: false,
       [PLAN_NAMES.pro]: "$500 / mo",
       [PLAN_NAMES.enterprise]: true,
@@ -548,6 +629,7 @@ const FEATURES: Feature[] = [
     name: "RBAC",
     description: "Assign roles to manage and protect your data",
     plans: {
+      [PLAN_NAMES.basicFree]: false,
       [PLAN_NAMES.basic]: false,
       [PLAN_NAMES.pro]: false,
       [PLAN_NAMES.enterprise]: true,
@@ -558,6 +640,7 @@ const FEATURES: Feature[] = [
     name: "Audit trails",
     description: "Comprehensive tracking for simple security",
     plans: {
+      [PLAN_NAMES.basicFree]: false,
       [PLAN_NAMES.basic]: false,
       [PLAN_NAMES.pro]: false,
       [PLAN_NAMES.enterprise]: true,
@@ -568,6 +651,7 @@ const FEATURES: Feature[] = [
     name: "PII prevention and masking",
     description: "Protect sensitive data directly in events",
     plans: {
+      [PLAN_NAMES.basicFree]: false,
       [PLAN_NAMES.basic]: false,
       [PLAN_NAMES.pro]: false,
       [PLAN_NAMES.enterprise]: "$750 / mo",
@@ -579,7 +663,7 @@ const FEATURES: Feature[] = [
 export async function getStaticProps() {
   return {
     props: {
-      designVersion: "2",
+      designVersion: "3",
       meta: {
         title: "Pricing",
         description: "Simple pricing. Powerful functionality.",

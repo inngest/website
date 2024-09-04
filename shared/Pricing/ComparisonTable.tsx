@@ -12,7 +12,7 @@ export default function ComparisonTable({ plans, features, sections }) {
   const [selectedPlan, setSelectedPlan] = useState(plans[0].name);
 
   const renderPlanTabs = () => (
-    <div className="grid grid-cols-3 mb-4 md:hidden pt-4 sticky top-14 bg-canvasBase z-10">
+    <div className="grid grid-cols-4 mb-4 md:hidden pt-4 sticky top-14 bg-canvasBase z-10">
       {plans.map((plan, i) => (
         <button
           key={i}
