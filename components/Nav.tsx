@@ -1,17 +1,18 @@
 "use client";
 import { useState, useEffect } from "react";
-import ArrowRight from "src/shared/Icons/ArrowRight";
+import {
+  RiMenuLine,
+  RiCloseLine,
+  RiGithubFill,
+  RiDiscordFill,
+  RiTwitterXFill,
+  RiArrowRightLine,
+} from "@remixicon/react";
 import Logo from "src/shared/Icons/Logo";
 import classNames from "src/utils/classNames";
-import Github from "src/shared/Icons/Github";
-import Discord from "src/shared/Icons/Discord";
-import XSocialIcon from "src/shared/Icons/XSocialIcon";
 import Container from "src/shared/layout/Container";
-import BurgerMenu from "src/shared/Icons/BurgerMenu";
-import CloseMenu from "src/shared/Icons/CloseMenu";
 import Menu, { type MenuProps } from "./Nav/Menu";
 import { productLinks, resourcesLinks } from "./Nav/links";
-import { RiArrowRightSLine } from "@remixicon/react";
 
 const menu: {
   title: string;
@@ -51,19 +52,19 @@ const iconLinks: {
   {
     title: "Github",
     url: "https://github.com/inngest/inngest",
-    icon: Github,
+    icon: RiGithubFill,
     iconClassName: "scale-110",
   },
   {
     title: "Discord",
     url: "/discord",
-    icon: Discord,
+    icon: RiDiscordFill,
     iconClassName: "scale-125",
   },
   {
     title: "X",
     url: "https://twitter.com/inngest",
-    icon: XSocialIcon,
+    icon: RiTwitterXFill,
   },
 ];
 
@@ -103,7 +104,7 @@ export default function Nav() {
               className="text-basis md:hidden"
               onClick={() => toggleMenu()}
             >
-              {menuState ? <CloseMenu /> : <BurgerMenu />}
+              {menuState ? <RiCloseLine /> : <RiMenuLine />}
             </button>
           </div>
           <nav
@@ -143,7 +144,7 @@ export default function Nav() {
                         className={`flex flex-shrink-0 items-center text-basis/90 px-3.5 py-2 hover:text-primary-intense`}
                         title={title}
                       >
-                        <item.icon className={iconClassName} />
+                        <item.icon className={`h-4 w-4 ${iconClassName}`} />
                       </a>
                     </li>
                   )
@@ -160,10 +161,10 @@ export default function Nav() {
 
               <a
                 href={`${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=nav`}
-                className="group flex gap-0.5 items-center rounded-md text-sm font-medium pl-6 pr-5 py-2 bg-cta hover:bg-ctaHover transition-all text-onContrast flex-shrink-0"
+                className="flex gap-1 items-center rounded-md text-sm font-medium pl-5 pr-4 py-2 bg-cta hover:bg-ctaHover transition-all text-onContrast flex-shrink-0"
               >
                 Sign Up
-                <RiArrowRightSLine className="group-hover:translate-x-1.5 relative top-px transition-transform duration-150 " />
+                <RiArrowRightLine className="h-4 w-4" />
               </a>
             </div>
           </nav>
