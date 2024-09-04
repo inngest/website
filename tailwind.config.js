@@ -292,9 +292,13 @@ module.exports = {
       },
     },
     fontFamily: {
-      sans: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
-      heading: `Inter -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"`,
-      mono: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+      sans: 'CircularXX, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto',
+      heading:
+        'CircularXX, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto',
+      mono: 'CircularXXMono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+      // We can use these temporary classes while we transition to the new fonts
+      circular:
+        'CircularXX, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto',
     },
   },
   plugins: [require("@tailwindcss/typography")],
