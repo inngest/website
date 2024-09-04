@@ -1,11 +1,5 @@
-import CopyBtn from "./CopyBtn";
 import Container from "../layout/Container";
-import SendEvents from "./HomeImg/SendEvents";
 import SectionHeader from "../SectionHeader";
-import { log } from "console";
-import HomePatternsCheck from "../Icons/HomePatternsCheck";
-import ArrowRight from "../Icons/ArrowRight";
-import Github from "../Icons/Github";
 
 export default function ShipInHours() {
   return (

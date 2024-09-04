@@ -2,13 +2,11 @@ import React, { useEffect, useState, useRef } from "react";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { atomOneDark as syntaxThemeDark } from "react-syntax-highlighter/dist/cjs/styles/hljs";
 
-import { MDXRemote } from "next-mdx-remote";
 
 import Header from "../shared/Header";
 import Footer from "../shared/Footer";
 import Container from "../shared/layout/Container";
 import { Button } from "src/shared/Button";
-import Arrow from "src/shared/Icons/Arrow";
 import ArrowRight from "src/shared/Icons/ArrowRight";
 import XSocialIcon from "src/shared/Icons/XSocialIcon";
 

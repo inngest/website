@@ -83,7 +83,8 @@ You can see this in the example above in the `event` parameter.
 #### `step`
 [Inngest steps](/docs/learn/inngest-steps) are fundamental building blocks in Inngest functions. They are used to manage execution flow. Each step is a discrete task, which can be executed, retried, and recovered independently, without re-executing other successful steps.
 
-If your handler contains numerous functions, it is a good practice to [wrap each one in a step](/docs/guides/multi-step-functions). In this way, you can manage complex state easier and if any task fails, it will be retried independently from others.
+It's helpful to think of steps as code-level transactions.  If your handler contains several independent tasks, it's good practice to [wrap each one in a step](/docs/guides/multi-step-functions).
+In this way, you can manage complex state easier and if any task fails, it will be retried independently from others.
 
 There are several step methods available at your disposal, for example, `step.run`, `step.sleep()`, or `step.waitForEvent()`.
 
@@ -102,9 +103,9 @@ Inngest's scheduled functions enable you to run tasks automatically at specified
 
 You can enqueue an Inngest function to run at a specific time in the future. The task will be executed exactly when needed without manual intervention. Perfect for actions like sending follow-up emails or processing delayed orders.
 
-### <a href="/docs/guides/multi-step-functions" className="flex items-center gap-4"><IconConcurrency size="2rem"/> Multi-step functions</a> {{anchor: false}}
+### <a href="/docs/guides/multi-step-functions" className="flex items-center gap-4"><IconConcurrency size="2rem"/> Step functions</a> {{anchor: false}}
 
-Multi-step functions allow you to create complex workflows. You can coordinate between multiple steps, including waiting for other events, delaying execution, or running code conditionally based on previous steps or incoming events. Each [step](/docs/learn/inngest-steps) is individually retriable, making the workflow robust against failures. Ideal for scenarios like onboarding flows or conditional notifications.
+Step functions allow you to create complex workflows. You can coordinate between multiple steps, including waiting for other events, delaying execution, or running code conditionally based on previous steps or incoming events. Each [step](/docs/learn/inngest-steps) is individually retriable, making the workflow robust against failures. Ideal for scenarios like onboarding flows or conditional notifications.
 
 ### <a href="/docs/guides/fan-out-jobs" className="flex items-center gap-4"><IconConcurrency size="2rem"/> Fan-out functions</a> {{anchor: false}}
 

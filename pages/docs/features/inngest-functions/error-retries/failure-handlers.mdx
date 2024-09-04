@@ -1,0 +1,37 @@
+import { CardGroup, Card, CodeGroup, Callout } from "src/shared/Docs/mdx";
+
+# Failure handlers
+
+If your function exhausts all of its retries, it will be marked as "Failed." You can handle this circumstance by providing an [`onFailure`](/docs/reference/functions/handling-failures) handler when defining your function.
+
+The example below checks if a user's subscription is valid a total of six times. If you can't check the subscription after all retries, you'll unsubscribe the user:
+
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
+inngest.createFunction(
+  {
+    id: "update-subscription",
+    retries: 5,
+    onFailure: async ({ event, error }) => {
+      // if the subscription check fails after all retries, unsubscribe the user
+      await unsubscribeUser(event.data.userId);
+    },
+  },
+  { event: "user/subscription.check" },
+  async ({ event }) => { /* ... */ },
+);
+```
+</CodeGroup>
+
+Internally, this handler creates a second function that listens for the [`inngest/function.failed`](/docs/reference/functions/handling-failures#the-inngest-function-failed-event) event, which you can listen to yourself to capture all failed runs across your system.
+
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
+inngest.createFunction(
+  { id: "handle-any-fn-failure" },
+  { event: "inngest/function.failed" },
+  async ({ event }) => { /* ... */ },
+);
+```
+</CodeGroup>
+

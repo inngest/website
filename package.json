@@ -80,6 +80,7 @@
     "react-fast-compare": "3.2.0",
     "react-fast-marquee": "1.6.2",
     "react-feather": "2.0.10",
+    "react-medium-image-zoom": "5.2.8",
     "react-syntax-highlighter": "15.5.0",
     "react-use": "17.4.0",
     "react-youtube-embed": "1.0.3",
@@ -133,5 +134,10 @@
     "pnpm": "8.x"
   },
   "packageManager": "pnpm@8.7.0",
-  "private": true
+  "private": true,
+  "pnpm": {
+    "patchedDependencies": {
+      "react-medium-image-zoom@5.2.8": "patches/react-medium-image-zoom@5.2.8.patch"
+    }
+  }
 }

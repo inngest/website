@@ -31,6 +31,7 @@ const options = {
     "https://sentry.io",
     "https://x.com",
     "https://devjobs.at/",
+    "https://nextjs.org/",
   ],
 };
 

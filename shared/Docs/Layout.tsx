@@ -15,7 +15,8 @@ import { SectionProvider } from "./SectionProvider";
 import { useMobileNavigationStore } from "./MobileNavigation";
 import { getOpenGraphImageURL } from "../../utils/social";
 import clsx from "clsx";
-import { MDXComponents } from "mdx/types";
+
+import { Breadcrumb } from "./Breadcrumb";
 
 const GITHUB_BRANCH = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_REF || "main";
 const GITHUB_PREFIX = `https://github.com/inngest/website/tree/${GITHUB_BRANCH}/`;
@@ -67,7 +68,7 @@ export function Layout({
     : undefined;
 
   return (
-    <div className="bg-canvas-base">
+    <div className="dark:bg-carbon-1000">
       <MDXProvider components={mdxComponents as any}>
         <Head>
           <title>{pageTitle}</title>
@@ -81,15 +82,21 @@ export function Layout({
           <meta name="twitter:title" content={pageTitle} />
           <meta name="twitter:image" content={metaImage} />
 
+          <link rel="preconnect" href="https://fonts-cdn.inngest.com/" />
+          <link
+            rel="stylesheet"
+            href="https://fonts-cdn.inngest.com/fonts.css"
+          />
+
           <script dangerouslySetInnerHTML={{ __html: modeScript }} />
         </Head>
         <SectionProvider sections={sections}>
           <Header />
 
-          <div className="lg:ml-72 xl:ml-80">
+          <div className="lg:ml-[248px]">
             <motion.header
               layoutScroll
-              className="fixed inset-y-0 mt-14 left-0 z-40 contents w-72 overflow-y-auto border-r border-slate-900/10 px-6 pt-4 pb-8 dark:border-white/10 lg:block xl:w-80"
+              className="fixed inset-y-0 mt-14 left-0 z-40 contents lg:w-[248px] overflow-y-auto border-r border-slate-900/10 pl-4 pr-3 py-4 pb-8 dark:border-white/10 lg:block"
             >
               <Navigation className="hidden lg:block" />
             </motion.header>
@@ -114,6 +121,7 @@ export function Layout({
             >
               <main className="pt-6 lg:pt-8 xl:pr-8">
                 <Prose as="article">
+                  <Breadcrumb />
                   {children}
                   <div
                     className={

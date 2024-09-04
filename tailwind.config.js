@@ -271,7 +271,7 @@ module.exports = {
           "rgb(var(--color-foreground-code-entityNameFunction) / <alpha-value>)",
       },
       textDecorationColor: {
-        link: 'rgb(var(--color-foreground-link) / <alpha-value>)',
+        link: "rgb(var(--color-foreground-link) / <alpha-value>)",
       },
       fontSize: {
         "5xl": ["3rem", "1.3"],
@@ -292,13 +292,9 @@ module.exports = {
       },
     },
     fontFamily: {
-      sans: 'CircularXX, "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto',
-      heading:
-        'CircularXX, "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto',
-      mono: 'CircularXXMono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
-      // We can use these temporary classes while we transition to the new fonts
-      circular:
-        'CircularXX, "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto',
+      sans: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
+      heading: `Inter -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"`,
+      mono: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
     },
   },
   plugins: [require("@tailwindcss/typography")],

@@ -21,15 +21,44 @@ const Batching = ({
         width="25.5"
         height="25.5"
         rx="1.75"
-        stroke={fill}
+        stroke={fill === "currentColor" ? fill : undefined}
+        className={`fill-${fill ? fill : "primary"}`}
         strokeOpacity="0.5"
         strokeWidth="1.5"
         strokeDasharray="3 3"
       />
-      <circle cx="13" cy="13" r="3.25" stroke={fill} strokeWidth="1.5" />
-      <circle cx="23" cy="13" r="3.25" stroke={fill} strokeWidth="1.5" />
-      <circle cx="23" cy="23" r="3.25" stroke={fill} strokeWidth="1.5" />
-      <circle cx="13" cy="23" r="3.25" stroke={fill} strokeWidth="1.5" />
+      <circle
+        cx="13"
+        cy="13"
+        r="3.25"
+        stroke={fill === "currentColor" ? fill : undefined}
+        className={`fill-${fill ? fill : "primary"}`}
+        strokeWidth="1.5"
+      />
+      <circle
+        cx="23"
+        cy="13"
+        r="3.25"
+        stroke={fill === "currentColor" ? fill : undefined}
+        className={`fill-${fill ? fill : "primary"}`}
+        strokeWidth="1.5"
+      />
+      <circle
+        cx="23"
+        cy="23"
+        r="3.25"
+        stroke={fill === "currentColor" ? fill : undefined}
+        className={`fill-${fill ? fill : "primary"}`}
+        strokeWidth="1.5"
+      />
+      <circle
+        cx="13"
+        cy="23"
+        r="3.25"
+        stroke={fill === "currentColor" ? fill : undefined}
+        className={`fill-${fill ? fill : "primary"}`}
+        strokeWidth="1.5"
+      />
     </svg>
   );
 };

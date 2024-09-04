@@ -1,5 +1,4 @@
 import FeaturedLink from "./FeaturedLink";
-import ArrowRight from "../../Icons/ArrowRight";
 import NavLink from "./NavLink";
 
 export default function HeaderDropdown({ navLinks }) {

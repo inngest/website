@@ -1,14 +1,16 @@
 "use client";
 import { useState, useEffect } from "react";
-import ArrowRight from "../Icons/ArrowRight";
+import {
+  RiMenuLine,
+  RiCloseLine,
+  RiGithubFill,
+  RiDiscordFill,
+  RiTwitterXFill,
+  RiArrowRightLine,
+} from "@remixicon/react";
 import Logo from "../Icons/Logo";
 import classNames from "src/utils/classNames";
-import Github from "../Icons/Github";
-import Discord from "../Icons/Discord";
-import XSocialIcon from "../Icons/XSocialIcon";
 import Container from "../layout/Container";
-import BurgerMenu from "../Icons/BurgerMenu";
-import CloseMenu from "../Icons/CloseMenu";
 import HeaderDropdown from "./Dropdown";
 import { productLinks, learnLinks } from "./headerLinks";
 
@@ -52,7 +54,7 @@ export function Header() {
               className="text-slate-400 md:hidden"
               onClick={() => toggleMenu()}
             >
-              {menuState ? <CloseMenu /> : <BurgerMenu />}
+              {menuState ? <RiCloseLine /> : <RiMenuLine />}
             </button>
           </div>
           <nav
@@ -106,7 +108,7 @@ export function Header() {
                     href="https://github.com/inngest/inngest"
                     className="flex flex-shrink-0 items-center text-white font-medium px-3.5 py-2 text-sm ml-4 hover:opacity-60"
                   >
-                    <Github />
+                    <RiGithubFill className="h-4 w-4" />
                   </a>
                 </li>
                 <li>
@@ -114,7 +116,7 @@ export function Header() {
                     href="https://www.inngest.com/discord"
                     className="flex flex-shrink-0 items-center text-white font-medium px-3.5 py-2 text-sm  hover:opacity-60"
                   >
-                    <Discord />
+                    <RiDiscordFill className="h-4 w-4" />
                   </a>
                 </li>
                 <li>
@@ -122,7 +124,7 @@ export function Header() {
                     href="https://twitter.com/inngest"
                     className="flex flex-shrink-0 items-center text-white font-medium px-3.5 py-2 text-sm hover:opacity-60"
                   >
-                    <XSocialIcon />
+                    <RiTwitterXFill className="h-4 w-4" />
                   </a>
                 </li>
               </ul>
@@ -140,7 +142,7 @@ export function Header() {
                 className="group flex gap-0.5 items-center rounded-full text-sm font-medium pl-6 pr-5 py-2  bg-indigo-500 hover:bg-indigo-400 transition-all text-white flex-shrink-0"
               >
                 Sign Up
-                <ArrowRight className="group-hover:translate-x-1.5 relative top-px transition-transform duration-150 " />
+                <RiArrowRightLine className="h-4 w-4 group-hover:translate-x-1.5 relative top-px transition-transform duration-150 " />
               </a>
             </div>
           </nav>

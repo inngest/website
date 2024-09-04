@@ -3,10 +3,13 @@ import { motion, useMotionTemplate, useMotionValue } from "framer-motion";
 
 import { GridPattern } from "./GridPattern";
 import { Heading } from "./Heading";
-import { ChatBubbleIcon } from "./icons/ChatBubbleIcon";
-import { EnvelopeIcon } from "./icons/EnvelopeIcon";
-import { UserIcon } from "./icons/UserIcon";
-import { UsersIcon } from "./icons/UsersIcon";
+import {
+  RiChat3Line,
+  RiUserLine,
+  RiGroupLine,
+  RiMailLine,
+  type RemixiconComponentType
+} from "@remixicon/react";
 import {
   PaperAirplaneIcon,
   ClockIcon,
@@ -28,7 +31,7 @@ const icons = {
   "rectangle-group": RectangleGroupIcon,
 } as const;
 
-type IconType = keyof typeof icons;
+type IconType = keyof typeof icons | RemixiconComponentType;
 
 const patterns = [
   {
@@ -64,7 +67,7 @@ const resources = [
     name: "Contacts",
     description:
       "Learn about the contact model and how to create, retrieve, update, delete, and list contacts.",
-    icon: UserIcon,
+    icon: RiUserLine,
     pattern: {
       y: 16,
       squares: [
@@ -78,7 +81,7 @@ const resources = [
     name: "Conversations",
     description:
       "Learn about the conversation model and how to create, retrieve, update, delete, and list conversations.",
-    icon: ChatBubbleIcon,
+    icon: RiChat3Line,
     pattern: {
       y: -6,
       squares: [
@@ -92,7 +95,7 @@ const resources = [
     name: "Messages",
     description:
       "Learn about the message model and how to create, retrieve, update, delete, and list messages.",
-    icon: EnvelopeIcon,
+    icon: RiMailLine,
     pattern: {
       y: 32,
       squares: [
@@ -106,7 +109,7 @@ const resources = [
     name: "Groups",
     description:
       "Learn about the group model and how to create, retrieve, update, delete, and list groups.",
-    icon: UsersIcon,
+    icon: RiGroupLine,
     pattern: {
       y: 22,
       squares: [[0, 1]],
@@ -117,7 +120,10 @@ const resources = [
 function ResourceIcon({ icon: Icon }) {
   return (
     <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/5 ring-1 ring-slate-900/25 backdrop-blur-[2px] transition duration-300 group-hover:bg-white/50 group-hover:ring-slate-900/25 dark:bg-white/7.5 dark:ring-white/15 dark:group-hover:bg-indigo-300/10 dark:group-hover:ring-indigo-400">
-      <Icon className="h-4 w45 fill-slate-700/10 stroke-slate-700 transition-colors duration-300 group-hover:stroke-slate-900 dark:fill-white/10 dark:stroke-slate-400 dark:group-hover:fill-indigo-300/10 dark:group-hover:stroke-indigo-400" />
+      <Icon
+        fill={"black"}
+        className="h-4 w45 fill-slate-700/10 stroke-slate-700 transition-colors duration-300 group-hover:stroke-slate-900 dark:fill-white/10 dark:stroke-slate-400 dark:group-hover:fill-indigo-300/10 dark:group-hover:stroke-indigo-400"
+      />
     </div>
   );
 }

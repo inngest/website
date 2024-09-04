@@ -1,144 +1,160 @@
-import { CodeBracketSquareIcon, RocketLaunchIcon } from '@heroicons/react/20/solid';
-import { Home } from 'src/shared/Docs/Home'
-import { Guides } from 'src/shared/Docs/Guides'
-import { ResourceGrid, Resource } from 'src/shared/Docs/Resources'
-import { GuideGrid, Guide } from 'src/shared/Docs/Guides'
-import { HeroPattern } from 'src/shared/Docs/HeroPattern'
-import EventIcon from 'src/shared/Icons/Event'
-import StepsIcon from 'src/shared/Icons/Steps'
-import TypeScriptIcon from 'src/shared/Icons/TypeScript';
+import { CardGroup, Card, Button } from "src/shared/Docs/mdx";
 import PythonIcon from 'src/shared/Icons/Python';
-import GuideIcon from 'src/shared/Icons/Guide';
+import GoIcon from 'src/shared/Icons/Go';
+import {
+  RiCloudLine,
+  RiNextjsFill,
+  RiGitPullRequestFill,
+  RiGuideFill,
+} from "@remixicon/react";
+import InngestIcon from 'src/shared/Icons/InngestIcon';
 
-export const pageTitle = 'Inngest Documentation & Guides'
-export const description =
-  'Learn how to use Inngest to deploy reliable background functions to any platform.'
 export const hidePageSidebar = true;
 
-## Introduction to Inngest
+# Inngest Documentation
 
-Inngest is an event-driven durable workflow engine that enables you to run reliable code on any platform, including serverless.
-
-With any Inngest SDK, you write [<CodeBracketSquareIcon className="h-4 inline" style={{ marginTop: "-2px" }}/> **Functions**](/docs/learn/inngest-functions) in your codebase and make them available to Inngest using an HTTP endpoint. Functions are triggered by [<EventIcon className="inline" style={{ marginTop: "-2px" }}/> **Events**](docs/events) which can be sent with our SDKs, via a regular POST request, or can come from an external source such as webhooks.
-
-Functions are composed of [<StepsIcon className="h-4 inline" style={{ marginTop: "-2px" }}/> **Steps**](/docs/learn/inngest-steps), which decouple parts of your functions into individually retriable blocks. Steps enable you to write complex, durable, long-lived workflows in a single function, on any platform: servers, serverless, or edge.
+Inngest is an event-driven durable execution platform that allows you to run fast, reliable code on any platform, without managing queues, infra, or state.  
 
 
-## Getting Started
+Write functions in TypeScript, Python or Go to power background and scheduled jobs, with steps built in.  We handle the backend infra, queueing, scaling, concurrency, throttling, rate limiting, and observability for you.
 
-Discover how to get set up with Inngest in just a few minutes:
-
-<ResourceGrid cols={3} border={false}>
-
-  <Resource resource={{
-    href: "/docs/getting-started/nextjs-quick-start?ref=docs-homepage",
-    name: "Next.js quick start",
-    logo: { light: "/assets/brand-logos/next-js-dark.svg", dark: "/assets/brand-logos/next-js-white.svg" },
-    pattern: 0,
-  }}/>
-
-  <Resource resource={{
-    href: "/docs/getting-started/python-quick-start?ref=docs-homepage",
-    name: "Python quick start",
-    logo: { light: "/assets/brand-logos/python-logo-only.svg", dark: "/assets/brand-logos/python-logo-only.svg" },
-    pattern: 0,
-  }}/>
-
-  <div/>
-
-  <Resource resource={{
-    href: "/docs/reference/typescript?ref=docs-homepage",
-    name: "TypeScript SDK Reference",
-    icon: TypeScriptIcon,
-    description: "Explore every SDK feature and option",
-    pattern: 0,
-  }}/>
-
-  <Resource resource={{
-    href: "/docs/reference/python?ref=docs-homepage",
-    name: "Python SDK Reference",
-    icon: PythonIcon,
-    description: "Explore every SDK feature and option",
-    pattern: 0,
-  }}/>
-
-</ResourceGrid>
+## Get started
 
 
-## Guides
+<CardGroup cols={3}>
 
-<ResourceGrid cols={3}>
+  <Card 
+    href={"/docs/getting-started/nextjs-quick-start"}
+    title={"Next.js"}
+    icon={<RiNextjsFill className="text-basis h-8 w-8"/>}
+    iconPlacement="top"
+  >
+  Add queueing, events, crons, and step functions to your Next app on any cloud provider.
+  </Card>
 
-<Resource resource={{
-  href: "/docs/guides/background-jobs",
-  name: "Background jobs",
-  icon: "paper-airplane",
-  description: "Run long-running tasks in the background out of the critical path of a request.",
-  pattern: 0,
-}}/>
+  <Card 
+    href={"/docs/getting-started/python-quick-start"}
+    title={"Python"}
+    icon={<PythonIcon className="text-basis h-8 w-8"/>}
+    iconPlacement="top"
+  >
+    Develop reliable step functions in Python without managing queueing systems or DAG based workflows.
+  </Card>
 
-<Resource resource={{
-  href: "/docs/guides/delayed-functions",
-  name: "Enqueueing future jobs",
-  icon: "chevron-double-right",
-  description: "Schedule or delay functions to run in the future.",
-  pattern: 1,
-}}/>
 
-<Resource resource={{
-  href: "/docs/guides/step-parallelism",
-  name: "Parallelize steps",
-  icon: "parallel",
-  description: "Run function steps in parallel to speed up execution.",
-  pattern: 2,
-}}/>
+  <Card 
+    href={"https://pkg.go.dev/github.com/inngest/inngestgo@v0.7.2"}
+    title={"Go"}
+    icon={<GoIcon className="text-basis h-8 w-8"/>}
+    iconPlacement="top"
+  >
+    Write fast, durable step functions in your Go application using the standard library.
+  </Card>
 
-<Resource resource={{
-  href: "/docs/guides/fan-out-jobs",
-  name: "Fan-out",
-  icon: "arrows-pointing-out",
-  description: "Use events to trigger multiple functions at once.",
-  pattern: 3,
-}}/>
+</CardGroup>
 
-<Resource resource={{
-  href: "/docs/guides/batching",
-  name: "Batching events",
-  icon: "square-3-stack-3d",
-  description: "Improve efficiency with high-load systems by processing batches of events at once.",
-  pattern: 2,
-}}/>
 
-<Resource resource={{
-  href: "/docs/guides/scheduled-functions",
-  name: "Scheduled functions",
-  icon: "clock",
-  description: "Run functions periodically on a cron schedule.",
-  pattern: 1,
-}}/>
+<CardGroup cols={1} className="my-10 px-12">
 
-<Resource resource={{
-  href: "/docs/guides/invoking-functions-directly",
-  name: "Invoking functions directly",
-  icon: "rectangle-group",
-  description: "Call one function from another across multiple apps.",
-  pattern: 0
-}}/>
+  <Card 
+    title={"Write reliable workflows"}
+  >
+    <div className="flex flex-col md:flex-row justify-between">
+      <div className="md:max-w-[65%]">
+        Learn how Inngest's Durable Execution Engine ensures that your workflow already run until completion with steps.
+      </div>
+      <div className="flex items-end mt-4 md:mt-0 justify-end">
+        <Button
+          href={"/docs/learn/how-functions-are-executed"}
+          size="sm"
+          variant="primaryV2"
+        >
+          Learn how Inngest works
+        </Button>
+      </div>
+    </div>
+  </Card>
 
-<Resource resource={{
-  href: "/docs/apps/cloud?ref=docs-homepage",
-  name: "Going to production",
-  icon: RocketLaunchIcon,
-  description: "How to sync your app with Inngest cloud",
-  pattern: 0,
-}}/>
+</CardGroup>
 
-</ResourceGrid>
 
-## Support
+## Build with Inngest
+
+<CardGroup cols={3}>
+
+  <Card 
+    href={"/docs/guides/user-defined-workflows"}
+    title={"User-defined Workflows"}
+    iconPlacement="top"
+  >
+    Users today are demanding customization and integrations. Discover how to build a Workflow Engine for your users using Inngest.
+  </Card>
+
+  <Card 
+    href={"/docs/examples/ai-agents-and-rag"}
+    title={"AI Agents and RAG"}
+    iconPlacement="top"
+  >
+    Inngest offers tools to support the development of AI-powered applications. Learn how to build a RAG workflow with Inngest.
+  </Card>
+
+
+  <Card 
+    href={"/docs/examples/email-sequence"}
+    title={"Email sequence"}
+    iconPlacement="top"
+  >
+    A drip campaign is usually based on your user's behavior.
+    This example will walk you through many examples of email workflows.
+  </Card>
+
+</CardGroup>
+
+
+## Explore
+
+<CardGroup cols={2}>
+
+  <Card 
+    href={"/docs/features/inngest-functions/steps-workflows"}
+    title={"Function steps"}
+    icon={<RiGuideFill className="text-basis h-4 w-4"/>}
+  >
+    Learn how to leverage Function steps to build reliable workflows.
+  </Card>
+
+
+  <Card 
+    href={"/docs/guides/flow-control"}
+    title={"Flow Control"}
+    icon={<RiGitPullRequestFill className="rotate-90 text-basis h-4 w-4" />}
+  >
+    Add multi-tenant aware prioritization, concurrency, throttling, batching, and rate limiting capabilities to your Inngest Functions.
+  </Card>
+
+  <Card 
+    href={"/docs/platform/monitor/observability-metrics"}
+    title={"Inngest Platform"}
+    icon={<InngestIcon className="text-basis h-4 w-4"/>}
+  >
+    Monitor your deployments with Metrics and Function & Events Logs.
+  </Card>
+
+  <Card 
+    href={"/docs/platform/deployment"}
+    title={"Deploy your Inngest Functions"}
+    icon={<RiCloudLine className="text-basis h-4 w-4"/>}
+  >
+    Deploy your Inngest Functions to Vercel, Netlify, Cloudflare Pages and other Cloud Providers.
+  </Card>
+
+</CardGroup>
+
+
+## Community & Support
 
 If you need help with Inngest, you can reach out to us in the following ways:
 
-* [Open a ticket in our support center](https://app.inngest.com/support)
 * [Ask your questions in our Discord community](/discord)
+* [Open a ticket in our support center](https://app.inngest.com/support)
 * [Contact our sales engineering team](/contact?ref=docs)

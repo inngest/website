@@ -54,6 +54,23 @@ const permanentRedirects = [
     "/docs/getting-started/python-quick-start",
   ],
   ["/docs/quick-start", "/docs/getting-started/nextjs-quick-start"],
+  [
+    "/docs/reference/typescript/functions/errors",
+    "/docs/features/inngest-functions/error-retries/inngest-errors",
+  ],
+  ["/docs/reference/middleware/overview", "/docs/features/middleware"],
+  [
+    "/docs/reference/middleware/create",
+    "/docs/features/middleware/create?guide=typescript",
+  ],
+  [
+    "/docs/reference/middleware/typescript",
+    "/docs/features/middleware/dependency-injection?guide=typescript",
+  ],
+  [
+    "/docs/reference/python/middleware/encryption",
+    "/docs/features/middleware/encryption-middleware?guide=python",
+  ],
 ];
 
 async function redirects() {

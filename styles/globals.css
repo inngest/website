@@ -37,7 +37,7 @@
   --color-dark-purple: #525398;
 
   --bg-color-d: #0a0a12;
-  --bg-color-l: var(--color-almost-white);
+  --bg-color-l: var(--color-white);
   --bg-color: var(--bg-color-l);
 
   --bg-primary-highlight: #12112b; /* A color that is used in gradients w/ the bg color to add depth */
@@ -89,9 +89,11 @@
 
 
 html.docs {
+  --primary-color: #1365d6;
   color: var(--font-color-primary);
-  background: var(--bg-color);
+  background: #FFF;
   scroll-behavior: smooth;
+  font-family: CircularXX, -apple-system, Helvetica, sans-serif;
 }
 
 * {

@@ -1,4 +1,4 @@
-import { ResourceGrid, Resource } from 'src/shared/Docs/Resources'
+import { CardGroup, Card } from "src/shared/Docs/mdx";
 import { EnvelopeIcon, Cog6ToothIcon } from "@heroicons/react/24/outline";
 import { RiBracesFill, RiCalendarScheduleFill, RiErrorWarningFill } from "@remixicon/react";
 
@@ -8,46 +8,46 @@ export const hidePageSidebar = true;
 
 Explore the features built with Inngest:
 
-<ResourceGrid cols={2}>
+<CardGroup cols={2}>
 
-<Resource resource={{
-  href: "/docs/examples/ai-agents-and-rag",
-  name: "AI Agents and RAG",
-  icon: Cog6ToothIcon,
-  description: "Use Inngest to build AI agents and RAG.",
-  pattern: 1,
-}}/>
+<Card
+  href={"/docs/examples/ai-agents-and-rag"}
+  icon={<Cog6ToothIcon className="h-6 w45 fill-carbon-700/10 stroke-carbon-700 transition-colors duration-300 group-hover:stroke-carbon-900 dark:fill-white/10 dark:stroke-carbon-400 dark:group-hover:fill-indigo-300/10 dark:group-hover:stroke-indigo-400" />}
+  title={'AI Agents and RAG'}
+>
+Use Inngest to build AI agents and RAG.
+</Card>
 
-<Resource resource={{
-  href: "/docs/examples/email-sequence",
-  name: "Email Sequence",
-  icon: EnvelopeIcon,
-  description: "Build a dynamic drip campaign based on a user's behavior.",
-  pattern: 1,
-}}/>
+<Card
+  href={"/docs/examples/email-sequence"}
+  icon={<EnvelopeIcon fill={"black"} className="h-6 w45 fill-carbon-700/10 stroke-carbon-700 transition-colors duration-300 group-hover:stroke-carbon-900 dark:fill-white/10 dark:stroke-carbon-400 dark:group-hover:fill-indigo-300/10 dark:group-hover:stroke-indigo-400" />}
+  title={'Email Sequence'}
+>
+Build a dynamic drip campaign based on a user's behavior.
+</Card>
 
-<Resource resource={{
-  href: "/docs/examples/scheduling-one-off-function",
-  name: "Scheduling a one-off function",
-  icon: RiCalendarScheduleFill,
-  description: "Schedule a function to run at a specific time.",
-  pattern: 2,
-}}/>
+<Card
+  href={"/docs/examples/scheduling-one-off-function"}
+  icon={<RiCalendarScheduleFill fill={"black"} className="h-6 w45 fill-carbon-700/10 stroke-carbon-700 transition-colors duration-300 group-hover:stroke-carbon-900 dark:fill-white/10 dark:stroke-carbon-400 dark:group-hover:fill-indigo-300/10 dark:group-hover:stroke-indigo-400" />}
+  title={'Scheduling a one-off function'}
+>
+Schedule a function to run at a specific time.
+</Card>
 
-<Resource resource={{
-  href: "/docs/examples/fetch-run-status-and-output",
-  name: "Fetch run status and output",
-  icon: RiBracesFill,
-  description: "Get the result of a run using an Event ID.",
-  pattern: 3,
-}}/>
+<Card
+  href={"/docs/examples/fetch-run-status-and-output"}
+  icon={<RiBracesFill fill={"black"} className="h-6 w45 fill-carbon-700/10 stroke-carbon-700 transition-colors duration-300 group-hover:stroke-carbon-900 dark:fill-white/10 dark:stroke-carbon-400 dark:group-hover:fill-indigo-300/10 dark:group-hover:stroke-indigo-400" />}
+  title={'Fetch run status and output'}
+>
+Get the result of a run using an Event ID.
+</Card>
 
-<Resource resource={{
-  href: "/docs/examples/track-failures-in-datadog",
-  name: "Track all function failures in Datadog",
-  icon: RiErrorWarningFill,
-  description: "Send all function failures to Datadog (or similar) for monitoring.",
-  pattern: 1,
-}}/>
+<Card
+  href={"/docs/examples/track-failures-in-datadog"}
+  icon={<RiErrorWarningFill fill={"black"} className="h-6 w45 fill-carbon-700/10 stroke-carbon-700 transition-colors duration-300 group-hover:stroke-carbon-900 dark:fill-white/10 dark:stroke-carbon-400 dark:group-hover:fill-indigo-300/10 dark:group-hover:stroke-indigo-400" />}
+  title={'Track all function failures in Datadog'}
+>
+Send all function failures to Datadog (or similar) for monitoring.
+</Card>
 
-</ResourceGrid>
+</CardGroup>

@@ -7,6 +7,9 @@ import React, { useState } from "react";
 import { ChevronDown, ChevronUp } from "react-feather";
 import Image, { ImageProps } from "next/image";
 
+import Zoom from "react-medium-image-zoom";
+import "react-medium-image-zoom/dist/styles.css";
+
 export { default as YouTube } from "react-youtube-embed";
 
 // export const a: React.FunctionComponent<LinkProps> = (props) => (
@@ -16,7 +19,13 @@ export { default as YouTube } from "react-youtube-embed";
 export const a: React.FunctionComponent<
   React.AnchorHTMLAttributes<HTMLAnchorElement>
 > = ({ children, href, target, rel, download }) => (
-  <Link href={href} target={target} rel={rel} download={download}>
+  <Link
+    href={href}
+    target={target}
+    rel={rel}
+    download={download}
+    className="text-breeze-600 dark:text-breeze-300 hover:text-breeze-500 hover:dark:text-breeze-400 hover:dark:decoration-breeze-400 hover:decoration-breeze-500"
+  >
     {children}
   </Link>
 );
@@ -118,11 +127,10 @@ export function Callout({
       className={clsx(
         "my-6 border border-transparent rounded-lg p-6",
         !Icon && "[&>:first-child]:mt-0 [&>:last-child]:mb-0",
-        variant === "default" && "bg-success dark:bg-success/40 text-success",
-        variant === "info" && "bg-info dark:bg-info/40 text-info",
-        // "dark:border-infoContrast/20 text-sky-600 dark:text-sky-100 bg-sky-300/10",
-        variant === "warning" && "bg-warning dark:bg-warning/40 text-warning",
-        // "dark:border-amber-700/20 text-amber-900 dark:text-amber-50 bg-amber-300/10",
+        (variant === "default" || variant === "info") &&
+          "dark:border-sky-600/20 text-sky-600 dark:text-sky-100 bg-sky-300/10",
+        variant === "warning" &&
+          "dark:border-amber-700/20 text-amber-900 dark:text-amber-50 bg-amber-300/10",
         Icon && "flex gap-2.5"
       )}
     >
@@ -320,9 +328,9 @@ export function Property({
 
 export function VersionBadge({ version }: { version: `v${string}` }) {
   return (
-    <div className="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-medium leading-4 bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-200">
+    <span className="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-medium leading-4 bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-200">
       <span>{version}</span>
-    </div>
+    </span>
   );
 }
 
@@ -330,6 +338,7 @@ export function ImageTheme({
   light,
   dark,
   alt,
+  className,
   ...imageProps
 }: ImageProps & {
   light: string;
@@ -338,30 +347,140 @@ export function ImageTheme({
   // if there's no dark mode image provided, invert the light mode
   if (!dark) {
     return (
-      <div>
+      <Zoom wrapElement="span" zoomMargin={25}>
         <Image
           src={light}
-          className="block dark:invert"
+          className={`${className} block dark:invert rounded`}
           alt={alt}
+          width={0}
+          height={0}
+          sizes="100vw"
+          style={{ width: "100%", height: "auto" }}
           {...imageProps}
         />
-      </div>
+      </Zoom>
     );
   }
   return (
-    <div>
-      <Image
-        src={light}
-        className="block dark:hidden"
-        alt={alt}
-        {...imageProps}
-      />
-      <Image
-        src={dark}
-        className="hidden dark:block"
-        alt={alt}
-        {...imageProps}
-      />
+    <>
+      <Zoom wrapElement="span" zoomMargin={25}>
+        <Image
+          src={light}
+          className={`${className} block dark:hidden rounded`}
+          alt={alt}
+          width={0}
+          loading="eager"
+          height={0}
+          sizes="100vw"
+          style={{ width: "100%", height: "auto" }}
+          {...imageProps}
+        />
+      </Zoom>
+      <Zoom wrapElement="span" zoomMargin={25}>
+        <Image
+          src={dark}
+          className={`${className} hidden dark:block rounded`}
+          alt={alt}
+          width={0}
+          loading="eager"
+          height={0}
+          sizes="100vw"
+          style={{ width: "100%", height: "auto" }}
+          {...imageProps}
+        />
+      </Zoom>
+    </>
+  );
+}
+
+export function CardGroup({
+  children,
+  cols = 2,
+  className,
+}: {
+  children: React.ReactNode;
+  cols?: 1 | 2 | 3 | 4;
+  className?: string;
+}) {
+  return (
+    <div
+      className={clsx(
+        `not-prose grid sm:grid-cols-${
+          cols >= 3 ? 3 : cols
+        } xl:grid-cols-${cols} gap-x-2`,
+        className
+      )}
+    >
+      {children}
     </div>
+  );
+}
+
+export interface CardProps<T> {
+  title?: string;
+  icon?: React.ReactNode;
+  iconPlacement?: "left" | "top";
+  className?: string;
+  as?: T;
+  href?: string;
+  children: React.ReactNode;
+}
+
+export function Card<T extends React.ElementType = "div">({
+  title,
+  icon,
+  iconPlacement = "left",
+  className,
+  children,
+  as,
+  ...props
+}: CardProps<T>) {
+  const Component = props.href != undefined ? "a" : "div";
+  return (
+    <Component
+      className={clsx(
+        "not-prose font-normal group relative my-2 ring-2 ring-transparent rounded border border-carbon-200 dark:border-carbon-700 overflow-hidden w-full",
+        !!props.href &&
+          "cursor-pointer hover:border-carbon-300 dark:hover:border-carbon-600 hover:bg-carbon-50/50 dark:hover:bg-carbon-900",
+        className
+      )}
+      {...props}
+    >
+      <div
+        className={clsx("px-6 py-6 flex gap-1 items-start", {
+          "flex-row": iconPlacement === "left",
+          "flex-col": iconPlacement === "top",
+        })}
+      >
+        {icon && iconPlacement === "top" && (
+          <div className="min-w-7 flex justify-start my-1">{icon}</div>
+        )}
+        <div>
+          <div className="flex items-center mb-1">
+            {icon && iconPlacement === "left" && (
+              <div className="min-w-7 flex justify-start mr-1">{icon}</div>
+            )}
+            <h2
+              className={clsx(
+                "font-semibold text-[#2E2E2E] text-sm dark:text-carbon-50",
+                {
+                  "text-base": !!props.href,
+                  "text-xl": !props.href,
+                }
+              )}
+            >
+              {title}
+            </h2>
+          </div>
+          <span
+            className={
+              "mt-1 font-medium text-sm text-carbon-700 dark:text-carbon-200"
+            }
+          >
+            {children}
+          </span>
+        </div>
+      </div>
+    </Component>
   );
 }

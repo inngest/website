@@ -16,7 +16,11 @@ const Event = ({
       xmlns="http://www.w3.org/2000/svg"
       style={style}
     >
-      <g fill={fill} fillRule="evenodd">
+      <g
+        fill={fill === "currentColor" ? fill : undefined}
+        className={`fill-${fill ? fill : "primary"}`}
+        fillRule="evenodd"
+      >
         <path d="M2.987 1.28c.3556 0 .6967.0583 1.013.1651-.5943.732-.9467 1.6449-.9467 2.6349s.3524 1.903.946 2.6345A3.1434 3.1434 0 0 1 2.987 6.88C1.3373 6.88 0 5.6264 0 4.08c0-1.5464 1.3373-2.8 2.987-2.8Z" />
         <circle cx="13.44" cy="4" r="4" />
         <path

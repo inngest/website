@@ -1,6 +1,5 @@
 import React from "react";
 import { GetStaticProps, GetStaticPaths } from "next";
-import Link from "next/link";
 import { MDXRemote } from "next-mdx-remote";
 
 import Container from "src/shared/layout/Container";
@@ -11,7 +10,6 @@ import * as MDXComponents from "../../shared/Patterns/mdx";
 import { SECTIONS } from "./index";
 import { Button } from "src/shared/Button";
 import { SectionProvider } from "src/shared/Docs/SectionProvider";
-import DebugBreakpoints from "src/shared/DebugBreakpoints";
 
 const getPatternProps = (slug: string) => {
   return SECTIONS.map((s) => s.articles)

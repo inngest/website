@@ -2,7 +2,7 @@ import { Callout, ButtonCol, ButtonDeploy } from "src/shared/Docs/mdx";
 
 export const description ="Learn how to sync Inngest Apps after a deploy"
 
-# Working with Apps
+# Syncing an Inngest App
 After deploying your code to a hosting platform, it is time to go to production and inform Inngest about your apps and functions. Check what [Inngest Apps](/docs/apps) are if you haven't done it yet.
 
 ## Sync a new app in Inngest Cloud
@@ -112,49 +112,6 @@ If your app location changes, enable the "Override" switch and edit the URL befo
   src="/assets/docs/apps/apps-cloud-resync-modal-override.png"
   className="rounded-md"
   alt="Inngest Cloud screen with resync app modal displaying an edited URL"
-/>
-
-## Archive an app
-
-Apps can be archived and unarchived at any time. Once an app is archived, all of its functions are archived.
-
-When the app is archived:
-- New function runs will not be triggered.
-- Existing function runs will continue until completion.
-- Functions will be marked as archived, but will still be visible, including their run history.
-
-If you need to cancel all runs prior to completion, read our [cancellation guide](/docs/guides/cancel-running-functions).
-### How to archive an app
-1. Navigate to the app you want to archive. You will find an “Archive” button at the top-right corner of the page.
-
-<img
-  src="/assets/docs/apps/apps-cloud-archive-button.png"
-  className="rounded-md"
-  alt="Inngest Cloud screen with archive app button"
-/>
-
-2. Confirm that you want to archive the app by clicking "Yes".
-
-<img
-  src="/assets/docs/apps/apps-cloud-archive-modal.png"
-  className="rounded-md"
-  alt="Inngest Cloud screen with archived app confirmation modal"
-/>
-
-3. Your app is now archived. 🎉
-
-<img
-  src="/assets/docs/apps/apps-cloud-archived-app.png"
-  className="rounded-md"
-  alt="Inngest Cloud screen with one app archived"
-/>
-
-In the image below, you can see how archived apps look like in Inngest Cloud:
-
-<img
-  src="/assets/docs/apps/apps-cloud-archived.png"
-  className="rounded-md"
-  alt="Inngest Cloud screen with archived apps"
 />
 
 ## Troubleshooting
