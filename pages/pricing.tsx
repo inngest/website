@@ -264,6 +264,7 @@ const FEATURES: Feature[] = [
         getPlan(PLAN_NAMES.enterprise).cost.includedRuns
       }`,
     },
+    infoUrl: "/docs/features/inngest-functions?ref=pricing",
     section: "platform",
   },
   {
@@ -292,7 +293,7 @@ const FEATURES: Feature[] = [
         getPlan(PLAN_NAMES.enterprise).cost.additionalStepsPrice
       }`,
     },
-    infoUrl: "/docs/learn/inngest-steps?ref=pricing",
+    infoUrl: "/docs/features/inngest-functions/steps-workflows?ref=pricing",
     section: "platform",
   },
   {
@@ -307,6 +308,7 @@ const FEATURES: Feature[] = [
         getPlan(PLAN_NAMES.enterprise).cost.includedConcurrency
       }`,
     },
+    infoUrl: "/docs/guides/concurrency?ref=pricing",
     section: "platform",
   },
   {
@@ -343,6 +345,7 @@ const FEATURES: Feature[] = [
       [PLAN_NAMES.pro]: "3MB",
       [PLAN_NAMES.enterprise]: "Custom",
     },
+    infoUrl: "/docs/usage-limits/inngest#payload-size?ref=pricing",
     section: "platform",
   },
   {
@@ -379,7 +382,7 @@ const FEATURES: Feature[] = [
     name: "Bulk cancellation",
     description: "Easily manage issues across in progress runs",
     section: "recovery",
-    infoUrl: "/docs/guides/cancel-running-functions?ref=pricing",
+    infoUrl: "/docs/platform/manage/bulk-cancellation?ref=pricing",
     all: true,
   },
   {
@@ -390,6 +393,7 @@ const FEATURES: Feature[] = [
       [PLAN_NAMES.pro]: "5 minutes",
       [PLAN_NAMES.enterprise]: "20 seconds",
     },
+    infoUrl: "/docs/platform/monitor/observability-metrics?ref=pricing",
     section: "observability",
   },
   {
@@ -400,6 +404,7 @@ const FEATURES: Feature[] = [
       [PLAN_NAMES.pro]: "14 days",
       [PLAN_NAMES.enterprise]: "90 days",
     },
+    infoUrl: "/docs/platform/monitor/inspecting-function-runs?ref=pricing",
     section: "observability",
   },
   {
@@ -410,6 +415,7 @@ const FEATURES: Feature[] = [
       [PLAN_NAMES.pro]: "$200/mo",
       [PLAN_NAMES.enterprise]: true,
     },
+    infoUrl: "/docs/platform/monitor/observability-metrics?ref=pricing",
     section: "observability",
   },
   {
@@ -430,6 +436,7 @@ const FEATURES: Feature[] = [
       [PLAN_NAMES.pro]: "100",
       [PLAN_NAMES.enterprise]: "Custom",
     },
+    infoUrl: "/docs/guides/batching#configuration-reference?ref=pricing",
     section: "data",
   },
   {
@@ -440,6 +447,7 @@ const FEATURES: Feature[] = [
       [PLAN_NAMES.pro]: "120 seconds",
       [PLAN_NAMES.enterprise]: "20 minutes",
     },
+    infoUrl: "/docs/guides/batching#configuration-reference?ref=pricing",
     section: "data",
   },
   {

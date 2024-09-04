@@ -143,6 +143,7 @@ const renderTable = (sectionFeatures, sectionName, plans, selectedPlan) => {
                       {Boolean(feature.infoUrl) && (
                         <Link
                           href={feature.infoUrl}
+                          target="_blank"
                           className="transition-all text-muted hover:text-white"
                         >
                           <RiExternalLinkLine className="h-4 w-4" />
@@ -229,6 +230,7 @@ const renderHighlightGrid = (
               {Boolean(feature.infoUrl) && (
                 <Link
                   href={feature.infoUrl}
+                  target="_blank"
                   className="transition-all text-muted hover:text-white"
                 >
                   <RiExternalLinkLine className="h-4 w-4" />
