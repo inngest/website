@@ -12,14 +12,10 @@ import FooterCallout from "./FooterCallout";
 
 export default function Footer({
   ctaRef,
-  className = "",
   disableCta = false,
-  className,
 }: {
   ctaRef?: string;
-  className?: string;
   disableCta?: boolean;
-  className?: string;
 }) {
   return (
     <>

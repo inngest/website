@@ -723,7 +723,7 @@ export default function Pricing() {
         </Button>
       </div>
 
-      <Footer className="!mt-0" disableCta />
+      <Footer disableCta />
     </div>
   );
 }
