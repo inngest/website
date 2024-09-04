@@ -24,7 +24,7 @@ const caseStudies: {
     name: "Fey",
     snippet: (
       <p>
-        <b>50x faster</b> after switching
+        <b>50x faster</b> after processing
       </p>
     ),
   },

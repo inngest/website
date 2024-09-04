@@ -72,7 +72,13 @@ export default function PlanCard({ content }: { content: Plan }) {
           ) : (
             <div className="pt-8" />
           )}
-          <p className={`text-3xl	lg:text-6xl mt-4 font-medium tracking-tight`}>
+          <p
+            className={`${
+              typeof content.cost.basePrice === "string"
+                ? "text-2xl leading-9 lg:text-5xl lg:leading-[3.75rem]"
+                : "text-3xl	lg:text-6xl"
+            } mt-4 font-medium tracking-tight`}
+          >
             {typeof price === "string" ? price : "$" + price}
             <span className={`text-xl lg:text-2xl font-normal ml-0.5 `}>
               {!!content.cost.period ? `/${content.cost.period}` : ""}
