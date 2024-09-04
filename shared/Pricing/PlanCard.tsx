@@ -1,206 +1,156 @@
-import React, { useState } from "react";
-import classNames from "src/utils/classNames";
+import React, { useState, useEffect } from "react";
 import { Button } from "../Button";
-import InformationCircle from "src/shared/Icons/InformationCircle";
-import * as SliderPrimitive from "@radix-ui/react-slider";
 import { type Plan } from "../../pages/pricing";
+import {
+  RiGitPrDraftLine,
+  RiMistLine,
+  RiCheckLine,
+  RiArrowDownSLine,
+} from "@remixicon/react";
+import * as Accordion from "@radix-ui/react-accordion";
 
-export default function PlanCard({
-  variant = "light",
-  content,
-}: {
-  variant: string;
-  content: Plan;
-}) {
-  const [stepCalculator, setStepCalculator] = useState<number>(
-    typeof content.cost.included === "number" ? content.cost.included : 0
-  );
-  // Calculate price with additional steps from calcuator
-  const additionalCost =
-    typeof content.cost.included === "number" &&
-    typeof content.cost.additionalPrice === "number"
-      ? ((stepCalculator - content.cost.included) /
-          content.cost.additionalRate) *
-        content.cost.additionalPrice
-      : 0;
-  const price =
-    typeof content.cost.basePrice === "number"
-      ? content.cost.basePrice + additionalCost
-      : content.cost.basePrice;
+const CLOSED_VALUE = "CLOSED";
+export default function PlanCard({ content }: { content: Plan }) {
+  // Solves the radix bug on undefined values in single accordions https://github.com/radix-ui/primitives/discussions/824
+  const [accordionValue, setAccordionValue] = useState(CLOSED_VALUE);
+  const [isMediumScreen, setIsMediumScreen] = useState(false);
 
-  const theme = {
-    light: {
-      cardBG: "bg-slate-100",
-      price: "text-indigo-500",
-      row: "odd:bg-slate-400/10",
-      primary: "text-slate-800",
-      secondary: "text-slate-600",
-      description: "text-slate-600",
-    },
-    focus: {
-      cardBG: "bg-white",
-      price: "text-indigo-500",
-      row: "odd:bg-slate-400/10",
-      primary: "text-slate-800",
-      secondary: "text-slate-600",
-      description: "text-slate-600",
-    },
-    dark: {
-      cardBG: "bg-slate-900/90",
-      price: "text-indigo-400",
-      row: "odd:bg-slate-400/10",
-      primary: "text-white",
-      secondary: "text-slate-400",
-      description: "text-slate-200",
-    },
-  };
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(min-width: 768px)");
+
+    const handleMediaQueryChange = (e) => {
+      setIsMediumScreen(e.matches);
+      if (e.matches) {
+        setAccordionValue(content.name);
+      }
+    };
+
+    setIsMediumScreen(mediaQuery.matches);
+    if (mediaQuery.matches) {
+      setAccordionValue(content.name);
+    }
+
+    mediaQuery.addEventListener("change", handleMediaQueryChange);
+
+    return () => {
+      mediaQuery.removeEventListener("change", handleMediaQueryChange);
+    };
+  }, [content.name]);
+
+  const price = content.cost.between
+    ? // Note: If we start showing basic free tier on PlanCard, we should use the following commented line instead
+      `$0-${content.cost.endPrice}`
+    : // ? `$${content.cost.basePrice}-${content.cost.endPrice}`
+      content.cost.basePrice;
 
   return (
     <div
-      className={`w-full rounded-lg md:rounded-l-none md:rounded-r-none md:first:rounded-l-lg md:last:rounded-r-lg flex flex-col justify-between text-center ${theme[variant].cardBG}`}
+      className={`w-full rounded-lg md:rounded-l-none md:rounded-r-none md:first:rounded-l-lg md:last:rounded-r-lg flex flex-col justify-between text-left `}
     >
-      <div className="pt-8">
-        {content.popular && (
-          <div className="-mt-11 mb-3.5 block">
-            <div className="bg-indigo-500 inline-block shadow-lg rounded-full text-white text-sm font-semibold tracking-tight leading-none py-2 px-4">
-              Most popular
+      <div
+        className={`h-full py-8 px-6 border rounded-2xl ${
+          content.recommended ? "border-matcha-400" : "border-muted"
+        } bg-canvasBase`}
+      >
+        {content.recommended && (
+          <div className="-mt-10 mb-3.5 block text-center">
+            <div className="bg-gradient-to-b from-matcha-400 to-breeze-400 inline-block shadow-lg rounded-full text-onContrast text-sm font-semibold tracking-tight py-0.5 px-2">
+              Recommended
             </div>
           </div>
         )}
         {/* Prevent weird button wrap on enterprise from mis-aligning rows */}
         <div className="sm:min-h-[272px] min-[933px]:min-h-[252px] min-[1272px]:min-h-0">
-          <h2 className={`text-lg font-semibold ${theme[variant].primary}`}>
-            {content.name}
-          </h2>
-
+          <h2 className="text-3xl font-semibold">{content.name}</h2>
+          <p className="text-sm pt-2">{content.description}</p>
+          {content.cost.between ? (
+            <p className="uppercase font-bold text-xs bg-gradient-to-b from-matcha-400 to-breeze-400 bg-clip-text text-transparent pt-4">
+              Between
+            </p>
+          ) : content.cost.startsAt ? (
+            <p className="uppercase font-bold text-xs bg-gradient-to-b from-matcha-400 to-breeze-400 bg-clip-text text-transparent pt-4">
+              Starting at
+            </p>
+          ) : (
+            <div className="pt-8" />
+          )}
           <p
-            className={`text-4xl mt-4 font-bold tracking-tight text-indigo-500 ${
-              theme[variant].price
-            } ${!!content.cost.period && "pl-4"}`}
+            className={`${
+              typeof content.cost.basePrice === "string"
+                ? "text-2xl leading-9 lg:text-5xl lg:leading-[3.75rem]"
+                : "text-3xl	lg:text-6xl"
+            } mt-4 font-medium tracking-tight`}
           >
-            {typeof price === "string" ? price : '$' + price}
-            <span
-              className={`text-sm font-medium ml-0.5 ${theme[variant].secondary}`}
-            >
+            {typeof price === "string" ? price : "$" + price}
+            <span className={`text-xl lg:text-2xl font-normal ml-0.5 `}>
               {!!content.cost.period ? `/${content.cost.period}` : ""}
             </span>
           </p>
 
-          <div className="px-12 py-2 mt-4 mb-4">
-            {/*  */}
+          <div className="my-8">
             <Button
               href={content.cta.href}
-              arrow="right"
               full
-              variant="primary"
+              variant={content.recommended ? "primary" : "outline"}
+              className={
+                content.recommended &&
+                "border border-transparent bg-primary-intense"
+              }
             >
               {content.cta.text}
             </Button>
           </div>
 
-          <p
-            className={`text-base mt-4 font-medium flex items-center justify-center ${theme[variant].description}`}
-          >
-            {typeof content.cost.included === "string"
-              ? content.cost.included
-              : stepCalculator?.toLocaleString(undefined, {
-                  notation: "compact",
-                  compactDisplay: "short",
-                })}{" "}
-            steps{" "}
-            <a
-              href="#what-is-a-function-step"
-              className="ml-1.5 transition-all text-slate-500 hover:text-slate-700"
-            >
-              <InformationCircle size="1.2em" />
-            </a>
+          <hr className="border-muted my-8" />
+
+          <p className="flex items-center gap-2 mb-3">
+            <RiMistLine className="text-muted" />
+            {content.highlights.runs}
           </p>
-
-          <div className="px-24 my-4 h-4">
-            {/* Set height to align columns */}
-            {typeof content.cost.included === "number" &&
-            content.cost.additionalPrice ? (
-              <Slider
-                defaultValue={[content.cost.included]}
-                min={content.cost.included}
-                max={content.cost.max}
-                step={content.cost.additionalRate}
-                onValueChange={(v) => setStepCalculator(v[0])}
-              />
-            ) : (
-              <div></div>
-            )}
-          </div>
-
-          <div className="flex justify-center mt-4">
-            <div className={`text-sm font-medium ${theme[variant].secondary}`}>
-              {content.cost.additionalPrice ? (
-                <>
-                  + $<strong>{content.cost.additionalPrice}</strong> per
-                  additional{" "}
-                  <strong>
-                    {content.cost.additionalRate.toLocaleString(undefined, {
-                      notation: "compact",
-                      compactDisplay: "short",
-                    })}
-                  </strong>
-                </>
-              ) : (
-                <>&nbsp;</>
-              )}
-            </div>
-          </div>
+          <p className="flex items-center gap-2  mb-3">
+            <RiGitPrDraftLine className="text-muted rotate-90" />
+            {content.highlights.concurrency}
+          </p>
         </div>
-        {/* <p
-          className={`text-sm mt-2 font-medium  ${theme[variant].description}`}
+
+        <hr className="border-subtle my-8" />
+
+        <Accordion.Root
+          type="single"
+          value={accordionValue}
+          onValueChange={(value) => {
+            if (!isMediumScreen) {
+              setAccordionValue(value || CLOSED_VALUE);
+            }
+          }}
+          collapsible
         >
-          {content.description}
-        </p> */}
-        <ul className="flex flex-col mt-6">
-          {content.features.map((feature, i) => (
-            <li
-              key={i}
-              className={`flex flex-col py-2.5 min-h-[64px] ${theme[variant].row}`}
-            >
-              {feature.quantity && (
-                <span className={`font-semibold ${theme[variant].primary}`}>
-                  {feature.quantity}
-                </span>
-              )}
-              <span
-                className={classNames(
-                  feature.quantity
-                    ? `font-medium text-sm ${theme[variant].secondary}`
-                    : `font-semibold my-2 ${theme[variant].primary}`,
-                  `  tracking-tight`
-                )}
-              >
-                {feature.text}
-              </span>
-            </li>
-          ))}
-        </ul>
+          <Accordion.Item
+            value={content.name}
+            disabled={isMediumScreen}
+            className={isMediumScreen ? "pointer-events-none" : ""}
+          >
+            <Accordion.Header className="flex items-center justify-between">
+              <p className="font-medium text-xs bg-gradient-to-b from-matcha-400 to-breeze-400 bg-clip-text text-transparent">
+                {content.planIncludes}
+              </p>
+              <Accordion.Trigger className="group border border-contrast rounded-full overflow-hidden md:hidden">
+                <RiArrowDownSLine className="transform-90 bg-canvasBase text-muted group-hover:bg-canvasSubtle transition-transform duration-500 group-data-[state=open]:-rotate-180" />
+              </Accordion.Trigger>
+            </Accordion.Header>
+            <Accordion.Content>
+              <ul className="flex flex-col">
+                {content.features.map((feature, i) => (
+                  <li key={i} className={`flex gap-2 py-3 last:pb-0`}>
+                    <RiCheckLine className="text-muted" />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+            </Accordion.Content>
+          </Accordion.Item>
+        </Accordion.Root>
       </div>
     </div>
   );
 }
-
-const Slider = React.forwardRef<
-  React.ElementRef<typeof SliderPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof SliderPrimitive.Root>
->(({ className, ...props }, ref) => (
-  <SliderPrimitive.Root
-    ref={ref}
-    className={classNames(
-      "relative flex w-full touch-none select-none items-center",
-      className
-    )}
-    {...props}
-  >
-    <SliderPrimitive.Track className="relative h-1 w-full grow overflow-hidden rounded-full bg-slate-200">
-      <SliderPrimitive.Range className="absolute h-full bg-slate-600" />
-    </SliderPrimitive.Track>
-    <SliderPrimitive.Thumb className="block h-5 w-5 rounded-full border-2 border-primary bg-slate-600 ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50" />
-  </SliderPrimitive.Root>
-));
-Slider.displayName = SliderPrimitive.Root.displayName;
