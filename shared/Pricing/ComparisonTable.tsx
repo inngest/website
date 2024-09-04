@@ -16,7 +16,7 @@ export default function ComparisonTable({ plans, features, sections }) {
       {plans.map((plan, i) => (
         <button
           key={i}
-          className={`px-4 py-2 text-sm font-medium text-basis border-b-2 border-disabled ${
+          className={`px-1.5 py-2 text-sm font-medium text-basis border-b-2 border-disabled ${
             plan.name === "Pro" && "text-primary-intense"
           } ${
             plan.name === "Enterprise" &&
@@ -24,7 +24,13 @@ export default function ComparisonTable({ plans, features, sections }) {
           } ${selectedPlan === plan.name && "border-b-carbon-0"}`}
           onClick={() => setSelectedPlan(plan.name)}
         >
-          {plan.name}
+          {plan.name === "Basic (free tier)" ? (
+            <>
+              Basic <div className="text-xs">(free tier)</div>
+            </>
+          ) : (
+            plan.name
+          )}
         </button>
       ))}
     </div>
