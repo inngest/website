@@ -6,7 +6,7 @@
 
 @supports (font-variation-settings: normal) {
   html {
-    font-family: "Inter var", sans-serif;
+    font-family: CircularXX, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto;
   }
 }
 

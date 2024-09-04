@@ -10,8 +10,11 @@ export type IconProps = {
 };
 
 export default function IconTheme(color: string = "transparent") {
-  const hex =
+  let hex =
     color in themeColors ? themeColors[color][500] : tailwindColors[color][500];
+  if (color === "matcha") {
+    hex = "#027a48"; // 600
+  }
   return {
     // NOTE - This only reads from Tailwind color constants, not any theme overrides in tailwind.config.js
     color: color === "transparent" ? "#FFFFFF" : hex,

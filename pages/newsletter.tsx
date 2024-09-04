@@ -32,13 +32,13 @@ export default function LaunchWeek() {
   return (
     <div className="home font-sans bg-slate-1000 bg-x[url(/assets/launch-week/background-image.png)] bg-cover bg-fixed">
       <Header />
-      <Container className="py-8 pb-48">
+      <Container className="py-8 pb-48 text-basis">
         <div className="my-12 tracking-tight flex items-center justify-center">
           <div className="py-12 md:py-24 rounded-md">
-            <h1 className="font-bold text-5xl md:text-7xl leading-tight md:leading-tight text-white text-center mb-4">
+            <h1 className="font-bold text-5xl md:text-7xl leading-tight md:leading-tight text-center mb-4">
               Stay in the loop
             </h1>
-            <p className="my-12 text-slate-200 text-lg md:text-xl">
+            <p className="my-12 text-lg md:text-xl">
               Be the first to hear about new features, beta releases, and other
               important updates.
             </p>
@@ -92,11 +92,11 @@ function NewsletterSignup({ tags = [] }: { tags: string[] }) {
 
   return (
     <form onSubmit={subscribeUser}>
-      <p className="mb-2 text-white text-sm">Get notified:</p>
+      <p className="mb-2 text-basis">Get notified:</p>
 
       <div className="flex flex-row flex-wrap gap-4">
         <input
-          className="w-72 flex-grow border border-slate-400 rounded-md px-4 py-2 text-white bg-transparent focus:outline-none focus:ring-1 focus:ring-[#A7F3D0] focus:border-transparent"
+          className="w-72 flex-grow border border-muted rounded-md px-4 py-2 text-basis bg-transparent focus:outline-none focus:ring-1 focus:ring-[#A7F3D0] focus:border-transparent"
           type="email"
           id="email-input"
           name="email"
@@ -112,7 +112,7 @@ function NewsletterSignup({ tags = [] }: { tags: string[] }) {
             name="register"
             disabled={loading || response.result === true}
             className={`whitespace-nowrap button group inline-flex items-center justify-center gap-0.5 rounded-md font-medium tracking-tight transition-all text-white
-            bg-indigo-500 hover:bg-indigo-400 text-sm px-3 py-2
+            bg-cta hover:bg-ctaHover text-carbon-1000 font-medium text-base px-3 py-2
             ${loading ? "opacity-40 cursor-not-allowed" : ""}`}
           >
             Register

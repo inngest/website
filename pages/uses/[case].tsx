@@ -146,7 +146,7 @@ export default function useCase({ stringData }) {
           {data.keyFeatures.map((feature, i) => (
             <div
               key={i}
-              className="max-w-[600px] m-auto md:m-0 bg-slate-950/80 overflow-hidden rounded-lg border-slate-900/10"
+              className="max-w-[600px] m-auto md:m-0 bg-surfaceSubtle overflow-hidden rounded-lg border-slate-900/10"
             >
               {Boolean(feature.img) && (
                 <Image
@@ -159,11 +159,11 @@ export default function useCase({ stringData }) {
                 />
               )}
               <div className="p-6 lg:p-10">
-                <h3 className="text-lg lg:text-xl text-white mb-2.5">
+                <h3 className="text-lg lg:text-xl text-basis mb-2.5">
                   {feature.title}
                 </h3>
                 <p
-                  className="text-sm text-indigo-100 leading-6"
+                  className="text-sm text-subtle leading-6"
                   dangerouslySetInnerHTML={{ __html: feature.description }}
                 ></p>
               </div>
@@ -184,7 +184,7 @@ export default function useCase({ stringData }) {
               )}
               {example.steps.map((step, idx) => (
                 <p className="flex items-start gap-3">
-                  <span className="bg-slate-800 rounded flex items-center justify-center w-6 h-6 text-xs font-bold shrink-0">
+                  <span className="bg-surfaceMuted rounded flex items-center justify-center w-6 h-6 text-xs font-bold shrink-0">
                     {example?.steps?.length === 1 ? "→" : idx + 1}
                   </span>{" "}
                   {step}
@@ -226,13 +226,11 @@ export default function useCase({ stringData }) {
             <div key={i}>
               <h3 className="text-slate-50 text-lg lg:text-xl mb-2 flex items-center gap-1 -ml-2">
                 {feature.icon && (
-                  <Icon name={feature.icon} size={30} color="indigo" />
+                  <Icon name={feature.icon} size={30} color="matcha" />
                 )}
                 {feature.title}
               </h3>
-              <p className="text-indigo-200 text-sm leading-loose">
-                {feature.description}
-              </p>
+              <p className="text-sm leading-loose">{feature.description}</p>
             </div>
           ))}
         </div>

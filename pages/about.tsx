@@ -6,6 +6,7 @@ import Container from "src/shared/layout/Container";
 import Footer from "src/shared/Footer";
 import ArrowRight from "src/shared/Icons/ArrowRight";
 import { Button } from "src/shared/Button";
+import Card from "src/components/Card";
 
 const TEAM = [
   {
@@ -189,10 +190,10 @@ export default function About() {
     <div className="font-sans">
       <Header />
       <main className="pt-16">
-        <Container className="m-auto">
+        <Container className="m-auto text-basis">
           <div className="mx-auto max-w-4xl">
             <header className="lg:my-24 my-8 text-center">
-              <h1 className="mt-2 mb-6 pr-4 text-3xl md:text-5xl tracking-tighter font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#f2e3ff] via-white to-[#e3e9ff] drop-shadow">
+              <h1 className="mt-2 mb-6 pr-4 text-3xl md:text-5xl tracking-tight font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#f2e3ff] via-white to-[#e3e9ff] drop-shadow">
                 About Inngest
               </h1>
               <p className="mt-8 mx-auto max-w-lg text-lg font-regular">
@@ -201,7 +202,7 @@ export default function About() {
               </p>
             </header>
 
-            <div className="mx-auto max-w-[800px] text-center prose text-slate-300 prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline hover:prose-a:text-white prose-a:font-medium prose-a:transition-all prose-invert">
+            <div className="mx-auto max-w-[800px] text-center flex flex-col gap-8 text-balance">
               <p>
                 Shipping reliable background jobs and workflows are a time
                 consuming and frustrating experience for any software team.
@@ -216,14 +217,14 @@ export default function About() {
             </div>
 
             <div className="mt-8 lg:mt-12 flex justify-center">
-              <a
+              <Button
                 href="/blog/announcing-funding-from-a16z?ref=about"
-                className="group inline-flex gap-0.5 items-center rounded-full font-medium pl-6 pr-5 py-2 border border-indigo-500/50 hover:bg-indigo-500/10 transition-all text-white whitespace-normal text-wrap md:flex-shrink-0"
+                className="group"
               >
                 <span className="hidden md:inline">News: </span>Inngest raises
                 $6.1M led by a16z
                 <ArrowRight className="group-hover:translate-x-1.5 relative top-px transition-transform duration-150 " />
-              </a>
+              </Button>
             </div>
           </div>
 
@@ -231,7 +232,7 @@ export default function About() {
             <h2 className="text-xl sm:text-2xl lg:text-3xl font-medium text-center text-white">
               Our Team
             </h2>
-            <p className="mt-2 text-center text-slate-400">
+            <p className="mt-2 text-center text-subtle">
               We've built and scaled systems for years and know that developers
               deserve something better.
             </p>
@@ -251,7 +252,7 @@ export default function About() {
                       {person.name}
                     </h3>
                     <p
-                      className="text-sm leading-5 text-slate-400"
+                      className="text-sm leading-5 text-subtle"
                       style={{ lineHeight: "1.5em" }}
                     >
                       {person.role}
@@ -262,23 +263,27 @@ export default function About() {
             </div>
           </div>
 
-          <aside className="max-w-[720px] m-auto p-2.5 rounded-xl bg-slate-950/20 mt-32 border-slate-900/50">
-            <div className="bg-slate-950 rounded-lg px-6 py-8 md:px-10 md:p-12 border border-slate-900 text-center shadow">
+          <aside className="max-w-[720px] m-auto mt-32">
+            <Card className="rounded-lg px-6 py-8 md:px-10 md:p-12 border border-slate-900 text-center shadow items-center">
               <h3 className="text-md lg:text-lg font-semibold text-white mb-4">
                 Want to join the team?
               </h3>
-              <p className="text-base text-slate-400 mb-8">
+              <p className="text-base mb-8">
                 We're just getting started and are looking for people that want
                 to contribute highly to an early-stage startup focused on
                 solving developer problems.
               </p>
-              <Button href="/careers?ref=about" arrow="right">
+              <Button
+                href="/careers?ref=about"
+                arrow="right"
+                className="inline-flex"
+              >
                 View the open roles
               </Button>
-            </div>
+            </Card>
           </aside>
         </Container>
-        <div className="bg-slate-1050/50 pt-60 pb-32 -mt-36">
+        <div className="bg-surfaceSubtle pt-60 pb-32 -mt-36">
           <Container className="m-auto">
             <div className="mx-auto py-6">
               <h2 className="text-xl sm:text-2xl lg:text-3xl font-medium text-center text-white mb-10">
@@ -293,7 +298,7 @@ export default function About() {
                       investor.featured
                         ? "md:col-span-4 mx-auto"
                         : "md:col-span-2 mx-auto",
-                      "flex items-center bg-slate-950 rounded w-full justify-center px-10 py-4 border border-slate-900 shadow h-[130px]"
+                      "flex items-center rounded w-full justify-center px-10 py-4 h-[130px]"
                     )}
                   >
                     <img
@@ -322,13 +327,13 @@ export default function About() {
                     <span>
                       {a.name}
                       <br />
-                      <span className="text-slate-500">{a.bio}</span>
+                      <span className="text-muted">{a.bio}</span>
                     </span>
                   </div>
                 ) : (
                   <div key={a.name} className="text-sm">
                     <h4>{a.name}</h4>
-                    <p className="text-slate-500">{a.bio}</p>
+                    <p className="text-muted">{a.bio}</p>
                     <br />
                   </div>
                 )
@@ -339,7 +344,7 @@ export default function About() {
         <Container>
           {FEATURED_BLOG_POSTS.length && (
             <div className="pt-32 pb-16">
-              <h2 className="text-xl sm:text-2xl font-normal text-center mb-8">
+              <h2 className="text-xl sm:text-3xl font-medium text-center mb-8">
                 From our blog
               </h2>
 
@@ -347,13 +352,13 @@ export default function About() {
                 {FEATURED_BLOG_POSTS.map((p, idx) => (
                   <p key={p.href} className="text-base">
                     <a
-                      className="text-indigo-400"
+                      className="text-link hover:underline"
                       href={`${p.href}?ref=about-page`}
                     >
                       {p.title} →
                     </a>
                     {p.date && (
-                      <span className="text-slate-400 ml-2">{p.date}</span>
+                      <span className="text-basis ml-2">{p.date}</span>
                     )}
                   </p>
                 ))}

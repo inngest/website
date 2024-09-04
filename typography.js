@@ -286,19 +286,19 @@ module.exports = ({ theme }) => ({
 
       // Inline elements
       a: {
-        color: "var(--tw-prose-links)",
+        color: "rgba(var(--color-foreground-link) / 1)",
         textDecoration: "underline transparent",
         fontWeight: "500",
         transitionProperty: "color, text-decoration-color",
         transitionDuration: theme("transitionDuration.DEFAULT"),
         transitionTimingFunction: theme("transitionTimingFunction.DEFAULT"),
         "&:hover": {
-          color: "var(--tw-prose-links-hover)",
           textDecorationColor: "var(--tw-prose-links-underline)",
         },
       },
       ":is(h1, h2, h3) a": {
         fontWeight: "inherit",
+        color: "var(--color-foreground-base)",
       },
       strong: {
         fontWeight: "600",
