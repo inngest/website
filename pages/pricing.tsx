@@ -1,10 +1,15 @@
+import dynamic from 'next/dynamic';
 import Header from "src/shared/Header";
 import Container from "src/shared/layout/Container";
-import ComparisonTable from "src/shared/Pricing/ComparisonTable";
 import PlanCard from "src/shared/Pricing/PlanCard";
 import CaseStudies from "src/shared/Pricing/CaseStudies";
 import Footer from "../shared/Footer";
 import { Button } from "src/shared/Button";
+
+// Disable SSR in ComparisonTable, to prevent hydration errors. It requires windows info on accordions
+const ComparisonTable = dynamic(() => import('src/shared/Pricing/ComparisonTable'), {
+  ssr: false,
+});
 
 export type Plan = {
   name: string;
