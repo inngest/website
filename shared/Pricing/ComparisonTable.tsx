@@ -144,13 +144,13 @@ const renderTable = (sectionFeatures, sectionName, plans, selectedPlan) => {
                   className="h-11 border-t last:border-b border-subtle"
                 >
                   <td className="py-3 text-sm">
-                    <div className="flex items-center font-medium gap-1">
+                    <div className="font-medium">
                       {feature.name}
                       {Boolean(feature.infoUrl) && (
                         <Link
                           href={feature.infoUrl}
                           target="_blank"
-                          className="transition-all text-muted hover:text-white"
+                          className="transition-all text-muted hover:text-white inline-flex align-text-top ml-1"
                         >
                           <RiExternalLinkLine className="h-4 w-4" />
                         </Link>
@@ -231,13 +231,13 @@ const renderHighlightGrid = (
       <div className="grid grid-cols-2 md:grid-cols-4 text-sm gap-6 lg:gap-10">
         {sectionFeatures.map((feature, i) => (
           <div key={i} className="flex flex-col items-center">
-            <div className="flex items-center font-medium gap-1">
+            <div className="font-medium">
               {feature.name}
               {Boolean(feature.infoUrl) && (
                 <Link
                   href={feature.infoUrl}
                   target="_blank"
-                  className="transition-all text-muted hover:text-white"
+                  className="transition-all text-muted hover:text-white inline-flex align-text-top ml-1"
                 >
                   <RiExternalLinkLine className="h-4 w-4" />
                 </Link>
