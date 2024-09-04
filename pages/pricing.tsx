@@ -590,7 +590,7 @@ export async function getStaticProps() {
 
 export default function Pricing() {
   return (
-    <div className="font-sans bg-canvasBase">
+    <div className="font-sans bg-canvasBase text-basis">
       <Header />
       <div
         style={{
