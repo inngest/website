@@ -17,7 +17,9 @@ export function Tabs<T extends TabItem>({
 }) {
   return (
     <div
-      className={`relative grid grid-cols-${content.length} gap-y-2 justify-stretch`}
+      className={`relative grid grid-cols-${content.length / 2} sm:grid-cols-${
+        content.length
+      } gap-y-2 justify-stretch`}
     >
       {content.map(({ title, ...tab }, idx) => (
         <Tab
@@ -26,7 +28,7 @@ export function Tabs<T extends TabItem>({
           onClick={() => setSelected(idx)}
         >
           {tab.icon && (
-            <tab.icon className="hidden md:inline-block sm:h-4 sm:w-4 md:h-6 md:w-6 fill-[#1CB4D5]" />
+            <tab.icon className="h-4 w-4 md:h-6 md:w-6 fill-[#1CB4D5]" />
           )}
           {title}
         </Tab>
@@ -50,7 +52,7 @@ export function Tab({ isSelected = false, onClick, children }) {
     <button
       onClick={onClick}
       className={clsx(
-        `flex flex-row grow gap-2 items-center justify-center p-4 -mb-px whitespace-nowrap `,
+        `flex flex-row grow gap-2 items-center justify-center p-2 sm:p-4 -mb-px whitespace-nowrap `,
         `font-semibold transition-all`,
         isSelected
           ? "border-[#1CB4D5] text-basis"

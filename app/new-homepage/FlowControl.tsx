@@ -138,7 +138,7 @@ export default function FlowControl() {
         className="my-8"
       />
 
-      <div className="my-16 mx-auto max-w-6xl grid grid-cols-3 gap-x-8 gap-y-10">
+      <div className="my-8 sm:my-16 mx-6 md:mx-auto max-w-6xl grid sm:grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-6 sm:gap-y-10">
         {items.map(({ title, description, icon, url }, idx) => (
           <Feature
             title={title}

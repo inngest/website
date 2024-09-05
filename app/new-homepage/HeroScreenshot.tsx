@@ -69,7 +69,7 @@ export default function HeroScreenshot() {
             </Button>
           </div>
         </header>
-        <div className="flex flex-col gap-6 items-center pb-8">
+        <div className="flex flex-col gap-6 items-center sm:pb-8">
           <p className="mx-8 text-sm text-balance text-subtle">
             Trusted by modern software companies at scale worldwide:
           </p>

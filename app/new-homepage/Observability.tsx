@@ -80,7 +80,7 @@ const Feature = ({
   <>
     <Image
       alt={`Screenshot of ${title}`}
-      className="rounded-md"
+      className="rounded-md w-full"
       src={img}
       width={imgSize.width}
       height={imgSize.height}

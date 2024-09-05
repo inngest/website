@@ -372,7 +372,7 @@ const content = [
   },
 ];
 
-export default function TabsContainer() {
+export default function UseCases() {
   const [selected, setSelected] = useState(0);
   const selectedContent = content[selected];
   return (

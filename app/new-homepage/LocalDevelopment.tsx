@@ -65,7 +65,7 @@ export default function LocalDevelopment() {
           shadow-[0_0_220px_16px_rgba(20,284,286,0.2)]
         `}
       />
-      <div className="my-12 mx-auto max-w-6xl grid grid-cols-3 gap-x-10 gap-y-10">
+      <div className="my-12 mx-6 md:mx-auto max-w-6xl grid sm:grid-cols-3 gap-x-10 gap-y-10">
         {features.map(({ title, description }, idx) => (
           <Feature title={title} description={description} key={idx} />
         ))}

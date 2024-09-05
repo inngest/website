@@ -6,7 +6,7 @@ import { Button } from "src/shared/Button";
 export default function Community() {
   return (
     <div>
-      <Container className="my-10 lg:mt-20 lg:mb-12 flex flex-col md:flex-row gap-8 lg:gap-12 text-basis">
+      <Container className="my-10 lg:mt-20 lg:mb-12 mx-6 md:mx-auto flex flex-col md:flex-row gap-8 lg:gap-12 text-basis">
         <Card
           wrapperClassName="w-full lg:w-1/2"
           className="flex-col gap-4 items-start"

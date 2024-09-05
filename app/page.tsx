@@ -6,7 +6,7 @@ import Link from "src/components/Link";
 import Command from "src/components/Command";
 import { Button } from "src/shared/Button";
 import Quote from "src/components/Quote";
-import TabContainer from "./new-homepage/TabContainer";
+import UseCases from "./new-homepage/UseCases";
 import Container from "./new-homepage/Container";
 import HeroScreenshot from "./new-homepage/HeroScreenshot";
 import Heading from "./new-homepage/Heading";
@@ -40,7 +40,7 @@ export default function Page() {
           description="Use any Inngest SDK to define complex or high-volume functions in your existing codebase and run them on your existing infrastructure. No queues, workers, or additional state management required."
           className="my-8"
         />
-        <TabContainer />
+        <UseCases />
       </div>
       <div className="my-32">
         <PlatformsLanguages />

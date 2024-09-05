@@ -3,9 +3,9 @@ import Container from "./Container";
 export default function PlatformsLanguages() {
   return (
     <Container>
-      <div className="flex flex-col lg:flex-row max-w-2xl lg:max-w-none mx-auto text-basis gap-16 md:gap-12 justify-between">
-        <div className="flex flex-col mx-12 md:mx-auto md:flex-row gap-10 md:gap-8 grow basis-5/12">
-          <p className="text-balance shrink md:max-w-32">
+      <div className="flex flex-col lg:flex-row max-w-2xl lg:max-w-none mx-4 sm:mx-auto text-basis gap-16 md:gap-12 justify-between">
+        <div className="flex flex-col sm:mx-12 md:mx-auto md:flex-row gap-10 md:gap-8 grow basis-5/12">
+          <p className="text-balance shrink text-center sm:text-left md:max-w-32">
             Write functions in any language.
           </p>
           {/* TODO - These vectors look terrible */}
@@ -35,8 +35,8 @@ export default function PlatformsLanguages() {
           </div>
         </div>
         <div className="hidden lg:block px-px bg-[#1CB4D5] bg-gradient-to-b from-cyan-500 to-blue-500 h-18"></div>
-        <div className="flex flex-col mx-12 md:mx-auto md:flex-row gap-10 md:gap-8 grow basis-7/12">
-          <p className="text-balance shrink md:max-w-48">
+        <div className="flex flex-col sm:mx-12 md:mx-auto md:flex-row gap-10 md:gap-8 grow basis-7/12">
+          <p className="text-balance shrink text-center sm:text-left md:max-w-48">
             Functions run on your own infrastructure: serverless, servers, or
             edge.
           </p>

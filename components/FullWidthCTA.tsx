@@ -46,7 +46,9 @@ export function FullWidthCTA({
     `}
     >
       <h2 className="text-3xl md:text-6xl font-bold">{title}</h2>
-      <p className="text-lg md:text-xl font-semibold">{description}</p>
+      <p className="text-lg md:text-xl text-balance font-semibold">
+        {description}
+      </p>
       <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
         {/* <Command command="npx inngest-cli@latest dev" /> */}
         {ctas.map(({ href, text, variant = "dark" }, idx) => (

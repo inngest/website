@@ -229,11 +229,11 @@ export default function SocialProof({ className }: { className?: string }) {
           </>
         }
       />
-      <div className="mt-16 grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="mt-16 grid md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8">
         {quotes.map(({ name, username, quote, avatar }, idx) => (
           <div
             key={idx}
-            className="p-6 max-w-[420px] mx-auto flex flex-col gap-4 rounded-md bg-canvasBase text-basis shadow-[0_0_220px_16px_rgba(20,284,286,0.2)]"
+            className="p-4 sm:p-6 w-full max-w-[420px] mx-auto flex flex-col gap-4 rounded-md bg-canvasBase text-basis shadow-[0_0_220px_16px_rgba(20,284,286,0.2)]"
           >
             <div className="flex flex-row gap-4 w-full items-center font-medium">
               <Image

@@ -23,7 +23,7 @@ export default function USPs() {
         className="my-8"
       />
       <p></p>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-8 mx-6 sm:mx-auto">
         <USP
           // title="SDKs for writing reliable, fault-tolerant code"
           title="Write reliable, fault-tolerant code with ease"
@@ -100,7 +100,7 @@ function USP({
         />
         <div
           className={clsx(
-            `flex flex-col gap-4 absolute top-0 left-0 transition-all text-lg text-basis/90`,
+            `flex flex-col gap-4 absolute top-0 left-0 transition-all text-base sm:text-lg text-basis/90`,
             showText ? "opacity-100" : "opacity-0"
           )}
         >
@@ -108,7 +108,9 @@ function USP({
         </div>
       </div>
       <div className="flex flex-row items-end">
-        <h3 className="font-semibold text-2xl text-balance">{title}</h3>
+        <h3 className="font-semibold text-xl sm:text-2xl text-balance">
+          {title}
+        </h3>
         <button
           onClick={onClick}
           className="flex shrink-0 items-center justify-center text-basis hover:text-primary-intense transition-all rounded-full border border-subtle hover:border-muted h-10 w-10 text-center"

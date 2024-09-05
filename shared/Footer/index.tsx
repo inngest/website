@@ -31,7 +31,7 @@ export default function Footer({
               <Logo className="text-basis w-20 relative top-[3px]" />
               <StatusWidget />
             </div>
-            <div className="flex flex-wrap gap-8 lg:gap-12 xl:gap-20">
+            <div className="flex flex-col sm:flex-wrap gap-8 lg:gap-12 xl:gap-20">
               {footerLinks.map((footerLink, i) => (
                 <div className="lg:w-auto flex-shrink-0" key={i}>
                   <h4 className="text-subtle text-sm font-semibold mb-6">

@@ -27,7 +27,7 @@ export default function Enterprise() {
         }
         className="my-8"
       />
-      <div className="max-w-5xl mx-auto my-16 grid md:grid-cols-2 gap-4">
+      <div className="max-w-5xl mx-6 sm:mx-auto my-16 grid md:grid-cols-2 gap-4">
         <div className="flex flex-col gap-8 text-basis">
           <div className="flex flex-col gap-2 justify-between">
             <div className="flex flex-col gap-2">
@@ -98,7 +98,7 @@ export default function Enterprise() {
             </div>
           </div>
         </div>
-        <div>
+        <div className="hidden md:block">
           <img
             src="/assets/homepage/gradient-graphics/enterprise.svg"
             alt="Enterprise ready"

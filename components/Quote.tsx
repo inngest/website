@@ -58,7 +58,7 @@ export default function Quote({
             alt={`Logo of ${name}`}
             height="72"
             width="128"
-            className="w-full max-w-[220px] max-h-12"
+            className="min-w-[140px] sm:w-full max-w-[220px] max-h-12"
           />
         )}
       </footer>
