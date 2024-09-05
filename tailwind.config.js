@@ -15,7 +15,9 @@ module.exports = {
   ],
   safelist: [
     // For Tabs.tsx
-    ...[1, 2, 3, 4, 5, 6].map((i) => [`grid-cols-${i}`, `w-1/${i}`]).flat(),
+    ...[1, 2, 3, 4, 5, 6]
+      .map((i) => [`grid-cols-${i}`, `sm:grid-cols-${i}`, `w-1/${i}`])
+      .flat(),
   ],
   theme: {
     typography: require("./typography"),
