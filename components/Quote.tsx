@@ -31,11 +31,6 @@ export default function Quote({
       )}
     >
       <p className="text-lg leading-7">{text}</p>
-      {!!caseStudy && (
-        <Button variant="primary" href={caseStudy}>
-          Read case study
-        </Button>
-      )}
       <footer className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex flex-row items-center gap-4">
           {!!avatar && (
@@ -62,6 +57,13 @@ export default function Quote({
           />
         )}
       </footer>
+      {!!caseStudy && (
+        <div className="flex w-full justify-end">
+          <Button variant="primary" href={caseStudy}>
+            Read case study
+          </Button>
+        </div>
+      )}
     </blockquote>
   );
 }
