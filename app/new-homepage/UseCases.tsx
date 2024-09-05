@@ -425,7 +425,7 @@ export default function UseCases() {
               </p>
               <div className="flex flex-col grow gap-10 max-w-md">
                 {selectedContent.highlights.map(({ title, content }, idx) => (
-                  <Feature title={title} description={content} key={idx} />
+                  <Feature title={title} description={content} key={idx} tight />
                 ))}
               </div>
             </div>
