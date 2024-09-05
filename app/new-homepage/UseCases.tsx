@@ -25,7 +25,7 @@ export const processVideo = inngest.createFunction(
   async ({ event, step }) => {
 
     // step.run is a code-level transaction:  it retries automatically
-    // on failure and only run once on success.
+    // on failure and only runs once on success.
     const transcript = await step.run('transcribe-video',
       async () => deepgram.transcribe(event.data.videoUrl)
     )
@@ -58,7 +58,7 @@ export const userWorkflow = inngest.createFunction(
   async ({ event, step }) => {
 
     // step.run is a code-level transaction:  it retries automatically
-    // on failure and only run once on success.
+    // on failure and only runs once on success.
     const similar = await step.run("query-vectordb",
       async () => {
         const embedding = createEmedding(event.data.input);
@@ -95,7 +95,7 @@ export const importJob = inngest.createFunction(
   async ({ event, step }) => {
 
     // step.run is a code-level transaction:  it retries automatically
-    // on failure and only run once on success, automatically backed
+    // on failure and only runs once on success, automatically backed
     // by queues.
     const data = await step.run("fetch-data-via-api", async () => {
       const credentials = await db.credentials.find(
