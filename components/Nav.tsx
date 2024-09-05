@@ -19,8 +19,6 @@ import { productLinks, resourcesLinks } from "./Nav/links";
 //                   inngest + js + py + go + kt + typedwebhooks
 const GITHUB_STARS = 1650 + 388 + 25 + 20 + 1 + 262;
 
-console.log("GITHUB_STARS", GITHUB_STARS);
-
 const menu: {
   title: string;
   url?: string;
