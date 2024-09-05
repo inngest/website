@@ -27,7 +27,7 @@ export default function PageHeader(props: PageHeaderProps) {
       </h1>
 
       <p
-        className="text-sm md:text-base max-w-xl leading-6 md:leading-7"
+        className="text-sm md:text-base max-w-xl leading-6 md:leading-7 text-balance"
         dangerouslySetInnerHTML={{ __html: lede }}
       ></p>
       {Boolean(ctas?.length) && (
