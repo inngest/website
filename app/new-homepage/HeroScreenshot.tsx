@@ -26,9 +26,8 @@ export default function HeroScreenshot() {
             for modern software teams
           </h1>
           <p className="max-w-5xl mt-8 mx-auto text-base sm:text-lg md:text-xl leading-normal text-balance drop-shadow-lg">
-            Inngest's durable functions replace queues, state management, and
-            scheduling to enable any developer to write reliable, multi-step
-            code faster without touching infrastructure.
+            Inngest is the modern durable execution platform that lets developers ship reliable and
+            scalable functions in minutes, without touching queues, function state, or infrastructure.
           </p>
 
           <div className="mt-8 flex flex-row flex-wrap justify-center items-center gap-4">

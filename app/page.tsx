@@ -35,9 +35,9 @@ export default function Page() {
       <HeroScreenshot />
       <div className="my-32">
         <Heading
-          label="Language SDKs"
-          title="Simple primitives for complex problems"
-          description="Use any Inngest SDK to define complex or high-volume functions in your existing codebase and run them on your existing infrastructure. No queues, workers, or additional state management required."
+          label="Powerful SDKs"
+          title="Simple APIs for reliable software"
+          description="Drop our SDK into your existing codebase to add durable execution via step functions in seconds. No queues, workers, or additional state management required."
           className="my-8"
         />
         <UseCases />
