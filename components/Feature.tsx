@@ -35,7 +35,7 @@ export default function Feature({
           src={img}
           width="512"
           height="192"
-          alt={title || ""}
+          alt={typeof title === "string" ? title : ""}
           className="rounded-md w-full mb-2"
         />
       )}

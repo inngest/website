@@ -30,8 +30,12 @@ export default function FooterCallout({
     <FullWidthCTA
       title={title}
       description={description}
-      ctaHref={ctaHref}
-      ctaText={ctaText}
+      ctas={[
+        {
+          href: ctaHref,
+          text: ctaText,
+        },
+      ]}
       ctaRef={ctaRef}
     />
   );
