@@ -91,38 +91,42 @@ function USP({
     setShowText(!showText);
   }
   return (
-    <Card variant="subtle" className="px-7 py-8 flex flex-col justify-between">
-      <div className="relative">
-        <img
-          src={src}
-          alt={alt}
-          className={clsx("transition-all", showText && "opacity-30")}
-        />
-        <div
-          className={clsx(
-            `flex flex-col gap-4 absolute top-0 left-0 transition-all text-base sm:text-lg text-basis/90`,
-            showText ? "opacity-100" : "opacity-0"
-          )}
-        >
-          {children}
+    <div className="group cursor-pointer" onClick={onClick}>
+      <Card
+        variant="subtle"
+        className="px-7 py-8 flex flex-col justify-between"
+      >
+        <div className="relative">
+          <img
+            src={src}
+            alt={alt}
+            className={clsx("transition-all", showText && "opacity-30")}
+          />
+          <div
+            className={clsx(
+              `flex flex-col gap-4 absolute top-0 left-0 transition-all text-base sm:text-lg text-basis/90`,
+              showText ? "opacity-100" : "opacity-0"
+            )}
+          >
+            {children}
+          </div>
         </div>
-      </div>
-      <div className="flex flex-row items-end">
-        <h3 className="font-semibold text-xl sm:text-2xl text-balance">
-          {title}
-        </h3>
-        <button
-          onClick={onClick}
-          className="flex shrink-0 items-center justify-center text-basis hover:text-primary-intense transition-all rounded-full border border-subtle hover:border-muted h-10 w-10 text-center"
-          title="Learn more"
-        >
-          {showText ? (
-            <RiSubtractLine className="h-8" />
-          ) : (
-            <RiAddLine className="h-8" />
-          )}
-        </button>
-      </div>
-    </Card>
+        <div className="flex flex-row items-end">
+          <h3 className="font-semibold text-xl sm:text-2xl text-balance">
+            {title}
+          </h3>
+          <button
+            className="flex shrink-0 items-center justify-center text-basis group-hover:text-primary-intense transition-all rounded-full border border-subtle group-hover:border-muted h-10 w-10 text-center"
+            title="Learn more"
+          >
+            {showText ? (
+              <RiSubtractLine className="h-8" />
+            ) : (
+              <RiAddLine className="h-8" />
+            )}
+          </button>
+        </div>
+      </Card>
+    </div>
   );
 }
