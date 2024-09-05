@@ -10,6 +10,7 @@ import { useRive } from "@rive-app/react-canvas";
 import { useEffect } from "react";
 import Footer from "src/shared/Footer";
 import Quote from "src/shared/Home/Quote";
+import { Button } from "src/shared/Button";
 
 export const getStaticProps: GetStaticProps = async (ctx) => {
   return {
@@ -49,7 +50,7 @@ export default function workflowEngine() {
                 Launch customizable workflows, in&nbsp;weeks
               </h1>
 
-              <p className="text-lg text-slate-200 leading-8">
+              <p className="text-lg text-basis leading-8">
                 Build powerful customizable workflows directly in your product
                 using Inngest as the reliable orchestration engine. Develop
                 locally and ship to your existing production systems ready for
@@ -141,7 +142,7 @@ export default function workflowEngine() {
             title: "Principal Engineer",
             avatar: "/assets/quotes/osenergy.jpeg",
           }}
-          className="my-36"
+          className="my-24"
         />
       </Container>
 
@@ -195,20 +196,18 @@ export default function workflowEngine() {
 
             <div className="flex flex-col lg:flex-row gap-8 pt-12 lg:py-28 items-center justify-center w-full">
               <div>
-                <Link
+                <Button
                   href={`${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=workflows`}
-                  className="rounded-md font-medium px-11 py-3.5 bg-indigo-500 hover:bg-indigo-400 transition-all text-white whitespace-nowrap flex flex-row items-center"
+                  variant="primary"
+                  size="lg"
                 >
                   Get started
                   <ChevronRightIcon className="h-5 group-hover:translate-x-1 relative top-px transition-transform duration-150" />
-                </Link>
+                </Button>
               </div>
-              <Link
-                href="/contact"
-                className="group flex items-center gap-1 rounded-md px-11 py-3.5 bg-transparent transition-all text-indigo-200 border border-transparent hover:border-slate-800 whitespace-nowrap"
-              >
-                Contact us
-              </Link>
+              <Button href="/contact?ref=workflows" size="lg" variant="outline">
+                Chat with solutions engineering
+              </Button>
             </div>
           </div>
 

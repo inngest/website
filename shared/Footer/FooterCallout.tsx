@@ -2,6 +2,8 @@ import Link from "next/link";
 
 import Container from "../layout/Container";
 
+import { FullWidthCTA } from "src/components/FullWidthCTA";
+
 const MeshGradient = `
 radial-gradient(at 35% 95%, hsla(258,82%,61%,1) 0px, transparent 50%),
 radial-gradient(at 65% 9%, hsla(261,49%,53%,1) 0px, transparent 50%),
@@ -11,7 +13,7 @@ url(/assets/textures/wave-large.svg)
 
 export default function FooterCallout({
   title = "Ready to start building?",
-  description = "Ship background functions & workflows like never before",
+  description = "Ship reliable code without manage queues, infrastructure, or state",
   ctaHref = process.env.NEXT_PUBLIC_SIGNUP_URL,
   ctaText = "Get started for free",
   ctaRef,
@@ -24,6 +26,19 @@ export default function FooterCallout({
   ctaRef?: string;
   showCliCmd?: boolean;
 }) {
+  return (
+    <FullWidthCTA
+      title={title}
+      description={description}
+      ctas={[
+        {
+          href: ctaHref,
+          text: ctaText,
+        },
+      ]}
+      ctaRef={ctaRef}
+    />
+  );
   return (
     <Container>
       <div className="p-2.5 rounded-[14px] bg-slate-800/50 mt-28 mb-12">

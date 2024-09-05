@@ -22,8 +22,12 @@ export default function LandingPageLayout({
           {children}
         </main>
         <FullWidthCTA
-          ctaText="Read the quick start guide"
-          ctaHref="/docs/getting-started/nextjs-quick-start"
+          ctas={[
+            {
+              text: "Read the quick start guide",
+              href: "/docs/getting-started/nextjs-quick-start",
+            },
+          ]}
         />
       </div>
     </SectionProvider>

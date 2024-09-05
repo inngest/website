@@ -52,13 +52,13 @@ export default function BlogLayout(props) {
 
         <Container className="pt-8">
           <div className="flex flex-col lg:flex-row gap-2 lg:gap-4 items-start lg:items-center">
-            <h2 className="font-bold text-base text-white lg:border-r border-slate-600/50 pr-4">
+            <h2 className="font-bold text-base text-white lg:border-r border-carbon-600/50 pr-4">
               Blog
             </h2>
-            <p className="text-slate-200 text-sm">{description}</p>
+            <p className="text-carbon-200 text-sm">{description}</p>
             <a
               href="/api/rss.xml"
-              className="py-1 rounded-md transition-all text-slate-300 hover:text-white border border-transparent hover:border-slate-200/30"
+              className="py-1 rounded-md transition-all text-carbon-300 hover:text-white border border-transparent hover:border-carbon-200/30"
             >
               <Rss className="h-4" />
             </a>
@@ -66,16 +66,16 @@ export default function BlogLayout(props) {
           <div className="pt-16">
             {focus && (
               <a
-                className="relative flex flex-col-reverse lg:flex-row xl:max-w-[1160px] bg-indigo-600 rounded-lg mb-32 group shadow-lg"
+                className="relative flex flex-col-reverse lg:flex-row xl:max-w-[1160px] bg-matcha-600 rounded-lg mb-32 group shadow-lg"
                 href={focus.redirect ?? `/blog/${focus.slug}`}
               >
-                <div className="absolute top-0 bottom-0 -left-[40px] -right-[40px] rounded-lg bg-indigo-500 opacity-20 rotate-1 -z-0 mx-5"></div>
+                <div className="absolute top-0 bottom-0 -left-[40px] -right-[40px] rounded-lg bg-matcha-500 opacity-20 rotate-1 -z-0 mx-5"></div>
                 <div className="lg:w-2/5 p-8 flex flex-col items-start justify-between relative z-10">
                   <div>
-                    <span className="inline-flex text-indigo-50 mb-3 text-xs font-semibold bg-indigo-700/50 px-3 py-1.5 rounded">
+                    <span className="inline-flex text-matcha-0 mb-3 text-xs font-semibold bg-matcha-700/50 px-3 py-1.5 rounded">
                       Latest Post
                     </span>
-                    <h2 className="text-xl md:text-2xl lg:text-xl xl:text-2xl text-white mb-1 font-medium">
+                    <h2 className="text-xl md:text-2xl lg:text-xl xl:text-2xl text-alwaysWhite mb-1 font-medium">
                       {focus.heading}
                     </h2>
                     <p className="text-slate-200 text-sm font-medium mb-4 flex gap-1 items-center">
@@ -84,7 +84,7 @@ export default function BlogLayout(props) {
                     </p>
                     <p className="text-slate-100">{focus.subtitle}</p>
                   </div>
-                  <span className="px-4 text-sm font-medium inline-flex mt-4 bg-slate-800 text-slate-50 py-1.5 rounded-full group-hover:bg-slate-700">
+                  <span className="px-4 text-sm font-medium inline-flex mt-4 bg-matcha-800 text-matcha-0 py-1.5 rounded-full group-hover:bg-matcha-700">
                     Read article
                     <ArrowRight className="group-hover:translate-x-1.5 relative top-px transition-transform duration-150 " />
                   </span>
@@ -124,7 +124,7 @@ export default function BlogLayout(props) {
                       </div>
                     )}
                     <div className="pt-4 xl:pt-6 xl:py-4">
-                      <h2 className="text-base xl:text-lg text-white mb-1 group-hover:text-indigo-400 transition-all">
+                      <h2 className="text-base xl:text-lg text-white mb-1 group-hover:text-link transition-all">
                         {item.heading}
                       </h2>
                       <p className="text-slate-400 text-sm font-medium mb-4 mt-2 flex items-center gap-1">

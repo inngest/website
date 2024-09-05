@@ -14,7 +14,11 @@ import Container from "../layout/Container";
 import HeaderDropdown from "./Dropdown";
 import { productLinks, learnLinks } from "./headerLinks";
 
-export default function Header() {
+import { default as Nav } from "src/components/Nav";
+
+export default Nav;
+/*
+export function Header() {
   const [scroll, setScroll] = useState(false);
   const [menuState, setMenuState] = useState(false);
 
@@ -147,3 +151,4 @@ export default function Header() {
     </header>
   );
 }
+*/

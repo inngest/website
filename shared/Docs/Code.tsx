@@ -78,11 +78,11 @@ function CopyButton({ code }) {
       <span
         aria-hidden={copied}
         className={clsx(
-          "pointer-events-none flex items-center gap-0.5 text-slate-400 transition duration-300",
+          "pointer-events-none flex items-center gap-0.5 text-basis transition duration-300",
           copied && "-translate-y-1.5 opacity-0"
         )}
       >
-        <ClipboardIcon className="h-5 w-5 fill-slate-500/20 stroke-slate-500 transition-colors group-hover/button:stroke-slate-400" />
+        <ClipboardIcon className="h-5 w-5 fill-carbon-500/20 stroke-carbon-500 transition-colors group-hover/button:stroke-carbon-400" />
         Copy
       </span>
       <span
@@ -131,7 +131,7 @@ function CodePanel({ tag, label, code, children }: CodePanelProps) {
   let child = Children.only<any>(children);
 
   return (
-    <div className="group dark:bg-white/2.5">
+    <div className="group Xbg-carbon-1000 bg-canvasBase border border-subtle rounded-lg">
       <CodePanelHeader
         tag={child.props.tag ?? tag}
         label={child.props.label ?? label}
@@ -172,7 +172,7 @@ function CodeGroupHeader({
       {heading && (
         <h3
           className={clsx(
-            "mr-auto text-xs font-semibold text-white",
+            "mr-auto text-xs font-semibold text-alwaysWhite",
             !!filename && "font-mono"
           )}
         >

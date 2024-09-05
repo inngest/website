@@ -52,7 +52,9 @@ export const Header = forwardRef<HTMLDivElement>(function Header(
         "fixed inset-x-0 top-0 z-50 flex h-14 items-center justify-between gap-12 px-4 transition lg:z-30",
         !isInsideMobileNavigation && "backdrop-blur-sm dark:backdrop-blur",
         isInsideMobileNavigation
-          ? "bg-white dark:bg-carbon-900"
+          ? // ? "bg-canvasBase"
+            // : "bg-canvasBase/[var(--bg-opacity-light)] dark:bg-canvasBase/[var(--bg-opacity-dark)]"
+            "bg-white dark:bg-carbon-900"
           : "bg-white dark:bg-carbon-1000"
       )}
       style={

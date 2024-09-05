@@ -13,6 +13,12 @@ module.exports = {
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./shared/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  safelist: [
+    // For Tabs.tsx
+    ...[1, 2, 3, 4, 5, 6]
+      .map((i) => [`grid-cols-${i}`, `sm:grid-cols-${i}`, `w-1/${i}`])
+      .flat(),
+  ],
   theme: {
     typography: require("./typography"),
     extend: {
@@ -28,6 +34,10 @@ module.exports = {
         primary: colors.indigo["500"],
         inngestBlack: theme2024.black,
         background: theme2024.black, // TODO - Change to carbon-1000
+
+        // Redesign 2024
+        cta: "#10B981",
+        ctaHover: "#2fe4a8",
 
         // Design System 2024
         carbon: {
@@ -263,7 +273,7 @@ module.exports = {
           "rgb(var(--color-foreground-code-entityNameFunction) / <alpha-value>)",
       },
       textDecorationColor: {
-        link: 'rgb(var(--color-foreground-link) / <alpha-value>)',
+        link: "rgb(var(--color-foreground-link) / <alpha-value>)",
       },
       fontSize: {
         "5xl": ["3rem", "1.3"],
@@ -284,12 +294,13 @@ module.exports = {
       },
     },
     fontFamily: {
-      sans: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
-      heading: `Inter -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"`,
+      sans: 'CircularXX, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto',
+      heading:
+        'CircularXX, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto',
       mono: 'CircularXXMono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
       // We can use these temporary classes while we transition to the new fonts
       circular:
-        'CircularXX, "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto',
+        'CircularXX, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto',
     },
   },
   plugins: [require("@tailwindcss/typography")],

@@ -131,14 +131,7 @@ export default function Patterns() {
     <div>
       <Header />
 
-      <div
-        style={{
-          backgroundImage: "url(/assets/pricing/table-bg.png)",
-          backgroundPosition: "center -30px",
-          backgroundRepeat: "no-repeat",
-          backgroundSize: "1800px 1200px",
-        }}
-      >
+      <div>
         <Container>
           <h1 className="text-3xl lg:text-5xl text-white mt-12 md:mt-20 font-semibold tracking-tight">
             Patterns
@@ -155,10 +148,10 @@ export default function Patterns() {
             {SECTIONS.map((s, idx) => (
               <div
                 key={s.title}
-                className="gap-y-6 xl:gap-y-8 flex flex-col xl:grid xl:grid-cols-4 md:bg-slate-900/20 rounded-lg md:px-3 md:py-6 lg:p-6"
+                className="gap-y-6 xl:gap-y-8 flex flex-col xl:grid xl:grid-cols-4 rounded-lg md:px-3 md:py-6 lg:p-6"
               >
                 <div className="flex items-center gap-4 xl:block">
-                  <div className="w-10 h-10 bg-indigo-500 flex items-center justify-center text-lg font-bold text-white rounded">
+                  <div className="w-10 h-10 bg-surfaceMuted flex items-center justify-center text-lg font-bold text-white rounded">
                     {zeroPad(idx + 1)}
                   </div>
                   <h2 className="text-xl xl:mt-4 text-white font-medium tracking-tight">
@@ -170,27 +163,27 @@ export default function Patterns() {
                     <Link
                       key={slug}
                       href={`/patterns/${slug}`}
-                      className="flex flex-col justify-between bg-slate-900 rounded-lg hover:bg-slate-50 group/card transition-all"
+                      className="flex flex-col justify-between bg-surfaceSubtle hover:drop-shadow-[0_0_35px_rgba(124,124,124,0.25)] rounded-lg group/card transition-all"
                     >
                       <div className="px-6 py-4 lg:px-8 lg:py-6 h-full flex flex-col justify-between">
                         <div>
-                          <h2 className="text-lg text-white group-hover/card:text-slate-700 font-semibold tracking-tight">
+                          <h2 className="text-lg text-basis font-semibold tracking-tight">
                             {title}
                           </h2>
-                          <p className="text-sm mt-1 mb-3 text-indigo-200 group-hover/card:text-slate-500 font-regular tracking-tight">
+                          <p className="text-sm mt-1 mb-3 text-subtle font-regular tracking-tight">
                             {subtitle}.
                           </p>
                         </div>
-                        <span className="text-sm text-indigo-400 font-medium group-hover/card:text-indigo-500 transition-all flex items-center gap-1">
+                        <span className="text-sm text-link font-medium group-hover/card:underline transition-all flex items-center gap-1">
                           Read pattern
                           <ArrowRight className="group-hover/card:translate-x-1 transition-transform duration-150  -mr-1.5" />
                         </span>
                       </div>
-                      <div className="flex flex-wrap gap-2 bg-slate-950 group-hover/card:bg-slate-100  rounded-b-lg py-3 px-6 border-t border-slate-800/60 group-hover/card:border-slate-200 transition-all">
+                      <div className="flex flex-wrap gap-2 bg-carbon-500/10 rounded-b-lg py-3 px-6 border-t border-subtle transition-all">
                         {tags.map((t) => (
                           <span
                             key={t}
-                            className="py-1 px-2 rounded bg-slate-800 text-slate-300 group-hover/card:bg-slate-200 group-hover/card:text-slate-500 transition-all font-medium text-xs"
+                            className="py-1 px-2 rounded bg-surfaceBase text-basis font-medium text-xs"
                           >
                             {t}
                           </span>
