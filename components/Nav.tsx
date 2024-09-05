@@ -115,16 +115,19 @@ export default function Nav() {
           >
             <div className="flex flex-col md:flex-row items-start md:items-center w-full">
               <ul className="flex flex-col md:flex-row md:items-center w-full md:w-auto gap-4 md:gap-0">
-                {menu.map(({ title, url, links, className = "" }) =>
+                {menu.map(({ title, url, links, className = "" }, idx) =>
                   links ? (
-                    <li className="relative flex items-center w-full md:w-auto group text-basis/90 font-medium md:px-5 md:py-8 text-sm">
+                    <li
+                      key={idx}
+                      className="relative flex items-center w-full md:w-auto group text-basis/90 font-medium md:px-5 md:py-8 text-sm"
+                    >
                       <span className="hidden md:block group-hover:md:text-primary-intense transition-color cursor-pointer">
                         {title}
                       </span>
                       <Menu {...links} />
                     </li>
                   ) : (
-                    <li>
+                    <li key={idx}>
                       <a
                         href={`${url}?ref=nav`}
                         className={`flex items-center text-basis/90 font-medium px-7 md:px-5 py-2 text-sm hover:text-primary-intense ${className}`}
@@ -137,8 +140,8 @@ export default function Nav() {
               </ul>
               <ul className="flex flex-shrink-0 md:items-center gap-3 mt-6 md:mt-0 md:px-3 md:hidden xl:flex">
                 {iconLinks.map(
-                  ({ title, url, iconClassName = "", ...item }) => (
-                    <li>
+                  ({ title, url, iconClassName = "", ...item }, idx) => (
+                    <li key={idx}>
                       <a
                         href={url}
                         className={`flex flex-shrink-0 items-center text-basis/90 px-3.5 py-2 hover:text-primary-intense`}

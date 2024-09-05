@@ -1,15 +1,17 @@
 import { AnchorHTMLAttributes } from "react";
 import { RiArrowRightSLine, RiArrowLeftSLine } from "@remixicon/react";
 
+export type ButtonVariant =
+  | "primary"
+  | "secondary"
+  | "tertiary"
+  | "primaryV2"
+  | "secondaryV2"
+  | "outline"
+  | "dark";
+
 type ButtonProps = {
-  variant?:
-    | "primary"
-    | "secondary"
-    | "tertiary"
-    | "primaryV2"
-    | "secondaryV2"
-    | "outline"
-    | "dark";
+  variant?: ButtonVariant;
   size?: "sm" | "md" | "lg";
   className?: string;
   arrow?: "left" | "right";

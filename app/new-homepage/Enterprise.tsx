@@ -67,7 +67,7 @@ export default function Enterprise() {
               <p className="text-balance">
                 Data is encrypted in transit and at rest, so you can trust that
                 your data is safe. Use our{" "}
-                <Link href="/docs/learn/security?ref=homepage-enterprise">
+                <Link href="/docs/features/middleware/encryption-middleware?ref=homepage-enterprise">
                   encryption middleware
                 </Link>{" "}
                 for additional control.

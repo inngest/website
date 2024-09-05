@@ -14,6 +14,7 @@ import {
   RiBox1Line,
 } from "@remixicon/react";
 import Card from "src/components/Card";
+import Feature from "src/components/Feature";
 import { Tabs } from "src/components/Tabs";
 
 const snippetDurableWorkflow = `
@@ -301,12 +302,9 @@ export default function TabsContainer() {
               <p className="text-xl font-bold text-basis">
                 {selectedContent.content}
               </p>
-              <div className="flex flex-col grow gap-4">
-                {selectedContent.highlights.map(({ title, content }) => (
-                  <Card>
-                    <h3 className="font-bold">{title}</h3>
-                    {content}
-                  </Card>
+              <div className="flex flex-col grow gap-8 max-w-md">
+                {selectedContent.highlights.map(({ title, content }, idx) => (
+                  <Feature title={title} description={content} key={idx} />
                 ))}
               </div>
             </div>

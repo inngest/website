@@ -13,10 +13,6 @@
 body {
   -webkit-font-smoothing: antialiased;
 }
-/* Use the default setting for font smoothing for new font */
-.font-circular {
-  -webkit-font-smoothing: subpixel-antialiased;
-}
 
 .dark :focus-visible {
   outline-color: white;

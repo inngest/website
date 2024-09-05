@@ -2,20 +2,29 @@
 import { useSelectedLayoutSegment } from "next/navigation";
 
 import Command from "./Command";
-import { Button } from "src/shared/Button";
+import { Button, type ButtonVariant } from "src/shared/Button";
+
+type CTA = {
+  href: string;
+  text: string;
+  variant?: ButtonVariant;
+};
 
 export function FullWidthCTA({
   title = "Ready to start building?",
   description = "Ship reliable code without manage queues, infrastructure, or state",
-  ctaHref = process.env.NEXT_PUBLIC_SIGNUP_URL,
-  ctaText = "Start building for free",
-  ctaRef,
+  ctas = [
+    {
+      href: process.env.NEXT_PUBLIC_SIGNUP_URL,
+      text: "Start building for free",
+    },
+  ],
+  ref,
 }: {
   title?: React.ReactNode;
   description?: React.ReactNode;
-  ctaHref?: string;
-  ctaText?: string;
-  ctaRef?: string;
+  ctas?: CTA[];
+  ref?: string;
 }) {
   let layoutSegment = "footer";
   try {
@@ -24,8 +33,7 @@ export function FullWidthCTA({
     /* noop */
   }
 
-  let ref = "callout";
-  if (!ctaRef) {
+  if (!ref) {
     ref = `${layoutSegment}-callout`;
   }
   return (
@@ -39,11 +47,13 @@ export function FullWidthCTA({
     >
       <h2 className="text-3xl md:text-6xl font-bold">{title}</h2>
       <p className="text-lg md:text-xl font-semibold">{description}</p>
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
         {/* <Command command="npx inngest-cli@latest dev" /> */}
-        <Button href={`${ctaHref}?ref=${ref}`} variant="dark">
-          {ctaText}
-        </Button>
+        {ctas.map(({ href, text, variant = "dark" }, idx) => (
+          <Button href={`${href}?ref=${ref}`} key={idx} variant={variant}>
+            {text}
+          </Button>
+        ))}
       </div>
     </section>
   );
