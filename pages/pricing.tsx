@@ -93,7 +93,7 @@ const PLANS: Plan[] = [
     name: PLAN_NAMES.basicFree,
     cost: {
       basePrice: 0,
-      includedRuns: 25_000,
+      includedRuns: 50_000,
       additionalRunsPrice: "-",
       additionalRunsRate: null,
       includedSteps: 5,
@@ -131,7 +131,7 @@ const PLANS: Plan[] = [
       between: true,
       basePrice: 50,
       endPrice: 300,
-      includedRuns: 50_000,
+      includedRuns: 100_000,
       additionalRunsPrice: 5,
       additionalRunsRate: 50_000,
       includedSteps: 5,
@@ -153,7 +153,7 @@ const PLANS: Plan[] = [
     },
     highlights: {
       // Note: If we start showing basic free tier on PlanCard, this should go to 50K runs/mo instead
-      runs: "Starts at 25K runs/mo",
+      runs: "Starts at 50K runs/mo",
       concurrency: "Starts at 5 concurrent runs",
     },
     planIncludes: "Basic plan includes:",
@@ -189,7 +189,7 @@ const PLANS: Plan[] = [
     recommended: true,
     cta: {
       href: `${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=pricing-card-pro`,
-      text: "Get started for free",
+      text: "Get started",
     },
     highlights: {
       runs: "Starts at 5M runs/mo",
@@ -401,8 +401,8 @@ const FEATURES: Feature[] = [
     name: "Event size",
     description: "The maximum size for a single event",
     plans: {
-      [PLAN_NAMES.basicFree]: "256KB",
-      [PLAN_NAMES.basic]: "256KB",
+      [PLAN_NAMES.basicFree]: "512KB",
+      [PLAN_NAMES.basic]: "512KB",
       [PLAN_NAMES.pro]: "3MB",
       [PLAN_NAMES.enterprise]: "Custom",
     },
@@ -410,11 +410,11 @@ const FEATURES: Feature[] = [
     section: "platform",
   },
   {
-    name: "Backpressure(per account)",
+    name: "Backpressure (per account)",
     description: "Prevent spikes and runaway executions",
     plans: {
-      [PLAN_NAMES.basicFree]: "1M",
-      [PLAN_NAMES.basic]: "1M",
+      [PLAN_NAMES.basicFree]: "200K",
+      [PLAN_NAMES.basic]: "Starts at 2M",
       [PLAN_NAMES.pro]: "Starts at 10M",
       [PLAN_NAMES.enterprise]: "Custom",
     },
