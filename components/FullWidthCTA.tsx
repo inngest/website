@@ -19,23 +19,23 @@ export function FullWidthCTA({
       text: "Start building for free",
     },
   ],
-  ref,
+  ctaRef,
 }: {
   title?: React.ReactNode;
   description?: React.ReactNode;
   ctas?: CTA[];
-  ref?: string;
+  ctaRef?: string;
 }) {
   let layoutSegment = "footer";
   try {
-    layoutSegment = useSelectedLayoutSegment();
+    const segment = useSelectedLayoutSegment();
+    if (segment) {
+      layoutSegment = segment;
+    }
   } catch (e) {
     /* noop */
   }
-
-  if (!ref) {
-    ref = `${layoutSegment}-callout`;
-  }
+  const ref = ctaRef ?? `${layoutSegment}-callout`;
   return (
     <section
       className={`
