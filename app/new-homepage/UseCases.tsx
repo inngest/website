@@ -377,7 +377,7 @@ export default function UseCases() {
   const selectedContent = content[selected];
   return (
     <Container>
-      <div className="max-w-6xl mx-auto my-8">
+      <div className="max-w-6xl xl:max-w-7xl mx-auto my-8">
         <div className="mb-8 border-b border-subtle">
           <Container className="mx-auto">
             <Tabs
@@ -388,7 +388,7 @@ export default function UseCases() {
           </Container>
         </div>
         {/* height of the largest code snippet */}
-        <Container className="grid grid-rows-auto grid-cols-1 md:grid-cols-8 gap-4 my-12 lg:min-h-[636px]">
+        <Container className="grid grid-rows-auto grid-cols-1 md:grid-cols-8 xl:grid-cols-9 gap-4 my-12 lg:min-h-[636px]">
           <div className="flex flex-col md:col-span-4">
             <div className="flex flex-col gap-12">
               <p className="text-xl font-bold text-basis text-balance">
@@ -411,7 +411,7 @@ export default function UseCases() {
           </div>
 
           {/* The min height here is for the longest code snippet that we show */}
-          <div className="md:col-span-4">
+          <div className="md:col-span-4 xl:col-span-5">
             <div
               className="md:min-h-[492px] py-2 px-1 ml-auto border border-subtle rounded-2xl
          shadow-[0_0_220px_16px_rgba(20,284,286,0.2)]"
