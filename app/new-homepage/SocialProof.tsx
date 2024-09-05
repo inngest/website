@@ -177,7 +177,7 @@ const quotes = [
     username: "codewithbhargav",
     avatar: "/assets/customers/social-proof/codewithbhargav.jpg",
   },
-  {
+  /*{
     // https://twitter.com/igarcido/status/1679168174678323201
     quote: (
       <>
@@ -189,23 +189,7 @@ const quotes = [
     name: "Ivan Garcia",
     username: "igarcido",
     avatar: "/assets/customers/social-proof/ivangarcia.jpg",
-  },
-  // {
-  //   // https://twitter.com/RiqwanMThamir/status/1686488475162288129
-  //   quote: (
-  //     <>
-  //       Just came across <AtInngest />. This looks bloody gorgeous! Can't wait
-  //       to find an idea to plug this in.
-  //       <br />
-  //       <br />
-  //       This is something I wish I had when I was running workflows with
-  //       @awscloud lambdas and SQS.
-  //     </>
-  //   ),
-  //   name: "Riqwan",
-  //   username: "RiqwanMThamir",
-  //   avatar: "/assets/customers/social-proof/riqwanmthamir.jpg",
-  // },
+  },*/
   {
     // https://twitter.com/julianbenegas8/status/1657586515436773376
     quote: (
@@ -218,7 +202,7 @@ const quotes = [
     username: "julianbenegas8",
     avatar: "/assets/customers/social-proof/julianbenegas8.jpg",
   },
-  {
+  /*{
     // https://twitter.com/dparksdev/status/1698192136691433780
     quote: (
       <>
@@ -229,7 +213,7 @@ const quotes = [
     name: "David parks",
     username: "dparksdev",
     avatar: "/assets/customers/social-proof/dparksdev.jpg",
-  },
+  },*/
 ];
 
 export default function SocialProof({ className }: { className?: string }) {
@@ -246,8 +230,11 @@ export default function SocialProof({ className }: { className?: string }) {
         }
       />
       <div className="mt-16 grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {quotes.map(({ name, username, quote, avatar }) => (
-          <div className="p-6 max-w-[420px] mx-auto flex flex-col gap-4 rounded-md bg-canvasBase text-basis shadow-[0_0_220px_16px_rgba(20,284,286,0.2)]">
+        {quotes.map(({ name, username, quote, avatar }, idx) => (
+          <div
+            key={idx}
+            className="p-6 max-w-[420px] mx-auto flex flex-col gap-4 rounded-md bg-canvasBase text-basis shadow-[0_0_220px_16px_rgba(20,284,286,0.2)]"
+          >
             <div className="flex flex-row gap-4 w-full items-center font-medium">
               <Image
                 src={avatar}
