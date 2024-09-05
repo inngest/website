@@ -13,15 +13,15 @@ export default function PlatformsLanguages() {
             {[
               {
                 title: "TypeScript",
-                logo: "/assets/homepage/gradient-graphics/logo-typescript.svg",
+                logo: "/assets/homepage/outline-logos/typescript.svg",
               },
               {
                 title: "Python",
-                logo: "/assets/homepage/gradient-graphics/logo-python.svg",
+                logo: "/assets/homepage/outline-logos/python.svg",
               },
               {
                 title: "Go",
-                logo: "/assets/homepage/gradient-graphics/logo-golang.svg",
+                logo: "/assets/homepage/outline-logos/golang.svg",
               },
             ].map(({ title, logo }, idx) => (
               <div
