@@ -7,12 +7,19 @@ import {
   RiDiscordFill,
   RiTwitterXFill,
   RiArrowRightLine,
+  RiArrowDownSLine,
 } from "@remixicon/react";
 import Logo from "src/shared/Icons/Logo";
 import classNames from "src/utils/classNames";
 import Container from "src/shared/layout/Container";
 import Menu, { type MenuProps } from "./Nav/Menu";
 import { productLinks, resourcesLinks } from "./Nav/links";
+
+// Manual count of stars on GitHub for now
+//                   inngest + js + py + go + kt + typedwebhooks
+const GITHUB_STARS = 1650 + 388 + 25 + 20 + 1 + 262;
+
+console.log("GITHUB_STARS", GITHUB_STARS);
 
 const menu: {
   title: string;
@@ -31,7 +38,6 @@ const menu: {
   {
     title: "Case Studies",
     url: "/customers",
-    className: "md:hidden lg:flex", // Hide on md
   },
   {
     title: "Pricing",
@@ -40,6 +46,7 @@ const menu: {
   {
     title: "Blog",
     url: "/blog",
+    className: "md:hidden min-[1120px]:flex", // Hide on md
   },
 ];
 
@@ -49,12 +56,6 @@ const iconLinks: {
   icon: React.ComponentType<{ className?: string }>;
   iconClassName?: string;
 }[] = [
-  {
-    title: "Github",
-    url: "https://github.com/inngest/inngest",
-    icon: RiGithubFill,
-    iconClassName: "scale-110",
-  },
   {
     title: "Discord",
     url: "/discord",
@@ -94,12 +95,15 @@ export default function Nav() {
           <div
             className={classNames(
               menuState ? `bg-canvasBase` : ``,
-              `md:bg-transparent flex items-center py-5 md:py-0 w-full md:w-auto justify-between`
+              `md:bg-transparent flex items-center gap-6 py-5 md:py-0 w-full md:w-auto justify-between`
             )}
           >
             <a href="/" className="mr-4">
               <Logo className="text-basis w-20 relative top-[2px]" />
             </a>
+            <div className="flex grow justify-end">
+              <OpenSourceButton className="md:hidden" />
+            </div>
             <button
               className="text-basis md:hidden"
               onClick={() => toggleMenu()}
@@ -121,7 +125,7 @@ export default function Nav() {
                       key={idx}
                       className="relative flex items-center w-full md:w-auto group text-basis/90 font-medium md:px-5 md:py-8 text-sm"
                     >
-                      <span className="hidden md:block group-hover:md:text-primary-intense transition-color cursor-pointer">
+                      <span className="hidden md:block group-hover:md:text-primary-intense transition-color cursor-pointer text-nowrap">
                         {title}
                       </span>
                       <Menu {...links} />
@@ -130,7 +134,7 @@ export default function Nav() {
                     <li key={idx}>
                       <a
                         href={`${url}?ref=nav`}
-                        className={`flex items-center text-basis/90 font-medium px-7 md:px-5 py-2 text-sm hover:text-primary-intense ${className}`}
+                        className={`flex items-center text-basis/90 font-medium px-7 md:px-5 py-2 text-sm hover:text-primary-intense text-nowrap ${className}`}
                       >
                         {title}
                       </a>
@@ -138,7 +142,7 @@ export default function Nav() {
                   )
                 )}
               </ul>
-              <ul className="flex flex-shrink-0 md:items-center gap-3 mt-6 md:mt-0 md:px-3 md:hidden xl:flex">
+              <ul className="flex flex-shrink-0 items-center gap-3 mt-6 md:mt-0 px-4 md:px-3 md:hidden xl:flex">
                 {iconLinks.map(
                   ({ title, url, iconClassName = "", ...item }, idx) => (
                     <li key={idx}>
@@ -154,14 +158,15 @@ export default function Nav() {
                 )}
               </ul>
             </div>
-            <div className="pl-8 md:pl-10 py-8 md:py-0 flex gap-6 items-center md:w-1/3 md:justify-end flex-shrink-0">
+            <div className="pl-8 md:pl-10 py-8 md:py-0 flex gap-6 items-center md:justify-end flex-shrink-0">
+              <OpenSourceButton className="hidden min-[816px]:block" />
               <a
                 href={`${process.env.NEXT_PUBLIC_SIGNIN_URL}?ref=nav`}
-                className="font-medium text-sm text-basis/90 hover:primary-intense duration-150 transition-all flex-shrink-0"
+                className={`font-medium text-sm text-basis/90 hover:primary-intense duration-150 transition-all flex-shrink-0
+                  md:hidden min-[880px]:inline`}
               >
                 Sign In
               </a>
-
               <a
                 href={`${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=nav`}
                 className="flex gap-1 items-center rounded-md text-sm font-medium pl-5 pr-4 py-2 bg-cta hover:bg-ctaHover transition-all text-onContrast flex-shrink-0"
@@ -174,5 +179,62 @@ export default function Nav() {
         </div>
       </Container>
     </header>
+  );
+}
+
+const repos = [
+  "inngest/inngest",
+  "inngest/inngest-js",
+  "inngest/inngest-py",
+  "inngest/inngestgo",
+  "inngest/inngest-kt",
+];
+
+function OpenSourceButton({ className = "" }: { className?: string }) {
+  const [open, setOpen] = useState(false);
+  /**
+   * NOTE - This uses md: prefixes to make the button work on hover on desktop and click on mobile
+   */
+  return (
+    <div
+      className={`group relative border border-subtle text-basis rounded-md text-sm ${className}`}
+    >
+      <div
+        className="flex flex-row flex-nowrap items-center justify-start text-nowrap gap-2 px-3 py-1 rounded-md group-hover:bg-canvasSubtle"
+        onClick={() => setOpen(!open)}
+      >
+        <span className="hidden lg:inline">Open Source</span>
+        <RiGithubFill className="h-4 w-4 shrink-0" />
+        <span>{(GITHUB_STARS / 1000).toFixed(1)}K</span>
+        <RiArrowDownSLine
+          className={`h-4 w-4 transition-all ${
+            open ? "rotate-180 md:rotate-0" : ""
+          }`}
+        />
+      </div>
+      <div
+        // Only show on hover when non-mobile (> md)
+        className={`absolute right-0 w-full min-w-min md:hidden md:group-hover:block ${
+          open ? "block" : "hidden"
+        }`}
+      >
+        <div className="bg-transparent h-2">
+          {/* transparent element to persist hover */}
+        </div>
+        <ul className="flex flex-col gap-2 px-3 py-2 bg-surfaceBase border border-subtle rounded-md text-sm">
+          {repos.map((repo, idx) => (
+            <li className="" key={idx}>
+              <a
+                href={`https://github.com/${repo}`}
+                target="_blank"
+                className="font-medium text-nowrap text-basis/90 hover:text-primary-intense"
+              >
+                {repo}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
   );
 }
