@@ -23,15 +23,23 @@ export const processVideo = inngest.createFunction(
     concurrency: { limit: 5, key: "event.data.userId" } },
   { event: "video/uploaded" },
   async ({ event, step }) => {
+
+    // step.run is a code-level transaction:  it retries automatically
+    // on failure and only run once on success.
     const transcript = await step.run('transcribe-video',
       async () => deepgram.transcribe(event.data.videoUrl)
     )
+
+    // function state is automatically managed for fault tolerance
+    // across steps.
     const summary = await step.run('summarize-transcript',
       async () => llm.createCompletion({
         model: "gpt-4o",
         prompt: createSummaryPrompt(transcript),
       })
     )
+
+    // easily chain a series of calls without managing infrastructure.
     await step.run('write-to-db',
       async () => db.videoSummaries.upsert({
         videoId: event.data.videoId,
@@ -48,6 +56,9 @@ export const userWorkflow = inngest.createFunction(
   { throttle: { limit: 30, period: "60s"  } /* ... */ },
   { event: "agent/request.received" },
   async ({ event, step }) => {
+
+    // step.run is a code-level transaction:  it retries automatically
+    // on failure and only run once on success.
     const similar = await step.run("query-vectordb",
       async () => {
         const embedding = createEmedding(event.data.input);
@@ -55,6 +66,8 @@ export const userWorkflow = inngest.createFunction(
           vector: embedding, topK: 3
         }).matches;
       });
+
+    // dynamically create deterministic user-generated agentic workflows
     const actions = await step.run("get-agent-actions",
       async () =>
         await agent.getActions({
@@ -63,6 +76,8 @@ export const userWorkflow = inngest.createFunction(
           similar,
         });
       );
+
+    // run agentic workflows by writing regular code
     for (let action of actions) {
       await step.run("run-action", async () => {
         await actions[action.id].execute(event.data.input);
@@ -78,14 +93,21 @@ export const importJob = inngest.createFunction(
   { priority: { run: "event.data.plan == 'paid' ? 120 : 0"  } /* ... */ },
   { event: "integration/import.initiated" },
   async ({ event, step }) => {
+
+    // step.run is a code-level transaction:  it retries automatically
+    // on failure and only run once on success, automatically backed
+    // by queues.
     const data = await step.run("fetch-data-via-api", async () => {
       const credentials = await db.credentials.find(
         event.data.credentialsId);
       return await api.fetchAllRecords(credentials);
     });
+
+    // chain calls without provisioning queues or managing state 
     await step.run("insert-data", async () => {
       await db.data.insert(data);
     });
+
     await step.run("run-aggregation", async () => {
       await runAggregation(db, event.data.userId);
     });
@@ -106,6 +128,8 @@ export const sendNotifications = inngest.createFunction(
       return user.loadPreferences();
     });
 
+    // Use language-specific idioms like Promise.all to automatically
+    // parallelize steps.
     await Promise.all([
       step.run("send-to-slack", async () => {
         await app.client.chat.postMessage({
@@ -127,6 +151,7 @@ export const etl = inngest.createFunction(
   { batch: { maxSize: 100, timeout: "30s" }, /* ... */ },
   { event: "ecommerce/product.purchased" },
   async ({ events, step }) => {
+
     let enrichedData = [];
     for (let event of events) {
       const data = await step.invoke('enrich-data', {
@@ -135,6 +160,7 @@ export const etl = inngest.createFunction(
       });
       enrichedData.push(data);
     }
+
     await step.run('bulk-insert', async () => {
       await db.productMetrics.insertMany(enrichedData);
     });
@@ -147,6 +173,9 @@ export const workflowEngine = inngest.createFunction(
   { id: "workflow-engine" },
   { event: "api/workflow.invoked" },
   async ({ event, step }) => {
+
+    // Deterministically load a users workflow once in a code-level
+    // transaction.
     const workflow = await step.run('load-workflow',
       async () =>
         db.workflows.find({
@@ -209,7 +238,7 @@ const content = [
         title: <>Run on serverless, servers, or both.</>,
         content: (
           <>
-            Deploy your Inngest functions to your existing platform or infra,
+            Deploy your Inngest functions to your existing platform or infra.
             Inngest securely invokes your jobs wherever the code runs.
           </>
         ),
@@ -396,7 +425,7 @@ export default function UseCases() {
               </p>
               <div className="flex flex-col grow gap-10 max-w-md">
                 {selectedContent.highlights.map(({ title, content }, idx) => (
-                  <Feature title={title} description={content} key={idx} />
+                  <Feature title={title} description={content} key={idx} tight />
                 ))}
               </div>
             </div>

@@ -15,16 +15,20 @@ export default function Feature({
   href,
   img,
   icon,
+  tight,
 }: {
   title?: string | React.ReactElement;
   description: string | React.ReactElement;
   href?: string | { href: string; text: string }[];
   img?: string;
   icon?: string | RemixiconComponentType;
+  tight?: boolean;
 }) {
   const Icon = typeof icon === "function" ? icon : null;
+  const gap = tight ? "gap-2" : "gap-4";
+
   return (
-    <div className="flex flex-col items-start gap-4 text-basis">
+    <div className={`flex flex-col items-start ${gap} text-basis`}>
       {typeof icon === "function" ? (
         <Icon className="w-7 h-7 text-basis" />
       ) : typeof icon === "string" ? (
