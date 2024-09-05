@@ -20,50 +20,60 @@ export default function HeroScreenshot() {
       `}
     >
       <Container>
-        <header className="pt-16 pb-16 px-8">
-          <h1 className="font-bold text-4xl md:text-6xl leading-tight md:leading-tight drop-shadow-lg">
+        <header className="pt-16 pb-16 px-4 sm:px-8">
+          <h1 className="px-4 sm:px-0 font-bold text-2xl sm:text-4xl md:text-6xl leading-tight md:leading-tight drop-shadow-lg">
             Queuing and orchestration <br className="hidden lg:inline" />
             for modern software teams
           </h1>
-          <p className="max-w-5xl mt-8 mx-auto text-lg md:text-xl leading-normal text-balance drop-shadow-lg">
-            {/* <strong className="font-semibold">
-              Develop and ship durable functions in minutes, without managing
-              queues, state, or flow control.
-            </strong>
-            <br className="" />
-            Inngest's SDKs let every developer write retryable step functions in
-            your existing codebase — <br className="hidden lg:inline" />
-            on serverless, servers, or the edge. */}
+          <p className="max-w-5xl mt-8 mx-auto text-base sm:text-lg md:text-xl leading-normal text-balance drop-shadow-lg">
             Inngest's durable functions replace queues, state management, and
             scheduling to enable any developer to write reliable, multi-step
             code faster without touching infrastructure.
           </p>
 
-          <div className="mt-8 flex flex-col sm:flex-row justify-center items-center gap-4">
+          <div className="mt-8 flex flex-row flex-wrap justify-center items-center gap-4">
+            {/* Desktop */}
             <Button
               variant="primary"
               size="md"
-              className="shadow-lg px-8 py-3"
+              className="hidden sm:inline-flex shadow-lg px-8 py-3"
               href={`${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=homepage-hero`}
             >
               Start building for free
             </Button>
-
             <Button
               variant="outline"
               size="md"
-              className="shadow-lg px-8 py-3"
+              className="hidden sm:inline-flex shadow-lg px-8 py-3"
               href="/contact?ref=homepage-hero"
             >
               Chat with solutions engineering
             </Button>
+
+            {/* Mobile */}
+            <Button
+              variant="primary"
+              size="sm"
+              className="sm:hidden shadow-lg px-8 py-3"
+              href={`${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=homepage-hero`}
+            >
+              Start for free
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="sm:hidden shadow-lg px-8 py-3"
+              href="/contact?ref=homepage-hero"
+            >
+              Get a demo
+            </Button>
           </div>
         </header>
         <div className="flex flex-col gap-6 items-center pb-8">
-          <p className="text-sm">
+          <p className="mx-8 text-sm text-balance text-subtle">
             Trusted by modern software companies at scale worldwide:
           </p>
-          <div className="flex flex-wrap lg:flex-nowrap gap-x-8 gap-y-8 mx-8">
+          <div className="grid grid-cols-2 sm:flex flex-wrap lg:flex-nowrap gap-x-4 sm:gap-x-8 gap-y-6 sm:gap-y-8 mx-8">
             {[
               {
                 src: "/assets/customers/soundcloud-logo-white-horizontal.svg",
@@ -104,8 +114,9 @@ export default function HeroScreenshot() {
                 width={120 * 0.8 * scale}
                 height={30 * 0.8 * scale}
                 className={clsx(
-                  "m-auto width-auto transition-all grayscale opacity-70 invert dark:invert-0",
-                  `max-h-[${36 * scale}px] col-span-2`,
+                  "m-auto width-auto transition-all grayscale opacity-80 invert dark:invert-0",
+                  `max-h-[${36 * scale}px]`,
+                  idx === 4 && "hidden sm:block",
                   idx > 4 && "hidden xl:block"
                 )}
               />
