@@ -417,7 +417,7 @@ export default function UseCases() {
           </Container>
         </div>
         {/* height of the largest code snippet */}
-        <Container className="grid grid-rows-auto grid-cols-1 md:grid-cols-8 gap-4 my-12 lg:min-h-[636px]">
+        <Container className="grid grid-rows-auto grid-cols-1 md:grid-cols-8 gap-1 my-12 lg:min-h-[636px]">
           <div className="flex flex-col md:col-span-4">
             <div className="flex flex-col gap-12">
               <p className="text-xl font-bold text-basis text-balance">
