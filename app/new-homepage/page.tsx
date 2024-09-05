@@ -31,7 +31,12 @@ export default function Page() {
     <div>
       <HeroScreenshot />
       <div className="my-32">
-        <Heading label="APIs for all challenges" className="my-8" />
+        <Heading
+          label="Language SDKs"
+          title="Simple primitives for complex problems"
+          description="Use any Inngest SDK to define complex or high-volume functions in your existing codebase and run them on your existing infrastructure. No queues, workers, or additional state management required."
+          className="my-8"
+        />
         <TabContainer />
       </div>
       <div className="my-32">
