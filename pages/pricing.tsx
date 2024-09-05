@@ -674,37 +674,37 @@ export async function getStaticProps() {
 
 export default function Pricing() {
   return (
-    <div className="font-sans bg-canvasBase text-basis">
+    <div
+      className="font-sans bg-canvasBase text-basis"
+      style={{
+        backgroundImage:
+          "radial-gradient(#2C9B63, rgba(0,0,0,0.0) 80%, rgba(0,0,0,0.0))",
+        backgroundSize: "1000px 1000px",
+        backgroundPosition: "center 120px",
+        backgroundRepeat: "no-repeat",
+      }}
+    >
       <Header />
-      <div
-        style={{
-          backgroundImage: "url(/assets/pricing/background-pricing.svg)",
-          backgroundPosition: "center -100px",
-          backgroundRepeat: "no-repeat",
-          backgroundSize: "1100px 1650px",
-        }}
-      >
-        <Container className="text-center">
-          <h1 className="text-3xl lg:text-6xl text-basis mt-20 mb-16 font-black tracking-tight">
-            Simple pricing that scales with you
-          </h1>
-          <p className="text-base lg:text-xl text-basis mb-24">
-            From early-stage startups to scaling enterprises, Inngest has you
-            covered. Get started for free today.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-y-8 lg:gap-4 text-center mb-8">
-            {PLANS.filter((p) => p.hideFromCards !== true).map((p) => (
-              <PlanCard key={p.name} content={p} />
-            ))}
-          </div>
-          <CaseStudies />
+      <div className="max-w-container-desktop m-auto px-4 md:px-6 lg:px-8 text-center">
+        <h1 className="text-3xl lg:text-6xl text-basis mt-8 md:mt-20 mb-4 md:mb-16 font-bold lg:font-black tracking-tight text-balance">
+          Simple pricing that scales with you
+        </h1>
+        <p className="text-base lg:text-xl text-basis mb-8 md:mb-24 text-balance">
+          From early-stage startups to scaling enterprises, Inngest has you
+          covered. Get started for free today.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-y-8 gap-2 lg:gap-4 text-center mb-8">
+          {PLANS.filter((p) => p.hideFromCards !== true).map((p) => (
+            <PlanCard key={p.name} content={p} />
+          ))}
+        </div>
+        <CaseStudies />
 
-          <ComparisonTable
-            plans={PLANS}
-            features={FEATURES}
-            sections={sections}
-          />
-        </Container>
+        <ComparisonTable
+          plans={PLANS}
+          features={FEATURES}
+          sections={sections}
+        />
       </div>
       <div
         className="text-center py-24"
