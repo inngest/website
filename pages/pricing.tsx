@@ -607,7 +607,7 @@ const FEATURES: Feature[] = [
     description: "Dedicated support direct from our engineers",
     plans: {
       [PLAN_NAMES.basicFree]: {
-        value: "Email, community",
+        value: "Community",
         description: "No SLA",
       },
       [PLAN_NAMES.basic]: { value: "Email, community", description: "No SLA" },
