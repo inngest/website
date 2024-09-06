@@ -357,7 +357,7 @@ const FEATURES: Feature[] = [
   },
   {
     name: "Concurrency",
-    description: "Process steps in parallel whilesmoothing load",
+    description: "Process steps in parallel while smoothing load",
     plans: {
       [PLAN_NAMES.basicFree]: `${
         getPlan(PLAN_NAMES.basicFree).cost.includedConcurrency
