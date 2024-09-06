@@ -39,6 +39,7 @@ export type Plan = {
   description: React.ReactFragment | string;
   hideFromCards?: boolean;
   recommended?: boolean;
+  primaryCTA?: boolean;
   cta: {
     href: string;
     text: string;
@@ -107,6 +108,7 @@ const PLANS: Plan[] = [
       additionalUsersRate: null,
       period: "mo",
     },
+    primaryCTA: true,
     description:
       "Get started with modern durable execution for free, with the future to grow",
     cta: {
@@ -146,6 +148,7 @@ const PLANS: Plan[] = [
       additionalUsersRate: 1,
       period: "mo",
     },
+    primaryCTA: true,
     description:
       "Build and deploy small scale reliable systems effortlessly",
     cta: {
@@ -185,6 +188,7 @@ const PLANS: Plan[] = [
     },
     description:
       "Production-ready systems with extended features for scaling companies",
+    primaryCTA: true,
     recommended: true,
     cta: {
       href: `${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=pricing-card-pro`,

@@ -91,7 +91,7 @@ export default function PlanCard({ content }: { content: Plan }) {
             <Button
               href={content.cta.href}
               full
-              variant={content.recommended ? "primary" : "outline"}
+              variant={content.primaryCTA ? "primary" : "outline"}
               className={
                 content.recommended &&
                 "border border-transparent bg-primary-intense"
