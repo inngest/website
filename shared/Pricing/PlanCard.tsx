@@ -39,7 +39,7 @@ export default function PlanCard({ content }: { content: Plan }) {
 
   const price = content.cost.between
     ? // Note: If we start showing basic free tier on PlanCard, we should use the following commented line instead
-      `$0-${content.cost.endPrice}`
+      `$${content.cost.basePrice}-${content.cost.endPrice}`
     : // ? `$${content.cost.basePrice}-${content.cost.endPrice}`
       content.cost.basePrice;
 
@@ -131,7 +131,7 @@ export default function PlanCard({ content }: { content: Plan }) {
             className={isMediumScreen ? "pointer-events-none" : ""}
           >
             <Accordion.Header className="flex items-center justify-between">
-              <p className="font-medium text-xs bg-gradient-to-b from-matcha-400 to-breeze-400 bg-clip-text text-transparent">
+              <p className="font-medium text-xs bg-gradient-to-b from-matcha-400 to-breeze-400 bg-clip-text text-transparent pb-4">
                 {content.planIncludes}
               </p>
               <Accordion.Trigger className="group border border-contrast rounded-full overflow-hidden md:hidden">
@@ -141,7 +141,7 @@ export default function PlanCard({ content }: { content: Plan }) {
             <Accordion.Content>
               <ul className="flex flex-col">
                 {content.features.map((feature, i) => (
-                  <li key={i} className={`flex gap-2 py-3 last:pb-0`}>
+                  <li key={i} className={`flex gap-2 py-2 last:pb-0`}>
                     <RiCheckLine className="text-muted" />
                     {feature}
                   </li>

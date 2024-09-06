@@ -82,7 +82,7 @@ export const sections: { key: string; name: string; description?: string }[] = [
 ];
 
 const PLAN_NAMES = {
-  basicFree: "Basic (free tier)",
+  basicFree: "Free",
   basic: "Basic",
   pro: "Pro",
   enterprise: "Enterprise",
@@ -107,28 +107,28 @@ const PLANS: Plan[] = [
       additionalUsersRate: null,
       period: "mo",
     },
-    hideFromCards: true,
     description:
-      "Everything you need to start building and scaling reliable systems for free",
+      "Get started with modern durable execution for free, with the future to grow",
     cta: {
-      href: `${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=pricing-card-basic`,
-      text: "Get started for free",
+      href: `${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=pricing-card-free`,
+      text: "Start for free",
     },
     highlights: {
-      runs: "Starts at 25K runs/mo",
-      concurrency: "Starts at 5 concurrent runs",
+      runs: "50K runs/mo free",
+      concurrency: "5 concurrent runs",
     },
-    planIncludes: "Basic (free tier) plan includes:",
+    planIncludes: "Free plan includes:",
     features: [
       "Unlimited branch and staging envs",
       "Logs, traces, and observability",
-      "Basic support and alerting",
+      "Basic alerting",
+      "Community support",
     ],
   },
   {
     name: PLAN_NAMES.basic,
     cost: {
-      between: true,
+      between: false,
       basePrice: 50,
       endPrice: 300,
       includedRuns: 100_000,
@@ -137,7 +137,7 @@ const PLANS: Plan[] = [
       includedSteps: 5,
       additionalStepsPrice: 4,
       additionalStepsRate: 50_000,
-      includedConcurrency: 5,
+      includedConcurrency: 15,
       additionalConcurrencyPrice: 10,
       additionalConcurrencyRate: 10,
       includedUsers: 5,
@@ -146,23 +146,20 @@ const PLANS: Plan[] = [
       period: "mo",
     },
     description:
-      "Everything you need to start building and scaling reliable systems for free",
+      "Build and deploy small scale reliable systems effortlessly",
     cta: {
       href: `${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=pricing-card-basic`,
-      text: "Get started for free",
+      text: "Start for free",
     },
     highlights: {
-      // Note: If we start showing basic free tier on PlanCard, this should go to 50K runs/mo instead
-      runs: "Starts at 50K runs/mo",
-      concurrency: "Starts at 5 concurrent runs",
+      runs: "Starts at 100K runs/mo",
+      concurrency: "Starts at 15 concurrent runs",
     },
-    planIncludes: "Basic plan includes:",
+    planIncludes: "Everything in Free plus:",
     features: [
       "Unlimited functions and apps",
-      "Unlimited branch and staging envs",
-      "Logs, traces, and observability",
-      "Basic support and alerting",
-      "Free plan limited to 25K runs/mo",
+      "No event rate limit",
+      "Basic email and ticketing support",
     ],
   },
   {
@@ -185,7 +182,7 @@ const PLANS: Plan[] = [
       period: "mo",
     },
     description:
-      "Production-ready systems with extended features for mid-sized products",
+      "Production-ready systems with extended features for scaling companies",
     recommended: true,
     cta: {
       href: `${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=pricing-card-pro`,
@@ -195,7 +192,7 @@ const PLANS: Plan[] = [
       runs: "Starts at 5M runs/mo",
       concurrency: "Starts at 200 concurrent runs",
     },
-    planIncludes: "Includes everything in basic plus:",
+    planIncludes: "Includes everything in Basic plus:",
     features: [
       "Granular metrics",
       "Increased scale and throughput",
@@ -401,7 +398,7 @@ const FEATURES: Feature[] = [
     name: "Event size",
     description: "The maximum size for a single event",
     plans: {
-      [PLAN_NAMES.basicFree]: "512KB",
+      [PLAN_NAMES.basicFree]: "256KB",
       [PLAN_NAMES.basic]: "512KB",
       [PLAN_NAMES.pro]: "3MB",
       [PLAN_NAMES.enterprise]: "Custom",
@@ -693,7 +690,7 @@ export default function Pricing() {
           From early-stage startups to scaling enterprises, Inngest has you
           covered. Get started for free today.
         </p>
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-y-8 gap-2 lg:gap-4 text-center mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-2 xl:gap-4 xl:gap-x-0 text-center mb-8">
           {PLANS.filter((p) => p.hideFromCards !== true).map((p) => (
             <PlanCard key={p.name} content={p} />
           ))}
