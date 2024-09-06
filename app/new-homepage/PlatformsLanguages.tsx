@@ -44,23 +44,23 @@ export default function PlatformsLanguages() {
             {[
               {
                 title: "Vercel",
-                logo: "/assets/homepage/gradient-graphics/logo-vercel.svg",
+                logo: "/assets/homepage/outline-logos/vercel.svg",
               },
               {
                 title: "Netlify",
-                logo: "/assets/homepage/gradient-graphics/logo-netlify.svg",
+                logo: "/assets/homepage/outline-logos/netlify.svg",
               },
               {
                 title: "AWS",
-                logo: "/assets/homepage/gradient-graphics/logo-aws.svg",
+                logo: "/assets/homepage/outline-logos/aws.svg",
               },
               {
                 title: "GCP",
-                logo: "/assets/homepage/gradient-graphics/logo-gcp.svg",
+                logo: "/assets/homepage/outline-logos/gcp.svg",
               },
               {
                 title: "Azure",
-                logo: "/assets/homepage/gradient-graphics/logo-azure.svg",
+                logo: "/assets/homepage/outline-logos/azure.svg",
               },
             ].map(({ title, logo }, idx) => (
               <div
