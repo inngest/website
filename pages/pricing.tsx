@@ -129,6 +129,7 @@ const PLANS: Plan[] = [
     name: PLAN_NAMES.basic,
     cost: {
       between: false,
+      startsAt: true,
       basePrice: 50,
       endPrice: 300,
       includedRuns: 100_000,
