@@ -57,6 +57,7 @@ export default function Logos({
           if (href) {
             return (
               <Link
+                key={idx}
                 href={href}
                 className={clsx(
                   "group flex items-center justify-center h-16 w-40 max-w-[90%] px-6 py-6 m-auto rounded-lg border transition-all",
@@ -73,7 +74,6 @@ export default function Logos({
                 )}
               >
                 <Image
-                  key={idx}
                   src={src}
                   alt={name}
                   width={120}
