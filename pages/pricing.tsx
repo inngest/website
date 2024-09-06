@@ -140,7 +140,7 @@ const PLANS: Plan[] = [
       includedSteps: 5,
       additionalStepsPrice: 4,
       additionalStepsRate: 50_000,
-      includedConcurrency: 15,
+      includedConcurrency: 25,
       additionalConcurrencyPrice: 10,
       additionalConcurrencyRate: 10,
       includedUsers: 5,
@@ -157,7 +157,7 @@ const PLANS: Plan[] = [
     },
     highlights: {
       runs: "Starts at 100K runs/mo",
-      concurrency: "Starts at 15 concurrent runs",
+      concurrency: "Starts at 25 concurrent runs",
     },
     planIncludes: "Everything in Free plus:",
     features: [
