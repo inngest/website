@@ -1,13 +1,7 @@
 import { type Metadata } from "next";
-import Image from "next/image";
-import clsx from "clsx";
 
-import Link from "src/components/Link";
-import Command from "src/components/Command";
-import { Button } from "src/shared/Button";
 import Quote from "src/components/Quote";
 import UseCases from "./new-homepage/UseCases";
-import Container from "./new-homepage/Container";
 import HeroScreenshot from "./new-homepage/HeroScreenshot";
 import Heading from "./new-homepage/Heading";
 import USPs from "./new-homepage/USPs";

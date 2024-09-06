@@ -13,15 +13,15 @@ export default function PlatformsLanguages() {
             {[
               {
                 title: "TypeScript",
-                logo: "/assets/homepage/gradient-graphics/logo-typescript.svg",
+                logo: "/assets/homepage/outline-logos/typescript.svg",
               },
               {
                 title: "Python",
-                logo: "/assets/homepage/gradient-graphics/logo-python.svg",
+                logo: "/assets/homepage/outline-logos/python.svg",
               },
               {
                 title: "Go",
-                logo: "/assets/homepage/gradient-graphics/logo-golang.svg",
+                logo: "/assets/homepage/outline-logos/golang.svg",
               },
             ].map(({ title, logo }, idx) => (
               <div
@@ -44,23 +44,23 @@ export default function PlatformsLanguages() {
             {[
               {
                 title: "Vercel",
-                logo: "/assets/homepage/gradient-graphics/logo-vercel.svg",
+                logo: "/assets/homepage/outline-logos/vercel.svg",
               },
               {
                 title: "Netlify",
-                logo: "/assets/homepage/gradient-graphics/logo-netlify.svg",
+                logo: "/assets/homepage/outline-logos/netlify.svg",
               },
               {
                 title: "AWS",
-                logo: "/assets/homepage/gradient-graphics/logo-aws.svg",
+                logo: "/assets/homepage/outline-logos/aws.svg",
               },
               {
                 title: "GCP",
-                logo: "/assets/homepage/gradient-graphics/logo-gcp.svg",
+                logo: "/assets/homepage/outline-logos/gcp.svg",
               },
               {
                 title: "Azure",
-                logo: "/assets/homepage/gradient-graphics/logo-azure.svg",
+                logo: "/assets/homepage/outline-logos/azure.svg",
               },
             ].map(({ title, logo }, idx) => (
               <div
