@@ -74,7 +74,7 @@ export const sections: { key: string; name: string; description?: string }[] = [
   {
     key: "recovery",
     name: "Recovery and management",
-    description: "Included with every plan at your fingertips",
+    description: "Included with every plan",
   },
   { key: "observability", name: "Observability" },
   { key: "data", name: "Time-based data management" },
