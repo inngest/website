@@ -157,6 +157,7 @@ const PLANS: Plan[] = [
     },
     planIncludes: "Everything in Free plus:",
     features: [
+      "7 day trace and history retention",
       "Unlimited functions and apps",
       "No event rate limit",
       "Basic email and ticketing support",
@@ -194,10 +195,12 @@ const PLANS: Plan[] = [
     },
     planIncludes: "Includes everything in Basic plus:",
     features: [
+      "14 day trace retention",
       "Granular metrics",
       "Increased scale and throughput",
       "Higher usage limits",
-      "14 day trace retention",
+      "SOC2",
+      "HIPAA as a paid addon",
     ],
   },
   {
