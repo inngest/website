@@ -70,7 +70,7 @@ def sync_systems(ctx: inngest.Context, step: inngest.StepSync) -> None:
 ```go {{ title: "Go" }}
 inngestgo.CreateFunction(
 	inngestgo.FunctionOpts{ID: "sync-systems", },
-  # A Function is triggered by events
+	// Functions are triggered by events
 	inngestgo.EventTrigger("auto/sync.request", nil),
 	func(ctx context.Context, input inngestgo.Input[SyncRequestEvent]) (any, error) {
 		// step is retried if it throws an error
