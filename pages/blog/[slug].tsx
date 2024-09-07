@@ -15,7 +15,7 @@ import DiscordCTA from "../../shared/Blog/DiscordCTA";
 import Header from "src/shared/Header";
 import Container from "src/shared/layout/Container";
 import { Button } from "src/shared/Button";
-import IconCalendar from "src/shared/Icons/Calendar";
+import { RiCalendarLine } from "@remixicon/react";
 import CTACallout from "src/shared/CTACallout";
 import Blockquote from "src/shared/Blog/Blockquote";
 import rehypeCodeTitles from "rehype-code-titles";
@@ -183,7 +183,8 @@ export default function BlogLayout(props) {
                   <p className="text-slate-300 text-sm mt-2 flex items-center gap-2">
                     {!!scope.author ? <>{scope.author} &middot; </> : ""}
                     <span className="flex items-center gap-1">
-                      <IconCalendar /> {scope.humanDate}{" "}
+                      <RiCalendarLine className="h-3 w-3 mr-px" />{" "}
+                      {scope.humanDate}{" "}
                       {!!dateUpdated && <> (Updated: {dateUpdated})</>}
                     </span>{" "}
                     &middot; <span>{scope.reading.text}</span>

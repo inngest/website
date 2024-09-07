@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import Image from "next/image";
 import { Rss } from "react-feather";
 
-import IconCalendar from "src/shared/Icons/Calendar";
+import { RiCalendarLine } from "@remixicon/react";
 import ArrowRight from "src/shared/Icons/ArrowRight";
 import Footer from "../shared/Footer";
 import Header from "../shared/Header";
@@ -78,8 +78,8 @@ export default function BlogLayout(props) {
                     <h2 className="text-xl md:text-2xl lg:text-xl xl:text-2xl text-alwaysWhite mb-1 font-medium">
                       {focus.heading}
                     </h2>
-                    <p className="text-slate-200 text-sm font-medium mb-4 flex gap-1 items-center">
-                      <IconCalendar />
+                    <p className="text-basis text-sm font-medium mb-4 flex gap-1 items-center">
+                      <RiCalendarLine className="h-3 w-3" />
                       {focus.humanDate} <Tags tags={focus.tags || []} />
                     </p>
                     <p className="text-slate-100">{focus.subtitle}</p>
@@ -124,14 +124,14 @@ export default function BlogLayout(props) {
                       </div>
                     )}
                     <div className="pt-4 xl:pt-6 xl:py-4">
-                      <h2 className="text-base xl:text-lg text-white mb-1 group-hover:text-link transition-all">
+                      <h2 className="text-base text-basis xl:text-lg text-white mb-1 group-hover:text-link transition-all">
                         {item.heading}
                       </h2>
-                      <p className="text-slate-400 text-sm font-medium mb-4 mt-2 flex items-center gap-1">
-                        <IconCalendar />
+                      <p className="text-muted text-sm font-medium mb-4 mt-2 flex items-center gap-1">
+                        <RiCalendarLine className="h-3 w-3" />
                         {item.humanDate} <Tags tags={item.tags || []} />
                       </p>
-                      <p className="text-slate-300 text-sm">{item.subtitle}</p>
+                      <p className="text-subtle text-sm">{item.subtitle}</p>
                     </div>
                   </a>
                 </li>
