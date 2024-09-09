@@ -57,7 +57,7 @@ export default function HeroScreenshot() {
               className="hidden sm:inline-flex shadow-lg px-8 py-3"
               href="/contact?ref=homepage-hero"
             >
-              Chat with solutions engineering
+              Get a demo
             </Button>
 
             {/* Mobile */}
