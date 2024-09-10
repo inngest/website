@@ -107,7 +107,7 @@ const renderTable = (sectionFeatures, sectionName, plans, selectedPlan) => {
       <Accordion.Item
         value={sectionName}
         disabled={isMediumScreen}
-        className={isMediumScreen ? "pointer-events-none" : ""}
+        className={isMediumScreen ? "" : ""}
       >
         <table className="w-full table-fixed my-8 text-left">
           <Accordion.Header asChild>
