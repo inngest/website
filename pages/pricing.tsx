@@ -329,6 +329,7 @@ const FEATURES: Feature[] = [
     plans: {
       [PLAN_NAMES.basicFree]: {
         value: '250K',
+        description: `5 steps per run included for free`,
       },
       [PLAN_NAMES.basic]: {
         value: '500K',
