@@ -324,30 +324,36 @@ const FEATURES: Feature[] = [
     section: "platform",
   },
   {
-    name: "Additional steps",
-    description: "After the first 5 steps in every run",
+    name: "Steps",
+    description: "An individual step in durable functions",
     plans: {
-      [PLAN_NAMES.basicFree]: `${
-        getPlan(PLAN_NAMES.basicFree).cost.additionalStepsPrice
-      }`,
-      [PLAN_NAMES.basic]: `$${
-        getPlan(PLAN_NAMES.basic).cost.additionalStepsPrice
-      } per ${getPlan(PLAN_NAMES.basic).cost.additionalStepsRate.toLocaleString(
-        undefined,
-        {
-          notation: "compact",
-          compactDisplay: "short",
-        }
-      )}`,
-      [PLAN_NAMES.pro]: `$${
-        getPlan(PLAN_NAMES.pro).cost.additionalStepsPrice
-      } per ${getPlan(PLAN_NAMES.pro).cost.additionalStepsRate.toLocaleString(
-        undefined,
-        {
-          notation: "compact",
-          compactDisplay: "short",
-        }
-      )}`,
+      [PLAN_NAMES.basicFree]: {
+        value: '250K',
+      },
+      [PLAN_NAMES.basic]: {
+        value: '500K',
+        description: `then $${
+          getPlan(PLAN_NAMES.basic).cost.additionalStepsPrice
+        } per ${getPlan(PLAN_NAMES.basic).cost.additionalStepsRate.toLocaleString(
+          undefined,
+          {
+            notation: "compact",
+            compactDisplay: "short",
+          }
+        )}`,
+      },
+      [PLAN_NAMES.pro]: {
+        value: '25M',
+        description: `then $${
+          getPlan(PLAN_NAMES.pro).cost.additionalStepsPrice
+        } per ${getPlan(PLAN_NAMES.pro).cost.additionalStepsRate.toLocaleString(
+          undefined,
+          {
+            notation: "compact",
+            compactDisplay: "short",
+          }
+        )}`,
+      },
       [PLAN_NAMES.enterprise]: `${
         getPlan(PLAN_NAMES.enterprise).cost.additionalStepsPrice
       }`,
