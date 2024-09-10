@@ -52,9 +52,9 @@ export default inngest.createFunction(
 
 [Rate Limiting](https://www.inngest.com/docs/guides/rate-limiting) is implemented following an algorithm. The simplest one is a “fixed window” approach where you can make a set number of requests (say 100) during a given time window (like one minute). If you exceed that limit within the window, you're blocked. Once the time resets, you get a fresh set of 100 requests.
 
-Public APIs like [the Shopify API](https://shopify.dev/docs/api/usage/rate-limits#the-leaky-bucket-algorithm) rely on the [**Leaky Bucket algorithm](https://en.wikipedia.org/wiki/Leaky_bucket).** Picture a bucket with a small hole at the bottom. You can add water (requests) as fast as you want, but it only leaks out (processes) steadily. The excess is discarded if the bucket overflows (too many requests).
+Public APIs like [the Shopify API](https://shopify.dev/docs/api/usage/rate-limits#the-leaky-bucket-algorithm) rely on the **[Leaky Bucket algorithm](https://en.wikipedia.org/wiki/Leaky_bucket)**. Picture a bucket with a small hole at the bottom. You can add water (requests) as fast as you want, but it only leaks out (processes) steadily. The excess is discarded if the bucket overflows (too many requests).
 
-**Inngest Functions benefits from a more flexible algorithm** that allows bursts but still enforces a steady overall rate: the [**Generic Cell Rate Algorithm (GCRA)](https://www.inngest.com/docs/guides/rate-limiting#how-rate-limiting-works).** This algorithm is like a hybrid of fixed window and Leaky Bucket algorithms. It controls traffic by spacing out requests, ensuring they happen regularly, **resulting in [more fairness](https://www.inngest.com/blog/fixing-multi-tenant-queueing-concurrency-problems) in Rate Limiting**.
+**Inngest Functions benefits from a more flexible algorithm** that allows bursts but still enforces a steady overall rate: the **[Generic Cell Rate Algorithm (GCRA)](https://www.inngest.com/docs/guides/rate-limiting#how-rate-limiting-works)**. This algorithm is like a hybrid of fixed window and Leaky Bucket algorithms. It controls traffic by spacing out requests, ensuring they happen regularly, **resulting in [more fairness](https://www.inngest.com/blog/fixing-multi-tenant-queueing-concurrency-problems) in Rate Limiting**.
 
 ### When should I use Rate Limiting?
 
