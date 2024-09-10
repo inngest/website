@@ -553,7 +553,7 @@ const FEATURES: Feature[] = [
       [PLAN_NAMES.basicFree]: false,
       [PLAN_NAMES.basic]: false,
       [PLAN_NAMES.pro]: false,
-      [PLAN_NAMES.enterprise]: "$500 per 1,000 concurrent steps",
+      [PLAN_NAMES.enterprise]: "$500 per 250 concurrent steps",
     },
     section: "connectivity",
   },
