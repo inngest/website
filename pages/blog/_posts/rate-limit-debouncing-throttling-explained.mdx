@@ -1,0 +1,129 @@
+---
+focus: true
+heading: "Understanding the Differences Between Rate Limiting, Debouncing, and Throttling"
+image: /assets/blog/rate-limit-debouncing-throttling-explained/featured-image.png
+showSubtitle: true
+subtitle: "Explore three different ways to control your Inngest Function's runs."
+date: 2024-09-10
+author: Charly Poly
+disableCTA: true
+---
+
+When developing, we often encounter rate limiting, debouncing, and throttling concepts, such as debouncing and throttling in the front end with event listeners and rate limiting when working with third-party APIs. These three concepts are at the core of any queueing system, enabling us to configure the frequency at which functions must be invoked over a given period.
+
+While this definition sounds simple, the distinction between the three approaches can take time to grasp. If my Inngest Function is calling the OpenAI API, should I use Rate Limiting or Throttling? Similarly, should I use Debouncing or Rate Limiting if my Inngest Function is performing some costly operation?
+
+Let's answer these questions with some examples and comparisons!
+
+## Rate limiting
+
+Let's start with the most widespread one: rate limiting. You've probably encountered this term while working with public APIs such as OpenAI or Shopify API. Both leverage rate limiting to control the external usage of their API by limiting the number of requests per hour or day — additional requests above this limit are rejected.
+
+The same reasoning applies when developing your [Inngest Functions](https://www.inngest.com/docs/features/inngest-functions). For example, consider an Inngest Function, part of a CRM product that frequently scrapes and stores company information. Companies might be updated often, and scraping is a costly operation unrelated to the order of events.
+
+![Rate limiting will ensure that an Inngest Function is only called based on the configured frequency. Any events arriving outside of the window is ignored.](/assets/blog/rate-limit-debouncing-throttling-explained/rate-limiting.jpg)
+
+*In case of a surge of company updates, our Inngest Function will be rate-limited (not run), preventing costly and unnecessary scraping operations.*
+
+Adding a [Rate Limit](https://www.inngest.com/docs/guides/rate-limiting) configuration guarantees that our company scraping function will only run when companies get updated and at a maximum of every 4 hours:
+
+```tsx
+export default inngest.createFunction(
+  {
+    id: "scrape-company",
+    rateLimit: {
+      limit: 1,
+      period: "4h",
+      key: "event.data.company_id",
+    },
+  },
+  { event: "intercom/company.updated" },
+  async ({ event, step }) => {
+    // This function will be rate limited
+    // It will only run once per 4 hours for a given event payload with matching company_id
+  }
+);
+
+```
+
+### The many flavors of Rate Limiting
+
+[Rate Limiting](https://www.inngest.com/docs/guides/rate-limiting) is implemented following an algorithm. The simplest one is a “fixed window” approach where you can make a set number of requests (say 100) during a given time window (like one minute). If you exceed that limit within the window, you're blocked. Once the time resets, you get a fresh set of 100 requests.
+
+Public APIs like [the Shopify API](https://shopify.dev/docs/api/usage/rate-limits#the-leaky-bucket-algorithm) rely on the [**Leaky Bucket algorithm](https://en.wikipedia.org/wiki/Leaky_bucket).** Picture a bucket with a small hole at the bottom. You can add water (requests) as fast as you want, but it only leaks out (processes) steadily. The excess is discarded if the bucket overflows (too many requests).
+
+**Inngest Functions benefits from a more flexible algorithm** that allows bursts but still enforces a steady overall rate: the [**Generic Cell Rate Algorithm (GCRA)](https://www.inngest.com/docs/guides/rate-limiting#how-rate-limiting-works).** This algorithm is like a hybrid of fixed window and Leaky Bucket algorithms. It controls traffic by spacing out requests, ensuring they happen regularly, **resulting in [more fairness](https://www.inngest.com/blog/fixing-multi-tenant-queueing-concurrency-problems) in Rate Limiting**.
+
+### When should I use Rate Limiting?
+
+[Rate Limiting](https://www.inngest.com/docs/guides/rate-limiting) is a good fit to protect the Inngest Functions that routinely perform costly operations. Good examples are Functions that won't be a good fit for a [CRON](https://www.inngest.com/docs/guides/scheduled-functions), as they only need to run when something is happening (not at each occurrence) and are costly to run (for example, AI calls, computations, or scraping). 
+
+## Debouncing
+
+[Debouncing](https://www.inngest.com/docs/guides/debounce) could be seen as the mirror of rate limiting, providing the same protection against spikes of invocations but behaving differently by permanently preserving the last occurrence of the given window (with Inngest, the last Event).
+
+For example, an Inngest Function computing AI suggestion based on a document change is costly and likely to be triggered often. In that scenario, we might want to avoid unnecessary runs and limit our AI work to run every minute with the latest Event received:
+
+![Debouncing function similarly to Rate Limiting but ensures that the last received Event will be the one triggering a Function Run.](/assets/blog/rate-limit-debouncing-throttling-explained/debouncing.jpg)
+
+*Our Inngest Function is called every minute only if a triggering event is received during this time window. You will notice that contrary to rate limiting, only the last received event triggers a Function run.*
+
+Adding a [debouncing window](https://www.inngest.com/docs/guides/debounce) of 1 minute ensures that our AI workflow will only be triggered by the last event received in a 1-minute window of document updates:
+
+```tsx
+export default inngest.createFunction(
+  {
+    id: "handle-document-suggestions",
+    debounce: {
+      key: "event.data.id",
+      period: "1m"
+    },
+  },
+  { event: "document.updated" },
+  async ({ event, step }) => {
+    // This function will only be scheduled 1 minute after events
+    //   are no longer received with the same `event.data.id` field.
+    //
+    // `event` will be the last event in the series received.
+  }
+);
+
+```
+
+### When should I use Debouncing?
+
+Popular use cases are [webhooks](https://www.inngest.com/docs/platform/webhooks), any [Inngest Function](https://www.inngest.com/docs/features/inngest-functions) reacting to use actions, or AI workflows.
+
+The above scenarios occur in a usage-intensive environment where the event triggering the function matters for the Function's execution (ex, the AI workflow needs the latest up-to-date occurrence).
+
+## Throttling
+
+Counterintuitively, Throttling is the [Flow Control](https://www.inngest.com/docs/guides/flow-control) feature for dealing with third-party API rate limiting. Instead of dropping unwanted Function runs like Rate limiting and Debouncing, [Throttling](https://www.inngest.com/docs/guides/throttling) will buffer the queued Function runs to match the configured frequency and time window.
+
+A good example would be an [Inngest Function](https://www.inngest.com/docs/features/inngest-functions) performing some AI enrichment as part of an ETL pipeline. As events arrive, our Inngest Function needs to match OpenAI's API rate limit by reducing the frequency of runs:
+
+![Throttling does not prevent Function Runs but distribute them in time. Any events arriving outside of the configured time window will enqueue a new Function run that will be executed as soon as possible.](/assets/blog/rate-limit-debouncing-throttling-explained/throttling.jpg)
+
+_Throttling keeps in queue Function runs that exceed that configured frequency and time window and distribute them smoothly as soon as capacity is available._
+
+### When should I use Throttling?
+
+[Throttling](https://www.inngest.com/docs/guides/throttling) is the go-to solution when dealing with third-party API rate limits. You can configure Throttling by matching its configuration with the target API's rate limit. For example, an Inngest Function relying on Resend might benefit from a Throttling of [2 calls per second](https://resend.com/docs/api-reference/introduction#rate-limit).
+
+## Conclusion — a takeaway cheatsheet
+
+Congrats, you are now an expert in Rate limiting, Debouncing, and Throttling!
+
+The following is a good rule of thumb to keep in mind:
+
+> **Throttling** helps deal with **external API limitations** while **Debouncing and Rate limiting** prevents abuse from **bad actors** or scheduling **resource intensive work**.
+> 
+
+Please find below a takeaway cheatsheet that will help you evaluate the best way to optimize your Inngest Functions:
+
+| Use cases/Feature | Throttling | Debouncing | Rate Limiting |
+| --- | --- | --- | --- |
+| Expensive computation (ex: AI) |  | ✅ | ✅ |
+| 3rd party rate-limited API calls | ✅ |  |  |
+| Processing large amount of real-time events |  | ✅ |  |
+| 2FA or magic sign-in emails |  |  | ✅ |
