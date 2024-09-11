@@ -43,9 +43,9 @@ export default function NewsletterSignup({ tags = [] }: { tags: string[] }) {
     <form onSubmit={subscribeUser}>
       <p className="mb-2 text-basis text-lg">Get notified:</p>
 
-      <div className="flex flex-row flex-wrap gap-4">
+      <div className="flex flex-col sm:flex-row flex-wrap gap-4">
         <input
-          className={`max-w-80 flex-grow border border-muted rounded-md px-4 py-2 text-white bg-transparent
+          className={`sm:max-w-80 flex-grow border border-muted rounded-md px-4 py-2 text-white bg-transparent
             focus:outline-none focus:ring-1 focus:ring-[rgb(var(--color-border-success))] focus:border-transparent
             placeholder:text-muted
           `}
