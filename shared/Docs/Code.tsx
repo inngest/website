@@ -64,10 +64,9 @@ function CopyButton({ code }) {
     <button
       type="button"
       className={clsx(
-        "group/button absolute top-3 right-4 overflow-hidden rounded-full py-1 pl-2 pr-3 text-2xs font-medium opacity-0 backdrop-blur transition focus:opacity-100 group-hover:opacity-100",
-        copied
-          ? "bg-breeze-400/10 ring-1 ring-inset ring-breeze-400/20"
-          : "bg-white/5 hover:bg-white/7.5 dark:bg-white/2.5 dark:hover:bg-white/5"
+        // Header is ~41px, button height
+        "absolute top-1.5 right-1.5 overflow-hidden rounded-md py-1 px-2 text-xs font-medium border border-muted",
+        "bg-surfaceBase hover:bg-canvasSubtle hover:border-contrast"
       )}
       onClick={() => {
         window.navigator.clipboard.writeText(code).then(() => {
@@ -82,17 +81,16 @@ function CopyButton({ code }) {
           copied && "-translate-y-1.5 opacity-0"
         )}
       >
-        <ClipboardIcon className="h-5 w-5 fill-carbon-500/20 stroke-carbon-500 transition-colors group-hover/button:stroke-carbon-400" />
         Copy
       </span>
       <span
         aria-hidden={!copied}
         className={clsx(
-          "pointer-events-none absolute inset-0 flex items-center justify-center text-breeze-400 transition duration-300",
+          "pointer-events-none absolute inset-0 flex items-center justify-center text-success transition duration-300",
           !copied && "translate-y-1.5 opacity-0"
         )}
       >
-        Copied!
+        Copied
       </span>
     </button>
   );
@@ -104,18 +102,21 @@ function CodePanelHeader({ tag, label }) {
   }
 
   return (
-    <div className="flex h-9 items-center gap-2 border-y border-t-transparent border-b-white/7.5 bg-carbon-900 bg-white/2.5 px-4 dark:border-b-white/5 dark:bg-white/1">
+    <div
+      className={`flex h-10 px-4 items-center gap-2
+        border-b border-b-subtle rounded-t-md
+        bg-surfaceBase
+      `}
+    >
       {tag && (
-        <div className="dark flex">
+        <div className="flex">
           <Tag variant="small">{tag}</Tag>
         </div>
       )}
       {tag && label && (
-        <span className="h-0.5 w-0.5 rounded-full bg-slate-500" />
+        <span className="h-0.5 w-0.5 rounded-full bg-surfaceMuted" />
       )}
-      {label && (
-        <span className="font-mono text-xs text-slate-400">{label}</span>
-      )}
+      {label && <span className="font-mono text-sm text-basis">{label}</span>}
     </div>
   );
 }
@@ -131,16 +132,17 @@ function CodePanel({ tag, label, code, children }: CodePanelProps) {
   let child = Children.only<any>(children);
 
   return (
-    <div className="group Xbg-carbon-1000 bg-canvasBase border border-subtle rounded-lg">
+    <div className="group bg-codeEditor">
       <CodePanelHeader
         tag={child.props.tag ?? tag}
         label={child.props.label ?? label}
       />
-      <div className="relative">
+      {/* Uses absolute positioning for now with CodeGroup container */}
+      <CopyButton code={child.props.code ?? code} />
+      <div>
         <pre className="overflow-x-auto px-6 py-5 text-xs text-white leading-relaxed">
           {children}
         </pre>
-        <CopyButton code={child.props.code ?? code} />
       </div>
     </div>
   );
@@ -168,11 +170,18 @@ function CodeGroupHeader({
   }
 
   return (
-    <div className="px-6 gap-x-4 bg-carbon-800 flex min-h-[calc(theme(spacing.10)+1px)] flex-wrap items-center dark:bg-transparent">
+    <div
+      className={`
+      px-4 flex min-h-[calc(theme(spacing.10)+1px)] flex-wrap items-center gap-x-4
+      bg-surfaceBase rounded-t-md
+      border-b border-b-subtle rounded-t-md
+      text-basis
+      `}
+    >
       {heading && (
         <h3
           className={clsx(
-            "mr-auto text-xs font-semibold text-alwaysWhite",
+            "mr-auto text-xs font-semibold text-basis",
             !!filename && "font-mono"
           )}
         >
@@ -186,8 +195,8 @@ function CodeGroupHeader({
               className={clsx(
                 "border-b py-3 transition focus:outline-none",
                 childIndex === selectedIndex
-                  ? "border-breeze-500 text-breeze-400"
-                  : "border-transparent text-slate-400 hover:text-slate-300"
+                  ? "border-breeze-500 text-link"
+                  : "border-transparent text-basis hover:text-link"
               )}
             >
               {getPanelTitle(child.props)}
@@ -315,7 +324,8 @@ export function CodeGroup({
     <CodeGroupContext.Provider value={true}>
       <Container
         {...containerProps}
-        className="not-prose my-6 overflow-hidden rounded-lg bg-carbon-900 shadow-md"
+        // relative used for absolute positioning of CopyButton
+        className="not-prose my-6 overflow-hidden rounded-md border border-subtle relative"
       >
         <CodeGroupHeader
           title={title}
