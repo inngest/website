@@ -3,21 +3,8 @@ import { ImageResponse } from "@vercel/og";
 import Logo from "src/shared/Icons/Logo";
 
 export const config = {
-  runtime: "experimental-edge",
+  runtime: "edge",
 };
-
-const SVGBackgroundGradient =
-  `<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect width="1200" height="630" fill="#0A0A12"/>
-<rect width="1200" height="630" fill="url(#paint0_radial_1_2)"/>
-<defs>
-<radialGradient id="paint0_radial_1_2" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(273.5 281) rotate(47.4717) scale(1770.83 3373.01)">
-<stop stop-color="#13123B"/>
-<stop offset="1" stop-color="#08090D"/>
-</radialGradient>
-</defs>
-</svg>
-`.replace(/\n/g, "");
 
 const font = fetch(
   new URL("../../public/assets/fonts/Inter/Inter-Medium.ttf", import.meta.url)
@@ -34,14 +21,14 @@ export default async function handler(req: NextApiRequest) {
       ? searchParams.get("title")?.slice(0, 100)
       : "Inngest";
     const isLongTitle = (title || "").length > 40;
+    const backgroundImageURL = `${process.env.NEXT_PUBLIC_HOST}/assets/open-graph/background-compressed.png`;
 
     return new ImageResponse(
       (
         <div
-          tw="border-t-8 border[#5d5fef]"
           style={{
-            backgroundColor: "#0a0a12",
-            backgroundImage: `url("data:image/svg+xml;utf8,${SVGBackgroundGradient}")`,
+            backgroundColor: "rgb(2,2,2)", // carbon-1000
+            backgroundImage: `url("${backgroundImageURL}")`,
             height: "100%",
             width: "100%",
             padding: "7% 6%",
@@ -54,8 +41,8 @@ export default async function handler(req: NextApiRequest) {
           }}
         >
           <Logo
-            width={160}
-            fill={"#ffffff"}
+            width={180}
+            fill={"#fefefe"} // carbon-50
             style={{
               display: "flex",
             }}

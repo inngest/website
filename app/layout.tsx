@@ -12,6 +12,10 @@ export const metadata: Metadata = {
     default: "Inngest - Ship reliable code, no extra infrastructure",
     template: "%s - Inngest",
   },
+  openGraph: {
+    // We cannot dynamically set the image URL with the page title, so we use this default
+    images: ["/assets/homepage/open-graph.png"],
+  },
   icons: {
     icon: [
       {

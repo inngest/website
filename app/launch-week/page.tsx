@@ -6,6 +6,9 @@ export const metadata: Metadata = {
   title: "Inngest - Launch Week #2 - September 23-27, 2024",
   description:
     "A week of exciting new feature launches and product updates from Inngest.",
+  openGraph: {
+    images: ["/assets/launch-week/2/open-graph.png"],
+  },
 };
 
 export default function Page() {
