@@ -4,6 +4,7 @@ import Nav from "src/components/Nav";
 import Footer from "src/shared/Footer";
 import { HeaderInit, PageViews } from "@/components/InngestClientSDK";
 import GoogleTagManger from "@/components/GoogleTagManager";
+import LaunchWeekBanner from "src/components/LaunchWeekBanner";
 
 import "./globals.css";
 
@@ -47,6 +48,8 @@ export default function RootLayout({
         <HeaderInit />
       </head>
       <body className="dark font-sans">
+        <LaunchWeekBanner />
+
         <Nav />
 
         <main /*className="max-w-container-desktop m-auto px-6 md:px-10 lg:px-20" */

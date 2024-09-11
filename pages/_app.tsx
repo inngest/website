@@ -20,7 +20,7 @@ import {
   type Props as CaseStudyLayoutProps,
 } from "../shared/CaseStudy/Layout";
 
-import PageBanner from "../shared/legacy/PageBanner";
+import LaunchWeekBanner from "src/components/LaunchWeekBanner";
 import type { PageProps } from "@/shared/types";
 
 const FireIcon = () => (
@@ -45,21 +45,13 @@ const FireIcon = () => (
   </svg>
 );
 
-const DISABLE_BANNER = true;
+const DISABLE_BANNER = false;
 
 function DefaultLayout({ children }) {
   const router = useRouter();
   return (
     <>
-      {!DISABLE_BANNER && (
-        <PageBanner href="/blog/announcing-inngest-seed-financing?ref=page-banner">
-          <FireIcon />
-          <span className="sm:hidden">Inngest Raises $3M Seed</span>
-          <span className="hidden sm:inline">
-            Inngest Raises $3M Seed from GGV Capital & Guillermo Rauch
-          </span>
-        </PageBanner>
-      )}
+      {!DISABLE_BANNER && <LaunchWeekBanner />}
       {children}
     </>
   );

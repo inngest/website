@@ -292,6 +292,12 @@ module.exports = {
         7.5: "0.075",
         15: "0.15",
       },
+      keyframes: {
+        wiggle: {
+          "0%, 100%": { transform: "rotate(-4deg)" },
+          "50%": { transform: "rotate(4deg)" },
+        },
+      },
     },
     fontFamily: {
       sans: 'CircularXX, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto',
