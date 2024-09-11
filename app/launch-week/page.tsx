@@ -19,10 +19,11 @@ export default function Page() {
             <span>Sept 30</span>
           </div>
           <h1 className="mt-3 text-6xl md:text-8xl lg:text-9xl uppercase font-medium">
-            Inngest <br className="hidden sm:block" /> Launch Week #2
+            Inngest <br className="hidden sm:block" /> Launch Week{" "}
+            <span className="text-[rgb(var(--color-primary-intense))]">II</span>
           </h1>
           <div className="mt-16">
-            <p className="text-xl md:text-2xl">
+            <p className="text-xl md:text-2xl drop-shadow">
               Join us for a week of new features and announcements starting on{" "}
               <span className="text-[rgb(var(--color-primary-moderate))]">
                 September 23
