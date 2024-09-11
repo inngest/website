@@ -18,8 +18,8 @@ const colorStyle = (
   switch (variant) {
     case "small":
       return `text-${color}-${
-        background === "default" ? "200" : "600"
-      } dark:text-${color}-${background === "default" ? "300" : "200"}`;
+        background === "default" ? "400" : "600"
+      } dark:text-${color}-${background === "default" ? "300" : "400"}`;
 
     case "medium":
       return `ring-${color}-300 dark:ring-${color}-400/30 bg-${color}-400/10 text-${color}-500 dark:text-${color}-400`;
@@ -30,10 +30,10 @@ const colorStyle = (
 };
 
 const valueColorMap = {
-  get: "indigo",
-  post: "sky",
-  put: "amber",
-  delete: "rose",
+  get: "matcha",
+  post: "breeze",
+  put: "honey",
+  delete: "ruby",
 };
 
 export function Tag({
@@ -50,7 +50,7 @@ export function Tag({
   return (
     <span
       className={clsx(
-        "font-mono text-[0.625rem] font-semibold leading-4",
+        "font-mono text-xs font-semibold leading-4",
         variantStyle(variant),
         colorStyle(color, variant, background)
       )}
