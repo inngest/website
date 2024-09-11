@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default function Page() {
   return (
     <>
-      <div className="max-w-[1520px] mx-auto px-8 bg-[url(/assets/launch-week/2/hero-background.svg)] bg-cover">
+      <div className="max-w-[1520px] mx-auto px-8 bg-[url(/assets/launch-week/2/hero-background-animated.svg)] bg-cover">
         <header className="max-w-6xl mx-auto py-24 md:py-52 text-basis">
           <div className="lg:ml-2.5 flex items-center gap-2 uppercase text-lg md:text-2xl text-[rgb(var(--color-primary-xIntense))] font-medium">
             <span>Sept 23</span>
