@@ -218,6 +218,7 @@
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -227,6 +228,7 @@
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -241,6 +243,7 @@
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -250,6 +253,7 @@
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -264,6 +268,7 @@
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -273,6 +278,7 @@
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -287,6 +293,7 @@
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -296,6 +303,7 @@
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -310,6 +318,7 @@
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -319,6 +328,7 @@
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -333,6 +343,7 @@
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -342,6 +353,7 @@
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -356,6 +368,7 @@
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -365,6 +378,7 @@
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -379,6 +393,7 @@
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -388,6 +403,7 @@
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -402,6 +418,7 @@
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -411,6 +428,7 @@
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -425,6 +443,7 @@
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -434,6 +453,7 @@
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -448,6 +468,7 @@
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -457,6 +478,7 @@
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -471,6 +493,7 @@
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -480,6 +503,7 @@
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -494,6 +518,7 @@
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -503,6 +528,7 @@
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -517,6 +543,7 @@
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -526,6 +553,7 @@
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -540,6 +568,7 @@
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -549,6 +578,7 @@
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -563,6 +593,7 @@
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -572,6 +603,7 @@
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -586,6 +618,7 @@
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -595,6 +628,7 @@
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -609,6 +643,7 @@
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -618,6 +653,7 @@
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -632,6 +668,7 @@
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -641,6 +678,7 @@
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -655,6 +693,7 @@
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -664,6 +703,7 @@
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -678,6 +718,7 @@
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -687,6 +728,7 @@
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -701,6 +743,7 @@
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -710,6 +753,7 @@
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -724,6 +768,7 @@
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -733,6 +778,7 @@
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -747,6 +793,7 @@
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -756,6 +803,7 @@
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -770,6 +818,7 @@
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -779,6 +828,7 @@
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -793,6 +843,7 @@
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -802,6 +853,7 @@
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -816,6 +868,7 @@
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -825,6 +878,7 @@
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -839,6 +893,7 @@
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -848,6 +903,7 @@
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -862,6 +918,7 @@
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -871,6 +928,7 @@
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -885,6 +943,7 @@
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -894,6 +953,7 @@
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -908,6 +968,7 @@
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -917,6 +978,7 @@
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -931,6 +993,7 @@
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -940,6 +1003,7 @@
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -954,6 +1018,7 @@
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -963,6 +1028,7 @@
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -977,6 +1043,7 @@
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -986,6 +1053,7 @@
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1000,6 +1068,7 @@
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1009,6 +1078,7 @@
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1023,6 +1093,7 @@
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1032,6 +1103,7 @@
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1046,6 +1118,7 @@
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1055,6 +1128,7 @@
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1069,6 +1143,7 @@
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1078,6 +1153,7 @@
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1092,6 +1168,7 @@
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1101,6 +1178,7 @@
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1115,6 +1193,7 @@
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1124,6 +1203,7 @@
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1137,12 +1217,14 @@
         <!-- <animate
           attributeName="offset"
           to="0.8"
-          dur="4s" fill="freeze" repeatCount="indefinite"
+          dur="4s"
+keySplines="0 0.96 1 1;" fill="freeze" repeatCount="indefinite"
 fill="freeze" /> -->
         <animate
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
-          dur="4s" repeatCount="indefinite"
+          dur="4s"
+          keySplines="0 0.96 1 1;" repeatCount="indefinite"
           fill="freeze" />
       </stop>
       <stop offset="0.82"
@@ -1150,7 +1232,8 @@ fill="freeze" /> -->
         <animate
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
-          dur="4s" repeatCount="indefinite"
+          dur="4s"
+          keySplines="0 0.96 1 1;" repeatCount="indefinite"
           fill="freeze" />
       </stop>
       <stop offset="1" stop-color="#66BD8B" />
@@ -1162,6 +1245,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1171,6 +1255,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1185,6 +1270,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1194,6 +1280,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1207,6 +1294,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1216,6 +1304,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1230,6 +1319,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1239,6 +1329,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1253,6 +1344,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1262,6 +1354,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1276,6 +1369,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1285,6 +1379,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1299,6 +1394,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1308,6 +1404,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1322,6 +1419,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1331,6 +1429,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1345,6 +1444,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1354,6 +1454,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1368,6 +1469,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1377,6 +1479,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1391,6 +1494,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1400,6 +1504,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1414,6 +1519,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1423,6 +1529,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1437,6 +1544,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1446,6 +1554,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1460,6 +1569,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1469,6 +1579,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1483,6 +1594,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1492,6 +1604,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1506,6 +1619,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1515,6 +1629,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1529,6 +1644,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1538,6 +1654,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1552,6 +1669,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1561,6 +1679,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1575,6 +1694,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1584,6 +1704,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1598,6 +1719,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1607,6 +1729,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1621,6 +1744,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1630,6 +1754,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1644,6 +1769,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1653,6 +1779,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1667,6 +1794,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1676,6 +1804,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1690,6 +1819,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1699,6 +1829,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1713,6 +1844,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1722,6 +1854,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1736,6 +1869,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1745,6 +1879,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1759,6 +1894,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1768,6 +1904,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1782,6 +1919,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1791,6 +1929,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1805,6 +1944,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1814,6 +1954,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1828,6 +1969,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1837,6 +1979,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1851,6 +1994,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1860,6 +2004,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1874,6 +2019,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1883,6 +2029,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1897,6 +2044,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1906,6 +2054,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1920,6 +2069,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1929,6 +2079,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1943,6 +2094,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1952,6 +2104,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1966,6 +2119,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1975,6 +2129,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1989,6 +2144,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -1998,6 +2154,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -2012,6 +2169,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -2021,6 +2179,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -2035,6 +2194,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -2044,6 +2204,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -2058,6 +2219,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -2067,6 +2229,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -2081,6 +2244,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -2090,6 +2254,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -2104,6 +2269,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -2113,6 +2279,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -2127,6 +2294,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -2136,6 +2304,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -2150,6 +2319,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -2159,6 +2329,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -2173,6 +2344,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -2182,6 +2354,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -2196,6 +2369,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -2205,6 +2379,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -2219,6 +2394,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -2228,6 +2404,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -2242,6 +2419,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -2251,6 +2429,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -2265,6 +2444,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -2274,6 +2454,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -2288,6 +2469,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -2297,6 +2479,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -2311,6 +2494,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -2320,6 +2504,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -2334,6 +2519,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -2343,6 +2529,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -2357,6 +2544,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -2366,6 +2554,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -2380,6 +2569,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -2389,6 +2579,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -2403,6 +2594,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#C4EFD4;#6F7F75;#C4EFD4"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
@@ -2412,6 +2604,7 @@ fill="freeze" /> -->
           attributeName="stop-color"
           values="#2C9B63;#6F7F75;#2C9B63"
           dur="4s"
+          keySplines="0 0.96 1 1;"
           repeatCount="indefinite"
           fill="freeze"
         />
