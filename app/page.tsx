@@ -99,7 +99,7 @@ export default function Page() {
       </div>
       <div className="my-32">
         <Quote
-          text={`Inngest changed how I built TypeScript applications. I can't stress enough how much I love using Inngest. The developer experience is unparalleled.`}
+          text={`Inngest changed how I build TypeScript applications. I can't stress enough how much I love using Inngest. The ease of use and developer experience is unparalleled`}
           attribution={{
             name: "Dieter De Mesmaeker",
             title: "CTO, Conveo",

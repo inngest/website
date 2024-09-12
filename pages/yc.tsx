@@ -1,12 +1,8 @@
-import { useEffect, useState } from "react";
-
 import Header from "src/shared/Header";
 import Container from "src/shared/layout/Container";
 import Footer from "src/shared/Footer";
 import Quote from "src/shared/Home/Quote";
-
-const CONTACT_KEY =
-  "Z-ymc97Dae8u4HHybHknc4DGRb51u6NnTOUaW-qG71ah1ZqsJfRcI6SaHg5APWutNcnMcaN3oZrZky-VQxBIyw";
+import ContactForm from "src/components/ContactForm";
 
 export async function getStaticProps() {
   return {
@@ -20,49 +16,6 @@ export async function getStaticProps() {
 }
 
 export default function Contact() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [teamSize, setTeamSize] = useState("");
-  const [disabled, setDisabled] = useState<boolean>(false);
-  const [buttonCopy, setButtonCopy] = useState("Send");
-
-  const onSubmit = async (e) => {
-    e.preventDefault();
-    setDisabled(true);
-    setButtonCopy("Sending...");
-    let ref = "";
-    try {
-      const u = new URLSearchParams(window.location.search);
-      if (u.get("ref")) {
-        ref = u.get("ref") || "";
-      }
-    } catch (err) {
-      // noop
-    }
-    try {
-      await window.Inngest.event(
-        {
-          name: "website/yc-deal.submitted",
-          data: { email, name, teamSize, ref },
-          user: { email, name },
-          v: "2024-08-13.1",
-        },
-        { key: CONTACT_KEY }
-      );
-      // GTM
-      window.dataLayer?.push({
-        event: "Sales Lead Form Submitted",
-        ref,
-        teamSize,
-      });
-      setButtonCopy("Your message has been sent!");
-    } catch (e) {
-      console.warn("Message not sent");
-      setButtonCopy("Message not sent");
-      setDisabled(false);
-    }
-  };
-
   return (
     <div className="font-sans text-slate-200">
       <Header />
@@ -72,79 +25,30 @@ export default function Contact() {
             <h1 className="text-white font-bold text-2xl md:text-4xl xl:text-5xl mb-2 md:mb-6 tracking-tight lg:leading-loose">
               Request the YC Deal
             </h1>
-            <p>
-              YC company or alumni?  Let us know here for access to the YC deal:
-              The pro plan free for the first year, with discounts in year 2.
+            <p className="text-balance">
+              Are you a Y Combinator company or alumni? Let us know here for
+              access to the YC deal: The pro plan free for the first year, with
+              discounts in year 2.
             </p>
           </header>
 
           <div className="my-12 grid lg:grid-cols-2 gap-24">
-            <form
-              onSubmit={onSubmit}
-              className="p-6 bg-indigo-900/10 text-indigo-100 flex flex-col items-start gap-4 rounded-lg border border-indigo-900/20"
-            >
-              <label className="w-full flex flex-col gap-2">
-                Your name
-                <input
-                  type="text"
-                  name="name"
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                  className="w-full p-3 bg-slate-1000/40 border border-indigo-900/50 outline-none rounded-md"
-                />
-              </label>
-              <label className="w-full flex flex-col gap-2">
-                Company email
-                <input
-                  type="email"
-                  name="email"
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="w-full p-3 bg-slate-1000/40 border border-indigo-900/50 outline-none rounded-md"
-                />
-              </label>
-              <label className="w-full flex flex-col gap-2">
-                What's the size of your engineering team?
-                <select
-                  name="teamSize"
-                  defaultValue=""
-                  required
-                  onChange={(e) => setTeamSize(e.target.value)}
-                  className="px-3 py-3 bg-slate-1000/40 border border-indigo-900/50 outline-none rounded-md"
-                >
-                  <option value="" disabled>
-                    Select an option
-                  </option>
-                  <option value="1">Just Me</option>
-                  <option value="2-9">2-9</option>
-                  <option value="10-30">10-20</option>
-                  <option value="20-99">20-99</option>
-                  <option value="100+">100+</option>
-                </select>
-              </label>
-              <div className="mt-4 w-full flex flex-row justify-items-end">
-                <button
-                  type="submit"
-                  disabled={disabled}
-                  className={`button group inline-flex items-center justify-center gap-0.5 rounded-full font-medium tracking-tight transition-all text-sm px-10 py-2.5 text-white bg-indigo-500 hover:bg-indigo-400 ${
-                    disabled ? "opacity-50" : ""
-                  }`}
-                >
-                  {buttonCopy}
-                </button>
-              </div>
-            </form>
+            <ContactForm
+              eventName="website/yc-deal.submitted"
+              eventVersion="2024-08-13.1"
+              gtmEvent="YC Lead Form Submitted"
+            />
 
             <div className="mx-auto max-w-2xl">
               <Quote
-                text="We were struggling with the complexities of managing our social media and e-commerce workflows. Thanks to Inngest, we were able to simplify our development process, speed up our time to market, and deliver a better customer experience. Inngest has become an essential tool in our tech stack."
+                text="The DX and visibility with Inngest is really incredible. We are able to develop functions locally easier and faster that with our previous queue. Also, Inngest's tools give us the visibility to debug issues much quicker than before."
                 attribution={{
-                  name: "Aivaras Tumas",
-                  title: "CEO @ Ocoya",
-                  avatar: "/assets/customers/ocoya-aivaras-tumas.png",
+                  name: "Bu Kinoshita",
+                  title: "CTO & Co-founder (YC W23)",
+                  logo: "/assets/customers/resend.svg",
                 }}
                 variant="vertical"
-                className="p-4 md:p-4"
+                className="p-0 md:p-0 pb-4"
               />
               <div className="flex flex-row gap-4 items-center my-8 text-lg text-indigo-50/80">
                 <img
@@ -158,20 +62,21 @@ export default function Contact() {
                 Trusted by
               </p>
               <div className="flex flex-row flex-wrap gap-8">
+                {/* We should swap these for YC companies and add their batch */}
                 <img
                   className="h-8"
                   src="/assets/customers/soundcloud-logo-white-horizontal.svg"
                   alt="SoundCloud"
                 />
                 <img
-                  className="h-7"
-                  src="/assets/customers/tripadvisor.svg"
-                  alt="TripAdvisor"
+                  className="h-9"
+                  src="/assets/customers/conveo-logo-white.svg"
+                  alt="Conveo"
                 />
                 <img
                   className="h-7"
-                  src="/assets/customers/resend.svg"
-                  alt="Resend"
+                  src="/assets/customers/gitbook-logo-white.svg"
+                  alt="Gitbook"
                 />
               </div>
             </div>

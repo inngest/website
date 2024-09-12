@@ -16,8 +16,8 @@ import Menu, { type MenuProps } from "./Nav/Menu";
 import { productLinks, resourcesLinks } from "./Nav/links";
 
 // Manual count of stars on GitHub for now
-//                   inngest + js + py + go + kt + typedwebhooks
-const GITHUB_STARS = 1650 + 388 + 25 + 20 + 1 + 262;
+// Run pnpm run github:stars to get the latest count
+const GITHUB_STARS = 2405;
 
 const menu: {
   title: string;

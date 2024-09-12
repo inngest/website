@@ -124,7 +124,7 @@ function NavLink({
         "flex rounded justify-between items-center gap-2 py-2 pl-2 text-sm transition group", // group for nested hovers
         active
           ? "font-medium rounded bg-secondary-3xSubtle text-info hover:bg-secondary-2xSubtle"
-          : "font-medium hover:bg-canvasSubtle text-muted hover:text-basis",
+          : "font-medium hover:bg-canvasSubtle text-subtle hover:text-basis",
         className
       )}
     >
@@ -331,9 +331,8 @@ function NavigationGroup({
           >
             <span
               className={clsx("pl-2", {
-                "text-sm font-medium text-[#2E2E2E] dark:text-carbon-100":
-                  nestingLevel > 0,
-                "text-xs font-semibold uppercase text-carbon-300 dark:text-carbon-600":
+                "text-sm font-medium text-basis": nestingLevel > 0,
+                "text-xs font-semibold uppercase text-[rgb(var(--color-carbon-400))] dark:text-[rgb(var(--color-carbon-500))]":
                   nestingLevel == 0,
               })}
             >

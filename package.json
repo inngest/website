@@ -22,6 +22,7 @@
     "env:pull": "vercel env pull",
     "env:add": "vercel env add",
     "env:rm": "vercel env rm",
+    "github:stars": "pnpm dlx ts-node ./utils/github.ts",
     "preinstall": "npx only-allow pnpm"
   },
   "dependencies": {
