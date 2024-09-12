@@ -140,7 +140,7 @@ function CodePanel({ tag, label, code, children }: CodePanelProps) {
       {/* Uses absolute positioning for now with CodeGroup container */}
       <CopyButton code={child.props.code ?? code} />
       <div>
-        <pre className="overflow-x-auto px-6 py-5 text-xs text-white leading-relaxed">
+        <pre className="overflow-x-auto px-6 py-5 text-xs text-basis leading-relaxed">
           {children}
         </pre>
       </div>

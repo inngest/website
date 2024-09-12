@@ -1,7 +1,7 @@
 module.exports = ({ theme }) => ({
   DEFAULT: {
     css: {
-      "--tw-prose-body": theme("colors.slate.700"),
+      "--tw-prose-body": "rgb(var(--color-foreground-base))",
       "--tw-prose-headings": theme("colors.slate.900"),
       "--tw-prose-links": "rgb(var(--color-foreground-link))",
       "--tw-prose-links-hover": "rgb(var(--color-foreground-link))",
@@ -364,7 +364,7 @@ module.exports = ({ theme }) => ({
   },
   invert: {
     css: {
-      "--tw-prose-body": "var(--tw-prose-invert-body)",
+      // "--tw-prose-body": "var(--tw-prose-invert-body)",
       "--tw-prose-headings": "var(--tw-prose-invert-headings)",
       // "--tw-prose-links": "var(--tw-prose-invert-links)",
       // "--tw-prose-links-hover": "var(--tw-prose-invert-links-hover)",

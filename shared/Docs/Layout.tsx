@@ -96,7 +96,7 @@ export function Layout({
           <div className="lg:ml-[248px]">
             <motion.header
               layoutScroll
-              className="fixed inset-y-0 mt-14 left-0 z-40 contents lg:w-[248px] overflow-y-auto border-r border-slate-900/10 pl-4 pr-3 py-4 pb-8 dark:border-white/10 lg:block"
+              className="fixed inset-y-0 mt-14 left-0 z-40 contents lg:w-[248px] overflow-y-auto border-r border-subtle pl-4 pr-3 py-4 pb-8 lg:block"
             >
               <Navigation className="hidden lg:block" />
             </motion.header>
@@ -104,7 +104,7 @@ export function Layout({
             {hidePageSidebar ? null : (
               <motion.nav
                 layoutScroll
-                className="fixed overflow-y-auto inset-y-0 mt-14 pt-16 pb-12 right-0 z-40 hidden w-60 border-l border-slate-900/10 px-6 2xl:px-10 dark:border-white/10 xl:block 2xl:w-96"
+                className="fixed overflow-y-auto inset-y-0 mt-14 pt-16 pb-12 right-0 z-40 hidden w-60 border-l border-subtle px-6 2xl:px-10 xl:block 2xl:w-96"
               >
                 <div className="pt-2">
                   <PageSidebar />
