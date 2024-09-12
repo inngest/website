@@ -261,6 +261,15 @@ const sectionReference: NavGroup[] = [
         ],
       },
       {
+        title: "Guides",
+        links: [
+          {
+            title: "Pydantic",
+            href: `/docs/reference/python/guides/pydantic`,
+          },
+        ],
+      },
+      {
         title: "Migrations",
         links: [
           {
