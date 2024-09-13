@@ -33,19 +33,19 @@ class BaseEvent(pydantic.BaseModel):
 
 Next, create a Pydantic model for your event.
 ```py
-class MyEventData(pydantic.BaseModel):
+class PostUpvotedEventData(pydantic.BaseModel):
     count: int
 
-class MyEvent(BasePydanticEvent):
-    data: MyEventData
-    name: str = "my-event"
+class PostUpvotedEvent(BaseEvent):
+    data: PostUpvotedEventData
+    name: str = "forum/post.upvoted"
 ```
 
 Since Pydantic validates on instantiation, the following code will raise an error if the data is invalid.
 ```py
 client.send(
-    MyEvent(
-        data=MyEventData(count="bad data"),
+    PostUpvotedEvent(
+        data=PostUpvotedEventData(count="bad data"),
     ).to_event()
 )
 ```
@@ -55,12 +55,12 @@ client.send(
 When defining your Inngest function, use the `name` class field when specifying the trigger. Within the function body, call the `from_event` class method to convert the `inngest.Event` object to your Pydantic model.
 ```py
 @client.create_function(
-    fn_id="my-fn",
-    trigger=inngest.TriggerEvent(event=MyEvent.name),
+    fn_id="handle-upvoted-post",
+    trigger=inngest.TriggerEvent(event=PostUpvotedEvent.name),
 )
 def fn(
     ctx: inngest.Context,
     step: inngest.StepSync,
 ) -> None:
-    event = MyEvent.from_event(ctx.event)
+    event = PostUpvotedEvent.from_event(ctx.event)
 ```
