@@ -7,7 +7,9 @@ export const metadata: Metadata = {
   description:
     "A week of exciting new feature launches and product updates from Inngest.",
   openGraph: {
-    images: ["/assets/launch-week/2/open-graph.png"],
+    images: [
+      `${process.env.NEXT_PUBLIC_HOST}/assets/launch-week/2/open-graph.png?v=2`,
+    ],
   },
 };
 
