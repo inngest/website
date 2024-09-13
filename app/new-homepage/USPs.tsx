@@ -11,7 +11,7 @@ export default function USPs() {
   return (
     <Container>
       <Heading
-        label="The Inngest difference"
+        label="Effortless development"
         title="Made for modern engineering teams"
         description={
           <>
