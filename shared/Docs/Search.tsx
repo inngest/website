@@ -254,27 +254,38 @@ function SearchResult({ result, resultIndex, autocomplete, collection }) {
         </span>
       )}
 
-      {hierarchyHtml.length > 0 && (
+      {result?._snippetResult?.content?.matchLevel === "full" ? (
         <div
-          id={`${id}-hierarchy`}
+          id={`${id}-snippet`}
           aria-hidden="true"
           className="mt-1 truncate whitespace-nowrap text-2xs text-carbon-500"
-        >
-          {hierarchyHtml.map((item, itemIndex, items) => (
-            <Fragment key={itemIndex}>
-              <span dangerouslySetInnerHTML={{ __html: item }} />
-              <span
-                className={
-                  itemIndex === items.length - 1
-                    ? "sr-only"
-                    : "mx-2 text-breeze-600 dark:text-breeze-300"
-                }
-              >
-                /
-              </span>
-            </Fragment>
-          ))}
-        </div>
+          dangerouslySetInnerHTML={{
+            __html: result?._snippetResult?.content?.value,
+          }}
+        />
+      ) : (
+        hierarchyHtml.length > 0 && (
+          <div
+            id={`${id}-hierarchy`}
+            aria-hidden="true"
+            className="mt-1 truncate whitespace-nowrap text-2xs text-carbon-500"
+          >
+            {hierarchyHtml.map((item, itemIndex, items) => (
+              <Fragment key={itemIndex}>
+                <span dangerouslySetInnerHTML={{ __html: item }} />
+                <span
+                  className={
+                    itemIndex === items.length - 1
+                      ? "sr-only"
+                      : "mx-2 text-breeze-600 dark:text-breeze-300"
+                  }
+                >
+                  /
+                </span>
+              </Fragment>
+            ))}
+          </div>
+        )
       )}
     </li>
   );
