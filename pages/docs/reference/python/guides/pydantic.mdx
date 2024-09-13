@@ -1,0 +1,66 @@
+# Pydantic
+
+This guide will help you use Pydantic to perform runtime type validation when sending and receiving events.
+
+## Sending events
+
+Create a base class that all your event classes will inherit from. This class has methods to convert to and from `inngest.Event` objects.
+```py
+import inngest
+import pydantic
+import typing
+
+TEvent = typing.TypeVar("TEvent", bound="BaseEvent")
+
+class BaseEvent(pydantic.BaseModel):
+    data: pydantic.BaseModel
+    id: str = ""
+    name: typing.ClassVar[str]
+    ts: int = 0
+
+    @classmethod
+    def from_event(cls: type[TEvent], event: inngest.Event) -> TEvent:
+        return cls.model_validate(event.model_dump(mode="json"))
+
+    def to_event(self) -> inngest.Event:
+        return inngest.Event(
+            name=self.name,
+            data=self.data.model_dump(mode="json"),
+            id=self.id,
+            ts=self.ts,
+        )
+```
+
+Next, create a Pydantic model for your event.
+```py
+class MyEventData(pydantic.BaseModel):
+    count: int
+
+class MyEvent(BasePydanticEvent):
+    data: MyEventData
+    name: str = "my-event"
+```
+
+Since Pydantic validates on instantiation, the following code will raise an error if the data is invalid.
+```py
+client.send(
+    MyEvent(
+        data=MyEventData(count="bad data"),
+    ).to_event()
+)
+```
+
+## Receiving events
+
+When defining your Inngest function, use the `name` class field when specifying the trigger. Within the function body, call the `from_event` class method to convert the `inngest.Event` object to your Pydantic model.
+```py
+@client.create_function(
+    fn_id="my-fn",
+    trigger=inngest.TriggerEvent(event=MyEvent.name),
+)
+def fn(
+    ctx: inngest.Context,
+    step: inngest.StepSync,
+) -> None:
+    event = MyEvent.from_event(ctx.event)
+```
