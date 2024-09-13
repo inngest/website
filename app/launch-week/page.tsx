@@ -1,17 +1,14 @@
 import { type Metadata } from "next";
 
 import NewsletterSignup from "src/components/NewsletterSignup";
+import { generateMetadata } from "src/utils/social";
 
-export const metadata: Metadata = {
-  title: "Inngest - Launch Week II - September 23-27, 2024",
+export const metadata: Metadata = generateMetadata({
+  title: "Launch Week II - September 23-27, 2024",
   description:
     "A week of exciting new feature launches and product updates from Inngest.",
-  openGraph: {
-    images: [
-      `${process.env.NEXT_PUBLIC_HOST}/assets/launch-week/2/open-graph.png?v=2`,
-    ],
-  },
-};
+  image: "/assets/launch-week/2/open-graph.png?v=2",
+});
 
 export default function Page() {
   return (

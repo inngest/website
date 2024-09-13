@@ -13,15 +13,14 @@ import LocalDevelopment from "./new-homepage/LocalDevelopment";
 import SocialProof from "./new-homepage/SocialProof";
 import Community from "./new-homepage/Community";
 import { FullWidthCTA } from "src/components/FullWidthCTA";
+import { generateMetadata } from "src/utils/social";
 
-export const metadata: Metadata = {
-  title: "Inngest - Queuing and orchestration for modern software teams",
+export const metadata: Metadata = generateMetadata({
+  title: "Queuing and orchestration for modern software teams",
   description:
     "Inngest's durable functions replace queues, state management, and scheduling to enable any developer to write reliable, multi-step code faster without touching infrastructure.",
-  openGraph: {
-    images: ["/assets/homepage/open-graph.png"],
-  },
-};
+  image: "/assets/launch-week/2/open-graph.png?v=2",
+});
 
 export default function Page() {
   return (

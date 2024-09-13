@@ -9,16 +9,13 @@ import Github from "src/shared/Icons/Github";
 import HeaderCard from "./Card";
 import PlatformComparison from "./PlatformComparison";
 import Card from "src/components/Card";
-import { getOpenGraphImageURL } from "src/utils/social";
+import { generateMetadata } from "src/utils/social";
 
-export const metadata: Metadata = {
-  title: "Inngest - Platform overview",
+export const metadata: Metadata = generateMetadata({
+  title: "Platform overview",
   description:
     "Learn about the Inngest platform, the features, and how it works.",
-  openGraph: {
-    images: [getOpenGraphImageURL({ title: "Platform overview" })],
-  },
-};
+});
 
 export default function Page() {
   return (
