@@ -7,7 +7,7 @@ export const metadata: Metadata = generateMetadata({
   title: "Launch Week II - September 23-27, 2024",
   description:
     "A week of exciting new feature launches and product updates from Inngest.",
-  image: "/assets/launch-week/2/open-graph.png?v=2",
+  image: "/assets/launch-week/2/open-graph.png?v=3",
 });
 
 export default function Page() {
