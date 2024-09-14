@@ -29,7 +29,7 @@ There’s a middle ground with semi-autonomous AI agents. We can leverage the tr
 
 This means we want to intercept the suggested actions, review them, and approve if they are executed.
 
-This is challenging and something difficult to achieve in standard streaming chat UIs. 
+This is challenging and something difficult to achieve in standard streaming chat UIs.
 
 Where does the command interception happen?
 
@@ -45,9 +45,9 @@ Imagine this conversation:
 
 [human]: _presses the order button_
 
-It seems simple enough, as it should to the user, but the actual mechanics are complex. If you want to change the toppings or the food type, the complexity starts to skyrocket, and it can be an async coding nightmare. Your agent still needs to order the food… because LLMs don’t do that. 
+It seems simple enough, as it should to the user, but the actual mechanics are complex. If you want to change the toppings or the food type, the complexity starts to skyrocket, and it can be an async coding nightmare. Your agent still needs to order the food… because LLMs don’t do that.
 
-LLMs deal with words, not actions, so it’s still on you to program the workflow. 
+LLMs deal with words, not actions, so it’s still on you to program the workflow.
 
 ## Programming the Workflow
 
@@ -62,7 +62,7 @@ Seems simple on the surface, but the asynchronous aspect adds a lot of complexit
 
 Let’s look at an example that combines Next.js, Inngest, PartyKit, Linear, and OpenAI wrapped up in a tidy monorepo with Turborepo to accomplish a semi-autonomous AI agent workflow.
 
-In this example, you will see how you could use this stack to create a chat UI that reads from your Linear issues, returns relevant issues based on your question, and then allows you to perform actions on those issues! 
+In this example, you will see how you could use this stack to create a chat UI that reads from your Linear issues, returns relevant issues based on your question, and then allows you to perform actions on those issues!
 
 ### Using Inngest to Manage the Asynchronous Workflow
 
@@ -78,7 +78,7 @@ _Yes, this is the Inngest blog, so obviously, we are biased, but stick with me h
 
 The first step is for the user to type a query in the chat UI. They can treat this like a standard ChatGPT conversation, or they can be more specific and ask the chat about issues in their Linear workspace.
 
-```typescript:/apps/web/app/api/chat/route.ts
+```typescript /apps/web/app/api/chat/route.ts
 import type { Message } from 'ai'
 import { customAlphabet } from 'nanoid';
 import { inngest } from '@/inngest/inngest.server.client';
@@ -122,7 +122,7 @@ export async function POST(req: Request) {
 
 This POSTs a request to the `/api/chat` endpoint, dispatching an Inngest event that triggers the primary workflow.
 
-```typescript:/apps/web/inngest/ai-flow.ts
+```typescript /apps/web/inngest/ai-flow.ts
 export const aibot = inngest.createFunction(
     {
         name: "OpenAI Linear Bot",
@@ -153,7 +153,7 @@ The workflow creates an instance of a `FunctionInvoker` class, which encapsulate
 
 The OpenAI Chat completion functions are defined like this:
 
-```typescript:/apps/web/inngest/ai-flow.ts
+```typescript /apps/web/inngest/ai-flow.ts
 const functions: Functions = {
   search_issues: {
     docs: {
@@ -224,7 +224,7 @@ It’s true, though, with PartyKit 🎈
 
 PartyKit takes all the misery of dealing with web sockets and crushes them while providing a simple and effective mechanism for streaming responses to our users inside an asynchronous workflow.
 
-```typescript:/apps/web/inngest/message-writer.ts
+```typescript /apps/web/inngest/message-writer.ts
 /**
  * 🥳 Publish a message to the party. Sends a POST request to the partykit server.
  * The server then broadcasts it to all connected clients.
@@ -246,13 +246,13 @@ export const publish = async (body: string, requestId: string) => {
 };
 ```
 
-That’s it. 
+That’s it.
 
 We call `publish` in our Function Invoker when we receive a response from OpenAI Chat completion API, which is forwarded to our PartyKit server via a POST message.
 
 Inside the PartyKit server, we can broadcast that message to all connected clients.
 
-```typescript:/apps/openai-party/server.ts
+```typescript /apps/openai-party/server.ts
 async onRequest(_req: PartyRequest) {
   const messageBody: {requestId: string, body: string} = await _req.json();
 
@@ -266,7 +266,7 @@ async onRequest(_req: PartyRequest) {
 
 Finally, in our handy React hook on the UI client side, we are listening for those messages to append them to the UI.
 
-```typescript:/apps/web/hooks/use-backend-chat.ts
+```typescript /apps/web/hooks/use-backend-chat.ts
 const socket = usePartySocket({
   room: process.env.NEXT_PUBLIC_PARTYKIT_ROOM_NAME!,
   host: process.env.NEXT_PUBLIC_PARTY_KIT_URL!,
@@ -286,7 +286,7 @@ This relatively simple example could be combined in so many exciting ways. The d
 
 ## Try it Out!
 
-[The code for this semi-autonomous AI Agent workflow can be found on GitHub](https://github.com/joelhooks/inngest-partykit-nextjs-openai). 
+[The code for this semi-autonomous AI Agent workflow can be found on GitHub](https://github.com/joelhooks/inngest-partykit-nextjs-openai).
 
 It only takes a few minutes to set it up if you’ve got your OpenAI and Linear API keys handy and follow these steps:
 
@@ -300,4 +300,4 @@ It only takes a few minutes to set it up if you’ve got your OpenAI and Linear 
 
 You can create a free Linear account, and they populate the project with a few issues that will work to test this out. If you feel adventurous, consider replacing Linear in this example with Github, allowing you to interact with your repositories in exciting ways.
 
-It will be cool to see what you make with it, so please share! 
+It will be cool to see what you make with it, so please share!

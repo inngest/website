@@ -25,21 +25,21 @@ export function Code({ codeblock }: { codeblock: HighlightedCode }) {
     <Pre
       code={codeblock}
       handlers={[mark]}
-      className="group py-4 font-mono leading-relaxed"
+      className="group py-4 font-mono leading-relaxed bg-codeEditor"
     />
   );
   const LanguageIcon = languageIcons[lang];
   const language = LanguageIcon ? (
-    <LanguageIcon size={5} fill={"white"} />
+    <LanguageIcon size={5} fill={"white"} className="h-4 w-4" />
   ) : (
-    <span className="p-1.5 rounded-sm bg-slate-700/50 font-mono text-xs">
+    <span className="p-1.5 rounded-sm bg-surfaceBase font-mono text-xs">
       {lang}
     </span>
   );
   return (
-    <div className="relative border border-slate-700/50 text-sm rounded-md">
+    <div className="relative border border-subtle text-sm rounded-md overflow-hidden not-prose">
       {title ? (
-        <div className="flex flex-row justify-between items-center py-1.5 px-4 border-b border-slate-800/50 bg-slate-800/50 font-mono">
+        <div className="flex flex-row justify-between items-center py-3 px-4 border-b border-subtle bg-canvasBase">
           <div>{title}</div>
           {language}
         </div>

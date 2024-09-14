@@ -69,7 +69,7 @@ Sanity is interesting for implementing a user-defined workflow system because it
 
 Here’s the workflow schema:
 
-```typescript:/sanity/schemas/documents/workflow.ts
+```typescript /sanity/schemas/documents/workflow.ts
 import {defineField, defineType} from 'sanity'
 
 export default defineType({
@@ -115,7 +115,7 @@ Clean and easy to manage. Each action can be reordered with drag-and-drop, edite
 
 The schemas for individual actions are similar:
 
-```typescript:/sanity/schemas/actions/delay.ts
+```typescript /sanity/schemas/actions/delay.ts
 import {defineField, defineType} from 'sanity'
 
 export default defineType({
@@ -168,7 +168,7 @@ While Inngest will work great across many different systems, from Cloudflare and
 
 Assuming that you’ve got Inngest setup, you can jump right in to the function that will execute the workflow and dig into the details:
 
-```typescript:/src/inngest/functions/marketing/new-account.ts
+```typescript /src/inngest/functions/marketing/new-account.ts
 export const newAccount = inngest.createFunction(
   {id: 'new-account', name: 'New Account Created'},
   {event: 'marketing/new-account'},
@@ -230,7 +230,7 @@ This function is setup to run one workflow process and is directly associated to
 
 The first thing we do is load the workflow data from Sanity:
 
-```typescript:/src/inngest/functions/marketing/new-account.ts
+```typescript /src/inngest/functions/marketing/new-account.ts
 const workflow = await step.run('load workflow from sanity', async () => {
   return sanityClient.fetch(
     `*[_type == "workflow" && trigger == "new-account" && accountId == "${accountId}"][0]{title, _id, _type, trigger, accountId, "actions": actions[]}`,
@@ -242,7 +242,7 @@ This gives us the metadata from the workflow as well as the array of actions tha
 
 The heart of the workflow is the conditional logic housed in this switch statement:
 
-```typescript:/src/inngest/functions/marketing/new-account.ts
+```typescript /src/inngest/functions/marketing/new-account.ts
 const action = workflow.actions.shift()
 switch (action._type) {
 case 'delay':
