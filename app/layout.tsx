@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 
 import Nav from "src/components/Nav";
@@ -45,22 +46,23 @@ export default function RootLayout({
           rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.4.0/styles/github-dark.min.css"
         />
-        <HeaderInit />
+        <Suspense>
+          <HeaderInit />
+        </Suspense>
       </head>
       <body className="dark font-sans">
         <LaunchWeekBanner />
 
         <Nav />
 
-        <main /*className="max-w-container-desktop m-auto px-6 md:px-10 lg:px-20" */
-        >
-          {children}
-        </main>
+        <main>{children}</main>
 
         <Footer disableCta={true} />
 
-        <PageViews />
-        <GoogleTagManger />
+        <Suspense>
+          <PageViews />
+          <GoogleTagManger />
+        </Suspense>
       </body>
     </html>
   );

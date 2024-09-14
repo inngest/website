@@ -13,7 +13,8 @@ export const metadata: Metadata = generateMetadata({
 export default function Page() {
   return (
     <>
-      <style global>{`
+      {/* @ts-ignore */}
+      <style global="true">{`
         /* Hide the page banner on this page*/
         .page-banner {
           display: none;

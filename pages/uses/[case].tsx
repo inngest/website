@@ -175,7 +175,10 @@ export default function useCase({ stringData }) {
       <Container className=" my-40">
         <SectionHeader title={data.codeSection.title} />
         {data.codeSection.examples.map((example) => (
-          <div className="mt-16 grid lg:grid-cols-5 md:grid-cols-1">
+          <div
+            className="mt-16 grid lg:grid-cols-5 md:grid-cols-1"
+            key={example.title}
+          >
             <div className="text-slate-200 mb-10 lg:mb-0 lg:pr-20 max-w-[480px] justify-center flex flex-col gap-3 col-span-2">
               {!!example.title && (
                 <h3 className="mb-12 text-xl md:text-3xl font-semibold">
@@ -183,7 +186,7 @@ export default function useCase({ stringData }) {
                 </h3>
               )}
               {example.steps.map((step, idx) => (
-                <p className="flex items-start gap-3">
+                <p className="flex items-start gap-3" key={idx}>
                   <span className="bg-surfaceMuted rounded flex items-center justify-center w-6 h-6 text-xs font-bold shrink-0">
                     {example?.steps?.length === 1 ? "→" : idx + 1}
                   </span>{" "}
