@@ -8,9 +8,18 @@ import {
   RiArrowDownSLine,
 } from "@remixicon/react";
 import * as Accordion from "@radix-ui/react-accordion";
+import classNames from "src/utils/classNames";
 
 const CLOSED_VALUE = "CLOSED";
-export default function PlanCard({ content }: { content: Plan }) {
+export default function PlanCard({
+  content,
+  idx,
+  total,
+}: {
+  content: Plan;
+  idx: number;
+  total: number;
+}) {
   // Solves the radix bug on undefined values in single accordions https://github.com/radix-ui/primitives/discussions/824
   const [accordionValue, setAccordionValue] = useState(CLOSED_VALUE);
   const [isMediumScreen, setIsMediumScreen] = useState(false);
@@ -45,12 +54,20 @@ export default function PlanCard({ content }: { content: Plan }) {
 
   return (
     <div
-      className={`w-full rounded-lg md:rounded-l-none md:rounded-r-none md:first:rounded-l-lg md:last:rounded-r-lg flex flex-col justify-between text-left `}
+      className={classNames(
+        `w-full flex flex-col justify-between text-left`,
+        `rounded-lg md:rounded-l-none md:rounded-r-none md:first:rounded-l-lg md:last:rounded-r-lg`
+      )}
     >
       <div
-        className={`h-full py-8 px-6 border rounded-2xl ${
-          content.recommended ? "border-matcha-400" : "border-muted"
-        } bg-canvasBase`}
+        className={classNames(
+          `h-full py-8 px-6 border bg-canvasBase`,
+          content.recommended ? "border-matcha-400" : "border-muted",
+          `rounded-2xl`,
+          idx === 0 && "xl:rounded-r-none",
+          idx > 0 && idx < total - 1 && "xl:rounded-none",
+          idx === total - 1 && "xl:rounded-l-none"
+        )}
       >
         {content.recommended && (
           <div className="-mt-10 mb-3.5 block text-center">
