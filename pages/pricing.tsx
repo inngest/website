@@ -149,8 +149,7 @@ const PLANS: Plan[] = [
       period: "mo",
     },
     primaryCTA: true,
-    description:
-      "Build and deploy small scale reliable systems effortlessly",
+    description: "Build and deploy small scale reliable systems effortlessly",
     cta: {
       href: `${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=pricing-card-basic`,
       text: "Start for free",
@@ -328,23 +327,22 @@ const FEATURES: Feature[] = [
     description: "An individual step in durable functions",
     plans: {
       [PLAN_NAMES.basicFree]: {
-        value: '250K',
+        value: "250K",
         description: `Avg of 5 steps per run included for free`,
       },
       [PLAN_NAMES.basic]: {
-        value: '500K',
+        value: "500K",
         description: `then $${
           getPlan(PLAN_NAMES.basic).cost.additionalStepsPrice
-        } per ${getPlan(PLAN_NAMES.basic).cost.additionalStepsRate.toLocaleString(
-          undefined,
-          {
-            notation: "compact",
-            compactDisplay: "short",
-          }
-        )}`,
+        } per ${getPlan(
+          PLAN_NAMES.basic
+        ).cost.additionalStepsRate.toLocaleString(undefined, {
+          notation: "compact",
+          compactDisplay: "short",
+        })}`,
       },
       [PLAN_NAMES.pro]: {
-        value: '25M',
+        value: "25M",
         description: `then $${
           getPlan(PLAN_NAMES.pro).cost.additionalStepsPrice
         } per ${getPlan(PLAN_NAMES.pro).cost.additionalStepsRate.toLocaleString(
@@ -706,8 +704,8 @@ export default function Pricing() {
           covered. Get started for free today.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-2 xl:gap-4 xl:gap-x-0 text-center mb-8">
-          {PLANS.filter((p) => p.hideFromCards !== true).map((p) => (
-            <PlanCard key={p.name} content={p} />
+          {PLANS.filter((p) => p.hideFromCards !== true).map((p, idx) => (
+            <PlanCard key={p.name} content={p} idx={idx} total={PLANS.length} />
           ))}
         </div>
         <CaseStudies />
