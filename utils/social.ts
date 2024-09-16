@@ -12,7 +12,7 @@ export const getOpenGraphImageURL = ({ title }: { title: string }) =>
     title
   )}&v=${openGraphImageVersion}`;
 
-const getFullURL = (absolutePath: string) =>
+export const getFullURL = (absolutePath: string) =>
   new URL(absolutePath, process.env.NEXT_PUBLIC_HOST).toString();
 
 // ...
