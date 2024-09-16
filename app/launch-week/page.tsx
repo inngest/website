@@ -25,7 +25,7 @@ export default function Page() {
           <div className="lg:ml-2.5 flex items-center gap-2 uppercase text-lg md:text-2xl text-[rgb(var(--color-primary-xIntense))] font-medium">
             <span>Sept 23</span>
             <span className="h-px w-[60px] bg-[rgb(var(--color-primary-xIntense))]"></span>
-            <span>Sept 30</span>
+            <span>Sept 27</span>
           </div>
           <h1 className="mt-3 text-6xl md:text-8xl lg:text-9xl uppercase font-medium">
             Inngest <br className="hidden sm:block" /> Launch Week{" "}

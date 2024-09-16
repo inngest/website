@@ -6,6 +6,7 @@ import Footer from "src/shared/Footer";
 import { HeaderInit, PageViews } from "@/components/InngestClientSDK";
 import GoogleTagManger from "@/components/GoogleTagManager";
 import LaunchWeekBanner from "src/components/LaunchWeekBanner";
+import { getFullURL } from "src/utils/social";
 
 import "./globals.css";
 
@@ -16,7 +17,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     // We cannot dynamically set the image URL with the page title, so we use this default
-    images: ["/assets/homepage/open-graph.png"],
+    images: [getFullURL("/assets/homepage/open-graph.png")],
   },
   icons: {
     icon: [

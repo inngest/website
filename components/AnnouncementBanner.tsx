@@ -32,7 +32,9 @@ const AnnouncementBanner: React.FC<Props> = ({ href, children, className }) => (
     <span className="rotate-45">
       <RiRocket2Fill className="h-4 w-4 group-hover:animate-[wiggle_200ms_ease-in-out_infinite]" />
     </span>
-    {children}
+    <span className="underline underline-offset-2 decoration-[rgba(var(--color-carbon-0)/0.5)] group-hover:decoration-[rgba(var(--color-carbon-0)/1)] transition-colors">
+      {children}
+    </span>
   </a>
 );
 
