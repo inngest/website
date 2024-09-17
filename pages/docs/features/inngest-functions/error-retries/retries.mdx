@@ -234,14 +234,20 @@ inngest.createFunction(
   { id: "send-welcome-notification" },
   { event: "app/user.created" },
   async ({ event, step }) => {
-    const { success, retryAfter } = await twilio.messages.create({
-      to: event.data.user.phoneNumber,
-      body: "Welcome to our service!",
-    });
 
-    if (!success && retryAfter) {
-      throw new RetryAfterError("Hit Twilio rate limit", retryAfter);
-    }
+    const msg = await step.run('send-message', async () => {
+      const { success, retryAfter, message } = await twilio.messages.create({
+        to: event.data.user.phoneNumber,
+        body: "Welcome to our service!",
+      });
+
+      if (!success && retryAfter) {
+        throw new RetryAfterError("Hit Twilio rate limit", retryAfter);
+      }
+      
+      return { message };
+    });
+    
   },
 );
 ```
