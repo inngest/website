@@ -84,7 +84,7 @@ function useAutocomplete() {
                     query,
                     indexName: process.env.NEXT_PUBLIC_DOCSEARCH_INDEX_NAME,
                     params: {
-                      hitsPerPage: 5,
+                      hitsPerPage: 6,
                       highlightPreTag:
                         '<mark class="underline bg-transparent text-breeze-600 dark:text-breeze-300">',
                       highlightPostTag: "</mark>",
@@ -223,7 +223,7 @@ function getSDKLanguageIcon(result): React.ElementType | null {
   }
 }
 
-function SearchResult({ result, resultIndex, autocomplete, collection }) {
+function SearchResult({ result, resultIndex, autocomplete }) {
   let id = useId();
   let { titleHtml, hierarchyHtml } = resolveResult(result);
 
@@ -239,7 +239,6 @@ function SearchResult({ result, resultIndex, autocomplete, collection }) {
       aria-labelledby={`${id}-hierarchy ${id}-title`}
       {...autocomplete.getItemProps({
         item: result,
-        source: collection.source,
       })}
     >
       <div
@@ -291,8 +290,8 @@ function SearchResult({ result, resultIndex, autocomplete, collection }) {
   );
 }
 
-function SearchResults({ autocomplete, query, collection }) {
-  if (collection.items.length === 0) {
+function SearchResults({ autocomplete, query, results }) {
+  if (results.length === 0) {
     return (
       <div className="p-6 text-center">
         <NoResultsIcon className="mx-auto h-5 w-5 stroke-carbon-900 dark:stroke-carbon-600" />
@@ -309,13 +308,12 @@ function SearchResults({ autocomplete, query, collection }) {
 
   return (
     <ul role="list" {...autocomplete.getListProps()}>
-      {collection.items.map((result, resultIndex) => (
+      {results.map((result, resultIndex) => (
         <SearchResult
           key={result.objectID}
           result={result}
           resultIndex={resultIndex}
           autocomplete={autocomplete}
-          collection={collection}
         />
       ))}
     </ul>
@@ -428,6 +426,22 @@ function SearchDialog({
     setOpen(open);
   }
 
+  // Remove duplicate results at the top
+  const filteredResults = autocompleteState.collections?.[0]?.items.reduce(
+    (results, item) => {
+      // Find any existing results that for the same URL and Level heirarchy
+      const existing = results.find(
+        (result) => result.url_without_anchor === item.url_without_anchor
+      );
+      // ex. "lvl1"
+      if (existing && existing.type === item.type) {
+        return results;
+      }
+      return [...results, item];
+    },
+    []
+  );
+
   return (
     <Transition.Root
       show={open}
@@ -486,7 +500,7 @@ function SearchDialog({
                         <SearchResults
                           autocomplete={autocomplete}
                           query={autocompleteState.query}
-                          collection={autocompleteState.collections[0]}
+                          results={filteredResults}
                         />
                       </>
                     )}
