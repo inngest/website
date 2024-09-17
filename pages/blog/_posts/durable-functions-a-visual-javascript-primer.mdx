@@ -31,12 +31,17 @@ While this method works, it's important to handle potential errors properly. In 
 
 Additionally, if the server goes down or there's an unexpected delay, our Cron job tasks fail to execute and won't retry automatically. Unless we explicitly give the instructions to retry the failed Cron job, our UI will remain broken until at least 10:00, when the next Cron job is scheduled.
 
+
+<Callout>
+
 💡 To summarize, our traditional approach had a few downsides:
 
 - **Lack of State Management**: Background jobs typically don't maintain their state between executions. If a job fails midway, it often needs to start from the beginning, potentially leading to duplicate work or inconsistent results.
 - **Inefficient Error Handling**: While we can implement basic retry mechanisms, it's challenging to manage complex error handling and recovery scenarios.
 - **Long-Running Processes**: Background jobs are usually designed for relatively short-lived tasks. Managing processes that may run for hours or days becomes increasingly complex.
 - **Scalability Concerns**: As the number of background jobs grows, it becomes increasingly challenging to manage their execution, monitor them, and handle errors.
+
+</Callout>
 
 ---
 
@@ -132,12 +137,16 @@ const orderProcessingWorkflow = inngest.createFunction(
 
 In this workflow, after scheduling the shipment, the workflow enters a wait state up to 7 days using the `step.waitForEvent` function. The `step.waitForEvent` function enables our workflow to wait for a new `"shipment.created”` matching the same `orderId`. This wait pauses the workflow until the logistics provider confirms the shipment has been dispatched. Unlike regular background jobs, this wait doesn't use resources while it waits, making it better for handling time-sensitive tasks in web apps.
 
+<Callout>
+
 💡 To summarize, our Durable Function approach enhances the efficiency and reliability of long-running tasks compared to the traditional approach:
 
 - **Robust State Management**: Each step in a Durable Function is capable of maintaining its state between executions. This prevents the need to restart tasks from the beginning if they fail, minimizing the risk of duplication or inconsistent results.
 - **Advanced Error Handling**: Durable Functions are equipped with built-in mechanisms for [error detection and automatic retries](https://www.inngest.com/docs/guides/error-handling), which can be tuned to address specific recovery scenarios. This not only improves the reliability of task execution, but also reduces the manual oversight that was required with the traditional approach.
 - **Efficient Long-Running Process Management**: Each task within a Durable Function is treated as a modular step that can independently handle long durations of activity. This modularity allows for more scalable and manageable processes, overcoming the limitations of traditional background jobs that are typically optimized for shorter tasks.
 - **Enhanced Scalability**: As the complexity and number of tasks grow within an application, Durable Functions provide a scalable framework that simplifies monitoring and managing these tasks. The independent steps ensure that the performance and stability of one does not affect others, which is a common challenge with traditional background jobs.
+
+</Callout>
 
 ---
 
@@ -150,6 +159,7 @@ Before we start, we first need to understand that:
 - The Inngest Platform hosts the Durable Execution Engine. The engine is responsible for managing the queue of pending function runs, and maintaining the state of ongoing or pending Function steps.
 - The Durable Execution Engine interacts with the Inngest SDK through HTTP requests. Through this communication, the engine provides states and collects updated states from the SDK.
 - The functions need to be [served through HTTP endpoints](https://www.inngest.com/docs/learn/serving-inngest-functions). In this step-by-step example, let's assume that we've successfully done this.
+
 
 ⚠️ Note: The illustrations are simplified to improve readability.
 

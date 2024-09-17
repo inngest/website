@@ -28,6 +28,7 @@ import { SectionProvider } from "src/shared/Docs/SectionProvider";
 // @ts-ignore
 import { remarkCodeHike, recmaCodeHike } from "codehike/mdx";
 import { Code } from "src/shared/Code/CodeHike";
+import { Callout } from "src/shared/Docs/mdx";
 
 const chConfig = {
   components: { code: "Code" },
@@ -45,6 +46,7 @@ const components: MDXComponents = {
   // @ts-ignore this package is older, but it works
   YouTube,
   Code,
+  Callout,
 };
 
 type Props = {
