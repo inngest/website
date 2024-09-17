@@ -18,6 +18,7 @@ import { Button } from "src/shared/Button";
 import { RiCalendarLine } from "@remixicon/react";
 import CTACallout from "src/shared/CTACallout";
 import Blockquote from "src/shared/Blog/Blockquote";
+import AutoplayVideo from "src/shared/Blog/AutoplayVideo";
 import rehypeCodeTitles from "rehype-code-titles";
 import YouTube from "react-youtube-embed";
 import remarkGfm from "remark-gfm";
@@ -40,6 +41,7 @@ const components: MDXComponents = {
   Button,
   CTACallout,
   Blockquote,
+  AutoplayVideo,
   // @ts-ignore this package is older, but it works
   YouTube,
   Code,
@@ -69,6 +71,7 @@ const authorURLs = {
   "Igor Samokhovets": "https://twitter.com/IgorSamokhovets",
   "Dave Kiss": "https://twitter.com/davekiss",
   "Bruno Scheufler": "https://brunoscheufler.com",
+  "Lydia Hallie": "https://x.com/lydiahallie",
 };
 
 export default function BlogLayout(props) {
@@ -181,7 +184,24 @@ export default function BlogLayout(props) {
                     </p>
                   )}
                   <p className="text-slate-300 text-sm mt-2 flex items-center gap-2">
-                    {!!scope.author ? <>{scope.author} &middot; </> : ""}
+                    {!!scope.author ? (
+                      authorURLs[scope.author] ? (
+                        <>
+                          <a
+                            href={authorURLs[scope.author]}
+                            target="_blank"
+                            className="text-slate-200 underline"
+                          >
+                            {scope.author}
+                          </a>
+                          &middot;{" "}
+                        </>
+                      ) : (
+                        <>{scope.author} &middot; </>
+                      )
+                    ) : (
+                      ""
+                    )}
                     <span className="flex items-center gap-1">
                       <RiCalendarLine className="h-3 w-3 mr-px" />{" "}
                       {scope.humanDate}{" "}
