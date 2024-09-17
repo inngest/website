@@ -9,7 +9,7 @@ author: Lydia Hallie
 disableCTA: false
 ---
 
-Modern web applications often require **long-running tasks** that need to be **resilient to external errors and interruptions**. If such long-running tasks aren't handled properly, any error could lead to data inconsistencies, financial losses, poor user experiences, and overall system failures. 
+Modern web applications often require **long-running tasks** that need to be **resilient to external errors and interruptions**. If such long-running tasks aren't handled propertly, any error could lead to data inconsistencies, financial losses, poor user experiences, and overall system failures. 
 
 These are features like API integrations, AI-powered workflows, data exports, automated billing systems, user onboarding sequences, or even recurring notifications. 
 
@@ -59,7 +59,7 @@ This is what makes Durable Functions special, because this wasn't the case with 
 
 In a Durable Function, each task in the order processing workflow is broken down into modular, independent **steps**. For example, the order processing workflow could include steps for validating payment, checking inventory, scheduling shipment, and updating the customer. 
 
-Inngest's SDKS allows you to create steps through the [`step.run`](http://step.run) function. 
+Inngest's SDK allows you to create steps through the [`step.run`](http://step.run) function. 
 
 ```jsx
 const orderProcessingWorkflow = inngest.createFunction(
