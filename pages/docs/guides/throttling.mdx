@@ -41,7 +41,7 @@ You can configure throttling on each function using the optional `throttle` para
 
 **Configuration information**
 
-- The rate limit smooths requests in the given period, allowing `period/limit` requests a second.
+- The rate limit smooths requests in the given period, allowing `limit/period` requests a second.
 - Period must be between `1s` and `7d`, or between 1 second and 7 days. The minimum granularity is one second.
 - Throttling is currently applied per function. Two functions with the same key have two separate limits.
 - Every request is evenly weighted and counts as a single unit in the rate limiter.
