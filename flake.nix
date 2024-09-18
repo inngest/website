@@ -14,18 +14,28 @@
           config.allowUnfree = true;
         };
 
+        corepack = pkgs.stdenv.mkDerivation {
+          name = "corepack";
+          buildInputs = [ pkgs.nodejs_18 ];
+          phases = [ "installPhase" ];
+          installPhase = ''
+            mkdir -p $out/bin
+            corepack enable --install-directory=$out/bin
+          '';
+        };
+
       in {
         devShells.default = pkgs.mkShell {
+          packages = [ corepack ];
+
           nativeBuildInputs = with pkgs; [
-            (pkgs.stdenv.mkDerivation {
-              name = "corepack";
-              buildInputs = [ pkgs.nodejs-18_x ];
-              phases = [ "installPhase" ];
-              installPhase = ''
-                mkdir -p $out/bin
-                corepack enable --install-directory=$out/bin
-              '';
-            })
+            typescript
+            nodejs_18
+
+            # LSPs
+            nodePackages.typescript-language-server
+            nodePackages.vscode-json-languageserver
+            nodePackages.yaml-language-server
           ];
         };
       });
