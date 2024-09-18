@@ -100,7 +100,7 @@ You can also use K6’s cloud to handle running the tests, though your services 
 
 ## Results
 
-We set up our basic [self-hosting stack](https://github.com/inngest/inngest/tree/main/hosting-stacks/aws-managed) using AWS’ managed services. That is, we hosted our event API on ECS, then pushed events onto SQS and consumed them via another ECS service.
+We set up our basic self-hosting stack using AWS’ managed services. That is, we hosted our event API on ECS, then pushed events onto SQS and consumed them via another ECS service.
 
 The results we cared about were number of requests/second, the number that failed, and the request duration. Here are the results on a 1GB ram / 0.5 vCPU instance:
 

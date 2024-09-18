@@ -33,7 +33,7 @@ You can ~~read the documentation for historic replay here~~ (**NOTE** - This has
 
 While we offer our [hosted cloud](https://app.inngest.com/sign-up?ref=v0.5.0) which lets you start using Inngest in minutes, we’ve also added a new command to the CLI: `inngest serve`. This lets you run the core Inngest services to accept events, initialize functions, execute functions, and deploy new versions to your own infrastructure. The backends are entirely configurable; you can choose any messaging system for processing incoming events by [changing your config file](https://github.com/inngest/inngest/blob/main/pkg/cuedefs/config/config.cue).
 
-[We’ve included example self-hosting stacks](https://github.com/inngest/inngest/tree/main/hosting-stacks/), which include all of the terraform and configuration you need to get started. We’ve also added some benchmarking:
+We’ve benchmarked with (self-hosting)[/docs/self-hosting] stacks running on AWS. We’ve also added some benchmarking:
 
 - A single 1GB / 0.5vCPU event API can process 110 requests per second with a p99 latency of 35ms, without breaking ~35mb ram usage.
 - It’s easy to scale to thousands of requests per second, as the services themselves are shared nothing.
