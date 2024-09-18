@@ -1,14 +1,15 @@
 import { useEffect, useRef, useState } from "react";
-import { Button } from "src/shared/Button";
 
 type AutoplayVideoProps = {
   src: string;
   loop?: boolean;
+  controls?: boolean;
 };
 
 export default function AutoplayVideo({
   src,
   loop = true,
+  controls = true,
 }: AutoplayVideoProps) {
   const [playing, setPlaying] = useState(false);
   const videoRef = useRef(null);
@@ -52,6 +53,7 @@ export default function AutoplayVideo({
       ref={videoRef}
       playsInline
       loop={loop}
+      controls={controls}
       preload="auto"
       autoPlay
       muted
