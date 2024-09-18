@@ -27,7 +27,7 @@ Traditionally, we might manage these stages using a mix of background and Cron  
 
 ![Cron jobs tend to be unrealiable in case of failure, requiring a manual intervention with risks of overlaps.](/assets/blog/durable-functions-a-visual-javascript-primer/Group_77_(1).png)
 
-While this method works, it's important to handle potential errors properly. In this case, the `checkInventory` Cron job failed at 9:00, which could lead to outdated stock levels if not handled property.  This in turn can cause overselling, missed restocking, and general fulfillment delays.
+While this method works, it's important to handle potential errors properly. In this case, the `checkInventory` Cron job failed at 9:00, which could lead to outdated stock levels if not handled properly.  This, in turn, can cause overselling, missed restocking, and general fulfillment delays.
 
 Additionally, if the server goes down or there's an unexpected delay, our Cron job tasks fail to execute and won't retry automatically. Unless we explicitly give the instructions to retry the failed Cron job, our UI will remain broken until at least 10:00, when the next Cron job is scheduled.
 
@@ -53,7 +53,7 @@ The term "durable" in Durable Functions refers to the workflow's ability to main
 
 ![Durable Functions are designed with reliability at their core with automatic retries.](/assets/blog/durable-functions-a-visual-javascript-primer/Group_85_(1).png)
 
-This is what makes Durable Functions special, because this wasn't the case with our traditional setup. 
+This is what makes Durable Functions special because this wasn't the case with our traditional setup. 
 
 ---
 
@@ -89,13 +89,13 @@ const orderProcessingWorkflow = inngest.createFunction(
 );
 ```
 
-Each step is capable of handling failures and can automatically retry based on predefined policies, ensuring that all parts of the order processing sequence is executed correctly. 
+Each step is capable of handling failures and can automatically retry based on predefined policies, ensuring that all parts of the order processing sequence are executed correctly. 
 
 Durable Functions can also include **waits** that pause the process for necessary delays (e.g., waiting for a third-party shipment confirmation) without consuming resources. This can be more efficient than traditional CRON jobs, which are less time flexible and can over-consume resources by continuously polling for status updates.
 
 Inngest's SDKS allows you to create waits through several methods, one of which is the [`step.waitForEvent`](/docs/reference/functions/step-wait-for-event?ref=blog-what-are-durable-functions) function.  
 
-![The Durable Functions "wait for event" feature enable to pause executions while waiting for another event, for example: waiting for shipment information to be dispatched.](/assets/blog/durable-functions-a-visual-javascript-primer/Group_88.png)
+![The Durable Functions "wait for event" feature enables pausing executions while waiting for another event, for example: waiting for shipment information to be dispatched.](/assets/blog/durable-functions-a-visual-javascript-primer/Group_88.png)
 
 This function is used to pause the execution of a workflow step until a specific event is received, or if a timeout occurs.
 
@@ -142,7 +142,7 @@ In this workflow, after scheduling the shipment, the workflow enters a wait stat
 💡 To summarize, our Durable Function approach enhances the efficiency and reliability of long-running tasks compared to the traditional approach:
 
 - **Robust State Management**: Each step in a Durable Function is capable of maintaining its state between executions. This prevents the need to restart tasks from the beginning if they fail, minimizing the risk of duplication or inconsistent results.
-- **Advanced Error Handling**: Durable Functions are equipped with built-in mechanisms for [error detection and automatic retries](/docs/guides/error-handling?ref=blog-what-are-durable-functions), which can be tuned to address specific recovery scenarios. This not only improves the reliability of task execution, but also reduces the manual oversight that was required with the traditional approach.
+- **Advanced Error Handling**: Durable Functions are equipped with built-in mechanisms for [error detection and automatic retries](/docs/guides/error-handling?ref=blog-what-are-durable-functions), which can be tuned to address specific recovery scenarios. This not only improves the reliability of task execution but also reduces the manual oversight that was required with the traditional approach.
 - **Efficient Long-Running Process Management**: Each task within a Durable Function is treated as a modular step that can independently handle long durations of activity. This modularity allows for more scalable and manageable processes, overcoming the limitations of traditional background jobs that are typically optimized for shorter tasks.
 - **Enhanced Scalability**: As the complexity and number of tasks grow within an application, Durable Functions provide a scalable framework that simplifies monitoring and managing these tasks. The independent steps ensure that the performance and stability of one does not affect others, which is a common challenge with traditional background jobs.
 
@@ -192,13 +192,13 @@ Here's a run of our `orderProcessingWorkflow()`:
 
 <AutoplayVideo src={"https://res.cloudinary.com/dd6gwkgww/video/upload/q_auto/inngest2.4_yyv0vx.mov"} />
 
-This process continues, with the Engine and SDK communicating back and forth, executing steps, and managing state until the entire workflow completes. When the workflow has completed, the SDK responds with a `200 OK` response, and the job is removed from the jobs queue.
+This process continues, with the Engine and SDK communicating back and forth, executing steps, and managing state until the entire workflow is completed. When the workflow has been completed, the SDK responds with a `200 OK` response, and the job is removed from the jobs queue.
 
 ---
 
-Throughout the workflow, any step that encounters an issue executes predefined error handling routines. Let's see what happens behind the scenes if `"check-inventory"` were to throw an error:
+Throughout the workflow, any step that encounters an issue executes predefined error-handling routines. Let's see what happens behind the scenes if `"check-inventory"` were to throw an error:
 
-1. The SDK tries to execute `check-inventory` , but an exception is thrown (in real life, this could be caused by e.g. a server timeout). The SDK catches this, returns an `error` object in the response, and includes default retry configuration if none is provided.
+1. The SDK tries to execute `check-inventory` , but an exception is thrown (in real life, this could be caused by e.g. a server timeout). The SDK catches this, returns an `error` object in the response, and includes a default retry configuration if none is provided.
 2. The Engine receives the error response, stores the run state including error details, and schedules a retry based on the retry configuration (default is 4 retries). 
 
 <AutoplayVideo src={"https://res.cloudinary.com/dd6gwkgww/video/upload/q_auto/inngest3.1_nlrcjz.mov"} />
@@ -209,7 +209,7 @@ Throughout the workflow, any step that encounters an issue executes predefined e
 
 If it were to fail again, the process repeats from step 3. This retry cycle continues until either the step succeeds or the maximum retries (4 by default) are exhausted. If all retries are exhausted, the Engine marks the step and workflow as failed, and stores the final error state for debugging and potential manual intervention.
 
-This durable retry mechanism automatically handles transient errors, giving each step multiple chances to succeed without manual intervention. By preserving workflow state, it can seamlessly continue once the error is resolved.
+This durable retry mechanism automatically handles transient errors, giving each step multiple chances to succeed without manual intervention. By preserving the workflow state, it can seamlessly continue once the error is resolved.
 
 ---
 
