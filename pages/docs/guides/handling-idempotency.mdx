@@ -27,7 +27,7 @@ Each event that is received by Inngest will trigger any functions with that matc
 **Example:** Using an e-commerce store as an example, a user can add the same t-shirt to their cart twice because they want to buy two (_2 unique events_). That same user may check out and pay for all items in their cart but click the "pay" button twice (_2 duplicate events_).
 </Callout>
 
-To prevent an event from being handled twice, you can set a unique event `id` when [sending the event](/docs/reference/events/send#inngest-send-event-payload-event-payload-promise). This `id` acts as an idempotency key **over a 24 hour period** and Inngest will check to see if that event has already been received before triggering another function.
+To prevent an event from being handled twice, you can set a unique event `id` when [sending the event](/docs/reference/events/send#inngest-send-event-payload-event-payload-promise). This `id` acts as an idempotency key **over a 24 hour or more period** and Inngest will check to see if that event has already been received before triggering another function.
 
 ```ts
 const cartId = 'CGo5Q5ekAxilN92d27asEoDO';
@@ -50,7 +50,7 @@ As you can see in the above example, setting the `id` allows you to prevent dupl
 
 Some other key points to note:
 
-* Event IDs will only be used to prevent duplicate execution for a 24 hour period. After 24 hours, the event will be treated as a new event and will trigger any functions with that trigger.
+* Event IDs will only be used to prevent duplicate execution for a 24 hour or more period. After this period, the event will be treated as a new event and will trigger any functions with that trigger.
 * Inngest will store the second event and it will be visible in your event history, but it will _not_ trigger any functions.
 * Events that fan-out to multiple functions will trigger each function as they normally would.
 
@@ -58,6 +58,17 @@ Some other key points to note:
 
 <Callout>
   **Tip** - If you are using Inngest's [webhook transforms](/docs/platform/webhooks#defining-a-transform-function), you can set the `id` in the transform to ensure that the event is idempotent.
+</Callout>
+
+<Callout variant="warning">
+  The 24 hour event idempotency period starts after the last-triggered function run for that event ID ends. For example, if you sent an event with ID `abc123` and the triggered run takes 7 days to complete, then the event idempotency period is 8 days (7 days + 24 hours).
+</Callout>
+
+<Callout variant="warning">
+  Event idempotency is ignored by some features
+  - Debouncing
+  - Event batching
+  - Function pausing. When a function is paused, event idempotency is ignored. So if a replay is created after unpausing, it may have "skipped" runs that ignored event idempotency.
 </Callout>
 
 {/*### Uniqueness of event IDs
