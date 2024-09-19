@@ -61,14 +61,10 @@ Some other key points to note:
 </Callout>
 
 <Callout variant="warning">
-  The 24 hour event idempotency period starts after the last-triggered function run for that event ID ends. For example, if you sent an event with ID `abc123` and the triggered run takes 7 days to complete, then the event idempotency period is 8 days (7 days + 24 hours).
-</Callout>
-
-<Callout variant="warning">
-  Event idempotency is ignored by some features
+  Event idempotency is ignored by some features:
   - Debouncing
   - Event batching
-  - Function pausing. When a function is paused, event idempotency is ignored. So if a replay is created after unpausing, it may have "skipped" runs that ignored event idempotency.
+  - Function pausing. While a function is paused, event idempotency is ignored. So if a replay is created after unpausing, it may have "skipped" runs that ignored event idempotency.
 </Callout>
 
 {/*### Uniqueness of event IDs
