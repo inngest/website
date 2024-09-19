@@ -223,7 +223,7 @@ function getSDKLanguageIcon(result): React.ElementType | null {
   }
 }
 
-function SearchResult({ result, resultIndex, autocomplete }) {
+function SearchResult({ result, resultIndex, autocomplete, collection }) {
   let id = useId();
   let { titleHtml, hierarchyHtml } = resolveResult(result);
 
@@ -239,6 +239,7 @@ function SearchResult({ result, resultIndex, autocomplete }) {
       aria-labelledby={`${id}-hierarchy ${id}-title`}
       {...autocomplete.getItemProps({
         item: result,
+        source: collection.source,
       })}
     >
       <div
@@ -290,8 +291,8 @@ function SearchResult({ result, resultIndex, autocomplete }) {
   );
 }
 
-function SearchResults({ autocomplete, query, results }) {
-  if (results.length === 0) {
+function SearchResults({ autocomplete, query, collection }) {
+  if (collection.items.length === 0) {
     return (
       <div className="p-6 text-center">
         <NoResultsIcon className="mx-auto h-5 w-5 stroke-carbon-900 dark:stroke-carbon-600" />
@@ -308,12 +309,13 @@ function SearchResults({ autocomplete, query, results }) {
 
   return (
     <ul role="list" {...autocomplete.getListProps()}>
-      {results.map((result, resultIndex) => (
+      {collection.items.map((result, resultIndex) => (
         <SearchResult
           key={result.objectID}
           result={result}
           resultIndex={resultIndex}
           autocomplete={autocomplete}
+          collection={collection}
         />
       ))}
     </ul>
@@ -426,8 +428,8 @@ function SearchDialog({
     setOpen(open);
   }
 
-  // Remove duplicate results at the top
-  const filteredResults = autocompleteState.collections?.[0]?.items.reduce(
+  // Remove duplicate result items at the top
+  const filteredResultItems = autocompleteState.collections?.[0]?.items.reduce(
     (results, item) => {
       // Find any existing results that for the same URL and Level heirarchy
       const existing = results.find(
@@ -500,7 +502,10 @@ function SearchDialog({
                         <SearchResults
                           autocomplete={autocomplete}
                           query={autocompleteState.query}
-                          results={filteredResults}
+                          collection={{
+                            ...autocompleteState.collections[0],
+                            items: filteredResultItems,
+                          }}
                         />
                       </>
                     )}
