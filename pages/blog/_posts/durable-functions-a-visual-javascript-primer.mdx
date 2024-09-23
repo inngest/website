@@ -1,5 +1,4 @@
 ---
-focus: true
 heading: "What are Durable Functions? A visual JavaScript primer"
 image: /assets/blog/durable-functions-a-visual-javascript-primer/featured-image.png
 showSubtitle: false
@@ -9,13 +8,13 @@ author: Lydia Hallie
 disableCTA: false
 ---
 
-Modern web applications often require **long-running tasks** that need to be **resilient to external errors and interruptions**. If such long-running tasks aren't handled propertly, any error could lead to data inconsistencies, financial losses, poor user experiences, and overall system failures. 
+Modern web applications often require **long-running tasks** that need to be **resilient to external errors and interruptions**. If such long-running tasks aren't handled propertly, any error could lead to data inconsistencies, financial losses, poor user experiences, and overall system failures.
 
-These are features like API integrations, AI-powered workflows, data exports, automated billing systems, user onboarding sequences, or even recurring notifications. 
+These are features like API integrations, AI-powered workflows, data exports, automated billing systems, user onboarding sequences, or even recurring notifications.
 
 Durable Functions offer a simpler, more streamlined solution for managing long-running tasks that need to withstand interruptions and failures. They provide a powerful framework for building resilient, stateful applications, removing the need for manual error and retry management.
 
-In this article, we'll explore what Durable Functions really are, the problems they solve, and how JavaScript developers can get started with Durable Functions through Inngest's Javascript SDK. 
+In this article, we'll explore what Durable Functions really are, the problems they solve, and how JavaScript developers can get started with Durable Functions through Inngest's Javascript SDK.
 
 ---
 
@@ -49,17 +48,17 @@ Additionally, if the server goes down or there's an unexpected delay, our Cron j
 
 Now, let's reimagine the same e-commerce platform using Durable Functions. But first, what *are* Durable Functions?
 
-The term "durable" in Durable Functions refers to the workflow's ability to maintain state and logic through **failures**, **retries**, and **pauses**. A Durable Function **guarantees a start-to-finish execution**; once it's started, it will eventually complete its execution regardless of any unexpected issues. 
+The term "durable" in Durable Functions refers to the workflow's ability to maintain state and logic through **failures**, **retries**, and **pauses**. A Durable Function **guarantees a start-to-finish execution**; once it's started, it will eventually complete its execution regardless of any unexpected issues.
 
 ![Durable Functions are designed with reliability at their core with automatic retries.](/assets/blog/durable-functions-a-visual-javascript-primer/Group_85_(1).png)
 
-This is what makes Durable Functions special because this wasn't the case with our traditional setup. 
+This is what makes Durable Functions special because this wasn't the case with our traditional setup.
 
 ---
 
-In a Durable Function, each task in the order processing workflow is broken down into modular, independent **steps**. For example, the order processing workflow could include steps for validating payment, checking inventory, scheduling shipment, and updating the customer. 
+In a Durable Function, each task in the order processing workflow is broken down into modular, independent **steps**. For example, the order processing workflow could include steps for validating payment, checking inventory, scheduling shipment, and updating the customer.
 
-Inngest's SDK allows you to create steps through the `step.run` function. 
+Inngest's SDK allows you to create steps through the `step.run` function.
 
 ```jsx
 const orderProcessingWorkflow = inngest.createFunction(
@@ -69,7 +68,7 @@ const orderProcessingWorkflow = inngest.createFunction(
     const paymentConfirmation = await step.run("process-payment", () =>
       processPayment(event.data.orderDetails)
     );
-    
+
     const inventoryStatus = await step.run("check-inventory", () =>
       checkInventory(event.data.orderDetails.items)
     );
@@ -77,7 +76,7 @@ const orderProcessingWorkflow = inngest.createFunction(
      const shipmentDetails = await step.run("schedule-shipment", () =>
       scheduleShipment(event.data.orderDetails)
     );
-    
+
     await step.run("send-notification", () =>
       sendNotification(
         event.data.customerId,
@@ -89,11 +88,11 @@ const orderProcessingWorkflow = inngest.createFunction(
 );
 ```
 
-Each step is capable of handling failures and can automatically retry based on predefined policies, ensuring that all parts of the order processing sequence are executed correctly. 
+Each step is capable of handling failures and can automatically retry based on predefined policies, ensuring that all parts of the order processing sequence are executed correctly.
 
 Durable Functions can also include **waits** that pause the process for necessary delays (e.g., waiting for a third-party shipment confirmation) without consuming resources. This can be more efficient than traditional CRON jobs, which are less time flexible and can over-consume resources by continuously polling for status updates.
 
-Inngest's SDKS allows you to create waits through several methods, one of which is the [`step.waitForEvent`](/docs/reference/functions/step-wait-for-event?ref=blog-what-are-durable-functions) function.  
+Inngest's SDKS allows you to create waits through several methods, one of which is the [`step.waitForEvent`](/docs/reference/functions/step-wait-for-event?ref=blog-what-are-durable-functions) function.
 
 ![The Durable Functions "wait for event" feature enables pausing executions while waiting for another event, for example: waiting for shipment information to be dispatched.](/assets/blog/durable-functions-a-visual-javascript-primer/Group_88.png)
 
@@ -115,7 +114,7 @@ const orderProcessingWorkflow = inngest.createFunction(
     await step.run("schedule-shipment", () =>
       scheduleShipment(event.data.orderDetails)
     );
-    
+
     await step.run("notify-customer", () =>
       sendNotification(event.data.customerId, "Order Received")
     );
@@ -177,8 +176,8 @@ Here's a run of our `orderProcessingWorkflow()`:
 
 <AutoplayVideo src={"https://res.cloudinary.com/dd6gwkgww/video/upload/q_auto/inngest2.1_nvcvor.mov"} />
 
-5. After running step #1, the SDK sends a request to the engine with the data from step #1, and a request to run step #2. 
-6. The Engine receives the response with the incremental state update, stores it, and picks up the run again. 
+5. After running step #1, the SDK sends a request to the engine with the data from step #1, and a request to run step #2.
+6. The Engine receives the response with the incremental state update, stores it, and picks up the run again.
 
 <AutoplayVideo src={"https://res.cloudinary.com/dd6gwkgww/video/upload/q_auto/inngest2.2_kbzh24.mov"} />
 
@@ -188,7 +187,7 @@ Here's a run of our `orderProcessingWorkflow()`:
 
 <AutoplayVideo src={"https://res.cloudinary.com/dd6gwkgww/video/upload/q_auto/inngest2.3_hxi1wh.mov"} />
 
-9. The SDK returns a response with step #2's state and return value, and information that lets the SDK know run step #3 next. 
+9. The SDK returns a response with step #2's state and return value, and information that lets the SDK know run step #3 next.
 
 <AutoplayVideo src={"https://res.cloudinary.com/dd6gwkgww/video/upload/q_auto/inngest2.4_yyv0vx.mov"} />
 
@@ -199,7 +198,7 @@ This process continues, with the Engine and SDK communicating back and forth, ex
 Throughout the workflow, any step that encounters an issue executes predefined error-handling routines. Let's see what happens behind the scenes if `"check-inventory"` were to throw an error:
 
 1. The SDK tries to execute `check-inventory` , but an exception is thrown (in real life, this could be caused by e.g. a server timeout). The SDK catches this, returns an `error` object in the response, and includes a default retry configuration if none is provided.
-2. The Engine receives the error response, stores the run state including error details, and schedules a retry based on the retry configuration (default is 4 retries). 
+2. The Engine receives the error response, stores the run state including error details, and schedules a retry based on the retry configuration (default is 4 retries).
 
 <AutoplayVideo src={"https://res.cloudinary.com/dd6gwkgww/video/upload/q_auto/inngest3.1_nlrcjz.mov"} />
 

@@ -1,0 +1,78 @@
+---
+heading: Announcing Inngest self-hosting
+subtitle: The easiest way to self-host durable execution.
+showSubtitle: true
+image: /assets/blog/self-hosting/featured-image.png
+date: 2024-09-23
+author: Dan Farrelly
+disableCTA: true
+---
+
+Today, alongside our 1.0 release of [the Inngest open source project](https://github.com/inngest/inngest), we're excited to announce the ability to self-host Inngest on your own infrastructure. We're excited about this milestone for a number of reasons. First, self-hosting support is one of the most highly requested features from our developer community. Second, it gives developers more flexibility with how they use Inngest. Lastly, it is the easiest way to self-host durable execution, period.
+
+## Self-hosting goals
+
+Our first self-hosting release today is aimed at the simplicity of deployment. Self-hosting Inngest can be done with a single command and run in a single service. We want developers to be able to stand up Inngest on a server in seconds.
+
+Often complex systems that offer self-hosting require heavyweight external dependencies like Kubernetes clusters or databases and lots of trial and error. Our first release's single-node setup is a great option for teams that want to test Inngest on their own infrastructure or in their own cloud.
+
+Let's take a look at how Inngest works, how self-hosting works today, and where we're taking it in the future.
+
+## Inngest system architecture
+
+To understand how self-hosting works, it's valuable to understand the architecture and system components at a high level. We'll take a look at a simplified architecture diagram and walk through the system.
+
+![Inngest system architecture diagram](/assets/docs/self-hosting/system-architecture-2024-09-23.png)
+
+* **Event API** - Receives events from SDKs via HTTP requests. Authenticates client requests via [Event Keys](/docs/events/creating-an-event-key?ref=docs-self-hosting). The Event API publishes event payloads to an internal event stream.
+* **Event stream** - Acts as buffer between the _Event API_ and the _Runner_.
+* **Runner** - Consumes incoming events and performs several actions:
+  * Scheduling of new “function runs” (aka jobs) given the event type, creating initial run state in the _State store_ database. Runs are added to queues given the function's flow control configuration.
+  * Resume functions paused via [`waitForEvent`](/docs/features/inngest-functions/steps-workflows/wait-for-event?ref=docs-self-hosting) with matching expressions.
+  * Cancels running functions with matching [`cancelOn`](/docs/features/inngest-functions/cancellation/cancel-on-events?ref=docs-self-hosting) expressions
+  * Writes ingested events to a database for historical record and future replay.
+* **Queue** - A multi-tenant aware, multi-tier queue designed for fairness and various [flow control](/docs/guides/flow-control?ref=docs-self-hosting) methods (concurrency, throttling, prioritization, debouncing, rate limiting) and [batching](/docs/guides/batching?ref=docs-self-hosting).
+* **Executor** - Responsible for executing functions, from initial execution, step execution, writing incremental function run state to the _State store_, and retries after failures.
+* **State store (database)** - Persists data for pending and ongoing function runs. Data includes initial triggering event(s), step output and step errors.
+* **Database** - Persists system data and history including Apps, Functions, Events, Function run results.
+* **API** - GraphQL and REST APIs for programmatic access and management of system resources.
+* **Dashboard UI** - The UI to manage apps, functions and view function run history.
+
+All of these services are implemented in our open source repo. The same code powers our Dev Server and also our managed cloud platform. The Inngest platform independently operates and scales each service for the highest level of performance, throughput, and resiliency.
+
+The Inngest system [communicates with your application to execute code](https://www.inngest.com/blog/durable-functions-a-visual-javascript-primer) through an HTTP transport driver. In the future, we'll support other transports such as WebSockets or HTTP/2 streams for persistent connections.
+
+## How self-hosting works
+
+To achieve our goal of a simple system to deploy, the default configuration does the following:
+
+* The `inngest start` command runs all system services in a single process with zero dependencies. Upcoming releases will enable you to select the service which you choose to run for high-availability (see roadmap section below).
+* The `inngest` binary is bundled with an in-memory Redis implementation which powers the queue and state store. Optionally, and recommended, you can run your own external Redis server with persistence and failover.
+* For persistence, the `inngest` binary is bundled with [SQLite](https://www.sqlite.org/). All system state is written to disk using SQLite and queue and state store data snapshots are periodically written to disk including prior to shutdown.
+  * Experimental support for Postgres is coming soon which enables you to swap out SQLite for persistence. If you're already building with Postgres, this will make it even easier for you.
+
+For this initial self-hosting release, we chose SQLite, as it's straightforward to bundle within the Inngest Go binary to easily provide cross-platform support. This creates a zero dependency starting point for anyone wanting to get Inngest up and running quickly.
+
+## How to get started
+
+Check out our [self-hosting docs](https://www.inngest.com/docs/self-hosting) for more information and considerations when comparing to the Inngest platform. Head over to [our GitHub repo](https://github.com/inngest/inngest) to dig into the source code and additional resources.
+
+## Roadmap
+
+As mentioned above, there are some upcoming features that will be added or improved upon to make self-hosting more flexible and extensive.
+
+* Postgres database persistence support \- Similar to external Redis support, you will be able to use your own Postgres database for persistence instead of the default bundled SQLite implementation.
+* Event key and signing key management \- [Event keys](https://www.inngest.com/docs/events/creating-an-event-key) and [signing keys](https://www.inngest.com/docs/platform/signing-keys) are used to authenticate client applications that use Inngest SDKs or send events via HTTP. Future releases will add management via the bundled dashboard UI and APIs.
+* Multi-node Inngest server support \- At initial release, the `inngest start` command runs all services in a single process. In a future release, the command will support starting one or more services (API, Executor, etc.) instead of all services in a single process.
+
+What do you want to see? Submit your ideas via our [public roadmap](https://roadmap.inngest.com/roadmap).
+
+## Updated licensing
+
+With today's 1.0 release we are inspired by the [fair source license initiative](https://fair.io/) and have updated [the Inngest project license](https://github.com/inngest/inngest/blob/main/LICENSE.md). Prior to today, the source code was licensed under SSPL, but today, we have updated our license to automatically license all code under Apache 2.0 after a 3 year period.
+
+We believe that this will enable our company to share our source code while also maintaining direction and control of the Inngest project. As a business whose goal is to empower and solve hard problems for developers, it's our goal that we can sustainably develop Inngest while providing best in class solutions for all software developers.
+
+## More flexibility for developers
+
+The Inngest managed platform remains the easiest way to get started with a generous free tier, but today, developers now have more choice with how they want to run Inngest. We believe that being able to self-host Inngest will give developers more flexibility and control from staging, to CI/CD, to air-gapped environments. We're excited about this new phase expanding options for our developer community.
