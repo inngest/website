@@ -1,17 +1,185 @@
-export const description = 'This reference guide explains how to self-host Inngest'
+import { Callout, CodeGroup } from "src/shared/Docs/mdx";
+
+export const description = 'Learn how to self-host Inngest. Includes configuration options and instructions for using external services.'
 
 # Self-hosting
 
-Self-hosting Inngest is not currently supported.
+Self-hosting support for Inngest is supported as of the 1.0 release.
 
-It's our goal to provide a best-in-class developer experience which means a focus on
-rapid development of our cloud platform.
+* [Why self-host Inngest?](#why-self-host-inngest)
+* [Inngest system architecture](#inngest-system-architecture)
+* [How to self-host Inngest](#how-to-self-host-inngest)
 
-Our [free tier](/pricing) enables teams to test the platform at no cost and options like
-[encryption middleware](/docs/features/middleware/encryption-middleware) enable most teams
-to work around the most stringent of data requirements.
+## Why self-host Inngest?
 
-If your needs still demand self-hosting, please share more context on the "Self hosting" project
-that we're tracking on our [roadmap][roadmap].
+While the easiest way to get started with Inngest is using our hosted platform, including our generous [free tier](/pricing?ref=docs-self-hosting), we understand that developers may want to self-host for a variety of reasons. If security or data privacy are concerns, review our [security documentation](/docs/learn/security?ref=docs-self-hosting) for more information including details about [end-to-end encryption](/docs/features/middleware/encryption-middleware?ref=docs-self-hosting).
 
-[roadmap]: https://inngest.productlane.com/roadmap?id=672bc121-f25b-4e64-bec5-7a58fd48ec36
+## Inngest system architecture
+
+To best understand how to self-host Inngest, it's important to understand the system architecture and components.
+
+![Inngest system architecture diagram](/assets/docs/self-hosting/system-architecture-2024-09-23.png)
+
+The system is composed of the following services:
+
+* **Event API** - Receives events from SDKs via HTTP requests. Authenticates client requests via [Event Keys](/docs/events/creating-an-event-key?ref=docs-self-hosting). The Event API publishes event payloads to an internal event stream.
+* **Event stream** - Acts as buffer between the _Event API_ and the _Runner_.
+* **Runner** - Consumes incoming events and performs several actions:
+  * Scheduling of new “function runs” (aka jobs) given the event type, creating initial run state in the _State store_ database. Runs are added to queues given the function's flow control configuration.
+  * Resume functions paused via [`waitForEvent`](/docs/features/inngest-functions/steps-workflows/wait-for-event?ref=docs-self-hosting) with matching expressions.
+  * Cancels running functions with matching [`cancelOn`](/docs/features/inngest-functions/cancellation/cancel-on-events?ref=docs-self-hosting) expressions
+  * Writes ingested events to a database for historical record and future replay.
+* **Queue** - A multi-tenant aware, multi-tier queue designed for fairness and various [flow control](/docs/guides/flow-control?ref=docs-self-hosting) methods (concurrency, throttling, prioritization, debouncing, rate limiting) and [batching](/docs/guides/batching?ref=docs-self-hosting).
+* **Executor** - Responsible for executing functions, from initial execution, step execution, writing incremental function run state to the _State store_, and retries after failures.
+* **State store (database)** - Persists data for pending and ongoing function runs. Data includes initial triggering event(s), step output and step errors.
+* **Database** - Persists system data and history including Apps, Functions, Events, Function run results.
+* **API** - GraphQL and REST APIs for programmatic access and management of system resources.
+* **Dashboard UI** - The UI to manage apps, functions and view function run history.
+
+The source code for Inngest and all services is [available on GitHub](https://github.com/inngest/inngest).
+
+## How to self-host Inngest
+
+To begin self-hosting Inngest, you only need to install the Inngest CLI. The Inngest CLI is a single binary which includes all Inngest services and can be run in any environment. Alternatively, you download the binary directly from [GitHub releases](https://github.com/inngest/inngest/releases).
+
+<CodeGroup>
+```plaintext {{ title: "npm" }}
+npm install -g inngest-cli
+```
+```plaintext {{ title: "Docker" }}
+docker pull inngest/inngest
+```
+```plaintext {{ title: "curl" }}
+curl -sfL https://cli.inngest.com/install.sh
+```
+</CodeGroup>
+
+Now that you have the CLI installed, you can start the Inngest server using the `inngest start` command.
+
+<CodeGroup>
+```plaintext {{ title: "shell" }}
+inngest start
+```
+```plaintext {{ title: "Docker" }}
+docker run -p 8288:8288 inngest/inngest inngest start
+```
+</CodeGroup>
+
+This will start the Inngest server on the default port `8288` and use the default configuration, including SQLite for persistence.
+
+### Configuration
+
+Configuring the server can be done via command line flags, environment variables, or a configuration file.
+
+By default, the server will:
+
+* Run on `localhost:8288`, including the Event API, API, and Dashboard UI.
+* Use an in-memory Redis server for the queue and state store. (See [Using external services](#using-external-services) for more information)
+* Use SQLite for persistence. The default database is located at `./.inngest/main.db`. Queue and state store snapshots are periodically saved to the SQLite database, including prior to shutdown.
+* Disable app sync polling to check for new functions or updated configurations (see `--poll-interval` flag).
+
+To see all the available options, run `inngest start --help`:
+
+```plaintext
+$ inngest start --help
+[Beta] Run Inngest as a single-node service.
+
+Usage:
+  inngest start [flags]
+
+Examples:
+inngest start
+
+Flags:
+      --config string        Path to an Inngest configuration file
+  -h, --help                 Output this help information
+      --host string          Server hostname
+      --poll-interval int    Enable app sync polling at a specific interval in seconds. (default disabled)
+  -p, --port string          Server port (default "8288")
+      --retry-interval int   Retry interval in seconds for linear backoff. Minimum: 1.
+  -u, --sdk-url strings      SDK URLs to load functions from
+      --tick int             Interval, in milliseconds, of which to check for new work. (default 150)
+
+Persistence Flags:
+      --redis-uri string    Redis server URI for external queue and run state. Defaults to self-contained, in-memory Redis server with periodic snapshot backups.
+      --sqlite-dir string   Directory for where to write SQLite database.
+
+Group Flags:
+      --json               Output logs as JSON.  Set to true if stdout is not a TTY.
+  -l, --log-level string   Set the log level.  One of: trace, debug, info, warn, error. (default "info")
+  -v, --verbose            Enable verbose logging.
+```
+
+<details>
+<summary>**Environment variables**</summary>
+
+  Any CLI option can be set via environment variable by converting the flag to uppercase, replacing hyphens with underscores, and prefixing it with `INNGEST_`. For example, `--port 8288` can be set with the `INNGEST_PORT` environment variable.
+</details>
+
+<details>
+<summary>**Configuration file** (`inngest.yaml`, `inngest.json`, etc.)</summary>
+
+  A configuration file can be specified with the `--config` flag. The file can be in YAML, JSON, TOML, or any other format supported by [Viper](https://github.com/spf13/viper). `urls` is used instead of `sdk-url` to specify your application's Inngest serve endpoints. An example configuration file is shown below:
+
+  <CodeGroup>
+    ```yaml {{ title: "inngest.yaml" }}
+    urls:
+      - http://localhost:3000/api/inngest
+    poll-interval: 60
+    redis-uri: redis://localhost:6379
+    sqlite-dir: /app/data
+    ```
+    ```json {{ title: "inngest.json" }}
+    {
+      "urls": [
+        "http://localhost:3000/api/inngest"
+      ],
+      "poll-interval": 60,
+      "redis-uri": "redis://localhost:6379",
+      "sqlite-dir": "/app/data"
+    }
+    ```
+  </CodeGroup>
+</details>
+
+### Configuring Inngest SDKs to use self-hosted server
+
+By default, the Inngest SDK will use URLs of the managed Inngest platform. To connect to a self-hosted server, set the [`INNGEST_DEV`](/docs/sdk/environment-variables#inngest-dev) and [`INNGEST_BASE_URL`](/docs/sdk/environment-variables#inngest-base-url) environment variables.
+
+For example, to connect to a self-hosted server running on `localhost:8288` for a Node.js app, set the following environment variables:
+
+```bash
+INNGEST_DEV=0 INNGEST_BASE_URL=http://localhost:8288 node ./server.js
+```
+
+### Using external services
+
+Inngest can be configured to use external services for the queue and state store, and soon, the database
+
+**External Redis server**
+
+With goal of simplifying the initial setup, the Inngest server will run an in-memory Redis server for the queue and state store. As this is running within the same process as the Inngest server, running your own Redis server can improve performance and reliability of the system. You may choose to run your own Redis server or use a cloud-based Redis service like AWS ElastiCache, Redis Cloud, etc.
+
+To use an external Redis server, set the `redis-uri` flag to the Redis server URI.
+
+**External Postgres database (experimental)**
+
+By default, the Inngest server uses SQLite for persistence. This is convenient for zero-dependency deployments, but does not support scaling beyond a single node. You may choose to run your own Postgres databae or use a cloud-based Postgres service like AWS RDS, Supabase, Neon, etc.
+
+<Callout variant="warning">
+  Postgres support is experimental, use at your own risk.
+</Callout>
+
+To use an external Postgres database, set the `postgres-uri` flag to your Postgres connection string URI.
+
+## Roadmap & feature requests
+
+Planned features for self-hosting include:
+
+* Postgres external database support
+* Event key and signing key management via API and UI
+* Multi-node Inngest server support. Run standalone services (API, Executor, etc.) instead of all services in a single process.
+
+To suggest additional features, please submit feedback on our [public roadmap](https://roadmap.inngest.com/roadmap).
+
+Check out [the source code on GitHub](https://github.com/inngest/inngest) to file issues or submit pull requests.
