@@ -1,8 +1,9 @@
 import { type Metadata } from "next";
+import { RiRocket2Line } from "@remixicon/react";
 
 import NewsletterSignup from "src/components/NewsletterSignup";
 import { generateMetadata } from "src/utils/social";
-import { RiArrowRightCircleLine } from "@remixicon/react";
+import Community from "./Community";
 
 export const metadata: Metadata = generateMetadata({
   title: "Launch Week II - September 23-27, 2024",
@@ -21,7 +22,7 @@ export default function Page() {
           display: none;
         }
       `}</style>
-      <div className="max-w-[1520px] mx-auto px-8 bg-[url(/assets/launch-week/2/hero-background-animated.svg)] bg-cover">
+      <div className="max-w-[1520px] mx-auto px-8 bg-[url(/assets/launch-week/2/hero-background-animated.svg)] bg-contain bg-no-repeat bg-top">
         <header className="max-w-6xl mx-auto py-24 md:py-52 text-basis">
           <div className="lg:ml-2.5 flex items-center gap-2 uppercase text-lg md:text-2xl text-[rgb(var(--color-primary-xIntense))] font-medium">
             <span>Sept 23</span>
@@ -45,7 +46,6 @@ export default function Page() {
             <NewsletterSignup tags={["launch-week-sept-2024"]} />
           </div> */}
         </header>
-
         <div className="max-w-6xl mx-auto mb-24 flex flex-col gap-16">
           <Day day={1} title="Self-hosting" date="Monday, September 23rd">
             <Card
@@ -65,6 +65,70 @@ export default function Page() {
               </p>
             </Card>
           </Day>
+
+          {/* Upcoming days */}
+          <div className="relative">
+            {/* Upcoming day */}
+            <div className="p-px rounded-lg bg-gradient-to-bl from-[#686868] via-[#545454] to-[#292929] relative z-50">
+              <div
+                className="p-6 py-12 md:py-28 flex items-center justify-center gap-4 rounded-lg"
+                style={{
+                  background: `url(/assets/launch-week/2/coming-soon-bg.svg), linear-gradient(211deg, rgba(176, 176, 176, 0.50) -57.05%, rgba(0, 0, 0, 0.40) 45.09%), #1A1A1A;`,
+                  backgroundSize: `contain, 100% 100%, 100% 100%`,
+                  backgroundRepeat: `no-repeat, no-repeat, no-repeat`,
+                  backgroundPosition: `right, center, center`,
+                }}
+              >
+                <div className="flex flex-col items-center gap-4 text-center">
+                  <RiRocket2Line className="text-basis h-10 w-10 rotate-45" />
+                  <h2 className="text-4xl text-basis font-book">
+                    Coming up next...
+                  </h2>
+                  <p className="text-subtle text-sm">Tuesday, September 24th</p>
+                  <div className="mt-8">
+                    <NewsletterSignup
+                      showHeader={false}
+                      tags={["launch-week-sept-2024"]}
+                      buttonText="Notify me"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+            {[
+              "Wednesday, September 23rd",
+              "Thursday, September 24th",
+              "Friday, September 25th",
+            ].map((day, idx) => (
+              <div
+                key={idx}
+                className="relative p-px rounded-lg bg-gradient-to-bl from-[#686868] via-[#545454] to-[#292929]"
+                style={{
+                  top: `${-2 * (idx + 1)}rem`,
+                  margin: `0 ${(idx + 1) * 30}px`,
+                  zIndex: 40 - idx * 10,
+                }}
+              >
+                <div
+                  className="bg-[#1A1A1A] rounded-lg pt-10 pb-2 text-center text-muted"
+                  style={{
+                    // background: `linear-gradient(211deg, rgba(176, 176, 176, 0.50) -57.05%, rgba(0, 0, 0, 0.40) 45.09%), #1A1A1A;`,
+                    backgroundSize: `contain, 100% 100%, 100% 100%`,
+                    backgroundRepeat: `no-repeat, no-repeat, no-repeat`,
+                    backgroundPosition: `right, center, center`,
+                  }}
+                >
+                  <span style={{ fontSize: `${1 - 0.05 * (idx + 1)}em` }}>
+                    {day}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="max-w-6xl mx-auto mb-48">
+          <Community />
         </div>
       </div>
     </>
@@ -84,14 +148,14 @@ function Day({
 }) {
   return (
     <div className="text-basis">
-      <div className="flex flex-row justify-between items-end gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
         <div>
           <p className="text-primary-intense font-medium">Day #{day}</p>
           <h2 className="text-4xl font-book">{title}</h2>
         </div>
         <p className="text-muted">{date}</p>
       </div>
-      <div className="mt-8 h-[496px] flex">{children}</div>
+      <div className="mt-8 lg:min-h-[496px] flex">{children}</div>
     </div>
   );
 }
@@ -109,28 +173,34 @@ function Card({
 }) {
   return (
     <a href={href} className="group flex flex-grow">
-      <div
-        className="flex flex-row gap-6 items-start bg-[#0D0D0D] border border-[#545454] rounded-lg p-6 bg-[url(/assets/launch-week/2/monday-bg.png)] bg-contain bg-no-repeat bg-right flex-grow"
-        style={{
-          background: `url(/assets/launch-week/2/monday-bg.svg), linear-gradient(211deg, rgba(176, 176, 176, 0.50) -57.05%, rgba(0, 0, 0, 0.40) 45.09%), var(--Background-Subtle, #1A1A1A);`,
-          backgroundSize: `contain, 100% 100%, 100% 100%`,
-          backgroundRepeat: `no-repeat, no-repeat, no-repeat`,
-          backgroundPosition: `right, center, center`,
-        }}
-      >
-        <div className="max-w-80 xl:w-80 flex flex-col gap-4">
-          <h3 className="flex items-center gap-2 text-basis text-xl">
-            {title}
-            <ArrowIcon />
-          </h3>
-          <div className="flex flex-col gap-6 text-subtle transition-all group-hover:text-basis text-sm">
-            {children}
+      <div className="flex p-px rounded-lg bg-gradient-to-bl from-[#686868] via-[#545454] to-[#292929]">
+        <div
+          className="flex flex-col md:flex-row gap-6 items-center md:items-start rounded-lg p-6 flex-grow"
+          style={{
+            background: `url(/assets/launch-week/2/monday-bg.svg), linear-gradient(211deg, rgba(176, 176, 176, 0.50) -57.05%, rgba(0, 0, 0, 0.40) 45.09%), #1A1A1A;`,
+            backgroundSize: `contain, 100% 100%, 100% 100%`,
+            backgroundRepeat: `no-repeat, no-repeat, no-repeat`,
+            backgroundPosition: `right, center, center`,
+          }}
+        >
+          <div className="md:max-w-80 xl:w-80 flex flex-col gap-4">
+            <h3 className="flex items-center gap-2 text-basis text-xl">
+              {title}
+              <ArrowIcon />
+            </h3>
+            <div className="flex flex-col gap-6 text-subtle transition-all group-hover:text-basis text-sm">
+              {children}
+            </div>
+            <p className="text-primary-intense text-sm group-hover:underline">
+              Read the announcement
+            </p>
           </div>
-          <p className="text-primary-intense text-sm group-hover:underline">
-            Read the announcement
-          </p>
+          <img
+            src={image}
+            alt={title}
+            className="my-auto sm:max-w-[80%] md:max-w-[50%] lg:max-w-[68%]"
+          />
         </div>
-        <img src={image} alt={title} className="h-full" />
       </div>
     </a>
   );
