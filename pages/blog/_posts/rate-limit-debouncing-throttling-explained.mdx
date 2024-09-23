@@ -1,5 +1,4 @@
 ---
-focus: true
 heading: "Understanding the Differences Between Rate Limiting, Debouncing, and Throttling"
 image: /assets/blog/rate-limit-debouncing-throttling-explained/featured-image.png
 showSubtitle: true
@@ -58,7 +57,7 @@ Public APIs like [the Shopify API](https://shopify.dev/docs/api/usage/rate-limit
 
 ### When should I use Rate Limiting?
 
-[Rate Limiting](https://www.inngest.com/docs/guides/rate-limiting) is a good fit to protect the Inngest Functions that routinely perform costly operations. Good examples are Functions that won't be a good fit for a [CRON](https://www.inngest.com/docs/guides/scheduled-functions), as they only need to run when something is happening (not at each occurrence) and are costly to run (for example, AI summaries, aggregations, synchronizing data, or scraping). 
+[Rate Limiting](https://www.inngest.com/docs/guides/rate-limiting) is a good fit to protect the Inngest Functions that routinely perform costly operations. Good examples are Functions that won't be a good fit for a [CRON](https://www.inngest.com/docs/guides/scheduled-functions), as they only need to run when something is happening (not at each occurrence) and are costly to run (for example, AI summaries, aggregations, synchronizing data, or scraping).
 
 ## Debouncing
 
@@ -123,7 +122,7 @@ Congrats, you are now an expert in Rate limiting, Debouncing, and Throttling!
 The following is a good rule of thumb to keep in mind:
 
 > **Throttling** helps deal with **external API limitations** while **Debouncing and Rate limiting** prevents abuse from **bad actors** or scheduling **resource intensive work**.
-> 
+>
 
 Please find below a takeaway cheatsheet that will help you evaluate the best way to optimize your Inngest Functions:
 
