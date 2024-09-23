@@ -46,7 +46,7 @@ export default function Page() {
             <NewsletterSignup tags={["launch-week-sept-2024"]} />
           </div> */}
         </header>
-        <div className="max-w-6xl mx-auto mb-24 flex flex-col gap-16">
+        <div className="max-w-6xl mx-auto mb-6 md:mb-24 flex flex-col gap-16">
           <Day day={1} title="Self-hosting" date="Monday, September 23rd">
             <Card
               title="Announcing self-hosting"
@@ -105,7 +105,7 @@ export default function Page() {
                 className="relative p-px rounded-lg bg-gradient-to-bl from-[#686868] via-[#545454] to-[#292929]"
                 style={{
                   top: `${-2 * (idx + 1)}rem`,
-                  margin: `0 ${(idx + 1) * 30}px`,
+                  margin: `0 ${(idx + 1) * 2.5}%`,
                   zIndex: 40 - idx * 10,
                 }}
               >
@@ -127,7 +127,7 @@ export default function Page() {
           </div>
         </div>
 
-        <div className="max-w-6xl mx-auto mb-48">
+        <div className="max-w-6xl mx-auto mb-24 md:mb-48">
           <Community />
         </div>
       </div>

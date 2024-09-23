@@ -2,6 +2,7 @@ import {
   RiDiscordFill,
   RiGithubFill,
   RiArrowRightUpLine,
+  RiToolsFill,
 } from "@remixicon/react";
 
 const betaTesterLink =
@@ -66,7 +67,7 @@ export default function Community() {
             href={betaTesterLink}
             className="w-full bg-[#027A48] rounded flex items-center justify-center text-white h-[140px] lg:h-[200px]  hover:opacity-80 transition-all duration-150"
           >
-            <RiGithubFill size="4em" />
+            <RiToolsFill size="4em" />
           </a>
         }
       >
