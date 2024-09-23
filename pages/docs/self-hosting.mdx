@@ -162,6 +162,11 @@ With goal of simplifying the initial setup, the Inngest server will run an in-me
 
 To use an external Redis server, set the `redis-uri` flag to the Redis server URI.
 
+**External Postgres database (Coming soon)**
+
+In an pending release, Inngest will support using an external Postgres database for persistence. This is useful for those who want to use a more scalable and durable database than SQLite.
+
+{/*
 **External Postgres database (experimental)**
 
 By default, the Inngest server uses SQLite for persistence. This is convenient for zero-dependency deployments, but does not support scaling beyond a single node. You may choose to run your own Postgres databae or use a cloud-based Postgres service like AWS RDS, Supabase, Neon, etc.
@@ -171,6 +176,7 @@ By default, the Inngest server uses SQLite for persistence. This is convenient f
 </Callout>
 
 To use an external Postgres database, set the `postgres-uri` flag to your Postgres connection string URI.
+*/}
 
 ## Roadmap & feature requests
 
