@@ -42,7 +42,7 @@ export function Button({
       bg-slate-300/80 hover:bg-slate-300/100 text-slate-900 hover:text-slate-900,
       dark:bg-slate-600/80 dark:hover:bg-slate-500/100 dark:text-white dark:hover:text-white
     `,
-    secondaryV2: `no-underline hover:text-matcha-600 dark:hover:text-matcha-500 text-matcha-600 dark:text-matcha-500 rounded dark:hover:bg-[#2E2E2E] hover:bg-carbon-50`,
+    secondaryV2: `no-underline hover:text-matcha-600 dark:hover:text-matcha-500 text-matcha-600 dark:text-matcha-500 dark:hover:bg-[#2E2E2E] hover:bg-carbon-50`,
     tertiary:
       "bg-slate-100 hover:bg-slate-300 text-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-100",
     outline: `text-carbon-50 border border-carbon-50 text-carbon-1000 hover:bg-carbon-50/10`,

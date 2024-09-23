@@ -2,7 +2,15 @@
 
 import { useRef, useState } from "react";
 
-export default function NewsletterSignup({ tags = [] }: { tags: string[] }) {
+export default function NewsletterSignup({
+  showHeader = true,
+  buttonText = "Submit",
+  tags = [],
+}: {
+  showHeader?: boolean;
+  buttonText?: string;
+  tags: string[];
+}) {
   const inputRef = useRef(null);
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState<{
@@ -41,11 +49,11 @@ export default function NewsletterSignup({ tags = [] }: { tags: string[] }) {
 
   return (
     <form onSubmit={subscribeUser}>
-      <p className="mb-2 text-basis text-lg">Get notified:</p>
+      {showHeader && <p className="mb-2 text-basis text-lg">Get Notified</p>}
 
       <div className="flex flex-col sm:flex-row flex-wrap gap-4">
         <input
-          className={`sm:max-w-80 flex-grow border border-muted rounded-md px-4 py-2 text-white bg-transparent
+          className={`sm:max-w-80 md:min-w-72 flex-grow border border-muted rounded-md px-4 py-2 text-white bg-transparent
             focus:outline-none focus:ring-1 focus:ring-[rgb(var(--color-border-success))] focus:border-transparent
             placeholder:text-muted
           `}
@@ -70,7 +78,7 @@ export default function NewsletterSignup({ tags = [] }: { tags: string[] }) {
                 text-sm font-medium
             ${loading ? "opacity-40 cursor-not-allowed" : ""}`}
           >
-            Submit
+            {buttonText}
           </button>
         )}
         <div></div>
