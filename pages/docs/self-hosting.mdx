@@ -78,6 +78,15 @@ By default, the server will:
 * Use SQLite for persistence. The default database is located at `./.inngest/main.db`. Queue and state store snapshots are periodically saved to the SQLite database, including prior to shutdown.
 * Disable app sync polling to check for new functions or updated configurations (see `--poll-interval` flag).
 
+To securely configure your server, create your event and signing keys using whatever format that you choose and start the Inngest server using them. You can also pass them via environment variable (see below):
+
+```plaintext
+inngest start --event-key <YOUR_EVENT_KEY> --signing-key <YOUR_SIGNING_KEY>
+```
+
+Then you can use these same keys as environment variables when starting your application (`INNGEST_EVENT_KEY` and `INNGEST_SIGNING_KEY`). [See below](#configuring-inngest-sdks-to-use-self-hosted-server) for an example Node.js startup command.
+
+
 To see all the available options, run `inngest start --help`:
 
 ```plaintext
@@ -92,12 +101,14 @@ inngest start
 
 Flags:
       --config string        Path to an Inngest configuration file
+      --event-key string     Event key(s) that will be used by apps to send events to the server.
   -h, --help                 Output this help information
       --host string          Server hostname
       --poll-interval int    Enable app sync polling at a specific interval in seconds. (default disabled)
   -p, --port string          Server port (default "8288")
       --retry-interval int   Retry interval in seconds for linear backoff. Minimum: 1.
   -u, --sdk-url strings      SDK URLs to load functions from
+      --signing-key string   Signing key used to sign and validate data between the server and apps.
       --tick int             Interval, in milliseconds, of which to check for new work. (default 150)
 
 Persistence Flags:
@@ -144,12 +155,16 @@ Group Flags:
 
 ### Configuring Inngest SDKs to use self-hosted server
 
-By default, the Inngest SDK will use URLs of the managed Inngest platform. To connect to a self-hosted server, set the [`INNGEST_DEV`](/docs/sdk/environment-variables#inngest-dev) and [`INNGEST_BASE_URL`](/docs/sdk/environment-variables#inngest-base-url) environment variables.
+By default, the Inngest SDK will use URLs of the managed Inngest platform. To connect to a self-hosted server, set the [`INNGEST_DEV`](/docs/sdk/environment-variables#inngest-dev) and [`INNGEST_BASE_URL`](/docs/sdk/environment-variables#inngest-base-url) environment variables. As mentioned above, you'll also need to set the `INNGEST_EVENT_KEY` and `INNGEST_SIGNING_KEY` environment variables for securely connecting your application to the Inngest server.
 
 For example, to connect to a self-hosted server running on `localhost:8288` for a Node.js app, set the following environment variables:
 
-```bash
-INNGEST_DEV=0 INNGEST_BASE_URL=http://localhost:8288 node ./server.js
+```plaintext
+INNGEST_EVENT_KEY=<YOUR_EVENT_KEY> \
+  INNGEST_SIGNING_KEY=<YOUR_SIGNING_KEY> \
+  INNGEST_DEV=0 \
+  INNGEST_BASE_URL=http://localhost:8288 \
+  node ./server.js
 ```
 
 ### Using external services
