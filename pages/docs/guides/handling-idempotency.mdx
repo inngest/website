@@ -60,6 +60,13 @@ Some other key points to note:
   **Tip** - If you are using Inngest's [webhook transforms](/docs/platform/webhooks#defining-a-transform-function), you can set the `id` in the transform to ensure that the event is idempotent.
 </Callout>
 
+<Callout variant="warning">
+  Event idempotency is ignored by some features:
+  - Debouncing
+  - Event batching
+  - Function pausing. While a function is paused, event idempotency is ignored. So if a replay is created after unpausing, it may have "skipped" runs that ignored event idempotency.
+</Callout>
+
 {/*### Uniqueness of event IDs
 
 TODO - Highlight the importance of the uniqueness of the event ID across events that may have different names*/}
