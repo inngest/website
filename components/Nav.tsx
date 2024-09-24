@@ -32,6 +32,7 @@ const menu: {
   {
     title: "Docs",
     links: resourcesLinks,
+    url: "/docs",
   },
   {
     title: "Case Studies",
@@ -62,7 +63,7 @@ const iconLinks: {
   },
   {
     title: "X",
-    url: "https://twitter.com/inngest",
+    url: "https://x.com/inngest",
     icon: RiTwitterXFill,
   },
 ];
@@ -121,11 +122,20 @@ export default function Nav() {
                   links ? (
                     <li
                       key={idx}
-                      className="relative flex items-center w-full md:w-auto group text-basis/90 font-medium md:px-5 md:py-8 text-sm"
+                      className="relative flex items-center w-full md:w-auto group text-basis/90 font-medium md:py-6 text-sm"
                     >
-                      <span className="hidden md:block group-hover:md:text-primary-intense transition-color cursor-pointer text-nowrap">
-                        {title}
-                      </span>
+                      {url ? (
+                        <a
+                          href={`${url}?ref=nav`}
+                          className={`flex items-center text-basis/90 font-medium px-7 md:px-5 py-2 text-sm hover:text-primary-intense text-nowrap ${className}`}
+                        >
+                          {title}
+                        </a>
+                      ) : (
+                        <div className="hidden md:block px-7 md:px-5 py-2 group-hover:md:text-primary-intense transition-color cursor-pointer text-nowrap">
+                          {title}
+                        </div>
+                      )}
                       <Menu {...links} />
                     </li>
                   ) : (
