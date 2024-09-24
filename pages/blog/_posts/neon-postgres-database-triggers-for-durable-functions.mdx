@@ -10,7 +10,7 @@ disableCTA: true
 
 We're excited to announce our integration with [Neon](https://neon.tech/), enabling you to trigger durable functions directly from changes in your Neon Postgres database.
 
-Neon is an open-source serverless Postgres platform that separates storage from compute, offering autoscaling and code-like database branching. Neon recently released support for [logical replication](https://neon.tech/docs/guides/logical-replication-guide) which enables listening for database changes.
+Neon is an open-source serverless Postgres platform that separates storage from compute, offering autoscaling and code-like database branching. Neon recently [GA'd their support for logical replication](https://neon.tech/docs/changelog/2024-08-23) which enables listening for database changes.
 
 This new and powerful integration unlocks a wide range of use cases by decoupling triggers from your application logic, making it easier to build durable workflows.
 
@@ -67,8 +67,6 @@ inngest.createFunction(
 
 The end result is a simple way to trigger durable functions reacting to database changes with Inngest. You can write functions that run in response to rows being inserted, updated, or deleted from any table in your database. Functions execute in your own codebase, on your own servers, using any Inngest language SDK (TypeScript, Python, Go, or Kotlin/Java).
 
-{/* TODO PLACEHOLDER - Potentially link to dbcap OSS repo */}
-
 ### A powerful new trigger for functions
 
 Leveraging events directly from your database to trigger functions provides clear benefits out of the box.
@@ -96,6 +94,8 @@ Today, in your Inngest dashboard, you can find Neon in [the Integrations tab](ht
 A prerequisite for setup is enabling [logical replication](https://neon.tech/docs/guides/logical-replication-guide) on your Neon database, which is necessary for Inngest to stream changes from your database.
 
 In the setup flow, Inngest will set up the users, roles and configure your database correctly. Each command that Inngest executes is visible for complete transparency. If you prefer a more hands-on approach with database administration, you can choose the manual setup, where you execute each command yourself. Throughout the process, you'll receive additional context and links to resources explaining what each command does.
+
+Check out our [Neon integration docs](/docs/features/events-triggers/neon?ref=blog-neon-integration) to learn more.
 
 {/* ### TODO PLACEHOLDER - Link to docs */}
 
