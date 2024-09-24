@@ -96,6 +96,18 @@ html.docs {
   font-family: CircularXX, -apple-system, Helvetica, sans-serif;
 }
 
+html.docs li code, html.docs p code {
+  background: rgba(0,0,0,0.1);
+  padding: 0.1em 0.3em 0.15em;
+  border-radius: 3px;
+}
+
+html.docs.dark li code, html.docs.dark p code {
+  background: rgba(255,255,255,0.2);
+  padding: 0.1em 0.3em 0.15em;
+  border-radius: 3px;
+}
+
 * {
   transition: box-shadow .3s;
 }

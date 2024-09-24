@@ -1,9 +1,9 @@
-import { Callout, CodeGroup, Card, CardGroup, Properties, Property } from "src/shared/Docs/mdx";
+import { Callout, CodeGroup, Card, CardGroup, Properties, Property, ImageTheme } from "src/shared/Docs/mdx";
 
 
 # Creating Workflow Actions
 
-The `@inngest/workflow-kit` package provides a [Workflow Engine](/docs/reference/workflow-kit/engine), enabling you to create workflow actions on the back end. These actions are later provided to the front end so end-users can build their own workflow instance using the [`<Editor />`](/docs/reference/workflow-kit/components-api).
+The [`@inngest/workflow-kit`](https://npmjs.com/package/@inngest/workflow-kit) package provides a [Workflow Engine](/docs/reference/workflow-kit/engine), enabling you to create workflow actions on the back end. These actions are later provided to the front end so end-users can build their own workflow instance using the [`<Editor />`](/docs/reference/workflow-kit/components-api).
 
 Workflow Actions are defined as two objects using the [`EngineAction`](#passing-actions-to-the-workflow-engine-engine-action) (for the back-end) and [`PublicEngineAction`](#passing-actions-to-the-react-components-public-engine-action) (for the front-end) types.
 
@@ -48,7 +48,15 @@ In the example above, the `actionsDefinition` array is passed to the [`<Provider
 
 **Why do I need two types of actions?**
 
-The actions need to be separated into 2 distinct objects to avoid leaking the action handler implementations and dependencies into the front end.
+The actions need to be separated into 2 distinct objects to avoid leaking the action handler implementations and dependencies into the front end:
+
+
+<ImageTheme
+  dark={'/assets/docs/reference/workflow-kit/workflow-kit-architecture-dark.jpg'}
+  light={'/assets/docs/reference/workflow-kit/workflow-kit-architecture-light.jpg'}
+  className="my-0"
+  alt={'The Workflow Kit provides a Workflow Engine to compose workflow actions on the back end and a set of pre-defined React components for the front end.'}
+/>
 
 </Callout>
 
