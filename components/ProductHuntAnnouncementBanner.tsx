@@ -1,7 +1,7 @@
 import React from "react";
 
 const ProductHuntAnnouncementBanner = () => (
-  <div className="py-4 px-4 flex flex-col md:flex-row items-center justify-center border-b border-[#B0B0B0] gap-8">
+  <div className="py-4 px-4 flex flex-col md:flex-row items-center justify-center border-b border-[#B0B0B0] gap-8 relative">
     <div className="text-sm text-basis max-w-[826px]">
       <span className="hidden md:inline">
         As part of launch week, we launched our new open source{" "}
