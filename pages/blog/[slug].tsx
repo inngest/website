@@ -177,22 +177,22 @@ export default function BlogLayout(props) {
               )}
               <div className="max-w-[76ch] m-auto pt-12 lg:pt-18">
                 <header className="">
-                  <h1 className="text-white font-medium text-2xl md:text-4xl xl:text-5xl mb-2 md:mb-4 tracking-tighter lg:leading-loose">
+                  <h1 className="text-basis font-medium text-2xl md:text-4xl xl:text-5xl mb-2 md:mb-4 tracking-tighter lg:leading-loose">
                     {scope.heading}
                   </h1>
                   {scope.showSubtitle && (
-                    <p className="text-slate-200 text-lg font-bold mb-6 flex gap-1 items-center">
+                    <p className="text-subtle text-lg font-bold mb-6 flex gap-1 items-center">
                       {scope.subtitle}
                     </p>
                   )}
-                  <p className="text-slate-300 text-sm mt-2 flex items-center gap-2">
+                  <p className="text-subtle text-sm mt-2 flex items-center gap-2">
                     {!!scope.author ? (
                       authorURLs[scope.author] ? (
                         <>
                           <a
                             href={authorURLs[scope.author]}
                             target="_blank"
-                            className="text-slate-200 underline"
+                            className="text-subtle hover:underline"
                           >
                             {scope.author}
                           </a>

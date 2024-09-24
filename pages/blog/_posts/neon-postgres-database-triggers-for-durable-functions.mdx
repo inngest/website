@@ -1,0 +1,107 @@
+---
+heading: "Neon + Inngest: Trigger durable functions from database changes"
+subtitle: A new integration for Postgres database events
+showSubtitle: true
+image: /assets/blog/neon-integration/featured-image.png
+date: 2024-09-24
+author: Dan Farrelly
+disableCTA: true
+---
+
+We're excited to announce our integration with [Neon](https://neon.tech/), enabling you to trigger durable functions directly from changes in your Neon Postgres database.
+
+Neon is an open-source serverless Postgres platform that separates storage from compute, offering autoscaling and code-like database branching. Neon recently [GA'd their support for logical replication](https://neon.tech/docs/changelog/2024-08-23) which enables listening for database changes.
+
+This new and powerful integration unlocks a wide range of use cases by decoupling triggers from your application logic, making it easier to build durable workflows.
+
+### How it works
+
+The Neon integration enables you to connect your Neon Postgres database to your Inngest account. The initial setup can be done automatically by Inngest or you can choose a manual setup if you prefer to verify and execute the required commands yourself.
+
+Once the initial setup is completed, any changes to data in your database will automatically send new events to your Inngest account. Here's an example event that would be created when a new row is inserted in a `books` table:
+
+```json
+{
+  "name": "db/books.inserted",
+  "data": {
+    "new": {
+      "id": {
+        "data": 2,
+        "encoding": "i"
+      },
+      "name": {
+        "data": "Designing Data-Intensive Applications",
+        "encoding": "t"
+      },
+      "description": {
+        "data": "Data is at the center of many challenges...",
+        "encoding": "t"
+      }
+    },
+    "table": "books",
+    "txn_commit_time": "2024-09-24T14:41:19.75149Z",
+    "txn_id": 36530520
+  },
+  "ts": 1727146545006
+}
+```
+
+These database events can then be used to trigger your Inngest functions. For example, you might want to run an Inngest function that creates an embedding every time a book is inserted in the `books` table:
+
+```typescript
+inngest.createFunction(
+  { id: "create-embedding-for-new-book" },
+  { event: "db/books.inserted" },
+  async ({ event, step }) => {
+    const embedding = await step.run("create-embedding", async () => {
+      const metadata = generateMetadata(event.data.new);
+      return await createEmbedding(metadata);
+    });
+    await step.run("insert-embedding", async () => {
+      const id = event.data.new.id.data;
+      return await sql`UPDATE SET embedding = ${embedding} WHERE id = ${id}`
+    })
+  }
+)
+```
+
+The end result is a simple way to trigger durable functions reacting to database changes with Inngest. You can write functions that run in response to rows being inserted, updated, or deleted from any table in your database. Functions execute in your own codebase, on your own servers, using any Inngest language SDK (TypeScript, Python, Go, or Kotlin/Java).
+
+### A powerful new trigger for functions
+
+Leveraging events directly from your database to trigger functions provides clear benefits out of the box.
+
+By decoupling function triggers from your application logic, events are initiated by database updates rather than relying on instrumentation in your code to send them. This ensures you won't miss an event when data is manipulated within your application. This decoupling creates a clean abstraction layer between database operations and code that runs asynchronously.
+
+Additionally, as database events are pushed into the Inngest system to enqueue new functions, this can eliminate the need for architecture patterns like the [transactional outbox pattern](https://microservices.io/patterns/data/transactional-outbox.html).
+
+#### Leveraging Inngest features with database triggers
+
+Beyond the architectural benefit, some specific Inngest features go perfectly with database triggers:
+
+* [**Fan-out**](/docs/guides/fan-out-jobs?ref=blog-neon-integration) \- Use a single database event to trigger multiple functions to run in parallel. For example, a `pg/users.inserted` might trigger a welcome email function and a function that starts a trial in Stripe.
+* [**Batching**](/docs/guides/batching?ref=blog-neon-integration) \- Database events can be batched to process many updates more efficiently. For example, many small updates can be aggregated or efficiently perform bulk operations using third party APIs that support it, like Shopify.
+* [**Flow control**](/docs/guides/flow-control?ref=blog-neon-integration) \- Combine database triggers with flow control functionality like throttling, debouncing, or rate limiting for better resource management and efficiency. For example, use throttling for working with third party API rate limits or use debounce for operations that may happen frequently, helping to avoid redundant work.
+
+This integration empowers developers to create robust, scalable systems with ease.
+
+## How to get started
+
+Today, in your Inngest dashboard, you can find Neon in [the Integrations tab](https://app.inngest.com/settings/integrations). Click “Connect” to begin the setup process.
+
+![Neon integration in the Inngest dashboard](/assets/blog/neon-integration/integration-graphic.png)
+
+A prerequisite for setup is enabling [logical replication](https://neon.tech/docs/guides/logical-replication-guide) on your Neon database, which is necessary for Inngest to stream changes from your database.
+
+In the setup flow, Inngest will set up the users, roles and configure your database correctly. Each command that Inngest executes is visible for complete transparency. If you prefer a more hands-on approach with database administration, you can choose the manual setup, where you execute each command yourself. Throughout the process, you'll receive additional context and links to resources explaining what each command does.
+
+Check out our [Neon integration docs](/docs/features/events-triggers/neon?ref=blog-neon-integration) to learn more.
+
+{/* ### TODO PLACEHOLDER - Link to docs */}
+
+### What will you build?
+
+Neon's truly serverless Postgres gives developers a more flexible way to build with Postgres and this Inngest integration provides even more flexibility bringing durable functions to Neon. We're excited to be partnering with the Neon team and building directly with their innovative platform.
+
+If you're a Neon user, give the integration a try today. If you're new to Neon, [check out their platform](https://neon.tech/), and spin up a database on their free tier. We'd love to hear what durable functions you're thinking about building with our new integration\! Come chat with us and other users in [our Discord](https://www.inngest.com/discord) today.
+
