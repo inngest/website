@@ -1,0 +1,55 @@
+import { Callout, CodeGroup, Card, CardGroup, Properties, Property } from "src/shared/Docs/mdx";
+
+
+# Use the Workflow Engine
+
+The Workflow `Engine` is used to run a given [Workflow Instance](/docs/reference/workflow-kit/workflow-instance) within an Inngest Function:
+
+```tsx {{ title: "src/inngest/workflow.ts" }}
+import { Engine, type Workflow } from "@inngest/workflow";
+
+import { inngest } from "./client";
+import { actions } from "./actions";
+
+import { createClient } from "../supabase/server";
+
+const workflowEngine = new Engine({
+  actions: actionsWithHandlers,
+  loader: (event) => {
+	  const supabase = createClient();
+	  const { data } = await supabase
+	    .from("workflows")
+	    .select("*", {})
+	    .eq("trigger", event.name)
+	    .eq("enabled", true)
+	    .single();
+	  return (data && data.workflow) as unknown as Workflow;
+  },
+});
+
+export default inngest.createFunction(
+  { id: "blog-post-workflow" },
+  { event: "blog-post.updated" },
+  async ({ event, step }) => {
+    // When `run` is called,
+    //  the loader function is called with access to the event
+    await workflowEngine.run({ event, step });
+  }
+);
+
+```
+
+## Configure
+
+
+<Properties>
+  <Property name="actions" type="EngineAction[]" version="v0.0.1+">
+    See [the `EngineAction[]` reference](/docs/reference/workflow-kit/actions#passing-actions-to-the-workflow-engine-engine-action).
+  </Property>
+  <Property name="loader" type="function" version="v0.0.1+">
+    An async function receiving the [`event`](/docs/reference/functions/create#event) as unique argument and returning a valid [`Workflow` instance](/docs/reference/workflow-kit/workflow-instance) object.
+  </Property>
+  <Property name="disableBuiltinActions" type="boolean" version="v0.0.1+">
+    For selectively adding built-in actions, set this to true and expose the actions you want via the [`<Provider>`](/docs/reference/workflow-kit/components-api) `availableActions` prop.
+  </Property>
+</Properties>

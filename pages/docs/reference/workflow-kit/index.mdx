@@ -1,0 +1,59 @@
+import { Callout, CodeGroup, Card, CardGroup, ImageTheme } from "src/shared/Docs/mdx";
+
+import GithubIcon from "shared/Icons/Github"
+
+# Workflow Kit
+The Workflow Kit enables you to build [user-defined workflows](/docs/guides/user-defined-workflows) with Inngest by providing a set of workflow actions to the **[Workflow Engine](/docs/reference/workflow-kit/engine)** while using the **[pre-built React components](/docs/reference/workflow-kit/components-api)** to build your Workflow Editor UI.
+
+
+<ImageTheme
+  dark={'/assets/docs/reference/workflow-kit/workflow-kit-architecture-dark.jpg'}
+  light={'/assets/docs/reference/workflow-kit/workflow-kit-architecture-light.jpg'}
+  className="my-0"
+  alt={'The Workflow Kit provides a Workflow Engine to compose workflow actions on the back end and a set of pre-defined React components for the front end.'}
+/>
+
+
+## Installing
+
+
+<CodeGroup>
+```shell {{ title: "npm" }}
+npm install @inngest/workflow-kit inngest
+```
+```shell {{ title: "pnpm" }}
+pnpm add @inngest/workflow-kit inngest
+```
+```shell {{ title: "yarn" }}
+yarn add @inngest/workflow-kit inngest
+```
+</CodeGroup>
+
+<Callout>
+
+**Prerequisites**
+
+The Workflow Kit integrates with our [TypeScript SDK](/docs/reference/typescript).
+
+To use it, you'll need an application with [Inngest set up](/docs/sdk/overview), ready to [serve Inngest functions](/docs/learn/serving-inngest-functions).
+
+</Callout>
+
+
+## Source code
+
+Our Workflow Kit and its related packages are open source and available on Github: [**inngest/workflow-sdk**](https://github.com/inngest/workflow-sdk/).
+
+## Examples
+
+The [inngest/workflow-sdk](https://github.com/inngest/workflow-sdk/) repository features a ready-to-deploy Next.js demo using the Workflow Kit, Supabase, and OpenAI to power some AI content workflows:
+
+![workflow-kit-announcement-video-loop.gif](/assets/docs/reference/workflow-kit/workflow-demo.gif)
+
+<CardGroup cols={1}>
+
+<Card href={'https://github.com/inngest/workflow-sdk/tree/main/examples/nextjs-blog-cms#readme'} title={"Clone or deploy the Next.js CMS AI workflows demo"} icon={<GithubIcon className="text-basis h-4 w-4" />}>
+     The Blog AI workflows demo app features AI workflows helping with grammar fixes, generating Table of Contents or Tweets, powered by the Workflow Kit.
+</Card>
+
+</CardGroup>
