@@ -76,6 +76,11 @@ const permanentRedirects = [
 async function redirects() {
   return [
     {
+      source: "/workflow-kit",
+      destination: "/docs/reference/workflow-kit",
+      permanent: false,
+    },
+    {
       source: "/discord",
       destination: "https://discord.gg/mPfcyDEdpx",
       permanent: true,
