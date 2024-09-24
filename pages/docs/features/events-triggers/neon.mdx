@@ -14,9 +14,9 @@ Additionally, as database events are pushed into the Inngest system to enqueue n
 
 Beyond the architectural benefit, some specific Inngest features go perfectly with database triggers:
 
-- [**Fan-out**](https://www.inngest.com/docs/guides/fan-out-jobs) - Use a single database event to trigger multiple functions to run in parallel. For example, a pg/users.inserted might trigger a welcome email function and a function that starts a trial in Stripe.
-- [**Batching**](https://www.inngest.com/docs/guides/batching) - Database events can be batched to process many updates more efficiently. For example, many small updates can be aggregated or efficiently perform bulk operations using third party APIs that support it, like Shopify.
-- [**Flow control**](https://www.inngest.com/docs/guides/flow-control) - Combine database triggers with flow control functionality like throttling, debouncing, or rate limiting for better resource management and efficiency. For example, use throttling for working with third party API rate limits or use debounce for operations that may happen frequently, helping to avoid redundant work.
+- [**Fan-out**](/docs/guides/fan-out-jobs) - Use a single database event to trigger multiple functions to run in parallel. For example, a pg/users.inserted might trigger a welcome email function and a function that starts a trial in Stripe.
+- [**Batching**](/docs/guides/batching) - Database events can be batched to process many updates more efficiently. For example, many small updates can be aggregated or efficiently perform bulk operations using third party APIs that support it, like Shopify.
+- [**Flow control**](/docs/guides/flow-control) - Combine database triggers with flow control functionality like throttling, debouncing, or rate limiting for better resource management and efficiency. For example, use throttling for working with third party API rate limits or use debounce for operations that may happen frequently, helping to avoid redundant work.
 
 ## How it works
 Once you connect Neon to Inngest, any changes to data in your database will automatically send new events to your Inngest account. 
