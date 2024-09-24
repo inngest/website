@@ -421,6 +421,10 @@ const sectionHome: (NavGroup | NavLink)[] = [
           },
           { title: "Integrations" },
           {
+            title: "Neon",
+            href: `/docs/features/events-triggers/neon`,
+          },
+          {
             title: "Prisma Pulse",
             href: `/docs/features/events-triggers/prisma-pulse`,
           },
