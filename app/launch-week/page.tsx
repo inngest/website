@@ -66,6 +66,26 @@ export default function Page() {
             </Card>
           </Day>
 
+          <Day day={2} title="Integrations" date="Tuesday, September 24rd">
+            <Card
+              title="Neon Postgres integration"
+              image="/assets/launch-week/2/tuesday-graphic.svg"
+              background="/assets/launch-week/2/tuesday-bg.svg"
+              href="/blog/neon-postgres-database-triggers-for-durable-functions?ref=launch-week-2"
+            >
+              <p>
+                Trigger Inngest functions directly from changes in your Neon
+                Postgres database. Write functions that react to changes like
+                rows being inserted, updated, or deleted.
+              </p>
+              <p>
+                Database triggers are a powerful new way to build Inngest
+                functions and can be combined with other Inngest features like
+                flow control, batching, and the fan-out pattern.
+              </p>
+            </Card>
+          </Day>
+
           {/* Upcoming days */}
           <div className="relative">
             {/* Upcoming day */}
@@ -84,7 +104,9 @@ export default function Page() {
                   <h2 className="text-4xl text-basis font-book">
                     Coming up next...
                   </h2>
-                  <p className="text-subtle text-sm">Tuesday, September 24th</p>
+                  <p className="text-subtle text-sm">
+                    Wednesday, September 24th
+                  </p>
                   <div className="mt-8">
                     <NewsletterSignup
                       showHeader={false}
@@ -96,7 +118,7 @@ export default function Page() {
               </div>
             </div>
             {[
-              "Wednesday, September 23rd",
+              // "Wednesday, September 23rd",
               "Thursday, September 24th",
               "Friday, September 25th",
             ].map((day, idx) => (
@@ -139,11 +161,13 @@ function Day({
   day,
   title,
   date,
+
   children,
 }: {
   day: number;
   title: string;
   date: string;
+
   children: React.ReactNode;
 }) {
   return (
@@ -164,11 +188,13 @@ function Card({
   title,
   image,
   href,
+  background = "/assets/launch-week/2/monday-bg.svg",
   children,
 }: {
   title: string;
   image: string;
   href: string;
+  background?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -177,7 +203,7 @@ function Card({
         <div
           className="flex flex-col md:flex-row gap-6 items-center md:items-start rounded-lg p-6 flex-grow"
           style={{
-            background: `url(/assets/launch-week/2/monday-bg.svg), linear-gradient(211deg, rgba(176, 176, 176, 0.50) -57.05%, rgba(0, 0, 0, 0.40) 45.09%), #1A1A1A;`,
+            background: `url(${background}), linear-gradient(211deg, rgba(176, 176, 176, 0.50) -57.05%, rgba(0, 0, 0, 0.40) 45.09%), #1A1A1A;`,
             backgroundSize: `contain, 100% 100%, 100% 100%`,
             backgroundRepeat: `no-repeat, no-repeat, no-repeat`,
             backgroundPosition: `right, center, center`,

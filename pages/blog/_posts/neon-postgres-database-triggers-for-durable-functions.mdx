@@ -16,15 +16,31 @@ This new and powerful integration unlocks a wide range of use cases by decouplin
 
 ### How it works
 
-The Neon integration enables you to connect your Neon Postgres database to your Inngest account. The initial setup can be done  automatically by Inngest or you can choose a manual setup if you prefer to verify and execute the required commands yourself.
+The Neon integration enables you to connect your Neon Postgres database to your Inngest account. The initial setup can be done automatically by Inngest or you can choose a manual setup if you prefer to verify and execute the required commands yourself.
 
 Once the initial setup is completed, any changes to data in your database will automatically send new events to your Inngest account. Here's an example event that would be created when a new row is inserted in a `books` table:
 
 ```json
 {
-  "name": "pg/books.inserted",
+  "name": "db/books.inserted",
   "data": {
-
+    "new": {
+      "id": {
+        "data": 2,
+        "encoding": "i"
+      },
+      "name": {
+        "data": "Designing Data-Intensive Applications",
+        "encoding": "t"
+      },
+      "description": {
+        "data": "Data is at the center of many challenges...",
+        "encoding": "t"
+      }
+    },
+    "table": "books",
+    "txn_commit_time": "2024-09-24T14:41:19.75149Z",
+    "txn_id": 36530520
   },
   "ts": 1727146545006
 }
@@ -35,9 +51,16 @@ These database events can then be used to trigger your Inngest functions. For ex
 ```typescript
 inngest.createFunction(
   { id: "create-embedding-for-new-book" },
-  { event: "pg/books.inserted" },
+  { event: "db/books.inserted" },
   async ({ event, step }) => {
-    // TODO -
+    const embedding = await step.run("create-embedding", async () => {
+      const metadata = generateMetadata(event.data.new);
+      return await createEmbedding(metadata);
+    });
+    await step.run("insert-embedding", async () => {
+      const id = event.data.new.id.data;
+      return await sql`UPDATE SET embedding = ${embedding} WHERE id = ${id}`
+    })
   }
 )
 ```
