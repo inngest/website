@@ -11,7 +11,7 @@ function useIsItDay3InSFNow() {
   const sfDate = new Date(utc + 3600000 * offset);
 
   return (
-    sfDate.getDate() == 24 &&
+    sfDate.getDate() == 25 &&
     sfDate.getMonth() == 8 &&
     sfDate.getFullYear() === 2024
   );
