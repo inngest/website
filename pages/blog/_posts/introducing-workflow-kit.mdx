@@ -1,0 +1,123 @@
+---
+heading: "Introducing Inngest's Workflow Kit"
+subtitle: The fastest way to build workflow UIs
+showSubtitle: true
+image: /assets/blog/introducing-workflow-kit/featured-image.png
+date: 2024-09-25
+author: Charly Poly
+disableCTA: true
+---
+
+Today, we're excited to unveil our new open-source SDK: the **Inngest Workflow Kit**.
+
+Over the last few years, we've had the privilege of supporting hundreds of companies and thousands of developers developing workflows using our SDKs. Through this journey, we observed that many developers used Inngest to develop user-defined workflows: dynamic workflows configurable by end-users (*e.g., marketing automation workflows*).
+
+Developing such workflows requires additional work on the back end (e.g., state management, linking actions via BFS traversal) and a lot of boilerplate on the front end to build a Workflow Editor UI.
+
+The Inngest Workflow Kit is a significant leap forward. It enables developers to craft Workflow UIs in hours, not days.
+
+## Inngest Workflow Kit: the perfect building blocks for user-defined workflow experiences
+
+[`@inngest/workflow-kit`](https://www.npmjs.com/package/@inngest/workflow-kit) ships as a full-stack package, simplifying the development of user-defined workflows on both the front end and back end:
+
+![An architecture diagram of an application using Workflow kit](/assets/blog/introducing-workflow-kit/workflow-architecture-dark.png)
+
+### A powerful state machine on top of Inngest's Durable Execution Engine
+
+Building user-defined workflows is composed of multiple challenges, starting on the backend.
+Unlike [standard workflows](/docs/features/inngest-functions/steps-workflows?ref=blog-workflow-kit), which have a fixed number of steps, user-defined workflows need to dynamically determine the next steps based on previous actions and user configuration.
+
+This design requires tools to save and restore the state of a workflow using the BFS traversal algorithm and custom API implementations.
+
+The [`@inngest/workflow-kit`](https://www.npmjs.com/package/@inngest/workflow-kit) package leverages [Inngest's Durable Functions](/blog/durable-functions-a-visual-javascript-primer), enabling:
+
+- **Customizable workflow actions** benefiting from [Inngest steps' features](/docs/guides/multi-step-functions?ref=blog-workflow-kit) such as automatic retries, waits, and more.
+- **Dynamic workflow configuration** using a loader pattern to retrieve user-configured workflow instances.
+
+Our Workflow kit simplifies the workflow management process, freeing you from building your own workflow logic and allowing you to focus on implementing actions:
+
+```typescript
+import { Engine } from "@inngest/workflow";
+import { inngest } from "./inngest/client";
+
+const workflowEngine = new Engine({
+  actions: [
+    {
+      kind: "add_ToC",
+      name: "Add a Table of Content",
+      description: "Add a Table of Content",
+      handler: async ({ event, step, workflowAction }) => {
+        await step.run("generate-toc-for-article", async () => {
+          // await openai.chat.completions.create({ /* ... */ })
+        });
+      },
+    },
+  ],
+  loader: async function (event) {
+    return loadWorkflowFromDatabase(event)
+  },
+});
+
+export default inngest.createFunction(
+  { id: "blog-post-workflow" },
+  [{ event: "blog-post.updated" }],
+  async ({ event, step }) => {
+    await workflowEngine.run({ event, step });
+  }
+);
+
+```
+
+Your newly created workflow is then passed to an [Inngest Function](/docs/features/inngest-functions?ref=blog-workflow-kit), which benefits from existing [Triggers](/docs/features/events-triggers?ref=blog-workflow-kit) to initiate your workflow based on user events or cron schedules. [Flow Control](/docs/guides/flow-control?ref=blog-workflow-kit) features like [Throttling](/docs/guides/throttling?ref=blog-workflow-kit) and [Rate Limiting](/docs/guides/rate-limiting?ref=blog-workflow-kit) are also available, particularly useful when developing AI workflows.
+
+### Building a Workflow Editor UI with prebuilt React components
+
+Allowing end-users to configure their workflows requires building a Workflow Editor UI, which involves significant complexity. It requires developing all the interactivity through custom components and managing complex states to support variables and other advanced customization.
+
+We believe an excellent workflow development experience is achieved by a Workflow Kit that offers tools for the back end and the front end.
+
+`inngest/workflow` includes a set of React components, giving your end-users with a complete and customizable Workflow Editor experience. Simply provide the workflow actions defined on the back end and optionally load any user-defined workflow configurations from your database:
+
+```jsx
+import * as React from 'react'
+import {
+  Provider,
+  Editor,
+  Sidebar
+} from "@inngest/workflow";
+import { actions, trigger } from "@lib/inngest/workflow"
+
+export default function Editor({ workflow }) {
+  // `workflow` is loaded from the database
+  return (
+    <Provider
+      workflow={workflow}
+      trigger={trigger}
+      availableActions={actions}
+      onChange={(updatedWorkflow) => {
+        // save to database...
+      }}
+    >
+      <Editor>
+        <Sidebar position="right"></Sidebar>
+      </Editor>
+    </Provider>;
+  )
+}
+```
+
+These few lines render a ready-to-use Workflow Editor UI:
+
+![A visual demo of the Workflow Editor UI](/assets/blog/introducing-workflow-kit/workflow-demo.gif)
+
+*Clone or deploy this demo from GitHub: [inngest/workflow-kit](https://github.com/inngest/workflow-kit/tree/main/examples/nextjs-blog-cms#readme).*
+
+## Start building now
+
+The combination of Inngest's Durable Execution Engine with the Workflow Kit's back-end and front-end building blocks makes it faster than ever to build experiences like marketing automation, approval workflows, or AI workflows.
+
+- **Get started** in under a few minutes by [following our Workflow Kit guide](/docs/guides/user-defined-workflows?ref=blog-workflow-kit)
+- **Explore** our [complete and deployable demo of CMS automations](https://github.com/inngest/workflow-sdk/tree/main/examples/nextjs-blog-cms#readme)
+- **Contribute** to the [open-source repository](https://github.com/inngest/workflow-sdk)
+
+**Support us on [Product Hunt](https://www.producthunt.com/posts/workflow-kit-by-inngest) today\!**
