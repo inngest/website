@@ -196,6 +196,7 @@ const repos = [
   "inngest/inngest-py",
   "inngest/inngestgo",
   "inngest/inngest-kt",
+  "inngest/workflow-kit",
 ];
 
 function OpenSourceButton({ className = "" }: { className?: string }) {
