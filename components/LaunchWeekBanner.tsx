@@ -7,7 +7,7 @@ function useIsItDay3InSFNow() {
   const localTime = d.getTime();
   const localOffset = d.getTimezoneOffset() * 60000;
   const utc = localTime + localOffset;
-  const offset = -8; // UTC of PST is -05.00
+  const offset = -7; // UTC of PST is -05.00
   const sfDate = new Date(utc + 3600000 * offset);
 
   return (
