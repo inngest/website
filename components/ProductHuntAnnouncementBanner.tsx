@@ -1,12 +1,6 @@
-"use client";
-import React, { useEffect, useState } from "react";
+import React from "react";
 
 const ProductHuntAnnouncementBanner = () => {
-  // cache bust every 60s
-  const [ts, setTs] = useState<number>(Math.floor(Date.now() / 1000 / 60));
-  useEffect(() => {
-    setTimeout(() => setTs(Math.floor(Date.now() / 1000 / 60)), 10);
-  }, []);
   return (
     <div className="py-4 px-4 flex flex-col md:flex-row items-center justify-center border-b border-[#B0B0B0] gap-8 relative">
       <div className="text-sm text-basis max-w-[826px]">
@@ -46,7 +40,7 @@ const ProductHuntAnnouncementBanner = () => {
         >
           <img
             className="border border-white rounded-lg"
-            src={`https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=490802&theme=dark&ts=${ts}`}
+            src={`https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=490802&theme=dark`}
             alt="Workflow&#0032;Kit&#0032;by&#0032;Inngest - Open&#0032;source&#0032;SDK&#0032;to&#0032;add&#0032;Zapier&#0045;like&#0032;workflows&#0032;to&#0032;your&#0032;product | Product Hunt"
             style={{ width: "169px", height: "38px" }}
             width="169"
