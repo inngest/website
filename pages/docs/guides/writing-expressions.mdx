@@ -42,7 +42,9 @@ Most expressions are given the `event` payload object as the input. Expressions 
 
 // Alternatively, you can use JavaScript string interpolation for wait for event
 `${userId} == async.data.userId` // => "user_1234 == async.data.userId"
-
+```
+{/* Omit macros until we review support individually
+```js
 // Advanced CEL methods (see reference linked above):
 // Check if a string contains a substring
 "event.data.email.contains('gmail.com')"
@@ -54,6 +56,7 @@ Most expressions are given the `event` payload object as the input. Expressions 
 "timestamp(event.data.created) > timestamp('2024-01-01T00:00:00Z')"
 "timestamp(event.data.createdAt) + duration('5m') > timestamp(event.data.expireAt)"
 ```
+*/}
 
 ### Value Expressions
 
@@ -65,11 +68,14 @@ Most expressions are given the `event` payload object as the input. Expressions 
 
 // Concatenate two strings together to create a unique key
 `event.data.userId + "-" + event.type` // => "user_1234-signup"
-
+```
+{/* Omit macros until we review support individually
+```js
 // Advanced CEL methods (see reference linked above):
 // Convert a number to a string for concatenation
 `string(event.data.amount) + "-" event.data.planId`
 ```
+*/}
 
 #### Dynamic Values
 
@@ -79,11 +85,14 @@ Most expressions are given the `event` payload object as the input. Expressions 
 
 // Return a value based on multiple conditions
 `event.data.billingPlan == 'enterprise' && event.data.requestNumber < 10 ? 0 : 1800`
-
+```
+{/* Omit macros until we review support individually
+```js
 // Advanced CEL methods (see reference linked above):
 // Return a priority if the value is set in the payload
 `has(event.data.priority) ? event.data.priority : 0`
 ```
+*/}
 
 ## Tips
 
@@ -93,6 +102,8 @@ Most expressions are given the `event` payload object as the input. Expressions 
 * When working with the TypeScript SDK, write expressions within backticks `` ` `` to use quotes in your expression or use JavaScript's string interpolation.
 * Use ternary operators to return default values
 * When using the or operator (`||`), CEL will always return a boolean. This is different from JavaScript, where the or operator returns the value of the statement left of the operator if truthy. Use the ternary operator (`?`) instead of `||` for conditional returns.
+
+{/* TODO - Omit these advanced macros for now until we review support individually
 
 ### CEL Helpers & Macros
 
@@ -126,7 +137,7 @@ This is a non-exhaustive list of CEL [helpers](https://github.com/google/cel-spe
 // Add a duration to a timestamp
 "timestamp(event.data.createdAt) + duration('5m')"
 ```
-
+*/}
 
 ## Testing out expressions
 
