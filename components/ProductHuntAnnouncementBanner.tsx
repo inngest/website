@@ -3,7 +3,7 @@ import React, { useMemo } from "react";
 
 const ProductHuntAnnouncementBanner = () => {
   // cache bust every 60s
-  const ts = useMemo(() => Math.floor(Date.now() / 1000 / 60), []);
+  const ts = Math.floor(Date.now() / 1000 / 60);
   return (
     <div className="py-4 px-4 flex flex-col md:flex-row items-center justify-center border-b border-[#B0B0B0] gap-8 relative">
       <div className="text-sm text-basis max-w-[826px]">

@@ -7,7 +7,7 @@ const url =
 export default function ProductHunt() {
   // We do this b/c this is a descendent of a card which is a link. This is a hack and I'm not proud of it.
   // cache bust every 60s
-  const ts = useMemo(() => Math.floor(Date.now() / 1000 / 60), []);
+  const ts = Math.floor(Date.now() / 1000 / 60);
   return (
     <div
       className="cursor-pointer"
