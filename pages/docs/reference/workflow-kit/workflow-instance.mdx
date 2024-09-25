@@ -2,10 +2,10 @@ import { Callout, CodeGroup, Card, CardGroup, Properties, Property } from "src/s
 
 # Workflow instance
 
-A Workflow instance represents a user configuration of a sequence of [Workflow actions](/docs/reference/workflow-kit/actions), later provided to the [Workflow Engine](/docs/reference/workflow-kit/engine) for execution.
+A workflow instance represents a user configuration of a sequence of [workflow actions](/docs/reference/workflow-kit/actions), later provided to the [workflow engine](/docs/reference/workflow-kit/engine) for execution.
 
 
-Example of a Workflow instance object:
+Example of a workflow instance object:
 
 ```json
 {
@@ -37,11 +37,11 @@ Example of a Workflow instance object:
 
 <Callout>
 
-**How to use the Workflow instance object**
+**How to use the workflow instance object**
 
 Workflow instance objects are meant to be retrieved from the [`<Provider>`](/docs/reference/workflow-kit/components-api) Editor, stored in database and loaded into the [Workflow Engine](/docs/reference/workflow-kit/engine) using a loader.
 
-Use this reference if you need to update the Workflow instance between these steps.
+Use this reference if you need to update the workflow instance between these steps.
 
 </Callout>
 
@@ -84,13 +84,13 @@ A Workflow instance in an object with the following properties:
   </Property>
   <Property name="inputs" type="object">
      Inputs is a list of configured inputs for the EngineAction.
-   
+
     The record key is the key of the EngineAction input name, and
     the value is the variable's value.
-   
+
     This will be type checked to match the EngineAction type before
     save and before execution.
-    
+
     Ref inputs for interpolation are `"!ref($.<path>)"`, eg. `"!ref($.event.data.email)"`
   </Property>
 </Properties>
