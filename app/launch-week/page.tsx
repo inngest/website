@@ -25,7 +25,7 @@ export default function Page() {
       `}</style>
       {/* Disable animated graphic as it's slowing down launch week page: hero-background-animated.svg */}
       <div className="max-w-[1520px] mx-auto px-8 bg-[url(/assets/launch-week/2/hero-background.svg)] bg-contain bg-no-repeat bg-top">
-        <header className="max-w-6xl mx-auto py-24 md:py-52 text-basis">
+        <header className="max-w-6xl mx-auto py-24 pb-18 md:py-52 md:pb-36 text-basis">
           <div className="lg:ml-2.5 flex items-center gap-2 uppercase text-lg md:text-2xl text-[rgb(var(--color-primary-xIntense))] font-medium">
             <span>Sept 23</span>
             <span className="h-px w-[60px] bg-[rgb(var(--color-primary-xIntense))]"></span>
@@ -35,6 +35,14 @@ export default function Page() {
             Inngest <br className="hidden sm:block" /> Launch Week{" "}
             <span className="text-[rgb(var(--color-primary-intense))]">II</span>
           </h1>
+          <div className="mt-24 flex items-center justify-center">
+            <a href="#today" className="flex flex-col items-center gap-2 group">
+              <p className="text-base font-bold drop-shadow">
+                Go to today’s announcements
+              </p>
+              <ArrowIcon className="rotate-90 h-10 w-10 transition-all group-hover:translate-y-1" />
+            </a>
+          </div>
           {/* <div className="mt-16">
             <p className="text-xl md:text-2xl drop-shadow">
               Join us for a week of new features and announcements starting on{" "}
@@ -88,7 +96,12 @@ export default function Page() {
             </Card>
           </Day>
 
-          <Day day={3} title="Workflow" date="Wednesday, September 25th">
+          <Day
+            isToday={true}
+            day={3}
+            title="Workflow"
+            date="Wednesday, September 25th"
+          >
             <Card
               title="Workflow kit"
               image="/assets/launch-week/2/wednesday-graphic.svg"
@@ -177,20 +190,23 @@ export default function Page() {
 }
 
 function Day({
+  isToday = false,
   day,
   title,
   date,
-
   children,
 }: {
+  isToday?: boolean;
   day: number;
   title: string;
   date: string;
-
   children: React.ReactNode;
 }) {
   return (
-    <div className="text-basis">
+    <div
+      className="text-basis scroll-mt-24"
+      id={isToday ? "today" : `day-${day}`}
+    >
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
         <div>
           <p className="text-primary-intense font-medium">Day #{day}</p>
@@ -254,7 +270,7 @@ function Card({
   );
 }
 
-function ArrowIcon() {
+function ArrowIcon({ className }: { className?: string }) {
   return (
     <svg
       width="24"
@@ -262,6 +278,7 @@ function ArrowIcon() {
       viewBox="0 0 24 24"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
+      className={className}
     >
       <path
         d="M1 12C1 5.92487 5.92487 1 12 1C18.0751 1 23 5.92487 23 12C23 18.0751 18.0751 23 12 23C5.92487 23 1 18.0751 1 12Z"
