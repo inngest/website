@@ -52,22 +52,22 @@ Make sure to updated `workflow={}` based on the updates received via `onChange={
 
 
 <Properties>
-  <Property name="workflow" type="Workflow" version="v0.0.1+" required>
+  <Property name="workflow" type="Workflow" required>
     A [Workflow instance object](/docs/reference/workflow-kit/workflow-instance).
   </Property>
-  <Property name="trigger" type="object" version="v0.0.1+" required>
+  <Property name="trigger" type="object" required>
     An object with a `name: string` property [representing an event name](/docs/reference/functions/create#trigger).
   </Property>
-  <Property name="availableActions" type="PublicEngineAction[]" version="v0.0.1+">
+  <Property name="availableActions" type="PublicEngineAction[]">
     See [the `PublicEngineActionEngineAction[]` reference](/docs/reference/workflow-kit/actions#passing-actions-to-the-react-components-public-engine-action).
   </Property>
-  <Property name="onChange" type="function" version="v0.0.1+" required>
+  <Property name="onChange" type="function" required>
     A callback function, called after each `workflow` changes.
   </Property>
-  <Property name="onChange" type="function" version="v0.0.1+" required>
+  <Property name="onChange" type="function" required>
     A callback function, called after each `workflow` changes.
   </Property>
-  <Property name="{children}" type="React.ReactNode" version="v0.0.1+" required>
+  <Property name="{children}" type="React.ReactNode" required>
     The `<Provider>` component should always get the following tree as children:
   </Property>
 </Properties>

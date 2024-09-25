@@ -90,7 +90,7 @@ The actions need to be separated into 2 distinct objects to avoid leaking the ac
 </Callout>
 
 <Properties>
-  <Property name="handler" type="function" version="v0.0.1+">
+  <Property name="handler" type="function">
     The handler is your code that runs whenever the action occurs. Every function handler receives a single object argument which can be deconstructed. The key arguments are `event` and `step`.
   </Property>
 </Properties>
@@ -116,16 +116,16 @@ The details of the `handler()` **unique argument's properties** can be found bel
 ### `handler()` function argument properties
 
 <Properties>
-  <Property name="event" type="TriggerEvent" version="v0.0.1+">
+  <Property name="event" type="TriggerEvent">
     See the Inngest Function handler [`event` argument property definition](/docs/reference/functions/create#event).
   </Property>
-  <Property name="step" type="Step" version="v0.0.1+">
+  <Property name="step" type="Step">
     See the Inngest Function handler [`step` argument property definition](/docs/reference/functions/create#step).
   </Property>
-  <Property name="workflow" type="Workflow" version="v0.0.1+">
+  <Property name="workflow" type="Workflow">
     See the [Workflow instance format](/docs/reference/workflow-kit/workflow-instance).
   </Property>
-  <Property name="workflowAction" type="WorkflowAction" version="v0.0.1+">
+  <Property name="workflowAction" type="WorkflowAction">
      WorkflowAction is the action being executed, with fully interpolated inputs.
 
      Key properties are:
@@ -135,7 +135,7 @@ The details of the `handler()` **unique argument's properties** can be found bel
         - `description?: string`: The description, as provided in the [`PublicEngineAction`](#passing-actions-to-the-react-components-public-engine-action).
         - `inputs?: string`: The record key is the key of the EngineAction inoput name, and the value is the variable's value.
   </Property>
-  <Property name="state" type="object" version="v0.0.1+">
+  <Property name="state" type="object">
     State represnets the current state of the workflow, with previous action's outputs recorded as key-value pairs.
   </Property>
 </Properties>
