@@ -496,6 +496,10 @@ const sectionHome: (NavGroup | NavLink)[] = [
                 title: "How Functions are executed",
                 href: `/docs/learn/how-functions-are-executed`,
               },
+              {
+                title: "User-defined Workflows",
+                href: `/docs/guides/user-defined-workflows`,
+              },
               { title: "Patterns" },
               {
                 title: "Parallel steps",
@@ -506,10 +510,6 @@ const sectionHome: (NavGroup | NavLink)[] = [
                 href: "/docs/guides/working-with-loops",
               },
               { title: "Use cases" },
-              {
-                title: "User-defined Workflows",
-                href: `/docs/guides/user-defined-workflows`,
-              },
               {
                 title: "Trigger workflows from Retool",
                 href: `/docs/guides/trigger-your-code-from-retool`,

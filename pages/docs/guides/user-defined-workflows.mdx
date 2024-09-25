@@ -1,133 +1,361 @@
-export const description = "How to Inngest to build customizable workflows that your users can define in your system and Inngest handles the scheduling & execution.";
+import { Callout, CodeGroup, Card, CardGroup, ImageTheme } from "src/shared/Docs/mdx";
+import GithubIcon from "shared/Icons/Github"
 
-# Building a Workflow Engine for your users
+# Build Workflows configurable by your users
 
-Users today are demanding customization and integrations from every product. Your users may want your product to support custom workflows to automate key user actions. Custom, user-defined workflows can be a powerful feature to add to your product, but it is not without challenges. To build a workflow engine you need to:
+Users today are demanding customization and integrations from every product. Your users may want your product to support custom workflows to automate key user actions.
+Leverage our [Workflow Kit](/docs/reference/workflow-kit) to add powerful user-defined workflows features to your product.
 
-- Define a series of pre-built tasks that user can select from
-- Create a way for users to use these tasks to build our their workflow
-- **Build a system that can execute tasks from a given workflow whenever it is triggered**
+Inngest's Workflow Kit ships as a full-stack package ([`@inngest/workflow-kit`](https://npmjs.com/package/@inngest/workflow-kit)), aiming to simplify the development of user-defined workflows on both the front end and back end:
 
-Building a system like this is difficult. To do this, you would traditionally need:
 
-- Queues and/or event streams to trigger workflows
-- Scheduling logic to determine _what_ task to execute and _when_ to execute it
-- Queues to handle processing of the tasks
-- A state store that handles passing context and interim state between tasks
-- Automatic retries of tasks that throw errors
+<ImageTheme
+  dark={'/assets/docs/reference/workflow-kit/workflow-kit-architecture-dark.jpg'}
+  light={'/assets/docs/reference/workflow-kit/workflow-kit-architecture-light.jpg'}
+  className="my-0"
+  alt={'The Workflow Kit provides a Workflow Engine to compose workflow actions on the back end and a set of pre-defined React components for the front end.'}
+/>
 
-Inngest can handle all of this for you enabling you to build a workflow engine in record time. Let's dig in to how you can do this:
+## Use case: adding AI automation to a Next.js CMS application
 
-## What is a "Workflow?"
+<CardGroup cols={1}>
+<Card href={'https://github.com/inngest/workflow-kit/tree/main/examples/nextjs-blog-cms#readme'} title={"Clone or deploy this use case"} icon={<GithubIcon className="text-basis h-4 w-4" />}>
+  This use case is available a open-source Next.js demo on GitHub.
+</Card>
+</CardGroup>
 
-Workflow is an overloaded term, but in the scope of this guide, we define a workflow as:
 
-> A set of tasks that need to be executed in a specific order that may depend on the result from earlier tasks.
+Our  Next.js CMS application features the following `blog_posts` table:
 
-## A simple example
+|Colunm name|Column type|Description|
+|-----------|-----------|-----------|
+id| `bigint`|
+title | `text`| _The title of the blog post_
+subtitle | `text`| _The subtitle of the blog post_
+status | `text`| _"draft" or "published"_
+markdown | `text`| _The content of the blog post as markdown_
+created_at | `timestamp`|
 
-We'll show a simple example, then walk through how to build something like this yourself. This example shows a custom workflow that might get triggered when a CRM product's user changes the status of one of their leads.
+<Callout>
 
-```ts
-import { sendEmail, sendSlackNotification } from "../lib/emails"; // your custom code
-import { inngest } from "./client";
+You will find a ready-to-use database seed [in the repository](https://github.com/inngest/workflow-kit/blob/main/examples/nextjs-blog-cms/supabase/seed.sql).
 
-export const workflowExecutor = inngest.createFunction(
-  { id: "crm-workflow-executor" },
-  { event: "crm/lead_status.changed" },
-  async ({ event, step }) => {
-    const { accountId } = event.data;
+</Callout>
 
-    // Load the workflow that the user defined
-    const workflow = await step.run("Load workflow from database", async () => {
-      return database.workflows.find({
-        accountId,
-        trigger: "lead_status_changed",
-      });
-    });
-    // The workflow here is represented as a simple series of actions
-    /*
-      "workflow": {
-        "name": "Approval",
-        "actions": [
-          { "type": "filter", "data": { "field": "status", "value": "proposal_created" } }
-          { "type": "email", "data": { "template": "proposal", "to": "leadEmail" } },
-          { "type": "slack", "data": { "channel": "C12345" } },
-          { "type": "sleep", "data": { "duration": "2 days" } },
-          { "type": "email", "data": { "template": "proposal_follow_up", "to": "salespersonEmail" } },
-        ]
-      }
-    */
+We would like to provide the following AI automation tasks to our users:
 
-    // We allow filter to terminate the workflow early
-    let shouldContinue = true;
+**Review tasks**
+- Add a Table of Contents: _a task leveraging OpenAI to insert a Table of Contents in the blog post_
+- Perform a grammar review: _a task leveraging OpenAI to perform some grammar fixes_
 
-    // We loop over all actions as long as there are any remaining and no filter has exited
-    while (shouldContinue && workflow.actions.length) {
-      const action = workflow.actions.shift();
+**Social content tasks**
+- Generate LinkedIn posts: _a task leveraging OpenAI to generate some Tweets_
+- Generate Twitter posts: _a task leveraging OpenAI to generate a LinkedIn post_
 
-      // We now run one of our pre-build actions:
-      switch (action.type) {
-        // The filter action sets shouldContinue and can end the workflow at any time
-        case "filter":
-          shouldContinue = await step.run("filter", async () => {
-            // Filter uses the action's configuration to match against the values
-            // in the triggering event:
-            return event.data[action.data.field] === action.data.value;
-          });
-          break;
+Our users will be able to combine those tasks to build their custom workflows.
 
-        // The email action just calls some external code that you imported
-        case "email":
-          await step.run("send-email", async () => {
-            // Determine who the email should be sent to
-            const sendToAddress = event.data[action.data.to];
-            return await sendEmail({
-              to: sendToAddress,
-              template: action.data.template,
-            });
-          });
-          break;
+### 1. Adding the tasks definition to the application
 
-        // The slack action sends a pre-defined Slack notification to the user's channel
-        case "slack":
-          await step.run("slack-notification", async () => {
-            // Grab the slack token from the database and post a message to the user's Slack
-            const slackToken = await database.slack_tokens.find({ accountId });
-            return await sendSlackNotification({
-              channelId: action.data.channel,
-              notificationType: event.data.status, // i.e. "proposal_created"
-              slackToken,
-            });
-          });
-          break;
+After [installing and setup Inngest](/docs/getting-started/nextjs-quick-start) in our Next.js application, we will create the following [Workflow Actions definition](/docs/reference/workflow-kit/actions) file:
 
-        // The sleep action allows the workflow to pause for any amount of time
-        case "sleep":
-          await step.sleep("pause-workflow", action.data.duration);
-          break;
-      }
-    }
+```ts {{ title: "lib/inngest/workflowActions.ts" }}
+import { type PublicEngineAction } from "@inngest/workflow/types";
 
-    // All actions have been executed, or the filter has determined to terminate the workflow early
-    // We're all done and we can return some data for our logs:
-    return {
-      status: "completed",
-      workflowName: workflow.name,
-      accountId,
-    };
-  }
-);
+export const actions: PublicEngineAction[] = [
+  {
+    kind: "add_ToC",
+    name: "Add a Table of Contents",
+    description: "Add an AI-generated ToC",
+  },
+  {
+    kind: "grammar_review",
+    name: "Perform a grammar review",
+    description: "Use OpenAI for grammar fixes",
+  },
+  {
+    kind: "wait_for_approval",
+    name: "Apply changes after approval",
+    description: "Request approval for changes",
+  },
+  {
+    kind: "apply_changes",
+    name: "Apply changes",
+    description: "Save the AI revisions",
+  },
+  {
+    kind: "generate_linkedin_posts",
+    name: "Generate LinkedIn posts",
+    description: "Generate LinkedIn posts",
+  },
+  {
+    kind: "generate_tweet_posts",
+    name: "Generate Twitter posts",
+    description: "Generate Twitter posts",
+  },
+];
+
 ```
 
-## How do I build this?
+<CardGroup cols={1}>
 
-There are several steps that you can take to build something like this, but they're all dependent on what you want to deliver for your users. This will walk through the high level flow of what you need to do and how to build with Inngest:
+  <Card title="Learn more about Workflow Actions" href="/docs/reference/workflow-kit/actions">
+    Explore how Workflow actions get declared as `PublicEngineAction` and `EngineAction`.
+  </Card>
 
-1. **Define the structure to configure and store workflows**. The simplest option might be an array of sequential events, but you also could define a [DAG](https://en.wikipedia.org/wiki/Directed_acyclic_graph) to allow for parallel workflow steps or complex ordering. In the above example, we use a simple array of actions.
-2. **Determine the pre-built actions and their inputs/outputs**. What do you want your users to be able to do? Some ideas might include: sending an email notification, updating another system via API, add a delay for `n` days, or triggering another part of your system.
-3. **Write logic to traverse workflow structure**. Keep it simple and flexible. You basically want to write logic that loops over the workflow and determines what to do next - that's it.
-4. **Build your actions as steps**. Now that you have your workflow traversal code written, you can conditionally run different Inngest steps ([`step.run()`](/docs/reference/functions/step-run), [`step.sleep()`](/docs/reference/functions/step-sleep), etc.).
-5. **Send events to trigger the user workflows**. Lastly, you just need to start triggering Inngest events from your system with [`inngest.send()`](/docs/reference/events/send). Events trigger Inngest functions to run, so you can add triggers in any part of your system, like when a user edits data, a data pipeline completes ingestion, or an external trigger like a webhook event.
+</CardGroup>
 
-With all of the above squared away, the rest is a UI task to allow users to define and customize workflows in your application. Inngest takes care of the hard parts so you can ship customizable workflow features to all of your users in a short amount of time.
+
+
+### 2. Updating our database schema
+
+To enable our users to configure the workflows, we will create the following `workflows` table:
+
+
+|Colunm name|Column type|Description|
+|-----------|-----------|-----------|
+id| `bigint`|
+name | `text`| _The name of the automation_
+description | `text`| _A short description of the automation_
+workflow | `jsonb`| _A [Workflow instance object](/docs/reference/workflow-kit/workflow-instance)_
+enabled | `boolean`|
+trigger | `text`| _The name of the [Inngest Event](/docs/features/events-triggers) triggering the workflow_
+created_at | `timestamp`|
+
+Once the `workflows` table created, we will add two [workflow instances](/doc/reference/workflow-kit/workflow-instance) records:
+- _"When a blog post is published"_: Getting a review from AI
+- _"When a blog post is moved to review"_: Actions performed to optimize the distribution of blog posts
+
+using the following SQL insert statement:
+
+```
+INSERT INTO "public"."workflows" ("id", "created_at", "workflow", "enabled", "trigger", "description", "name") VALUES
+	(2, '2024-09-14 20:19:41.892865+00', NULL, true, 'blog-post.published', 'Actions performed to optimize the distribution of blog posts', 'When a blog post is published'),
+	(1, '2024-09-14 15:46:53.822922+00', NULL, true, 'blog-post.updated', 'Getting a review from AI', 'When a blog post is moved to review');
+```
+
+<Callout>
+
+You will find a ready-to-use database seed [in the repository](https://github.com/inngest/workflow-kit/blob/main/examples/nextjs-blog-cms/supabase/seed.sql).
+
+</Callout>
+
+
+### 3. Adding the Workflow Editor page
+
+With our workflow actions definition and `workflows` table ready, we will create a new Next.js Page featuring the Workflow Editor.
+
+First, we will add a new [Next.js Page](https://nextjs.org/docs/app/building-your-application/routing/pages) to load the worklow and render the Editor:
+
+```tsx {{ title: "app/automation/[id]/page.tsx" }}
+import { AutomationEditor } from "@/components/automation-editor";
+import { createClient } from "@/lib/supabase/server";
+import { notFound } from "next/navigation";
+
+export const runtime = "edge";
+
+export default async function Automation({
+  params,
+}: {
+  params: { id: string };
+}) {
+  const supabase = createClient();
+  const { data: workflow } = await supabase
+    .from("workflows")
+    .select("*")
+    .eq("id", params.id!)
+    .single();
+  if (workflow) {
+    return <AutomationEditor workflow={workflow} />;
+  } else {
+    notFound();
+  }
+}
+
+```
+
+The `<AutomationEditor>` component is instantiated with a [workflow instance](/doc/reference/workflow-kit/workflow-instance) loaded from the database:
+
+
+```tsx {{ title: "src/components/automation-editor.ts" }}
+import { useState } from "react";
+import { Editor, Provider, Sidebar } from "@inngest/workflow/ui";
+
+// import `PublicEngineAction[]`
+import { actions } from "@/inngest/workflowActions";
+import { type Workflow } from "@/lib/supabase/types";
+
+import "@inngest/workflow/ui/ui.css";
+import "@xyflow/react/dist/style.css";
+
+export const AutomationEditor = ({ workflow }: { workflow: Workflow }) => {
+  const [workflowDraft, updateWorkflowDraft] =
+    useState<typeof workflow>(workflow);
+
+  return (
+    <Provider
+      key={workflowDraft?.id}
+      workflow={workflowDraft?.workflow}
+      trigger={{
+        event: {
+          name: workflowDraft.trigger,
+        },
+      }}
+      availableActions={actions}
+      onChange={(updated) => {
+        updateWorkflowDraft({
+          ...workflowDraft,
+          workflow: updated,
+        });
+      }}
+    >
+      <Editor>
+        <Sidebar position="right">
+          <></>
+        </Sidebar>
+      </Editor>
+    </Provider>
+  );
+};
+```
+
+The [`<Provider>`](/docs/reference/workflow-kit/components-api) is a controlled component, relying on the `workflow={}` object to update.
+
+<Callout>
+
+The complete version of the `<AutomationEditor>` is [available on GitHub](https://github.com/inngest/workflow-kit/blob/main/examples/nextjs-blog-cms/components/automation-editor.tsx).
+
+</Callout>
+
+Navigating to `/automation/1` renders tht following Workflow Editor UI using our workflow actions:
+
+![workflow-kit-announcement-video-loop.gif](/assets/docs/reference/workflow-kit/workflow-demo.gif)
+
+### 4. Implementing the Workflow Actions handlers
+
+Let's now implement the logic our automation tasks by creating a new file in `lib/inngest` and starting with the "Add a Table of Contents" workflow action:
+
+```tsx {{ title: "lib/inngest/workflowActionHandlers.ts" }}
+import OpenAI from "openai";
+import { type EngineAction, type WorkflowAction } from "@inngest/workflow-kit";
+
+import { type BlogPost } from "../supabase/types";
+
+import { loadBlogPost } from "../loaders/blog-post";
+import { createClient } from "../supabase/server";
+import { actions } from "./workflowActions";
+
+
+export const actions: EngineAction[] = [
+  {
+    // Add a Table of Contents
+    ...actionsDefinition[0],
+    handler: async ({ event, step, workflowAction }) => {
+      const supabase = createClient();
+
+      const blogPost = await step.run("load-blog-post", async () =>
+        loadBlogPost(event.data.id)
+      );
+
+      const aiRevision = await step.run("add-toc-to-article", async () => {
+        const openai = new OpenAI({
+          apiKey: process.env["OPENAI_API_KEY"], // This is the default and can be omitted
+        });
+
+        const prompt = `
+        Please update the below markdown article by adding a Table of Content under the h1 title. Return only the complete updated article in markdown without the wrapping "\`\`\`".
+
+        Here is the text wrapped with "\`\`\`":
+        \`\`\`
+        ${getAIworkingCopy(workflowAction, blogPost)}
+        \`\`\`
+        `;
+
+        const response = await openai.chat.completions.create({
+          model: process.env["OPENAI_MODEL"] || "gpt-3.5-turbo",
+          messages: [
+            {
+              role: "system",
+              content: "You are an AI that make text editing changes.",
+            },
+            {
+              role: "user",
+              content: prompt,
+            },
+          ],
+        });
+
+        return response.choices[0]?.message?.content || "";
+      });
+
+      await step.run("save-ai-revision", async () => {
+        await supabase
+          .from("blog_posts")
+          .update({
+            markdown_ai_revision: aiRevision,
+            status: "under review",
+          })
+          .eq("id", event.data.id)
+          .select("*");
+      });
+    },
+    }
+  },
+];
+```
+
+This new file adds the `handler` property to the existing _"Add a Table of Contents"_ action.
+
+A [workflow action `handler()`](/docs/reference/workflow-kit/actions#handler-function-argument-properties) has a similar signature to Inngest's function handlers, receiving two key arguments: `event` and [`step`](/docs/reference/functions/create#step).
+
+Our _"Add a Table of Contents"_ leverages Inngest's [step API](/docs/reference/functions/step-run) to create reliable and retriable steps generating and inserting a Table of Contents.
+
+
+<Callout>
+
+The complete implementation of all workflow actions are [available on GitHub](https://github.com/inngest/workflow-kit/blob/main/examples/nextjs-blog-cms/lib/inngest/workflowActionHandlers.ts).
+
+</Callout>
+
+
+
+### 5. Creating an Inngest Function
+
+With all the workflow action handlers of our automation tasks [implemented](https://github.com/inngest/workflow-kit/blob/main/examples/nextjs-blog-cms/lib/inngest/workflowActionHandlers.ts),
+we can create a [`Engine`](/docs/reference/workflow-kit/engine) instance and pass it to a dedicated [Inngest Function](/docs/features/inngest-functions) that will run the automation when the `"blog-post.updated"` and `"blog-post.published"` events will be triggered:
+
+```tsx {{ title: "lib/inngest/workflow.ts" }}
+import { Engine } from "@inngest/workflow-kit";
+
+import { loadWorkflow } from "../loaders/workflow";
+import { inngest } from "./client";
+import { actionsWithHandlers } from "./workflowActionHandlers";
+
+const workflowEngine = new Engine({
+  actions: actionsWithHandlers,
+  loader: loadWorkflow,
+});
+
+export default inngest.createFunction(
+  { id: "blog-post-workflow" },
+  // Triggers
+  // - When a blog post is set to "review"
+  // - When a blog post is published
+  [{ event: "blog-post.updated" }, { event: "blog-post.published" }],
+  async ({ event, step }) => {
+    // When `run` is called, the loader function is called with access to the event
+    await workflowEngine.run({ event, step });
+  }
+);
+
+```
+
+### Going further
+
+This guide demonstrated how quickly and easily user-defined workflows can be added to your product when using our [Workflow Kit](/docs/reference/workflow-kit).
+
+
+<CardGroup cols={1}>
+<Card href={'https://github.com/inngest/workflow-kit/tree/main/examples/nextjs-blog-cms#readme'} title={"Step-by-step tutorial of setting up this demo"} icon={<GithubIcon className="text-basis h-4 w-4" />}>
+  This use case is available a open-source Next.js demo on GitHub.
+</Card>
+</CardGroup>
