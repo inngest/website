@@ -10,8 +10,7 @@ import { Engine, type Workflow } from "@inngest/workflow";
 
 import { inngest } from "./client";
 import { actions } from "./actions";
-
-import { createClient } from "../supabase/server";
+import { loadWorkflowInstanceFromEvent } from "./loaders";
 
 const workflowEngine = new Engine({
   actions: actionsWithHandlers,
