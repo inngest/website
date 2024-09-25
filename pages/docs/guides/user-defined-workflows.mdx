@@ -1,7 +1,7 @@
 import { Callout, CodeGroup, Card, CardGroup, ImageTheme } from "src/shared/Docs/mdx";
 import GithubIcon from "shared/Icons/Github"
 
-# Build Workflows configurable by your users
+# Build workflows configurable by your users
 
 Users today are demanding customization and integrations from every product. Your users may want your product to support custom workflows to automate key user actions.
 Leverage our [Workflow Kit](/docs/reference/workflow-kit) to add powerful user-defined workflows features to your product.
@@ -127,7 +127,7 @@ Once the `workflows` table created, we will add two [workflow instances](/doc/re
 
 using the following SQL insert statement:
 
-```
+```sql
 INSERT INTO "public"."workflows" ("id", "created_at", "workflow", "enabled", "trigger", "description", "name") VALUES
 	(2, '2024-09-14 20:19:41.892865+00', NULL, true, 'blog-post.published', 'Actions performed to optimize the distribution of blog posts', 'When a blog post is published'),
 	(1, '2024-09-14 15:46:53.822922+00', NULL, true, 'blog-post.updated', 'Getting a review from AI', 'When a blog post is moved to review');
@@ -180,7 +180,6 @@ The `<AutomationEditor>` component is instantiated with a [workflow instance](/d
 import { useState } from "react";
 import { Editor, Provider, Sidebar } from "@inngest/workflow/ui";
 
-// import `PublicEngineAction[]`
 import { actions } from "@/inngest/workflowActions";
 import { type Workflow } from "@/lib/supabase/types";
 
