@@ -1,5 +1,5 @@
 "use client";
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 
 const url =
   "https://www.producthunt.com/posts/workflow-kit-by-inngest?embed=true&utm_source=badge-featured&utm_medium=badge&utm_souce=badge-workflow&#0045;kit&#0045;by&#0045;inngest";
@@ -7,7 +7,10 @@ const url =
 export default function ProductHunt() {
   // We do this b/c this is a descendent of a card which is a link. This is a hack and I'm not proud of it.
   // cache bust every 60s
-  const ts = Math.floor(Date.now() / 1000 / 60);
+  const [ts, setTs] = useState<number>(Math.floor(Date.now() / 1000 / 60));
+  useEffect(() => {
+    setTimeout(() => setTs(Math.floor(Date.now() / 1000 / 60)), 10);
+  }, []);
   return (
     <div
       className="cursor-pointer"
