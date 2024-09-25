@@ -4,6 +4,7 @@ import { RiRocket2Line } from "@remixicon/react";
 import NewsletterSignup from "src/components/NewsletterSignup";
 import { generateMetadata } from "src/utils/social";
 import Community from "./Community";
+import ProductHunt from "./ProductHunt";
 
 export const metadata: Metadata = generateMetadata({
   title: "Launch Week II - September 23-27, 2024",
@@ -22,7 +23,8 @@ export default function Page() {
           display: none;
         }
       `}</style>
-      <div className="max-w-[1520px] mx-auto px-8 bg-[url(/assets/launch-week/2/hero-background-animated.svg)] bg-contain bg-no-repeat bg-top">
+      {/* Disable animated graphic as it's slowing down launch week page: hero-background-animated.svg */}
+      <div className="max-w-[1520px] mx-auto px-8 bg-[url(/assets/launch-week/2/hero-background.svg)] bg-contain bg-no-repeat bg-top">
         <header className="max-w-6xl mx-auto py-24 md:py-52 text-basis">
           <div className="lg:ml-2.5 flex items-center gap-2 uppercase text-lg md:text-2xl text-[rgb(var(--color-primary-xIntense))] font-medium">
             <span>Sept 23</span>
@@ -46,7 +48,7 @@ export default function Page() {
             <NewsletterSignup tags={["launch-week-sept-2024"]} />
           </div> */}
         </header>
-        <div className="max-w-6xl mx-auto mb-6 md:mb-24 flex flex-col gap-16">
+        <div className="max-w-6xl mx-auto mb-6 md:mb-24 flex flex-col gap-16 lg:gap-24">
           <Day day={1} title="Self-hosting" date="Monday, September 23rd">
             <Card
               title="Announcing self-hosting"
@@ -66,7 +68,7 @@ export default function Page() {
             </Card>
           </Day>
 
-          <Day day={2} title="Integrations" date="Tuesday, September 24rd">
+          <Day day={2} title="Integrations" date="Tuesday, September 24th">
             <Card
               title="Neon Postgres integration"
               image="/assets/launch-week/2/tuesday-graphic.svg"
@@ -86,6 +88,27 @@ export default function Page() {
             </Card>
           </Day>
 
+          <Day day={3} title="Workflow" date="Wednesday, September 25th">
+            <Card
+              title="Workflow kit"
+              image="/assets/launch-week/2/wednesday-graphic.svg"
+              background="/assets/launch-week/2/wednesday-bg.png"
+              href="/blog/introducing-workflow-kit?ref=launch-week-2"
+              extra={<ProductHunt />}
+            >
+              <p>
+                Build workflow UIs faster with our open-source SDK. It
+                simplifies developing user-defined workflows by providing
+                powerful state management and a dynamic UI editor.
+              </p>
+              <p>
+                Leverage Inngest's durable execution engine for customizable
+                actions and dynamic configuration, reducing development time
+                from days to hours.
+              </p>
+            </Card>
+          </Day>
+
           {/* Upcoming days */}
           <div className="relative">
             {/* Upcoming day */}
@@ -93,7 +116,7 @@ export default function Page() {
               <div
                 className="p-6 py-12 md:py-28 flex items-center justify-center gap-4 rounded-lg"
                 style={{
-                  background: `url(/assets/launch-week/2/coming-soon-bg.svg), linear-gradient(211deg, rgba(176, 176, 176, 0.50) -57.05%, rgba(0, 0, 0, 0.40) 45.09%), #1A1A1A;`,
+                  background: `url(/assets/launch-week/2/coming-soon-bg.svg), linear-gradient(211deg, rgba(176, 176, 176, 0.50) -57.05%, rgba(0, 0, 0, 0.40) 45.09%), #1A1A1A`,
                   backgroundSize: `contain, 100% 100%, 100% 100%`,
                   backgroundRepeat: `no-repeat, no-repeat, no-repeat`,
                   backgroundPosition: `right, center, center`,
@@ -105,7 +128,7 @@ export default function Page() {
                     Coming up next...
                   </h2>
                   <p className="text-subtle text-sm">
-                    Wednesday, September 24th
+                    Thursday, September 24th
                   </p>
                   <div className="mt-8">
                     <NewsletterSignup
@@ -117,11 +140,7 @@ export default function Page() {
                 </div>
               </div>
             </div>
-            {[
-              // "Wednesday, September 23rd",
-              "Thursday, September 24th",
-              "Friday, September 25th",
-            ].map((day, idx) => (
+            {["Friday, September 25th"].map((day, idx) => (
               <div
                 key={idx}
                 className="relative p-px rounded-lg bg-gradient-to-bl from-[#686868] via-[#545454] to-[#292929]"
@@ -190,18 +209,20 @@ function Card({
   href,
   background = "/assets/launch-week/2/monday-bg.svg",
   children,
+  extra,
 }: {
   title: string;
   image: string;
   href: string;
   background?: string;
   children: React.ReactNode;
+  extra?: React.ReactNode;
 }) {
   return (
     <a href={href} className="group flex flex-grow">
-      <div className="flex p-px rounded-lg bg-gradient-to-bl from-[#686868] via-[#545454] to-[#292929]">
+      <div className="flex p-px w-full rounded-lg bg-gradient-to-bl from-[#686868] via-[#545454] to-[#292929]">
         <div
-          className="flex flex-col md:flex-row gap-6 items-center md:items-start rounded-lg p-6 flex-grow"
+          className="flex flex-col md:flex-row gap-6 items-center md:items-start justify-between rounded-lg p-6 flex-grow"
           style={{
             background: `url(${background}), linear-gradient(211deg, rgba(176, 176, 176, 0.50) -57.05%, rgba(0, 0, 0, 0.40) 45.09%), #1A1A1A;`,
             backgroundSize: `contain, 100% 100%, 100% 100%`,
@@ -220,6 +241,7 @@ function Card({
             <p className="text-primary-intense text-sm group-hover:underline">
               Read the announcement
             </p>
+            {extra ? <div className="mt-4">{extra}</div> : null}
           </div>
           <img
             src={image}
