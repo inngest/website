@@ -56,7 +56,7 @@ export default function Page() {
             <NewsletterSignup tags={["launch-week-sept-2024"]} />
           </div> */}
         </header>
-        <div className="max-w-6xl mx-auto mb-6 md:mb-24 flex flex-col gap-16 lg:gap-24">
+        <div className="max-w-6xl mx-auto mb-6 md:mb-24 flex flex-col gap-16 lg:gap-20">
           <Day day={1} title="Self-hosting" date="Monday, September 23rd">
             <Card
               title="Announcing self-hosting"
@@ -96,12 +96,7 @@ export default function Page() {
             </Card>
           </Day>
 
-          <Day
-            isToday={true}
-            day={3}
-            title="Workflow"
-            date="Wednesday, September 25th"
-          >
+          <Day day={3} title="Workflow" date="Wednesday, September 25th">
             <Card
               title="Workflow kit"
               image="/assets/launch-week/2/wednesday-graphic.svg"
@@ -119,6 +114,54 @@ export default function Page() {
                 actions and dynamic configuration, reducing development time
                 from days to hours.
               </p>
+            </Card>
+          </Day>
+
+          <Day
+            isToday={true}
+            day={4}
+            title="Observability"
+            date="Thursday, September 26th"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 lg:grid-rows-2 gap-6"
+          >
+            <Card
+              title="Observability on Inngest"
+              image="/assets/launch-week/2/thursday-chart-graphic.svg"
+              background="/assets/launch-week/2/thursday-bg.png"
+              href="/blog/enhanced-observability-traces-and-metrics?ref=launch-week-2"
+              className="md:col-span-2 md:row-span-2"
+              flow="col"
+              cta="Explore the update now"
+            >
+              <p>
+                Introducing two major updates to Inngest's observability:{" "}
+                <strong>new traces and run details experiences</strong>. Get a
+                pulse of the health of your application at a glance with
+                cross-application metrics & inspect complex workflows in detail
+                with traces.
+              </p>
+            </Card>
+            <Card
+              title="Metrics dashboard"
+              image="/assets/launch-week/2/thursday-donut-graphic.svg"
+              background="/assets/launch-week/2/thursday-bg.png"
+              href="/blog/enhanced-observability-traces-and-metrics?ref=launch-week-2"
+              flow="col"
+              cta=""
+            >
+              <p>
+                Top-down app health view, quick troubleshooting, clear insights.
+              </p>
+            </Card>
+            <Card
+              title="Tracing for function runs"
+              image="/assets/launch-week/2/thursday-trace-graphic.svg"
+              background="/assets/launch-week/2/thursday-bg.png"
+              href="/blog/enhanced-observability-traces-and-metrics?ref=launch-week-2"
+              flow="col"
+              cta=""
+            >
+              <p>New waterfall view for runs, inspired by OpenTelemetry.</p>
             </Card>
           </Day>
 
@@ -140,9 +183,7 @@ export default function Page() {
                   <h2 className="text-4xl text-basis font-book">
                     Coming up next...
                   </h2>
-                  <p className="text-subtle text-sm">
-                    Thursday, September 24th
-                  </p>
+                  <p className="text-subtle text-sm">Friday, September 27th</p>
                   <div className="mt-8">
                     <NewsletterSignup
                       showHeader={false}
@@ -153,7 +194,7 @@ export default function Page() {
                 </div>
               </div>
             </div>
-            {["Friday, September 25th"].map((day, idx) => (
+            {[].map((day, idx) => (
               <div
                 key={idx}
                 className="relative p-px rounded-lg bg-gradient-to-bl from-[#686868] via-[#545454] to-[#292929]"
@@ -195,12 +236,14 @@ function Day({
   title,
   date,
   children,
+  className = "flex",
 }: {
   isToday?: boolean;
   day: number;
   title: string;
   date: string;
   children: React.ReactNode;
+  className?: string;
 }) {
   return (
     <div
@@ -214,7 +257,7 @@ function Day({
         </div>
         <p className="text-muted">{date}</p>
       </div>
-      <div className="mt-8 lg:min-h-[496px] flex">{children}</div>
+      <div className={`mt-8 lg:min-h-[496px] ${className}`}>{children}</div>
     </div>
   );
 }
@@ -226,6 +269,9 @@ function Card({
   background = "/assets/launch-week/2/monday-bg.svg",
   children,
   extra,
+  className,
+  flow = "row",
+  cta = "Read the announcement",
 }: {
   title: string;
   image: string;
@@ -233,20 +279,28 @@ function Card({
   background?: string;
   children: React.ReactNode;
   extra?: React.ReactNode;
+  className?: string;
+  flow?: "row" | "col";
+  cta?: string;
 }) {
   return (
-    <a href={href} className="group flex flex-grow">
+    <a href={href} className={`group flex flex-grow ${className}`}>
       <div className="flex p-px w-full rounded-lg bg-gradient-to-bl from-[#686868] via-[#545454] to-[#292929]">
         <div
-          className="flex flex-col md:flex-row gap-6 items-center md:items-start justify-between rounded-lg p-6 flex-grow"
+          className={`flex flex-col md:flex-${flow} gap-6 items-center md:items-start justify-between rounded-lg p-6 flex-grow
+          ${flow === "col" ? "pb-0" : ""}`}
           style={{
-            background: `url(${background}), linear-gradient(211deg, rgba(176, 176, 176, 0.50) -57.05%, rgba(0, 0, 0, 0.40) 45.09%), #1A1A1A;`,
+            background: `url(${background}), linear-gradient(211deg, rgba(176, 176, 176, 0.50) -57.05%, rgba(0, 0, 0, 0.40) 45.09%), #1A1A1A`,
             backgroundSize: `contain, 100% 100%, 100% 100%`,
             backgroundRepeat: `no-repeat, no-repeat, no-repeat`,
             backgroundPosition: `right, center, center`,
           }}
         >
-          <div className="md:max-w-80 xl:w-80 flex flex-col gap-4">
+          <div
+            className={`${
+              flow === "row" ? "md:max-w-80 xl:w-80" : "w-full"
+            } flex flex-col gap-4`}
+          >
             <h3 className="flex items-center gap-2 text-basis text-xl">
               {title}
               <ArrowIcon />
@@ -255,14 +309,18 @@ function Card({
               {children}
             </div>
             <p className="text-primary-intense text-sm group-hover:underline">
-              Read the announcement
+              {cta}
             </p>
             {extra ? <div className="mt-4">{extra}</div> : null}
           </div>
           <img
             src={image}
             alt={title}
-            className="my-auto sm:max-w-[80%] md:max-w-[50%] lg:max-w-[68%]"
+            className={`my-auto ${
+              flow === "row"
+                ? "sm:max-w-[80%] md:max-w-[50%] lg:max-w-[68%]"
+                : ""
+            }`}
           />
         </div>
       </div>
