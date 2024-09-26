@@ -1,1 +1,60 @@
-TODO
+---
+heading: "Enhanced observability with Inngest: Waterfall trace view and advanced monitoring"
+subtitle: A new era for monitoring durable functions
+showSubtitle: true
+image: /assets/blog/enhanced-observability-traces-and-metrics/featured-image.png
+date: 2024-09-26
+author: Cheryl Manalo
+disableCTA: true
+---
+
+At Inngest, we are constantly evolving to meet the needs of developers building applications with durable execution. Today, we're excited to unveil two significant updates designed to enhance how you monitor, debug, and gain insights into your durable workflows: **our new trace experience for runs and a holistic top-down monitoring dashboard**. Together, these updates redefine how you interact with your function executions and provide deeper insights into the overall health of your Inngest applications.
+
+### **A fresh perspective on function execution: The new trace experience for runs**
+
+Managing workflows can get complex, especially with parallel steps, concurrency limits, and multiple functions running simultaneously. Previously, our function run view displayed function steps in a vertical timeline, which often made it difficult to grasp the sequence and relationships between steps.
+
+To address this, we've introduced a dynamic **waterfall view** and **expanded run details**, inspired by OpenTelemetry tracing. These features make it easier than ever to visualize complex workflows and troubleshoot faster. Here's how they enhance your observability:
+
+* **Waterfall visualization**: This new trace view clearly maps out the sequence and timing of function executions, including steps running in parallel. You can now understand the flow of your entire workflow in seconds, simplifying navigation and revealing bottlenecks or inefficiencies at a glance.
+
+![Inngest's new waterfall view](/assets/blog/enhanced-observability-traces-and-metrics/waterfall.png)
+
+* **Expanded run details**: For those who need more granular insights, each run can be expanded within the list for a detailed breakdown, without losing your place in the workflow. This seamless integration between a high-level overview and detailed function execution ensures that you maintain both context and focus.
+
+![Inngest's new run details](/assets/blog/enhanced-observability-traces-and-metrics/run-details.png)
+
+By leveraging the principles of OpenTelemetry for tracing, these updates provide reliable and actionable data that enhance your debugging efficiency. You'll spend less time deciphering execution timelines and more time resolving issues, improving the overall performance and reliability of your applications.
+
+### Dashboard monitoring: A holistic view of application health
+
+While Inngest has long offered [function-level metrics](/blog/2023-10-27-fn-metrics-release?ref=blog-enhanced-observability), many users expressed the need for a higher-level view—one that provides a comprehensive snapshot of the entire application. With this release, we're introducing **dashboard monitoring capabilities** that offer a bird's-eye view of your system's health.
+
+![Inngest's new metrics dashboard](/assets/blog/enhanced-observability-traces-and-metrics/metrics-dashboard.png)
+
+Our new monitoring features are designed to help you quickly identify anomalies across your Inngest applications, from high-level system metrics down to individual function executions. Here's what you can expect:
+
+* **System health at a glance**: View the health of your applications at the environment level, helping you spot issues before they escalate. With metrics like backlog, concurrency, failure rates, and usage analytics, you can monitor your system holistically without having to dig into each function individually.
+
+  ![Inngest's environment level metrics](/assets/blog/enhanced-observability-traces-and-metrics/metrics-environment.png)
+
+* **Top-down debugging**: If an issue arises, you can quickly drill down from the system-wide view into specific functions or steps that are causing problems. This eliminates the need for manual investigation through logs and metrics, enabling faster troubleshooting.
+
+  ![Inngest's new run details](/assets/blog/enhanced-observability-traces-and-metrics/metrics-failed-functions.png)
+
+* **Clear visualizations**: The new dashboards are intuitive and focused on key performance indicators. These visualizations allow you to track critical data points, ensuring you always have the most relevant insights at hand.
+
+These enhancements don't aim to replace dedicated monitoring platforms like Datadog. Instead, they provide exactly what you need to manage your Inngest applications with confidence, offering the most important data for your Inngest-powered applications without unnecessary complexity.
+
+### The future of Inngest observability
+
+By combining the new trace experience with a monitoring dashboard, we're equipping you with powerful tools to manage, monitor, and troubleshoot your durable functions with effortless control. The ability to see both detailed execution traces and a holistic view of system health means you can move seamlessly between resolving function-level issues and addressing broader system-wide concerns.
+
+These updates reflect our commitment to improving observability and giving developers the tools they need to build resilient, durable workflows. As we continue to expand Inngest's capabilities, we'd love to hear your [feedback](https://roadmap.inngest.com/roadmap) to make sure we're meeting the needs of your team.
+
+**Start using these new features today** and experience a new level of visibility and control over your applications. Whether you're troubleshooting a specific function or monitoring your entire system, these enhancements are designed to make your job easier and more efficient.
+
+* [**Learn more about our new trace experience for runs**](/docs/platform/monitor/inspecting-function-runs?ref=blog-enhanced-observability)
+* [**Explore the metrics UI**](/docs/platform/monitor/observability-metrics?ref=blog-enhanced-observability)
+
+Stay tuned for future updates, including potential data export capabilities and even more advanced insights tailored to your durable workflows.
