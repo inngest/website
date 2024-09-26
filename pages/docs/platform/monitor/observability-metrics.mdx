@@ -5,104 +5,161 @@ import { Callout, Col, Row } from "src/shared/Docs/mdx";
 
 With hundreds to thousands of events going through your Inngest Apps, triggering multiple Function runs, getting a clear view of what is happening at any time is crucial.
 
-The Inngest Platform provides observability features for both Events and Function runs, coupled with Event logs and [a detailed Function Run Logs to inspect arguments and steps timings](/docs/platform/monitor/inspecting-function-runs).
+The Inngest Platform provides observability features for both Events and Function runs, coupled with Event logs and [a detailed Function Run details to inspect arguments and steps timings](/docs/platform/monitor/inspecting-function-runs).
 
 ## Function runs observability
 
 The Functions list page provides the first round of essential information in one place with:
 
 - **Triggers**: Events or Cron schedule
-- **Failure** rate: enabling you to quickly identify a surge of errors
+- **Failure rate**: enabling you to quickly identify a surge of errors
 - **Volume**: helping in identifying possible drops in processing
 
 ![The Functions list page lists all available Functions with essential information such as associated Events, Failure rate and Volume.](/assets/docs/platform/monitor/observability-metrics/functions-list.png)
 
-Navigating to a Function displays an overview composed of three main parts:
+## Function metrics
 
-1. KPIs - on the top
-2. Metrics - at the center
-3. Configuration - on the right
+Navigating to a Function displays the Function metrics page, composed of 7 charts:
 
-![Clicking on a Function leads us to the Function view, composed of three main parts, KPIs, metrics (as charts) and Configuration information.](/assets/docs/platform/monitor/observability-metrics/function-view.png)
+![Clicking on a Function leads us to the Function view, composed of 7 charts.](/assets/docs/platform/monitor/observability-metrics/function-view.png)
 
-### Function KPIs
+All the above charts can be filtered based on a time range (ex: last 24 hours), a specific Function or [App](/docs/platform/manage/apps).
 
-The Function KPIs are composed of two essential numbers for the selected time range (_default to 24h_):
+Let's go over each chart in detail:
+
+
+
+### Function Status
 
 <Row>
 
 <Col>
 
-- **Volume**: the number of Function runs
-- **Failure rate**: the number of Functions runs that failed after reaching their maximum retry policy
+![The Function Status chart is a pie chart where each part represents a function status (failed, succeed or cancelled).](/assets/docs/platform/monitor/observability-metrics/function-metrics-runs.png)
+
+
 </Col>
+
 <Col>
-![The KPIs are composed of two metrics: the Volume and the Failure rate.](/assets/docs/platform/monitor/observability-metrics/function-kpis.png)
+
+<div className="pt-5">
+
+The Function Status chart provides a snapshot of the number of Function runs grouped by status.
+
+<Callout variant="info">
+
+**How to use this chart?**
+
+This chart is the quickest way to identify an unwanted rate of failures at a given moment.
+</Callout>
+
+</div>
+
 </Col>
 
 </Row>
 
-Those two numbers are a good representation of the state of your application that might indicate some actions to take:
 
-- A sudden Volume increase might require updating your Function configuration (ex: Throttling)
-- A Volume at zero might suggest that some events stopped from being sent
-- A high failure rate might be linked to a recent deployment or an external outage
+### Failed Functions
 
-### Function Metrics
+<Row>
 
-The Function overview page showcases many charts featuring metrics that can help you better understand the overall performance of your Inngest Functions.
+<Col>
 
-**Function Runs**
 
-![The Function Runs chat is a bar chat where each bar represents a variable time bucket and each bar's stack a function status (failed, succeed or cancelled).](/assets/docs/platform/monitor/observability-metrics/function-metrics-runs.png)
+The _Failed Functions_ chart displays the top 6 failing functions with the frequency of failures.
 
-The Function Runs charts provide a snapshot of the number of finished Function runs in buckets (from 1 minute to 1 hour).
 
 <Callout variant="info">
 
 **How to use this chart?**
 
-You can leverage this chart to identify a possible recurrence or surge in failures or cancellations that might have affected the total volume for the active time range.
+You can leverage this chart to identify a possible elevated rate of failures and quickly access the Function runs details from the "View all" button.
 
 </Callout>
 
-**Function Throughput**
+</Col>
 
-![The Function Throughput is a line chart featuring 3 series: queued, started and ended Function runs.](/assets/docs/platform/monitor/observability-metrics/function-metrics-throughput.png)
+<Col>
 
-The _Function Throughput_ chart shows the rate of which new function runs are queued, started and ended with flow control in mind. This shows the performance of the system of how fast new runs are created and are being handled.
+![](/assets/docs/platform/monitor/observability-metrics/failed-functions-chart.png)
+
+
+
+</Col>
+
+</Row>
+
+
+
+### Total runs throughput
+
+
+<Row>
+
+<Col>
+
+![The Total runs throughput is a line chart featuring the total number of Function runs per application.](/assets/docs/platform/monitor/observability-metrics/function-metrics-throughput.png)
+
+</Col>
+
+<Col>
+
+The _Total runs throughput_ is a line chart featuring the **rate of Function runs started per app**. This shows the performance of the system of how fast new runs are created and are being handled.
 
 <Callout variant="info">
 
 **How to use this chart?**
 
-Flow control might intentionally limit throughput, this chart is a great way to visualize how flow control may be able to limit throughput.
-
+Flow control might intentionally limit throughput, this chart is a great way to visualize it.
 </Callout>
 
-**Step Running & Step Backlog  - Point in Time**
 
-![The Step Running is a line chart featuring two series: queues and sleeping steps.](/assets/docs/platform/monitor/observability-metrics/function-metrics-step-backlog.png)
-![The Step Backlog is a line chart featuring a single series: running steps and some colored bar indicating concurrency capacity exhaust events.](/assets/docs/platform/monitor/observability-metrics/function-metrics-step-running.png)
+</Col>
 
-Both charts represents Step activity at a given point in time. Unlike other charts present on this page, these charts are not
-aggregating the number of running or started steps in a given time bucket.
+</Row>
+
+
+### Total steps throughput
+
+
+<Row>
+
+<Col>
+
+
+![The Total steps throughput is a line chart featuring the total number of Function steps running at a given time, per application.](/assets/docs/platform/monitor/observability-metrics/total-steps-throughput.png)
+
+
+</Col>
+
+<Col>
+
+The _Total steps throughput_ chart represents **the rate of which steps are executed, grouped by the selected Apps**.
 
 <Callout variant="info">
 
 **How to use these charts?**
 
-The _Step Backlog_ and _Step Running_ charts are helpful to assess the configuration of your Inngest Functions.
+The _Total steps throughput_ chart is helpful to assess the configuration of your Inngest Functions.
 
-For example, a low _Function Throughput_ might be linked to a high number of concurrent steps combined with a restrictive concurrency configuration.
+For example, a low _Total steps throughput_ might be linked to a high number of concurrent steps combined with a restrictive concurrency configuration.
 
 </Callout>
 
-**SDK Request Throughput**
+</Col>
 
-![The SDK Request Throughput is a line chart featuring three series: queued, started and ended Function runs.](/assets/docs/platform/monitor/observability-metrics/function-metrics-sdk-request-throughput.png)
+</Row>
 
-This charts indicates the throughput at which SDK requests (or steps) are queued and executed.
+
+{/* 
+### SDK request throughput
+
+<Row>
+
+<Col>
+
+The _SDK request throughput_ chart indicates the throughput at which SDK requests (or steps) are queued and executed, **across all selected Apps**.
 
 <Callout variant="info">
 
@@ -110,38 +167,84 @@ This charts indicates the throughput at which SDK requests (or steps) are queued
 
 This chart is a useful tool to evaluate in the requests sent by the Inngest Platform matches the number of steps created by Functions runs.
 
-The SDK Request Throughput is also useful to evaluate the number of requests sent to your application over time.
+The _SDK request throughput_ chart is also useful to evaluate the number of requests sent to your application over time.
 
 </Callout>
 
-**Function RateLimit**
+</Col>
 
-The _Function RateLimit_ chart indicates occurrences where the Flow Control [Rate Limit](/docs/guides/rate-limiting) mechanism had to prevent Function runs.
+<Col>
+
+![The SDK request throughput is a line chart featuring three series: queued, started and ended Function runs.](/assets/docs/platform/monitor/observability-metrics/function-metrics-sdk-request-throughput.png)
+
+
+</Col>
+
+</Row> */}
+
+
+
+### Backlog
+
+<Row>
+
+<Col>
+
+
+![The_Backlog highlights the number of Function runs waiting to processed at a given time bucket.](/assets/docs/platform/monitor/observability-metrics/backlog.png)
+
+</Col>
+
+<Col>
+
+The _Backlog_ highlights the number of **Function runs waiting to processed at a given time bucket, grouped by the selected Apps**.
 
 <Callout variant="info">
 
 **How to use this chart?**
 
-This chart is useful to assess the overall Rate Limit rate of an Inngest Function. For example, a lack of data might indicate that this Inngest Function might not require Rate limiting.
+This chart is useful to assess the _Account Concurrency_ capacity of your account and to identify potential spikes of activity.
 
 </Callout>
 
-### Function Configuration
 
+</Col>
+
+</Row>
+
+{/* 
+
+### Account concurrency
 
 <Row>
 
 <Col>
-The Function Configuration right panel is meant to be used as a reference for the KPIs and Function Metrics. This panel features information on the [retries policy](/docs/guides/error-handling) and [Flow Control](/docs/guides/flow-control) configuration.
 
-Updating your Function's retry configuration can solve a high failure rate. Also, increasing your Function's concurrency can help deal with Function Throughput issues.
+The _Account concurrency_ displays the **[concurrency](/docs/guides/concurrency) usage in time, at the account level**.
+
+The red line illustrates the maximum concurrency capacity of the account.
+
+<Callout variant="info">
+
+**How to use this chart?**
+
+This chart is useful to quickly identify is some increase in _Backlog_ or drop in _Total run throughput_ is linked to your account's [concurrency capacity](/docs/guides/concurrency).
+
+Each account gets a maximum concurrency capacity, computed by adding the total number of running steps across all applications.
+
+
+</Callout>
+
 </Col>
 
 <Col>
-![The Function Configuration side section features the retries and concurrency information.](/assets/docs/platform/monitor/observability-metrics/function-configuration.png)
+
+![The SDK request throughput is a line chart featuring three series: queued, started and ended Function runs.](/assets/docs/platform/monitor/observability-metrics/account-concurrency.png)
+
+
 </Col>
 
-</Row>
+</Row> */}
 
 
 ## Events observability
@@ -154,7 +257,7 @@ Thankfully, the Events page gives you a quick overview of the volume of Events b
 
 Get more detailed metrics for a dedicated event by navigating to it from the list:
 
-## Event Metrics and Logs
+## Events metrics and logs
 
 The Event page helps quickly visualize the throughput (the rate of event over time) and functions associated with this event.
 

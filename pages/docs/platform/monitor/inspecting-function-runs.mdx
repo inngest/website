@@ -1,31 +1,40 @@
 import { Callout, Row, Col } from "src/shared/Docs/mdx";
+import { RiExternalLinkFill } from "@remixicon/react";
 
 # Inspecting a Function run
 
-You identified a failed Function run and want to identify the root cause? Or simply want to dig into this run's timings?
+You identified a failed Function run and want to identify the root cause? Or simply want to dig into a run's timings?
+The Function run details will provide all the information to understand how this run ran and the tools to reproduce it locally.
 
-The Function Run Logs will provide all the information to understand how this run ran and the tools to reproduce it locally.
+## Accessing Function runs
 
+Functions runs across all application of the currently [selected environment](/docs/platform/environments) are accessible via the "Runs" page in the left side navigation.
 
-## The Function Run Logs
+![The "Handle failed payments" Function runs list features a run in a failing state.](/assets/docs/platform/monitor/inspecting-function-runs/function-runs.png)
 
-Our _Handle failed payments_ function failed after retrying 5 times:
+_Runs can be filtered using a Status, Queued or Started at and Application filters._
+
+Accessing the runs of a specific Function is achieved via the "Functions" menu, as described in the following section.
+
+## The Function run details
+
+A _Handle failed payments_ function failed after retrying 5 times:
 
 
 ![The "Handle failed payments" Function runs list features a run in a failing state.](/assets/docs/platform/monitor/inspecting-function-runs/handle-failed-payments-function-run-failed.png)
 
-Clicking on the failed Function Runs open the Function Run Logs panel:
+Clicking on the failed Function Runs expands the run detail view:
 
-![The Function Run Logs view displays the event payload on the left, some technical attributes (function version, timings) on the right and a timeline of steps on the bottom left.](/assets/docs/platform/monitor/inspecting-function-runs/function-run-logs.png)
+![The Function run details view displays the event payload on the left, some technical attributes (function version, timings) on the right and a timeline of steps on the bottom left.](/assets/docs/platform/monitor/inspecting-function-runs/function-run-logs.png)
 
-The Function Run Logs panel is divided in 3 parts:
+The Function run details panel is divided in 3 parts:
 
-- On the left: the **Event payload** that triggered the Function run
-- On the top right: **Timings and other technical information** helpful when exchanging with Support
-- On the bottom right: the **Timeline of execution** of the Function's steps
+- On the top right: the **Trigger details** helpful when exchanging with Support
+- On the right: the **Event payload** that triggered the Function run
+- On the bottom right: the **Run details** with its timeline, a clear with of the Function's steps execution
 
 
-The Function logs informs us that our Function run failed because of an `Error: Failed to downgrade user` error.
+The Function run details informs us that our Function run failed because of an `Error: Failed to downgrade user` error.
 
 This is a first clue, let's have a closer look at the Timeline to identify the root cause:
 
@@ -61,16 +70,37 @@ Expanding a step provides the same level of details (the error message and timin
 
 It seems that our `downgrade-account-billing-plan` step raised the same error during the following 5 retries, we might have to perform a fix in the database.
 
+
 </Col>
 
 </Row>
 
 
+<Callout>
 
-## Performing actions from the Function Run Logs
+💡 **Tips**
 
-The Function Run Logs provides two main actions: replay the Function Run or sending the trigger event to your local Inngest Dev Server.
+<div className="flex flex-row items-center">
+<div>Clicking on the</div>
+<RiExternalLinkFill className="fill-breeze-500 mx-2 h-4 w-4"/>
+<div> icon next to "Run details" open it in a new tab with a full-page layout.</div>
+</div>
+
+
+![Clicking on the icon next to "Run details" open it in a new tab with a full-page layout](/assets/docs/platform/monitor/inspecting-function-runs/function-runs-details-open-new-tab.png)
+
+It is useful for Function having a lot of steps or retries!
+
+
+</Callout>
+
+
+## Performing actions from the Function run details
+
+The Function run details provides two main actions: replay the Function Run or sending the trigger event to your local Inngest Dev Server.
 
 Sending the trigger Event to your local Inngest Dev Server provides a quick way to reproduce issues that are not linked to external factors (ex: new function version recently deployed, data issues).
 
-After looking at the Function Run Logs, the failure is judged temporary or fixed by a recent deployment, you can replay the Function run by using the "Rerun" button at the top right of the screen.
+After looking at the Function run details, the failure is judged temporary or fixed by a recent deployment, you can replay the Function run by using the "Rerun" button at the top right of the screen.
+
+![The rerun button is accessible in the header of the "run details" section of the Function run detail](/assets/docs/platform/monitor/inspecting-function-runs/function-runs-details-open-new-tab.png)
