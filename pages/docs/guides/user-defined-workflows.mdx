@@ -59,7 +59,7 @@ Our users will be able to combine those tasks to build their custom workflows.
 After [installing and setup Inngest](/docs/getting-started/nextjs-quick-start) in our Next.js application, we will create the following [Workflow Actions definition](/docs/reference/workflow-kit/actions) file:
 
 ```ts {{ title: "lib/inngest/workflowActions.ts" }}
-import { type PublicEngineAction } from "@inngest/workflow/types";
+import { type PublicEngineAction } from "@inngest/workflow";
 
 export const actions: PublicEngineAction[] = [
   {
@@ -108,7 +108,11 @@ export const actions: PublicEngineAction[] = [
 
 ### 2. Updating our database schema
 
-To enable our users to configure the workflows, we will create the following `workflows` table:
+To enable our users to configure the workflows, we will create the following `workflows` table.
+
+The `workflows` tables stores the [Workflow instance object](/docs/reference/workflow-kit/workflow-instance) containing how the user ordered
+the different selected [Workflow actions](/docs/reference/workflow-kit/actions). Other columns are added to store extra properties specific to
+our application such as: the automation name and description, the event triggering the automation and its status (`enabled`).
 
 
 |Colunm name|Column type|Description|
@@ -173,7 +177,10 @@ export default async function Automation({
 
 ```
 
-The `<AutomationEditor>` component is instantiated with a [workflow instance](/docs/reference/workflow-kit/workflow-instance) loaded from the database:
+The `<AutomationEditor>` component is then rendered with the following required properties:
+- `workflow={}`:  [workflow instance](/docs/reference/workflow-kit/workflow-instance) loaded from the database along side 
+- `event={}`: the name of the event triggering the workflow
+- `availableActions={}`: [actions](/docs/reference/workflow-kit/actions#passing-actions-to-the-react-components-public-engine-action) that the user can select to build its automation
 
 
 ```tsx {{ title: "src/components/automation-editor.ts" }}
@@ -217,7 +224,10 @@ export const AutomationEditor = ({ workflow }: { workflow: Workflow }) => {
 };
 ```
 
-The [`<Provider>`](/docs/reference/workflow-kit/components-api) is a controlled component, relying on the `workflow={}` object to update.
+[`<Provider>`](/docs/reference/workflow-kit/components-api) is a [Controlled Component](https://react.dev/learn/sharing-state-between-components#controlled-and-uncontrolled-components), relying on the `workflow={}` object to update its UI.
+
+Every change performed by the user will trigger the `onChange={}` callback to be called. This callback should update the object passed to the
+`workflow={}` prop and can be used to also implement an auto save mechanism.
 
 <Callout>
 

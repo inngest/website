@@ -1,6 +1,7 @@
 import { Callout, CodeGroup, Card, CardGroup, ImageTheme } from "src/shared/Docs/mdx";
 
 import GithubIcon from "shared/Icons/Github"
+import NewspaperIcon from "shared/Icons/Newspaper"
 
 # Workflow Kit
 Workflow Kit enables you to build [user-defined workflows](/docs/guides/user-defined-workflows) with Inngest by providing a set of workflow actions to the **[Workflow Engine](/docs/reference/workflow-kit/engine)** while using the **[pre-built React components](/docs/reference/workflow-kit/components-api)** to build your Workflow Editor UI.
@@ -49,16 +50,28 @@ Our Workflow Kit is open source and available on Github: [**inngest/workflow-kit
 <iframe src="https://ghbtns.com/github-btn.html?user=inngest&repo=workflow-kit&type=star&count=true" frameborder="0" scrolling="0" width="150" height="20" title="GitHub"></iframe>
 </div>
 
-## Examples
+## Guides and examples
 
-The [inngest/workflow-kit](https://github.com/inngest/workflow-kit/) repository features a ready-to-deploy Next.js demo using the Workflow Kit, Supabase, and OpenAI to power some AI content workflows:
+Get started with Worflow Kit by exploring our guide or cloning our Next.js template:
 
-![workflow-kit-announcement-video-loop.gif](/assets/docs/reference/workflow-kit/workflow-demo.gif)
+<CardGroup cols={2}>
 
-<CardGroup cols={1}>
+  <Card 
+    href={"/docs/guides/user-defined-workflows"}
+    title={"Guide: Build workflows configurable by your users"}
+    icon={<NewspaperIcon className="text-basis h-6 w-6" />}
+    iconPlacement="top"
+  >
+    Follow this step-by-step tutorial to learn how to use Workflow Kit to add automations to a CMS Next.js application.
+  </Card>
 
-<Card href={'https://github.com/inngest/workflow-kit/tree/main/examples/nextjs-blog-cms#readme'} title={"Clone or deploy the Next.js CMS AI workflows demo"} icon={<GithubIcon className="text-basis h-4 w-4" />}>
-     The Blog AI workflows demo app features AI workflows helping with grammar fixes, generating Table of Contents or Tweets, powered by the Workflow Kit.
-</Card>
+  <Card
+    href={'https://github.com/inngest/workflow-kit/tree/main/examples/nextjs-blog-cms#readme'}
+    title={"Next.js template: CMS AI automation demo"}
+    icon={<GithubIcon className="text-basis h-6 w-6" />}
+    iconPlacement="top"
+    >
+      This Next.js template features AI workflows helping with grammar fixes, generating Table of Contents or Tweets.
+  </Card>
 
 </CardGroup>
