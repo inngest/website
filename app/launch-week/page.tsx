@@ -118,7 +118,6 @@ export default function Page() {
           </Day>
 
           <Day
-            isToday={true}
             day={4}
             title="Observability"
             date="Thursday, September 26th"
@@ -165,9 +164,38 @@ export default function Page() {
             </Card>
           </Day>
 
-          {/* Upcoming days */}
+          <Day
+            isToday
+            day={5}
+            title="Recovery tools"
+            date="Friday, September 27th"
+          >
+            <Card
+              title="Bulk cancellation UI"
+              image="/assets/launch-week/2/friday-graphic.png"
+              background="/assets/launch-week/2/friday-bg.png"
+              href="/blog/bulk-cancellation?ref=launch-week-2"
+            >
+              <p>
+                The new Bulk Cancellation feature via the Inngest UI streamlines
+                function cancellations in Inngest, making event recovery faster
+                and more efficient.
+              </p>
+              <p>
+                It allows users to cancel function runs in bulk based on
+                criteria like time ranges or function states, providing better
+                control even when functions are paused.
+              </p>
+              <p>
+                This feature is part of Inngest's recovery toolkit, alongside
+                <strong>Pause</strong> and <strong>Replay</strong>, enabling
+                developers to manage large-scale workflows with ease.
+              </p>
+            </Card>
+          </Day>
+
+          {/* Upcoming days
           <div className="relative">
-            {/* Upcoming day */}
             <div className="p-px rounded-lg bg-gradient-to-bl from-[#686868] via-[#545454] to-[#292929] relative z-50">
               <div
                 className="p-6 py-12 md:py-28 flex items-center justify-center gap-4 rounded-lg"
@@ -220,6 +248,7 @@ export default function Page() {
               </div>
             ))}
           </div>
+          */}
         </div>
 
         <div className="max-w-6xl mx-auto mb-24 md:mb-48">
@@ -305,7 +334,7 @@ function Card({
               {title}
               <ArrowIcon />
             </h3>
-            <div className="flex flex-col gap-6 text-subtle transition-all group-hover:text-basis text-sm">
+            <div className="flex flex-col gap-4 text-subtle transition-all group-hover:text-basis text-sm">
               {children}
             </div>
             <p className="text-primary-intense text-sm group-hover:underline">
