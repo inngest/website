@@ -1,0 +1,67 @@
+---
+heading: "Bulk cancellation UI: the latest addition to Inngest's recovery tool suite"
+subtitle: Handle incidents
+showSubtitle: true
+image: /assets/blog/bulk-cancellation/featured-image.png
+date: 2024-09-27
+author: Cheryl Manalo
+disableCTA: true
+---
+
+The Bulk Cancellation UI feature is the latest addition to Inngest's powerful recovery tool suite, designed to help users manage and recover from incidents  with ease. Alongside tools like [**Pause**](/docs/guides/pause-functions?ref=blog-bulk-cancellation#when-a-function-is-paused) and [**Replay**](/docs/platform/replay?ref=blog-bulk-cancellation), this feature provides a higher-level declarative approach to managing your workflows.
+
+With Bulk Cancellation, users can cancel running functions in bulk by specifying a specific time range and selecting one or more function states. This ensures you only cancel the exact runs that you need to cancel \- not a complete “purge.”
+
+![Bulk cancellation user interface](/assets/blog/bulk-cancellation/ui.png)
+
+In large-scale, queue-based systems, issues can arise where thousands of function runs may need to be halted to prevent unnecessary or unwanted executions. With the new Bulk Cancellation UI, we've introduced a faster, more scalable cancellation strategy that automatically cancels function runs, even when the function is paused. Previously, with our REST API cancellation, function runs were canceled just-in-time during execution, meaning that paused or sleeping functions would not appear as canceled in the UI, even though they were effectively canceled. Now, cancellations are reflected immediately, ensuring better visibility and control.
+
+Additionally, when functions entered a "sleep" state, they appeared as "running" in the UI, causing confusion for users attempting to manage their function runs. This improved bulk cancellation functionality will soon be brought to our REST API for more performant cancellation.
+
+To solve this, we built a cancellation feature that can:
+
+* Cancel running functions in bulk via an easy-to-use UI.
+* Automatically cancel functions in the background with an "eager" cancel feature.
+* Selectively cancel running functions based on time ranges or function states.
+* Prevent confusion by ensuring that only the appropriate functions are canceled, even when some are in a "sleep" state.
+
+This feature provides a declarative, user-friendly solution to an operational challenge, ensuring that cancellations are no longer just-in-time but planned and executed based on your specific needs.
+
+### How do you use the bulk cancellation feature?
+
+Accessing cancellations is simple, and it's built to integrate seamlessly into your durable workflows.
+
+1. **Access the UI**: Head to the Bulk Cancellation section within Inngest's dashboard.
+2. **Set your parameters**: Define the time range or function logic for which you need to cancel runs.
+3. **Initiate a bulk cancellation**: With one click, the UI will progressively cancel function runs in the background, ensuring the appropriate jobs are terminated based on your criteria.
+4. **Advanced options**: For more complex cancellation scenarios, the REST API remains available. This gives you the flexibility to write more intricate logic when necessary.
+
+Whether you're dealing with a few errant function runs or thousands, the UI provides a fast, easy way to cancel all relevant jobs in one go.
+
+### When to use Bulk Cancellation?
+
+Bulk cancellation is ideal in scenarios where users need to:
+
+* End up to millions of function runs all at once.
+* Cancel operations based on specific conditions (e.g., time range, function state).
+* Avoid manual REST API calls by using a UI-driven approach for simpler one-off cancellations.
+
+For example, if you're running thousands of workflows and suddenly need to stop operations across a specific subset of functions (like those initiated in the last hour), the **Bulk Cancellation UI** allows you to cancel multiple function runs at once, rather than manually canceling each one individually. This streamlines the process and saves time when managing large-scale operations. .
+
+### Why we built it: Expanding Inngest's recovery tool suite
+
+![Inngest recovery tools](/assets/blog/bulk-cancellation/recovery-tools.png)
+
+The Bulk Cancellation feature is part of Inngest's comprehensive recovery tool suite, which also includes:
+
+* **Pausing**: Temporarily halt function runs when you need to stop processes for maintenance or issue resolution.
+* **Cancel**: Terminate specific function runs to prevent further issues.
+* **Replay**: Re-execute function runs, allowing you to recover from failures or go back and retry operations after an issue has been resolved.
+
+These tools can be used together for more complex recovery scenarios, such as when you need to take an application offline for maintenance and then replay events once it's back online. Bulk cancellation also pairs perfectly with the Replay feature for a smooth developer workflow. When a function enters a bad state, you can cancel multiple jobs, fix the issue, and replay the canceled functions. This streamlined process gives you more speed and control when it matters most, without having to rely on the REST API every time.
+
+The Bulk Cancellation UI makes it easier and faster to handle issues with queued and async jobs, so you can focus on building applications without the operational headaches. If you need more control, the [REST API](/docs/guides/cancel-running-functions?ref=blog-bulk-cancellation) remains available for writing more complex logic giving you the best of both worlds.
+
+**Explore the [Bulk Cancellation documentation](/docs/guides/cancel-running-functions?ref=blog-bulk-cancellation)** to learn more about how to integrate it into your workflows.
+
+Try it out today and take control of your durable workflows with ease\!
