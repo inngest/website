@@ -29,6 +29,7 @@ import { SectionProvider } from "src/shared/Docs/SectionProvider";
 import { remarkCodeHike, recmaCodeHike } from "codehike/mdx";
 import { Code } from "src/shared/Code/CodeHike";
 import { Callout } from "src/shared/Docs/mdx";
+import ProductHunt from "src/app/launch-week/ProductHunt";
 
 const chConfig = {
   components: { code: "Code" },
@@ -47,6 +48,7 @@ const components: MDXComponents = {
   YouTube,
   Code,
   Callout,
+  WorkflowKitProductOfTheDay: ProductHunt,
 };
 
 type Props = {
