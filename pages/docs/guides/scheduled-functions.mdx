@@ -23,7 +23,7 @@ export const prepareWeeklyDigest = inngest.createFunction(
       async () => await db.load("SELECT * FROM users")
     );
 
-    // 💡 Since we want to sent a weekly digest to each one of these users
+    // 💡 Since we want to send a weekly digest to each one of these users
     // it may take a long time to iterate through each user and send an email.
 
     // Instead, we'll use this scheduled function to send an event to Inngest
