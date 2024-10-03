@@ -127,7 +127,7 @@ export default function Nav() {
                       {url ? (
                         <a
                           href={`${url}?ref=nav`}
-                          className={`flex items-center text-basis/90 font-medium px-7 md:px-5 py-2 text-sm hover:text-primary-intense text-nowrap ${className}`}
+                          className={`hidden md:block flex items-center text-basis/90 font-medium px-7 md:px-5 py-2 text-sm hover:text-primary-intense text-nowrap ${className}`}
                         >
                           {title}
                         </a>
@@ -136,7 +136,7 @@ export default function Nav() {
                           {title}
                         </div>
                       )}
-                      <Menu {...links} />
+                      <Menu {...links} headerUrl={url} />
                     </li>
                   ) : (
                     <li key={idx}>

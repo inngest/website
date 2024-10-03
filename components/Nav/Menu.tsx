@@ -20,6 +20,7 @@ export type MenuProps = {
     }>;
     iconClassName?: string;
   }[];
+  headerUrl?: string;
 };
 
 export default function Menu({
@@ -27,12 +28,13 @@ export default function Menu({
   primaryLinks,
   secondaryTitle,
   secondaryLinks,
+  headerUrl,
 }: MenuProps) {
   return (
     <div className="px-4 md:py-2 md:px-2 w-full md:w-auto md:overflow-auto bg-surfaceBase md:border border-subtle md:rounded-lg md:absolute top-[70px] -left-4 md:hidden group-hover:md:block md:shadow-2xl">
       <div className="flex flex-col md:w-[520px]">
         <h3 className="text-base text-basis md:hidden font-semibold mb-2 px-2 pt-3">
-          {title}
+          {headerUrl ? <a href={headerUrl}>{title}</a> : title}
         </h3>
         {!!primaryLinks.length && (
           <div className="flex w-full flex-col gap-1.5">
