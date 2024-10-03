@@ -135,7 +135,7 @@ Because functions are FIFO, function runs are more likely to be worked on the ol
 
 - Concurrency limits the number of steps executing at a single time. It does not _yet_ perform rate limiting over a given period of time. <a href="https://roadmap.inngest.com/roadmap?id=8d3aae15-d21f-4e18-a3ae-571307fc9e99" target="_blank" rel="nofollow">This is scheduled for a Q2 '24 release</a>.
 - Functions can specify up to 2 concurrency constraints at once
-- The maximum concurrency limit is defined by your account's plan
+- The maximum concurrency limit is defined by <a href="https://www.inngest.com/pricing" target="_blank" rel="nofollow">your account's plan</a>
 - Ordering amongst the same function is guaranteed (with the exception of retries)
 - Ordering amongst different functions is not guaranteed.  Functions compete with each other randomly to be scheduled.
 
@@ -145,7 +145,7 @@ Because functions are FIFO, function runs are more likely to be worked on the ol
   <Property name="limit" type="number" required>
     The maximum number of concurrently running steps.
     A value of `0` or `undefined` is the equivalent of not setting a limit.
-    The maximum value is dictated by your account's plan.
+    The maximum value is dictated by <a href="https://www.inngest.com/pricing" target="_blank" rel="nofollow">your account's plan</a>.
   </Property>
   <Property name="scope" type="'account' | 'env' | 'fn'">
     The scope for the concurrency limit, which impacts whether concurrency is managed on an individual function, across an environment, or across your entire account.
