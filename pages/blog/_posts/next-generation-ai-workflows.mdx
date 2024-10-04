@@ -52,7 +52,7 @@ export const writerPipeline = client.createFunction(
 
 ```
 
-#### Indexing the Blog
+**Indexing the Blog**
 
 The first major task is crawling and indexing the client's blog. We use a custom crawler to scan through their existing content, extracting valuable information about their writing style, topics, and SEO patterns.
 
@@ -103,7 +103,7 @@ export const indexSite = client.createFunction(
 
 If we were using a traditional queue system like SQS, this process would be far more cumbersome. We'd have to manually manage the indexing jobs, handle retries, and deal with the complexities of long-running tasks. With Inngest, it's all handled seamlessly.
 
-#### Writing the Outline
+**Writing the Outline**
 
 While the indexing is happening, we kick off another crucial step: generating article outlines based on the suggested keywords. This is a two-step process involving keyword research and our outliner agent.
 
@@ -133,7 +133,7 @@ Inngest orchestrates this task smoothly, ensuring that the outline generation do
 
 This level of granular control and efficiency would be a nightmare to implement with SQS. We'd be drowning in a sea of queue management, error handling, and state tracking. With Inngest, it's all handled out of the box, allowing us to focus on perfecting our AI algorithms instead of wrestling with infrastructure.
 
-#### Putting it together
+**Putting it together**
 
 Inngest makes it easy to compose our two functions. All you have to do is “await” the calls using Promise.all(), like regular Typescript code. 
 
@@ -170,24 +170,24 @@ export const writerPipeline = client.createPipeline(
 
 The heart of MEGA SEO's operation lies in its writing agent. Our system juggles several different article-creating workflows, each with its own nuances. All these flows funnel through a unified Inngest function, complete with centralized rate limiting and concurrency management.  This approach is crucial for managing our LLM token usage, which has strict per-minute limits. Additionally, it ensures that all writing flows benefit from improvements to the writer agent.
 
-#### The Writing Agent
+**The Writing Agent**
 
 The AI-driven writing process transforms our carefully crafted outlines into full-fledged articles. As part of this process, the writer fleshes out the existing research with even more sources from across the web. It contextually embeds links to these sources when constructing the article. The writer is structured to make sure it always produces critical sections that increase value like key takeaways, conclusions and FAQs. 
 
 Inngest's [step functions](https://www.inngest.com/docs/reference/sdk/step-sdk) allow us to break down the writing process into manageable chunks. This granular control would have been a nightmare to implement with a traditional queue-based system like SQS, where each step would require its own queue and error handling logic.
 
-#### Finding Related Links
+**Finding Related Links**
 
 Once the article is written, we leverage  our indexed blog content. An agent sifts through the Pinecone vector database, identifying the most relevant articles to link within the new content. This creates a web of interconnected posts, improving SEO performance and user engagement.
 
 The writer then automatically generates a "Related Articles" section, further increasing the value of each piece. 
 
-#### Generate the Image
+**Generate the Image**
 
 No article is complete without a captivating image. Our system uses [Recraft's AI image generation](https://www.recraft.ai/) api to create unique visuals for each post. Recraft is an industry leading AI Image tool, capable of creating everything from beautiful photorealistic images to vector graphics.  
  
 
-#### Putting it all together
+**Putting it all together**
 
 With all those steps, our writer function looks like this:
 
@@ -245,7 +245,7 @@ Once the article is returned from our creation pipeline, we publish it to the cu
 
 ![][image2]
 
-#### The Whole Write Pipeline
+**The Whole Write Pipeline**
 
 With Inngest, orchestrating all of those steps together is straightforward. This code is easy to understand, maintain and iterate on. It's all in a single repository, so it's easy to read and quick figure out the structure and the implementation of different functions.
 
