@@ -74,6 +74,7 @@ const authorURLs = {
   "Dave Kiss": "https://twitter.com/davekiss",
   "Bruno Scheufler": "https://brunoscheufler.com",
   "Lydia Hallie": "https://x.com/lydiahallie",
+  "Joe Adams": "https://www.linkedin.com/in/josephadams9/",
 };
 
 export default function BlogLayout(props) {
