@@ -289,6 +289,10 @@ const sectionReference: NavGroup[] = [
         title: "Guides",
         links: [
           {
+            title: "Modal",
+            href: `/docs/reference/python/guides/modal`,
+          },
+          {
             title: "Pydantic",
             href: `/docs/reference/python/guides/pydantic`,
           },
