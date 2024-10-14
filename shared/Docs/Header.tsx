@@ -23,11 +23,8 @@ function Separator() {
 
 function DocsLogo() {
   return (
-    <a href="/docs" className="flex gap-1.5 group/logo items-center pt-1">
+    <a href="/" className="flex gap-1.5 group/logo items-center pt-1">
       <Logo className="w-20 text-black dark:text-white" />
-      {/* <span className="mb-0.5 text-slate-700 dark:text-indigo-400 text-base group-hover/logo:text-slate-500 dark:group-hover/logo:text-white transition-color font-semibold">
-        Docs
-      </span> */}
     </a>
   );
 }
@@ -145,12 +142,18 @@ export const Header = forwardRef<HTMLDivElement>(function Header(
             <ModeToggle />
           </div>
           <Separator />
-          <div className="hidden sm:flex items-center gap-4">
+          <div className="hidden sm:flex items-center gap-2">
+            <Button
+              href={`/contact?ref=docs-header`}
+              size="sm"
+              variant="primaryOutline"
+            >
+              Contact sales
+            </Button>
             <Button
               href={`${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=docs-header`}
               size="sm"
               variant="primaryV2"
-              // arrow="right"
             >
               Sign Up
             </Button>

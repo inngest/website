@@ -12,7 +12,8 @@ import { useRouter } from "next/router";
 import clsx from "clsx";
 import { AnimatePresence, m, motion, useIsPresent } from "framer-motion";
 
-import { Button } from "./Button";
+// import { Button } from "./Button";
+import { Button } from "../Button";
 import { useIsInsideMobileNavigation } from "./MobileNavigation";
 import { useSectionStore } from "./SectionProvider";
 import { Tag } from "./Tag";
@@ -571,19 +572,20 @@ export function Navigation(props) {
             </>
           ) : null}
 
-          <li className="sticky bottom-0 z-10 mt-6 sm:hidden gap-2 flex dark:bg-carbon-900">
+          <li className="sticky bottom-0 z-10 mt-6 sm:hidden gap-2 flex bg-canvasBase dark:bg-carbon-900 shadow-xl shadow-white dark:shadow-black">
             <Button
-              href={process.env.NEXT_PUBLIC_SIGNIN_URL}
-              variant="secondaryV2"
+              href="/contact?ref=docs-mobile-nav"
+              variant="primaryOutline"
               className="w-full"
+              size="sm"
             >
-              Sign In
+              Contact sales
             </Button>
             <Button
               href={`${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=docs-mobile-nav`}
               variant="primaryV2"
-              arrow="right"
               className="w-full"
+              size="sm"
             >
               Sign Up
             </Button>
