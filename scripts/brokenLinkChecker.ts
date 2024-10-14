@@ -32,6 +32,8 @@ const options = {
     "https://x.com",
     "https://devjobs.at/",
     "https://nextjs.org/",
+    "https://open.spotify.com/",
+    "https://www.linkedin.com/",
   ],
 };
 

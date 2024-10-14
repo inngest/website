@@ -19,13 +19,13 @@ Our AI-powered platform handles everything from keyword research to article writ
 
 Picture this: you give MEGA SEO a URL, and then we give you fresh, SEO-optimized articles every day, no prompting needed. Sounds simple, right? But behind the scenes, it's like conducting an orchestra. We crawl your site, understand your content, generate relevant topics, enrich those topics with Search APIs, write high-quality articles, and publish them to your blog in 1 click. All of this while ensuring each piece is SEO-optimized and aligns with your brand voice, and while generating images in your brand style.
 
-The complexity doesn't end there. We're dealing with multiple AI models, each with its own quirks and limitations. We need to manage rate limits, handle failures gracefully, and ensure the entire process is scalable. 
+The complexity doesn't end there. We're dealing with multiple AI models, each with its own quirks and limitations. We need to manage rate limits, handle failures gracefully, and ensure the entire process is scalable.
 
 ![MEGA SEO AI workflows are composed of multiple steps \(ex: indexing pages steps and AI content generation steps\), including some steps running in parallel. This complexity makes a perfect fit for Inngest.](/assets/blog/next-generation-ai-workflows/diagram.jpg)
 
-Luckily, we found [Inngest](https://www.inngest.com/), which allowed us to tame the chaos. With Inngest, we could break down our complex process into [manageable steps](https://www.inngest.com/docs/features/inngest-functions/steps-workflows), run tasks in parallel, and handle retries and errors.
+Luckily, we found [Inngest](/), which allowed us to tame the chaos. With Inngest, we could break down our complex process into [manageable steps](/docs/features/inngest-functions/steps-workflows?ref=blog-next-generation-ai-workflows), run tasks in parallel, and handle retries and errors.
 
-Inngest's [event-based triggers](https://www.inngest.com/docs/features/events-triggers) were a perfect fit for our needs. It allowed us to trigger different parts of our workflow based on specific events, making our system more responsive and efficient. For example, when a new article outline is ready, Inngest automatically kicks off the writing process without any manual intervention.
+Inngest's [event-based triggers](/docs/features/events-triggers?ref=blog-next-generation-ai-workflows) were a perfect fit for our needs. It allowed us to trigger different parts of our workflow based on specific events, making our system more responsive and efficient. For example, when a new article outline is ready, Inngest automatically kicks off the writing process without any manual intervention.
 
 Generating a high-quality, AI-written article can take several minutes. With traditional serverless setups, this would be a nightmare. But Inngest handles these long-running tasks seamlessly, allowing our system to scale.
 
@@ -56,7 +56,7 @@ export const writerPipeline = client.createFunction(
 
 The first major task is crawling and indexing the client's blog. We use a custom crawler to scan through their existing content, extracting valuable information about their writing style, topics, and SEO patterns.
 
-This data is then stored in a vector database hosted by [Pinecone](https://www.pinecone.io/), which allows for fast searches later in the process. Inngest's [parallel processing](https://www.inngest.com/docs/guides/concurrency) capabilities make this step a breeze, allowing us to index even large blogs quickly and efficiently.
+This data is then stored in a vector database hosted by [Pinecone](https://www.pinecone.io/), which allows for fast searches later in the process. Inngest's [parallel processing](/docs/guides/concurrency?ref=blog-next-generation-ai-workflows) capabilities make this step a breeze, allowing us to index even large blogs quickly and efficiently.
 
 ```javascript
 // index_functions.ts
@@ -119,7 +119,7 @@ export const writeOutline = client.createFunction(
     const research = await step.run("conduct-research", async () => {
       return conductResearch(keyword);
     });
-    
+
     const outline = await step.run("write-outline", async () => {
       return writeOutline(research);
     });
@@ -129,13 +129,13 @@ export const writeOutline = client.createFunction(
 );
 ```
 
-Inngest orchestrates this task smoothly, ensuring that the outline generation doesn't interfere with the ongoing indexing process. But here's where it gets really useful: let's say the outlining finishes, but the indexing fails and needs to be [retried](https://www.inngest.com/docs/features/inngest-functions/error-retries/retries). With a traditional setup, we might end up regenerating the outline unnecessarily. But Inngest is smarter than that. It [only reruns the failed step](https://www.inngest.com/blog/durable-functions-a-visual-javascript-primer), saving us time and money – crucial when you're working with expensive AI models.
+Inngest orchestrates this task smoothly, ensuring that the outline generation doesn't interfere with the ongoing indexing process. But here's where it gets really useful: let's say the outlining finishes, but the indexing fails and needs to be [retried](/docs/features/inngest-functions/error-retries/retries?ref=blog-next-generation-ai-workflows). With a traditional setup, we might end up regenerating the outline unnecessarily. But Inngest is smarter than that. It [only reruns the failed step](/blog/durable-functions-a-visual-javascript-primer?ref=blog-next-generation-ai-workflows), saving us time and money – crucial when you're working with expensive AI models.
 
 This level of granular control and efficiency would be a nightmare to implement with SQS. We'd be drowning in a sea of queue management, error handling, and state tracking. With Inngest, it's all handled out of the box, allowing us to focus on perfecting our AI algorithms instead of wrestling with infrastructure.
 
 **Putting it together**
 
-Inngest makes it easy to compose our two functions. All you have to do is “await” the calls using Promise.all(), like regular Typescript code. 
+Inngest makes it easy to compose our two functions. All you have to do is “await” the calls using Promise.all(), like regular Typescript code.
 
 ```javascript
 // writer_pipeline.ts
@@ -172,20 +172,20 @@ The heart of MEGA SEO's operation lies in its writing agent. Our system juggles 
 
 **The Writing Agent**
 
-The AI-driven writing process transforms our carefully crafted outlines into full-fledged articles. As part of this process, the writer fleshes out the existing research with even more sources from across the web. It contextually embeds links to these sources when constructing the article. The writer is structured to make sure it always produces critical sections that increase value like key takeaways, conclusions and FAQs. 
+The AI-driven writing process transforms our carefully crafted outlines into full-fledged articles. As part of this process, the writer fleshes out the existing research with even more sources from across the web. It contextually embeds links to these sources when constructing the article. The writer is structured to make sure it always produces critical sections that increase value like key takeaways, conclusions and FAQs.
 
-Inngest's [step functions](https://www.inngest.com/docs/reference/sdk/step-sdk) allow us to break down the writing process into manageable chunks. This granular control would have been a nightmare to implement with a traditional queue-based system like SQS, where each step would require its own queue and error handling logic.
+Inngest's [step functions](/docs/features/inngest-functions/steps-workflows?ref=blog-next-generation-ai-workflows) allow us to break down the writing process into manageable chunks. This granular control would have been a nightmare to implement with a traditional queue-based system like SQS, where each step would require its own queue and error handling logic.
 
 **Finding Related Links**
 
 Once the article is written, we leverage  our indexed blog content. An agent sifts through the Pinecone vector database, identifying the most relevant articles to link within the new content. This creates a web of interconnected posts, improving SEO performance and user engagement.
 
-The writer then automatically generates a "Related Articles" section, further increasing the value of each piece. 
+The writer then automatically generates a "Related Articles" section, further increasing the value of each piece.
 
 **Generate the Image**
 
-No article is complete without a captivating image. Our system uses [Recraft's AI image generation](https://www.recraft.ai/) api to create unique visuals for each post. Recraft is an industry leading AI Image tool, capable of creating everything from beautiful photorealistic images to vector graphics.  
- 
+No article is complete without a captivating image. Our system uses [Recraft's AI image generation](https://www.recraft.ai/) api to create unique visuals for each post. Recraft is an industry leading AI Image tool, capable of creating everything from beautiful photorealistic images to vector graphics.
+
 
 **Putting it all together**
 
@@ -201,7 +201,7 @@ export const writeArticle = client.createFunction(
       limit: 5,
     },
     rateLimit: {
-      // Avoid hitting tokens per minute rate limits 
+      // Avoid hitting tokens per minute rate limits
       limit: 10,
       period: "1 minute",
     },
@@ -237,9 +237,9 @@ export const writeArticle = client.createFunction(
 
 ### Delivering the Final Product
 
-With the article polished and ready, we move to the final stage: publication. 
+With the article polished and ready, we move to the final stage: publication.
 
-Once the article is returned from our creation pipeline, we publish it to the customer portal. For our free article offerings, we trigger an email notification to the client. Inngest's [event deduplication](https://www.inngest.com/docs/events/event-deduplication) feature ensures that even if an event is processed multiple times, the email is sent only once. This level of reliability is crucial for maintaining a level of trust with our customers.
+Once the article is returned from our creation pipeline, we publish it to the customer portal. For our free article offerings, we trigger an email notification to the client. Inngest's [event deduplication](/docs/events?ref=blog-next-generation-ai-workflows#deduplication) feature ensures that even if an event is processed multiple times, the email is sent only once. This level of reliability is crucial for maintaining a level of trust with our customers.
 
 **The Final Product**
 
@@ -259,7 +259,7 @@ export const writerPipeline = client.createPipeline(
 
     const [siteResult, ...outlineResults] = await Promise.all([
       step.invoke("index-site", async () => {
-        function: 
+        function:
       }),
       ...keywords.map(async (keyword) => {
         return step.invoke(`write-outline-${keyword}`, {
@@ -308,4 +308,4 @@ My journey with Inngest began out of exasperation. At my previous company, we bu
 
 When we started MEGA SEO, I knew we needed a better solution. Our product was going to be even more reliant on running workflows at scale. That's when I discovered Inngest.
 
-As I got to use it, I quickly learned that it offers the features of systems like Apache Airflow, but much easier to use and more robust. Everything we need is in one place, from workflow definition to execution and monitoring. This makes it so much faster to understand and improve workflows, letting us ship faster. 
+As I got to use it, I quickly learned that it offers the features of systems like Apache Airflow, but much easier to use and more robust. Everything we need is in one place, from workflow definition to execution and monitoring. This makes it so much faster to understand and improve workflows, letting us ship faster.
