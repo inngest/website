@@ -1,0 +1,208 @@
+import { Callout } from "src/shared/Docs/mdx";
+
+# Testing
+
+## Unit testing
+
+If you'd like to unit test without an Inngest server, the `mocked` library can simulate much of the Inngest server's behavior.
+
+<Callout variant="warning">
+The `mocked` library is experimental. It may have interface and behavioral changes that don't follow semantic versioning.
+</Callout>
+
+Let's say you've defined this function somewhere in your app:
+
+```python
+import inngest
+
+def create_message(name: object) -> str:
+    return f"Hello, {name}!"
+
+client = inngest.Inngest(app_id="my-app")
+
+@client.create_function(
+    fn_id="greet",
+    trigger=inngest.TriggerEvent(event="user.login"),
+)
+async def greet(
+    ctx: inngest.Context,
+    step: inngest.Step,
+) -> str:
+    message = await step.run(
+        "create-message",
+        create_message,
+        ctx.event.data["name"],
+    )
+
+    return message
+```
+
+You can unit test it like this:
+
+```python
+import unittest
+import inngest
+from inngest.experimental import mocked
+from .functions import greet
+
+# Mocked Inngest client
+client_mock = mocked.Inngest(app_id="test")
+
+# A normal Python test class
+class TestGreet(unittest.TestCase):
+    def test_greet(self) -> None:
+        # Trigger the function with an in-memory, simulated Inngest server
+        res = mocked.trigger(
+            greet,
+            inngest.Event(name="user.login", data={"name": "Alice"}),
+            client_mock,
+        )
+
+        # Assert that it ran as expected
+        assert res.status is mocked.Status.COMPLETED
+        assert res.output == "Hello, Alice!"
+```
+
+### Limitations
+
+The `mocked` library has some notable limitations:
+- `step.invoke` and `step.wait_for_event` must be stubbed using the `step_stubs` parameter of `mocked.trigger`.
+- `step.send_event` does not send events. It returns a stubbed value.
+- `step.sleep` and `step.sleep_until` always sleep for 0 seconds.
+
+### Stubbing
+
+Stubbing is required for `step.invoke` and `step.wait_for_event`. Here's an example of how to stub these functions:
+
+```python
+# Real production function
+@client.create_function(
+    fn_id="signup",
+    trigger=inngest.TriggerEvent(event="user.signup"),
+)
+def signup(
+    ctx: inngest.Context,
+    step: inngest.StepSync,
+) -> bool:
+    email_id = step.invoke(
+        "send-email",
+        function=send_email,
+    )
+
+    event = step.wait_for_event(
+        "wait-for-reply",
+        event="email.reply",
+        if_exp=f"async.data.email_id == '{email_id}'",
+        timeout=datetime.timedelta(days=1),
+    )
+    user_replied = event is not None
+    return user_replied
+
+# Mocked Inngest client
+client_mock = mocked.Inngest(app_id="test")
+
+class TestSignup(unittest.TestCase):
+    def test_signup(self) -> None:
+        res = mocked.trigger(
+            fn,
+            inngest.Event(name="test"),
+            client_mock,
+
+            # Stub the invoke and wait_for_event steps
+            step_stubs={
+                "send-email": "email-id-abc123",
+                "wait-for-reply": inngest.Event(
+                    data={"text": "Sounds good!"}, name="email.reply"
+                ),
+            },
+        )
+        assert res.status is mocked.Status.COMPLETED
+        assert res.output is True
+```
+
+To simulate a `step.wait_for_event` timeout, stub the step with `mocked.Timeout`.
+
+## Integration testing
+
+This section contains an approach for automatically starting and stoping an Inngest Dev Server with your integration tests.
+
+Here's a `dev_server.py` file (it requires `httpx`):
+
+```python
+import signal
+import subprocess
+import threading
+import time
+import typing
+import httpx
+
+class _DevServer:
+    _process: typing.Optional[subprocess.Popen[bytes]] = None
+    _thread: typing.Optional[threading.Thread] = None
+
+    def start(self) -> None:
+        print("Starting Dev Server")
+
+        stderr = subprocess.DEVNULL
+        stdout = subprocess.DEVNULL
+
+        def _run() -> None:
+            self._process = subprocess.Popen(
+                [
+                    "npx",
+                    "--yes",
+                    "inngest-cli@latest",
+                    "dev",
+                    "--no-discovery",
+                    "--no-poll",
+                ],
+                stderr=stderr,
+                stdout=stdout,
+            )
+
+        self._thread = threading.Thread(target=_run)
+        self._thread.start()
+
+        print("Waiting for Dev Server to start")
+        start_time = time.time()
+        while True:
+            if time.time() - start_time > 30:
+                raise Exception("timeout waiting for dev server to start")
+
+            try:
+                httpx.get("http://127.0.0.1:8288")
+                break
+            except Exception:
+                pass
+
+    def stop(self) -> None:
+        print("Stopping Dev Server")
+
+        if self._process is None:
+            raise Exception("missing process")
+
+        self._process.send_signal(signal.SIGINT)
+
+        # Try to gracefully stop but kill it if that fails.
+        try:
+            self._process.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            self._process.kill()
+            self._process.wait(timeout=5)
+
+singleton = _DevServer()
+```
+
+Then you can use it in your `conftest.py`:
+
+```python
+import pytest
+from . import dev_server
+
+def pytest_configure(config: pytest.Config) -> None:
+    dev_server.singleton.start()
+
+
+def pytest_unconfigure(config: pytest.Config) -> None:
+    dev_server.singleton.stop()
+```
