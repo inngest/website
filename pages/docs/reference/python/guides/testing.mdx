@@ -1,8 +1,8 @@
-import { Callout } from "src/shared/Docs/mdx";
+import { Callout, VersionBadge } from "src/shared/Docs/mdx";
 
 # Testing
 
-## Unit testing
+## Unit testing <VersionBadge version="v0.4.14+" /> 
 
 If you'd like to unit test without an Inngest server, the `mocked` library can simulate much of the Inngest server's behavior.
 
@@ -45,7 +45,7 @@ import inngest
 from inngest.experimental import mocked
 from .functions import greet
 
-# Mocked Inngest client
+# Mocked Inngest client. The app_id can be any string (it's currently unused)
 client_mock = mocked.Inngest(app_id="test")
 
 # A normal Python test class
@@ -108,7 +108,8 @@ class TestSignup(unittest.TestCase):
             inngest.Event(name="test"),
             client_mock,
 
-            # Stub the invoke and wait_for_event steps
+            # Stub the invoke and wait_for_event steps. The keys are the step
+            # IDs
             step_stubs={
                 "send-email": "email-id-abc123",
                 "wait-for-reply": inngest.Event(
