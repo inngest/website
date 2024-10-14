@@ -8,7 +8,7 @@ This section will help you setup your development environment. You'll have an In
 
 ### Creating a tunnel
 
-Since we need bidirectional communication between the Dev Server and your app, you'll also need a tunnel to allow your app to reach your locally-running Dev Server. We recommend using [ngrok](https://ngrok.com) for this. 
+Since we need bidirectional communication between the Dev Server and your app, you'll also need a tunnel to allow your app to reach your locally-running Dev Server. We recommend using [ngrok](https://ngrok.com) for this.
 
 ```sh
 # Tunnel to the Dev Server's port
@@ -108,7 +108,7 @@ Start the Dev Server, specifying the FastAPI app's Inngest endpoint:
 npx inngest-cli@latest dev -u https://test-fast-api-fastapi-app.modal.run/api/inngest --no-discovery
 ```
 
-In your browser, navigate to http://127.0.0.1:8288/apps. Your app should be successfully synced.
+In your browser, navigate to `http://127.0.0.1:8288/apps`. Your app should be successfully synced.
 
 ## Deploying to production
 
