@@ -142,12 +142,18 @@ export const Header = forwardRef<HTMLDivElement>(function Header(
             <ModeToggle />
           </div>
           <Separator />
-          <div className="hidden sm:flex items-center gap-4">
+          <div className="hidden sm:flex items-center gap-2">
+            <Button
+              href={`/contact?ref=docs-header`}
+              size="sm"
+              variant="primaryOutline"
+            >
+              Contact sales
+            </Button>
             <Button
               href={`${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=docs-header`}
               size="sm"
               variant="primaryV2"
-              // arrow="right"
             >
               Sign Up
             </Button>

@@ -50,7 +50,7 @@ const FeedbackForm = forwardRef<
       <p className="text-sm text-slate-600 dark:text-slate-400">
         Was this page helpful?
       </p>
-      <div className="group grid h-8 grid-cols-[1fr,1px,1fr] overflow-hidden rounded-full border border-slate-900/10 dark:border-white/10">
+      <div className="group grid h-8 grid-cols-[1fr,1px,1fr] overflow-hidden rounded border border-slate-900/10 dark:border-white/10">
         <FeedbackButton data-response="yes">Yes</FeedbackButton>
         <div className="bg-slate-900/10 dark:bg-white/10" />
         <FeedbackButton data-response="no">No</FeedbackButton>
