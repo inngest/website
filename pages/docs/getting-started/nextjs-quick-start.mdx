@@ -1,21 +1,25 @@
 import { GuideSelector, GuideSection, Callout, CodeGroup } from "src/shared/Docs/mdx";
 
 export const description =
-  `Get started with Inngest in this ten-minute Next.js tutorial`
+  `Learn how to integrate Inngest to your Next.js app in 10 minutes.`
 
 # Next.js Quick Start
 
-In this tutorial you will add Inngest to a Next.js app to see how easy it can be to build complex workflows.
+Next.js by Vercel is an open-source web development framework that enables React-based web applications. This tutorial describes how to add Inngest to a Next.js application, demonstrating how to build complex, event-driven workflows and serverless functions.
 
-Inngest makes it easy to build, manage, and execute reliable workflows. Some use cases include scheduling drip marketing campaigns, building payment flows, or chaining LLM interactions.
+In 10 minutes, you'll learn how to use Inngest for tasks like scheduling drip marketing campaigns, creating payment flows, or orchestrating LLM interactions.
 
-By the end of this ten-minute tutorial you will:
+By the end of this quick start guide, you will:
 - Set up and run Inngest on your machine.
-- Write your first Inngest function.
-- Trigger your function from your app and through Inngest Dev Server.
+- Write and deploy your first Inngest serverless function.
+- Trigger your function from both your Next.js app and the Inngest Dev Server.
+- Understand the basics of event-driven architecture in a Next.js context.
 
-Let's get started!
+<Callout type="info">
+    New to Inngest? Check out [How Inngest Works](https://www.inngest.com/product/how-inngest-works) for a quick overview before you begin.
+</Callout>
 
+Let's get started.
 ### Choose Next.js version
 
 Choose your preferred Next.js version for this tutorial:
@@ -30,7 +34,9 @@ Choose your preferred Next.js version for this tutorial:
 
 In this tutorial you can use any existing Next.js project, or you can create a new one.
 
-<details>
+    ### Creating a New Next.js Project
+
+    <details>
   <summary><strong>Instructions for creating a new Next.js project </strong></summary>
 
   Run the following command in your terminal to create a new Next.js project:
@@ -134,7 +140,7 @@ In your browser open [`http://localhost:8288`](http://localhost:8288) to see the
   src="/assets/docs/getting-started/nextjs-quick-start/dev-server.png"
   width="800" height={800/2762*1868} quality="95"
   className="rounded-md"
-  alt="Inngest Dev Server screen with no events recorded"
+  alt="Inngest Dev Server interface showing no recorded events"
 />
 
 ## 3. Create an Inngest client
