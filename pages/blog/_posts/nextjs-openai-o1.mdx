@@ -8,7 +8,7 @@ author: Charly Poly
 disableCTA: false
 ---
 
-Anyone who has already built a data-import user experience knows it requires some complex column-matching UI and many branches on the backend to safely parse and save the user-provided data:  
+Anyone who has already built a data-import user experience knows it requires some complex column-matching UI and many branches on the backend to safely parse and save the user-provided data:
 ![Contacts import UI are often complex for the end-user to use and the developers to develop and maintain.](/assets/blog/nextjs-openai-o1-preview/contact-importer-UI.png)
 
 _Such UI is a slow and tedious experience for the end-user and a challenge to maintain for developers._
@@ -20,30 +20,30 @@ In this article, we will review a demo CRM Next.js putting a contacts import fea
 An Agentic workflow is a new pattern consisting of relying on model reasoning to achieve a goal instead of providing a series of static prompts.
 In short, the model is given a high-level goal to achieve and figures out the necessary steps to reach that goal.
 
-Many [papers](https://arxiv.org/abs/2210.03629) and [articles](https://www.techzine.eu/blogs/applications/118176/the-ai-shift-from-prompt-engineering-to-flow-engineering/) have been published earlier this year, showcasing the [outstanding performance of agentic workflows](https://www.deeplearning.ai/the-batch/how-agents-can-improve-llm-performance/) compared to standard prompting techniques.  
+Many [papers](https://arxiv.org/abs/2210.03629) and [articles](https://www.techzine.eu/blogs/applications/118176/the-ai-shift-from-prompt-engineering-to-flow-engineering/) have been published earlier this year, showcasing the [outstanding performance of agentic workflows](https://www.deeplearning.ai/the-batch/how-agents-can-improve-llm-performance/) compared to standard prompting techniques.
 It turns out that agentic workflows, by combining reflection (reasoning), planning, and tools, lead to more precise answers, [solving important integration issues](https://www.bbc.com/travel/article/20240222-air-canada-chatbot-misinformation-what-travellers-should-know) of AI in user-facing use cases.
 
 We are now witnessing the rise of new tools that help with agentic workflow developments with LangGraph and, recently, [OpenAI's swarm](https://github.com/openai/swarm), along with their new reasoning model: [`o1`](https://openai.com/o1/).
 Adding Agentic workflows to an application comes with many challenges:
 
-- **Duration volatility**: Models are responsible for reflecting and planning all the steps to reach a given goal, resulting in significant variance in the workflow duration.  
-- **Reliability**: Agentic workflows rely on more tools than regular prompt-designed workflows. Adding more tools calling external APIs based on LLM-generated parameters raises the risk of failure. Recovering from failure enables the model to self-correct during the workflow execution.  
+- **Duration volatility**: Models are responsible for reflecting and planning all the steps to reach a given goal, resulting in significant variance in the workflow duration.
+- **Reliability**: Agentic workflows rely on more tools than regular prompt-designed workflows. Adding more tools calling external APIs based on LLM-generated parameters raises the risk of failure. Recovering from failure enables the model to self-correct during the workflow execution.
 - **Unpredictability**: Pushing an agentic workflow to production requires setting up some safeguards on cost, duration, and output validation.
 
-Let's now look at our Next.js CRM demo, featuring an autopilot contacts import feature.  
+Let's now look at our Next.js CRM demo, featuring an autopilot contacts import feature.
 We'll see that agentic workflows mostly reuse existing patterns found in Next.js  and can already be used today to bring brand-new capabilities to Next.js applications.
 
 ## Designing an agentic workflow with OpenAI o1
 
 We will design our CRM's autopilot contact importer feature by leveraging the new OpenAI `o1` reasoning model to plan the best steps to import a given file by:
 
-- Ensuring that the fields are properly set, without typos  
-- Ranking the provided contact as good software Sales lead dynamically based on the provided columns  
+- Ensuring that the fields are properly set, without typos
+- Ranking the provided contact as good software Sales lead dynamically based on the provided columns
 - Matching provided column by our CRM ones: Name, Email, Role, Company
 
 Open AI `o1` will take this high-level goal to generate a set of steps leveraging our existing handwritten actions (`convert`, `enrich`, `save`) and generating custom OpenAI calls (if necessary) while managing cost.
 
-Here's a visualization of our autopilot import contacts feature in our Next.js application:  
+Here's a visualization of our autopilot import contacts feature in our Next.js application:
 ![The image shows a workflow where a user uploads a contact list to a Next.js app, triggering Inngest via Vercel AI SDK to process and enrich the data using OpenAI before saving it to a database. The system manages contact parsing, enrichment, dynamic OpenAI calls, and final database storage, completing the workflow with custom steps.](/assets/blog/nextjs-openai-o1-preview/workflow-overview.jpg)
 
 ## Creating our contacts importer UI with Vercel v0
@@ -133,12 +133,12 @@ We are using the stellar [Vercel AI SDK](https://sdk.vercel.ai/docs/reference/ai
 ```
 
 The actions generated will vary depending on the provided CSV file.
-The code then transforms these actions into a format using [Inngest's Workflow Kit](/docs/reference/workflow-kit/workflow-instance) which can easily handle o1's multi-step plans and execute them. The transformed plan is then send to the importContacts Inngest Function to execute the plan.  
+The code then transforms these actions into a format using [Inngest's Workflow Kit](/docs/reference/workflow-kit/workflow-instance) which can easily handle o1's multi-step plans and execute them. The transformed plan is then send to the importContacts Inngest Function to execute the plan.
 
 <Callout>
-**Note: `o1-preview` vs. `o1-mini` accuracy**  
-`o1-mini` is a preferred choice when developing, offering faster iterations and lower costs.  
-While developing this demo, we realized that `o1-mini` struggled to output a deterministic and simple JSON structure for model call actions. Switching back to `o1-preview` solved this problem.  
+**Note: `o1-preview` vs. `o1-mini` accuracy**
+`o1-mini` is a preferred choice when developing, offering faster iterations and lower costs.
+While developing this demo, we realized that `o1-mini` struggled to output a deterministic and simple JSON structure for model call actions. Switching back to `o1-preview` solved this problem.
 </Callout>
 
 Our `o1-preview` call and the processing of its results is wrapped as an Inngest Function, enabling it to run without duration limitation in the background and matching `o1-preview`'s [API Rate limits](https://x.com/OpenAIDevs/status/1841176573527077235) by leveraging [throttling](/docs/guides/throttling):
@@ -165,7 +165,7 @@ export default inngest.createFunction(
   )
 ```
 
-*Access the full source code [here](https://github.com/inngest/vercel-ai-open-o1-crm-agent/blob/main/lib/inngest/functions/generateImportWorkflow.ts).*
+*Access the full source code [here](https://github.com/inngest/vercel-ai-o1-preview-crm-agent/blob/main/lib/inngest/functions/generateImportWorkflow.ts).*
 
 ## Executing the dynamic workflow with Inngest's Workflow Kit
 
@@ -173,9 +173,9 @@ Our `importContact()` Inngest Function leverages the [Inngest Workflow Kit](/blo
 
 Our Inngest workflow is composed of 4 predefined actions:
 
-- `openaiCall`: Make a dynamic call to OpenAI API  
+- `openaiCall`: Make a dynamic call to OpenAI API
 - `convert`: convert CSV data to JSON items
-- `enrich`: Enrich contact information  
+- `enrich`: Enrich contact information
 - `save`: Save contact information to the database
 
 Our `o1-preview` model leverages the `openaiCall` action to dynamically add actions, helping to format and structure the provided contact data. It takes two parameters: `prompt`, and `model` which the model configures according to the task to achieve.
@@ -226,11 +226,11 @@ export default inngest.createFunction(
 );
 ```
 
-*Access the full source code [here](https://github.com/inngest/vercel-ai-open-o1-crm-agent/blob/main/lib/inngest/functions/importContacts.ts).*
+*Access the full source code [here](https://github.com/inngest/vercel-ai-o1-preview-crm-agent/blob/main/lib/inngest/functions/importContacts.ts).*
 
 ## How our Agent performs
 
-Our demo CRM application now features a smooth AI-powered contact import onboarding experience powered by a semi-autonomous agentic workflow as a complete part of the Next.js application ✨  
+Our demo CRM application now features a smooth AI-powered contact import onboarding experience powered by a semi-autonomous agentic workflow as a complete part of the Next.js application ✨
 Uploading the below CSV file sample generates a custom import workflow and runs smoothly in the background:
 
 ```csv
@@ -242,7 +242,7 @@ Michael,Jackson,michael.jackson@example.com,Junior,CqO,AutoCorp,Healthcare
 
 *Notice the typos in position, roles, and columns that do not match our contact properties.*
 
-Once completed, the clean, structured, and enriched contact records are saved to the database:  
+Once completed, the clean, structured, and enriched contact records are saved to the database:
 
 ![Contacts are inserted in the Vercel Postgres table](/assets/blog/nextjs-openai-o1-preview/vercel-postgres-contacts.png)
 _Vercel Postgres database with the contact information loaded from the agentic workflow. **Our Agent event fixed the typos in contact properties like "Scbentist"**_
@@ -251,14 +251,14 @@ When deployed on Vercel, the workflow leverages Edge Function's streaming capabi
 
 ### Making our agent even smarter
 
-This contacts import on autopilot is a first draft that can be used as a boilerplate to iterate and improve `o1`'s results.  
+This contacts import on autopilot is a first draft that can be used as a boilerplate to iterate and improve `o1`'s results.
 A non-exhaustive list of interesting additional capabilities could be:
 
-- Leveraging the OpenAI Batching API to reduce cost on large CSV files  
-- Have the model learn from previous runs to fine-tune its lead ranking mechanism  
+- Leveraging the OpenAI Batching API to reduce cost on large CSV files
+- Have the model learn from previous runs to fine-tune its lead ranking mechanism
 - Iterate and improve `o1`'s prompt by following [OpenAI's best practices](https://platform.openai.com/docs/guides/reasoning/advice-on-prompting)
 
 ## Try the demo now
 
-The combination of Vercel AI SDK and Inngest makes it super easy to add Agentic workflows to provide more accurate (e.g., support chat) or achieve more complex tasks (e.g., data analysis, agent-based features).  
-**Try this demo now** by running it locally or deploying it on Vercel: [https://github.com/inngest/vercel-ai-open-o1-crm-agent](https://github.com/inngest/vercel-ai-o1-preview-crm-agent).
+The combination of Vercel AI SDK and Inngest makes it super easy to add Agentic workflows to provide more accurate (e.g., support chat) or achieve more complex tasks (e.g., data analysis, agent-based features).
+**Try this demo now** by running it locally or deploying it on Vercel: [https://github.com/inngest/vercel-ai-o1-preview-crm-agent](https://github.com/inngest/vercel-ai-o1-preview-crm-agent).
