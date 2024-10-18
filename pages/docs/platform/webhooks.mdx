@@ -85,7 +85,7 @@ Transforms are defined as simple JavaScript functions that accept three argument
     The raw JSON payload from the POST request body
   </Property>
   <Property name="headers" type="object" attribute>
-    A map of HTTP headers sent along with the request as key-value pairs. Header names are standardized by making the first character and any characters following a hyphen uppercase and the rest lowercase. For more details, [check out](https://pkg.go.dev/net/http#CanonicalHeaderKey) the underlying implementation reference.
+    A map of HTTP headers sent along with the request as key-value pairs. Header names are case-insensitive and are canonicalized by making the first character and any characters following a hyphen uppercase and the rest lowercase. For more details, [check out](https://pkg.go.dev/net/http#CanonicalHeaderKey) the underlying implementation reference.
   </Property>
   <Property name="queryParams" type="object" attribute>
     A map of parsed query string parameters sent to the webhook URL. Values are all arrays to support multiple params for a single key.
@@ -113,7 +113,7 @@ function transform(evt, headers = {}, queryParams = {}) {
 ### Example transforms
 
 <Callout variant="info">
-  💡 Header names are standardized by making the first character and any characters following a hyphen uppercase and the rest lowercase. For more details, [check out](https://pkg.go.dev/net/http#CanonicalHeaderKey) the underlying implementation reference.
+  💡 Header names are case-insensitive and canonicalized by making the first character and any characters following a hyphen uppercase and the rest lowercase.
 
   Remember to check your transforms for header usage and make sure to use the correct case.
 </Callout>
