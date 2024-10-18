@@ -132,7 +132,7 @@ inngest.createFunction(
 
     // Since step.run return a Promise, we iterate over all products
     // creating an array of step.run Promises - Inngest can handle it all!
-    Promise.all(
+    await Promise.all(
       allProducts.map((product) =>
         step.run("import-product", async () => {
           await database.upsertProduct({
