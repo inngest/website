@@ -330,7 +330,7 @@ const content = [
       {
         title: "Run steps in parallel or in sequence",
         content:
-          "Parallelize work to for faster execution. Run steps in sequence to ensure order and consistency.",
+          "Parallelize work for faster execution. Run steps in sequence to ensure order and consistency.",
       },
       {
         title: "Develop and debug complex flows with ease",
