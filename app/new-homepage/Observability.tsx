@@ -25,7 +25,7 @@ export default function Observability() {
           <>
             Run in production with confidence with observability and recovery
             tools built into Inngest. Dig into traces to debug errors, monitor
-            function and system health, and recovery from incidents with
+            function and system health, and recover from incidents with
             build-in tooling.
           </>
         }
