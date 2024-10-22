@@ -402,10 +402,10 @@ In a real-world app, you might send events from API routes that perform an actio
 
 </details>
 
-You will now send an event from inside your code: from the “hello” Next.js API function. To do so, create a new API handler at the <GuideSection show="nextpages">`./pages/api/hello.ts`</GuideSection><GuideSection show="nextappdir">`src/app/api/hello/route.ts`</GuideSection> file:
+You will now send an event from inside your code: from the “hello” Next.js API function. To do so, create a new API handler in the <GuideSection show="nextpages">`./pages/api/hello.ts`</GuideSection><GuideSection show="nextappdir">`src/app/api/hello/route.ts`</GuideSection> file:
 
 <GuideSection show="nextpages">
-  ```ts {{ filename: "src/app/api/hello/route.ts" }}
+  ```ts {{ filename: "pages/api/hello.ts" }}
   import { NextApiRequest, NextApiResponse } from "next";
   import { inngest } from "./inngest";
 
