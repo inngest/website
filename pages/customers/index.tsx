@@ -71,6 +71,20 @@ const caseStudies: {
     tags: ["Serverless"],
   },
   {
+    href: "/customers/megaseo",
+    logo: "/assets/customers/megaseo-logo.svg",
+    name: "Mega SEO",
+    title: "Powering the Future of AI-Driven Content",
+    snippet: (
+      <>
+        "The ability to test complex workflows locally has been a game-changer,{" "}
+        <strong>giving us confidence</strong> that our AI-driven processes will
+        run smoothly in production."
+      </>
+    ),
+    tags: ["AI"],
+  },
+  {
     href: "/customers/fey",
     logo: "/assets/customers/fey/fey-icon.svg",
     name: "Fey",
