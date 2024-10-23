@@ -17,7 +17,9 @@ import { productLinks, resourcesLinks } from "./Nav/links";
 
 // Manual count of stars on GitHub for now
 // Run pnpm run github:stars to get the latest count
-const GITHUB_STARS = 2684;
+import githubData from "src/data/github.json";
+
+const githubStars = githubData.stars;
 
 const menu: {
   title: string;
@@ -214,7 +216,7 @@ function OpenSourceButton({ className = "" }: { className?: string }) {
       >
         <span className="hidden lg:inline">Open Source</span>
         <RiGithubFill className="h-4 w-4 shrink-0" />
-        <span>{(GITHUB_STARS / 1000).toFixed(1)}K</span>
+        <span>{(githubStars / 1000).toFixed(1)}K</span>
         <RiArrowDownSLine
           className={`h-4 w-4 transition-all ${
             open ? "rotate-180 md:rotate-0" : ""
