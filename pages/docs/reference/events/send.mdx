@@ -59,6 +59,8 @@ To send events from within of the context of a function, use [`step.sendEvent()`
 
 	    If the `ts` time is in the future, function runs will be scheduled to start at the given time.   This has the same effect as running `await step.sleepUntil(event.ts)` at
 	    the start of the function.
+
+            Note: This does not apply to functions waiting for events. Functions waiting for events will immediately resume, regardless of the timestamp.
           </Property>
           <Property name="v" type="string">
             A version identifier for a particular event payload. e.g. `"2023-04-14.1"`

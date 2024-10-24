@@ -50,6 +50,10 @@ await inngest.send({
 });
 ```
 
+<Callout variant="warning">
+  ⚠️ Providing a timestamp in the event only applies for starting function runs. Functions waiting for a matching event will immediately resume, regardless of the timestamp.
+</Callout>
+
 ### Alternatives
 
 Depending on your use case, you may want to consider using [scheduled functions (cron jobs)](/docs/guides/scheduled-functions) for scheduling periodic work or use [`step.sleepUntil()`](/docs/reference/functions/step-sleep-until) to add mid-function delays for a layer time.
