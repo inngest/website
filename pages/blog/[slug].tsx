@@ -75,6 +75,7 @@ const authorURLs = {
   "Bruno Scheufler": "https://brunoscheufler.com",
   "Lydia Hallie": "https://x.com/lydiahallie",
   "Joe Adams": "https://www.linkedin.com/in/josephadams9/",
+  "Charly Poly": "https://x.com/whereischarly",
 };
 
 export default function BlogLayout(props) {
