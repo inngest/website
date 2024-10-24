@@ -54,6 +54,8 @@ Only for async/await code.
             A timestamp integer representing the time (in milliseconds) at which the event occurred. Defaults to the time the Inngest receives the event.
 
             If the `ts` time is in the future, function runs will be scheduled to start at the given time. This has the same effect as sleeping at the start of the function.
+
+            Note: This does not apply to functions waiting for events. Functions waiting for events will immediately resume, regardless of the timestamp.
         </Property>
     </Properties>
     </Property>
