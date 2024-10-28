@@ -4,16 +4,21 @@ export default function Heading({
   title,
   description,
   className,
+  layout = "vertical",
 }: {
   title?: string;
   description?: string | string[];
   className?: string;
+  layout?: "vertical" | "horizontal";
 }) {
   return (
     <div
       className={clsx(
-        "mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 flex flex-col gap-4 items-center text-basis ",
-        "text-center text-balance",
+        "mx-auto px-4 flex gap-4 items-center text-basis",
+        "text-balance",
+        layout === "vertical" &&
+          "sm:px-6 lg:px-8 max-w-4xl flex-col text-center",
+        layout === "horizontal" && "max-w-6xl flex-col md:flex-row text-left",
         className
       )}
     >

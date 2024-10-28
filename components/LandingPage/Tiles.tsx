@@ -10,11 +10,11 @@ export default function Tiles({
   return (
     <div>
       {/* ghost tiles in bg */}
-      <div className="my-12 flex flex-row flex-wrap items-center justify-center gap-6 text-subtle text-lg leading-6">
+      <div className="my-12 flex flex-row flex-wrap items-center justify-center gap-6 text-subtle text-base sm:text-lg leading-6">
         {tiles.map((tile, idx) => (
           <div
             key={idx}
-            className="w-[400px] h-[120px] p-px rounded-lg bg-gradient-to-br from-[rgba(var(--color-carbon-400)/0.4)] to-transparent overflow-clip"
+            className="w-auto max-w-[90%] sm:w-[400px] sm:h-[120px] p-px rounded-lg bg-gradient-to-br from-[rgba(var(--color-carbon-400)/0.4)] to-transparent overflow-clip"
           >
             <div
               className="p-6 h-full flex items-center rounded-lg"
@@ -24,7 +24,7 @@ export default function Tiles({
               }}
             >
               <div className="flex gap-3">
-                <RiCloseCircleLine className="text-error h-5 w-5 shrink-0" />
+                <RiCloseCircleLine className="text-error h-5 w-5 mt-1 shrink-0" />
                 {tile.text}
               </div>
             </div>
