@@ -21,8 +21,6 @@ These systems often lack native workflow orchestration, forcing you to piece tog
 
 Traditional queuing systems treat each message as an isolated unit, making it challenging to track the overall progress of workflows and identify bottlenecks. This lack of visibility can significantly hinder troubleshooting efforts and impact overall system reliability. Even newer tools like Celery, while useful for task queuing and scheduling, [still struggle with multi-queue workflows]() and [require additional overhead for tracking, state management](https://www.vintasoftware.com/blog/guide-django-celery-tasks), and monitoring.
 
-<!-- 1 [Scaling Celery to handle workflows and multiple queues by Lokesh Sanapalli](https://lokesh1729.com/posts/scaling-celery-to-handle-workflows-and-multiple-queues/), 2 [Ensuring reliability in Django Celery tasks: a comprehensive guide by Flávio Juvenal](https://www.vintasoftware.com/blog/guide-django-celery-tasks) -->
-
 Inngest simplifies complex workflows by consolidating functions and steps into a single, intuitive system. With [Inngest's Workflow Kit](/docs/reference/workflow-kit?ref=blog-why-your-queue-is-slowing-you-down), you can define intricate processes in one workflow function with built-in scheduling features, eliminating the need to juggle queues, workers, crons, and database states. This streamlined approach accelerates development and simplifies workflow orchestration.
 
 Problem 2: No built-in traffic cop
