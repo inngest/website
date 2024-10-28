@@ -79,5 +79,6 @@ const scheduleReminder = inngest.createFunction(
 ### Tips
 
 * The `timeouts.start` duration limits how long a run waits in the queue for the first step to start
+* Once the first attempt of a step begins, the `timeouts.start` property no longer applies.  Instead, the `timeouts.finish` duration begins.
 * Once started, the `timeouts.finish` duration limits how long a run can execute
 * Both properties can be stacked to control the overall length of a function run
