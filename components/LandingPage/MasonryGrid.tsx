@@ -13,7 +13,12 @@ export type MasonryGridItem = {
 export default function MasonryGrid({ items }: { items: MasonryGridItem[] }) {
   return (
     // <div className="my-8 sm:my-16 mx-6 md:mx-auto max-w-6xl grid sm:grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-6 sm:gap-y-10">
-    <div className="max-w-6xl mx-auto sm:my-16 px-4 lg:px-0 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div
+      className="max-w-6xl mx-auto sm:my-16 px-4 lg:px-0 grid sm:grid-cols-2 lg:grid-cols-3 gap-4"
+      style={{
+        background: `radial-gradient(75% 75% at 50% 50%, #CCCCCC44 0%, #CCCCCC00 46%, #CCCCCC00 100%)`,
+      }}
+    >
       {items.map(({ title, description, url, image, className }, idx) => (
         <MasonryItem key={idx} wrapperClassName={className}>
           <div className="flex flex-col gap-2">

@@ -10,7 +10,7 @@ export default function Comparison({
   }[];
 }) {
   return (
-    <div className="max-w-6xl w-[90%] px-4 sm:w-auto mx-auto my-8 grid md:grid-cols-2 gap-6">
+    <div className="max-w-6xl w-[90%] px-4 sm:w-auto mx-auto my-12 grid md:grid-cols-2 gap-6">
       {items.map((item, idx) => (
         <div
           className={"p-px rounded-lg"}
