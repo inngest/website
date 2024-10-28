@@ -70,7 +70,11 @@ export default function BlogLayout(props) {
                 href={focus.redirect ?? `/blog/${focus.slug}`}
               >
                 <div className="absolute top-0 bottom-0 -left-[40px] -right-[40px] rounded-lg bg-matcha-500 opacity-20 rotate-1 -z-0 mx-5"></div>
-                <div className="lg:w-2/5 p-8 flex flex-col items-start justify-between relative z-10">
+                <div
+                  className={`${
+                    focus.image ? "lg:w-2/5" : "w-full"
+                  } p-8 flex flex-col items-start justify-between relative z-10`}
+                >
                   <div>
                     <span className="inline-flex text-matcha-0 mb-3 text-xs font-semibold bg-matcha-700/50 px-3 py-1.5 rounded">
                       Latest Post

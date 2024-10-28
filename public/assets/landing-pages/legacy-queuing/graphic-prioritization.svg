@@ -1,0 +1,27 @@
+<svg width="347" height="150" viewBox="0 0 347 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_192_3385)">
+<rect opacity="0.6" x="-1.13281" y="82.5" width="363.791" height="1" fill="#353535" stroke="#353535"/>
+<circle cx="239.5" cy="83" r="12" fill="#0F0F0F"/>
+<circle opacity="0.6" cx="239.5" cy="83" r="8" fill="#2C9B63"/>
+<circle cx="269.5" cy="83" r="12" fill="#0F0F0F"/>
+<circle opacity="0.3" cx="269.5" cy="83" r="8" fill="#2C9B63"/>
+<circle cx="175.5" cy="83" r="12" fill="#0F0F0F"/>
+<circle opacity="0.6" cx="175.5" cy="83" r="8" fill="#2C9B63"/>
+<circle cx="207.5" cy="83" r="12" fill="#0F0F0F"/>
+<circle opacity="0.3" cx="207.5" cy="83" r="8" fill="#2C9B63"/>
+<circle cx="47.5" cy="83" r="12" fill="#0F0F0F"/>
+<circle opacity="0.3" cx="47.5" cy="83" r="8" fill="#2C9B63"/>
+<circle cx="79.5" cy="83" r="12" fill="#0F0F0F"/>
+<circle opacity="0.6" cx="79.5" cy="83" r="8" fill="#2C9B63"/>
+<circle cx="111.5" cy="83" r="12" fill="#0F0F0F"/>
+<circle opacity="0.3" cx="111.5" cy="83" r="8" fill="#2C9B63"/>
+<path opacity="0.75" d="M142.5 82.0321C142.5 82.5844 142.948 83.0321 143.5 83.0321C144.052 83.0321 144.5 82.5844 144.5 82.0321H142.5ZM303.293 82.7392C303.683 83.1297 304.317 83.1297 304.707 82.7392L311.071 76.3753C311.462 75.9847 311.462 75.3516 311.071 74.961C310.681 74.5705 310.047 74.5705 309.657 74.961L304 80.6179L298.343 74.961C297.953 74.5705 297.319 74.5705 296.929 74.961C296.538 75.3516 296.538 75.9847 296.929 76.3753L303.293 82.7392ZM144.5 82.0321V40.5H142.5V82.0321H144.5ZM145.5 39.5H302V37.5H145.5V39.5ZM303 40.5V82.0321H305V40.5H303ZM302 39.5C302.552 39.5 303 39.9477 303 40.5H305C305 38.8431 303.657 37.5 302 37.5V39.5ZM144.5 40.5C144.5 39.9477 144.948 39.5 145.5 39.5V37.5C143.843 37.5 142.5 38.8431 142.5 40.5H144.5Z" fill="#353535"/>
+<circle cx="144.5" cy="39" r="12" fill="#0F0F0F"/>
+<circle opacity="0.8" cx="144.5" cy="39" r="8" fill="#CCCCCC"/>
+</g>
+<defs>
+<clipPath id="clip0_192_3385">
+<rect width="346" height="150" fill="white" transform="translate(0.5)"/>
+</clipPath>
+</defs>
+</svg>
