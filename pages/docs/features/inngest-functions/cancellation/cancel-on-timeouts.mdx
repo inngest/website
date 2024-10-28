@@ -58,8 +58,10 @@ const scheduleReminder = inngest.createFunction(
   {
     id: "schedule-reminder",
     timeouts: {
-      // If the run takes longer than 30s to finish once started, cancel the run.
-      start: "30s",
+      // If the run takes longer than 10s to start, cancel the run.
+      start: "10s",
+      // And, once started, if the run takes longer than 30s to finish once started, cancel the run.
+      finish: "30s",
     },
   }
   { event: "tasks/reminder.created" },
