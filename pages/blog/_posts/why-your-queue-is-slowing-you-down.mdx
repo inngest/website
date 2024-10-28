@@ -1,0 +1,80 @@
+---
+heading: 5 Reasons Why Your Queue is Slowing You Down
+subtitle: Common pitfalls of traditional queues and how Inngest can help
+# image: /assets/blog/soc2-compliant/featured-image.png
+date: 2024-10-28
+author: Tony Holdstock-Brown
+disableCTA: true
+---
+
+If you're building complex products, you're probably using some sort of queueing system. Traditional queues help with scale, job scheduling, and managing background jobs — but as products become complex, traditional queuing systems start to fall short.  While they work for basic message delivery and job processing, they often lack the higher-level abstractions required to build complex workflows. Things like workflow orchestration, multi-tenancy, and native throttling are being built into every product.
+
+Developers require more than speed and storage; they need the flexibility to create custom workflows without getting tied down in complex infrastructure and protocols. Traditional queuing systems rely heavily on lower level abstractions, often leading to slow development time, complex operational overhead, and potential reliability issues.
+
+Let's dive into the top 5 challenges modern teams typically face when building with traditional queues:
+
+Problem 1: Juggling complex workflows
+
+Managing complex workflows with traditional queues — such as passing data between multiple functions in sequence — can be a real challenge. Things can quickly become overwhelming when handling multiple queues, cron jobs, and complex application states.
+
+These systems often lack native workflow orchestration, forcing you to piece together various tools and custom logic. This can make it difficult to monitor job performance and troubleshoot issues, especially when dealing with complex workflows involving multiple steps, conditional logic, and retries.
+
+Traditional queuing systems treat each message as an isolated unit, making it challenging to track the overall progress of workflows and identify bottlenecks. This lack of visibility can significantly hinder troubleshooting efforts and impact overall system reliability. Even newer tools like Celery, while useful for task queuing and scheduling, [still struggle with multi-queue workflows]() and [require additional overhead for tracking, state management](https://www.vintasoftware.com/blog/guide-django-celery-tasks), and monitoring.
+
+<!-- 1 [Scaling Celery to handle workflows and multiple queues by Lokesh Sanapalli](https://lokesh1729.com/posts/scaling-celery-to-handle-workflows-and-multiple-queues/), 2 [Ensuring reliability in Django Celery tasks: a comprehensive guide by Flávio Juvenal](https://www.vintasoftware.com/blog/guide-django-celery-tasks) -->
+
+Inngest simplifies complex workflows by consolidating functions and steps into a single, intuitive system. With [Inngest's Workflow Kit](/docs/reference/workflow-kit?ref=blog-why-your-queue-is-slowing-you-down), you can define intricate processes in one workflow function with built-in scheduling features, eliminating the need to juggle queues, workers, crons, and database states. This streamlined approach accelerates development and simplifies workflow orchestration.
+
+Problem 2: No built-in traffic cop
+
+Traditional queues like Kafka, RabbitMQ, and Amazon SQS lack built-in traffic control mechanisms. This means you're left to manually implement solutions to manage the flow of messages, which can be a major pain point.
+
+It's like trying to manually control a busy intersection with a LED stick. As applications evolve and scale, flow control becomes essential - something traditional queues don't offer out of the box. You're left to figure out how to implement solutions within these queues like native throttling, rate limiting, and job prioritization yourself across your workflows which can easily lead to bottlenecks, performance issues, and a lot of extra work.
+
+Luckily, with Inngest's native [flow control](/docs/guides/flow-control?ref=blog-why-your-queue-is-slowing-you-down), you can say goodbye to the manual work associated with managing traffic flow. Inngest offers built-in throttling, debouncing, and dynamic prioritization, ensuring your system runs smoothly, efficiently, and fairly, even under heavy load.
+
+Problem 3: Sharing the sandbox (and dealing with noisy neighbors)
+
+Traditional queues often have limited support for multi-tenancy, making it difficult to share resources and control access across different environments. This can lead to “noisy neighbor” problems, where one tenant's heavy usage can impact the performance of others. (More on this issue in this [article](/blog/fixing-multi-tenant-queueing-concurrency-problems?ref=blog-why-your-queue-is-slowing-you-down), if you're curious to learn more).
+
+And if you were to make traditional queueing solutions work for multi-tenant use cases, it would mean a lot of extra work. Kafka users have to manage separate topics, partitions, and access controls for each tenant. RabbitMQ relies on creating virtual hosts with custom permissions. And SQS requires separate queues for each tenant. These workarounds can introduce security risks, scalability challenges, balloon your costs, and add significant complexity.
+
+Inngest natively supports [multi-tenancy](/blog/building-the-inngest-queue-pt-i-fairness-multi-tenancy?ref=blog-why-your-queue-is-slowing-you-down) eliminating the need for separate queues and complex permission setups for each tenant. With built-in, robust access controls, you can securely share resources across different environments without sacrificing performance or security.
+
+Problem 4: Lost in the queue
+
+Traditional queues also lack robust job management and recovery capabilities. While they're good at delivering messages, they don't always provide the visibility and control needed to ensure jobs complete successfully.
+
+With RabbitMQ and Kafka, you're left to your own devices to track job progress, handle errors, and implement retries. And while on SQS you can get some monitoring with CloudWatch, it still requires custom solutions for job tracking and cancellation.
+
+This lack of lifecycle management across jobs can lead to inefficiencies and wasted resources as jobs run unnecessarily or fail without a safety net. Inngest's native job management enhances your application by treating jobs as foundational elements, giving you greater control and visibility. Easily track statuses, cancel, re-run, and monitor jobs from start to finish, all within a single platform. Inngest also automates state management and recovery, ensuring reliable execution without manual intervention. Use Inngest's declarative [cancellation](/docs/features/inngest-functions/cancellation?ref=blog-why-your-queue-is-slowing-you-down), to automatically cancel functions based on system events, streamline your workflows and reduce operational overhead.
+
+Problem 5: The black box of queues
+
+Traditional queues often lack robust built-in observability tools. This means you must piece together external tools to monitor performance, troubleshoot issues, and optimize workflows.
+
+For instance, while SQS integrates with Amazon CloudWatch, it's lackluster offering basic metrics (like the age of the oldest message and message count), it lacks detailed insights into message processing, latency, or advanced tracing. To gain deeper insights into processing latency, message tracing, or advanced debugging, you'll need to combine CloudWatch with custom logging or other AWS services.
+
+Similarly, RabbitMQ and Kafka offer basic metrics, but often fall short when it comes to tracking latency or identifying bottlenecks in complex workflows. With RabbitMQ, you're often limited to basic metrics like message counts and queue lengths. While Kafka provides some metrics on consumer lag and partition offsets, it lacks deeper insights into message processing times and potential bottlenecks. To gain a clearer picture of your system's performance, you may need to rely on additional plugins or third-party tools like Prometheus or Confluent Control Center. All this extra tooling can add significant overhead and complexity to applications, making them harder to maintain and optimize.
+
+With Inngest's comprehensive [observability & metrics](/docs/platform/monitor/observability-metrics?ref=blog-why-your-queue-is-slowing-you-down) dashboard, you can say goodbye to the black box. Gain deep insights into workflow performance and issues, allowing you to troubleshoot faster, identify bottlenecks, and continuously optimize your system.
+
+**Upgrade your queues with Inngest**
+
+Inngest is more than a queue, and goes beyond improving performance— it's a robust, durable execution platform designed to simplify workflow management and address the challenges of traditional queuing systems.
+
+With Inngest, you can:
+
+* **Build streamlined, multi-step workflows:** Write imperative functions using a simple SDK to rapidly develop complex workflows
+* **Achieve flow control:** Manage job processing rates, debounce functions, and prioritize tasks with ease.
+* **Access multi-tenancy support:** Seamlessly manage multiple tenants with built-in concurrency controls.
+* **Easily manage and recover jobs:** Track, cancel, and recover jobs effortlessly, ensuring reliable execution.
+* **Get real-time insights with built-in observability:** Gain deep insights into workflow performance and troubleshoot issues quickly.
+
+A solution built by developers for developers
+
+Aligned with how developers approach queuing, Inngest provides high-level abstractions at the application level. This means, it offers flexibility and simplicity with DX in mind and eliminates the need for intricate infrastructure setup and maintenance. Inngest aims to redefine queuing and workflow management while no other solution has been able to fully address the fundamental limitations of these systems. As it breaks new ground, Inngest delivers a comprehensive solution that empowers modern software teams to build more efficient and scalable applications.
+
+With its intuitive interface and robust feature set, Inngest enables developers to focus on building for today's applications, while ensuring reliable and efficient task execution to ultimately ship faster.
+
+[Check it out for yourself](/docs?ref=blog-why-your-queue-is-slowing-you-down) or [chat with us](/contact?ref=blog-why-your-queue-is-slowing-you-down) to discover if Inngest is the solution you've been looking for.

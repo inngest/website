@@ -305,11 +305,10 @@ export default function Page() {
           items={[
             {
               type: "blog",
-              title:
-                "Why Traditional Queues Fall Short in Modern Application Development",
+              title: "5 Reasons Why Your Queue is Slowing You Down",
               description:
-                "The key challenges with traditional message queues in modern application development and how to solve them.",
-              url: `/blog?ref=${baseCTA}`, // TODO!
+                "Common pitfalls of traditional queues and how Inngest can help.",
+              url: `/blog/why-your-queue-is-slowing-you-down?ref=${baseCTA}`,
             },
             {
               type: "docs",
