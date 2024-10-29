@@ -13,7 +13,7 @@ Developers require more than speed and storage; they need the flexibility to cre
 
 Let's dive into the top 5 challenges modern teams typically face when building with traditional queues:
 
-Problem 1: Juggling complex workflows
+## Problem 1: Juggling complex workflows
 
 Managing complex workflows with traditional queues — such as passing data between multiple functions in sequence — can be a real challenge. Things can quickly become overwhelming when handling multiple queues, cron jobs, and complex application states.
 
@@ -23,7 +23,7 @@ Traditional queuing systems treat each message as an isolated unit, making it ch
 
 Inngest simplifies complex workflows by consolidating functions and steps into a single, intuitive system. With [Inngest's Workflow Kit](/docs/reference/workflow-kit?ref=blog-why-your-queue-is-slowing-you-down), you can define intricate processes in one workflow function with built-in scheduling features, eliminating the need to juggle queues, workers, crons, and database states. This streamlined approach accelerates development and simplifies workflow orchestration.
 
-Problem 2: No built-in traffic cop
+## Problem 2: No built-in traffic cop
 
 Traditional queues like Kafka, RabbitMQ, and Amazon SQS lack built-in traffic control mechanisms. This means you're left to manually implement solutions to manage the flow of messages, which can be a major pain point.
 
@@ -31,7 +31,7 @@ It's like trying to manually control a busy intersection with a LED stick. As ap
 
 Luckily, with Inngest's native [flow control](/docs/guides/flow-control?ref=blog-why-your-queue-is-slowing-you-down), you can say goodbye to the manual work associated with managing traffic flow. Inngest offers built-in throttling, debouncing, and dynamic prioritization, ensuring your system runs smoothly, efficiently, and fairly, even under heavy load.
 
-Problem 3: Sharing the sandbox (and dealing with noisy neighbors)
+## Problem 3: Sharing the sandbox (and dealing with noisy neighbors)
 
 Traditional queues often have limited support for multi-tenancy, making it difficult to share resources and control access across different environments. This can lead to “noisy neighbor” problems, where one tenant's heavy usage can impact the performance of others. (More on this issue in this [article](/blog/fixing-multi-tenant-queueing-concurrency-problems?ref=blog-why-your-queue-is-slowing-you-down), if you're curious to learn more).
 
@@ -39,7 +39,7 @@ And if you were to make traditional queueing solutions work for multi-tenant use
 
 Inngest natively supports [multi-tenancy](/blog/building-the-inngest-queue-pt-i-fairness-multi-tenancy?ref=blog-why-your-queue-is-slowing-you-down) eliminating the need for separate queues and complex permission setups for each tenant. With built-in, robust access controls, you can securely share resources across different environments without sacrificing performance or security.
 
-Problem 4: Lost in the queue
+## Problem 4: Lost in the queue
 
 Traditional queues also lack robust job management and recovery capabilities. While they're good at delivering messages, they don't always provide the visibility and control needed to ensure jobs complete successfully.
 
@@ -47,7 +47,7 @@ With RabbitMQ and Kafka, you're left to your own devices to track job progress, 
 
 This lack of lifecycle management across jobs can lead to inefficiencies and wasted resources as jobs run unnecessarily or fail without a safety net. Inngest's native job management enhances your application by treating jobs as foundational elements, giving you greater control and visibility. Easily track statuses, cancel, re-run, and monitor jobs from start to finish, all within a single platform. Inngest also automates state management and recovery, ensuring reliable execution without manual intervention. Use Inngest's declarative [cancellation](/docs/features/inngest-functions/cancellation?ref=blog-why-your-queue-is-slowing-you-down), to automatically cancel functions based on system events, streamline your workflows and reduce operational overhead.
 
-Problem 5: The black box of queues
+## Problem 5: The black box of queues
 
 Traditional queues often lack robust built-in observability tools. This means you must piece together external tools to monitor performance, troubleshoot issues, and optimize workflows.
 
@@ -57,7 +57,7 @@ Similarly, RabbitMQ and Kafka offer basic metrics, but often fall short when it 
 
 With Inngest's comprehensive [observability & metrics](/docs/platform/monitor/observability-metrics?ref=blog-why-your-queue-is-slowing-you-down) dashboard, you can say goodbye to the black box. Gain deep insights into workflow performance and issues, allowing you to troubleshoot faster, identify bottlenecks, and continuously optimize your system.
 
-**Upgrade your queues with Inngest**
+## Upgrade your queues with Inngest
 
 Inngest is more than a queue, and goes beyond improving performance— it's a robust, durable execution platform designed to simplify workflow management and address the challenges of traditional queuing systems.
 
@@ -69,7 +69,7 @@ With Inngest, you can:
 * **Easily manage and recover jobs:** Track, cancel, and recover jobs effortlessly, ensuring reliable execution.
 * **Get real-time insights with built-in observability:** Gain deep insights into workflow performance and troubleshoot issues quickly.
 
-A solution built by developers for developers
+## A solution built by developers for developers
 
 Aligned with how developers approach queuing, Inngest provides high-level abstractions at the application level. This means, it offers flexibility and simplicity with DX in mind and eliminates the need for intricate infrastructure setup and maintenance. Inngest aims to redefine queuing and workflow management while no other solution has been able to fully address the fundamental limitations of these systems. As it breaks new ground, Inngest delivers a comprehensive solution that empowers modern software teams to build more efficient and scalable applications.
 
