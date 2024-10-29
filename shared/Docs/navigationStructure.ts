@@ -573,7 +573,7 @@ const sectionHome: (NavGroup | NavLink)[] = [
                 href: "/docs/features/inngest-functions/error-retries/failure-handlers",
               },
               {
-                title: "Inngest Errors",
+                title: "Inngest errors",
                 href: "/docs/features/inngest-functions/error-retries/inngest-errors",
               },
               {
@@ -597,11 +597,11 @@ const sectionHome: (NavGroup | NavLink)[] = [
                 href: `/docs/features/inngest-functions/cancellation/cancel-on-timeouts`,
               },
               {
-                title: "Cancel on Events",
+                title: "Cancel on events",
                 href: `/docs/features/inngest-functions/cancellation/cancel-on-events`,
               },
               {
-                title: "Bulk Cancellation",
+                title: "Bulk cancellation",
                 href: `/docs/guides/cancel-running-functions`,
               },
             ],
