@@ -18,8 +18,6 @@ In the following examples, we'll explore how to configure the timeout property a
     { key: "go", title: "Go" },
   ]}>
 
-<GuideSection show="typescript">
-</GuideSection>
 
 ### `timeouts.start` - Adding timeouts to unstarted runs
 
@@ -27,6 +25,7 @@ Runs may stay in the queue waiting to start due to concurrency backlogs, throttl
 
 The `timeouts.start` configuration property controls this timeout. This example forces runs to cancel if it takes over 10 seconds to successfully start the first step of a run:
 
+<GuideSection show="typescript">
 ```ts {{ title: "inngest/function.ts" }}
 const scheduleReminder = inngest.createFunction(
   {
@@ -45,7 +44,28 @@ const scheduleReminder = inngest.createFunction(
   // ...
 );
 ```
+</GuideSection>
 
+<GuideSection show="go">
+```go {{ title: "inngest/function.go" }}
+return inngestgo.CreateFunction(
+	inngestgo.FunctionOpts{
+		Name: "A function",
+		Timeouts: &inngestgo.Timeouts{
+			// If the run takes longer than 10s to start, cancel the run.
+			Start: inngestgo.Ptr(10*time.Second),
+		},
+	},
+	inngestgo.EventTrigger("tasks/reminder.createad", nil),
+	func(ctx context.Context, input inngestgo.Input[ReminderEvent]) (any, error) {
+		return step.Run(ctx, "send-reminder", func (ctx context.Context) (bool, error) {
+			// ...
+			return false, nil
+		})
+	},
+)
+```
+</GuideSection>
 
 ### `timeouts.finish` - Adding timeouts to executing runs
 
@@ -53,6 +73,7 @@ You may want to limit the overall duration of a run after the run starts executi
 
 The `timeouts.finish` configuration property controls this timeout. This example forces runs to cancel if it takes over 30 seconds to finish, once started:
 
+<GuideSection show="typescript">
 ```ts {{ title: "inngest/function.ts" }}
 const scheduleReminder = inngest.createFunction(
   {
@@ -73,6 +94,30 @@ const scheduleReminder = inngest.createFunction(
   // ...
 );
 ```
+</GuideSection>
+
+<GuideSection show="go">
+```go {{ title: "inngest/function.go" }}
+return inngestgo.CreateFunction(
+	inngestgo.FunctionOpts{
+		Name: "A function",
+		Timeouts: &inngestgo.Timeouts{
+			// If the run takes longer than 10s to start, cancel the run.
+			Start: inngestgo.Ptr(10*time.Second),
+			// And if the run takes longer than 30s to finish after starting, cancel the run.
+			Finish: inngestgo.Ptr(30*time.Second),
+		},
+	},
+	inngestgo.EventTrigger("tasks/reminder.createad", nil),
+	func(ctx context.Context, input inngestgo.Input[ReminderEvent]) (any, error) {
+		return step.Run(ctx, "send-reminder", func (ctx context.Context) (bool, error) {
+			// ...
+			return false, nil
+		})
+	},
+)
+```
+</GuideSection>
 
 </GuideSelector>
 
