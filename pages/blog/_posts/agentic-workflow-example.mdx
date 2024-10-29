@@ -181,7 +181,7 @@ Our Inngest workflow is composed of 4 predefined actions:
 
 Our `o1-preview` model leverages the `openaiCall` action to dynamically add actions, helping to format and structure the provided contact data. It takes two parameters: `prompt`, and `model` which the model configures according to the task to achieve.
 
-Each workflow's action provides a `handler()` function that benefits from Inngest's features, such as [automatic retries](/blog/durable-functions-a-visual-typescript-primer) and throttling. These features improve the reliability of our agentic workflow and help manage its unpredictability.
+Each workflow's action provides a `handler()` function that benefits from Inngest's features, such as [automatic retries](/blog/durable-functions-a-visual-javascript-primer) and throttling. These features improve the reliability of our agentic workflow and help manage its unpredictability.
 
 An Inngest Workflow is then passed to our `importContacts()` Inngest Function for execution:
 
