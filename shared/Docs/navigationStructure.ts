@@ -593,6 +593,10 @@ const sectionHome: (NavGroup | NavLink)[] = [
                 href: `/docs/features/inngest-functions/cancellation`,
               },
               {
+                title: "Cancel on timeouts",
+                href: `/docs/features/inngest-functions/cancellation/cancel-on-timeouts`,
+              },
+              {
                 title: "Cancel on Events",
                 href: `/docs/features/inngest-functions/cancellation/cancel-on-events`,
               },
