@@ -34,6 +34,7 @@ const options = {
     "https://nextjs.org/",
     "https://open.spotify.com/",
     "https://www.linkedin.com/",
+    "https://openai.com/",
   ],
 };
 

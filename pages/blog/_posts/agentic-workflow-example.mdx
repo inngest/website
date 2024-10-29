@@ -1,8 +1,8 @@
 ---
-heading: "Replacing complex UX patterns with Next.js and OpenAI o1"
+heading: "Agentic workflow example: importing CRM contacts with Next.js and OpenAI o1"
 subtitle: A reimagined contacts importer leveraging the power of reasoning models with Inngest
 showSubtitle: true
-image: /assets/blog/nextjs-openai-o1-preview/featured-image-2.png
+image: /assets/blog/nextjs-openai-o1-preview/featured-image-3.png
 date: 2024-10-17
 author: Charly Poly
 disableCTA: false
@@ -14,6 +14,8 @@ Anyone who has already built a data-import user experience knows it requires som
 _Such UI is a slow and tedious experience for the end-user and a challenge to maintain for developers._
 
 In this article, we will review a demo CRM Next.js putting a contacts import feature on autopilot, remarkably demonstrating the power of agentic workflows.
+
+If you want to follow along, you will find the full example project on GitHub: https://github.com/inngest/vercel-ai-o1-preview-crm-agent.
 
 ## What is an AI Agentic workflow?
 
@@ -30,8 +32,7 @@ Adding Agentic workflows to an application comes with many challenges:
 - **Reliability**: Agentic workflows rely on more tools than regular prompt-designed workflows. Adding more tools calling external APIs based on LLM-generated parameters raises the risk of failure. Recovering from failure enables the model to self-correct during the workflow execution.
 - **Unpredictability**: Pushing an agentic workflow to production requires setting up some safeguards on cost, duration, and output validation.
 
-Let's now look at our Next.js CRM demo, featuring an autopilot contacts import feature.
-We'll see that agentic workflows mostly reuse existing patterns found in Next.js  and can already be used today to bring brand-new capabilities to Next.js applications.
+This article will guide you through a Next.js CRM demo featuring an autopilot contacts import feature. We'll see how **Inngest helps deal with the challenges of agentic workflows by bringing long-running and retriable workflows** inside your Next.js application.
 
 ## Designing an agentic workflow with OpenAI o1
 
@@ -180,7 +181,7 @@ Our Inngest workflow is composed of 4 predefined actions:
 
 Our `o1-preview` model leverages the `openaiCall` action to dynamically add actions, helping to format and structure the provided contact data. It takes two parameters: `prompt`, and `model` which the model configures according to the task to achieve.
 
-Each workflow's action provides a `handler()` function that benefits from Inngest's features, such as [automatic retries](/blog/durable-functions-a-visual-typescript-primer) and throttling. These features improve the reliability of our agentic workflow and help manage its unpredictability.
+Each workflow's action provides a `handler()` function that benefits from Inngest's features, such as [automatic retries](/blog/durable-functions-a-visual-javascript-primer) and throttling. These features improve the reliability of our agentic workflow and help manage its unpredictability.
 
 An Inngest Workflow is then passed to our `importContacts()` Inngest Function for execution:
 
