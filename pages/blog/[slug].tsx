@@ -61,6 +61,35 @@ type Props = {
   };
 };
 
+type Scope = {
+  path: string;
+
+  heading: string;
+  subtitle?: string;
+  showSubtitle?: boolean;
+
+  author?: string;
+  image?: string;
+  imageCredits?: string;
+  tags?: string[];
+
+  /**
+   * ISO8601
+   */
+  date: string;
+  humanDate: string;
+  dateUpdated?: string;
+
+  primaryCTA?: "sales" | "docs";
+
+  reading: {
+    text: string;
+    minutes: number;
+    time: number;
+    words: number;
+  };
+};
+
 const authorURLs = {
   "Dan Farrelly": "https://twitter.com/djfarrelly",
   "Tony Holdstock-Brown": "https://twitter.com/itstonyhb",
@@ -78,7 +107,9 @@ const authorURLs = {
 };
 
 export default function BlogLayout(props) {
-  const scope = JSON.parse(props.post.scope.json);
+  const scope: Scope = JSON.parse(props.post.scope.json);
+  const slug = props.slug;
+  const primaryCTA = scope.primaryCTA;
 
   const structuredData = {
     "@context": "https://schema.org",
@@ -88,7 +119,6 @@ export default function BlogLayout(props) {
     image: [`${process.env.NEXT_PUBLIC_HOST}${scope.image}`],
     datePublished: scope.date,
     dateModified: scope.dateUpdated ? scope.dateUpdated : scope.date,
-    introCallout: scope.introCallout,
     author: [
       {
         "@type": scope.author ? "Person" : "Organization",
@@ -214,35 +244,6 @@ export default function BlogLayout(props) {
                     <Tags tags={scope.tags} />
                   </p>
                 </header>
-                {scope.introCallout && (
-                  <CTACallout
-                    text={scope.introCallout}
-                    cta={{
-                      href: "https://www.inngest.com?ref=blog-post",
-                      text: "Give it a try",
-                    }}
-                  />
-                )}
-                {/* {!scope.disableCTA && !scope.introCallout && (
-                <CTACallout
-                  text={
-                    <>
-                      <a
-                        className="text-indigo-400 font-medium hover:text-white transition-all no-underline hover:underline"
-                        href="https://www.inngest.com?ref=blog-post"
-                      >
-                        Inngest
-                      </a>{" "}
-                      is the developer platform for easily building reliable
-                      workflows and background jobs with zero infrastructure.
-                    </>
-                  }
-                  cta={{
-                    href: "https://www.inngest.com?ref=blog-post",
-                    text: "Give it a try",
-                  }}
-                />
-              )} */}
                 <SectionProvider sections={[]}>
                   <div className="prose mt-12 mb-20 prose-img:rounded-lg prose-code:tracking-tight prose-pre:border prose-pre:border-subtle text-basis prose-a:no-underline hover:prose-a:underline prose-a:font-medium prose-a:transition-all prose-invert blog-content">
                     {/* @ts-ignore */}
@@ -253,7 +254,7 @@ export default function BlogLayout(props) {
                     />
                   </div>
                 </SectionProvider>
-                <DiscordCTA />
+                <CTAs primary={primaryCTA} ctaRef={`blog-${slug}`} />
               </div>
             </main>
           </article>
@@ -261,6 +262,56 @@ export default function BlogLayout(props) {
         <Footer />
       </div>
     </>
+  );
+}
+
+function CTAs({
+  primary = "docs",
+  ctaRef = "",
+}: {
+  primary: "docs" | "sales";
+  ctaRef: string;
+}) {
+  const ctas = {
+    sales: {
+      title: "Chat with a solutions expert",
+      description:
+        "Connect with us to see if Inngest fits your queuing and orchestration needs.",
+      button: {
+        href: `/contact?ref=${ctaRef}`,
+        text: "Contact us",
+      },
+    },
+    docs: {
+      title: "View the documentation",
+      description:
+        "Dive into quick starts, guides, and examples to learn Inngest.",
+      button: {
+        href: `/docs?ref=${ctaRef}`,
+        text: "Read the docs",
+      },
+    },
+  };
+  const visibleCTAs =
+    primary === "sales" ? [ctas.sales, ctas.docs] : [ctas.docs, ctas.sales];
+  return (
+    <div className="max-w-[70ch] grid sm:grid-cols-2 gap-16 border-t-[2px] border-slate-800 pt-16 m-auto text-indigo-500">
+      {visibleCTAs.map((c, idx) => (
+        <div key={idx} className="flex flex-col items-start">
+          <h2 className="text-basis text-xl font-medium mt-6">{c.title}</h2>
+          <p className="text-subtle mb-6 mt-2 text-sm text-balance">
+            {c.description}
+          </p>
+          <Button
+            variant={idx === 0 ? "primary" : "outline"}
+            href={c.button.href}
+            arrow="right"
+          >
+            {c.button.text}
+          </Button>
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -331,6 +382,7 @@ export async function getStaticProps({ params }) {
   });
   return {
     props: {
+      slug: params.slug,
       post,
       meta: {
         disabled: true,

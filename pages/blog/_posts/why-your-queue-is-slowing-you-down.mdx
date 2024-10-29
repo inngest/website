@@ -1,10 +1,10 @@
 ---
 heading: 5 Reasons Why Your Queue is Slowing You Down
 subtitle: Common pitfalls of traditional queues and how Inngest can help
-# image: /assets/blog/soc2-compliant/featured-image.png
+image: /assets/blog/why-your-queue-is-slowing-you-down/featured-image.png
 date: 2024-10-28
 author: Tony Holdstock-Brown
-disableCTA: true
+primaryCTA: sales
 ---
 
 If you're building complex products, you're probably using some sort of queueing system. Traditional queues help with scale, job scheduling, and managing background jobs — but as products become complex, traditional queuing systems start to fall short.  While they work for basic message delivery and job processing, they often lack the higher-level abstractions required to build complex workflows. Things like workflow orchestration, multi-tenancy, and native throttling are being built into every product.
@@ -14,6 +14,8 @@ Developers require more than speed and storage; they need the flexibility to cre
 Let's dive into the top 5 challenges modern teams typically face when building with traditional queues:
 
 ## Problem 1: Juggling complex workflows
+
+![A graphic of hands juggling balls](/assets/blog/why-your-queue-is-slowing-you-down/juggling.png)
 
 Managing complex workflows with traditional queues — such as passing data between multiple functions in sequence — can be a real challenge. Things can quickly become overwhelming when handling multiple queues, cron jobs, and complex application states.
 
@@ -25,6 +27,8 @@ Inngest simplifies complex workflows by consolidating functions and steps into a
 
 ## Problem 2: No built-in traffic cop
 
+![A graphic of a traffic light](/assets/blog/why-your-queue-is-slowing-you-down/traffic.png)
+
 Traditional queues like Kafka, RabbitMQ, and Amazon SQS lack built-in traffic control mechanisms. This means you're left to manually implement solutions to manage the flow of messages, which can be a major pain point.
 
 It's like trying to manually control a busy intersection with a LED stick. As applications evolve and scale, flow control becomes essential - something traditional queues don't offer out of the box. You're left to figure out how to implement solutions within these queues like native throttling, rate limiting, and job prioritization yourself across your workflows which can easily lead to bottlenecks, performance issues, and a lot of extra work.
@@ -32,6 +36,8 @@ It's like trying to manually control a busy intersection with a LED stick. As ap
 Luckily, with Inngest's native [flow control](/docs/guides/flow-control?ref=blog-why-your-queue-is-slowing-you-down), you can say goodbye to the manual work associated with managing traffic flow. Inngest offers built-in throttling, debouncing, and dynamic prioritization, ensuring your system runs smoothly, efficiently, and fairly, even under heavy load.
 
 ## Problem 3: Sharing the sandbox (and dealing with noisy neighbors)
+
+![A graphic of a megaphone](/assets/blog/why-your-queue-is-slowing-you-down/noisy.png)
 
 Traditional queues often have limited support for multi-tenancy, making it difficult to share resources and control access across different environments. This can lead to “noisy neighbor” problems, where one tenant's heavy usage can impact the performance of others. (More on this issue in this [article](/blog/fixing-multi-tenant-queueing-concurrency-problems?ref=blog-why-your-queue-is-slowing-you-down), if you're curious to learn more).
 
@@ -41,6 +47,8 @@ Inngest natively supports [multi-tenancy](/blog/building-the-inngest-queue-pt-i-
 
 ## Problem 4: Lost in the queue
 
+![A graphic of many circles with one circle highlighted](/assets/blog/why-your-queue-is-slowing-you-down/lost.png)
+
 Traditional queues also lack robust job management and recovery capabilities. While they're good at delivering messages, they don't always provide the visibility and control needed to ensure jobs complete successfully.
 
 With RabbitMQ and Kafka, you're left to your own devices to track job progress, handle errors, and implement retries. And while on SQS you can get some monitoring with CloudWatch, it still requires custom solutions for job tracking and cancellation.
@@ -48,6 +56,8 @@ With RabbitMQ and Kafka, you're left to your own devices to track job progress, 
 This lack of lifecycle management across jobs can lead to inefficiencies and wasted resources as jobs run unnecessarily or fail without a safety net. Inngest's native job management enhances your application by treating jobs as foundational elements, giving you greater control and visibility. Easily track statuses, cancel, re-run, and monitor jobs from start to finish, all within a single platform. Inngest also automates state management and recovery, ensuring reliable execution without manual intervention. Use Inngest's declarative [cancellation](/docs/features/inngest-functions/cancellation?ref=blog-why-your-queue-is-slowing-you-down), to automatically cancel functions based on system events, streamline your workflows and reduce operational overhead.
 
 ## Problem 5: The black box of queues
+
+![A graphic of a mysterious black box](/assets/blog/why-your-queue-is-slowing-you-down/blackbox.png)
 
 Traditional queues often lack robust built-in observability tools. This means you must piece together external tools to monitor performance, troubleshoot issues, and optimize workflows.
 
