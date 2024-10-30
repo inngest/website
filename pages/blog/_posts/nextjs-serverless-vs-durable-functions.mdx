@@ -2,18 +2,18 @@
 heading: "Next.js Serverless Functions vs Durable Functions"
 image: /assets/blog/nextjs-serverless-vs-durable-functions/featured-image-2.png
 showSubtitle: true
-subtitle: Learn how Durable Functions extends your Next.js experience by powering integrations, email scheduling, or AI workflows without timeouts.
+subtitle: Learn how Durable Functions remove the need of a separate server to handle long-running workflows or to power queues.
 date: 2024-08-13
 author: Charly Poly
 disableCTA: true
 ---
 
 
-Next.js makes using Serverless Functions easy for developers, but running code on a schedule or over a long time span requires managing queues, state, or handling the recovery from external failures.
+Next.js makes using Serverless Functions easy for developers, but **running code on a schedule or over a long time span** requires managing queues, state, or handling the recovery from external failures.
 
 A Durable Function helps with such code, powering core features such as integrations, email scheduling, or AI workflows.
 
-Teams at [Resend](https://resend.com/) and [Mintlify](https://mintlify.com/) built their own back-end workflow parts on top of Next.js to power core features:
+Teams at **[Resend](https://resend.com/) and [Mintlify](https://mintlify.com/)** built their own back-end workflow parts on top of Next.js to power core features:
 
 ![Diagram illustrating Resend and Mintlify Next.js applications architecture overview. Both applications rely on some backend parts responsible for either scheduling emails or sync with third party services like GitHub or Algolia.](/assets/blog/nextjs-serverless-vs-durable-functions/1.png)
 
@@ -265,9 +265,12 @@ Now, you might wonder: how do Durable Functions work? What do steps do? Why does
 
 To answer those questions, let's have a look under the hood.
 
+<CTACallout text={'Want to get started with Durable Functions in Next.js?'} cta={{ href: '/docs/getting-started/nextjs-quick-start?ref=blog-nextjs-serverless-vs-durable-functions', text: 'Read our tutorial' }} />
+
+
 ## Durable Functions: under the hood
 
-Durable Function are composed of 2 main components: Triggers and Steps.
+Durable Function are composed of 2 main components: [Triggers](/docs/features/events-triggers) and [Steps](/docs/features/inngest-functions/steps-workflows).
 
 Let's start with how Durable Functions get triggered.
 
@@ -285,7 +288,7 @@ Our domain verification Durable Function starts when an `account/verify-domain` 
 
 **The Durable Execution Engine:  how events trigger Durable Functions runs**
 
-Events are sent to a Durable Execution Engine (for example, Inngest), which triggers Durable Function runs and manages their steps (like React manages Components and their state).
+Events are sent to a[ Durable Execution Engine (for example, Inngest)](/docs/learn/how-functions-are-executed), which triggers Durable Function runs and manages their steps (like React manages Components and their state).
 
 To be managed by the Durable Execution Engine, the Durable Functions are exposed over HTTP via a dedicated Next.js API Route:
 
