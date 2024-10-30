@@ -17,7 +17,7 @@ export default function Resources({
   }[];
 }) {
   return (
-    <div className="max-w-6xl w-[90%] px-4 sm:w-auto mx-auto my-12 grid md:grid-cols-3 gap-8">
+    <div className="max-w-6xl w-[90%] px-4 sm:w-auto mx-auto my-12 grid sm:grid-cols-2 md:grid-cols-3 gap-8">
       {items.map((item, idx) => (
         <div
           key={idx}

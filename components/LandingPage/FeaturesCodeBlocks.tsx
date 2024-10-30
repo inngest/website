@@ -14,13 +14,16 @@ export default function FeaturesCodeBlocks({
 }) {
   const [selected, setSelected] = useState<number>(0);
   return (
-    <div className="max-w-6xl mx-auto my-12 flex flex-col gap-12 items-center justify-center">
-      <div>
-        <div className={`grid grid-cols-${features.length} gap-6 mb-1.5`}>
+    <div className="max-w-6xl mx-auto my-12 px-4 lg:px-0 flex flex-col gap-12 items-center justify-center">
+      <div className="flex flex-row md:flex-col gap-2 md:gap-1.5">
+        <div
+          className={`order-last md:order-first grid grid-cols-1 grid-rows-${features.length} md:grid-cols-${features.length} md:grid-rows-1 gap-6`}
+        >
           {features.map(({ title, description }, idx) => (
             <div key={idx}>
               <div
                 className={clsx(
+                  "h-full md:h-auto", // mobile
                   "p-3 flex flex-col gap-2 cursor-pointer rounded hover:bg-canvasMuted",
                   selected === idx && "border-bottom border-primary"
                 )}
@@ -63,16 +66,32 @@ function TabSelectorBar({
 }) {
   return (
     <div className="relative">
-      <div className="h-0.5 w-full bg-canvasMuted"></div>
+      {/* Horizontal */}
+      <div className="hidden md:block h-0.5 w-full bg-canvasMuted"></div>
       <div
         className={clsx(
-          `absolute top-0 left-0 h-0.5`,
+          `hidden md:block absolute top-0 left-0 h-0.5`,
           `bg-[rgb(var(--color-foreground-success))]`,
           `transform transition-transform duration-300`
         )}
         style={{
           width: `calc((100% - ${length - 1} * ${gap}) * ${1 / length})`,
           transform: `translateX(calc(${
+            selected * 100
+          }% + ${selected} * ${gap}))`,
+        }}
+      ></div>
+      {/* Vertical */}
+      <div className="md:hidden w-0.5 h-full bg-canvasMuted"></div>
+      <div
+        className={clsx(
+          `md:hidden absolute top-0 left-0 w-0.5`,
+          `bg-[rgb(var(--color-foreground-success))]`,
+          `transform transition-transform duration-300`
+        )}
+        style={{
+          height: `calc((100% - ${length - 1} * ${gap}) * ${1 / length})`,
+          transform: `translateY(calc(${
             selected * 100
           }% + ${selected} * ${gap}))`,
         }}
