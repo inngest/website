@@ -244,3 +244,38 @@ inngest.createFunction(
 <Callout>
   💡 **Tip**: To test functions locally, copy an event from a webhook from the Inngest dashboard and use it with the Inngest dev server's `Send test` button.
 </Callout>
+
+## Verifying request signatures
+
+Many webhook producers sign their requests with a secret key to ensure that the request is coming from them. This establishes trust with the webhook producer and ensures that the event data has not been tampered with.
+
+To verify a webhook signature, you'll need to return the signature and raw request body string in your transform. For example, the following transform function could be used for Stripe webhooks:
+
+```ts
+function transform(evt, headers, queryParams, raw) {
+  return {
+    name: `stripe/${evt.type}`,
+    data: {
+      raw,
+      sig: headers["Stripe-Signature"],
+    }
+  };
+};
+```
+
+Then you can use that data to verify the signature in your Inngest functions:
+
+```ts
+inngest.createFunction(
+  { id: "stripe/charge.updated" },
+  { event: "stripe/charge.updated" },
+  async ({ attempt, event, step }) => {
+    if (!verifySig(event.data.raw, event.data.sig, stripeSecret)) {
+      throw new NonRetriableError("failed signature verification");
+    }
+
+    // Now it's safe to use the event data.
+    const data = JSON.parse(event.data.raw);
+  }
+);
+```
