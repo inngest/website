@@ -1,0 +1,165 @@
+---
+heading: "4 solutions to Vercel function timeouts"
+subtitle: Solving Vercel timeout issues isn't only about increasing the timeout but also using the right tools for the job.
+showSubtitle: true
+image: /assets/blog/vercel-function-timeout/featured-image.png
+date: 2024-10-30
+author: Charly Poly
+disableCTA: false
+---
+
+Vercel is a great platform for TypeScript developers, especially those creating globally distributed applications using React and the serverless approach.
+
+Many Vercel first users face limitations linked to the nature of serverless. Vercel Functions are meant to serve direct user interactions or API calls and, by design, should be completed quickly.  
+Still, many developers want to leverage Vercel Functions to build integrations, AI workflows, or data import, which may cause requests to last longer than the default 10s max duration.
+
+Hitting the limitations of Vercel Functions duration does not mean that Vercel Functions are unfit for your use case. Sometimes, you just need to take a different approach to writing such long-running code — to avoid timeouts and guarantee a sensible application architecture. This article will cover four free and paid approaches to solving your Vercel Functions timeout issues.
+
+## Bump your Vercel Function max duration
+
+This first solution applies if you need to keep your piece of long-running code user or API-facing (in short, in a Vercel Function that returns data synchronously).
+
+A first quick-win that most people miss is the ability to bump your Vercel Function max duration from 10s to 60s by updating the `vercel.json` file:
+
+```json
+{
+  "functions": {
+    "app/api/mySlowFunction/route.ts": {
+      "maxDuration": 60
+    }
+  }
+}
+```
+
+However, we recommend **avoiding** enabling a 60-second timeout for all your functions. Longer timeouts make it harder to pinpoint Vercel Functions that are not behaving correctly (*and consume your free tier allowance faster*).  
+Still, if you'd like to enable a higher max duration for all your functions and projects, follow these steps:
+
+1. From your [dashboard](https://vercel.com/dashboard), select your project and go to the **Settings** tab.  
+2. From the left side, select the Functions tab and scroll to the **Function Max Duration** section. Finally, update the **Default Max Duration** field value and select **Save**.
+
+## Leverage Edge Function's infinite duration
+
+Is increasing your Vercel Function max duration to 60 seconds not enough?  
+Then, you might want to consider transforming your long-running piece of code into a streamed response.  
+The perfect use case for streaming is code that relies on an external API offering streamed endpoints. The most famous AI APIs are OpenAI and Gemini, but other services, such as Twitter or YouTube, offer streamed endpoints.
+
+If you are developing AI features, consider using the [AI SDK](https://sdk.vercel.ai/docs/introduction). This will help you maximize the model's streaming capabilities and leverage the Edge Function's longer max duration.
+
+If your code is not relying on streamed endpoints, you might experiment with the [Stream API](https://developer.mozilla.org/en-US/docs/Web/API/Streams_API) by wrapping your code as a “fake stream” (*technique currently used by Vercel AI with `o1-preview`*):
+
+```typescript
+export const config = {
+  runtime: 'edge',
+};
+
+export default async function handler(req: Request): Promise<Response> {
+  // Create a ReadableStream to stream the data
+  const stream = new ReadableStream({
+    async start(controller) {
+      // Simulate long-running task with multiple steps
+      const startSync = async () => {
+        controller.enqueue(`Sync started.`);
+
+        // perform time-consuming data-sync
+        const data = await getDataFromExternalSource();
+        await db.syncs.insertMany(data);
+
+        controller.enqueue(`Sync completed.`);
+
+        // Close the stream when done
+        controller.close();
+      };
+
+      // Execute the task
+      startSync();
+    },
+  });
+
+  // Return the stream as a response with appropriate headers
+  return new Response(stream, {
+    headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+  });
+}
+```
+
+This hack will solve your duration limits but require the consumer (front-end or another API) to consume the stream until the Edge Function is completed. Any closing of the stream will terminate the Edge Function execution.
+
+Going with a “fake streaming” approach indicates that your consumer doesn't need a sync response from your Function. In that case, you might consider running your code asynchronously using a **Durable Function**.
+
+## Move your code into a Durable Function
+
+A piece of code running for a long time without returning a response synchronously is a good candidate for Durable Functions.  
+Durable Functions are the asynchronous alter ego of Vercel Functions, enabling you to run code asynchronously for extended periods.
+
+You can transform your existing Vercel Function into [Durable Functions](/blog/nextjs-serverless-vs-durable-functions) by leveraging Inngest's similar developer experience.  
+First, you'll need to move your existing code into an Inngest Function:
+
+```typescript
+inngest.createFunction({
+    id: "long-running-code",
+  },
+  // A Function is triggered by events
+  { event: "sync/start" },
+  async ({ step }) => {
+    // step is retried if it throws an error
+    const data = await step.run("get-data", async () => {
+      return getDataFromExternalSource();
+    });
+
+    // Steps can reuse data from previous ones
+    await step.run("save-data", async () => {
+      return db.syncs.insertMany(data);
+    });
+  }
+);
+```
+
+And finally, replace your Vercel Function code with the following [Inngest Function](/docs/features/inngest-functions) invocation:
+
+```typescript
+import { inngest } from '@lib/inngest/client' 
+
+export const dynamic = 'force-dynamic';
+ 
+export function POST(request: Request) {
+  await inngest.send({
+    name: "sync/start",
+    data: {
+      //  The event's data (params)
+    },
+  });
+
+  return new Response(`Sync triggered!`);
+}
+```
+
+Running code for an extended period is only the tip of the iceberg of Inngest Functions benefits.  
+Inngest Functions also brings:
+
+- **[Automatic retries](/docs/features/inngest-functions/error-retries/retries)**: handy when exchanging with external APIs.  
+- **[Throttling and Concurrency](/docs/guides/flow-control)**: to avoid hitting 3rd party rate limits.  
+- **[Sleeps](/docs/features/inngest-functions/steps-workflows/sleeps):** useful when implementing user onboarding workflows or email drip campaigns.
+
+Do you still want to keep your long-running code in a Vercel Function? There is one solution left.
+
+## Still hitting the limits? Move to a Vercel Pro or Enterprise plan
+
+All the solutions mentioned above relying on the Vercel free tier will still run against the total 100 hours offered per month.  
+If your long-running piece of code must return a synchronous response and cannot be streamed, the only solution is to move to a Vercel paid plan.  
+The Vercel Pro plan increases your default max duration to 15 seconds, configurable for up to 5 minutes:
+
+|  | Default | Configurable up to | Using Edge Functions |
+| :---- | :---- | :---- | :---- |
+| **Hobby plan** | 10s | 60s | Unlimited |
+| **Pro plan** | 15s | 300s | Unlimited |
+| **Enterprise plan** | 15s | 900s | Unlimited |
+
+## Takeaways
+
+We discussed four ways to **solve Vercel function timeouts:**
+
+1. You can bump the max duration to 60 seconds (although this has downsides).  
+2. You can wrap your code in a “fake stream” and use Edge Functions (not a very good architectural decision, but it will work).  
+3. You can [use a Durable Function in combination with your Vercel function](/blog/nextjs-serverless-vs-durable-functions)—architecturally, this is a smart option, even though it takes some work to set up.  
+4. You can upgrade to the Pro or Enterprise tier on Vercel to get a 300s or 900s timeout, respectively.
+
