@@ -17,7 +17,7 @@ import { productLinks, resourcesLinks } from "./Nav/links";
 
 // Manual count of stars on GitHub for now
 // Run pnpm run github:stars to get the latest count
-const GITHUB_STARS = 2684;
+const GITHUB_STARS = 2824;
 
 const menu: {
   title: string;
