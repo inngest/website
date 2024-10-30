@@ -696,16 +696,20 @@ const sectionHome: (NavGroup | NavLink)[] = [
             title: "Cloud Providers Setup",
             links: [
               {
-                title: "Vercel",
-                href: "/docs/deploy/vercel",
+                title: "Cloudflare Pages",
+                href: `/docs/deploy/cloudflare`,
               },
               {
                 title: "Netlify",
                 href: `/docs/deploy/netlify`,
               },
               {
-                title: "Cloudflare Pages",
-                href: `/docs/deploy/cloudflare`,
+                title: "Render",
+                href: `/docs/deploy/render`,
+              },
+              {
+                title: "Vercel",
+                href: "/docs/deploy/vercel",
               },
               {
                 title: "Cloud Provider Usage Limits",
