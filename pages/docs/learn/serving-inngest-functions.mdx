@@ -661,6 +661,27 @@ export default serve(inngest, [...fns], {
 
 For more information, check out the [Streaming](/docs/streaming) page.
 
+### Framework: Nitro <VersionBadge version="v3.24.0" />
+
+Add the following to `./server/routes/api/inngest.ts`:
+
+<CodeGroup>
+```ts
+import { serve } from "inngest/nitro";
+import { inngest } from "~~/inngest/client";
+import fnA from "~~/inngest/fnA"; // Your own function
+
+export default eventHandler(
+  serve({
+    client: inngest,
+    functions: [fnA],
+  })
+);
+```
+</CodeGroup>
+
+See the [Nitro example](https://github.com/inngest/inngest-js/tree/main/examples/framework-nitro) for more information.
+
 ### Framework: Nuxt <VersionBadge version="v0.9.2+" />
 
 Inngest has first class support for [Nuxt server routes](https://nuxt.com/docs/guide/directory-structure/server#server-routes), allowing you to easily create the Inngest API.
