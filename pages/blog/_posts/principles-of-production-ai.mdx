@@ -23,7 +23,7 @@ LLM Evaluations assess the quality and relevance of responses that an AI model p
 - **Using LLM Evaluation during development** consists of **benchmarking** the quality and relevance of your prompts.  
 - **When used in production**, LLM Evaluation (also called “Online evals”) helps **monitor the evolution** of your AI application quality over time and identify potential regression problems.
 
-{/* image1 */}
+![LLM Evaluation enable a quick feedback loop in development and a continuous monitoring in production.](/assets/blog/principles-of-production-ai/1.png)
 
 ### How to perform LLM Evaluation?
 
@@ -70,8 +70,9 @@ Durable Workflows enable you to build AI workflows composed of retriable and lin
 - **Embedded Caching**: preventing any duplicate costly LLM costs during retries  
 - [**Concurrency, Throttling, and Rate limiting**](https://www.inngest.com/docs/guides/flow-control) are essential to scale user requests and protect your application from abuse.
 
-{/* image2 */}
-{/* _A failure at the second step of an Inngest AI workflow doesn't trigger a rerun of the first LLM call._ */}
+![AI Workflows running on Inngest benefits from automatic retries and caching, prevent unnecessary LLM calls.](/assets/blog/principles-of-production-ai/2.png)
+
+_A failure at the second step of an Inngest AI workflow doesn't trigger a rerun of the first LLM call._
 
 Durable Workflows brings a modern approach to building long-running workflows composed of reliable steps, which are usually more challenging to compose using solutions such as Airflow, AWS Step Functions, or SQS.
 
@@ -120,7 +121,7 @@ contacts
 While LLM Evaluation helps assess the overall quality of your AI features, it does not prevent unwanted behavior from your LLM answers. Its users can manipulate LLM or have hallucinations, resulting in damages to your brand or business (e.g., the [AirCanada chatbot inventing new T\&Cs](https://www.bbc.com/travel/article/20240222-air-canada-chatbot-misinformation-what-travellers-should-know)).  
 LLM Guardrails helps identify and intercept unwanted user input and LLM outputs.
 
-{/* image 3 */}
+![Guardrails prevent any issues at the user input or model output levels.](/assets/blog/principles-of-production-ai/3.png)
 
 ### How to implement Guardrails
 
