@@ -9,8 +9,7 @@ export default function Tiles({
 }) {
   return (
     <div>
-      {/* ghost tiles in bg */}
-      <div className="my-12 flex flex-row flex-wrap items-center justify-center gap-6 text-subtle text-base sm:text-lg leading-6">
+      <div className="my-12 mx-auto max-w-[1260px] px-2 flex flex-row flex-wrap items-center justify-center gap-6 text-subtle text-base sm:text-lg leading-6">
         {tiles.map((tile, idx) => (
           <div
             key={idx}
