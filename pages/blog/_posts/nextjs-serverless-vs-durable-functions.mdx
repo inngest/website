@@ -62,8 +62,7 @@ A pragmatic way of implementing such flow in Next.js would be to rely on a CRON 
 
 The Serverless Function would retrieve all the `"pending"` domains from the database, query the DNS servers, and send emails, all in a single loop while handling most failure cases:
 
-```tsx
-// src/api/domain-verification/route.tsx
+```tsx src/api/domain-verification/route.tsx
 import { intervalToDuration } from "date-fns";
 
 import prisma from "./prisma-client";
@@ -172,8 +171,7 @@ Beyond being hard to decipher, the above code also has many drawbacks:
 
 This is where Durable Functions get interesting; let's look at our refactored workflow:
 
-```tsx
-// src/inngest/domain-verification.tsx
+```tsx src/inngest/domain-verification.tsx
 import { intervalToDuration } from "date-fns";
 
 import inngest from "./inngest-client";
@@ -324,9 +322,7 @@ Durable Functions provide [Flow Control](https://www.inngest.com/docs/guides/flo
 
 Let's add the following line to our Durable Function to add some Throttling configuration:
 
-```tsx
-// src/inngest/domain-verification.tsx
-
+```tsx src/inngest/domain-verification.tsx
 // ...
 
 export default inngest.createFunction(
