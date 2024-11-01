@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import RSS from "rss";
 
 import { loadMarkdownFilesMetadata } from "../../utils/markdown";
-import { type BlogPost } from "../blog";
+import { type BlogPost } from "src/components/Blog";
 
 export default async (req: NextApiRequest, res: NextApiResponse<string>) => {
   const posts = await loadMarkdownFilesMetadata<BlogPost>("blog/_posts");
