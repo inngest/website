@@ -4,6 +4,7 @@ subtitle: "What did we learn from building and shipping our new app with the Nex
 image: "/assets/blog/5-lessons-learned-from-taking-next-js-app-router-to-production/featured-image.png"
 date: 2023-05-05
 author: Igor Gassmann
+category: engineering
 ---
 
 Next.js 13 introduced the new [App Router](https://nextjs.org/docs/app) that offers several new features, including [Nested Layouts](https://nextjs.org/docs/app/building-your-application/routing/pages-and-layouts#nesting-layouts), [Server Components](https://nextjs.org/docs/getting-started/react-essentials#server-components), and [Streaming](https://nextjs.org/docs/app/building-your-application/routing/loading-ui-and-streaming#what-is-streaming). It’s the first open-source implementation that allows developers to fully leverage the primitives brought by [React 18](https://react.dev/blog/2022/03/29/react-v18).
