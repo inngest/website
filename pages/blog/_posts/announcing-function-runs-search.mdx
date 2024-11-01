@@ -5,10 +5,10 @@ showSubtitle: true
 image: /assets/blog/announcing-function-runs-search/featured-image.png
 date: 2024-11-01
 author: Tony Holdstock-Brown
-disableCTA: false
+category: product-updates
 ---
 
-Today, we're excited to release one of our [most requested features](https://roadmap.inngest.com/roadmap): **Function Run Search**. We've had this in our beta program for a few weeks with hugely positive feedback.   
+Today, we're excited to release one of our [most requested features](https://roadmap.inngest.com/roadmap): **Function Run Search**. We've had this in our beta program for a few weeks with hugely positive feedback.
 Let's talk about what you're getting.
 
 The Inngest Platform Runs view now features a search bar similar to the traditional log search experiences you've probably already encountered. This search bar lets you **search and filter runs** based on:
@@ -18,15 +18,15 @@ The Inngest Platform Runs view now features a search bar similar to the traditio
 
 This is essential to the Inngest developer experience, which massively improves observability and debugging.  Here's what you'll get:
 
-- **Quicker issue resolution**: Quickly pindown runs associated with a specific user  
-- **An easier way to cross-find runs from your application logs**: Find a Function run by ID  
+- **Quicker issue resolution**: Quickly pindown runs associated with a specific user
+- **An easier way to cross-find runs from your application logs**: Find a Function run by ID
 - **A simple way to answer complex questions**: Combine event and output properties to find specific run patterns
 
 All with **blazing-fast speed:** searching tens of millions of runs takes milliseconds.
 
 ## Searching for Function runs
 
-You can search for runs in two places: the _Runs view_, which shows runs across all apps and functions, and each specific Function's own _Runs tab_, you'll see a new search box:  
+You can search for runs in two places: the _Runs view_, which shows runs across all apps and functions, and each specific Function's own _Runs tab_, you'll see a new search box:
 
 <AutoplayVideo src={"/assets/blog/announcing-function-runs-search/function-search-demo.mov"} />
 
@@ -102,8 +102,8 @@ await inngest.send({
 
 ### Leverage function's output properties
 
-While the Inngest Function function return value is mainly used at runtime to transfer information, it can now be leveraged to filter runs based on data specific to your application quickly.  
-Some of your existing functions might **benefit from returning complete objects** instead of filtering on only used properties.  
+While the Inngest Function function return value is mainly used at runtime to transfer information, it can now be leveraged to filter runs based on data specific to your application quickly.
+Some of your existing functions might **benefit from returning complete objects** instead of filtering on only used properties.
 For example, an AI workflow should return both the completion value and the usage information, unlocking more powerful search patterns:
 
 
@@ -168,7 +168,7 @@ export const chatCompletion = inngest.createFunction(
 
 </Row>
 
-The above approach enables the following search pattern:  
+The above approach enables the following search pattern:
 
 ```txt
 event.name == "ai/chat.completion" && output.usage.total_token > 300
@@ -190,15 +190,15 @@ Combining search and filtering with corrective actions is an incredibly powerful
 
 Run search is built using the CEL expression engine, which we also use to power features like [`step.waitForEvent`](/docs/features/inngest-functions/steps-workflows/wait-for-event?ref=blog-announcing-function-runs-search).  To make CEL work with our tracing and logging backend, we have a multi-stage search pipeline:
 
-1. Normalize the search queries and validate the expressions  
-2. Compile the expression into an AST  
-3. Walk the AST and convert the expressions into binomial normal form  
+1. Normalize the search queries and validate the expressions
+2. Compile the expression into an AST
+3. Walk the AST and convert the expressions into binomial normal form
 4. Finally, convert the BNF AST into a safe SQL expression that queries runs in our OLAP database.
 
 Generating the query is only the first part of the challenge. To enable required search functionality posed additional hurdles. Some of the complex parts to implement included:
 
-- Search runs by both `queued_at` and `ended_at`  
-- Show you the total number of runs matching the expression  
+- Search runs by both `queued_at` and `ended_at`
+- Show you the total number of runs matching the expression
 - Create an infinite scroll with pagination to view search results
 
 Handling these UX requirements took additional work. In orchestration, runs can take minutes, hours, days, or months to finish.  The input event data and the output data may be inserted at *very* different times, leading to windowing issues when showing all of the data.  Our search algorithm intelligently applies windowing and filtering to correctly filter function run data to ensure consistent pagination while also providing accurate counts of function runs.
