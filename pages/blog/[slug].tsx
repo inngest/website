@@ -28,7 +28,7 @@ import { SectionProvider } from "src/shared/Docs/SectionProvider";
 // @ts-ignore
 import { remarkCodeHike, recmaCodeHike } from "codehike/mdx";
 import { Code } from "src/shared/Code/CodeHike";
-import { Callout } from "src/shared/Docs/mdx";
+import { Callout, Col, Row } from "src/shared/Docs/mdx";
 import ProductHunt from "src/app/launch-week/ProductHunt";
 
 const chConfig = {
@@ -49,6 +49,8 @@ const components: MDXComponents = {
   Code,
   Callout,
   WorkflowKitProductOfTheDay: ProductHunt,
+  Col,
+  Row,
 };
 
 type Props = {
