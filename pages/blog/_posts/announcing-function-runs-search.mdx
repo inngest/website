@@ -26,27 +26,30 @@ All with **blazing-fast speed:** searching tens of millions of runs takes millis
 
 ## Searching for Function runs
 
-You can search for runs in two places:  the global *Runs* view, which shows runs across all apps and functions, or the *Runs* tab for a specific function. When you hit the *Runs* view, you'll see a new search box:  
+You can search for runs in two places: the _Runs view_, which shows runs across all apps and functions, and each specific Function's own _Runs tab_, you'll see a new search box:  
 
 <AutoplayVideo src={"/assets/blog/announcing-function-runs-search/function-search-demo.mov"} />
 
 
 The Function run search box lets you write expressions with some autocomplete on the following variables:
 
-- `event`, to filter runs based on the **input event data**  
+- `event`, to filter runs based on the **event payload data**
 - `output`, to filter based on the **run's output**
 
 Here's an example that filters on the event and output together:
 
-`event.data.organizationId == “org_ab1fd2” && event.data.createdAt < “2024-10-01” && output.verified == false`
+```plaintext
+event.data.organizationId == "org_ab1fd2" && output.verified == false
+```
 
 *Searching for all the Function runs that returned a failed verification process and happened for a specific organization since October 1st, 2024*
 
-Similar to other classic log searches, you can add new lines to the search box — and each new line is joined with an “ && “ under the hood, meaning you can change our example to the following:
+Similar to other classic log searches, you can add new lines to the search box — and each new line is joined with an " && " under the hood, meaning you can change our example to the following:
 
-`event.data.organizationId == “org_ab1fd2”`  
-`event.data.createdAt < “2024-10-01”`  
-`output.verified == false`
+```plaintext
+event.data.organizationId == "org_ab1fd2"
+output.verified == false
+```
 
 Searching returns results in **milliseconds**, even with hundreds of millions of daily runs.  For more information, check out our [documentation on run search](/docs/platform/monitor/inspecting-function-runs#searching-function-runs?ref=blog-announcing-function-runs-search), and if you have any feedback, [join us on our Discord](/discord) (where you can chat with our engineering team about how we build things like this).
 
@@ -54,10 +57,9 @@ Searching returns results in **milliseconds**, even with hundreds of millions of
 
 The Function runs search makes it easy to search across thousands of runs using event and run result properties. Here are some tips to make your runs easily searchable.
 
-### Add context to Events properties
+### Add context to event payloads
 
-Events properties are useful for providing the initial data to your Inngest Function. Event properties also now provide crucial context to search for Function runs.  
-This means that Events should be designed to provide context for Inngest Functions execution and enable searchable runs.
+Events properties are useful for providing the initial data to your Inngest Function. Event properties also now provide crucial context to search for Function runs. This means that Events can be designed to provide context for Inngest Functions execution and enable searchable runs.
 
 A good starting point to enable searchable Function runs is to include domain-specific attributes, such as `user_id`, `workspace_id`, in your Event properties. Your application logging stack often uses such information to support customers.
 
@@ -167,7 +169,10 @@ export const chatCompletion = inngest.createFunction(
 </Row>
 
 The above approach enables the following search pattern:  
-`event.name == “ai/chat.completion” && output.usage.total_token > 300`
+
+```plaintext
+event.name == "ai/chat.completion" && output.usage.total_token > 300
+```
 
 ### Search across batches of events
 
@@ -177,33 +182,32 @@ For example, if a single run has a batch of 1000 events — all for different or
 
 ## Future of function runs searching
 
-Searching across function runs is just the beginning. Soon, once you search and filter your runs, we'll let you create cancellations and replays using the same filter, allowing you to properly debug, handle, and resolve issues within a single intuitive UI (*join our beta program to get early access*).
+Searching across function runs is just the beginning. Soon, once you search and filter your runs, we'll let you create [cancellations](/docs/platform/manage/bulk-cancellation?ref=blog-announcing-function-runs-search) and [replays](/docs/platform/replay?ref=blog-announcing-function-runs-search) using the same filter, allowing you to properly debug, handle, and resolve issues within a single intuitive UI (*join our beta program to get early access*).
 
 Combining search and filtering with corrective actions is an incredibly powerful way to manage your backend stack, and that's why we believe observability should be a first-class part of your orchestration stack.
 
 ## Function runs search: under the hood
 
-Run search is built using the CEL expression engine, which we also use to power things like `step.waitForEvent`.  To make CEL work with our tracing and logging backend, we have a multi-stage search pipeline:
+Run search is built using the CEL expression engine, which we also use to power features like [`step.waitForEvent`](/docs/features/inngest-functions/steps-workflows/wait-for-event?ref=blog-announcing-function-runs-search).  To make CEL work with our tracing and logging backend, we have a multi-stage search pipeline:
 
 1. Normalize the search queries and validate the expressions  
 2. Compile the expression into an AST  
 3. Walk the AST and convert the expressions into binomial normal form  
-4. Finally, convert the BNF AST into a safe SQL expression that filters runs in our OLAP backend.
+4. Finally, convert the BNF AST into a safe SQL expression that queries runs in our OLAP database.
 
-Once we've created the query, filtering is another challenge.  We *deeply* care about UX, and we allow you to do the following:
+Generating the query is only the first part of the challenge. To enable required search functionality posed additional hurdles. Some of the complex parts to implement included:
 
 - Search runs by both `queued_at` and `ended_at`  
 - Show you the total number of runs matching the expression  
 - Create an infinite scroll with pagination to view search results
 
-In orchestration, runs can take minutes, hours, days, or months to finish.  The input event data and the output data may be inserted at *very* different times, leading to windowing issues when showing all of the data.  Our backend smartly applies windowing and filtering to ensure that we correctly filter traces in our backend for correct pagination while also filtering to show the correct number of function runs in the run count.
+Handling these UX requirements took additional work. In orchestration, runs can take minutes, hours, days, or months to finish.  The input event data and the output data may be inserted at *very* different times, leading to windowing issues when showing all of the data.  Our search algorithm intelligently applies windowing and filtering to correctly filter function run data to ensure consistent pagination while also providing accurate counts of function runs.
 
 ## Join our Beta program
 
 As many features are released through the beta program, the function run search feature has been shaped with the help of beta testers, we leveraged their feedback from getting early access to function run search on their production applications.
 
-Joining the Beta Program is available to all Inngest users and customers.  
-Our beta testers are currently testing the x and x features, so don't miss out on this opportunity\!
+Joining the Beta Program is available to all Inngest users and customers, so don't miss out on the opportunity to test our next features!
 
 
 <CTACallout text={'Get your hands on the next Inngest features'} cta={{ href: "mailto:hello@inngest.com?subject=I'd%20like%20to%20become%20an%20Inngest%20beta%20tester&body=Hi%20there%2C%0ACan%20you%20please%20add%20me%20to%20the%20Inngest%20beta%20tester%20group%3F%0A%0AMy%20Inngest%20billing%20email%20is%3A%20%3CPlease%20add%20you%20email%3E%0A%0AThanks!", text: 'Join the Beta Program' }} />
