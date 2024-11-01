@@ -6,6 +6,7 @@ image: /assets/blog/accidentally-quadratic/featured-image.png
 imageCredits: Image by <a href="https://unsplash.com/@rick_rothenberg">Rick Rothenberg</a> on <a href="https://unsplash.com/">Unsplash</a>
 date: 2024-05-15
 author: Tony Holdstock-Brown
+category: engineering
 ---
 
 Event-driven systems depend on accurately matching and filtering events. This process ensures data is directed to the right part of the code that needs specific event information. Systems like Kafka offer topics and filters to allow consumers to achieve this, but they need to be determined up front either at the infrastructure level or directly in the code. This is great, but what about in a multi-tenant system where you don't know what event types or filters you might need up front?
@@ -18,10 +19,10 @@ This is the core of the challenge that we have with Inngest. Inngest allows deve
 
 As an example, this code allows the developer to pause a function in the middle of execution to wait for an `app/onboarding.completed` event with a payload that matches the value of the `data.userId` exactly:
 
-```js 
+```js
 const onboardingCompleted = await step.waitForEvent(
       "wait-for-onboarding-completion",
-      { 
+      {
         event: "app/onboarding.completed",
         timeout: "3d",
         if: `data.userId == '${user.id}'`
