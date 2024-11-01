@@ -169,27 +169,27 @@ Here's a run of our `orderProcessingWorkflow()`:
 1. An `"order.placed"` event is sent to Inngest. In this case, this is done within our application's custom  `api/order` endpoint, which for example can be triggered when an order is placed. This sends an HTTP request to the Inngest Platform.
 2. Inngest's Platform receives this request, which in turn triggers the engine to identify the matching functions. Within the engine, it creates a new job for the execution of the matching function (`orderProcessingWorkflow` in this case), and queues this job.
 
-<AutoplayVideo src={"https://res.cloudinary.com/dd6gwkgww/video/upload/Inngest1_gumqjd.mov"} />
+<AutoplayVideo src={"https://cdn.inngest.com/blog/durable-functions-a-visual-javascript-primer/inngest1.mov"} />
 
 3. The engine picks up this job when it's first in the queue, and sends a request to your app's  `/api/inngest` endpoint. This request includes all the information that the SDK needs to run `orderProcessingWorkflow` and the state indicating that step #1 hasn't run yet.
 4. The SDK receives this request. It executes `orderProcessingWorkflow`, and runs step #1.
 
-<AutoplayVideo src={"https://res.cloudinary.com/dd6gwkgww/video/upload/inngest2.1_nvcvor.mov"} />
+<AutoplayVideo src={"https://cdn.inngest.com/blog/durable-functions-a-visual-javascript-primer/inngest2.1.mov"} />
 
 5. After running step #1, the SDK sends a request to the engine with the data from step #1, and a request to run step #2.
 6. The Engine receives the response with the incremental state update, stores it, and picks up the run again.
 
-<AutoplayVideo src={"https://res.cloudinary.com/dd6gwkgww/video/upload/inngest2.2_kbzh24.mov"} />
+<AutoplayVideo src={"https://cdn.inngest.com/blog/durable-functions-a-visual-javascript-primer/inngest2.2.mov"} />
 
 
 7. The Engine sends a request to the SDK which indicates that step #2 should be run next.
 8. The SDK receives this request. It re-runs the entire workflow, but skips step #1 since this has already been memoized. It then discovers step #2, and executes this.
 
-<AutoplayVideo src={"https://res.cloudinary.com/dd6gwkgww/video/upload/inngest2.3_hxi1wh.mov"} />
+<AutoplayVideo src={"https://cdn.inngest.com/blog/durable-functions-a-visual-javascript-primer/inngest2.3.mov"} />
 
 9. The SDK returns a response with step #2's state and return value, and information that lets the SDK know run step #3 next.
 
-<AutoplayVideo src={"https://res.cloudinary.com/dd6gwkgww/video/upload/inngest2.4_yyv0vx.mov"} />
+<AutoplayVideo src={"https://cdn.inngest.com/blog/durable-functions-a-visual-javascript-primer/inngest2.4.mov"} />
 
 This process continues, with the Engine and SDK communicating back and forth, executing steps, and managing state until the entire workflow is completed. When the workflow has been completed, the SDK responds with a `200 OK` response, and the job is removed from the jobs queue.
 
@@ -200,11 +200,11 @@ Throughout the workflow, any step that encounters an issue executes predefined e
 1. The SDK tries to execute `check-inventory` , but an exception is thrown (in real life, this could be caused by e.g. a server timeout). The SDK catches this, returns an `error` object in the response, and includes a default retry configuration if none is provided.
 2. The Engine receives the error response, stores the run state including error details, and schedules a retry based on the retry configuration (default is 4 retries).
 
-<AutoplayVideo src={"https://res.cloudinary.com/dd6gwkgww/video/upload/inngest3.1_nlrcjz.mov"} />
+<AutoplayVideo src={"https://cdn.inngest.com/blog/durable-functions-a-visual-javascript-primer/inngest3.1.mov"} />
 
 3. After the first delay of 15 seconds, the Engine initiates the first retry by resending another request. The SDK skips  `process-payment` as this is already memoized, and attempts to run `check-inventory` again. In this case, the second attempt succeeds.
 
-<AutoplayVideo src={"https://res.cloudinary.com/dd6gwkgww/video/upload/inngest3.2_jd9sdy.mov"} />
+<AutoplayVideo src={"https://cdn.inngest.com/blog/durable-functions-a-visual-javascript-primer/inngest3.2.mov"} />
 
 If it were to fail again, the process repeats from step 3. This retry cycle continues until either the step succeeds or the maximum retries (4 by default) are exhausted. If all retries are exhausted, the Engine marks the step and workflow as failed, and stores the final error state for debugging and potential manual intervention.
 
