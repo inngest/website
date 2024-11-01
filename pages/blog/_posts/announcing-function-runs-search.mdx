@@ -38,7 +38,7 @@ The Function run search box lets you write expressions with some autocomplete on
 
 Here's an example that filters on the event and output together:
 
-```plaintext
+```txt
 event.data.organizationId == "org_ab1fd2" && output.verified == false
 ```
 
@@ -46,7 +46,7 @@ event.data.organizationId == "org_ab1fd2" && output.verified == false
 
 Similar to other classic log searches, you can add new lines to the search box — and each new line is joined with an " && " under the hood, meaning you can change our example to the following:
 
-```plaintext
+```txt
 event.data.organizationId == "org_ab1fd2"
 output.verified == false
 ```
@@ -170,7 +170,7 @@ export const chatCompletion = inngest.createFunction(
 
 The above approach enables the following search pattern:  
 
-```plaintext
+```txt
 event.name == "ai/chat.completion" && output.usage.total_token > 300
 ```
 
