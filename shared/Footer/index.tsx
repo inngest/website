@@ -1,4 +1,4 @@
-import NextLink from "next/Link";
+import NextLink from "next/link";
 import Logo from "src/shared/Icons/Logo";
 import Discord from "../Icons/Discord";
 import Github from "../Icons/Github";
