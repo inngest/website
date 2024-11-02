@@ -49,7 +49,7 @@ export const productLinks: MenuProps = {
     },
     {
       title: "Queuing",
-      url: "/uses/compare-to-legacy-queues?ref=nav",
+      url: "/compare-to-legacy-queues?ref=nav",
       icon: IconSteps,
     },
     {
