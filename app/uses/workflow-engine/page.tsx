@@ -135,7 +135,7 @@ const workflowEngine = new Engine({
             {
               title: "Drop-in ready React components",
               description:
-                "Your users workflows are serialized as DAGs which are ",
+                "Use a pre-built workflow editor UI built on React Flow.",
               codeBlock: `import { Editor, Provider, Sidebar } from "@inngest/workflow/ui";
 import { actions } from "@/inngest/workflowActions";
 

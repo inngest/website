@@ -103,7 +103,7 @@ export const importJob = inngest.createFunction(
       return await api.fetchAllRecords(credentials);
     });
 
-    // chain calls without provisioning queues or managing state 
+    // chain calls without provisioning queues or managing state
     await step.run("insert-data", async () => {
       await db.data.insert(data);
     });
@@ -319,7 +319,7 @@ const content = [
       // IDEA: Could call out fan-out
     ],
     snippet: snippetQueueing,
-    href: "/uses/serverless-node-background-jobs?ref=homepage",
+    href: "/compare-to-legacy-queues?ref=homepage",
   },
   {
     title: "Workflows",
@@ -425,7 +425,12 @@ export default function UseCases() {
               </p>
               <div className="flex flex-col grow gap-10 max-w-md">
                 {selectedContent.highlights.map(({ title, content }, idx) => (
-                  <Feature title={title} description={content} key={idx} tight />
+                  <Feature
+                    title={title}
+                    description={content}
+                    key={idx}
+                    tight
+                  />
                 ))}
               </div>
             </div>
