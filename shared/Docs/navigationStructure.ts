@@ -116,6 +116,10 @@ const sectionReference: NavGroup[] = [
         href: `/docs/functions/references`,
       },
       {
+        title: "Testing",
+        href: "/docs/reference/testing",
+      },
+      {
         title: "Steps",
         links: [
           {
