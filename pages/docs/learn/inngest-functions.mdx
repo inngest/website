@@ -39,7 +39,7 @@ export default inngest.createFunction(
 
 The above code can be explained as:
 
-> This Inngest function is called `import-product-images`. When an event called `shop/product.imported` is received, run a function called `copyAllImagesToS3`.
+> This Inngest function is called `import-product-images`. When an event called `shop/product.imported` is received, run two steps: `copy-images-to-s3` and `resize-images`.
 
 Let's have a look at each of this function's components.
 
@@ -70,7 +70,7 @@ Each function needs at least one trigger. However, you can also work with [multi
 
 ### Handler
 
-A "handler" is the core function that defines what should happen when the function is triggered. In the example above, the handler contains only one function called `copyAllImagesToS3`.
+A "handler" is the core function that defines what should happen when the function is triggered.
 
 The handler receives context, which includes the event data, tools for managing execution flow, or logging configuration. Let's take a closer look at them.
 
@@ -87,6 +87,8 @@ It's helpful to think of steps as code-level transactions.  If your handler cont
 In this way, you can manage complex state easier and if any task fails, it will be retried independently from others.
 
 There are several step methods available at your disposal, for example, `step.run`, `step.sleep()`, or `step.waitForEvent()`.
+
+In the example above, the handler contains two steps: `copy-images-to-s3` and `resize-images`.
 
 ## Kinds of Inngest functions
 
