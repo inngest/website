@@ -213,7 +213,7 @@ export default function AI() {
           w-2/3 m-auto
         "
         >
-          Scale-ready productionAI in hours.
+          Scale-ready production AI in hours.
           Zero&nbsp;infrastructure&nbsp;required.
         </h2>
 
