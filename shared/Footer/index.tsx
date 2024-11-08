@@ -1,6 +1,4 @@
-import Link from "next/link";
-import clsx from "clsx";
-
+import NextLink from "next/link";
 import Logo from "src/shared/Icons/Logo";
 import Discord from "../Icons/Discord";
 import Github from "../Icons/Github";
@@ -9,6 +7,7 @@ import Container from "../layout/Container";
 import footerLinks from "./footerLinks";
 import StatusWidget from "../StatusWidget";
 import FooterCallout from "./FooterCallout";
+import React from "react";
 
 export default function Footer({
   ctaRef,
@@ -34,19 +33,11 @@ export default function Footer({
             <div className="flex flex-col sm:flex-row flex-wrap gap-8 lg:gap-12 xl:gap-20">
               {footerLinks.map((footerLink, i) => (
                 <div className="lg:w-auto flex-shrink-0" key={i}>
-                  <h4 className="text-subtle text-sm font-semibold mb-6">
-                    {footerLink.name}
-                  </h4>
+                  <SectionTitle title={footerLink.name} />
                   <ul className="flex flex-col gap-4">
                     {footerLink.links.map((link, j) => (
                       <li key={j}>
-                        <a
-                          className="text-basis text-sm font-medium flex items-center group gap-1.5 hover:text-primary-intense transition-all"
-                          href={link.url}
-                        >
-                          {link.icon && <link.icon size={22} color="matcha" />}
-                          {link.label}
-                        </a>
+                        <Link href={link.url}>{link.label}</Link>
                       </li>
                     ))}
                   </ul>
@@ -54,36 +45,31 @@ export default function Footer({
               ))}
 
               <div>
-                <h4 className="text-subtle text-sm font-semibold mb-6">
-                  Community
-                </h4>
+                <SectionTitle title="Community" />
                 <ul className="flex flex-col gap-4">
                   <li>
-                    <a
-                      className="text-basis text-sm font-medium flex items-center group gap-2 hover:text-primary-intense transition-all"
+                    <Link
                       href="https://www.inngest.com/discord"
+                      target="_blank"
                     >
                       <Discord />
                       Discord
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a
-                      className="text-basis text-sm font-medium flex items-center group gap-2 hover:text-primary-intense transition-all"
+                    <Link
                       href="https://github.com/inngest/inngest"
+                      target="_blank"
                     >
                       <Github />
                       GitHub
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a
-                      className="text-basis text-sm font-medium flex items-center group gap-2 hover:text-primary-intense transition-all"
-                      href="https://x.com/inngest"
-                    >
+                    <Link href="https://x.com/inngest" target="_blank">
                       <XSocialIcon />
                       X.com
-                    </a>
+                    </Link>
                   </li>
                 </ul>
               </div>
@@ -130,5 +116,29 @@ export default function Footer({
         </Container>
       </footer>
     </>
+  );
+}
+
+function SectionTitle({ title }: { title: string }) {
+  return <h4 className="text-basis text-base font-semibold mb-6">{title}</h4>;
+}
+
+function Link({
+  href,
+  children,
+  target,
+}: {
+  href: string;
+  children: React.ReactNode;
+  target?: string;
+}) {
+  return (
+    <NextLink
+      href={href}
+      target={target}
+      className="text-subtle text-sm font-medium flex items-center group gap-1.5 hover:text-primary-intense transition-all"
+    >
+      {children}
+    </NextLink>
   );
 }

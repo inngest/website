@@ -33,7 +33,7 @@ export const productLinks: MenuProps = {
   secondaryTitle: "Use Cases",
   secondaryLinks: [
     {
-      title: "AI + LLMs",
+      title: "AI + AI Agents",
       url: "/ai?ref=nav",
       icon: IconSDK,
     },
@@ -48,8 +48,8 @@ export const productLinks: MenuProps = {
       icon: IconJourney,
     },
     {
-      title: "Serverless queues",
-      url: "/uses/serverless-queues?ref=nav",
+      title: "Queuing",
+      url: "/compare-to-legacy-queues?ref=nav",
       icon: IconSteps,
     },
     {

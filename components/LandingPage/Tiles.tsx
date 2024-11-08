@@ -1,15 +1,16 @@
-import { RiCloseCircleLine } from "@remixicon/react";
+import { RiCloseCircleLine, RiCheckLine } from "@remixicon/react";
 
 export default function Tiles({
   tiles,
 }: {
   tiles: {
+    icon?: "x" | "check";
     text: string;
   }[];
 }) {
   return (
     <div>
-      <div className="my-12 mx-auto max-w-[1260px] px-2 flex flex-row flex-wrap items-center justify-center gap-6 text-subtle text-base sm:text-lg leading-6">
+      <div className="my-12 mx-auto max-w-[1270px] px-2 flex flex-row flex-wrap items-center justify-center gap-6 text-subtle text-base sm:text-lg leading-6">
         {tiles.map((tile, idx) => (
           <div
             key={idx}
@@ -23,7 +24,12 @@ export default function Tiles({
               }}
             >
               <div className="flex gap-3">
-                <RiCloseCircleLine className="text-error h-5 w-5 mt-1 shrink-0" />
+                {tile.icon === "check" ? (
+                  <RiCheckLine className="text-success h-5 w-5 mt-1 shrink-0" />
+                ) : (
+                  <RiCloseCircleLine className="text-error h-5 w-5 mt-1 shrink-0" />
+                )}
+
                 {tile.text}
               </div>
             </div>

@@ -30,7 +30,9 @@ export default function Heading({
       {!!description && Array.isArray(description) ? (
         <div className="flex flex-col gap-4">
           {description.map((para, idx) => (
-            <p className="text-base md:text-lg max-w-4xl text-subtle">{para}</p>
+            <p key={idx} className="text-base md:text-lg max-w-4xl text-subtle">
+              {para}
+            </p>
           ))}
         </div>
       ) : (
