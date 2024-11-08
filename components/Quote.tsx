@@ -53,9 +53,9 @@ export default function Quote({
         </p>
         <div
           className={clsx(
-            "flex gap-4",
+            "flex gap-4 w-full",
             variant === "box"
-              ? "flex-row w-full items-end justify-between"
+              ? "flex-row items-end justify-between"
               : "flex-col"
           )}
         >

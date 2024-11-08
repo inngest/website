@@ -64,6 +64,8 @@ export default function Page() {
   },
   { event: "video.uploaded" },
   async ({ event, step }) => {
+    // Steps that are prone to failure are automatically retried
+    // Successful steps are cached and never re-run if a following step fails
     const transcript = await step.run('transcribe-video', async () => {
       return deepgram.transcribe(event.data.videoUrl);
     });
@@ -118,28 +120,25 @@ export default function Page() {
 );`,
             },
             {
-              title: "Workflows triggered by events",
+              title: "Wait for additional events",
               description:
-                "Use Inngest functions to define triggers for your user's workflows.",
-              codeBlock: `import { Engine } from "@inngest/workflow-kit";
-import { loadWorkflow } from "../loaders/workflow";
-import { inngest } from "./client";
-import { actionsWithHandlers } from "./workflowActionHandlers";
-
-const workflowEngine = new Engine({
-  actions: actionsWithHandlers,
-  loader: loadWorkflow,
-});
-
-export default inngest.createFunction(
-  { id: "blog-post-workflow" },
-  // Triggers
-  // - When a blog post is set to "review"
-  // - When a blog post is published
-  [{ event: "blog-post.updated" }, { event: "blog-post.published" }],
+                "Pause your workflow and resume with events for simple, decoupled systems.",
+              codeBlock: `export const onboardingNudge = inngest.createFunction(
+  { id: "send-onboarding-nudge-email" },
+  { event: "app/account.created" },
   async ({ event, step }) => {
-    // When 'run' is called, the loader function is called with access to the event
-    await workflowEngine.run({ event, step });
+    // The function will pause and only resume when the matching
+    // event is received. Events enable highly decoupled, declarative workflows
+    const onboardingCompleted = await step.waitForEvent(
+      "wait-for-onboarding-completion",
+      { event: "app/onboarding.completed", timeout: "3d", if: \`async.data.userId === $\{event.data.userId}\` }
+    );
+    // Take different paths of your workflow based on inbound events
+    if (!onboardingCompleted) {
+      // if no event is received within 3 days, onboardingCompleted will be null
+    } else {
+      // if the event is received, onboardingCompleted will be the event payload object
+    }
   }
 );`,
             },
