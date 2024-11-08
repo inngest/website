@@ -1,15 +1,15 @@
 import { type Metadata } from "next";
-import Image from "next/image";
 import { generateMetadata } from "src/utils/social";
 import { RiArrowRightLine } from "@remixicon/react";
 
 import Hero from "src/components/LandingPage/Hero";
 import Heading from "src/components/LandingPage/Heading";
-import Tiles from "src/components/LandingPage/Tiles";
 import CTA from "src/components/LandingPage/CTA";
 import FeaturesCodeBlocks from "src/components/LandingPage/FeaturesCodeBlocks";
 import Resources from "src/components/LandingPage/Resources";
-import CaseStudy from "src/components/LandingPage/CaseStudy";
+import MasonryGrid from "src/components/LandingPage/MasonryGrid";
+import Video from "src/components/LandingPage/Video";
+import Quote from "src/components/Quote";
 
 export const metadata: Metadata = generateMetadata({
   title: "Durable Workflows",
@@ -84,7 +84,7 @@ export default function Page() {
 )`,
             },
             {
-              title: "Long running, durable jobs",
+              title: "Long running, durable workflows",
               description:
                 "Trigger workflows with events and pause functions for hours or days.",
               codeBlock: `export const handlePayments = inngest.createFunction(
@@ -157,30 +157,54 @@ export default inngest.createFunction(
           title="Durable workflow engine, out-of-the-box"
           description="Avoid months of development time building a workflow engine from scratch. Build on top of Inngest's SDKs and primitives to offer endless options for customizable workflows to your users."
         />
-        <Tiles
-          tiles={[
+
+        <MasonryGrid
+          items={[
             {
-              icon: "check",
-              text: "Integrate directly into your existing codebase.",
+              title: "Run steps in series or parallel",
+              description:
+                "Easily run parts of your workflow code in parallel, event on serverless. Always retried automatically on error.",
+              image:
+                "/assets/landing-pages/legacy-queuing/graphic-step-orchestration.svg",
             },
             {
-              icon: "check",
-              text: "Ready for scale to millions of concurrent workflows from day one.",
+              title: "Pause functions for additional input",
+              description:
+                "Use step.waitForEvent() to pause your function until another event is received. Create human-in the middle workflows or communicate between long running jobs with events.",
+              image:
+                "/assets/landing-pages/durable-workflows/graphic-wait-for-event.svg",
             },
             {
-              icon: "check",
-              text: "Multi-tenant aware controls to limit concurrency, rate limit, or debounce.",
+              title: "Durable sleep for hours or weeks",
+              description:
+                "Pause your function and schedule to resume it after a specific period of time. Your code stops running and Inngest resumes it when the time is right.",
+              image:
+                "/assets/landing-pages/legacy-queuing/graphic-scheduling.svg",
             },
             {
-              icon: "check",
-              text: "Automatic retries for maximum durability when errors happen.",
+              title: "Declarative job cancellation",
+              description:
+                "Cancel jobs just by sending an event. No need to keep track of running jobs, Inngest can automatically match long running functions with cancellation events to kill jobs declaratively.",
+              image:
+                "/assets/landing-pages/legacy-queuing/graphic-cancellation.svg",
             },
             {
-              icon: "check",
-              text: "Auditable, observable, and scalable with logs and real-time metrics.",
+              title: "Automatic retries",
+              description:
+                "Every step of your function is retried whenever it throws an error. Customize the number of retries to ensure your functions are reliably executed.",
+              image:
+                "/assets/landing-pages/durable-workflows/graphic-retries.svg",
+            },
+            {
+              title: "Replay workflow functions",
+              description:
+                "Forget dead letter queues. Fix your issues then replay a failed function in a single click.",
+              image:
+                "/assets/landing-pages/durable-workflows/graphic-replay.svg",
             },
           ]}
         />
+
         <CTA
           text="Chat with a solutions expert"
           href={`/contact?ref=${baseCTA}`}
@@ -188,63 +212,60 @@ export default inngest.createFunction(
       </section>
       <section className="my-28 py-14">
         <Heading
-          title="You bring the application code, we bring the engine"
+          title="Visual debugging and observability"
           description={[
-            "Allow your own users to create workflows composed of reusable logic that you define. Use our step primitives for automatically retriable steps and human-in-the-loop flows using waitForEvent",
-            "Users then define linear or complex DAG-based workflows with support for parallel actions.",
+            "Our visual function timeline UI makes debugging easier than ever. See exactly what happened in your function, and when without grepping logs.",
+            "Use the same tools from your local-first development server to the Inngest platform.",
           ]}
-          layout="horizontal"
         />
 
-        {/* todo dev server */}
-        <Image
-          className="mx-auto max-w-4xl rounded-md"
-          src="/assets/blog/introducing-workflow-kit/workflow-kit-architecture-dark.jpg"
-          alt="Workflow Kit architecture"
-          width={896}
-          height={(896 / 744) * 445}
-        />
+        <Video src="/assets/homepage/video/2024-09-dev-server-4k.mp4" />
       </section>
 
       <section className="my-28 py-14">
-        <CaseStudy
-          title="Florian Works: zero to building a mission-critical workflow engine for fire departments"
-          description={[
-            "Florian Works develops custom-built software products for fire departments, incorporating custom workflows built directly on top of Inngest to ship reliable products faster and easier than ever before.",
-            "Utilizing Inngest's core workflow engine and primitives such as step.waitForEvent, FlorianWorks ships scheduling, roster management, a rules engine, and finance management without spending effort developing custom distributed systems primitives or reliability concerns.",
-          ]}
-          href={`/customers/florian-works?ref=${baseCTA}`}
-          image="/assets/florianworks.jpg"
+        <Quote
+          text={
+            `One of my goals was to simplify a complex workflow in a cloud world. If the abstractions exist, let's use them so engineers can focus on the business problem, not the not the infrastructure-as-code and primitives problem. The best infrastructure is the one you don't have to manage.`
+            // `I wanted to find a solution that would let us just write the code, not manage the infrastructure around queues, concurrency, retries, error handling, prioritization... I don't think that developers should be even configuring and managing queues themselves in 2024.`
+          }
+          attribution={{
+            name: "Matthew Drooker",
+            title: "CTO, SoundCloud",
+            // logo: "/assets/customers/soundcloud-logo-white-horizontal.svg",
+            avatar: "/assets/customers/soundcloud-matthew-drooker.jpg",
+          }}
+          caseStudy={`/customers/soundcloud?ref=${baseCTA}`}
+          variant="box"
         />
       </section>
 
       <section className="my-28 py-14">
         <Heading
           title="Start building today"
-          description="Dive into our guides, documentation and other resources to learn how to build your own customizable workflow experience for your users on top of Inngest."
+          description="Dive into our resources and learn how Inngest is the best solution for durable workflows."
         />
         <Resources
           items={[
             {
               type: "docs",
-              title: "Guide: Building user-defined workflows",
+              title: "Guide: Steps & Workflows",
               description:
-                "Learn how to get started using Workflow Kit's backend libraries and front-end React components.",
-              url: `/docs/guides/user-defined-workflows?ref=${baseCTA}`,
-            },
-            {
-              type: "docs",
-              title: "Workflow Kit documentation",
-              description:
-                "Read the full reference documentation and learn how you can extend the primitives.",
-              url: `/docs/reference/workflow-kit?ref=${baseCTA}`,
+                "Learn how to use steps as building blocks for creating reliable workflows that run for hours and recover from failures.",
+              url: `/docs/features/inngest-functions/steps-workflows?ref=${baseCTA}`,
             },
             {
               type: "blog",
-              title: "Introducing Workflow Kit",
+              title: "What are Durable Functions? A visual primer",
               description:
-                "Read the announcement that hit the top 5 Product Hunt product of the day.",
-              url: `/blog/introducing-workflow-kit?ref=${baseCTA}`,
+                "An article with animated illustrations to cover the inner workings of Durable Functions",
+              url: `/blog/durable-functions-a-visual-javascript-primer?ref=${baseCTA}`,
+            },
+            {
+              type: "docs",
+              title: "Running tasks in parallel",
+              description:
+                "True workflow step parallelization on servers or serverless.",
+              url: `/docs/guides/step-parallelism?ref=${baseCTA}`,
             },
           ]}
         />

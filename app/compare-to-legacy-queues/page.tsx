@@ -137,9 +137,8 @@ export default function Page() {
               title: "Step function orchestration",
               description:
                 "Simplify workloads that typically span multiple queues and workers by writing step functions that define multi-stage workflows directly in code. All business logic and context stays in one easy to understand function, not spread across multiple workers.",
-              // TODO
               image:
-                "/assets/landing-pages/legacy-queuing/graphic-cancellation.svg",
+                "/assets/landing-pages/legacy-queuing/graphic-step-orchestration.svg",
               className: "row-span-4",
             },
             {
