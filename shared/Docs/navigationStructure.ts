@@ -449,6 +449,10 @@ const sectionHome: (NavGroup | NavLink)[] = [
             href: `/docs/guides/multiple-triggers`,
           },
           {
+            title: "Sending events from functions",
+            href: `/docs/guides/sending-events-from-functions`,
+          },
+          {
             title: "Batching events",
             href: `/docs/guides/batching`,
           },
@@ -629,6 +633,10 @@ const sectionHome: (NavGroup | NavLink)[] = [
             //   tag: "new",
             // },
             // ],
+          },
+          {
+            title: "Logging",
+            href: "/docs/guides/logging",
           },
         ],
       },
