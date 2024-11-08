@@ -27,9 +27,12 @@ Below, we'll cover how to deploy:
     * See [this Inngest guide](/docs/apps/cloud) for instructions.
 
 ## Automatically sync your app with Inngest
-Each time you push changes to your Inngest functions, you need to sync your web app with Inngest.
+Each time you push changes to your Inngest functions, you need to sync your web app with Inngest. For convenience, you can automate these syncs from your CI/CD or from your API.
 
-For convenience, you can automate these syncs from your CI/CD using the [Render Deploy Action](https://github.com/marketplace/actions/render-deploy-action) combine with a ["curl command"](/docs/apps/cloud#curl-command):
+
+### Automatically sync from your CI/CD
+
+Automatically sync your app with Inngest using the [Render Deploy Action](https://github.com/marketplace/actions/render-deploy-action), combined with a ["curl command"](/docs/apps/cloud#curl-command):
 
 ```yaml
 # .github/workflows/deploy.yaml
@@ -62,6 +65,62 @@ jobs:
 ```
 
 _The above GitHub Action requires the `MY_RENDER_API_KEY`, `MY_RENDER_SERVICE_ID` and `APP_URL` to be configured on your repository._
+
+
+### Automatically sync from your app
+
+You app can self-register as part of its startup flow **if it matches the following requirements**:
+- Your application should run as a long-lived server instance (not serverless)
+- Your application should be deployed as a single node (not with auto scaled replicas)
+
+The following Express.js code snippet showcases how to achieve self-register:
+
+```tsx {{ title: "index.ts (Express.js)" }}
+
+// your express `app` definition stands here...
+
+app.listen(PORT, async () => {
+  console.log(`✅ Server started on localhost:${PORT}
+➡️ Inngest running at http://localhost:${PORT}/api/inngest`);
+
+  // Attempt to self-register the app after deploy
+  if (process.env.RENDER_EXTERNAL_URL) {
+    console.log(
+      `Attempting self-register. Functions: `,
+      functions.map((f) => f.name).join(', ')
+    );
+    const inngestURL = new URL('/api/inngest', process.env.RENDER_EXTERNAL_URL);
+    const result = await fetch(inngestURL, {
+      method: 'PUT',
+    });
+    await sleep(2000);
+    try {
+      const json = await result.json();
+      console.log(
+        `Register attempted:`,
+        inngestURL.toString(),
+        result.status,
+        json
+      );
+    } catch (err) {
+      console.log(
+        `Register failed:`,
+        inngestURL.toString(),
+        result.status,
+        result.body
+      );
+    }
+  }
+});
+
+function sleep(t: number): Promise<void> {
+  return new Promise((res) => {
+    return setTimeout(res, t);
+  });
+}
+```
+_[The full code is available on GitHub](https://github.com/inngest/inngest-demo-app/blob/e95247d3e3277ecd57bd9a8bb1478c36b3ee09b2/index.ts)_
+
 
 ## Set up preview apps on Render
 ### What are preview apps?
