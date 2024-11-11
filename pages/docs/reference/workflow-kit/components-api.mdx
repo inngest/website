@@ -10,12 +10,12 @@ The [`@inngest/workflow-kit`](https://npmjs.com/package/@inngest/workflow-kit) p
 
 ```tsx {{ title: "src/components/my-workflow-editor.ts" }}
 import { useState } from "react";
-import { Editor, Provider, Sidebar, type Workflow } from "@inngest/workflow/ui";
+import { Editor, Provider, Sidebar, type Workflow } from "@inngest/workflow-kit/ui";
 
 // import `PublicEngineAction[]`
 import { actionsDefinitions } from "@/inngest/actions-definitions";
 
-import "@inngest/workflow/ui/ui.css";
+import "@inngest/workflow-kit/ui/ui.css";
 import "@xyflow/react/dist/style.css";
 
 export const MyWorkflowEditor = ({ workflow }: { workflow: Workflow }) => {

@@ -11,7 +11,7 @@ Workflow actions are defined as two objects using the [`EngineAction`](#passing-
 
 
 ```ts {{ title: "src/inngest/actions-definition.ts" }}
-import { type PublicEngineAction } from "@inngest/workflow";
+import { type PublicEngineAction } from "@inngest/workflow-kit";
 
 export const actionsDefinition: PublicEngineAction[] = [
   {
@@ -25,7 +25,7 @@ export const actionsDefinition: PublicEngineAction[] = [
 
 
 ```tsx {{ title: "src/inngest/actions.ts" }}
-import { type EngineAction } from "@inngest/workflow";
+import { type EngineAction } from "@inngest/workflow-kit";
 
 import { actionsDefinition } from "./actions-definition";
 
@@ -96,7 +96,7 @@ The actions need to be separated into 2 distinct objects to avoid leaking the ac
 </Properties>
 
 ```ts {{ title: "src/inngest/actions.ts" }}
-import { type EngineAction } from "@inngest/workflow";
+import { type EngineAction } from "@inngest/workflow-kit";
 
 import { actionsDefinition } from "./actions-definition";
 
