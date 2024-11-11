@@ -154,6 +154,7 @@
     "utm_content",
     "utm_medium",
     "utm_term",
+    "ref",
   ];
 
   function context(eventData) {
