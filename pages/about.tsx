@@ -45,11 +45,6 @@ const TEAM = [
     avatar: "/assets/team/john-b-2024-01-21.jpg",
   },
   {
-    name: "Sylwia Vargas",
-    role: "Dev Rel",
-    avatar: "/assets/team/sylwia-v-2024-01-21.jpg",
-  },
-  {
     name: "Sanjana Laddha",
     role: "Designer",
     avatar: "/assets/team/sanjana-v-2024-05-06.jpg",
@@ -63,6 +58,26 @@ const TEAM = [
     name: "Chris Dzombak",
     role: "Engineer",
     avatar: "/assets/team/chris-v-2024-05-06.jpg",
+  },
+  {
+    name: "Jacob Heric",
+    role: "Engineer",
+    avatar: "/assets/team/jacob-heric-2024-11-11.png",
+  },
+  {
+    name: "Charly Poly",
+    role: "Marketing",
+    avatar: "/assets/team/charly-poly-2024-11-11.jpg",
+  },
+  {
+    name: "Cheryl Manalo",
+    role: "Marketing",
+    avatar: "/assets/team/cheryl-manalo-2024-11-11.png",
+  },
+  {
+    name: "Andrew Dahl",
+    role: "Engineer",
+    avatar: "/assets/team/andrew-dahl-2024-11-11.jpg",
   },
 ];
 
@@ -238,14 +253,20 @@ export default function About() {
             </p>
             <div
               className={clsx(
-                "mt-20 mb-6 grid md:px-24 grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-16 items-center",
-                TEAM.length % 3 === 0 && "xl:grid-cols-3",
-                TEAM.length % 2 === 0 && "xl:grid-cols-4"
+                "mt-20 mb-6 grid md:px-24 gap-x-10 gap-y-16 items-center",
+                "grid-cols-2 lg:grid-cols-4"
               )}
             >
-              {TEAM.map((person) => {
+              {TEAM.map((person, idx) => {
                 return (
-                  <div key={person.name} className="flex flex-col items-center">
+                  <div
+                    key={person.name}
+                    className={clsx(
+                      "flex flex-col items-center",
+                      // Change this with team size to center the last row
+                      idx === 12 && "lg:col-start-2"
+                    )}
+                  >
                     <img className="w-20 rounded-lg" src={person.avatar} />
 
                     <h3 className="mt-4 mb-1 text-base text-slate-200 font-medium">
