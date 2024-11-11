@@ -38,7 +38,7 @@
       return false;
     }
     event.data = event.data || {};
-    assign(event.data, context());
+    assign(event.data, context(event.data));
 
     // The event.user object should take precedence over the identify() attributes
     // called.  Copy the event user attributes into a new variable so that we can
@@ -73,7 +73,7 @@
   Inngest.track = function (eventName, data) {
     evt = {
       name: eventName,
-      data: assign(data || {}, context()),
+      data: assign(data || {}, context(data)),
       user: user,
     };
     Inngest.event(evt);
@@ -148,7 +148,28 @@
     return errors;
   }
 
-  function context() {
+  const utmKeys = [
+    "utm_source",
+    "utm_campaign",
+    "utm_content",
+    "utm_medium",
+    "utm_term",
+  ];
+
+  function context(eventData) {
+    const utmProps = {};
+    const isFirstTouch = eventData.first_touch;
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      // we track both first touch UTMs props and all touchpoints UTMs
+      for (let utmKey of utmKeys) {
+        utmProps[utmKey] = urlParams.get(utmKey);
+        if (isFirstTouch) {
+          utmProps[`first_${utmKey}`] = urlParams.get(utmKey);
+        }
+      }
+    } catch (e) {}
+
     var data = {
       context: {
         path: window.location.pathname,
@@ -159,7 +180,7 @@
         user_agent: navigator && navigator.userAgent,
         library: "js",
         library_version: VERSION,
-        // TODO Store utm params
+        ...utmProps,
       },
     };
     if (window && window.location.search.length) {
