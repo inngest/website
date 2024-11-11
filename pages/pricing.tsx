@@ -117,7 +117,7 @@ const PLANS: Plan[] = [
     },
     highlights: {
       runs: "50K runs/mo free",
-      concurrency: "5 concurrent runs",
+      concurrency: "5 concurrent steps",
     },
     planIncludes: "Free plan includes:",
     features: [
@@ -156,7 +156,7 @@ const PLANS: Plan[] = [
     },
     highlights: {
       runs: "Starts at 100K runs/mo",
-      concurrency: "Starts at 25 concurrent runs",
+      concurrency: "Starts at 25 concurrent steps",
     },
     planIncludes: "Everything in Free plus:",
     features: [
@@ -195,7 +195,7 @@ const PLANS: Plan[] = [
     },
     highlights: {
       runs: "Starts at 5M runs/mo",
-      concurrency: "Starts at 200 concurrent runs",
+      concurrency: "Starts at 200 concurrent steps",
     },
     planIncludes: "Includes everything in Basic plus:",
     features: [
@@ -232,7 +232,7 @@ const PLANS: Plan[] = [
     },
     highlights: {
       runs: "From 0-100B runs/mo",
-      concurrency: "From 200-100K concurrent runs",
+      concurrency: "From 200-100K concurrent steps",
     },
     planIncludes: "Includes everything in pro plus:",
     features: [
@@ -362,7 +362,7 @@ const FEATURES: Feature[] = [
   },
   {
     name: "Concurrency",
-    description: "Process steps in parallel while smoothing load",
+    description: "Maximum concurrently executing steps",
     plans: {
       [PLAN_NAMES.basicFree]: `${
         getPlan(PLAN_NAMES.basicFree).cost.includedConcurrency
@@ -385,14 +385,17 @@ const FEATURES: Feature[] = [
       [PLAN_NAMES.basicFree]: `${
         getPlan(PLAN_NAMES.basicFree).cost.additionalConcurrencyPrice
       }`,
-      [PLAN_NAMES.basic]: `$${
-        getPlan(PLAN_NAMES.basic).cost.additionalConcurrencyPrice
-      } per ${getPlan(
-        PLAN_NAMES.basic
-      ).cost.additionalConcurrencyRate.toLocaleString(undefined, {
-        notation: "compact",
-        compactDisplay: "short",
-      })}`,
+      [PLAN_NAMES.basic]:
+        getPlan(PLAN_NAMES.basic).cost.additionalConcurrencyPrice === "-"
+          ? "-"
+          : `$${
+              getPlan(PLAN_NAMES.basic).cost.additionalConcurrencyPrice
+            } per ${getPlan(
+              PLAN_NAMES.basic
+            ).cost.additionalConcurrencyRate.toLocaleString(undefined, {
+              notation: "compact",
+              compactDisplay: "short",
+            })}`,
       [PLAN_NAMES.pro]: `$${
         getPlan(PLAN_NAMES.pro).cost.additionalConcurrencyPrice
       } per ${getPlan(
