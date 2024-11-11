@@ -111,7 +111,7 @@ export default function Page() {
               title: "Define available actions",
               description:
                 "Define re-usable actions that your users can use to build their own workflows.",
-              codeBlock: `import { Engine } from "@inngest/workflow";
+              codeBlock: `import { Engine } from "@inngest/workflow-kit";
 
 const workflowEngine = new Engine({
   actions: [
@@ -136,7 +136,7 @@ const workflowEngine = new Engine({
               title: "Drop-in ready React components",
               description:
                 "Use a pre-built workflow editor UI built on React Flow.",
-              codeBlock: `import { Editor, Provider, Sidebar } from "@inngest/workflow/ui";
+              codeBlock: `import { Editor, Provider, Sidebar } from "@inngest/workflow-kit/ui";
 import { actions } from "@/inngest/workflowActions";
 
 export const AutomationEditor = ({ workflow }: { workflow: Workflow }) => {

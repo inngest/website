@@ -37,7 +37,7 @@ The [`@inngest/workflow-kit`](https://www.npmjs.com/package/@inngest/workflow-ki
 Our Workflow kit simplifies the workflow management process, freeing you from building your own workflow logic and allowing you to focus on implementing actions:
 
 ```typescript
-import { Engine } from "@inngest/workflow";
+import { Engine } from "@inngest/workflow-kit";
 import { inngest } from "./inngest/client";
 
 const workflowEngine = new Engine({
@@ -84,7 +84,7 @@ import {
   Provider,
   Editor,
   Sidebar
-} from "@inngest/workflow";
+} from "@inngest/workflow-kit";
 import { actions, trigger } from "@lib/inngest/workflow"
 
 export default function Editor({ workflow }) {
