@@ -1,5 +1,5 @@
 import deterministicSplit from "deterministic-split";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useCookie, useLocalStorage } from "react-use";
 import { v4 as uuid } from "uuid";
 
@@ -13,32 +13,39 @@ export const abExperiments = {
 /**
  * Fetch and return the user's anonymous ID.
  */
-export const useAnonymousID = (): { anonymousID: string; existing: boolean } => {
+export const useAnonymousID = (): {
+  anonymousID: string;
+  existing: boolean;
+} => {
+  // prevent race condition on re-renders
+  const cached = useRef<any>(false);
   const [anonymousID, setAnonymousID] = useCookie("inngest_anonymous_id");
 
-  // TODO: remove this once sufficient time has passed for users to get the new cookie.
-  // If the user has a legacy anonymous ID, migrate it to the new cookie.
-  const [legacyAnonymousID, _, deleteLegacyAnonymousID] = useLocalStorage<string>("inngest-anon-id");
-  if (!anonymousID && legacyAnonymousID) {
-    const sixMonthsFromNow = new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000);
-    setAnonymousID(legacyAnonymousID, { domain: process.env.NEXT_PUBLIC_HOSTNAME, path: "/", expires: sixMonthsFromNow, sameSite: 'lax' });
-    deleteLegacyAnonymousID();
-  }
+  if (!cached.current) {
+    if (!anonymousID) {
+      const newAnonymousID = uuid();
+      const sixMonthsFromNow = new Date(
+        Date.now() + 6 * 30 * 24 * 60 * 60 * 1000
+      );
+      setAnonymousID(newAnonymousID, {
+        domain: process.env.NEXT_PUBLIC_HOSTNAME,
+        path: "/",
+        expires: sixMonthsFromNow,
+        sameSite: "lax",
+      });
 
-  if (!anonymousID) {
-    const newAnonymousID = uuid();
-    const sixMonthsFromNow = new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000);
-    setAnonymousID(newAnonymousID, { domain: process.env.NEXT_PUBLIC_HOSTNAME, path: "/", expires: sixMonthsFromNow, sameSite: 'lax' });
-    return {
-      anonymousID: newAnonymousID,
-      existing: false,
-    };
+      cached.current = {
+        anonymousID: newAnonymousID,
+        existing: false,
+      };
+    } else {
+      cached.current = {
+        anonymousID,
+        existing: true,
+      };
+    }
   }
-
-  return {
-    anonymousID,
-    existing: true,
-  };
+  return cached.current;
 };
 
 // If we call useAbTest in multiple places in one page,
