@@ -184,21 +184,6 @@
         ...utmProps,
       },
     };
-    if (window && window.location.search.length) {
-      try {
-        var params = new URLSearchParams(window.location.search);
-        ["source", "medium", "campaign", "content", "term"].forEach(function (
-          param
-        ) {
-          var key = "utm_" + param;
-          if (params.get(key)) {
-            data.context[key] = params.get(key);
-          }
-        });
-      } catch (err) {
-        /* No-op - URLSearchParams may not be supported in browser */
-      }
-    }
     return data;
   }
 
