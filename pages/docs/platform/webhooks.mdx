@@ -291,3 +291,7 @@ curl 'https://inn.gs/e/REDACTED?x-inngest-env=branch-1' -d '{"msg": "hi"}'
 ```
 
 If the branch environment is not specified with the header or query param, the webhook will be sent to [this page](https://app.inngest.com/env/branch/events) and will not trigger any functions. Events will also go here if the branch environment does not exist.
+
+<Callout>
+  The value for `x-inngest-env` is the name of the branch environment, not the ID in the URL.
+</Callout>
