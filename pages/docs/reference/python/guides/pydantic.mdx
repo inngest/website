@@ -38,7 +38,7 @@ class PostUpvotedEventData(pydantic.BaseModel):
 
 class PostUpvotedEvent(BaseEvent):
     data: PostUpvotedEventData
-    name: str = "forum/post.upvoted"
+    name: typing.ClassVar[str] = "forum/post.upvoted"
 ```
 
 Since Pydantic validates on instantiation, the following code will raise an error if the data is invalid.
