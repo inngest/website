@@ -440,3 +440,11 @@ export function GuideSection({
   }
   return null;
 }
+
+export function GuideTitle() {
+  const context = useContext(GuideSelectorContext);
+  const selectedOption = context.options.find(
+    (o) => o.key === context.selected
+  );
+  return <>{selectedOption?.title}</>;
+}

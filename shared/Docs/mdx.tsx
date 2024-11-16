@@ -37,6 +37,7 @@ export {
   Pre as pre,
   GuideSelector,
   GuideSection,
+  GuideTitle,
 } from "./Code";
 
 export const h1: React.FC<any> = function (props) {
