@@ -463,7 +463,7 @@ export function Card<T extends React.ElementType = "div">({
             )}
             <h2
               className={clsx(
-                "font-semibold text-[#2E2E2E] text-sm dark:text-carbon-50",
+                "mb-px font-semibold text-[#2E2E2E] text-sm dark:text-carbon-50",
                 {
                   "text-base": !!props.href,
                   "text-xl": !props.href,
