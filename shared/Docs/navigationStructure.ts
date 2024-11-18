@@ -358,6 +358,10 @@ const sectionHome: (NavGroup | NavLink)[] = [
         href: "/docs/getting-started/nextjs-quick-start",
       },
       {
+        title: "Node.js",
+        href: "/docs/getting-started/nodejs-quick-start",
+      },
+      {
         title: "Python",
         href: "/docs/getting-started/python-quick-start",
       },

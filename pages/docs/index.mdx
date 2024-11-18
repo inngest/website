@@ -4,6 +4,7 @@ import GoIcon from 'src/shared/Icons/Go';
 import {
   RiCloudLine,
   RiNextjsFill,
+  RiNodejsFill,
   RiGitPullRequestFill,
   RiGuideFill,
 } from "@remixicon/react";
@@ -13,7 +14,7 @@ export const hidePageSidebar = true;
 
 # Inngest Documentation
 
-Inngest is an event-driven durable execution platform that allows you to run fast, reliable code on any platform, without managing queues, infra, or state.  
+Inngest is an event-driven durable execution platform that allows you to run fast, reliable code on any platform, without managing queues, infra, or state.
 
 
 Write functions in TypeScript, Python or Go to power background and scheduled jobs, with steps built in.  We handle the backend infra, queueing, scaling, concurrency, throttling, rate limiting, and observability for you.
@@ -21,9 +22,9 @@ Write functions in TypeScript, Python or Go to power background and scheduled jo
 ## Get started
 
 
-<CardGroup cols={3}>
+<CardGroup cols={2}>
 
-  <Card 
+  <Card
     href={"/docs/getting-started/nextjs-quick-start"}
     title={"Next.js"}
     icon={<RiNextjsFill className="text-basis h-8 w-8"/>}
@@ -32,7 +33,16 @@ Write functions in TypeScript, Python or Go to power background and scheduled jo
   Add queueing, events, crons, and step functions to your Next app on any cloud provider.
   </Card>
 
-  <Card 
+  <Card
+    href={"/docs/getting-started/nodejs-quick-start"}
+    title={"Node.js"}
+    icon={<RiNodejsFill className="text-basis h-8 w-8"/>}
+    iconPlacement="top"
+  >
+  Write durable step functions in any Node.js app and run on servers or serverless.
+  </Card>
+
+  <Card
     href={"/docs/getting-started/python-quick-start"}
     title={"Python"}
     icon={<PythonIcon className="text-basis h-8 w-8"/>}
@@ -42,7 +52,7 @@ Write functions in TypeScript, Python or Go to power background and scheduled jo
   </Card>
 
 
-  <Card 
+  <Card
     href={"https://pkg.go.dev/github.com/inngest/inngestgo@v0.7.2"}
     title={"Go"}
     icon={<GoIcon className="text-basis h-8 w-8"/>}
@@ -56,7 +66,7 @@ Write functions in TypeScript, Python or Go to power background and scheduled jo
 
 <CardGroup cols={1} className="my-10 px-12">
 
-  <Card 
+  <Card
     title={"Write reliable workflows"}
   >
     <div className="flex flex-col md:flex-row justify-between">
@@ -82,7 +92,7 @@ Write functions in TypeScript, Python or Go to power background and scheduled jo
 
 <CardGroup cols={3}>
 
-  <Card 
+  <Card
     href={"/docs/guides/user-defined-workflows"}
     title={"User-defined Workflows"}
     iconPlacement="top"
@@ -90,7 +100,7 @@ Write functions in TypeScript, Python or Go to power background and scheduled jo
     Users today are demanding customization and integrations. Discover how to build a Workflow Engine for your users using Inngest.
   </Card>
 
-  <Card 
+  <Card
     href={"/docs/examples/ai-agents-and-rag"}
     title={"AI Agents and RAG"}
     iconPlacement="top"
@@ -99,7 +109,7 @@ Write functions in TypeScript, Python or Go to power background and scheduled jo
   </Card>
 
 
-  <Card 
+  <Card
     href={"/docs/examples/email-sequence"}
     title={"Email sequence"}
     iconPlacement="top"
@@ -115,7 +125,7 @@ Write functions in TypeScript, Python or Go to power background and scheduled jo
 
 <CardGroup cols={2}>
 
-  <Card 
+  <Card
     href={"/docs/features/inngest-functions/steps-workflows"}
     title={"Function steps"}
     icon={<RiGuideFill className="text-basis h-4 w-4"/>}
@@ -124,7 +134,7 @@ Write functions in TypeScript, Python or Go to power background and scheduled jo
   </Card>
 
 
-  <Card 
+  <Card
     href={"/docs/guides/flow-control"}
     title={"Flow Control"}
     icon={<RiGitPullRequestFill className="rotate-90 text-basis h-4 w-4" />}
@@ -132,7 +142,7 @@ Write functions in TypeScript, Python or Go to power background and scheduled jo
     Add multi-tenant aware prioritization, concurrency, throttling, batching, and rate limiting capabilities to your Inngest Functions.
   </Card>
 
-  <Card 
+  <Card
     href={"/docs/platform/monitor/observability-metrics"}
     title={"Inngest Platform"}
     icon={<InngestIcon className="text-basis h-4 w-4"/>}
@@ -140,7 +150,7 @@ Write functions in TypeScript, Python or Go to power background and scheduled jo
     Monitor your deployments with Metrics and Function & Events Logs.
   </Card>
 
-  <Card 
+  <Card
     href={"/docs/platform/deployment"}
     title={"Deploy your Inngest Functions"}
     icon={<RiCloudLine className="text-basis h-4 w-4"/>}

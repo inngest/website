@@ -37,6 +37,7 @@ export {
   Pre as pre,
   GuideSelector,
   GuideSection,
+  GuideTitle,
 } from "./Code";
 
 export const h1: React.FC<any> = function (props) {
@@ -462,7 +463,7 @@ export function Card<T extends React.ElementType = "div">({
             )}
             <h2
               className={clsx(
-                "font-semibold text-[#2E2E2E] text-sm dark:text-carbon-50",
+                "mb-px font-semibold text-[#2E2E2E] text-sm dark:text-carbon-50",
                 {
                   "text-base": !!props.href,
                   "text-xl": !props.href,

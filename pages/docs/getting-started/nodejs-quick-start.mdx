@@ -1,13 +1,13 @@
-import { GuideSelector, GuideSection, Callout, CodeGroup } from "src/shared/Docs/mdx";
+import { GuideSelector, GuideSection, GuideTitle, Callout, CodeGroup } from "src/shared/Docs/mdx";
 
 export const description =
-  `Get started with Inngest in this ten-minute Next.js tutorial`
+  `Get started with Inngest in this ten-minute JavaScript tutorial`
 
-# Next.js Quick Start
+# Node.js Quick Start
 
-In this tutorial you will add Inngest to a Next.js app to see how easy it can be to build complex workflows.
+In this tutorial you will add Inngest to a Node.js app to easily run background tasks and build complex workflows.
 
-Inngest makes it easy to build, manage, and execute reliable workflows. Some use cases include scheduling drip marketing campaigns, building payment flows, or chaining LLM interactions.
+Inngest makes it easy to build, manage, and execute durable functions. Some use cases include scheduling drip marketing campaigns, building payment flows, or chaining LLM interactions.
 
 By the end of this ten-minute tutorial you will:
 - Set up and run Inngest on your machine.
@@ -16,20 +16,23 @@ By the end of this ten-minute tutorial you will:
 
 Let's get started!
 
-### Choose Next.js version
+## Select your Node.js framework
 
-Choose your preferred Next.js version for this tutorial:
+Choose your preferred Node.js web framework to get started. This guide uses ESM (ECMAScript Modules), but it also works for Common.js with typical modifications.
 
 <GuideSelector
   options={[
-    { key: "nextappdir", title: "Next.js - App Router" },
-    { key: "nextpages", title: "Next.js - Pages Router" }
+    { key: "express", title: "Express.js" },
+    { key: "fastify", title: "Fastify" }
   ]}>
 
-## Before you start: choose a project
+Inngest works with any Node, Bun or Deno backend framework,but this tutorial will focus on some of the most popular frameworks.
 
-In this tutorial you can use any existing Next.js project, or you can create a new one.
+### Optional: Use a starter project
 
+If you don't have an existing project, you can clone the following starter project to run through the quick start tutorial:
+
+{/* TODO - I'd like to make these easily cloneable from
 <details>
   <summary><strong>Instructions for creating a new Next.js project </strong></summary>
 
@@ -50,17 +53,26 @@ In this tutorial you can use any existing Next.js project, or you can create a n
 
 Once you've chosen a project, open it in a code editor.
 
-Next, start your Next.js app in development mode by running:
+*/}
 
-```shell
-npm run dev
+## Starting your project
+
+Start your server using your typical script. We recommend using something like [`tsx`](https://www.npmjs.com/package/tsx) or [`nodemon`](https://www.npmjs.com/package/nodemon) for automatically restarting on file save:
+
+<CodeGroup>
+```shell {{ title: "tsx" }}
+npx tsx watch ./index.ts # replace with your own main entrypoint file
 ```
+```shell {{ title: "nodemon" }}
+nodemon ./index.js # replace with your own main entrypoint file
+```
+</CodeGroup>
 
-Now you can add Inngest to your project!
+Now let's add Inngest to your project.
 
-## 1. Install Inngest
+## 1. Install the Inngest SDK
 
-With the Next.js app now running running open a new tab in your terminal. In your project directory's root, run the following command to install Inngest SDK:
+In your project directory's root, run the following command to install Inngest SDK:
 
 <CodeGroup>
 ```shell {{ title: "npm" }}
@@ -79,21 +91,21 @@ bun add inngest
 
 ## 2. Run the Inngest Dev Server
 
-Next, start the [Inngest Dev Server](/docs/local-development#inngest-dev-server), which is a fast, in-memory version of Inngest where you can quickly send and view events events and function runs:
+Next, start the [Inngest Dev Server](/docs/local-development#inngest-dev-server), which is a fast, in-memory version of Inngest where you can quickly send and view events events and function runs. This tutorial assumes that your <GuideTitle/> server will be running on port `3000`; change this to match your port if you use another.
 
 <CodeGroup>
 ```shell {{ title: "npm" }}
-npx inngest-cli@latest dev
+npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
 ```
 ```shell {{ title: "yarn" }}
-yarn dlx inngest-cli@latest dev
+yarn dlx inngest-cli@latest dev -u http://localhost:3000/api/inngest
 ```
 ```shell {{ title: "pnpm" }}
-pnpm dlx inngest-cli@latest dev
+pnpm dlx inngest-cli@latest dev -u http://localhost:3000/api/inngest
 ```
 ```shell {{ title: "bun" }}
 bun add global inngest-cli@latest
-inngest-cli dev
+inngest-cli dev -u http://localhost:3000/api/inngest
 ```
 </CodeGroup>
 
@@ -103,7 +115,7 @@ inngest-cli dev
 <CodeGroup>
 
 ```bash {{ language: 'js' }}
-$ npx inngest-cli@latest dev
+$ npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
 
 12:33PM INF executor > service starting
 12:33PM INF runner > starting event stream backend=redis
@@ -114,7 +126,6 @@ $ npx inngest-cli@latest dev
 12:33PM INF devserver > service starting
 12:33PM INF devserver > autodiscovering locally hosted SDKs
 12:33PM INF api > starting server addr=0.0.0.0:8288
-
 
         Inngest dev server online at 0.0.0.0:8288, visible at the following URLs:
 
@@ -139,62 +150,78 @@ In your browser open [`http://localhost:8288`](http://localhost:8288) to see the
 
 ## 3. Create an Inngest client
 
-Inngest invokes your functions securely via an [API endpoint](/docs/learn/serving-inngest-functions) at `/api/inngest`. To enable that, you will create an [Inngest client](/docs/reference/client/create) in your Next.js project, which you will use to send events and create functions.
+Inngest invokes your functions securely via an [API endpoint](/docs/learn/serving-inngest-functions) at `/api/inngest`. To enable that, you will create an [Inngest client](/docs/reference/client/create) in your project, which you will use to send events and create functions.
 
-<GuideSection show="nextpages">
-  Create a new file at `./pages/api/inngest.ts` with the following code:
+Create a file in the directory of your preference. We recommend creating an `inngest` directory for your client and all functions.
 
-  ```ts {{ filename: "pages/api/inngest.ts" }}
-  import { Inngest } from "inngest";
-  import { serve } from "inngest/next";
+```ts {{ filename: "src/inngest/index.ts" }}
+import { Inngest } from "inngest";
 
-  // Create a client to send and receive events
-  export const inngest = new Inngest({ id: "my-app" });
+// Create a client to send and receive events
+export const inngest = new Inngest({ id: "my-app" });
 
-  // Create an API that serves zero functions
-  export default serve({
-    client: inngest,
-    functions: [
-      /* your functions will be passed here later! */
-    ],
-  });
-  ```
+// Create an empty array where we'll export future Inngest functions
+export const functions = [];
+```
+
+## 4. Set up the Inngest http endpoint
+
+<GuideSection show="express">
+Using your existing Express.js server, we'll set up Inngest using the provided `serve` handler which will "serve" Inngest functions. Here we'll assume this file is your entrypoint at `inngest.ts` and all import paths will be relative to that:
+
+```ts {{ filename: "./index.ts" }}
+import express from "express";
+import { serve } from "inngest/express";
+import { inngest, functions } from "./src/inngest"
+
+// Important: ensure you add JSON middleware to process incoming JSON POST payloads.
+app.use(express.json());
+// Set up the "/api/inngest" (recommended) routes with the serve handler
+app.use("/api/inngest", serve({ client: inngest, functions }));
+
+app.listen(3000, () => {
+  console.log('Server running on http://localhost:3000');
+});
+```
 </GuideSection>
 
-<GuideSection show="nextappdir">
-  Make a new directory next to your `app` directory (for example, `src/inngest`) where you'll define your Inngest functions and the client.
+<GuideSection show="fastify">
+Using your existing Fastify server, we'll set up Inngest using the provided Fastify plugin which will "serve" Inngest functions. Here we'll assume this file is your entrypoint at `inngest.ts` and all import paths will be relative to that:
 
-  In the `/src/inngest` directory create an Inngest client:
+```ts {{ filename: "./index.ts" }}
+import Fastify from "fastify";
+import inngestFastify from "inngest/fastify";
+import { inngest, functions } from "./src/inngest"
 
-  ```ts {{ filename: "src/inngest/client.ts" }}
-  import { Inngest } from "inngest";
+const fastify = Fastify({
+  logger: true,
+});
 
-  // Create a client to send and receive events
-  export const inngest = new Inngest({ id: "my-app" });
-  ```
+// This automatically adds the "/api/inngest" routes to your server
+fastify.register(inngestFastify, {
+  client: inngest,
+  functions,
+  options: {},
+});
 
-Next, you will set up a route handler for the `/api/inngest` route. To do so, create a file inside your `app` directory (for example, at `src/app/api/inngest/route.ts`) with the following code:
-
-  ```ts {{ filename: "src/app/api/inngest/route.ts" }}
-  import { serve } from "inngest/next";
-  import { inngest } from "../../../inngest/client";
-
-  // Create an API that serves zero functions
-  export const { GET, POST, PUT } = serve({
-    client: inngest,
-    functions: [
-      /* your functions will be passed here later! */
-    ],
-  });
-  ```
-
+// Start up the fastify server
+fastify.listen({ port: 3000 }, function (err, address) {
+  if (err) {
+    fastify.log.error(err);
+    process.exit(1);
+  }
+});
+```
 </GuideSection>
 
-## 4. Write your first Inngest function
+<Callout>
+👉 Note that you can import a [`serve`](/docs/reference/serve) handler for other frameworks and the rest of the code remains the same. These adapters enable you to change your web framework without changing any Inngest function code (ex. instead of <GuideSection show="express">`inngest/express`</GuideSection><GuideSection show="fastify">`inngest/fastify`</GuideSection> it could be `inngest/next` or `inngest/hono`);
+</Callout>
 
-In this step, you will write your first reliable serverless function. This function will be triggered whenever a specific event occurs (in our case, it will be `test/hello.world`). Then, it will sleep for a second and return a "Hello, World!".
+## 5. Write your first Inngest function
 
-### Define the function
+{/* TODO - Change this from hello world */}
+In this step, you will write your first durable function. This function will be triggered whenever a specific event occurs (in our case, it will be `test/hello.world`). Then, it will sleep for a second and return a "Hello, World!".
 
 To define the function, use the [`createFunction`](/docs/reference/functions/create) method on the Inngest client.
 
@@ -207,90 +234,40 @@ To define the function, use the [`createFunction`](/docs/reference/functions/cre
     - **Handler**: The function that is called when the `event` is received. The `event` payload is passed as an argument. Arguments include `step` to define durable steps within your handler and [additional arguments](/docs/reference/functions/create#handler) include logging helpers and other data.
 </details>
 
-<GuideSection show="nextpages">
+Define a function in the same file where we defined our Inngest client:
 
-Add the following code to the `./pages/api/inngest.ts` file:
+```ts {{ filename: "src/inngest/index.ts" }}
+import { Inngest } from "inngest";
 
-  ```ts
-  // Step 2 code...
-  const helloWorld = inngest.createFunction(
-    { id: "hello-world" },
-    { event: "test/hello.world" },
-    async ({ event, step }) => {
-      await step.sleep("wait-a-moment", "1s");
-      return { message: `Hello ${event.data.email}!` };
-    },
-  );
-  ```
+export const inngest = new Inngest({ id: "my-app" });
 
-</GuideSection>
+// Your new function:
+const helloWorld = inngest.createFunction(
+  { id: "hello-world" },
+  { event: "test/hello.world" },
+  async ({ event, step }) => {
+    await step.sleep("wait-a-moment", "1s");
+    return { message: `Hello ${event.data.email}!` };
+  },
+);
 
-<GuideSection show="nextappdir">
-
-  Inside your `src/inngest` directory create a new file called `functions.ts` where you will define Inngest functions. Add the following code:
-
-  ```ts {{ filename: "src/inngest/functions.ts" }}
-  import { inngest } from "./client";
-
-  const helloWorld = inngest.createFunction(
-    { id: "hello-world" },
-    { event: "test/hello.world" },
-    async ({ event, step }) => {
-      await step.sleep("wait-a-moment", "1s");
-      return { message: `Hello ${event.data.email}!` };
-    },
-  );
-  ```
-
-</GuideSection>
-
-### Add the function to `serve()`
-
-<GuideSection show="nextpages">
-
-  Next, add your Inngest function to the `serve()` handler.
-
-  ```ts
-  export default serve({
-    client: inngest,
-    functions: [
-      helloWorld, // <-- This is where you'll always add your new functions
-    ],
-  });
-  ```
-
-</GuideSection>
-
-<GuideSection show="nextappdir">
-
-  Next, import your Inngest function in the routes handler (`src/app/api/inngest/route.ts`) and add it to the `serve` handler so Inngest can invoke it via HTTP:
-
-  ```ts {{ filename: "src/app/api/inngest/route.ts" }}
-  import { serve } from "inngest/next";
-  import { inngest } from "../../../inngest/client";
-  import { helloWorld } from "../../../inngest/functions";
-
-  export const { GET, POST, PUT } = serve({
-    client: inngest,
-    functions: [
-      helloWorld, // <-- This is where you'll always add all your functions
-    ],
-  });
-  ```
-
-</GuideSection>
+// Add the function to the exported array:
+export const functions = [
+  helloWorld
+];
+```
 
 <Callout>
-👉 Note that you can import [`serve()`](/docs/reference/serve) for other frameworks and the rest of the code, in fact, remains the same — only the import statement changes (instead of `inngest/next`, it would be `inngest/astro`, `inngest/remix`, and so on).
+  In the previous step, we configured the exported `functions` array to be passed to our Inngest http endpoint. Each new function must be added to this array in order for Inngest to read it's configuration and invoke it.
 </Callout>
 
 Now, it's time to run your function!
 
 ## 5. Trigger your function from the Inngest Dev Server UI
 
-Inngest is powered by events.You will trigger your function in two ways: first, by invoking it directly from the Inngest Dev Server UI, and then by sending events from code.
+You will trigger your function in two ways: first, by invoking it directly from the Inngest Dev Server UI, and then by sending events from code.
 
-With your Next.js app and Inngest Dev Server running, open the Inngest Dev Server UI and select the "Functions" tab [`http://localhost:8288/functions`](http://localhost:8288/functions). You should see your function. (Note: if you don't see any function, select the "Apps" tab to troubleshoot)
+With your <GuideTitle/> server and Inngest Dev Server running, open the Inngest Dev Server UI and select the "Functions" tab [`http://localhost:8288/functions`](http://localhost:8288/functions). You should see your function. (Note: if you don't see any function, select the "Apps" tab to troubleshoot)
 
 <img
   src="/assets/docs/getting-started/quick-starts/dev-server-functions-hello-world-2024-11-16.png"
@@ -402,61 +379,65 @@ In a real-world app, you might send events from API routes that perform an actio
 
 </details>
 
-You will now send an event from within your Next.js app: from the “hello” Next.js API function. To do so, create a new API handler in the <GuideSection show="nextpages">`./pages/api/hello.ts`</GuideSection><GuideSection show="nextappdir">`src/app/api/hello/route.ts`</GuideSection> file:
+You will now send an event from within your server from a `/api/hello` `GET` endpoint. Create a new get handler on your server object:
 
-<GuideSection show="nextpages">
-  ```ts {{ filename: "pages/api/hello.ts" }}
-  import { NextApiRequest, NextApiResponse } from "next";
-  import { inngest } from "./inngest";
+<GuideSection show="express">
+```ts {{ filename: "./index.ts" }}
+import express from "express";
+import { serve } from "inngest/express";
+import { inngest, functions } from "./src/inngest"
 
-  // Opt out of caching; every request should send a new event
-  export const dynamic = "force-dynamic";
+app.use(express.json());
+app.use("/api/inngest", serve({ client: inngest, functions }));
 
-  // Create a simple async Next.js API route handler
-  export default async function handler(
-    req: NextApiRequest,
-    res: NextApiResponse,
-  ) {
-    // Send your event payload to Inngest
-    await inngest.send({
-      name: "test/hello.world",
-      data: {
-        email: "testUser@example.com",
-      },
-    });
+// Create a new route
+app.get("/api/hello", async function (req, res, next) {
+  await inngest.send({
+    name: "test/hello.world",
+    data: {
+      email: "testUser@example.com",
+    },
+  }).catch(err => next(err));
+  res.json({ message: 'Event sent!' });
+});
 
-    res.status(200).json({ message: "Event sent!" });
-  }
-  ```
+app.listen(3000, () => {
+  console.log('Server running on http://localhost:3000');
+});
+```
 </GuideSection>
-<GuideSection show="nextappdir">
-  ```ts {{ filename: "src/app/api/hello/route.ts" }}
-  import { NextResponse } from "next/server";
-  import { inngest } from "../../../inngest/client"; // Import our client
+<GuideSection show="fastify">
+```ts {{ filename: "./index.ts" }}
+import Fastify from "fastify";
+import inngestFastify from "inngest/fastify";
+import { inngest, functions } from "./src/inngest"
 
-  // Opt out of caching; every request should send a new event
-  export const dynamic = "force-dynamic";
+const fastify = Fastify({
+  logger: true,
+});
+fastify.register(inngestFastify, { client: inngest, functions, options: {} });
 
-  // Create a simple async Next.js API route handler
-  export async function GET() {}
-    // Send your event payload to Inngest
-    await inngest.send({
-      name: "test/hello.world",
-      data: {
-        email: "testUser@example.com",
-      },
-    });
+// Create a new route:
+fastify.get("/api/hello", async function (request, reply) {
+  await inngest.send({
+    name: "test/hello.world",
+    data: {
+      email: "testUser@example.com",
+    },
+  });
+  return { message: "Event sent!" };
+})
 
-    return NextResponse.json({ message: "Event sent!" });
+fastify.listen({ port: 3000 }, function (err, address) {
+  if (err) {
+    fastify.log.error(err);
+    process.exit(1);
   }
-  ```
+});
+```
 </GuideSection>
 
-<Callout>
-👉 Note that we use [`"force-dynamic"`](https://nextjs.org/docs/app/building-your-application/caching) to ensure we always send a new event on every request. In most situations, you'll probably want to send an event during a `POST` request so that you don't need this config option.
-</Callout>
-
-Every time this API route is requested, an event is sent to Inngest. To test it, open [`http://localhost:3000/api/hello`](http://localhost:3000/api/hello) (change your port if your Next.js app is running elsewhere). You should see the following output: `{"message":"Event sent!"}`
+Every time this API route is requested, an event is sent to Inngest. To test it, open [`http://localhost:3000/api/hello`](http://localhost:3000/api/hello) (change your port if your <GuideTitle/> app is running elsewhere). You should see the following output: `{"message":"Event sent!"}`
 
 <img
   src="/assets/docs/getting-started/quick-starts/api-hello-response-browser.png"
