@@ -77,7 +77,7 @@ bun add inngest
 ```
 </CodeGroup>
 
-## 2. Run Inngest Dev Server
+## 2. Run the Inngest Dev Server
 
 Next, start the [Inngest Dev Server](/docs/local-development#inngest-dev-server), which is a fast, in-memory version of Inngest where you can quickly send and view events events and function runs:
 
@@ -131,10 +131,10 @@ $ npx inngest-cli@latest dev
 In your browser open [`http://localhost:8288`](http://localhost:8288) to see the development UI where later you will test the functions you write:
 
 <img
-  src="/assets/docs/getting-started/nextjs-quick-start/dev-server.png"
+  src="/assets/docs/getting-started/quick-starts/dev-server-runs-blank-2024-11-16.png"
   width="800" height={800/2762*1868} quality="95"
   className="rounded-md"
-  alt="Inngest Dev Server screen with no events recorded"
+  alt="Inngest Dev Server's 'Runs' tab with no data"
 />
 
 ## 3. Create an Inngest client
@@ -196,15 +196,15 @@ In this step, you will write your first reliable serverless function. This funct
 
 ### Define the function
 
-To define the function, use the [`createFunction`](/docs/reference/functions/create) method.
+To define the function, use the [`createFunction`](/docs/reference/functions/create) method on the Inngest client.
 
 <details>
   <summary><strong>Learn more: What is `createFunction` method?</strong></summary>
 
   The `createFunction` method takes three objects as arguments:
-    - **Configuration**: `id` is required and it is the default name that will be displayed on the Inngest dashboard to refer to your function. You can also specify [additional options](/docs/reference/functions/create#configuration) such as `concurrency`, `rateLimit`, `retries`, or `batchEvents`, and others.
-    - **Trigger**: `event` is the name of the event that triggers your function. Alternatively, you can use `cron` to specify a schedule to trigger this function.
-    - **Handler**: the function that is called when the event is received. You can also specify [additional options](/docs/reference/functions/create#handler) such as invoking other functions from inside this function or logging data.
+    - **Configuration**: A unique `id` is required and it is the default name that will be displayed on the Inngest dashboard to refer to your function. You can also specify [additional options](/docs/reference/functions/create#configuration) such as `concurrency`, `rateLimit`, `retries`, or `batchEvents`, and others.
+    - **Trigger**: `event` is the name of the event that triggers your function. Alternatively, you can use `cron` to specify a schedule to trigger this function. Learn more about triggers [here](/docs/features/events-triggers).
+    - **Handler**: The function that is called when the `event` is received. The `event` payload is passed as an argument. Arguments include `step` to define durable steps within your handler and [additional arguments]((/docs/reference/functions/create#handler)) include logging helpers and other data.
 </details>
 
 <GuideSection show="nextpages">
@@ -218,7 +218,7 @@ Add the following code to the `./pages/api/inngest.ts` file:
     { event: "test/hello.world" },
     async ({ event, step }) => {
       await step.sleep("wait-a-moment", "1s");
-      return { event, body: "Hello, World!" };
+      return { message: `Hello ${event.data.email}!` };
     },
   );
   ```
@@ -232,12 +232,12 @@ Add the following code to the `./pages/api/inngest.ts` file:
   ```ts {{ filename: "src/inngest/functions.ts" }}
   import { inngest } from "./client";
 
-  export const helloWorld = inngest.createFunction(
+  const helloWorld = inngest.createFunction(
     { id: "hello-world" },
     { event: "test/hello.world" },
     async ({ event, step }) => {
       await step.sleep("wait-a-moment", "1s");
-      return { event, body: "Hello, World!" };
+      return { message: `Hello ${event.data.email}!` };
     },
   );
   ```
@@ -286,7 +286,94 @@ Add the following code to the `./pages/api/inngest.ts` file:
 
 Now, it's time to run your function!
 
-## 5. Trigger your function from the development UI
+## 5. Trigger your function from the Inngest Dev Server UI
+
+Inngest is powered by events.You will trigger your function in two ways: first, by invoking it directly from the Inngest Dev Server UI, and then by sending events from code.
+
+With your Next.js app and Inngest Dev Server running, open the Inngest Dev Server UI and select the "Functions" tab [`http://localhost:8288/functions`](http://localhost:8288/functions). You should see your function. (Note: if you don't see any function, select the "Apps" tab to troubleshoot)
+
+<img
+  src="/assets/docs/getting-started/quick-starts/dev-server-functions-hello-world-2024-11-16.png"
+  width="800" height={800/2762*1868} quality="95"
+  className="rounded-md"
+  alt="Inngest Dev Server web interface's functions tab with functions listed"
+/>
+
+To trigger your function, use the "Invoke" button for the associated function:
+
+<img
+  src="/assets/docs/getting-started/quick-starts/dev-server-functions-invoke-button-2024-11-16.png"
+  width="800" height={800/2762*1868} quality="95"
+  className="rounded-md"
+  alt="Inngest Dev Server web interface's functions tab with the invoke button highlighted"
+/>
+
+In the pop up editor, add your event payload data like the example below. This can be any JSON and you can use this data within your function's handler. Next, press the "Invoke Function" button:
+
+```json
+{
+  "data": {
+    "email": "test@example.com"
+  }
+}
+```
+
+<img
+  src="/assets/docs/getting-started/quick-starts/dev-server-functions-invoke-modal-2024-11-16.png"
+  width="800" height={800/2762*1868} quality="95"
+  className="rounded-md"
+  alt="Inngest Dev Server web interface's invoke modal with payload editor and invoke submit button highlighted"
+/>
+
+The payload is sent to Inngest (which is running locally) which automatically executes your function in the background! You can see the new function run logged in the "Runs" tab:
+
+<img
+  src="/assets/docs/getting-started/quick-starts/dev-server-runs-new-run-2024-11-16.png"
+  width="800" height={800/2762*1868} quality="95"
+  className="rounded-md"
+  alt="Inngest Dev Server web interface's runs tab with a single completed run displayed"
+/>
+
+When you click on the run, you will see more information about the event, such as which function was triggered, its payload, output, and timeline:
+
+<img
+  src="/assets/docs/getting-started/quick-starts/dev-server-runs-run-expanded-2024-11-16.png"
+  width="800" height={800/2762*1868} quality="95"
+  className="rounded-md"
+  alt="Inngest Dev Server web interface's runs tab with a single completed run expanded"
+/>
+
+In this case, the payload triggered the `hello-world` function, which did sleep for a second and then returned `"Hello, World!"`. No surprises here, that's what we expected!
+
+<img
+  src="/assets/docs/getting-started/quick-starts/dev-server-runs-run-expanded-highlighted-2024-11-16.png"
+  width="800" height={800/2762*1868} quality="95"
+  className="rounded-md"
+  alt="Inngest Dev Server web interface's runs tab with a single completed run expanded indicating that hello-world function ran, that it slept for 1s, and that the correct body was returned"
+/>
+
+{/* TODO - Update this when we bring back edit + re-run */}
+To aid in debugging your functions, you can quickly "Rerun" or "Cancel" a function. Try clicking "Rerun" at the top of the "Run details" table:
+
+<img
+  src="/assets/docs/getting-started/quick-starts/dev-server-runs-run-expanded-buttons-2024-11-16.png"
+  width="800" height={800/2762*1868} quality="95"
+  className="rounded-md"
+  alt="Run details expanded with rerun and cancel buttons highlighted"
+/>
+
+After the function was replayed, you will see two runs in the UI:
+
+<img
+  src="/assets/docs/getting-started/quick-starts/dev-server-runs-after-rerun-2024-11-16.png"
+  width="800" height={800/2762*1868} quality="95"
+  className="rounded-md"
+  alt="Inngest Dev Server web interface's runs tab with two runs listed"
+/>
+
+Now you will trigger an event from inside your app.
+
+## 6. Trigger from code
 
 Inngest is powered by events.
 
@@ -299,93 +386,6 @@ It is worth mentioning here that an event-driven approach allows you to:
 - Use stored events to [replay](/docs/platform/replay) functions when there are issues in production.
 - Interact with long-running functions by sending new events including [waiting for input](/docs/features/inngest-functions/steps-workflows/wait-for-event) and [cancelling](/docs/features/inngest-functions/cancellation/cancel-on-events).
 </details>
-
-You will test your first event in two ways: first, by sending it directly to the Inngest Dev Server UI, and then by triggering it from code.
-
-With your Next.js and Inngest Dev Server running, open the Inngest Dev Server UI: [`http://localhost:8288`](http://localhost:8288):
-
-<img
-  src="/assets/docs/getting-started/nextjs-quick-start/dev-server.png"
-  width="800" height={800/2762*1868} quality="95"
-  className="rounded-md"
-  alt="Inngest Dev Server screen with no events recorded"
-/>
-
-To send a test event, click on “Test Event” in the top right corner:
-
-<img
-  src="/assets/docs/getting-started/nextjs-quick-start/dev-server-frame.png"
-  width="800" height={800/2762*1868} quality="95"
-  className="rounded-md"
-  alt="Inngest Dev Server screen with no events recorded and the test button highlighted"
-/>
-
-In the popup console, add the event name (you defined it earlier in the `createFunction` method as `test/hello.world`) and some test metadata like an email address, and press the "Send Event" button:
-
-```json
-{
-  "name": "test/hello.world",
-  "data": {
-    "email": "test-user@example.com"
-  }
-}
-```
-
-<img
-  src="/assets/docs/getting-started/nextjs-quick-start/dev-server-test-event-console.png"
-  width="800" height={800/2762*1868} quality="95"
-  className="rounded-md"
-  alt="Event console with test data"
-/>
-
-The event is sent to Inngest (which is running locally) which automatically executes your function in the background! You can see the new function run logged in the "Stream" tab:
-
-<img
-  src="/assets/docs/getting-started/nextjs-quick-start/dev-server-event-1.png"
-  width="800" height={800/2762*1868} quality="95"
-  className="rounded-md"
-  alt="Inngest Dev Server screen with one event recorded"
-/>
-
-When you click on the run, you will see more information about the event, such as which function was triggered, its payload, output, and timeline:
-
-<img
-  src="/assets/docs/getting-started/nextjs-quick-start/event-details-1.png"
-  width="800" height={800/2762*1868} quality="95"
-  className="rounded-md"
-  alt="Event details popup"
-/>
-
-In this case, the event triggered the `hello-world` function, which did sleep for a second and then returned `"Hello, World!"`. No surprises here, that's what we expected!
-
-<img
-  src="/assets/docs/getting-started/nextjs-quick-start/event-details-1-frames.png"
-  width="800" height={800/2762*1868} quality="95"
-  className="rounded-md"
-  alt="Event details popup indicating that hello-world function ran, that it slept for 1s, and that the correct body was returned"
-/>
-
-A handy little trick: if your event behaved in an odd way, you can either just replay it or edit and replay it. Replaying a function can be really helpful in debugging the function errors locally. To try it, click on the "Replay" button in the top center:
-
-<img
-  src="/assets/docs/getting-started/nextjs-quick-start/event-details-1-replay.png"
-  width="800" height={800/2762*1868} quality="95"
-  className="rounded-md"
-  alt="Event details popup with replay button highlighted"
-/>
-
-After the event was replayed, you will see two events recorded in the dashboard:
-
-<img
-  src="/assets/docs/getting-started/nextjs-quick-start/dev-server-event-2.png"
-  width="800" height={800/2762*1868} quality="95"
-  className="rounded-md"
-  alt="Inngest Dev Server screen with two events recorded"
-/>
-
-Now you will trigger an event from inside your app.
-
-## 6. Trigger from code
 
 To trigger Inngest functions to run in the background, you will need to send events from your application to Inngest. Once the event is received, it will automatically invoke all functions that are configured to be triggered by it.
 
@@ -402,7 +402,7 @@ In a real-world app, you might send events from API routes that perform an actio
 
 </details>
 
-You will now send an event from inside your code: from the “hello” Next.js API function. To do so, create a new API handler in the <GuideSection show="nextpages">`./pages/api/hello.ts`</GuideSection><GuideSection show="nextappdir">`src/app/api/hello/route.ts`</GuideSection> file:
+You will now send an event from within your Next.js app: from the “hello” Next.js API function. To do so, create a new API handler in the <GuideSection show="nextpages">`./pages/api/hello.ts`</GuideSection><GuideSection show="nextappdir">`src/app/api/hello/route.ts`</GuideSection> file:
 
 <GuideSection show="nextpages">
   ```ts {{ filename: "pages/api/hello.ts" }}
@@ -421,11 +421,11 @@ You will now send an event from inside your code: from the “hello” Next.js A
     await inngest.send({
       name: "test/hello.world",
       data: {
-        email: "testFromNext@example.com",
+        email: "testUser@example.com",
       },
     });
 
-    res.status(200).json({ name: "Hello Inngest from Next!" });
+    res.status(200).json({ message: "Event sent!" });
   }
   ```
 </GuideSection>
@@ -438,16 +438,16 @@ You will now send an event from inside your code: from the “hello” Next.js A
   export const dynamic = "force-dynamic";
 
   // Create a simple async Next.js API route handler
-  export async function GET() {
+  export async function GET() {}
     // Send your event payload to Inngest
     await inngest.send({
       name: "test/hello.world",
       data: {
-        email: "testFromNext@example.com",
+        email: "testUser@example.com",
       },
     });
 
-    return NextResponse.json({ name: "Hello Inngest from Next!" });
+    return NextResponse.json({ message: "Event sent!" });
   }
   ```
 </GuideSection>
@@ -456,40 +456,22 @@ You will now send an event from inside your code: from the “hello” Next.js A
 👉 Note that we use [`"force-dynamic"`](https://nextjs.org/docs/app/building-your-application/caching) to ensure we always send a new event on every request. In most situations, you'll probably want to send an event during a `POST` request so that you don't need this config option.
 </Callout>
 
-Every time this API route is requested, an event is sent to Inngest. To test it, open [`http://localhost:3000/api/hello`](http://localhost:3000/api/hello) (change your port if your Next.js app is running elsewhere). You should see the following output: `{"name":"Hello Inngest from Next!"}`
+Every time this API route is requested, an event is sent to Inngest. To test it, open [`http://localhost:3000/api/hello`](http://localhost:3000/api/hello) (change your port if your Next.js app is running elsewhere). You should see the following output: `{"message":"Event sent!"}`
 
 <img
-  src="/assets/docs/getting-started/nextjs-quick-start/hello-from-next.png"
+  src="/assets/docs/getting-started/quick-starts/api-hello-response-browser.png"
   width="800" height={800/2762*1868} quality="95"
   className="rounded-md"
-  alt="Black screen with the JSON statement"
+  alt="Web browser showing the JSON response of the /api/hello endpoint"
 />
 
-If you go back to the Inngest Dev Server, you will see this new event appear there as well:
+If you go back to the Inngest Dev Server, you will see a new run is triggered by this event:
 
 <img
-  src="/assets/docs/getting-started/nextjs-quick-start/dev-server-event-3.png"
+  src="/assets/docs/getting-started/quick-starts/dev-server-runs-via-event-2024-11-16.png"
   width="800" height={800/2762*1868} quality="95"
   className="rounded-md"
-  alt="Inngest Dev Server screen with three events recorded"
-/>
-
-However, what happens if you send a different event? Let's see! Change `test/hello.world` to `test/hello.bizarro.world` and refresh [`http://localhost:3000/api/hello`](http://localhost:3000/api/hello). You will see that the event was sent and received:
-
-<img
-  src="/assets/docs/getting-started/nextjs-quick-start/dev-server-event-4.png"
-  width="800" height={800/2762*1868} quality="95"
-  className="rounded-md"
-  alt="Inngest Dev Server screen with four events recorded, last one being 'test/hello.bizarro.world' with no functions called"
-/>
-
-... but no functions were triggered because you have not created any function that is listening to this event:
-
-<img
-  src="/assets/docs/getting-started/nextjs-quick-start/dev-server-event-4-details.png"
-  width="800" height={800/2762*1868} quality="95"
-  className="rounded-md"
-  alt="Event details for the last event where it's clear that while the event was recorded, no function was called"
+  alt="Inngest Dev Server web interface's runs tab with a third run triggered by the 'test/hello.world' event"
 />
 
 And - that's it! You now have learned how to create Inngest functions and you have sent events to trigger those functions. Congratulations 🥳
