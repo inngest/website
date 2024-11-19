@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { type RemixiconComponentType } from "@remixicon/react";
 
 export type MenuProps = {
   title: string;
@@ -6,18 +7,20 @@ export type MenuProps = {
     title: string;
     description: string;
     url: string;
-    icon: React.ComponentType<{ size: number }>;
+    icon: React.ComponentType<{ size: number }> | RemixiconComponentType;
     iconBg: string;
   }[];
   secondaryTitle?: string;
   secondaryLinks?: {
     title: string;
     url: string;
-    icon: React.ComponentType<{
-      size: number;
-      color?: string;
-      className?: string;
-    }>;
+    icon:
+      | React.ComponentType<{
+          size: number;
+          color?: string;
+          className?: string;
+        }>
+      | RemixiconComponentType;
     iconClassName?: string;
   }[];
   headerUrl?: string;
