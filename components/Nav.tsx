@@ -18,7 +18,7 @@ import Dropdown from "./Dropdown";
 
 // Manual count of stars on GitHub for now
 // Run pnpm run github:stars to get the latest count
-const GITHUB_STARS = 2824;
+const GITHUB_STARS = 2943;
 
 const menu: {
   title: string;
