@@ -7,7 +7,7 @@ import {
   RiDiscordFill,
   RiTwitterXFill,
   RiArrowRightLine,
-  RiArrowDownSLine,
+  RiBlueskyFill,
 } from "@remixicon/react";
 import Logo from "src/shared/Icons/Logo";
 import classNames from "src/utils/classNames";
@@ -66,6 +66,11 @@ const iconLinks: {
     title: "X",
     url: "https://x.com/inngest",
     icon: RiTwitterXFill,
+  },
+  {
+    title: "Bluesky",
+    url: "https://bsky.app/profile/inngest.com",
+    icon: RiBlueskyFill,
   },
 ];
 

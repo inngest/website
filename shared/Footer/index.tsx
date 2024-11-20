@@ -3,11 +3,40 @@ import Logo from "src/shared/Icons/Logo";
 import Discord from "../Icons/Discord";
 import Github from "../Icons/Github";
 import XSocialIcon from "../Icons/XSocialIcon";
+import {
+  RiGithubFill,
+  RiBlueskyFill,
+  RiTwitterXFill,
+  RiDiscordFill,
+} from "@remixicon/react";
 import Container from "../layout/Container";
 import footerLinks from "./footerLinks";
 import StatusWidget from "../StatusWidget";
 import FooterCallout from "./FooterCallout";
 import React from "react";
+
+const communityLinks = [
+  {
+    title: "Discord",
+    url: "https://www.inngest.com/discord?ref=footer",
+    icon: RiDiscordFill,
+  },
+  {
+    title: "GitHub",
+    url: "https://github.com/inngest/inngest",
+    icon: RiGithubFill,
+  },
+  {
+    title: "X.com",
+    url: "https://x.com/inngest",
+    icon: RiTwitterXFill,
+  },
+  {
+    title: "Bluesky",
+    url: "https://bsky.app/profile/inngest.com",
+    icon: RiBlueskyFill,
+  },
+];
 
 export default function Footer({
   ctaRef,
@@ -47,30 +76,14 @@ export default function Footer({
               <div>
                 <SectionTitle title="Community" />
                 <ul className="flex flex-col gap-4">
-                  <li>
-                    <Link
-                      href="https://www.inngest.com/discord"
-                      target="_blank"
-                    >
-                      <Discord />
-                      Discord
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="https://github.com/inngest/inngest"
-                      target="_blank"
-                    >
-                      <Github />
-                      GitHub
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="https://x.com/inngest" target="_blank">
-                      <XSocialIcon />
-                      X.com
-                    </Link>
-                  </li>
+                  {communityLinks.map((l, idx) => (
+                    <li>
+                      <Link href={l.url} target="_blank">
+                        <l.icon className="w-4 h-4" />
+                        {l.title}
+                      </Link>
+                    </li>
+                  ))}
                 </ul>
               </div>
             </div>
