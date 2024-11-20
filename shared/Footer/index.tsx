@@ -77,7 +77,7 @@ export default function Footer({
                 <SectionTitle title="Community" />
                 <ul className="flex flex-col gap-4">
                   {communityLinks.map((l, idx) => (
-                    <li>
+                    <li key={idx}>
                       <Link href={l.url} target="_blank">
                         <l.icon className="w-4 h-4" />
                         {l.title}
