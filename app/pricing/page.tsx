@@ -2,8 +2,8 @@ import { type Metadata } from "next";
 import dynamic from "next/dynamic";
 
 import { generateMetadata } from "src/utils/social";
-import PlanCard from "src/shared/Pricing/PlanCard";
-import CaseStudies from "src/shared/Pricing/CaseStudies";
+import PlanCard from "./PlanCard";
+import CaseStudies from "./CaseStudies";
 import { Button } from "src/shared/Button";
 import PricingCalculator from "./PricingCalculator";
 
@@ -11,7 +11,7 @@ import { PLANS, FEATURES, sections } from "./plans";
 
 // Disable SSR in ComparisonTable, to prevent hydration errors. It requires windows info on accordions
 const ComparisonTable = dynamic(
-  () => import("src/shared/Pricing/ComparisonTable"),
+  () => import("src/app/pricing/ComparisonTable"),
   {
     ssr: false,
   }
