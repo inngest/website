@@ -1,6 +1,8 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
-import { Button } from "../Button";
-import { type Plan } from "../../pages/pricing";
+import { Button } from "src/shared/Button";
+import { type Plan } from "./plans";
 import {
   RiGitPrDraftLine,
   RiMistLine,

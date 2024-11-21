@@ -1,19 +1,3 @@
-import dynamic from "next/dynamic";
-import Header from "src/shared/Header";
-import Container from "src/shared/layout/Container";
-import PlanCard from "src/shared/Pricing/PlanCard";
-import CaseStudies from "src/shared/Pricing/CaseStudies";
-import Footer from "../shared/Footer";
-import { Button } from "src/shared/Button";
-
-// Disable SSR in ComparisonTable, to prevent hydration errors. It requires windows info on accordions
-const ComparisonTable = dynamic(
-  () => import("src/shared/Pricing/ComparisonTable"),
-  {
-    ssr: false,
-  }
-);
-
 export type Plan = {
   name: string;
   cost: {
@@ -52,7 +36,7 @@ export type Plan = {
   features: string[];
 };
 
-type Feature = {
+export type Feature = {
   name: string;
   description?: string;
   section:
@@ -69,27 +53,14 @@ type Feature = {
   infoUrl?: string;
 };
 
-export const sections: { key: string; name: string; description?: string }[] = [
-  { key: "platform", name: "Platform" },
-  {
-    key: "recovery",
-    name: "Recovery and management",
-    description: "Included with every plan",
-  },
-  { key: "observability", name: "Observability" },
-  { key: "data", name: "Time-based data management" },
-  { key: "connectivity", name: "Connectivity" },
-  { key: "organization", name: "Organization" },
-];
-
-const PLAN_NAMES = {
+export const PLAN_NAMES = {
   basicFree: "Free",
   basic: "Basic",
   pro: "Pro",
   enterprise: "Enterprise",
 };
 
-const PLANS: Plan[] = [
+export const PLANS: Plan[] = [
   {
     name: PLAN_NAMES.basicFree,
     cost: {
@@ -247,11 +218,26 @@ const PLANS: Plan[] = [
   },
 ];
 
-function getPlan(planName: string): Plan {
+export function getPlan(
+  planName: typeof PLAN_NAMES[keyof typeof PLAN_NAMES]
+): Plan {
   return PLANS.find((p) => p.name === planName);
 }
 
-const FEATURES: Feature[] = [
+export const sections: { key: string; name: string; description?: string }[] = [
+  { key: "platform", name: "Platform" },
+  {
+    key: "recovery",
+    name: "Recovery and management",
+    description: "Included with every plan",
+  },
+  { key: "observability", name: "Observability" },
+  { key: "data", name: "Time-based data management" },
+  { key: "connectivity", name: "Connectivity" },
+  { key: "organization", name: "Organization" },
+];
+
+export const FEATURES: Feature[] = [
   {
     name: "Base price",
     plans: {
@@ -672,71 +658,3 @@ const FEATURES: Feature[] = [
     section: "organization",
   },
 ];
-
-export async function getStaticProps() {
-  return {
-    props: {
-      designVersion: "3",
-      meta: {
-        title: "Pricing",
-        description: "Simple pricing. Powerful functionality.",
-      },
-    },
-  };
-}
-
-export default function Pricing() {
-  return (
-    <div
-      className="font-sans bg-canvasBase text-basis"
-      style={{
-        backgroundImage:
-          "radial-gradient(#2C9B63, rgba(0,0,0,0.0) 80%, rgba(0,0,0,0.0))",
-        backgroundSize: "1000px 1000px",
-        backgroundPosition: "center 120px",
-        backgroundRepeat: "no-repeat",
-      }}
-    >
-      <Header />
-      <div className="max-w-container-desktop m-auto px-4 md:px-6 lg:px-8 text-center">
-        <h1 className="text-3xl lg:text-6xl text-basis mt-8 md:mt-20 mb-4 md:mb-16 font-bold lg:font-black tracking-tight text-balance">
-          Simple pricing that scales with you
-        </h1>
-        <p className="text-base lg:text-xl text-basis mb-8 md:mb-24 text-balance">
-          From early-stage startups to scaling enterprises, Inngest has you
-          covered. Get started for free today.
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-2 xl:gap-4 xl:gap-x-0 text-center mb-8">
-          {PLANS.filter((p) => p.hideFromCards !== true).map((p, idx) => (
-            <PlanCard key={p.name} content={p} idx={idx} total={PLANS.length} />
-          ))}
-        </div>
-        <CaseStudies />
-
-        <ComparisonTable
-          plans={PLANS}
-          features={FEATURES}
-          sections={sections}
-        />
-      </div>
-      <div
-        className="text-center py-24"
-        style={{
-          backgroundImage: "url(/assets/pricing/blob.svg)",
-          backgroundPosition: "center 40%",
-          backgroundRepeat: "no-repeat",
-          backgroundSize: "cover",
-        }}
-      >
-        <p className="text-2xl lg:text-3xl font-bold mb-12">
-          Need help deciding which plan to choose?
-        </p>
-        <Button href="/contact?ref=pricing-help" variant="dark">
-          Let's talk
-        </Button>
-      </div>
-
-      <Footer disableCta />
-    </div>
-  );
-}
