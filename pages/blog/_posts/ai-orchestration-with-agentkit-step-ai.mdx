@@ -69,7 +69,7 @@ Both AI APIs offer a bunch of new features, specifically for rapidly iterating o
 
 ### `step.ai.wrap`: reliable AI with any SDK
 
-If you’ve already experimented with AI, you’re probably using an SDK like OpenAI’s, Anthropics, or Vercel’s AI SDK.  `step.ai.wrap` is designed to seamlessly wrap your existing AI SDK to with steps and AI observability:
+If you’ve already experimented with AI, you’re probably using an SDK like OpenAI’s, Anthropic's, or Vercel’s AI SDK.  `step.ai.wrap` is designed to seamlessly wrap your existing AI SDK to with steps and AI observability:
 
 ```typescript
 import { generateText } from "ai"
@@ -95,7 +95,7 @@ export default inngest.createFunction(
 
 If you’re starting from scratch, `step.ai.infer` securely offloads requests through Inngest’s gateway, with advanced AI observability and metrics built in.  If you’re running on serverless functions, **your function will stop while the request is in flight so that you’re not charged while aiting for the response** — also bringing heavy savings with compute costs.
 
-```ts {{ title: "TypeScript" }}
+```typescript
 export default inngest.createFunction(
   { id: "summarize-contents" },
   { event: "app/ticket.created" },
@@ -104,7 +104,7 @@ export default inngest.createFunction(
     // This calls your model's chat endpoint, adding AI observability,
     // metrics, datasets, and monitoring to your calls.
     const response = await step.ai.infer("call-openai", {
-      model: step.ai.models.openai({ model: "gpt-4o" }),
+      model: openai({ model: "gpt-4o" }),
       // body is the model request, which is strongly typed depending on the model
       body: {
         messages: [{
