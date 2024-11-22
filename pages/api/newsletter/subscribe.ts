@@ -13,8 +13,11 @@ export default async (req, res) => {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
-  const { email, tags = [] }: { email: string | null; tags: string[] } =
-    req.body;
+  const {
+    email,
+    tags = [],
+    ...mergeFields
+  }: { email: string | null; tags: string[] } = req.body;
 
   if (!email) {
     return res.status(400).json({ error: "Email is required" });
@@ -30,7 +33,11 @@ export default async (req, res) => {
   try {
     // Try to add the member to our list
     try {
-      const newMemberRes = await addMember(email, [TAGS.MAILING_LIST, ...tags]);
+      const newMemberRes = await addMember(
+        email,
+        [TAGS.MAILING_LIST, ...tags],
+        mergeFields
+      );
       if (newMemberRes.status >= 400) {
         return res.status(400).json({
           error: `There was an error subscribing to the newsletter. Please try again.`,
@@ -39,9 +46,18 @@ export default async (req, res) => {
     } catch (err) {
       // This error throws if the user is already on the list
       if (err instanceof MemberExistsError) {
+        // Update the user if there are new merge tags
+        if (Object.keys(mergeFields).length) {
+          try {
+            await updateMemberMergeFields(email, mergeFields);
+          } catch (err) {
+            console.log(`Failed to update merge fields for ${email}`, err);
+          }
+        }
+
         // Update the user's tags
         const updateMemberRes = await addMemberTags(email, tags);
-        console.log("res?", JSON.stringify(updateMemberRes, null, 2));
+        // console.log("res?", JSON.stringify(updateMemberRes, null, 2));
         return res.status(201).json({ error: "" });
       }
       // If it's not an existing member error, throw it
@@ -54,11 +70,12 @@ export default async (req, res) => {
   }
 };
 
-async function addMember(email: string, tags: string[]) {
+async function addMember(email: string, tags: string[], mergeFields = {}) {
   const data = {
     email_address: email,
     status: "subscribed",
     tags,
+    merge_fields: mergeFields,
   };
   const response = await fetch(
     `https://${DATACENTER}.api.mailchimp.com/3.0/lists/${LIST_ID}/members`,
@@ -81,12 +98,35 @@ async function addMember(email: string, tags: string[]) {
   return response;
 }
 
+async function updateMemberMergeFields(email: string, mergeFields = {}) {
+  const subscriberHash = getSubscriberHash(email);
+  const data = {
+    email_address: email,
+    status: "subscribed",
+    status_if_new: "subscribed",
+    merge_fields: mergeFields,
+  };
+  const response = await fetch(
+    `https://${DATACENTER}.api.mailchimp.com/3.0/lists/${LIST_ID}/members/${subscriberHash}?skip_merge_validation=true`,
+    {
+      body: JSON.stringify(data),
+      headers: {
+        Authorization: `apikey ${API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      method: "PUT",
+    }
+  );
+  if (response.status >= 400) {
+    const text = await response.json();
+    console.log(text);
+    throw new Error("Failed to update member emails");
+  }
+  return response;
+}
+
 async function addMemberTags(email: string, tags: string[]) {
-  const lowercaseEmail = email.toLowerCase();
-  const subscriberHash = crypto
-    .createHash("md5")
-    .update(lowercaseEmail)
-    .digest("hex");
+  const subscriberHash = getSubscriberHash(email);
   const data = {
     tags: tags.map((t) => ({ name: t, status: "active" })),
   };
@@ -102,4 +142,9 @@ async function addMemberTags(email: string, tags: string[]) {
       method: "POST",
     }
   );
+}
+
+function getSubscriberHash(email: string): string {
+  const lowercaseEmail = email.toLowerCase();
+  return crypto.createHash("md5").update(lowercaseEmail).digest("hex");
 }
