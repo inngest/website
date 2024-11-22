@@ -1,15 +1,20 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 export default function NewsletterSignup({
   showHeader = true,
   buttonText = "Submit",
   tags = [],
+  tagsFromSearchParams = false,
+  fields = [],
 }: {
   showHeader?: boolean;
   buttonText?: string;
-  tags: string[];
+  tags?: string[];
+  tagsFromSearchParams: boolean;
+  fields?: { name: string; label: string }[];
 }) {
   const inputRef = useRef(null);
   const [loading, setLoading] = useState(false);
@@ -20,6 +25,15 @@ export default function NewsletterSignup({
     error: "",
     result: null,
   });
+  let subscriberTags = tags;
+
+  // Optionally get tags from search params
+  const searchParams = useSearchParams();
+  if (tagsFromSearchParams) {
+    const tag = searchParams.getAll("tag");
+    // Query can contain multiple tags
+    subscriberTags = tag ? (typeof tag === "string" ? [tag] : tag) : [];
+  }
 
   const subscribeUser = async (e) => {
     e.preventDefault();
@@ -28,7 +42,7 @@ export default function NewsletterSignup({
       body: JSON.stringify({
         // @ts-ignore
         email: inputRef.current.value,
-        tags,
+        tags: subscriberTags,
       }),
       headers: {
         "Content-Type": "application/json",
@@ -52,36 +66,59 @@ export default function NewsletterSignup({
       {showHeader && <p className="mb-2 text-basis text-lg">Get Notified</p>}
 
       <div className="flex flex-col sm:flex-row flex-wrap gap-4">
-        <input
-          className={`sm:max-w-80 md:min-w-72 flex-grow border border-muted rounded-md px-4 py-2 text-white bg-transparent
+        {fields.map((f, idx) => {
+          return (
+            <input
+              key={idx}
+              className={`md:min-w-72 flex-grow border border-muted rounded-md px-4 py-2 text-white bg-transparent
             focus:outline-none focus:ring-1 focus:ring-[rgb(var(--color-border-success))] focus:border-transparent
             placeholder:text-muted
+            grow
           `}
-          type="email"
-          id="email-input"
-          name="email"
-          placeholder="Enter email address"
-          ref={inputRef}
-          required
-          autoCapitalize="off"
-          autoCorrect="off"
-        />
-        {canSubmit && (
-          <button
-            type="submit"
-            name="register"
-            disabled={loading || response.result === true}
-            className={`whitespace-nowrap button group inline-flex items-center justify-center gap-0.5
+              type="text"
+              id={`${f.name}-input`}
+              name={f.name}
+              placeholder={f.label}
+              // ref={inputRef}
+              required
+              autoCapitalize="off"
+              autoCorrect="off"
+            />
+          );
+        })}
+        <div className="w-full flex flex-col sm:flex-row gap-4 pb-px">
+          <input
+            className={`md:min-w-72 flex-grow border border-muted rounded-md px-4 py-2 text-white bg-transparent
+            focus:outline-none focus:ring-1 focus:ring-[rgb(var(--color-border-success))] focus:border-transparent
+            placeholder:text-muted
+            grow
+          `}
+            type="email"
+            id="email-input"
+            name="email"
+            placeholder="Enter email address"
+            ref={inputRef}
+            required
+            autoCapitalize="off"
+            autoCorrect="off"
+          />
+          {canSubmit && (
+            <button
+              type="submit"
+              name="register"
+              disabled={loading || response.result === true}
+              className={`
+                group inline-flex items-center justify-center gap-0.5
                 px-12 py-2
                 rounded-md transition-all
-                text-alwaysWhite bg-btnPrimary hover:bg-btnPrimaryHover
-                text-sm font-medium
+                text-carbon-1000 bg-cta hover:bg-ctaHover
+                text-sm font-medium whitespace-nowrap
             ${loading ? "opacity-40 cursor-not-allowed" : ""}`}
-          >
-            {buttonText}
-          </button>
-        )}
-        <div></div>
+            >
+              {buttonText}
+            </button>
+          )}
+        </div>
       </div>
       {response.error && (
         <p className="mt-2 text-white text-sm">{response.error}</p>
