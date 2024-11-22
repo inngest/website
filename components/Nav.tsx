@@ -18,7 +18,9 @@ import Dropdown from "./Dropdown";
 
 // Manual count of stars on GitHub for now
 // Run pnpm run github:stars to get the latest count
-const GITHUB_STARS = 2943;
+import githubData from "src/data/github.json";
+
+const githubStars = githubData.stars;
 
 const menu: {
   title: string;
@@ -202,6 +204,7 @@ const repos = [
   "inngest/inngest-py",
   "inngest/inngestgo",
   "inngest/inngest-kt",
+  "inngest/agent-kit",
   "inngest/workflow-kit",
 ];
 
@@ -217,7 +220,7 @@ function OpenSourceButton({ className = "" }: { className?: string }) {
         <>
           <span className="hidden lg:inline">Open Source</span>
           <RiGithubFill className="h-4 w-4 shrink-0" />
-          <span>{(GITHUB_STARS / 1000).toFixed(1)}K</span>
+          <span>{(githubStars / 1000).toFixed(1)}K</span>
         </>
       }
       items={items}

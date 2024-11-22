@@ -8,15 +8,8 @@ async function getRepoStars(org) {
   return repos;
 }
 
-async function getTotalStars(org) {
+export async function getTotalStars(org) {
   const repos = await getRepoStars(org);
   const totalStars = repos.reduce((acc, repo) => acc + repo.stars, 0);
   return totalStars;
 }
-
-async function main() {
-  const totalStars = await getTotalStars("inngest");
-  console.log(`${totalStars} total stars`);
-}
-
-main();
