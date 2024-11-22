@@ -12,10 +12,10 @@ Building AI applications that actually work in production is surprisingly comple
 
 Today, we're excited to announce two new AI-native features:
 
-- AgentKit, the fastest way to develop, test, and ship complex AI workflows to production, in early access
-- A new set of core APIs in our platform: [step.ai](http://step.ai/), which brings the same world-class developer experience from our existing product to AI-native applications.
+- [AgentKit](https://github.com/inngest/agent-kit), the fastest way to develop, test, and ship complex AI workflows to production, in early access
+- A new set of core APIs in our platform: [step.ai](/docs/features/inngest-functions/steps-workflows/step-ai-orchestration), which brings the same world-class developer experience from our existing product to AI-native applications.
 
-Just as Inngest manages your background jobs, webhooks, and scheduled tasks with built-in retries and state management, [step.ai](http://step.ai/) now handles your AI model calls with the same production-ready infrastructure — with built in observability and support for agentic workflows out of the box.
+Just as Inngest manages your background jobs, webhooks, and scheduled tasks with built-in retries and state management, [step.ai](/docs/features/inngest-functions/steps-workflows/step-ai-orchestration) now handles your AI model calls with the same production-ready infrastructure — with built in observability and support for agentic workflows out of the box.
 
 ## AgentKit:  the fastest way to build production-ready AI workflows
 
@@ -48,7 +48,7 @@ export default inngest.createFunction(
 );
 ```
 
-<a href="/docs/agent-kit/overview">You can read the docs here</a>.  We cannot wait to see how you work with AgentKit.  We're iterating daily, and to speak with us or give feedback <a href="https://www.inngest.com/discord?ref=agentkit-blog"> join us in our #ai discord</a>
+<a href="/docs/agent-kit/overview">You can read the docs here</a>, and [see the code on GitHub](https://github.com/inngest/agent-kit).  We cannot wait to see how you work with AgentKit.  We're iterating daily, and to speak with us or give feedback <a href="https://www.inngest.com/discord?ref=agentkit-blog"> join us in our #ai discord</a>
 
 
 ## New step APIs - now available for early access: `step.ai.wrap` and `step.ai.infer`
@@ -64,6 +64,8 @@ Both AI APIs offer a bunch of new features, specifically for rapidly iterating o
 - AI workflow tracing, including large sequences of inference calls or agentic workflows
 - The ability to edit inputs from the middle of a workflow and rerun
 - Metadata, metrics, and usage stats across AI model calls
+
+[To learn more, read our docs here](/docs/features/inngest-functions/steps-workflows/step-ai-orchestration).
 
 ### `step.ai.wrap`: reliable AI with any SDK
 
