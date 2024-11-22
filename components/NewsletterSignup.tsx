@@ -38,7 +38,10 @@ export default function NewsletterSignup({
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const data = Object.assign({ tags }, formDataToObject(formData));
+    const data = Object.assign(
+      { tags: subscriberTags },
+      formDataToObject(formData)
+    );
     setLoading(true);
     const res = await fetch("/api/newsletter/subscribe", {
       body: JSON.stringify(data),
@@ -52,12 +55,12 @@ export default function NewsletterSignup({
       setResponse({ result: true, error: "" });
     } else {
       const { error } = await res.json();
-      console.log(error);
+      console.log("Error:", error);
       setResponse({ result: false, error });
     }
   };
 
-  const canSubmit = response.result !== true || response.error !== "";
+  const submitDisabled = loading || response.result === true;
 
   return (
     <form onSubmit={onSubmit}>
@@ -99,30 +102,29 @@ export default function NewsletterSignup({
             autoCapitalize="off"
             autoCorrect="off"
           />
-          {canSubmit && (
-            <button
-              type="submit"
-              name="register"
-              disabled={loading || response.result === true}
-              className={`
-                group inline-flex items-center justify-center gap-0.5
-                px-12 py-2
-                rounded-md transition-all
-                text-carbon-1000 bg-cta hover:bg-ctaHover
-                text-sm font-medium whitespace-nowrap
-            ${loading ? "opacity-40 cursor-not-allowed" : ""}`}
-            >
-              {buttonText}
-            </button>
-          )}
+          <button
+            type="submit"
+            name="register"
+            disabled={submitDisabled}
+            className={`
+              group inline-flex items-center justify-center gap-0.5
+              px-12 py-2
+              rounded-md transition-all
+              text-carbon-1000
+              bg-cta hover:bg-ctaHover
+              disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-cta
+              text-sm font-medium whitespace-nowrap`}
+          >
+            {buttonText}
+          </button>
         </div>
       </div>
       {response.error && (
-        <p className="mt-2 text-white text-sm">{response.error}</p>
+        <p className="mt-2 text-white text-center text-lg">{response.error}</p>
       )}
       {response.result && (
-        <p className="mt-2 text-white text-sm">
-          Great! You're all set to receive updates on Inngest Launch Week!
+        <p className="mt-2 text-white text-center text-lg">
+          Great - You're all set!
         </p>
       )}
     </form>
