@@ -69,7 +69,7 @@ Here’s a distilled quick take on Svelte(Kit):
 13. Surprisingly, there were Svelte packages for two things we needed: [a JSON view](https://github.com/zerodevx/svelte-json-view) and a [toast display](https://github.com/zerodevx/svelte-toast). By the same person!
 14. It really is amazingly fast and performant in all aspects — to load, to paint, and to use. Without any optimization here’s the first lighthouse profile:
 
-<img src="/assets/perf.png" />
+<img src="/assets/blog/building-a-realtime-websocket-app-using-sveltekit/perf.png" />
 
 ### An example: writing realtime websockets
 
