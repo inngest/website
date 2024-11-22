@@ -80,7 +80,7 @@ const systemPrompt =
     "You are an expert TypeScript programmer.  Given a set of asks, think step-by-step to plan clean, " +
     "idiomatic TypeScript code, with comments and tests as necessary."
 
-#const agent = new Agent({
+const agent = new Agent({
   name: "Code writer",
 
   // description helps LLM routers choose the right agents to run.

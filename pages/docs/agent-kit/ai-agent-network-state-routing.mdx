@@ -1,0 +1,274 @@
+import { Callout, GuideSelector, GuideSection, CodeGroup } from "src/shared/Docs/mdx";
+
+# Networks, state, and routing
+
+<Callout variant="info">
+  Use Networks to create complex workflows with one or more agents.
+</Callout>
+
+Networks are a simple class that turns agents into powerful stateful workflows.  A network contains three components:
+
+- The agents that the network can access
+- The network’s state, including past messages and a key value store (read more below)
+- The network’s router, which chooses whether to quit or the next agent to run in the loop (read more below)
+
+Here's a simple example:
+
+```tsx
+// Create a network with two agents.
+const network = createNetwork({
+  agents: [searchAgent, summaryAgent],
+  defaultProvider: provider,  // Optional: used for routing and agents if they have no provider
+  maxIter: 10,  // Optional: max number of agent calls
+});
+
+// Run the network with a user prompt
+await network.run("What happened in the 2024 Super Bowl?");
+```
+
+Similar to agents, you call `.run` on a network with some user input.  The network then runs a core loop to call one or more agents to find a suitable answer.
+
+## How networks work
+
+Networks are designed to be powerful while being easy to understand:
+
+1. You create a network with a list of available agents.  Each agent can use a different model and inference provider.
+2. You give the network a user prompt by calling `.run`
+3. The network runs its core loop, and:
+    - Calls the router, which picks the first agent to run
+    - Runs the agent with your input.  This also runs the agent’s lifecycles, and any tools selected.
+    - Stores the result in the network's state
+    - Re-calls the router with the new state, which either quits or runs another agent
+
+<hr />
+
+## Network state
+
+<Callout variant="info">
+  Network state passes context between different Agents in a series of calls.  It stores ouputs from prior calls, and has a KV store for additional data from tools or custom code.
+</Callout>
+
+Network state is the memory of your agent workflow.  It stores two things:
+
+1. **History Management**: It keeps track of all agent interactions, including prompts, responses, and tool calls
+2. **Key-Value Storage**: It provides a simple key-value store for sharing data and facts between different agent calls
+
+Without this state, each agent call would be isolated and unable to build upon previous interactions to solve complex tasks.  The history and key value stores are used automatically by the network to give each agent context about what happened before.  We’ll dive into both.
+
+### History
+
+The history system maintains a chronological record of all agent interactions in your network. Each interaction is stored as an `InferenceResult`, which includes:
+
+- `agent`: The agent that created this result
+- `input`: The original input
+- `system`: System instructions
+- `prompt`: The complete prompt
+- `output`: Agent output
+- `toolCalls`: Tool calls and their results
+- `raw`: Raw API responses
+
+### Using state in agent prompts
+
+The network state keeps track of every agent interaction, building a chronological list of messages in memory.  When the network runs, it calls the `onStart` lifecycle hook with the given agent, network, user input, system, and history from memory:
+
+```jsx
+const agent = new Agent({
+  name: "Code writer",
+  lifecycles: {
+    onStart: ({
+      agent,
+      network, // has the entire state
+      input,
+
+      system, // The system prompt for the agent
+      history, // An array of messages
+    }) => {
+      // Return the system prompt (the first message), and any history added to the
+      // model's conversation.
+      return { system, history };
+    }
+  },
+});
+```
+
+This lifecycle hook can be used to modify the system prompt and history used within each agent.
+
+### The state key-value store
+
+The KV store is a simple way to store information between agent calls.  Think of it like a shared memory that all your agents and tools can access.  Here's how to use it:
+
+```tsx
+// Store a value
+network.state.kv.set("user-name", "Alice");
+
+// Get a value
+const name = network.state.kv.get<string>("user-name");
+
+// Delete a value
+network.state.kv.delete("user-name");
+
+// Check if a value exists
+const exists = network.state.kv.has("user-name");
+```
+
+Common uses for the KV store include:
+
+- Storing intermediate results that other agents might need within lifecycles
+- Storing user preferences or context
+- Passing data between tools and agents
+
+Here’s a tool which stores files created by a coding agent the network’s key-value state:
+
+```jsx
+const writeFiles = createTypedTool({
+  name: "write_files",
+  description: "Write code with the given filenames",
+  parameters: z.object({
+    files: z.array(z.object({
+      filename: z.string(),
+      content: z.string(),
+    })),
+  }),
+  handler: (output, { network }) => {
+    // files is the output from the model's response in the format above.
+    // Here, we store OpenAI's generated files in the response. 
+    const files = network?.state.kv.get("files") || {};
+    for (const file of output.files) {
+      files[file.filename] = file.content;
+    }
+    network?.state.kv.set("files", files);
+  }
+})
+```
+
+Remember: The KV store persists for the entire network run, but is cleared when you create a new network.
+
+This combination of history and key-value storage makes networks powerful for creating complex, stateful agent workflows. Agents can build on each other's work, store and retrieve information, and make decisions based on what's happened before.
+
+<hr />
+
+## Network routing
+
+<Callout variant="info">
+  Network routers decide what Agent to call next based off of the current network state.
+</Callout>
+
+A router is a function that gets called after each agent runs, which decides whether to:
+
+1. Stop the network (by returning `undefined`)
+2. Call another agent (by returning an `Agent`)
+
+The routing function gets access to everything it needs to make this decision:
+
+```jsx
+interface RouterArgs {
+  network: Network; // The entire network, including the state and history
+  stack: Agent[]; // Future agents to be called
+  callCount: number; // Number of times we've called agents
+  lastResult?: InferenceResult; // The last agent's response
+}
+```
+
+### Code-based routers (supervised routing)
+
+The simplest way to route is to write code that makes decisions.  Here's an example that routes between a classifier and a writer:
+
+```jsx
+
+const network = createNetwork({
+  agents: [classifier, writer],
+  router: ({ lastResult, callCount }) => {
+    // First call: use the classifier
+    if (callCount === 0) {
+      return classifier;
+    }
+    // Second call: if it's a question, use the writer
+    if (callCount === 1 && lastResult?.output === "question") {
+      return writer;
+    }
+    // Otherwise, we're done!
+    return undefined;
+  },
+});
+```
+
+Code-based routing is great when you want deterministic, predictable behavior.  It's also the fastest option since there's no LLM calls involved.
+
+### Agent routers (autonomous routing)
+
+Sometimes you want your network to be more dynamic.  Agent-based routing uses an LLM to decide what to do next.  The network comes with a built-in routing agent that you can use:
+
+```tsx
+const network = createNetwork({
+  agents: [classifier, writer],
+  defaultProvider: provider,
+  router: ({ lastResult, callCount }) => {
+    return defaultAgenticRouter;
+  },
+});
+```
+
+The routing agent looks at:
+
+- The original input
+- What agents are available
+- The conversation history
+- Each agent's description
+
+It then decides whether to call another agent or stop.  This is great for building autonomous workflows where you're not sure what steps are needed up front.  Note that the default agentic router is a starting point.  In production apps it’s likely that you define your own agentic router props specifically for the network’s use case.
+
+### Hybrid code and agent routers (semi-supervised routing)
+
+And, of course, you can mix code and agent-based routing.  Here's an example that uses code for the first step, then lets an agent take over:
+
+```tsx
+const network = createNetwork({
+  agents: [classifier, writer],
+  router: ({ lastResult, callCount }) => {
+    // Always start with the classifier
+    if (callCount === 0) {
+      return classifier;
+    }
+    // Then let the routing agent take over
+    return defaultAgenticRouter;
+  },
+});
+
+```
+
+This gives you the best of both worlds:
+
+- Predictable first steps when you know what needs to happen
+- Flexibility when the path forward isn't clear
+
+### Using state in routing
+
+The router is the brain of your network - it decides which agent to call next.  You can use state to make smart routing decisions:
+
+```tsx
+const router = ({ network, lastResult }) => {
+  // Check if we've solved the problem
+  const solution = network.state.kv.get("solution");
+  if (solution) {
+    // We're done - return undefined to stop the network
+    return undefined;
+  }
+
+  // Check the last result to decide what to do next
+  if (lastResult?.output[0].content.includes("need more context")) {
+    return contextAgent;
+  }
+
+  return mathAgent;
+};
+```
+
+### Tips for routing
+
+- Start simple with code-based routing
+- Use agent-based routing when you need flexibility
+- Remember that routers can access the network's state
+- You can return agents that weren't in the original network
+- The router runs after each agent call
+
+That's it! Routing is what makes networks powerful - it lets you build workflows that can be as simple or complex as you need.

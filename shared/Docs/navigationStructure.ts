@@ -819,10 +819,12 @@ const sectionHome: (NavGroup | NavLink)[] = [
             title: "Overview",
             href: "/docs/agent-kit/overview",
           },
+          /*
           {
             title: "Getting started",
             href: "/docs/agent-kit/getting-started",
           },
+          */
         ],
       },
       {
@@ -834,7 +836,7 @@ const sectionHome: (NavGroup | NavLink)[] = [
           },
           {
             title: "Networks, state, and routing",
-            href: "/docs/agent-kit/getting-started",
+            href: "/docs/agent-kit/ai-agent-network-state-routing",
           },
         ],
       }
