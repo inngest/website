@@ -8,6 +8,7 @@ export default function NewsletterSignup({
   buttonText = "Submit",
   tags = [],
   tagsFromSearchParams = false,
+  // NOTE - Custom fields must be set up in mailchimp first that match the "name"
   fields = [],
 }: {
   showHeader?: boolean;

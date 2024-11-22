@@ -30,7 +30,7 @@ export default function Page() {
               showHeader={false}
               buttonText="Register"
               tags={["ai-early-access"]}
-              fields={[{ name: "use-case", label: "What are you building?" }]}
+              fields={[{ name: "USE_CASE", label: "What are you building?" }]}
             />
           </div>
         </div>
