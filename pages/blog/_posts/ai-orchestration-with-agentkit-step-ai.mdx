@@ -22,7 +22,7 @@ Just as Inngest manages your background jobs, webhooks, and scheduled tasks with
 As companies explore AI, one common realization is the need for complex AI workflows that call many agents with different tools in a sequence.  Orchestrating this in production is hard.  Today, we're releasing AgentKit in early access, which is the fastest way to build complex AI workflows, including agentic orchestration.  Here's a small example:
 
 ```ts
-import { Network } from "@inngest/agent-kit";
+import { Network, agenticOpenai } from "@inngest/agent-kit";
 import { navigator, classifier, summarizer } from "./src/agents";
 
 export default inngest.createFunction(
@@ -31,10 +31,10 @@ export default inngest.createFunction(
   async ({ event, step }) => {
 
     // Create a network of agents with separate tasks and instructions to solve
-    // a specific task.
+    // a specific task, using Inngest steps for orchestration 
     const network = new Network({
       agents: [navigator, classifier, summarizer],
-      defaultProvider: provider, // TODO
+      defaultModel: agenticOpenai({ model: "gpt-4o", step }),
     })
     
     const input = "Classify then summarize the latest 10 blog posts on https://www.deeplearning.ai/blog/"
