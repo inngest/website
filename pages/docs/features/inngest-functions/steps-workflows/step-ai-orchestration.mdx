@@ -4,13 +4,13 @@ import { Callout, GuideSelector, GuideSection, CodeGroup } from "src/shared/Docs
 
 You can build complex AI workflows and call model providers as steps using two step methods, `step.ai.infer` and `step.ai.wrap`, or our AgentKit SDK.  They work with any model provider, and all offer full AI observability:
 
-- AgentKit allows you to easily create single model calls or agentic workflows.  Read the AgentKit docs here
+- [AgentKit](/docs/agent-kit/overview) allows you to easily create single model calls or agentic workflows.  Read the AgentKit docs here
 - `step.ai.wrap`  wraps other AI SDKs as a step.  This works with every SDK, including OpenAI, Anthropic, and Vercel’s AI SDK
 - `step.ai.infer` offloads the inference request to Inngest’s infrastructure, pausing your function execution until the request finishes.  This can be a significant cost saver if you deploy to serverless functions
 
 ### Benefits
 
-Using AgentKit and `step.ai` allows you to:
+Using [AgentKit](/docs/agent-kit/overview) and `step.ai` allows you to:
 
 - Automatically monitor AI usage in production to ensure quality output 
 - Easily iterate and test prompts in the dev server
@@ -24,6 +24,9 @@ Using AgentKit and `step.ai` allows you to:
   **AgentKit TypeScript SDK**
 
   **In TypeScript, we strongly recommend using AgentKit, our AI SDK which adds multiple AI capabilities to Inngest.**  AgentKit allows you to call single-shot inference APIs with a simple self-documenting class, and also allows you to create semi or fully autonomous agent workflows using a network of agents.
+
+  - [AgentKit GitHub repo](https://github.com/inngest/agent-kit)
+  - [AgentKit docs](//docs/agent-kit/overview)
 </Callout>
 
 ## AgentKit: AI and agent orchestration
@@ -35,7 +38,7 @@ Here's an exmaple of a single model call:
 <CodeGroup>
 ```ts {{ title: "TypeScript" }}
 
-import { Agent } from "@inngest/agent-kit";
+import { Agent, agenticOpenai as openai } from "@inngest/agent-kit";
 export default inngest.createFunction(
   { id: "summarize-contents" },
   { event: "app/ticket.created" },
@@ -57,7 +60,7 @@ export default inngest.createFunction(
 ```
 </CodeGroup>
 
-Read the full AgentKit docs.
+[Read the full AgentKit docs here](/docs/agent-kit/overview) and [see the code on GitHub](https://github.com/inngest/agent-kit).
 
 ## Step tools: `step.ai`
 

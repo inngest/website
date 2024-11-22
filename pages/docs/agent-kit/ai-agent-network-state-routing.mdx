@@ -12,13 +12,15 @@ Networks are a simple class that turns agents into powerful stateful workflows. 
 - The network’s state, including past messages and a key value store (read more below)
 - The network’s router, which chooses whether to quit or the next agent to run in the loop (read more below)
 
+It also has an optional default model, which will be used when your Agents have no model provided, and a setting to cap the number of model calls via `maxIter`.
+
 Here's a simple example:
 
 ```tsx
 // Create a network with two agents.
 const network = createNetwork({
   agents: [searchAgent, summaryAgent],
-  defaultProvider: provider,  // Optional: used for routing and agents if they have no provider
+  defaultModel: model,  // Optional: used for routing and agents if they have no model
   maxIter: 10,  // Optional: max number of agent calls
 });
 
@@ -199,9 +201,11 @@ Code-based routing is great when you want deterministic, predictable behavior.  
 Sometimes you want your network to be more dynamic.  Agent-based routing uses an LLM to decide what to do next.  The network comes with a built-in routing agent that you can use:
 
 ```tsx
+import { Network, agenticOpenai as openai } from "@inngest/agent-kit";
+
 const network = createNetwork({
   agents: [classifier, writer],
-  defaultProvider: provider,
+  defaultModel: model,
   router: ({ lastResult, callCount }) => {
     return defaultAgenticRouter;
   },
@@ -246,7 +250,7 @@ This gives you the best of both worlds:
 The router is the brain of your network - it decides which agent to call next.  You can use state to make smart routing decisions:
 
 ```tsx
-const router = ({ network, lastResult }) => {
+const router = ({ network, lastResult }): Agent | undefined => {
   // Check if we've solved the problem
   const solution = network.state.kv.get("solution");
   if (solution) {
