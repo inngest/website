@@ -1,0 +1,127 @@
+---
+heading: "Introducing AgentKit and step.ai:  orchestrating AI with confidence"
+subtitle: "The easist way to build production-ready AI workflows with AgentKit and step.ai"
+showSubtitle: true
+image: /assets/blog/agentkit-stepai.png
+date: 2024-11-22
+author: Tony Holdstock-Brown
+category: product-updates
+---
+
+Building AI applications that actually work in production is surprisingly complex.  Your model calls need to be reliable, you need to store history across timeouts, retries, and multiple model calls,  and you need to handle flow control successfully, all while iterating on things like your actual prompts and RAG approach.  To be successful, this requires careful orchestration.  This is why we built Inngest — the developer-first platform that lets handles orchestration at scale, so you can focus on your product without worrying about technical details.
+
+Today, we're excited to announce two new AI-native features:
+
+- [AgentKit](/docs/agent-kit/overview), the fastest way to develop, test, and ship complex AI workflows to production, in early access
+- A new set of core APIs in our platform: [step.ai](/docs/features/inngest-functions/steps-workflows/step-ai-orchestration), which brings the same world-class developer experience from our existing product to AI-native applications.
+
+Just as Inngest manages your background jobs, webhooks, and scheduled tasks with built-in retries and state management, [step.ai](/docs/features/inngest-functions/steps-workflows/step-ai-orchestration) now handles your AI model calls with the same production-ready infrastructure — with built in observability and support for agentic workflows out of the box.
+
+## AgentKit:  the fastest way to build production-ready AI workflows
+
+As companies explore AI, one common realization is the need for complex AI workflows that call many agents with different tools in a sequence.  Orchestrating this in production is hard.  Today, we're releasing AgentKit in early access, which is the fastest way to build complex AI workflows, including agentic orchestration.  Here's a small example:
+
+```ts
+import { Network, agenticOpenai } from "@inngest/agent-kit";
+import { navigator, classifier, summarizer } from "./src/agents";
+
+export default inngest.createFunction(
+  { id: "summarizer" },
+  { event: "api/summary.requested" },
+  async ({ event, step }) => {
+
+    // Create a network of agents with separate tasks and instructions to solve
+    // a specific task, using Inngest steps for orchestration 
+    const network = new Network({
+      agents: [navigator, classifier, summarizer],
+      defaultModel: agenticOpenai({ model: "gpt-4o", step }),
+    })
+    
+    const input = "Classify then summarize the latest 10 blog posts on https://www.deeplearning.ai/blog/"
+    
+    const result = await network.run(input, ({ network }) => {
+      // Use an agent which figures out the specific agent to call based off of the network's history.
+      return defaultRoutingAgent;
+    });
+
+  },
+);
+```
+
+<a href="/docs/agent-kit/overview">You can read the docs here</a>, and [see the code on GitHub](https://github.com/inngest/agent-kit).  We cannot wait to see how you work with AgentKit.  We're iterating daily, and to speak with us or give feedback <a href="https://www.inngest.com/discord?ref=agentkit-blog"> join us in our #ai discord</a>
+
+
+## New step APIs - now available for early access: `step.ai.wrap` and `step.ai.infer`
+
+We’re launching two new step APIs:
+
+- `step.ai.wrap`, which wraps *any* AI SDK with reliable, retryable steps and full request/response AI observability
+- `step.ai.infer`, which securely offloads inference requests to any inference API through Inngest’s infrastructure, with full AI observability
+
+Both AI APIs offer a bunch of new features, specifically for rapidly iterating on production-ready API products:
+
+- Request and response tracking, in development and production
+- AI workflow tracing, including large sequences of inference calls or agentic workflows
+- The ability to edit inputs from the middle of a workflow and rerun
+- Metadata, metrics, and usage stats across AI model calls
+
+[To learn more, read our docs here](/docs/features/inngest-functions/steps-workflows/step-ai-orchestration).
+
+### `step.ai.wrap`: reliable AI with any SDK
+
+If you’ve already experimented with AI, you’re probably using an SDK like OpenAI’s, Anthropics, or Vercel’s AI SDK.  `step.ai.wrap` is designed to seamlessly wrap your existing AI SDK to with steps and AI observability:
+
+```typescript
+import { generateText } from "ai"
+import { openai } from "@ai-sdk/openai"
+
+export default inngest.createFunction(
+  { id: "summarize-contents" },
+  { event: "app/ticket.created" },
+  async ({ event, step }) => {
+  
+    // This calls `generateText` with the given arguments, adding AI observability,
+    // metrics, datasets, and monitoring to your calls.
+    const { text } = await step.ai.wrap("using-vercel-ai", generateText, {
+      model: openai("gpt-4-turbo"),
+      prompt: "What is love?"
+    });
+
+  }
+);
+```
+
+### `step.ai.infer`: offloading inference to Inngest
+
+If you’re starting from scratch, `step.ai.infer` securely offloads requests through Inngest’s gateway, with advanced AI observability and metrics built in.  If you’re running on serverless functions, **your function will stop while the request is in flight so that you’re not charged while aiting for the response** — also bringing heavy savings with compute costs.
+
+```ts {{ title: "TypeScript" }}
+export default inngest.createFunction(
+  { id: "summarize-contents" },
+  { event: "app/ticket.created" },
+  async ({ event, step }) => {
+
+    // This calls your model's chat endpoint, adding AI observability,
+    // metrics, datasets, and monitoring to your calls.
+    const response = await step.ai.infer("call-openai", {
+      model: step.ai.models.openai({ model: "gpt-4o" }),
+      // body is the model request, which is strongly typed depending on the model
+      body: {
+        messages: [{
+          role: "assistant",
+          content: "Write instructions for improving short term memory",
+        }],
+      },
+    });
+
+    // The response is also strongly typed depending on the model.
+    return response.choices;
+  }
+);
+```
+
+## Start building and provide your feedback
+
+As part of our early access release, we’re inviting you and your team to share your thoughts, experiences, and suggestions. Your feedback is invaluable in shaping the future of our APIs to better serve your needs. [Sign-up for early access here](/ai/early-access?ref=blog-ai-orchestration-with-agentkit-step-ai) so we can stay in touch.
+
+We’re excited to see what you build with AgentKit and `step.ai`!

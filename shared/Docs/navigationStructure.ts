@@ -511,6 +511,10 @@ const sectionHome: (NavGroup | NavLink)[] = [
                 title: "Wait for events",
                 href: "/docs/features/inngest-functions/steps-workflows/wait-for-event",
               },
+              {
+                title: "AI Inference",
+                href: "/docs/features/inngest-functions/steps-workflows/step-ai-orchestration",
+              },
               { title: "Guides" },
               {
                 title: "How Functions are executed",
@@ -803,6 +807,39 @@ const sectionHome: (NavGroup | NavLink)[] = [
         title: "Limitations",
         href: `/docs/usage-limits/inngest`,
       },
+    ],
+  },
+  {
+    title: "AgentKit",
+    links: [
+      {
+        title: "AgentKit Foundations",
+        links: [
+          {
+            title: "Overview",
+            href: "/docs/agent-kit/overview",
+          },
+          /*
+          {
+            title: "Getting started",
+            href: "/docs/agent-kit/getting-started",
+          },
+          */
+        ],
+      },
+      {
+        title: "Build with AgentKit",
+        links: [
+          {
+            title: "Agents and Tools",
+            href: "/docs/agent-kit/ai-agents-tools",
+          },
+          {
+            title: "Networks, state, and routing",
+            href: "/docs/agent-kit/ai-agent-network-state-routing",
+          },
+        ],
+      }
     ],
   },
   { title: "References", links: sectionReference },
