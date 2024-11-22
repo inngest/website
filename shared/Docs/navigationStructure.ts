@@ -511,6 +511,10 @@ const sectionHome: (NavGroup | NavLink)[] = [
                 title: "Wait for events",
                 href: "/docs/features/inngest-functions/steps-workflows/wait-for-event",
               },
+              {
+                title: "AI Inference",
+                href: "/docs/features/inngest-functions/steps-workflows/step-ai-orchestration",
+              },
               { title: "Guides" },
               {
                 title: "How Functions are executed",
