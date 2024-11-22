@@ -43,12 +43,18 @@ const Security = () => {
                   Inngest is <strong>SOC 2 Type II</strong> compliant.
                 </p>
                 <p>
-                  Learn more about this{" "}
                   <a
                     href="/blog/soc2-compliant?ref=security"
                     className="text-link hover:underline font-medium"
                   >
-                    here
+                    Read our announcement
+                  </a>
+                  ,{" "}
+                  <a
+                    href="https://trust.inngest.com/"
+                    className="text-link hover:underline font-medium"
+                  >
+                    request a copy of the report
                   </a>{" "}
                   or{" "}
                   <a
@@ -57,7 +63,7 @@ const Security = () => {
                   >
                     contact us
                   </a>{" "}
-                  for questions or to request a report
+                  for additional questions.
                 </p>
               </div>
             </div>

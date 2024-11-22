@@ -44,7 +44,7 @@ const Debounce = ({
         transform="matrix(-1 0 0 1 13.75 23)"
         stroke={fill === "currentColor" ? fill : undefined}
         className={`stroke-${fill ? fill : "primary"}`}
-        stroke-width="1.5"
+        strokeWidth="1.5"
       />
       <path
         fillRule="evenodd"
@@ -59,7 +59,7 @@ const Debounce = ({
         r="3.25"
         stroke={fill === "currentColor" ? fill : undefined}
         className={`stroke-${fill ? fill : "primary"}`}
-        stroke-width="1.5"
+        strokeWidth="1.5"
       />
     </svg>
   );

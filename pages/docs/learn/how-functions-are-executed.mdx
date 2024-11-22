@@ -27,7 +27,7 @@ Inngest functions are durable: they throw errors or exceptions, automatically re
 Inngest functions use "**Steps**" to define the execution flow of a function. Each step:
 
 * Is a unit of work that can be run and retried independently.
-* Captures any error or exception thrown within it to.
+* Captures any error or exception thrown within it.
 * Will not be re-executed if it has already been successfully executed.
 * Returns state (_data_) that can be used by subsequent steps.
 * Can be executed in parallel or sequentially, depending on the function's configuration.

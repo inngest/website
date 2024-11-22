@@ -1,0 +1,213 @@
+---
+heading: "Announcing: Function runs search"
+subtitle: Instantly search across all your Function runs with advanced queries filtering on events and function runs properties.
+showSubtitle: true
+image: /assets/blog/announcing-function-runs-search/featured-image.png
+date: 2024-11-01
+author: Tony Holdstock-Brown
+category: product-updates
+---
+
+Today, we're excited to release one of our [most requested features](https://roadmap.inngest.com/roadmap): **Function Run Search**. We've had this in our beta program for a few weeks with hugely positive feedback.
+Let's talk about what you're getting.
+
+The Inngest Platform Runs view now features a search bar similar to the traditional log search experiences you've probably already encountered. This search bar lets you **search and filter runs** based on:
+
+- **Event properties**, such as finding all runs triggered by specific event data
+- **Function run output**, allowing you to filter runs based on your function's return value
+
+This is essential to the Inngest developer experience, which massively improves observability and debugging.  Here's what you'll get:
+
+- **Quicker issue resolution**: Quickly pindown runs associated with a specific user
+- **An easier way to cross-find runs from your application logs**: Find a Function run by ID
+- **A simple way to answer complex questions**: Combine event and output properties to find specific run patterns
+
+All with **blazing-fast speed:** searching tens of millions of runs takes milliseconds.
+
+## Searching for Function runs
+
+You can search for runs in two places: the _Runs view_, which shows runs across all apps and functions, and each specific Function's own _Runs tab_, you'll see a new search box:
+
+<AutoplayVideo src={"/assets/blog/announcing-function-runs-search/function-search-demo.mov"} />
+
+
+The Function run search box lets you write expressions with some autocomplete on the following variables:
+
+- `event`, to filter runs based on the **event payload data**
+- `output`, to filter based on the **run's output**
+
+Here's an example that filters on the event and output together:
+
+```txt
+event.data.organizationId == "org_ab1fd2" && output.verified == false
+```
+
+*Searching for all the Function runs that returned a failed verification process and happened for a specific organization since October 1st, 2024*
+
+Similar to other classic log searches, you can add new lines to the search box — and each new line is joined with an " && " under the hood, meaning you can change our example to the following:
+
+```txt
+event.data.organizationId == "org_ab1fd2"
+output.verified == false
+```
+
+Searching returns results in **milliseconds**, even with hundreds of millions of daily runs.  For more information, check out our [documentation on run search](/docs/platform/monitor/inspecting-function-runs#searching-function-runs?ref=blog-announcing-function-runs-search), and if you have any feedback, [join us on our Discord](/discord) (where you can chat with our engineering team about how we build things like this).
+
+## Tips: Make your Inngest Function runs searchable
+
+The Function runs search makes it easy to search across thousands of runs using event and run result properties. Here are some tips to make your runs easily searchable.
+
+### Add context to event payloads
+
+Events properties are useful for providing the initial data to your Inngest Function. Event properties also now provide crucial context to search for Function runs. This means that Events can be designed to provide context for Inngest Functions execution and enable searchable runs.
+
+A good starting point to enable searchable Function runs is to include domain-specific attributes, such as `user_id`, `workspace_id`, in your Event properties. Your application logging stack often uses such information to support customers.
+
+<Row>
+
+<Col>
+<strong>
+Before: only pass event properties useful for the Inngest Function's context
+</strong>
+
+```ts
+await inngest.send({
+  name: "user/message.sent",
+  data: { messageId: 1, userId: 12 },
+});
+```
+
+</Col>
+<Col>
+
+<strong>
+After: Include the properties already used in your logging stack
+</strong>
+
+```ts
+await inngest.send({
+  name: "user/message.sent",
+  data: {
+    messageId: 1,
+    userId: 12,
+    workspaceId: 2,
+    // you can also add feature-specific information
+    messageEdit: false,
+  },
+});
+```
+</Col>
+
+</Row>
+
+### Leverage function's output properties
+
+While the Inngest Function function return value is mainly used at runtime to transfer information, it can now be leveraged to filter runs based on data specific to your application quickly.
+Some of your existing functions might **benefit from returning complete objects** instead of filtering on only used properties.
+For example, an AI workflow should return both the completion value and the usage information, unlocking more powerful search patterns:
+
+
+<Row>
+
+<Col>
+<strong>
+Before: only return the LLM completion text
+</strong>
+
+```ts
+export const chatCompletion = inngest.createFunction(
+  {
+    name: "Create chat completion",
+    id: "create-chat-completion",
+    throttle: {
+      limit: 5,
+      period: "60s"
+    },
+  },
+  { event: "ai/chat.completion" },
+  async ({ event, step }) => {
+    const completion = await openai.chat.completions.create({
+      messages: event.data.messages,
+      model: "gpt-3.5-turbo",
+    });
+    const { choices } = completion
+    const message = choices[0]!.message
+    return message?.content;
+  }
+);
+```
+
+</Col>
+<Col>
+
+<strong>
+After: return the LLM completion object
+</strong>
+
+```ts
+export const chatCompletion = inngest.createFunction(
+  {
+    name: "Create chat completion",
+    id: "create-chat-completion",
+    throttle: {
+      limit: 5,
+      period: "60s"
+    },
+  },
+  { event: "ai/chat.completion" },
+  async ({ event, step }) => {
+    const completion = await openai.chat.completions.create({
+      messages: event.data.messages,
+      model: "gpt-3.5-turbo",
+    });
+    return completion;
+  }
+);
+```
+</Col>
+
+</Row>
+
+The above approach enables the following search pattern:
+
+```txt
+event.name == "ai/chat.completion" && output.usage.total_token > 300
+```
+
+### Search across batches of events
+
+Sometimes, you might want to batch high throughput events into a single function call.  We're thrilled that **event search works natively with event batching**.  When you search using event data, the Inngest platform filters across every event within all batches.  If an event matches, we'll show you the run and the batch that matched.
+
+For example, if a single run has a batch of 1000 events — all for different organizations — you can still search for `event.data.organization_id,` and we'll find all runs across any batches with a matching event.
+
+## Future of function runs searching
+
+Searching across function runs is just the beginning. Soon, once you search and filter your runs, we'll let you create [cancellations](/docs/platform/manage/bulk-cancellation?ref=blog-announcing-function-runs-search) and [replays](/docs/platform/replay?ref=blog-announcing-function-runs-search) using the same filter, allowing you to properly debug, handle, and resolve issues within a single intuitive UI (*join our beta program to get early access*).
+
+Combining search and filtering with corrective actions is an incredibly powerful way to manage your backend stack, and that's why we believe observability should be a first-class part of your orchestration stack.
+
+## Function runs search: under the hood
+
+Run search is built using the CEL expression engine, which we also use to power features like [`step.waitForEvent`](/docs/features/inngest-functions/steps-workflows/wait-for-event?ref=blog-announcing-function-runs-search).  To make CEL work with our tracing and logging backend, we have a multi-stage search pipeline:
+
+1. Normalize the search queries and validate the expressions
+2. Compile the expression into an AST
+3. Walk the AST and convert the expressions into binomial normal form
+4. Finally, convert the BNF AST into a safe SQL expression that queries runs in our OLAP database.
+
+Generating the query is only the first part of the challenge. To enable required search functionality posed additional hurdles. Some of the complex parts to implement included:
+
+- Search runs by both `queued_at` and `ended_at`
+- Show you the total number of runs matching the expression
+- Create an infinite scroll with pagination to view search results
+
+Handling these UX requirements took additional work. In orchestration, runs can take minutes, hours, days, or months to finish.  The input event data and the output data may be inserted at *very* different times, leading to windowing issues when showing all of the data.  Our search algorithm intelligently applies windowing and filtering to correctly filter function run data to ensure consistent pagination while also providing accurate counts of function runs.
+
+## Join our Beta program
+
+As many features are released through the beta program, the function run search feature has been shaped with the help of beta testers, we leveraged their feedback from getting early access to function run search on their production applications.
+
+Joining the Beta Program is available to all Inngest users and customers, so don't miss out on the opportunity to test our next features!
+
+
+<CTACallout text={'Get your hands on the next Inngest features'} cta={{ href: "mailto:hello@inngest.com?subject=I'd%20like%20to%20become%20an%20Inngest%20beta%20tester&body=Hi%20there%2C%0ACan%20you%20please%20add%20me%20to%20the%20Inngest%20beta%20tester%20group%3F%0A%0AMy%20Inngest%20billing%20email%20is%3A%20%3CPlease%20add%20you%20email%3E%0A%0AThanks!", text: 'Join the Beta Program' }} />

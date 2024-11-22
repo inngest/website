@@ -1,3 +1,7 @@
+.PHONY: dev
+dev:
+	pnpm dev
+
 .PHONY: build
 build:
 	pnpm build

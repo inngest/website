@@ -5,7 +5,7 @@ showSubtitle: true
 image: /assets/blog/introducing-workflow-kit/featured-image-2.png
 date: 2024-09-25
 author: Charly Poly
-disableCTA: true
+category: product-updates
 ---
 
 Today, we're excited to unveil our new open-source SDK: the **Inngest Workflow Kit**.
@@ -37,7 +37,7 @@ The [`@inngest/workflow-kit`](https://www.npmjs.com/package/@inngest/workflow-ki
 Our Workflow kit simplifies the workflow management process, freeing you from building your own workflow logic and allowing you to focus on implementing actions:
 
 ```typescript
-import { Engine } from "@inngest/workflow";
+import { Engine } from "@inngest/workflow-kit";
 import { inngest } from "./inngest/client";
 
 const workflowEngine = new Engine({
@@ -84,7 +84,7 @@ import {
   Provider,
   Editor,
   Sidebar
-} from "@inngest/workflow";
+} from "@inngest/workflow-kit";
 import { actions, trigger } from "@lib/inngest/workflow"
 
 export default function Editor({ workflow }) {
@@ -108,7 +108,7 @@ export default function Editor({ workflow }) {
 
 These few lines render a ready-to-use Workflow Editor UI:
 
-<AutoplayVideo src="https://res.cloudinary.com/dd6gwkgww/video/upload/v1727099036/workflow-kit-announcement-video-loop_m26wzt.mov" />
+<AutoplayVideo src={"https://cdn.inngest.com/blog/introducing-workflow-kit/workflow-kit-announcement-video-loop.mov"} />
 
 *Clone or deploy this demo from GitHub: [inngest/workflow-kit](https://github.com/inngest/workflow-kit/tree/main/examples/nextjs-blog-cms#readme).*
 
@@ -120,9 +120,7 @@ The combination of Inngest's Durable Execution Engine with the Workflow Kit's ba
 - **Explore** our [complete and deployable demo of CMS automation](https://github.com/inngest/workflow-kit/tree/main/examples/nextjs-blog-cms#readme)
 - **Contribute** to the [open-source repository](https://github.com/inngest/workflow-kit)
 
-<Callout>
 
-
-**[Support us on Product Hunt](https://www.producthunt.com/posts/workflow-kit-by-inngest) today\!**
-
-</Callout>
+<div className="flex items-center justify-center my-5">
+  <WorkflowKitProductOfTheDay />
+</div>

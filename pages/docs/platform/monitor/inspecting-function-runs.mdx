@@ -14,10 +14,27 @@ Functions runs across all application of the currently [selected environment](/d
 
 _Runs can be filtered using a Status, Queued or Started at and Application filters._
 
-Accessing the runs of a specific Function is achieved via the "Functions" menu, as described in the following section.
+Accessing the runs of a specific Function is achieved via the "Functions" menu, as described in [the function run details section](http://localhost:3002/docs/platform/monitor/inspecting-function-runs#the-function-run-details).
+
+## Searching Function runs
+Advanced filters are available using a [CEL expression](https://www.inngest.com/docs/guides/writing-expressions). The search feature is available by clicking on the "Show search" button next to the other run filters.
+
+![The runs list features an advance search feature that filters results using a CEL query.](/assets/docs/platform/monitor/inspecting-function-runs/function-runs-search.png)
+### Searchable properties
+Only basic search operators and `event` and `output` variables are available for now:
+
+|Field name|Type|Operators|
+|-----------|-----------|-----------|
+event.id| `string`| `==`, `!=`
+event.name| `string`| `==`, `!=`
+event.ts| `int64`| `==`, `!=`, `>`, `>=`, `<`, `<=`
+event.v| `string`| `==`, `!=`
+event.data| `map[string]any`| `==`, `!=`, `>`, `>=`, `<`, `<=`
+output| `any`| `==`, `!=`, `>`, `>=`, `<`, `<=`
+
+A few examples of valid search queries are `event.data.hello == "world"` and `output.success != true`. [Learn more about how expressions are used in Inngest.](https://www.inngest.com/docs/guides/writing-expressions)
 
 ## The Function run details
-
 A _Handle failed payments_ function failed after retrying 5 times:
 
 

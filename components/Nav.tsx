@@ -7,13 +7,14 @@ import {
   RiDiscordFill,
   RiTwitterXFill,
   RiArrowRightLine,
-  RiArrowDownSLine,
+  RiBlueskyFill,
 } from "@remixicon/react";
 import Logo from "src/shared/Icons/Logo";
 import classNames from "src/utils/classNames";
 import Container from "src/shared/layout/Container";
 import Menu, { type MenuProps } from "./Nav/Menu";
 import { productLinks, resourcesLinks } from "./Nav/links";
+import Dropdown from "./Dropdown";
 
 // Manual count of stars on GitHub for now
 // Run pnpm run github:stars to get the latest count
@@ -67,6 +68,11 @@ const iconLinks: {
     title: "X",
     url: "https://x.com/inngest",
     icon: RiTwitterXFill,
+  },
+  {
+    title: "Bluesky",
+    url: "https://bsky.app/profile/inngest.com",
+    icon: RiBlueskyFill,
   },
 ];
 
@@ -198,54 +204,27 @@ const repos = [
   "inngest/inngest-py",
   "inngest/inngestgo",
   "inngest/inngest-kt",
+  "inngest/agent-kit",
   "inngest/workflow-kit",
 ];
 
 function OpenSourceButton({ className = "" }: { className?: string }) {
-  const [open, setOpen] = useState(false);
-  /**
-   * NOTE - This uses md: prefixes to make the button work on hover on desktop and click on mobile
-   */
+  const items = repos.map((repo) => ({
+    href: `https://github.com/${repo}`,
+    text: repo,
+    target: "_blank",
+  }));
   return (
-    <div
-      className={`group relative border border-subtle text-basis rounded-md text-sm ${className}`}
-    >
-      <div
-        className="flex flex-row flex-nowrap items-center justify-start text-nowrap gap-2 px-3 py-1 rounded-md group-hover:bg-canvasSubtle"
-        onClick={() => setOpen(!open)}
-      >
-        <span className="hidden lg:inline">Open Source</span>
-        <RiGithubFill className="h-4 w-4 shrink-0" />
-        <span>{(githubStars / 1000).toFixed(1)}K</span>
-        <RiArrowDownSLine
-          className={`h-4 w-4 transition-all ${
-            open ? "rotate-180 md:rotate-0" : ""
-          }`}
-        />
-      </div>
-      <div
-        // Only show on hover when non-mobile (> md)
-        className={`absolute right-0 w-full min-w-min md:hidden md:group-hover:block ${
-          open ? "block" : "hidden"
-        }`}
-      >
-        <div className="bg-transparent h-2">
-          {/* transparent element to persist hover */}
-        </div>
-        <ul className="flex flex-col gap-2 px-3 py-2 bg-surfaceBase border border-subtle rounded-md text-sm">
-          {repos.map((repo, idx) => (
-            <li className="" key={idx}>
-              <a
-                href={`https://github.com/${repo}`}
-                target="_blank"
-                className="font-medium text-nowrap text-basis/90 hover:text-primary-intense"
-              >
-                {repo}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
+    <Dropdown
+      title={
+        <>
+          <span className="hidden lg:inline">Open Source</span>
+          <RiGithubFill className="h-4 w-4 shrink-0" />
+          <span>{(githubStars / 1000).toFixed(1)}K</span>
+        </>
+      }
+      items={items}
+      className={className}
+    />
   );
 }

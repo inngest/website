@@ -69,6 +69,10 @@ Rate limiting also specifies how many functions can start within a time period. 
 
 Rate limiting is *lossy* and provides hard limits on function runs, while throttling delays function runs over the limit until there’s capacity, smoothing spikes.
 
+## Tips
+
+* Configure [start timeouts](/docs/features/inngest-functions/cancellation/cancel-on-timeouts) to prevent large backlogs with throttling 
+
 ## Further reference
 
 * [TypeScript SDK Reference](/docs/reference/functions/create#throttle)

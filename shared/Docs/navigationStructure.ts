@@ -116,6 +116,10 @@ const sectionReference: NavGroup[] = [
         href: `/docs/functions/references`,
       },
       {
+        title: "Testing",
+        href: "/docs/reference/testing",
+      },
+      {
         title: "Steps",
         links: [
           {
@@ -289,6 +293,10 @@ const sectionReference: NavGroup[] = [
         title: "Guides",
         links: [
           {
+            title: "Testing",
+            href: `/docs/reference/python/guides/testing`,
+          },
+          {
             title: "Modal",
             href: `/docs/reference/python/guides/modal`,
           },
@@ -348,6 +356,10 @@ const sectionHome: (NavGroup | NavLink)[] = [
       {
         title: "Next.js",
         href: "/docs/getting-started/nextjs-quick-start",
+      },
+      {
+        title: "Node.js",
+        href: "/docs/getting-started/nodejs-quick-start",
       },
       {
         title: "Python",
@@ -441,6 +453,10 @@ const sectionHome: (NavGroup | NavLink)[] = [
             href: `/docs/guides/multiple-triggers`,
           },
           {
+            title: "Sending events from functions",
+            href: `/docs/guides/sending-events-from-functions`,
+          },
+          {
             title: "Batching events",
             href: `/docs/guides/batching`,
           },
@@ -494,6 +510,10 @@ const sectionHome: (NavGroup | NavLink)[] = [
               {
                 title: "Wait for events",
                 href: "/docs/features/inngest-functions/steps-workflows/wait-for-event",
+              },
+              {
+                title: "AI Inference",
+                href: "/docs/features/inngest-functions/steps-workflows/step-ai-orchestration",
               },
               { title: "Guides" },
               {
@@ -569,7 +589,7 @@ const sectionHome: (NavGroup | NavLink)[] = [
                 href: "/docs/features/inngest-functions/error-retries/failure-handlers",
               },
               {
-                title: "Inngest Errors",
+                title: "Inngest errors",
                 href: "/docs/features/inngest-functions/error-retries/inngest-errors",
               },
               {
@@ -589,11 +609,15 @@ const sectionHome: (NavGroup | NavLink)[] = [
                 href: `/docs/features/inngest-functions/cancellation`,
               },
               {
-                title: "Cancel on Events",
+                title: "Cancel on timeouts",
+                href: `/docs/features/inngest-functions/cancellation/cancel-on-timeouts`,
+              },
+              {
+                title: "Cancel on events",
                 href: `/docs/features/inngest-functions/cancellation/cancel-on-events`,
               },
               {
-                title: "Bulk Cancellation",
+                title: "Bulk cancellation",
                 href: `/docs/guides/cancel-running-functions`,
               },
             ],
@@ -617,6 +641,10 @@ const sectionHome: (NavGroup | NavLink)[] = [
             //   tag: "new",
             // },
             // ],
+          },
+          {
+            title: "Logging",
+            href: "/docs/guides/logging",
           },
         ],
       },
@@ -688,16 +716,20 @@ const sectionHome: (NavGroup | NavLink)[] = [
             title: "Cloud Providers Setup",
             links: [
               {
-                title: "Vercel",
-                href: "/docs/deploy/vercel",
+                title: "Cloudflare Pages",
+                href: `/docs/deploy/cloudflare`,
               },
               {
                 title: "Netlify",
                 href: `/docs/deploy/netlify`,
               },
               {
-                title: "Cloudflare Pages",
-                href: `/docs/deploy/cloudflare`,
+                title: "Render",
+                href: `/docs/deploy/render`,
+              },
+              {
+                title: "Vercel",
+                href: "/docs/deploy/vercel",
               },
               {
                 title: "Cloud Provider Usage Limits",
@@ -775,6 +807,39 @@ const sectionHome: (NavGroup | NavLink)[] = [
         title: "Limitations",
         href: `/docs/usage-limits/inngest`,
       },
+    ],
+  },
+  {
+    title: "AgentKit",
+    links: [
+      {
+        title: "AgentKit Foundations",
+        links: [
+          {
+            title: "Overview",
+            href: "/docs/agent-kit/overview",
+          },
+          /*
+          {
+            title: "Getting started",
+            href: "/docs/agent-kit/getting-started",
+          },
+          */
+        ],
+      },
+      {
+        title: "Build with AgentKit",
+        links: [
+          {
+            title: "Agents and Tools",
+            href: "/docs/agent-kit/ai-agents-tools",
+          },
+          {
+            title: "Networks, state, and routing",
+            href: "/docs/agent-kit/ai-agent-network-state-routing",
+          },
+        ],
+      }
     ],
   },
   { title: "References", links: sectionReference },

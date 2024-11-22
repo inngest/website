@@ -1,0 +1,20 @@
+<svg width="299" height="175" viewBox="0 0 299 175" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path opacity="0.6" d="M67.1836 111.866L100.32 111.866" stroke="#353535" stroke-width="2"/>
+<path opacity="0.6" d="M115.91 111.866L149.047 111.866" stroke="#353535" stroke-width="2"/>
+<path opacity="0.6" d="M162.879 111.866L190.441 111.866" stroke="#353535" stroke-width="2" stroke-dasharray="4 4"/>
+<path opacity="0.6" d="M205.066 111.866L232.629 111.866" stroke="#353535" stroke-width="2"/>
+<circle opacity="0.3" cx="59.2148" cy="112.124" r="8" transform="rotate(-90 59.2148 112.124)" fill="#4B4B4B"/>
+<path opacity="0.6" d="M164.582 62.7971L197.426 62.7971L197.426 101.115" stroke="#353535" stroke-width="2"/>
+<circle opacity="0.4" cx="107.863" cy="111.229" r="8" transform="rotate(-90 107.863 111.229)" fill="#4B4B4B"/>
+<circle cx="154.762" cy="110.805" r="8" transform="rotate(-90 154.762 110.805)" fill="#0F0F0F"/>
+<circle opacity="0.6" cx="154.652" cy="110.832" r="8" transform="rotate(-90 154.652 110.832)" fill="#8B1E16"/>
+<circle opacity="0.7" cx="197.605" cy="110.832" r="8" transform="rotate(-90 197.605 110.832)" fill="#7C7C7C"/>
+<circle cx="239.785" cy="110.832" r="8" transform="rotate(-90 239.785 110.832)" fill="#7C7C7C"/>
+<path d="M192.652 96.8184L197.605 101.771L202.558 96.8184" stroke="#353535" stroke-width="2"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M146.019 110.722L141.067 105.769L139.652 107.183L143.898 111.429L139.652 115.674L141.067 117.088L146.019 112.136L146.726 111.429L146.019 110.722Z" fill="#353535"/>
+<path opacity="0.6" d="M155.059 103.229L155.059 70.0928" stroke="#353535" stroke-width="2"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M154.352 73.1203L149.398 78.0727L150.813 79.4871L155.059 75.2417L159.304 79.487L160.718 78.0728L155.766 73.1204L155.059 72.4133L154.352 73.1203Z" fill="#353535"/>
+<path d="M92.4023 106.476L97.3547 111.429L92.4023 116.381" stroke="#353535" stroke-width="2"/>
+<path d="M225.121 106.476L230.073 111.429L225.121 116.381" stroke="#353535" stroke-width="2"/>
+<circle opacity="0.6" cx="155.059" cy="62.8762" r="8" transform="rotate(-90 155.059 62.8762)" fill="#2C9B63"/>
+</svg>

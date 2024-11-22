@@ -40,17 +40,11 @@ export function PageViews() {
         window.Inngest.identify({ anonymous_id: anonymousID });
         // The hook should tell us if the anon id is an existing one, or it's just been set
         const firstTouch = !existing;
-        let ref: string | null = null;
-        try {
-          const urlParams = new URLSearchParams(window.location.search);
-          ref = urlParams.get("ref");
-        } catch (e) {}
         // See tracking for next/link based transitions in tracking.ts
         window.Inngest.event({
           name: "website/page.viewed",
           data: {
             first_touch: firstTouch,
-            ref: ref,
           },
           v: "2022-12-27.1",
         });

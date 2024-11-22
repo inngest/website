@@ -27,7 +27,7 @@ Inngest's Workflow Kit ships as a full-stack package ([`@inngest/workflow-kit`](
 
 Our  Next.js CMS application features the following `blog_posts` table:
 
-|Colunm name|Column type|Description|
+|Column name|Column type|Description|
 |-----------|-----------|-----------|
 id| `bigint`|
 title | `text`| _The title of the blog post_
@@ -59,7 +59,7 @@ Our users will be able to combine those tasks to build their custom workflows.
 After [installing and setup Inngest](/docs/getting-started/nextjs-quick-start) in our Next.js application, we will create the following [Workflow Actions definition](/docs/reference/workflow-kit/actions) file:
 
 ```ts {{ title: "lib/inngest/workflowActions.ts" }}
-import { type PublicEngineAction } from "@inngest/workflow";
+import { type PublicEngineAction } from "@inngest/workflow-kit";
 
 export const actions: PublicEngineAction[] = [
   {
@@ -178,19 +178,19 @@ export default async function Automation({
 ```
 
 The `<AutomationEditor>` component is then rendered with the following required properties:
-- `workflow={}`:  [workflow instance](/docs/reference/workflow-kit/workflow-instance) loaded from the database along side 
+- `workflow={}`:  [workflow instance](/docs/reference/workflow-kit/workflow-instance) loaded from the database along side
 - `event={}`: the name of the event triggering the workflow
 - `availableActions={}`: [actions](/docs/reference/workflow-kit/actions#passing-actions-to-the-react-components-public-engine-action) that the user can select to build its automation
 
 
 ```tsx {{ title: "src/components/automation-editor.ts" }}
 import { useState } from "react";
-import { Editor, Provider, Sidebar } from "@inngest/workflow/ui";
+import { Editor, Provider, Sidebar } from "@inngest/workflow-kit/ui";
 
 import { actions } from "@/inngest/workflowActions";
 import { type Workflow } from "@/lib/supabase/types";
 
-import "@inngest/workflow/ui/ui.css";
+import "@inngest/workflow-kit/ui/ui.css";
 import "@xyflow/react/dist/style.css";
 
 export const AutomationEditor = ({ workflow }: { workflow: Workflow }) => {

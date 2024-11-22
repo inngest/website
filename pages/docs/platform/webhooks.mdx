@@ -244,3 +244,54 @@ inngest.createFunction(
 <Callout>
   💡 **Tip**: To test functions locally, copy an event from a webhook from the Inngest dashboard and use it with the Inngest dev server's `Send test` button.
 </Callout>
+
+## Verifying request signatures
+
+Many webhook producers sign their requests with a secret key to ensure that the request is coming from them. This establishes trust with the webhook producer and ensures that the event data has not been tampered with.
+
+To verify a webhook signature, you'll need to return the signature and raw request body string in your transform. For example, the following transform function could be used for Stripe webhooks:
+
+```ts
+function transform(evt, headers, queryParams, raw) {
+  return {
+    name: `stripe/${evt.type}`,
+    data: {
+      raw,
+      sig: headers["Stripe-Signature"],
+    }
+  };
+};
+```
+
+Then you can use that data to verify the signature in your Inngest functions:
+
+```ts
+inngest.createFunction(
+  { id: "stripe/charge.updated" },
+  { event: "stripe/charge.updated" },
+  async ({ attempt, event, step }) => {
+    if (!verifySig(event.data.raw, event.data.sig, stripeSecret)) {
+      throw new NonRetriableError("failed signature verification");
+    }
+
+    // Now it's safe to use the event data.
+    const data = JSON.parse(event.data.raw);
+  }
+);
+```
+
+## Branch environments
+
+All branch environments share the same webhooks. They are centrally-managed in a [single page](https://app.inngest.com/env/branch/manage/webhooks).
+
+Additionally, the target branch environment must be specified using either an `x-inngest-env` query param or header. For example, the following command will send an webhook to the `branch-1` branch environment:
+
+```sh
+curl 'https://inn.gs/e/REDACTED?x-inngest-env=branch-1' -d '{"msg": "hi"}'
+```
+
+If the branch environment is not specified with the header or query param, the webhook will be sent to [this page](https://app.inngest.com/env/branch/events) and will not trigger any functions. Events will also go here if the branch environment does not exist.
+
+<Callout>
+  The value for `x-inngest-env` is the name of the branch environment, not the ID in the URL.
+</Callout>

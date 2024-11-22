@@ -1,13 +1,3 @@
-import {
-  IconSDK,
-  IconSteps,
-  IconDocs,
-  IconPatterns,
-  IconScheduled,
-  IconBackgroundTasks,
-  IconJourney,
-} from "../Icons/duotone";
-
 const footerLinks = [
   {
     name: "Product",
@@ -15,22 +5,14 @@ const footerLinks = [
       {
         label: "Platform",
         url: "/platform?ref=footer",
-        icon: IconSteps,
       },
-      // {
-      //   label: "Step Functions",
-      //   url: "/features/step-functions?ref=footer",
-      //   icon: IconSteps,
-      // },
       {
         label: "Documentation",
         url: "/docs?ref=footer",
-        icon: IconDocs,
       },
       {
         label: "Patterns: Async + Event-Driven",
         url: "/patterns?ref=footer",
-        icon: IconPatterns,
       },
     ],
   },
@@ -38,30 +20,42 @@ const footerLinks = [
     name: "Use Cases",
     links: [
       {
+        label: "AI + AI Agents",
+        url: "/ai?ref=footer",
+      },
+      {
+        label: "Compare to traditional queues",
+        url: "/compare-to-legacy-queues?ref=footer",
+      },
+      {
+        label: "Durable workflows",
+        url: "/uses/durable-workflows?ref=footer",
+      },
+      {
+        label: "Workflow engines",
+        url: "/uses/workflow-engine?ref=footer",
+      },
+      {
         label: "Serverless queues for TypeScript",
         url: "/uses/serverless-queues?ref=footer",
-        icon: IconJourney,
       },
       {
         label: "Scheduled & cron jobs",
         url: "/uses/serverless-cron-jobs?ref=footer",
-        icon: IconScheduled,
-      },
-      {
-        label: "AI + LLMs",
-        url: "/ai?ref=footer",
-        icon: IconSDK,
       },
       {
         label: "Node.js background jobs",
         url: "/uses/serverless-node-background-jobs?ref=footer",
-        icon: IconBackgroundTasks,
       },
     ],
   },
   {
     name: "Company",
     links: [
+      {
+        label: "Blog",
+        url: "/blog?ref=footer",
+      },
       {
         label: "Roadmap",
         url: "https://roadmap.inngest.com/roadmap?ref=footer",
@@ -77,10 +71,6 @@ const footerLinks = [
       {
         label: "Careers",
         url: "/careers?ref=footer",
-      },
-      {
-        label: "Blog",
-        url: "/blog?ref=footer",
       },
       {
         label: "Contact Us",

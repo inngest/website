@@ -1,0 +1,161 @@
+import { Callout, GuideSelector, GuideSection, CodeGroup } from "src/shared/Docs/mdx";
+
+# AI Inference
+
+You can build complex AI workflows and call model providers as steps using two step methods, `step.ai.infer` and `step.ai.wrap`, or our AgentKit SDK.  They work with any model provider, and all offer full AI observability:
+
+- [AgentKit](/docs/agent-kit/overview) allows you to easily create single model calls or agentic workflows.  Read the AgentKit docs here
+- `step.ai.wrap`  wraps other AI SDKs as a step.  This works with every SDK, including OpenAI, Anthropic, and Vercel’s AI SDK
+- `step.ai.infer` offloads the inference request to Inngest’s infrastructure, pausing your function execution until the request finishes.  This can be a significant cost saver if you deploy to serverless functions
+
+### Benefits
+
+Using [AgentKit](/docs/agent-kit/overview) and `step.ai` allows you to:
+
+- Automatically monitor AI usage in production to ensure quality output 
+- Easily iterate and test prompts in the dev server
+- Track requests and responses from foundational inference providers
+- Track how inference calls work together in multi-step or agentic workflows
+- Automatically create datasets based off of production requests
+
+<br />
+
+<Callout variant="info">
+  **AgentKit TypeScript SDK**
+
+  **In TypeScript, we strongly recommend using AgentKit, our AI SDK which adds multiple AI capabilities to Inngest.**  AgentKit allows you to call single-shot inference APIs with a simple self-documenting class, and also allows you to create semi or fully autonomous agent workflows using a network of agents.
+
+  - [AgentKit GitHub repo](https://github.com/inngest/agent-kit)
+  - [AgentKit docs](//docs/agent-kit/overview)
+</Callout>
+
+## AgentKit: AI and agent orchestration
+
+AgentKit is a simple, standardized way to implement model calling — either as individual calls, a comoplex workflow, or agentic flows.
+
+Here's an exmaple of a single model call:
+
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
+
+import { Agent, agenticOpenai as openai } from "@inngest/agent-kit";
+export default inngest.createFunction(
+  { id: "summarize-contents" },
+  { event: "app/ticket.created" },
+  async ({ event, step }) => {
+
+    // Create a new agent with a system prompt (you can add optional tools, too)
+    const writer = new Agent({
+      name: "writer",
+      system: "You are an expert writer.  You write readable, concise, simple content.",
+      model: openai({ model: "gpt-4o", step }),
+    });
+
+    // Run the agent with an input.  This automatically uses steps
+    // to call your AI model.
+    const { output } = await writer.run("Write a tweet on how AI works");
+  }
+);
+
+```
+</CodeGroup>
+
+[Read the full AgentKit docs here](/docs/agent-kit/overview) and [see the code on GitHub](https://github.com/inngest/agent-kit).
+
+## Step tools: `step.ai`
+
+### `step.ai.infer`
+
+Using `step.ai.infer` allows you to call any inference provider’s endpoints, tracking the requests and responses automatically within your workflow traces.
+
+**Request offloading**
+
+This step method also offloads requests to Inngest’s infrastructure.  On serverless environments, your function is not executing while the request is in progress — which means you don’t pay for function execution while waiting for the provider’s response. Once the request finishes, your function restarts with the inference result’s data.  Inngest never logs or stores your API keys or authentication headers.  Authentication originates from your own functions.
+
+Here's an example which calls OpenAI:
+
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
+export default inngest.createFunction(
+  { id: "summarize-contents" },
+  { event: "app/ticket.created" },
+  async ({ event, step }) => {
+
+    // This calls your model's chat endpoint, adding AI observability,
+    // metrics, datasets, and monitoring to your calls.
+    const response = await step.ai.infer("call-openai", {
+      model: step.ai.models.openai({ model: "gpt-4o" }),
+      // body is the model request, which is strongly typed depending on the model
+      body: {
+        messages: [{
+          role: "assistant",
+          content: "Write instructions for improving short term memory",
+        }],
+      },
+    });
+
+    // The response is also strongly typed depending on the model.
+    return response.choices;
+  }
+);
+```
+</CodeGroup>
+
+### `step.ai.wrap`  (TypeScript only)
+
+Using `step.ai.wrap` allows you to wrap other TypeScript AI SDKs, treating each inference call as a step.  This allows you to easily convert AI calls to steps with full observability, without changing much application-level code:
+
+<CodeGroup>
+```ts {{ title: "Vercel AI SDK" }}
+import { generateText } from "ai"
+import { openai } from "@ai-sdk/openai"
+
+export default inngest.createFunction(
+  { id: "summarize-contents" },
+  { event: "app/ticket.created" },
+  async ({ event, step }) => {
+  
+    // This calls `generateText` with the given arguments, adding AI observability,
+    // metrics, datasets, and monitoring to your calls.
+    const { text } = await step.ai.wrap("using-vercel-ai", generateText, {
+      model: openai("gpt-4-turbo"),
+      prompt: "What is love?"
+    });
+
+  }
+);
+```
+```ts {{ title: "Anthropic SDK" }}
+import Anthropic from '@anthropic-ai/sdk';
+const anthropic = new Anthropic();
+
+export default inngest.createFunction(
+  { id: "summarize-contents" },
+  { event: "app/ticket.created" },
+  async ({ event, step }) => {
+  
+    // This calls `generateText` with the given arguments, adding AI observability,
+    // metrics, datasets, and monitoring to your calls.
+    const result = await step.ai.wrap("using-anthropic", anthropic.messages.create, {
+      model: "claude-3-5-sonnet-20241022",
+      max_tokens: 1024,
+      messages: [{ role: "user", content: "Hello, Claude" }],
+    });
+
+  }
+);
+```
+</CodeGroup>
+
+In this case, instead of calling the SDK directly, you specifyc the SDK function you want to call and the function's arguments separately within `step.ai.wrap`.
+
+### Supported providers
+
+The list of current providers supported for `step.ai.infer` is:
+
+- `openai`, including any OpenAI compatible API such as Perplexity
+- `gemini`
+
+### Limitations
+
+- Streaming responses from providers is coming soon, alongisde realtime support with Inngest functions.
