@@ -5,10 +5,10 @@ import Nav from "src/components/Nav";
 import Footer from "src/shared/Footer";
 import { HeaderInit, PageViews } from "@/components/InngestClientSDK";
 import GoogleTagManger from "@/components/GoogleTagManager";
-import LaunchWeekBanner from "src/components/LaunchWeekBanner";
 import { getFullURL } from "src/utils/social";
 
 import "./globals.css";
+import AnnouncementBanner from "src/components/AnnouncementBanner";
 
 export const metadata: Metadata = {
   title: {
@@ -52,7 +52,9 @@ export default function RootLayout({
         </Suspense>
       </head>
       <body className="dark font-sans">
-        <LaunchWeekBanner />
+        <AnnouncementBanner href="/blog/ai-orchestration-with-agentkit-step-ai?ref=banner">
+          Introducing AgentKit and step.ai: orchestrating AI with confidence
+        </AnnouncementBanner>
 
         <Nav />
 
