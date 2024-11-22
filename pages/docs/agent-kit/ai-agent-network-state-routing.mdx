@@ -164,7 +164,7 @@ A router is a function that gets called after each agent runs, which decides whe
 
 The routing function gets access to everything it needs to make this decision:
 
-```jsx
+```ts
 interface RouterArgs {
   network: Network; // The entire network, including the state and history
   stack: Agent[]; // Future agents to be called
