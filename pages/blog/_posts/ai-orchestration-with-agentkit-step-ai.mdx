@@ -12,7 +12,7 @@ Building AI applications that actually work in production is surprisingly comple
 
 Today, we're excited to announce two new AI-native features:
 
-- [AgentKit](https://github.com/inngest/agent-kit), the fastest way to develop, test, and ship complex AI workflows to production, in early access
+- [AgentKit](/docs/agent-kit/overview), the fastest way to develop, test, and ship complex AI workflows to production, in early access
 - A new set of core APIs in our platform: [step.ai](/docs/features/inngest-functions/steps-workflows/step-ai-orchestration), which brings the same world-class developer experience from our existing product to AI-native applications.
 
 Just as Inngest manages your background jobs, webhooks, and scheduled tasks with built-in retries and state management, [step.ai](/docs/features/inngest-functions/steps-workflows/step-ai-orchestration) now handles your AI model calls with the same production-ready infrastructure — with built in observability and support for agentic workflows out of the box.
@@ -39,7 +39,7 @@ export default inngest.createFunction(
     
     const input = "Classify then summarize the latest 10 blog posts on https://www.deeplearning.ai/blog/"
     
-    const result = await network.run(, ({ network }) => {
+    const result = await network.run(input, ({ network }) => {
       // Use an agent which figures out the specific agent to call based off of the network's history.
       return defaultRoutingAgent;
     });
@@ -122,6 +122,6 @@ export default inngest.createFunction(
 
 ## Start building and provide your feedback
 
-As part of our early access release, we’re inviting you and your team to share your thoughts, experiences, and suggestions. Your feedback is invaluable in shaping the future of our APIs to better serve your needs. Sign-up for early access here so we can stay in touch.
+As part of our early access release, we’re inviting you and your team to share your thoughts, experiences, and suggestions. Your feedback is invaluable in shaping the future of our APIs to better serve your needs. [Sign-up for early access here](/ai/early-access?ref=blog-ai-orchestration-with-agentkit-step-ai) so we can stay in touch.
 
 We’re excited to see what you build with AgentKit and `step.ai`!

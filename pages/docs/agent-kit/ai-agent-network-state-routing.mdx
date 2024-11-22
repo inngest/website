@@ -121,9 +121,9 @@ Common uses for the KV store include:
 - Storing user preferences or context
 - Passing data between tools and agents
 
-Here’s a tool which stores files created by a coding agent the network’s key-value state:
+Here’s a tool described using a Zod schema which stores files created by a coding agent the network’s key-value state:
 
-```jsx
+```ts
 const writeFiles = createTypedTool({
   name: "write_files",
   description: "Write code with the given filenames",
@@ -177,8 +177,7 @@ interface RouterArgs {
 
 The simplest way to route is to write code that makes decisions.  Here's an example that routes between a classifier and a writer:
 
-```jsx
-
+```ts
 const network = createNetwork({
   agents: [classifier, writer],
   router: ({ lastResult, callCount }) => {

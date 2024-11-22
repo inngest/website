@@ -77,7 +77,7 @@ In AgentKit, you also define a `handler` function which is called when the tool 
 
 A more complex agent used in a network defines a description, lifecycle hooks, tools, and a dynamic set of instructions based off of network state:
 
-```jsx
+```ts
 import { Agent, Network, agenticOpenai as openai } from "@inngest/agent-kit";
 
 const systemPrompt =
@@ -103,8 +103,8 @@ const agent = new Agent({
 
     // There are files present in the network's state, so add them to the promp to help
     // provide previous context automatically.
-		let prompt = systemPrompt + "The following code already exists:"
-		for (const [name, contents] of Object.entries(record)) {
+    let prompt = systemPrompt + "The following code already exists:"
+    for (const [name, contents] of Object.entries(record)) {
       prompt += `<file name='${name}'>$contents</file>`
     }
     return prompt;
