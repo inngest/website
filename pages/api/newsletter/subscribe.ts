@@ -24,11 +24,11 @@ export default async (req, res) => {
   }
 
   // Skip in development so we don't add to the list
-  // if (process.env.NODE_ENV === "development") {
-  //   console.log("Skipping newsletter subscription in development");
-  //   console.log({ email, tags });
-  //   return res.status(201).json({ error: "" });
-  // }
+  if (process.env.NODE_ENV === "development") {
+    console.log("Skipping newsletter subscription in development");
+    console.log({ email, tags });
+    return res.status(201).json({ error: "" });
+  }
 
   try {
     // Try to add the member to our list
