@@ -1,0 +1,199 @@
+import { Callout, GuideSelector, GuideSection, CodeGroup } from "src/shared/Docs/mdx";
+
+# Agents and Agent Tools
+
+<Callout variant="info">
+  You can think of an Agent as a wrapper over a single model, with instructions and tools.  Calling `.run` on an Agent
+  passes the system prompt, tools, and input to the Agent's model.
+</Callout>
+
+Agents are the core of AgentKit.  An Agent is used to call a single model with a system prompt and, optionally, set of tools.  The an agent’s additional properties like a name, description, and lifecycle hooks make calls more powerful and composable.  An Agent has the following structure:
+
+- `name`: the name of the agent shown in tracing
+- `description`: an optional description for the agent, used for LLM-based routing to help the network pick which agent to run next
+- `system`: the system prompt, as a string or function.  Functions let you change prompts based off of state and memory
+- `tools`: a set of tools that this agent has access to
+
+
+## Understanding how an agent makes calls
+
+Here’s a simple agent, which makes a single model call using system prompts and user input:
+
+```jsx
+const agent = new Agent({
+  name: "Code writer",
+  system: "You are an expert TypeScript programmer.  Given a set of asks, you think step-by-step to plan clean, " +
+    "idiomatic TypeScript code, with comments and tests as necessary." +
+    "Do not respond with anything else other than the following XML tags:" +
+    "- If you would like to write code, add all code within the following tags (replace $filename and $contents appropriately):" +
+    "  <file name='$filename.ts'>$contents</file>",
+  model: openai("gpt-4o-mini"),
+});
+
+```
+
+You can run an agent individually.  This creates a new inference request with its system prompt as the first message, and the input as the user message:
+
+```jsx
+// Run the agent:
+const { output } = await agent.run("Write a function that trims a string");
+
+// This is similar to:
+// const chatCompletion = await step.ai.infer("Code writer", {
+//   model: openai("gpt-4o-mini"),
+//   body: {
+//     messages: [
+//       { role: "system", content: "You are an expert..." },
+//       { role: "user", content: "Write a function that trims a string" }
+//     ],
+//   },
+// });
+```
+
+Under the hood, the agent will call your model provider using an Inngest step.  This gives you all of the benefits of Inngest: reliability, durability, automatic retries, and observability. 
+
+## How agents work
+
+Agents themselves are relatively simple.  When you call `run` on an agent, there are several steps that happen:
+
+1. The prompt is created from the system, input, and any *network state* (if the agent is part of a network)
+    * The agent’s `onStart` lifecycle is called, if defined.  This lets you modify the agent’s prompts before inference
+2. An inference is made as an Inngest step — with retries and durability built in. The inference result is parsed into an `InferenceResult` class, containing standardized messages, any tool call responses, and the raw API response in the format of your provider
+    * The agent’s `onResponse` lifecycle is called with the result.  This lets you modify and manage the result prior to calling tools
+4. If any tools were specified in the response, those tools are automatically called.  The outputs are added to the result
+    * The agent’s `onFinish` lifecycle is called with the new result.  This lets you inspect the output of tool use
+5. The result is returned to the caller
+
+## Agent tools
+
+When you create an agent you can specify any number of tools that the agent can use. Tools follow the standard formats that OpenAI and Anthropic provide: a name and a description, plus typed parameters.
+
+In AgentKit, you also define a `handler` function which is called when the tool is invoked.  Because AgentKit runs in the backend (on your own infrastructure) these handlers can run almost any code you define.
+
+
+### Complex agents with tools
+
+A more complex agent used in a network defines a description, lifecycle hooks, tools, and a dynamic set of instructions based off of network state:
+
+```jsx
+const systemPrompt =
+    "You are an expert TypeScript programmer.  Given a set of asks, think step-by-step to plan clean, " +
+    "idiomatic TypeScript code, with comments and tests as necessary."
+
+#const agent = new Agent({
+  name: "Code writer",
+
+  // description helps LLM routers choose the right agents to run.
+  description: "An expert TypeScript programmer which can write and debug code",
+
+  // system defines a system prompt.  This function is called by the network each time
+  // the agent runs, and allows you to customize the instructions based off of past state.
+  system: async ({ network }) => {
+
+    // Each time this agent runs, it may produce "file" content.  Check if any
+    // content has already been produced in an agentic workflow.
+    const files: Record<string, string> | undefined = network?.state.kv.get("files")
+    if (files === undefined) {
+      return systemPrompt;
+    }
+
+    // There are files present in the network's state, so add them to the promp to help
+    // provide previous context automatically.
+		let prompt = systemPrompt + "The following code already exists:"
+		for (const [name, contents] of Object.entries(record)) {
+      prompt += `<file name='${name}'>$contents</file>`
+    }
+    return prompt;
+  },
+  
+  // tools are provided to the model and are automatically called.
+  tools: [
+    // This tool forces the model to generate file content as structured data.
+    // createTypedTool is a utility that forces typescript to strictly type the handler.
+    createTypedTool({
+      name: "write_files",
+      description: "Write code with the given filenames",
+      parameters: z.object({
+        files: z.array(z.object({
+          filename: z.string(),
+          content: z.string(),
+        })),
+      }),
+      handler: (output, { network }) => {
+        // files is the output from the model's response in the format above.
+        // Here, we store OpenAI's generated files in the response. 
+        const files = network?.state.kv.get("files") || {};
+        for (const file of output.files) {
+          files[file.filename] = file.content;
+        }
+        network?.state.kv.set("files", files);
+      },
+    }),
+  ],
+});
+
+// Use this agent in a network of other agents, or with long-term state.
+const network = createNetwork({
+  agents: [agent]
+});
+
+```
+
+Calling `.run` on this agent will pass the tools into your provider, allowing the model to select whether to run the `write_files` tool as a result.  Tools are automatically called on your behalf.
+
+If the agent is part of a network, the agent’s inference calls are automatically added to the network’s state as memory, and the network’s state is used to adjust the prompt at any call.  This is one way of building a complex network of agents, which learns as the network solves the problem.
+
+<Callout variant="info">
+  Networks manage shared state between a sequence of Agent calls, and allow you to manage Agent calls over time as
+  state changes.
+</Callout>
+
+### Step functions in tools
+
+AgentKit also exposes Inngest’s `step` tooling directly within tools.  This lets you build complex step functions as tools, including human-in-the-loop tasks via `step.waitForEvent` or invoking other Inngest functions with `step.invoke`:
+
+```jsx
+createTypedTool({
+  name: "request_refund_approval",
+  description: "Request refund approval",
+  parameters: z.array(z.object({
+    refund_id: z.string(),
+  }).required(),
+  handler: async (output, { network, agent, step }) => {
+    await step.run("request approval in slack", async () => {
+      // XXX: Send a message in slack which has an "approve/reject" button.
+    });
+    // wait 1 hour for the approval
+    const approval = await step.waitForEvent("wait for approval event", {
+      event: "api/refund.approved",
+      if: `async.data.refund_id == "${output.refund_id}"`,
+      timeout: "1h",
+    });
+    if (approval === null) {
+      // This was _not_ approved.  
+      return { approved: false };
+    }
+    return { approved: true };
+  }
+})
+```
+
+This example shows how Inngest’s orchestration allows for long running, stateful agentic workflows.  For more information on Inngest’s step tooling, read the documentation here.
+
+### Handler typing and reference
+
+AgentKit exposes a `createTypedTool` utility that forces the `output` parameter in a handler to be typed according to your parameter’s Zod schema:
+
+```jsx
+createTypedTool({
+  name: "list_charges",
+  description: "Returns all of a user's charges",
+  parameters: z.array(z.object({
+    id: z.string(),
+    amount: z.number(),
+  })),
+  handler: async (output, { network, agent, step }) => {
+    // output is strongly typed to match the parameter type.
+  }
+})
+```
