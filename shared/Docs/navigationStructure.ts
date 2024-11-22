@@ -809,6 +809,37 @@ const sectionHome: (NavGroup | NavLink)[] = [
       },
     ],
   },
+  {
+    title: "AgentKit",
+    links: [
+      {
+        title: "AgentKit Foundations",
+        links: [
+          {
+            title: "Overview",
+            href: "/docs/agent-kit/overview",
+          },
+          {
+            title: "Getting started",
+            href: "/docs/agent-kit/getting-started",
+          },
+        ],
+      },
+      {
+        title: "Build with AgentKit",
+        links: [
+          {
+            title: "Agents and Tools",
+            href: "/docs/agent-kit/ai-agents-tools",
+          },
+          {
+            title: "Networks, state, and routing",
+            href: "/docs/agent-kit/getting-started",
+          },
+        ],
+      }
+    ],
+  },
   { title: "References", links: sectionReference },
   {
     title: "",
