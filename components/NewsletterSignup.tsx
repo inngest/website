@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { useSearchParams } from "next/navigation";
 
 export default function NewsletterSignup({
@@ -13,7 +13,7 @@ export default function NewsletterSignup({
   showHeader?: boolean;
   buttonText?: string;
   tags?: string[];
-  tagsFromSearchParams: boolean;
+  tagsFromSearchParams?: boolean;
   fields?: { name: string; label: string }[];
 }) {
   const inputRef = useRef(null);
@@ -35,15 +35,13 @@ export default function NewsletterSignup({
     subscriberTags = tag ? (typeof tag === "string" ? [tag] : tag) : [];
   }
 
-  const subscribeUser = async (e) => {
+  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const data = Object.assign({ tags }, formDataToObject(formData));
     setLoading(true);
     const res = await fetch("/api/newsletter/subscribe", {
-      body: JSON.stringify({
-        // @ts-ignore
-        email: inputRef.current.value,
-        tags: subscriberTags,
-      }),
+      body: JSON.stringify(data),
       headers: {
         "Content-Type": "application/json",
       },
@@ -62,7 +60,7 @@ export default function NewsletterSignup({
   const canSubmit = response.result !== true || response.error !== "";
 
   return (
-    <form onSubmit={subscribeUser}>
+    <form onSubmit={onSubmit}>
       {showHeader && <p className="mb-2 text-basis text-lg">Get Notified</p>}
 
       <div className="flex flex-col sm:flex-row flex-wrap gap-4">
@@ -71,15 +69,14 @@ export default function NewsletterSignup({
             <input
               key={idx}
               className={`md:min-w-72 flex-grow border border-muted rounded-md px-4 py-2 text-white bg-transparent
-            focus:outline-none focus:ring-1 focus:ring-[rgb(var(--color-border-success))] focus:border-transparent
-            placeholder:text-muted
-            grow
-          `}
+                focus:outline-none focus:ring-1 focus:ring-[rgb(var(--color-border-success))] focus:border-transparent
+                placeholder:text-muted
+                grow
+              `}
               type="text"
               id={`${f.name}-input`}
               name={f.name}
               placeholder={f.label}
-              // ref={inputRef}
               required
               autoCapitalize="off"
               autoCorrect="off"
@@ -130,4 +127,12 @@ export default function NewsletterSignup({
       )}
     </form>
   );
+}
+
+function formDataToObject(formData: FormData): { [key: string]: string } {
+  const data = {};
+  for (let [key, value] of Array.from(formData.entries())) {
+    data[key] = value;
+  }
+  return data;
 }

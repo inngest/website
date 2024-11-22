@@ -29,7 +29,7 @@ export default function Page() {
             <NewsletterSignup
               showHeader={false}
               buttonText="Register"
-              tagsFromSearchParams={true}
+              tags={["ai-early-access"]}
               fields={[{ name: "use-case", label: "What are you building?" }]}
             />
           </div>
