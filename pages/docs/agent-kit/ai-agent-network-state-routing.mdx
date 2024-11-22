@@ -17,10 +17,12 @@ It also has an optional default model, which will be used when your Agents have 
 Here's a simple example:
 
 ```tsx
+import { createNetwork, agenticOpenai as openai } from "@inngest/agent-kit";
+
 // Create a network with two agents.
 const network = createNetwork({
   agents: [searchAgent, summaryAgent],
-  defaultModel: model,  // Optional: used for routing and agents if they have no model
+  defaultModel: openai({ model: "gpt-4o", step }),  // Optional: used for routing and agents if they have no model
   maxIter: 10,  // Optional: max number of agent calls
 });
 
