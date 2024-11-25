@@ -213,7 +213,7 @@ Add the following code to the `./pages/api/inngest.ts` file:
 
   ```ts
   // Step 2 code...
-  const helloWorld = inngest.createFunction(
+  export const helloWorld = inngest.createFunction(
     { id: "hello-world" },
     { event: "test/hello.world" },
     async ({ event, step }) => {
@@ -232,7 +232,7 @@ Add the following code to the `./pages/api/inngest.ts` file:
   ```ts {{ filename: "src/inngest/functions.ts" }}
   import { inngest } from "./client";
 
-  const helloWorld = inngest.createFunction(
+  export const helloWorld = inngest.createFunction(
     { id: "hello-world" },
     { event: "test/hello.world" },
     async ({ event, step }) => {
