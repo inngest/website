@@ -58,6 +58,7 @@ When each step is finished, Inngest will aggregate each step's state and re-invo
 
 Inngest supports parallel steps regardless of whether you're using asynchronous or synchronous code. For both approaches, you can use `step.parallel`:
 
+#### async - with `inngest.Step` and `await step.parallel()` 
 ```py
 @client.create_function(
   fn_id="my-fn",
@@ -77,6 +78,7 @@ async def fn(
   )
 ```
 
+#### sync - with `inngest.StepSync` and `step.parallel()` 
 ```py
 @client.create_function(
   fn_id="my-fn",
