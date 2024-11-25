@@ -119,3 +119,9 @@ Let's now look at two different cancellations triggered from the Dashboard Bulk 
 </Row>
 
 All canceled Function runs can be replay by using the Platform's [Functions Replay UI](/docs/platform/replay).
+
+## Handling cancelled functions
+
+Function runs that are cancelled may require additional work like database cleanup or purging of deletion of temporary resources. This can be done leveraging the [`inngest/function.cancelled`](/docs/reference/system-events/inngest-function-cancelled) system event.
+
+See [this complete example](/docs/examples/cleanup-after-function-cancellation) for how to use this event within your system to cleanup after a function run is cancelled.
