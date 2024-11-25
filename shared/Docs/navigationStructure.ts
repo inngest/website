@@ -513,6 +513,7 @@ const sectionHome: (NavGroup | NavLink)[] = [
               },
               {
                 title: "AI Inference",
+                tag: "new",
                 href: "/docs/features/inngest-functions/steps-workflows/step-ai-orchestration",
               },
               { title: "Guides" },
@@ -839,7 +840,7 @@ const sectionHome: (NavGroup | NavLink)[] = [
             href: "/docs/agent-kit/ai-agent-network-state-routing",
           },
         ],
-      }
+      },
     ],
   },
   { title: "References", links: sectionReference },

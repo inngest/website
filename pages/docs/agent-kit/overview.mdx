@@ -27,7 +27,7 @@ export default inngest.createFunction(
     
     const { output } = await writer.run(
       "Describe the ideas behind the given input into clear topics, and explain any insight: " +
-      `<content>${content}</content>`
+      `<content>${event.data.input}</content>`
     );
 
   },
