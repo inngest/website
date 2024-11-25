@@ -76,7 +76,7 @@ The history system maintains a chronological record of all agent interactions in
 The network state keeps track of every agent interaction, building a chronological list of messages in memory.  When the network runs, it calls the `onStart` lifecycle hook with the given agent, network, user input, system, and history from memory:
 
 ```jsx
-const agent = new Agent({
+const agent = createAgent({
   name: "Code writer",
   lifecycles: {
     onStart: ({
