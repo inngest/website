@@ -41,18 +41,21 @@ export function Tag({
   variant = "medium",
   color = valueColorMap[children.toLowerCase()] ?? "indigo",
   background = "default",
+  className,
 }: {
   children: string;
   variant?: "small" | "medium";
   color?: string;
+  className?: string;
   background?: "default" | "page";
 }) {
   return (
     <span
       className={clsx(
-        "font-mono text-xs font-semibold leading-4",
+        "font-mono text-xs font-semibold leading-2",
         variantStyle(variant),
-        colorStyle(color, variant, background)
+        colorStyle(color, variant, background),
+        className
       )}
     >
       {children}
