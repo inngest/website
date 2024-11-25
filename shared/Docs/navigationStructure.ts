@@ -339,8 +339,13 @@ const sectionReference: NavGroup[] = [
     title: "System events",
     links: [
       {
-        title: "inngest/function.failed",
+        title: "function.failed",
         href: "/docs/reference/system-events/inngest-function-failed",
+        className: "font-mono",
+      },
+      {
+        title: "function.cancelled",
+        href: "/docs/reference/system-events/inngest-function-cancelled",
         className: "font-mono",
       },
     ],
@@ -885,6 +890,10 @@ const sectionExamples: NavGroup[] = [
       {
         title: "Track all function failures in Datadog",
         href: `/docs/examples/track-failures-in-datadog`,
+      },
+      {
+        title: "Cleanup after function cancellation",
+        href: `/docs/examples/cleanup-after-function-cancellation`,
       },
     ],
   },
