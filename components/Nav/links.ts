@@ -14,8 +14,9 @@ import {
   IconPower,
   IconRetry,
 } from "src/shared/Icons/duotone";
+import { RiNextjsFill, RiNodejsFill } from "@remixicon/react";
 import PythonIcon from "src/shared/Icons/Python";
-import TypeScriptIcon from "src/shared/Icons/TypeScript";
+// import TypeScriptIcon from "src/shared/Icons/TypeScript";
 
 import { type MenuProps } from "./Menu";
 
@@ -108,9 +109,15 @@ export const resourcesLinks: MenuProps = {
   secondaryTitle: "Quick start guides",
   secondaryLinks: [
     {
-      title: "TypeScript / JavaScript",
-      url: "/docs/quick-start?ref=nav",
-      icon: TypeScriptIcon,
+      title: "Next.js",
+      url: "/docs/getting-started/nextjs-quick-start?ref=nav",
+      icon: RiNextjsFill,
+      iconClassName: "w-4",
+    },
+    {
+      title: "Node.js",
+      url: "/docs/getting-started/nodejs-quick-start?ref=nav",
+      icon: RiNodejsFill,
       iconClassName: "w-4",
     },
     {
