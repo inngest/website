@@ -6,6 +6,7 @@ image: /assets/blog/agentkit-stepai.png
 date: 2024-11-22
 author: Tony Holdstock-Brown
 category: product-updates
+focus: true
 ---
 
 Building AI applications that actually work in production is surprisingly complex.  Your model calls need to be reliable, you need to store history across timeouts, retries, and multiple model calls,  and you need to handle flow control successfully, all while iterating on things like your actual prompts and RAG approach.  To be successful, this requires careful orchestration.  This is why we built Inngest — the developer-first platform that lets handles orchestration at scale, so you can focus on your product without worrying about technical details.
@@ -31,14 +32,14 @@ export default inngest.createFunction(
   async ({ event, step }) => {
 
     // Create a network of agents with separate tasks and instructions to solve
-    // a specific task, using Inngest steps for orchestration 
+    // a specific task, using Inngest steps for orchestration
     const network = new Network({
       agents: [navigator, classifier, summarizer],
       defaultModel: agenticOpenai({ model: "gpt-4o", step }),
     })
-    
+
     const input = "Classify then summarize the latest 10 blog posts on https://www.deeplearning.ai/blog/"
-    
+
     const result = await network.run(input, ({ network }) => {
       // Use an agent which figures out the specific agent to call based off of the network's history.
       return defaultRoutingAgent;
@@ -79,7 +80,7 @@ export default inngest.createFunction(
   { id: "summarize-contents" },
   { event: "app/ticket.created" },
   async ({ event, step }) => {
-  
+
     // This calls `generateText` with the given arguments, adding AI observability,
     // metrics, datasets, and monitoring to your calls.
     const { text } = await step.ai.wrap("using-vercel-ai", generateText, {
