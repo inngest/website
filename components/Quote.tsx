@@ -26,7 +26,7 @@ export default function Quote({
   return (
     <blockquote
       className={clsx(
-        "mx-auto rounded-lg",
+        "mx-4 sm:mx-auto rounded-lg",
         variant === "default" && "max-w-[860px]",
         variant === "box" &&
           "max-w-[830px] p-px bg-gradient-to-br from-[rgba(var(--color-carbon-400)/0.4)] to-transparent",
@@ -37,7 +37,7 @@ export default function Quote({
         className={clsx(
           "flex flex-col items-start gap-4 text-basis rounded-lg",
           variant === "default" && "px-8 md:p-12 ",
-          variant === "box" && "px-8 md:p-8"
+          variant === "box" && "p-8"
         )}
         style={{
           background:
@@ -70,8 +70,8 @@ export default function Quote({
                   className="rounded-full h-12 w-12 lg:h-16 lg:w-16"
                 />
               )}
-              <cite className="leading-8 not-italic text-sm">
-                <div className="font-semibold">{name}</div>
+              <cite className="flex flex-col justify-center leading-8 not-italic text-sm">
+                <div className="font-semibold text-lg">{name}</div>
                 <div>{title}</div>
               </cite>
             </div>

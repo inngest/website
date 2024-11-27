@@ -1,12 +1,16 @@
 import { RiCloseCircleLine, RiCheckLine } from "@remixicon/react";
+import clsx from "clsx";
 
 export default function Tiles({
   tiles,
+  height = "default",
 }: {
   tiles: {
     icon?: "x" | "check";
-    text: string;
+    heading?: string;
+    text: string | React.ReactNode; // String should be used for templated pages
   }[];
+  height?: "default" | "large";
 }) {
   return (
     <div>
@@ -14,7 +18,12 @@ export default function Tiles({
         {tiles.map((tile, idx) => (
           <div
             key={idx}
-            className="w-auto max-w-[90%] sm:w-[400px] sm:h-[120px] p-px rounded-lg bg-gradient-to-br from-[rgba(var(--color-carbon-400)/0.4)] to-transparent overflow-clip"
+            className={clsx(
+              "w-auto max-w-[90%] sm:w-[400px] p-px",
+              height === "default" && "sm:h-[120px]",
+              height === "large" && "sm:h-[175px]",
+              "rounded-lg bg-gradient-to-br from-[rgba(var(--color-carbon-400)/0.4)] to-transparent overflow-clip"
+            )}
           >
             <div
               className="p-6 h-full flex items-center rounded-lg"
@@ -26,11 +35,17 @@ export default function Tiles({
               <div className="flex gap-3">
                 {tile.icon === "check" ? (
                   <RiCheckLine className="text-success h-5 w-5 mt-1 shrink-0" />
-                ) : (
+                ) : tile.icon === "x" ? (
                   <RiCloseCircleLine className="text-error h-5 w-5 mt-1 shrink-0" />
+                ) : (
+                  ""
                 )}
-
-                {tile.text}
+                <div className="flex flex-col gap-1 leading-snug">
+                  {tile.heading && (
+                    <h3 className="font-bold">{tile.heading}</h3>
+                  )}
+                  <p>{tile.text}</p>
+                </div>
               </div>
             </div>
           </div>

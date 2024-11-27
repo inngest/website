@@ -4,7 +4,7 @@ import { generateMetadata } from "src/utils/social";
 import { RiArrowRightLine } from "@remixicon/react";
 
 import Hero from "src/components/LandingPage/Hero";
-import Heading from "src/components/LandingPage/Heading";
+import Heading from "src/components/LandingPage/Header";
 import Tiles from "src/components/LandingPage/Tiles";
 import CTA from "src/components/LandingPage/CTA";
 import FeaturesCodeBlocks from "src/components/LandingPage/FeaturesCodeBlocks";
