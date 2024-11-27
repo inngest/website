@@ -37,7 +37,7 @@ export default function FeaturesCodeBlocks({
           ))}
         </div>
         <TabSelectorBar
-          length={3}
+          length={features.length}
           selected={selected}
           gap="1.5rem" /* gap-2 */
         />

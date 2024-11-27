@@ -25,7 +25,7 @@ export default function Page() {
   return (
     <div className="relative text-basis">
       {/* The background needs to be here with negative position to bleed under the header nav */}
-      <div className="absolute z-0 top-[-84px] w-full h-[calc(100vw/1728*1219)] bg-[url(/assets/ai/2024-11-27-hero-background.png)] bg-cover bg-no-repeat bg-bottom"></div>
+      <div className="absolute z-0 top-[-84px] w-full h-[200vw] sm:h-[calc(100vw/1728*1219)] bg-[url(/assets/ai/2024-11-27-hero-background.png)] bg-cover bg-no-repeat bg-top"></div>
 
       <div className="relative z-10">
         <Hero />
@@ -68,7 +68,7 @@ export default function Page() {
           />
         </section>
 
-        <section className="my-28">
+        <section className="my-32">
           <Header
             title="AgentKit: The fastest way to build production-ready AI workflows"
             description="AgentKit is a framework for building and orchestrating AI agents, from single-model inference to multi-agent systems, enabling reliable AI at scale."
@@ -114,22 +114,23 @@ const network = new Network({
             }}
             layout="right"
           />
-          <Feature
-            heading="Production-grade reliability"
-            text="AgentKit workflows are production-ready with reliable orchestration, full observability, and the ability to seamlessly integrate external tools and models"
-            content={{
-              image: {
-                src: "/assets/ai/2024-11-27-trace-view.png",
-                alt: "Screenshot of the Inngest trace view with AI steps",
-                height: 414,
-                width: 663,
-              },
-              fullBleed: true,
-            }}
+        </section>
+
+        <section className="my-32">
+          <Header
+            title="Production-grade reliability"
+            description="AgentKit workflows are production-ready with reliable orchestration, full observability, and the ability to seamlessly integrate external tools and models"
+          />
+          <Image
+            className="mx-auto max-w-[938]"
+            src="/assets/ai/2024-11-27-trace-with-tools.png"
+            alt="Screenshot of the Inngest trace view with AI steps"
+            width={938}
+            height={289}
           />
         </section>
 
-        <section className="my-28">
+        <section className="my-32">
           <Header
             title={
               <>
@@ -280,9 +281,9 @@ export default inngest.createFunction(
 
 function Hero() {
   return (
-    <div className="py-8 mx-auto max-w-[1728px] grid md:grid-cols-2 gap-12">
-      <div className="flex flex-row items-center justify-end">
-        <div className="flex flex-col gap-8 md:max-w-[600px]">
+    <div className="py-8 px-4 sm:px-auto mx-auto max-w-[1728px] grid md:grid-cols-2 gap-12">
+      <div className="flex flex-row items-center justify-end text-center md:text-left">
+        <div className="flex flex-col gap-8 md:pl-4 lg:max-w-[580px] shrink">
           <H1 variant="contrast">
             Ship AI workflows and Agents to production faster
           </H1>
@@ -292,7 +293,7 @@ function Hero() {
             infrastructure, so you can focus on building AI applications — not
             backend complexity.
           </p>
-          <div className="flex flex-row gap-4">
+          <div className="flex flex-row flex-wrap gap-4 justify-center md:justify-start">
             <Button variant="primary" href={`ai/early-access?ref=${ref}`}>
               Sign up for early access
             </Button>
@@ -303,6 +304,7 @@ function Hero() {
         </div>
       </div>
       <Image
+        className="px-4 sm:px-0"
         src="/assets/ai/2024-11-27-hero-image.png"
         alt="Mosaic screenshot of the Inngest dashboard showing a trace view for an AI workflow"
         width={941}
