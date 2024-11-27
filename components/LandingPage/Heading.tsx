@@ -1,45 +1,43 @@
 import clsx from "clsx";
+const commonClassNames = `font-semibold leading-tight sm:leading-tight`;
+const gradientClassNames = `bg-clip-text text-transparent bg-gradient-to-br from-[rgb(var(--color-carbon-400))] to-[rgb(var(--color-carbon-50))]`;
 
-export default function Heading({
-  title,
-  description,
-  className,
-  layout = "vertical",
+export function H1({
+  children,
+  variant = "gradient",
 }: {
-  title?: string;
-  description?: string | string[];
-  className?: string;
-  layout?: "vertical" | "horizontal";
+  children: React.ReactNode;
+  variant?: "gradient" | "contrast";
 }) {
   return (
-    <div
+    <h1
       className={clsx(
-        "mx-auto mb-8 px-4 flex gap-4 items-center text-basis",
-        "text-balance",
-        layout === "vertical" &&
-          "sm:px-6 lg:px-8 max-w-4xl flex-col text-center",
-        layout === "horizontal" && "max-w-6xl flex-col md:flex-row text-left",
-        className
+        `text-5xl md:text-6xl leading-tight ${commonClassNames}`,
+        variant === "gradient" && gradientClassNames,
+        variant === "contrast" && "text-basis"
       )}
     >
-      {!!title && (
-        <h2 className="text-3xl sm:text-5xl font-semibold bg-clip-text text-transparent bg-gradient-to-br from-[rgb(var(--color-carbon-400))] to-[rgb(var(--color-carbon-50))]">
-          {title}
-        </h2>
-      )}
-      {!!description && Array.isArray(description) ? (
-        <div className="flex flex-col gap-4">
-          {description.map((para, idx) => (
-            <p key={idx} className="text-base md:text-lg max-w-4xl text-subtle">
-              {para}
-            </p>
-          ))}
-        </div>
-      ) : (
-        <p className="text-base md:text-lg max-w-4xl text-subtle">
-          {description}
-        </p>
-      )}
-    </div>
+      {children}
+    </h1>
+  );
+}
+
+export function H2({ children }: { children: React.ReactNode }) {
+  return (
+    <h2
+      className={`text-3xl sm:text-5xl ${commonClassNames} ${gradientClassNames}`}
+    >
+      {children}
+    </h2>
+  );
+}
+
+export function H3({ children }: { children: React.ReactNode }) {
+  return (
+    <h3
+      className={`text-2xl sm:text-4xl ${commonClassNames} ${gradientClassNames}`}
+    >
+      {children}
+    </h3>
   );
 }

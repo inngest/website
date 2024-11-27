@@ -70,8 +70,8 @@ export default function Quote({
                   className="rounded-full h-12 w-12 lg:h-16 lg:w-16"
                 />
               )}
-              <cite className="leading-8 not-italic text-sm">
-                <div className="font-semibold">{name}</div>
+              <cite className="flex flex-col justify-center leading-8 not-italic text-sm">
+                <div className="font-semibold text-lg">{name}</div>
                 <div>{title}</div>
               </cite>
             </div>

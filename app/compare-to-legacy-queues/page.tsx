@@ -3,7 +3,7 @@ import { generateMetadata } from "src/utils/social";
 import { RiArrowRightLine } from "@remixicon/react";
 
 import Hero from "src/components/LandingPage/Hero";
-import Heading from "src/components/LandingPage/Heading";
+import Heading from "src/components/LandingPage/Header";
 import Tiles from "src/components/LandingPage/Tiles";
 import Comparison from "src/components/LandingPage/Comparison";
 import CTA from "src/components/LandingPage/CTA";
@@ -52,18 +52,23 @@ export default function Page() {
         <Tiles
           tiles={[
             {
+              icon: "x",
               text: "No native support for throttling, rate limiting, debouncing, or dynamic prioritization",
             },
             {
+              icon: "x",
               text: "Cumbersome and complex workflow management spanning queues, workers, and crons",
             },
             {
+              icon: "x",
               text: "Limited support for multi-tenant workloads",
             },
             {
+              icon: "x",
               text: "Lack of job management capabilities including cancel, replay, status checks",
             },
             {
+              icon: "x",
               text: "Insufficient built-in observability and monitoring tools",
             },
           ]}

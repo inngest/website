@@ -7,7 +7,7 @@ export default function FeaturesCodeBlocks({
   features,
 }: {
   features: {
-    title: string;
+    title: string | React.ReactNode;
     description: string;
     codeBlock: string;
   }[];
@@ -49,7 +49,7 @@ export default function FeaturesCodeBlocks({
           style={{
             background: `linear-gradient(108deg, rgba(204, 204, 204, 0.12) 9.67%, rgba(0, 0, 0, 0.00) 49.19%), #141414`,
           }}
-        ></CodeWindow>
+        />
       </div>
     </div>
   );
