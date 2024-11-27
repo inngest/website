@@ -66,7 +66,55 @@ Agents themselves are relatively simple.  When you call `run` on an agent, there
     * The agent’s `onFinish` lifecycle is called with the new result.  This lets you inspect the output of tool use
 5. The result is returned to the caller
 
+## Agent system prompts
+
+You can define an agent's system prompt as a string or as an async callback which can inspect network state and return custom instructions.  This is useful in an agentic workflow:  multiple models are called in a loop, impacting network state that can adjust prompts.
+
+Here's an example:
+
+```ts
+import { Agent, Network, agenticOpenai as openai } from "@inngest/agent-kit";
+
+const systemPrompt =
+    "You are an expert TypeScript programmer.  Given a set of asks, think step-by-step to plan clean, " +
+    "idiomatic TypeScript code, with comments and tests as necessary."
+
+const agent = createAgent({
+  name: "Code writer",
+
+  // description helps LLM routers choose the right agents to run.
+  description: "An expert TypeScript programmer which can write and debug code",
+
+  // system defines a system prompt.  This function is called by the network each time
+  // the agent runs, and allows you to customize the instructions based off of past state.
+  system: async ({ network }) => {
+    // Inspect the network state to see if we have any existing code saved as files.
+    const files: Record<string, string> | undefined = network?.state.kv.get("files")
+    if (files === undefined) {
+      return systemPrompt;
+    }
+
+    // There are files present in the network's state, so add them to the promp to help
+    // provide previous context automatically.
+    let prompt = systemPrompt + "The following code already exists:"
+    for (const [name, contents] of Object.entries(record)) {
+      prompt += `<file name='${name}'>$contents</file>`
+    }
+    return prompt;
+  },
+});
+
+```
+
+
 ## Agent tools
+
+<Callout variant="info">
+  Tools are a vital part of agents, and have two core uses:
+
+    * Tools are exceptional at turn unstructured inputs into structured responses
+    * Tools can call arbitrary code, allowing models to interact with other systems
+</Callout>
 
 When you create an agent you can specify any number of tools that the agent can use. Tools follow the standard formats that OpenAI and Anthropic provide: a name and a description, plus typed parameters.
 
@@ -92,23 +140,7 @@ const agent = createAgent({
 
   // system defines a system prompt.  This function is called by the network each time
   // the agent runs, and allows you to customize the instructions based off of past state.
-  system: async ({ network }) => {
-
-    // Each time this agent runs, it may produce "file" content.  Check if any
-    // content has already been produced in an agentic workflow.
-    const files: Record<string, string> | undefined = network?.state.kv.get("files")
-    if (files === undefined) {
-      return systemPrompt;
-    }
-
-    // There are files present in the network's state, so add them to the promp to help
-    // provide previous context automatically.
-    let prompt = systemPrompt + "The following code already exists:"
-    for (const [name, contents] of Object.entries(record)) {
-      prompt += `<file name='${name}'>$contents</file>`
-    }
-    return prompt;
-  },
+  system: systemPrompt;
   
   // tools are provided to the model and are automatically called.
   tools: [
@@ -134,11 +166,6 @@ const agent = createAgent({
       },
     }),
   ],
-});
-
-// Use this agent in a network of other agents, or with long-term state.
-const network = createNetwork({
-  agents: [agent]
 });
 
 ```
