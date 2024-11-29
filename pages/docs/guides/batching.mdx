@@ -13,8 +13,8 @@ Batching allows a function to process multiple events in a single run. This is u
 ## How to configure batching
 
 {/* NOTE - This should be moved to an example and we can make this more succinct */}
-<CodeGroup forceTabs>
-```ts {{ title: "record-api-calls.ts"}}
+<CodeGroup>
+```ts {{ title: "TypeScript"}}
 inngest.createFunction(
   {
     id: "record-api-calls",
@@ -43,6 +43,74 @@ inngest.createFunction(
   }
 );
 ```
+
+```go {{ title: "Go" }}
+inngestgo.CreateFunction(
+  &inngestgo.FunctionOpts{
+    ID: "record-api-calls",
+    BatchEvents: &inngest.EventBatchConfig{
+      MaxSize: 100,
+      Timeout: "5s",
+      Key: "event.data.user_id", // Optional: batch events by user ID
+    },
+  },
+  inngestgo.TriggerEvent("log/api.call"),
+  func(ctx context.Context, events []*inngestgo.Event, step inngestgo.StepFunction) error {
+    // NOTE: Use the events argument, which is an array of event payloads
+    attrs := make([]interface{}, len(events))
+    for i, evt := range events {
+      attrs[i] = map[string]interface{}{
+        "user_id":   evt.Data["user_id"],
+        "endpoint":  evt.Data["endpoint"], 
+        "timestamp": toDateTime(evt.Ts),
+      }
+    }
+
+    var result []interface{}
+    _, err := step.Run(ctx, "record-data-to-db", func(ctx context.Context) (interface{}, error) {
+      return db.BulkWrite(attrs)
+    })
+    if err != nil {
+      return err
+    }
+
+    return map[string]interface{}{
+      "success":  true,
+      "recorded": len(result),
+    }
+  },
+)
+```
+
+```py {{ title: "Python" }}
+@inngest_client.create_function(
+    fn_id="record-api-calls",
+    trigger=inngest.TriggerEvent(event="log/api.call"),
+    batch_events=inngest.Batch(
+        max_size=100,
+        timeout=datetime.timedelta(seconds=5),
+        key="event.data.user_id"  # Optional: batch events by user ID
+    ),
+)
+async def record_api_calls(ctx: inngest.Context, step: inngest.Step):
+    # NOTE: Use the events from ctx, which is an array of event payloads
+    attrs = [
+        {
+            "user_id": evt.data.user_id,
+            "endpoint": evt.data.endpoint,
+            "timestamp": to_datetime(evt.ts)
+        }
+        for evt in ctx.events
+    ]
+
+    async def record_data():
+        return await db.bulk_write(attrs)
+
+    result = await step.run("record-data-to-db", record_data)
+
+    return {"success": True, "recorded": len(result)}
+```
+
 </CodeGroup>
 
 ### Configuration reference

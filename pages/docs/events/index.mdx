@@ -465,7 +465,7 @@ import "github.com/inngest/inngest-go"
 func main() {
   inngestgo.Send(context.Background(), inngestgo.Event{
     Name: "storefront/cart.checkout.completed",
-    Id: "cart-checkout-completed-ed12c8bde",
+    ID: "cart-checkout-completed-ed12c8bde",
     Data: map[string]any{
       "cartId": "ed12c8bde",
       "itemIds": []string{"9f08sdh84", "sdf098487", "0fnun498n"},
