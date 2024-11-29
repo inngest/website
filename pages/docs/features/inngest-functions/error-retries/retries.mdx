@@ -272,4 +272,21 @@ inngestgo.CreateFunction(
 	}
 )
 ```
+```py {{ title: "Python" }}
+import inngest
+from src.inngest.client import inngest_client
+
+@inngest_client.create_function(
+    fn_id="send-welcome-notification",
+    trigger=inngest.TriggerEvent(event="user.created"),
+)
+def send_welcome_notification(ctx: inngest.Context, step: inngest.StepSync) -> None:
+	success, retryAfter, err = twilio.Messages.Create(twilio.MessageOpts{
+		To:   ctx.event.data["user"]["phoneNumber"],
+		Body: "Welcome to our service!",
+	})
+
+	if not success and retryAfter is not None:
+		raise inngest.RetryAfterError("Hit Twilio rate limit", retryAfter)
+```
 </CodeGroup>

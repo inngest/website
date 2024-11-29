@@ -12,7 +12,7 @@ For our example, we'll take a reminder app where a user can schedule to be remin
   options={[
     { key: "typescript", title: "TypeScript" },
     { key: "python", title: "Python" },
-    {/* { key: "go", title: "Go" } */}
+    { key: "go", title: "Go" }
   ]}>
 
 <GuideSection show="typescript">
@@ -101,9 +101,9 @@ Learn more in the full [reference](/docs/reference/typescript/functions/cancel-o
 
 Delaying code to run for days or weeks is easy with `step.sleep_until`, but we need a way to be able to stop the function if the user deletes the reminder while our function is "sleeping."
 
-When defining a function, you can also specify the `cancelOn` option which allows you to list one or more events that, when sent to Inngest, will cause the sleep to be terminated and function will be marked as "Canceled."
+When defining a function, you can also specify the `cancel` option which allows you to list one or more events that, when sent to Inngest, will cause the sleep to be terminated and function will be marked as "Canceled."
 
-Here is our schedule reminders function that leverages `cancelOn`:
+Here is our schedule reminders function that leverages `cancel`:
 
 ```py {{ title: "inngest/schedule_reminder.py" }}
 @inngest_client.create_function(
@@ -132,6 +132,89 @@ async def fn(
 
 async def send_reminder_push() -> None:
     pass
+```
+
+Let's break down how this works:
+
+1. Whenever the function is triggered, a cancellation listener is created which waits for an `"tasks/reminder.deleted"` event to be received.
+2. The `if` statement tells Inngest that both the triggering event (`"tasks/reminder.created"`) and the cancellation event (`"tasks/reminder.deleted"`) have the same exact value for `data.reminderId` in each event payload. This makes sure that an event does not cancel a different reminder.
+
+For more information on writing events, read our guide [on writing expressions](/docs/guides/writing-expressions).
+
+Here is an example of these two events which will be matched on the `data.reminderId` field:
+
+<Row>
+  <Col>
+
+```json
+{
+  "name": "tasks/reminder.created",
+  "data": {
+    "userId": "user_123",
+    "reminderId": "reminder_0987654321",
+    "reminderBody": "Pick up Jane from the airport"
+  }
+}
+```
+
+  </Col>
+  <Col>
+
+```json
+{
+  "name": "tasks/reminder.deleted",
+  "data": {
+    "userId": "user_123",
+    "reminderId": "reminder_0987654321",
+  }
+}
+```
+
+  </Col>
+</Row>
+
+
+</GuideSection>
+
+<GuideSection show="go">
+
+
+Delaying code to run for days or weeks is easy with `step.Sleep()`, but we need a way to be able to stop the function if the user deletes the reminder while our function is "sleeping."
+
+When defining a function, you can also specify the `Cancel` option which allows you to list one or more events that, when sent to Inngest, will cause the sleep to be terminated and function will be marked as "Canceled."
+
+Here is our schedule reminders function that leverages `Cancel`:
+
+```go {{ title: "main.go" }}
+package main
+
+import (
+	"context"
+	"github.com/inngest/inngestgo"
+	"github.com/inngest/inngestgo/step"
+)
+
+func main() {
+	f := inngestgo.CreateFunction(
+		inngestgo.FunctionOpts{
+			ID:   "schedule-reminder",
+			Name: "Schedule reminder",
+			Cancel: []inngestgo.Cancel{
+				{
+					Event: "tasks/reminder.deleted",
+					IfExp: "event.data.id == async.data.id",
+				},
+			},
+		},
+		// Run on every tasks/reminder.created event.
+		inngestgo.EventTrigger("tasks/reminder.created", nil),
+		ScheduleReminder,
+	)
+}
+
+func ScheduleReminder(ctx context.Context, input inngestgo.Input[ScheduleReminderEvent]) (any, error) {
+	// ...
+}
 ```
 
 Let's break down how this works:

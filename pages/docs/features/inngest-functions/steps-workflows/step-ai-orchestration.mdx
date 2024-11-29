@@ -38,7 +38,7 @@ Here's an example of a single model call:
 <CodeGroup>
 ```ts {{ title: "TypeScript" }}
 
-import { Agent, agenticOpenai as openai } from "@inngest/agent-kit";
+import { Agent, agenticOpenai as openai, createAgent } from "@inngest/agent-kit";
 export default inngest.createFunction(
   { id: "summarize-contents" },
   { event: "app/ticket.created" },

@@ -1,10 +1,21 @@
-import { Callout, CodeGroup, Properties, Property, Row, Col, VersionBadge } from "src/shared/Docs/mdx";
+import { Callout, CodeGroup, Properties, Property, Row, Col, VersionBadge, GuideSelector, GuideSection } from "src/shared/Docs/mdx";
+
 
 # Inngest Errors
 
 Inngest automatically handles errors and retries for you. You can use standard errors or use included Inngest errors to control how Inngest handles errors.
 
+<GuideSelector
+  options={[
+    { key: "typescript", title: "TypeScript" },
+    { key: "python", title: "Python" },
+    {/* { key: "go", title: "Go" },  */} // TODO
+  ]}>
+
+
 ## Standard errors
+
+<GuideSection show="typescript">
 
 All `Error` objects are handled by Inngest and [retried automatically](/docs/features/inngest-functions/error-retries/retries). This includes all standard errors like `TypeError` and custom errors that extend the `Error` class. You can throw errors in the function handler or within a step.
 
@@ -30,8 +41,34 @@ export default inngest.createFunction(
   }
 );
 ```
+</GuideSection>
+
+<GuideSection show="python">
+
+All thrown Errors are handled by Inngest and [retried automatically](/docs/features/inngest-functions/error-retries/retries). This includes all standard errors like `ValueError` and custom errors that extend the `Exception` class. You can throw errors in the function handler or within a step.
+
+```python
+@client.create_function(
+    fn_id="import-item-data",
+    retries=0,
+    trigger=inngest.TriggerEvent(event="store/import.requested"),
+)
+async def fn_async(
+    ctx: inngest.Context,
+    step: inngest.Step,
+) -> None:
+
+    def foo() -> None:
+        raise ValueError("foo")
+
+    # a retry will be attempted
+    await step.run("foo", foo)
+```
+</GuideSection>
 
 ## `NonRetriableError`
+
+<GuideSection show="typescript">
 
 Use `NonRetriableError` to prevent Inngest from retrying the function _or_ step. This is useful when the type of error is not expected to be resolved by a retry, for example, when the error is caused by an invalid input or when the error is expected to occur again if retried.
 
@@ -75,11 +112,37 @@ new NonRetriableError(message: string, options?: { cause?: Error }): NonRetriabl
   </Property>
 </Properties>
 
+</GuideSection>
+
+<GuideSection show="python">
+
+Use `NonRetriableError` to prevent Inngest from retrying the function _or_ step. This is useful when the type of error is not expected to be resolved by a retry, for example, when the error is caused by an invalid input or when the error is expected to occur again if retried.
+
+```python
+@client.create_function(
+    fn_id="import-item-data",
+    retries=0,
+    trigger=inngest.TriggerEvent(event="store/import.requested"),
+)
+async def fn_async(
+    ctx: inngest.Context,
+    step: inngest.Step,
+) -> None:
+    def step_1() -> None:
+        raise inngest.NonRetriableError("non-retriable-step-error")
+
+    step.run("step_1", step_1)
+``` 
+
+</GuideSection>
+
 ## `RetryAfterError`
 
 Use `RetryAfterError` to control when Inngest should retry the function or step. This is useful when you want to delay the next retry attempt for a specific period of time, for example, to more gracefully handle a race condition or backing off after hitting an API rate limit.
 
 If `RetryAfterError` is not used, Inngest will use [the default retry backoff policy](https://github.com/inngest/inngest/blob/main/pkg/backoff/backoff.go#L10-L22).
+
+<GuideSection show="typescript">
 
 ```typescript
 inngest.createFunction(
@@ -127,6 +190,52 @@ new RetryAfterError(
     </Properties>
   </Property>
 </Properties>
+
+</GuideSection>
+
+<GuideSection show="python">
+
+```python
+@client.create_function(
+    fn_id="import-item-data",
+    retries=0,
+    trigger=inngest.TriggerEvent(event="store/import.requested"),
+)
+async def fn_async(
+        ctx: inngest.Context,
+    step: inngest.Step,
+) -> None:
+  def step_1() -> None:
+      raise inngest.RetryAfterError("rate-limit-hit", 1000) # delay in milliseconds
+
+  step.run("step_1", step_1)
+``` 
+
+### Parameters
+
+```python
+RetryAfterError(
+  message: typing.Optional[str],
+  retry_after: typing.Union[int, datetime.timedelta, datetime.datetime],
+) -> None
+```
+
+<Properties>
+  <Property name="message" type="string" required>
+    The error message.
+  </Property>
+  <Property name="retry_after" type="int | datetime.timedelta | datetime.datetime" required>
+    The specified time to delay the next retry attempt. The following formats are accepted:
+
+    * `int` - The number of **milliseconds** to delay the next retry attempt.
+    * `datetime.timedelta` - A time delta object, such as `datetime.timedelta(seconds=30)`.
+    * `datetime.datetime` - A `datetime` object.
+  </Property>
+</Properties>
+
+</GuideSection>
+
+<GuideSection show="typescript">
 
 ## Step errors <VersionBadge version="v3.12.0+" />
 
@@ -196,6 +305,37 @@ inngest.createFunction(
   Support for handling step errors is available in the Inngest TypeScript SDK starting from version **3.12.0**. Prior to this version, wrapping a step in try/catch will not work correctly.
 </Callout>
 
+</GuideSection>
+
+<GuideSection show="python">
+
+## Step errors
+
+After a step exhausts all of its retries, it will throw a `StepError` which can be caught and handled in the function handler if desired.
+
+```python
+@client.create_function(
+    fn_id="import-item-data",
+    retries=0,
+    trigger=inngest.TriggerEvent(event="store/import.requested"),
+)
+async def fn_async(
+    ctx: inngest.Context,
+    step: inngest.Step,
+) -> None:
+    def foo() -> None:
+        raise ValueError("foo")
+
+    try:
+        step.run("foo", foo)
+    except inngest.StepError:
+        raise MyError("I am new")
+``` 
+
+</GuideSection>
+
+<GuideSection show="typescript">
+
 ## Attempt counter
 
 The current attempt number is passed in as input to the function handler. `attempt` is a zero-index number that increments for each retry. The first attempt will be `0`, the second `1`, and so on. The number is reset after a successfully executed step.
@@ -217,6 +357,7 @@ inngest.createFunction(
   }
 );
 ```
+
 
 ## Stack traces
 
@@ -251,3 +392,6 @@ When calling functions that return Promises, await the Promise to ensure that th
 </CodeGroup>
 
 Please note that immediately returning the Promise will not include a pointer to the calling function in the stack trace. Awaiting the Promise will ensure that the stack trace includes the calling function.
+
+</GuideSection>
+</GuideSelector>

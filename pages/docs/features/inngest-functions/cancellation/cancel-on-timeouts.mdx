@@ -1,4 +1,4 @@
-import { CodeGroup, Row, Col, GuideSelector, GuideSection } from "src/shared/Docs/mdx";
+import { CodeGroup, Row, Col, GuideSelector, GuideSection, Callout } from "src/shared/Docs/mdx";
 export const description = 'Learn how to cancel long running functions with events.'
 
 # Cancel on timeouts
@@ -8,8 +8,12 @@ It's possible to force runs to cancel if they take too long to start, or if the 
 - `timeouts.start`, which controls how long a function can stay unstarted in the queue
 - `timeouts.finish`, which controls how long a function can execute once started
 
+
 In the following examples, we'll explore how to configure the timeout property and how this works.
 
+<Callout variant="warning">
+  _Cancel on timeouts_ is not yet supported in the Python SDK.
+</Callout>
 
 <GuideSelector
   options={[
