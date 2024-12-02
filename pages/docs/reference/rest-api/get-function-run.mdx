@@ -1,0 +1,102 @@
+export const description = "Returns a single function run by its run ID. Response includes status, output, and timestamps."
+export const hidePageSidebar = true;
+
+# Get a function run  {{ tag: 'GET', label: '/v1/runs/{runID}' }}
+
+Returns a single function run by its run ID
+
+
+
+<Row>
+  <Col>
+
+    ## Request
+
+    <Properties>
+      <Property name="runID" type="string" required>
+        The unique identifier for the run (a ULID)
+      </Property>
+    </Properties>
+
+    ## Response
+
+    <Properties>
+      <Property name="data" type="object" attribute>
+        <Properties nested={true}>
+          <Property name="run_id" type="string" attribute>
+            The unique identifier for the run (a ULID)
+          </Property>
+          <Property name="event_id" type="string" attribute>
+            The internal unique identifier of the event that triggered the function (a ULID)
+          </Property>
+          <Property name="status" type="string" attribute>
+            Values: `Running`, `Completed`, `Failed`, `Pending`
+          </Property>
+          <Property name="run_started_at" type="ISO8601 Timestamp" attribute>
+            The timestamp that the run started
+          </Property>
+          <Property name="ended_at" type="ISO8601 Timestamp" attribute>
+            The timestamp that the run ended
+          </Property>
+          <Property name="function_id" type="string" attribute>
+            Function uuid
+          </Property>
+          <Property name="function_version" type="Number" attribute>
+            The version of the function that was run
+          </Property>
+          <Property name="environment_id" type="string" attribute>
+            Environment uuid
+          </Property>
+        </Properties>
+      </Property>
+    </Properties>
+
+  </Col>
+  <Col sticky>
+
+    <CodeGroup title="Request" tag="GET" label="/v1/runs/{runID}">
+      ```typescript
+      import { Inngest } from "inngest";
+
+      const inngest = new Inngest({ id: "my-app" });
+
+      const run = await inngest.api.getRun("01HX9TK1GG2EQE3ZXV4F9S9N7P");
+      ```
+      ```shell {{ title: "curl" }}
+      curl --request GET \
+        --url https://api.inngest.com/v1/runs/$runID \
+        --header 'Accept: application/json' \
+        --header 'Authorization: Bearer 123'
+      ```
+    </CodeGroup>
+
+    <CodeGroup title="Response">
+      ```json
+      {
+        "data": {
+          "run_id": "01HX9TK1GG2EQE3ZXV4F9S9N7P",
+          "event_id": "01HX9TK0YR00SR04E8M315GC5B",
+          "status": "Completed",
+          "run_started_at": "2024-05-07T15:26:09.936Z",
+          "ended_at": "2024-05-07T15:26:13.226Z",
+          "output": {
+            "accountID": "f3503068-594e-45cf-8377-60cc752b1291",
+            "clerkOrganizationID": "org_2g92eGirb7nJgZD8Mf7JJJpO4og",
+            "message": "updated account",
+            "result": "success"
+          },
+          "function_id": "96edf1ee-2e1d-4197-8670-2fdaa75dec73",
+          "function_version": 14,
+          "environment_id": "899fcf3b-575f-4524-9bf0-ec28ca434fdb"
+        },
+        "metadata": {
+          "fetched_at": "2024-05-07T16:19:48.28569233Z",
+          "cached_until": "2024-05-07T16:19:51.285692563Z"
+        }
+      }
+      ```
+    </CodeGroup>
+
+
+  </Col>
+</Row>
