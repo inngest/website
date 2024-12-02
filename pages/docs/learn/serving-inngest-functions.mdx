@@ -1,6 +1,7 @@
-import { Callout, CodeGroup, VersionBadge } from "shared/Docs/mdx";
+import { Callout, CodeGroup, VersionBadge, GuideSelector, GuideSection } from "shared/Docs/mdx";
 
 export const description = `Serve the Inngest API as an HTTP endpoint in your application.`
+export const hidePageSidebar = true;
 
 # Serving Inngest Functions
 
@@ -10,9 +11,19 @@ This page covers how to serve the Inngest API in your project.
 
 ## Exposing Inngest Functions
 
+<GuideSelector
+  options={[
+    { key: "typescript", title: "TypeScript" },
+    { key: "go", title: "Go" },
+    { key: "python", title: "Python" },
+  ]}
+>
+
+<GuideSection show="typescript">
+
 Inngest provides a `serve()` handler which adds an API endpoint to your router. You expose your functions to Inngest through this HTTP endpoint. To make automated deploys much easier, **the endpoint needs to be defined at `/api/inngest`** (though you can [change the API path](/docs/reference/serve#serve-client-functions-options)).
 
-```ts {{ title: "./api/inngest" }}
+```ts {{ title: "./api/inngest.ts" }}
 // All serve handlers have the same arguments:
 serve({
   client: inngest, // a client created with new Inngest()
@@ -21,12 +32,9 @@ serve({
 });
 ```
 
-### Signing key
-
-You'll need to assign your [signing key](/docs/platform/signing-keys) to an [`INNGEST_SIGNING_KEY`](/docs/sdk/environment-variables#inngest-signing-key) environment variable in your hosting
-provider or `.env` file locally, which lets the SDK securely communicate with Inngest. If you can't
-provide this as a signing key, you can pass it in to `serve` when setting up your framework. [Read
-the reference for more information](/docs/sdk/reference/serve#reference).
+<Callout>
+  You will find the complete list of supported frameworks below.
+</Callout>
 
 ## Supported Platforms
 
@@ -868,6 +876,125 @@ const fn = inngest.createFunction(
 
 export default serve({ client: inngest, functions: [fn] });
 ```
+
+</GuideSection>
+
+<GuideSection show="go">
+
+
+Inngest enables you to create a HTTP handler for your functions. This handler will be used to serve your functions over HTTP (compatible with `net/http`).
+
+```go {{ title: "Go (HTTP)" }}
+package main
+
+import (
+	"context"
+	"fmt"
+	"net/http"
+	"time"
+
+	"github.com/inngest/inngestgo"
+	"github.com/inngest/inngestgo/step"
+)
+
+func main() {
+	h := inngestgo.NewHandler("core", inngestgo.HandlerOpts{})
+	f := inngestgo.CreateFunction(
+		inngestgo.FunctionOpts{
+			ID:   "account-created",
+			Name: "Account creation flow",
+		},
+		// Run on every api/account.created event.
+		inngestgo.EventTrigger("api/account.created", nil),
+		AccountCreated,
+	)
+	h.Register(f)
+	http.ListenAndServe(":8080", h)
+}
+```
+
+</GuideSection>
+
+<GuideSection show="python">
+
+You expose your functions to Inngest through this HTTP endpoint.
+Inngest provides integrations with Flask and FastAPI.
+
+<CodeGroup>
+
+```python {{ title: "Python (Flask)" }}
+import logging
+import inngest
+from src.flask import app
+import inngest.flask
+
+logger = logging.getLogger(f"{app.logger.name}.inngest")
+logger.setLevel(logging.DEBUG)
+
+inngest_client = inngest.Inngest(app_id="flask_example", logger=logger)
+
+@inngest_client.create_function(
+    fn_id="hello-world",
+    trigger=inngest.TriggerEvent(event="say-hello"),
+)
+def hello(
+    ctx: inngest.Context,
+    step: inngest.StepSync,
+) -> str:
+
+inngest.flask.serve(
+    app,
+    inngest_client,
+    [hello],
+)
+
+app.run(port=8000)
+```
+
+```python {{ title: "Python (FastAPI)" }}
+import logging
+import inngest
+import fastapi
+import inngest.fast_api
+
+logger = logging.getLogger("uvicorn.inngest")
+logger.setLevel(logging.DEBUG)
+
+inngest_client = inngest.Inngest(app_id="fast_api_example", logger=logger)
+
+@inngest_client.create_function(
+    fn_id="hello-world",
+    trigger=inngest.TriggerEvent(event="say-hello"),
+)
+async def hello(
+    ctx: inngest.Context,
+    step: inngest.Step,
+) -> str:
+    return "Hello world!"
+
+app = fastapi.FastAPI()
+
+inngest.fast_api.serve(
+    app,
+    inngest_client,
+    [hello],
+)
+```
+
+</CodeGroup>
+
+</GuideSection>
+
+</GuideSelector>
+
+### Signing key
+
+You'll need to assign your [signing key](/docs/platform/signing-keys) to an [`INNGEST_SIGNING_KEY`](/docs/sdk/environment-variables#inngest-signing-key) environment variable in your hosting
+provider or `.env` file locally, which lets the SDK securely communicate with Inngest. If you can't
+provide this as a signing key, you can pass it in to `serve` when setting up your framework. [Read
+the reference for more information](/docs/sdk/reference/serve#reference).
+
+
 
 ## Reference
 
