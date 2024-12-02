@@ -1,4 +1,4 @@
-import { Callout, CodeGroup, Row, Col } from "src/shared/Docs/mdx";
+import { Callout, CodeGroup, Row, Col, GuideSelector, GuideSection } from "src/shared/Docs/mdx";
 
 export const description = `Define background jobs in just a few lines of code.`
 
@@ -13,6 +13,13 @@ By running background tasks in Inngest:
 
 ## How to create background jobs
 
+<GuideSelector
+  options={[
+    { key: "typescript", title: "TypeScript" },
+    { key: "go", title: "Go" },
+    { key: "python", title: "Python" },
+  ]}>
+
 Background jobs in Inngest are executed in response to a trigger (an event or cron).
 
 The example below shows a background job that uses an event (here called `app/user.created`) to send an email to new signups. It consists of two parts: creating the function that runs in the background and triggering the function.
@@ -23,6 +30,7 @@ The example below shows a background job that uses an event (here called `app/us
 
 ### 1. Create a function that runs in the background
 
+<GuideSection show="typescript">
 <Row>
   <Col>
 Let's walk through the code step by step:
@@ -74,11 +82,129 @@ await inngest.send({
 });
 ```
 
+</GuideSection>
+<GuideSection show="go">
+
+Let's walk through the code step by step:
+1. We [create a new Inngest function](https://pkg.go.dev/github.com/inngest/inngestgo#CreateFunction), which will run in the background any time the `app/user.created` event is sent to Inngest.
+2. We send an email reliably using the [`step.Run()`](https://pkg.go.dev/github.com/inngest/inngestgo@v0.7.4/step#Run) method. Every [Inngest step](/docs/steps) is automatically retried upon failure.
+3. We pause the execution of the function for 4 hours using [`step.Sleep()`](https://pkg.go.dev/github.com/inngest/inngestgo@v0.7.4/step#Sleep). The function will be resumed automatically, across server restarts or serverless functions. You don't have to worry about scale, memory leaks, connections, or restarts.
+4. We resume execution and perform other tasks.
+
+```go
+import (
+    "time"
+    "github.com/inngest/inngest-go"
+    "github.com/inngest/inngest-go/step"
+)
+
+inngestgo.CreateFunction(
+    inngest.FunctionOpts{
+        ID: "send-signup-email",
+    },
+    inngest.TriggerEvent("app/user.created"),
+    func(ctx *inngest.Context) error {
+        _, err := step.Run("send-the-user-a-signup-email", func(ctx *inngest.StepContext) (any, error) {
+            return nil, sesclient.SendEmail(&ses.SendEmailInput{
+                To:      ctx.Event.Data["user_email"].(string),
+                Subject: "Welcome to Inngest!",
+                Message: "...",
+            })
+        })
+        if err != nil {
+            return err, nil
+        }
+
+        step.Sleep("wait-for-the-future", 4 * time.Hour)
+
+        _, err = step.Run("do-some-work-in-the-future", func(ctx *inngest.StepContext) error {
+            // Code here runs in the future automatically.
+            return nil, nil
+        })
+        return err, nil
+    },
+)
+```
+
+### 2. Trigger the function
+
+Your `sendSignUpEmail` function will be triggered whenever Inngest receives an event called `app/user.created`. is received. You send this event to Inngest like so:
+
+```go
+_, err := inngestgo.Send(context.Background(), inngestgo.Event{
+    Name: "app/user.created", // This matches the event used in `createFunction`
+    Data: map[string]interface{}{
+        "email": "test@example.com",
+        // any data you want to send
+    },
+})
+```
+
+</GuideSection>
+<GuideSection show="python">
+
+Let's walk through the code step by step:
+1. We [create a new Inngest function](/docs/reference/python/functions/create), which will run in the background any time the `app/user.created` event is sent to Inngest.
+2. We send an email reliably using the [`step.run()`](/docs/reference/python/steps/run) method. Every [Inngest step](/docs/steps) is automatically retried upon failure.
+3. We pause the execution of the function until a specific date using [`step.sleep_until()`](/docs/reference/python/steps/sleep-until). The function will be resumed automatically, across server restarts or serverless functions. You don't have to worry about scale, memory leaks, connections, or restarts.
+4. We resume execution and perform other tasks.
+
+```python
+import inngest
+
+inngest_client = inngest.Inngest(
+    app_id="my-app",
+)
+
+@inngest_client.create_function(
+    fn_id="send-signup-email", 
+    trigger=inngest.TriggerEvent(event="app/user.created")
+)
+async def send_signup_email(ctx: inngest.Context, step: inngest.Step):
+    async def send_email():
+        await sesclient.send_email(
+            to=ctx.event.data["user_email"],
+            subject="Welcome to Inngest!",
+            message="..."
+        )
+    
+    await step.run("send-the-user-a-signup-email", send_email)
+    
+    await step.sleep_until("wait-for-the-future", "2023-02-01T16:30:00")
+
+    async def future_work():
+        # Code here runs in the future automatically
+        pass
+
+    await step.run("do-some-work-in-the-future", future_work)
+```
+
+
+### 2. Trigger the function
+
+Your `sendSignUpEmail` function will be triggered whenever Inngest receives an event called `app/user.created`. is received. You send this event to Inngest like so:
+
+```python
+from src.inngest.client import inngest_client
+
+await inngest_client.send(
+    name="app/user.created",  # This matches the event used in `create_function`
+    data={
+        "email": "test@example.com",
+        # any data you want to send
+    }
+)
+```
+
+</GuideSection>
+
 When you send an event to Inngest, it automatically finds any functions that are triggered by the event ID and automatically runs those functions in the background. The entire JSON object you pass in to `inngest.send()` will be available to your functions.
 
 <Callout>
 💡 Tip: You can create many functions which listen to the same event, and all of them will run in the background. Learn more about this pattern in our ["Fan out" guide](/docs/guides/fan-out-jobs).
 </Callout>
+
+</GuideSelector>
 
 ## Further reading
 

@@ -89,7 +89,7 @@ inngestgo.CreateFunction(
     SendUserEmail,
 )
 
-func SendUserEmail(ctx *inngest.FunctionContext) error {
+func SendUserEmail(ctx *inngest.FunctionContext) (any, error) {
     // Run a step which emails the user.  This automatically retries on error.
     // This returns the fully typed result of the lambda.
     result, err := step.Run(ctx, "on-user-created", func(ctx context.Context) (bool, error) {
@@ -198,7 +198,7 @@ inngestgo.CreateFunction(
     SendUserEmail,
 )
 
-func SendUserEmail(ctx *inngest.FunctionContext) error {
+func SendUserEmail(ctx *inngest.FunctionContext) (any, error) {
     // Run a step which emails the user.  This automatically retries on error.
     // This returns the fully typed result of the lambda.
     result, err := step.Run(ctx, "on-user-created", func(ctx context.Context) (bool, error) {
@@ -344,7 +344,7 @@ inngestgo.CreateFunction(
     SendUserEmail,
 )
 
-func SendUserEmail(ctx *inngest.FunctionContext) error {
+func SendUserEmail(ctx *inngest.FunctionContext) (any, error) {
     // Run a step which emails the user.  This automatically retries on error.
     // This returns the fully typed result of the lambda.
     result, err := step.Run(ctx, "on-user-created", func(ctx context.Context) (bool, error) {

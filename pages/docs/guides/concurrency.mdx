@@ -242,9 +242,9 @@ inngestgo.CreateFunction(
       }
     },
   },
-  inngestgo.TriggerEvent("ai/summary.requested"),
-  func(ctx context.Context, event *inngestgo.Event, step inngestgo.StepFunction) error {
-    return nil
+  inngestgo.EventTrigger("ai/summary.requested"),
+  func(ctx context.Context, event *inngestgo.Event, step inngestgo.StepFunction) (any, error) {
+    return nil, nil
   },
 )
 
@@ -260,9 +260,9 @@ inngestgo.CreateFunction(
       }
     },
   },
-  inngestgo.TriggerEvent("ai/summary.requested"),
-  func(ctx context.Context, event *inngestgo.Event, step inngestgo.StepFunction) error {
-    return nil
+  inngestgo.EventTrigger("ai/summary.requested"),
+  func(ctx context.Context, event *inngestgo.Event, step inngestgo.StepFunction) (any, error) {
+    return nil, nil
   },
 )
 
@@ -476,8 +476,8 @@ inngestgo.CreateFunction(
       },
     },
   },
-  inngestgo.TriggerEvent("csv/file.uploaded"),
-  func(ctx context.Context, event *inngestgo.Event, step inngestgo.StepFunction) error {
+  inngestgo.EventTrigger("csv/file.uploaded"),
+  func(ctx context.Context, event *inngestgo.Event, step inngestgo.StepFunction) (any, error) {
     _, err := step.Run(ctx, "process-file", func(ctx context.Context) (any, error) {
       file, err := bucket.Fetch(event.Data.FileURI)
       if err != nil {
@@ -487,10 +487,10 @@ inngestgo.CreateFunction(
       return nil, nil
     })
     if err != nil {
-      return err
+      return err, nil
     }
 
-    return nil
+    return nil, nil
   },
 )
 ```
