@@ -10,13 +10,13 @@ In order to send events, you'll need to instantiate the `Inngest` client. We rec
 
 <GuideSelector
   options={[
-    { key: "nodejs", title: "Node.js" },
+    { key: "typescript", title: "TypeScript" },
     { key: "python", title: "Python" },
     { key: "go", title: "Go" },
   ]}
 >
 
-<GuideSection show="nodejs">
+<GuideSection show="typescript">
 
 ```ts {{ filename: 'inngest/client.ts' }}
 import { Inngest } from "inngest";
@@ -139,7 +139,7 @@ You can learn [how to create an Event Key here](/docs/events/creating-an-event-k
 1. Set an `INNGEST_EVENT_KEY` environment variable with your Event Key. **This is the recommended approach.**
 2. Pass the Event Key to the `Inngest` constructor as the `eventKey` option:
 
-<GuideSection show="nodejs">
+<GuideSection show="typescript">
 ```ts {{ filename: 'inngest/client.ts' }}
 import { Inngest } from "inngest";
 
@@ -174,7 +174,7 @@ Explore all events properties in the [Event payload format guide](/docs/features
 
 You can also send multiple events in a single `send()` call. This enables you to send a batch of events very easily. You can send up to `512kb` in a single request which means you can send anywhere between 10 and 1000 typically sized payloads at once. This is the default and can be increased for your account.
 
-<GuideSection show="nodejs">
+<GuideSection show="typescript">
 
 ```ts
 await inngest.send([
@@ -425,7 +425,7 @@ Often, you may need to prevent duplicate events from being processed by Inngest.
 
 To prevent duplicate function runs from events, you can add an `id` parameter to the event payload. Once Inngest receives an event with an `id`, any events sent with the same `id` will be ignored, regardless of the event's payload.
 
-<GuideSection show="nodejs">
+<GuideSection show="typescript">
 
 ```ts
 await inngest.send({

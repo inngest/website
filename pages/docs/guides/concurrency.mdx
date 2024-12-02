@@ -120,7 +120,7 @@ inngestgo.CreateFunction(
 ```py {{ title: "Python" }}
 # Example 1: a simple concurrency definition limiting this function to 10 steps at once.
 @inngest.create_function(
-    id="another-function",
+    fn_id="another-function",
     concurrency=[
       inngest.Concurrency(
           limit=10,
@@ -133,7 +133,7 @@ async def first_function(event, step):
 
 # Example 2:  A complete, complex example with two virtual concurrency queues.
 @inngest.create_function(
-    id="unique-function-id",
+    fn_id="unique-function-id",
     concurrency=[
         inngest.Concurrency(
             # Use an account-level concurrency limit for this function, using the
@@ -411,7 +411,7 @@ inngest.CreateFunction(
 
 ```python {{ title: "Python" }}
 @inngest.create_function(
-    id="email-pending-invoice",
+    fn_id="email-pending-invoice",
     name="Email: Pending invoice", 
     concurrency=[
         inngest.Concurrency(

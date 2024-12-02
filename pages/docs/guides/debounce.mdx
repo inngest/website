@@ -54,7 +54,7 @@ inngestgo.CreateFunction(
 ```
 ```py {{ title: "Python" }}
 @inngest.create_function(
-    id="handle-webhook",
+    fn_id="handle-webhook",
     debounce=inngest.Debounce(
         key="event.data.account_id",
         period=datetime.timedelta(minutes=5),
