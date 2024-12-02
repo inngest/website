@@ -1,5 +1,7 @@
 import { Callout, CodeGroup, Properties, Property, Row, Col, VersionBadge, GuideSelector, GuideSection } from "src/shared/Docs/mdx";
 
+export const hidePageSidebar = true;
+
 
 # Inngest Errors
 
@@ -8,8 +10,8 @@ Inngest automatically handles errors and retries for you. You can use standard e
 <GuideSelector
   options={[
     { key: "typescript", title: "TypeScript" },
+    { key: "go", title: "Go" },
     { key: "python", title: "Python" },
-    {/* { key: "go", title: "Go" },  */} // TODO
   ]}>
 
 
@@ -66,7 +68,46 @@ async def fn_async(
 ```
 </GuideSection>
 
-## `NonRetriableError`
+<GuideSection show="go">
+
+All Errors returned by your Inngest Functions are handled by Inngest and [retried automatically](/docs/features/inngest-functions/error-retries/retries). 
+
+```go
+import (
+  "github.com/inngest/inngestgo"
+  "github.com/inngest/inngestgo/step"
+)
+
+// Register the function
+inngestgo.CreateFunction(
+    &inngest.FunctionOptions{
+        ID: "send-user-email",
+    },
+    inngest.FunctionTrigger{
+        Event: "user/created",
+    },
+    SendUserEmail,
+)
+
+func SendUserEmail(ctx *inngest.FunctionContext) error {
+    // Run a step which emails the user.  This automatically retries on error.
+    // This returns the fully typed result of the lambda.
+    result, err := step.Run(ctx, "on-user-created", func(ctx context.Context) (bool, error) {
+      // Run any code inside a step.
+      result, err := emails.Send(emails.Opts{})
+      return result, err
+    })
+    if err != nil {
+      // This step retried 5 times by default and permanently failed.
+      return nil, err
+    }
+
+    return nil, nil
+}
+```
+</GuideSection>
+
+## Prevent any additional retries
 
 <GuideSection show="typescript">
 
@@ -136,13 +177,54 @@ async def fn_async(
 
 </GuideSection>
 
-## `RetryAfterError`
+<GuideSection show="go">
+
+Use `inngestgo.NoRetryError` to prevent Inngest from retrying the function. This is useful when the type of error is not expected to be resolved by a retry, for example, when the error is caused by an invalid input or when the error is expected to occur again if retried.
+
+```go
+import (
+  "github.com/inngest/inngestgo"
+  "github.com/inngest/inngestgo/step"
+)
+
+// Register the function
+inngestgo.CreateFunction(
+    &inngest.FunctionOptions{
+        ID: "send-user-email",
+    },
+    inngest.FunctionTrigger{
+        Event: "user/created",
+    },
+    SendUserEmail,
+)
+
+func SendUserEmail(ctx *inngest.FunctionContext) error {
+    // Run a step which emails the user.  This automatically retries on error.
+    // This returns the fully typed result of the lambda.
+    result, err := step.Run(ctx, "on-user-created", func(ctx context.Context) (bool, error) {
+      // Run any code inside a step.
+      result, err := emails.Send(emails.Opts{})
+      return result, err
+    })
+    if err != nil {
+      // This step retried 5 times by default and permanently failed.
+      // we return a NoRetryError to prevent Inngest from retrying the function
+      return nil, inngestgo.NoRetryError(err)
+    }
+
+    return nil, nil
+}
+```
+
+</GuideSection>
+
+## Retry after a specific period of time
+
+<GuideSection show="typescript">
 
 Use `RetryAfterError` to control when Inngest should retry the function or step. This is useful when you want to delay the next retry attempt for a specific period of time, for example, to more gracefully handle a race condition or backing off after hitting an API rate limit.
 
 If `RetryAfterError` is not used, Inngest will use [the default retry backoff policy](https://github.com/inngest/inngest/blob/main/pkg/backoff/backoff.go#L10-L22).
-
-<GuideSection show="typescript">
 
 ```typescript
 inngest.createFunction(
@@ -195,6 +277,10 @@ new RetryAfterError(
 
 <GuideSection show="python">
 
+Use `RetryAfterError` to control when Inngest should retry the function or step. This is useful when you want to delay the next retry attempt for a specific period of time, for example, to more gracefully handle a race condition or backing off after hitting an API rate limit.
+
+If `RetryAfterError` is not used, Inngest will use [the default retry backoff policy](https://github.com/inngest/inngest/blob/main/pkg/backoff/backoff.go#L10-L22).
+
 ```python
 @client.create_function(
     fn_id="import-item-data",
@@ -232,6 +318,49 @@ RetryAfterError(
     * `datetime.datetime` - A `datetime` object.
   </Property>
 </Properties>
+
+</GuideSection>
+
+<GuideSection show="go">
+
+Use `RetryAtError` to control when Inngest should retry the function or step. This is useful when you want to delay the next retry attempt for a specific period of time, for example, to more gracefully handle a race condition or backing off after hitting an API rate limit.
+
+If `RetryAtError` is not used, Inngest will use [the default retry backoff policy](https://github.com/inngest/inngest/blob/main/pkg/backoff/backoff.go#L10-L22).
+
+```go
+import (
+  "github.com/inngest/inngestgo"
+  "github.com/inngest/inngestgo/step"
+)
+
+// Register the function
+inngestgo.CreateFunction(
+    &inngest.FunctionOptions{
+        ID: "send-user-email",
+    },
+    inngest.FunctionTrigger{
+        Event: "user/created",
+    },
+    SendUserEmail,
+)
+
+func SendUserEmail(ctx *inngest.FunctionContext) error {
+    // Run a step which emails the user.  This automatically retries on error.
+    // This returns the fully typed result of the lambda.
+    result, err := step.Run(ctx, "on-user-created", func(ctx context.Context) (bool, error) {
+      // Run any code inside a step.
+      result, err := emails.Send(emails.Opts{})
+      return result, err
+    })
+    if err != nil {
+      // This step retried 5 times by default and permanently failed.
+      // We delay the next retry attempt by 5 hours
+      return nil, inngestgo.RetryAtError(err, time.Now().Add(5*time.Hour))
+    }
+
+    return nil, nil
+}
+```
 
 </GuideSection>
 

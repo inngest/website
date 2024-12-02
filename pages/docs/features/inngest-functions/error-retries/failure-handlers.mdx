@@ -1,12 +1,8 @@
-import { CardGroup, Card, CodeGroup, Callout } from "src/shared/Docs/mdx";
+import { CardGroup, Card, CodeGroup, Callout, VersionBadge } from "src/shared/Docs/mdx";
 
-# Failure handlers
+# Failure handlers <VersionBadge version="TypeScript only" />
 
 If your function exhausts all of its retries, it will be marked as "Failed." You can handle this circumstance by providing an [`onFailure`](/docs/reference/functions/handling-failures) handler when defining your function.
-
-<Callout variant="warning">
-  _Failure handlers_ are only supported in the TypeScript SDK.
-</Callout>
 
 The example below checks if a user's subscription is valid a total of six times. If you can't check the subscription after all retries, you'll unsubscribe the user:
 

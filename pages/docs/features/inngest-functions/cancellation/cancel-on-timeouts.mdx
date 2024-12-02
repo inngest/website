@@ -1,7 +1,7 @@
-import { CodeGroup, Row, Col, GuideSelector, GuideSection, Callout } from "src/shared/Docs/mdx";
+import { CodeGroup, Row, Col, GuideSelector, GuideSection, Callout, VersionBadge } from "src/shared/Docs/mdx";
 export const description = 'Learn how to cancel long running functions with events.'
 
-# Cancel on timeouts
+# Cancel on timeouts <VersionBadge version="TypeScript & Go only" />
 
 It's possible to force runs to cancel if they take too long to start, or if the runs execute for too long.  The `timeouts` configuration property allows you to automatically cancel functions based off of two timeout properties:
 
@@ -10,10 +10,6 @@ It's possible to force runs to cancel if they take too long to start, or if the 
 
 
 In the following examples, we'll explore how to configure the timeout property and how this works.
-
-<Callout variant="warning">
-  _Cancel on timeouts_ is not yet supported in the Python SDK.
-</Callout>
 
 <GuideSelector
   options={[

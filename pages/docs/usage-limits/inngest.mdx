@@ -63,7 +63,7 @@ Maximum number of events you can send in one request is `5000`.
 If you're doing fan out, you'll need to be aware of this limitation when you run `step.sendEvent(events)`.
 
 <CodeGroup>
-```ts {{ title: "v3" }}
+```ts {{ title: "TypeScript" }}
 // this `events` list will need to be <= 5000
 const events = [{name: "<event-name>", data: {}}, ...];
 
@@ -71,13 +71,21 @@ await step.sendEvent("send-example-events", events);
 // or
 await inngest.send(events);
 ```
-```ts {{ title: "v2" }}
-// this `events` list will need to be <= 5000
-const events = [{name: "<event-name>", data: {}}, ...];
 
-await step.sendEvent(events);
-// or
-await inngest.send(events);
+```go {{ title: "Go" }}
+// this `events` list will need to be <= 5000
+events := []inngestgo.Event{{Name: "<event-name>", Data: {}}}
+
+ids, err := inngestgo.SendMany(ctx, events)
+```
+
+```python {{ title: "Python" }}
+# this `events` list will need to be <= 5000
+events = [{'name': '<event-name>', 'data': {}}, ...]
+
+await step.send_event('send-example-events', events)
+# or
+await inngest.send(events)
 ```
 </CodeGroup>
 
