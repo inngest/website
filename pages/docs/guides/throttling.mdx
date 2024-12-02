@@ -11,8 +11,8 @@ Throttling allows you to specify how many function runs can start within a time 
 
 ## How to configure throttling
 
-<CodeGroup forceTabs>
-```ts
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
 inngest.createFunction(
   {
     id: "unique-function-id",
@@ -28,6 +28,41 @@ inngest.createFunction(
   }
 );
 ```
+
+```go {{ title: "Go" }}
+inngestgo.CreateFunction(
+  &inngestgo.FunctionOpts{
+    ID: "unique-function-id",
+    Throttle: &inngestgo.Throttle{
+      Limit: 1,
+      Period: 5 * time.Second,
+      Key: inngestgo.StrPtr("event.data.user_id"),
+      Burst: 2,
+    },
+  },
+  inngestgo.EventTrigger("ai/summary.requested", nil),
+  func(ctx context.Context, input inngestgo.Input) (any, error) {
+    // This function will be throttled to 1 run per 5 seconds for a given event payload with matching user_id
+    return nil, nil
+  },
+)
+```
+
+```py {{ title: "Python" }}
+@inngest.create_function(
+  id="unique-function-id",
+  throttle=inngest.Throttle(
+    limit=1,
+    period=datetime.timedelta(seconds=5),
+    key="event.data.user_id",
+    burst=2,
+  ),
+  trigger=inngest.Trigger(event="ai/summary.requested")
+)
+async def synchronize_data(ctx: inngest.Context):
+    # This function will be throttled to 1 run per 5 seconds for a given event payload with matching user_id
+```
+
 </CodeGroup>
 
 You can configure throttling on each function using the optional `throttle` parameter.  The options directly control the generic cell rate algorithm parameters used within the queue.

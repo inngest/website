@@ -12,8 +12,8 @@ Debounce delays function execution until a series of events are no longer receiv
 
 ## How to configure debounce
 
-<CodeGroup forceTabs>
-```ts
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
 export default inngest.createFunction(
   {
     id: "handle-webhook",
@@ -31,6 +31,43 @@ export default inngest.createFunction(
     // `event` will be the last event in the series received.
   }
 );
+```
+```go {{ title: "Go" }}
+inngestgo.CreateFunction(
+  &inngestgo.FunctionOpts{
+    ID: "handle-webhook",
+    Debounce: &inngestgo.Debounce{
+      Key: "event.data.account_id",
+      Period: "5m",
+      Timeout: "10m",
+    },
+  },
+  inngestgo.EventTrigger("intercom/company.updated", nil),
+  func(ctx context.Context, input inngestgo.Input) (any, error) {
+    // This function will only be scheduled 5 minutes after events are no longer received with the same
+    // `event.data.account_id` field.
+    //
+    // `event` will be the last event in the series received.
+    return nil, nil
+  },
+)
+```
+```py {{ title: "Python" }}
+@inngest.create_function(
+    id="handle-webhook",
+    debounce=inngest.Debounce(
+        key="event.data.account_id",
+        period=datetime.timedelta(minutes=5),
+        timeout=datetime.timedelta(minutes=10)
+    ),
+    trigger=inngest.Trigger(event="intercom/company.updated")
+)
+async def handle_webhook(ctx: inngest.Context):
+    // This function will only be scheduled 5 minutes after events are no longer received with the same
+    // `event.data.account_id` field.
+    //
+    // `event` will be the last event in the series received.
+    pass
 ```
 </CodeGroup>
 
