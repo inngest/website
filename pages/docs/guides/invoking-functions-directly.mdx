@@ -1,4 +1,4 @@
-import { Callout } from "src/shared/Docs/mdx";
+import { Callout, GuideSelector, GuideSection } from "src/shared/Docs/mdx";
 
 # Invoking functions directly
 
@@ -8,6 +8,19 @@ Inngest's `step.invoke()` function provides a powerful tool for calling function
 - Naturally separates your system into reusable functions that can spread across process boundaries
 - Allows use of synchronous interaction between functions in an otherwise-asynchronous event-driven architecture, making it much easier to manage functions that require immediate outcomes
 
+
+## Invoking another function
+
+<GuideSelector
+  options={[
+    { key: "typescript", title: "TypeScript" },
+    { key: "go", title: "Go" },
+    { key: "python", title: "Python" },
+  ]}
+>
+
+<GuideSection show="typescript">
+
 <Callout>
 ### When should I invoke?
 
@@ -16,8 +29,6 @@ distinct from the invoker's, you can provide a tailored configuration for each f
 
 If you don't need to define granular configuration or if your function won't be reused across app boundaries, use `step.run()` for simplicity.
 </Callout>
-
-## Invoking another function
 
 ```ts
 // Some function we'll call
@@ -104,6 +115,118 @@ const mainFunction = inngest.createFunction(
 ```
 
 For more information on referencing functions, see [TypeScript -> Referencing Functions](/docs/functions/references).
+
+</GuideSection>
+
+<GuideSection show="go">
+
+<Callout>
+### When should I invoke?
+
+Use `step.Invoke()` in tasks that need specific settings like concurrency limits. Because it runs with its own configuration,
+distinct from the invoker's, you can provide a tailored configuration for each function.
+
+If you don't need to define granular configuration or if your function won't be reused across app boundaries, use `step.Run()` for simplicity.
+</Callout>
+
+```go
+import (
+  "github.com/inngest/inngestgo"
+  "github.com/inngest/inngestgo/step"
+)
+
+// Some function we'll call
+inngest.CreateFunction(
+	inngest.FunctionOpts{ID: "compute-square"},
+	inngest.EventTrigger("calculate/square"),
+	ComputeSquare,
+)
+func ComputeSquare(ctx *inngest.Context) error {
+	data := struct {
+		Number int `json:"number"`
+	}{}
+	if err := ctx.Event.Data.Decode(&data); err != nil {
+		return err
+	}
+
+	return ctx.Return(map[string]int{
+		"result": data.Number * data.Number,
+	})
+}
+
+
+// In this function, we'll call ComputeSquare
+inngest.CreateFunction(
+	inngest.FunctionOpts{ID: "main-function"},
+	inngest.EventTrigger("main/event"),
+	MainFunction,
+)
+func MainFunction(ctx *inngest.Context) error {
+	square, err := step.Invoke("compute-square-value", &inngest.InvokeOpts{
+		Function: "compute-square",
+		Data: map[string]interface{}{
+			"number": 4,
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	result := square.Data["result"].(int)
+	return ctx.Return(fmt.Sprintf("Square of 4 is %d.", result))
+}
+
+```
+
+In the above example, our `mainFunction` calls `computeSquare` to retrieve the resulting value. `computeSquare` can now be called from here or any other process connected to Inngest.
+
+
+</GuideSection>
+<GuideSection show="python">
+
+<Callout>
+### When should I invoke?
+
+Use `step.invoke()` in tasks that need specific settings like concurrency limits. Because it runs with its own configuration,
+distinct from the invoker's, you can provide a tailored configuration for each function.
+
+If you don't need to define granular configuration or if your function won't be reused across app boundaries, use `step.run()` for simplicity.
+</Callout>
+
+```py
+import inngest
+from src.inngest.client import inngest_client
+
+# Some function we'll call
+@inngest_client.create_function(
+    fn_id="compute-square",
+    trigger=inngest.TriggerEvent(event="calculate/square")
+)
+async def compute_square(ctx: inngest.Context, step: inngest.Step):
+    return {"result": ctx.event.data["number"] * ctx.event.data["number"]}  # Result typed as { result: number }
+
+# In this function, we'll call compute_square
+@inngest_client.create_function(
+    fn_id="main-function",
+    trigger=inngest.TriggerEvent(event="main/event")
+)
+async def main_function(ctx: inngest.Context, step: inngest.Step):
+    square = await step.invoke(
+        "compute-square-value",
+        function=compute_square,
+        data={"number": 4}  # input data is typed, requiring input if it's needed
+    )
+
+    return f"Square of 4 is {square['result']}."  # square.result is typed as number
+```
+
+In the above example, our `mainFunction` calls `compute_square` to retrieve the resulting value. `compute_square` can now be called from here or any other process connected to Inngest.
+
+
+</GuideSection>
+
+</GuideSelector>
+
 
 ## Creating a distributed system
 
