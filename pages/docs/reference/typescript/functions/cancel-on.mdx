@@ -13,7 +13,7 @@ inngest.createFunction(
     cancelOn: [
       {
         event: "app/user.deleted",
-	// ensure the async (future) event's userId matches the trigger userId
+        // ensure the async (future) event's userId matches the trigger userId
         if: "async.data.userId == event.data.userId",
       },
     ],
@@ -43,7 +43,7 @@ inngest.createFunction(
     cancelOn: [
       {
         event: "app/user.deleted",
-	// ensure the async (future) event's userId matches the trigger userId
+        // ensure the async (future) event's userId matches the trigger userId
         if: "async.data.userId == event.data.userId",
       },
     ],
