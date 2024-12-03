@@ -6,20 +6,17 @@ import { InformationCircleIcon } from '@heroicons/react/24/outline'
 Stop the execution of a running function when a specific event is received using `cancelOn`.
 
 <CodeGroup>
-```ts {{ title: "v3" }}
+```ts
 inngest.createFunction(
   {
     id: "sync-contacts",
-    cancelOn: [{ event: "app/user.deleted", match: "data.userId" }],
-  }
-  // ...
-);
-```
-```ts {{ title: "v2" }}
-inngest.createFunction(
-  {
-    name: "Sync contacts",
-    cancelOn: [{ event: "app/user.deleted", match: "data.userId" }],
+    cancelOn: [
+      {
+        event: "app/user.deleted",
+        // ensure the async (future) event's userId matches the trigger userId
+        if: "async.data.userId == event.data.userId",
+      },
+    ],
   }
   // ...
 );
@@ -43,7 +40,13 @@ This function specifies it will `cancelOn` the `"app/user.deleted"` event only w
 inngest.createFunction(
   {
     id: "sync-contacts",
-    cancelOn: [{ event: "app/user.deleted", match: "data.userId" }],
+    cancelOn: [
+      {
+        event: "app/user.deleted",
+        // ensure the async (future) event's userId matches the trigger userId
+        if: "async.data.userId == event.data.userId",
+      },
+    ],
   },
   { event: "app/user.created" },
   // ...
