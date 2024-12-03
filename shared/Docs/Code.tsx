@@ -314,6 +314,8 @@ export function CodeGroup({
   let languages = Children.map<string, any>(children, (child) =>
     getPanelTitle(child.props)
   );
+  const [currentLanguage] = useLocalStorage("currentLanguage", null);
+  const mountRef = useRef(false);
   let tabGroupProps = useTabGroupProps(languages);
   let hasTabs = forceTabs || Children.count(children) > 1;
   let Container: typeof Tab["Group"] | "div" = hasTabs ? Tab.Group : "div";
@@ -321,6 +323,30 @@ export function CodeGroup({
   let headerProps = hasTabs
     ? { selectedIndex: tabGroupProps.selectedIndex }
     : {};
+
+  // ensure to select the current language if set in local storage
+  useEffect(() => {
+    if (mountRef.current) {
+      return;
+    }
+    mountRef.current = true;
+    const childrenList: React.ReactElement[] = Children.toArray(
+      children
+    ) as React.ReactElement[];
+    if (
+      tabGroupProps &&
+      currentLanguage &&
+      childrenList.find(
+        (child) => child.props?.title?.toLowerCase() === currentLanguage
+      )
+    ) {
+      tabGroupProps.onChange(
+        childrenList.findIndex(
+          (child) => child.props?.title?.toLowerCase() === currentLanguage
+        )
+      );
+    }
+  }, []);
 
   return (
     <CodeGroupContext.Provider value={true}>
