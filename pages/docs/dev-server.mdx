@@ -60,7 +60,10 @@ There are different ways that you can send events to the dev server when testing
 
 When using the Inngest SDK locally, it tries to detect if the dev server is running on your machine. If it's running, the event will be sent there.
 
-```ts
+<CodeGroup>
+```ts {{ title: "Node.js" }}
+import { Inngest } from "inngest";
+
 const inngest = new Inngest({ id: "my-app" });
 await inngest.send({
   name: "user.avatar.uploaded",
@@ -68,6 +71,29 @@ await inngest.send({
 });
 ```
 
+```python {{ title: "Python" }}
+from inngest import Inngest
+
+inngest_client = inngest.Inngest(app_id="my_app")
+await inngest_client.send(
+  name="user.avatar.uploaded",
+  data={"url": "https://a-bucket.s3.us-west-2.amazonaws.com/..."},
+)
+```
+
+```go {{ title: "Go" }}
+package main
+
+import "github.com/inngest/inngest-go"
+
+func main() {
+  inngestgo.Send(context.Background(), inngestgo.Event{
+    Name: "user.avatar.uploaded",
+    Data: map[string]any{"url": "https://a-bucket.s3.us-west-2.amazonaws.com/..."},
+  })
+}
+```
+</CodeGroup>
 **Note** - During local development, you can use a dummy value for your [`INNGEST_EVENT_KEY`](/docs/sdk/environment-variables#inngest-event-key?ref=local-development) environment variable. The dev server does not validate keys locally.
 
 #### Using the "Test Event" button

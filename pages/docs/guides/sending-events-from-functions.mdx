@@ -1,4 +1,4 @@
-import { Callout } from "src/shared/Docs/mdx";
+import { Callout, GuideSelector, GuideSection } from "src/shared/Docs/mdx";
 
 export const description = 'How to send events from within functions to trigger other functions to run in parallel'
 
@@ -12,9 +12,18 @@ In some workflows or pipeline functions, you may want to broadcast events from w
 * You want to [cancel](/docs/guides/cancel-running-functions) another function
 * You want to send data to another function [waiting for an event](/docs/reference/functions/step-wait-for-event)
 
-If your function needs to handle the result of another function, or wait until that other function has completed, you should use [direct function invocation with `step.invoke()`](/docs/guides/invoking-functions-directly) instead.
+If your function needs to handle the result of another function, or wait until that other function has completed, you should use [direct function invocation](/docs/guides/invoking-functions-directly) instead.
 
 ## How to send events from functions
+
+<GuideSelector
+  options={[
+    { key: "typescript", title: "TypeScript" },
+    { key: "go", title: "Go" },
+    { key: "python", title: "Python" },
+  ]}>
+
+<GuideSection show="typescript">
 
 To send events from within functions, you will use [`step.sendEvent()`](/docs/reference/functions/step-send-event). This method takes a single event, or an array of events. The example below uses an array of events.
 
@@ -88,6 +97,190 @@ Each of these functions will run in parallel and individually retry on error, re
 ### Why `step.sendEvent()` vs. `inngest.send()`?
 
 By using [`step.sendEvent()`](/docs/reference/functions/step-send-event) Inngest's SDK can automatically add context and tracing which ties events to the current function run. If you use [`inngest.send()`](/docs/reference/events/send), the context around the function run is not present.
+
+</GuideSection>
+<GuideSection show="go">
+
+To send events from within functions, you  will use [`inngestgo.Send()`](https://pkg.go.dev/github.com/inngest/inngestgo#Send). This method takes a single event, or an array of events. The example below uses an array of events.
+
+This is an example of a [scheduled function](/docs/guides/scheduled-functions) that sends a weekly activity email to all users.
+
+First, the function fetches all users, then it maps over all users to create a `"app/weekly-email-activity.send"` event for each user, and finally it sends all events to Inngest.
+
+```go
+package main
+
+import (
+    "context"
+    "github.com/inngest/inngest-go"
+    "github.com/inngest/inngest-go/step"
+)
+
+func loadCron(client *inngest.Client) *inngest.FunctionDefinition {
+    return client.CreateFunction(
+        inngest.FunctionOpts{
+            ID: "weekly-activity-load-users",
+        },
+        inngest.CronTrigger("0 12 * * 5"),
+        func(ctx context.Context, event *inngest.Event) error {
+            // Fetch all users
+            var users []User
+            if err := step.Run("fetch-users", func() error {
+                var err error
+                users, err = fetchUsers()
+                return err
+            }); err != nil {
+                return err
+            }
+
+            // For each user, send us an event. Inngest supports batches of events
+            // as long as the entire payload is less than 512KB.
+            events := make([]inngest.Event, len(users))
+            for i, user := range users {
+                events[i] = inngest.Event{
+                    Name: "app/weekly-email-activity.send",
+                    Data: map[string]interface{}{
+                        "user": user,
+                    },
+                }
+            }
+
+            // Send all events to Inngest, which triggers any functions listening to
+            // the given event names.
+            if err := inngestgo.Send(ctx, events); err != nil {
+                return err
+            }
+
+            // Return the number of users triggered
+            return step.Return(map[string]interface{}{
+                "count": len(users),
+            })
+        },
+    )
+}
+```
+
+Next, create a function that listens for the `"app/weekly-email-activity.send"` event. This function will be triggered for each user that was sent an event in the previous function.
+
+```go
+import (
+    "context"
+    "github.com/inngest/inngest-go"
+    "github.com/inngest/inngest-go/step"
+)
+
+func sendReminder(client *inngest.Client) *inngest.FunctionDefinition {
+    return client.CreateFunction(
+        inngest.FunctionOpts{
+            ID: "weekly-activity-send-email",
+        },
+        inngest.TriggerEvent("app/weekly-email-activity.send"),
+        func(ctx *inngest.Context) error {
+            var data interface{}
+            if err := step.Run("load-user-data", func() error {
+                var err error
+                data, err = loadUserData(ctx.Event.Data["user"].(map[string]interface{})["id"].(string))
+                return err
+            }); err != nil {
+                return err
+            }
+
+            if err := step.Run("email-user", func() error {
+                return sendEmail(ctx.Event.Data["user"], data)
+            }); err != nil {
+                return err
+            }
+
+            return nil
+        },
+    )
+}
+```
+
+Each of these functions will run in parallel and individually retry on error, resulting in a faster, more reliable system.
+
+<Callout>
+  💡 **Tip**: When triggering lots of functions to run in parallel, you will likely want to configure `concurrency` limits to prevent overloading your system. See our [concurrency guide](/docs/guides/concurrency) for more information.
+</Callout>
+
+</GuideSection>
+<GuideSection show="python">
+
+To send events from within functions, you will use [`step.send_event()`](/docs/reference/python/steps/send-event). This method takes a single event, or an array of events. The example below uses an array of events.
+
+This is an example of a [scheduled function](/docs/guides/scheduled-functions) that sends a weekly activity email to all users.
+
+First, the function fetches all users, then it maps over all users to create a `"app/weekly-email-activity.send"` event for each user, and finally it sends all events to Inngest.
+
+```py
+import inngest
+from src.inngest.client import inngest_client
+
+@inngest_client.create_function(
+    fn_id="weekly-activity-load-users",
+    trigger=inngest.TriggerCron(cron="0 12 * * 5")
+)
+async def load_cron(ctx: inngest.Context, step: inngest.Step):
+    # Fetch all users
+    async def fetch():
+        return await fetch_users()
+    
+    users = await step.run("fetch-users", fetch)
+
+    # For each user, send us an event. Inngest supports batches of events
+    # as long as the entire payload is less than 512KB.
+    events = []
+    for user in users:
+        events.append(
+            inngest.Event(
+                name="app/weekly-email-activity.send",
+                data={
+                    **user,
+                    "user": user
+                }
+            )
+        )
+
+    # Send all events to Inngest, which triggers any functions listening to
+    # the given event names.
+    await step.send_event("fan-out-weekly-emails", events)
+
+    # Return the number of users triggered.
+    return {"count": len(users)}
+```
+
+Next, create a function that listens for the `"app/weekly-email-activity.send"` event. This function will be triggered for each user that was sent an event in the previous function.
+
+```py
+@inngest_client.create_function(
+    fn_id="weekly-activity-send-email",
+    trigger=inngest.TriggerEvent(event="app/weekly-email-activity.send")
+)
+async def send_reminder(ctx: inngest.Context, step: inngest.Step):
+    async def load_data():
+        return await load_user_data(ctx.event.data["user"]["id"])
+    
+    data = await step.run("load-user-data", load_data)
+
+    async def send():
+        return await send_email(ctx.event.data["user"], data)
+    
+    await step.run("email-user", send)
+```
+
+Each of these functions will run in parallel and individually retry on error, resulting in a faster, more reliable system.
+
+<Callout>
+  💡 **Tip**: When triggering lots of functions to run in parallel, you will likely want to configure `concurrency` limits to prevent overloading your system. See our [concurrency guide](/docs/guides/concurrency) for more information.
+</Callout>
+
+### Why `step.send_event()` vs. `inngest.send()`?
+
+By using [`step.send_event()`](/docs/reference/python/steps/send-event) Inngest's SDK can automatically add context and tracing which ties events to the current function run. If you use [`inngest.send()`](/docs/reference/python/client/send), the context around the function run is not present.
+
+</GuideSection>
+
+</GuideSelector>
 
 ## Parallel functions vs. parallel steps
 

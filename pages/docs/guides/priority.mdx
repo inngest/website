@@ -30,6 +30,35 @@ export default inngest.createFunction(
   }
 );
 ```
+
+```go {{ title: "Go" }}
+inngestgo.CreateFunction(
+  &inngestgo.FunctionOpts{
+    ID: "ai-generate-summary",
+    Priority: &inngest.Priority{
+      Run: inngestgo.StrPtr("event.data.account_type == 'enterprise' ? 120 : 0"),
+    },
+  },
+  inngestgo.EventTrigger("ai/summary.requested", nil),
+  func(ctx context.Context, input inngestgo.Input) (any, error) {
+    // This function will be prioritized based on the account type
+    return nil, nil
+  },
+)
+```
+
+```py {{ title: "Python" }}
+@inngest.create_function(
+  id="ai-generate-summary",
+  priority=inngest.Priority(
+    run="event.data.account_type == 'enterprise' ? 120 : 0",
+  ),
+  trigger=inngest.Trigger(event="ai/summary.requested")
+)
+async def ai_generate_summary(ctx: inngest.Context):
+    # This function will be prioritized based on the account type
+```
+
 </CodeGroup>
 
 ### Configuration reference

@@ -24,8 +24,7 @@ Creating middleware means defining the lifecycles and subsequent hooks in those 
     **`new InngestMiddleware(options): InngestMiddleware`**
 
 
-    <CodeGroup>
-    ```ts {{ title: "v3" }}
+    ```ts
     // Create a new middleware
     const myMiddleware = new InngestMiddleware({
       name: "My Middleware",
@@ -40,23 +39,7 @@ Creating middleware means defining the lifecycles and subsequent hooks in those 
       middleware: [myMiddleware],
     });
     ```
-    ```ts {{ title: "v2" }}
-    // Create a new middleware
-    const myMiddleware = new InngestMiddleware({
-      name: "My Middleware",
-      init: () => {
-          return {};
-      },
-    });
-
-    // Register it on the client
-    const inngest = new Inngest({
-      name: "My App",
-      middleware: [myMiddleware],
-    });
-    ```
-    </CodeGroup>
-
+    
 </GuideSection>
 
 <GuideSection show="python">
@@ -287,9 +270,7 @@ It's common for middleware to require additional customization or options from d
     });
     };
     ```
-
-    <CodeGroup filename="inngest/client.ts">
-    ```ts {{ title: "v3" }}
+    ```ts
     import { createMyMiddleware } from "./middleware/myMiddleware";
 
     export const inngest = new Inngest({
@@ -297,15 +278,6 @@ It's common for middleware to require additional customization or options from d
     middleware: [createMyMiddleware("app/user.created")],
     });
     ```
-    ```ts {{ title: "v2" }}
-    import { createMyMiddleware } from "./middleware/myMiddleware";
-
-    export const inngest = new Inngest({
-    name: "My Client",
-    middleware: [createMyMiddleware("app/user.created")],
-    });
-    ```
-    </CodeGroup>
 
     <Callout>
     Make sure to let TypeScript infer the output of the function instead of strictly typing it; this helps Inngest understand changes to input and output of arguments. See [Middleware - TypeScript](/docs/reference/middleware/typescript) for more information.
