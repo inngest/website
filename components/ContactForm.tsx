@@ -59,7 +59,7 @@ export default function ContactForm({
   return (
     <form
       onSubmit={onSubmit}
-      className="p-6 bg-surfaceSubtle flex flex-col items-start gap-4 rounded-lg border border-subtle"
+      className="p-4 sm:p-6 bg-surfaceSubtle flex flex-col items-start gap-4 rounded-lg border border-subtle"
     >
       <label className="w-full flex flex-col gap-2">
         Your name
@@ -102,10 +102,9 @@ export default function ContactForm({
           <option value="" disabled>
             Select an option
           </option>
-          <option value="1">Just Me</option>
           <option value="2-9">2-9</option>
-          <option value="10-30">10-20</option>
-          <option value="20-99">20-99</option>
+          <option value="10-30">10-30</option>
+          <option value="30-99">30-99</option>
           <option value="100+">100+</option>
         </select>
       </label>

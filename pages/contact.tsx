@@ -3,6 +3,7 @@ import Container from "src/shared/layout/Container";
 import Footer from "src/shared/Footer";
 import Quote from "src/shared/Home/Quote";
 import ContactForm from "src/components/ContactForm";
+import { RiLifebuoyLine } from "@remixicon/react";
 
 export async function getStaticProps() {
   return {
@@ -20,19 +21,20 @@ export default function Contact() {
     <div className="font-sans text-basis">
       <Header />
       <Container>
-        <main className="m-auto max-w-5xl pt-16 pb-8">
+        <main className="m-auto max-w-5xl pt-4 sm:pt-16 pb-8">
           <header className="pt-12 lg:pt-24 max-w-4xl m-auto text-center">
             <h1 className="text-white font-bold text-2xl md:text-4xl xl:text-5xl mb-2 md:mb-6 tracking-tight lg:leading-loose">
               Chat with sales engineering
             </h1>
             <p className="text-balance">
-              We'll help you evaluate Inngest and show you how Inngest enables
-              teams to ship more reliable code, faster.
+              Explore and evaluate Inngest and learn about custom Enterprise
+              plans and pricing.
             </p>
 
-            <div className="flex place-content-center">
-              <p className="mt-4 py-4 px-6 rounded-full bg-white/10 flex gap-2 items-center">
-                👋&nbsp;&nbsp; Looking for support?{" "}
+            <div className="hidden sm:flex place-content-center">
+              <p className="mt-4 py-2 px-3 rounded-md bg-white/5 gap-2 items-center">
+                <RiLifebuoyLine className="w-4 h-4 inline -translate-y-px mr-1" />{" "}
+                Looking for support?{" "}
                 <a href="/discord" className="font-medium hover:underline">
                   Chat on Discord
                 </a>{" "}
