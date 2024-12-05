@@ -23,6 +23,7 @@ import rehypeCodeTitles from "rehype-code-titles";
 import YouTube from "react-youtube-embed";
 import remarkGfm from "remark-gfm";
 import { SectionProvider } from "src/shared/Docs/SectionProvider";
+import FloatingCTA from "src/components/Blog/FloatingCTA";
 // import { LaunchWeekBanner } from "../index";
 
 // @ts-ignore
@@ -85,6 +86,7 @@ type Scope = {
   dateUpdated?: string;
 
   primaryCTA?: "sales" | "docs";
+  floatingCTA?: boolean;
 
   reading: {
     text: string;
@@ -192,7 +194,7 @@ export default function BlogLayout(props) {
         {/* <LaunchWeekBanner urlRef="blog-post-banner" /> */}
         <Container>
           <article>
-            <main className="m-auto max-w-3xl pt-16">
+            <main className="m-auto max-w-3xl pt-16 relative">
               {scope.image && (
                 <figure className="mx-auto flex flex-col items-end max-w-[768px]">
                   <Image
@@ -261,6 +263,7 @@ export default function BlogLayout(props) {
                 </SectionProvider>
                 <CTAs primary={primaryCTA} ctaRef={`blog-${slug}`} />
               </div>
+              {scope.floatingCTA && <FloatingCTA ctaRef={`blog-${slug}`} />}
             </main>
           </article>
         </Container>
@@ -300,7 +303,7 @@ function CTAs({
   const visibleCTAs =
     primary === "sales" ? [ctas.sales, ctas.docs] : [ctas.docs, ctas.sales];
   return (
-    <div className="max-w-[70ch] grid sm:grid-cols-2 gap-16 border-t-[2px] border-slate-800 pt-16 m-auto text-indigo-500">
+    <aside className="max-w-[70ch] grid sm:grid-cols-2 gap-16 border-t-[2px] border-slate-800 pt-16 m-auto text-indigo-500">
       {visibleCTAs.map((c, idx) => (
         <div key={idx} className="flex flex-col items-start">
           <h2 className="text-basis text-xl font-medium mt-6">{c.title}</h2>
@@ -316,7 +319,7 @@ function CTAs({
           </Button>
         </div>
       ))}
-    </div>
+    </aside>
   );
 }
 
