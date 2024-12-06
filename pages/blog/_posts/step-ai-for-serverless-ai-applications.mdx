@@ -1,0 +1,212 @@
+---
+heading: "step.ai: Build Serverless AI Applications That Won't Break the Bank"
+subtitle: "Combining step.run() and step.ai.infer() is the best toolset to build reliable AI applications on Serverless while saving on compute."
+showSubtitle: false
+image: /assets/blog/step-ai-for-serverless-ai-applications/og-image.png
+date: 2024-12-09
+author: Charly Poly
+category: engineering
+---
+
+Inngest's functions are popular among developers deploying their applications on Serverless platforms such as Vercel. Its `step.run()` API enables developers to [add state to Serverless Functions](https://www.youtube.com/watch?v=sDZ1HINJPgA), overcome third-party rate limits and timeouts, and recover from failures with retries.  
+Our new `step.ai.infer()` API offloads all LLM requests to Inngest's infrastructure, removing all duration constraints when developing AI applications in Serverless environments.
+
+In this article, we'll see how combining the `step.run()` and `step.ai.infer()` APIs is the quickest way to build reliable AI applications on Serverless while saving on compute.
+
+## `step.run()`: AI applications are workflows
+
+Inngest Functions are composed of steps defined using the `step.run()` API. Each step is an independent cached and retriable part of your function, [making your workflows durable](https://www.inngest.com/blog/durable-functions-a-visual-javascript-primer) (in other words, *unbreakable*).
+
+![](/assets/blog/step-ai-for-serverless-ai-applications/step-run.png)
+
+Building AI applications mainly consists of building workflows composed of 3 primary types of steps:
+
+1. **Gather context for the LLM**: Retrieve data, generate embeddings, preprocess user data (ex, uploaded files)  
+2. **Perform LLM calls**: single-shot prompts, prompt chaining, or agentic workflows  
+3. **Process the generated results**: save the generated result and trigger business-related logic (ex, sending notifications, bulk process data, etc.)
+
+By using `step.run()` to build your AI workflows, each step of your workflow immediately benefits from automatic [retries](https://www.inngest.com/docs/features/inngest-functions/error-retries/retries), [throttling configuration](https://www.inngest.com/docs/guides/throttling), and caching:
+
+![](/assets/blog/step-ai-for-serverless-ai-applications/ai-workflow.png)
+
+*The interesting bit is that retrying the vector database step does not rerun the first LLM call, saving you some credits and Serveless compute time.*
+
+Here is an example from MegaSEO, an AI product built with Inngest to generate SEO-optimized articles:
+
+<div className="flex gap-4">
+
+
+<div className="max-w-64">
+
+This first `index-page` function demonstrates the pattern described above:
+
+<br />
+
+The first step retrieves the page content (using scraping). 
+
+
+The second step uses the first step result to index it into a vector database. 
+
+
+Here, a failure of the vector insert step won't trigger a new run of the first scraping step.
+
+<br />
+
+The second `index-site` function triggers the first `index-page` function in parallel for each website page. 
+
+**Important note**: each [`step.run()` runs into a dedicated Serverless Function run](https://www.inngest.com/blog/durable-functions-a-visual-javascript-primer#under-the-hood), meaning that `step.run()` also helps to extend your Serverless Function's duration limit.
+
+Running steps in parallel is simply achieved using `Promise.all()`.
+
+</div>
+
+
+<div>
+
+```typescript
+// index_functions.ts
+export const indexPage = client.createFunction(
+  { id: "index-page", concurrency: 10 },
+  { event: Events.INDEX_PAGE },
+  async ({ event, step }) => {
+    const { pageUrl } = event.data;
+
+    const page = await step.run("get-page-content", async () => {
+      return getPageContent(pageUrl);
+    });
+
+    await step.run("index-page", async () => {
+      return saveToPinecone({ page });
+    });
+  }
+);
+
+
+
+
+
+export const indexSite = client.createFunction(
+  { id: "index-site" },
+  { event: Events.INDEX_SITE },
+  async ({ event, step }) => {
+    const { url } = event.data;
+
+    const pages = await step.run("find-pages", async () => {
+      return findPagesToIndex(url);
+    });
+
+
+
+
+
+    await Promise.all(
+      pages.map(async (page) => {
+        return step.invoke(`index-page-${page.url}`, {
+          function: indexPage,
+          data: { pageUrl: page.url },
+        });
+      })
+    );
+  }
+);
+```
+
+</div>
+
+</div>
+
+
+*You can explore the complete AI workflow code [in this article](https://www.inngest.com/blog/next-generation-ai-workflows).* |
+
+
+The above AI workflow demonstrates how the Inngest Function's `step.run()` API **makes fetching context for LLM calls easier**.  
+With few lines of code, MegaSEO built a complex and scalable AI workflow that can recover from external errors (ex, scraping or network issues) without performing unnecessary costly and slow step reruns.
+
+Let's now see how to use the `step.ai.infer()` method can help you perform LLM requests without consuming Serverless compute or reaching the maximum duration limit.
+
+## `step.ai.infer()`: offloading slow LLM requests
+
+Some AI patterns requiring long-running requests are challenging to adopt on Serverless, such as reasoning models like OpenAI o1, the ReAct pattern, or a multi-agent setup.
+
+We [recently released `step.ai.infer()`](https://www.inngest.com/blog/ai-orchestration-with-agentkit-step-ai) to solve this challenge:
+
+```javascript
+export default inngest.createFunction(
+  {
+    id: "generate-import-workflow",
+  },
+  { event: "contacts.uploaded" },
+  async ({ event, step }) => {
+    const generatedStepsResult = await step.ai.infer(
+      "generate-workflow-steps",
+      {
+        model: step.ai.models.openai({ model: "gpt-4" }),
+        body: {
+          messages: [
+            {
+              role: "user",
+              content: prompt(event.data.contactsFileContent),
+            },
+          ],
+        },
+      }
+    );
+    // ...
+  }
+)
+```
+
+Performing an LLM call with `step.ai.infer()` pauses your workflow while the Inngest's servers perform the LLM request. Your workflow gets resumed when the LLM request is completed, saving the compute time usually used when an LLM call is done within a Serverless Function:
+
+![](/assets/blog/step-ai-for-serverless-ai-applications/without-step-ai-infer.png)
+
+![](/assets/blog/step-ai-for-serverless-ai-applications/with-step-ai-infer.png)
+
+Let's review an example Next.js application that leverages the OpenAI o1 reasoning model and Inngest's `step.ai.infer()`.
+
+Our sample Next.js application, [available on GitHub](https://github.com/inngest/vercel-ai-o1-preview-crm-agent/tree/step-ai), uses OpenAI o1 to import contacts CSV files by dynamically creating Inngest workflows. OpenAI o1 gets prompted with the file and available workflow steps. In return, the LMM returns a valid workflow schema used to process the file:  
+
+![](/assets/blog/step-ai-for-serverless-ai-applications/nextjs-openai-o1-demo.jpg)
+
+The initial call to the OpenAI o1 model **can take multiple minutes**, consuming Vercel Serverless computing while waiting for the LLM request and risking reaching the maximum duration limit.  
+Thankfully, this OpenAI call is performed using `step.ai.infer()`, **removing any timeout and billing surge risks**:
+
+```javascript
+export default inngest.createFunction(
+  {
+    id: "generate-import-workflow",
+    throttle: {
+      limit: 5000,
+      period: "1m",
+    },
+  },
+  { event: "contacts.uploaded" },
+  async ({ event, step }) => {
+    const generatedStepsResult = await step.ai.infer(
+      "generate-workflow-steps",
+      {
+        model: step.ai.models.openai({ model: "gpt-4" }),
+        body: {
+          messages: [
+            {
+              role: "user",
+              content: prompt(event.data.contactsFileContent),
+            },
+          ],
+        },
+      }
+    );
+
+   // ...
+ }
+)
+```
+
+*Explore the [complete project on GitHub](https://github.com/inngest/vercel-ai-o1-preview-crm-agent/tree/step-ai) and run it locally or deploy it on Vercel.*
+
+## Conclusion
+
+We're happy to continue to support developers building Serverless applications by enabling the creation of durable, retriable workflows with `step.run()` and the efficient offloading of LLM requests with `step.ai.infer()`.  
+Whether you're building a complex SEO generation tool like MegaSEO or AI features for your application, you can now create sophisticated AI workflows without getting bogged down by Serverless constraints thanks to automatic retries, granular step management, compute cost savings, and the ability to handle long-running AI operations without hitting platform time limits. 
+
+As AI evolves, tools that simplify infrastructure complexity will become increasingly crucial for developers looking to build intelligent, reliable applications quickly and efficiently.  
