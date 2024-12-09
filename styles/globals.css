@@ -73,7 +73,7 @@
 
   /* Default to dark theme */
   color: #fff;
-  background-color: #080D19;
+  background-color: rgb(var(--color-background-canvas-base));
 }
 
 /* Legacy base styles */
