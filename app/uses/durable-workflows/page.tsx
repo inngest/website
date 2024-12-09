@@ -3,7 +3,7 @@ import { generateMetadata } from "src/utils/social";
 import { RiArrowRightLine } from "@remixicon/react";
 
 import Hero from "src/components/LandingPage/Hero";
-import Heading from "src/components/LandingPage/Heading";
+import Heading from "src/components/LandingPage/Header";
 import CTA from "src/components/LandingPage/CTA";
 import FeaturesCodeBlocks from "src/components/LandingPage/FeaturesCodeBlocks";
 import Resources from "src/components/LandingPage/Resources";

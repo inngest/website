@@ -4,7 +4,7 @@ import NewsletterSignup from "src/components/NewsletterSignup";
 
 export const metadata: Metadata = generateMetadata({
   title: "Join our AI early access program",
-  description: "Get early access to new AI features first and ",
+  description: "Get early access to new AI features first.",
 });
 
 export default function Page() {
