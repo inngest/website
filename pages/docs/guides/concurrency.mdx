@@ -16,7 +16,9 @@ Use cases include:
 
 Inngest lets you provide fine-grained concurrency across all functions in a simple, configurable manner.  You can control each function's concurrency limits within your function definition. Here are two examples:
 
-```js
+<CodeGroup>
+
+```ts {{ title: "TypeScript" }}
 // Example 1: a simple concurrency definition limiting this function to 10 steps at once.
 inngest.createFunction(
   {
@@ -61,6 +63,107 @@ inngest.createFunction(
 
 ```
 
+```go {{ title: "Go" }}
+// Example 1: a simple concurrency definition limiting this function to 10 steps at once.
+inngest.CreateFunction(
+  &inngestgo.FunctionOpts{
+    Name: "another-function",
+    Concurrency: []inngest.Concurrency{
+      {
+        Limit: 10,
+      }
+    },
+  },
+  inngestgo.EventTrigger("ai/summary.requested", nil),
+  func(ctx context.Context, input inngestgo.Input) (any, error) {
+    // Function implementation here
+    return nil, nil
+  },
+)
+
+// Example 2: A complete, complex example with two virtual concurrency queues.
+inngestgo.CreateFunction(
+  &inngestgo.FunctionOpts{
+    Name: "unique-function-id",
+    Concurrency: []inngest.Concurrency{
+      {
+        // Use an account-level concurrency limit for this function, using the
+        // "openai" key as a virtual queue. Any other function which
+        // runs using the same "openai" key counts towards this limit.
+        Scope: "account",
+        Key:   `"openai"`,
+        // If there are 10 functions running with the "openai" key, this function's
+        // runs will wait for capacity before executing.
+        Limit: 10,
+      },
+      {
+        // Create another virtual concurrency queue for this function only. This
+        // limits all accounts to a single execution for this function, based off
+        // of the `event.data.account_id` field.
+        // "fn" is the default scope, so we could omit this field.
+        Scope: "fn",
+        Key:   "event.data.account_id",
+        Limit: 1,
+      },
+    },
+  },
+  inngestgo.EventTrigger("ai/summary.requested", nil),
+  func(ctx context.Context, input inngestgo.Input) (any, error) {
+    // Function implementation here
+    return nil, nil
+  },
+)
+
+```
+
+
+```py {{ title: "Python" }}
+# Example 1: a simple concurrency definition limiting this function to 10 steps at once.
+@inngest.create_function(
+    fn_id="another-function",
+    concurrency=[
+      inngest.Concurrency(
+          limit=10,
+      )
+    ]
+)
+async def first_function(event, step):
+    # Function implementation here
+    pass
+
+# Example 2:  A complete, complex example with two virtual concurrency queues.
+@inngest.create_function(
+    fn_id="unique-function-id",
+    concurrency=[
+        inngest.Concurrency(
+            # Use an account-level concurrency limit for this function, using the
+            # "openai" key as a virtual queue.  Any other function which
+            # runs using the same "openai" key counts towards this limit.
+            scope="account",
+            key='"openai"',
+            # If there are 10 functions running with the "openai" key, this function's
+            # runs will wait for capacity before executing.
+            limit=10,
+        ),
+        inngest.Concurrency(
+            # Create another virtual concurrency queue for this function only.  This
+            # limits all accounts to a single execution for this function, based off
+            # of the `event.data.account_id` field.
+            # "fn" is the default scope, so we could omit this field.
+            scope="fn",
+            key="event.data.account_id",
+            limit=1,
+        ),
+    ],
+)
+async def handle_ai_summary(event, step):
+    # Function implementation here
+    pass
+```
+
+
+</CodeGroup>
+
 In the first example, the function is constrained to `10` executing steps at once.
 
 In the second example, we define **two concurrency constraints that create two virtual queues to manage capacity**. Runs will be limited if they hit either of the virtual queue's limits. For example:
@@ -94,7 +197,10 @@ To control concurrency on individual steps, extract the step into a new function
 
 You may write two functions that define different levels for an 'account' scoped concurrency limit.  For example, function A may limit the "ai" capacity to 5, while function B limits the "ai" capacity to 50:
 
-```js
+
+<CodeGroup>
+
+```ts {{ title: "TypeScript" }}
 inngest.createFunction(
   {
     id: "func-a",
@@ -124,7 +230,77 @@ inngest.createFunction(
 );
 ```
 
+```go {{ title: "Go" }}
+inngestgo.CreateFunction(
+  &inngestgo.FunctionConfig{
+    Name: "func-a",
+    Concurrency: []inngest.Concurrency{
+      {
+        Scope: "account",
+        Key:   `"openai"`,
+        Limit: 5,
+      }
+    },
+  },
+  inngestgo.EventTrigger("ai/summary.requested"),
+  func(ctx context.Context, event *inngestgo.Event, step inngestgo.StepFunction) (any, error) {
+    return nil, nil
+  },
+)
 
+
+inngestgo.CreateFunction(
+  &inngestgo.FunctionConfig{
+    Name: "func-b",
+    Concurrency: []inngest.Concurrency{
+      {
+        Scope: "account",
+        Key:   `"openai"`,
+        Limit: 50,
+      }
+    },
+  },
+  inngestgo.EventTrigger("ai/summary.requested"),
+  func(ctx context.Context, event *inngestgo.Event, step inngestgo.StepFunction) (any, error) {
+    return nil, nil
+  },
+)
+
+```
+
+
+```py {{ title: "Python" }}
+@inngest_client.create_function(
+    fn_id="func-a",
+    trigger=inngest.TriggerEvent(event="ai/summary.requested"),
+    concurrency=[
+      inngest.Concurrency(
+        scope="account",
+        key='"openai"',
+        limit=5
+      )
+    ]
+)
+async def func_a(ctx: inngest.Context, step: inngest.Step):
+    pass
+
+@inngest_client.create_function(
+    fn_id="func-b", 
+    trigger=inngest.TriggerEvent(event="ai/summary.requested"),
+    concurrency=[
+      inngest.Concurrency(
+        scope="account",
+        key='"openai"',
+        limit=50
+      )
+    ]
+)
+async def func_b(ctx: inngest.Context, step: inngest.Step):
+    pass
+```
+
+
+</CodeGroup>
 This works in Inngest and is *not* a conflict.  Instead, function A is limited any time there are 5 or more functions running in the 'openai' queue.  Function B, however, is limited when there are 50 or more items in the queue.  This means that function B has more capacity than function A, though both are limited and compete on the same virtual queue.
 
 Because functions are FIFO, function runs are more likely to be worked on the older their jobs get (as the backlog grows).  If function A's jobs stay in the backlog longer than function B's jobs, it's likely that their jobs will be worked on as soon as capacity is free.  That said, function B will almost always have capacity before function A and may block function A's work.
@@ -133,7 +309,7 @@ Because functions are FIFO, function runs are more likely to be worked on the ol
 
 ## Limitations
 
-- Concurrency limits the number of steps executing at a single time. It does not _yet_ perform rate limiting over a given period of time. <a href="https://roadmap.inngest.com/roadmap?id=8d3aae15-d21f-4e18-a3ae-571307fc9e99" target="_blank" rel="nofollow">This is scheduled for a Q2 '24 release</a>.
+- Concurrency limits the number of steps executing at a single time. It does not _yet_ perform rate limiting over a given period of time.
 - Functions can specify up to 2 concurrency constraints at once
 - The maximum concurrency limit is defined by <a href="https://www.inngest.com/pricing" target="_blank" rel="nofollow">your account's plan</a>
 - Ordering amongst the same function is guaranteed (with the exception of retries)
@@ -173,7 +349,9 @@ Because functions are FIFO, function runs are more likely to be worked on the ol
 
 Here, we use the Resend SDK to send an email. Resend's rate limit is 10 requests per second so we set a lower concurrency as our function is simple and may execute multiple times per second. Here we use a limit of `4` to keep the throughput a bit slower than necessary:
 
-```ts
+<CodeGroup>
+
+```ts {{ title: "TypeScript" }}
 export const send = inngest.createFunction(
   {
     name: "Email: Pending invoice",
@@ -198,14 +376,73 @@ export const send = inngest.createFunction(
 );
 ```
 
+
+```go {{ title: "Go" }}
+inngest.CreateFunction(
+  &inngestgo.FunctionOpts{
+    Name: "Email: Pending invoice",
+    ID: "email-pending-invoice",
+    Concurrency: []inngest.Concurrency{
+      {
+        Limit: 4, // Resend's rate limit is 10 req/s
+      },
+    },
+  },
+  inngestgo.EventTrigger("billing/invoice.pending", nil),
+  func(ctx context.Context, input inngestgo.Input) (any, error) {
+    _, err := input.Step.Run(ctx, "send-email", func(ctx context.Context) (any, error) {
+      return resend.Emails.Send(&resend.SendEmailRequest{
+        From:    "hello@myco.com",
+        To:      input.Event.User.Email,
+        Subject: fmt.Sprintf("Invoice pending for %s", input.Event.Data.InvoicePeriod),
+        Text:    "Dear user, ...",
+      })
+    })
+    if err != nil {
+      return nil, err
+    }
+
+    return map[string]string{"message": "success"}, nil
+  },
+)
+```
+
+
+
+```python {{ title: "Python" }}
+@inngest.create_function(
+    fn_id="email-pending-invoice",
+    name="Email: Pending invoice", 
+    concurrency=[
+        inngest.Concurrency(
+            limit=4,  # Resend's rate limit is 10 req/s
+        )
+    ]
+)
+async def send(event, step):
+    async with step.run("send-email") as _:
+        params: resend.Emails.SendParams = {
+          "from": "Acme <onboarding@resend.dev>",
+          "to": ["delivered@resend.dev"],
+          "subject": "hello world",
+          "html": "<strong>it works!</strong>",
+        }
+        await resend.emails.send(params)
+    
+    return {"message": "success"}
+```
+
+</CodeGroup>
+
 ### Restricting parallel import jobs for a customer id
 
 In this hypothetical system, customers can upload `.csv` files which each need to be processed and imported. We want to limit each customer to only one import job at a time so no two jobs are writing to a customer's data at a given time. We do this by setting a `limit: 1` and a concurrency `key` to the `customerId` which is included in every single event payload.
 
 Inngest ensures that the concurrency (`1`) applies to each unique value for `event.data.customerId`. This allows different customers to have functions running at the same exact time, but no given customer can have two functions running at once!
 
+<CodeGroup>
 
-```ts
+```ts {{ title: "TypeScript" }} 
 export const send = inngest.createFunction(
   {
     name: "Process customer csv import",
@@ -226,6 +463,60 @@ export const send = inngest.createFunction(
   }
 );
 ```
+
+```go {{ title: "Go" }}
+inngestgo.CreateFunction(
+  &inngestgo.FunctionConfig{
+    Name: "Process customer csv import",
+    ID: "process-customer-csv-import",
+    Concurrency: []inngest.Concurrency{
+      {
+        Limit: 1,
+        Key: `event.data.customerId`, // You can use any piece of data from the event payload
+      },
+    },
+  },
+  inngestgo.EventTrigger("csv/file.uploaded"),
+  func(ctx context.Context, event *inngestgo.Event, step inngestgo.StepFunction) (any, error) {
+    _, err := step.Run(ctx, "process-file", func(ctx context.Context) (any, error) {
+      file, err := bucket.Fetch(event.Data.FileURI)
+      if err != nil {
+        return nil, err
+      }
+      // ...
+      return nil, nil
+    })
+    if err != nil {
+      return err, nil
+    }
+
+    return nil, nil
+  },
+)
+```
+
+```py {{ title: "Python" }}
+@inngest_client.create_function(
+    fn_id="process-customer-csv-import",
+    name="Process customer csv import",
+    trigger=inngest.TriggerEvent(event="csv/file.uploaded"),
+    concurrency=[
+        inngest.Concurrency(
+            limit=1,
+            key="event.data.customerId"  # You can use any piece of data from the event payload
+        )
+    ]
+)
+async def process_csv_import(ctx: inngest.Context, step: inngest.Step):
+    async def process_file():
+        file = await bucket.fetch(ctx.event.data.file_uri)
+        # ...
+    
+    await step.run("process-file", process_file)
+    return {"message": "success"}
+```
+
+</CodeGroup>
 
 ## Tips
 

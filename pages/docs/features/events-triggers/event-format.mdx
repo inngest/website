@@ -17,7 +17,7 @@ The event payload is a JSON object that must contain a `name` and `data` propert
 * `v` is the event payload version. This is useful to track changes in the event payload shape over time. For example, `"2024-01-14.1"`
 
 <CodeGroup>
-```ts {{ title: "Basic JSON event example" }}
+```json {{ title: "Basic JSON event example" }}
 {
   "name": "billing/invoice.paid",
   "data": {
@@ -44,6 +44,42 @@ type EventPayload = {
   ts?: number;
   v?: string;
 }
+```
+
+```py {{ title: "Pydantic Type representation" }}
+import inngest
+import pydantic
+import typing
+
+TEvent = typing.TypeVar("TEvent", bound="BaseEvent")
+
+class BaseEvent(pydantic.BaseModel):
+    data: pydantic.BaseModel
+    id: str = ""
+    name: typing.ClassVar[str]
+    ts: int = 0
+
+    @classmethod
+    def from_event(cls: type[TEvent], event: inngest.Event) -> TEvent:
+        return cls.model_validate(event.model_dump(mode="json"))
+
+    def to_event(self) -> inngest.Event:
+        return inngest.Event(
+            name=self.name,
+            data=self.data.model_dump(mode="json"),
+            id=self.id,
+            ts=self.ts,
+        )
+
+class InvoicePaidEventData(pydantic.BaseModel):
+    customerId: str
+    invoiceId: str
+    amount: int
+    metadata: dict
+
+class InvoicePaidEvent(BaseEvent):
+    data: InvoicePaidEventData
+    name: typing.ClassVar[str] = "billing/invoice.paid"
 ```
 </CodeGroup>
 

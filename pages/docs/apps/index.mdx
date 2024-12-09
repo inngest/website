@@ -24,13 +24,13 @@ The diagram below shows how each environment can have multiple apps which can ha
 
 ## Apps in SDK
 
-Each [`serve()` API handler](/docs/reference/serve) will generate an app in Inngest upon syncing.
-The app ID is determined by the ID passed to the serve handler from the [Inngest client](/docs/reference/client/create).
+Each [`serve()` API handler](/docs/learn/serving-inngest-functions) will generate an app in Inngest upon syncing.
+The app ID is determined by the ID passed to the serve handler from the Inngest client.
 
 For example, the code below will create an Inngest app called “example-app” which contains one function:
 
 <CodeGroup>
-```ts
+```ts {{ title: "Node.js" }}
 import { Inngest } from "inngest";
 import { serve } from "inngest/next"; // or your preferred framework
 import { sendSignupEmail } from "./functions";
@@ -42,6 +42,96 @@ serve({
   functions: [sendSignupEmail],
 });
 ```
+
+```python {{ title: "Python (Flask)" }}
+import logging
+import inngest
+from src.flask import app
+import inngest.flask
+
+logger = logging.getLogger(f"{app.logger.name}.inngest")
+logger.setLevel(logging.DEBUG)
+
+inngest_client = inngest.Inngest(app_id="flask_example", logger=logger)
+
+@inngest_client.create_function(
+    fn_id="hello-world",
+    trigger=inngest.TriggerEvent(event="say-hello"),
+)
+def hello(
+    ctx: inngest.Context,
+    step: inngest.StepSync,
+) -> str:
+
+inngest.flask.serve(
+    app,
+    inngest_client,
+    [hello],
+)
+
+app.run(port=8000)
+```
+
+```python {{ title: "Python (FastAPI)" }}
+import logging
+import inngest
+import fastapi
+import inngest.fast_api
+
+
+logger = logging.getLogger("uvicorn.inngest")
+logger.setLevel(logging.DEBUG)
+
+inngest_client = inngest.Inngest(app_id="fast_api_example", logger=logger)
+
+@inngest_client.create_function(
+    fn_id="hello-world",
+    trigger=inngest.TriggerEvent(event="say-hello"),
+)
+async def hello(
+    ctx: inngest.Context,
+    step: inngest.Step,
+) -> str:
+    return "Hello world!"
+
+app = fastapi.FastAPI()
+
+inngest.fast_api.serve(
+    app,
+    inngest_client,
+    [hello],
+)
+```
+
+```go {{ title: "Go (HTTP)" }}
+package main
+
+import (
+	"context"
+	"fmt"
+	"net/http"
+	"time"
+
+	"github.com/inngest/inngestgo"
+	"github.com/inngest/inngestgo/step"
+)
+
+func main() {
+	h := inngestgo.NewHandler("core", inngestgo.HandlerOpts{})
+	f := inngestgo.CreateFunction(
+		inngestgo.FunctionOpts{
+			ID:   "account-created",
+			Name: "Account creation flow",
+		},
+		// Run on every api/account.created event.
+		inngestgo.EventTrigger("api/account.created", nil),
+		AccountCreated,
+	)
+	h.Register(f)
+	http.ListenAndServe(":8080", h)
+}
+```
+
 </CodeGroup>
 
 <Callout>
