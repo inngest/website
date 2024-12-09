@@ -235,11 +235,15 @@ export default function PricingCalculator({ plans }: { plans: Plan[] }) {
             </p>
             <p>
               Estimated cost:{" "}
-              {results.cost.totalCost === Infinity
-                ? "Custom"
-                : `$${results.cost.totalCost}/mo.`}
+              <strong>
+                {results.cost.totalCost === Infinity
+                  ? "Custom"
+                  : `$${results.cost.totalCost}/mo.`}
+              </strong>
             </p>
-            <Calculations cost={results.cost} />
+            {results.cost.totalCost !== Infinity && (
+              <Calculations cost={results.cost} />
+            )}
           </div>
         </div>
       </div>
