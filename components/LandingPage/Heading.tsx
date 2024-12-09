@@ -1,6 +1,6 @@
 import clsx from "clsx";
-const commonClassNames = `font-semibold leading-tight sm:leading-tight`;
-const gradientClassNames = `bg-clip-text text-transparent bg-gradient-to-br from-[rgb(var(--color-carbon-400))] to-[rgb(var(--color-carbon-50))]`;
+export const commonClassNames = `font-semibold leading-tight sm:leading-tight`;
+export const gradientClassNames = `bg-clip-text text-transparent bg-gradient-to-br from-[rgb(var(--color-carbon-400))] to-[rgb(var(--color-carbon-50))]`;
 
 export function H1({
   children,

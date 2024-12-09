@@ -1,10 +1,16 @@
 import { type Metadata } from "next";
 import Image from "next/image";
+import clsx from "clsx";
 import { generateMetadata } from "src/utils/social";
 import Tiles from "src/components/LandingPage/Tiles";
 import Header from "src/components/LandingPage/Header";
 import Feature from "src/components/LandingPage/Feature";
-import { H1, H2 } from "src/components/LandingPage/Heading";
+import {
+  H1,
+  H2,
+  commonClassNames,
+  gradientClassNames,
+} from "src/components/LandingPage/Heading";
 import CTA from "src/components/LandingPage/CTA";
 import Button from "src/components/LandingPage/Button";
 import FeaturesCodeBlocks from "src/components/LandingPage/FeaturesCodeBlocks";
@@ -29,6 +35,92 @@ export default function Page() {
 
       <div className="relative z-10">
         <Hero />
+
+        <div className="my-12 flex flex-col gap-6 items-center sm:pb-8">
+          <p className="mx-8 text-sm text-balance text-subtle">
+            Trusted by companies innovating with AI:
+          </p>
+          <div className="grid grid-cols-2 sm:flex flex-wrap lg:flex-nowrap gap-x-4 sm:gap-x-10 gap-y-6 sm:gap-y-8 mx-8">
+            {[
+              {
+                src: "/assets/customers/11x-logo.svg",
+                name: "11x",
+                scale: 1,
+              },
+              {
+                src: "/assets/customers/day-ai-logo.svg",
+                name: "Day.ai",
+                scale: 1.2,
+              },
+              {
+                src: "/assets/customers/leap-logo-white.svg",
+                name: "Leap",
+                scale: 1,
+              },
+              {
+                src: "/assets/customers/otto-logo.svg",
+                name: "Otto",
+                scale: 0.8,
+              },
+              {
+                src: "/assets/customers/aomni-logo.svg",
+                name: "Aomni",
+                scale: 1.3,
+              },
+            ].map(({ src, name, scale = 1 }, idx) => (
+              <Image
+                key={idx}
+                src={src}
+                alt={name}
+                title={name}
+                width={120 * 0.8 * scale}
+                height={30 * 0.8 * scale}
+                className={clsx(
+                  "m-auto width-auto transition-all grayscale opacity-80 invert dark:invert-0",
+                  `max-h-[${36 * scale}px]`,
+                  idx === 4 && "hidden sm:block",
+                  idx > 4 && "hidden xl:block"
+                )}
+              />
+            ))}
+          </div>
+        </div>
+
+        <section className="my-14 sm:my-28">
+          <h2
+            className={`mb-12 text-center text-[1.32rem] ${commonClassNames} ${gradientClassNames}`}
+          >
+            Built to support any AI use case
+          </h2>
+          <div className="w-[300px] mx-auto grid grid-cols-3 gap-6 text-sm">
+            {[
+              "RAG",
+              "Multi-model chains",
+              "Embedding pipelines",
+
+              "GraphRAG",
+              "Tree of Thoughts",
+              "Tool use",
+              "Prompt chaining",
+              "Guardrails",
+              "Observability",
+              "Scoring",
+              // "Hallucination detection",
+              // "Cost monitoring",
+            ].map((u, idx) => (
+              <span
+                key={idx}
+                className={clsx(
+                  "font-mono text-subtle uppercase",
+                  idx % 2 === 1 && "text-right",
+                  u.length > 10 ? "col-span-2" : "col-span-1"
+                )}
+              >
+                {u}
+              </span>
+            ))}
+          </div>
+        </section>
 
         <section className="my-28">
           <Header
@@ -137,7 +229,7 @@ const network = new Network({
                 Introducing <Code>step.ai</Code> APIs
               </>
             }
-            description="Overview copy: Seamlessly integrate reliable, retryable steps and achieve full observability across your AI applications and agentic workflows. These APIs are designed to simplify development and production, empowering you to iterate rapidly and ship production-ready AI products with confidence."
+            description="Seamlessly integrate reliable, retryable steps and achieve full observability across your AI applications and agentic workflows. These APIs are designed to simplify development and production, empowering you to iterate rapidly and ship production-ready AI products with confidence."
           />
           <FeaturesCodeBlocks
             features={[

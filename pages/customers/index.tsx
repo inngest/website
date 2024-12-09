@@ -130,27 +130,27 @@ const featuredCompanies = [
     scale: 1.1,
   },
   {
+    src: "/assets/customers/11x-logo.svg",
+    name: "11x",
+    url: "https://11x.ai/",
+    scale: 0.9,
+    type: "company",
+  },
+  {
     src: "/assets/customers/howl-logo.svg",
     name: "Howl",
     url: "https://www.planethowl.com/",
     scale: 0.9,
     type: "company",
   },
+];
+
+const grid = [
   {
     src: "/assets/customers/leap-logo-white.svg",
     name: "Leap",
     url: "https://tryleap.ai/",
     scale: 1,
-    type: "company",
-  },
-];
-
-const grid = [
-  {
-    src: "/assets/customers/productlane.svg",
-    name: "Productlane",
-    url: "https://productlane.com/",
-    scale: 1.4,
     type: "company",
   },
   {
@@ -164,6 +164,19 @@ const grid = [
       },
       avatar: "/assets/customers/resend-bu-kinoshita.jpg",
     },
+  },
+  {
+    src: "/assets/customers/day-ai-logo.svg",
+    name: "Day.ai",
+    url: "https://day.ai/",
+    scale: 1.2,
+  },
+  {
+    src: "/assets/customers/zamp-logo.svg",
+    name: "Zamp",
+    url: "https://zamp.com/",
+    scale: 1,
+    type: "company",
   },
   {
     src: "/assets/customers/elba-logo-white.svg",
@@ -180,19 +193,6 @@ const grid = [
     type: "company",
   },
   {
-    src: "/assets/customers/firstquadrant.svg",
-    name: "FirstQuadrant.ai",
-    url: "https://firstquadrant.ai/",
-    scale: 1.2,
-    type: "company",
-  },
-  {
-    src: "/assets/customers/secta-labs-logo.svg",
-    name: "Secta.ai",
-    url: "https://secta.ai/",
-    type: "company",
-  },
-  {
     type: "quote",
     name: "SoundCloud",
     quote: {
@@ -205,10 +205,56 @@ const grid = [
     },
   },
   {
+    src: "/assets/customers/productlane.svg",
+    name: "Productlane",
+    url: "https://productlane.com/",
+    scale: 1.4,
+    type: "company",
+  },
+  {
+    src: "/assets/customers/secta-labs-logo.svg",
+    name: "Secta.ai",
+    url: "https://secta.ai/",
+    type: "company",
+  },
+  {
+    src: "/assets/customers/firstquadrant.svg",
+    name: "FirstQuadrant.ai",
+    url: "https://firstquadrant.ai/",
+    scale: 1.2,
+    type: "company",
+  },
+  {
     src: "/assets/customers/devjobs.svg",
     name: "DevJobs.at",
     url: "https://devjobs.at/",
     scale: 1.2,
+    type: "company",
+  },
+  {
+    type: "quote",
+    name: "NiftyKit",
+    quote: {
+      text: `For anyone who is building multi-step AI agents (such as AutoGPT type systems), I highly recommend building it on top of Inngest's job queue orchestration framework, the traceability it provides out of the box is super useful, plus you get timeouts & retries for free.`,
+      attribution: {
+        name: "David Zhang",
+        title: "Founder - Aomni",
+      },
+      avatar: "/assets/customers/aomni-david.jpg",
+    },
+  },
+  {
+    src: "/assets/customers/finta-logo.png?v=1",
+    name: "Finta.io",
+    url: "https://www.finta.io/",
+    type: "company",
+  },
+
+  {
+    src: "/assets/customers/lynq-logo.svg",
+    name: "Lynq.ai",
+    url: "https://www.lynq.ai/",
+    scale: 1,
     type: "company",
   },
   {
@@ -219,15 +265,8 @@ const grid = [
     type: "company",
   },
   {
-    src: "/assets/customers/finta-logo.png?v=1",
-    name: "Finta.io",
-    url: "https://www.finta.io/",
-    type: "company",
-  },
-  {
-    src: "/assets/customers/lynq-logo.svg",
-    name: "Lynq.ai",
-    url: "https://www.lynq.ai/",
+    src: "/assets/customers/sliderule-analytics.png",
+    name: "SlideRule",
     scale: 1,
     type: "company",
   },
@@ -244,12 +283,6 @@ const grid = [
     },
   },
   {
-    src: "/assets/customers/sliderule-analytics.png",
-    name: "SlideRule",
-    scale: 1,
-    type: "company",
-  },
-  {
     src: "/assets/customers/double-logo.svg",
     name: "Double",
     scale: 1,
@@ -262,11 +295,11 @@ const grid = [
     type: "company",
   },
   // Hide b/c we don't want a single dangling item at the end - we want even rows
-  // {
-  //   src: "/assets/customers/awaken-tax-logo.png",
-  //   name: "Awaken.tax",
-  //   type: "company",
-  // },
+  {
+    src: "/assets/customers/awaken-tax-logo.png",
+    name: "Awaken.tax",
+    type: "company",
+  },
 ];
 
 export default function Customers() {

@@ -96,19 +96,19 @@ export default function HeroScreenshot() {
                 scale: 1.4,
               },
               {
-                src: "/assets/customers/gitbook-logo-white.svg",
-                name: "Gitbook",
-                scale: 1.3,
-              },
-              {
                 src: "/assets/customers/resend.svg",
                 name: "Resend",
                 scale: 0.9,
               },
               {
-                src: "/assets/customers/leap-logo-white.svg",
-                name: "Leap",
+                src: "/assets/customers/11x-logo.svg",
+                name: "11x.ai",
                 scale: 0.8,
+              },
+              {
+                src: "/assets/customers/gitbook-logo-white.svg",
+                name: "Gitbook",
+                scale: 1.3,
               },
               {
                 src: "/assets/customers/zamp-logo.svg",
