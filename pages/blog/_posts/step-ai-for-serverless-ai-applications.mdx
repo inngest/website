@@ -219,7 +219,7 @@ Let's review an example Next.js application that leverages the OpenAI o1 reasoni
 
 Our sample Next.js application, [available on GitHub](https://github.com/inngest/vercel-ai-o1-preview-crm-agent/tree/step-ai), uses OpenAI o1 to import contacts CSV files by dynamically creating Inngest workflows. OpenAI o1 gets prompted with the file and available workflow steps. In return, the LMM returns a valid workflow schema used to process the file:  
 
-![](/assets/blog/step-ai-for-serverless-ai-applications/nextjs-openai-o1-demo.jpg)
+![](/assets/blog/step-ai-for-serverless-ai-applications/next-openai-o1-demo.jpg)
 
 The initial call to the OpenAI o1 model **can take multiple minutes**, consuming Vercel Serverless computing while waiting for the LLM request and risking reaching the maximum duration limit.  
 Thankfully, this OpenAI call is performed using `step.ai.infer()`, **removing any timeout and billing surge risks**:
