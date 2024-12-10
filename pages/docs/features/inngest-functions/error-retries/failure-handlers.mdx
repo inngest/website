@@ -2,12 +2,21 @@ import { CardGroup, Card, CodeGroup, Callout } from "src/shared/Docs/mdx";
 
 # Failure handlers
 
-If your function exhausts all of its retries, it will be marked as "Failed." You can handle this circumstance by providing an [`onFailure`](/docs/reference/functions/handling-failures) handler when defining your function.
+If your function exhausts all of its retries, it will be marked as "Failed." You can handle this circumstance by either providing an [`onFailure/on_failure`](/docs/reference/functions/handling-failures) handler when defining your function, or by listening for the [`inngest/function.failed`](/docs/reference/system-events/inngest-function-failed) system event.
+
+The first approach is function-specific, while the second covers all function failures in a given Inngest environment.
+
+<Callout>
+  In any way you will need to re-sync your app for the onFailure-code to register and work!
+</Callout>
+
+# Examples
 
 The example below checks if a user's subscription is valid a total of six times. If you can't check the subscription after all retries, you'll unsubscribe the user:
 
 <CodeGroup>
 ```ts {{ title: "TypeScript" }}
+/* Option 1: give the inngest function an [`onFailure`] handler. */
 inngest.createFunction(
   {
     id: "update-subscription",
@@ -20,21 +29,46 @@ inngest.createFunction(
   { event: "user/subscription.check" },
   async ({ event }) => { /* ... */ },
 );
-```
-</CodeGroup>
-
-Internally, this handler creates a second function that listens for the [`inngest/function.failed`](/docs/reference/functions/handling-failures#the-inngest-function-failed-event) event, which you can listen to yourself to capture all failed runs across your system.
-
-<CodeGroup>
-```ts {{ title: "TypeScript" }}
+/* Option 2: Listens for the [`inngest/function.failed`](/docs/reference/functions/handling-failures#the-inngest-function-failed-event) system event to catch all failures in the inngest environment*/
 inngest.createFunction(
   { id: "handle-any-fn-failure" },
   { event: "inngest/function.failed" },
   async ({ event }) => { /* ... */ },
 );
 ```
+
+```python {{ title: "Python" }}
+# Option 1: give the inngest function an [`on_failure`] handler.
+async def update_subscription_failed(ctx: inngest.Context, step: inngest.Step):
+    # if the subscription check fails after all retries, unsubscribe the user
+    await unsubscribe_user(ctx.data.userId)
+
+@inngest_client.create_function(
+    fn_id="update-subscription", 
+    retries=5,
+    on_failure=update_subscription_failed,
+    trigger=TriggerEvent(event="user/subscription.check"))
+async def update_subscription(ctx: Context, step: Step):
+    pass # ...
+
+
+# Option 2: Listens for the [inngest/function.failed](/docs/reference/functions/handling-failures#the-inngest-function-failed-event)
+# system event to catch all failures in the inngest environment
+@inngest_client.create_function(
+    fn_id="global_failure_handler",
+    trigger=[
+        TriggerEvent(event="inngest/function.failed"),
+        #TriggerEvent(event="inngest/function.cancelled")
+    ],
+)
+async def global_failure_handler(ctx: Context, step: Step):
+    pass # handle all failures, e.g. to send to sentry
+```
 </CodeGroup>
 
 <Callout>
-  To handle cancelled function runs, checkout out [this example](/docs/examples/cleanup-after-function-cancellation) that uses the [`inngest/function.cancelled`](/docs/reference/system-events/inngest-function-cancelled) system event.
+  See also: The [`inngest/function.cancelled`](/docs/reference/system-events/inngest-function-cancelled) system event.
 </Callout>
+
+
+
