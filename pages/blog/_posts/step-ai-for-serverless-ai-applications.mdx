@@ -1,9 +1,9 @@
 ---
-heading: "step.ai: Build Serverless AI Applications That Won't Break the Bank"
+heading: "step.ai: the quickest way to build reliable AI applications on Serverless while saving on compute"
 subtitle: "Combining step.run() and step.ai.infer() is the best toolset to build reliable AI applications on Serverless while saving on compute."
 showSubtitle: false
 image: /assets/blog/step-ai-for-serverless-ai-applications/featured-image.png
-date: 2024-12-09
+date: 2024-12-10
 author: Charly Poly
 category: engineering
 ---
@@ -33,10 +33,10 @@ By using `step.run()` to build your AI workflows, each step of your workflow imm
 
 Here is an example from MegaSEO, an AI product built with Inngest to generate SEO-optimized articles:
 
-<div className="flex gap-4">
+<div className="hidden md:flex gap-4">
 
 
-<div className="max-w-64">
+<div className="hidden md:block md:max-w-64">
 
 This first `index-page` function demonstrates the pattern described above:
 
@@ -61,7 +61,7 @@ Running steps in parallel is simply achieved using `Promise.all()`.
 </div>
 
 
-<div>
+<div className="hidden md:block">
 
 ```typescript
 // index_functions.ts
@@ -115,8 +115,58 @@ export const indexSite = client.createFunction(
 
 </div>
 
+<div className="md:hidden">
 
-*You can explore the complete AI workflow code [in this article](https://www.inngest.com/blog/next-generation-ai-workflows).* |
+```typescript
+// index_functions.ts
+export const indexPage = client.createFunction(
+  { id: "index-page", concurrency: 10 },
+  { event: Events.INDEX_PAGE },
+  async ({ event, step }) => {
+    const { pageUrl } = event.data;
+
+    // The first step retrieves the page content (using scraping). 
+    const page = await step.run("get-page-content", async () => {
+      return getPageContent(pageUrl);
+    });
+
+    // The second step uses the first step result to index it into a vector database. 
+    // Here, a failure of the vector insert step won't trigger a new run of the first scraping step.
+    await step.run("index-page", async () => {
+      return saveToPinecone({ page });
+    });
+  }
+);
+
+export const indexSite = client.createFunction(
+  { id: "index-site" },
+  { event: Events.INDEX_SITE },
+  async ({ event, step }) => {
+    const { url } = event.data;
+
+    
+    const pages = await step.run("find-pages", async () => {
+      return findPagesToIndex(url);
+    });
+
+    // The second `index-site` function triggers the first `index-page` function in parallel for each website page. 
+    // Running steps in parallel is simply achieved using `Promise.all()`.
+    await Promise.all(
+      pages.map(async (page) => {
+        return step.invoke(`index-page-${page.url}`, {
+          function: indexPage,
+          data: { pageUrl: page.url },
+        });
+      })
+    );
+  }
+);
+```
+
+</div>
+
+
+*You can explore the complete AI workflow code [in this article](https://www.inngest.com/blog/next-generation-ai-workflows).*
 
 <CTACallout text={'Start building your AI Workflows with Inngest locally, no account required'} cta={{ href: '/docs/getting-started/nextjs-quick-start?ref=blog-step-ai-for-serverless-ai-applications', text: 'Read the Next.js quickstart' }} />
 
