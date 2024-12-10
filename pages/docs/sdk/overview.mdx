@@ -1,4 +1,4 @@
-import { CodeGroup } from "shared/Docs/mdx";
+import { CodeGroup, GuideSelector, GuideSection } from "shared/Docs/mdx";
 
 # Installing the SDK
 
@@ -9,7 +9,19 @@ The Inngest SDK allows you to write reliable, durable functions in your existing
 - It fully supports TypeScript out of the box
 - You can locally test your code without any extra setup
 
+
+
 ## Getting started
+
+<GuideSelector
+  options={[
+    { key: "typescript", title: "TypeScript" },
+    { key: "go", title: "Go" },
+    { key: "python", title: "Python" },
+  ]}
+>
+
+<GuideSection show="typescript">
 
 To get started, install the SDK via your favorite package manager:
 
@@ -27,6 +39,35 @@ pnpm add inngest
 bun add inngest
 ```
 </CodeGroup>
+
+
+</GuideSection>
+
+<GuideSection show="go">
+
+To get started, install the SDK via `go get`:
+
+```shell
+go get github.com/inngest/inngest-go
+```
+
+</GuideSection>
+
+<GuideSection show="python">
+
+To get started, install the SDK via `pip`:
+
+
+
+```shell
+pip install inngest
+```
+
+
+</GuideSection>
+
+</GuideSelector>
+
 
 You'll need to do a few things to get set up, which will only take a few minutes.
 

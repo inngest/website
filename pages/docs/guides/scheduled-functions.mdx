@@ -1,12 +1,21 @@
-import { CodeGroup, Callout } from "src/shared/Docs/mdx";
+import { CodeGroup, Callout, GuideSection, GuideSelector } from "src/shared/Docs/mdx";
 
 # Crons (Scheduled Functions)
 
 You can create scheduled jobs using cron schedules within Inngest natively.  Inngest's cron schedules also support timezones, allowing you to schedule work in whatever timezone you need work to run in.
 
+
+<GuideSelector
+  options={[
+    { key: "typescript", title: "TypeScript" },
+    { key: "go", title: "Go" },
+    { key: "python", title: "Python" },
+  ]}>
+
+<GuideSection show="typescript">
+
 You can create scheduled functions that run in any timezone using the SDK's [`createFunction()`](/docs/reference/functions/create):
 
-<CodeGroup>
 ```ts 
 import { Inngest } from "inngest";
 
@@ -70,10 +79,170 @@ export const sendWeeklyDigest = inngest.createFunction(
   }
 );
 ```
-</CodeGroup>
+
+</GuideSection>
+<GuideSection show="go">
+
+You can create scheduled functions that run in any timezone using the SDK's [`CreateFunction()`](https://pkg.go.dev/github.com/inngest/inngestgo#CreateFunction):
+
+```go
+package main
+
+import (
+	"context"
+
+	"github.com/inngest/inngest-go"
+	"github.com/inngest/inngest-go/step"
+)
+
+func init() {
+	// This weekly digest function will run at 12:00pm on Friday in the Paris timezone
+	inngestgo.CreateFunction(
+		inngestgo.FunctionOpts{ID: "prepare-weekly-digest"},
+		inngestgo.CronTrigger("TZ=Europe/Paris 0 12 * * 5", nil),
+		func(ctx context.Context, input inngestgo.Input) (any, error) {
+			// Load all the users from your database:
+			users, err := step.Run("load-users", func() ([]*User, error) {
+				return loadUsers()
+			})
+			if err != nil {
+				return nil, err
+			}
+
+			// 💡 Since we want to send a weekly digest to each one of these users
+			// it may take a long time to iterate through each user and send an email.
+
+			// Instead, we'll use this scheduled function to send an event to Inngest
+			// for each user then handle the actual sending of the email in a separate
+			// function triggered by that event.
+
+			// ✨ This is known as a "fan-out" pattern ✨
+
+			// 1️⃣ First, we'll create an event object for every user return in the query:
+			events := make([]inngestgo.Event, len(users))
+			for i, user := range users {
+				events[i] = inngestgo.Event{
+					Name: "app/send.weekly.digest",
+					Data: map[string]interface{}{
+						"user_id": user.ID,
+						"email":   user.Email,
+					},
+				}
+			}
+
+			// 2️⃣ Now, we'll send all events in a single batch:
+			err = step.SendEvent("send-digest-events", events)
+			if err != nil {
+				return nil, err
+			}
+
+			// This function can now quickly finish and the rest of the logic will
+			// be handled in the function below ⬇️
+			return nil, nil
+		},
+	)
+
+	// This is a regular Inngest function that will send the actual email for
+	// every event that is received (see the above function's inngest.send())
+
+	// Since we are "fanning out" with events, these functions can all run in parallel
+	inngestgo.CreateFunction(
+		inngestgo.FunctionOpts{ID: "send-weekly-digest-email"},
+		inngestgo.EventTrigger("app/send.weekly.digest", nil),
+		func(ctx context.Context, input inngestgo.Input) (any, error) {
+			// 3️⃣ We can now grab the email and user id from the event payload
+			email := input.Event.Data["email"].(string)
+			userID := input.Event.Data["user_id"].(string)
+
+			// 4️⃣ Finally, we send the email itself:
+			err := email.Send("weekly_digest", email, userID)
+			if err != nil {
+				return nil, err
+			}
+
+			// 🎇 That's it! - We've used two functions to reliably perform a scheduled
+			// task for a large list of users!
+			return nil, nil
+		},
+	)
+}
+```
+
+</GuideSection>
+<GuideSection show="python">
+
+You can create scheduled functions that run in any timezone using the SDK's [`create_function()`](/docs/reference/python/functions/create):
+
+```py
+from inngest import Inngest
+
+inngest_client = Inngest(id="signup-flow")
+
+# This weekly digest function will run at 12:00pm on Friday in the Paris timezone
+@inngest_client.create_function(
+    fn_id="prepare-weekly-digest",
+    trigger=inngest.TriggerCron(cron="TZ=Europe/Paris 0 12 * * 5")
+)
+async def prepare_weekly_digest(ctx: inngest.Context) -> None:
+    # Load all the users from your database:
+    users = await ctx.step.run(
+        "load-users",
+        lambda: db.load("SELECT * FROM users")
+    )
+
+    # 💡 Since we want to send a weekly digest to each one of these users
+    # it may take a long time to iterate through each user and send an email.
+
+    # Instead, we'll use this scheduled function to send an event to Inngest
+    # for each user then handle the actual sending of the email in a separate
+    # function triggered by that event.
+
+    # ✨ This is known as a "fan-out" pattern ✨
+
+    # 1️⃣ First, we'll create an event object for every user return in the query:
+    events = [
+        {
+            "name": "app/send.weekly.digest",
+            "data": {
+                "user_id": user.id,
+                "email": user.email,
+            }
+        }
+        for user in users
+    ]
+
+    # 2️⃣ Now, we'll send all events in a single batch:
+    await ctx.step.send_event("send-digest-events", events)
+
+    # This function can now quickly finish and the rest of the logic will
+    # be handled in the function below ⬇️
+
+
+# This is a regular Inngest function that will send the actual email for
+# every event that is received (see the above function's inngest.send())
+
+# Since we are "fanning out" with events, these functions can all run in parallel
+@inngest_client.create_function(
+    fn_id="send-weekly-digest-email",
+    trigger=inngest.TriggerEvent(event="app/send.weekly.digest")
+)
+async def send_weekly_digest(ctx: inngest.Context) -> None:
+    # 3️⃣ We can now grab the email and user id from the event payload
+    email = ctx.event.data["email"]
+    user_id = ctx.event.data["user_id"]
+
+    # 4️⃣ Finally, we send the email itself:
+    await email.send("weekly_digest", email, user_id)
+
+    # 🎇 That's it! - We've used two functions to reliably perform a scheduled
+    # task for a large list of users!
+```
+
+</GuideSection>
+</GuideSelector>
 
 <Callout>
-👉 Note: You’ll need to [serve these functions in your Inngest API](/docs/learn/serving-inngest-functions) for the functions to be available to Inngest.
+👉 Note: You'll need to [serve these functions in your Inngest API](/docs/learn/serving-inngest-functions) for the functions to be available to Inngest.
 </Callout>
 
 On the free plan, if your function fails 20 times consecutively it will automatically be paused.
