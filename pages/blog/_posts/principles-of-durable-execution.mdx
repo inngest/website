@@ -1,0 +1,167 @@
+---
+heading: Principles of Durable Execution
+subtitle: The three key principles explained
+image: /assets/blog/principles-of-durable-execution/featured-image.png
+date: 2024-12-10
+author: Dan Farrelly
+primaryCTA: sales
+floatingCTA: true
+category: engineering
+---
+import Blockquote from "src/shared/Blog/Blockquote";
+
+Long-running jobs, complex workflows, distributed systems, and DAGs are difficult to manage. They often involve managing asynchronous, stateful, and fault-tolerant processes that operate at a large scale.
+
+Developers face many challenges when working with these systems. They need to handle failures, ensure reliability, and maintain observability in distributed environments. Additionally, they often find themselves grappling with concurrency issues while working with suboptimal tooling.
+
+Distributed systems are inherently complex, making robust frameworks or abstractions essential to simplify coordination, error handling, and scalability without compromising flexibility.
+
+**Durable execution** has emerged as a powerful approach to address these challenges, enabling reliable, long-running software processes. In this post, we'll dive into what durable execution is, what makes a system durable, and the benefits of adopting this model in your applications.
+
+## Durable execution explained
+
+Durable Execution is a **fault-tolerant** approach to running code, designed to handle failures and interruptions gracefully through automatic retries and state persistence. In simple terms, it externalizes a program's memory, scheduling, and error handling, ensuring reliable execution. This approach is built on a few key principles, and by applying these principles, any system can implement durable execution.
+
+<AutoplayVideo src="https://cdn.inngest.com/blog/durable-functions-a-visual-javascript-primer/inngest3.2.mov" />
+
+## Key principles and their impact
+
+There are three core principles for achieving durable execution: incremental execution, state persistence, and fault tolerance. Let's define each and explore how they contribute to reliable execution:
+
+* **Incremental execution:** Execute each step of a function independently from other steps.
+* **State persistence**: Save the output of each step externally to ensure progress is not lost.
+* **Fault tolerance** \- If a step fails, retry the function, while skipping previously completed steps and reusing the saved outputs.
+
+Together, these principles form the backbone of durable execution, ensuring that even the most complex and long-running processes can be executed reliably. Incremental execution provides isolation, state persistence safeguards progress, and fault tolerance ensures resilience in the face of errors or interruptions.
+
+### Incremental execution
+
+For code to be truly durable, it must first be executed incrementally. Similar to how database transactions wrap a series of operations, or side effects, durable functions are a series of steps, each of which can succeed or fail and should not be run multiple times.
+
+The following code shows the example of a function that provisions a new account for a user. Each side effect is encapsulated within a “step” which can be individually executed.
+
+```typescript
+function handler({ event, step }) {
+  const account = await step.run('create-account', () => {/* ... */})
+  const trial = await step.run('start-trial', () => {/* ... */})
+  const email = await step.run('send-welcome-message', () => {/* ... */})
+}
+```
+
+When code is independently executed, the output can be individually saved and also retried as needed. This leads us into our other two principles.
+
+### State persistence
+
+With our function composed of individually executed steps, each step that is successful is committed to state. This state is stored externally, outside of the runtime, enabling function execution to be paused and resumed from any point of the function, including after failures.
+
+Functions defined using native programming language primitives only have this state or “memory” for the life of the function. Instead of data being held at a memory address assigned by the runtime, a durable function stores this state outside of the runtime and outside of the machine executing that code.
+
+Combining state persistence and incremental execution enables work to run across different machines, processes, or serverless functions. This enables true parallelism of work even if a language doesn't support multiple threads or “sleep” that can last for hours or days without blocking. This is especially advantageous in serverless functions where compute is ephemeral.
+
+Whether it's serverless or a containerized application, state persistence is required to enable fault tolerance.
+
+### Fault tolerance
+
+With incremental function execution and externally persisted state, handling failures gracefully becomes possible. A given step of a function can fail and the code can be retried and resumed from the point of failure. All previous steps are skipped and the results are memoized using the persisted state.
+
+Automatic retries enable durable functions to withstand race conditions, third-party API outages, system crashes, or infrastructure downtime. When code can be resilient to all of these issues, it truly becomes durably executed.
+
+—
+
+By applying these principles, developers can build systems that are not only more reliable but also more efficient, reducing downtime and simplifying error recovery. In modern applications, where moving and streaming data are central to real-time processing and decision making, durable execution ensures that systems can handle high-throughput workloads without missing a beat. This reliability is critical for applications like AI workflows, where tasks often involve chaining complex computations, integrating with external APIs, or managing state across distributed environments.
+
+An example use case familiar to many developers is an e-commerce checkout function that handles inventory management, payment processing, and order confirmations (see below).
+
+![An flow diagram of an e-commerce durable function](/assets/blog/principles-of-durable-execution/e-commerce-function.png)
+
+As AI workflows and real-time data streams continue to shape software delivery practices, the demand for fault-tolerant, stateful execution will only grow. Durable execution provides a foundation for managing the intrinsic unpredictability of these systems, such as handling model retries, managing state transitions in dynamic environments, and ensuring consistency across multiple components. By adopting these principles, organizations can deliver software that meets the rigorous demands of today's data-driven and AI-powered world, enabling faster iteration cycles, seamless scalability, and enhanced end-user experiences. Durable execution is more than just a method–it's an essential approach to building the resilient and adaptable software systems of the future.
+
+## Inngest: A principled approach to Durable Execution
+
+Inngest is a powerful durable execution solution that simplifies complex workflow orchestration. By abstracting the underlying infrastructure and providing a developer-friendly SDK, Inngest empowers teams to build reliable and scalable workflows without worrying about managing state, retries, and error handling.
+
+**How Inngest works**
+
+When function is executed, Inngest:
+
+* **Schedules the function:** Assigns the function to a worker.
+* **Executes the function:** Runs the function and handles any exceptions.
+* **Manages state:** Stores intermediate results and ensures consistency.
+* **Retries failures:** Automatically retries failed functions with exponential backoff.
+* **Scales dynamically:** Adjusts resources to handle varying workloads.
+
+**A simple example** (reference: [Inngest documentation](/docs/features/inngest-functions?ref=blog-principles-of-durable-execution))
+
+```ts
+export default inngest.createFunction(
+  { id: "checkout" },
+  { event: "store/checkout.completed" },
+  async ({ event, step }) => {
+    const inventoryClaim = await step.run("lock-item-in-inventory", async () => {
+      return await db.inventoryClaim.insert({
+        sku: event.data.itemSKU,
+        count: event.data.count,
+        cartId: event.data.cart.id,
+        status: 'pending-payment'
+      });
+    });
+
+    const orderNumber = await step.run("perform-payment", async () => {
+      return await paymentsAPI.charge({
+        paymentMethodId: event.data.paymentMethodId,
+        amount: event.data.cart.amount,
+      });
+    });
+
+    await step.run("update-inventory", async () => {
+      return await db.inventoryClaim.update(inventoryClaim.id, {
+        status: 'pending-shipment',
+        orderNumber,
+      });
+    });
+
+    await step.run("send-user-email", async () => {
+      await emails.send({
+        to: event.data.email,
+        subject: "Thanks for your order!",
+        body: templates.createReceiptEmail(event.data.cart, orderNumber)
+      });
+    });
+  }
+);
+```
+
+**Getting started with Inngest**
+
+Start building durable workflows with Inngest in just a few minutes. Follow these steps:
+
+1. **Sign up:** [Create a free account](https://app.inngest.com/sign-up?ref=blog-principles-of-durable-execution) or [sign-up for a demo](/contact?ref=blog-principles-of-durable-execution)
+2. **Install the SDK:** Follow the [documentation](/docs/sdk/overview?ref=blog-principles-of-durable-execution) to install the SDK in your preferred language
+3. **Write your first function:** Use [Inngest functions](/docs/learn/inngest-functions?ref=blog-principles-of-durable-execution) to define durable functions and workflows, triggered by events.
+4. **Learn about steps:** Steps are the building blocks of workflows in Inngest. Get familiar with [how they work](/docs/learn/inngest-steps?ref=blog-principles-of-durable-execution).
+5. **Run & orchestrate your workflows**: [Serve your Inngest functions](/docs/learn/serving-inngest-functions?ref=blog-principles-of-durable-execution) via an HTTP endpoint to get started.
+6. **Monitor and recover:** Use the Inngest [dashboard](/docs/platform/monitor/observability-metrics?ref=blog-principles-of-durable-execution) to monitor, debug and recover from production issues.
+
+Inngest's SDKs provide simple primitives that enable every developer to learn and deploy durable workflows quickly.
+
+## The benefits of Durable Execution in modern architectures
+
+Building durable execution systems comes with unique challenges, but the benefits far outweigh the effort. Durable execution requires expertise in complex areas such as time management, sequencing, and task dependencies – areas that can be difficult for organizations without deep experience to navigate.
+
+The following are common use cases where durable execution can provide immediate value:
+
+* **Workflows that interface with slow systems**: Streamline processes dependent on external systems with latency or frequent delays.
+* **Workflows that integrate with AI**: Ensure reliability for workflows involving AI models with retries, timeouts, and non-deterministic processes.
+* **Workflows with multiple steps:** Automate and simplify the orchestration of complex workflows with dependencies.
+* **Event-driven workflows:** Enable scalable, real-time workflow triggering based on system events.
+* **Scheduled or recurring workflows:** Automate repetitive tasks and recurring jobs, eliminating the need of custom CRON solutions.
+* **Error prone workflows:** Improve reliability with automated retries and seamless recovery from failures.
+
+<Blockquote
+  text="One of my goals was to simplify a complex workflow in a cloud world. If the abstractions exist, let's use them so engineers can focus on the business problem, not the not the infrastructure-as-code and primitives problem. The best infrastructure is the one you don't have to manage."
+  attribution={{ name: "Matthew Drooker", title: "CTO", company: 'SoundCloud' }}
+  logo="/assets/customers/soundcloud-logo-white-horizontal.svg"
+/>
+
+Durable execution accelerates development and improves quality by automating workflow orchestration and eliminating the need for manual infrastructure and system management. Tools like Inngest make it easier to adopt durable execution, enabling teams to ship with confidence.
+
