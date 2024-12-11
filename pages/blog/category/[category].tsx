@@ -17,7 +17,7 @@ type StaticProps = {
 };
 
 export default function BlogCategory(props: StaticProps) {
-  const posts: BlogPost[] = props.serializedPosts.map((p) => JSON.parse(p));
+  const posts: MDXBlogPost[] = props.serializedPosts.map((p) => JSON.parse(p));
 
   return (
     <>

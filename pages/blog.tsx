@@ -20,7 +20,7 @@ export default function BlogIndex(props) {
   const router = useRouter();
   const { showHidden } = router.query;
 
-  const content: BlogPost[] = props.content.map(JSON.parse);
+  const content: MDXBlogPost[] = props.content.map(JSON.parse);
   const visiblePosts = showHidden
     ? content
     : content
