@@ -89,6 +89,38 @@ async def send_reminder_push() -> None:
     pass
 ```
 
+```go {{ title: "main.go" }}
+package main
+
+import (
+	"context"
+	"github.com/inngest/inngestgo"
+	"github.com/inngest/inngestgo/step"
+)
+
+func main() {
+	f := inngestgo.CreateFunction(
+		inngestgo.FunctionOpts{
+			ID:   "schedule-reminder",
+			Name: "Schedule reminder",
+			Cancel: []inngestgo.Cancel{
+				{
+					Event: "tasks/deleted",
+					IfExp: "event.data.id == async.data.id",
+				},
+			},
+		},
+		// Run on every tasks/reminder.created event.
+		inngestgo.EventTrigger("tasks/reminder.created", nil),
+		ScheduleReminder,
+	)
+}
+
+func ScheduleReminder(ctx context.Context, input inngestgo.Input[ScheduleReminderEvent]) (any, error) {
+	// ...
+}
+```
+
 </CodeGroup>
 
 Let's now look at two different cancellations triggered from the Dashboard Bulk Cancellation UI:

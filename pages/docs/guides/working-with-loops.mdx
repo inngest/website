@@ -1,4 +1,4 @@
-import { CodeGroup, Callout } from "shared/Docs/mdx";
+import { CodeGroup, Callout, GuideSection, GuideSelector } from "shared/Docs/mdx";
 export const description = 'Implement loops in your Inngest functions and avoid common pitfalls.';
 
 # Working with Loops in Inngest
@@ -7,7 +7,18 @@ In Inngest each step in your function is executed as a separate HTTP request.  T
 
 This page covers how to implement loops in your Inngest functions and avoid common pitfalls.
 
+
 ## Simple function example
+
+<GuideSelector
+  options={[
+    { key: "typescript", title: "TypeScript" },
+    { key: "go", title: "Go" },
+    { key: "python", title: "Python" },
+  ]}>
+
+<GuideSection show="typescript">
+
 
 Let's start with a simple example to illustrate the concept:
 
@@ -87,8 +98,250 @@ inngest.createFunction(
 
 Now, "hello" is printed only once, as expected.
 
+</GuideSection>
+
+<GuideSection show="go">
+
+Let's start with a simple example to illustrate the concept:
+
+```go
+import (
+    "fmt"
+    "github.com/inngest/inngest-go"
+    "github.com/inngest/inngest-go/step"
+)
+
+inngestgo.CreateFunction(
+	inngestgo.FunctionOpts{ID: "simple-function"},
+	inngestgo.EventTrigger("test/simple.function", nil),
+	func(ctx context.Context, input inngestgo.Input) (any, error) {
+		fmt.Println("hello")
+
+		_, err := step.Run("a", func() error {
+			fmt.Println("a")
+			return nil
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		_, err = step.Run("b", func() error {
+			fmt.Println("b")
+			return nil
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		_, err = step.Run("c", func() error {
+			fmt.Println("c")
+			return nil
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		return nil, nil
+	},
+)
+```
+
+In the above example, you will see "hello" printed four times, once for the initial function entry and once for each step execution (`a`, `b`, and `c`).
+
+
+<CodeGroup forceTabs>
+```bash {{ title: "✅ How Inngest executes the code" }}
+
+# This is how Inngest executes the code above:
+
+<run start>
+"hello"
+
+"hello"
+"a"
+
+"hello"
+"b"
+
+"hello"
+"c"
+<run complete>
+```
+```bash {{ title: "❌ Common incorrect misconception" }}
+
+# This is a common assumption of how Inngest executes the code above.
+# It is not correct.
+
+<run start>
+
+"hello"
+"a"
+"b"
+"c"
+
+<run complete>
+```
+</CodeGroup>
+
+Any non-deterministic logic (like database calls or API calls) must be placed inside a `step.run` call to ensure it is executed correctly within each step.
+
+With this in mind, here is how the previous example can be fixed:
+
+```go
+import (
+    "fmt"
+    "github.com/inngest/inngest-go"
+    "github.com/inngest/inngest-go/step"
+)
+
+inngest.CreateFunction(
+	"simple-function",
+	inngest.EventTrigger("test/simple.function"),
+	func(ctx context.Context, step inngest.Step) error {
+		if _, err := step.Run("hello", func() error {
+			fmt.Println("hello")
+			return nil
+		}); err != nil {
+			return err
+		}
+
+		if _, err := step.Run("a", func() error {
+			fmt.Println("a")
+			return nil
+		}); err != nil {
+			return err
+		}
+
+		if _, err := step.Run("b", func() error {
+			fmt.Println("b")
+			return nil
+		}); err != nil {
+			return err
+		}
+
+		if _, err := step.Run("c", func() error {
+			fmt.Println("c")
+			return nil
+		}); err != nil {
+			return err
+		}
+
+		return nil
+	},
+)
+
+// hello
+// a 
+// b
+// c
+```
+
+Now, "hello" is printed only once, as expected.
+
+</GuideSection>
+
+<GuideSection show="python">
+Let's start with a simple example to illustrate the concept:
+
+```python
+@inngest_client.create_function(
+    fn_id="simple-function",
+    trigger=inngest.TriggerEvent(event="test/simple.function")
+)
+async def simple_function(ctx: inngest.Context, step: inngest.Step):
+    print("hello")
+
+    async def step_a():
+        print("a")
+    await step.run("a", step_a)
+
+    async def step_b():
+        print("b") 
+    await step.run("b", step_b)
+
+    async def step_c():
+        print("c")
+    await step.run("c", step_c)
+```
+
+In the above example, you will see "hello" printed four times, once for the initial function entry and once for each step execution (`a`, `b`, and `c`).
+
+
+<CodeGroup forceTabs>
+```bash {{ title: "✅ How Inngest executes the code" }}
+
+# This is how Inngest executes the code above:
+
+<run start>
+"hello"
+
+"hello"
+"a"
+
+"hello"
+"b"
+
+"hello"
+"c"
+<run complete>
+```
+```bash {{ title: "❌ Common incorrect misconception" }}
+
+# This is a common assumption of how Inngest executes the code above.
+# It is not correct.
+
+<run start>
+
+"hello"
+"a"
+"b"
+"c"
+
+<run complete>
+```
+</CodeGroup>
+
+Any non-deterministic logic (like database calls or API calls) must be placed inside a `step.run` call to ensure it is executed correctly within each step.
+
+With this in mind, here is how the previous example can be fixed:
+
+```python
+import inngest
+from src.inngest.client import inngest_client
+
+@inngest_client.create_function(
+    id="simple-function",
+    trigger=inngest.TriggerEvent(event="test/simple.function")
+)
+async def simple_function(ctx: inngest.Context, step: inngest.Step):
+    await step.run("hello", lambda: print("hello"))
+
+    await step.run("a", lambda: print("a"))
+    await step.run("b", lambda: print("b")) 
+    await step.run("c", lambda: print("c"))
+
+# hello
+# a
+# b
+# c
+```
+
+Now, "hello" is printed only once, as expected.
+
+</GuideSection>
+
+</GuideSelector>
+
 ## Loop example
 
+<GuideSelector
+  options={[
+    { key: "typescript", title: "TypeScript" },
+    { key: "go", title: "Go" },
+    { key: "python", title: "Python" },
+  ]}>
+
+<GuideSection show="typescript">
 Here's [an example](/blog/import-ecommerce-api-data-in-seconds) of an Inngest function that imports all products from a Shopify store into a local system. This function iterates over all pages combining all products into a single array.
 
 ```typescript
@@ -131,6 +384,107 @@ In the example above, each iteration of the loop is managed using `step.run()`, 
 Note that in the example above `getShopifySession` is deterministic across multiple requests (and it's added to all API calls for authorization). If the returned results must stay in the same order, wrap the database call in `step.run()`.
 
 Read more about this use case in the [blog post](/blog/import-ecommerce-api-data-in-seconds).
+
+</GuideSection>
+<GuideSection show="go">
+Here's an example of an Inngest function that imports all products from a Shopify store into a local system. This function iterates over all pages combining all products into a single array.
+
+```go
+inngest.CreateFunction(
+	"shopify-product-import",
+	inngest.EventTrigger("shopify/import.requested"),
+	func(ctx context.Context, event inngest.Event) error {
+		var allProducts []Product
+		var cursor *string
+		hasMore := true
+
+		// Use the event's "data" to pass key info like IDs
+		// Note: in this example is deterministic across multiple requests
+		// If the returned results must stay in the same order, wrap the db call in step.run()
+		session, err := database.GetShopifySession(event.Data["storeId"].(string))
+		if err != nil {
+			return err
+		}
+
+		for hasMore {
+			var page *shopify.ProductsResponse
+			if _, err := step.Run(fmt.Sprintf("fetch-products-%v", cursor), func() error {
+				var err error
+				page, err = shopify.Product.All(&shopify.ProductListOptions{
+					Session:  session,
+					SinceID: cursor,
+				})
+				return err
+			}); err != nil {
+				return err
+			}
+
+			// Combine all of the data into a single list
+			allProducts = append(allProducts, page.Products...)
+
+			if len(page.Products) == 50 {
+				id := page.Products[49].ID
+				cursor = &id
+			} else {
+				hasMore = false
+			}
+		}
+
+		// Now we have the entire list of products within allProducts!
+		return nil
+	},
+)
+```
+
+In the example above, each iteration of the loop is managed using `step.Run()`, ensuring that **all non-deterministic logic (like fetching products from Shopify) is encapsulated within a step**. This approach guarantees that if the request fails, it will be retried automatically, in the correct order. This structure aligns with Inngest's execution model, where each step is a separate HTTP request, ensuring robust and consistent loop behavior.
+
+Note that in the example above `getShopifySession` is deterministic across multiple requests (and it's added to all API calls for authorization). If the returned results must stay in the same order, wrap the database call in `step.Run()`.
+
+Read more about this use case in the [blog post](/blog/import-ecommerce-api-data-in-seconds).
+
+</GuideSection>
+<GuideSection show="python">
+Here's an example of an Inngest function that imports all products from a Shopify store into a local system. This function iterates over all pages combining all products into a single array.
+
+```python
+@inngest.create_function(
+    id="shopify-product-import",
+    trigger=inngest.TriggerEvent(event="shopify/import.requested")
+)
+async def shopify_product_import(ctx: inngest.Context, step: inngest.Step):
+    all_products = []
+    cursor = None
+    has_more = True
+
+    # Use the event's "data" to pass key info like IDs
+    # Note: in this example is deterministic across multiple requests
+    # If the returned results must stay in the same order, wrap the db call in step.run()
+    session = await database.get_shopify_session(ctx.event.data["store_id"])
+
+    while has_more:
+        page = await step.run(f"fetch-products-{cursor}", lambda: shopify.Product.all(
+            session=session,
+            since_id=cursor
+        ))
+        # Combine all of the data into a single list
+        all_products.extend(page.products)
+        if len(page.products) == 50:
+            cursor = page.products[49].id
+        else:
+            has_more = False
+
+    # Now we have the entire list of products within all_products!
+```
+
+In the example above, each iteration of the loop is managed using `step.run()`, ensuring that **all non-deterministic logic (like fetching products from Shopify) is encapsulated within a step**. This approach guarantees that if the request fails, it will be retried automatically, in the correct order. This structure aligns with Inngest's execution model, where each step is a separate HTTP request, ensuring robust and consistent loop behavior.
+
+Note that in the example above `get_shopify_session` is deterministic across multiple requests (and it's added to all API calls for authorization). If the returned results must stay in the same order, wrap the database call in `step.run()`.
+
+Read more about this use case in the [blog post](/blog/import-ecommerce-api-data-in-seconds).
+
+</GuideSection>
+
+</GuideSelector>
 
 ## Best practices: implementing loops in Inngest
 

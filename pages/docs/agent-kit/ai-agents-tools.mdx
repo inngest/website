@@ -1,6 +1,6 @@
-import { Callout, GuideSelector, GuideSection, CodeGroup } from "src/shared/Docs/mdx";
+import { Callout, GuideSelector, GuideSection, CodeGroup, VersionBadge } from "src/shared/Docs/mdx";
 
-# Agents and Agent Tools
+# Agents and Agent Tools <VersionBadge version="TypeScript only" />
 
 <Callout variant="info">
   You can think of an Agent as a wrapper over a single model, with instructions and tools.  Calling `.run` on an Agent
@@ -20,7 +20,7 @@ Agents are the core of AgentKit.  An Agent is used to call a single model with a
 Here’s a simple agent, which makes a single model call using system prompts and user input:
 
 ```jsx
-import { Agent, agenticOpenai as openai } from "@inngest/agent-kit";
+import { Agent, agenticOpenai as openai, createAgent } from "@inngest/agent-kit";
 
 const agent = createAgent({
   name: "Code writer",
@@ -73,7 +73,7 @@ You can define an agent's system prompt as a string or as an async callback whic
 Here's an example:
 
 ```ts
-import { Agent, Network, agenticOpenai as openai } from "@inngest/agent-kit";
+import { Agent, Network, agenticOpenai as openai, createAgent } from "@inngest/agent-kit";
 
 const systemPrompt =
     "You are an expert TypeScript programmer.  Given a set of asks, think step-by-step to plan clean, " +
@@ -126,7 +126,7 @@ In AgentKit, you also define a `handler` function which is called when the tool 
 A more complex agent used in a network defines a description, lifecycle hooks, tools, and a dynamic set of instructions based off of network state:
 
 ```ts
-import { Agent, Network, agenticOpenai as openai } from "@inngest/agent-kit";
+import { Agent, Network, agenticOpenai as openai, createAgent } from "@inngest/agent-kit";
 
 const systemPrompt =
     "You are an expert TypeScript programmer.  Given a set of asks, think step-by-step to plan clean, " +

@@ -1,5 +1,7 @@
-import { CodeGroup, Callout } from "shared/Docs/mdx";
+import { CodeGroup, Callout, GuideSelector, GuideSection } from "src/shared/Docs/mdx";
+
 export const description = `Build reliable workflows with event coordination and conditional execution using Inngest's multi-step functions.`
+export const hidePageSidebar = true;
 
 # Multi-Step Functions
 
@@ -17,8 +19,20 @@ Creating functions that utilize multiple steps enable you to:
 
 This approach makes building reliable and distributed code simple. By wrapping asynchronous actions such as API calls in retriable blocks, we can ensure reliability when coordinating across many services.
 
+
+
+
+
 ## How to write a multi-step function
 
+<GuideSelector
+  options={[
+    { key: "typescript", title: "TypeScript" },
+    { key: "go", title: "Go" },
+    { key: "python", title: "Python" },
+  ]}>
+
+<GuideSection show="typescript">
 Consider this simple [Inngest function](/docs/learn/inngest-functions) which sends a welcome email when a user signs up:
 
 <CodeGroup>
@@ -131,7 +145,311 @@ That's it! We've now written a multi-step function that will send a welcome emai
 
 Most importantly, we had to write no config to do this. We can use all the power of JavaScript to write our functions and all the power of Inngest's tools to coordinate between events and steps.
 
+</GuideSection>
+<GuideSection show="go">
+Consider this simple [Inngest function](/docs/learn/inngest-functions) which sends a welcome email when a user signs up:
+
+<CodeGroup>
+```go
+import (
+    "github.com/inngest/inngest-go"
+)
+
+inngestgo.CreateFunction(
+    inngestgo.FunctionOpts{
+        ID: "activation-email",
+    },
+    inngestgo.EventTrigger("app/user.created"),
+    func(ctx *inngestgo.Context) (any, error) {
+        if err := sendEmail(ctx.Event.Data["user"].(map[string]interface{})["email"].(string), "welcome"); err != nil {
+            return err
+        }
+        return nil, nil
+    },
+)
+```
+</CodeGroup>
+
+This function comes with all of the benefits of Inngest: the code is reliable and retriable. If an error happens, you will recover the data. This works for a single-task functions.
+
+However, there is a new requirement: if a user hasn't created a post on our platform within 24 hours of signing up, we should send the user another email. Instead of adding more logic to the handler, we can convert this function into a multi-step one.
+
+### 1. Convert to a step function
+
+First, let's convert this function into a multi-step function:
+- Add a `github.com/inngest/inngest-go/step` import
+- Wrap `sendEmail()` call in a [`step.Run()`](https://pkg.go.dev/github.com/inngest/inngestgo@v0.7.4/step#Run) method.
+
+```go
+import (
+    "github.com/inngest/inngest-go"
+    "github.com/inngest/inngest-go/step"
+)
+
+inngestgo.CreateFunction(
+    inngestgo.FunctionOpts{
+        ID: "activation-email",
+    },
+    inngestgo.EventTrigger("app/user.created"),
+    func(ctx *inngestgo.Context) (any, error) {
+        _, err := step.Run("send-welcome-email", func() (any, error) {
+            return nil, sendEmail(ctx.Event.Data["user"].(map[string]interface{})["email"].(string), "welcome")
+        })
+        if err != nil {
+            return err
+        }
+        return nil, nil
+    },
+)
+```
+
+The main difference is that we've wrapped our `sendEmail()` call in a `step.run()` call. This is how we tell Inngest that this is an individual step in our function. This step can be retried independently, just like a single-step function would.
+
+### 2. Add another step: wait for event
+
+Once the welcome email is sent, we want to wait at most 24 hours for our user to create a post. If they haven't created one by then, we want to send them a reminder email.
+
+Elsewhere in our app, an `app/post.created` event is sent whenever a user creates a new post. We could use it to trigger the second email.
+
+To do this, we can use the [`step.WaitForEvent()`](https://pkg.go.dev/github.com/inngest/inngestgo@v0.7.4/step#WaitForEvent) method. This tool will wait for a matching event to be fired, and then return the event data. If the event is not fired within the timeout, it will return `nil`, which we can use to decide whether to send the reminder email.
+
+<CodeGroup>
+```go
+import (
+    "github.com/inngest/inngest-go"
+    "github.com/inngest/inngest-go/step"
+)
+
+inngestgo.CreateFunction(
+    inngestgo.FunctionOpts{
+        ID: "activation-email",
+    },
+    inngestgo.EventTrigger("app/user.created"),
+    func(ctx *inngestgo.Context) (any, error) {
+        _, err := step.Run("send-welcome-email", func() (any, error) {
+            return nil, sendEmail(ctx.Event.Data["user"].(map[string]interface{})["email"].(string), "welcome")
+        })
+        if err != nil {
+            return nil, err
+        }
+
+        // Wait for an "app/post.created" event
+        postCreated, err := step.WaitForEvent("wait-for-post-creation", &step.WaitForEventOpts{
+            Event:   "app/post.created",
+            Match:   "data.user.id", // the field "data.user.id" must match
+            Timeout: "24h",          // wait at most 24 hours
+        })
+        if err != nil {
+            return nil, err
+        }
+
+        return postCreated, nil
+    },
+)
+```
+</CodeGroup>
+
+Now we have a `postCreated` variable, which will be `nil` if the user hasn't created a post within 24 hours, or the event data if they have.
+
+### 3. Set conditional action
+
+Finally, we can use the `postCreated` variable to send the reminder email if the user hasn't created a post. Let's add another block of code with `step.Run()`:
+
+<CodeGroup>
+```go
+import (
+    "github.com/inngest/inngest-go"
+    "github.com/inngest/inngest-go/step"
+)
+
+inngestgo.CreateFunction(
+    inngestgo.FunctionOpts{
+        ID: "activation-email",
+    },
+    inngestgo.EventTrigger("app/user.created", nil),
+    func(ctx context.Context, input inngestgo.Input) (any, error) {
+        // Send welcome email
+        _, err := step.Run("send-welcome-email", func() (any, error) {
+            return nil, sendEmail(input.Event.Data["user"].(map[string]interface{})["email"].(string), "welcome")
+        })
+        if err != nil {
+            return nil, err
+        }
+
+        // Wait for post creation event
+        postCreated, err := step.WaitForEvent("wait-for-post-creation", &step.WaitForEventOpts{
+            Event:   "app/post.created",
+            Match:   "data.user.id",
+            Timeout: "24h",
+        })
+        if err != nil {
+            return nil, err
+        }
+
+        // If no post was created, send reminder email
+        if postCreated == nil {
+            _, err := step.Run("send-reminder-email", func() (any, error) {
+                return nil, sendEmail(input.Event.Data["user"].(map[string]interface{})["email"].(string), "reminder")
+            })
+            if err != nil {
+                return nil, err
+            }
+        }
+
+        return nil, nil
+    },
+)
+```
+</CodeGroup>
+
+That's it! We've now written a multi-step function that will send a welcome email, and then send a reminder email if the user hasn't created a post within 24 hours.
+
+Most importantly, we had to write no config to do this. We can use all the power of JavaScript to write our functions and all the power of Inngest's tools to coordinate between events and steps.
+
+</GuideSection>
+<GuideSection show="python">
+Consider this simple [Inngest function](/docs/learn/inngest-functions) which sends a welcome email when a user signs up:
+
+<CodeGroup>
+```py
+import inngest
+from src.inngest.client import inngest_client
+
+@inngest_client.create_function(
+    fn_id="activation-email",
+    trigger=inngest.TriggerEvent(event="app/user.created"),
+)
+async def fn(
+    ctx: inngest.Context,
+    step: inngest.Step,
+) -> None:
+    await sendEmail({ email: ctx.event.user.email, template: "welcome" })
+```
+</CodeGroup>
+
+This function comes with all of the benefits of Inngest: the code is reliable and retriable. If an error happens, you will recover the data. This works for a single-task functions.
+
+However, there is a new requirement: if a user hasn't created a post on our platform within 24 hours of signing up, we should send the user another email. Instead of adding more logic to the handler, we can convert this function into a multi-step one.
+
+### 1. Convert to a step function
+
+First, let's convert this function into a multi-step function:
+- Add a `step` argument to the handler in the Inngest function.
+- Wrap `sendEmail()` call in a [`step.run()`](/docs/reference/python/steps/run) method.
+
+```py
+import inngest
+from src.inngest.client import inngest_client
+
+@inngest_client.create_function(
+    fn_id="activation-email",
+    trigger=inngest.TriggerEvent(event="app/user.created"),
+)
+async def fn(
+    ctx: inngest.Context,
+    step: inngest.Step,
+) -> None:
+    await step.run("send-welcome-email", lambda: sendEmail({ 
+        "email": ctx.event.user.email, 
+        "template": "welcome" 
+    }))
+```
+
+The main difference is that we've wrapped our `sendEmail()` call in a `step.run()` call. This is how we tell Inngest that this is an individual step in our function. This step can be retried independently, just like a single-step function would.
+
+### 2. Add another step: wait for event
+
+Once the welcome email is sent, we want to wait at most 24 hours for our user to create a post. If they haven't created one by then, we want to send them a reminder email.
+
+Elsewhere in our app, an `app/post.created` event is sent whenever a user creates a new post. We could use it to trigger the second email.
+
+To do this, we can use the [`step.wait_for_event()`](/docs/reference/python/steps/wait-for-event) method. This tool will wait for a matching event to be fired, and then return the event data. If the event is not fired within the timeout, it will return `None`, which we can use to decide whether to send the reminder email.
+
+<CodeGroup>
+```py
+import inngest
+from src.inngest.client import inngest_client
+
+@inngest_client.create_function(
+    fn_id="activation-email",
+    trigger=inngest.TriggerEvent(event="app/user.created"),
+)
+async def fn(
+    ctx: inngest.Context,
+    step: inngest.Step,
+) -> None:
+    await step.run("send-welcome-email", lambda: sendEmail({
+        "email": ctx.event.user.email,
+        "template": "welcome"
+    }))
+
+    # Wait for an "app/post.created" event
+    post_created = await step.wait_for_event("wait-for-post-creation", {
+        "event": "app/post.created",
+        "match": "data.user.id",  # the field "data.user.id" must match
+        "timeout": "24h",  # wait at most 24 hours
+    })
+```
+</CodeGroup>
+
+Now we have a `postCreated` variable, which will be `None` if the user hasn't created a post within 24 hours, or the event data if they have.
+
+### 3. Set conditional action
+
+Finally, we can use the `postCreated` variable to send the reminder email if the user hasn't created a post. Let's add another block of code with `step.run()`:
+
+<CodeGroup>
+```py
+import inngest
+from src.inngest.client import inngest_client
+
+@inngest_client.create_function(
+    fn_id="activation-email",
+    trigger=inngest.TriggerEvent(event="app/user.created"),
+)
+async def fn(
+    ctx: inngest.Context,
+    step: inngest.Step,
+) -> None:
+    await step.run("send-welcome-email", lambda: sendEmail({
+        "email": ctx.event.user.email,
+        "template": "welcome"
+    }))
+
+    # Wait for an "app/post.created" event
+    post_created = await step.wait_for_event("wait-for-post-creation", {
+        "event": "app/post.created", 
+        "match": "data.user.id",  # the field "data.user.id" must match
+        "timeout": "24h",  # wait at most 24 hours
+    })
+
+    if not post_created:
+        # If no post was created, send a reminder email
+        await step.run("send-reminder-email", lambda: sendEmail({
+            "email": ctx.event.user.email,
+            "template": "reminder"
+        }))
+```
+</CodeGroup>
+
+That's it! We've now written a multi-step function that will send a welcome email, and then send a reminder email if the user hasn't created a post within 24 hours.
+
+Most importantly, we had to write no config to do this. We can use all the power of JavaScript to write our functions and all the power of Inngest's tools to coordinate between events and steps.
+
+</GuideSection>
+</GuideSelector>
+
+
 ## Step Reference
+
+<GuideSelector
+  options={[
+    { key: "typescript", title: "TypeScript" },
+    { key: "go", title: "Go" },
+    { key: "python", title: "Python" },
+  ]}>
+
+<GuideSection show="typescript">
 
 You can read more about [Inngest steps](/docs/learn/inngest-steps) or jump directly to a step reference guide:
 
@@ -248,6 +566,105 @@ If code within a loop is not encapsulated within a step, it will re-run multiple
 
 Learn more about [working with loops in Inngest](/docs/guides/working-with-loops).
 
+</GuideSection>
+
+<GuideSection show="go">
+You can read more about [Inngest steps](/docs/learn/inngest-steps) or jump directly to a step reference guide:
+
+- [`step.Run()`](https://pkg.go.dev/github.com/inngest/inngestgo@v0.7.4/step#Run): Run synchronous or asynchronous code as a retriable step in your function.
+- [`step.Sleep()`](https://pkg.go.dev/github.com/inngest/inngestgo@v0.7.4/step#Sleep): Sleep for a given amount of time.
+- [`step.Invoke()`](https://pkg.go.dev/github.com/inngest/inngestgo@v0.7.4/step#Invoke): Invoke another Inngest function as a step, receiving the result of the invoked function.
+- [`step.WaitForEvent()`](https://pkg.go.dev/github.com/inngest/inngestgo@v0.7.4/step#WaitForEvent): Pause a function's execution until another event is received.
+
+<Callout>
+Please note that each step is executed as **a separate HTTP request**. To ensure efficient and correct execution, place any non-deterministic logic (such as DB calls or API calls) within a `step.Run()` call. [Learn more](/docs/guides/working-with-loops).
+
+</Callout>
+
+## Gotchas
+
+### My function is running twice
+
+Inngest will communicate with your function multiple times throughout a single run and will use your use of tools to intelligently memoize state.
+
+For this reason, placing business logic outside of a `step.Run()` call is a bad idea, as this will be run every time Inngest communicates with your function.
+
+
+### Unexpected loop behavior
+
+When using loops within functions, it is recommended to treat each iteration as it's own step or steps.
+
+When [functions are run](/docs/learn/how-functions-are-executed), the function handler is re-executed from the start for each new step and previously completed steps are memoized. This means that iterations of loops will be run every re-execution, but code encapsulated within `step.Run()` will not re-run.
+
+If code within a loop is not encapsulated within a step, it will re-run multiple times, which can lead to confusing behavior, debugging, or [logging](/docs/guides/logging). This is why it is recommended to encapsulate non-deterministic code within a `step.Run()` when working with loops.
+
+Learn more about [working with loops in Inngest](/docs/guides/working-with-loops).
+
+
+</GuideSection>
+
+<GuideSection show="python">
+You can read more about [Inngest steps](/docs/learn/inngest-steps) or jump directly to a step reference guide:
+
+- [`step.run()`](/docs/reference/python/steps/run): Run synchronous or asynchronous code as a retriable step in your function.
+- [`step.sleep()`](/docs/reference/python/steps/sleep): Sleep for a given amount of time.
+- [`step.sleep_until()`](/docs/reference/python/steps/sleep-until): Sleep until a given time.
+- [`step.invoke()`](/docs/reference/python/steps/invoke): Invoke another Inngest function as a step, receiving the result of the invoked function.
+- [`step.wait_for_event()`](/docs/reference/python/steps/wait-for-event): Pause a function's execution until another event is received.
+- [`step.send_event()`](/docs/reference/python/steps/send-event): Send event(s) reliably within your function. Use this instead of `inngest.send()` to ensure reliable event delivery from within functions.
+
+<Callout>
+Please note that each step is executed as **a separate HTTP request**. To ensure efficient and correct execution, place any non-deterministic logic (such as DB calls or API calls) within a `step.run()` call. [Learn more](/docs/guides/working-with-loops).
+
+</Callout>
+
+## Gotchas
+
+### My function is running twice
+
+Inngest will communicate with your function multiple times throughout a single run and will use your use of tools to intelligently memoize state.
+
+For this reason, placing business logic outside of a `step.run()` call is a bad idea, as this will be run every time Inngest communicates with your function.
+
+### `sleep_until()` isn't working as expected
+
+Make sure to only to use `sleep_until()` with dates that will be static across the various calls to your function.
+
+Always use `sleep()` if you'd like to wait a particular time from _now_.
+
+```py
+# ❌ Bad
+tomorrow = datetime.now() + timedelta(days=1)
+await step.sleepUntil("wait-until-tomorrow", tomorrow);
+
+# ✅ Good
+await step.sleep("wait-a-day", "1 day");
+```
+
+```py
+# ✅ Good
+user_birthday = await step.run("get-user-birthday", async () => {
+  user = await get_user();
+  return user.birthday; # Date
+});
+
+await step.sleep_until("wait-for-user-birthday", user_birthday);
+```
+
+### Unexpected loop behavior
+
+When using loops within functions, it is recommended to treat each iteration as it's own step or steps.
+
+When [functions are run](/docs/learn/how-functions-are-executed), the function handler is re-executed from the start for each new step and previously completed steps are memoized. This means that iterations of loops will be run every re-execution, but code encapsulated within `step.run()` will not re-run.
+
+If code within a loop is not encapsulated within a step, it will re-run multiple times, which can lead to confusing behavior, debugging, or [logging](/docs/guides/logging). This is why it is recommended to encapsulate non-deterministic code within a `step.run()` when working with loops.
+
+Learn more about [working with loops in Inngest](/docs/guides/working-with-loops).
+
+
+</GuideSection>
+
+</GuideSelector>
 
 ## Further reading
 

@@ -1,6 +1,7 @@
 import IconConcurrency from 'src/shared/Icons/FlowControl/Concurrency';
 import { ResourceGrid, Resource } from 'src/shared/Docs/Resources';
 import { EnvelopeIcon } from "@heroicons/react/24/outline";
+import { GuideSelector, GuideSection } from "shared/Docs/mdx";
 
 export const description = 'Learn what Inngest functions are and of what they are capable.';
 
@@ -12,7 +13,17 @@ This page covers components of an Inngest function, as well as introduces differ
 
 ## Anatomy of an Inngest function
 
+<GuideSelector
+  options={[
+    { key: "typescript", title: "TypeScript" },
+    { key: "go", title: "Go" },
+    { key: "python", title: "Python" },
+  ]}
+>
+
 Let's have a look at the following Inngest function:
+
+<GuideSection show="typescript">
 
 ```ts
 import { inngest } from "./client";
@@ -37,8 +48,87 @@ export default inngest.createFunction(
 );
 ```
 
-The above code can be explained as:
+</GuideSection>
 
+<GuideSection show="go">
+
+```go
+import (
+  "github.com/inngest/inngestgo"
+  "github.com/inngest/inngestgo/step"
+)
+
+inngestgo.CreateFunction(
+  // config
+  &inngestgo.FunctionOpts{
+    ID: "import-product-images",
+  },
+  // trigger (event or cron)
+  inngestgo.EventTrigger("shop/product.imported", nil),
+  // handler function
+  func(ctx context.Context, input inngestgo.Input) (any, error) {
+    // Here goes the business logic
+    // By wrapping code in steps, it will be retried automatically on failure
+    s3Urls, err := step.Run("copy-images-to-s3", func() ([]string, error) {
+      return copyAllImagesToS3(input.Event.Data["imageURLs"].([]string))
+    })
+    if err != nil {
+      return nil, err
+    }
+
+    // You can include numerous steps in your function
+    _, err = step.Run("resize-images", func() (any, error) {
+      return nil, resizer.Bulk(ResizerOpts{
+        URLs:     s3Urls,
+        Quality:  0.9,
+        MaxWidth: 1024,
+      })
+    })
+    if err != nil {
+      return nil, err
+    }
+
+    return nil, nil
+  },
+)
+```
+
+</GuideSection>
+
+<GuideSection show="python">
+
+```py
+import inngest
+from src.inngest.client import inngest_client
+
+@inngest_client.create_function(
+    # config
+    id="import-product-images",
+    # trigger (event or cron)
+    trigger=inngest.Trigger(event="shop/product.imported")
+)
+async def import_product_images(ctx: inngest.Context, step: inngest.Step):
+    # Here goes the business logic
+    # By wrapping code in steps, it will be retried automatically on failure
+    s3_urls = await step.run(
+        "copy-images-to-s3",
+        lambda: copy_all_images_to_s3(ctx.event.data["imageURLs"])
+    )
+
+    # You can include numerous steps in your function
+    await step.run(
+        "resize-images",
+        lambda: resizer.bulk(
+            urls=s3_urls,
+            quality=0.9,
+            max_width=1024
+        )
+    )
+```
+
+</GuideSection>
+
+The above code can be explained as:
 > This Inngest function is called `import-product-images`. When an event called `shop/product.imported` is received, run two steps: `copy-images-to-s3` and `resize-images`.
 
 Let's have a look at each of this function's components.
@@ -46,6 +136,8 @@ Let's have a look at each of this function's components.
 {/* <Callout>
 💡 You can test Inngest functions using standard tooling such as Jest or Mocha. To do so, export the job code and run standard unit tests.
 </Callout> */}
+
+<GuideSection show="typescript">
 
 ### Config
 
@@ -90,6 +182,102 @@ There are several step methods available at your disposal, for example, `step.ru
 
 In the example above, the handler contains two steps: `copy-images-to-s3` and `resize-images`.
 
+</GuideSection>
+<GuideSection show="go">
+
+### Config
+
+The first parameter of the `createFunction` method specifies Inngest function's configuration. In the above example, the `id` is specified, which will be used to identify the function in the Inngest system.
+
+You can see this ID in the [Inngest Dev Server's](/docs/local-development) function list:
+
+<img
+  src="/assets/docs/local-development/dev-server-functions.png"
+  width="400" height={400/2762*1868} quality="95"
+  className="rounded-md"
+  alt="Screenshot of the Inngest Dev Server interface showing three functions listed under the 'Functions' tab. The functions are: 'store-events,' 'Generate monthly report,' and 'Customer Onboarding,' each with their respective triggers and App URLs."
+/>
+
+You can also provide other [configuration options](https://pkg.go.dev/github.com/inngest/inngestgo#CreateFunction), such as `Concurrency`, `Throttle`, `Debounce`, `RateLimit`, `Priority`, `BatchEvents`, or `Idempotency` (learn more about [Flow Control](/docs/guides/flow-control)). You can also specify how many times the function will retry, what callback function will run on failure, and when to cancel the function.
+
+### Trigger
+
+Inngest functions are designed to be triggered by events or crons (schedules). Events can be [sent from your own code](/docs/events) or received from third party webhooks or API requests. When an event is received, it triggers a corresponding function to execute the tasks defined in the function handler (see the ["Handler" section](#handler) below).
+
+Each function needs at least one trigger. However, you can also work with [multiple triggers](/docs/guides/multiple-triggers) to invoke your function whenever any of the events are received or cron schedule occurs.
+
+### Handler
+
+A "handler" is the core function that defines what should happen when the function is triggered.
+
+The handler receives context, which includes the event data, tools for managing execution flow, or logging configuration. Let's take a closer look at them.
+
+#### `event`
+
+Handler has access to the data which you pass when sending events to Inngest via [`inngest.Send()`](https://pkg.go.dev/github.com/inngest/inngestgo#Send).
+
+You can see this in the example above in the `event` parameter.
+
+#### `step`
+[Inngest steps](/docs/learn/inngest-steps) are fundamental building blocks in Inngest functions. They are used to manage execution flow. Each step is a discrete task, which can be executed, retried, and recovered independently, without re-executing other successful steps.
+
+It's helpful to think of steps as code-level transactions.  If your handler contains several independent tasks, it's good practice to [wrap each one in a step](/docs/guides/multi-step-functions).
+In this way, you can manage complex state easier and if any task fails, it will be retried independently from others.
+
+There are several step methods available at your disposal, for example, `step.Run`, `step.Sleep()`, or `step.WaitForEvent()`.
+
+In the example above, the handler contains two steps: `copy-images-to-s3` and `resize-images`.
+
+</GuideSection>
+
+<GuideSection show="python">
+
+### Config
+
+The first parameter of the `createFunction` method specifies Inngest function's configuration. In the above example, the `id` is specified, which will be used to identify the function in the Inngest system.
+
+You can see this ID in the [Inngest Dev Server's](/docs/local-development) function list:
+
+<img
+  src="/assets/docs/local-development/dev-server-functions.png"
+  width="400" height={400/2762*1868} quality="95"
+  className="rounded-md"
+  alt="Screenshot of the Inngest Dev Server interface showing three functions listed under the 'Functions' tab. The functions are: 'store-events,' 'Generate monthly report,' and 'Customer Onboarding,' each with their respective triggers and App URLs."
+/>
+
+You can also provide other [configuration options](/docs/reference/python/functions/create), such as `concurrency`, `throttle`, `debounce`, `rateLimit`, `priority`, `batchEvents`, or `idempotency` (learn more about [Flow Control](/docs/guides/flow-control)). You can also specify how many times the function will retry, what callback function will run on failure, and when to cancel the function.
+
+### Trigger
+
+Inngest functions are designed to be triggered by events or crons (schedules). Events can be [sent from your own code](/docs/events) or received from third party webhooks or API requests. When an event is received, it triggers a corresponding function to execute the tasks defined in the function handler (see the ["Handler" section](#handler) below).
+
+Each function needs at least one trigger. However, you can also work with [multiple triggers](/docs/guides/multiple-triggers) to invoke your function whenever any of the events are received or cron schedule occurs.
+
+### Handler
+
+A "handler" is the core function that defines what should happen when the function is triggered.
+
+The handler receives context, which includes the event data, tools for managing execution flow, or logging configuration. Let's take a closer look at them.
+
+#### `event`
+
+Handler has access to the data which you pass when sending events to Inngest via [`inngest.send()`](/docs/reference/python/client/send) or [`step.send_event()`](/docs/reference/python/functions/step-send-event).
+
+You can see this in the example above in the `event` parameter.
+
+#### `step`
+[Inngest steps](/docs/learn/inngest-steps) are fundamental building blocks in Inngest functions. They are used to manage execution flow. Each step is a discrete task, which can be executed, retried, and recovered independently, without re-executing other successful steps.
+
+It's helpful to think of steps as code-level transactions.  If your handler contains several independent tasks, it's good practice to [wrap each one in a step](/docs/guides/multi-step-functions).
+In this way, you can manage complex state easier and if any task fails, it will be retried independently from others.
+
+There are several step methods available at your disposal, for example, `step.run`, `step.sleep()`, or `step.wait_for_event()`.
+
+In the example above, the handler contains two steps: `copy-images-to-s3` and `resize-images`.
+
+</GuideSection>
+
+
 ## Kinds of Inngest functions
 
 
@@ -125,3 +313,5 @@ This is useful when you need to break down complex workflows into simpler, manag
 - ["How Inngest functions are executed"](/docs/learn/how-functions-are-executed): learn more about Inngest's execution model.
 - ["Inngest steps"](/docs/learn/inngest-steps): understand building Inngest's blocks.
 - ["Flow Control"](/docs/guides/flow-control): learn how to manage execution within Inngest functions.
+
+</GuideSelector>

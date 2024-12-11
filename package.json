@@ -30,7 +30,7 @@
     "@algolia/autocomplete-preset-algolia": "1.7.4",
     "@babel/core": "7.20.12",
     "@fullstory/browser": "1.6.2",
-    "@headlessui/react": "1.7.13",
+    "@headlessui/react": "1.7.19",
     "@heroicons/react": "2.0.18",
     "@mdx-js/loader": "2.2.1",
     "@mdx-js/react": "2.2.1",

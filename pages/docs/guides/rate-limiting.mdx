@@ -12,8 +12,8 @@ Rate limiting is a _hard limit_ on how many function runs can start within a tim
 
 ## How to configure rate limiting
 
-<CodeGroup forceTabs>
-```ts
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
 export default inngest.createFunction(
   {
     id: "synchronize-data",
@@ -30,6 +30,39 @@ export default inngest.createFunction(
   }
 );
 ```
+
+```go {{ title: "Go" }}
+inngestgo.CreateFunction(
+  &inngestgo.FunctionOpts{
+    ID: "synchronize-data",
+    RateLimit: &inngestgo.RateLimit{
+      Limit: 1,
+      Period: 4 * time.Hour,
+      Key: inngestgo.StrPtr("event.data.company_id"),
+    },
+  },
+  inngestgo.EventTrigger("intercom/company.updated", nil),
+  func(ctx context.Context, input inngestgo.Input) (any, error) {
+    // This function will be rate limited to 1 run per 4 hours for a given event payload with matching company_id
+    return nil, nil
+  },
+)
+```
+
+```py {{ title: "Python" }}
+@inngest.create_function(
+  id="synchronize-data",
+  rate_limit=inngest.RateLimit(
+    limit=1,
+    period=datetime.timedelta(hours=4),
+    key="event.data.company_id",
+  ),
+  trigger=inngest.Trigger(event="intercom/company.updated")
+)
+async def synchronize_data(ctx: inngest.Context):
+    # This function will be rate limited to 1 run per 4 hours for a given event payload with matching company_id
+```
+
 </CodeGroup>
 
 ### Configuration reference

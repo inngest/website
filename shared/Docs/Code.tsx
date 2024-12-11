@@ -15,6 +15,7 @@ import clsx from "clsx";
 import create from "zustand";
 
 import { Tag } from "./Tag";
+import { useLocalStorage } from "react-use";
 
 const languageNames = {
   js: "JavaScript",
@@ -23,6 +24,7 @@ const languageNames = {
   typescript: "TypeScript",
   php: "PHP",
   python: "Python",
+  py: "Python",
   ruby: "Ruby",
   go: "Go",
 };
@@ -312,6 +314,8 @@ export function CodeGroup({
   let languages = Children.map<string, any>(children, (child) =>
     getPanelTitle(child.props)
   );
+  const [currentLanguage] = useLocalStorage("currentLanguage", null);
+  const mountRef = useRef(false);
   let tabGroupProps = useTabGroupProps(languages);
   let hasTabs = forceTabs || Children.count(children) > 1;
   let Container: typeof Tab["Group"] | "div" = hasTabs ? Tab.Group : "div";
@@ -319,6 +323,30 @@ export function CodeGroup({
   let headerProps = hasTabs
     ? { selectedIndex: tabGroupProps.selectedIndex }
     : {};
+
+  // ensure to select the current language if set in local storage
+  useEffect(() => {
+    if (mountRef.current) {
+      return;
+    }
+    mountRef.current = true;
+    const childrenList: React.ReactElement[] = Children.toArray(
+      children
+    ) as React.ReactElement[];
+    if (
+      tabGroupProps &&
+      currentLanguage &&
+      childrenList.find(
+        (child) => child.props?.title?.toLowerCase() === currentLanguage
+      )
+    ) {
+      tabGroupProps.onChange(
+        childrenList.findIndex(
+          (child) => child.props?.title?.toLowerCase() === currentLanguage
+        )
+      );
+    }
+  }, []);
 
   return (
     <CodeGroupContext.Provider value={true}>
@@ -382,20 +410,48 @@ export function GuideSelector({
 }) {
   const router = useRouter();
   const searchParamKey = "guide";
-  const [selected, setSelected] = useState<string>(options[0].key);
+  const [currentLanguage, setCurrentLanguage] = useLocalStorage(
+    "currentLanguage",
+    null
+  );
+  const mountRef = useRef(false);
 
+  const [selected, setSelected] = useState<string>(options[0].key);
+  const [defaultSelected, setDefaultSelected] = useState<string>(
+    options[0].key
+  );
+
+  // infer the default selected from the url or local storage
   useEffect(() => {
+    if (mountRef.current) {
+      return;
+    }
+    mountRef.current = true;
+
     const urlSelected = Array.isArray(router.query[searchParamKey])
       ? router.query[searchParamKey][0]
       : router.query[searchParamKey];
-    const isValidOption = options.find((o) => o.key === urlSelected);
-    if (isValidOption && Boolean(urlSelected) && urlSelected !== selected) {
+    if (
+      options.find((o) => o.key === urlSelected) &&
+      Boolean(urlSelected) &&
+      urlSelected !== selected
+    ) {
       setSelected(urlSelected);
+      setDefaultSelected(urlSelected);
+    } else if (
+      !urlSelected &&
+      // if no url param, fallback to local storage
+      currentLanguage &&
+      options.find((o) => o.key === currentLanguage)
+    ) {
+      setSelected(currentLanguage);
+      setDefaultSelected(currentLanguage);
     }
-  }, [router, selected]);
+  }, []);
 
   const onChange = (newSelectedIndex) => {
     const newSelectedKey = options[newSelectedIndex].key;
+    setCurrentLanguage(newSelectedKey);
     setSelected(newSelectedKey);
     const url = new URL(router.asPath, window.location.origin);
     url.searchParams.set(searchParamKey, newSelectedKey);
@@ -405,11 +461,16 @@ export function GuideSelector({
 
   return (
     <GuideSelectorContext.Provider value={{ selected, options }}>
-      <Tab.Group onChange={onChange}>
+      <Tab.Group
+        onChange={onChange}
+        // the below fixes an old bug where the default index was not set
+        defaultIndex={options.findIndex((o) => o.key === defaultSelected)}
+        selectedIndex={options.findIndex((o) => o.key === selected)}
+      >
         <Tab.List className="-mb-px flex gap-4 text-sm font-medium">
           {options.map((option, idx) => (
             <Tab
-              key={idx}
+              key={`tab-${idx}`}
               className={clsx(
                 "border-b py-3 transition focus:outline-none",
                 option.key === selected
