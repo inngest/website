@@ -29,7 +29,7 @@ export default function Hero({
         ></div>
       </div>
       <div className="relative z-10 max-w-4xl mx-auto py-28 px-4 sm:px-8 text-basis text-center text-balance">
-        <h1 className="text-5xl leading-tight md:text-6xl font-semibold bg-clip-text text-transparent bg-gradient-to-bl from-[rgb(var(--color-carbon-300))] to-[rgb(var(--color-carbon-50))]">
+        <h1 className="text-5xl leading-tight md:text-6xl md:leading-tight font-semibold bg-clip-text text-transparent bg-gradient-to-bl from-[rgb(var(--color-carbon-300))] to-[rgb(var(--color-carbon-50))]">
           {headline}
         </h1>
         <p className="mt-6 text-xl md:text-2xl text-subtle bg-clip-text text-transparent bg-gradient-to-bl from-[rgb(var(--color-carbon-300))] to-[rgba(var(--color-carbon-200)/0.8)]">

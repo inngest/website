@@ -5,7 +5,7 @@ import BlogPostList from "src/components/Blog/BlogPostList";
 import BlogHeader from "src/components/Blog/BlogHeader";
 import Container from "src/shared/layout/Container";
 import Nav from "src/components/Nav";
-import { type BlogPost, BLOG_CATEGORIES } from "src/components/Blog";
+import { type MDXBlogPost, BLOG_CATEGORIES } from "src/components/Blog";
 
 type StaticProps = {
   serializedPosts: string[];
@@ -17,7 +17,7 @@ type StaticProps = {
 };
 
 export default function BlogCategory(props: StaticProps) {
-  const posts: BlogPost[] = props.serializedPosts.map((p) => JSON.parse(p));
+  const posts: MDXBlogPost[] = props.serializedPosts.map((p) => JSON.parse(p));
 
   return (
     <>
@@ -46,7 +46,7 @@ export async function getStaticProps({
 }: {
   params: { category: string };
 }): Promise<{ props: StaticProps }> {
-  const posts = await loadMarkdownFilesMetadata<BlogPost>("blog/_posts");
+  const posts = await loadMarkdownFilesMetadata<MDXBlogPost>("blog/_posts");
   const filteredPosts = posts.filter((p) => p.category === params.category);
   const serializedPosts = filteredPosts.map((p) => JSON.stringify(p));
   const title = BLOG_CATEGORIES[params.category];
