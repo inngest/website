@@ -39,10 +39,8 @@ export default async function Page({
   const { data } = matter(source);
   const contentUrl = `/blog/${slug}`;
 
-  console.log(data);
-
   return (
-    <div className="text-basis" style={{ scrollBehavior: "smooth" }}>
+    <div className="text-basis">
       <Hero headline={data.heading} subheadline={data.subtitle}>
         <a
           href={"#get-access"}
@@ -50,13 +48,13 @@ export default async function Page({
             "inline-flex items-center gap-1 rounded-md font-medium px-6 py-2 transition-all whitespace-nowrap bg-cta hover:bg-ctaHover text-carbon-1000"
           }
         >
-          Read the article
+          Access the guide
         </a>
       </Hero>
       <div className="max-w-[76ch] m-auto pb-24">
         <div
           id="get-access"
-          className="max-w-xl mx-auto mt-4 flex flex-col gap-6"
+          className="max-w-xl mx-auto mt-4 scroll-mt-28 flex flex-col gap-6"
         >
           {data.teaser?.map((p, idx) => (
             <p className="text-lg md:text-xl">{p}</p>
@@ -64,7 +62,7 @@ export default async function Page({
           <NewsletterSignup
             showHeader={false}
             buttonText="Get access"
-            tags={["gate-principles-of-durable-execution"]}
+            tags={[`gate-${slug}`]}
             redirect={contentUrl}
           />
         </div>
