@@ -22,11 +22,15 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       {
-        url: process.env.NEXT_PUBLIC_FAVICON ?? "/favicon-june-2024-light.png",
+        url: process.env.NEXT_PUBLIC_FAVICON
+          ? `/${process.env.NEXT_PUBLIC_FAVICON}`
+          : "/favicon-june-2024-light.png",
         media: "(prefers-color-scheme: light)",
       },
       {
-        url: process.env.NEXT_PUBLIC_FAVICON ?? "/favicon-june-2024-dark.png",
+        url: process.env.NEXT_PUBLIC_FAVICON
+          ? `/${process.env.NEXT_PUBLIC_FAVICON}`
+          : "/favicon-june-2024-dark.png",
         media: "(prefers-color-scheme: dark)",
       },
     ],

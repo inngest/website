@@ -4,15 +4,17 @@ import React from "react";
 export default function Hero({
   headline,
   subheadline,
-  ctas,
+  ctas = [],
+  children,
 }: {
   headline: string;
   subheadline: string;
-  ctas: {
+  ctas?: {
     href: string;
     text: string | React.ReactNode;
     kind: "button" | "link";
   }[];
+  children?: React.ReactElement;
 }) {
   return (
     <header className="relative pb-8">
@@ -57,6 +59,7 @@ export default function Hero({
             );
           })}
         </div>
+        {children}
       </div>
       <span className="block mx-auto h-0.5 w-[84px] bg-[rgba(var(--color-foreground-base)/0.3)]"></span>
     </header>
