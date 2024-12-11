@@ -1,9 +1,9 @@
 import Image from "next/image";
 import { RiCalendarLine } from "@remixicon/react";
 import Tags from "src/shared/Blog/Tags";
-import { type BlogPost } from "./index";
+import { type MDXBlogPost } from "./index";
 
-export default function BlogPostList({ posts }: { posts: BlogPost[] }) {
+export default function BlogPostList({ posts }: { posts: MDXBlogPost[] }) {
   return (
     <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-8 lg:gap-x-4 xl:gap-x-8 lg:grid-cols-3  gap-y-20">
       {posts.map((post) => (

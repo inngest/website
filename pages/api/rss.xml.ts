@@ -2,10 +2,10 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import RSS from "rss";
 
 import { loadMarkdownFilesMetadata } from "../../utils/markdown";
-import { type BlogPost } from "src/components/Blog";
+import { type MDXBlogPost } from "src/components/Blog";
 
 export default async (req: NextApiRequest, res: NextApiResponse<string>) => {
-  const posts = await loadMarkdownFilesMetadata<BlogPost>("blog/_posts");
+  const posts = await loadMarkdownFilesMetadata<MDXBlogPost>("blog/_posts");
 
   const feed = new RSS({
     title: "Inngest Product & Engineering Blog",
