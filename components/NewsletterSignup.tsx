@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, type FormEvent } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 
 export default function NewsletterSignup({
   showHeader = true,
@@ -10,13 +10,16 @@ export default function NewsletterSignup({
   tagsFromSearchParams = false,
   // NOTE - Custom fields must be set up in mailchimp first that match the "name"
   fields = [],
+  redirect,
 }: {
   showHeader?: boolean;
   buttonText?: string;
   tags?: string[];
   tagsFromSearchParams?: boolean;
   fields?: { name: string; label: string }[];
+  redirect?: string;
 }) {
+  const router = useRouter();
   const inputRef = useRef(null);
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState<{
@@ -54,6 +57,9 @@ export default function NewsletterSignup({
     setLoading(false);
     if (res.status === 201) {
       setResponse({ result: true, error: "" });
+      if (redirect) {
+        router.push(redirect);
+      }
     } else {
       const { error } = await res.json();
       console.log("Error:", error);

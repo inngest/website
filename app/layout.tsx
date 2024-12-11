@@ -22,11 +22,15 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       {
-        url: process.env.NEXT_PUBLIC_FAVICON ?? "/favicon-june-2024-light.png",
+        url: process.env.NEXT_PUBLIC_FAVICON
+          ? `/${process.env.NEXT_PUBLIC_FAVICON}`
+          : "/favicon-june-2024-light.png",
         media: "(prefers-color-scheme: light)",
       },
       {
-        url: process.env.NEXT_PUBLIC_FAVICON ?? "/favicon-june-2024-dark.png",
+        url: process.env.NEXT_PUBLIC_FAVICON
+          ? `/${process.env.NEXT_PUBLIC_FAVICON}`
+          : "/favicon-june-2024-dark.png",
         media: "(prefers-color-scheme: dark)",
       },
     ],
@@ -39,7 +43,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html>
+    <html className="scroll-smooth">
       <head>
         <link rel="preconnect" href="https://fonts-cdn.inngest.com/" />
         <link rel="stylesheet" href="https://fonts-cdn.inngest.com/fonts.css" />

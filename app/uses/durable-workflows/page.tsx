@@ -223,10 +223,7 @@ export default function Page() {
 
       <section className="my-28 py-14">
         <Quote
-          text={
-            `One of my goals was to simplify a complex workflow in a cloud world. If the abstractions exist, let's use them so engineers can focus on the business problem, not the not the infrastructure-as-code and primitives problem. The best infrastructure is the one you don't have to manage.`
-            // `I wanted to find a solution that would let us just write the code, not manage the infrastructure around queues, concurrency, retries, error handling, prioritization... I don't think that developers should be even configuring and managing queues themselves in 2024.`
-          }
+          text={`One of my goals was to simplify a complex workflow in a cloud world. If the abstractions exist, let's use them so engineers can focus on the business problem, not the not the infrastructure-as-code and primitives problem. The best infrastructure is the one you don't have to manage.`}
           attribution={{
             name: "Matthew Drooker",
             title: "CTO, SoundCloud",

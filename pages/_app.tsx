@@ -48,7 +48,7 @@ const FireIcon = () => (
 const DISABLE_BANNER = false;
 
 function DefaultLayout({ children }) {
-  const router = useRouter();
+  // const router = useRouter();
   return (
     <>
       {!DISABLE_BANNER && <LaunchWeekBanner />}

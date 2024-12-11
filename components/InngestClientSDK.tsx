@@ -48,7 +48,11 @@ export function PageViews() {
           },
           v: "2022-12-27.1",
         });
-        if (typeof window !== "undefined" && window._inngestQueue.length) {
+        if (
+          typeof window !== "undefined" &&
+          window._inngestQueue &&
+          window._inngestQueue.length
+        ) {
           window._inngestQueue.forEach((p) => {
             // Prevent the double tracking of page views b/c routeChangeComplete
             // is unpredictable.
