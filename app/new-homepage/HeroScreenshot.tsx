@@ -3,7 +3,7 @@ import clsx from "clsx";
 
 import Container from "./Container";
 import { Button } from "src/shared/Button";
-import Link from "src/components/Link";
+import ScreenshotTabs from "./ScreenshotTabs";
 
 export default function HeroScreenshot() {
   return (
@@ -133,14 +133,8 @@ export default function HeroScreenshot() {
             ))}
           </div>
         </div>
-        <div className="flex items-center mt-8 mx-4">
-          <Image
-            alt="Screenshot of Inngest's dashboard"
-            className="rounded-t-md"
-            src="/assets/homepage/hero/2024-08-function-dashboard.png"
-            width={3060 * 0.5}
-            height={1680 * 0.5}
-          />
+        <div className="flex flex-col items-center mt-8 mx-4">
+          <ScreenshotTabs />
         </div>
       </Container>
     </div>
