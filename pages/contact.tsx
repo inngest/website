@@ -50,11 +50,15 @@ export default function Contact() {
           </header>
 
           <div className="my-12 grid lg:grid-cols-2 gap-24">
-            <ContactForm
-              eventName="contact.form.sent"
-              eventVersion="2023-07-12.1"
-              gtmEvent="Sales Lead Form Submitted"
-            />
+            <div>
+              <ContactForm
+                eventName="contact.form.sent"
+                eventVersion="2023-07-12.1"
+                gtmEvent="Sales Lead Form Submitted"
+                button="Schedule a call"
+                redirectTo="https://savvycal.com/inngest/demo"
+              />
+            </div>
 
             <div className="mx-auto max-w-2xl">
               <Quote
@@ -65,7 +69,7 @@ export default function Contact() {
                   avatar: "/assets/customers/ocoya-aivaras-tumas.png",
                 }}
                 variant="vertical"
-                className="p-0 md:p-0 pb-4"
+                className="p-0 md:p-0 pb-4 md:px-0 md:pt-4 md:pr-2"
               />
               <div className="flex flex-row gap-4 items-center my-8 text-lg text-indigo-50/80">
                 <img
