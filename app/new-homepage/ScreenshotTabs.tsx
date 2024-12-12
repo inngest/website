@@ -6,8 +6,6 @@ export default function ScreenshotTabs() {
   const [selected, setSelected] = useState(0);
   const screenshots = [
     {
-      // title: "History & traces",
-      // title: "Build",
       title: "Tracing",
       src: "/assets/homepage/hero/2024-12-12-runs.png",
       alt: "Inngest function runs and traces",
@@ -18,7 +16,6 @@ export default function ScreenshotTabs() {
       alt: "Inngest metrics dashboard",
     },
     {
-      // title: "Function metrics",
       title: "Management",
       src: "/assets/homepage/hero/2024-12-12-function-list.png",
       alt: "Inngest function dashboard",
