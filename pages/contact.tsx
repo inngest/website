@@ -53,7 +53,7 @@ export default function Contact() {
             <div>
               <ContactForm
                 eventName="contact.form.sent"
-                eventVersion="2023-07-12.1"
+                eventVersion="2023-12-12.1"
                 gtmEvent="Sales Lead Form Submitted"
                 button="Schedule a call"
                 redirectTo="https://savvycal.com/inngest/demo"
