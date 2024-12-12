@@ -107,27 +107,25 @@ export default function ContactForm({
       </label>
       <label className="w-full flex flex-col gap-2">
         <span>
-          What can we help you with? <span className="text-warning">*</span>
-        </span>
-        <textarea
-          name="message"
-          required
-          onChange={(e) => setMessage(e.target.value)}
-          className="w-full min-h-[10rem] p-3 bg-canvasBase border border-muted outline-none rounded-md"
-        />
-      </label>
-      <label className="w-full flex flex-col gap-2">
-        <span>
-          How did you hear about us?
-          {/* <span className="text-warning">*</span> */}
+          How did you hear about us? <span className="text-warning">*</span>
         </span>
         <input
           type="text"
           name="survey"
+          required
           onChange={(e) => setSurvey(e.target.value)}
           className="w-full p-3 bg-canvasBase border border-muted outline-none rounded-md"
         />
       </label>
+      <label className="w-full flex flex-col gap-2">
+        <span>What can we help you with?</span>
+        <textarea
+          name="message"
+          onChange={(e) => setMessage(e.target.value)}
+          className="w-full min-h-[6rem] p-3 bg-canvasBase border border-muted outline-none rounded-md"
+        />
+      </label>
+
       {/* <label className="w-full flex flex-col gap-2">
         What's the size of your engineering team?
         <select
