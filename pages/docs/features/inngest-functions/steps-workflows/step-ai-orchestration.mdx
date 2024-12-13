@@ -161,3 +161,196 @@ The list of current providers supported for `step.ai.infer()` is:
 ### Limitations
 
 - Streaming responses from providers is coming soon, alongisde realtime support with Inngest functions.
+
+- When using `step.ai.wrap` with sdk clients that require client instance context to be preserved between 
+invocations, currently it's necessary to bind the client call outside the `step.ai.wrap` call like so:
+
+<CodeGroup>
+```ts {{ title: "Wrap Anthropic SDK" }}
+import Anthropic from "@anthropic-ai/sdk";
+const anthropic = new Anthropic();
+
+export const anthropicWrapGenerateText = inngest.createFunction(
+  { id: "anthropic-wrap-generateText" },
+  { event: "anthropic/wrap.generate.text" },
+  async ({ event, step }) => {
+    //
+    // Will fail because anthropic client requires instance context
+    // to be preserved across invocations.
+    await step.ai.wrap(
+      "using-anthropic",
+      anthropic.messages.create,
+      {
+        model: "claude-3-5-sonnet-20241022",
+        max_tokens: 1024,
+        messages: [{ role: "user", content: "Hello, Claude" }],
+      },
+    );
+
+    //
+    // Will work beccause we bind to preserve instance context
+    const createCompletion = anthropic.messages.create.bind(anthropic.messages);
+    await step.ai.wrap(
+      "using-anthropic",
+      createCompletion,
+      {
+        model: "claude-3-5-sonnet-20241022",
+        max_tokens: 1024,
+        messages: [{ role: "user", content: "Hello, Claude" }],
+      },
+    );
+  },
+);
+```
+```ts {{ title: "Wrap OpenAI SDK" }}
+import OpenAI from "openai";
+const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
+
+export const openAIWrapCompletionCreate = inngest.createFunction(
+  { id: "opeai-wrap-completion-create" },
+  { event: "openai/wrap.completion.create" },
+  async ({ event, step }) => {
+    //
+    // Will fail because anthropic client requires instance context
+    // to be preserved across invocations.
+    await step.ai.wrap(
+      "openai.wrap.completions",
+      openai.chat.completions.create,
+      {
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: "You are a helpful assistant." },
+          {
+            role: "user",
+            content: "Write a haiku about recursion in programming.",
+          },
+        ],
+      },
+    );
+
+    //
+    // Will work beccause we bind to preserve instance context
+    const createCompletion = openai.chat.completions.create.bind(
+      openai.chat.completions,
+    );
+
+    const response = await step.ai.wrap(
+      "openai-wrap-completions",
+      createCompletion,
+      {
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: "You are a helpful assistant." },
+          {
+            role: "user",
+            content: "Write a haiku about recursion in programming.",
+          },
+        ],
+      },
+    );
+  },
+);
+```
+</CodeGroup>
+
+- When using `step.ai.wrap`, you can edit prompts and rerun steps in the dev server. 
+But, arguments must be JSON serializable.
+
+<CodeGroup>
+```ts {{ title: "Vercel AI SDK" }}
+import { generateText as vercelGenerateText } from "ai";
+import { openai as vercelOpenAI } from "@ai-sdk/openai";
+
+export const vercelWrapGenerateText = inngest.createFunction(
+  { id: "vercel-wrap-generate-text" },
+  { event: "vercel/wrap.generate.text" },
+  async ({ event, step }) => {
+    //
+    // Will work but you will not be able to edit the prompt and rerun the step in the dev server.
+    await step.ai.wrap(
+      "vercel-openai-generateText",
+      vercelGenerateText,
+      {
+        model: vercelOpenAI("gpt-4o-mini"),
+        prompt: "Write a haiku about recursion in programming.",
+      },
+    );
+
+    //
+    // Will work and you will be able to edit the prompt and rerun the step in the dev server because
+    // the arguments to step.ai.wrap are JSON serializable.
+    const args = {
+      model: "gpt-4o-mini",
+      prompt: "Write a haiku about recursion in programming.",
+    };
+
+    const gen = ({ model, prompt }: { model: string; prompt: string }) =>
+      vercelGenerateText({
+        model: vercelOpenAI(model),
+        prompt,
+      });
+
+    await step.ai.wrap("using-vercel-ai", gen, args);
+  },
+);
+```
+</CodeGroup>
+
+- `step.ai.wrap's` Typescript definition will for the most part infer allowable inputs based on the
+signature of the wrapped function. However in some cases where the wrapped function contains complex
+overloads, such as Vercel's `generateObject`, it may be necessary to type cast. 
+
+*Note*: Future version of the Typescript SDK will correctly infer these complex types but for now we 
+require type casting to ensure backwards compatibility. 
+
+<CodeGroup>
+```ts {{ title: "Vercel AI SDK" }}
+import { generateText as vercelGenerateText } from "ai";
+import { openai as vercelOpenAI } from "@ai-sdk/openai";
+
+export const vercelWrapSchema = inngest.createFunction(
+  { id: "vercel-wrap-generate-object" },
+  { event: "vercel/wrap.generate.object" },
+  async ({ event, step }) => {
+    //
+    // Calling generateObject directly is fine
+    await vercelGenerateObject({
+      model: vercelOpenAI("gpt-4o-mini"),
+      schema: z.object({
+        recipe: z.object({
+          name: z.string(),
+          ingredients: z.array(
+            z.object({ name: z.string(), amount: z.string() }),
+          ),
+          steps: z.array(z.string()),
+        }),
+      }),
+      prompt: "Generate a lasagna recipe.",
+    });
+
+    //
+    // step.ai.wrap requires type casting
+    await step.ai.wrap(
+      "vercel-openai-generateObject",
+      vercelGenerateObject,
+      {
+        model: vercelOpenAI("gpt-4o-mini"),
+        schema: z.object({
+          recipe: z.object({
+            name: z.string(),
+            ingredients: z.array(
+              z.object({ name: z.string(), amount: z.string() }),
+            ),
+            steps: z.array(z.string()),
+          }),
+        }),
+        prompt: "Generate a lasagna recipe.",
+      } as any,
+    );
+  },
+);
+```
+</CodeGroup>
+
+
+
