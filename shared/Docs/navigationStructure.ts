@@ -33,7 +33,7 @@ export type NavSection = NavLink & {
   }[];
 };
 
-const sectionReference: NavGroup[] = [
+const sectionReference: (NavGroup | NavLink)[] = [
   {
     title: "Workflow Kit",
     links: [
@@ -319,21 +319,11 @@ const sectionReference: NavGroup[] = [
   },
   {
     title: "Go SDK",
-    links: [
-      {
-        title: "Documentation",
-        href: "https://pkg.go.dev/github.com/inngest/inngestgo",
-      },
-    ],
+    href: "https://pkg.go.dev/github.com/inngest/inngestgo",
   },
   {
     title: "REST API",
-    links: [
-      {
-        title: "Documentation",
-        href: "https://api-docs.inngest.com/docs/inngest-api/1j9i5603g5768-introduction",
-      },
-    ],
+    href: "https://api-docs.inngest.com/docs/inngest-api/1j9i5603g5768-introduction",
   },
   {
     title: "System events",
@@ -816,35 +806,12 @@ const sectionHome: (NavGroup | NavLink)[] = [
     ],
   },
   {
-    title: "AgentKit",
+    title: "AI",
     links: [
       {
-        title: "AgentKit Foundations",
-        links: [
-          {
-            title: "Overview",
-            href: "/docs/agent-kit/overview",
-          },
-          /*
-          {
-            title: "Getting started",
-            href: "/docs/agent-kit/getting-started",
-          },
-          */
-        ],
-      },
-      {
-        title: "Build with AgentKit",
-        links: [
-          {
-            title: "Agents and Tools",
-            href: "/docs/agent-kit/ai-agents-tools",
-          },
-          {
-            title: "Networks, state, and routing",
-            href: "/docs/agent-kit/ai-agent-network-state-routing",
-          },
-        ],
+        title: "AgentKit",
+        href: "https://agentkit.inngest.com",
+        target: "_blank",
       },
     ],
   },

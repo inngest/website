@@ -72,6 +72,8 @@ const permanentRedirects = [
     "/docs/features/middleware/encryption-middleware?guide=python",
   ],
   ["/blog/nextjs-openai-o1", "/blog/agentic-workflow-example"],
+
+  ["/docs/agent-kit/overview", "https://agentkit.inngest.com"],
 ];
 
 async function redirects() {
