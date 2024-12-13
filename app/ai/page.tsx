@@ -329,7 +329,7 @@ export default inngest.createFunction(
               },
               {
                 type: "blog",
-                title: "The principles of produciton AI",
+                title: "The principles of production AI",
                 description:
                   "How LLM evaluations, guardrails, and orchestration shape safe and reliable AI experiences.",
                 url: `/blog/principles-of-production-ai?ref=${ref}`,
