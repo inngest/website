@@ -143,7 +143,7 @@ body {
     --color-border-success: var(--color-matcha-700);
     --color-border-error: var(--color-ruby-600);
     --color-border-warning: var(--color-honey-600);
-    --color-border-info: var(--color-purplehaze-700);
+    --color-border-info: var(--color-breeze-600);
 
     --color-primary-2xSubtle: var(--color-matcha-200);
     --color-primary-xSubtle: var(--color-matcha-300);
@@ -247,7 +247,7 @@ body {
     --color-border-success: var(--color-matcha-500);
     --color-border-error: var(--color-ruby-300);
     --color-border-warning: var(--color-honey-300);
-    --color-border-info: var(--color-purplehaze-300);
+    --color-border-info: var(--color-breeze-300);
 
     --color-primary-2xSubtle: var(--color-matcha-800);
     --color-primary-xSubtle: var(--color-matcha-700);
