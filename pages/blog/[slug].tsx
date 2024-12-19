@@ -107,7 +107,7 @@ const authorURLs = {
   "Taylor Facen": "https://twitter.com/ItsTayFay",
   "Igor Samokhovets": "https://twitter.com/IgorSamokhovets",
   "Dave Kiss": "https://twitter.com/davekiss",
-  "Bruno Scheufler": "https://brunoscheufler.com",
+  // "Bruno Scheufler": "https://brunoscheufler.com", // removed while site is disabled
   "Lydia Hallie": "https://x.com/lydiahallie",
   "Joe Adams": "https://www.linkedin.com/in/josephadams9/",
   "Charly Poly": "https://x.com/whereischarly",
