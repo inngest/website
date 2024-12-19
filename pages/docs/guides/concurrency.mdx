@@ -1,36 +1,218 @@
-import { Callout, CodeGroup, Properties, Property } from "src/shared/Docs/mdx";
+import { Callout, Info, Tip, Warning, CodeGroup, Properties, Property } from "src/shared/Docs/mdx";
 
 # Concurrency management
 
-Managing concurrency is important for any production system. Inngest allows you to manage concurrency limits in functions.  Concurrency controls the number of steps executing code at any one time.  It works by creating multi-level virtual queues within each function, directly in code, without thinking about infrastructure.
+Limiting concurrency in systems is an important tool for correctly managing computing resources and scaling workloads. Inngest's concurrency control enables you to manage the number _steps_ that concurrently execute.
 
-## Concurrency use cases
+{/* TODO - Link to updated keys section */}
+Step concurrency can be optionally configured using "keys" which applies the limit to each unique value of the key (ex. user id). The concurrency option can also be applied to different "scopes" which allows a concurrency limit to be shared across _multiple_ functions.
 
-Use cases include:
-- **Setting individual function concurrency limits**, for example to only run 10 imports at once.
-- **Setting global limits for many functions which share a pool of resources**, for example with many functions which use shared AI capacity, or global DB connections.
-- **Setting limits on your own individual accounts, tenants or users**, for example limiting unpaid users to a specific capacity.
-- **A combination of the above**, with functions limited by the first concurrency key to hit limits.
+As compared to traditional queue and worker systems, Inngest manages the concurrency within the system you do not need to implement additional worker-level logic or state.
 
-## Examples and configuration
+## When to use concurrency
 
-Inngest lets you provide fine-grained concurrency across all functions in a simple, configurable manner.  You can control each function's concurrency limits within your function definition. Here are two examples:
+Concurrency is most useful when you want to constrain your function for a set of resources. Some use cases include:
+
+- **Limiting in multi-tenant systems** - Prevent a single account, user, or tenant from consuming too many resources and creating a backlog for others. See: [Concurrency keys (Multi-tenant concurrency)](#concurrency-keys-multi-tenant-concurrency).
+- **Limiting throughput for database operations** - Prevent potentially high volume jobs from overwhelming a database or similar resource. See: [Sharing limits across functions (scope)](#sharing-limits-across-functions-scope).
+- **Basic concurrent operations limits** - Limit the capacity dedicated to processing a certain job, for example an import pipeline. See: [Basic concurrency](#basic-concurrency).
+- **Combining multiple of the above** - Multiple concurrency limits can be added per function. See: [Combining multiple concurrency limits](#combining-multiple-concurrency-limits)
+
+<Info>
+If you need to limit a function to a certain rate of processing, for example with a third party API rate limit, you might need [throttling](/docs/guides/throttling) instead. Throttling is applied at the function level, compared to concurrency which is at the step level.
+</Info>
+
+## How to configure concurrency
+
+One or more concurrency limits can be configured for each function.
+
+* [Basic concurrency](#basic-concurrency)
+* [Concurrency keys (Multi-tenant concurrency)](#concurrency-keys-multi-tenant-concurrency)
+* [Sharing limits across functions (scope)](#sharing-limits-across-functions-scope)
+* [Combining multiple concurrency limits](#combining-multiple-concurrency-limits)
+
+### Basic concurrency
+
+The most basic concurrency limit is a single `limit` set to an integer value of the maximum number of concurrently executing steps. When concurrency limit is reached, new steps will continue to be queued and create a backlog to be processed.
 
 <CodeGroup>
-
-```ts {{ title: "TypeScript" }}
-// Example 1: a simple concurrency definition limiting this function to 10 steps at once.
+```ts
 inngest.createFunction(
   {
-    id: "another-function",
+    id: "generate-ai-summary",
     concurrency: 10,
+  },
+  { event: "ai/summary.requested" },
+  async ({ event, step }) => {
+    // Your function handler here
+  }
+);
+```
+```go
+inngest.CreateFunction(
+  &inngestgo.FunctionOpts{
+    Name: "generate-ai-summary",
+    Concurrency: []inngest.Concurrency{
+      {
+        Limit: 10,
+      }
+    },
+  },
+  inngestgo.EventTrigger("ai/summary.requested", nil),
+  func(ctx context.Context, input inngestgo.Input) (any, error) {
+    // Your function handler here
+    return nil, nil
+  },
+)
+```
+```python
+@inngest.create_function(
+    fn_id="generate-ai-summary",
+    concurrency=[
+      inngest.Concurrency(
+          limit=10,
+      )
+    ]
+)
+async def first_function(event, step):
+    # Your function handler here
+    pass
+```
+</CodeGroup>
+
+### Concurrency keys (Multi-tenant concurrency)
+
+Use a concurrency `key` expression to apply the `limit` to each unique value of key received. Within the Inngest system, this creates a **virtual queue** for every unique value and limits concurrency to each.
+
+<CodeGroup>
+```ts
+inngest.createFunction(
+  {
+    id: "generate-ai-summary",
+    concurrency: [
+      {
+        key: "event.data.account_id",
+        limit: 10,
+      },
+    ],
   },
   { event: "ai/summary.requested" },
   async ({ event, step }) => {
   }
 );
+```
+```go
+inngest.CreateFunction(
+  &inngestgo.FunctionOpts{
+    Name: "generate-ai-summary",
+    Concurrency: []inngest.Concurrency{
+      {
+        Scope: "fn",
+        Key:   "event.data.account_id",
+        Limit: 10,
+      }
+    },
+  },
+  inngestgo.EventTrigger("ai/summary.requested", nil),
+  func(ctx context.Context, input inngestgo.Input) (any, error) {
+    // Your function handler here
+    return nil, nil
+  },
+)
+```
+```python
+@inngest.create_function(
+    fn_id="another-function",
+    concurrency=[
+      inngest.Concurrency(
+          scope="fn",
+          key="event.data.account_id",
+          limit=10,
+      )
+    ]
+)
+async def first_function(event, step):
+    # Your function handler here
+    pass
+```
+</CodeGroup>
 
-// Example 2:  A complete, complex example with two virtual concurrency queues.
+<Tip>
+  Concurrency keys are great for creating fair, multi-tenant systems. This can help prevent the noisy neighbor issue where one user triggers a lot of jobs and consumes far more resources that slow down your other users.
+</Tip>
+
+### Sharing limits across functions (scope)
+
+Using the `scope` option, limits can be set across your entire Inngest account, shared across multiple functions. Here is an example of setting an `"account"` level limit for a _static_ `key` equal to `"openai"`. This will create a virtual queue using `"openai"` as the key. Any other functions using this same `"openai"` key will consume from this same limit.
+
+{/* TODO - Link to the detail section on how this works */}
+
+<CodeGroup>
+```ts
+inngest.createFunction(
+  {
+    id: "generate-ai-summary",
+    concurrency: [
+      {
+        scope: "account",
+        key: `"openai"`,
+        limit: 60,
+      },
+    ],
+  },
+  { event: "ai/summary.requested" },
+  async ({ event, step }) => {
+  }
+);
+```
+```go
+inngest.CreateFunction(
+  &inngestgo.FunctionOpts{
+    Name: "generate-ai-summary",
+    Concurrency: []inngest.Concurrency{
+      {
+        Scope: "account",
+        Key:   `"openai"`,
+        Limit: 60,
+      }
+    },
+  },
+  inngestgo.EventTrigger("ai/summary.requested", nil),
+  func(ctx context.Context, input inngestgo.Input) (any, error) {
+    // Your function handler here
+    return nil, nil
+  },
+)
+```
+```python
+@inngest.create_function(
+    fn_id="another-function",
+    concurrency=[
+      inngest.Concurrency(
+          scope="account",
+          key='"openai"',
+          limit=60,
+      )
+    ]
+)
+async def first_function(event, step):
+    # Your function handler here
+    pass
+```
+</CodeGroup>
+
+### Combining multiple concurrency limits
+
+Each SDK's concurrency option supports up to two limits. This is the most beneficial when combining limits, each with a different `scope`. Here is an example that combines two limits, one on the `"account"` scope and another on the `"fn"` level. Combining limits will create multiple virtual queues to limit concurrency. In the below function:
+
+- If there are 10 steps executing under the 'openai' key's virtual queue, any future runs will be blocked and will wait for existing runs to finish before executing.
+- If there are 5 steps executing under the 'openai' key and a single `event.data.account_id` enqueues 2 runs, the second run is limited by the `event.data.account_id` virtual queue and will wait before executing.
+
+
+
+<CodeGroup>
+
+```ts {{ title: "TypeScript" }}
 inngest.createFunction(
   {
     id: "unique-function-id",
@@ -41,15 +223,13 @@ inngest.createFunction(
          // runs using the same "openai"` key counts towards this limit.
          scope: "account",
          key: `"openai"`,
-         // If there are 10 functions running with the "openai" key, this function's
-         // runs will wait for capacity before executing.
          limit: 10,
       },
       {
          // Create another virtual concurrency queue for this function only.  This
          // limits all accounts to a single execution for this function, based off
          // of the `event.data.account_id` field.
-         // "fn" is the default scope, so we could omit this field.
+         // NOTE - "fn" is the default scope, so we could omit this field.
          scope: "fn",
          key: "event.data.account_id",
          limit: 1,
@@ -60,28 +240,9 @@ inngest.createFunction(
   async ({ event, step }) => {
   }
 );
-
 ```
 
 ```go {{ title: "Go" }}
-// Example 1: a simple concurrency definition limiting this function to 10 steps at once.
-inngest.CreateFunction(
-  &inngestgo.FunctionOpts{
-    Name: "another-function",
-    Concurrency: []inngest.Concurrency{
-      {
-        Limit: 10,
-      }
-    },
-  },
-  inngestgo.EventTrigger("ai/summary.requested", nil),
-  func(ctx context.Context, input inngestgo.Input) (any, error) {
-    // Function implementation here
-    return nil, nil
-  },
-)
-
-// Example 2: A complete, complex example with two virtual concurrency queues.
 inngestgo.CreateFunction(
   &inngestgo.FunctionOpts{
     Name: "unique-function-id",
@@ -92,15 +253,13 @@ inngestgo.CreateFunction(
         // runs using the same "openai" key counts towards this limit.
         Scope: "account",
         Key:   `"openai"`,
-        // If there are 10 functions running with the "openai" key, this function's
-        // runs will wait for capacity before executing.
         Limit: 10,
       },
       {
         // Create another virtual concurrency queue for this function only. This
         // limits all accounts to a single execution for this function, based off
         // of the `event.data.account_id` field.
-        // "fn" is the default scope, so we could omit this field.
+        // NOTE - "fn" is the default scope, so we could omit this field.
         Scope: "fn",
         Key:   "event.data.account_id",
         Limit: 1,
@@ -115,23 +274,7 @@ inngestgo.CreateFunction(
 )
 
 ```
-
-
 ```py {{ title: "Python" }}
-# Example 1: a simple concurrency definition limiting this function to 10 steps at once.
-@inngest.create_function(
-    fn_id="another-function",
-    concurrency=[
-      inngest.Concurrency(
-          limit=10,
-      )
-    ]
-)
-async def first_function(event, step):
-    # Function implementation here
-    pass
-
-# Example 2:  A complete, complex example with two virtual concurrency queues.
 @inngest.create_function(
     fn_id="unique-function-id",
     concurrency=[
@@ -141,15 +284,13 @@ async def first_function(event, step):
             # runs using the same "openai" key counts towards this limit.
             scope="account",
             key='"openai"',
-            # If there are 10 functions running with the "openai" key, this function's
-            # runs will wait for capacity before executing.
             limit=10,
         ),
         inngest.Concurrency(
             # Create another virtual concurrency queue for this function only.  This
             # limits all accounts to a single execution for this function, based off
             # of the `event.data.account_id` field.
-            # "fn" is the default scope, so we could omit this field.
+            # NOTE - "fn" is the default scope, so we could omit this field.
             scope="fn",
             key="event.data.account_id",
             limit=1,
@@ -160,23 +301,21 @@ async def handle_ai_summary(event, step):
     # Function implementation here
     pass
 ```
-
-
 </CodeGroup>
 
-In the first example, the function is constrained to `10` executing steps at once.
-
-In the second example, we define **two concurrency constraints that create two virtual queues to manage capacity**. Runs will be limited if they hit either of the virtual queue's limits. For example:
-- If there are 10 steps executing under the 'openai' key's virtual queue, any future runs will be blocked and will wait for existing runs to finish before executing.
-- If there are 5 steps executing under the 'openai' key and a single `event.data.account_id` enqueues 2 runs, the second run is limited by the `event.data.account_id` virtual queue and will wait before executing.
+<Info>
+  It's worth it to note that the `"fn"` scope is the default and is optional to include.
+</Info>
 
 ## How concurrency works
 
 **Concurrency works by limiting the number of steps executing at a single time.** Within Inngest, execution is defined as "an SDK running code". **Calling **`step.sleep`**, **`step.sleepUntil`**, **`step.waitForEvent`**, or **`step.invoke`** does not count towards capacity limits**, as the SDK doesn't execute code while those steps wait. Because sleeping or waiting is common, concurrency _does not_ limit the number of functions in progress.  Instead, it limits the number of steps executing at any single time.
 
-**Queues are ordered from oldest to newest jobs ([FIFO](https://en.wikipedia.org/wiki/FIFO))** across the same function.  Ordering amongst different functions is not guaranteed.  This means that within a specific function, Inngest prioritizes finishing older functions above starting newer functions - even if the older functions continue to schedule new steps to run.  Different functions, however, compete for capacity, with runs on the most backlogged function much more likely (but not guaranteed) to be scheduled first.
+<Info>
+  Steps that are asynchronous actions, `step.sleep`, `step.sleepUntil`, `step.waitForEvent`, and `step.invoke` do not contribute to the concurrency limit.
+</Info>
 
-Inngest manages concurrency for you within our scheduling system, and you do not need to provision queues, infrastructure, or manage concurrency limits within your own workers or services.
+**Queues are ordered from oldest to newest jobs ([FIFO](https://en.wikipedia.org/wiki/FIFO))** across the same function.  Ordering amongst different functions is not guaranteed.  This means that within a specific function, Inngest prioritizes finishing older functions above starting newer functions - even if the older functions continue to schedule new steps to run.  Different functions, however, compete for capacity, with runs on the most backlogged function much more likely (but not guaranteed) to be scheduled first.
 
 Some additional information:
 
@@ -285,7 +424,7 @@ async def func_a(ctx: inngest.Context, step: inngest.Step):
     pass
 
 @inngest_client.create_function(
-    fn_id="func-b", 
+    fn_id="func-b",
     trigger=inngest.TriggerEvent(event="ai/summary.requested"),
     concurrency=[
       inngest.Concurrency(
@@ -311,7 +450,7 @@ Because functions are FIFO, function runs are more likely to be worked on the ol
 
 - Concurrency limits the number of steps executing at a single time. It does not _yet_ perform rate limiting over a given period of time.
 - Functions can specify up to 2 concurrency constraints at once
-- The maximum concurrency limit is defined by <a href="https://www.inngest.com/pricing" target="_blank" rel="nofollow">your account's plan</a>
+- The maximum concurrency limit is defined by <a href="/pricing?ref=docs-concurrency" target="_blank" rel="nofollow">your account's plan</a>
 - Ordering amongst the same function is guaranteed (with the exception of retries)
 - Ordering amongst different functions is not guaranteed.  Functions compete with each other randomly to be scheduled.
 
@@ -321,7 +460,7 @@ Because functions are FIFO, function runs are more likely to be worked on the ol
   <Property name="limit" type="number" required>
     The maximum number of concurrently running steps.
     A value of `0` or `undefined` is the equivalent of not setting a limit.
-    The maximum value is dictated by <a href="https://www.inngest.com/pricing" target="_blank" rel="nofollow">your account's plan</a>.
+    The maximum value is dictated by <a href="/pricing?ref=docs-concurrency" target="_blank" rel="nofollow">your account's plan</a>.
   </Property>
   <Property name="scope" type="'account' | 'env' | 'fn'">
     The scope for the concurrency limit, which impacts whether concurrency is managed on an individual function, across an environment, or across your entire account.
@@ -345,95 +484,6 @@ Because functions are FIFO, function runs are more likely to be worked on the ol
 
 ## Further examples
 
-### Handling third party API rate limits
-
-Here, we use the Resend SDK to send an email. Resend's rate limit is 10 requests per second so we set a lower concurrency as our function is simple and may execute multiple times per second. Here we use a limit of `4` to keep the throughput a bit slower than necessary:
-
-<CodeGroup>
-
-```ts {{ title: "TypeScript" }}
-export const send = inngest.createFunction(
-  {
-    name: "Email: Pending invoice",
-    id: "email-pending-invoice",
-    concurrency: {
-      limit: 4, // Resend's rate limit is 10 req/s
-    },
-  },
-  { event: "billing/invoice.pending" },
-  async ({ event, step }) => {
-    await step.run("send-email", async () => {
-      return await resend.emails.send({
-        from: "hello@myco.com",
-        to: event.user.email,
-        subject: `Invoice pending for ${event.data.invoicePeriod}`,
-        text: `Dear user, ...`,
-      });
-    });
-
-    return { message: "success" };
-  }
-);
-```
-
-
-```go {{ title: "Go" }}
-inngest.CreateFunction(
-  &inngestgo.FunctionOpts{
-    Name: "Email: Pending invoice",
-    ID: "email-pending-invoice",
-    Concurrency: []inngest.Concurrency{
-      {
-        Limit: 4, // Resend's rate limit is 10 req/s
-      },
-    },
-  },
-  inngestgo.EventTrigger("billing/invoice.pending", nil),
-  func(ctx context.Context, input inngestgo.Input) (any, error) {
-    _, err := input.Step.Run(ctx, "send-email", func(ctx context.Context) (any, error) {
-      return resend.Emails.Send(&resend.SendEmailRequest{
-        From:    "hello@myco.com",
-        To:      input.Event.User.Email,
-        Subject: fmt.Sprintf("Invoice pending for %s", input.Event.Data.InvoicePeriod),
-        Text:    "Dear user, ...",
-      })
-    })
-    if err != nil {
-      return nil, err
-    }
-
-    return map[string]string{"message": "success"}, nil
-  },
-)
-```
-
-
-
-```python {{ title: "Python" }}
-@inngest.create_function(
-    fn_id="email-pending-invoice",
-    name="Email: Pending invoice", 
-    concurrency=[
-        inngest.Concurrency(
-            limit=4,  # Resend's rate limit is 10 req/s
-        )
-    ]
-)
-async def send(event, step):
-    async with step.run("send-email") as _:
-        params: resend.Emails.SendParams = {
-          "from": "Acme <onboarding@resend.dev>",
-          "to": ["delivered@resend.dev"],
-          "subject": "hello world",
-          "html": "<strong>it works!</strong>",
-        }
-        await resend.emails.send(params)
-    
-    return {"message": "success"}
-```
-
-</CodeGroup>
-
 ### Restricting parallel import jobs for a customer id
 
 In this hypothetical system, customers can upload `.csv` files which each need to be processed and imported. We want to limit each customer to only one import job at a time so no two jobs are writing to a customer's data at a given time. We do this by setting a `limit: 1` and a concurrency `key` to the `customerId` which is included in every single event payload.
@@ -442,7 +492,7 @@ Inngest ensures that the concurrency (`1`) applies to each unique value for `eve
 
 <CodeGroup>
 
-```ts {{ title: "TypeScript" }} 
+```ts {{ title: "TypeScript" }}
 export const send = inngest.createFunction(
   {
     name: "Process customer csv import",
@@ -511,7 +561,7 @@ async def process_csv_import(ctx: inngest.Context, step: inngest.Step):
     async def process_file():
         file = await bucket.fetch(ctx.event.data.file_uri)
         # ...
-    
+
     await step.run("process-file", process_file)
     return {"message": "success"}
 ```
@@ -520,4 +570,4 @@ async def process_csv_import(ctx: inngest.Context, step: inngest.Step):
 
 ## Tips
 
-* Configure [start timeouts](/docs/features/inngest-functions/cancellation/cancel-on-timeouts) to prevent large backlogs with concurrency 
+* Configure [start timeouts](/docs/features/inngest-functions/cancellation/cancel-on-timeouts) to prevent large backlogs with concurrency
