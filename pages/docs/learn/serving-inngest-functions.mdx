@@ -623,19 +623,12 @@ To enable this, set your runtime to `"edge"` (see [Quickstart for Using Edge Fun
 
 **Next.js 13+**
 <CodeGroup>
-```ts {{ title: "v3" }}
+```ts
 export const runtime = "edge";
 
-export default serve({
+export const { GET, POST, PUT } = serve({
   client: inngest,
   functions: [...fns],
-  streaming: "allow",
-});
-```
-```ts {{ title: "v2" }}
-export const runtime = "edge";
-
-export default serve(inngest, [...fns], {
   streaming: "allow",
 });
 ```
