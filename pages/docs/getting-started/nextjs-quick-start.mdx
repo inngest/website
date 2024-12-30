@@ -438,7 +438,7 @@ You will now send an event from within your Next.js app: from the “hello” Ne
   export const dynamic = "force-dynamic";
 
   // Create a simple async Next.js API route handler
-  export async function GET() {}
+  export async function GET() {
     // Send your event payload to Inngest
     await inngest.send({
       name: "test/hello.world",
