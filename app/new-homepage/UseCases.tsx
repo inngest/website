@@ -57,30 +57,30 @@ export const userWorkflow = inngest.createFunction(
   { event: "agent/request.received" },
   async ({ event, step }) => {
 
-    // step.run is a code-level transaction:  it retries automatically
-    // on failure and only runs once on success.
-    const similar = await step.run("query-vectordb",
-      async () => {
-        const embedding = createEmedding(event.data.input);
-        return await index.query({
-          vector: embedding, topK: 3
-        }).matches;
-      });
+    // Use step.ai to proxy AI requests w/ automatic retries,
+    // caching and improved observability
+    const response = await step.ai.infer("call-openai", {
+      model: step.ai.models.openai({ model: "gpt-4o" }),
+      body: {
+        messages: [
+          {
+            role: "assistant",
+            content: \`You are an expert...\`,
+          },{
+            role: "user",
+            content: event.data.input,
+          }
+        ],
+        tools: [/* ... */],
+      },
+    });
+    const tool_calls = response.choices[0].message.tool_calls;
 
-    // dynamically create deterministic user-generated agentic workflows
-    const actions = await step.run("get-agent-actions",
-      async () =>
-        await agent.getActions({
-          model: "gpt-4o",
-          request: event.data.input,
-          similar,
-        });
-      );
-
-    // run agentic workflows by writing regular code
-    for (let action of actions) {
-      await step.run("run-action", async () => {
-        await actions[action.id].execute(event.data.input);
+    // Run reliable agentic workflows as a series of steps
+    for (let tool_call of tool_calls) {
+      await step.run("run-tool", async () => {
+        const { name, arguments } = tool_call.function;
+        await actions[name].execute(JSON.parse(arguments));
       });
     }
   }
@@ -264,28 +264,26 @@ const content = [
   {
     title: "AI",
     icon: RiBrainLine,
-    content: (
-      <>Use simple primitives to build complex AI workflows and agents.</>
-    ),
+    content: <>Ship faster and orchestrate AI with confidence.</>,
     highlights: [
       {
-        title: "Chain steps for powerful features",
+        title: "Reliable orchestration",
         content:
-          "Run complex and expensive steps once and only once, then reuse the results. Run in parallel or in sequence.",
+          "Manage workflows across models, tools, and data sources with full observability. Automatically handle retries to ensure smooth, failure-resistant execution.",
       },
       {
-        title: "Automatic retries for flaky LLM APIs",
+        title: "Efficient resource management",
         content: (
           <>
-            Retry requests automatically when they fail or hallucinate. Create
-            more reliable AI enabled features.
+            Proxy long-running LLM requests using step.ai.infer, reducing
+            serverless costs and gaining detailed telemetry.
           </>
         ),
       },
       {
-        title: "Throttle and debounce",
+        title: "Rapid iteration",
         content:
-          "Use throttle to keep within API limits and debounce to prevent duplicate work wasting expensive API calls.",
+          "Debug locally with Inngest's Dev Server to quickly test and refine agentic workflows before production.",
       },
     ],
     snippet: snippetAI,
