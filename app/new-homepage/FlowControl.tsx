@@ -126,13 +126,15 @@ export default function FlowControl() {
     <Container>
       <Heading
         label="Orchestration + Flow control"
-        title="Orchestration and flow control necessary for resilient systems"
+        title="Resilient systems with durable execution and flow control"
         description={
           <>
-            Complete control over how your functions are executed without
-            re-inventing the wheel. Inngest's built-in tools allow you to build
-            complex workflows and run high volume jobs with fairness across your
-            user base.
+            Gain complete control over how your functions are executed, ensuring
+            reliability at every step. Inngest's built-in tools power durable
+            execution for complex workflows, enabling retries, state management,
+            and recovery out-of-the-box — no need to re-invent the wheel. Run
+            high-volume jobs seamlessly, with built-in fairness and fault
+            tolerance across your user base.
           </>
         }
         className="my-8"

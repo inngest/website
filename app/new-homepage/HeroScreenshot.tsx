@@ -21,14 +21,14 @@ export default function HeroScreenshot() {
     >
       <Container>
         <header className="pt-16 pb-16 px-4 sm:px-8">
-          <h1 className="px-4 sm:px-0 font-bold text-2xl sm:text-4xl md:text-6xl leading-tight md:leading-tight drop-shadow-lg">
+          <h1 className="px-4 sm:px-0 font-bold text-3xl sm:text-5xl md:text-6xl leading-tight md:leading-tight drop-shadow-lg text-balance">
             Queuing and orchestration <br className="hidden lg:inline" />
             for modern software teams
           </h1>
           <p className="max-w-5xl mt-8 mx-auto text-base sm:text-lg md:text-xl leading-normal text-balance drop-shadow-lg">
             Inngest's durable functions replace queues, state management, and
-            scheduling to enable any developer to write reliable step functions
-            faster without touching infrastructure.
+            scheduling to enable developers to build reliable, AI-ready step
+            functions faster — without touching infrastructure.
             {/*
             Alternatives:
 
