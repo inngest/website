@@ -1,4 +1,4 @@
-import { Callout, CodeGroup } from "shared/Docs/mdx";
+import { Callout, CodeGroup, Tip } from "shared/Docs/mdx";
 
 # Testing
 
@@ -79,6 +79,10 @@ test("throws an error", async () => {
   expect(error).toContain("Some specific error");
 });
 ```
+
+<Tip>
+  When using steps that delay execution, like `step.sleep` or `step.waitForEvent`, you will need to mock them. [Learn more about mocking steps](#steps).
+</Tip>
 
 ### Running an individual step
 
@@ -205,7 +209,7 @@ an `inngest/function.invoked` event will be mocked for you.
 #### Steps
 
 Mocking steps can help you model different paths and situations within your
-function. To do so, any step can be mocked by providing the `steps` option.
+function. To do so, any step can be mocked by providing the `steps` option. You should always mock `sleep` and `waitForEvent` steps - [learn more here](#sleep-and-wait-for-event).
 
 Here we mock two steps, one that will run successfully and another that will
 model a failure and throw an error:
@@ -253,6 +257,76 @@ t.execute({
   ],
 });
 ```
+
+#### Sleep and waitForEvent
+
+Steps that pause the function, `step.sleep`, `step.sleepUntil`, and `step.waitForEvent` should always be mocked.
+
+<CodeGroup>
+```ts {{ title: 'step.sleep' }}
+// Given the following function that sleeps
+const myFunction = inngest.createFunction(
+  { id: "my-function" },
+  { event: "user.created" },
+  async ({ event, step }) => {
+    await step.sleep("one-day-delay", "1d");
+    return { message: "success" };
+  }
+)
+// Mock the step to execute a no-op handler to return immediately
+t.execute({
+  steps: [
+    {
+      id: "one-day-delay",
+      handler() {}, // no return value necessary
+    },
+  ],
+});
+```
+```ts {{ title: "step.waitForEvent" }}
+// Given the following function that sleeps
+const myFunction = inngest.createFunction(
+  { id: "my-function" },
+  { event: "time_off.requested" },
+  async ({ event, step }) => {
+    const evt = await step.waitForEvent("wait-for-approval", {
+      event: "manager.approved",
+      timeout: "1d",
+    });
+    return { message: evt?.data.message };
+  }
+)
+// Mock the step to return null to simulate a timeout
+t.execute({
+  steps: [
+    {
+      id: "wait-for-approval",
+      handler() {
+        // A timeout will return null
+        return null;
+      },
+    },
+  ],
+});
+// Mock the step to return an event
+t.execute({
+  steps: [
+    {
+      id: "wait-for-approval",
+      handler() {
+        // If the event is approved, it will be returned
+        return {
+          name: 'manager.approved',
+          data: {
+            message: 'This looks great!'
+          }
+        };
+      },
+    },
+  ],
+});
+```
+</CodeGroup>
 
 #### Modules and imports
 

@@ -356,9 +356,9 @@ export const handler = serve(inngest, [fnA]);
 ```
 </CodeGroup>
 
-### Framework: Google Cloud Functions
+### Framework: Google Cloud Run Functions
 
-Google's [Functions Framework](https://github.com/GoogleCloudPlatform/functions-framework-nodejs) has an Express-compatible API which enables you to use the Express serve handler to deploy your functions to Google's Cloud Functions or Cloud Run. This is an example of a function
+Google's [Functions Framework](https://github.com/GoogleCloudPlatform/functions-framework-nodejs) has an Express-compatible API which enables you to use the Express serve handler to deploy your Inngest functions to Google Cloud Run. This is an example of a function:
 
 <CodeGroup>
 ```ts {{ title: "v3" }}
@@ -372,6 +372,7 @@ ff.http(
   serve({
     client: inngest,
     functions: [fnA],
+    servePath: "/",
   })
 );
 ```
@@ -381,13 +382,24 @@ import { serve } from "inngest/express";
 import { inngest } from "./src/inngest/client";
 import fnA from "./src/inngest/fnA"; // Your own function
 
-ff.http('inngest', serve(inngest, [fnA]));
+ff.http(
+  'inngest',
+  serve(
+    inngest,
+    [fnA],
+    { servePath: "/" },
+  )
+);
 ```
 </CodeGroup>
 
 You can run this locally with `npx @google-cloud/functions-framework --target=inngest` which will serve your Inngest functions on port `8080`.
 
 See the [Google Cloud Functions example](https://github.com/inngest/inngest-js/tree/main/examples/framework-google-functions-framework) for more information.
+
+<Callout>
+1st generation Cloud Run Functions are not officially supported. Using one may result in a signature verification error.
+</Callout>
 
 ### Framework: Firebase Cloud Functions
 
@@ -623,19 +635,12 @@ To enable this, set your runtime to `"edge"` (see [Quickstart for Using Edge Fun
 
 **Next.js 13+**
 <CodeGroup>
-```ts {{ title: "v3" }}
+```ts
 export const runtime = "edge";
 
-export default serve({
+export const { GET, POST, PUT } = serve({
   client: inngest,
   functions: [...fns],
-  streaming: "allow",
-});
-```
-```ts {{ title: "v2" }}
-export const runtime = "edge";
-
-export default serve(inngest, [...fns], {
   streaming: "allow",
 });
 ```

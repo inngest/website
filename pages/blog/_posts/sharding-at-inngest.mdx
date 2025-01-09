@@ -32,7 +32,7 @@ Our first phase was to create a new interface layer that would coordinate how ou
 
 Two weeks after starting at Inngest, I joined forces with Jack Williams, our founding engineer, and kicked off work on a coordinator service mediating access to the state store. The state store persists events, step outputs, and other metadata on every function run. As users can return blobs and other data from their function run steps, we need to ensure incredibly fast reads and writes to the state store to keep latency as low as possible.
 
-Adding this service boundary would enable connection pooling, centralized instrumentation for observability, and a single cut-over point to roll out changes across different user segments. Long-term, this also allows us to replace the Redis-based storage backend with a more scalable system tailored to our access patterns. If you're interested in our work on the state coordinator, please check out [my recent post](https://brunoscheufler.com/blog/2024-07-04-enhancing-scalability-and-reducing-latency-without-missing-a-beat) on the design decisions and rollout strategy we chose.
+Adding this service boundary would enable connection pooling, centralized instrumentation for observability, and a single cut-over point to roll out changes across different user segments. Long-term, this also allows us to replace the Redis-based storage backend with a more scalable system tailored to our access patterns. {/* (NOTE Hidden until Bruno's site is back online)  If you're interested in our work on the state coordinator, please check out [my recent post](https://brunoscheufler.com/blog/2024-07-04-enhancing-scalability-and-reducing-latency-without-missing-a-beat) on the design decisions and rollout strategy we chose. */}
 
 ## Sharding Redis
 

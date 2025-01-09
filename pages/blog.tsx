@@ -10,20 +10,17 @@ import Footer from "../shared/Footer";
 import Header from "../shared/Header";
 import Container from "../shared/layout/Container";
 import Tags from "../shared/Blog/Tags";
-import {
-  loadMarkdownFilesMetadata,
-  type MDXFileMetadata,
-} from "../utils/markdown";
+import { loadMarkdownFilesMetadata } from "../utils/markdown";
 import BlogHeader from "src/components/Blog/BlogHeader";
 import BlogPostList from "src/components/Blog/BlogPostList";
-import { type BlogPost } from "src/components/Blog";
+import { type MDXBlogPost } from "src/components/Blog";
 // import { LaunchWeekBanner } from "./index";
 
 export default function BlogIndex(props) {
   const router = useRouter();
   const { showHidden } = router.query;
 
-  const content: BlogPost[] = props.content.map(JSON.parse);
+  const content: MDXBlogPost[] = props.content.map(JSON.parse);
   const visiblePosts = showHidden
     ? content
     : content
@@ -113,7 +110,7 @@ export default function BlogIndex(props) {
 
 // This function also gets called at build time to generate specific content.
 export async function getStaticProps() {
-  const posts = await loadMarkdownFilesMetadata<BlogPost>("blog/_posts");
+  const posts = await loadMarkdownFilesMetadata<MDXBlogPost>("blog/_posts");
   // If a post is set to featured=false, do not show on main blog feed
   // This can be used for less important posts that may be directly linked to from other places
   const filteredPosts = posts.filter((p) => p?.featured !== false);

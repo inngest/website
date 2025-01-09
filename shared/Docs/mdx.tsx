@@ -6,6 +6,12 @@ import { Heading } from "./Heading";
 import React, { useState } from "react";
 import { ChevronDown, ChevronUp } from "react-feather";
 import Image, { ImageProps } from "next/image";
+import {
+  RiLightbulbLine,
+  RiInformationLine,
+  RiAlertLine,
+  type RemixiconComponentType,
+} from "@remixicon/react";
 
 import Zoom from "react-medium-image-zoom";
 import "react-medium-image-zoom/dist/styles.css";
@@ -119,25 +125,35 @@ export function Callout({
   Icon = null,
   children,
 }: {
-  variant: "default" | "info" | "warning";
-  Icon?: typeof React.Component<any, any>;
+  variant: "default" | "info" | "warning" | "tip";
+  Icon?: typeof React.Component<any, any> | RemixiconComponentType;
   children: React.ReactNode;
 }) {
   return (
     <div
       className={clsx(
-        "my-6 border border-transparent rounded-lg p-6",
+        "my-6 rounded-lg p-6",
         !Icon && "[&>:first-child]:mt-0 [&>:last-child]:mb-0",
+        // Setting the dark variants for text are necessary to override other selectors
         (variant === "default" || variant === "info") &&
-          "dark:border-sky-600/20 text-sky-600 dark:text-sky-100 bg-sky-300/10",
+          "text-info dark:text-info bg-info dark:bg-info/50",
         variant === "warning" &&
-          "dark:border-amber-700/20 text-amber-900 dark:text-amber-50 bg-amber-300/10",
+          "text-warning dark:text-warning bg-warning dark:bg-warning/50",
+        variant === "tip" &&
+          "text-success dark:text-success bg-success dark:bg-success/50",
         Icon && "flex gap-2.5"
       )}
     >
       {Icon ? (
         <>
-          <Icon className="block h-5 w-5 mt-1 shrink-0" />
+          <Icon
+            className={clsx(
+              "block h-5 w-5 mt-1 shrink-0",
+              variant === "default" || (variant === "info" && "text-info"),
+              variant === "warning" && "text-warning",
+              variant === "tip" && "text-success"
+            )}
+          />
           <div className="[&>:first-child]:mt-0 [&>:last-child]:mb-0">
             {children}
           </div>
@@ -146,6 +162,30 @@ export function Callout({
         children
       )}
     </div>
+  );
+}
+
+export function Info({ children }) {
+  return (
+    <Callout variant="info" Icon={RiInformationLine}>
+      {children}
+    </Callout>
+  );
+}
+
+export function Tip({ children }) {
+  return (
+    <Callout variant="tip" Icon={RiLightbulbLine}>
+      {children}
+    </Callout>
+  );
+}
+
+export function Warning({ children }) {
+  return (
+    <Callout variant="warning" Icon={RiAlertLine}>
+      {children}
+    </Callout>
   );
 }
 

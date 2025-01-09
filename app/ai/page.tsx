@@ -170,7 +170,7 @@ export default function Page() {
             text="Define complex AI workflows in code, including agentic orchestration, and let the AgentKit handle the heavy lifting of managing dependencies, retries, and failures with ease."
             ctas={[
               {
-                href: `/docs/agent-kit/overview?ref=${ref}`,
+                href: `https://agentkit.inngest.com/?ref=${ref}`,
                 text: "Get started",
               },
             ]}
@@ -325,11 +325,11 @@ export default inngest.createFunction(
                 title: "AgentKit",
                 description:
                   "Learn how to use AgentKit to build, test and deploy reliable AI workflows.",
-                url: `/docs/agent-kit/overview?ref=${ref}`,
+                url: `https://agentkit.inngest.com/?ref=${ref}`,
               },
               {
                 type: "blog",
-                title: "The principles of produciton AI",
+                title: "The principles of production AI",
                 description:
                   "How LLM evaluations, guardrails, and orchestration shape safe and reliable AI experiences.",
                 url: `/blog/principles-of-production-ai?ref=${ref}`,
@@ -386,10 +386,13 @@ function Hero() {
             backend complexity.
           </p>
           <div className="flex flex-row flex-wrap gap-4 justify-center md:justify-start">
-            <Button variant="primary" href={`ai/early-access?ref=${ref}`}>
+            <Button variant="primary" href={`/ai/early-access?ref=${ref}`}>
               Sign up for early access
             </Button>
-            <Button variant="link" href={`ai/early-access?ref=${ref}`}>
+            <Button
+              variant="link"
+              href={`/docs/features/inngest-functions/steps-workflows/step-ai-orchestration?ref=${ref}`}
+            >
               Explore the docs <RiArrowRightLine className="h-4 w-4" />
             </Button>
           </div>

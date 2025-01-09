@@ -11,6 +11,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import clsx from "clsx";
 import { AnimatePresence, m, motion, useIsPresent } from "framer-motion";
+import { RiExternalLinkLine } from "@remixicon/react";
 
 // import { Button } from "./Button";
 import { Button } from "../Button";
@@ -116,11 +117,13 @@ function NavLink({
   target?: string;
   children: React.ReactNode;
 }) {
+  const isExternal = target === "_blank" || href.match(/^https?:\/\//);
+  const linkTarget = target ?? href.match(/^https?:\/\//) ? "_blank" : null;
   return (
     <LinkOrHref
       href={href}
       aria-current={active ? "page" : undefined}
-      target={target}
+      target={linkTarget}
       className={clsx(
         "flex rounded justify-between items-center gap-2 py-2 pl-2 text-sm transition group", // group for nested hovers
         active
@@ -130,13 +133,13 @@ function NavLink({
       )}
     >
       {!isAnchorLink && <span className="absolute inset-y-0 left-0 w-px" />}
-
       <span>{children}</span>
       {tag && (
         <Tag color="breeze" className={"mr-2"}>
           {tag}
         </Tag>
       )}
+      {isExternal && <RiExternalLinkLine className="mx-1 h-4 w-4 text-muted" />}
     </LinkOrHref>
   );
 }
@@ -343,7 +346,7 @@ function NavigationGroup({
             >
               {group.title}
             </span>
-            {nestingLevel > 0 && <ChevronDownIcon className="h-4 w-4" />}
+            {nestingLevel > 0 && <ChevronDownIcon className="mr-1 h-4 w-4" />}
           </h2>
         </NavigationGroupStructure.Trigger>
 

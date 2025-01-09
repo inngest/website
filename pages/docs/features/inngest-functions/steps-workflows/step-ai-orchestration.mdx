@@ -4,15 +4,15 @@ import { Callout, GuideSelector, GuideSection, CodeGroup, VersionBadge } from "s
 
 You can build complex AI workflows and call model providers as steps using two step methods, `step.ai.infer()` and `step.ai.wrap()`, or our AgentKit SDK.  They work with any model provider, and all offer full AI observability:
 
-- [AgentKit](/docs/agent-kit/overview) allows you to easily create single model calls or agentic workflows.  Read the AgentKit docs here
+- [AgentKit](https://agentkit.inngest.com) allows you to easily create single model calls or agentic workflows.  Read the AgentKit docs here
 - `step.ai.wrap()`  wraps other AI SDKs (OpenAI, Anthropic, and Vercel AI SDK) as a step, augmenting the observability of your Inngest Functions with information such as prompts and tokens used.
 - `step.ai.infer()` offloads the inference request to Inngest's infrastructure, pausing your function execution until the request finishes.  This can be a significant cost saver if you deploy to serverless functions
 
 ### Benefits
 
-Using [AgentKit](/docs/agent-kit/overview) and `step.ai` allows you to:
+Using [AgentKit](https://agentkit.inngest.com) and `step.ai` allows you to:
 
-- Automatically monitor AI usage in production to ensure quality output 
+- Automatically monitor AI usage in production to ensure quality output
 - Easily iterate and test prompts in the dev server
 - Track requests and responses from foundational inference providers
 - Track how inference calls work together in multi-step or agentic workflows
@@ -26,7 +26,7 @@ Using [AgentKit](/docs/agent-kit/overview) and `step.ai` allows you to:
   **In TypeScript, we strongly recommend using AgentKit, our AI SDK which adds multiple AI capabilities to Inngest.**  AgentKit allows you to call single-shot inference APIs with a simple self-documenting class, and also allows you to create semi or fully autonomous agent workflows using a network of agents.
 
   - [AgentKit GitHub repo](https://github.com/inngest/agent-kit)
-  - [AgentKit docs](//docs/agent-kit/overview)
+  - [AgentKit docs](/https://agentkit.inngest.com)
 </Callout>
 
 ## AgentKit: AI and agent orchestration
@@ -60,7 +60,7 @@ export default inngest.createFunction(
 ```
 </CodeGroup>
 
-[Read the full AgentKit docs here](/docs/agent-kit/overview) and [see the code on GitHub](https://github.com/inngest/agent-kit).
+[Read the full AgentKit docs here](https://agentkit.inngest.com) and [see the code on GitHub](https://github.com/inngest/agent-kit).
 
 ## Step tools: `step.ai`
 
@@ -116,7 +116,7 @@ export default inngest.createFunction(
   { id: "summarize-contents" },
   { event: "app/ticket.created" },
   async ({ event, step }) => {
-  
+
     // This calls `generateText` with the given arguments, adding AI observability,
     // metrics, datasets, and monitoring to your calls.
     const { text } = await step.ai.wrap("using-vercel-ai", generateText, {
@@ -135,7 +135,7 @@ export default inngest.createFunction(
   { id: "summarize-contents" },
   { event: "app/ticket.created" },
   async ({ event, step }) => {
-  
+
     // This calls `generateText` with the given arguments, adding AI observability,
     // metrics, datasets, and monitoring to your calls.
     const result = await step.ai.wrap("using-anthropic", anthropic.messages.create, {

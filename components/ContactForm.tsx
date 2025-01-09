@@ -1,4 +1,6 @@
+"use client";
 import { useState } from "react";
+import { useRouter } from "next/router";
 
 const CONTACT_KEY =
   "Z-ymc97Dae8u4HHybHknc4DGRb51u6NnTOUaW-qG71ah1ZqsJfRcI6SaHg5APWutNcnMcaN3oZrZky-VQxBIyw";
@@ -7,17 +9,24 @@ export default function ContactForm({
   eventName,
   eventVersion,
   gtmEvent,
+  button = "Send",
+  redirectTo,
 }: {
   eventName: string;
   eventVersion: string;
   gtmEvent: string;
+  button?: string;
+  redirectTo?: string;
 }) {
+  const router = useRouter();
+
+  // Fields
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
-  const [teamSize, setTeamSize] = useState("");
+  const [survey, setSurvey] = useState("");
   const [disabled, setDisabled] = useState<boolean>(false);
-  const [buttonCopy, setButtonCopy] = useState("Send");
+  const [buttonCopy, setButtonCopy] = useState(button);
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -36,7 +45,7 @@ export default function ContactForm({
       await window.Inngest.event(
         {
           name: eventName,
-          data: { email, name, message, teamSize, ref },
+          data: { email, name, message, survey, ref },
           user: { email, name },
           v: eventVersion,
         },
@@ -46,9 +55,20 @@ export default function ContactForm({
       window.dataLayer?.push({
         event: gtmEvent,
         ref,
-        teamSize,
+        survey,
       });
-      setButtonCopy("Your message has been sent!");
+      if (redirectTo) {
+        setButtonCopy("Redirecting to scheduling...");
+        const redirectURL = new URL(redirectTo);
+        // Assume it's a Savvycal call URL
+        redirectURL.searchParams.set("display_name", name);
+        redirectURL.searchParams.set("email", email);
+        router.push(redirectURL);
+        console.log(redirectURL.toString());
+        router.push(redirectTo);
+      } else {
+        setButtonCopy("Your message has been sent!");
+      }
     } catch (e) {
       console.warn("Message not sent");
       setButtonCopy("Message not sent");
@@ -62,7 +82,9 @@ export default function ContactForm({
       className="p-4 sm:p-6 bg-surfaceSubtle flex flex-col items-start gap-4 rounded-lg border border-subtle"
     >
       <label className="w-full flex flex-col gap-2">
-        Your name
+        <span>
+          Your name <span className="text-warning">*</span>
+        </span>
         <input
           type="text"
           name="name"
@@ -72,7 +94,9 @@ export default function ContactForm({
         />
       </label>
       <label className="w-full flex flex-col gap-2">
-        Company email
+        <span>
+          Company email <span className="text-warning">*</span>
+        </span>
         <input
           type="email"
           name="email"
@@ -82,15 +106,27 @@ export default function ContactForm({
         />
       </label>
       <label className="w-full flex flex-col gap-2">
-        What can we help you with?
-        <textarea
-          name="message"
+        <span>
+          How did you hear about us? <span className="text-warning">*</span>
+        </span>
+        <input
+          type="text"
+          name="survey"
           required
-          onChange={(e) => setMessage(e.target.value)}
-          className="w-full min-h-[10rem] p-3 bg-canvasBase border border-muted outline-none rounded-md"
+          onChange={(e) => setSurvey(e.target.value)}
+          className="w-full p-3 bg-canvasBase border border-muted outline-none rounded-md"
         />
       </label>
       <label className="w-full flex flex-col gap-2">
+        <span>What can we help you with?</span>
+        <textarea
+          name="message"
+          onChange={(e) => setMessage(e.target.value)}
+          className="w-full min-h-[6rem] p-3 bg-canvasBase border border-muted outline-none rounded-md"
+        />
+      </label>
+
+      {/* <label className="w-full flex flex-col gap-2">
         What's the size of your engineering team?
         <select
           name="teamSize"
@@ -107,7 +143,7 @@ export default function ContactForm({
           <option value="30-99">30-99</option>
           <option value="100+">100+</option>
         </select>
-      </label>
+      </label> */}
       <div className="mt-4 w-full flex flex-row justify-items-end">
         <button
           type="submit"
