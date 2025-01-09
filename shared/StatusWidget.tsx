@@ -80,9 +80,12 @@ const useStatus = (): Status => {
     (async function () {
       try {
         const res = await fetchStatus();
-        // Grab first incident
-        const incident = res.ongoing_incidents?.[0];
-        const impact = incident?.current_worst_impact || "none";
+        // Grab first incident and maintenance item
+        const incident = res.ongoing_incidents[0];
+        const maintenance = res.in_progress_maintenances[0];
+        const impact =
+          incident?.current_worst_impact ||
+          (maintenance ? "maintenance" : "none");
         setStatus({
           impact,
           description: impactMessage[impact],
