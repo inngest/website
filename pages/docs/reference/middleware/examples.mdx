@@ -1,4 +1,5 @@
-import { Callout, CodeGroup, Properties, Property, Row, Col, VersionBadge } from "src/shared/Docs/mdx";
+import { Callout, CodeGroup, Properties, Property, Row, Col, VersionBadge, Card, CardGroup } from "src/shared/Docs/mdx";
+import { RiKeyLine } from "@remixicon/react"
 
 # Example middleware <VersionBadge version="v2.0.0+" />
 
@@ -8,6 +9,7 @@ The following examples show how you might use middleware in some real-world scen
 - [Common actions for every function](#common-actions-for-every-function)
 - [Logging](#logging)
 - [Prisma in function context](#prisma-in-function-context)
+- [Cloudflare Workers & Hono environment variables](/docs/examples/middleware/cloudflare-workers-environment-variables)
 
 ---
 
@@ -283,3 +285,10 @@ const prismaMiddleware = new InngestMiddleware({
 
 Check out [Common actions for every function](/docs/reference/middleware/examples#common-actions-for-every-function) to see how this technique can be used to create steps for all of your unique logic.
 
+## Other examples
+
+<CardGroup cols={2}>
+  <Card title="Cloudflare Workers & Hono middleware" icon={<RiKeyLine className="text-basis h-4 w-4"/>} href={'/docs/examples/middleware/cloudflare-workers-environment-variables'}>
+    Access environment variables within Inngest functions.
+  </Card>
+</CardGroup>
