@@ -7,6 +7,7 @@ import Heading from "src/components/LandingPage/Header";
 import Tiles from "src/components/LandingPage/Tiles";
 import Comparison from "src/components/LandingPage/Comparison";
 import CTA from "src/components/LandingPage/CTA";
+import Button from "src/components/LandingPage/Button";
 import MasonryGrid from "src/components/LandingPage/MasonryGrid";
 import LanguagesAndPlatforms from "src/components/LandingPage/LanguagesAndPlatforms";
 import FeaturesCodeBlocks from "src/components/LandingPage/FeaturesCodeBlocks";
@@ -19,6 +20,8 @@ export const metadata: Metadata = generateMetadata({
 });
 
 const baseCTA = "compare-to-legacy-queues";
+const demoURL =
+  "https://savvycal.com/inngest/demo?utm_source=website&utm_medium=landing-page&utm_campaign=compare-to-legacy-queues";
 
 export default function Page() {
   return (
@@ -40,6 +43,38 @@ export default function Page() {
               </>
             ),
             kind: "link",
+          },
+        ]}
+        logos={[
+          {
+            src: "/assets/customers/soundcloud-logo-white-horizontal.svg",
+            name: "SoundCloud",
+            scale: 1.5,
+          },
+          {
+            src: "/assets/customers/tripadvisor.svg",
+            name: "TripAdvisor",
+            scale: 1.4,
+          },
+          {
+            src: "/assets/customers/resend.svg",
+            name: "Resend",
+            scale: 0.9,
+          },
+          {
+            src: "/assets/customers/11x-logo.svg",
+            name: "11x.ai",
+            scale: 0.8,
+          },
+          {
+            src: "/assets/customers/gitbook-logo-white.svg",
+            name: "Gitbook",
+            scale: 1.3,
+          },
+          {
+            src: "/assets/customers/zamp-logo.svg",
+            name: "Zamp",
+            scale: 0.7,
           },
         ]}
       />
@@ -99,10 +134,7 @@ export default function Page() {
           ]}
         />
 
-        <CTA
-          text="Chat with a solutions expert"
-          href={`/contact?ref=${baseCTA}-comparison`}
-        />
+        <CTA text="Contact us" href={`/contact?ref=${baseCTA}-comparison`} />
       </section>
       <section className="my-28 py-14 bg-codeEditor">
         <Heading
@@ -190,10 +222,13 @@ export default function Page() {
         />
         <LanguagesAndPlatforms />
 
-        <CTA
-          text="Chat with a solutions expert"
-          href={`/contact?ref=${baseCTA}`}
-        />
+        {/* <CTA text="Contact us" href={`/contact?ref=${baseCTA}`} /> */}
+        <div className="flex items-center justify-center">
+          <Button href={`/contact?ref=${baseCTA}`}>Contact us</Button>
+          {/* <Button href={demoURL} variant="link">
+            Schedule a demo
+          </Button> */}
+        </div>
       </section>
       <section className="my-28 py-14">
         <Heading
@@ -336,10 +371,12 @@ export default function Page() {
           title="Chat with our team today"
           description="Speak with a solutions engineer to learn if Inngest is right for your queuing and orchestration needs."
         />
-        <CTA
-          text="Chat with a solutions expert"
-          href={`/contact?ref=${baseCTA}`}
-        />
+        <div className="flex items-center justify-center">
+          <Button href={`/contact?ref=${baseCTA}`}>Contact us</Button>
+          {/* <Button href={demoURL} variant="link">
+            Schedule a demo
+          </Button> */}
+        </div>
       </section>
     </>
   );
