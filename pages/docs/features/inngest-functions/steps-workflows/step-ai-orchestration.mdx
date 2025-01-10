@@ -26,7 +26,7 @@ Using [AgentKit](https://agentkit.inngest.com) and `step.ai` allows you to:
   **In TypeScript, we strongly recommend using AgentKit, our AI SDK which adds multiple AI capabilities to Inngest.**  AgentKit allows you to call single-shot inference APIs with a simple self-documenting class, and also allows you to create semi or fully autonomous agent workflows using a network of agents.
 
   - [AgentKit GitHub repo](https://github.com/inngest/agent-kit)
-  - [AgentKit docs](/https://agentkit.inngest.com)
+  - [AgentKit docs](https://agentkit.inngest.com)
 </Callout>
 
 ## AgentKit: AI and agent orchestration
@@ -162,7 +162,7 @@ The list of current providers supported for `step.ai.infer()` is:
 
 - Streaming responses from providers is coming soon, alongisde realtime support with Inngest functions.
 
-- When using `step.ai.wrap` with sdk clients that require client instance context to be preserved between 
+- When using `step.ai.wrap` with sdk clients that require client instance context to be preserved between
 invocations, currently it's necessary to bind the client call outside the `step.ai.wrap` call like so:
 
 <CodeGroup>
@@ -253,7 +253,7 @@ export const openAIWrapCompletionCreate = inngest.createFunction(
 ```
 </CodeGroup>
 
-- When using `step.ai.wrap`, you can edit prompts and rerun steps in the dev server. 
+- When using `step.ai.wrap`, you can edit prompts and rerun steps in the dev server.
 But, arguments must be JSON serializable.
 
 <CodeGroup>
@@ -298,10 +298,10 @@ export const vercelWrapGenerateText = inngest.createFunction(
 
 - `step.ai.wrap's` Typescript definition will for the most part infer allowable inputs based on the
 signature of the wrapped function. However in some cases where the wrapped function contains complex
-overloads, such as Vercel's `generateObject`, it may be necessary to type cast. 
+overloads, such as Vercel's `generateObject`, it may be necessary to type cast.
 
-*Note*: Future version of the Typescript SDK will correctly infer these complex types but for now we 
-require type casting to ensure backwards compatibility. 
+*Note*: Future version of the Typescript SDK will correctly infer these complex types but for now we
+require type casting to ensure backwards compatibility.
 
 <CodeGroup>
 ```ts {{ title: "Vercel AI SDK" }}

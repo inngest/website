@@ -5,9 +5,10 @@ import {
   RiMistFill,
   RiPlugLine,
   RiTerminalBoxLine,
+  RiKeyLine,
 } from "@remixicon/react";
 
-# Creating a middleware
+# Creating middleware
 
 Creating middleware means defining the lifecycles and subsequent hooks in those lifecycles to run code in. Lifecycles are actions such as a function run or sending events, and individual hooks within those are where we run code, usually with a _before_ and _after_ step.
 
@@ -39,7 +40,7 @@ Creating middleware means defining the lifecycles and subsequent hooks in those 
       middleware: [myMiddleware],
     });
     ```
-    
+
 </GuideSection>
 
 <GuideSection show="python">
@@ -340,7 +341,7 @@ It's common for middleware to require additional customization or options from d
 
 ## Next steps
 
-Check out our pre-build middleware and examples:
+Check out our pre-built middleware and examples:
 
 <CardGroup cols={2}>
   <Card title="Dependency Injection" icon={<RiPlugLine className="text-basis h-4 w-4" />} href={'/docs/features/middleware/dependency-injection'}>
@@ -354,6 +355,9 @@ Check out our pre-build middleware and examples:
   </Card>
   <Card title="Datadog middleware" icon={<RiTerminalBoxLine className="text-basis h-4 w-4"/>} href={'/docs/examples/track-failures-in-datadog'}>
     Add tracing with Datadog under a few minutes.
+  </Card>
+  <Card title="Cloudflare Workers & Hono middleware" icon={<RiKeyLine className="text-basis h-4 w-4"/>} href={'/docs/examples/middleware/cloudflare-workers-environment-variables'}>
+    Access environment variables within Inngest functions.
   </Card>
 </CardGroup>
 

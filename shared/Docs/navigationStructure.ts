@@ -652,7 +652,7 @@ const sectionHome: (NavGroup | NavLink)[] = [
             href: `/docs/features/middleware`,
           },
           {
-            title: "Creating a middleware",
+            title: "Creating middleware",
             href: `/docs/features/middleware/create`,
           },
           {
@@ -861,6 +861,16 @@ const sectionExamples: NavGroup[] = [
       {
         title: "Cleanup after function cancellation",
         href: `/docs/examples/cleanup-after-function-cancellation`,
+      },
+    ],
+  },
+  {
+    title: "Middleware",
+    defaultOpen: true,
+    links: [
+      {
+        title: "Cloudflare Workers & Hono environment variables",
+        href: `/docs/examples/middleware/cloudflare-workers-environment-variables`,
       },
     ],
   },

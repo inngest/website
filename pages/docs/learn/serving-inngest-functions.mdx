@@ -1,4 +1,4 @@
-import { Callout, CodeGroup, VersionBadge, GuideSelector, GuideSection } from "shared/Docs/mdx";
+import { Callout, Tip, CodeGroup, VersionBadge, GuideSelector, GuideSection, Col, Row } from "shared/Docs/mdx";
 
 export const description = `Serve the Inngest API as an HTTP endpoint in your application.`
 export const hidePageSidebar = true;
@@ -32,13 +32,41 @@ serve({
 });
 ```
 
-<Callout>
-  You will find the complete list of supported frameworks below.
-</Callout>
+## Supported frameworks and platforms
 
-## Supported Platforms
+<div className="grid md:grid-cols-3">
 
-Below you will find a list of framework-specific bindings, as well as instructions on adding bindings to [custom platforms](#custom-frameworks)!
+<Col>
+* [Astro](#framework-astro)
+* [AWS Lambda](#framework-aws-lambda)
+* [Bun](#bun-serve)
+* [Cloudflare Pages](#framework-cloudflare-pages-functions)
+* [Cloudflare Workers](#framework-cloudflare-workers)
+* [DigitalOcean Functions](#framework-digital-ocean-functions)
+* [Express](#framework-express)
+</Col>
+<Col>
+* [Fastify](#framework-fastify)
+* [Fresh (Deno)](#framework-fresh-deno)
+* [Google Cloud Run Functions](#framework-google-cloud-run-functions)
+* [Firebase Cloud functions](#framework-firebase-cloud-functions)
+* [H3](#framework-h3)
+* [Hono](#framework-hono)
+* [Koa](#framework-koa)
+</Col>
+<Col>
+* [NestJS](#framework-nest-js)
+* [Next.js](#framework-next-js)
+* [Nitro](#framework-nitro)
+* [Nuxt](#framework-nuxt)
+* [Redwood](#framework-redwood)
+* [Remix](#framework-remix)
+* [SvelteKit](#framework-svelte-kit)
+</Col>
+
+</div>
+
+You can also create a custom serve handler for any framework or platform not listed here - [read more here](#custom-frameworks).
 
 <Callout variant="info">
   Want us to add support for another framework? Open an issue on [GitHub](https://github.com/inngest/website) or tell us about it on our [Discord](/discord).
@@ -155,10 +183,16 @@ export default {
   fetch: serve({
     client: inngest,
     functions: [fnA],
+    // We suggest explicitly defining the path to serve Inngest functions
+    servePath: "/api/inngest",
   }),
 };
 ```
 </CodeGroup>
+
+<Tip>
+  To automatically pass environment variables defined with Wrangler to Inngest function handlers, use the [Cloudflare Workers bindings middleware](/docs/examples/middleware/cloudflare-workers-environment-variables).
+</Tip>
 
 When developing locally with Wrangler and the `--remote` flag, your code is
 deployed and run remotely. To use this with a local Inngest Dev Server, you must
@@ -488,7 +522,7 @@ See the [github.com/unjs/h3](https://github.com/unjs/h3) repository for more inf
 
 ### Framework: Hono
 
-Add the following to `./src/index.ts`:
+Inngest supports the [Hono](https://hono.dev/) framework which is popularly deployed to Cloudflare Workers. Add the following to `./src/index.ts`:
 
 <CodeGroup>
 ```ts
@@ -510,6 +544,10 @@ app.on(
 export default app;
 ```
 </CodeGroup>
+
+<Tip>
+  To automatically pass environment variables defined with Wrangler to Inngest function handlers, use the [Hono bindings middleware](/docs/examples/middleware/cloudflare-workers-environment-variables).
+</Tip>
 
 See the [Hono example](https://github.com/inngest/inngest-js/blob/main/examples/framework-hono) for more information.
 
