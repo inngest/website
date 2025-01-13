@@ -59,22 +59,22 @@ export default function Page() {
           {
             src: "/assets/customers/resend.svg",
             name: "Resend",
-            scale: 0.9,
+            scale: 0.8,
+          },
+          {
+            src: "/assets/customers/contentful-logo-white.svg",
+            name: "Contenful",
+            scale: 1.2,
           },
           {
             src: "/assets/customers/11x-logo.svg",
             name: "11x.ai",
-            scale: 0.8,
+            scale: 0.7,
           },
           {
             src: "/assets/customers/gitbook-logo-white.svg",
             name: "Gitbook",
             scale: 1.3,
-          },
-          {
-            src: "/assets/customers/zamp-logo.svg",
-            name: "Zamp",
-            scale: 0.7,
           },
         ]}
       />

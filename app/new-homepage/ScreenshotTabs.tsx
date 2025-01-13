@@ -28,6 +28,7 @@ export default function ScreenshotTabs() {
       <div className="p-1 flex flex-row gap-1 rounded-lg text-sm font-semibold bg-carbon-50/10 backdrop-blur">
         {screenshots.map((s, idx) => (
           <button
+            key={idx}
             className={
               "py-1 px-4 rounded-md transition-all hover:bg-carbon-50/10 data-[state=active]:bg-carbon-50 data-[state=active]:text-carbon-800"
             }
