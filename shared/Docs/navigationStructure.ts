@@ -338,6 +338,16 @@ const sectionReference: (NavGroup | NavLink)[] = [
         href: "/docs/reference/system-events/inngest-function-cancelled",
         className: "font-mono",
       },
+      {
+        title: "Function runs",
+        links: [
+          {
+            title: "Get a function run",
+            href: "/docs/reference/rest-api/get-function-run",
+            tag: "GET",
+          },
+        ],
+      },
     ],
   },
 ];
