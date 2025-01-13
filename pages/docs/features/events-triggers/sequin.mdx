@@ -1,0 +1,180 @@
+import { CardGroup, Card, Callout, ImageTheme } from "src/shared/Docs/mdx";
+
+# Sequin: Trigger functions from database inserts, updates, and deletes
+
+<ImageTheme
+  dark={'/assets/docs/features/events-triggers/sequin/feature-image-dark.png'}
+  light={'/assets/docs/features/events-triggers/sequin/feature-image-light.png'}
+  className="my-0"
+  alt={'Sequin allows you to trigger Inngest functions from database changes.'}
+/>
+
+[Sequin](https://sequinstream.com/) allows you to trigger Inngest functions from database changes. Sequin captures every insert, update, and delete in your database tables and sends an event to Inngest. You can then use Inngest to trigger other functions, fan out work, and more.
+
+Sequin is an open source project that you can self-host, or you can use the hosted version. Sequin works with any Postgres database including AWS RDS, Neon, and Supabase.
+
+This guide will show you how to setup Sequin to trigger an Inngest function that sends a welcome email to new users.
+
+## 1. Create an Inngest webhook
+
+Sequin will send webhook events to Inngest when changes are detected in your database. As a first step, you'll create a new webhook in the Inngest Cloud Dashboard:
+
+### Create a new webhook in the Inngest Cloud dashboard
+
+In the Inngest Cloud Dashboard, navigate to the [**Webhooks**](https://app.inngest.com/env/production/manage/webhooks)  tab and click the **Create Webhook** button.
+
+<Callout>
+Copy the webhook URL. You'll provide this URL to Sequin when you create a Sequin consumer below.
+</Callout>
+
+### Transform the Sequin payload into an Inngest event
+
+Sequin will send a payload to your webhook containing the database change. For example, a new user in the `users` table will trigger the following payload:
+
+```json {{ filename: 'Sequin Payload' }}
+{
+    "record": {
+        "id": 1,
+        "name": "John Doe",
+        "email": "john.doe@example.com"
+    },
+    "changes": null,
+    "action": "insert",
+    "metadata": {
+        "table_schema": "public",
+        "table_name": "users",
+        "commit_timestamp": "2024-02-20T14:30:00Z",
+        "consumer": {
+            "id": "e2f9a3b1-7c6d-4b5a-9f8e-1d2c3b4a5e6f",
+            "name": "new_user_consumer"
+        },
+    }
+}
+```
+
+ You need to transform this payload into an Inngest event that triggers your `send-welcome-email` function. To do so, use a **Transform** to extract the the event `name` and `data` from the Sequin payload:
+
+```ts {{ filename: 'Inngest Transform Function' }}
+function transform(evt, headers = {}, queryParams = {}) {
+    return {
+    name: `webhook/${evt.metadata.table_name}.${evt.action}`,
+    data: evt.record,
+    };
+};
+```
+
+This will create an Inngest event with the name `webhook/users.insert` and the data from the Sequin `record` field:
+
+<img
+  src="/assets/docs/features/events-triggers/sequin/create-webhook.png"
+  width="800" height={800/2762*1868} quality="95"
+  className="rounded-md drop-shadow-2xl"
+  alt="Transform Event"
+/>
+
+## 2. Create a Sequin push consumer
+
+You'll now configure Sequin to capture every new user in your database and send an event to the Inngest webhook you just created.
+
+### Connect Sequin to your database
+
+1. Login to your Sequin account and click the **Add New Database** button.
+2. Enter the connection details for your Postgres database.
+3. Follow the instructions in the Sequin console to create a publication and a replication slot by running two SQL commands in your database:
+
+```sql
+create publication sequin_pub for all tables;
+select pg_create_logical_replication_slot('sequin_slot', 'pgoutput');
+```
+4. Name your database and click the **Connect Database** button.
+
+Sequin will connect to your database and ensure that it's configured properly.
+
+<Callout>
+If you need step-by-step connection instructions to connect Sequin to your database, check out our [quickstart guide](https://sequinstream.com/docs/quickstart).
+</Callout>
+
+### Create a Sequin push consumer
+With your database connected, create a Sequin push consumer that will send events to Inngest:
+
+1. Navigate to the **Consumers** tab and click the **Create Consumer** button.
+2. Select the table you want to capture changes from . In this "welcome email" example, select the users table (i.e `public.users`).
+3. On the next page, select to process **changes** and click **Continue**.
+4. Configure which kinds of changes you want to capture and apply filters (for instance, ignore internal emails). Since in this example, you just want to email all new users, capture just the `insert` changes and apply no additional filters:
+
+<img
+  src="/assets/docs/features/events-triggers/sequin/filters.png"
+  width="800" height={800/2762*1868} quality="95"
+  className="rounded-md drop-shadow-2xl"
+  alt="Transform Event"
+/>
+
+5. On the next screen, select **Push** to have Sequin send the events to your webhook URL. Click **Continue**.
+6. Now, give your consumer a name (i.e. `new_user_consumer`) and in the **HTTP Endpoint** section enter the webhook URL you created earlier in Inngest as the **Base URL**. You don't need any headers or a path:
+
+<img
+  src="/assets/docs/features/events-triggers/sequin/webhook_url.png"
+  width="800" height={800/2762*1868} quality="95"
+  className="rounded-md drop-shadow-2xl"
+  alt="Transform Event"
+/>
+
+7. Click the **Create Consumer** button. Sequin will verify your database is set up properly and give you another SQL command to run to ensure every new user is captured.
+
+## 3. Test end-to-end
+
+Now watch Sequin capture a new user and send an event to Inngest.
+
+### Create a new user in your database
+Insert a new user into your database:
+
+```sql
+insert into users (name, email) values ('John Doe', 'john.doe@example.com');
+```
+### Trace the change in the Sequin console
+
+In the Sequin console, navigate to the [**Trace**](https://console.sequinstream.com/trace) tab and confirm that Sequin delivered the event to Inngest:
+
+<img
+  src="/assets/docs/features/events-triggers/sequin/trace.png"
+  width="800" height={800/2762*1868} quality="95"
+  className="rounded-md drop-shadow-2xl"
+  alt="Transform Event"
+/>
+
+### Log the event in the Inngest Cloud dashboard
+
+In the Inngest Cloud dashboard, navigate to the [**Events**](https://app.inngest.com/env/production/events) tab, select the `webhook/users.insert` event, and open the **Logs** tab. You should see the event you just created:
+
+<img
+  src="/assets/docs/features/events-triggers/sequin/inngest-log.png"
+  width="800" height={800/2762*1868} quality="95"
+  className="rounded-md drop-shadow-2xl"
+  alt="Transform Event"
+/>
+
+Now, click the **Send to Dev Server** button to forward the event to your local Inngest development server.
+
+### Confirm the function runs
+
+Finally, in your local Inngest development server, navigate to the **Runs** tab and confirm that the event was received and your `send-welcome-email` function was invoked:
+
+<img
+  src="/assets/docs/features/events-triggers/sequin/confirm-function-run.png"
+  width="800" height={800/2762*1868} quality="95"
+  className="rounded-md drop-shadow-2xl"
+  alt="Transform Event"
+/>
+
+## Next steps
+
+You've implemented a complete workflow that captures every new user in your database, triggers an Inngest event, and sends a welcome email. This is a simple pattern you can expand on to fit your needs.
+
+Sequin guarantees that every change in your database results in an event being delivered to Inngest. Sequin handles retries to ensure that no events are missed.
+
+From here you can tailor your Sequin consumers and Inngest functions to cover more use cases. Then deploy your Inngest functions to production. Here are some resources to help:
+
+- Tailor your [Sequin consumers](/core-concepts#consumers) to your use case.
+- [Deploy](https://www.inngest.com/docs/platform/deployment) your Inngest functions to production.
+- Make your Inngest functions more [robust](https://www.inngest.com/docs/guides/error-handling) with retries, timeouts, and other features.
+- Reach out to [Sequin support](mailto:support@sequinstream.com) if you need help with your setup.
