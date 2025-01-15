@@ -1,4 +1,4 @@
-import { Callout, CodeGroup } from "src/shared/Docs/mdx";
+import { Callout, CodeGroup, Tip } from "src/shared/Docs/mdx";
 
 # Inngest Dev Server
 
@@ -7,7 +7,7 @@ The Inngest dev server is an [open source](https://github.com/inngest/inngest) e
 1. Runs a fast, in-memory version of Inngest on your machine
 2. Provides a browser interface for sending events and viewing events and function runs
 
-![Dev Server Demo](/assets/docs/local-development/dev-server-demo.gif)
+![Dev Server Demo](/assets/docs/local-development/dev-server-demo-2025-01-15.gif)
 
 You can start the dev server with a single command. The dev server will attempt to find an Inngest `serve` API endpoint by scanning ports and endpoints that are commonly used for this purpose. (See the [list of ports](https://github.com/inngest/inngest/blob/ea67219e7e7c33451416249f98fd5ca48e99ba28/pkg/devserver/discovery.go#L15-L28) the dev server scans.) Alternatively, you can specify the URL of the `serve` endpoint:
 
@@ -34,7 +34,11 @@ There are two ways to connect apps to the Dev Server:
     - Using the CLI -u param
     - Adding the URL in the Dev Server Apps page. You can edit the URL or delete a manually added app at any point in time
 
-![Dev Server Apps Demo](/assets/docs/local-development/dev-server-apps-demo.gif)
+![Dev Server demo manually syncing an app](/assets/docs/local-development/dev-server-apps-demo-2025-01-15.gif)
+
+<Tip>
+  The dev server does "auto-discovery" which scans popular ports and [endpoints](https://github.com/inngest/inngest/blob/ea67219e7e7c33451416249f98fd5ca48e99ba28/pkg/devserver/discovery.go#L32-L40) like `/api/inngest` and `/.netlify/functions/inngest`. **If you would like to disable auto-discovery, pass the `--no-discovery` flag to the `dev` command**.
+</Tip>
 
 ### How functions are loaded by the Dev Server
 
@@ -44,6 +48,20 @@ The dev server polls your app locally for any new or changed functions. Then as 
   src="/assets/docs/local-development/dev-server-diagram-v2.png"
   width="800"
   height={800/1800*674}
+  quality="95"
+/>
+
+## Testing functions
+
+### Invoke via UI
+
+From the Functions tab, you can quickly test any function by click the "Invoke" button and providing the data for your payload in the modal that pops up there. This is the easiest way to directly call a specific function:
+
+<img
+  src="/assets/docs/local-development/dev-server-functions-2025-01-15.png"
+  width="600"
+  height={600/2288*1310}
+  className="max-w-2xl rounded-md"
   quality="95"
 />
 
@@ -101,7 +119,7 @@ func main() {
 The dev server's interface also has a "Test Event" button on the top right that enables you to enter any JSON event payload and send it manually. This is useful for testing out different variants of event payloads with your functions.
 
 <img
-  src="/assets/docs/local-development/dev-server-send-event-modal.jpg"
+  src="/assets/docs/local-development/dev-server-send-event-modal-2025-01-15.png"
   width="600"
   height={600/2288*1310}
   className="max-w-2xl rounded-md"
@@ -124,12 +142,34 @@ curl -X POST -v "http://localhost:8288/e/123" \
   💡 Since you can send events via HTTP, this means you can send events with any programming language or from your favorite testing tools like Postman.
 </Callout>
 
+## Configuration file
 
-## Inngest SDK Debug page
+When using lots of configuration options or specifying multiple `-u` flags for a project, you can choose to configure the CLI via `inngest.json` configuration file. The `dev` command will start in your current directory and walk up directories until it finds a file. `yaml`, `yml`, `toml`, or `properties` file formats and extensions are also supported. You can list all options with `dev --help`. Here is an example file specifying two app urls and the `no-discovery` option:
 
-The [SDK's `serve` API endpoint](/docs/learn/serving-inngest-functions) will display a landing page that allows you to check that your functions have been successfully served and the endpoint is accessible.
+<CodeGroup>
+```json {{ title: "inngest.json" }}
+{
+  "sdk-url": [
+    "http://localhost:3000/api/inngest",
+    "http://localhost:3030/api/inngest"
+  ],
+  "no-discovery": true
+}
+```
+```yaml {{ title: "inngest.yaml" }}
+sdk-url:
+  - "http://localhost:3000/api/inngest"
+  - "http://localhost:3030/api/inngest"
+no-discovery: true
+```
+</CodeGroup>
 
-To view this, you can visit the route where (default `/api/inngest`) on your local serve, e.g. `http://localhost:3000/api/inngest`. Here we cURL a local app to see some basic health check data.
+
+## Inngest SDK debug endpoint
+
+The [SDK's `serve` API endpoint](/docs/learn/serving-inngest-functions) will return some diagnostic information for your server configuration when sending a `GET` request. You can do this via `curl` command or by opening the URL in the browser.
+
+Here is an example of a curl request to an Inngest app running at `http://localhost:3000/api/inngest`:
 
 ```sh
 $ curl -s http://localhost:3000/api/inngest | jq
