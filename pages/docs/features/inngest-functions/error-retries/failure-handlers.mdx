@@ -41,7 +41,7 @@ async def update_subscription_failed(ctx: inngest.Context, step: inngest.Step):
     await unsubscribe_user(ctx.data.userId)
 
 @inngest_client.create_function(
-    fn_id="update-subscription", 
+    fn_id="update-subscription",
     retries=5,
     on_failure=update_subscription_failed,
     trigger=TriggerEvent(event="user/subscription.check"))
@@ -60,6 +60,53 @@ async def update_subscription(ctx: Context, step: Step):
 )
 async def global_failure_handler(ctx: Context, step: Step):
     pass # handle all failures, e.g. to send to sentry
+```
+```go
+// the Go SDK doesn't have native way to define failure handlers,
+// but you can define one by create a new function that uses
+// the "inngest/function.failed" event and an expression:
+myFailureHandler := inngestgo.CreateFunction(
+	inngestgo.FunctionOpts{
+			ID:   "account-created-on-failure",
+			Name: "Account creation flow: On Failure",
+	},
+	inngestgo.EventTrigger(
+		"inngest/function.failed",
+		// The full function_id is a concatenated slug of your app id and the
+		// failing function's "ID"
+		inngestgo.StrPtr("event.data.function_id == 'my-app-account-created'")
+	),
+	func(
+		ctx context.Context,
+		input inngestgo.Input[inngestgo.GenericEvent[functionFailedEventData, any]],
+	) (any, error) {
+		// Handle your failure here
+	}
+)
+
+type functionFailedEventData struct {
+  Error struct {
+    Message string `json:"message"`
+    Name string `json:"name"`
+  } `json:"error"`
+  FunctionID string `json:"function_id"`
+  RunID string `json:"run_id"`
+}
+
+// How to determine the full function_id to use in the expression?
+// 1. Get the "app id" set via "NewHandler"
+h := inngestgo.NewHandler("my-app", inngestgo.HandlerOpts{})
+// 2. Get the FunctionOpts's ID parameter:
+f := inngestgo.CreateFunction(
+	inngestgo.FunctionOpts{
+			ID:   "account-created",
+			Name: "Account creation flow",
+	},
+	inngestgo.EventTrigger("api/account.created", nil),
+	AccountCreated,
+)
+// 3. Join them with a hyphen:
+// event.data.function_id == 'my-app-account-created'
 ```
 </CodeGroup>
 
