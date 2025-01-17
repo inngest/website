@@ -57,6 +57,10 @@ const fn = inngest.createFunction(
 This is only needed to ensure function runs started on v2 will transition to v3; new functions can specify any ID.
 </Callout>
 
+<Callout variant="warning">
+  <span className="text-yellow-300">⚠️</span> `slugify()` **should only be applied to function IDs, not application IDs**. Changing the application ID will result new app, archiving the existing one.
+</Callout>
+
 <Row>
      <Col>
           <CodeGroup filename="✅ v3">
