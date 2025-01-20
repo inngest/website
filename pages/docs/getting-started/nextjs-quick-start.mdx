@@ -137,6 +137,63 @@ In your browser open [`http://localhost:8288`](http://localhost:8288) to see the
   alt="Inngest Dev Server's 'Runs' tab with no data"
 />
 
+#### Path Discovery
+
+Inngest scans for common ports and common paths where the API might be served, and it does this every 2 seconds. It logs the result of this discovery scan to your console. It would typcally look like this:
+
+```bash
+GET /x/functions/inngest 404 in 91ms
+GET /.netlify/functions/inngest 404 in 91ms
+GET /.redwood/functions/inngest 404 in 91ms
+GET /api/inngest 200 in 295ms
+PUT /api/inngest 200 in 335ms
+```
+
+To disable path discovery, use the following command to start the [Inngest Dev Server](/docs/local-development#inngest-dev-server):
+
+<CodeGroup>
+```shell {{ title: "npm" }}
+npx inngest-cli@latest dev --no-discovery -u http://localhost:3000/api/inngest
+```
+```shell {{ title: "yarn" }}
+yarn dlx inngest-cli@latest dev --no-discovery -u http://localhost:3000/api/inngest
+```
+```shell {{ title: "pnpm" }}
+pnpm dlx inngest-cli@latest dev --no-discovery -u http://localhost:3000/api/inngest
+```
+```shell {{ title: "bun" }}
+bun add global inngest-cli@latest
+inngest-cli dev --no-discovery -u http://localhost:3000/api/inngest
+```
+</CodeGroup>
+
+The API endpoint `http://localhost:3000/api/inngest` can be replaced with a custom endpoint. See the [next section](#3-create-an-inngest-client) for more innformation.
+
+For convenience, you can add the following script command to your `package.json`:
+
+<CodeGroup>
+```json {{ title: "npm" }}
+{
+  "inngest:dev": "npx inngest-cli@latest dev --no-discovery -u http://localhost:3000/api/inngest"
+}
+```
+```json {{ title: "yarn" }}
+{
+  "inngest:dev": "yarn dlx inngest-cli@latest dev --no-discovery -u http://localhost:3000/api/inngest"
+}
+```
+```json {{ title: "pnpm" }}
+{
+  "inngest:dev": "pnpm dlx inngest-cli@latest dev --no-discovery -u http://localhost:3000/api/inngest"
+}
+```
+```json {{ title: "bun" }}
+{
+  "inngest:dev": "inngest-cli dev --no-discovery -u http://localhost:3000/api/inngest"
+}
+```
+</CodeGroup>
+
 ## 3. Create an Inngest client
 
 Inngest invokes your functions securely via an [API endpoint](/docs/learn/serving-inngest-functions) at `/api/inngest`. To enable that, you will create an [Inngest client](/docs/reference/client/create) in your Next.js project, which you will use to send events and create functions.
