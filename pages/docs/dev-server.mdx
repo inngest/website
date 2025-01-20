@@ -9,7 +9,7 @@ The Inngest dev server is an [open source](https://github.com/inngest/inngest) e
 
 ![Dev Server Demo](/assets/docs/local-development/dev-server-demo-2025-01-15.gif)
 
-You can start the dev server with a single command. The dev server will attempt to find an Inngest `serve` API endpoint by scanning ports and endpoints that are commonly used for this purpose. (See the [list of ports](https://github.com/inngest/inngest/blob/ea67219e7e7c33451416249f98fd5ca48e99ba28/pkg/devserver/discovery.go#L15-L28) the dev server scans.) Alternatively, you can specify the URL of the `serve` endpoint:
+You can start the dev server with a single command. The dev server will attempt to find an Inngest `serve` API endpoint by scanning ports and endpoints that are commonly used for this purpose (See "[Auto-discovery](#auto-discovery)"). Alternatively, you can specify the URL of the `serve` endpoint:
 
 <CodeGroup>
 ```shell {{ title: "npx (npm)" }}
@@ -37,7 +37,7 @@ There are two ways to connect apps to the Dev Server:
 ![Dev Server demo manually syncing an app](/assets/docs/local-development/dev-server-apps-demo-2025-01-15.gif)
 
 <Tip>
-  The dev server does "auto-discovery" which scans popular ports and [endpoints](https://github.com/inngest/inngest/blob/ea67219e7e7c33451416249f98fd5ca48e99ba28/pkg/devserver/discovery.go#L32-L40) like `/api/inngest` and `/.netlify/functions/inngest`. **If you would like to disable auto-discovery, pass the `--no-discovery` flag to the `dev` command**.
+  The dev server does "auto-discovery" which scans popular ports and endpoints like `/api/inngest` and `/.netlify/functions/inngest`. **If you would like to disable auto-discovery, pass the `--no-discovery` flag to the `dev` command**. Learn more about [this below](#auto-discovery)
 </Tip>
 
 ### How functions are loaded by the Dev Server
@@ -180,3 +180,37 @@ $ curl -s http://localhost:3000/api/inngest | jq
   "functionsFound": 1
 }
 ```
+
+## Auto-discovery
+
+The dev server will automatically detect and connect to apps running on common ports and endpoints. You can disable auto-discovery by passing the `--no-discovery` flag to the `dev` command:
+
+```sh
+npx inngest-cli@latest dev --no-discovery -u http://localhost:3000/api/inngest
+```
+
+<CodeGroup>
+```plaintext {{ title: "Common endpoints" }}
+/api/inngest
+/x/inngest
+/.netlify/functions/inngest
+/.redwood/functions/inngest
+```
+
+```plaintext {{ title: "Common ports" }}
+80, 443,
+// Rails, Express & Next/Nuxt/Nest routes
+3000, 3001, 3002, 3003, 3004, 3005, 3006, 3007, 3008, 3009, 3010,
+// Django
+5000,
+// Vite/SvelteKit
+5173,
+// Other common ports
+8000, 8080, 8081, 8888,
+// Redwood
+8910, 8911, 8912, 8913, 8914, 8915,
+// Cloudflare Workers
+8787,
+```
+</CodeGroup>
+

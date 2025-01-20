@@ -12,7 +12,7 @@
 - [Why am I getting a `NON_DETERMINISTIC_FUNCTION`
   error?](#why-am-i-getting-a-non-deterministic-function-error)
 - [Why am I getting an `Illegal invocation` error?](#why-am-i-getting-an-illegal-invocation-error)
-
+- [Why is the dev server polling endpoints that don't exist?](#why-is-the-dev-server-polling-endpoints-that-don-t-exist)
 ## How do I run crons only in production?
 
 There are multiple ways to achieve it:
@@ -96,3 +96,14 @@ new Inngest({
   fetch: fetch.bind(globalThis),
 });
 ```
+
+## Why is the dev server polling endpoints that don't exist?
+The dev server will automatically detect and connect to apps running on common ports and endpoints. These endpoints include `/api/inngest`, `/x/inngest`, `/.netlify/functions/inngest`, `/.redwood/functions/inngest`.
+
+You can disable auto-discovery by passing the `--no-discovery` flag to the `dev` command:
+
+```sh
+npx inngest-cli@latest dev --no-discovery
+```
+
+Learn more about this in the [dev server](/docs/dev-server#auto-discovery) docs.
