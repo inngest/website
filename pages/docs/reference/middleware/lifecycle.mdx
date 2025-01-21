@@ -62,10 +62,10 @@ The `init()` function can return functions for two separate lifecycles to hook i
                     Called after the function has finished memoizing state (running over previously-seen code).
                </Property>
                <Property name="beforeExecution" type="function">
-                    Called before the function starts to execute (running code seen for the first time).
+                    Called before any step or code executes.
                </Property>
                <Property name="afterExecution" type="function">
-                    Called after the function has finished executing.
+                    Called after any step or code has finished executing.
                </Property>
                <Property name="transformOutput" type="function">
                     Called after the function has finished executing and before the response is sent back to Inngest. This is where you can modify the output.
