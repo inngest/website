@@ -20,12 +20,14 @@ export const generateMetadata = ({
   title,
   description,
   image,
+  ...rest
 }: {
   // Title without the "Inngest - " prefix
   title: string;
   description?: string;
   // A relative path URL to the image
   image?: string;
+  robots?: string;
 }): Metadata => {
   const imageUrl = image
     ? image.match(/^\//)
@@ -45,6 +47,7 @@ export const generateMetadata = ({
       title: metaTitle,
       images: [imageUrl],
     },
+    ...rest,
   };
   if (description) {
     metadata.description = description;

@@ -367,7 +367,7 @@ export default inngest.createFunction(
             <div className="mt-12 px-6 flex items-center justify-center tracking-tight text-basis text-center">
               <div className="max-w-xl mx-auto mt-4 flex flex-col gap-6">
                 <H2>AI early access program</H2>
-                <p className="text-lg md:text-xl">
+                <p className="text-lg md:text-xl text-balance">
                   Be the first to get access to and stay in the loop about our
                   latest AI features, including <code>step.ai</code>,{" "}
                   <strong>AgentKit</strong> and more.

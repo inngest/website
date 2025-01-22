@@ -1,13 +1,17 @@
 import type { Metadata } from "next";
 import { AIPage } from "src/app/ai/page";
 import ContactForm from "src/components/ContactForm";
+import { generateMetadata } from "src/utils/social";
 import { H2 } from "src/components/LandingPage/Heading";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = generateMetadata({
   // Prevent Google from indexing landing pages which may have
   // duplicate and/or temporary content
   robots: "noindex",
-};
+  title: "AI",
+  description:
+    "Orchestration for AI workflows and AI agents. Build, iterate and ship to production with confidence.",
+});
 
 export default function Page() {
   return (
@@ -30,9 +34,9 @@ export default function Page() {
         <div className="mt-12 px-6 flex items-center justify-center tracking-tight text-basis text-center">
           <div className="max-w-xl mx-auto mt-4 flex flex-col gap-6">
             <H2>Schedule a call</H2>
-            <p className="text-lg md:text-xl">
+            <p className="text-lg md:text-xl text-balance">
               We're here to help you with any questions you have about Inngest
-              AI.
+              and AI.
             </p>
             <div className="text-left">
               <ContactForm

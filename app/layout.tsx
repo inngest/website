@@ -62,7 +62,7 @@ export default function RootLayout({
 
         <Nav />
 
-        <main>{children}</main>
+        <main className="text-basis">{children}</main>
 
         <Footer disableCta={true} />
 

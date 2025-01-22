@@ -20,27 +20,39 @@ export const metadata: Metadata = generateMetadata({
 const baseCTA = "durable-workflows";
 
 export default function Page() {
+  return <DurableWorkflowsPage />;
+}
+
+export function DurableWorkflowsPage({
+  cta = null,
+}: {
+  cta?: { href: string; text: string };
+}) {
   return (
     <>
       <Hero
         headline="Durable Workflows"
         subheadline="Write complex workflows as code and let Inngest handle the rest. Inngest manages state, retries, logging and observability for you."
-        ctas={[
-          {
-            href: `${process.env.NEXT_PUBLIC_SUPPORT_URL}?ref=${baseCTA}`,
-            text: "Get started for free",
-            kind: "button",
-          },
-          {
-            href: `/docs?ref=${baseCTA}`,
-            text: (
-              <>
-                Read the docs <RiArrowRightLine className="w-4 h-4" />
-              </>
-            ),
-            kind: "link",
-          },
-        ]}
+        ctas={
+          cta
+            ? [{ ...cta, kind: "button" }]
+            : [
+                {
+                  href: `/contact?ref=${baseCTA}`,
+                  text: "Get started for free",
+                  kind: "button",
+                },
+                {
+                  href: `/docs?ref=${baseCTA}`,
+                  text: (
+                    <>
+                      Read the docs <RiArrowRightLine className="w-4 h-4" />
+                    </>
+                  ),
+                  kind: "link",
+                },
+              ]
+        }
       />
 
       <section className="mb-14">
@@ -145,10 +157,14 @@ export default function Page() {
           ]}
         />
 
-        <CTA
-          text="View documentation"
-          href={`/docs/reference/workflow-kit?ref=${baseCTA}`}
-        />
+        {cta ? (
+          <CTA text={cta.text} href={cta.href} />
+        ) : (
+          <CTA
+            text="View documentation"
+            href={`/docs/reference/workflow-kit?ref=${baseCTA}`}
+          />
+        )}
       </section>
 
       <section className="my-28 py-14">
@@ -204,10 +220,14 @@ export default function Page() {
           ]}
         />
 
-        <CTA
-          text="Chat with a solutions expert"
-          href={`/contact?ref=${baseCTA}`}
-        />
+        {cta ? (
+          <CTA text={cta.text} href={cta.href} />
+        ) : (
+          <CTA
+            text="Chat with a solutions expert"
+            href={`/contact?ref=${baseCTA}`}
+          />
+        )}
       </section>
       <section className="my-28 py-14">
         <Heading
@@ -243,25 +263,25 @@ export default function Page() {
         <Resources
           items={[
             {
-              type: "docs",
-              title: "Guide: Steps & Workflows",
+              type: "blog",
+              title: "The Principles of Durable Execution Explained",
               description:
-                "Learn how to use steps as building blocks for creating reliable workflows that run for hours and recover from failures.",
-              url: `/docs/features/inngest-functions/steps-workflows?ref=${baseCTA}`,
+                "Learn what Durable Execution is, how it works, and why it's beneficial to your system.",
+              url: `/blog/principles-of-durable-execution?ref=${baseCTA}`,
             },
             {
               type: "blog",
               title: "What are Durable Functions? A visual primer",
               description:
-                "An article with animated illustrations to cover the inner workings of Durable Functions",
+                "An article with animated illustrations to cover the inner workings of Durable Functions.",
               url: `/blog/durable-functions-a-visual-javascript-primer?ref=${baseCTA}`,
             },
             {
               type: "docs",
-              title: "Running tasks in parallel",
+              title: "Guide: Steps & Workflows",
               description:
-                "True workflow step parallelization on servers or serverless.",
-              url: `/docs/guides/step-parallelism?ref=${baseCTA}`,
+                "Learn how to use steps as building blocks for creating reliable workflows that run for hours and recover from failures.",
+              url: `/docs/features/inngest-functions/steps-workflows?ref=${baseCTA}`,
             },
           ]}
         />
