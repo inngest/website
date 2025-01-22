@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import clsx from "clsx";
+import { cn } from "./utils/classNames";
 import { Button } from "src/shared/Button";
 
 type Props = {
@@ -12,7 +12,7 @@ type Props = {
     logo?: string;
   };
   caseStudy?: string;
-  variant?: "default" | "box";
+  variant?: "default" | "box" | "no-padding";
   className?: string;
 };
 
@@ -25,7 +25,7 @@ export default function Quote({
 }: Props) {
   return (
     <blockquote
-      className={clsx(
+      className={cn(
         "mx-4 sm:mx-auto rounded-lg",
         variant === "default" && "max-w-[860px]",
         variant === "box" &&
@@ -34,7 +34,7 @@ export default function Quote({
       )}
     >
       <div
-        className={clsx(
+        className={cn(
           "flex flex-col items-start gap-4 text-basis rounded-lg",
           variant === "default" && "px-8 md:p-12 ",
           variant === "box" && "p-8"
@@ -52,7 +52,7 @@ export default function Quote({
           <span className="">&rdquo;</span>
         </p>
         <div
-          className={clsx(
+          className={cn(
             "flex gap-4 w-full",
             variant === "box"
               ? "flex-row items-end justify-between"

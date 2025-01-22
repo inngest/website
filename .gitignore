@@ -35,3 +35,5 @@
 # Nix
 /.direnv/
 .env*.local
+
+cdn

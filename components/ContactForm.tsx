@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
+import { cn } from "src/components/utils/classNames";
 
 const CONTACT_KEY =
   "Z-ymc97Dae8u4HHybHknc4DGRb51u6NnTOUaW-qG71ah1ZqsJfRcI6SaHg5APWutNcnMcaN3oZrZky-VQxBIyw";
@@ -11,12 +12,14 @@ export default function ContactForm({
   gtmEvent,
   button = "Send",
   redirectTo,
+  className,
 }: {
   eventName: string;
   eventVersion: string;
   gtmEvent: string;
   button?: string;
   redirectTo?: string;
+  className?: string;
 }) {
   const router = useRouter();
 
@@ -63,8 +66,8 @@ export default function ContactForm({
         // Assume it's a Savvycal call URL
         redirectURL.searchParams.set("display_name", name);
         redirectURL.searchParams.set("email", email);
-        router.push(redirectURL);
-        console.log(redirectURL.toString());
+        router.push(redirectURL.toString());
+        // console.log(redirectURL.toString());
         router.push(redirectTo);
       } else {
         setButtonCopy("Your message has been sent!");
@@ -79,7 +82,10 @@ export default function ContactForm({
   return (
     <form
       onSubmit={onSubmit}
-      className="p-4 sm:p-6 bg-surfaceSubtle flex flex-col items-start gap-4 rounded-lg border border-subtle"
+      className={cn(
+        "p-4 sm:p-6 bg-surfaceSubtle flex flex-col items-start gap-4 rounded-lg border border-subtle",
+        className
+      )}
     >
       <label className="w-full flex flex-col gap-2">
         <span>
