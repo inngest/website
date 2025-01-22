@@ -44,7 +44,7 @@ export default function Pricing() {
           From early-stage startups to scaling enterprises, Inngest has you
           covered. Get started for free today.
         </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-2 xl:gap-4 xl:gap-x-0 text-center mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-4 lg:gap-x-0 text-center mb-8">
           {PLANS.filter((p) => p.hideFromCards !== true).map((p, idx) => (
             <PlanCard key={p.name} content={p} idx={idx} total={PLANS.length} />
           ))}

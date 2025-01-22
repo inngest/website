@@ -28,13 +28,25 @@ export const metadata: Metadata = generateMetadata({
 const ref = "ai-landing-page";
 
 export default function Page() {
+  return <AIPage />;
+}
+
+export function AIPage({
+  heroCTAs,
+  heroFeature,
+  showCTAs = true,
+}: {
+  heroCTAs?: { href: string; text: string }[];
+  heroFeature?: React.ReactNode;
+  showCTAs?: boolean;
+}) {
   return (
     <div className="relative text-basis">
       {/* The background needs to be here with negative position to bleed under the header nav */}
       <div className="absolute z-0 top-[-84px] w-full h-[200vw] sm:h-[calc(100vw/1728*1219)] bg-[url(/assets/ai/2024-11-27-hero-background.png)] bg-cover bg-no-repeat bg-top"></div>
 
       <div className="relative z-10">
-        <Hero />
+        <Hero ctas={heroCTAs} featured={heroFeature} />
 
         <div className="my-12 flex flex-col gap-6 items-center sm:pb-8">
           <p className="mx-8 text-sm text-balance text-subtle">
@@ -168,12 +180,16 @@ export default function Page() {
           <Feature
             heading="Simplified orchestration"
             text="Define complex AI workflows in code, including agentic orchestration, and let the AgentKit handle the heavy lifting of managing dependencies, retries, and failures with ease."
-            ctas={[
-              {
-                href: `https://agentkit.inngest.com/?ref=${ref}`,
-                text: "Get started",
-              },
-            ]}
+            ctas={
+              showCTAs
+                ? [
+                    {
+                      href: `https://agentkit.inngest.com/?ref=${ref}`,
+                      text: "Get started",
+                    },
+                  ]
+                : []
+            }
             content={{
               code: {
                 snippet: `// Define simple agents
@@ -346,36 +362,59 @@ export default inngest.createFunction(
           />
         </section>
 
-        <section>
-          <div className="mt-12 px-6 flex items-center justify-center tracking-tight text-basis text-center">
-            <div className="max-w-xl mx-auto mt-4 flex flex-col gap-6">
-              <H2>AI early access program</H2>
-              <p className="text-lg md:text-xl">
-                Be the first to get access to and stay in the loop about our
-                latest AI features, including <code>step.ai</code>,{" "}
-                <strong>AgentKit</strong> and more.
-              </p>
-              <CTA
-                href={`ai/early-access?ref=${ref}`}
-                text="Sign up for early access"
-              />
+        {showCTAs && (
+          <section>
+            <div className="mt-12 px-6 flex items-center justify-center tracking-tight text-basis text-center">
+              <div className="max-w-xl mx-auto mt-4 flex flex-col gap-6">
+                <H2>AI early access program</H2>
+                <p className="text-lg md:text-xl text-balance">
+                  Be the first to get access to and stay in the loop about our
+                  latest AI features, including <code>step.ai</code>,{" "}
+                  <strong>AgentKit</strong> and more.
+                </p>
+                <CTA
+                  href={`ai/early-access?ref=${ref}`}
+                  text="Sign up for early access"
+                />
+              </div>
             </div>
-          </div>
-          <img
-            className="max-w-6xl w-full mx-auto"
-            src="/assets/ai/early-access-isometric-ui-image.png"
-          />
-        </section>
+            <img
+              className="max-w-6xl w-full mx-auto"
+              src="/assets/ai/early-access-isometric-ui-image.png"
+            />
+          </section>
+        )}
       </div>
     </div>
   );
 }
 
-function Hero() {
+function Hero({
+  ctas = [
+    {
+      href: `/ai/early-access?ref=${ref}`,
+      text: "Sign up for early access",
+      variant: "primary",
+    },
+    {
+      href: `/docs/features/inngest-functions/steps-workflows/step-ai-orchestration?ref=${ref}`,
+      text: "Explore the docs",
+      variant: "link",
+    },
+  ],
+  featured,
+}: {
+  ctas?: {
+    href: string;
+    text: string | React.ReactNode;
+    variant?: "primary" | "link";
+  }[];
+  featured?: React.ReactNode;
+}) {
   return (
     <div className="py-8 px-4 sm:px-auto mx-auto max-w-[1728px] grid md:grid-cols-2 gap-12">
       <div className="flex flex-row items-center justify-end text-center md:text-left">
-        <div className="flex flex-col gap-8 md:pl-4 lg:max-w-[580px] shrink">
+        <div className="flex flex-col gap-8 md:pl-4 md:py-8 lg:max-w-[580px] shrink">
           <H1 variant="contrast">
             Ship AI workflows and Agents to production faster
           </H1>
@@ -386,25 +425,25 @@ function Hero() {
             backend complexity.
           </p>
           <div className="flex flex-row flex-wrap gap-4 justify-center md:justify-start">
-            <Button variant="primary" href={`/ai/early-access?ref=${ref}`}>
-              Sign up for early access
-            </Button>
-            <Button
-              variant="link"
-              href={`/docs/features/inngest-functions/steps-workflows/step-ai-orchestration?ref=${ref}`}
-            >
-              Explore the docs <RiArrowRightLine className="h-4 w-4" />
-            </Button>
+            {ctas.map((cta) => (
+              <Button variant={cta.variant} href={cta.href}>
+                {cta.text}
+              </Button>
+            ))}
           </div>
         </div>
       </div>
-      <Image
-        className="px-4 sm:px-0"
-        src="/assets/ai/2024-11-27-hero-image.png"
-        alt="Mosaic screenshot of the Inngest dashboard showing a trace view for an AI workflow"
-        width={941}
-        height={621}
-      />
+      {featured ? (
+        featured
+      ) : (
+        <Image
+          className="px-4 sm:px-0"
+          src="/assets/ai/2024-11-27-hero-image.png"
+          alt="Mosaic screenshot of the Inngest dashboard showing a trace view for an AI workflow"
+          width={941}
+          height={621}
+        />
+      )}
     </div>
   );
 }

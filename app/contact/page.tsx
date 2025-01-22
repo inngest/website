@@ -1,25 +1,20 @@
-import Header from "src/shared/Header";
+import { type Metadata } from "next";
+
 import Container from "src/shared/layout/Container";
-import Footer from "src/shared/Footer";
-import Quote from "src/shared/Home/Quote";
+import Quote from "src/components/Quote";
 import ContactForm from "src/components/ContactForm";
 import { RiLifebuoyLine } from "@remixicon/react";
+import { generateMetadata } from "src/utils/social";
 
-export async function getStaticProps() {
-  return {
-    props: {
-      meta: {
-        title: "Chat with solutions engineering",
-      },
-      designVersion: "2",
-    },
-  };
-}
+export const metadata: Metadata = generateMetadata({
+  title: "Schedule a demo",
+  description:
+    "Schedule a demo with a solutions expert to learn more about Inngest.",
+});
 
-export default function Contact() {
+export default function Page() {
   return (
     <div className="font-sans text-basis">
-      <Header />
       <Container>
         <main className="m-auto max-w-5xl pt-4 sm:pt-16 pb-8">
           <header className="pt-12 lg:pt-24 max-w-4xl m-auto text-center">
@@ -68,10 +63,10 @@ export default function Contact() {
                   title: "CEO @ Ocoya",
                   avatar: "/assets/customers/ocoya-aivaras-tumas.png",
                 }}
-                variant="vertical"
-                className="p-0 md:p-0 pb-4 md:px-0 md:pt-4 md:pr-2"
+                variant="no-padding"
+                className="pb-8 rounded-none border-b border-subtle"
               />
-              <div className="flex flex-row gap-4 items-center my-8 text-lg text-indigo-50/80">
+              <div className="flex flex-row gap-4 items-center my-8 text-lg text-subtle">
                 <img
                   src="/assets/compliance/soc2.webp"
                   alt="SOC 2"
@@ -79,7 +74,7 @@ export default function Contact() {
                 />
                 <p>Inngest is SOC 2 Type II compliant.</p>
               </div>
-              <p className="mt-8 mb-6 text-lg font-semibold text-indigo-50/80">
+              <p className="mt-12 mb-6 text-lg font-semibold text-subtle">
                 Trusted by
               </p>
               <div className="flex flex-row flex-wrap gap-8">
@@ -103,7 +98,6 @@ export default function Contact() {
           </div>
         </main>
       </Container>
-      <Footer />
     </div>
   );
 }

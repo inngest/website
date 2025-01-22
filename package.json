@@ -98,6 +98,7 @@
     "rss": "1.2.2",
     "shiki": "0.12.1",
     "slugify": "1.6.5",
+    "tailwind-merge": "2.6.0",
     "unist-builder": "3.0.0",
     "unist-util-visit": "4.1.1",
     "urql": "2.2.3",
