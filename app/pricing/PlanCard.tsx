@@ -66,9 +66,10 @@ export default function PlanCard({
           `h-full py-8 px-6 border bg-canvasBase`,
           content.recommended ? "border-matcha-400" : "border-muted",
           `rounded-2xl`,
-          idx === 0 && "xl:rounded-r-none",
-          idx > 0 && idx < total - 1 && "xl:rounded-none",
-          idx === total - 1 && "xl:rounded-l-none"
+          // Match the flexbox changes in the parent
+          idx === 0 && "lg:rounded-r-none",
+          idx > 0 && idx < total - 1 && "lg:rounded-none",
+          idx === total - 1 && "lg:rounded-l-none"
         )}
       >
         {content.recommended && (
@@ -81,7 +82,9 @@ export default function PlanCard({
         {/* Prevent weird button wrap on enterprise from mis-aligning rows */}
         <div className="sm:min-h-[272px] min-[933px]:min-h-[252px] min-[1272px]:min-h-0">
           <h2 className="text-3xl font-semibold">{content.name}</h2>
-          <p className="text-sm pt-2">{content.description}</p>
+          <p className="text-sm pt-2 md:min-h-[4.4rem]">
+            {content.description}
+          </p>
           {content.cost.between ? (
             <p className="uppercase font-bold text-xs bg-gradient-to-b from-matcha-400 to-breeze-400 bg-clip-text text-transparent pt-4">
               Between
