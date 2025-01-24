@@ -60,7 +60,7 @@ const CodeWindow = ({
       className={`rounded-lg border border-subtle text-sm leading-relaxed bg-canvasBase ${className}`}
       style={style}
     >
-      {header && <div className="mb-1 bg-slate-800/50">{header}</div>}
+      {header && <div className="mb-1 bg-canvasSubtle px-2">{header}</div>}
       <div className="flex flex-row p-2 items-stretch">
         {Boolean(lineHighlights?.length) && (
           <div className="h-full w-[2px] py-1 relative">

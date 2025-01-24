@@ -10,11 +10,21 @@ export type MasonryGridItem = {
   className?: string;
 };
 
-export default function MasonryGrid({ items }: { items: MasonryGridItem[] }) {
+export default function MasonryGrid({
+  items,
+  columns = 3,
+}: {
+  items: MasonryGridItem[];
+  columns?: 2 | 3;
+}) {
   return (
     // <div className="my-8 sm:my-16 mx-6 md:mx-auto max-w-6xl grid sm:grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-6 sm:gap-y-10">
     <div
-      className="max-w-6xl mx-auto sm:my-16 px-4 lg:px-0 grid sm:grid-cols-2 lg:grid-cols-3 gap-4"
+      className={clsx(
+        "mx-auto sm:my-16 px-4 lg:px-0 grid sm:grid-cols-2 gap-4",
+        columns === 2 && "max-w-3xl  sm:grid-cols-2",
+        columns === 3 && "max-w-6xl lg:grid-cols-3"
+      )}
       style={{
         background: `radial-gradient(75% 75% at 50% 50%, #CCCCCC44 0%, #CCCCCC00 46%, #CCCCCC00 100%)`,
       }}
