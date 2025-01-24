@@ -3,8 +3,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "src/components/utils/classNames";
 
-const CONTACT_KEY =
-  "Z-ymc97Dae8u4HHybHknc4DGRb51u6NnTOUaW-qG71ah1ZqsJfRcI6SaHg5APWutNcnMcaN3oZrZky-VQxBIyw";
+const CONTACT_KEY = process.env.NEXT_PUBLIC_INNGEST_KEY;
+
+const DEBUG = process.env.NEXT_PUBLIC_HOST.match(/localhost/) ? true : false;
 
 export default function ContactForm({
   eventName,
@@ -35,6 +36,7 @@ export default function ContactForm({
     e.preventDefault();
     setDisabled(true);
     setButtonCopy("Sending...");
+
     let ref = "";
     try {
       const u = new URLSearchParams(window.location.search);
@@ -43,7 +45,17 @@ export default function ContactForm({
       }
     } catch (err) {
       // noop
+      if (DEBUG) {
+        console.error(err);
+      }
     }
+
+    if (DEBUG) {
+      console.log("Debug mode enabled");
+      console.log("URL ref:", ref);
+      console.log("Redirect URL:", redirectTo);
+    }
+
     try {
       await window.Inngest.event(
         {
@@ -63,17 +75,24 @@ export default function ContactForm({
       if (redirectTo) {
         setButtonCopy("Redirecting to scheduling...");
         const redirectURL = new URL(redirectTo);
+        // If the URL of the page has a ref param, we override the UTM source
+        if (ref) {
+          redirectURL.searchParams.set("utm_source", ref);
+        }
         // Assume it's a Savvycal call URL
         redirectURL.searchParams.set("display_name", name);
         redirectURL.searchParams.set("email", email);
+
+        if (DEBUG) {
+          console.log(redirectURL.toString());
+        }
+
         router.push(redirectURL.toString());
-        // console.log(redirectURL.toString());
-        router.push(redirectTo);
       } else {
         setButtonCopy("Your message has been sent!");
       }
     } catch (e) {
-      console.warn("Message not sent");
+      console.warn("Message not sent", e);
       setButtonCopy("Message not sent");
       setDisabled(false);
     }

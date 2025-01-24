@@ -51,7 +51,7 @@ export default function Page() {
                 eventVersion="2023-12-12.1"
                 gtmEvent="Sales Lead Form Submitted"
                 button="Schedule a call"
-                redirectTo="https://savvycal.com/inngest/demo"
+                redirectTo="https://savvycal.com/inngest/demo?utm_medium=website&utm_source=contact-page"
               />
             </div>
 
