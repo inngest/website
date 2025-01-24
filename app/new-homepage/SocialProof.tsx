@@ -1,12 +1,21 @@
 import Container from "./Container";
 import Image from "next/image";
 import Heading from "./Heading";
+import { cn } from "src/components/utils/classNames";
 
 function AtInngest() {
   return <span className="text-matcha-400">@inngest</span>;
 }
 
-const quotes = [
+type Quote = {
+  quote: React.ReactNode;
+  name: string;
+  username?: string;
+  title?: string;
+  avatar: string;
+};
+
+const defaultQuotes: Quote[] = [
   {
     // https://x.com/erikmunson/status/1790824618208690363
     quote: (
@@ -216,21 +225,31 @@ const quotes = [
   },*/
 ];
 
-export default function SocialProof({ className }: { className?: string }) {
+export default function SocialProof({
+  className,
+  quotes = defaultQuotes,
+  hideHeading = false,
+}: {
+  className?: string;
+  quotes?: Quote[];
+  hideHeading?: boolean;
+}) {
   return (
-    <Container className={`my-44 relative z-30 ${className}`}>
-      <Heading
-        label="Developer love"
-        title="What devs are saying about Inngest"
-        description={
-          <>
-            Don't just take our word for it, this is what developers think about
-            Inngest.
-          </>
-        }
-      />
+    <Container className={cn(`my-44 relative z-30 ${className}`)}>
+      {!hideHeading && (
+        <Heading
+          label="Developer love"
+          title="What devs are saying about Inngest"
+          description={
+            <>
+              Don't just take our word for it, this is what developers think
+              about Inngest.
+            </>
+          }
+        />
+      )}
       <div className="mt-16 grid md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8">
-        {quotes.map(({ name, username, quote, avatar }, idx) => (
+        {quotes.map(({ name, username, title, quote, avatar }, idx) => (
           <div
             key={idx}
             className="p-4 sm:p-6 w-full max-w-[420px] mx-auto flex flex-col gap-4 rounded-md bg-canvasBase text-basis shadow-[0_0_220px_16px_rgba(20,284,286,0.2)]"
@@ -248,6 +267,7 @@ export default function SocialProof({ className }: { className?: string }) {
                 {!!username && (
                   <span className="ml-2 text-muted">@{username}</span>
                 )}
+                {!!title && <span className="ml-2 text-muted">{title}</span>}
               </span>
             </div>
             <p className="text-sm md:text-base">{quote}</p>

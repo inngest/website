@@ -1,6 +1,5 @@
 import { type Metadata } from "next";
 import { generateMetadata } from "src/utils/social";
-import { RiArrowRightLine } from "@remixicon/react";
 
 import Hero from "src/components/LandingPage/Hero";
 import Heading from "src/components/LandingPage/Header";
@@ -10,15 +9,15 @@ import CTA from "src/components/LandingPage/CTA";
 import Button from "src/components/LandingPage/Button";
 import MasonryGrid from "src/components/LandingPage/MasonryGrid";
 import LanguagesAndPlatforms from "src/components/LandingPage/LanguagesAndPlatforms";
-import FeaturesCodeBlocks from "src/components/LandingPage/FeaturesCodeBlocks";
 import Resources from "src/components/LandingPage/Resources";
 import ContactForm from "src/components/ContactForm";
 import CodeWindow from "src/shared/CodeWindow";
+import SocialProof from "src/app/new-homepage/SocialProof";
 
 export const metadata: Metadata = generateMetadata({
-  title: "Traditional queues weren't built for today's workflows",
+  title: "Inngest vs Temporal: Durable execution that developers love",
   description:
-    "Inngest delivers everything your current queues lack—modern features, built-in orchestration, and zero overhead",
+    "Discover a serverless, event-driven platform that developers love. Build faster, debug easier, and scale effortlessly with Inngest.",
 });
 
 const baseCTA = "compare-to-temporal";
@@ -142,7 +141,8 @@ export default function Page() {
                 feature: "Recovery tool suite",
                 inngest:
                   "Built-in capabilities like pausing, bulk cancel, and bulk replay",
-                temporal: "?",
+                temporal:
+                  "Manual system administration and custom rolled solutions.",
               },
               {
                 feature: "Workflow versioning",
@@ -172,27 +172,38 @@ export default function Page() {
 
       {/* What devs are saying about Inngest */}
       <section className="my-28 py-14 bg-codeEditor">
-        <Heading
-          title="What devs are saying about Inngest"
-          // description={[
-          //   "Easily add concurrency, prioritization, debouncing, throttling, and multi-tenant fairness to any function, without any implementation. Inngest’s native flow control provides a comprehensive, out-of-the-box queuing experience, allowing you to focus more on building your product, and less on managing systems.",
-          // ]}
-          // layout="horizontal"
+        <Heading title="What developers are saying about Inngest" />
+        <SocialProof
+          className="my-24"
+          hideHeading={true}
+          quotes={[
+            {
+              quote: "The DX and visibility with Inngest is incredible.",
+              name: "Bu Kinoshita",
+              title: "CTO, Resend",
+              avatar: "/assets/customers/resend-bu-kinoshita.jpg",
+            },
+            {
+              quote:
+                "Using Inngest, the amount of context switching drops significantly, because the code is just business logic. If you read the code, you know that the steps that will execute without having to manage any infrastructure.",
+              name: "Matthew Drooker",
+              title: "CTO, SoundCloud",
+              avatar: "/assets/customers/soundcloud-matthew-drooker.jpg",
+            },
+            {
+              quote:
+                "Inngest changed how I build applications. The ease of use and developer experience is unparalleled.",
+              name: "Dieter De Mesmaeker",
+              title: "CTO, Conveo",
+              avatar: "/assets/customers/conveo-dieter-cto.jpeg",
+            },
+          ]}
         />
-        {/* TODO quotes */}
-        <LanguagesAndPlatforms />
-
-        {/* <CTA text="Contact us" href={`/contact?ref=${baseCTA}`} /> */}
-        <div className="flex items-center justify-center">
-          <Button href={`/contact?ref=${baseCTA}`}>Contact us</Button>
-          {/* <Button href={demoURL} variant="link">
-            Schedule a demo
-          </Button> */}
-        </div>
+        {/* <LanguagesAndPlatforms /> */}
       </section>
       <section className="my-28 pt-8">
         <Heading
-          title="Check out some features you might enjoy from Inngest to fit your use case"
+          title="Hassle-free execution so you can focus on innovation"
           description={[
             "Say goodbye to complexity and infrastructure management. Build better workflows with Inngest today.",
           ]}
@@ -398,13 +409,13 @@ app.listen(3000);`}
           ]}
         />
 
-        <CTA
+        {/* <CTA
           text="Schedule a demo"
           href={`/contact?ref=${baseCTA}-comparison`}
-        />
+        /> */}
       </section>
 
-      <section className="my-28 py-14">
+      {/* <section className="my-28 py-14">
         <Heading
           title="Learn more about Inngest"
           description="Discover why Inngest is the ideal queuing solution for modern development teams."
@@ -434,17 +445,14 @@ app.listen(3000);`}
             },
           ]}
         />
-      </section>
+      </section> */}
       <section className="my-28">
         <Heading
           title="Chat with our team today"
-          description="Speak with a solutions engineer to learn if Inngest is right for your queuing and orchestration needs."
+          description="Speak with a solutions expert to learn if Inngest is right for your queuing and orchestration needs."
         />
         <div className="flex items-center justify-center">
-          <Button href={`/contact?ref=${baseCTA}`}>Contact us</Button>
-          {/* <Button href={demoURL} variant="link">
-            Schedule a demo
-          </Button> */}
+          <Button href={`/contact?ref=${baseCTA}`}>Schedule a demo</Button>
         </div>
       </section>
     </>
