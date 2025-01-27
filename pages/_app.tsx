@@ -22,6 +22,7 @@ import {
 
 import LaunchWeekBanner from "src/components/LaunchWeekBanner";
 import type { PageProps } from "@/shared/types";
+import AnnouncementBanner from "src/components/AnnouncementBanner";
 
 const FireIcon = () => (
   <svg
@@ -52,6 +53,10 @@ function DefaultLayout({ children }) {
   return (
     <>
       {!DISABLE_BANNER && <LaunchWeekBanner />}
+      <AnnouncementBanner href="https://innge.st/ai-agent-webinar">
+        Join our Inngest + Render webinar on February 4th to learn how to build
+        AI Agents
+      </AnnouncementBanner>
       {children}
     </>
   );

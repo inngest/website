@@ -8,6 +8,7 @@ import Footer from "src/shared/Footer";
 import FooterCallout from "src/shared/Footer/FooterCallout";
 import { Button } from "../Button";
 import { SectionProvider } from "shared/Docs/SectionProvider";
+import AnnouncementBanner from "src/components/AnnouncementBanner";
 
 export type Props = {
   children: React.ReactNode;
@@ -66,6 +67,10 @@ export function Layout({
           content={`https://www.inngest.com${ogImage}`}
         />
       </Head>
+      <AnnouncementBanner href="https://innge.st/ai-agent-webinar">
+        Join our Inngest + Render webinar on February 4th to learn how to build
+        AI Agents
+      </AnnouncementBanner>
       <Header />
       <Container>
         <div className="mx-auto my-12 flex flex-col lg:flex-row items-start justify-between gap-8 max-w-[1200px]">
