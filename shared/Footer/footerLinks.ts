@@ -17,7 +17,7 @@ const footerLinks = [
     ],
   },
   {
-    name: "Use Cases",
+    name: "Learn more",
     links: [
       {
         label: "AI + AI Agents",
@@ -46,6 +46,10 @@ const footerLinks = [
       {
         label: "Node.js background jobs",
         url: "/uses/serverless-node-background-jobs?ref=footer",
+      },
+      {
+        label: "Compare to Temporal",
+        url: "/compare-to-temporal?ref=footer",
       },
     ],
   },

@@ -13,6 +13,7 @@ import Resources from "src/components/LandingPage/Resources";
 import ContactForm from "src/components/ContactForm";
 import CodeWindow from "src/shared/CodeWindow";
 import SocialProof from "src/app/new-homepage/SocialProof";
+import { cn } from "src/components/utils/classNames";
 
 export const metadata: Metadata = generateMetadata({
   title: "Inngest vs Temporal: Durable execution that developers love",
@@ -112,12 +113,14 @@ export default function Page() {
           //   "With Inngest, workflows are modeled in code as functions and steps, simplifying the process. Built-in scheduling, batching, throttling, and multi-tenancy eliminate the need for managing infrastructure, offering a modern, efficient solution for reliable, scalable workflows.",
           // ]}
         />
-        <table className="max-w-4xl mx-auto mb-12 text-left table-auto border border-subtle rounded-md divide-y divide-subtle">
+        <table className="max-w-4xl mx-auto mb-12 text-left table-auto divide-y divide-subtle">
           <thead>
-            <tr className="grid grid-cols-3 divide-x divide-subtle">
-              <th className="p-2 rounded-tl-md">Feature</th>
-              <th className="p-2">Inngest</th>
-              <th className="p-2 rounded-tr-md">Temporal</th>
+            <tr className="grid grid-cols-3 md:grid-cols-8 text-lg">
+              <th className="p-3 md:col-span-2">Features</th>
+              <th className="p-3 bg-canvasSubtle rounded-t-md md:col-span-3">
+                Inngest
+              </th>
+              <th className="p-3 md:col-span-3">Temporal</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-subtle">
@@ -154,11 +157,18 @@ export default function Page() {
                 inngest: "Minutes",
                 temporal: "Weeks",
               },
-            ].map((row) => (
-              <tr className="grid grid-cols-3 divide-x divide-subtle">
-                <td className="p-2">{row.feature}</td>
-                <td className="p-2">{row.inngest}</td>
-                <td className="p-2">{row.temporal}</td>
+            ].map((row, idx, arr) => (
+              <tr className="grid grid-cols-3 md:grid-cols-8">
+                <td className="p-3 md:col-span-2">{row.feature}</td>
+                <td
+                  className={cn(
+                    "p-3 bg-canvasSubtle md:col-span-3",
+                    idx === arr.length - 1 && "rounded-b-md"
+                  )}
+                >
+                  {row.inngest}
+                </td>
+                <td className="p-3 md:col-span-3">{row.temporal}</td>
               </tr>
             ))}
           </tbody>
