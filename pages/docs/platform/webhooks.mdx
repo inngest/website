@@ -211,8 +211,6 @@ Some webhook producers do not provide example payloads in their documentation. I
 
 Additionally, you can configure allow/deny lists for event names and IP addresses. This can be useful if you want a bit more control over what events are ingested.
 
-Inngest currently does not yet support webhook signature verification. While this means that you cannot use the signature to verify the authenticity of the payload, each webhook URL is unique and can only be used by one producer. This means that you can be confident that the events are coming from the producer that you expect.
-
 ## Managing webhooks via REST API
 
 Webhooks can be created, updated and deleted all via the Inngest REST API. This is very useful if you want to manage all transforms within your codebase and sync them to the Inngest platform. Check out the documentation below to learn more:
