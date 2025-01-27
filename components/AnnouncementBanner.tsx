@@ -21,8 +21,8 @@ const AnnouncementBanner: React.FC<Props> = ({ href, children, className }) => (
   <a
     href={href}
     // use the .page-banner class to hide it on select pages via CSS
-    className={`page-banner group flex items-center justify-center gap-2.5 w-full py-2 px-6
-                border-b border-[rgb(var(--color-primary-subtle))]
+    className={`page-banner group flex items-center justify-center gap-2.5 w-full md:py-2 px-6
+                border-b border-[rgb(var(--color-primary-subtle))] pb-6 pt-3
                 text-base text-basis transition-all ${className}`}
     style={{
       backgroundImage: `

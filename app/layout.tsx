@@ -56,8 +56,9 @@ export default function RootLayout({
         </Suspense>
       </head>
       <body className="dark font-sans">
-        <AnnouncementBanner href="/blog/ai-orchestration-with-agentkit-step-ai?ref=banner">
-          Introducing AgentKit and step.ai: orchestrating AI with confidence
+        <AnnouncementBanner href="https://www.linkedin.com/events/buildahackernewsaiagentwithinng7287214928480874496/theater/">
+          Join our Inngest + Render webinar on February 4th to learn how to
+          build AI Agents
         </AnnouncementBanner>
 
         <Nav />
