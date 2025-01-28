@@ -1,12 +1,13 @@
 import Link from "next/link";
 import Image from "next/image";
 import React from "react";
-import clsx from "clsx";
+import { cn } from "src/components/utils/classNames";
 
 export default function Hero({
   headline,
   subheadline,
   ctas = [],
+  layout = "default",
   logosHeading = "Trusted by modern software teams worldwide:",
   logos = [],
   children,
@@ -18,6 +19,7 @@ export default function Hero({
     text: string | React.ReactNode;
     kind: "button" | "link";
   }[];
+  layout?: "default" | "horizontal";
   logosHeading?: string;
   logos?: {
     src: string;
@@ -39,40 +41,49 @@ export default function Hero({
         ></div>
       </div>
       <div
-        className={clsx(
-          "relative z-10 max-w-4xl mx-auto py-28 px-4 sm:px-8 text-basis text-center text-balance",
-          logos?.length > 0 ? "pt-28 pb-12" : "py-28"
+        className={cn(
+          "relative z-10 flex flex-col gap-8 mx-auto py-28 px-4 sm:px-8 text-basis text-balance",
+          logos?.length > 0 ? "pt-28 pb-12" : "py-28",
+          layout === "default" && "max-w-4xl text-center",
+          layout === "horizontal" && "max-w-7xl flex flex-row items-center"
         )}
       >
-        <h1 className="text-5xl leading-tight md:text-6xl md:leading-tight font-semibold bg-clip-text text-transparent bg-gradient-to-bl from-[rgb(var(--color-carbon-300))] to-[rgb(var(--color-carbon-50))]">
-          {headline}
-        </h1>
-        <p className="mt-6 text-xl md:text-2xl text-subtle bg-clip-text text-transparent bg-gradient-to-bl from-[rgb(var(--color-carbon-300))] to-[rgba(var(--color-carbon-200)/0.8)]">
-          {subheadline}
-        </p>
-        <div className="mt-10 flex flex-row flex-wrap justify-center items-center gap-4">
-          {ctas.map((cta, idx) => {
-            if (cta.kind === "button") {
+        <div>
+          <h1 className="text-5xl leading-tight md:text-6xl md:leading-tight font-semibold bg-clip-text text-transparent bg-gradient-to-bl from-[rgb(var(--color-carbon-300))] to-[rgb(var(--color-carbon-50))]">
+            {headline}
+          </h1>
+          <p className="mt-6 text-xl md:text-2xl text-subtle bg-clip-text text-transparent bg-gradient-to-bl from-[rgb(var(--color-carbon-300))] to-[rgba(var(--color-carbon-200)/0.8)]">
+            {subheadline}
+          </p>
+          <div
+            className={cn(
+              "mt-10 flex flex-row flex-wrap justify-center items-center gap-4",
+              layout === "horizontal" && "justify-start"
+            )}
+          >
+            {ctas.map((cta, idx) => {
+              if (cta.kind === "button") {
+                return (
+                  <Link
+                    key={idx}
+                    href={cta.href}
+                    className="inline-flex items-center gap-1 rounded-md font-medium px-6 py-2 bg-cta hover:bg-ctaHover transition-all text-carbon-1000 whitespace-nowrap"
+                  >
+                    {cta.text}
+                  </Link>
+                );
+              }
               return (
                 <Link
                   key={idx}
                   href={cta.href}
-                  className="inline-flex items-center gap-1 rounded-md font-medium px-6 py-2 bg-cta hover:bg-ctaHover transition-all text-carbon-1000 whitespace-nowrap"
+                  className="inline-flex items-center gap-1 font-medium px-6 py-2 hover:underline transition-all text-basis whitespace-nowrap"
                 >
                   {cta.text}
                 </Link>
               );
-            }
-            return (
-              <Link
-                key={idx}
-                href={cta.href}
-                className="inline-flex items-center gap-1 font-medium px-6 py-2 hover:underline transition-all text-basis whitespace-nowrap"
-              >
-                {cta.text}
-              </Link>
-            );
-          })}
+            })}
+          </div>
         </div>
         {children}
       </div>
@@ -90,7 +101,7 @@ export default function Hero({
                 title={name}
                 width={120 * 0.8 * scale}
                 height={30 * 0.8 * scale}
-                className={clsx(
+                className={cn(
                   "m-auto width-auto transition-all grayscale opacity-80 invert dark:invert-0",
                   `max-h-[${36 * scale}px]`,
                   idx === 4 && "hidden sm:block",

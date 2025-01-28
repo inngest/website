@@ -12,6 +12,7 @@ export default function Tiles({
   }[];
   height?: "default" | "large";
 }) {
+  const width = tiles.length < 5 ? "large" : "default";
   return (
     <div>
       <div className="my-12 mx-auto max-w-[1270px] px-2 flex flex-row flex-wrap items-center justify-center gap-6 text-subtle text-base sm:text-lg leading-6">
@@ -19,7 +20,9 @@ export default function Tiles({
           <div
             key={idx}
             className={clsx(
-              "w-auto max-w-[90%] sm:w-[400px] p-px",
+              "w-auto max-w-[90%] p-px",
+              width === "large" && "sm:w-[520px]",
+              width === "default" && "sm:w-[400px]",
               height === "default" && "sm:h-[120px]",
               height === "large" && "sm:h-[175px]",
               "rounded-lg bg-gradient-to-br from-[rgba(var(--color-carbon-400)/0.4)] to-transparent overflow-clip"

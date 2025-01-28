@@ -6,7 +6,8 @@ export default function Comparison({
   items: {
     style: "before" | "after";
     title: string;
-    image: string;
+    image?: string;
+    children?: React.ReactNode;
   }[];
 }) {
   return (
@@ -34,11 +35,14 @@ export default function Comparison({
             >
               {item.title}
             </h3>
-            <img
-              src={item.image}
-              alt={`Graphic of ${item.title}`}
-              className="grow"
-            />
+            {item.image && (
+              <img
+                src={item.image}
+                alt={`Graphic of ${item.title}`}
+                className="grow"
+              />
+            )}
+            {item.children}
           </div>
         </div>
       ))}

@@ -36,7 +36,7 @@ export default function Feature({
     <div>
       <div
         className={clsx(
-          "my-24 mx-auto px-6 sm:px-0 grid sm:grid-cols-2 gap-12 sm:gap-24",
+          "my-24 mx-auto px-6 grid sm:grid-cols-2 gap-12 sm:gap-24",
           // Full bleed removes the max width and moves the width constraint to the nested component
           !content.fullBleed && "max-w-[1270px]"
         )}
