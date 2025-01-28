@@ -13,13 +13,13 @@ import LocalDevelopment from "./new-homepage/LocalDevelopment";
 import SocialProof from "./new-homepage/SocialProof";
 import Community from "./new-homepage/Community";
 import { FullWidthCTA } from "src/components/FullWidthCTA";
-import { generateMetadata } from "src/utils/social";
+import { generateMetadata, getFullURL } from "src/utils/social";
 
 export const metadata: Metadata = generateMetadata({
   title: "Queuing and orchestration for modern software teams",
   description:
     "Inngest's durable functions replace queues, state management, and scheduling to enable any developer to write reliable, multi-step code faster without touching infrastructure.",
-  image: "/assets/launch-week/2/open-graph.png?v=2",
+  image: "/assets/homepage/open-graph.png",
 });
 
 export default function Page() {
