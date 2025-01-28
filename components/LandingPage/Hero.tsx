@@ -42,10 +42,10 @@ export default function Hero({
       </div>
       <div
         className={cn(
-          "relative z-10 flex flex-col gap-8 mx-auto py-28 px-4 sm:px-8 text-basis text-balance",
+          "relative z-10 flex flex-col items-center gap-8 mx-auto py-28 px-4 sm:px-8 text-basis text-balance",
           logos?.length > 0 ? "pt-28 pb-12" : "py-28",
           layout === "default" && "max-w-4xl text-center",
-          layout === "horizontal" && "max-w-7xl flex flex-row items-center"
+          layout === "horizontal" && "max-w-7xl flex flex-row"
         )}
       >
         <div>
