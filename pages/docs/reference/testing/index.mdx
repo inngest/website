@@ -71,7 +71,7 @@ This will run the entire function (steps and all) to completion, then return the
 response from the function, where we assert that it was the string `"Hello
 World!"`.
 
-An serialized `error` will be returned instead of `result` if the function threw:
+A serialized `error` will be returned instead of `result` if the function threw:
 
 ```ts
 test("throws an error", async () => {
@@ -114,7 +114,7 @@ function and step input and output. You can assert:
 - Step tool usage
 
 All of these values are returned from both `t.execute()` and `t.executeStep()`;
-we'll only show one for simplicit here.
+we'll only show one for simplicity here.
 
 The `result` is returned, which is the output of the run or step:
 
@@ -233,7 +233,7 @@ t.execute({
 });
 ```
 
-These handlers will lazily when they rae found during a function's execution.
+These handlers will run lazily when they are found during a function's execution.
 This means you can write complex mocks that respond to other information:
 
 ```ts
