@@ -1,22 +1,27 @@
-import { CodeGroup } from "src/shared/Docs/mdx";
+import { CodeGroup, Info } from "src/shared/Docs/mdx";
 
-# Multiple triggers
+# Multiple triggers & wildcards
 
-Each Inngest function can be triggered by one or more events or schedules, up to
-a maximum of 10.
+Inngest functions can be configured to trigger on multiple events or schedules.
 
-This is useful for running the same logic for a wide array of events, or
+Using multiple triggers is useful for running the same logic for a wide array of events, or
 ensuring something also runs on a schedule, for example running an integrity
 check every morning, or when requested using an event.
+
+Multiple triggers can be configured using an [list of triggers](#multiple-triggers), or [wildcard event triggers](#wildcard-event-triggers).
+
+## Multiple triggers
+
+Functions support up to 10 unique triggers. This allows you to explicitly match multiple events, or schedules. Multiple schedules that overlap will be de-duplicated - Learn more about [overlapping crons](#overlapping-crons).
 
 <CodeGroup>
 ```ts {{ title: "TypeScript" }}
 inngest.createFunction(
-  { id: "my-fn" },
+  { id: "resync-user-data" },
   [
-    { event: "a" },
-    { event: "b" },
-    { cron: "0 * * * *" },
+    { event: "user.created" },
+    { event: "user.updated" },
+    { cron: "0 5 * * *" }, // Every morning at 5am
   ],
   async ({ event, step }) => {
     // ...
@@ -25,11 +30,11 @@ inngest.createFunction(
 ```
 ```go {{ title: "Go" }}
 inngestgo.CreateFunction(
-	inngestgo.FunctionOpts{ID: "my-fn"},
+	inngestgo.FunctionOpts{ID: "resync-user-data"},
 	inngestgo.MultipleTriggers{
-		inngestgo.EventTrigger("a", nil),
-		inngestgo.EventTrigger("b", nil),
-		inngestgo.CronTrigger("0 * * * *", nil),
+		inngestgo.EventTrigger("user.created", nil),
+		inngestgo.EventTrigger("user.updated", nil),
+		inngestgo.CronTrigger("0 5 * * *", nil),
 	},
 	func(ctx context.Context, input inngestgo.Input) (any, error) {
 		// ...
@@ -38,17 +43,64 @@ inngestgo.CreateFunction(
 ```
 ```py {{ title: "Python" }}
 @inngest_client.create_function(
-    fn_id="my-fn",
+    fn_id="resync-user-data",
     trigger=[
-        inngest.TriggerEvent(event="a"),
-        inngest.TriggerEvent(event="b"),
-        inngest.TriggerCron(cron="0 * * * *")
+        inngest.TriggerEvent(event="user.created"),
+        inngest.TriggerEvent(event="user.updated"),
+        inngest.TriggerCron(cron="0 5 * * *")
     ],
 )
 def my_handler(ctx: inngest.Context) -> None:
      # ...
 ```
 </CodeGroup>
+
+## Wildcard event triggers
+
+Event triggers can be configured using wildcards to match multiple events. This is useful for matching entire groups of events for cases like forwarding events to another system, like an real-time ETL.
+
+Wildcards can be used after any `/` or `.` character to match entire groups of events. Here are some examples:
+
+* `app/*` matches any event with the `app` prefix, like `app/user.created` and `app/blog.post.published`.
+* `app/user.*` matches any event with the `app/user.` prefix, like `app/user.created` and `app/user.updated`.
+* `app/blog.post.*` matches any event with the `app/blog.post.` prefix, like `app/blog.post.published`.
+
+<Info>
+Wildcards cannot be used following any characters other than `/` and `.` or in the middle of a pattern, so mid-word wildcards like `app/user.update*` and `app/blog.*.published` are not supported.
+</Info>
+
+### Defining types for wildcard triggers
+
+To define types for wildcard triggers, you need to explicitly define
+
+```ts
+type WildcardEvents = {
+  "app/blog.post.*": {
+    name: "app/blog.post.created" | "app/blog.post.published";
+    data: {
+      postId: string;
+      authorId: string;
+      createdAt: string;
+    } | {
+      postId: string;
+      authorId: string;
+      publishedAt: string;
+    }
+  }
+}
+const inngest = new Inngest({
+  id: "my-app",
+  schemas: new EventSchemas().fromRecord<WildcardEvents>()
+});
+
+inngest.createFunction(
+  { id: "blog-updates-to-slack" },
+  { event: "app/blog.post.*" },
+  async ({ event, step }) => {
+    // ...
+  },
+);
+```
 
 ## Determining event types
 

@@ -413,7 +413,7 @@ const sectionHome: (NavGroup | NavLink)[] = [
             href: `/docs/features/events-triggers`,
           },
           { title: "Essentials" },
-          { title: "Sending Events", href: `/docs/events` },
+          { title: "Sending events", href: `/docs/events` },
           {
             title: "Event payload format",
             href: `/docs/features/events-triggers/event-format`,
@@ -423,7 +423,7 @@ const sectionHome: (NavGroup | NavLink)[] = [
             href: `/docs/guides/scheduled-functions`,
           },
           {
-            title: "Delayed Functions",
+            title: "Delayed functions",
             href: `/docs/guides/delayed-functions`,
           },
           {
@@ -444,7 +444,7 @@ const sectionHome: (NavGroup | NavLink)[] = [
             href: `/docs/guides/fan-out-jobs`,
           },
           {
-            title: "Multiple Triggers",
+            title: "Multiple triggers & wildcards",
             href: `/docs/guides/multiple-triggers`,
           },
           {
