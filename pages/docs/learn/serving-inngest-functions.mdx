@@ -1,4 +1,4 @@
-import { Callout, Tip, CodeGroup, VersionBadge, GuideSelector, GuideSection, Col, Row } from "shared/Docs/mdx";
+import { Callout, Tip, Info, CodeGroup, VersionBadge, GuideSelector, GuideSection, Col, Row } from "shared/Docs/mdx";
 
 export const description = `Serve the Inngest API as an HTTP endpoint in your application.`
 export const hidePageSidebar = true;
@@ -194,6 +194,8 @@ export default {
   To automatically pass environment variables defined with Wrangler to Inngest function handlers, use the [Cloudflare Workers bindings middleware](/docs/examples/middleware/cloudflare-workers-environment-variables).
 </Tip>
 
+#### Local development with Wrangler
+
 When developing locally with Wrangler and the `--remote` flag, your code is
 deployed and run remotely. To use this with a local Inngest Dev Server, you must
 use a tool such as [ngrok](https://ngrok.com/) or
@@ -204,12 +206,18 @@ the Dev Server from the internet.
 ngrok http 8288
 ```
 
-```toml
-# wrangler.toml
+```toml {{ title: "wrangler.toml" }}
 [vars]
+# The URL of your tunnel. This enables the "cloud" worker to access the local Dev Server
 INNGEST_DEV = "https://YOUR_TUNNEL_URL.ngrok.app"
-INNGEST_SERVE_HOST = "http://localhost:3000" # force the Dev Server to access the app at this local URL
+# This may be needed:
+# The URL of your local server. This enables the Dev Server to access the app at this local URL
+# You may have to change this URL to match your local server if running on a different port.
+# Without this, the "cloud" worker may attempt to redirect Inngest to the wrong URL.
+INNGEST_SERVE_HOST = "http://localhost:8787"
 ```
+
+See an example of this in the [Hono framework example on GitHub](https://github.com/inngest/inngest-js/tree/main/examples/framework-hono).
 
 ### Framework: DigitalOcean Functions
 
@@ -548,6 +556,10 @@ export default app;
 <Tip>
   To automatically pass environment variables defined with Wrangler to Inngest function handlers, use the [Hono bindings middleware](/docs/examples/middleware/cloudflare-workers-environment-variables).
 </Tip>
+
+<Info>
+  If you're using Hono with Cloudflare's Wrangler CLI in "_cloud_" mode, follow [the documentation above](#local-development-with-wrangler) for Cloudflare Workers.
+</Info>
 
 See the [Hono example](https://github.com/inngest/inngest-js/blob/main/examples/framework-hono) for more information.
 
