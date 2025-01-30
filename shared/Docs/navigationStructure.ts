@@ -468,6 +468,10 @@ const sectionHome: (NavGroup | NavLink)[] = [
             title: "Prisma Pulse",
             href: `/docs/features/events-triggers/prisma-pulse`,
           },
+          {
+            title: "Sequin",
+            href: `/docs/features/events-triggers/sequin`,
+          },
           { title: "Use cases" },
           {
             title: "Handle Clerk webhooks",
