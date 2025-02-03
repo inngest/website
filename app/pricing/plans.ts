@@ -400,9 +400,9 @@ export const FEATURES: Feature[] = [
     name: "Event size",
     description: "The maximum size for a single event",
     plans: {
-      [PLAN_NAMES.basicFree]: "256KB",
-      [PLAN_NAMES.basic]: "512KB",
-      [PLAN_NAMES.pro]: "3MB",
+      [PLAN_NAMES.basicFree]: "256KiB",
+      [PLAN_NAMES.basic]: "512KiB",
+      [PLAN_NAMES.pro]: "3MiB",
       [PLAN_NAMES.enterprise]: "Custom",
     },
     infoUrl: "/docs/usage-limits/inngest#payload-size?ref=pricing",
