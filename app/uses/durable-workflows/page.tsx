@@ -243,7 +243,7 @@ export function DurableWorkflowsPage({
 
       <section className="my-28 py-14">
         <Quote
-          text={`One of my goals was to simplify a complex workflow in a cloud world. If the abstractions exist, let's use them so engineers can focus on the business problem, not the not the infrastructure-as-code and primitives problem. The best infrastructure is the one you don't have to manage.`}
+          text={`One of my goals was to simplify a complex workflow in a cloud world. If the abstractions exist, let's use them so engineers can focus on the business problem, not the infrastructure-as-code and primitives problem. The best infrastructure is the one you don't have to manage.`}
           attribution={{
             name: "Matthew Drooker",
             title: "CTO, SoundCloud",
