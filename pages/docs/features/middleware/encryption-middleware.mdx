@@ -17,7 +17,7 @@ Encryption middleware provides end-to-end encryption for events, step output, an
 
   <GuideSection show="python">
 
-    The `EncryptionMiddleware` is shipped as part of the `inngest` package:
+    The `EncryptionMiddleware` is available as part of the `inngest` package:
 
     ```py
     import inngest
@@ -25,7 +25,10 @@ Encryption middleware provides end-to-end encryption for events, step output, an
 
     inngest_client = inngest.Inngest(
         app_id="my-app",
-        middleware=[EncryptionMiddleware.factory("my-secret-key")],
+        middleware=[EncryptionMiddleware.factory(
+          "my-secret-key",
+          encrypt_invoke_data=True,
+        )],
     )
     ```
 
