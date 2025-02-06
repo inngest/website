@@ -157,7 +157,7 @@ inngest_client = inngest.Inngest(
 )
 
 @inngest_client.create_function(
-    fn_id="send-signup-email", 
+    fn_id="send-signup-email",
     trigger=inngest.TriggerEvent(event="app/user.created")
 )
 async def send_signup_email(ctx: inngest.Context, step: inngest.Step):
@@ -167,9 +167,9 @@ async def send_signup_email(ctx: inngest.Context, step: inngest.Step):
             subject="Welcome to Inngest!",
             message="..."
         )
-    
+
     await step.run("send-the-user-a-signup-email", send_email)
-    
+
     await step.sleep_until("wait-for-the-future", "2023-02-01T16:30:00")
 
     async def future_work():
@@ -210,8 +210,8 @@ When you send an event to Inngest, it automatically finds any functions that are
 
 More information on background jobs:
 - [Email sequence examples](/docs/examples/email-sequence) implemented with Inngest.
-- [Soundcloud Case Study](/customers/soundcloud): building scalable video pipelines with Inngest to streamline dynamic video generation.
-- [GitBook Case Study](/customers/gitbook): how GitBook scaled background job processing with Inngest.
-- [Fey Case Study](/customers/fey): how Fey cut execution time and costs by 50x in data-intensive processes.
+- [Customer story: Soundcloud](/customers/soundcloud): building scalable video pipelines with Inngest to streamline dynamic video generation.
+- [Customer story: GitBook](/customers/gitbook): how GitBook scaled background job processing with Inngest.
+- [Customer story: Fey](/customers/fey): how Fey cut execution time and costs by 50x in data-intensive processes.
 - Blog post: [building Truckload](/blog/mux-migrating-video-collections), a tool for heavy video migration between hosting platforms, from Mux.
 - Blog post: building _banger.show_'s [video rendering pipeline](/blog/banger-video-rendering-pipeline).

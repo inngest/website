@@ -88,7 +88,7 @@ export default function Quote({
           {!!caseStudy && (
             <div className="flex w-full justify-end">
               <Button variant="primary" href={caseStudy}>
-                Read case study
+                Read customer story
               </Button>
             </div>
           )}

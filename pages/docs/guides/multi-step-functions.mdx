@@ -349,9 +349,9 @@ async def fn(
     ctx: inngest.Context,
     step: inngest.Step,
 ) -> None:
-    await step.run("send-welcome-email", lambda: sendEmail({ 
-        "email": ctx.event.user.email, 
-        "template": "welcome" 
+    await step.run("send-welcome-email", lambda: sendEmail({
+        "email": ctx.event.user.email,
+        "template": "welcome"
     }))
 ```
 
@@ -418,7 +418,7 @@ async def fn(
 
     # Wait for an "app/post.created" event
     post_created = await step.wait_for_event("wait-for-post-creation", {
-        "event": "app/post.created", 
+        "event": "app/post.created",
         "match": "data.user.id",  # the field "data.user.id" must match
         "timeout": "24h",  # wait at most 24 hours
     })
@@ -676,4 +676,4 @@ More information on multi-step functions:
 - Blog post: [building Truckload](/blog/mux-migrating-video-collections), a tool for heavy video migration between hosting platforms, from Mux.
 - Blog post: building _banger.show_'s [video rendering pipeline](/blog/banger-video-rendering-pipeline).
 - [Email sequence examples](/docs/examples/email-sequence) implemented with Inngest.
-- [Soundcloud Case Study](/customers/soundcloud): building scalable video pipelines with Inngest to streamline dynamic video generation.
+- [Customer story: Soundcloud](/customers/soundcloud): building scalable video pipelines with Inngest to streamline dynamic video generation.

@@ -19,14 +19,14 @@ export default function CaseStudy({
         <Image
           className="mx-auto w-full max-w-4xl rounded-md"
           src={image}
-          alt={`${title} case study`}
+          alt={`${title} customer story`}
           width={800}
           height={800}
         />
       </div>
       <div className="flex flex-col gap-8">
         <div>
-          <p className="text-muted text-sm">Case Study</p>
+          <p className="text-muted text-sm">Customer story</p>
           <H2>{title}</H2>
         </div>
         {!!description && Array.isArray(description) ? (
@@ -47,7 +47,7 @@ export default function CaseStudy({
         )}
         <div>
           <Button href={href} variant="primary">
-            Read the case study
+            Read the customer story
           </Button>
         </div>
       </div>
