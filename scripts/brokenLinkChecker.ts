@@ -36,6 +36,7 @@ const options = {
     "https://www.linkedin.com/",
     "https://openai.com/",
     "https://bsky.app/profile/inngest.com",
+    "https://v0.dev",
   ],
 };
 
