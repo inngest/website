@@ -45,7 +45,7 @@ export function Layout({
   companyURL,
   ogImage = "/assets/customers/case-study/og-image-default.png",
 }: Props) {
-  const metaTitle = `Case Study - ${companyName}`;
+  const metaTitle = `Customer story - ${companyName}`;
   const description = title;
   return (
     <div>
@@ -67,24 +67,24 @@ export function Layout({
           content={`https://www.inngest.com${ogImage}`}
         />
       </Head>
-      <AnnouncementBanner href="https://innge.st/ai-agent-webinar">
+      {/* <AnnouncementBanner href="https://innge.st/ai-agent-webinar">
         Join our Inngest + Render webinar on February 4th to learn how to build
         AI Agents
-      </AnnouncementBanner>
+      </AnnouncementBanner> */}
       <Header />
       <Container>
         <div className="mx-auto my-12 flex flex-col lg:flex-row items-start justify-between gap-8 max-w-[1200px]">
           <div>
             <article className="w-full lg:max-w-[80ch]">
               <div className="mb-4 text-sm font-medium text-subtle">
-                Case Study - {companyName}
+                Customer story - {companyName}
               </div>
               <h1 className="mr-8 text-4xl leading-[3rem] font-medium">
                 {title}
               </h1>
 
               {quote && (
-                <blockquote className="mx-auto my-8 max-w-3xl px-8 md:p-16 flex flex-col md:flex-row gap-8 bg-[url(/assets/textures/wave.svg)] bg-[length:auto_80%] bg-center bg-no-repeat">
+                <blockquote className="mx-auto my-8 max-w-3xl px-8 md:p-12 flex flex-col md:flex-row gap-8 bg-[url(/assets/textures/wave.svg)] bg-[length:auto_80%] bg-center bg-no-repeat">
                   <p className="text-lg leading-7 relative">
                     <span className="absolute top-1 -left-4 text-2xl leading-3 text-muted">
                       &ldquo;

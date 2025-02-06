@@ -23,7 +23,9 @@ export default function CaseStudyCard({
     <Link href={href} className="group text-basis flex">
       <Card variant="hover" className="p-8">
         <div className="grow flex flex-col justify-items-start">
-          <div className="mb-4 text-sm font-medium text-muted">Case Study</div>
+          <div className="mb-4 text-sm font-medium text-muted">
+            Customer story
+          </div>
           <h2 className="font-bold text-2xl">{title}</h2>
           <div className="my-10 grow min-h-20 lg:h-24 flex flex-row md:flex-col lg:flex-row items-center space-between gap-8">
             <p className="text-slate-300">{snippet}</p>
@@ -43,7 +45,7 @@ export default function CaseStudyCard({
               ))}
             </div>
             <div className="flex flex-row text-link">
-              Read the case study{" "}
+              Read the story{" "}
               <RiArrowRightSLine className="group-hover:translate-x-1 relative top-px transition-transform duration-150 " />
             </div>
           </div>

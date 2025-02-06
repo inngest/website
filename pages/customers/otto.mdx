@@ -1,0 +1,61 @@
+export const title = 'Leveraging multi-tenant concurrency to scale AI workflows'
+export const companyName = 'Otto'
+export const logo = '/assets/customers/otto-logo.svg'
+export const logoScale = 1;
+export const quote = {
+  text: `Inngest completely transformed how we handle AI orchestration at Otto. Its intuitive developer experience, built-in multi-tenant concurrency, and flow control allowed us to scale without the complexity of other tools or the need to build custom solutions. What would have taken us a month.`,
+  attribution: {
+    name: 'Sully Omar',
+    title: 'Co-founder, CEO',
+  },
+  avatar: '/assets/customers/otto-sully.jpg',
+}
+export const companyURL = 'https://ottogrid.ai'
+export const companyDescription = `AI-powered spreadsheets that handle the work, from start to finish.`
+export const ogImage = '/assets/customers/fey/og-image-fey.png'
+
+_Otto is an AI-powered platform that uses tables to streamline workflows. It can process data from various sources including documents, web research, URLs, and even unstructured information— transforming it all into actionable insights in minutes. Simply define your task once and Otto automates thousands of actions effortlessly. Serving a wide range of users, from private equity firms to marketing teams, Otto helps businesses efficiently analyze consumer demographics, market trends, and more._
+
+## The challenge
+
+Otto's AI platform needed a queuing system with advanced concurrency controls to evenly distribute workloads which was a fundamental necessity of their execution model. Built on a modern backend stack including Next.js deployed on Vercel, Google Cloud Platform (GCP), Express, ts-rest, and ElectricSQL for synchronization, Otto needed a seamless solution to integrate this functionality as a core part of their application.
+
+Otto builds AI agents for research tasks, where users use a table interface to add rows of companies, and each cell in the table represents an AI agent that runs asynchronously. When users add a new column to their table, tens or even thousands of cells are executed simultaneously, creating spiky, unpredictable loads. With a small engineering team, Otto couldn't afford to wait for network idle times or overpay for serverless compute. They needed a scalable queuing system to efficiently process 1000+ cells, handle unpredictable traffic spikes from a single user, and orchestrate AI agents similarly to background jobs.
+
+The core challenge stemmed from Otto's product architecture: in their model, agents run continuously in the background, independent of individual users. However, the nature of AI agents compresses traditional work into small time windows &mdash; from 30 days of engineering hours to just 30 minutes for an agent &mdash; requiring immense parallel processing. Any technical team facing this constraint needs a reliable orchestration solution to prevent bottlenecks and ensure smooth execution at scale.
+
+## Why Inngest as the solution
+
+Before adopting Inngest, Otto's team built a multi-step orchestration system using Google Pub/Sub. However, as their needs evolved, they had to pivot. While exploring alternatives, a fellow AI co-founder recommended Inngest. After reading [Aomni's customer story](/customers/aomni) on Inngest, they were convinced to give it a try.
+
+The team had previously looked at Temporal, assessing its developer experience, documentation, setup complexity, and time to value. Ultimately, they found the effort required wasn't worth it–the learning curve was steep, operational overhead was high, and it lacked the necessary flow control for managing concurrency and multi-tenancy. In contrast, Inngest not only addressed these challenges but also provided a significantly better developer experience. It was easier to set up, use, understand, making it the clear choice for Otto's engineering team.
+
+### Effortless concurrency: scalable, controlled processing
+
+With Inngest, Otto found the easiest way to set up virtual queues for processing tasks. By leveraging concurrency keys for multi-tenant flow control, their platform can now limit user actions with rate limits across different queues, ensuring prioritization and guardrail controls for seamless workload management.
+
+<fig>
+<video controls autoPlay loop muted src="https://cdn.inngest.com/customers/otto/otto-table-animation-dark.mp4" />
+<figcaption>Example: Instead of processing every simultaneously, Otto can run five concurrent rows at a time for better efficiency</figcaption>
+</fig>
+
+### Automated workflows: built in hours, not weeks
+
+Otto uses Inngest to enable two-way syncs with just eight lines of code. Instead of manually building complex automation triggers, they fire an event to trigger a function, completing the setup in four hours and saving a month's worth of engineering effort.
+
+```typescript
+// TODO CODE
+```
+
+### Precision, performance, and visibility: Optimizing AI workflows at scale
+
+Otto leverages Inngest to optimize AI-driven workflows with multi-tenant concurrency, intelligent orchestration, and robust observability. This gives them fine-tuned control, seamless automation, and deep insights.
+
+* **User-specific rate limits:** Inngest enables Otto to implement multi-tenant concurrency, allowing them to create separate queues for different users. This ensures fair resource allocation per pricing tier while maintaining reliability and performance.
+* **AI integration:** Inngest plays a critical role in orchestrating workflows efficiently across Otto's platform. Its AI system is custom-built for data retrieval, web scraping, and intelligent agent communication with LLMs.
+* **Tracing & observability:** Otto integrates LangSmith for tracing, and with Inngest's real-time dashboard, they can gain enhanced transparency and debugging capabilities across their AI workflows.
+
+## Conclusion
+For Otto, Inngest wasn't just an improvement &mdash; it was a fundamental shift in how they built and scaled their AI workflows. By replacing complex orchestration with simple, scalable automation, Otto's engineering team saved weeks of development time to ensure rate limiting across their platform with multi-tenant concurrency and seamless flow control.
+
+If you're looking for a better way to orchestrate workflows, manage concurrency, and scale AI-powered applications, [book a demo](/contact?ref=case-study-otto) today and see how Inngest can streamline your infrastructure.

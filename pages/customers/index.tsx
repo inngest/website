@@ -14,7 +14,7 @@ export async function getStaticProps() {
     props: {
       designVersion: "2",
       meta: {
-        title: "Customer Case Studies",
+        title: "Customer success stories",
         description:
           "From startups to public companies, these customers chose Inngest to build reliable products.",
       },
@@ -39,15 +39,15 @@ const caseStudies: {
     snippet: "Building scalable video pipelines with Inngest.",
     tags: ["Workflows"],
   },
-  {
-    href: "/customers/aomni",
-    logo: "/assets/customers/aomni-logo.svg",
-    name: "Aomni",
-    title: "Productionizing AI-driven sales flows using serverless LLMs",
-    snippet:
-      "Leveraging Inngest for production-grade complex state management and LLM chaining.",
-    tags: ["AI"],
-  },
+  // {
+  //   href: "/customers/otto",
+  //   logo: "/assets/customers/otto-logo.svg",
+  //   name: "Otto",
+  //   title: "Leveraging multi-tenant concurrency to scale AI workflows",
+  //   snippet:
+  //     "How Otto uses flow control and orchestration to build AI Agents that are as easy as a spreadsheet.",
+  //   tags: ["AI"],
+  // },
   {
     href: "/customers/gitbook",
     logo: "/assets/customers/gitbook-logo-white.svg",
@@ -82,6 +82,15 @@ const caseStudies: {
         run smoothly in production."
       </>
     ),
+    tags: ["AI"],
+  },
+  {
+    href: "/customers/aomni",
+    logo: "/assets/customers/aomni-logo.svg",
+    name: "Aomni",
+    title: "Productionizing AI-driven sales flows using serverless LLMs",
+    snippet:
+      "Leveraging Inngest for production-grade complex state management and LLM chaining.",
     tags: ["AI"],
   },
   {
@@ -145,14 +154,7 @@ const featuredCompanies = [
   },
 ];
 
-const grid = [
-  {
-    src: "/assets/customers/leap-logo-white.svg",
-    name: "Leap",
-    url: "https://tryleap.ai/",
-    scale: 1,
-    type: "company",
-  },
+const gridQuotes = [
   {
     type: "quote",
     name: "Resend",
@@ -164,6 +166,59 @@ const grid = [
       },
       avatar: "/assets/customers/resend-bu-kinoshita.jpg",
     },
+  },
+  {
+    type: "quote",
+    name: "SoundCloud",
+    quote: {
+      text: `I wanted to find a solution that would let us just write the code, not manage the infrastructure around queues, concurrency, retries, error handling, prioritization... I don't think that developers should be even configuring and managing queues themselves in 2024.`,
+      attribution: {
+        name: "Matthew Drooker",
+        title: "CTO",
+      },
+      avatar: "/assets/customers/soundcloud-matthew-drooker.jpg",
+    },
+  },
+  {
+    type: "quote",
+    name: "NiftyKit",
+    quote: {
+      text: `For anyone who is building multi-step AI agents (such as AutoGPT type systems), I highly recommend building it on top of Inngest's job queue orchestration framework, the traceability it provides out of the box is super useful, plus you get timeouts & retries for free.`,
+      attribution: {
+        name: "David Zhang",
+        title: "Founder - Aomni",
+      },
+      avatar: "/assets/customers/aomni-david.jpg",
+    },
+  },
+  {
+    type: "quote",
+    name: "NiftyKit",
+    quote: {
+      text: `I can't stress enough how integral Inngest has been to our operations. It's more than just "battle tested" for us—it's been a game-changer and a cornerstone of our processes.`,
+      attribution: {
+        name: "Robin Curbelo",
+        title: "Engineer",
+      },
+      avatar: "/assets/customers/niftykit-robin-curbelo.jpg",
+    },
+  },
+];
+
+const grid = [
+  {
+    src: "/assets/customers/gumroad-logo.svg",
+    name: "Gumroad",
+    url: "https://gumroad.com/",
+    scale: 1.4,
+    type: "company",
+  },
+  {
+    src: "/assets/customers/leap-logo-white.svg",
+    name: "Leap",
+    url: "https://tryleap.ai/",
+    scale: 1,
+    type: "company",
   },
   {
     src: "/assets/customers/howl-logo.svg",
@@ -193,18 +248,6 @@ const grid = [
     type: "company",
   },
   {
-    type: "quote",
-    name: "SoundCloud",
-    quote: {
-      text: `I wanted to find a solution that would let us just write the code, not manage the infrastructure around queues, concurrency, retries, error handling, prioritization... I don't think that developers should be even configuring and managing queues themselves in 2024.`,
-      attribution: {
-        name: "Matthew Drooker",
-        title: "CTO",
-      },
-      avatar: "/assets/customers/soundcloud-matthew-drooker.jpg",
-    },
-  },
-  {
     src: "/assets/customers/productlane.svg",
     name: "Productlane",
     url: "https://productlane.com/",
@@ -232,24 +275,11 @@ const grid = [
     type: "company",
   },
   {
-    type: "quote",
-    name: "NiftyKit",
-    quote: {
-      text: `For anyone who is building multi-step AI agents (such as AutoGPT type systems), I highly recommend building it on top of Inngest's job queue orchestration framework, the traceability it provides out of the box is super useful, plus you get timeouts & retries for free.`,
-      attribution: {
-        name: "David Zhang",
-        title: "Founder - Aomni",
-      },
-      avatar: "/assets/customers/aomni-david.jpg",
-    },
-  },
-  {
     src: "/assets/customers/finta-logo.png?v=1",
     name: "Finta.io",
     url: "https://www.finta.io/",
     type: "company",
   },
-
   {
     src: "/assets/customers/lynq-logo.svg",
     name: "Lynq.ai",
@@ -271,18 +301,6 @@ const grid = [
     type: "company",
   },
   {
-    type: "quote",
-    name: "NiftyKit",
-    quote: {
-      text: `I can't stress enough how integral Inngest has been to our operations. It's more than just "battle tested" for us—it's been a game-changer and a cornerstone of our processes.`,
-      attribution: {
-        name: "Robin Curbelo",
-        title: "Engineer",
-      },
-      avatar: "/assets/customers/niftykit-robin-curbelo.jpg",
-    },
-  },
-  {
     src: "/assets/customers/double-logo.svg",
     name: "Double",
     scale: 1,
@@ -294,13 +312,19 @@ const grid = [
     scale: 0.9,
     type: "company",
   },
-  // Hide b/c we don't want a single dangling item at the end - we want even rows
-  {
-    src: "/assets/customers/awaken-tax-logo.png",
-    name: "Awaken.tax",
-    type: "company",
-  },
+  // Hide when we don't want a dangling logo at the end
+  // {
+  //   src: "/assets/customers/awaken-tax-logo.png",
+  //   name: "Awaken.tax",
+  //   type: "company",
+  // },
 ];
+
+const gridItems = [...grid];
+let idx = [1, 6, 11, 16, 21];
+for (const quote of gridQuotes) {
+  gridItems.splice(idx.shift()!, 0, quote);
+}
 
 export default function Customers() {
   return (
@@ -347,7 +371,7 @@ export default function Customers() {
           </div>
 
           <div className="mt-12 mb-36 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-12">
-            {grid.map(({ type, name, ...item }, idx) => {
+            {gridItems.map(({ type, name, ...item }, idx) => {
               if (type === "quote") {
                 const { quote } = item;
                 if (!quote) {
