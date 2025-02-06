@@ -154,7 +154,23 @@ const featuredCompanies = [
   },
 ];
 
-const gridQuotes = [
+type GridItem = {
+  type: "quote" | "company";
+  name: string;
+  quote?: {
+    text: string;
+    attribution: {
+      name: string;
+      title: string;
+    };
+    avatar: string;
+  };
+  src?: string;
+  url?: string;
+  scale?: number;
+};
+
+const gridQuotes: GridItem[] = [
   {
     type: "quote",
     name: "Resend",
@@ -205,7 +221,7 @@ const gridQuotes = [
   },
 ];
 
-const grid = [
+const grid: GridItem[] = [
   {
     src: "/assets/customers/gumroad-logo.svg",
     name: "Gumroad",
@@ -232,6 +248,7 @@ const grid = [
     name: "Day.ai",
     url: "https://day.ai/",
     scale: 1.2,
+    type: "company",
   },
   {
     src: "/assets/customers/zamp-logo.svg",
