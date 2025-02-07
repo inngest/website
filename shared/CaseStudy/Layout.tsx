@@ -68,8 +68,8 @@ export function Layout({
         />
       </Head>
       <AnnouncementBanner href="https://innge.st/devweek-25">
-        Claim a free pass to DeveloperWeek and see Tony present on Orchestrating
-        Agentic AI Workflows
+        Claim a free pass to DeveloperWeek and catch Tony's talk on
+        Orchestrating Agentic AI Workflows
       </AnnouncementBanner>
       <Header />
       <Container>

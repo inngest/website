@@ -54,8 +54,8 @@ function DefaultLayout({ children }) {
     <>
       {!DISABLE_BANNER && <LaunchWeekBanner />}
       <AnnouncementBanner href="https://innge.st/devweek-25">
-        Join our Inngest + Render webinar on February 4th to learn how to build
-        AI Agents
+        Claim a free pass to DeveloperWeek and catch Tony's talk on
+        Orchestrating Agentic AI Workflows
       </AnnouncementBanner>
       {children}
     </>
