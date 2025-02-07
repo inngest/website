@@ -39,15 +39,15 @@ const caseStudies: {
     snippet: "Building scalable video pipelines with Inngest.",
     tags: ["Workflows"],
   },
-  // {
-  //   href: "/customers/otto",
-  //   logo: "/assets/customers/otto-logo.svg",
-  //   name: "Otto",
-  //   title: "Leveraging multi-tenant concurrency to scale AI workflows",
-  //   snippet:
-  //     "How Otto uses flow control and orchestration to build AI Agents that are as easy as a spreadsheet.",
-  //   tags: ["AI"],
-  // },
+  {
+    href: "/customers/otto",
+    logo: "/assets/customers/otto-logo.svg",
+    name: "Otto",
+    title: "Leveraging multi-tenant concurrency to scale AI workflows",
+    snippet:
+      "How Otto uses flow control and orchestration to build AI Agents that are as easy as a spreadsheet.",
+    tags: ["AI"],
+  },
   {
     href: "/customers/gitbook",
     logo: "/assets/customers/gitbook-logo-white.svg",
