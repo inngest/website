@@ -56,10 +56,10 @@ export default function RootLayout({
         </Suspense>
       </head>
       <body className="dark font-sans">
-        {/* <AnnouncementBanner href="https://innge.st/devweek-25">
+        <AnnouncementBanner href="https://innge.st/devweek-25">
           Claim a free pass to DeveloperWeek and see Tony present on
           Orchestrating Agentic AI Workflows
-        </AnnouncementBanner> */}
+        </AnnouncementBanner>
 
         <Nav />
 
