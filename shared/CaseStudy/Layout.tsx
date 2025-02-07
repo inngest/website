@@ -67,10 +67,10 @@ export function Layout({
           content={`https://www.inngest.com${ogImage}`}
         />
       </Head>
-      {/* <AnnouncementBanner href="https://innge.st/ai-agent-webinar">
-        Join our Inngest + Render webinar on February 4th to learn how to build
-        AI Agents
-      </AnnouncementBanner> */}
+      <AnnouncementBanner href="https://innge.st/devweek-25">
+        Claim a free pass to DeveloperWeek and catch Tony's talk on
+        Orchestrating Agentic AI Workflows
+      </AnnouncementBanner>
       <Header />
       <Container>
         <div className="mx-auto my-12 flex flex-col lg:flex-row items-start justify-between gap-8 max-w-[1200px]">

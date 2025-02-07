@@ -56,9 +56,9 @@ export default function RootLayout({
         </Suspense>
       </head>
       <body className="dark font-sans">
-        <AnnouncementBanner href="https://innge.st/ai-agent-webinar">
-          Join our Inngest + Render webinar on February 4th to learn how to
-          build AI Agents
+        <AnnouncementBanner href="https://innge.st/devweek-25">
+          Claim a free pass to DeveloperWeek and see Tony present on
+          Orchestrating Agentic AI Workflows
         </AnnouncementBanner>
 
         <Nav />
