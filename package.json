@@ -35,10 +35,10 @@
     "@mdx-js/loader": "2.2.1",
     "@mdx-js/react": "2.2.1",
     "@monaco-editor/react": "4.4.6",
-    "@next/mdx": "13.5.6",
+    "@next/mdx": "15.1.6",
     "@next/third-parties": "14.2.4",
-    "@radix-ui/react-accordion": "1.1.2",
-    "@radix-ui/react-slider": "1.1.2",
+    "@radix-ui/react-accordion": "1.2.3",
+    "@radix-ui/react-slider": "1.2.3",
     "@remixicon/react": "4.2.0",
     "@rive-app/react-canvas": "4.4.0",
     "@sindresorhus/slugify": "2.1.1",
@@ -76,7 +76,7 @@
     "next-usequerystate": "1.7.2",
     "quickjs-emscripten": "0.13.0",
     "react": "19.0.0",
-    "react-dom": "18.2.0",
+    "react-dom": "19.0.0",
     "react-error-boundary": "3.1.4",
     "react-fast-compare": "3.2.0",
     "react-fast-marquee": "1.6.2",
@@ -132,7 +132,7 @@
     "vercel": "32.4.1"
   },
   "engines": {
-    "node": "18.x",
+    "node": "12.x",
     "pnpm": "9.x"
   },
   "packageManager": "pnpm@9.14.4",
