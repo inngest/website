@@ -131,7 +131,7 @@ The `connect` API establishes a persistent WebSocket connection to Inngest. Each
   <Step title="Set the instance id (recommended)">
     The `instanceId` is used to identify the worker instance of your app that is connected to Inngest. This allows Inngest to support multiple instances (workers) of your app connected to Inngest.
 
-    By default, Inngest will attempt to use the IP address of the worker as the instance id. If you're running your app in a containerized environment, you can set the `instanceId` to the container id.
+    By default, Inngest will attempt to use the hostname of the worker as the instance id. If you're running your app in a containerized environment, you can set the `instanceId` to the container id.
 
     <CodeGroup>
     ```ts {{ title: "Render" }}
