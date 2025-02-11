@@ -9,13 +9,7 @@ import PricingCalculator from "./PricingCalculator";
 
 import { PLANS, FEATURES, sections } from "./plans";
 
-// Disable SSR in ComparisonTable, to prevent hydration errors. It requires windows info on accordions
-const ComparisonTable = dynamic(
-  () => import("src/app/pricing/ComparisonTable"),
-  {
-    ssr: false,
-  }
-);
+import ComparisonTable from "./ComparisonTableWrapper";
 
 export const metadata: Metadata = generateMetadata({
   title: "Pricing",

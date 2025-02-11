@@ -128,7 +128,7 @@ export const getHeadings = (content: string): Headings => {
   let h2 = null; // store the current heading we're in
   let order = 0;
 
-  (content.match(/^###? (.*)/gm) || []).forEach((heading) => {
+  (content.match(/^###? (.*)/gm) || ([] as string[])).forEach((heading) => {
     const title = heading.replace(/^###? /, "");
     if (heading.indexOf("## ") === 0) {
       h2 = title;

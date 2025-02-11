@@ -142,7 +142,6 @@ const nextConfig = {
   pageExtensions: ["js", "jsx", "ts", "tsx", "mdx"],
   experimental: {
     scrollRestoration: true,
-    appDir: true,
   },
   webpack: (config, { dev, isServer }) => {
     // Exclude old-style _prefix directories from being rendered (ex. mdx pages)
