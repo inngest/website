@@ -1,4 +1,5 @@
 import { type Metadata } from "next";
+import Link from "next/link";
 import { MDXComponents, MDXContent } from "mdx/types";
 
 import { SectionProvider } from "shared/Docs/SectionProvider";
@@ -68,7 +69,12 @@ export default async function Page() {
                 className="md:col-span-3"
               >
                 <h2 className="text-2xl font-semibold mb-4">
-                  {item.metadata.title}
+                  <Link
+                    href={`/changelog/${item.slug}`}
+                    className="hover:underline"
+                  >
+                    {item.metadata.title}
+                  </Link>
                 </h2>
                 <div className="prose">
                   <item.Content components={components} />
