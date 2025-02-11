@@ -1,4 +1,4 @@
-import nextMDX from "@next/mdx";
+import createMDX from "@next/mdx";
 import { remarkPlugins } from "./mdx/remark.mjs";
 import { rehypePlugins } from "./mdx/rehype.mjs";
 import { recmaPlugins } from "./mdx/recma.mjs";
@@ -127,7 +127,7 @@ async function redirects() {
   ];
 }
 
-const withMDX = nextMDX({
+const withMDX = createMDX({
   options: {
     remarkPlugins,
     rehypePlugins,

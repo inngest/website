@@ -26,7 +26,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export async function generateStaticParams() {
-  const posts = await loadMarkdownFilesMetadata<MDXBlogPost>("blog/_posts");
+  const posts = await loadMarkdownFilesMetadata<MDXBlogPost>(
+    "pages/blog/_posts"
+  );
   return posts.map((post) => ({
     slug: post.slug,
   }));
