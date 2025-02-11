@@ -1,6 +1,6 @@
 import deterministicSplit from "deterministic-split";
 import { useEffect, useMemo, useRef } from "react";
-import { useCookie, useLocalStorage } from "react-use";
+import { useCookie } from "react-use";
 import { v4 as uuid } from "uuid";
 
 /**

@@ -37,6 +37,8 @@ const options = {
     "https://openai.com/",
     "https://bsky.app/profile/inngest.com",
     "https://v0.dev",
+    "https://innge.st",
+    "https://roadmap.inngest.com",
   ],
 };
 
