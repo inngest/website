@@ -795,8 +795,8 @@ const sectionHome: (NavGroup | NavLink)[] = [
           },
           { title: "Integrations" },
           {
-            title: "Prometheus exports",
-            href: "/docs/platform/monitor/prometheus-exports",
+            title: "Prometheus metrics",
+            href: "/docs/platform/monitor/prometheus-metrics-export-integration",
           },
         ],
       },
