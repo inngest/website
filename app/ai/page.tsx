@@ -366,16 +366,12 @@ export default inngest.createFunction(
           <section>
             <div className="mt-12 px-6 flex items-center justify-center tracking-tight text-basis text-center">
               <div className="max-w-xl mx-auto mt-4 flex flex-col gap-6">
-                <H2>AI early access program</H2>
+                <H2>This is AI product development, redefined</H2>
                 <p className="text-lg md:text-xl text-balance">
-                  Be the first to get access to and stay in the loop about our
-                  latest AI features, including <code>step.ai</code>,{" "}
-                  <strong>AgentKit</strong> and more.
+                  Want to know more about how Inngest can level up your
+                  production? Let's talk.
                 </p>
-                <CTA
-                  href={`ai/early-access?ref=${ref}`}
-                  text="Sign up for early access"
-                />
+                <CTA href={`/contact?ref=${ref}`} text="Book a demo" />
               </div>
             </div>
             <img
@@ -392,8 +388,8 @@ export default inngest.createFunction(
 function Hero({
   ctas = [
     {
-      href: `/ai/early-access?ref=${ref}`,
-      text: "Sign up for early access",
+      href: `/contact?ref=${ref}`,
+      text: "Book a demo",
       variant: "primary",
     },
     {

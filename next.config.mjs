@@ -143,11 +143,9 @@ const nextConfig = {
   experimental: {
     scrollRestoration: true,
   },
-  outputFileTracingIncludes: {
-    "/api/og": ["./public/assets/fonts/**"],
-  },
   outputFileTracingExcludes: {
-    "*": ["./.git/*", "./.next/*", "./public/**/*"],
+    "*": ["./.git/*", "./public/**/*"],
+    "!(/api)": ["./.next/*"],
   },
   webpack: (config, { dev, isServer }) => {
     // Exclude old-style _prefix directories from being rendered (ex. mdx pages)
