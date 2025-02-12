@@ -26,16 +26,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export async function generateStaticParams() {
-  const posts = await loadMarkdownFilesMetadata<MDXBlogPost>(
-    "pages/blog/_posts"
-  );
+  const posts = await loadMarkdownFilesMetadata<MDXBlogPost>("content/blog");
   return posts.map((post) => ({
     slug: post.slug,
   }));
 }
 
 async function loadBlogPost(slug: string) {
-  let filePath = `./pages/blog/_posts/${slug}.md`;
+  let filePath = `./content/blog${slug}.md`;
   if (!fs.existsSync(filePath) && fs.existsSync(filePath + "x")) {
     filePath += "x";
   }
