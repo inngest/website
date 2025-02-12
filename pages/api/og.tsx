@@ -6,13 +6,6 @@ export const config = {
   runtime: "edge",
 };
 
-const font = fetch(
-  new URL(
-    "../../public/assets/fonts/Metropolis/Metropolis-SemiBold.otf",
-    import.meta.url
-  )
-).then((res) => res.arrayBuffer());
-
 async function loadGoogleFont(font: string, text: string) {
   const url = `https://fonts.googleapis.com/css2?family=${font}&text=${encodeURIComponent(
     text
@@ -53,7 +46,6 @@ export default async function handler(req: NextApiRequest) {
     const isLongTitle = (title || "").length > 40;
     const backgroundImageURL = `${process.env.NEXT_PUBLIC_HOST}/assets/open-graph/background-compressed.png`;
 
-    // const fontData = await font;
     // const fontData = await loadGoogleFont("Inter", "Inngest");
     const fontData = await loadInngestCDNFont(
       "Metropolis/Metropolis-SemiBold.otf"
