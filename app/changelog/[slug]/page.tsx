@@ -4,27 +4,11 @@ import Link from "next/link";
 import { generateMetadata as generateOgMetadata } from "src/utils/social";
 import { SectionProvider } from "shared/Docs/SectionProvider";
 import { formatDate } from "src/utils/date";
+import { loadPost } from "../helpers";
 
 type Props = {
   params: Promise<{ slug: string }>;
 };
-
-export async function loadPost(slug: string) {
-  const { default: Post, getStaticProps } = await import(
-    `content/changelog/${slug}.mdx`
-  );
-  const metadata = getStaticProps().props;
-  if (!metadata.date) {
-    const filenameDate = slug.match(/\d\d\d\d-\d\d-\d\d/)?.[0];
-    if (filenameDate) {
-      metadata.date = filenameDate;
-    }
-  }
-  return {
-    Post,
-    metadata,
-  };
-}
 
 export async function generateMetadata(
   { params }: Props,

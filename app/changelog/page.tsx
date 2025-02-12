@@ -7,6 +7,7 @@ import { generateMetadata } from "src/utils/social";
 import { loadMarkdownFilesMetadata } from "src/utils/markdown";
 import { Code } from "src/shared/Code/CodeHike";
 import { formatDate } from "src/utils/date";
+import { loadPost } from "./helpers";
 
 export const metadata: Metadata = generateMetadata({
   title: "Changelog",
@@ -27,21 +28,9 @@ export default async function Page() {
   );
 
   for (const item of data) {
-    const {
-      default: Content,
-      getStaticProps,
-    }: { default: MDXContent; getStaticProps } = await import(
-      `content/changelog/${item.slug}.mdx`
-    );
-
-    item.metadata = getStaticProps().props;
-    if (!item.metadata.date) {
-      const filenameDate = item.slug.match(/\d\d\d\d-\d\d-\d\d/)?.[0];
-      if (filenameDate) {
-        item.metadata.date = filenameDate;
-      }
-    }
-    item.Content = Content;
+    const { Post, metadata } = await loadPost(item.slug);
+    item.metadata = metadata;
+    item.Content = Post;
   }
 
   const sortedEntries = data.sort((a, b) => {

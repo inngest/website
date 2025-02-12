@@ -3,7 +3,7 @@ import RSS from "rss";
 
 import { loadMarkdownFilesMetadata } from "../../utils/markdown";
 import { type MDXBlogPost } from "src/components/Blog";
-import { loadPost } from "app/changelog/[slug]/page";
+import { loadPost } from "app/changelog/helpers";
 
 export default async (req: NextApiRequest, res: NextApiResponse<string>) => {
   const blogPosts = await loadMarkdownFilesMetadata<MDXBlogPost>(
