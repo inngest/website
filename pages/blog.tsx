@@ -110,9 +110,7 @@ export default function BlogIndex(props) {
 
 // This function also gets called at build time to generate specific content.
 export async function getStaticProps() {
-  const posts = await loadMarkdownFilesMetadata<MDXBlogPost>(
-    "pages/blog/_posts"
-  );
+  const posts = await loadMarkdownFilesMetadata<MDXBlogPost>("content/blog");
   // If a post is set to featured=false, do not show on main blog feed
   // This can be used for less important posts that may be directly linked to from other places
   const filteredPosts = posts.filter((p) => p?.featured !== false);
