@@ -66,7 +66,7 @@ const footerLinks = [
       },
       {
         label: "Changelog",
-        url: "https://roadmap.inngest.com/changelog?ref=footer",
+        url: "/changelog?ref=footer",
       },
       {
         label: "About",

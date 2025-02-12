@@ -35,11 +35,17 @@ export default async function Page() {
     );
 
     item.metadata = getStaticProps().props;
+    if (!item.metadata.date) {
+      const filenameDate = item.slug.match(/\d\d\d\d-\d\d-\d\d/)?.[0];
+      if (filenameDate) {
+        item.metadata.date = filenameDate;
+      }
+    }
     item.Content = Content;
   }
 
   const sortedEntries = data.sort((a, b) => {
-    return new Date(b.date) > new Date(a.date) ? -1 : 1;
+    return new Date(b.metadata.date) < new Date(a.metadata.date) ? -1 : 1;
   });
 
   return (
