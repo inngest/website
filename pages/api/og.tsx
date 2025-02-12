@@ -13,9 +13,36 @@ const font = fetch(
   )
 ).then((res) => res.arrayBuffer());
 
+async function loadGoogleFont(font: string, text: string) {
+  const url = `https://fonts.googleapis.com/css2?family=${font}&text=${encodeURIComponent(
+    text
+  )}`;
+  const css = await (await fetch(url)).text();
+  const resource = css.match(
+    /src: url\((.+)\) format\('(opentype|truetype)'\)/
+  );
+
+  if (resource) {
+    const response = await fetch(resource[1]);
+    if (response.status == 200) {
+      return await response.arrayBuffer();
+    }
+  }
+
+  throw new Error("failed to load font data");
+}
+
+async function loadInngestCDNFont(fontPath: string) {
+  const url = `https://fonts-cdn.inngest.com/${fontPath}`;
+  const response = await fetch(url);
+  if (response.status == 200) {
+    return await response.arrayBuffer();
+  }
+  throw new Error("failed to load font data");
+}
+
 export default async function handler(req: NextApiRequest) {
   try {
-    const fontData = await font;
     const { searchParams } = new URL(req.url || "");
 
     // ?title=<title>
@@ -25,6 +52,12 @@ export default async function handler(req: NextApiRequest) {
       : "Inngest";
     const isLongTitle = (title || "").length > 40;
     const backgroundImageURL = `${process.env.NEXT_PUBLIC_HOST}/assets/open-graph/background-compressed.png`;
+
+    // const fontData = await font;
+    // const fontData = await loadGoogleFont("Inter", "Inngest");
+    const fontData = await loadInngestCDNFont(
+      "Metropolis/Metropolis-SemiBold.otf"
+    );
 
     return new ImageResponse(
       (
@@ -40,7 +73,7 @@ export default async function handler(req: NextApiRequest) {
             justifyContent: "flex-start",
             flexDirection: "column",
             flexWrap: "nowrap",
-            fontFamily: "Inter, sans-serif",
+            fontFamily: "Metropolis, sans-serif",
           }}
         >
           <Logo
@@ -72,7 +105,7 @@ export default async function handler(req: NextApiRequest) {
         height: 630,
         fonts: [
           {
-            name: "Inter",
+            name: "Metropolis",
             data: fontData,
             style: "normal",
             weight: 500,
@@ -81,7 +114,7 @@ export default async function handler(req: NextApiRequest) {
       }
     );
   } catch (e: any) {
-    console.log(`${e.message}`);
+    console.log(`Error generating OG image:`, e);
     return new Response(`Failed to generate the image`, {
       status: 500,
     });
