@@ -144,7 +144,7 @@ const nextConfig = {
     scrollRestoration: true,
   },
   outputFileTracingIncludes: {
-    "/api/og": ["./public/assets/fonts"],
+    "/api/og": ["./public/assets/fonts/**"],
   },
   outputFileTracingExcludes: {
     "*": ["./.git/*", "./.next/*", "./public/**/*"],
