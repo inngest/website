@@ -782,16 +782,21 @@ const sectionHome: (NavGroup | NavLink)[] = [
         title: "Monitor",
         links: [
           {
-            title: "Observability & Metrics",
+            title: "Observability & metrics",
             href: "/docs/platform/monitor/observability-metrics",
           },
           {
-            title: "Inspecting Function Runs",
+            title: "Inspecting function runs",
             href: "/docs/platform/monitor/inspecting-function-runs",
           },
           {
-            title: "Searching for Events",
+            title: "Searching for events",
             href: "/docs/platform/monitor/searching-events",
+          },
+          { title: "Integrations" },
+          {
+            title: "Prometheus exports",
+            href: "/docs/platform/monitor/prometheus-exports",
           },
         ],
       },
