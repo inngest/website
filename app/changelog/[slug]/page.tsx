@@ -1,18 +1,46 @@
+import type { Metadata, ResolvingMetadata } from "next";
 import Link from "next/link";
+
+import { generateMetadata as generateOgMetadata } from "src/utils/social";
 import { SectionProvider } from "shared/Docs/SectionProvider";
 import { formatDate } from "src/utils/date";
 
-export default async function Page({
-  params,
-}: {
+type Props = {
   params: Promise<{ slug: string }>;
-}) {
-  const slug = (await params).slug;
+};
+
+async function loadPost(slug: string) {
   const { default: Post, getStaticProps } = await import(
     `content/changelog/${slug}.mdx`
   );
   const metadata = getStaticProps().props;
+  if (!metadata.date) {
+    const filenameDate = slug.match(/\d\d\d\d-\d\d-\d\d/)?.[0];
+    if (filenameDate) {
+      metadata.date = filenameDate;
+    }
+  }
+  return {
+    Post,
+    metadata,
+  };
+}
 
+export async function generateMetadata(
+  { params }: Props,
+  parent: ResolvingMetadata
+): Promise<Metadata> {
+  const slug = (await params).slug;
+  const { metadata } = await loadPost(slug);
+  return generateOgMetadata({
+    title: metadata.title,
+    description: metadata.description,
+  });
+}
+
+export default async function Page({ params }: Props) {
+  const slug = (await params).slug;
+  const { Post, metadata } = await loadPost(slug);
   return (
     <div className="max-w-6xl mx-auto mt-16 mb-32 px-6 lg:px-12">
       <SectionProvider sections={[]}>
