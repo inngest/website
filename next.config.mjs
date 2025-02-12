@@ -149,6 +149,12 @@ const nextConfig = {
       test: /_\w+\/.+\.mdx?$/,
       use: "ignore-loader",
     });
+    // Disable cache for production builds to reduce bundle size on Vercel
+    if (config.cache && !dev) {
+      config.cache = Object.freeze({
+        type: "memory",
+      });
+    }
 
     return config;
   },
