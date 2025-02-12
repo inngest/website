@@ -14,7 +14,6 @@ import { loadMarkdownFilesMetadata } from "../utils/markdown";
 import BlogHeader from "src/components/Blog/BlogHeader";
 import BlogPostList from "src/components/Blog/BlogPostList";
 import { type MDXBlogPost } from "src/components/Blog";
-// import { LaunchWeekBanner } from "./index";
 
 export default function BlogIndex(props) {
   const router = useRouter();
@@ -48,8 +47,6 @@ export default function BlogIndex(props) {
 
       <div className="font-sans">
         <Header />
-
-        {/* <LaunchWeekBanner urlRef="blog-feed-banner" /> */}
 
         <Container className="pt-8">
           <BlogHeader description={description} />

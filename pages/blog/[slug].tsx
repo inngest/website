@@ -24,7 +24,6 @@ import YouTube from "react-youtube-embed";
 import remarkGfm from "remark-gfm";
 import { SectionProvider } from "src/shared/Docs/SectionProvider";
 import FloatingCTA from "src/components/Blog/FloatingCTA";
-// import { LaunchWeekBanner } from "../index";
 
 // @ts-ignore
 import { remarkCodeHike, recmaCodeHike } from "codehike/mdx";
@@ -191,7 +190,6 @@ export default function BlogLayout(props) {
 
       <div className="font-sans">
         <Header />
-        {/* <LaunchWeekBanner urlRef="blog-post-banner" /> */}
         <Container>
           <article>
             <main className="m-auto max-w-3xl pt-16 relative">
