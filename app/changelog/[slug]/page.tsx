@@ -9,7 +9,7 @@ type Props = {
   params: Promise<{ slug: string }>;
 };
 
-async function loadPost(slug: string) {
+export async function loadPost(slug: string) {
   const { default: Post, getStaticProps } = await import(
     `content/changelog/${slug}.mdx`
   );
