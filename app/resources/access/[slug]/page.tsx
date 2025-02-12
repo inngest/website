@@ -33,7 +33,7 @@ export async function generateStaticParams() {
 }
 
 async function loadBlogPost(slug: string) {
-  let filePath = `./content/blog${slug}.md`;
+  let filePath = `./content/blog/${slug}.md`;
   if (!fs.existsSync(filePath) && fs.existsSync(filePath + "x")) {
     filePath += "x";
   }
