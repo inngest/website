@@ -330,7 +330,7 @@ function CTAs({
 // called for each URL with the slug in params.
 export async function getStaticPaths() {
   const fs = require("fs");
-  const paths = fs.readdirSync("./pages/blog/_posts/").map((fname) => {
+  const paths = fs.readdirSync("./content/blog/").map((fname) => {
     return `/blog/${fname.replace(/.mdx?/, "")}`;
   });
   return { paths, fallback: false };
@@ -344,7 +344,7 @@ export async function getStaticProps({ params }) {
   const readingTime = require("reading-time");
   const matter = require("gray-matter");
 
-  let filePath = `./pages/blog/_posts/${params.slug}.md`;
+  let filePath = `./content/blog/${params.slug}.md`;
   if (!fs.existsSync(filePath) && fs.existsSync(filePath + "x")) {
     filePath += "x";
   }

@@ -14,7 +14,7 @@ import { SectionProvider } from "src/shared/Docs/SectionProvider";
 import type { Role } from "./index";
 import { AboutInngest, Benefits } from "./index";
 
-const dir = "careers/_roles";
+const dir = "pages/careers/_roles";
 
 export async function getStaticProps({ params }) {
   const role = await loadMarkdownFile<Role>(dir, params.role);

@@ -1,0 +1,316 @@
+---
+heading: Migrating videos across platforms reliably - A look into Mux's Truckload project
+showSubtitle: false
+subtitle: Dave Kiss shares his takeaways from building Truckload, a project which simplifies heavy video migration between hosting platforms.
+image: /assets/blog/mux/mux-featured-image.png
+date: 2024-05-17
+author: Dave Kiss
+disableCTA: true
+---
+
+*In this blog post [Dave Kiss](https://twitter.com/davekiss) shares his takeaways from building [Truckload](https://github.com/muxinc/truckload), a project which simplifies heavy video migration between hosting platforms. Dave is a Senior Developer Community Lead at Mux, a video and live streaming platform.*
+
+<div class="flex justify-center items-center">
+  <img src="/assets/blog/mux/mux-3.png" alt="A Truckload screenshot"/>
+</div>
+
+Video file sizes can be <span className="text-xl">big</span>, and big things often move… slowly. It's not uncommon for a single video upload, download, or transfer to take several minutes (or hours) to complete. Replace that single video with hundreds or thousands of videos to transfer, and you've suddenly got yourself a hefty task on hand.
+
+Therein lies the problem, though: **web apps don't like to be placed on hold and wait for processes to complete.** Long-running synchronous tasks can be expensive, resource-intensive, and prone to errors, disconnects, and timeouts. If you do run into trouble, oftentimes the best bet is to start all over and try again, creating an inefficient workflow and a frustrating user experience.
+
+So, how exactly do you instruct your app to wait for a long-running process to finish? In this post, you'll learn how the team at [Mux](https://mux.com/) built an app to split up and handle heavy video migration tasks with ease using Inngest to fetch, process, and transfer massive video collections.
+
+## The jobs to be done in a video migration
+
+At Mux, we frequently help new customers migrate their entire video collection over to our services. In the past, we've used internal tooling to do the job, but there's no reason why we couldn't publish a similar tool for self-serve customers who have a do-it-yourself mindset. That's where the idea for [Truckload](https://github.com/muxinc/truckload), our open source video migration framework, was born.
+
+Let's imagine you have a collection of 100 videos stored on *VideoPlayz*, but you've had enough with their constant buffering and decided to move your content over to Mux. What exactly does that technical process entail? 
+
+<div class="flex justify-center items-center">
+  <img src="/assets/blog/mux/mux-map.png" alt="Truckload process map with the following steps: 1. Choose your source, 2. Connect your source, 3. Select your videos, 4. Choose your destination, 5. Connect your destination, 6. Configure import settings, 7. Start migration"/>
+</div>
+
+Let's think it through, step by step:
+
+1. We begin by fetching all your videos with incremental paginated `GET` requests and storing each of the responses.
+2. After we have a list of all your videos, we then loop through each video and initiate a task to process said video.
+
+Easy enough. What's involved in a task for any individual video?
+
+1. Fetch the individual video record which contains more detailed information about the video file.
+2. Check to see if the video has an MP4 rendition available via a public URL.
+    - If it doesn't, we'll send a request to the provider to create one:
+        - Periodically poll the API to determine if the MP4 rendition is ready.
+        - When it's ready, grab the public URL for use in step two.
+    - If it does, we'll store the URL for use in step 3.
+3. Send a request to Mux to create a new asset using the MP4 URL.
+
+Okay, this is getting a little weedy, especially as the collection grows in size. Luckily, Inngest makes handling each of these steps trivial.
+
+We start by kicking off the migration process and grabbing all videos, then firing a `truckload/video.process` event for each video:
+
+```js
+export const initiateMigration = inngest.createFunction(
+  { id: 'initiate-migration' },
+  { event: 'truckload/migration.init' },
+  async ({ event, step }) => {
+    let jobId = event.id;
+    let hasMorePages = true;
+    let page = 1;
+    let nextPageNumber: number | undefined = undefined;
+    let nextPageToken: string | null | undefined = undefined;
+    let videoList: Video[] = [];
+
+    // use the source platform id to conditionally set the fetch page function
+    const sourcePlatformId = event.data.encrypted.sourcePlatform.id;
+    const fetchPageFn = providerFns[sourcePlatformId].fetchPage;
+
+    while (hasMorePages && event.data.encrypted.sourcePlatform.credentials) {
+      const { cursor, isTruncated, videos } = await step.invoke(`fetch-page-${page}`, {
+        function: fetchPageFn,
+        data: {
+          jobId: jobId!,
+          encrypted: event.data.encrypted.sourcePlatform.credentials,
+          nextPageToken,
+          nextPageNumber
+        },
+      });
+
+      videoList = videoList.concat(videos);
+      nextPageToken = cursor;
+
+      if (!isTruncated) {
+        hasMorePages = false;
+      } else {
+        page++;
+      }
+    }
+
+    const videoEvents = videoList.map((video): Events['truckload/video.process'] => ({
+      name: 'truckload/video.process',
+      data: {
+        jobId: jobId!,
+        encrypted: {
+          sourcePlatform: event.data.encrypted.sourcePlatform,
+          destinationPlatform: event.data.encrypted.destinationPlatform,
+          video,
+        },
+      },
+    }));
+
+    await step.sendEvent('process-videos', videoEvents);
+
+    return { message: 'migration initiated', videosMigrated: videoList.length };
+  }
+);
+```
+
+Nothing too unusual here; ultimately, we're building out a list of every video that we'd like to migrate off of the source platform. But wait… what's the source platform?
+
+You might notice that the `fetchPageFn` is a variable that is set by selecting an entry from a `providerFns` dictionary:
+
+```js
+const sourcePlatformId = event.data.encrypted.sourcePlatform.id;
+const fetchPageFn = providerFns[sourcePlatformId].fetchPage;
+```
+
+In this application, we allow the user to choose from multiple sources where their video collection may be stored. That could be any number of video storage solutions (think Dropbox, Google Drive, Amazon S3, and so on).
+
+We want to support video transfers from many different services, so defining the function as a variable allows us to abstract away the pagination logic based on each providers' specific implementation details.
+
+**💡 Takeaway #1: your Inngest function and event mapping doesn't need to be 1 to 1.**
+
+Once we have the list of videos, we map over them, building up an array of `truckload/video.process` events, and fire them off in a batch using [`step.sendEvent()`](/docs/reference/functions/step-send-event).
+
+```js
+await step.sendEvent('process-videos', videoEvents);
+```
+
+At this point, we can discontinue the execution of the migration initiation process by returning from the Inngest function; the remaining work will pick up in future executions.
+
+## Processing each unique video transfer
+
+Every video record will go through its own unique processing function. In this code, we'll fetch the video's expanded details record from the source provider using a variable `fetchVideoFn` and then fire off the transfer with a variable `transferVideoFn`.
+
+Implementation details are important here, as each provider requires different API calls, credentials, and headers to successfully respond with the correct data.
+
+```js
+export const processVideo = inngest.createFunction(
+  { id: 'process-video', name: 'Process video' },
+  { event: 'truckload/video.process' },
+  async ({ event, step }) => {
+    const videoData = event.data.encrypted.video;
+    // use the source platform id to conditionally set the fetch page function
+    const sourcePlatformId = event.data.encrypted.sourcePlatform.id;
+    const fetchVideoFn = providerFns[sourcePlatformId].fetchVideo;
+
+    // use the destination platform id to conditionally set the transfer video function
+    const destinationPlatformId = event.data.encrypted.destinationPlatform.id;
+    const transferVideoFn = providerFns[destinationPlatformId].transferVideo;
+
+    const video = await step.invoke(`fetch-video-${videoData.id}`, {
+      function: fetchVideoFn,
+      data: {
+        jobId: event.data.jobId,
+        encrypted: {
+          credentials: event.data.encrypted.sourcePlatform.credentials!,
+          video: videoData,
+        },
+      },
+    });
+
+    const transfer = await step.invoke(`transfer-video-${videoData.id}`, {
+      function: transferVideoFn,
+      data: {
+        jobId: event.data.jobId,
+        encrypted: {
+          sourcePlatform: event.data.encrypted.sourcePlatform,
+          destinationPlatform: event.data.encrypted.destinationPlatform,
+          video,
+        },
+      },
+    });
+
+    return { status: 'success', transfer };
+  }
+);
+```
+
+What's up with this `encrypted` key?
+
+It's a good idea to store your end users' credentials for only as long as you absolutely need. Since video migrations are typically a one-off task, we really don't need to store credentials at all — we can use them for each task and then forget about them entirely.
+
+Inngest's [encryption middleware](/docs/reference/middleware/examples#e2-e-encryption) meets this requirement perfectly. The user can supply their source provider and destination credentials on the client, and as soon as these sensitive details hit the server, they're encrypted.
+
+The credentials are only unencrypted at the time that the third-party provider API calls are made. This is a great way to facilitate short-lived credentials safely without the liability of persisting them in your own datastore somewhere.
+
+**💡 Takeaway #2: Inngest data can be encrypted between steps.**
+
+## Fetching the individual video details
+
+Let's take a look at how we fetch the individual video details. Remember, we're looking for a public URL to a video MP4 file which Mux can easily import and optimize for playback over the web.
+
+```js
+export const fetchVideo = inngest.createFunction(
+  { id: 'fetch-video-video-playz', name: 'Fetch video - VideoPlayz', concurrency: 10 },
+  { event: 'truckload/video.fetch' },
+  async ({ event, step }) => {
+    const response = await fetch(
+      `https://api.videoplayz.notarealdomain.com/videos/${event.data.encrypted.video.id}/downloads`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${event.data.encrypted.credentials.secretKey}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    const result = await response.json();
+
+    if (result.result.default.status === 'ready') {
+      return {
+        id: event.data.encrypted.video.id,
+        url: result.result.default.url,
+      };
+    }
+
+    const { url } = await step.invoke(`check-source-status-video-playz`, {
+      function: checkSourceStatus,
+      data: {
+        jobId: event.data.jobId,
+        encrypted: event.data.encrypted,
+      },
+    });
+
+    return {
+      id: event.data.encrypted.video.id,
+      url,
+    };
+  }
+);
+```
+
+This involves a simple `POST` request which, in *VideoPlayz* case, will retrieve the MP4 URL (or, start to create it if it doesn't exist.)
+
+Transcoding an MP4 file is an asynchronous process that takes some time, so if we find that the MP4 URL is not ready, we'll invoke a `checkSourceStatus` function that will poll an API endpoint periodically and will return the URL once it's ready to go.
+
+For simplicity, let's assume this video already has an MP4 URL that's public to the world. We can now use it in the `truckload/video.transfer` event to start the import process.
+
+## Importing the video to Mux
+
+```js
+// We decouple the logic of the copy video function from the run migration function
+// to allow this to be re-used and tested independently.
+// This also allows the system to define different configuration for each part,
+// like limits on concurrency for how many videos should be copied in parallel
+// A separate function could be created for each destination platform
+export const transferVideo = inngest.createFunction(
+  { id: 'transfer-video', name: 'Transfer video - Mux', concurrency: 10 },
+  { event: 'truckload/video.transfer' },
+  async ({ event, step }) => {
+    const mux = new Mux({
+      tokenId: event.data.encrypted.destinationPlatform.credentials!.publicKey,
+      tokenSecret: event.data.encrypted.destinationPlatform.credentials!.secretKey,
+    });
+
+    const config = event.data.encrypted.destinationPlatform.config;
+
+    let input: Mux.Video.Assets.AssetCreateParams.Input[] = [{ url: event.data.encrypted.video.url }];
+
+    if (config?.autoGenerateCaptions) {
+      input[0].generated_subtitles = [{ name: 'English', language_code: 'en' }];
+    }
+
+    let payload: Mux.Video.Assets.AssetCreateParams = {
+      input,
+      passthrough: JSON.stringify({ jobId: event.data.jobId, sourceVideoId: event.data.encrypted.video.id }),
+    };
+
+    if (config?.maxResolutionTier) {
+      payload = { ...payload, max_resolution_tier: config.maxResolutionTier as any };
+    }
+
+    if (config?.playbackPolicy) {
+      payload = {
+        ...payload,
+        playback_policy: Array.isArray(config.playbackPolicy)
+          ? (config.playbackPolicy as PlaybackPolicy[])
+          : ([config.playbackPolicy] as PlaybackPolicy[]),
+      };
+    }
+
+    if (config?.encodingTier) {
+      payload = { ...payload, encoding_tier: config.encodingTier as any };
+    }
+
+    if (config?.testMode) {
+      payload = { ...payload, test: true };
+    }
+
+    const result = await mux.video.assets.create(payload);
+
+    await updateJobStatus(event.data.jobId, 'migration.video.progress', {
+      video: {
+        id: event.data.encrypted.video.id,
+        status: 'in-progress',
+        progress: 0,
+      },
+    });
+
+    return { status: 'success', result };
+  }
+);
+```
+
+This last one could really be just a few lines of code. However, we wanted Truckload to support many different types of Mux import features like [auto-generated captions](https://docs.mux.com/guides/add-autogenerated-captions-and-use-transcripts#enabling-auto-generated-captions-retroactively), multiple resolution tiers, [playback policies](https://docs.mux.com/guides/secure-video-playback#understanding-playback-policies), and so on. The user can define their import preferences as part of the migration process and Truckload will honor them as part of the destination provider's importing implementation.
+
+Near the end of the function, we call an `updateJobStatus` function — that will fire off a request to a [PartyKit](https://www.partykit.io/) server containing details of the video's migration progress. In turn, PartyKit will update the client browser in real time, keeping the user informed of the latest migration status.
+
+**💡 Takeaway #3: You can keep the client updated with additional visibility into Inngest jobs.**
+
+## Inngest made my life so much easier
+
+If I had to set up this background job processing without a tool like Inngest, I'd definitely be coming home from work a little sad. There's a lot here, and we really didn't get into the fact that Inngest handles [automatic retries](/docs/guides/error-handling) and [concurrency](/docs/guides/concurrency) without me really having to think about it at all.
+
+Video migration is still a monumental task — one we're trying hard to make easier on you over at Mux. And thanks to Inngest, we're super glad to be able to offer tooling to do just that.

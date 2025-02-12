@@ -26,28 +26,6 @@ export default function PlanCard({
   const [accordionValue, setAccordionValue] = useState(CLOSED_VALUE);
   const [isMediumScreen, setIsMediumScreen] = useState(false);
 
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(min-width: 768px)");
-
-    const handleMediaQueryChange = (e) => {
-      setIsMediumScreen(e.matches);
-      if (e.matches) {
-        setAccordionValue(content.name);
-      }
-    };
-
-    setIsMediumScreen(mediaQuery.matches);
-    if (mediaQuery.matches) {
-      setAccordionValue(content.name);
-    }
-
-    mediaQuery.addEventListener("change", handleMediaQueryChange);
-
-    return () => {
-      mediaQuery.removeEventListener("change", handleMediaQueryChange);
-    };
-  }, [content.name]);
-
   const price = content.cost.between
     ? // Note: If we start showing basic free tier on PlanCard, we should use the following commented line instead
       `$${content.cost.basePrice}-${content.cost.endPrice}`
@@ -123,7 +101,7 @@ export default function PlanCard({
             </Button>
           </div>
 
-          <hr className="border-muted my-8" />
+          <hr className="border-muted my-4 md:my-8" />
 
           <p className="flex items-center gap-2 mb-3">
             <RiMistLine className="text-muted" />
@@ -135,25 +113,36 @@ export default function PlanCard({
           </p>
         </div>
 
-        <hr className="border-subtle my-8" />
+        <hr className="border-subtle my-4 md:my-8" />
 
+        {/* Desktop */}
+        <div className="hidden md:block">
+          <p className="font-medium text-xs bg-gradient-to-b from-matcha-400 to-breeze-400 bg-clip-text text-transparent pb-4">
+            {content.planIncludes}
+          </p>
+          <ul className="flex flex-col">
+            {content.features.map((feature, i) => (
+              <li key={i} className={`flex gap-2 py-2 last:pb-0`}>
+                <RiCheckLine className="text-muted" />
+                {feature}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Mobile */}
         <Accordion.Root
           type="single"
           value={accordionValue}
           onValueChange={(value) => {
-            if (!isMediumScreen) {
-              setAccordionValue(value || CLOSED_VALUE);
-            }
+            setAccordionValue(value || CLOSED_VALUE);
           }}
           collapsible
+          className="md:hidden"
         >
-          <Accordion.Item
-            value={content.name}
-            disabled={isMediumScreen}
-            className={isMediumScreen ? "pointer-events-none" : ""}
-          >
+          <Accordion.Item value={content.name}>
             <Accordion.Header className="flex items-center justify-between">
-              <p className="font-medium text-xs bg-gradient-to-b from-matcha-400 to-breeze-400 bg-clip-text text-transparent pb-4">
+              <p className="font-medium text-xs bg-gradient-to-b from-matcha-400 to-breeze-400 bg-clip-text text-transparent">
                 {content.planIncludes}
               </p>
               <Accordion.Trigger className="group border border-contrast rounded-full overflow-hidden md:hidden">

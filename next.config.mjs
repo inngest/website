@@ -1,4 +1,4 @@
-import nextMDX from "@next/mdx";
+import createMDX from "@next/mdx";
 import { remarkPlugins } from "./mdx/remark.mjs";
 import { rehypePlugins } from "./mdx/rehype.mjs";
 import { recmaPlugins } from "./mdx/recma.mjs";
@@ -127,7 +127,7 @@ async function redirects() {
   ];
 }
 
-const withMDX = nextMDX({
+const withMDX = createMDX({
   options: {
     remarkPlugins,
     rehypePlugins,
@@ -143,12 +143,21 @@ const nextConfig = {
   experimental: {
     scrollRestoration: true,
   },
+  outputFileTracingExcludes: {
+    "*": ["./.git/*", "./.next/*", "./public/**/*"],
+  },
   webpack: (config, { dev, isServer }) => {
     // Exclude old-style _prefix directories from being rendered (ex. mdx pages)
     config.module.rules.push({
       test: /_\w+\/.+\.mdx?$/,
       use: "ignore-loader",
     });
+    // Disable cache for production builds to reduce bundle size on Vercel
+    if (config.cache && !dev) {
+      config.cache = Object.freeze({
+        type: "memory",
+      });
+    }
 
     return config;
   },

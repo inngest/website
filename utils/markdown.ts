@@ -28,7 +28,7 @@ export async function loadMarkdownFilesMetadata<T>(
   const matter = require("gray-matter");
   const readingTime = require("reading-time");
 
-  const baseDir = path.join(process.cwd(), "./pages/", dir);
+  const baseDir = path.join(process.cwd(), dir);
 
   // Iterate all files in the directory, then parse the markdown.
   const mdxFilenames = fs.readdirSync(baseDir);
@@ -39,7 +39,11 @@ export async function loadMarkdownFilesMetadata<T>(
     data.reading = readingTime(content);
     data.slug = filename.replace(/.mdx?/, "");
     if (data.date) {
-      data.humanDate = data.date.toLocaleDateString();
+      if (typeof data.date === "string") {
+        data.humanDate = new Date(data.date).toLocaleDateString();
+      } else {
+        data.humanDate = data.date.toLocaleDateString();
+      }
     }
     if (data.tags) {
       data.tags =
@@ -78,18 +82,11 @@ export async function loadMarkdownFile<T>(
   const path = require("node:path");
   const fs = require("node:fs");
   const matter = require("gray-matter");
-  const sourceFilename = path.join("./pages", dir, `${slug}.mdx`);
+  const sourceFilename = path.join(dir, `${slug}.mdx`);
   const source = fs.readFileSync(sourceFilename, "utf8");
   const { content, data } = matter(source);
-  const nodeTypes = [
-    "mdxFlowExpression",
-    "mdxJsxFlowElement",
-    "mdxJsxTextElement",
-    "mdxTextExpression",
-    "mdxjsEsm",
-  ];
+
   const serializedContent = await serialize(content, {
-    // scope: { json: JSON.stringify(data) },
     mdxOptions: {
       rehypePlugins: [
         rehypeParseCodeBlocks,

@@ -471,15 +471,16 @@ export const FEATURES: Feature[] = [
     section: "observability",
   },
   {
-    name: "Exportable and scrapable metrics",
-    description: "Pushable and prom scrapable metrics",
+    name: "Exportable metrics",
+    description: "Prometheus exports and integrations",
     plans: {
       [PLAN_NAMES.basicFree]: false,
-      [PLAN_NAMES.basic]: false,
-      [PLAN_NAMES.pro]: "$200/mo",
-      [PLAN_NAMES.enterprise]: true,
+      [PLAN_NAMES.basic]: "15 minute delay",
+      [PLAN_NAMES.pro]: "5m delay",
+      [PLAN_NAMES.enterprise]: "No delay",
     },
-    infoUrl: "/docs/platform/monitor/observability-metrics?ref=pricing",
+    infoUrl:
+      "/docs/platform/monitor/prometheus-metrics-export-integration?ref=pricing",
     section: "observability",
   },
   {

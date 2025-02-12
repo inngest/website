@@ -46,7 +46,7 @@ export async function getStaticProps({
 }: {
   params: { category: string };
 }): Promise<{ props: StaticProps }> {
-  const posts = await loadMarkdownFilesMetadata<MDXBlogPost>("blog/_posts");
+  const posts = await loadMarkdownFilesMetadata<MDXBlogPost>("content/blog");
   const filteredPosts = posts.filter((p) => p.category === params.category);
   const serializedPosts = filteredPosts.map((p) => JSON.stringify(p));
   const title = BLOG_CATEGORIES[params.category];
