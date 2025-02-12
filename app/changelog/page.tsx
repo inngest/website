@@ -59,20 +59,20 @@ export default async function Page() {
 
       <SectionProvider sections={[]}>
         <div
-          className="grid grid-cols-1 md:grid-cols-4 gap-8 gap-y-16"
+          className="grid grid-cols-1 md:grid-cols-4 gap-x-8 gap-y-4 md:gap-y-16"
           key={"list"}
         >
           {sortedEntries.map((item, idx) => (
             <>
               <p
                 key={`${idx}-${item.slug}--date`}
-                className="mt-1.5 text-muted text-sm text-right"
+                className="mt-1.5 text-muted text-sm md:text-right"
               >
                 {formatDate(item.metadata.date)}
               </p>
               <div
                 key={`${idx}-${item.slug}--content`}
-                className="md:col-span-3"
+                className="md:col-span-3 mb-16 md:mb-0"
               >
                 <h2 className="text-2xl font-semibold mb-4">
                   <Link
