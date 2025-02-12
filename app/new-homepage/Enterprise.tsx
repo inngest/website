@@ -17,12 +17,15 @@ export default function Enterprise() {
   return (
     <Container>
       <Heading
-        label="Enterprise ready"
-        title="Security, scalability, and compliance"
+        // label="Enterprise"
+        title="Enterprise ready, Built for trust"
         description={
           <>
-            We take security and reliability seriously. Our platform complies
-            with the security standards you need to run your business.
+            We prioritize security and reliability, so your team can build with
+            confidence, not manage infrastructure. Our platform meets the
+            security and compliance standards you need to run mission-critical
+            workflows at scale, ensuring seamless execution and enterprise-grade
+            protection.
           </>
         }
         className="my-8"

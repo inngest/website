@@ -1,11 +1,12 @@
-import type { NextApiRequest, NextApiResponse } from "next";
 import RSS from "rss";
 
-import { loadMarkdownFilesMetadata } from "../../utils/markdown";
+import { loadMarkdownFilesMetadata } from "utils/markdown";
 import { type MDXBlogPost } from "src/components/Blog";
 import { loadPost } from "app/changelog/helpers";
 
-export default async (req: NextApiRequest, res: NextApiResponse<string>) => {
+export const dynamic = "force-static";
+
+export async function GET() {
   const blogPosts = await loadMarkdownFilesMetadata<MDXBlogPost>(
     "content/blog"
   );
@@ -27,6 +28,7 @@ export default async (req: NextApiRequest, res: NextApiResponse<string>) => {
         : `${process.env.NEXT_PUBLIC_HOST}/blog/${post.slug}`,
       categories: post.tags || [],
     }));
+
   const changelogPostsTransformed = [];
   for (const post of changelogPosts) {
     const { metadata } = await loadPost(post.slug);
@@ -65,8 +67,10 @@ export default async (req: NextApiRequest, res: NextApiResponse<string>) => {
 
   const xml = feed.xml();
 
-  res.setHeader("Content-Type", "text/xml");
-  res.setHeader("Cache-Control", "s-maxage=360, stale-while-revalidate");
-  res.write(xml);
-  res.end();
-};
+  return new Response(xml, {
+    headers: {
+      "Content-Type": "text/xml",
+      "Cache-Control": "s-maxage=360, stale-while-revalidate",
+    },
+  });
+}
