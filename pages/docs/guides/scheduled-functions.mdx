@@ -98,9 +98,9 @@ import (
 func init() {
 	// This weekly digest function will run at 12:00pm on Friday in the Paris timezone
 	inngestgo.CreateFunction(
-		inngestgo.FunctionOpts{ID: "prepare-weekly-digest"},
-		inngestgo.CronTrigger("TZ=Europe/Paris 0 12 * * 5", nil),
-		func(ctx context.Context, input inngestgo.Input) (any, error) {
+		inngestgo.FunctionOpts{ID: "prepare-weekly-digest", Name: "Prepare Weekly Digest"},
+		inngestgo.CronTrigger("TZ=Europe/Paris 0 12 * * 5"),
+		func(ctx context.Context, input inngestgo.Input[any]) (any, error) {
 			// Load all the users from your database:
 			users, err := step.Run("load-users", func() ([]*User, error) {
 				return loadUsers()
