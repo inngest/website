@@ -36,7 +36,7 @@ After deploying your scheduled function to Inngest [using your preferred platfor
 
 As mentioned above, cron jobs today are very often platform-specific, from the Kubernetes' [`CronJob`](https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/) to the AWS ECS [Scheduled Task](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/scheduled_tasks.html) to the classic Linux [crontab](https://opensource.com/article/17/11/how-use-cron-linux). You'll need to determine how to run cron jobs on `X` platform then determine:
 
-- How will I know that my cron configuration was correcct and it actually ran?
+- How will I know that my cron configuration was correct and it actually ran?
 - How will logs be captured and stored?
 - How will I handle failed cron jobs?
 - How will I handle CI/CD?
