@@ -44,8 +44,8 @@ export default function AnnouncementBanner() {
 
   return (
     <Banner href="https://innge.st/devweek-25">
-      Catch our talk on Orchestrating Agentic AI Workflows- claim a free pass to
-      DevWeek's live replay
+      Sign-up to catch a live replay of “Orchestrating Agentic AI Workflows”
+      from DevWeek
     </Banner>
   );
 }
