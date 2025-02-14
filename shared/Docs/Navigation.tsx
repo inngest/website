@@ -491,15 +491,19 @@ function findRecursiveSectionLinkMatch(sections, pathname) {
 
 export const DefaultOpenSectionsContext = createContext([]);
 
+const defaultSection = getAllSections(topLevelNav).find(
+  (section) => section.title === "Home"
+);
+
 export function Navigation(props) {
   const router = useRouter();
   // Remove query params and hash from pathname
   const pathname = router.asPath.replace(/(\?|#).+$/, "");
 
-  const nestedSection = findRecursiveSectionLinkMatch(
-    getAllSections(topLevelNav),
-    pathname
-  );
+  // Find the section this path is in or show default
+  const nestedSection =
+    findRecursiveSectionLinkMatch(getAllSections(topLevelNav), pathname) ??
+    defaultSection;
 
   const isNested = !!nestedSection;
   const nestedNavigation = nestedSection;
@@ -569,6 +573,7 @@ export function Navigation(props) {
                     <NavLink
                       key={item.title}
                       isTopLevel={true}
+                      key={groupIndex}
                       href={item.href}
                       active={pathname === item.href}
                     >
