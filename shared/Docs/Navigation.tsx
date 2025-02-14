@@ -361,10 +361,11 @@ function NavigationGroup({
                   nestingLevel > 0,
               })}
             >
-              {group.links.map((link) => {
+              {group.links.map((link, idx) => {
                 if (isNavGroup(link)) {
                   return (
                     <Accordion.Root
+                      key={idx}
                       type="multiple"
                       defaultValue={
                         hasNavGroupPath(link, router.pathname)
@@ -566,6 +567,7 @@ export function Navigation(props) {
                     />
                   ) : (
                     <NavLink
+                      key={item.title}
                       isTopLevel={true}
                       href={item.href}
                       active={pathname === item.href}
