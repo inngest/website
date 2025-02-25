@@ -110,6 +110,7 @@ const authorURLs = {
   "Lydia Hallie": "https://x.com/lydiahallie",
   "Joe Adams": "https://www.linkedin.com/in/josephadams9/",
   "Charly Poly": "https://x.com/whereischarly",
+  "Ana Filipa de Almeida": "https://www.linkedin.com/in/anafilipadealmeida/"
 };
 
 export default function BlogLayout(props) {
