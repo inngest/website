@@ -16,7 +16,7 @@ import Resources from "src/components/LandingPage/Resources";
 import CaseStudy from "src/components/LandingPage/CaseStudy";
 import Quote from "src/components/Quote";
 
-const ref = "ai-landing-page";
+const ref = "product-ai";
 
 export function AIPage({
   heroCTAs,
