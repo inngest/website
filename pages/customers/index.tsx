@@ -197,12 +197,12 @@ const gridQuotes: GridItem[] = [
   },
   {
     type: "quote",
-    name: "NiftyKit",
+    name: "Aomni",
     quote: {
       text: `For anyone who is building multi-step AI agents (such as AutoGPT type systems), I highly recommend building it on top of Inngest's job queue orchestration framework, the traceability it provides out of the box is super useful, plus you get timeouts & retries for free.`,
       attribution: {
         name: "David Zhang",
-        title: "Founder - Aomni",
+        title: "Founder",
       },
       avatar: "/assets/customers/aomni-david.jpg",
     },
@@ -230,6 +230,20 @@ const grid: GridItem[] = [
     type: "company",
   },
   {
+    src: "/assets/customers/browser-use-white.svg",
+    name: "Browser Use",
+    url: "https://browser-use.com/",
+    scale: 1.7,
+    type: "company",
+  },
+  {
+    src: "/assets/customers/day-ai-logo.svg",
+    name: "Day.ai",
+    url: "https://day.ai/",
+    scale: 1.2,
+    type: "company",
+  },
+  {
     src: "/assets/customers/leap-logo-white.svg",
     name: "Leap",
     url: "https://tryleap.ai/",
@@ -241,13 +255,6 @@ const grid: GridItem[] = [
     name: "Howl",
     url: "https://www.planethowl.com/",
     scale: 0.9,
-    type: "company",
-  },
-  {
-    src: "/assets/customers/day-ai-logo.svg",
-    name: "Day.ai",
-    url: "https://day.ai/",
-    scale: 1.2,
     type: "company",
   },
   {
@@ -323,12 +330,12 @@ const grid: GridItem[] = [
     scale: 1,
     type: "company",
   },
-  {
-    src: "/assets/customers/tono-logo.png",
-    name: "Tono Health",
-    scale: 0.9,
-    type: "company",
-  },
+  // {
+  //   src: "/assets/customers/tono-logo.png",
+  //   name: "Tono Health",
+  //   scale: 0.9,
+  //   type: "company",
+  // },
   // Hide when we don't want a dangling logo at the end
   // {
   //   src: "/assets/customers/awaken-tax-logo.png",

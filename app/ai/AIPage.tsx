@@ -52,9 +52,14 @@ export function AIPage({
                 scale: 1.2,
               },
               {
-                src: "/assets/customers/leap-logo-white.svg",
-                name: "Leap",
-                scale: 1,
+                src: "/assets/customers/browser-use-white.svg",
+                name: "Browser Use",
+                scale: 1.6,
+              },
+              {
+                src: "/assets/customers/aomni-logo.svg",
+                name: "Aomni",
+                scale: 1.3,
               },
               {
                 src: "/assets/customers/otto-logo.svg",
@@ -62,9 +67,9 @@ export function AIPage({
                 scale: 0.8,
               },
               {
-                src: "/assets/customers/aomni-logo.svg",
-                name: "Aomni",
-                scale: 1.3,
+                src: "/assets/customers/leap-logo-white.svg",
+                name: "Leap",
+                scale: 1,
               },
             ].map(({ src, name, scale = 1 }, idx) => (
               <Image
