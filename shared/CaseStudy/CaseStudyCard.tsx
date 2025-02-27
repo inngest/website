@@ -11,34 +11,36 @@ export default function CaseStudyCard({
   name,
   logo,
   tags = [],
+  logoScale = 1,
 }: {
   href: string;
   title: string;
   snippet: React.ReactNode;
   name: string;
   logo: string;
+  logoScale?: number;
   tags?: string[];
 }) {
   return (
-    <Link href={href} className="group text-basis flex">
+    <Link href={href} className="group text-basis block md:flex">
       <Card variant="hover" className="p-8">
-        <div className="grow flex flex-col justify-items-start">
-          <div className="mb-4 text-sm font-medium text-muted">
-            Customer story
-          </div>
-          <h2 className="font-bold text-2xl">{title}</h2>
-          <div className="my-10 grow min-h-20 lg:h-24 flex flex-row md:flex-col lg:flex-row items-center space-between gap-8">
-            <p className="text-slate-300">{snippet}</p>
-            <Image
+        <div className="grow flex flex-col gap-4 justify-items-start">
+          <div className="h-10 mb-1">
+            <img
               src={logo}
               alt={`${name} logo`}
               title={name}
-              width={240 * 0.6 * 1}
-              height={120 * 0.6 * 1}
-              className="w-36 shrink-0 text-white mx-auto width-auto transition-all"
+              className="shrink-0 text-white width-auto transition-all"
+              style={{
+                height: `${40 * logoScale}px`,
+              }}
             />
           </div>
-          <div className="flex items-end justify-between">
+          <h2 className="font-bold text-xl">{title}</h2>
+          <div className="grow min-h-20 lg:h-24 flex flex-row md:flex-col lg:flex-row items-center space-between gap-8">
+            <p className="text-slate-300">{snippet}</p>
+          </div>
+          <div className="flex items-center justify-between">
             <div className="flex gap-2 text-sm font-medium text-muted">
               {tags.map((tag) => (
                 <span key={tag}>{tag}</span>
