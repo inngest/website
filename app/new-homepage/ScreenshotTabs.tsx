@@ -8,16 +8,19 @@ export default function ScreenshotTabs() {
     {
       title: "Tracing",
       src: "/assets/homepage/hero/2024-12-12-runs.png",
+      srcDark: "/assets/homepage/hero/2024-12-12-runs-dark.png",
       alt: "Inngest function runs and traces",
     },
     {
       title: "Observability",
       src: "/assets/homepage/hero/2024-12-12-metrics.png",
+      srcDark: "/assets/homepage/hero/2024-12-12-metrics-dark.png",
       alt: "Inngest metrics dashboard",
     },
     {
       title: "Management",
       src: "/assets/homepage/hero/2024-12-12-function-list.png",
+      srcDark: "/assets/homepage/hero/2024-12-12-function-list-dark.png",
       alt: "Inngest function dashboard",
     },
   ];
@@ -42,8 +45,15 @@ export default function ScreenshotTabs() {
       </div>
       <Image
         alt={`Screenshot of ${screenshot.alt}`}
-        className="rounded-t-md mx-auto"
+        className="rounded-t-md mx-auto visible-light"
         src={screenshot.src}
+        width={3026 * 0.35}
+        height={1850 * 0.35}
+      />
+      <Image
+        alt={`Screenshot of ${screenshot.alt}`}
+        className="rounded-t-md mx-auto visible-dark"
+        src={screenshot.srcDark}
         width={3026 * 0.35}
         height={1850 * 0.35}
       />
