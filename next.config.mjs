@@ -144,7 +144,7 @@ const nextConfig = {
     scrollRestoration: true,
   },
   outputFileTracingExcludes: {
-    "*": ["./.git/*", "./public/**/*"],
+    "*": ["./.git/*", "./public/**/*", "./.pnpm-store/*"],
     "!(/api)": ["./.next/*"],
   },
   webpack: (config, { dev, isServer }) => {
