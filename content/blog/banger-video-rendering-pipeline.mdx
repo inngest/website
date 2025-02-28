@@ -1,29 +1,29 @@
 ---
 heading: A Deep Dive into a Video Rendering Pipeline
 showSubtitle: true
-subtitle: banger.show is a video app maker that heavily relies on background data processing
+subtitle: Banger.Show is a video app maker that heavily relies on background data processing
 image: /assets/blog/banger/banger-main.jpg
 date: 2024-05-07
 author: Igor Samokhovets
 disableCTA: true
 ---
 
-Hi everyone! My name is [Igor Samokhovets](https://twitter.com/IgorSamokhovets) and I'm a music producer who goes by the artist name Tequila Funk. In this blog post I will walk you through our video rendering pipeline built with Inngest, which powers [banger.show](https://banger.show/).
+Hi everyone! My name is [Igor Samokhovets](https://x.com/tequilafunks) and I'm a music producer who goes by the artist name Tequila Funk. In this blog post I will walk you through our video rendering pipeline built with Inngest, which powers Banger.Show.
 
 
-[banger.show](https://banger.show/) is a video maker app for musicians, DJs, and labels, which I built together with Mark Beziaev. It allows music industry people to create stunning visual assets for their music.
+**Banger.Show** is a video maker app for musicians, DJs, and labels that I built with Mark Beziaev. It allows people in the music industry to create stunning visual assets and [music visualizers](https://banger.show/music-visualizer) for their tracks.
 
-<YouTube id="eSLKm6IfZM4" height={300}/>
+<YouTube id="6OAQ6dNhCGY" height={300}/>
 
-Creating a video for your new song takes only a few minutes and you don't need to install or learn any complex software because banger.show works in your browser!
+Creating a video for your new song takes only a few minutes, and you don't need to install or learn any complex software. Banger.Show works in your browser!
 
 ## Making background processing snappy
 
-At banger.show, we do a lot of background processing. Managing render states, generating visual assets in the background, and even handling the rendering process on remote distributed workers.
+At Banger.Show, we do a lot of background processing. Managing render states, generating visual assets in the background, and even handling the rendering process on remote distributed workers.
 
 We chose Inngest because there's no better way to handle background jobs if you're using Next.js **without a custom server**. **It's a primary "flow controller" for us**, even though we have a simple queue solution based on Redis to handle tasks on our infra. It allows us to orchestrate, observe, and abstract away lower-level processes, for example:
 
-- We don't have to delegate every post-render task to the video rendering machine, but have some flow where the main server can receive render results from the workers and do something with it.
+- We don't have to delegate every post-render task to the video rendering machine, but we have some flow where the main server can receive render results from the workers and do something with them.
 - We can observe each [step](/docs/learn/inngest-steps) and its return data in the dashboard.
 - We can handle emergency cases when all of our infra goes down and we need to spin up some backup workers on AWS.
 
@@ -32,9 +32,9 @@ We chose Inngest because there's no better way to handle background jobs if you'
 Before we dive in, let's take a high-level look at our video rendering pipeline:
 
 - First, the app receives an uploaded project from the user.
-- Next, it converts the audio for the more efficient rendering.
+- Next, it converts the audio for a more efficient rendering.
 - The project is then sent to the render machine, which controls the progress, updates statuses, and handles error retries and "stalled render" cases.
-- Finally, when the render is finished, a number of tasks need to run, such as invalidating CDN cache, creating video thumbnails, or sending email to the user when the video is ready.
+- Finally, when the render is finished, several tasks need to run, such as invalidating the CDN cache, creating video thumbnails, or sending an email to the user when the video is ready.
 
 Let's now dive into some parts of the video rendering pipeline.
 
@@ -82,7 +82,7 @@ export const renderVideo = inngest.createFunction(
 
 ### 2. Cropping the audio file
 
-In banger.show, the user selects a fragment of the song to create a "videoization" for it. In the background job, we:
+In Banger.Show, the user selects a fragment of the song to create a "videoization" for it. In the background job, we:
 
 - Crop audio file based on the user selection.
 - Convert the file to mp3 format for disk space efficiency and optimal compatibility.
@@ -143,7 +143,7 @@ The next step is to render the video using remote workers with beefy CPUs and GP
 
 ![A screenshot of the Banger app](/assets/blog/banger/banger-app.png)
 
-We have a sub-queue that communicates with our own infrastructure. We send a job to the queue while Inngest allows us to wait until the job is done and handles new progress events.
+We have a sub-queue that communicates with our infrastructure. We send a job to the queue while Inngest allows us to wait until the job is done and handles new progress events.
 
 ```js
 const { videoFileURL, renderTime } = await step.run(
@@ -218,7 +218,7 @@ const { videoFileURL, renderTime } = await step.run(
 
 ### 4. Invalidate CDN cache
 
-There are some cases when video needs to be re-rendered. We host our videos on a CDN, but some times, the video needs to be re-rendered. To make sure CDN cache is always fresh, we purge it each time the video renders.
+We host our videos on a CDN, but sometimes, the video needs to be re-rendered. To make sure the CDN cache is always fresh, we purge it each time the video renders.
 
 ```js
 await step.run('create-invalidation-on-CloudFront', async () => {
@@ -239,7 +239,7 @@ await step.run('create-invalidation-on-CloudFront', async () => {
 
 ### 5. Updating video status to "ready"
 
-After video is successfully rendered and we have obtained a URL, we set video status to "ready" and update `renderTime`.
+After the video is successfully rendered and we have obtained a URL, we set the video status to "ready" and update `renderTime`.
 
 ```js
 await step.run('update-video-status-to-ready', () =>
@@ -262,7 +262,7 @@ await step.run('update-video-status-to-ready', () =>
 
 ### 6. Creating a video thumbnail
 
-Finally, we also want to create a thumbnail for each video to show it in listings or use as a video posters.
+Finally, we also want to create a thumbnail for each video to show it in listings or use as a video poster.
 
 ```js
 await step.run('generate-thumbnail-and-upload-to-s3', async () => {
@@ -373,6 +373,6 @@ export const renderVideo = inngest.createFunction(
 
 Inngest makes the difficult parts easy.
 
-For example, there's no simpler way to put it: I find the [`steps`](/docs/learn/inngest-steps) concept mindblowing. I wished something like this was available back in 2019, when I was just starting out with BullMQ, Agenda.js, and other solutions. It's a really sweet abstraction. I also enjoy observability, so I can track each step and function run in one dashboard.
+For example, there's no simpler way to put it: I find the [`steps`](/docs/learn/inngest-steps) concept mindblowing. I wished something like this was available back in 2019 when I was just starting with BullMQ, Agenda.js, and other solutions. It's a really sweet abstraction. I also enjoy observability, so I can track each step and function run in one dashboard.
 
-_You can reach out to Igor on [Twitter](https://twitter.com/IgorSamokhovets) or listen to his music on [Spotify](https://open.spotify.com/artist/66PsDRGGiij2rHAK21GUEB)._
+_You can reach out to Igor on [Twitter](https://x.com/tequilafunks) or listen to his music on [Spotify](https://open.spotify.com/artist/66PsDRGGiij2rHAK21GUEB)._
