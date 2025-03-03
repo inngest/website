@@ -40,12 +40,12 @@ const Banner: React.FC<Props> = ({ href, children, className }) => (
 
 export default function AnnouncementBanner() {
   // Return null if we want to disable the banner
-  // return null;
+  return null;
 
-  return (
-    <Banner href="https://innge.st/devweek-25">
-      Sign-up to catch a live replay of “Orchestrating Agentic AI Workflows”
-      from DevWeek
-    </Banner>
-  );
+  // return (
+  //   <Banner href="https://innge.st/devweek-25">
+  //     Sign-up to catch a live replay of “Orchestrating Agentic AI Workflows”
+  //     from DevWeek
+  //   </Banner>
+  // );
 }
