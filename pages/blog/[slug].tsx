@@ -70,6 +70,7 @@ type Scope = {
 
   heading: string;
   subtitle?: string;
+  canonical_url?: string;
   showSubtitle?: boolean;
 
   author?: string;
@@ -110,7 +111,8 @@ const authorURLs = {
   "Lydia Hallie": "https://x.com/lydiahallie",
   "Joe Adams": "https://www.linkedin.com/in/josephadams9/",
   "Charly Poly": "https://x.com/whereischarly",
-  "Ana Filipa de Almeida": "https://www.linkedin.com/in/anafilipadealmeida/"
+  "Ana Filipa de Almeida": "https://www.linkedin.com/in/anafilipadealmeida/",
+  "Jess Lin": "https://x.com/jesstyping",
 };
 
 export default function BlogLayout(props) {
@@ -393,6 +395,7 @@ export async function getStaticProps({ params }) {
       post,
       meta: {
         disabled: true,
+        canonical_url: data.canonical_url,
       },
       designVersion: "2",
     },

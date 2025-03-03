@@ -1,0 +1,357 @@
+---
+focus: false
+heading: "DeepSeek-R1 in practice with step.ai"
+subtitle: A deep dive into DeepSeek-R1's Multi-Lingual and Agentic RAG Capabilities
+showSubtitle: true
+image: "/assets/blog/building-webhooks-that-scale/hero-image.jpg"
+date: 2025-01-31
+author: Charly Poly
+canonical_url: https://www.koyeb.com/tutorials/deepseek-r1-multi-lingual-and-agentic-rag-capabilities-in-practice
+---
+
+While the release of the DeepSeek-R1 model series caused much ink to flow, few articles cover real examples of DeepSeek-R1's most powerful capabilities.
+
+DeepSeek-R1 is a cheaper and open-source model that excels at **agentic reasoning**, **superior multilingual capabilities**, **large context windows**, and generalization across domains (_to name a few_).
+
+In this article, we will combine [Koyeb's DeepSeek-R1 Qwen 32B](https://www.koyeb.com/deploy/deepseek-r1-qwen-32b) One-Click Model along with Inngest as an orchestrator library and interface. to explore the following examples:
+
+*   **A Multilingual marketing content generator** leveraging DeepSeek R1's **superior multilingual capabilities.**
+*   **An Agentic arXiv Research Assistant** uses DeepSeek R1's **agentic reasoning combined with its large context window capability** over [arXiv's open access interoperability](https://info.arxiv.org/help/api/index.html).
+
+**Multilingual marketing content generator**
+--------------------------------------------
+
+DeepSeek R1 is known for **excelling in understanding and generating content in multiple languages while maintaining cultural nuances**.
+
+To test these assumptions, we built a prompt chaining workflow that generates marketing campaigns for multiple countries, asking DeepSeek to adapt its tone depending on the target culture and economy.
+
+Our AI workflow is built in [TypeScript using Inngest](/docs/reference/typescript?utm_source=koyeb&utm_medium=article&utm_campaign=deepseek-r1), which enables automatic caching and retrying of LLM calls and parallelism. Here are the two primary steps of our multilingual marketing content generator workflow:
+
+1.  **Generation of the core message and key themes** based on the provided information about the brand and a set of campaign goals
+2.  **Generation of a Headline, Main copy, CTA, and social media snippets** from the list of target markets (in parallel)
+
+### Implementation
+
+A first specificity of DeepSeek-R1 Qwen 32B is the lack of support for `system` messages.
+
+For this reason, we will define the description and goal of our Agent into a shared constant:
+
+    const MARKETING_EXPERT_PROMPT = `You are an expert marketing copywriter who specializes in creating engaging, culturally-appropriate content 
+    in multiple languages. You understand marketing psychology, cultural nuances, and how to adapt messaging 
+    across different markets while maintaining brand voice.`;
+    
+
+Once our [DeepSeek-R1 Qwen 32B](https://www.koyeb.com/deploy/deepseek-r1-qwen-32b) model is deployed on Koyeb, we can configure its URL in our `.env` file as `DEEPSEEK_BASE_URL`. The deployed model has built-in compatibility with the OpenAI Chat Completions API, enabling us to use the OpenAI Node.js client.
+
+Our workflow will be triggered by a user-triggered event providing the above-mentioned required information along with a model name, which later will enable us to compare `o1-preview` and DeepSeek:
+
+```typescript
+const generateCampaign = inngest.createFunction(
+    { id: "generate-multilingual-campaign" },
+    { event: "marketing/campaign.requested" },
+    async ({ event, step }) => {
+    const { brandInfo, targetLanguages, campaignGoal, model } = event.data;
+
+    const openai = new OpenAI({
+    apiKey: model.includes("deepseek")
+        ? process.env.DEEPSEEK_API_KEY
+        : process.env.OPENAI_API_KEY,
+    ...(model.includes("deepseek")
+        ? { baseURL: process.env.DEEPSEEK_BASE_URL }
+        : {}),
+    });
+    const createCompletion = openai.chat.completions.create.bind(
+    openai.chat.completions
+    );
+
+    // ...
+});
+```
+
+Now, let's implement our first step to generate the campaign's core message and key themes:
+
+```typescript
+// ...
+const campaignConcept: any = await step.ai.wrap(
+    "generate-campaign-concept",
+    createCompletion,
+    {
+    model: model,
+    messages: [
+        {
+        role: "user",
+        content: `
+${MARKETING_EXPERT_PROMPT}
+Create a marketing campaign concept for the following brand:
+${brandInfo}
+Campaign Goal: ${campaignGoal}
+
+The concept should be culturally adaptable across multiple markets.
+Provide the core message and key themes.
+`,
+        },
+    ],
+    temperature: model.includes("deepseek") ? 0.6 : 1,
+    }
+);
+```  
+
+Note how the temperature requirements differ from OpenAI o1 (`*temperature` must be set at `1`_) and DeepSeek-R1 (`*temperature` is recommended to be set between `0.5` and `0.8`_).
+
+Then, let's use the result to generate each localized campaign in parallel:
+
+```typescript
+const localizedContent = targetLanguages.map(async (lang: string) =>
+    step.ai.wrap("generate-campaign-concept", createCompletion, {
+    model: model,
+    messages: [
+        {
+        role: "user",
+        content: `
+        ${MARKETING_EXPERT_PROMPT}
+        Adapt the following campaign concept for ${lang} market:
+        ${campaignConcept.choices[0].message.content}
+        
+        Consider cultural nuances, local preferences, and idiomatic expressions.
+        Provide:
+        1. Headline
+        2. Main copy
+        3. Call to action
+        4. Social media snippets (3 variations)
+        
+        Ensure the content feels native to ${lang} speakers while maintaining the core message and keeping technical terms in English.
+        `,
+        },
+    ],
+    temperature: model.includes("deepseek") ? 0.6 : 1,
+    })
+);
+
+await Promise.all(localizedContent);
+```
+
+Let's now run our workflow using the [Inngest Dev Server](/docs/local-development?utm_source=koyeb&utm_medium=article&utm_campaign=deepseek-r1).
+
+### Results analysis and comparison with OpenAI o1
+
+Let's run a Koyeb marketing campaign generation for the German, English (UK), and French markets using the following parameters:
+
+```json
+{
+    "data": {
+        "brandInfo": "At Koyeb, our mission is to provide the fastest way to run APIs, full-stack apps, and event-driven workloads around the world with high performance and a developer-centric experience. We aim to dramatically reduce deployment time and operational complexity by removing server and infrastructure management for businesses and developers.\nWe are building a next-generation serverless platform to run applications across clouds and edges. We provide strong primitives for application hosting with a focus on the developer experience.\nPrimary cloud infrastructure services are now a commodity; Cloud Compute & Storage are now behind nearly all online platforms built in the last decade. As a pioneer in serverless solutions for the cloud-native era, we are committed to building the industry's first cloud platform for efficient serverless hosting across multiple Cloud Service Providers. Koyeb aims to remove operational complexity and vendor lock-in with a flexible serverless technology designed for multi-cloud environments.\nThink of us as a the ultimate Serverless Cloud Provider - designed to deploy, run, and operate all your apps.",
+    "campaignGoal": "Target CTO, Architect and Founders building AI B2B products in FinTech, EdTech, HealthTech or other industries requiring self-hosting of data.",
+    "targetLanguages": [
+        "Germany",
+        "France",
+        "England"
+    ]
+    }
+}
+```
+
+Our workflow is now running, leveraging parallel LLM calls for the localized campaign generation:
+
+![Inngest workflow](/static/blog/deepseek-r1-step-ai/inngest1.png)
+
+Let's see how DeepSeek thinks about adapting Koyeb's campaign to the French market:
+
+```txt
+<think>
+Alright, so I've got this task to adapt a marketing campaign concept for Koyeb into French.
+Koyeb is a serverless platform that helps businesses deploy applications without worrying about servers or infrastructure.
+The target audience is CTOs, Architects, and Founders, especially in sectors like FinTech, EdTech, and HealthTech.
+First, I need to understand the core message. It's about empowering innovation with serverless freedom.
+The key themes are freedom from complexity, scalability, security, multi-cloud flexibility, and a developer-centric experience.
+That makes sense because these decision-makers are often concerned with efficiency, cost, and security.
+
+Now, adapting this for the French market. I should consider the cultural nuances.
+In France, professionalism and precision are highly valued.
+The language is formal, especially in business contexts.
+Also, data privacy is a big concern, so emphasizing security and compliance would resonate well.
+
+I need to translate the campaign elements: headline, main copy, call to action, and social media snippets. The challenge is to make it feel native without losing the technical terms. So, I'll keep terms like \"serverless\" and \"cloud\" in English but translate the surrounding text.
+
+...
+</think>
+``` 
+
+Let's now run the same parameters with OpenAI's `o1-preview` model and compare the campaigns generated for the US market:
+
+**DeepSeek campaign**
+
+```txt
+**Campaign for England Market: "Empower Your Innovation with Koyeb"**
+**Headline:**  
+"Empower Your Innovation with Koyeb"
+**Main Copy:**  
+"Koyeb is your serverless solution, enabling you to deploy and manage applications effortlessly. With Koyeb, you can focus on innovation while we handle the rest. Experience the benefits of a secure, scalable, and flexible cloud platform that grows with your business."
+**Call to Action:**  
+"Start Your Free Trial Today" or "Deploy in Minutes with Koyeb"
+**Social Media Snippets:**
+1. **Ease of Use:**  
+"Say goodbye to server stress. Koyeb lets you deploy and scale effortlessly. Start today!"
+2. **Security:**  
+"Secure, scalable, and serverless. Koyeb is your cloud solution. Learn more now."
+3. **Scalability:**  
+"Innovation meets simplicity. Koyeb takes care of the servers, so you can focus on your business. Get started."
+
+This campaign is designed to resonate with the professional and trust-oriented values of the English market, emphasizing efficiency, security, and scalability.
+```
+
+**`o1-preview` campaign**
+
+```txt
+**Headline:**
+"Push Boundaries, Not Paperwork: Effortless Global AI Deployment with Koyeb"
+---
+**Main Copy:**
+Unlock the true potential of your AI-driven B2B solutions and take them global without the usual hassle. With Koyeb's cutting-edge serverless platform, you can deploy worldwide at lightning speed, seamlessly integrating with your existing workflows. Say farewell to the faff of infrastructure management—free up your team to focus on innovation while we handle the heavy lifting.
+Experience unparalleled scalability and performance by running your applications wherever your users are. Our edge computing advantage ensures reduced latency and a superior user experience across the globe. Keep control firmly in your hands with self-hosting capabilities, vital for sectors like FinTech, EdTech, and HealthTech, ensuring data sovereignty and compliance with regional regulations.
+Break free from vendor lock-in with our multi-cloud flexibility. Future-proof your applications and stay ahead of the curve with solutions adaptable to evolving technologies and market needs. Optimised for AI workloads, Koyeb empowers you to create value without getting bogged down by operational complexities.
+---
+**Call to Action:**
+It's time to cut to the chase and let your innovation know no bounds. Discover how Koyeb can accelerate your AI-driven B2B solutions, giving your business the agility and control it demands. **Experience the freedom of serverless, multi-cloud deployment today.**
+---
+**Social Media Snippets:**
+1. "Ready to ditch the faff and deploy your AI solutions globally? With Koyeb, go serverless and scale instantly. No fuss, just innovation. #Koyeb #AI #Serverless"
+2. "Push boundaries, not paperwork! Effortless global deployment of your AI-driven products starts with Koyeb. Focus on what matters. #InnovationUnleashed #MultiCloud"
+3. "Stay ahead of the game with Koyeb's edge computing. Deliver superior user experiences worldwide—securely and swiftly. #EdgeComputing #FinTech #EdTech #HealthTech"
+```
+
+Keep in mind that our current DeepSeek-R1 Qwen 32B is the third-biggest model variant, 20 times smaller than the 671B version.
+
+It is interesting to see how DeepSeek decided to go for a more formal tone, stating, “In England, professionalism and trust are highly valued. The language should be clear and concise, avoiding overly casual language.” At the same time, `o1-preview` used a tone closer to the U.S. market.
+
+[Follow the instructions on the repository](https://github.com/inngest/deepseek-r1-marketing-multilangual-example?tab=readme-ov-file#marketing-multilangual-generator) to deploy this Marketing multilingual workflow and test different prompts, change the parameters, and compare DeepSeek R1 Qwen 32B with other models.
+
+Now, look at a more advanced example: testing DeepSeek-R1 Qwen 32B's large context window and Agentic capabilities.
+
+**Agentic arXiv Research Assistant**
+------------------------------------
+
+Our second example is an Agentic RAG workflow that helps us answer general questions by searching in the latest arXiv research paper.
+
+This demo relies on DeepSeek-R1 Qwen 32b agentic capabilities (advanced reasoning) and a large context window comparable to the best available models (128k tokens).
+
+As a bonus, we will also test again its multilingual capabilities by asking questions in French while performing its reasoning in English using English documents.
+
+Our Assistant will take the shape of a workflow composed of the following steps:
+
+1.  From the user question, **generate a search query for the arXiv database**
+2.  Perform the search and fetch each paper as PDF as well as translating it to text
+3.  Finally, generate an answer to the initial user question by using the retrieved papers
+
+### **Implementation**
+
+Building such a pipeline with DeepSeek-R1 Qwen 32B raises its first challenge as it [does not yet support Tool Calling](https://github.com/deepseek-ai/DeepSeek-R1/issues/9) or structured output. To overcome this limitation, we will use the same prompting used by CrewAI and Langchain (from the ReAct pattern) to ask the model to generate a valid search query.
+
+Let's look at this pattern implementation:
+
+```typescript
+const generateSearchQuery = await step.ai.wrap(
+    "generate-search-query",
+    createCompletion,
+    {
+    model: model,
+    messages: [
+        {
+        role: "user",
+        content: `You are a helpful research analyst that helps users find relevant academic papers on arXiv to answer the following question:
+${input}
+
+DO NOT answer with your current knowledge, ONLY search for papers on arXiv.
+IMPORTANT: We are in the year ${new Date().getFullYear()}.
+
+Perform your arXiv search by returning your search query in the following format:
+
+<search_query>
+{your search query}
+</search_query>
+`,
+        },
+    ],
+    temperature: model.includes("deepseek") ? 0.6 : 1,
+    }
+);
+```
+
+The people building Agents will recognize the prompt pattern involving the use of “NOT” and very specific scoping instructions to get the model to return a formatted answer.
+
+Two main challenges required multiple integrations to get such a prompt to work:
+
+*   Remove the use of a `system` prompt, which was always overridden by the following `user` prompt
+*   DeepSeek-R1 Qwen 32B often ignored the main task and decided to answer the question with it recent training data
+
+The generated search query is then extracted from the model's response and used to find papers. Each paper's PDF is downloaded and formatted as text before being incorporated into a merged results list.
+
+```typescript
+const papersContents = await step.run("search-arxiv", async () => {
+    if (
+    generateSearchQuery.choices[0].message.content.includes(
+        "<search_query>"
+    )
+    ) {
+    console.log("found search query!");
+    let searchQuery = (
+        generateSearchQuery.choices[0].message.content as string
+    ).match(/<search_query>(.*?)<\/search_query>/s)?.[1];
+    // remove quotes and line breaks
+    searchQuery = searchQuery?.replace(/["\n]/g, "");
+    console.log("search query:", searchQuery);
+    if (searchQuery) {
+        try {
+        let results = await searchArxiv(searchQuery, MAX_RESULTS);
+        console.log("results:", results);
+        const papersContents = [];
+        for (const result of results) {
+            let content = "";
+            try {
+            content = await getPaperContent(
+                result.link.replace("/abs/", "/pdf/")
+            );
+            } catch (error) {
+            console.error("Error getting paper content", error);
+            }
+            papersContents.push(`
+                ------------------------------
+                Title: ${result.title}
+                Authors: ${result.authors.join(", ")}
+                Summary: ${result.summary}
+                Content: \n ${content}
+                ------------------------------
+                `);
+        }
+        return papersContents.join("\n\n");
+        } catch (error) {
+        console.error("Error calling tool", error);
+        }
+    }
+    }
+});
+```
+
+_Note: The first three results and their first 5 PDF pages are extracted to avoid implementing document chunking. However, an upcoming version of the Qwen model featuring a 1m token context window will enable us to remove this limitation._
+
+### Evaluation of the results
+
+Asking precise questions such as “What are the latest advancements in deep learning optimization techniques?” works as expected.
+
+![Evaluation of the results 1](/static/blog/deepseek-r1-step-ai/inngest2.png)
+
+Also, a mixed and vague question such as “Explain to me like I'm five the last advancements applicable to LLM” does not generate an irrelevant search query.
+
+Surprisingly, asking a question in French and specifying that you want a French answer does not lead the model to search for papers written in French. This is another good demonstration of the multilingual flexibility of DeepSeek-R1 Qwen 32B.
+
+![Evaluation of the results 2](/static/blog/deepseek-r1-step-ai/inngest3.png)
+
+_DeepSeek-R1 Qwen 32B generates a relevant arXiv search query from a French question._
+
+Find the code and the instructions to deploy this DeepSeek-R1 Qwen 32b Research Assistant [on the repository](https://github.com/inngest/deepseek-r1-agentic-rag-arxiv-research-example?tab=readme-ov-file#agentic-rag-powered-arxiv-research-assistant).
+
+Conclusion
+----------
+
+DeepSeek R1 is a challenger in the model race. The covered examples showcased how well this new model's reasoning and multilingual capabilities perform while being self-hosted on Koyeb for only $2/h (_when deployed on a perfectly fitted A100 with 80 GB VRAM_).
+
+Still, this is only the beginning of this new series of open-source models, as we are still waiting for DeepSeek R1 to develop its Tool calling and support for `system` prompts, which are essential for creating agentic applications.
