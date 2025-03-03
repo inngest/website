@@ -5,6 +5,7 @@ export type PageProps = {
     title?: string;
     description?: string;
     image?: string;
+    canonical_url?: string;
     // Disable auto-injecting meta tags
     disabled?: boolean;
   };
