@@ -22,6 +22,8 @@ Here is a one-file example of a fully-functioning app that connects to Inngest.
 <CodeGroup>
 ```ts
 import { Inngest } from 'inngest'
+import { connect } from 'inngest/connect';
+import { ConnectionState } from 'inngest/components/connect/types';
 
 const inngest = new Inngest({
   id: 'my-app'
@@ -35,11 +37,13 @@ const handleSignupFunction = inngest.createFunction(
   }
 );
 
-inngest.connect({
-  functions: [handleSignupFunction],
-}).then((connection) => {
+(async () => {
+  const connection = await connect({
+    apps: [{ client: inngest, functions: [handleSignupFunction] }]
+  });
+
   console.log('Worker: connected', connection);
-});
+})();
 ```
 ```go
 type UserCreatedEvent struct {
@@ -69,11 +73,22 @@ func main() {
 
 	fmt.Println("Worker: connecting")
 
-	err := app.Connect(ctx)
+	ws, err := inngestgo.Connect(ctx, inngestgo.ConnectOpts{
+		InstanceID: inngestgo.Ptr("example-worker"),
+		Apps:       []inngestgo.Handler{h},
+	})
 	if err != nil {
 		fmt.Printf("ERROR: %#v\n", err)
 		os.Exit(1)
 	}
+
+  defer func(ws connect.WorkerConnection) {
+		<-ctx.Done()
+		err := ws.Close()
+		if err != nil {
+			fmt.Printf("could not close connection: %s\n", err)
+		}
+	}(ws)
 }
 ```
 </CodeGroup>
@@ -102,9 +117,19 @@ The `connect` API establishes a persistent WebSocket connection to Inngest. Each
     You can set the `appVersion` to whatever you want, but we recommend using something that automatically changes with each deploy, like a git commit sha or Docker image tag.
 
     <CodeGroup>
+    ```ts {{ title: "Any platform" }}
+    // You can set the app version to any environment variable, you might use
+    // a build number ('v2025.02.12.01'), git commit sha ('f5a40ff'), or
+    // a custom value ('my-app-v1').
+    const inngest = new Inngest({
+      id: 'my-app',
+      appVersion: process.env.MY_APP_VERSION, // Use any environment variable you choose
+    })
+    ```
     ```ts {{ title: "GitHub Actions" }}
     // If you're using Github Actions to build your app, you can set the
-    // app version to the GITHUB_SHA environment variable.
+    // app version to the GITHUB_SHA environment variable during build time
+    // or inject into the build of a Docker image.
     const inngest = new Inngest({
       id: 'my-app',
       appVersion: process.env.GITHUB_SHA,
@@ -134,19 +159,36 @@ The `connect` API establishes a persistent WebSocket connection to Inngest. Each
     By default, Inngest will attempt to use the hostname of the worker as the instance id. If you're running your app in a containerized environment, you can set the `instanceId` to the container id.
 
     <CodeGroup>
+    ```ts {{ title: "Any platform" }}
+    // Set the instance ID to any environment variable that is unique to the worker
+    await connect({
+      apps: [...],
+      instanceId: process.env.MY_CONTAINER_ID,
+    })
+    ```
+    ```ts {{ title: "Kubernetes + Docker" }}
+    // instanceId defaults to the HOSTNAME environment variable.
+    // By default, Kubernetes and Docker set the HOSTNAME environment variable to the pod name
+    // so it is automatically set for you.
+    await connect({
+      apps: [...],
+      // This is what happens under the hood if you don't set instanceId
+      // instanceId: process.env.HOSTNAME,
+    })
+    ```
     ```ts {{ title: "Render" }}
     // Render includes the RENDER_INSTANCE_ID env var at runtime.
     // https://render.com/docs/environment-variables
-    connect({
-      functions: [...],
+    await connect({
+      apps: [...],
       instanceId: process.env.RENDER_INSTANCE_ID,
     })
     ```
     ```ts {{ title: "Fly.io" }}
     // Fly includes the FLY_MACHINE_ID env var at runtime.
     // https://fly.io/docs/machines/runtime-environment/
-    connect({
-      functions: [...],
+    await connect({
+      apps: [...],
       instanceId: process.env.FLY_MACHINE_ID,
     })
     ```
@@ -156,13 +198,13 @@ The `connect` API establishes a persistent WebSocket connection to Inngest. Each
     The `maxConcurrency` option is used to limit the number of concurrent steps that can be executed by the worker instance. This allows Inngest to distribute load across multiple workers and not overload a single worker.
 
     <Warning>
-      The `maxConcurrency` option is not yet supported.
+      The `maxConcurrency` option is not yet supported. It will be supported in a future release before general availability.
     </Warning>
 
     <CodeGroup>
     ```ts
-    connect({
-      functions: [...],
+    await connect({
+      apps: [...],
       maxConcurrency: 100,
     })
     ```
@@ -170,6 +212,82 @@ The `connect` API establishes a persistent WebSocket connection to Inngest. Each
   </Step>
 </Steps>
 
-## Kubernetes
+## Lifecycle
 
-_Kubernetes guide and best practices coming soon_
+_Coming soon_
+
+{/* It's important to understand the lifecycle of a connect worker and how it relates to the deployment of a */}
+
+{/* listening to signals, shutdown/startup, */}
+
+## Health checks
+
+If you are running your app in a containerized environment, we recommend using a health check to ensure that your app is running and ready to accept connections. This is key for graceful rollouts of new app versions. If you are using Kubernetes, we recommend using the `readinessProbe` to check that the app is ready to accept connections.
+
+The simplest way to implement a health check is to create an http endpoint that listens for health check requests. As connect is an outbound WebSocket connection, you'll need to create a small http server that listens for health check requests and returns a 200 status code when the connection to Inngest is active.
+
+Here is an example of using `connect` with a basic Node.js http server to listen for health check requests and return a 200 status code when the connection to Inngest is active.
+
+```ts
+import { createServer } from 'http';
+import { connect } from 'inngest/connect';
+import { inngest, functions } from './src/inngest';
+
+(async () => {
+  const connection = await connect({
+    apps: [{ client: inngest, functions }]
+  });
+
+  console.log('Worker: connected', connection);
+
+  // This is a basic web server that only listens for the /ready endpoint
+  // and returns a 200 status code when the connection to Inngest is active.
+  const httpServer = createServer((req, res) => {
+    if (req.url === '/ready') {
+      if (connection.state === ConnectionState.ACTIVE) {
+        res.writeHead(200, { 'Content-Type': 'text/plain' });
+        res.end('OK');
+      } else {
+        res.writeHead(500, { 'Content-Type': 'text/plain' });
+        res.end('NOT OK');
+      }
+      return;
+    }
+    res.writeHead(404, { 'Content-Type': 'text/plain' });
+    res.end('NOT FOUND');
+  });
+
+  // Start the server on a port of your choice
+  httpServer.listen(8080, () => {
+    console.log('Worker: HTTP server listening on port 8080');
+  });
+
+  // When the Inngest connection has gracefully closed,
+  // this will resolve and the app will exit.
+  await connection.closed;
+
+  console.log('Worker: Shut down');
+  httpServer.close();
+})();
+```
+
+### Kubernetes readiness probe
+
+If you are running your app in Kubernetes, you can use the `readinessProbe` to check that the app is ready to accept connections. For the above example running on port 8080, the readiness probe would look like this:
+
+```yaml
+readinessProbe:
+  httpGet:
+    path: /ready
+  initialDelaySeconds: 3
+  periodSeconds: 10
+  successThreshold: 3
+  failureThreshold: 3
+```
+
+{/* TODO: promises/apis/etc., multiple apps, tour of the UI with workers */}
+
+
+
+
+
