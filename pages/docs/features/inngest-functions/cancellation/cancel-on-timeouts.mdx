@@ -5,7 +5,7 @@ export const description = 'Learn how to cancel long running functions with even
 
 It's possible to force runs to cancel if they take too long to start, or if the runs execute for too long.  The `timeouts` configuration property allows you to automatically cancel functions based off of two timeout properties:
 
-- `timeouts.start`, which controls how long a function can stay unstarted in the queue
+- `timeouts.start`, which controls how long a function can stay "queued" before they start
 - `timeouts.finish`, which controls how long a function can execute once started
 
 
@@ -19,9 +19,9 @@ In the following examples, we'll explore how to configure the timeout property a
   ]}>
 
 
-### `timeouts.start` - Adding timeouts to unstarted runs
+### `timeouts.start` - Adding timeouts to queued runs (before start)
 
-Runs may stay in the queue waiting to start due to concurrency backlogs, throttling configurations, or other delays.  You can cancel functions automatically if they stay unstarted for too long.
+Runs may stay in the queue waiting to start due to concurrency backlogs, throttling configurations, or other delays. You can automatically cancel these runs if they are queued for too long prior to starting.
 
 The `timeouts.start` configuration property controls this timeout. This example forces runs to cancel if it takes over 10 seconds to successfully start the first step of a run:
 
@@ -56,7 +56,7 @@ return inngestgo.CreateFunction(
 			Start: inngestgo.Ptr(10*time.Second),
 		},
 	},
-	inngestgo.EventTrigger("tasks/reminder.createad", nil),
+	inngestgo.EventTrigger("tasks/reminder.created", nil),
 	func(ctx context.Context, input inngestgo.Input[ReminderEvent]) (any, error) {
 		return step.Run(ctx, "send-reminder", func (ctx context.Context) (bool, error) {
 			// ...
@@ -127,3 +127,4 @@ return inngestgo.CreateFunction(
 * Once the first attempt of a step begins, the `timeouts.start` property no longer applies.  Instead, the `timeouts.finish` duration begins.
 * Once started, the `timeouts.finish` duration limits how long a run can execute
 * Both properties can be stacked to control the overall length of a function run
+* Runs that are cancelled due to a timeout trigger an [`inngest/function.cancelled`](/docs/reference/system-events/inngest-function-cancelled) event

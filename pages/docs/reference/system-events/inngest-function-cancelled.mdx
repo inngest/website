@@ -2,7 +2,7 @@ import { Callout, CodeGroup, Properties, Property, Row, Col, VersionBadge } from
 
 # `inngest/function.cancelled` {{ className: "not-prose" }}
 
-The `inngest/function.cancelled` event is sent whenever any single function is cancelled in your [Inngest environment](/docs/platform/environments). The event will be sent if the event is cancelled via [`cancelOn` event](/docs/features/inngest-functions/cancellation/cancel-on-events), [REST API](/docs/guides/cancel-running-functions) or [bulk cancellation](/docs/platform/manage/bulk-cancellation).
+The `inngest/function.cancelled` event is sent whenever any single function is cancelled in your [Inngest environment](/docs/platform/environments). The event will be sent if the event is cancelled via [`cancelOn` event](/docs/features/inngest-functions/cancellation/cancel-on-events), [function timeouts](/docs/features/inngest-functions/cancellation/cancel-on-timeouts),  [REST API](/docs/guides/cancel-running-functions) or [bulk cancellation](/docs/platform/manage/bulk-cancellation).
 
 This event can be used to handle cleanup or similar for a single function or handle some sort of tracking function cancellations in some external system like Datadog.
 
