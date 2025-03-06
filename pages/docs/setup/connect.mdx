@@ -109,6 +109,10 @@ No signing or event keys are required in local development mode.
 
 ## Deploying to production
 
+<Warning>
+  The `connect` API is currently in developer preview and is not yet recommended for critical production workloads. We recommend deploying to a staging environment first and reaching out to the Inngest team prior to deploying to production.
+</Warning>
+
 <Steps>
   <Step title="Set signing and event keys">
     To enable your application to securely connect to Inngest, you must set the `INNGEST_SIGNING_KEY` and `INNGEST_EVENT_KEY` environment variables.
