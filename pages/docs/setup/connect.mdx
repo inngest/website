@@ -3,7 +3,7 @@ import { Info, Warning, CodeGroup, Steps, Step } from "shared/Docs/mdx";
 # Connect
 
 <Info>
-  These docs are part of a developer preview for Inngest's `connect` API. This feature must be enabled on your account by contacting support.
+  These docs are part of a developer preview for Inngest's `connect` API. This feature must be enabled on your account by [contacting support](https://app.inngest.com/support).
 </Info>
 
 The `connect` API allows your app to create an outbound persistent connection to Inngest. Each app can establish multiple connections to Inngest, which enable you to scale horizontally across multiple workers. The key benefits of using `connect` compared to [`serve`](/docs/learn/serving-inngest-functions) are:
@@ -100,6 +100,12 @@ The `connect` API establishes a persistent WebSocket connection to Inngest. Each
 - **Automatic re-connections** - The connection will automatically reconnect if it is closed.
 - **Graceful shutdown** - The connection will gracefully shutdown when the app receives a signal to terminate (`SIGTERM`). New steps will not be accepted after the connection is closed, and existing steps will be allowed to complete.
 - **Worker-level maximum concurrency** - Each worker can configure the maximum number of concurrent steps it can handle. This allows Inngest to distribute load across multiple workers and not overload a single worker.
+
+## Local development
+
+During local development, set the `INNGEST_DEV=1` environment variable to enable local development mode. This will cause the SDK to connect to [the Inngest dev server](/docs/dev-server). When your worker process is running it will automatically connect to the dev server and sync your functions' configurations.
+
+No signing or event keys are required in local development mode.
 
 ## Deploying to production
 
@@ -214,11 +220,90 @@ The `connect` API establishes a persistent WebSocket connection to Inngest. Each
 
 ## Lifecycle
 
-_Coming soon_
+As a connect worker is a long-running process, it's important to understand the lifecycle of the worker and how it relates to the deployment of a new version of your app. Here is an overview of the lifecycle of a connect worker and where you can hook into it to handle graceful shutdowns and other lifecycle events.
 
-{/* It's important to understand the lifecycle of a connect worker and how it relates to the deployment of a */}
+<Steps>
+  <Step>
+    `CONNECTING` - The worker is establishing a connection to Inngest. This starts when `connect()` is called.
 
-{/* listening to signals, shutdown/startup, */}
+    First, the worker sends a request to the Inngest API via HTTP to get connection information. The response includes the WebSocket gateway URL. The worker then connects to the WebSocket gateway.
+  </Step>
+  <Step>
+    `ACTIVE` - The worker is connected to Inngest and ready to execute functions.
+
+    * The new `appVersion` is synced including the latest function configurations.
+    * The worker begins sending and receiving "heartbeat" messages to Inngest to ensure the connection is still active.
+    * The worker will automatically reconnect if the connection is lost.
+
+    ```ts {{ title: "TypeScript" }}
+    // The connect promise will resolve when the connection is ACTIVE
+    const connection = await connect({
+      apps: [...],
+    })
+    console.log(`The worker connection is: ${connection.state}`)
+    // The worker connection is: ACTIVE
+    ```
+  </Step>
+  <Step>
+    `RECONNECTING` - The worker is reconnecting to Inngest after a connection was lost.
+  </Step>
+  <Step>
+    `CLOSING` - The worker is beginning the shutdown process.
+
+    * New steps will not be accepted after this state is entered.
+    * Existing steps will be allowed to complete.
+
+    By default, the SDK listens for `SIGTERM` and `SIGINT` signals and begins the shutdown process. You can customize this behavior by in each SDK:
+
+    <CodeGroup>
+    ```ts
+    // You can explicitly configure which signals the SDK should
+    // listen for by an array of signals to `handleShutdownSignals`:
+    const connection = await connect({
+      apps: [...],
+      // ex. Only listen for SIGTERM, or pass an empty array to listen to no signals
+      handleShutdownSignals: ['SIGTERM'],
+    })
+    ```
+    ```go
+    // The Go SDK must receive a Context object that will be notified
+    // when the correct signals are received. Use signal.NotifyContext:
+    ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+    defer cancel()
+
+    // Later in your function - pass the context to the connect function:
+    ws, err := inngestgo.Connect(ctx, inngestgo.ConnectOpts{
+        InstanceID: inngestgo.Ptr("example-worker"),
+        Apps:       []inngestgo.Client{client},
+    })
+    ```
+    </CodeGroup>
+
+    You can manually close the connection with the `close` method on the connection object:
+
+    ```ts
+    await connection.close()
+    // Connection is now closed
+    ```
+  </Step>
+  <Step>
+    `CLOSED` - The worker's WebSocket connection has closed. Any in-flight requests may continue to complete via the HTTP API.
+
+    ```ts {{ title: "TypeScript" }}
+    // The `closed` promise will resolve when the connection is "CLOSED"
+    await connection.closed
+    // Connection is now closed
+    ```
+  </Step>
+</Steps>
+
+## Worker observability
+
+In the Inngest Cloud dashboard, you can view the connection status of each of your workers. At a glance, you can see each worker's instance id, connection status, connected at timestamp, last heartbeat, the app version, and app version.
+
+This view is helpful for debugging connection issues or verifying rolling deploys of new app versions.
+
+![App worker observability](/assets/docs/connect/cloud-app-workers.png)
 
 ## Health checks
 
@@ -285,9 +370,26 @@ readinessProbe:
   failureThreshold: 3
 ```
 
-{/* TODO: promises/apis/etc., multiple apps, tour of the UI with workers */}
+## Self hosted Inngest
 
+If you are [self-hosting](/docs/self-hosting?ref=docs-connect) Inngest, you need to ensure that the Inngest WebSocket gateway is accessible within your network. The Inngest WebSocket gateway is available at port `8289`.
 
+Depending on your network configuration, you may need to dynamically re-write the gateway URL that the SDK uses to connect.
 
+```ts
+const connection = await connect({
+  apps: [...],
+  rewriteGatewayEndpoint: (url) => { // ex. "wss://gw2.connect.inngest.com/v0/connect"
+    // If not running in dev mode, return
+    if (!process.env.INNGEST_DEV) {
+      const clusterUrl = new URL(url);
+      clusterUrl.host = 'my-cluster-host:8289';
+      return clusterUrl.toString();
+    }
+    return url;
+  },
+})
+```
 
+{/* TODO: multiple apps in a single worker */}
 
