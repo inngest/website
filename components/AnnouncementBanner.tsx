@@ -43,9 +43,9 @@ export default function AnnouncementBanner() {
   // return null;
 
   return (
-    <Banner href="https://innge.st/devweek-25">
-      Sign-up to catch a live replay of “Orchestrating Agentic AI Workflows”
-      from DevWeek
+    <Banner href="https://directus.is/inngest">
+      Join our "Building Advanced Content Workflows" webinar with Directus on
+      March 20th
     </Banner>
   );
 }

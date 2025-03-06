@@ -942,6 +942,12 @@ export const menuTabs = [
     href: "/docs/examples",
     matcher: matchers.examples,
   },
+  {
+    title: "AgentKit",
+    // icon: LightBulbIcon,
+    href: "https://agentkit.inngest.com/overview",
+    // matcher: matchers.examples,
+  },
 ];
 
 export const topLevelNav = [
