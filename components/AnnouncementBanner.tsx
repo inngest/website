@@ -17,7 +17,7 @@ type Props = {
   `}</style>
  */
 
-const AnnouncementBanner: React.FC<Props> = ({ href, children, className }) => (
+const Banner: React.FC<Props> = ({ href, children, className }) => (
   <a
     href={href}
     // use the .page-banner class to hide it on select pages via CSS
@@ -38,4 +38,14 @@ const AnnouncementBanner: React.FC<Props> = ({ href, children, className }) => (
   </a>
 );
 
-export default AnnouncementBanner;
+export default function AnnouncementBanner() {
+  // Return null if we want to disable the banner
+  // return null;
+
+  return (
+    <Banner href="https://innge.st/devweek-25">
+      Sign-up to catch a live replay of “Orchestrating Agentic AI Workflows”
+      from DevWeek
+    </Banner>
+  );
+}

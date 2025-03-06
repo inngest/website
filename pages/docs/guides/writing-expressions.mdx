@@ -1,3 +1,5 @@
+import { Info } from "src/shared/Docs/mdx";
+
 # Writing expressions
 
 Expressions are used in a number of ways for configuring your functions. They are used for:
@@ -102,6 +104,10 @@ Most expressions are given the `event` payload object as the input. Expressions 
 * When working with the TypeScript SDK, write expressions within backticks `` ` `` to use quotes in your expression or use JavaScript's string interpolation.
 * Use ternary operators to return default values
 * When using the or operator (`||`), CEL will always return a boolean. This is different from JavaScript, where the or operator returns the value of the statement left of the operator if truthy. Use the ternary operator (`?`) instead of `||` for conditional returns.
+
+<Info>
+  Please note that while CEL supports a wide range of helpers and macros, Inngest only supports a subset of these to ensure a high level of performance and reliability.
+</Info>
 
 {/* TODO - Omit these advanced macros for now until we review support individually
 

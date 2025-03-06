@@ -1,9 +1,18 @@
 "use client";
 
-import { useRef, useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
-export default function NewsletterSignup({
+type Props = {
+  showHeader?: boolean;
+  buttonText?: string;
+  tags?: string[];
+  tagsFromSearchParams?: boolean;
+  fields?: { name: string; label: string }[];
+  redirect?: string;
+};
+
+function NewsletterSignup({
   showHeader = true,
   buttonText = "Submit",
   tags = [],
@@ -11,14 +20,7 @@ export default function NewsletterSignup({
   // NOTE - Custom fields must be set up in mailchimp first that match the "name"
   fields = [],
   redirect,
-}: {
-  showHeader?: boolean;
-  buttonText?: string;
-  tags?: string[];
-  tagsFromSearchParams?: boolean;
-  fields?: { name: string; label: string }[];
-  redirect?: string;
-}) {
+}: Props) {
   const router = useRouter();
   const inputRef = useRef(null);
   const [loading, setLoading] = useState(false);
@@ -135,6 +137,14 @@ export default function NewsletterSignup({
         </p>
       )}
     </form>
+  );
+}
+
+export default function (props: Props) {
+  return (
+    <Suspense>
+      <NewsletterSignup {...props} />
+    </Suspense>
   );
 }
 

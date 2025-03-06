@@ -14,7 +14,12 @@ import {
   AutocompleteApi,
 } from "@algolia/autocomplete-core";
 import { getAlgoliaResults } from "@algolia/autocomplete-preset-algolia";
-import { Dialog, Transition } from "@headlessui/react";
+import {
+  Dialog,
+  DialogPanel,
+  Transition,
+  TransitionChild,
+} from "@headlessui/react";
 import algoliasearch from "algoliasearch/lite";
 import clsx from "clsx";
 
@@ -346,6 +351,7 @@ const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
         <SearchIcon className="pointer-events-none absolute left-3 top-0 h-full w-5 stroke-slate-500" />
         {/* @ts-ignore */}
         <input
+          data-autofocus
           ref={inputRef}
           className={clsx(
             "flex-auto appearance-none bg-transparent pl-10 text-slate-900 outline-none placeholder:text-carbon-600 focus:w-full focus:flex-none dark:text-white sm:text-sm [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden [&::-webkit-search-results-button]:hidden [&::-webkit-search-results-decoration]:hidden",
@@ -395,6 +401,10 @@ function SearchDialog({
     function onRouteChange() {
       setOpen(false);
     }
+    // Hack for mobile auto-focus b/c data-autofocus doesn't work there
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 100);
 
     router.events.on("routeChangeStart", onRouteChange);
     router.events.on("hashChangeStart", onRouteChange);
@@ -403,7 +413,7 @@ function SearchDialog({
       router.events.off("routeChangeStart", onRouteChange);
       router.events.off("hashChangeStart", onRouteChange);
     };
-  }, [open, setOpen, router]);
+  }, [open, setOpen, router, inputRef.current]);
 
   useEffect(() => {
     if (open || enableShortcutKey === false) {
@@ -445,7 +455,7 @@ function SearchDialog({
   );
 
   return (
-    <Transition.Root
+    <Transition
       show={open}
       as={Fragment}
       afterLeave={() => autocomplete.setQuery("")}
@@ -454,7 +464,7 @@ function SearchDialog({
         onClose={onClose}
         className={clsx("fixed inset-0 z-50", className)}
       >
-        <Transition.Child
+        <TransitionChild
           as={Fragment}
           enter="ease-out duration-300"
           enterFrom="opacity-0"
@@ -464,10 +474,10 @@ function SearchDialog({
           leaveTo="opacity-0"
         >
           <div className="fixed inset-0 bg-carbon-400/40 backdrop-blur-sm dark:bg-black/40" />
-        </Transition.Child>
+        </TransitionChild>
 
         <div className="fixed inset-0 overflow-y-auto px-4 py-4 sm:py-20 sm:px-6 md:py-32 lg:px-8 lg:py-[15vh]">
-          <Transition.Child
+          <TransitionChild
             as={Fragment}
             enter="ease-out duration-300"
             enterFrom="opacity-0 scale-95"
@@ -476,7 +486,7 @@ function SearchDialog({
             leaveFrom="opacity-100 scale-100"
             leaveTo="opacity-0 scale-95"
           >
-            <Dialog.Panel className="mx-auto overflow-hidden rounded-lg bg-carbon-50 shadow-xl ring-1 ring-carbon-900/7.5 dark:bg-carbon-900 dark:ring-carbon-800 sm:max-w-xl">
+            <DialogPanel className="mx-auto overflow-hidden rounded-lg bg-carbon-50 shadow-xl ring-1 ring-carbon-900/7.5 dark:bg-carbon-900 dark:ring-carbon-800 sm:max-w-xl">
               <div {...autocomplete.getRootProps({})}>
                 {/* @ts-ignore */}
                 <form
@@ -512,11 +522,11 @@ function SearchDialog({
                   </div>
                 </form>
               </div>
-            </Dialog.Panel>
-          </Transition.Child>
+            </DialogPanel>
+          </TransitionChild>
         </div>
       </Dialog>
-    </Transition.Root>
+    </Transition>
   );
 }
 

@@ -22,7 +22,7 @@ export const getStaticProps: GetStaticProps = async (ctx) => {
     ? ctx?.params?.pattern[0]
     : ctx?.params?.pattern;
   const pageInfo = getPatternProps(slug || "");
-  const pageData = await loadMarkdownFile("patterns/_patterns", slug);
+  const pageData = await loadMarkdownFile("pages/patterns/_patterns", slug);
   return {
     props: {
       ...pageInfo,

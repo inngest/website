@@ -27,13 +27,7 @@ export default function Page() {
     <div>
       <HeroScreenshot />
       <div className="my-32">
-        <Heading
-          label="Powerful SDKs"
-          title="Simple APIs for reliable software"
-          description="Drop our SDK into your existing codebase to add durable execution via step functions in seconds. No queues, workers, or additional state management required."
-          className="my-8"
-        />
-        <UseCases />
+        <USPs />
       </div>
       <div className="my-32">
         <PlatformsLanguages />
@@ -51,7 +45,13 @@ export default function Page() {
         />
       </div>
       <div className="my-32">
-        <USPs />
+        <Heading
+          label="Powerful SDKs"
+          title="Simple APIs for reliable software"
+          description="Drop our SDK into your existing codebase to add durable execution via step functions in seconds. No queues, workers, or additional state management required."
+          className="my-8"
+        />
+        <UseCases />
       </div>
       <div className="my-32">
         <Quote

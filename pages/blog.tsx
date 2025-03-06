@@ -14,7 +14,6 @@ import { loadMarkdownFilesMetadata } from "../utils/markdown";
 import BlogHeader from "src/components/Blog/BlogHeader";
 import BlogPostList from "src/components/Blog/BlogPostList";
 import { type MDXBlogPost } from "src/components/Blog";
-// import { LaunchWeekBanner } from "./index";
 
 export default function BlogIndex(props) {
   const router = useRouter();
@@ -48,8 +47,6 @@ export default function BlogIndex(props) {
 
       <div className="font-sans">
         <Header />
-
-        {/* <LaunchWeekBanner urlRef="blog-feed-banner" /> */}
 
         <Container className="pt-8">
           <BlogHeader description={description} />
@@ -110,7 +107,7 @@ export default function BlogIndex(props) {
 
 // This function also gets called at build time to generate specific content.
 export async function getStaticProps() {
-  const posts = await loadMarkdownFilesMetadata<MDXBlogPost>("blog/_posts");
+  const posts = await loadMarkdownFilesMetadata<MDXBlogPost>("content/blog");
   // If a post is set to featured=false, do not show on main blog feed
   // This can be used for less important posts that may be directly linked to from other places
   const filteredPosts = posts.filter((p) => p?.featured !== false);

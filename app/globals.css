@@ -322,3 +322,21 @@ body {
 body {
   background-color: rgb(var(--color-background-canvas-base));
 }
+
+/* Dark mode class helpers */
+@media (prefers-color-scheme: light) {
+  .visible-light {
+    display: inherit;
+  }
+  .visible-dark {
+    display: none;
+  }
+}
+@media (prefers-color-scheme: dark) {
+  .visible-light {
+    display: none;
+  }
+  .visible-dark {
+    display: inherit;
+  }
+}

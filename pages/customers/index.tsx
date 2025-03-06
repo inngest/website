@@ -25,6 +25,7 @@ export async function getStaticProps() {
 const caseStudies: {
   href: string;
   logo: string;
+  logoScale?: number;
   name: string;
   title: string;
   snippet: React.ReactNode;
@@ -33,7 +34,7 @@ const caseStudies: {
 }[] = [
   {
     href: "/customers/soundcloud",
-    logo: "/assets/customers/soundcloud-logo-white.svg",
+    logo: "/assets/customers/soundcloud-logo-white-horizontal.svg",
     name: "SoundCloud",
     title: "Streamlining dynamic video generation",
     snippet: "Building scalable video pipelines with Inngest.",
@@ -42,6 +43,7 @@ const caseStudies: {
   {
     href: "/customers/otto",
     logo: "/assets/customers/otto-logo.svg",
+    logoScale: 0.8,
     name: "Otto",
     title: "Leveraging multi-tenant concurrency to scale AI workflows",
     snippet:
@@ -61,6 +63,7 @@ const caseStudies: {
     href: "/customers/resend",
     logo: "/assets/customers/resend.svg",
     name: "Resend",
+    logoScale: 0.8,
     title: "Scaling a developer email platform with serverless workflows",
     snippet: (
       <>
@@ -74,6 +77,7 @@ const caseStudies: {
     href: "/customers/megaseo",
     logo: "/assets/customers/megaseo-logo.svg",
     name: "Mega SEO",
+    logoScale: 0.6,
     title: "Powering the Future of AI-Driven Content",
     snippet: (
       <>
@@ -197,28 +201,40 @@ const gridQuotes: GridItem[] = [
   },
   {
     type: "quote",
-    name: "NiftyKit",
+    name: "Aomni",
     quote: {
       text: `For anyone who is building multi-step AI agents (such as AutoGPT type systems), I highly recommend building it on top of Inngest's job queue orchestration framework, the traceability it provides out of the box is super useful, plus you get timeouts & retries for free.`,
       attribution: {
         name: "David Zhang",
-        title: "Founder - Aomni",
+        title: "Founder",
       },
       avatar: "/assets/customers/aomni-david.jpg",
     },
   },
   {
     type: "quote",
-    name: "NiftyKit",
+    name: "Otto",
     quote: {
-      text: `I can't stress enough how integral Inngest has been to our operations. It's more than just "battle tested" for us—it's been a game-changer and a cornerstone of our processes.`,
+      text: `Inngest completely transformed how we handle AI orchestration at Otto. Its intuitive developer experience, built-in multi-tenant concurrency, and flow control allowed us to scale without the complexity of other tools or the need to build custom solutions. What would have taken us a month.`,
       attribution: {
-        name: "Robin Curbelo",
-        title: "Engineer",
+        name: "Sully Omar",
+        title: "Co-founder",
       },
-      avatar: "/assets/customers/niftykit-robin-curbelo.jpg",
+      avatar: "/assets/customers/otto-sully.jpg",
     },
   },
+  // {
+  //   type: "quote",
+  //   name: "NiftyKit",
+  //   quote: {
+  //     text: `I can't stress enough how integral Inngest has been to our operations. It's more than just "battle tested" for us—it's been a game-changer and a cornerstone of our processes.`,
+  //     attribution: {
+  //       name: "Robin Curbelo",
+  //       title: "Engineer",
+  //     },
+  //     avatar: "/assets/customers/niftykit-robin-curbelo.jpg",
+  //   },
+  // },
 ];
 
 const grid: GridItem[] = [
@@ -227,6 +243,27 @@ const grid: GridItem[] = [
     name: "Gumroad",
     url: "https://gumroad.com/",
     scale: 1.4,
+    type: "company",
+  },
+  {
+    src: "/assets/customers/browser-use-white.svg",
+    name: "Browser Use",
+    url: "https://browser-use.com/",
+    scale: 1.7,
+    type: "company",
+  },
+  {
+    src: "/assets/customers/documenso-logo-white.svg",
+    name: "Documenso",
+    url: "https://documenso.com/",
+    scale: 1.7,
+    type: "company",
+  },
+  {
+    src: "/assets/customers/day-ai-logo.svg",
+    name: "Day.ai",
+    url: "https://day.ai/",
+    scale: 1.2,
     type: "company",
   },
   {
@@ -241,13 +278,6 @@ const grid: GridItem[] = [
     name: "Howl",
     url: "https://www.planethowl.com/",
     scale: 0.9,
-    type: "company",
-  },
-  {
-    src: "/assets/customers/day-ai-logo.svg",
-    name: "Day.ai",
-    url: "https://day.ai/",
-    scale: 1.2,
     type: "company",
   },
   {
@@ -323,18 +353,19 @@ const grid: GridItem[] = [
     scale: 1,
     type: "company",
   },
+  // Hide when we don't want a dangling logo at the end
   {
     src: "/assets/customers/tono-logo.png",
     name: "Tono Health",
     scale: 0.9,
     type: "company",
   },
-  // Hide when we don't want a dangling logo at the end
-  // {
-  //   src: "/assets/customers/awaken-tax-logo.png",
-  //   name: "Awaken.tax",
-  //   type: "company",
-  // },
+
+  {
+    src: "/assets/customers/awaken-tax-logo.png",
+    name: "Awaken.tax",
+    type: "company",
+  },
 ];
 
 const gridItems = [...grid];
@@ -359,13 +390,13 @@ export default function Customers() {
           </p>
         </div>
         <div className="max-w-6xl mx-auto">
-          <div className="my-20 grid md:grid-cols-2 gap-6 md:gap-12">
+          <div className="my-20 grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
             {caseStudies.map((props, idx) => (
               <CaseStudyCard {...props} key={idx} />
             ))}
           </div>
 
-          <div className="my-20 grid md:grid-cols-3 gap-6 md:gap-12">
+          <div className="mt-20 mb-4 md:mb-6 grid md:grid-cols-3 gap-4 md:gap-6">
             {featuredCompanies.map(({ src, name, scale = 1, url }, idx) => (
               <div className="group relative p-6 flex flex-col justify-items-start items-center border border-subtle rounded-2xl">
                 <div className="my-10 md:my-20 h-20 md:h-24 flex items-center">
@@ -387,7 +418,7 @@ export default function Customers() {
             ))}
           </div>
 
-          <div className="mt-12 mb-36 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-12">
+          <div className="mt-4 md:mt-6 mb-36 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {gridItems.map(({ type, name, ...item }, idx) => {
               if (type === "quote") {
                 const { quote } = item;

@@ -24,7 +24,6 @@ import YouTube from "react-youtube-embed";
 import remarkGfm from "remark-gfm";
 import { SectionProvider } from "src/shared/Docs/SectionProvider";
 import FloatingCTA from "src/components/Blog/FloatingCTA";
-// import { LaunchWeekBanner } from "../index";
 
 // @ts-ignore
 import { remarkCodeHike, recmaCodeHike } from "codehike/mdx";
@@ -111,6 +110,7 @@ const authorURLs = {
   "Lydia Hallie": "https://x.com/lydiahallie",
   "Joe Adams": "https://www.linkedin.com/in/josephadams9/",
   "Charly Poly": "https://x.com/whereischarly",
+  "Ana Filipa de Almeida": "https://www.linkedin.com/in/anafilipadealmeida/"
 };
 
 export default function BlogLayout(props) {
@@ -191,7 +191,6 @@ export default function BlogLayout(props) {
 
       <div className="font-sans">
         <Header />
-        {/* <LaunchWeekBanner urlRef="blog-post-banner" /> */}
         <Container>
           <article>
             <main className="m-auto max-w-3xl pt-16 relative">
@@ -330,7 +329,7 @@ function CTAs({
 // called for each URL with the slug in params.
 export async function getStaticPaths() {
   const fs = require("fs");
-  const paths = fs.readdirSync("./pages/blog/_posts/").map((fname) => {
+  const paths = fs.readdirSync("./content/blog/").map((fname) => {
     return `/blog/${fname.replace(/.mdx?/, "")}`;
   });
   return { paths, fallback: false };
@@ -344,7 +343,7 @@ export async function getStaticProps({ params }) {
   const readingTime = require("reading-time");
   const matter = require("gray-matter");
 
-  let filePath = `./pages/blog/_posts/${params.slug}.md`;
+  let filePath = `./content/blog/${params.slug}.md`;
   if (!fs.existsSync(filePath) && fs.existsSync(filePath + "x")) {
     filePath += "x";
   }

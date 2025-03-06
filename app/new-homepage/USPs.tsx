@@ -11,13 +11,12 @@ export default function USPs() {
   return (
     <Container>
       <Heading
-        label="Effortless development"
-        title="Made for modern engineering teams"
+        label="DURABLE EXECUTION++"
+        title="Ship anywhere, everywhere, with durable execution and more"
         description={
           <>
-            We've built Inngest to enable every developer to build reliable,
-            scalable systems with less effort, more confidence, and fewer
-            headaches.
+            Develop and deploy reliable, AI-ready step functions in your current
+            codebase — no infrastructure or additional state management needed.
           </>
         }
         className="my-8"

@@ -36,7 +36,7 @@ export const generateMetadata = ({
     : getOpenGraphImageURL({ title });
   const metaTitle = `Inngest - ${title}`;
   const metadata: Metadata = {
-    title: metaTitle,
+    title,
     openGraph: {
       title: metaTitle,
       images: [imageUrl],
