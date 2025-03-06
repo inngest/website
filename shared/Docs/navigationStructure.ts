@@ -319,7 +319,21 @@ const sectionReference: (NavGroup | NavLink)[] = [
   },
   {
     title: "Go SDK",
-    href: "https://pkg.go.dev/github.com/inngest/inngestgo",
+    links: [
+      {
+        title: "Reference",
+        href: "https://pkg.go.dev/github.com/inngest/inngestgo",
+      },
+      {
+        title: "Migrations",
+        links: [
+          {
+            title: "v0.7 to v0.8",
+            href: `/docs/reference/go/migrations/v0.7-to-v0.8`,
+          },
+        ],
+      },
+    ],
   },
   {
     title: "REST API",
