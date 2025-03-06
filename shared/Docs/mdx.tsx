@@ -525,3 +525,37 @@ export function Card<T extends React.ElementType = "div">({
     </Component>
   );
 }
+
+export function Steps({ children }: { children: React.ReactNode[] }) {
+  return (
+    <div className="ml-3.5 mt-10 mb-6" role="list">
+      {(Array.isArray(children) ? children : [children]).map((child, index) => (
+        <div key={index} className="relative flex items-start pb-2">
+          {index < children.length - 1 && (
+            <div className="absolute w-px h-[calc(100%-2.75rem)] top-[2.75rem] bg-gray-200/70 dark:bg-white/10"></div>
+          )}
+          <div className="absolute ml-[-14px] py-2">
+            <div className="w-7 h-7 shrink-0 rounded-lg bg-gray-100 dark:text-white dark:bg-[#26292E] text-sm text-gray-800 font-semibold flex items-center justify-center">
+              {index + 1}
+            </div>
+          </div>
+          {child}
+        </div>
+      ))}
+    </div>
+  );
+}
+export function Step({
+  title,
+  children,
+}: {
+  title?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="w-full overflow-hidden pl-12 pr-px step">
+      {title && <p className="mt-2 text-lg font-semibold">{title}</p>}
+      {children}
+    </div>
+  );
+}

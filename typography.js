@@ -40,6 +40,9 @@ module.exports = ({ theme }) => ({
         marginTop: theme("spacing.6"),
         marginBottom: theme("spacing.6"),
       },
+      ".step > p": {
+        marginTop: theme("spacing.2"),
+      },
       '[class~="lead"]': {
         fontSize: theme("fontSize.base")[0],
         ...theme("fontSize.base")[1],

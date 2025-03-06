@@ -1,0 +1,395 @@
+import { Info, Warning, CodeGroup, Steps, Step } from "shared/Docs/mdx";
+
+# Connect
+
+<Info>
+  These docs are part of a developer preview for Inngest's `connect` API. This feature must be enabled on your account by [contacting support](https://app.inngest.com/support).
+</Info>
+
+The `connect` API allows your app to create an outbound persistent connection to Inngest. Each app can establish multiple connections to Inngest, which enable you to scale horizontally across multiple workers. The key benefits of using `connect` compared to [`serve`](/docs/learn/serving-inngest-functions) are:
+
+- **Lowest latency** - Persistent connections enable the lowest latency between your app and Inngest.
+- **Elastic horizontal scaling** - Easily add more capacity by running additional workers.
+- **Ideal for container runtimes** -  Deploy on Kubernetes or ECS without the need of a load balancer for inbound traffic
+- **Simpler long running steps** - Step execution is not bound by platform http timeouts.
+
+## Getting started
+
+Using `connect` with your app is simple. Using each SDK's "connect" method only requires a list of functions that are available to be executed. (NOTE - Python is not yet supported)
+
+Here is a one-file example of a fully-functioning app that connects to Inngest.
+
+<CodeGroup>
+```ts
+import { Inngest } from 'inngest'
+import { connect } from 'inngest/connect';
+import { ConnectionState } from 'inngest/components/connect/types';
+
+const inngest = new Inngest({
+  id: 'my-app'
+});
+
+const handleSignupFunction = inngest.createFunction(
+  { id: 'handle-signup' },
+  { event: 'user.created'}
+  async ({ event, step }) => {
+    console.log('Function called', event);
+  }
+);
+
+(async () => {
+  const connection = await connect({
+    apps: [{ client: inngest, functions: [handleSignupFunction] }]
+  });
+
+  console.log('Worker: connected', connection);
+})();
+```
+```go
+type UserCreatedEvent struct {
+	Name string
+	Data struct {
+		UserID string `json:"user_id"`
+	}
+}
+
+func main() {
+	ctx := context.Background()
+
+	app := inngestgo.NewHandler("my-app", inngestgo.HandlerOpts{
+		Logger:  logger.StdlibLogger(ctx),
+	})
+
+	f := inngestgo.CreateFunction(
+		inngestgo.FunctionOpts{ID: "handle-signup", Name: "Handle signup"},
+		inngestgo.EventTrigger("user.created", nil),
+		func(ctx context.Context, input inngestgo.Input[UserCreatedEvent]) (any, error) {
+      fmt.Println("Function called")
+			return map[string]any{"success": true}, nil
+		},
+	)
+
+	app.Register(f)
+
+	fmt.Println("Worker: connecting")
+
+	ws, err := inngestgo.Connect(ctx, inngestgo.ConnectOpts{
+		InstanceID: inngestgo.Ptr("example-worker"),
+		Apps:       []inngestgo.Handler{h},
+	})
+	if err != nil {
+		fmt.Printf("ERROR: %#v\n", err)
+		os.Exit(1)
+	}
+
+  defer func(ws connect.WorkerConnection) {
+		<-ctx.Done()
+		err := ws.Close()
+		if err != nil {
+			fmt.Printf("could not close connection: %s\n", err)
+		}
+	}(ws)
+}
+```
+</CodeGroup>
+
+## How does it work?
+
+The `connect` API establishes a persistent WebSocket connection to Inngest. Each connection can handle executing multiple functions and steps concurrently. Each app can create multiple connections to Inngest enabling horizontal scaling. Additionally, connect has the following features:
+
+- **Automatic re-connections** - The connection will automatically reconnect if it is closed.
+- **Graceful shutdown** - The connection will gracefully shutdown when the app receives a signal to terminate (`SIGTERM`). New steps will not be accepted after the connection is closed, and existing steps will be allowed to complete.
+- **Worker-level maximum concurrency** - Each worker can configure the maximum number of concurrent steps it can handle. This allows Inngest to distribute load across multiple workers and not overload a single worker.
+
+## Local development
+
+During local development, set the `INNGEST_DEV=1` environment variable to enable local development mode. This will cause the SDK to connect to [the Inngest dev server](/docs/dev-server). When your worker process is running it will automatically connect to the dev server and sync your functions' configurations.
+
+No signing or event keys are required in local development mode.
+
+## Deploying to production
+
+<Steps>
+  <Step title="Set signing and event keys">
+    To enable your application to securely connect to Inngest, you must set the `INNGEST_SIGNING_KEY` and `INNGEST_EVENT_KEY` environment variables.
+
+    These keys can be found in the Inngest Dashboard. Learn more about [Event keys](/docs/events/creating-an-event-key) and [Signing Keys](/docs/platform/signing-keys).
+  </Step>
+  <Step title="Set your app version">
+    The `appVersion` is used to identify the version of your app that is connected to Inngest. This allows Inngest to support rolling deploys where multiple versions of your app may be connected to Inngest.
+
+    When a new version of your app is connected to Inngest, the functions' configurations are synced to Inngest. When a new version is connected, Inngest update the function configuration in your environment and starts routing new function runs to the latest version.
+
+    You can set the `appVersion` to whatever you want, but we recommend using something that automatically changes with each deploy, like a git commit sha or Docker image tag.
+
+    <CodeGroup>
+    ```ts {{ title: "Any platform" }}
+    // You can set the app version to any environment variable, you might use
+    // a build number ('v2025.02.12.01'), git commit sha ('f5a40ff'), or
+    // a custom value ('my-app-v1').
+    const inngest = new Inngest({
+      id: 'my-app',
+      appVersion: process.env.MY_APP_VERSION, // Use any environment variable you choose
+    })
+    ```
+    ```ts {{ title: "GitHub Actions" }}
+    // If you're using Github Actions to build your app, you can set the
+    // app version to the GITHUB_SHA environment variable during build time
+    // or inject into the build of a Docker image.
+    const inngest = new Inngest({
+      id: 'my-app',
+      appVersion: process.env.GITHUB_SHA,
+    })
+    ```
+    ```ts {{ title: "Render" }}
+    // Render includes the RENDER_GIT_COMMIT env var at build and runtime.
+    // https://render.com/docs/environment-variables
+    const inngest = new Inngest({
+      id: 'my-app',
+      appVersion: process.env.RENDER_GIT_COMMIT,
+    })
+    ```
+    ```ts { {title: "Fly.io" }}
+    // Fly includes a machine version env var at runtime.
+    // https://fly.io/docs/machines/runtime-environment/
+    const inngest = new Inngest({
+      id: 'my-app',
+      appVersion: process.env.FLY_MACHINE_VERSION,
+    })
+    ```
+    </CodeGroup>
+  </Step>
+  <Step title="Set the instance id (recommended)">
+    The `instanceId` is used to identify the worker instance of your app that is connected to Inngest. This allows Inngest to support multiple instances (workers) of your app connected to Inngest.
+
+    By default, Inngest will attempt to use the hostname of the worker as the instance id. If you're running your app in a containerized environment, you can set the `instanceId` to the container id.
+
+    <CodeGroup>
+    ```ts {{ title: "Any platform" }}
+    // Set the instance ID to any environment variable that is unique to the worker
+    await connect({
+      apps: [...],
+      instanceId: process.env.MY_CONTAINER_ID,
+    })
+    ```
+    ```ts {{ title: "Kubernetes + Docker" }}
+    // instanceId defaults to the HOSTNAME environment variable.
+    // By default, Kubernetes and Docker set the HOSTNAME environment variable to the pod name
+    // so it is automatically set for you.
+    await connect({
+      apps: [...],
+      // This is what happens under the hood if you don't set instanceId
+      // instanceId: process.env.HOSTNAME,
+    })
+    ```
+    ```ts {{ title: "Render" }}
+    // Render includes the RENDER_INSTANCE_ID env var at runtime.
+    // https://render.com/docs/environment-variables
+    await connect({
+      apps: [...],
+      instanceId: process.env.RENDER_INSTANCE_ID,
+    })
+    ```
+    ```ts {{ title: "Fly.io" }}
+    // Fly includes the FLY_MACHINE_ID env var at runtime.
+    // https://fly.io/docs/machines/runtime-environment/
+    await connect({
+      apps: [...],
+      instanceId: process.env.FLY_MACHINE_ID,
+    })
+    ```
+    </CodeGroup>
+  </Step>
+  <Step title="Set the max concurrency (recommended)">
+    The `maxConcurrency` option is used to limit the number of concurrent steps that can be executed by the worker instance. This allows Inngest to distribute load across multiple workers and not overload a single worker.
+
+    <Warning>
+      The `maxConcurrency` option is not yet supported. It will be supported in a future release before general availability.
+    </Warning>
+
+    <CodeGroup>
+    ```ts
+    await connect({
+      apps: [...],
+      maxConcurrency: 100,
+    })
+    ```
+    </CodeGroup>
+  </Step>
+</Steps>
+
+## Lifecycle
+
+As a connect worker is a long-running process, it's important to understand the lifecycle of the worker and how it relates to the deployment of a new version of your app. Here is an overview of the lifecycle of a connect worker and where you can hook into it to handle graceful shutdowns and other lifecycle events.
+
+<Steps>
+  <Step>
+    `CONNECTING` - The worker is establishing a connection to Inngest. This starts when `connect()` is called.
+
+    First, the worker sends a request to the Inngest API via HTTP to get connection information. The response includes the WebSocket gateway URL. The worker then connects to the WebSocket gateway.
+  </Step>
+  <Step>
+    `ACTIVE` - The worker is connected to Inngest and ready to execute functions.
+
+    * The new `appVersion` is synced including the latest function configurations.
+    * The worker begins sending and receiving "heartbeat" messages to Inngest to ensure the connection is still active.
+    * The worker will automatically reconnect if the connection is lost.
+
+    ```ts {{ title: "TypeScript" }}
+    // The connect promise will resolve when the connection is ACTIVE
+    const connection = await connect({
+      apps: [...],
+    })
+    console.log(`The worker connection is: ${connection.state}`)
+    // The worker connection is: ACTIVE
+    ```
+  </Step>
+  <Step>
+    `RECONNECTING` - The worker is reconnecting to Inngest after a connection was lost.
+  </Step>
+  <Step>
+    `CLOSING` - The worker is beginning the shutdown process.
+
+    * New steps will not be accepted after this state is entered.
+    * Existing steps will be allowed to complete.
+
+    By default, the SDK listens for `SIGTERM` and `SIGINT` signals and begins the shutdown process. You can customize this behavior by in each SDK:
+
+    <CodeGroup>
+    ```ts
+    // You can explicitly configure which signals the SDK should
+    // listen for by an array of signals to `handleShutdownSignals`:
+    const connection = await connect({
+      apps: [...],
+      // ex. Only listen for SIGTERM, or pass an empty array to listen to no signals
+      handleShutdownSignals: ['SIGTERM'],
+    })
+    ```
+    ```go
+    // The Go SDK must receive a Context object that will be notified
+    // when the correct signals are received. Use signal.NotifyContext:
+    ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+    defer cancel()
+
+    // Later in your function - pass the context to the connect function:
+    ws, err := inngestgo.Connect(ctx, inngestgo.ConnectOpts{
+        InstanceID: inngestgo.Ptr("example-worker"),
+        Apps:       []inngestgo.Client{client},
+    })
+    ```
+    </CodeGroup>
+
+    You can manually close the connection with the `close` method on the connection object:
+
+    ```ts
+    await connection.close()
+    // Connection is now closed
+    ```
+  </Step>
+  <Step>
+    `CLOSED` - The worker's WebSocket connection has closed. Any in-flight requests may continue to complete via the HTTP API.
+
+    ```ts {{ title: "TypeScript" }}
+    // The `closed` promise will resolve when the connection is "CLOSED"
+    await connection.closed
+    // Connection is now closed
+    ```
+  </Step>
+</Steps>
+
+## Worker observability
+
+In the Inngest Cloud dashboard, you can view the connection status of each of your workers. At a glance, you can see each worker's instance id, connection status, connected at timestamp, last heartbeat, the app version, and app version.
+
+This view is helpful for debugging connection issues or verifying rolling deploys of new app versions.
+
+![App worker observability](/assets/docs/connect/cloud-app-workers.png)
+
+## Health checks
+
+If you are running your app in a containerized environment, we recommend using a health check to ensure that your app is running and ready to accept connections. This is key for graceful rollouts of new app versions. If you are using Kubernetes, we recommend using the `readinessProbe` to check that the app is ready to accept connections.
+
+The simplest way to implement a health check is to create an http endpoint that listens for health check requests. As connect is an outbound WebSocket connection, you'll need to create a small http server that listens for health check requests and returns a 200 status code when the connection to Inngest is active.
+
+Here is an example of using `connect` with a basic Node.js http server to listen for health check requests and return a 200 status code when the connection to Inngest is active.
+
+```ts
+import { createServer } from 'http';
+import { connect } from 'inngest/connect';
+import { inngest, functions } from './src/inngest';
+
+(async () => {
+  const connection = await connect({
+    apps: [{ client: inngest, functions }]
+  });
+
+  console.log('Worker: connected', connection);
+
+  // This is a basic web server that only listens for the /ready endpoint
+  // and returns a 200 status code when the connection to Inngest is active.
+  const httpServer = createServer((req, res) => {
+    if (req.url === '/ready') {
+      if (connection.state === ConnectionState.ACTIVE) {
+        res.writeHead(200, { 'Content-Type': 'text/plain' });
+        res.end('OK');
+      } else {
+        res.writeHead(500, { 'Content-Type': 'text/plain' });
+        res.end('NOT OK');
+      }
+      return;
+    }
+    res.writeHead(404, { 'Content-Type': 'text/plain' });
+    res.end('NOT FOUND');
+  });
+
+  // Start the server on a port of your choice
+  httpServer.listen(8080, () => {
+    console.log('Worker: HTTP server listening on port 8080');
+  });
+
+  // When the Inngest connection has gracefully closed,
+  // this will resolve and the app will exit.
+  await connection.closed;
+
+  console.log('Worker: Shut down');
+  httpServer.close();
+})();
+```
+
+### Kubernetes readiness probe
+
+If you are running your app in Kubernetes, you can use the `readinessProbe` to check that the app is ready to accept connections. For the above example running on port 8080, the readiness probe would look like this:
+
+```yaml
+readinessProbe:
+  httpGet:
+    path: /ready
+  initialDelaySeconds: 3
+  periodSeconds: 10
+  successThreshold: 3
+  failureThreshold: 3
+```
+
+## Self hosted Inngest
+
+If you are [self-hosting](/docs/self-hosting?ref=docs-connect) Inngest, you need to ensure that the Inngest WebSocket gateway is accessible within your network. The Inngest WebSocket gateway is available at port `8289`.
+
+Depending on your network configuration, you may need to dynamically re-write the gateway URL that the SDK uses to connect.
+
+```ts
+const connection = await connect({
+  apps: [...],
+  rewriteGatewayEndpoint: (url) => { // ex. "wss://gw2.connect.inngest.com/v0/connect"
+    // If not running in dev mode, return
+    if (!process.env.INNGEST_DEV) {
+      const clusterUrl = new URL(url);
+      clusterUrl.host = 'my-cluster-host:8289';
+      return clusterUrl.toString();
+    }
+    return url;
+  },
+})
+```
+
+{/* TODO: multiple apps in a single worker */}
+
