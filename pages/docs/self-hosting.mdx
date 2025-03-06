@@ -1,4 +1,4 @@
-import { Callout, CodeGroup } from "src/shared/Docs/mdx";
+import { Callout, Warning, CodeGroup } from "src/shared/Docs/mdx";
 
 export const description = 'Learn how to self-host Inngest. Includes configuration options and instructions for using external services.'
 
@@ -101,21 +101,25 @@ inngest start
 
 Flags:
       --config string        Path to an Inngest configuration file
-      --event-key string     Event key(s) that will be used by apps to send events to the server.
+      --event-key strings    Event key(s) that will be used by apps to send events to the server.
   -h, --help                 Output this help information
-      --host string          Server hostname
-      --poll-interval int    Enable app sync polling at a specific interval in seconds. (default disabled)
-  -p, --port string          Server port (default "8288")
-      --retry-interval int   Retry interval in seconds for linear backoff. Minimum: 1.
-  -u, --sdk-url strings      SDK URLs to load functions from
+      --host string          Inngest server hostname
+  -p, --port string          Inngest server port (default "8288")
+  -u, --sdk-url strings      App serve URLs to sync (ex. http://localhost:3000/api/inngest)
       --signing-key string   Signing key used to sign and validate data between the server and apps.
-      --tick int             Interval, in milliseconds, of which to check for new work. (default 150)
 
 Persistence Flags:
-      --redis-uri string    Redis server URI for external queue and run state. Defaults to self-contained, in-memory Redis server with periodic snapshot backups.
-      --sqlite-dir string   Directory for where to write SQLite database.
+      --postgres-uri string   [Experimental] PostgreSQL database URI for configuration and history persistence. Defaults to SQLite database.
+      --redis-uri string      Redis server URI for external queue and run state. Defaults to self-contained, in-memory Redis server with periodic snapshot backups.
+      --sqlite-dir string     Directory for where to write SQLite database.
 
-Group Flags:
+Advanced Flags:
+      --poll-interval int    Interval in seconds between polling for updates to apps
+      --queue-workers int    Number of executor workers to execute steps from the queue (default 100)
+      --retry-interval int   Retry interval in seconds for linear backoff when retrying functions - must be 1 or above
+      --tick int             The interval (in milliseconds) at which the executor polls the queue (default 150)
+
+Global Flags:
       --json               Output logs as JSON.  Set to true if stdout is not a TTY.
   -l, --log-level string   Set the log level.  One of: trace, debug, info, warn, error. (default "info")
   -v, --verbose            Enable verbose logging.
@@ -177,21 +181,19 @@ With goal of simplifying the initial setup, the Inngest server will run an in-me
 
 To use an external Redis server, set the `redis-uri` flag to the Redis server URI.
 
-**External Postgres database (Coming soon)**
-
-In an pending release, Inngest will support using an external Postgres database for persistence. This is useful for those who want to use a more scalable and durable database than SQLite.
-
-{/*
 **External Postgres database (experimental)**
 
-By default, the Inngest server uses SQLite for persistence. This is convenient for zero-dependency deployments, but does not support scaling beyond a single node. You may choose to run your own Postgres databae or use a cloud-based Postgres service like AWS RDS, Supabase, Neon, etc.
+By default, the Inngest server uses SQLite for persistence. This is convenient for zero-dependency deployments, but does not support scaling beyond a single node. You may choose to run your own Postgres database or use a cloud-based Postgres service like AWS RDS, Neon, Supabase, etc.
 
-<Callout variant="warning">
-  Postgres support is experimental, use at your own risk.
-</Callout>
+<Warning>
+  Postgres support is experimental and should be used with caution.
+</Warning>
 
 To use an external Postgres database, set the `postgres-uri` flag to your Postgres connection string URI.
-*/}
+
+## Docker compose example
+
+_Coming soon_
 
 ## Roadmap & feature requests
 
