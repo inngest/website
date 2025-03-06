@@ -126,5 +126,11 @@ export const resourcesLinks: MenuProps = {
       icon: PythonIcon,
       iconClassName: "w-4",
     },
+    {
+      title: "Build AI Agents",
+      url: "https://agentkit.inngest.com/getting-started/quick-start",
+      icon: IconSDK,
+      iconClassName: "w-6",
+    },
   ],
 };

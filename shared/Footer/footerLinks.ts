@@ -14,6 +14,10 @@ const footerLinks = [
         label: "Patterns: Async + Event-Driven",
         url: "/patterns?ref=footer",
       },
+      {
+        label: "AgentKit: AI Agents with Inngest",
+        url: "https://agentkit.inngest.com/overview",
+      },
     ],
   },
   {
