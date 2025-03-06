@@ -571,9 +571,8 @@ export function Navigation(props) {
                     />
                   ) : (
                     <NavLink
-                      key={item.title}
                       isTopLevel={true}
-                      key={groupIndex}
+                      key={"grp-" + groupIndex}
                       href={item.href}
                       active={pathname === item.href}
                     >
