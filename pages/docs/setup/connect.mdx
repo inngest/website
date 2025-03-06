@@ -15,7 +15,7 @@ The `connect` API allows your app to create an outbound persistent connection to
 
 ## Getting started
 
-Using `connect` with your app is simple. Using each SDK's "connect" method only requires a list of functions that are available to be executed. (NOTE - Python is not yet supported)
+Using `connect` with your app is simple. Using each SDK's "connect" method only requires a list of functions that are available to be executed. (Note: Python is not yet supported; [upvote and join the waiting list here](https://roadmap.inngest.com/roadmap?id=2bac8d74-288f-47c7-8afc-3fd1a0e94654))
 
 Here is a one-file example of a fully-functioning app that connects to Inngest.
 
@@ -99,7 +99,7 @@ The `connect` API establishes a persistent WebSocket connection to Inngest. Each
 
 - **Automatic re-connections** - The connection will automatically reconnect if it is closed.
 - **Graceful shutdown** - The connection will gracefully shutdown when the app receives a signal to terminate (`SIGTERM`). New steps will not be accepted after the connection is closed, and existing steps will be allowed to complete.
-- **Worker-level maximum concurrency** - Each worker can configure the maximum number of concurrent steps it can handle. This allows Inngest to distribute load across multiple workers and not overload a single worker.
+- **Worker-level maximum concurrency (Coming soon)** - Each worker can configure the maximum number of concurrent steps it can handle. This allows Inngest to distribute load across multiple workers and not overload a single worker.
 
 ## Local development
 
@@ -376,6 +376,10 @@ readinessProbe:
 
 ## Self hosted Inngest
 
+<Info>
+  Self-hosting support for `connect` is in development. Please [contact us](https://app.inngest.com/support) for more info.
+</Info>
+
 If you are [self-hosting](/docs/self-hosting?ref=docs-connect) Inngest, you need to ensure that the Inngest WebSocket gateway is accessible within your network. The Inngest WebSocket gateway is available at port `8289`.
 
 Depending on your network configuration, you may need to dynamically re-write the gateway URL that the SDK uses to connect.
@@ -397,3 +401,19 @@ const connection = await connect({
 
 {/* TODO: multiple apps in a single worker */}
 
+## Migrating from serve
+
+_Guide on migration from `serve` to `connect` coming soon_
+
+## Limitations
+
+During the developer preview, there are some limitations to using `connect` to be aware of. Please [contact us](https://app.inngest.com/support) if you'd like clarity on any of the following:
+
+* **Lost connections may result in long timeouts before retries** - If a connection is lost in the middle of a step, the step may result in a timeout of the max step duration (2 hours) before the step is retried. Graceful shutdowns, as documented above, handle this correctly, but if a networking issue occurs and the worker cannot re-establish connection, the step may result in a timeout.
+* **Worker-level maximum concurrency** - This is not yet supported. When completed, each worker can configure the maximum number of concurrent steps it can handle. This allows Inngest to distribute load across multiple workers and not overload a single worker.
+* **Reconnection policy is not configurable** - The SDK will attempt to reconnect to Inngest an infinite number of times. We will expose a configurable reconnection policy in the future.
+* **Rollbacks** - Rollbacks of app versions may not work as expected. Additional functionality and control around rollbacks is coming in a future release.
+
+<Warning>
+  As this is a developer preview, the `connect` API may be subject to breaking changes.
+</Warning>
