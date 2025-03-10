@@ -1,4 +1,5 @@
-import { Callout, GuideSelector, GuideSection, CodeGroup, VersionBadge } from "src/shared/Docs/mdx";
+import { Callout, GuideSelector, GuideSection, CodeGroup, VersionBadge, Card, CardGroup } from "src/shared/Docs/mdx";
+import Github from "src/shared/Icons/Github";
 
 # AI Inference <VersionBadge version="TypeScript only" />
 
@@ -102,6 +103,20 @@ export default inngest.createFunction(
 );
 ```
 </CodeGroup>
+
+
+<CardGroup cols={1}>
+
+  <Card
+    href={"https://github.com/inngest/inngest-js/tree/main/examples//step-ai/anthropic-claude-pdf-processing/#readme"}
+    title={"PDF processing with Claude Sonnet and step.ai.infer()"}
+    icon={<Github className="text-basis h-8 w-8"/>}
+    iconPlacement="top"
+  >
+  Use `step.ai.infer()` to process a PDF with Claude Sonnet.
+  </Card>
+
+</CardGroup>
 
 ### `step.ai.wrap()`  (TypeScript only)
 
