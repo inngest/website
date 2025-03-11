@@ -395,7 +395,7 @@ export async function getStaticProps({ params }) {
       post,
       meta: {
         disabled: true,
-        canonical_url: data.canonical_url,
+        canonical_url: data.canonical_url ? data.canonical_url : null,
       },
       designVersion: "2",
     },
