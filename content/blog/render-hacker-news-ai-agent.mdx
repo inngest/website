@@ -41,7 +41,7 @@ First, let's take a look at the app in action: As a quick summary, here's how yo
 
 ![Architecture overview](/assets/blog/render-hacker-news-ai-agent/4fdf9743eb9cacd5189b495d5b67783db11b3d7f-4560x2280.webp)
 
-_Image too small? View the full image [here](/assets/blog/render-hacker-news-ai-agent/4fdf9743eb9cacd5189b495d5b67783db11b3d7f-4560x2280.png)._ This app consists of three main components:
+ This app consists of three main components:
 
 1.  **Database**: Stores the Hacker News stories (both the original text and vectorized embedding), your email addresses, and topics/questions you've specified.
 2.  **Indexer cron job**: Periodically fetches new Hacker News stories based on topics you're interested in, generates embeddings of the content, and stores the data in the database.
