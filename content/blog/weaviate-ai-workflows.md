@@ -2,7 +2,7 @@
 focus: false
 heading: "Building Agentic Workflows with Inngest"
 subtitle: Combine Weaviate and Inngest step.ai API to build AI workflows
-image: "/assets/blog/building-webhooks-that-scale/hero-image.jpg"
+image: "/assets/blog/weaviate-ai-workflows/cover.png"
 date: 2025-01-07
 author: Charly Poly
 canonical_url: https://weaviate.io/blog/inngest-ai-workflows

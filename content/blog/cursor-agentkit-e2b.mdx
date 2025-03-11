@@ -2,7 +2,7 @@
 focus: false
 heading: "Tutorial: Replicating Cursor's Agent mode with E2B and AgentKit"
 subtitle: Learn how to build the famous Cursor Agent mode with our AI Agent framework
-image: "/assets/blog/building-webhooks-that-scale/hero-image.jpg"
+image: "/assets/blog/cursor-agentkit-e2b/cover.png"
 date: 2025-02-24
 author: Charly Poly
 canonical_url: https://e2b.dev/blog/replicating-cursors-agent-mode-with-e2b-and-agentkit
@@ -47,7 +47,7 @@ An Agent prompt follows a structure documented as [ReAct](https://arxiv.org/abs/
 
 ![The anatomy of a reasoning prompt](/assets/blog/cursor-agentkit-e2b/67b9c602453821e20e694067.jpeg)
 
-Credits to [Ben Hylak](https://www.linkedin.com/in/benhylak/)
+(_Image credits to [Ben Hylak](https://www.linkedin.com/in/benhylak/)_)
 
 Our Coding Agent, like Cursor, relies on Claude Sonnet 3.5 which excels at coding tasks. Anthropic recommends a slight variation of the prompt format called [CoT](https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/chain-of-thought#example-writing-donor-emails-basic-cot) (Chain of Thoughts), resulting in the below prompt:
 
@@ -353,6 +353,10 @@ The TodoList demo is now complete and fully tested. The coverage report shows ex
 ```
 
 I highly encourage you to [clone the repository](https://github.com/e2b-dev/e2b-cookbook) (examples/agentkit-coding-agent/) and try some different prompts. You can even update the program to load an existing project in the sandbox and ask our Coding Agent to fix some bugs.
+
+
+<CTACallout text={'AgentKit: a TypeScript library to create and orchestrate AI Agents.'} cta={{ href: 'https://agentkit.inngest.com', text: 'Read the docs' }} />
+
 
 Conclusion
 ----------

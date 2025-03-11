@@ -3,7 +3,7 @@ focus: false
 heading: "DeepSeek-R1 in practice with step.ai"
 subtitle: A deep dive into DeepSeek-R1's Multi-Lingual and Agentic RAG Capabilities
 showSubtitle: true
-image: "/assets/blog/building-webhooks-that-scale/hero-image.jpg"
+image: "/assets/blog/deepseek-r1-step-ai/cover.png"
 date: 2025-01-31
 author: Charly Poly
 canonical_url: https://www.koyeb.com/tutorials/deepseek-r1-multi-lingual-and-agentic-rag-capabilities-in-practice
@@ -36,10 +36,11 @@ A first specificity of DeepSeek-R1 Qwen 32B is the lack of support for `system` 
 
 For this reason, we will define the description and goal of our Agent into a shared constant:
 
-    const MARKETING_EXPERT_PROMPT = `You are an expert marketing copywriter who specializes in creating engaging, culturally-appropriate content 
-    in multiple languages. You understand marketing psychology, cultural nuances, and how to adapt messaging 
-    across different markets while maintaining brand voice.`;
-    
+```ts
+const MARKETING_EXPERT_PROMPT = `You are an expert marketing copywriter who specializes in creating engaging, culturally-appropriate content 
+in multiple languages. You understand marketing psychology, cultural nuances, and how to adapt messaging 
+across different markets while maintaining brand voice.`;
+```
 
 Once our [DeepSeek-R1 Qwen 32B](https://www.koyeb.com/deploy/deepseek-r1-qwen-32b) model is deployed on Koyeb, we can configure its URL in our `.env` file as `DEEPSEEK_BASE_URL`. The deployed model has built-in compatibility with the OpenAI Chat Completions API, enabling us to use the OpenAI Node.js client.
 
@@ -132,6 +133,8 @@ await Promise.all(localizedContent);
 
 Let's now run our workflow using the [Inngest Dev Server](/docs/local-development?utm_source=koyeb&utm_medium=article&utm_campaign=deepseek-r1).
 
+<CTACallout text={'step.ai: reliable inference calls with best-in-class observability'} cta={{ href: '/docs/features/inngest-functions/steps-workflows/step-ai-orchestration#step-tools-step-ai', text: 'Read the docs' }} />
+
 ### Results analysis and comparison with OpenAI o1
 
 Let's run a Koyeb marketing campaign generation for the German, English (UK), and French markets using the following parameters:
@@ -152,7 +155,7 @@ Let's run a Koyeb marketing campaign generation for the German, English (UK), an
 
 Our workflow is now running, leveraging parallel LLM calls for the localized campaign generation:
 
-![Inngest workflow](/static/blog/deepseek-r1-step-ai/inngest1.png)
+![Inngest workflow](/assets/blog/deepseek-r1-step-ai/inngest1.png)
 
 Let's see how DeepSeek thinks about adapting Koyeb's campaign to the French market:
 
@@ -337,13 +340,13 @@ _Note: The first three results and their first 5 PDF pages are extracted to avoi
 
 Asking precise questions such as “What are the latest advancements in deep learning optimization techniques?” works as expected.
 
-![Evaluation of the results 1](/static/blog/deepseek-r1-step-ai/inngest2.png)
+![Evaluation of the results 1](/assets/blog/deepseek-r1-step-ai/inngest2.png)
 
 Also, a mixed and vague question such as “Explain to me like I'm five the last advancements applicable to LLM” does not generate an irrelevant search query.
 
 Surprisingly, asking a question in French and specifying that you want a French answer does not lead the model to search for papers written in French. This is another good demonstration of the multilingual flexibility of DeepSeek-R1 Qwen 32B.
 
-![Evaluation of the results 2](/static/blog/deepseek-r1-step-ai/inngest3.png)
+![Evaluation of the results 2](/assets/blog/deepseek-r1-step-ai/inngest3.png)
 
 _DeepSeek-R1 Qwen 32B generates a relevant arXiv search query from a French question._
 

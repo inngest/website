@@ -2,7 +2,7 @@
 focus: false
 heading: "Tutorial: Custom Hacker News summaries in your inbox"
 subtitle: Build an AI Agent with Inngest and Render
-image: "/assets/blog/building-webhooks-that-scale/hero-image.jpg"
+image: "/assets/blog/render-hacker-news-ai-agent/cover.png"
 date: 2025-01-16
 author: Jess Lin
 canonical_url: https://render.com/blog/hacker-news-ai-agent-inngest-render
@@ -167,6 +167,8 @@ export const hackerNewsAgent = inngest.createFunction(
 ```
 
 Then, we use Inngest's [AgentKit TypeScript library](https://agentkit.inngest.com/overview?utm_source=render&utm_medium=article&utm_campaign=hn-hacker-news-agent) to power the AI agent part of our AI workflow. This library makes it easier to create agents, which require more flexibility than statically written workflows. Notably, the library lets you dynamically execute code based on the LLM's reasoning. Our app defines two AI agents: a Search Agent and a Summarizer Agent.
+
+<CTACallout text={'AgentKit: a TypeScript library to create and orchestrate AI Agents.'} cta={{ href: 'https://agentkit.inngest.com', text: 'Read the docs' }} />
 
 ### The Summarizer Agent: an agent that uses state
 
