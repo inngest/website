@@ -1,0 +1,434 @@
+---
+focus: false
+heading: "Tutorial: Custom Hacker News summaries in your inbox"
+subtitle: Build an AI Agent with Inngest and Render
+image: "/assets/blog/render-hacker-news-ai-agent/cover.png"
+date: 2025-01-16
+author: Jess Lin
+canonical_url: https://render.com/blog/hacker-news-ai-agent-inngest-render
+---
+
+For busy developers, staying on top of AI news today can be overwhelming. If you're like us, you've **bookmarked** far more tutorials than you've read or implemented. And now—here's another one. So we're going to make this tutorial hopefully more useful than average. You'll:
+
+- **Learn** the fundamental pieces of architecture you need to build AI agents and workflows
+- **Deploy** a working end-to-end app that features two AI agents within a workflow, and
+- Be able to **use** the app you deployed to help you stay on top of AI news (or any other topic)
+
+The app you'll build is an AI agent that periodically searches Hacker News for custom questions you're interested in and then sends you an email summary. For example, you can ask, _“What are the most popular new demos that involve AI agents?”_ or _“What are new libraries in the Next.js ecosystem?”_
+
+![The homepage of the Hacker News app](/assets/blog/render-hacker-news-ai-agent/f27dee2e94eea3a891fa18862a93c884c64e7592-1172x808.webp)
+
+The homepage of the Hacker News app
+
+The architecture of this bot includes:
+
+- **Infra hosted on Render**: Components include a PostgreSQL database with the pgvector extension, a full-stack Next.js app, and a cron job, which are all hosted on Render. They communicate with each other securely over a private network.
+- **AI workflow orchestrated by Inngest: Inngest provides a framework called AgentKit that lets you easily define and orchestrate AI agents and offers a platform to run them reliably.
+
+See [this GitHub repo](https://github.com/inngest/agentkit-render-tutorial) for the code and detailed deployment instructions. Let's dive in!
+
+## Demo
+
+First, let's take a look at the app in action: As a quick summary, here's how you use the app:
+
+<AutoplayVideo src={"/assets/blog/render-hacker-news-ai-agent/7f5d784d83bb9602405b52c28a8b91ab7adf6f7a.mp4"} />
+
+1.  **Enter your email address**: You can provide more than one email address—i.e. this bot can update several people.
+2.  **Enter topics and questions**: For each email recipient, you can specify one or more custom topics and questions for the bot to track and how frequently you want to get updates.
+3.  **Receive an email, or “Preview” results**: At the specified frequency, the bot will scan the latest stories from Hacker News, identify stories that match your questions, and send you an email summary. You can also hit “Preview” in the app to see an immediate result.
+
+## Architecture overview
+
+![Architecture overview](/assets/blog/render-hacker-news-ai-agent/4fdf9743eb9cacd5189b495d5b67783db11b3d7f-4560x2280.webp)
+
+ This app consists of three main components:
+
+1.  **Database**: Stores the Hacker News stories (both the original text and vectorized embedding), your email addresses, and topics/questions you've specified.
+2.  **Indexer cron job**: Periodically fetches new Hacker News stories based on topics you're interested in, generates embeddings of the content, and stores the data in the database.
+3.  **Full-stack Next.js app**: Provides the UI that lets you configure email addresses & topics/questions. Also hosts the backend logic of the AI workflow: searching the database for relevant stories, summarizing them, and sending emails.
+
+These components are all deployed on Render, and can communicate securely with each other on a [private network](https://render.com/docs/private-network). Let's take a closer look at each one.
+
+### Database
+
+This app stores data in a PostgreSQL database with the [pgvector extension](https://github.com/pgvector/pgvector). pgvector is an open-source extension that lets you efficiently store and query vector embeddings in PostgreSQL. Your PostgreSQL database can then function as both a relational database and vector database. It's easy to use pgvector with a managed Render PostgreSQL database. Just run the following command in psql: `CREATE EXTENSION IF NOT EXISTS vector;`. Our database has three tables, which are defined in the [schema.sql file](https://github.com/inngest/agentkit-render-tutorial/blob/main/packages/indexer/schema.sql):
+
+- **interests**: Topics you want to track. For example, “AI agents” or “Next.js”.
+- **questions**: Questions you have about specific interests, and how often you want updates about them.
+- **stories**: Stories from Hacker News, including the title, content, and comments. We also store the embedding of the title and content combined.
+
+Note that the schema of the `stories` table is made possible by pgvector:
+
+```sql
+CREATE TABLE IF NOT EXISTS stories (
+  id SERIAL PRIMARY KEY,
+  title TEXT,
+  content TEXT,
+  date DATE,
+  comments TEXT,
+  interest_id INTEGER REFERENCES interests(id),
+  embedding vector(1536)
+);
+
+-- Create an index on the embedding column for faster similarity searches
+CREATE INDEX IF NOT EXISTS stories_embedding_idx ON stories
+USING hnsw (embedding vector_cosine_ops);
+```
+
+In particular:
+
+- The pgvector extension provides the `vector` data type that's used for the `embedding` column.
+- We generate an index on the `embedding` column using the `hnsw` (Hierarchical Navigable Small Worlds) function, which is also provided by pgvector. This index makes it faster to identify stories that are similar to the questions we're interested in.
+
+### Indexer cron job
+
+The second component of our app is the Indexer, which is a cron job that periodically searches Hacker News for each topic you're interested in. It indexes the top results into the `stories` database table. In this app, we use [Playwright](https://playwright.dev/) to automate the search for Hacker News stories. Via Playwright, the Indexer visits Algolia's [Hacker News Search](https://hn.algolia.com/), queries for each topic you're interested in, and extracts stories from the results. You can see the full Playwright logic in [`searchHackerNews.ts`](https://github.com/inngest/agentkit-render-tutorial/blob/main/packages/indexer/src/lib/searchHackerNews.ts). After the Indexer extracts the stories from Hacker News, it generates an embedding of each story and stores it in the database:
+
+
+```typescript
+async function generateEmbedding(text: string): Promise<number[]> {
+  const response = await openai.embeddings.create({
+    model: "text-embedding-ada-002",
+    input: text,
+  });
+  return response.data[0].embedding;
+}
+
+export async function storeStory(story: Story): Promise<void> {
+  // [...]
+
+  // Generate embedding from title and content
+  const embedding = await generateEmbedding(`${story.title} ${story.content}`);
+
+  // Insert new story into `stories` db table
+  await client.query(
+    "INSERT INTO stories (title, content, date, comments, embedding, interest_id) VALUES ($1, $2, $3::date, $4, $5::vector, $6)",
+    [
+      story.title,
+      story.content,
+      story.date,
+      story.comments,
+      `[${embedding.join(",")}]`,
+      story.interest_id,
+    ]
+  );
+}
+```
+
+### Full-stack Next.js app
+
+The third main component of our app is the full-stack Next.js web app. This app hosts the UI and backend logic that lets you configure your email address as well as the topics and questions you want to be notified about. It stores these settings in the database.
+
+![The Next.js app](/assets/blog/render-hacker-news-ai-agent/f27dee2e94eea3a891fa18862a93c884c64e7592-1172x808.webp)
+
+On the backend, this app also contains the logic of the AI workflow, which reads your settings and also the stored Hacker News stories from the database. Let's take a look at how this workflow is built.
+
+## How the AI workflow is implemented
+
+The AI workflow is orchestrated using Inngest. Inngest is a workflow engine that lets you create backend workflows in TypeScript, Go, and Python. You define [steps](/docs/features/inngest-functions/steps-workflows?utm_source=render&utm_medium=article&utm_campaign=hn-hacker-news-agent) in your workflow, which can contain any code you write, and optionally conditions that trigger each step. Inngest executes your workflow and handles retries and recovery on failures—even when they happen in the middle of a workflow run. Note that the steps in the workflow are deployed as part of the backend of the Next.js app, and thus all of the logic executes on Render. Inngest's job is to trigger each step of the workflow at the right time, and it does this by calling an endpoint on the Next.js app. Our AI Workflow starts with a step that fetches the question and interest for the current workflow run from the PostgreSQL database. No AI is needed here, so far:
+
+```typescript
+import { inngest } from "./client";
+
+export const hackerNewsAgent = inngest.createFunction(
+  {
+    id: "hacker-news-agent",
+  },
+  { event: "hacker-news-agent/run" },
+  async ({ event, db, step }) => {
+    const { interest_id, question_id } = event.data;
+
+    // By wrapping code in step.run(),
+    //   the code will be retried if it throws an error.
+    // If successful, its result is saved to prevent unnecessary re-execution.
+    const { interest, question } = await step.run(
+      "fetch-interest-and-question",
+      async () => {
+        const interest = await db.query(
+          "SELECT * FROM interests WHERE id = $1 LIMIT 1",
+          [interest_id]
+        );
+        const question = await db.query(
+          "SELECT * FROM questions WHERE id = $1 LIMIT 1",
+          [question_id]
+        );
+        return { interest: interest.rows[0], question: question.rows[0] };
+      }
+    );
+
+    if (!interest || !question) {
+      console.warn(
+        "[HackerNewsAgent] Interest or question not found, aborting"
+      );
+      return;
+    }
+  }
+);
+```
+
+Then, we use Inngest's [AgentKit TypeScript library](https://agentkit.inngest.com/overview?utm_source=render&utm_medium=article&utm_campaign=hn-hacker-news-agent) to power the AI agent part of our AI workflow. This library makes it easier to create agents, which require more flexibility than statically written workflows. Notably, the library lets you dynamically execute code based on the LLM's reasoning. Our app defines two AI agents: a Search Agent and a Summarizer Agent.
+
+<CTACallout text={'AgentKit: a TypeScript library to create and orchestrate AI Agents.'} cta={{ href: 'https://agentkit.inngest.com', text: 'Read the docs' }} />
+
+### The Summarizer Agent: an agent that uses state
+
+Let's take a look at the Summarizer Agent first. The Summarizer Agent actually runs after the Search Agent in our workflow, but it's simpler and easier to understand. The AgentKit library lets you define _agents_ that each accomplishes specific subtasks (e.g. “search Next.js posts”, “summarize these 4 posts”) of your overall goal (e.g. answer “What are the latest Next.js tools?”). To create our Summarizer Agent, we specify a name, description, and then a `system` function:
+
+```typescript
+import {
+  createAgent
+} from "@inngest/agent-kit";
+
+const summarizerAgent = createAgent({
+      name: "Summarizer Agent",
+      description: "Summarize the results of the search agent",
+      system: ({ network }) => {
+        const searchResults = network?.state.kv.get("search-result");
+        const trendsResults = network?.state.kv.get("trends-result");
+        const prompt = `
+        Prepare the answers to the questions based on the results of the search agent.
+        If the user is interested in trends, use the trends-result to answer the questions and provide a summary of the trends.
+        If the user is not interested in trends, use the search-result to answer the questions.
+
+        The user is interested in ${
+          interest.name
+        }. They asked the following questions:
+        <questions>
+        ${question.question}
+        </questions>
+
+        The search agent found the following results online:
+        <search-results>
+        ${(searchResults || []).join(`\n`)}
+        </search-results>
+
+        The trends agent found the following trends:
+        <trends-results>
+        ${(trendsResults || []).join(`\n`)}
+        </trends-results>
+
+        Provide you answer wrapped in <answer> tags.
+        `;
+        return prompt;
+      },
+      / ...
+    });
+```
+
+The meat of this agent is in the `system` function. Note that this function receives all state that's saved from earlier steps in the AgentKit network. The Summarizer Agent reads two pieces of state, `searchResults` and `trendsResults`, and summarizes them. As we'll see, these two pieces of state are generated by the Search Agent.
+
+### The Search Agent: an agent that uses tools
+
+In AgentKit, you can specify _tools_ that each agent can use. The agent can dynamically call these tools to achieve its goal. Our Search Agent comes with two valuable tools: search and identify-trends:
+
+```typescript 
+import {
+  createAgent,
+  createTool,
+} from "@inngest/agent-kit";
+
+
+const searchAgent = createAgent({
+  name: "Search Agent",
+  description: "Search Hacker News for a given set of interests",
+  system: `You are a search agent that searches Hacker News for posts that are relevant to a given set of interests. Today is ${
+    new Date().toISOString().split("T")[0]
+  }. Search for posts from the last ${frequencyToRelativeHuman(
+    question.frequency
+  )} period.`,
+  tools: [
+    createTool({
+      name: "search",
+      description: "Search Hacker News for a given set of interests",
+      parameters: z.object({
+        query: z.string(),
+        startDate: z.string(),
+        endDate: z.string(),
+      }),
+      handler: async (input, { network }) => {
+        // ...
+      },
+    }),
+    createTool({
+      name: "identify-trends",
+      description:
+        "Identify trends on Hacker News for a given set of interests",
+      parameters: z.object({
+        query: z.string(),
+        startDate: z.string(),
+        endDate: z.string(),
+      }),
+      handler: async (input, { network }) => {
+        // ...
+      },
+    }),
+  ],
+});
+```
+
+Let's take a closer look at the `identify-trends` tool. This tool helps the Search Agent answer questions involving trends, such as _“What are the most popular devtools?”_
+
+```typescript
+import {
+  createAgent,
+  createTool,
+} from "@inngest/agent-kit";
+
+
+const searchAgent = createAgent({
+  name: "Search Agent",
+  // ...
+  tools: [
+    // ...
+    createTool({
+      name: "identify-trends",
+      description:
+        "Identify trends on Hacker News for a given set of interests",
+      parameters: z.object({
+        query: z.string(),
+        startDate: z.string(),
+        endDate: z.string(),
+      }),
+      handler: async (input, { network }) => {
+        console.info("[HackerNewsAgent] Identifying trends", input);
+        // Generate embedding for the query
+        const openai = new OpenAI({
+          apiKey: process.env.OPENAI_API_KEY,
+        });
+
+        const embedding = await openai.embeddings.create({
+          model: "text-embedding-ada-002",
+          input: input.query,
+        });
+
+        // Find similar stories using vector similarity
+        const similarStories = await db.query(
+          `WITH similar_stories AS (
+                SELECT title, content, date::timestamp as date, comments,
+                  (embedding <=> $1::vector) as distance
+                FROM stories
+                WHERE (embedding <=> $1::vector) < 0.3
+                AND interest_id = $2
+                AND date >= $3::date
+                AND date <= $4::date
+                ORDER BY date DESC
+              )
+              SELECT
+                date_trunc('day', date) as story_date,
+                COUNT(*) as story_count,
+                STRING_AGG(title, ' | ' ORDER BY date DESC) as titles
+              FROM similar_stories
+              GROUP BY date_trunc('day', date)
+              ORDER BY story_date DESC
+              LIMIT 10`,
+          [
+            `[${embedding.data[0].embedding.join(",")}]`,
+            interest.id,
+            input.startDate,
+            input.endDate,
+          ]
+        );
+
+        // Format results to show trends
+        const result = similarStories.rows.map((row) => {
+          const date = new Date(row.story_date).toLocaleDateString();
+          return `Date: ${date}\nNumber of Related Stories: ${row.story_count}\nTitles: ${row.titles}\n\n`;
+        });
+
+        console.info(
+          "[HackerNewsAgent] Trends results:",
+          input.query,
+          result.length
+        );
+
+        network?.state.kv.set("trends-result", result);
+
+        return result;
+      },
+    }),
+  ],
+});
+```
+
+Note that tools can receive input parameters. Here, the `identify-trends` tool takes in a `query`, `startDate`, and `endDate`. Here's how the `identify-trends` tool works:
+
+1.  First, it creates an [embedding](https://platform.openai.com/docs/guides/embeddings) from the input query. Notably, we must use the same model (OpenAI's "text-embedding-ada-002") that the indexer cron job uses to create the embeddings of each Hacker News story.
+2.  Next, it queries the PostgreSQL database to retrieve stories similar to the input query. Specifically, it looks for `similar_stories`, which consists of stories that the indexer cron job found for our given “interest” that have a similarity distance that's `< 0.3` (indicating strong similarity). Then, it aggregates the stories by day, returning a total count of stories for each day and a concatenated list of all of the titles of stories from that day.
+
+### The Network: combining and routing our agents
+
+Once we've defined our agents and their tools with AgentKit, we combine them into a _network_. As we mentioned earlier, the network gives agents the ability to write to and read from shared state. In a network, you can also write custom routing logic that determines when each agent should be used. For example, in our app, we specify that we should only call the Summarizer Agent if there are search results or trend results in our shared state. (Otherwise, there would be nothing to summarize!)
+
+```typescript
+import { openai } from "inngest";
+import {
+  createNetwork,
+  getDefaultRoutingAgent,
+} from "@inngest/agent-kit";
+
+
+const model = openai({ model: "gpt-4" });
+const network = createNetwork({
+  agents: [searchAgent.withModel(model), summarizerAgent.withModel(model)],
+  defaultModel: model,
+  maxIter: 4,
+  defaultRouter: ({ network }) => {
+    if (network?.state.kv.has("answers")) {
+      return;
+    } else if (
+      network?.state.kv.has("search-result") ||
+      network?.state.kv.has("trends-result")
+    ) {
+      return summarizerAgent;
+    }
+    return getDefaultRoutingAgent();
+  },
+});
+
+const result = await network.run(
+  `I am passionate about ${interest.name}. Answer the following questions: ${question.question}`
+);
+```
+
+After we create the network, we can run it by calling `network.run` with a prompt. _See the AgentKit docs to learn more about the [three types of network routing](https://agentkit.inngest.com/concepts/routers#types-of-routers)._
+
+### Sending email: the final step
+
+The final step of our workflow is sending the summary email. This step also does not require any AI, so we implement it as a regular Inngest workflow step:
+
+```typescript
+if (result.state.kv.has("answers") && !event.data.preview) {
+      await step.run("send-email", async () => {
+        console.info("[HackerNewsAgent] Preparing to send email");
+        const answers = result.state.kv.get("answers");
+
+        if (!event.data.preview) {
+          const { data, error } = await resend.emails.send({
+            from: "Hacker News Agent <onboarding@resend.dev>",
+            to: interest.email,
+            subject: `Your Hacker News Agent Update on ${interest.name}`,
+            text: `Here are the answers to "${question.question}":\n\n${answers}`,
+          });
+
+          // …
+```
+
+That wraps up our AI workflow. You can find the full workflow defined in [this code file](https://github.com/inngest/agentkit-render-tutorial/blob/main/packages/app/src/inngest/functions.ts). To summarize, Inngest orchestrates the steps in our Hacker News AI Agent, which we define as part of the backend of our Next.js app using Inngest's AgentKit framework. The main pieces of this workflow (Search -> Summarize -> Send email) always run in the same order, but the Search Agent is able to dynamically leverage its tools (`search` and `identify-trends`) to extract the most relevant information from our vector database.
+
+![The Next.js app](/assets/blog/render-hacker-news-ai-agent/92a700c16ef4ac768931c515bbbd558f3a281159-1600x1056.webp)
+
+## Try it out
+
+Now that you know how the app works, you can try to deploy it!
+
+- **Get the code.** Visit [this GitHub repo](https://github.com/inngest/agentkit-render-tutorial) to get the code.
+- **Follow the README.** The README contains detailed instructions to help you deploy each component of this app on Render: the database, indexer cron job, and Next.js web service.
+- **Add your own features.** We invite you to extend the app. Here are two ideas that could make this app even more useful:
+  1.  In the emails, add links to the original Hacker News articles.
+  2.  Enable yourself to ask follow-up questions by replying to an email.
+
+To go deeper on the tech stack, you can:
+
+- **Learn more about Render:** See the different [services types](https://render.com/docs/service-types) you can deploy on Render, and understand how to [combine multiple services](https://render.com/docs/multi-service-architecture) into a single app.
+- **Learn more about Inngest:** Explore [Inngest's TypeScript SDK](/docs?utm_source=render&utm_medium=article&utm_campaign=hn-hacker-news-agent) and [AgentKit](https://agentkit.inngest.com/overview) documentation.
+- **Read about a production use case:** Read how Fey uses both [Render](https://render.com/customers/fey) and [Inngest](/customers/fey) to build their AI-powered personal finance app.

@@ -1,0 +1,399 @@
+---
+focus: false
+heading: "Tutorial: Replicating Cursor's Agent mode with E2B and AgentKit"
+subtitle: Learn how to build the famous Cursor Agent mode with our AI Agent framework
+image: "/assets/blog/cursor-agentkit-e2b/cover.png"
+date: 2025-02-24
+author: Charly Poly
+canonical_url: https://e2b.dev/blog/replicating-cursors-agent-mode-with-e2b-and-agentkit
+---
+
+Cursor is one of the fastest-growing AI products, completely changing how developers code. Initially released in November 2024, Cursor Agent mode can now read terminal outputs and lint errors and interact with MCP servers, unleashing a new wave of autonomous coding capabilities.
+
+Coding Agents is now the hottest topic in town. In this article, we will see how to replicate Cursor's Agent mode capabilities by using [E2B Sandboxes](https://e2b.dev/docs) and [AgentKit](https://github.com/inngest/agentkit) and following best practices to build useful Agent tools.
+
+Our Coding Agent capabilities
+-----------------------------
+
+Before jumping into the code, let's list the capabilities from Cursor's Agent mode that we will replicate. Our Coding Agent, built with AgentKit and E2B, will focus on three main capabilities:
+
+*   **Generating a complete working project** from a given prompt
+*   **Fixing bugs or performing refactoring** on an existing codebase
+*   **Run terminal commands** to assess the program's health. For example, run tests
+
+Building a Coding Agent with such capabilities requires some core concepts:
+
+*   **E2B Sandboxes** will replace Cursor's Editor environment, providing a quick, safe environment to interact with
+*   **The AgentKit library** will allow our Agent to interact with the Sandbox and develop a certain level of autonomy, enabling it to react and learn from its actions.
+
+Let's now dig into our Coding Agent implementation, layer by layer.
+
+Building our Coding Agent
+-------------------------
+
+Creating an Agent differs from building a RAG workflow or other AI workflows with pre-defined steps.
+
+First, the prompt is no longer used to instruct some “generative” (ex: classify) or transformative (ex: translate) actions but rather to guide the LLM with open-ended instructions to follow.
+
+Also, an Agent requires “context pulling” (the LLM asks for context) versus “context pushing,” which we usually find in RAG workflows. “Context pulling” is achieved by providing the LLM with a set of available tools to interact with its environment to perform actions or retrieve context.
+
+Finally, an Agent relies on an “autonomous loop” in which the LLM decides when the workflow is complete.
+
+Let's see these patterns in action:
+
+### Shaping the prompt
+
+An Agent prompt follows a structure documented as [ReAct](https://arxiv.org/abs/2210.03629) (Reason and Act). It is usually composed of three parts: Goal, Return Format, Warnings, and Context.
+
+![The anatomy of a reasoning prompt](/assets/blog/cursor-agentkit-e2b/67b9c602453821e20e694067.jpeg)
+
+(_Image credits to [Ben Hylak](https://www.linkedin.com/in/benhylak/)_)
+
+Our Coding Agent, like Cursor, relies on Claude Sonnet 3.5 which excels at coding tasks. Anthropic recommends a slight variation of the prompt format called [CoT](https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/chain-of-thought#example-writing-donor-emails-basic-cot) (Chain of Thoughts), resulting in the below prompt:
+
+Our prompt follows the [structured guided Chain of Thoughts format](https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/chain-of-thought#example-writing-donor-emails-structured-guided-cot).
+
+```txt
+You are a coding agent help the user to achieve the described task.
+
+When running commands, keep in mind that the terminal is non-interactive, remind to use the '-y' flag when running commands.
+
+Once the task completed, you should return the following information:
+<task_summary>
+</task_summary>
+
+Think step-by-step before you start the task.
+```
+
+Our Coding Agent is now implemented as follows with AgentKit's `createAgent()`:
+
+```typescript
+import { createAgent, anthropic } from "@inngest/agent-kit"
+
+const agent = createAgent({
+    name: "Coding Agent",
+    description: "An expert coding agent",
+    system: `You are a coding agent help the user to achieve the described task.
+
+    When running commands, keep in mind that the terminal is non-interactive, remind to use the '-y' flag when running commands.
+
+    Once the task completed, you should return the following information:
+    <task_summary>
+    </task_summary>
+
+    Think step-by-step before you start the task.
+    `,
+    model: anthropic({
+    model: "claude-3-5-sonnet-latest",
+    max_tokens: 4096,
+}),  
+})
+```
+
+Let's now focus on the most critical part of building Coding Agents: Designing and building tools.
+
+### Building the tools
+
+Providing tools to an Agent to enable it to interact with its environment relies on Function Calling, also called [Tool Calling](https://docs.anthropic.com/en/docs/build-with-claude/tool-use).
+
+Tool Calling is achieved by providing a description of tools (tool name, description, and parameters as JSON Schema) that the LLM can request to use to achieve its goal.
+
+Let's build tools enabling our Coding Agent to interact with a dedicated E2B Sandbox to [CRUD](https://en.wikipedia.org/wiki/Create,_read,_update_and_delete) on files and run terminal commands, just like Cursor does.
+
+**A naive approach to tools building**
+
+An intuitive approach to building tools can be to directly map our Agent to the API we want to use, for example, with E2B:
+
+*   a `runCode` tool, described as “run code in the sandbox” and taking a `code: string` parameter
+*   a `terminal` tool, described as “run terminal commands” and taking a `command: string` parameter
+
+This approach, while logical, makes it harder for the Agent to achieve its goals as the following behavior rapidly starts to rise:
+
+*   The LLM will begin to use the `runCode` tool to run code that will create code files
+*   Sometimes, it will try to achieve the same goal by going through the `terminal` tool to perform some `echo "..." > /path/to/file.tsx` commands
+
+The above behaviors often lead to some string escape errors, which create endless error loops.
+
+Instead of mapping our Agent tools to the E2B APIs, we will follow the tool design best practices [recently introduced by Anthropic](https://www.youtube.com/watch?v=LP5OCa20Zpg).
+
+**Best practice of tools building**
+
+Designing helpful Agent tools requires us to have some “LLM empathy” by asking ourselves which tools we need to achieve similar capabilities.
+
+By asking ourselves, “What would I need in this situation?” the list of tools will expand with the following tools:
+
+*   `createOrUpdateFiles`, described as "Create or update files in the sandbox”
+*   `readFiles`, described as "Read files from the sandbox”
+
+These two new tools map to the [E2B Sandbox filesystem API](https://e2b.dev/docs/filesystem/read-write).
+
+Here is the `createOrUpdateFiles` created using `createTool()` from AgentKit:
+
+
+```typescript
+import { createAgent, anthropic, createTool } from "@inngest/agent-kit"
+
+const agent = createAgent({
+    name: "Coding Agent",
+    description: "An expert coding agent",
+    system: `You are a coding agent help the user to achieve the described task.
+
+    When running commands, keep in mind that the terminal is non-interactive, remind to use the '-y' flag when running commands.
+
+    Once the task completed, you should return the following information:
+    <task_summary>
+    </task_summary>
+
+    Think step-by-step before you start the task.
+    `,
+    model: anthropic({
+    model: "claude-3-5-sonnet-latest",
+    max_tokens: 4096,
+    }),
+    tools: [
+    // create or update file
+    createTool({
+        name: "createOrUpdateFiles",
+        description: "Create or update files in the sandbox",
+        parameters: z.object({
+        files: z.array(
+            z.object({
+            path: z.string(),
+            content: z.string(),
+            })
+        ),
+        }),
+        handler: async ({ files }, { network }) => {
+        const sandbox = getSandbox(network);
+        try {
+            await Promise.all(
+                files.map((file) => sandbox?.files.write(file.path, file.content)
+            );
+            return `Files created or updated: ${files.map((f) => f.path).join(", ")}`;
+        } catch (e) {
+            console.error("error", e);
+            return "Error: " + e;
+        }
+        },
+    }),
+    ]
+})
+```
+
+Let's take a closer look at the createOrUpdateFiles tool:
+
+*   `createOrUpdateFiles` is created using [`createTool()`](https://agentkit.inngest.com/reference/create-tool) and assigned to our Agent. Here, AgentKit will handle the tool calling mechanism and forward the tool result back to the LLM.
+*   **You will notice that errors are also returned to the Agent**. This enables our Agent to react to such errors and call this tool again (with different parameters) or decide to take another action.
+*   The implementation of `getSandbox()` is in the repository. This helps ensure that a dedicated E2B sandbox runs while [increasing its timeout if necessary](https://e2b.dev/docs/sandbox#change-sandbox-timeout-during-runtime).
+
+Interestingly, the tools provided to our Coding Agent are similar to the ones available to Cursor's Agent: terminal commands, Editor actions (read, create files), and code evaluation.
+
+Let's now make our Coding Agent autonomous by enabling it to react to its thinking process and actions (tools).
+
+### Making it autonomous
+
+AgentKit enables us to add autonomy to our [`Agent`](https://agentkit.inngest.com/concepts/agents) via the concept of a [`Network`](https://agentkit.inngest.com/concepts/networks). Adding our Agent to a Network will allow us to run it in a loop until it completes its goal:
+
+```typescript
+import { createAgent, anthropic, createTool, createNetwork } from "@inngest/agent-kit"
+
+const agent = createAgent(/* our Agent and its Tools */);
+
+const network = createNetwork({
+    name: "coding-agent-network",
+    agents: [agent],
+    maxIter: 10,
+    defaultRouter: ({ network }) => {
+    if (network?.state.kv.has("task_summary")) {
+        return;
+    }
+
+    return agent;
+    },
+});
+
+async function main() {
+    const result = await network.run(process.argv.slice(2).join(" "));
+    console.log(result.state.kv.get("task_summary"));
+}
+
+main();
+```
+
+Our Network will run our Agent into a loop, enabling it to react to the output of its tools (e.g., terminal commands) and iterate on the plan created to reach its goals (e.g., “Create a Next.js TodoList project).”
+
+The `defaultRouter` function is called after each iteration of our Agent, enabling us to define when the Agent has completed its goal. If no `task_summary` has been inserted in the state, the Agent will perform a maximum of 10 iterations.
+
+But where does this `task_summary` come from?
+
+It is added to the state when the Agent responds with a `<task_summary></task_summary>` answer (check the prompt). It is achieved by leveraging the AgentKit Agent lifecycle hooks to update the network state dynamically:
+
+```typescript
+const agent = createAgent({
+    name: "Coding Agent",
+    description: "An expert coding agent",
+    // ... prompt and tools
+    lifecycle: {
+    onResponse: async ({ result, network }) => {
+        const lastAssistantMessageText =
+            lastAssistantTextMessageContent(result);
+    if (lastAssistantMessageText) {
+        if (lastAssistantMessageText.includes("<task_summary>")) {
+            network?.state.kv.set("task_summary", lastAssistantMessageText);
+        }
+    }
+    
+    return result;
+    },
+},
+```
+
+Our Coding Agent is now complete!
+
+Its code is [available on GitHub](https://github.com/e2b-dev/e2b-cookbook/tree/main/examples/agentkit-coding-agent/) and can run locally with a valid Anthropic Claude API Key.
+
+Putting it all together: demos time!
+------------------------------------
+
+Let's now look at how our Coding Agent behaves with typical Cursor Agent prompts.
+
+### Scaffold a complete Next.js TodoList with unit tests
+
+After cloning the repository and installing its dependencies with `pnpm i`, let's run the following prompt:
+
+    pnpm run start "Create a Next.js TodoList demo and its associated unit tests. Finally run the tests with coverage"
+
+Our Coding Agent will create a plan and start executing it:
+
+```txt
+    --- Iteration #0 ---
+Agent response > undefined
+terminal <  npx create-next-app@latest todo-list-demo --typescript --tailwind --eslint --app --src-dir --use-npm --yes
+terminal result > Creating a new Next.js app in /home/user/todo-list-demo.
+
+[...]
+Success! Created todo-list-demo at /home/user/todo-list-demo
+
+
+    --- Iteration #1 ---
+Agent response > undefined
+terminal <  cd todo-list-demo && npm install --save-dev @testing-library/react @testing-library/jest-dom @testing-library/user-event jest jest-environment-jsdom
+terminal result > 
+added 329 packages, and audited 709 packages in 14s
+
+[...]
+
+    --- Iteration #2 ---
+Agent response > undefined
+createOrUpdateFiles < [ 'todo-list-demo/src/components/TodoList.tsx' ]
+    --- Iteration #3 ---
+Agent response > undefined
+createOrUpdateFiles < [ 'todo-list-demo/src/components/__tests__/TodoList.test.tsx' ]
+    --- Iteration #4 ---
+Agent response > undefined
+createOrUpdateFiles < [ 'todo-list-demo/jest.config.js' ]
+    --- Iteration #5 ---
+Agent response > undefined
+createOrUpdateFiles < [ 'todo-list-demo/jest.setup.js' ]
+    --- Iteration #6 ---
+Agent response > undefined
+terminal <  cd todo-list-demo && npm pkg set scripts.test="jest" scripts.test:coverage="jest --coverage"
+terminal result > 
+    --- Iteration #7 ---
+Agent response > undefined
+createOrUpdateFiles < [ 'todo-list-demo/src/app/page.tsx' ]
+    --- Iteration #8 ---
+Agent response > undefined
+terminal <  cd todo-list-demo && npm run test:coverage
+terminal result > 
+> todo-list-demo@0.1.0 test:coverage
+> jest --coverage
+
+--------------|---------|----------|---------|---------|-------------------
+File          | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+--------------|---------|----------|---------|---------|-------------------
+All files     |     100 |    85.71 |     100 |     100 |                   
+    TodoList.tsx |     100 |    85.71 |     100 |     100 | 28                
+--------------|---------|----------|---------|---------|-------------------
+
+    --- Iteration #9 ---
+Agent response > <agent>Coding Agent</agent>
+Now that we have completed all the steps, let me provide a task summary:
+
+<task_summary>
+[...]
+</task_summary>
+    --- Iteration #10 ---
+<agent>Coding Agent</agent>
+Now that we have completed all the steps, let me provide a task summary:
+
+<task_summary>
+1. Created a new Next.js project with TypeScript and Tailwind CSS
+2. Installed testing dependencies (Jest, Testing Library)
+3. Created the TodoList component with the following features:
+    - Add new todos
+    - Toggle todo completion
+    - Delete todos
+    - Support for Enter key to add todos
+4. Created comprehensive unit tests covering:
+    - Component rendering
+    - Adding todos
+    - Toggling todo completion
+    - Deleting todos
+    - Enter key functionality
+5. Configured Jest with coverage reporting
+6. Executed tests with coverage results:
+    - Statements: 100%
+    - Branches: 85.71%
+    - Functions: 100%
+    - Lines: 100%
+
+The TodoList demo is now complete and fully tested. The coverage report shows excellent test coverage with only one uncovered branch case.
+</task_summary>
+```
+
+I highly encourage you to [clone the repository](https://github.com/e2b-dev/e2b-cookbook) (examples/agentkit-coding-agent/) and try some different prompts. You can even update the program to load an existing project in the sandbox and ask our Coding Agent to fix some bugs.
+
+
+<CTACallout text={'AgentKit: a TypeScript library to create and orchestrate AI Agents.'} cta={{ href: 'https://agentkit.inngest.com', text: 'Read the docs' }} />
+
+
+Conclusion
+----------
+
+As we saw together, combining E2B and [AgentKit](https://github.com/inngest/agentkit/) only requires a few hundred lines of code to build a competent Coding Agent. The most essential part of creating a Coding Agent (and any kind of Agent) resides in the design of its tools, which consists of putting yourself in the shoes of the LLM.
+
+You might say, “Right, but Cursor also performs searches on the web and can navigate documentations”. The good news is that AgentKit also supports Anthropic's MCP servers ([Model Context Protocol](https://github.com/modelcontextprotocol)), which could enable our Coding Agent to interact with external tools such as Neon to create databases on the fly or [Stagehand](https://github.com/browserbase/mcp-server-browserbase/blob/main/stagehand/README.md) to browse the web autonomously:
+
+```typescript
+import { createAgent, anthropic } from "@inngest/agent-kit"
+
+const agent = createAgent({
+    name: "Coding Agent",
+    description: "An expert coding agent",
+    // prompt, model configuration
+    mcpServers: [
+        // enables our Coding Agent to browse the web
+    {
+        name: "stagehand",
+        transport: {
+        type: "sse",
+        url: "http://localhost:3005",
+        requestInit: {
+            headers: {
+            "BROWSERBASE_API_KEY": "<YOUR_BROWSERBASE_API_KEY>",
+            "BROWSERBASE_PROJECT_ID": "browserbase-project-id",
+            "OPENAI_API_KEY": "openai-api-key",
+            },
+        },
+        },
+    },
+    ],  
+})
+```
+
+By configuring MCP servers to this Coding Agent, you'll get an experience similar to the current version of Cursor Agent mode.
+
+Finally, AgentKit will soon support parallel tools, providing an experience similar to Cursor Agent, which allows you to edit multiple files simultaneously.
+
+If you enjoy this Coding Agent experiment, check [the E2B Fragment project](https://github.com/e2b-dev/fragments), an open-source alternative to v0, Cursor, and Stackblitz.
