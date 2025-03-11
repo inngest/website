@@ -1,4 +1,17 @@
-import { Callout, CodeGroup, Properties, Property, Row, Col, VersionBadge, GuideSelector, GuideSection, Card, CardGroup } from "src/shared/Docs/mdx";
+import {
+  Callout, 
+  Card,
+  CardGroup,
+  CodeGroup,
+  Col,
+  GuideSection,
+  GuideSelector,
+  Info,
+  Properties,
+  Property,
+  Row,
+  VersionBadge,
+} from "src/shared/Docs/mdx";
 
 # Encryption Middleware
 
@@ -17,18 +30,15 @@ Encryption middleware provides end-to-end encryption for events, step output, an
 
   <GuideSection show="python">
 
-    The `EncryptionMiddleware` is available as part of the `inngest` package:
+    The `EncryptionMiddleware` is available as part of the `inngest_encryption` package:
 
     ```py
     import inngest
-    from inngest.experimental.encryption_middleware import EncryptionMiddleware
+    from inngest_encryption import EncryptionMiddleware
 
     inngest_client = inngest.Inngest(
         app_id="my-app",
-        middleware=[EncryptionMiddleware.factory(
-          "my-secret-key",
-          encrypt_invoke_data=True,
-        )],
+        middleware=[EncryptionMiddleware.factory("my-secret-key")],
     )
     ```
 
