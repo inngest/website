@@ -1,0 +1,183 @@
+import { Callout, CodeGroup, VersionBadge, CardGroup, Card } from "src/shared/Docs/mdx";
+import {
+  RiEyeOffLine,
+  RiMistFill,
+  RiPlugLine,
+  RiFileSearchLine,
+} from "@remixicon/react";
+
+
+# Realtime
+
+Realtime allows you to stream data from workflows to your users, without configuring infrastructure
+or maintaining state. This allows you to build interactive applications, show status updates, or
+stream AI responses to your users directly in your existing code.
+
+## Usage
+
+There are two core parts of realtime:  **publishing** and **subscribing**. You must publish data
+from your functions in order for it to be visible.  Publishing data accepts three parameters:
+
+- `data`, the data to be published to the realtime stream
+- `topic`, the (optionally typed) topic name, allowing you to differentiate between types of data
+- `channel`, the name for a group of topics, eg. `user:123`
+
+Subscriptions receive data by subscribing to topics within a channel.  We manage the websocket
+connections, publishing, subscribing, and state for you.
+
+### Publishing
+
+Using our APIs, you publish specific data that users subscribe to.  Here's a basic example:
+
+<CodeGroup>
+```tsx {{ title: "Minimal" }}
+// NOTE: This is an untyped, minimal example.  To view typed channels, use the code
+// tabs above.
+
+inngest.createFunction(
+  { id: "some-task" },
+  { event: "ai/ai.requested" },
+  async ({ event, step, publish }) => {
+
+    // Publish data to a user's channel, on the given topic.  Channel names are custom
+    // and act as a container for a group of topics.  Each topic is a stream of data.
+    publish({
+      channel: `user:${event.data.userId}`,
+      topic: "ai",
+      data: {
+        response: "an llm response here",
+        success: true,
+      },
+    });
+
+  },
+);
+```
+```tsx {{ title: "Typed channels" }}
+import { channel, topic } from "inngest/experimental";
+
+// create a channel for each user, given a user ID.  a channel is a namespace
+// for one or more topics of streams.
+const userChannel = channel((userId: string) => userId)
+  // Add a specific topic, eg. "ai" for all AI data within the user's channel
+  .addTopic(
+    topic("ai").schema(
+      z.object({
+        response: z.string(),
+        // Transforms are supported for realtime data
+        success: z.number().transform(Boolean),
+      })
+    )
+  );
+
+inngest.createFunction(
+  { id: "some-task" },
+  { event: "ai/ai.requested" },
+  async ({ event, step, publish }) => {
+
+    // Publish data to the given channel, on the given topic.
+    publish(userChannel(event.data.userId).ai({
+      response: "an llm response here",
+      success: true,
+    });
+
+  },
+);
+```
+</CodeGroup>
+
+### Subscribing
+
+In order to subscribe to topics within a channel, you must first create an authentication token
+that grants permissions to subscribe to the given topics and channels.  This must be done on the
+backend, as it requires a secret key:
+
+```tsx
+// This token can only read from the given topics in the given channel.
+// You should pass this token to the frontend within a protected API endpoint.
+const token = await inngest.getSubscribeToken({
+  channel: "user:123",
+  topics: ["ai"], // subscribe to one or more topics in the user channel
+});
+```
+
+Once the frontend has a subscription token, you can easily subscribe to receive data using our
+subscription API:
+
+```tsx
+const stream = await inngest.subscribe(token);
+
+// The returned stream from `subscribe()` is a `ReadableStream` that can be
+// used with `getReader()` or as an async iterator
+//
+// In both cases, message is typed based on the subscription
+
+// Example 1: AsyncIterator
+for await (const message of stream) {
+  console.log(message); // TODO: Show type of data.
+}
+
+// Example 2: ReadableStream
+const reader = stream.getReader();
+const { done, value } = await reader.read();
+if (!done) {
+  console.log(value);
+}
+```
+
+## Concepts
+
+### Channels
+
+Channels are environment-level containers which group one or more topics of data.  You can create
+as many channels as you need. Some tips:
+
+- You can create a channel for a specific run ID, eg. for a run's status: `run:${ctx.runId}`
+- You can create channels for each user, or for a given conversation.
+
+### Topics
+
+Topics allow you to specify individual streams within a channel. For example, within a given run you
+may publish status updates, AI responses, and tool outputs to a user.
+
+Benefits of separating data by topics include:
+
+- Typing and data handling: you can switch on the topic name to properly type and handle different
+  streams of data within a channel.
+- Security:  you must specify topics when creating subcription tokens, allowing you to protect or
+  hide specific published data.
+
+### Subscription Tokens
+
+Subscription tokens allow you to subscribe to the specified channel's topics.  Tokens expire 1 minute
+after creation for security purposes.
+
+## SDK Support
+
+Realtime is supported in the following SDKs:
+
+| SDK        | Publish | Subscribe | Version |
+| ---------- | ------- | --------- | ------- |
+| TypeScript | ✅      | ✅        | v3.X.X  |
+| Golang     | ✅      | ✅        | v0.9.0  |
+| Python     | In progress | In progress         | -       |
+
+## Limitations
+
+- The number of currently active topics depends on your Inngest plan
+- Data sent is currently at-most-once and ephemeral
+- The max message size is currently 512KB
+
+
+## Security
+
+Realtime is secure by default.   You can only subscribe to a channel's topics using time-sensitive
+tokens.  The subscription token mechanism must be placed within your own protected API endpoints.
+
+You must always specify the channel and topics when publishing data.  This lets you ensure that users
+can only access specific subsets of data within runs.
+
+## Delivery guarantees
+
+Message delivery is currently at-most-once.  We recommend that your users subscribe to a channel's
+topics as you invoke runs or send events to ensure delivery of data within a topic.

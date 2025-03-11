@@ -1,4 +1,5 @@
 import { HomeIcon, PlayIcon, LightBulbIcon } from "@heroicons/react/24/outline";
+import { parse } from "node:path";
 
 // A basic link in the nav
 export type NavLink = {
@@ -656,6 +657,16 @@ const sectionHome: (NavGroup | NavLink)[] = [
             title: "Logging",
             href: "/docs/guides/logging",
           },
+        ],
+      },
+      {
+        title: "Realtime",
+        tag: "new",
+        links: [
+          {
+            title: "Overview",
+            href: "/docs/features/realtime",
+          }
         ],
       },
       {
