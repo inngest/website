@@ -265,6 +265,65 @@ const token = await getSubscriptionToken(inngest, {
 });
 ```
 
+For convenience, we also provide a `Realtime.Token` type helper to help type
+backend outputs when generating tokens for your frontend:
+
+```ts
+import { type Realtime } from "@inngest/realtime";
+import { type userChannel } from "./channels";
+
+type UserAiToken = Realtime.Token<typeof userChannel, ["ai"]>;
+```
+
+## React hooks
+
+Realtime provides a `useInngestSubscription()` react hook, used to subscribe
+using a token and collate streamed data for you.
+
+```tsx
+import { useInngestSubscription } from "@inngest/realtime/hooks";
+
+const { data } = useInngestSubscription({
+  app: inngest,
+  token,
+});
+
+return (
+  <div>
+    {data.map((message, i) => (
+      <div key={i}>{message.data}</div>
+    ))}
+  </div>
+);
+```
+
+### Inputs
+
+- `app: Inngest` - The Inngest client to use for subscribing. Does not require a signing
+  key, as we subscribe using a token.
+- `enabled?: boolean` - Whether or not the hook will subscribe or not.
+- `bufferInterval?: number` - If set and above `0`, the outputs will only update
+  every `n` milliseconds. This helps with very busy streams that could overwhelm
+  a UI.
+- `token?: Realtime.Subscribe.Token` - The token to be used for subscribing.
+- `refreshToken?: () => Promise<Realtime.Subscribe.Token>` - A function that
+  will be called if no `token` is available, or if the hook has been
+  re-`enabled` and the previous `token` has expired.
+
+### Outputs
+
+- `data: Array<Realtime.Message>` - All messages received on the subscription in
+  chronological order.
+- `latestData: Realtime.Message` - A shortcut to the last message
+  received on the subscription. Useful for streams where each message is the
+  latest state of an entity.
+- `freshData: Array<Realtime.Message>` - If `bufferInterval` is active, this
+  will be the last batch of messages released from the buffer. If
+  `bufferInterval` is inactive, this is always the latest message.
+- `error: Error | null` - If truthy, this is an error with the subscription.
+- `state: InngestSubscriptionState` - The current state of the subscription, one
+  of `"closed"`, `"error"`, `"refresh_token"`, `"connecting"`, `"active"`, or `"closing"`.
+
 ## Examples
 
 TODO:
