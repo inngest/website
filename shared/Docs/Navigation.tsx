@@ -314,7 +314,7 @@ function NavigationGroup({
   isActiveGroup?: boolean;
   nestingLevel?: number;
   className?: string;
-  tag: string;
+  tag?: string;
 }) {
   const defaultOpenGroupTitles = useContext(DefaultOpenSectionsContext);
   // If this is the mobile navigation then we always render the initial
