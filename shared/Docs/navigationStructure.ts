@@ -667,6 +667,10 @@ const sectionHome: (NavGroup | NavLink)[] = [
             title: "Overview",
             href: "/docs/features/realtime",
           },
+          {
+            title: "React hooks",
+            href: "/docs/features/realtime/react-hooks",
+          },
         ],
       },
       {
