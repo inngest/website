@@ -4,10 +4,14 @@ import {
   RiMistFill,
   RiPlugLine,
 } from "@remixicon/react";
-import { Callout, Card, CardGroup, CodeGroup, VersionBadge } from "src/shared/Docs/mdx";
+import { Callout, Info, Card, CardGroup, CodeGroup, VersionBadge } from "src/shared/Docs/mdx";
 
 
 # Realtime
+
+<Info>
+  Realtime is currently in developer preview. Some details including APIs are still subject to change during this period. Read more about the [developer preview here](#developer-preview).
+</Info>
 
 Realtime allows you to stream data from workflows to your users, without configuring infrastructure
 or maintaining state. This allows you to build interactive applications, show status updates, or
@@ -369,6 +373,13 @@ Realtime is supported in the following SDKs:
 - Data sent is currently at-most-once and ephemeral
 - The max message size is currently 512KB
 
+## Developer preview
+
+Realtime is available as a developer preview. During this period:
+
+* This feature is **widely available** for all Inngest accounts.
+* Some details including APIs and SDKs are subject to change based on user feedback.
+* There is no additional cost to using realtime. Realtime will be available to all Inngest billing plans at general availability, but final pricing is not yet determined.
 
 ## Security
 
