@@ -53,9 +53,6 @@ The following environment variables are required:
 
 Due to its long-lived nature, the Inngest Pulse Router needs to be deployed on a Cloud Provider such as Railway.
 
-You will find instructions to deploy your router on Railway [on this GitHub README.](https://github.com/prisma/prisma-examples/tree/latest/pulse/inngest-router#to-railway)
-
-
 <Callout>
 
 **Using Prisma Pulse with Serverless**
@@ -123,7 +120,5 @@ export const handleNewUser = inngest.createFunction(
 A Function run performing a database change might trigger a Prisma Pulse event that will run the Function again.
 
 We recommend using `"db/*"` events in combination with a `if:` filter to avoid any infinite loop of Function runs triggered.
-
-See an example [in this blog post](https://www.prisma.io/blog/build-real-time-durable-workflows-with-pulse-and-inngest#prisma-pulse--inngest-in-practice-building-an-ai-writer-workflow).
 
 </Callout>
