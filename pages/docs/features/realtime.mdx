@@ -1,4 +1,8 @@
-import { Info, CodeGroup, Steps, Step } from "src/shared/Docs/mdx";
+import {
+  RiNextjsFill,
+  RiNodejsFill,
+} from "@remixicon/react";
+import { Info, CodeGroup, Steps, Step, CardGroup, Card } from "src/shared/Docs/mdx";
 
 export const description = 'Learn how to use realtime to stream data from workflows to your users.'
 
@@ -393,3 +397,27 @@ can only access specific subsets of data within runs.
 
 Message delivery is currently at-most-once.  We recommend that your users subscribe to a channel's
 topics as you invoke runs or send events to ensure delivery of data within a topic.
+
+## Examples
+
+<CardGroup cols={2}>
+
+  <Card
+    href="https://github.com/inngest/inngest-js/tree/main/examples/realtime-next"
+    title={"Example: Next.js + Realtime"}
+    icon={<RiNextjsFill className="text-basis h-8 w-8"/>}
+    iconPlacement="top"
+  >
+  A Next.js app with Inngest Realtime including React hooks, and creating tokens via server actions.
+  </Card>
+
+  <Card
+    href="https://github.com/inngest/inngest-js/tree/main/examples/realtime-simple"
+    title={"Example: Single file"}
+    icon={<RiNodejsFill className="text-basis h-8 w-8"/>}
+    iconPlacement="top"
+  >
+  A single-file demo of using Inngest Realtime with Node.js.
+  </Card>
+
+</CardGroup>
