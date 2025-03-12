@@ -1,4 +1,5 @@
 import { HomeIcon, PlayIcon, LightBulbIcon } from "@heroicons/react/24/outline";
+import { parse } from "node:path";
 
 // A basic link in the nav
 export type NavLink = {
@@ -659,6 +660,20 @@ const sectionHome: (NavGroup | NavLink)[] = [
         ],
       },
       {
+        title: "Realtime",
+        tag: "new",
+        links: [
+          {
+            title: "Overview",
+            href: "/docs/features/realtime",
+          },
+          {
+            title: "React hooks",
+            href: "/docs/features/realtime/react-hooks",
+          },
+        ],
+      },
+      {
         title: "Middleware",
         links: [
           {
@@ -859,7 +874,6 @@ const sectionExamples: NavGroup[] = [
       {
         title: "AI Agents and RAG",
         href: `/docs/examples/ai-agents-and-rag`,
-        tag: "New",
       },
       {
         title: "Email Sequence",

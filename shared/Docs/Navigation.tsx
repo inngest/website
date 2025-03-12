@@ -308,11 +308,13 @@ function NavigationGroup({
   isActiveGroup = false,
   nestingLevel = 0,
   className = "",
+  tag = "",
 }: {
   group: NavGroup;
   isActiveGroup?: boolean;
   nestingLevel?: number;
   className?: string;
+  tag?: string;
 }) {
   const defaultOpenGroupTitles = useContext(DefaultOpenSectionsContext);
   // If this is the mobile navigation then we always render the initial
@@ -345,6 +347,11 @@ function NavigationGroup({
               })}
             >
               {group.title}
+              {tag && (
+                <Tag color="breeze" className={"ml-2"}>
+                  {tag}
+                </Tag>
+              )}
             </span>
             {nestingLevel > 0 && <ChevronDownIcon className="mr-1 h-4 w-4" />}
           </h2>
@@ -375,6 +382,7 @@ function NavigationGroup({
                     >
                       <NavigationGroup
                         group={link}
+                        tag={(link as any).tag || ""}
                         nestingLevel={nestingLevel + 1}
                       />
                     </Accordion.Root>
