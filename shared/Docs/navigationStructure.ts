@@ -387,11 +387,11 @@ const sectionHome: (NavGroup | NavLink)[] = [
         href: `/docs/learn/inngest-functions`,
       },
       {
-        title: "Inngest Steps",
+        title: "Leveraging Steps",
         href: `/docs/learn/inngest-steps`,
       },
       {
-        title: "Serving Inngest Functions",
+        title: "Setting up your app",
         href: `/docs/learn/serving-inngest-functions`,
       },
     ],
