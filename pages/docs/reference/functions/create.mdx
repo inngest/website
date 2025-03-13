@@ -52,8 +52,8 @@ The `createFunction` method accepts a series of arguments to define your functio
       <Property name="limit" type="number" required>
         The total number of runs allowed to start within the given `period`.
       </Property>
-      <Property name="period" type="number" required>
-        The period within the `limit` will be applied.
+      <Property name="period" type="string" required>
+        The period within which the `limit` will be applied.
       </Property>
       <Property name="burst" type="number">
         The number of runs allowed to start in the given window in a single burst. This defaults to 1, which ensures that requests are smoothed amongst the given `period`.
