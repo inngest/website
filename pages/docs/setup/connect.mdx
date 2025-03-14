@@ -250,12 +250,16 @@ As a connect worker is a long-running process, it's important to understand the 
   </Step>
   <Step>
     `RECONNECTING` - The worker is reconnecting to Inngest after a connection was lost.
+
+    The worker will automatically flush any in-flight steps via the HTTP API when the WebSocket connection is lost.
+
+    By default, the worker will attempt to reconnect to Inngest an infinite number of times. See the [developer preview limitations](#limitations) for more details.
   </Step>
   <Step>
     `CLOSING` - The worker is beginning the shutdown process.
 
     * New steps will not be accepted after this state is entered.
-    * Existing steps will be allowed to complete.
+    * Existing steps will be allowed to complete. The worker will flush any in-flight steps via the HTTP API after the WebSocket connection is closed.
 
     By default, the SDK listens for `SIGTERM` and `SIGINT` signals and begins the shutdown process. You can customize this behavior by in each SDK:
 
@@ -291,7 +295,9 @@ As a connect worker is a long-running process, it's important to understand the 
     ```
   </Step>
   <Step>
-    `CLOSED` - The worker's WebSocket connection has closed. Any in-flight requests may continue to complete via the HTTP API.
+    `CLOSED` - The worker's WebSocket connection has closed.
+
+    By this stage, all in-flight steps will be flushed via the HTTP API as the WebSocket connection is closed, ensuring that no in-progress steps are lost.
 
     ```ts {{ title: "TypeScript" }}
     // The `closed` promise will resolve when the connection is "CLOSED"
@@ -300,6 +306,10 @@ As a connect worker is a long-running process, it's important to understand the 
     ```
   </Step>
 </Steps>
+
+<Info>
+  **WebSocket connection and HTTP fallback** - While a WebSocket connection is open, the worker will receive and send all step results via the WebSocket connection. When the connection closes, the worker will fallback to the HTTP API to send any remaining step results.
+</Info>
 
 ## Worker observability
 
