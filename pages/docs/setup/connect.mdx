@@ -3,7 +3,7 @@ import { Info, Warning, CodeGroup, Steps, Step } from "shared/Docs/mdx";
 # Connect
 
 <Info>
-  These docs are part of a developer preview for Inngest's `connect` API. This feature must be enabled on your account by [contacting support](https://app.inngest.com/support).
+  These docs are part of a developer preview for Inngest's `connect` API. Learn more about the [developer preview here](#developer-preview).
 </Info>
 
 The `connect` API allows your app to create an outbound persistent connection to Inngest. Each app can establish multiple connections to Inngest, which enable you to scale horizontally across multiple workers. The key benefits of using `connect` compared to [`serve`](/docs/learn/serving-inngest-functions) are:
@@ -110,7 +110,7 @@ No signing or event keys are required in local development mode.
 ## Deploying to production
 
 <Warning>
-  The `connect` API is currently in developer preview and is not yet recommended for critical production workloads. We recommend deploying to a staging environment first and reaching out to the Inngest team prior to deploying to production.
+  The `connect` API is currently in developer preview and is not yet recommended for critical production workloads. We recommend deploying to a staging environment first prior to deploying to production.
 </Warning>
 
 <Steps>
@@ -250,12 +250,16 @@ As a connect worker is a long-running process, it's important to understand the 
   </Step>
   <Step>
     `RECONNECTING` - The worker is reconnecting to Inngest after a connection was lost.
+
+    The worker will automatically flush any in-flight steps via the HTTP API when the WebSocket connection is lost.
+
+    By default, the worker will attempt to reconnect to Inngest an infinite number of times. See the [developer preview limitations](#limitations) for more details.
   </Step>
   <Step>
     `CLOSING` - The worker is beginning the shutdown process.
 
     * New steps will not be accepted after this state is entered.
-    * Existing steps will be allowed to complete.
+    * Existing steps will be allowed to complete. The worker will flush any in-flight steps via the HTTP API after the WebSocket connection is closed.
 
     By default, the SDK listens for `SIGTERM` and `SIGINT` signals and begins the shutdown process. You can customize this behavior by in each SDK:
 
@@ -291,7 +295,9 @@ As a connect worker is a long-running process, it's important to understand the 
     ```
   </Step>
   <Step>
-    `CLOSED` - The worker's WebSocket connection has closed. Any in-flight requests may continue to complete via the HTTP API.
+    `CLOSED` - The worker's WebSocket connection has closed.
+
+    By this stage, all in-flight steps will be flushed via the HTTP API as the WebSocket connection is closed, ensuring that no in-progress steps are lost.
 
     ```ts {{ title: "TypeScript" }}
     // The `closed` promise will resolve when the connection is "CLOSED"
@@ -300,6 +306,10 @@ As a connect worker is a long-running process, it's important to understand the 
     ```
   </Step>
 </Steps>
+
+<Info>
+  **WebSocket connection and HTTP fallback** - While a WebSocket connection is open, the worker will receive and send all step results via the WebSocket connection. When the connection closes, the worker will fallback to the HTTP API to send any remaining step results.
+</Info>
 
 ## Worker observability
 
@@ -405,7 +415,19 @@ const connection = await connect({
 
 _Guide on migration from `serve` to `connect` coming soon_
 
-## Limitations
+## Developer preview
+
+The `connect` API is currently in developer preview. This means that the API is not yet recommended for critical production workloads and is subject to breaking changes.
+
+During the developer preview, the `connect` API is available to all Inngest accounts with the following plan-limits:
+
+* Free plan: 2 concurrent worker connections
+* All paid plans: 10 concurrent worker connections
+* Max apps per connection: 10
+
+Final plan limitations will be announced prior to general availability. Please [contact us](https://app.inngest.com/support) if you need to increase these limits.
+
+### Limitations
 
 During the developer preview, there are some limitations to using `connect` to be aware of. Please [contact us](https://app.inngest.com/support) if you'd like clarity on any of the following:
 
@@ -414,7 +436,5 @@ During the developer preview, there are some limitations to using `connect` to b
 * **Reconnection policy is not configurable** - The SDK will attempt to reconnect to Inngest an infinite number of times. We will expose a configurable reconnection policy in the future.
 * **Rollbacks** - Rollbacks of app versions may not work as expected. Additional functionality and control around rollbacks is coming in a future release.
 
-<Warning>
-  As this is a developer preview, the `connect` API may be subject to breaking changes.
-</Warning>
+
 
