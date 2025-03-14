@@ -56,26 +56,32 @@ type UserCreatedEvent struct {
 func main() {
 	ctx := context.Background()
 
-	app := inngestgo.NewHandler("my-app", inngestgo.HandlerOpts{
-		Logger:  logger.StdlibLogger(ctx),
+	app, err := inngestgo.NewClient(inngestgo.ClientOpts{
+		AppID:      "my-app",
+		Logger:     logger.StdlibLogger(ctx),
+		AppVersion: nil, // Optional, defaults to the git commit SHA
 	})
+	if err != nil {
+		panic(err)
+	}
 
 	f := inngestgo.CreateFunction(
+    app,
 		inngestgo.FunctionOpts{ID: "handle-signup", Name: "Handle signup"},
 		inngestgo.EventTrigger("user.created", nil),
 		func(ctx context.Context, input inngestgo.Input[UserCreatedEvent]) (any, error) {
-      fmt.Println("Function called")
+			fmt.Println("Function called")
 			return map[string]any{"success": true}, nil
 		},
 	)
-
-	app.Register(f)
 
 	fmt.Println("Worker: connecting")
 
 	ws, err := inngestgo.Connect(ctx, inngestgo.ConnectOpts{
 		InstanceID: inngestgo.Ptr("example-worker"),
-		Apps:       []inngestgo.Handler{h},
+		Apps:       []inngestgo.Handler{
+      app,
+    },
 	})
 	if err != nil {
 		fmt.Printf("ERROR: %#v\n", err)
