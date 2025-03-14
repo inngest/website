@@ -1,15 +1,40 @@
-import { Callout, Tip, Info, CodeGroup, VersionBadge, GuideSelector, GuideSection, Col, Row } from "shared/Docs/mdx";
+import { Callout, Tip, Info, CodeGroup, VersionBadge, GuideSelector, GuideSection, Col, Row, Card, CardGroup } from "shared/Docs/mdx";
 
 export const description = `Serve the Inngest API as an HTTP endpoint in your application.`
 export const hidePageSidebar = true;
 
-# Serving Inngest Functions
+# Setting up your Inngest app
 
-With Inngest, you define functions or workflows using its SDK right in your codebase and serve them through an HTTP endpoint in your application. Inngest uses this endpoint to reliably execute functions in response to an event.
+With Inngest, you define functions or workflows using the SDK and deploy them to whatever platform or cloud provider you want including including serverless and container runtimes.
 
-This page covers how to serve the Inngest API in your project.
+For Inngest to remotely execute your functions, you will need to set up a connection between your app and Inngest. This can be done in one of two ways:
 
-## Exposing Inngest Functions
+<CardGroup>
+  <Card title="serve()" href="#serving-inngest-functions">
+    <p className="my-4">Serve your Inngest functions by creating an HTTP endpoint in your application.</p>
+
+    <p className="my-2">**Ideal for**:</p>
+    <ul className="list-disc list-inside">
+      <li>Serverless platforms like Vercel, Lambda, etc.</li>
+      <li>Adding Inngest to an existing API.</li>
+      <li>Zero changes to your CI/CD pipeline</li>
+    </ul>
+  </Card>
+  <Card title="connect()" href="/docs/setup/connect">
+    <p className="my-4">Connect to Inngest's servers using out-bound WebSocket connection.</p>
+
+    <p className="my-2">**Ideal for**:</p>
+    <ul className="list-disc list-inside">
+      <li>Container runtimes (Kubernetes, Docker, etc.)</li>
+      <li>Latency sensitive applications</li>
+      <li>Horizontal scaling with workers</li>
+    </ul>
+  </Card>
+</CardGroup>
+
+Inngest functions are portable, so you can migrate between `serve()` and `connect()` as well as cloud providers.
+
+## Serving Inngest functions
 
 <GuideSelector
   options={[
