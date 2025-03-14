@@ -147,7 +147,7 @@ key or a subscription token. You can can subscribe from the [client](#subscribe-
 
     <CodeGroup>
     ```ts {{ title: "Next.js - App router" }}
-    import { getSubscribeToken } from "@inngest/realtime";
+    import { getSubscriptionToken } from "@inngest/realtime";
     import { auth } from "src/auth"; // this could be any auth provider
     import { inngest } from "src/inngest";
 
@@ -155,7 +155,7 @@ key or a subscription token. You can can subscribe from the [client](#subscribe-
     export async function POST() {
       const { userId } = await auth()
 
-      const token = await getSubscribeToken(inngest, {
+      const token = await getSubscriptionToken(inngest, {
         channel: `user:${userId}`,
         topics: ["ai"],
       })
@@ -164,14 +164,14 @@ key or a subscription token. You can can subscribe from the [client](#subscribe-
     }
     ```
     ```ts {{ title: "Express" }}
-    import { getSubscribeToken } from "@inngest/realtime";
+    import { getSubscriptionToken } from "@inngest/realtime";
     import { getAuth } from "src/auth"; // this could be any auth provider
     import { inngest } from "src/inngest";
 
     app.post("/get-subscribe-token", async (req, res) => {
       const { userId } = getAuth(req)
 
-      const token = await getSubscribeToken(inngest, {
+      const token = await getSubscriptionToken(inngest, {
         channel: `user:${userId}`,
         topics: ["ai"],
       })
