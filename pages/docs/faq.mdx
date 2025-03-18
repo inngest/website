@@ -1,7 +1,10 @@
-# Frequently Asked Questions
+export const description = "Frequently asked questions about Inngest";
+
+# Frequently Asked Questions (FAQs)
 
 - [How do I run crons only in production?](#how-do-i-run-crons-only-in-production)
 - [How do I stop functions from running?](#how-do-i-stop-functions-from-running)
+- [What is the "Finalization" step in my trace?](#what-is-the-finalization-step-in-my-trace)
 - [Why am I getting “Event key not found" errors in branch environments?](#why-am-i-getting-event-key-not-found-errors-in-branch-environments)
 - [How do I specify multiple serve paths for a same Vercel application on the Dashboard?](#why-am-i-getting-event-key-not-found-errors-in-branch-environments)
 - [What's the recommended way to redact data from step outputs?](#what-s-the-recommended-way-to-redact-data-from-step-outputs)
@@ -13,6 +16,7 @@
   error?](#why-am-i-getting-a-non-deterministic-function-error)
 - [Why am I getting an `Illegal invocation` error?](#why-am-i-getting-an-illegal-invocation-error)
 - [Why is the dev server polling endpoints that don't exist?](#why-is-the-dev-server-polling-endpoints-that-don-t-exist)
+
 ## How do I run crons only in production?
 
 There are multiple ways to achieve it:
@@ -26,6 +30,26 @@ process.env.NODE_ENV === "production" ? { cron: "* * *" } : { event: "dev/manual
 
 ## How do I stop functions from running?
 The best way to ensure a deprecated function doesn't run is to deploy without including it in your [serve handler](/docs/reference/serve). You can temporarily achieved the same result by archiving the function on our dashboard, but note that a new deployment will unarchive the function.
+
+## What is the "Finalization" step in my trace?
+
+The "finalization" step in a run's trace represents the execution of the code between your function's last step and the end of the function handler.
+
+```ts {{ x: "10"}}
+const myFunction = inngest.createFunction(
+  { id: "handle-import" }
+  { event: "integration.connected" }
+  async ({ event, step }) => {
+    const res = await step.run("import-data", async () => {
+      // ...
+    });
+    // -- Finalization starts ⬇️ --
+    const newRows = res.rows.filter((row) => row.created === true)
+    return { message: `Imported ${newRows.length} rows` }
+    // -- Finalization ends ⬆️ --
+  },
+)
+```
 
 ## Why am I getting “Event key not found" errors in branch environments?
 Branch environments are [automatically archived](/docs/platform/environments#archiving-branch-environments) 3 days after their latest deploy.
