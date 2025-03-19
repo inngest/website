@@ -407,14 +407,11 @@ inngest.CreateFunction(
 		}
 
 		for hasMore {
-			var page *shopify.ProductsResponse
-			if _, err := step.Run(fmt.Sprintf("fetch-products-%v", cursor), func() error {
-				var err error
-				page, err = shopify.Product.All(&shopify.ProductListOptions{
-					Session:  session,
+			if page, err := step.Run(fmt.Sprintf("fetch-products-%v", cursor), func() error {
+				return shopify.Product.All(&shopify.ProductListOptions{
+					Session: session,
 					SinceID: cursor,
 				})
-				return err
 			}); err != nil {
 				return err
 			}
