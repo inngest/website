@@ -152,9 +152,9 @@ inngestgo.CreateFunction(
 			_, err = step.Run(ctx, "rollback-row-creation", func(ctx context.Context) (any, error) {
 				return removeRow(input.Event.Data.RowID)
 			})
-               if err != nil {
-               	return nil, err
-               }
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		return nil, nil

@@ -1,0 +1,38 @@
+# Go SDK migration guide: v0.8 to v0.11
+
+This guide will help you migrate your Inngest Go SDK from v0.8 to v0.11 by providing a summary of the breaking changes.
+
+## `Input`
+
+The `Input` type now accepts the event data type as a generic parameter. Previously, it accepted the `GenericEvent` type.
+
+```go
+type MyEventData struct {
+	Message string `json:"message"`
+}
+
+_, err = inngestgo.CreateFunction(
+	client,
+	inngestgo.FunctionOpts{ID: "my-fn"},
+	inngestgo.EventTrigger("my-event", nil),
+	func(
+		ctx context.Context,
+		input inngestgo.Input[MyEventData],
+	) (any, error) {
+		fmt.Println(input.Event.Data.Message)
+		return nil, nil
+	},
+)
+```
+
+## `GenericEvent`
+
+The `GenericEvent` type no longer accepts the event user type as a generic parameter.
+
+```go
+type MyEventData struct {
+	Message string `json:"message"`
+}
+
+type MyEvent = inngestgo.GenericEvent[MyEventData]
+```
