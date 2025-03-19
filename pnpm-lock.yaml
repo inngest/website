@@ -94,9 +94,6 @@ importers:
       google-spreadsheet:
         specifier: 4.1.1
         version: 4.1.1(google-auth-library@9.6.3)
-      gray-matter:
-        specifier: 4.0.3
-        version: 4.0.3
       hast-util-heading-rank:
         specifier: 2.1.0
         version: 2.1.0
@@ -239,6 +236,9 @@ importers:
       eslint-config-next:
         specifier: 15.1.6
         version: 15.1.6(eslint@8.46.0)(typescript@5.7.3)
+      gray-matter:
+        specifier: 4.0.3
+        version: 4.0.3
       ignore-loader:
         specifier: 0.1.2
         version: 0.1.2
