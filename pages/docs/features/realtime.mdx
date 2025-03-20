@@ -198,15 +198,20 @@ key or a subscription token. You can can subscribe from the [client](#subscribe-
 
     <CodeGroup>
     ```ts {{ title: "Basic subscribe" }}
-    import { subscribe } from "@inngest/realtime";
+    "use server";
 
-    const stream = await subscribe(token)
+    import { subscribe } from "@inngest/realtime";
+    import { inngest } from "src/inngest";
+
+    const stream = await subscribe(inngest, token)
 
     for await (const message of stream) {
       console.log(message)
     }
     ```
     ```ts {{ title: "React hook - useInngestSubscription" }}
+    "use server";
+
     import { useInngestSubscription } from "@inngest/realtime/hooks";
 
     export default function MyComponent({ token }: { token: string }) {
