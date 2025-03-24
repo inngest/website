@@ -1,6 +1,3 @@
-import { loadMarkdownFilesMetadata } from "utils/markdown";
-import { type MDXBlogPost } from "src/components/Blog";
-import { loadPost } from "app/changelog/helpers";
 import {
   topLevelNav,
   type NavGroup,
