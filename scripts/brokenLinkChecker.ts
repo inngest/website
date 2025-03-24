@@ -39,6 +39,7 @@ const options = {
     "https://v0.dev",
     "https://innge.st",
     "https://roadmap.inngest.com",
+    "https://docs.anthropic.com",
   ],
 };
 
