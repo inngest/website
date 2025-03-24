@@ -1,4 +1,4 @@
-import { Callout, Properties, Property, Row, Col, CodeGroup, VersionBadge } from "src/shared/Docs/mdx";
+import { Callout, CodeGroup, Col, Properties, Property, Row, VersionBadge } from "src/shared/Docs/mdx";
 
 export const description = `Sleep until a specific date time with step.sleepUntil()`;
 
@@ -13,11 +13,13 @@ export const description = `Sleep until a specific date time with step.sleepUnti
       <Property name="id" type="string" required>
         The ID of the step. This will be what appears in your function's logs and is used to memoize step state across function versions.
       </Property>
-      <Property name="datetime" type="Date | string" required>
+      <Property name="datetime" type="Date | string | Temporal.Instant | Temporal.ZonedDateTime" required>
         The datetime at which to continue execution of your function. This can be:
 
         * A [`Date`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date) object
-        * Any date time string in [the format accepted by the `Date` object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date#date_time_string_format), i.e. `YYYY-MM-DDTHH:mm:ss.sssZ` or simplified forms like `YYYY-MM-DD` or `YYYY-MM-DDHH:mm:ss`
+        * Any date time `string` in [the format accepted by the `Date` object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date#date_time_string_format), i.e. `YYYY-MM-DDTHH:mm:ss.sssZ` or simplified forms like `YYYY-MM-DD` or `YYYY-MM-DDHH:mm:ss`
+        * <VersionBadge version="3.33.0+" /> [`Temporal.Instant`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Temporal/Instant)
+        * <VersionBadge version="3.33.0+" /> [`Temporal.ZonedDateTime`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Temporal/ZonedDateTime)
       </Property>
     </Properties>
   </Col>
@@ -33,6 +35,15 @@ export const description = `Sleep until a specific date time with step.sleepUnti
   // Sleep until the end of the this week
   const date = dayjs().endOf("week").toDate();
   await step.sleepUntil("wait-for-end-of-the-week", date);
+
+  // Sleep until tea time in London
+  const teaTime = Temporal.ZonedDateTime.from("2025-05-01T16:00:00+01:00[Europe/London]");
+  await step.sleepUntil("british-tea-time", teaTime);
+
+  // Sleep until the end of the day
+  const now = Temporal.Now.instant();
+  const endOfDay = now.round({ smallestUnit: "day", roundingMode: "ceil" });
+  await step.sleepUntil("done-for-today", endOfDay);
   ```
   ```ts {{ title: "v2" }}
   // Sleep until the new year
