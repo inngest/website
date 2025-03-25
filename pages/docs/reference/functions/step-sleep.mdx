@@ -1,4 +1,4 @@
-import { Callout, Properties, Property, Row, Col, CodeGroup, VersionBadge } from "src/shared/Docs/mdx";
+import { Callout, CodeGroup, Col, Properties, Property, Row, VersionBadge } from "src/shared/Docs/mdx";
 
 # Sleep `step.sleep()`
 
@@ -10,11 +10,12 @@ import { Callout, Properties, Property, Row, Col, CodeGroup, VersionBadge } from
       <Property name="id" type="string" required>
         The ID of the step. This will be what appears in your function's logs and is used to memoize step state across function versions.
       </Property>
-      <Property name="duration" type="number | string" required>
+      <Property name="duration" type="number | string | Temporal.Duration" required>
         The duration of time to sleep:
 
-        * Number of milliseconds
-        * Time string compatible with the [ms](https://npm.im/ms) package, e.g. `"30m"`, `"3 hours"`, or `"2.5d"`
+        * `number` of milliseconds
+        * `string` compatible with the [ms](https://npm.im/ms) package, e.g. `"30m"`, `"3 hours"`, or `"2.5d"`
+        * <VersionBadge version="3.33.0+" /> [`Temporal.Duration`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Temporal/Duration)
       </Property>
     </Properties>
   </Col>
@@ -22,6 +23,9 @@ import { Callout, Properties, Property, Row, Col, CodeGroup, VersionBadge } from
   <CodeGroup>
   ```ts {{ title: "v3" }}
   // Sleep for 30 minutes
+  const thirtyMins = Temporal.Duration.from({ minutes: 5 });
+  await step.sleep("wait-with-temporal", thirtyMins);
+
   await step.sleep("wait-with-string", "30m");
   await step.sleep("wait-with-string-alt", "30 minutes");
   await step.sleep("wait-with-ms", 30 * 60 * 1000);
