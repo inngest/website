@@ -150,10 +150,10 @@ const featuredCompanies = [
     type: "company",
   },
   {
-    src: "/assets/customers/11x-logo.svg",
-    name: "11x",
-    url: "https://11x.ai/",
-    scale: 0.9,
+    src: "/assets/customers/browser-use-white.svg",
+    name: "Browser Use",
+    url: "https://browser-use.com/",
+    scale: 1.7,
     type: "company",
   },
 ];
@@ -245,13 +245,7 @@ const grid: GridItem[] = [
     scale: 1.4,
     type: "company",
   },
-  {
-    src: "/assets/customers/browser-use-white.svg",
-    name: "Browser Use",
-    url: "https://browser-use.com/",
-    scale: 1.7,
-    type: "company",
-  },
+
   {
     src: "/assets/customers/documenso-logo-white.svg",
     name: "Documenso",
@@ -264,6 +258,13 @@ const grid: GridItem[] = [
     name: "Day.ai",
     url: "https://day.ai/",
     scale: 1.2,
+    type: "company",
+  },
+  {
+    src: "/assets/customers/11x-logo.svg",
+    name: "11x",
+    url: "https://11x.ai/",
+    scale: 0.9,
     type: "company",
   },
   {

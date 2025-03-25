@@ -42,19 +42,19 @@ export function AIPage({
           <div className="grid grid-cols-2 sm:flex flex-wrap lg:flex-nowrap gap-x-4 sm:gap-x-10 gap-y-6 sm:gap-y-8 mx-8">
             {[
               {
-                src: "/assets/customers/11x-logo.svg",
-                name: "11x",
-                scale: 1,
+                src: "/assets/customers/browser-use-white.svg",
+                name: "Browser Use",
+                scale: 1.6,
+              },
+              {
+                src: "/assets/customers/gumroad-logo.svg",
+                name: "Gumroad",
+                scale: 1.6,
               },
               {
                 src: "/assets/customers/day-ai-logo.svg",
                 name: "Day.ai",
-                scale: 1.2,
-              },
-              {
-                src: "/assets/customers/browser-use-white.svg",
-                name: "Browser Use",
-                scale: 1.6,
+                scale: 1.1,
               },
               {
                 src: "/assets/customers/aomni-logo.svg",
@@ -64,12 +64,17 @@ export function AIPage({
               {
                 src: "/assets/customers/otto-logo.svg",
                 name: "Otto",
-                scale: 0.8,
+                scale: 0.7,
               },
+              // {
+              //   src: "/assets/customers/leap-logo-white.svg",
+              //   name: "Leap",
+              //   scale: 1,
+              // },
               {
-                src: "/assets/customers/leap-logo-white.svg",
-                name: "Leap",
-                scale: 1,
+                src: "/assets/customers/11x-logo.svg",
+                name: "11x",
+                scale: 0.9,
               },
             ].map(({ src, name, scale = 1 }, idx) => (
               <Image

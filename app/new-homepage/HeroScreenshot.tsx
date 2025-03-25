@@ -106,9 +106,9 @@ export default function HeroScreenshot() {
                 scale: 1.2,
               },
               {
-                src: "/assets/customers/11x-logo.svg",
-                name: "11x.ai",
-                scale: 0.7,
+                src: "/assets/customers/browser-use-white.svg",
+                name: "Browser Use",
+                scale: 1.5,
               },
               {
                 src: "/assets/customers/gitbook-logo-white.svg",
