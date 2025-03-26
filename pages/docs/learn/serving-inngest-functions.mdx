@@ -1,4 +1,4 @@
-import { Callout, Tip, Info, CodeGroup, VersionBadge, GuideSelector, GuideSection, Col, Row, Card, CardGroup } from "shared/Docs/mdx";
+import { Callout, Card, CardGroup, CodeGroup, Col, GuideSection, GuideSelector, Info, Row, Tip, VersionBadge } from "shared/Docs/mdx";
 
 export const description = `Serve the Inngest API as an HTTP endpoint in your application.`
 export const hidePageSidebar = true;
@@ -336,12 +336,12 @@ We recommend using the exported `inngestFastify` plugin, though we also expose a
 <CodeGroup>
 ```ts {{ title: "Plugin" }}
 import Fastify from "fastify";
-import inngestFastify from "inngest/fastify";
+import { fastifyPlugin } from "inngest/fastify";
 import { inngest, fnA } from "./inngest";
 
 const fastify = Fastify();
 
-fastify.register(inngestFastify, {
+fastify.register(fastifyPlugin, {
   client: inngest,
   functions: [fnA],
   options: {},
