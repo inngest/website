@@ -15,6 +15,7 @@ import clsx from "clsx";
 import create from "zustand";
 
 import { Tag } from "./Tag";
+import { useSearchParams } from "next/navigation";
 import { useLocalStorage } from "react-use";
 
 const languageNames = {
@@ -410,11 +411,10 @@ export function GuideSelector({
 }) {
   const router = useRouter();
   const searchParamKey = "guide";
-  const [currentLanguage, setCurrentLanguage] = useLocalStorage(
-    "currentLanguage",
-    null
-  );
-  const mountRef = useRef(false);
+  const [localStorageCurrentLanguage, setLocalStorageCurrentLanguage] =
+    useLocalStorage("currentLanguage", null);
+  const searchParams = useSearchParams();
+  const qsCurrentLanguage = searchParams.get(searchParamKey);
 
   const [selected, setSelected] = useState<string>(options[0].key);
   const [defaultSelected, setDefaultSelected] = useState<string>(
@@ -423,35 +423,27 @@ export function GuideSelector({
 
   // infer the default selected from the url or local storage
   useEffect(() => {
-    if (mountRef.current) {
-      return;
-    }
-    mountRef.current = true;
-
-    const urlSelected = Array.isArray(router.query[searchParamKey])
-      ? router.query[searchParamKey][0]
-      : router.query[searchParamKey];
     if (
-      options.find((o) => o.key === urlSelected) &&
-      Boolean(urlSelected) &&
-      urlSelected !== selected
+      options.find((o) => o.key === qsCurrentLanguage) &&
+      Boolean(qsCurrentLanguage) &&
+      qsCurrentLanguage !== selected
     ) {
-      setSelected(urlSelected);
-      setDefaultSelected(urlSelected);
+      setSelected(qsCurrentLanguage);
+      setDefaultSelected(qsCurrentLanguage);
     } else if (
-      !urlSelected &&
+      !qsCurrentLanguage &&
       // if no url param, fallback to local storage
-      currentLanguage &&
-      options.find((o) => o.key === currentLanguage)
+      localStorageCurrentLanguage &&
+      options.find((o) => o.key === localStorageCurrentLanguage)
     ) {
-      setSelected(currentLanguage);
-      setDefaultSelected(currentLanguage);
+      setSelected(localStorageCurrentLanguage);
+      setDefaultSelected(localStorageCurrentLanguage);
     }
-  }, []);
+  }, [qsCurrentLanguage]);
 
   const onChange = (newSelectedIndex) => {
     const newSelectedKey = options[newSelectedIndex].key;
-    setCurrentLanguage(newSelectedKey);
+    setLocalStorageCurrentLanguage(newSelectedKey);
     setSelected(newSelectedKey);
     const url = new URL(router.asPath, window.location.origin);
     url.searchParams.set(searchParamKey, newSelectedKey);
