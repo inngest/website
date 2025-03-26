@@ -1,4 +1,4 @@
-import { GuideSelector, GuideSection, GuideTitle, Callout, CodeGroup } from "src/shared/Docs/mdx";
+import { Callout, CodeGroup, GuideSection, GuideSelector, GuideTitle } from "src/shared/Docs/mdx";
 
 export const description =
   `Get started with Inngest in this ten-minute JavaScript tutorial`
@@ -190,7 +190,7 @@ Using your existing Fastify server, we'll set up Inngest using the provided Fast
 
 ```ts {{ filename: "./index.ts" }}
 import Fastify from "fastify";
-import inngestFastify from "inngest/fastify";
+import { fastifyPlugin } from "inngest/fastify";
 import { inngest, functions } from "./src/inngest"
 
 const fastify = Fastify({
@@ -198,7 +198,7 @@ const fastify = Fastify({
 });
 
 // This automatically adds the "/api/inngest" routes to your server
-fastify.register(inngestFastify, {
+fastify.register(fastifyPlugin, {
   client: inngest,
   functions,
   options: {},
@@ -409,13 +409,13 @@ app.listen(3000, () => {
 <GuideSection show="fastify">
 ```ts {{ filename: "./index.ts" }}
 import Fastify from "fastify";
-import inngestFastify from "inngest/fastify";
+import { fastifyPlugin } from "inngest/fastify";
 import { inngest, functions } from "./src/inngest"
 
 const fastify = Fastify({
   logger: true,
 });
-fastify.register(inngestFastify, { client: inngest, functions, options: {} });
+fastify.register(fastifyPlugin, { client: inngest, functions, options: {} });
 
 // Create a new route:
 fastify.get("/api/hello", async function (request, reply) {
