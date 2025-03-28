@@ -826,10 +826,6 @@ const sectionHome: (NavGroup | NavLink)[] = [
             title: "Inspecting function runs",
             href: "/docs/platform/monitor/inspecting-function-runs",
           },
-          {
-            title: "Searching for events",
-            href: "/docs/platform/monitor/searching-events",
-          },
           { title: "Integrations" },
           {
             title: "Prometheus metrics",
