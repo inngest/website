@@ -333,9 +333,11 @@ The simplest way to implement a health check is to create an http endpoint that 
 
 Here is an example of using `connect` with a basic Node.js http server to listen for health check requests and return a 200 status code when the connection to Inngest is active.
 
-```ts
+<CodeGroup>
+```ts {{ title: "Node.js" }}
 import { createServer } from 'http';
 import { connect } from 'inngest/connect';
+import { ConnectionState } from 'inngest/components/connect/types';
 import { inngest, functions } from './src/inngest';
 
 (async () => {
@@ -370,11 +372,50 @@ import { inngest, functions } from './src/inngest';
   // When the Inngest connection has gracefully closed,
   // this will resolve and the app will exit.
   await connection.closed;
-
   console.log('Worker: Shut down');
+
+  // Stop the HTTP server
   httpServer.close();
 })();
 ```
+```ts  {{ title: "Bun (JavaScript)" }}
+import { connect } from 'inngest/connect';
+import { ConnectionState } from 'inngest/components/connect/types';
+import { inngest, functions } from './src/inngest';
+
+const connection = await connect({
+  apps: [{ client: inngest, functions: [helloWorld] }],
+});
+
+console.log('Worker: connected', connection);
+
+// Start a basic web server that only listens for the /ready endpoint
+// and returns a 200 status code when the connection to Inngest is active.
+const server = Bun.serve({
+  port: 8080,
+  routes: {
+    '/ready': async () => {
+      return connection.state === ConnectionState.ACTIVE
+        ? new Response('OK')
+        : new Response('Not Ready', { status: 500 });
+    },
+  },
+  fetch(req) {
+    return new Response('Not Found', { status: 404 });
+  },
+});
+
+console.log('Worker: HTTP server listening on port 8080');
+
+// When the Inngest connection has gracefully closed,
+// this will resolve and the app will exit.
+await connection.closed;
+console.log('Worker: Shut down');
+
+// Stop the HTTP server
+await server.stop();
+```
+</CodeGroup>
 
 ### Kubernetes readiness probe
 
