@@ -13,6 +13,20 @@ The `connect` API allows your app to create an outbound persistent connection to
 - **Ideal for container runtimes** -  Deploy on Kubernetes or ECS without the need of a load balancer for inbound traffic
 - **Simpler long running steps** - Step execution is not bound by platform http timeouts.
 
+## Minimum requirements
+
+### Language
+- **TypeScript**: SDK `3.34.1` or higher.
+- **Go**: SDK `0.11.2` or higher.
+
+### Runtime
+
+You must use a long running server (Render, Fly.io, Kubernetes, etc.). Serverless runtimes (AWS Lambda, Vercel, etc.) are not supported.
+
+If using TypeScript, your runtime must support built-in WebSocket support (Node `22` or higher, Deno `1.4` or higher, Bun `1.1` or higher).
+
+
+
 ## Getting started
 
 Using `connect` with your app is simple. Using each SDK's "connect" method only requires a list of functions that are available to be executed. (Note: Python is not yet supported; [upvote and join the waiting list here](https://roadmap.inngest.com/roadmap?id=2bac8d74-288f-47c7-8afc-3fd1a0e94654))
