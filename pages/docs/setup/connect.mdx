@@ -18,6 +18,12 @@ The `connect` API allows your app to create an outbound persistent connection to
 ### Language
 - **TypeScript**: SDK `3.34.1` or higher.
 - **Go**: SDK `0.11.2` or higher.
+- **Python**: SDK `0.4.21` or higher.
+  - Install the SDK with `pip install inngest[connect]` since there are additional dependencies required.
+  - We also recommend the following constraints:
+    - `protobuf>=5.29.4,<6.0.0`
+    - `psutil>=6.0.0,<7.0.0`
+    - `websockets>=15.0.0,<16.0.0`
 
 ### Runtime
 
@@ -110,6 +116,28 @@ func main() {
 		}
 	}(ws)
 }
+```
+```python
+import asyncio
+import inngest
+from inngest.experimental.connect import connect
+
+client = inngest.Inngest(app_id="my-app")
+
+@client.create_function(
+    fn_id="handle-signup",
+    trigger=inngest.TriggerEvent(event="user.created"),
+)
+async def fn_1(ctx: inngest.Context, step: inngest.Step) -> None:
+    print("Function called")
+
+functions = [fn_1]
+
+asyncio.run(
+    connect(
+        apps=[(client, functions)],
+    ).start()
+)
 ```
 </CodeGroup>
 
