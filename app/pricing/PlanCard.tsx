@@ -105,7 +105,7 @@ export default function PlanCard({
 
           <p className="flex items-center gap-2 mb-3">
             <RiMistLine className="text-muted" />
-            {content.highlights.runs}
+            <span>{content.highlights.runs}</span>
           </p>
           <p className="flex items-center gap-2  mb-3">
             <RiGitPrDraftLine className="text-muted rotate-90" />
