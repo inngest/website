@@ -30,7 +30,6 @@ export type Plan = {
   };
   highlights: {
     runs: string;
-    runsOverages?: boolean;
     concurrency: string;
   };
   planIncludes: string;
@@ -128,7 +127,6 @@ export const PLANS: Plan[] = [
     },
     highlights: {
       runs: "100K runs included",
-      runsOverages: true,
       concurrency: "25 concurrent steps",
     },
     planIncludes: "Everything in Free plus:",
@@ -168,7 +166,6 @@ export const PLANS: Plan[] = [
     },
     highlights: {
       runs: "5M runs included",
-      runsOverages: true,
       concurrency: "200+ concurrent steps",
     },
     planIncludes: "Includes everything in Basic plus:",
