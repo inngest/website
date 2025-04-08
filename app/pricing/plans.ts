@@ -87,7 +87,7 @@ export const PLANS: Plan[] = [
       text: "Start for free",
     },
     highlights: {
-      runs: "50K runs/mo free",
+      runs: "50K runs free",
       concurrency: "5 concurrent steps",
     },
     planIncludes: "Free plan includes:",
@@ -126,8 +126,8 @@ export const PLANS: Plan[] = [
       text: "Start for free",
     },
     highlights: {
-      runs: "Starts at 100K runs/mo",
-      concurrency: "Starts at 25 concurrent steps",
+      runs: "100K runs included",
+      concurrency: "25 concurrent steps",
     },
     planIncludes: "Everything in Free plus:",
     features: [
@@ -165,8 +165,8 @@ export const PLANS: Plan[] = [
       text: "Get started",
     },
     highlights: {
-      runs: "Starts at 5M runs/mo",
-      concurrency: "Starts at 200 concurrent steps",
+      runs: "5M runs included",
+      concurrency: "200+ concurrent steps",
     },
     planIncludes: "Includes everything in Basic plus:",
     features: [
@@ -203,7 +203,7 @@ export const PLANS: Plan[] = [
     },
     highlights: {
       runs: "From 0-100B runs/mo",
-      concurrency: "From 200-100K concurrent steps",
+      concurrency: "From 1k-100K+ concurrent steps",
     },
     planIncludes: "Includes everything in pro plus:",
     features: [
