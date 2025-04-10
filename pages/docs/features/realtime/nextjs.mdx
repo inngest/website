@@ -32,7 +32,7 @@ export async function POST(req: Request) {
   });
 
   // Subscribe to the Inngest function's channel.
-  const stream = await subscribe(inngest, {
+  const stream = await subscribe({
     channel: `simple-search.${uuid}`,
     topics: ["updates"], // subscribe to one or more topics in the user channel
   });

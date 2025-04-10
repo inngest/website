@@ -6,17 +6,12 @@ Realtime provides a `useInngestSubscription()` react hook, used to subscribe
 using a token and collate streamed data for you.
 
 ```tsx
-"use server";
-
+import type { Realtime } from "@inngest/realtime";
 import { useInngestSubscription } from "@inngest/realtime/hooks";
-import { inngest } from "src/inngest";
 
-export default function MyComponent({ token }: { token: string }) {
+export default function MyComponent({ token }: { token: Realtime.Subscribe.Token }) {
   // Use a user scoped token to subscribe to channels:
-  const { data } = useInngestSubscription({
-    app: inngest,
-    token,
-  });
+  const { data } = useInngestSubscription({ token });
 
   return (
     <div>

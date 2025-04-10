@@ -149,13 +149,12 @@ key or a subscription token. You can can subscribe from the [client](#subscribe-
     ```ts {{ title: "Next.js - App router" }}
     import { getSubscriptionToken } from "@inngest/realtime";
     import { auth } from "src/auth"; // this could be any auth provider
-    import { inngest } from "src/inngest";
 
     // ex. /api/get-subscribe-token
     export async function POST() {
       const { userId } = await auth()
 
-      const token = await getSubscriptionToken(inngest, {
+      const token = await getSubscriptionToken({
         channel: `user:${userId}`,
         topics: ["ai"],
       })
@@ -166,12 +165,11 @@ key or a subscription token. You can can subscribe from the [client](#subscribe-
     ```ts {{ title: "Express" }}
     import { getSubscriptionToken } from "@inngest/realtime";
     import { getAuth } from "src/auth"; // this could be any auth provider
-    import { inngest } from "src/inngest";
 
     app.post("/get-subscribe-token", async (req, res) => {
       const { userId } = getAuth(req)
 
-      const token = await getSubscriptionToken(inngest, {
+      const token = await getSubscriptionToken({
         channel: `user:${userId}`,
         topics: ["ai"],
       })
@@ -198,26 +196,20 @@ key or a subscription token. You can can subscribe from the [client](#subscribe-
 
     <CodeGroup>
     ```ts {{ title: "Basic subscribe" }}
-    "use server";
-
     import { subscribe } from "@inngest/realtime";
-    import { inngest } from "src/inngest";
 
-    const stream = await subscribe(inngest, token)
+    const stream = await subscribe(token)
 
     for await (const message of stream) {
       console.log(message)
     }
     ```
     ```ts {{ title: "React hook - useInngestSubscription" }}
-    "use server";
-
+    import type { Realtime } from "@inngest/realtime";
     import { useInngestSubscription } from "@inngest/realtime/hooks";
 
-    export default function MyComponent({ token }: { token: string }) {
-      const { data } = useInngestSubscription({
-        token,
-      });
+    export default function MyComponent({ token }: { token: Realtime.Subscribe.Token }) {
+      const { data } = useInngestSubscription({ token });
 
       return (
         <div>
@@ -242,9 +234,8 @@ Subscribing on the backend is simple:
 <CodeGroup>
 ```ts {{ title: "Minimal" }}
 import { subscribe } from "@inngest/realtime";
-import { inngest } from "src/inngest";
 
-const stream = await subscribe(inngest, {
+const stream = await subscribe({
   channel: "user:123",
   topics: ["ai"], // subscribe to one or more topics in the user channel
 });
@@ -269,9 +260,8 @@ if (!done) {
 ```ts {{ title: "Typed channels" }}
 import { subscribe } from "@inngest/realtime";
 import { userChannel } from "./channels";
-import { inngest } from "src/inngest";
 
-const stream = await subscribe(inngest, {
+const stream = await subscribe({
   channel: userChannel("123"),
   topics: ["ai"], // subscribe to one or more topics in the user channel
 });
@@ -314,14 +304,14 @@ import {
 
 const token = await fetchTokenFromBackend();
 
-const stream = await subscribe(inngest, {
+const stream = await subscribe({
   channel: typeOnlyChannel<typeof userChannel>("user:123"),
   topics: ["ai"],
 });
 
 // or generating a token...
 
-const token = await getSubscriptionToken(inngest, {
+const token = await getSubscriptionToken({
   channel: typeOnlyChannel<typeof userChannel>("user:123"),
   topics: ["ai"],
 });
