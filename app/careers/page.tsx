@@ -174,7 +174,7 @@ export default function Careers(props) {
   );
 }
 
-export const AboutInngest = ({ heading = false }) => (
+const AboutInngest = ({ heading = false }) => (
   <>
     {heading && <h2 id="about-inngest">About Inngest</h2>}
     <p>
@@ -206,7 +206,7 @@ export const AboutInngest = ({ heading = false }) => (
   </>
 );
 
-export const Benefits = () => (
+const Benefits = () => (
   <>
     <h2 id="benefits">What we offer</h2>
     <ul>
