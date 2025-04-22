@@ -367,6 +367,14 @@ This view is helpful for debugging connection issues or verifying rolling deploy
 
 ![App worker observability](/assets/docs/connect/cloud-app-workers.png)
 
+## Syncing and Rollbacks
+
+When you deploy a new version of your application, the first instance to reach `connect()` will kick off a sync during the connection setup process. This will update function configurations to the desired state configured in your code.
+
+`connect` supports rolling releases: During a deployment of your app, Inngest will run functions on all connected workers, regardless of the version, as long as they are able to process a request for a given function. This prevents traffic from concentrating on a single instance during rollouts and causing a thundering herd issue.
+
+Once all old workers have terminated after a deployment, you can roll back to an old version by bringing back an old worker. Similar to the deployment process, this will update the function configuration to the previous state and gradually allow you to shift traffic to the old version by bringing up more old workers while terminating workers running the newer version.
+
 ## Health checks
 
 If you are running your app in a containerized environment, we recommend using a health check to ensure that your app is running and ready to accept connections. This is key for graceful rollouts of new app versions. If you are using Kubernetes, we recommend using the `readinessProbe` to check that the app is ready to accept connections.
@@ -502,7 +510,11 @@ const connection = await connect({
 
 ## Migrating from serve
 
-_Guide on migration from `serve` to `connect` coming soon_
+<Info>
+  We are working on enabling more fine-grained function and app migrations from existing `serve` apps to `connect`.
+</Info>
+
+During the Inngest developer preview, we recommend setting up a new app for trying out `connect`. We will support gradually migrating your existing `serve` apps in a future release.
 
 ## Developer preview
 
@@ -520,7 +532,6 @@ Final plan limitations will be announced prior to general availability. Please [
 
 During the developer preview, there are some limitations to using `connect` to be aware of. Please [contact us](https://app.inngest.com/support) if you'd like clarity on any of the following:
 
-* **Lost connections may result in long timeouts before retries** - If a connection is lost in the middle of a step, the step may result in a timeout of the max step duration (2 hours) before the step is retried. Graceful shutdowns, as documented above, handle this correctly, but if a networking issue occurs and the worker cannot re-establish connection, the step may result in a timeout.
 * **Worker-level maximum concurrency** - This is not yet supported. When completed, each worker can configure the maximum number of concurrent steps it can handle. This allows Inngest to distribute load across multiple workers and not overload a single worker.
 * **Reconnection policy is not configurable** - The SDK will attempt to reconnect to Inngest an infinite number of times. We will expose a configurable reconnection policy in the future.
 * **Rollbacks** - Rollbacks of app versions may not work as expected. Additional functionality and control around rollbacks is coming in a future release.
