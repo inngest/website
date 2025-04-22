@@ -70,14 +70,14 @@ const TEAM = [
     avatar: "/assets/team/charly-poly-2024-11-11.jpg",
   },
   {
-    name: "Cheryl Manalo",
-    role: "Marketing",
-    avatar: "/assets/team/cheryl-manalo-2024-11-11.png",
-  },
-  {
     name: "Andrew Dahl",
     role: "Engineer",
     avatar: "/assets/team/andrew-dahl-2024-11-11.jpg",
+  },
+  {
+    name: "Ted Werbel",
+    role: "AI Engineer",
+    avatar: "/assets/team/ted-werbel-2025-04-22.jpg",
   },
 ];
 
