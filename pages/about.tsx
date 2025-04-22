@@ -7,6 +7,8 @@ import Footer from "src/shared/Footer";
 import ArrowRight from "src/shared/Icons/ArrowRight";
 import { Button } from "src/shared/Button";
 import Card from "src/components/Card";
+import { IS_HIRING } from "@/shared/flags";
+import HiringCallout from "@/shared/HiringCallout";
 
 const TEAM = [
   {
@@ -208,10 +210,15 @@ export default function About() {
         <Container className="m-auto text-basis">
           <div className="mx-auto max-w-4xl">
             <header className="lg:my-24 my-8 text-center">
-              <h1 className="mt-2 mb-6 pr-4 text-3xl md:text-5xl tracking-tight font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#f2e3ff] via-white to-[#e3e9ff] drop-shadow">
+              {IS_HIRING && (
+                <div className="mb-4">
+                  <HiringCallout />
+                </div>
+              )}
+              <h1 className="mt-2 mb-6 pr-4 text-3xl md:text-5xl tracking-tight font-semibold bg-clip-text text-transparent bg-gradient-to-r from-[#f2e3ff] via-white to-[#e3e9ff] drop-shadow">
                 About Inngest
               </h1>
-              <p className="mt-8 mx-auto max-w-lg text-lg font-regular">
+              <p className="mt-8 mx-auto max-w-lg text-lg font-regular text-balance">
                 Inngest is the developer platform for easily building reliable
                 workflows with zero infrastructure.
               </p>

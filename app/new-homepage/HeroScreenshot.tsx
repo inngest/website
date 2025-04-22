@@ -1,9 +1,11 @@
 import Image from "next/image";
 import clsx from "clsx";
-
+import Link from "next/link";
 import Container from "./Container";
 import { Button } from "src/shared/Button";
 import ScreenshotTabs from "./ScreenshotTabs";
+import { IS_HIRING } from "@/shared/flags";
+import HiringCallout from "@/shared/HiringCallout";
 
 export default function HeroScreenshot() {
   return (
@@ -20,7 +22,14 @@ export default function HeroScreenshot() {
       `}
     >
       <Container>
-        <header className="pt-16 pb-16 px-4 sm:px-8">
+        <header
+          className={clsx("pb-16 px-4 sm:px-8", IS_HIRING ? "pt-12" : "pt-16")}
+        >
+          {IS_HIRING && (
+            <div className="mb-4">
+              <HiringCallout />
+            </div>
+          )}
           <h1 className="px-4 sm:px-0 font-regular text-3xl sm:text-5xl lg:text-6xl leading-tight md:leading-tight drop-shadow-lg text-balance">
             AI and backend workflows, <br className="hidden lg:inline" />
             orchestrated at <strong className="font-bold">any scale</strong>

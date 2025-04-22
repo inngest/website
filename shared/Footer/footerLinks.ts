@@ -1,3 +1,5 @@
+import { IS_HIRING } from "@/shared/flags";
+
 const footerLinks = [
   {
     name: "Product",
@@ -79,6 +81,7 @@ const footerLinks = [
       {
         label: "Careers",
         url: "/careers?ref=footer",
+        callout: IS_HIRING ? "We're hiring!" : undefined,
       },
       {
         label: "Contact Us",

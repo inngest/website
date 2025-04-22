@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { Transition } from "@headlessui/react";
 import { PencilSquareIcon } from "@heroicons/react/24/outline";
+import { IS_HIRING } from "@/shared/flags";
 import { Button } from "../Button";
 import {
   isNavLink,
@@ -226,6 +227,14 @@ function SmallPrint() {
       <div className="text-xs text-slate-600 dark:text-slate-400">
         &copy; {new Date().getFullYear()} Inngest Inc. All rights reserved.
       </div>
+      {IS_HIRING && (
+        <a
+          href="/careers"
+          className="text-xs text-slate-600 dark:text-slate-400"
+        >
+          We're hiring!
+        </a>
+      )}
       <SocialBadges />
     </Divider>
   );

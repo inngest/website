@@ -16,7 +16,7 @@ import { FullWidthCTA } from "src/components/FullWidthCTA";
 import { generateMetadata, getFullURL } from "src/utils/social";
 
 export const metadata: Metadata = generateMetadata({
-  title: "Queuing and orchestration for modern software teams",
+  title: "AI and backend workflows, orchestrated at any scale",
   description:
     "Inngest's durable functions replace queues, state management, and scheduling to enable any developer to write reliable, multi-step code faster without touching infrastructure.",
   image: "/assets/homepage/open-graph.png",

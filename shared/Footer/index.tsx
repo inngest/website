@@ -59,14 +59,19 @@ export default function Footer({
               <Logo className="text-basis w-20 relative top-[3px]" />
               <StatusWidget />
             </div>
-            <div className="flex flex-col sm:flex-row flex-wrap md:justify-between gap-8 lg:gap-12 xl:gap-20">
+            <div className="flex flex-col sm:flex-row flex-wrap md:justify-between gap-8 lg:gap-8 xl:gap-20">
               {footerLinks.map((footerLink, i) => (
                 <div className="lg:w-auto flex-shrink-0" key={i}>
                   <SectionTitle title={footerLink.name} />
                   <ul className="flex flex-col gap-4">
                     {footerLink.links.map((link, j) => (
-                      <li key={j}>
+                      <li key={j} className="flex items-center gap-2">
                         <Link href={link.url}>{link.label}</Link>
+                        {link.callout && (
+                          <span className="text-sm font-semibold text-primary-xIntense">
+                            {link.callout}
+                          </span>
+                        )}
                       </li>
                     ))}
                   </ul>
