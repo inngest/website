@@ -11,7 +11,7 @@ export const metadata: Metadata = generateMetadata({
   title: "Careers at Inngest",
   description: "We're hiring!",
 });
-export default function Careers(props) {
+export default async function Careers(props) {
   return (
     <>
       <Container>
