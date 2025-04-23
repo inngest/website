@@ -534,7 +534,6 @@ During the developer preview, there are some limitations to using `connect` to b
 
 * **Worker-level maximum concurrency** - This is not yet supported. When completed, each worker can configure the maximum number of concurrent steps it can handle. This allows Inngest to distribute load across multiple workers and not overload a single worker.
 * **Reconnection policy is not configurable** - The SDK will attempt to reconnect to Inngest an infinite number of times. We will expose a configurable reconnection policy in the future.
-* **Rollbacks** - Rollbacks of app versions may not work as expected. Additional functionality and control around rollbacks is coming in a future release.
 
 
 
