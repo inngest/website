@@ -2,53 +2,218 @@
 
 As Mergent transitions its focus, we recommend migrating your background jobs, workflows, and event-driven systems to Inngest, a modern developer platform purpose-built for reliable, scalable background functions and workflows.
 
-When you migrate to Inngest, the execution still happens on your own servers (whether that’s serverless or actual servers).  We manage the orchestration, queueing, and function state — meaning migration is fast and easy.
+When you migrate to Inngest, the execution still happens on your own servers (whether that's serverless or actual servers).  We manage the orchestration, queueing, and function state — meaning migration is fast and easy.
 
 This guide walks you through:
 
-- Why you should switch
-- Some key differences to be aware of
-- How to switch
+- [A quick introduction to Inngest](#why-migrate-to-inngest)
+- [Migrating Mergent Tasks to Inngest](#migrating-tasks-to-inngest)
+- [Migrating Schedules Tasks to Inngest](#migrating-schedules-to-inngest)
+- [Deploying to production](#deploying-to-production)
 
 ## Why migrate to Inngest
 
-Inngest is more than a Mergent alternative… it’s a next-generation workflow platform for modern developers, and it works everywhere — whether you’re running on serverless or servers.  Using Inngest, you get a powerful suite of tools out of the box, with minimal setup:
+Inngest is more than a Mergent alternative… It's a next-generation workflow platform for modern developers, and it works everywhere — whether you're running on serverless or servers.  Using Inngest, you get a powerful suite of tools out of the box, with minimal setup:
 
 - **Durable functions and resumable workflows:** Define long-running, resumable workflows with simple async/await syntax. No state machines, context juggling, or queues to manage.
-- **Built in retries, replay, idempotency, and flow control:** Automatic retries, step isolation, and state persistence ensure workflows don’t break — even during deploys or failures.
+- **Built in retries, replay, idempotency, and flow control:** Automatic retries, step isolation, and state persistence ensure workflows don't break — even during deploys or failures.
 - **Local development & debugging tools:** Build and test locally with the Inngest Dev Server. Log, trace, and replay events for full observability.
-- **Scalable by Default**: Inngest is built to handle hundreds of millions of runs, without managing new infra.
+- **Scalable by Default**: Inngest is built to handle hundreds of millions of runs, without managing new infrastructure.
 
-## Key differences
+## Migrating Tasks to Inngest
 
-Inngest introduces several new concepts to improve reliability, performance, scale, and the developer experience compared to Mergent.  Here are a few things to be aware of:
+Migrating existing Mergent Tasks to Inngest only requires a few changes.
 
-### Functions
+First, you'll change your Tasks HTTP handler, then your Tasks body, and finally your calls to the Mergent Tasks API.
 
-Mergent allows you to queue requests to any URL.  In Inngest, you write individual functions using our SDK.  These functions are called via HTTP through Inngest.
+**1. Create an Inngest client**
 
-### **Events & job scheduling**
+First, let's create an Inngest client that will be used to create and trigger Inngest functions:
 
-In Mergent, you schedule jobs directly via an API.
+```tsx
+//src/inngest/client.ts
+import { Inngest } from "inngest";
 
-In Inngest, you write self-contained **durable functions** using our SDK, deployed inside your application.  Each function declares how it runs (one or more events, or a cron).  You send events to Inngest, which automatically run all matching functions.
+export const inngest = new Inngest({ id: "my-app" });
+```
 
-This allows you to:
+**2. Updating your Task handlers**
+
+Like Mergent, Inngest will communicate with your application (where your Tasks run) over HTTP.
+
+To do so, migrate the following Tasks handler:
+
+```tsx
+// pages/api/tasks.ts
+import Mergent from "mergent";
+import { sendEmail } from "@/mergent/tasks/sendEmail"
+
+export default async function handler(req, res) {
+  try {
+    await sendEmail(req);
+    // task was successful, respond with 200
+    res.status(200).send("");
+  } catch (err) {
+    // task failed, respond with 500 so Mergent will retry
+    res.status(500).send({ error: err });
+  }
+}
+```
+
+To this Inngest equivalent:
+
+```tsx
+// src/api/inngest/route.ts
+import { serve } from "inngest/next";
+import { inngest } from "@/inngest/client";
+
+// Create an API that your Inngest functions
+export const { GET, POST, PUT } = serve({
+  client: inngest,
+  functions: [
+    /* your Inngest functions will be passed here later! */
+  ],
+});
+
+```
+
+**3. Update your Task**
+
+Let's now migrate an existing Mergent Task as an Inngest Function:
+
+```tsx
+// src/mergent/tasks/sendEmail.ts
+
+async function sendEmail(req) {
+  await sendEmail(req);
+}
+```
+
+Wrap (*or extract to a new file if colocated to your Task handler*) your existing Task with `inngest.createFunction()` as follows:
+
+```tsx
+// src/inngest/functions/sendEmail.ts
+import { inngest } from "@/inngest/client";
+
+export const helloWorld = inngest.createFunction(
+  { id: "send-email" },
+  { event: "tasks/sendEmail" },
+  async ({ event, step }) => {
+    await step.run("Send daily email", async () => {
+      await sendEmail(event.data.email);
+    });
+  },
+);
+
+```
+
+You will notice some new concepts here:
+
+- Inngest functions are **identified with a unique ID.**
+- Inngest functions are **triggered by events** (see next section).
+- Inngest functions get access to the `step` API, enabling you to **build durable workflows composed of [atomic and automatically retried steps](/docs/features/inngest-functions/steps-workflows).**
+
+In our freshly migrated `sendEmail` task, any failure to send an email will be retried up to 4 times, [configurable via the Inngest function options](/docs/reference/functions/create).
+
+Let's register this function by adding it to our Inngest serve handler:
+
+```tsx
+// src/api/inngest/route.ts
+import { serve } from "inngest/next";
+import { inngest } from "@/inngest/client";
+import { myTask } from "@/inngest/functions/myTask";
+
+// Create an API that your Inngest functions
+export const { GET, POST, PUT } = serve({
+  client: inngest,
+  functions: [
+    myTask
+  ],
+});
+
+```
+
+**4. Migrate your Tasks API calls**
+
+ While Mergent Tasks are triggered using the [Create Tasks API endpoint](https://docs.mergent.co/api-reference/operations/create-task), Inngest Functions get triggered using events using the SDK.
+
+Previously, our `sendEmail` Mergent Task was triggered as follows:
+
+```tsx
+const Mergent = require("mergent");
+
+// set the Mergent API key
+const mergent = new Mergent("...");
+
+// create a task that will run in 5 minutes
+// the URL should be set to the URL of your task handler
+// if using JSON, don't forget to set the Content-Type header
+mergent.tasks
+  .create({
+    request: {
+      url: "...",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ hello: "world" }),
+    },
+    delay: { minutes: 5 },
+  })
+  .then((task) => console.log(task))
+  .catch((error) => console.error(error));
+```
+
+Now, our `sendEmail` Inngest function gets triggered using `inngest.sendEvent()`:
+
+```tsx
+import { inngest } from "@/inngest/client";
+
+await inngest.send({
+  name: "tasks/sendEmail",
+  data: {
+    email: "testUser@example.com",
+  },
+});
+```
+
+Using events over direct HTTP invocation comes with many benefits, allowing you to:
 
 - **Fan-out,** having one event trigger many functions
 - **Replay events on failure**, in bulk
-- **Wait for matching events,** in the middle of functions ([docs](https://www.inngest.com/docs/features/inngest-functions/steps-workflows/wait-for-event))
+- **Wait for matching events,** in the middle of functions ([docs](/docs/features/inngest-functions/steps-workflows/wait-for-event))
 
-### Cron schedules
+**Triggering Inngest Functions via the UI**
 
-In Mergent, cron schedules are defined in the dashboard or API with cron syntax.
+Inngest Functions can also be triggered from the UI, either locally via the [Inngest Dev Server](/docs/local-development) or, [once deployed](https://www.notion.so/Mergent-co-migration-guide-1ddb64753bbd805990b2e03bcc6f82f0?pvs=21), via the Inngest Cloud by sending an event manually.
 
-In Inngest**, c**ron schedules are declared directly inside your function file:
+<img
+  src="/assets/docs/local-development/dev-server-send-event-modal-2025-01-15.png"
+  width="600"
+  height={600/2288*1310}
+  className="max-w-2xl rounded-md"
+  quality="95"
+/>
+
+## Migrating Schedules to Inngest
+
+Mergent Schedules are Tasks that run at a given interval, configured from the Mergent Dashboard.
+
+To migrate existing Mergent Schedules to an Inngest Scheduled Function (CRON), perform the steps 1 (”*1. Create an Inngest client”*) and 2 (”*2. Update your Tasks handlers”*) ( from the “Migrate Tasks to Inngest” section.
+
+Once your Inngest client is created and the Task HTTP handler is migrated to Inngest, transform your Mergent Scheduled task as follows:
+
+```tsx
+export const dailyReminder = async (req) => {
+    await sendEmail(event.data.email)
+);
+```
+
+The above example task has a Schedule configured to the Mergent [**Schedules Dashboard**](https://app.mergent.co/) at `0 0 * * *` (every day at midnight).
+
+Inngest enables you to configure your CRON interval directly from the code:
 
 ```tsx
 export const dailyReminder = inngest.createFunction(
   { id: "daily-reminder" },
-  { cron: "0 9 * * *" }, // Run daily at 9am UTC
+  { cron: "0 0 * * *" }, // Run daily at midnight UTC
   async ({ event, step }) => {
     await step.run("Send daily email", async () => {
       await sendEmail(event.data.email);
@@ -57,92 +222,8 @@ export const dailyReminder = inngest.createFunction(
 );
 ```
 
-### **Retries & Durability**
+Note that, like any Inngest Function, Inngest Scheduled Functions can be triggered manually from the Functions tabs of the Inngest Cloud and Inngest Dev Server.
 
-In Inngest, functions are **durable** by default. Each step is atomic and automatically retried if it fails — even across deploys.
+## **Deploy to Production**
 
-```tsx
-await step.run("Some task", async () => {
-  // This step will be retried if it fails
-});
-```
-
-## Migrating to Inngest
-
-Let’s walk through how to migrate your Mergent background jobs to Inngest.
-
-### 1. **Install Inngest SDK**
-
-First, install the Inngest SDK for your environment:
-
-```jsx
-npm install inngest
-```
-
-### 2. **Initialize Inngest Client**
-
-Create a file like `inngest.ts` to initialize the Inngest client:
-
-```tsx
-// inngest.ts
-import { Inngest } from "inngest";
-
-// Change your app name here
-export const inngest = new Inngest({ name: "My App" });
-```
-
-### 3. **Convert Mergent Jobs to Inngest Functions**
-
-In Mergent, you might define a cron or event-triggered job. In Inngest, you’ll wrap this logic in a function like so:
-
-```tsx
-// jobs/sendEmail.ts
-import { inngest } from "../inngest";
-
-export const sendEmail = inngest.createFunction(
-  { id: "send-email", name: "Send Email" },
-  // NOTE: This event triggers the send email function.  You send this event
-  // whenver a user is created — we'll cover that next.
-  { event: "app/user.created" },
-  async ({ event, step }) => {
-    const user = event.data;
-
-    // 🧠 step.run ensures retryable, durable execution.
-    // Read our docs for more info: https://innge.st/steps
-    await step.run("Send welcome email", async () => {
-      await sendEmailToUser(user.email); // your own function
-    });
-  }
-);
-```
-
-[Read more about steps here.](https://innge.st/steps)
-
-### 4. Send events to trigger Inngest functions
-
-In your application code, [you *send events to Inngest* to trigger functions](https://www.inngest.com/docs/features/events-triggers):
-
-```tsx
-import { inngest } from "../inngest/client";
-
-// This sends an event to Inngest, which triggers *every* function that listens
-// to this event.  Each function gets a copy of the event.
-await inngest.send({
-  // The event name
-  name: "app/user.created",
-  // The event's data.
-  data: {
-    email: "test@example.com",
-  },
-});
-```
-
-You can also test your functions — including viewing function traces — in development using our dev server:
-
-```tsx
-npx inngest-cli@latest dev
-```
-
-### 5. **Deploy to Production**
-
-Once you're ready, deploy your Inngest functions to your platform of choice (Vercel, Netlify, or a custom Node.js server). Inngest works seamlessly with serverless platforms and can also run inside any Express/Next.js app.  [Read the deployment docs here.](https://www.inngest.com/docs/platform/deployment)
+Once you're ready, deploy your Inngest functions to your platform of choice (Vercel, Netlify, or a custom Node.js server). Inngest works seamlessly with serverless platforms and can also run inside any Express/Next.js app.  [Read the deployment docs here.](/docs/platform/deployment)
