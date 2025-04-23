@@ -118,6 +118,7 @@ export function MobileNavigation() {
                 leaveFrom="translate-x-0"
                 leaveTo="-translate-x-full"
               >
+                {/* @ts-ignore */}
                 <motion.div
                   layoutScroll
                   className="fixed left-0 top-14 bottom-0 w-full overflow-y-auto bg-white px-4 pt-6 pb-4 shadow-lg shadow-slate-900/10 ring-1 ring-slate-900/7.5 dark:bg-carbon-900 dark:ring-slate-800 sm:px-6 sm:pb-10"

@@ -20,7 +20,7 @@ export type Plan = {
     additionalUsersRate?: number;
     period?: string;
   };
-  description: React.ReactFragment | string;
+  description: React.ReactNode | string;
   hideFromCards?: boolean;
   recommended?: boolean;
   primaryCTA?: boolean;

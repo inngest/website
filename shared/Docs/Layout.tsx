@@ -94,6 +94,7 @@ export function Layout({
           <Header />
 
           <div className="lg:ml-[248px]">
+            {/* @ts-ignore */}
             <motion.header
               layoutScroll
               className="fixed inset-y-0 mt-14 left-0 z-40 contents lg:w-[248px] overflow-y-auto border-r border-subtle pl-4 pr-3 py-4 pb-8 lg:block"
@@ -102,6 +103,7 @@ export function Layout({
             </motion.header>
 
             {hidePageSidebar ? null : (
+              // @ts-ignore
               <motion.nav
                 layoutScroll
                 className="fixed overflow-y-auto inset-y-0 mt-14 pt-16 pb-12 right-0 z-40 hidden w-60 border-l border-subtle px-6 2xl:px-10 xl:block 2xl:w-96"

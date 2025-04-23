@@ -1,3 +1,4 @@
+import React from "react";
 import { type MDXProps } from "mdx/types";
 import type monaco from "monaco-editor";
 
@@ -9,7 +10,7 @@ declare const process: {
 };
 
 declare module "*.mdx" {
-  export default function MDXContent(props: MDXProps): JSX.Element;
+  export default function MDXContent(props: MDXProps): React.JSX.Element;
   export const getStaticProps: () => {
     title: string;
   };

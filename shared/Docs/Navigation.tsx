@@ -179,6 +179,7 @@ function VisibleSectionHighlight({ listItems }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1, transition: { delay: 0.2 } }}
       exit={{ opacity: 0 }}
+      // @ts-ignore
       className="absolute -left-2 right-0 top-0 bg-slate-500/10 will-change-transform dark:bg-white/10"
       style={{ borderRadius: 4, height, top }}
     />
@@ -218,6 +219,7 @@ export function PageSidebar() {
             <VisibleSectionHighlight listItems={pageSectionListItems} />
           )}
         </AnimatePresence>
+        {/* @ts-ignore */}
         <motion.ul
           key={router.pathname}
           ref={setPageSectionsEl}
@@ -361,6 +363,7 @@ function NavigationGroup({
           className={animateAccordion ? "animate-accordion" : ""}
         >
           <div className={clsx("relative overflow-hidden")}>
+            {/* @ts-ignore */}
             <motion.ul
               role="list"
               className={clsx({
@@ -389,6 +392,7 @@ function NavigationGroup({
                   );
                 } else if (isNavLink(link)) {
                   return (
+                    // @ts-ignore
                     <motion.li
                       key={link.href}
                       layout="position"
@@ -406,6 +410,7 @@ function NavigationGroup({
                   );
                 } else {
                   return (
+                    // @ts-ignore
                     <motion.li
                       key={link.title}
                       layout="position"

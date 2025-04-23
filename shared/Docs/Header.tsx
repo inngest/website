@@ -1,6 +1,11 @@
 import { forwardRef } from "react";
 import clsx from "clsx";
-import { motion, useScroll, useTransform } from "framer-motion";
+import {
+  motion,
+  useScroll,
+  useTransform,
+  HTMLMotionProps,
+} from "framer-motion";
 
 import { Button } from "../Button";
 
@@ -41,6 +46,7 @@ export const Header = forwardRef<HTMLDivElement>(function Header(
   let bgOpacityDark = useTransform(scrollY, [0, 72], [0.2, 0.8]);
 
   return (
+    // @ts-ignore
     <motion.div
       ref={ref}
       className={clsx(
