@@ -388,9 +388,9 @@ function SearchDialog({
   enableShortcutKey,
 }: SearchDialogProps) {
   let router = useRouter();
-  let formRef = useRef();
-  let panelRef = useRef();
-  let inputRef = useRef<HTMLInputElement>();
+  let formRef = useRef(null);
+  let panelRef = useRef(null);
+  let inputRef = useRef<HTMLInputElement>(null);
   let { autocomplete, autocompleteState } = useAutocomplete();
 
   useEffect(() => {
@@ -546,7 +546,7 @@ type SearchProps = {
 };
 
 function useSearchProps(): SearchProps {
-  let buttonRef = useRef<HTMLButtonElement>();
+  let buttonRef = useRef<HTMLButtonElement>(null);
   let [open, setOpen] = useState(false);
 
   return {

@@ -1,3 +1,4 @@
+import React from "react";
 import Link from "next/link";
 import { motion, useMotionTemplate, useMotionValue } from "framer-motion";
 
@@ -8,7 +9,7 @@ import {
   RiUserLine,
   RiGroupLine,
   RiMailLine,
-  type RemixiconComponentType
+  type RemixiconComponentType,
 } from "@remixicon/react";
 import {
   PaperAirplaneIcon,
@@ -144,9 +145,11 @@ function ResourcePattern({ mouseX, mouseY, ...gridProps }) {
         />
       </div>
       <motion.div
+        // @ts-ignore
         className="absolute inset-0 rounded-lg bg-gradient-to-r from-indigo-50 to-sky-100 opacity-0 transition duration-300 group-hover:opacity-100 dark:from-[#202D2E] dark:to-[#303428]"
         style={style}
       />
+      {/* @ts-ignore */}
       <motion.div
         className="absolute inset-0 rounded-lg opacity-0 mix-blend-overlay transition duration-300 group-hover:opacity-100"
         style={style}
@@ -172,7 +175,7 @@ export function Resource({
     description?: string;
     logo?: { dark: string; light: string };
     pattern: 0 | 1 | 2 | 3 | object | null;
-    icon?: IconType | ((any) => JSX.Element);
+    icon?: IconType | ((any) => React.JSX.Element);
     image?: string;
   };
 }) {

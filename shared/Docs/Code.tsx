@@ -228,8 +228,8 @@ function CodeGroupPanels({ hasTabs, children, ...props }) {
 }
 
 function usePreventLayoutShift() {
-  let positionRef = useRef<HTMLElement>();
-  let rafRef = useRef<number>();
+  let positionRef = useRef<HTMLElement>(null);
+  let rafRef = useRef<number>(null);
 
   useEffect(() => {
     return () => {
@@ -331,9 +331,8 @@ export function CodeGroup({
       return;
     }
     mountRef.current = true;
-    const childrenList: React.ReactElement[] = Children.toArray(
-      children
-    ) as React.ReactElement[];
+    const childrenList: React.ReactElement<{ title: string }>[] =
+      Children.toArray(children) as React.ReactElement<{ title: string }>[];
     if (
       tabGroupProps &&
       currentLanguage &&

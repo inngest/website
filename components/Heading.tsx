@@ -1,3 +1,4 @@
+import React from "react";
 import clsx from "clsx";
 
 export default function Heading({
@@ -15,7 +16,7 @@ export default function Heading({
   className?: string;
   ledeClassName?: string;
 }) {
-  const Tag = `h${level}` as keyof JSX.IntrinsicElements;
+  const Tag = `h${level}` as keyof React.JSX.IntrinsicElements;
   return (
     <div className={clsx("text-left", className)}>
       {context && <span className="text-sm text-slate-400">{context}</span>}

@@ -1,3 +1,4 @@
+import React from "react";
 import Link, { LinkProps } from "next/link";
 import clsx from "clsx";
 
@@ -50,7 +51,7 @@ export function Button({
   children,
   arrow,
   ...props
-}: ButtonProps): JSX.Element {
+}: ButtonProps): React.JSX.Element {
   let Component = props.href ? Link : "button";
 
   className = clsx(

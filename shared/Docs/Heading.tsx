@@ -75,7 +75,7 @@ export function Heading({
   ...props
 }: HeadingProps) {
   let Component: "h1" | "h2" | "h3" | "h4" | "h5" = `h${level}`;
-  let ref = useRef();
+  let ref = useRef<HTMLHeadingElement>(null);
   let registerHeading = useSectionStore((s) => s.registerHeading);
 
   let inView = useInView(ref, {
