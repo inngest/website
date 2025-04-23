@@ -207,6 +207,10 @@ const sectionReference: (NavGroup | NavLink)[] = [
           { title: "Upgrading to v3", href: `/docs/sdk/migration` },
         ],
       },
+      {
+        title: "Migrate from Mergent",
+        href: `/docs/sdk/mergent-migration`,
+      },
     ],
   },
   {
@@ -678,7 +682,7 @@ const sectionHome: (NavGroup | NavLink)[] = [
           {
             title: "React hooks",
             href: "/docs/features/realtime/react-hooks",
-          }
+          },
         ],
       },
       {
