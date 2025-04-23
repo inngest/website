@@ -1,19 +1,16 @@
 import { type Metadata } from "next";
 import { generateMetadata } from "src/utils/social";
-import Header from "src/shared/Header";
 import Container from "src/shared/layout/Container";
-import Footer from "src/shared/Footer";
 import { Button } from "src/shared/Button";
-// import Roles from "./Roles";
-import RolesSync from "./RolesSync";
+import Roles from "./Roles";
 
 export const metadata: Metadata = generateMetadata({
   title: "Careers at Inngest",
   description: "We're hiring!",
 });
 
-// Cache invalidation in seconds
-export const revalidate = 60;
+// Invalidate cache if doing server side fetch in Roles.tsx
+// export const revalidate = 60;
 
 export default async function Careers(props) {
   return (
@@ -148,15 +145,15 @@ export default async function Careers(props) {
 
               <Benefits />
             </div>
-            <h2
+            {/* <h2
               id="positions"
               className="mb-8 scroll-mt-32 text-2xl font-semibold"
             >
               Open positions
             </h2>
             <div className="my-8">
-              <RolesSync />
-            </div>
+              <Roles />
+            </div> */}
             <Button href="https://jobs.ashbyhq.com/inngest" arrow="right">
               See all open positions
             </Button>

@@ -1,45 +1,23 @@
-"use client";
+const url = "https://api.ashbyhq.com/jobPosting.list";
+const apiKey = process.env.ASHBY_API_KEY;
 
-import { useEffect, useState } from "react";
+export default async function Roles() {
+  const auth = Buffer.from(`${apiKey}:`).toString("base64");
+  console.log(auth);
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      authorization: `Basic ${auth}`,
+      accept: "application/json",
+    },
+  })
+    .then((res) => res.json())
+    .catch((err) => {
+      throw err;
+    });
 
-type Role = {
-  id: string;
-  title: string;
-  jobId: string;
-  departmentName: string;
-  teamName: string;
-  locationName: string;
-  workplaceType: string;
-  employmentType: string;
-  isListed: boolean;
-  publishedDate: string;
-  applicationDeadline: string | null;
-  externalLink: string;
-  applyLink: string;
-  locationIds: {
-    primaryLocationId: string;
-    secondaryLocationIds: string[];
-  };
-  compensationTierSummary: string;
-  shouldDisplayCompensationOnJobBoard: boolean;
-  updatedAt: string;
-};
+  const roles = response.results;
 
-function Roles() {
-  const [error, setError] = useState(null);
-  const [roles, setRoles] = useState<Role[]>([]);
-
-  useEffect(() => {
-    fetch("/api/careers")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.error) {
-          setError(data.error);
-        } else {
-          setRoles(data.roles);
-        }
-      });
-  }, []);
   return (
     <div>
       {roles.map((role) => (
@@ -59,11 +37,7 @@ function Roles() {
           <p className="m-0">{role.locationName}</p>
         </div>
       ))}
-      {error
-        ? "Check the job board for all open roles"
-        : roles.length === 0 && <p>There are currently no open roles.</p>}
+      {roles.length === 0 && <p>Check the job board for all open roles</p>}
     </div>
   );
 }
-
-export default Roles;
