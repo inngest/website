@@ -4,7 +4,8 @@ import Header from "src/shared/Header";
 import Container from "src/shared/layout/Container";
 import Footer from "src/shared/Footer";
 import { Button } from "src/shared/Button";
-import Roles from "./Roles";
+// import Roles from "./Roles";
+import RolesSync from "./RolesSync";
 
 export const metadata: Metadata = generateMetadata({
   title: "Careers at Inngest",
@@ -150,7 +151,7 @@ export default function Careers(props) {
               Open positions
             </h2>
             <div className="my-8">
-              <Roles />
+              <RolesSync />
             </div>
             <Button href="https://jobs.ashbyhq.com/inngest" arrow="right">
               See all open positions
