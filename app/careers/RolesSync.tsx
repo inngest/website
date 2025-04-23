@@ -1,9 +1,6 @@
 const url = "https://api.ashbyhq.com/jobPosting.list";
 const apiKey = process.env.ASHBY_API_KEY;
 
-// Cache invalidation in seconds
-export const revalidate = 60;
-
 export default async function Roles() {
   const auth = Buffer.from(`${apiKey}:`).toString("base64");
   console.log(auth);

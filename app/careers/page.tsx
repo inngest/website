@@ -11,6 +11,10 @@ export const metadata: Metadata = generateMetadata({
   title: "Careers at Inngest",
   description: "We're hiring!",
 });
+
+// Cache invalidation in seconds
+export const revalidate = 60;
+
 export default async function Careers(props) {
   return (
     <>
