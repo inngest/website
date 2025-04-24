@@ -373,7 +373,7 @@ This view is helpful for debugging connection issues or verifying rolling deploy
 
 Inngest keeps track of the version your workers are running on. This internal representation changes when you update your function configuration, provide a new app version identifier to the client configuration, or change the SDK version or language.
 
-When deploying a new version of your application either by changing the function configuration or updating the app version, the first instance to reach `connect()` will kick off a sync during the connection setup process. This will update function configurations to the desired state configured in your code.
+When you deploy a new version of your application, the first worker to connect to Inngest will automatically sync your app. This will update function configurations to the desired state configured in your code.
 
 `connect` supports rolling releases: During a deployment of your app, Inngest will run functions on all connected workers, regardless of the version, as long as they are able to process a request for a given function. This prevents traffic from concentrating on a single instance during rollouts and causing a thundering herd issue.
 
