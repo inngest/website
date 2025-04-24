@@ -369,6 +369,8 @@ This view is helpful for debugging connection issues or verifying rolling deploy
 
 ## Syncing and Rollbacks
 
+<!-- TODO: Create diagram to explain syncing -->
+
 When deploying a new version of your application, the first instance to reach `connect()` will kick off a sync during the connection setup process. This will update function configurations to the desired state configured in your code.
 
 `connect` supports rolling releases: During a deployment of your app, Inngest will run functions on all connected workers, regardless of the version, as long as they are able to process a request for a given function. This prevents traffic from concentrating on a single instance during rollouts and causing a thundering herd issue.
