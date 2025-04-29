@@ -36,31 +36,6 @@ export type NavSection = NavLink & {
 
 const sectionReference: (NavGroup | NavLink)[] = [
   {
-    title: "Workflow Kit",
-    links: [
-      {
-        title: "Introduction",
-        href: `/docs/reference/workflow-kit`,
-      },
-      {
-        title: "Creating Workflow Actions",
-        href: `/docs/reference/workflow-kit/actions`,
-      },
-      {
-        title: "Using the Workflow Engine",
-        href: `/docs/reference/workflow-kit/engine`,
-      },
-      {
-        title: "Workflow instance format",
-        href: `/docs/reference/workflow-kit/workflow-instance`,
-      },
-      {
-        title: "Components API (React)",
-        href: `/docs/reference/workflow-kit/components-api`,
-      },
-    ],
-  },
-  {
     title: "TypeScript SDK",
     links: [
       {
@@ -356,6 +331,31 @@ const sectionReference: (NavGroup | NavLink)[] = [
         title: "function.cancelled",
         href: "/docs/reference/system-events/inngest-function-cancelled",
         className: "font-mono",
+      },
+    ],
+  },
+  {
+    title: "Workflow Kit",
+    links: [
+      {
+        title: "Introduction",
+        href: `/docs/reference/workflow-kit`,
+      },
+      {
+        title: "Creating Workflow Actions",
+        href: `/docs/reference/workflow-kit/actions`,
+      },
+      {
+        title: "Using the Workflow Engine",
+        href: `/docs/reference/workflow-kit/engine`,
+      },
+      {
+        title: "Workflow instance format",
+        href: `/docs/reference/workflow-kit/workflow-instance`,
+      },
+      {
+        title: "Components API (React)",
+        href: `/docs/reference/workflow-kit/components-api`,
       },
     ],
   },
@@ -678,7 +678,7 @@ const sectionHome: (NavGroup | NavLink)[] = [
           {
             title: "React hooks",
             href: "/docs/features/realtime/react-hooks",
-          }
+          },
         ],
       },
       {
