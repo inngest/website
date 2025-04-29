@@ -530,6 +530,11 @@ const sectionHome: (NavGroup | NavLink)[] = [
                 tag: "new",
                 href: "/docs/features/inngest-functions/steps-workflows/step-ai-orchestration",
               },
+              {
+                title: "Fetch",
+                tag: "new",
+                href: "/docs/features/inngest-functions/steps-workflows/fetch",
+              },
               { title: "Guides" },
               {
                 title: "How Functions are executed",

@@ -1,0 +1,103 @@
+import { CodeGroup, VersionBadge } from "src/shared/Docs/mdx";
+
+# Fetch <VersionBadge version="TypeScript only" />
+
+A Fetch API-compatible function is exported to allow you to make any HTTP
+requests durable if they're called within an Inngest function.
+
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
+import { fetch } from "inngest";
+
+const api = new MyProductApi({ fetch });
+```
+</CodeGroup>
+
+The request itself is also made by Inngest's servers, meaning your service does
+not have to be active and waiting for the response.
+
+## Within steps
+
+By default, using Inngest's `fetch` should retain all functionality of requests
+outside of an endpoint, but ensure those from inside are durable.
+
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
+import { fetch } from "inngest";
+
+const api = new MyProductApi({ fetch });
+
+// A call outside will fall back to the global fetch
+await api.getProduct(1);
+
+// A call from inside an Inngest function will be made durable
+inngest.createFunction(
+  { id: "my-fn" },
+  { event: "product/activated" },
+  async () => {
+    await api.getProduct(1);
+  },
+);
+```
+</CodeGroup>
+
+The same `fetch` is, however, also exported as `step.fetch`, allowing you to
+create your APIs isolated within the function instead:
+
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
+inngest.createFunction(
+  { id: "my-fn" },
+  { event: "product/activated" },
+  async ({ step }) => {
+    const api = new MyProductApi({ fetch: step.fetch });
+
+    await api.getProduct(1);
+  },
+);
+```
+</CodeGroup>
+
+## Fallbacks
+
+By default, it will gracefully fall back to the global `fetch` if called outside
+of an Inngest function, though a custom fallback can also be set using the
+`config` method:
+
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
+import { fetch } from "inngest";
+
+const api = new MyProductApi({
+  fetch: fetch.config({ fallback: myCustomFetch }),
+});
+```
+</CodeGroup>
+
+You can also disable the fallback entirely:
+
+<CodeGroup>
+```ts {{ title: "TypeScript" }}
+import { fetch } from "inngest";
+
+const api = new MyProductApi({
+  fetch: fetch.config({ fallback: undefined }),
+});
+```
+</CodeGroup>
+
+## How it works
+
+Inngest's `fetch` function uses some of the basic building blocks of Inngest to allow
+seamless creation of optionally-durable code. When it's called, it will:
+
+- Check the context we're running in
+- If we're not in an Inngest function, optionally use the fallback, else
+- Report the request we want to make to Inngest
+- Inngest makes the request
+- Inngest continues the function with the `Response` we received from making
+  your request
+
+Critically, this means that your service does not have to be active for the
+duration of the call; we'll continue your function when we have a result, as
+well as keeping it durable!
