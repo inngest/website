@@ -61,7 +61,7 @@ inngestgo.CreateFunction(
     for i, evt := range events {
       attrs[i] = map[string]interface{}{
         "user_id":   evt.Data["user_id"],
-        "endpoint":  evt.Data["endpoint"], 
+        "endpoint":  evt.Data["endpoint"],
         "timestamp": toDateTime(evt.Ts),
       }
     }
@@ -122,6 +122,9 @@ async def record_api_calls(ctx: inngest.Context, step: inngest.Step):
 
 <Callout>
   It is recommended to consider the overall batch size that you will need to process including the typical event payload size. Processing large batches can lead to memory or performance issues in your application.
+
+  For system safety purposes, We also enforce a 10 MiB size limit for a batch, meaning if the size of the total number of events exceeds 10 MiB, the batch will start execution even if it's not full or has reached a timeout.
+  This limit cannot be changed at the moment.
 </Callout>
 
 ## How batching works
