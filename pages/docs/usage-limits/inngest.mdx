@@ -89,6 +89,11 @@ await inngest.send(events)
 ```
 </CodeGroup>
 
+### Batch size
+
+The hard limit of a batch size is 10 MiB regardless of the `timeout` or `maxSize` limit.
+Meaning the batch will be started if that limit is crossed even if the batch is not full or has not reached the timeout duration configured.
+
 [provider-docs]: /docs/usage-limits/providers
 [fanout-guide]: /docs/guides/fan-out-jobs
 [contact]: /contact
