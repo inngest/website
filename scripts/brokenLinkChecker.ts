@@ -7,6 +7,8 @@ const options = {
   honorRobotExclusions: false,
   excludedKeywords: [
     `${SITE_URL}/test/`,
+    // Internal "Edit" links on Docs pages
+    "https://github.com/inngest/website/tree",
     "https://www.iubenda.com",
     "https://stripe.com/docs/api",
     "https://docs.stripe.com",
