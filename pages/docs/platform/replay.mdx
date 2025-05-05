@@ -17,10 +17,9 @@ Let's learn how you can use Replay to recover from function failures:
 
 ## How to create a new Replay
 
-To replay a function, click the replay button which is present on both the function runs page and
-the function replay page. This will open a modal where you can select the runs you want to replay.
+To replay a function, select the "Replay" option in the "All actions" menu from a function's dashboard. This will open a modal where you can select the runs you want to replay.
 
-![Replay button in function runs page](/assets/docs/platform/replay/replay-function-runs.png)
+![Replay button in function runs page](/assets/docs/platform/function-dashboard-actions-2025-05-05.png)
 
 
 Each replay requires a name, a time range and status(es) to filter the runs to be replayed.
@@ -28,7 +27,7 @@ We recommend using a name that describes the incident that you're resolving so y
 understand this later, or maybe just mention the bug tracker issue:  e.g. "Bug fix from PR #958",
 "API-395: Networking blip."
 
-![Replay modal form](/assets/docs/platform/replay/replay-function-modal-empty.png)
+![Replay modal form](/assets/docs/platform/replay/replay-function-modal-empty-2025-05-05.png)
 
 
 Here's an example of a Replay that fixed a bug triggered by daylight savings time between the given timestamp.
@@ -36,13 +35,13 @@ For this issue, we only want to target the "Failed" function runs statuses. You 
 statuses in case your function might have had a bug that failed silently, so you want to replay anything
 previously marked as "Succeeded" as well.
 
-![Replay modal form filled](/assets/docs/platform/replay/replay-function-modal-filled.png)
+![Replay modal form filled](/assets/docs/platform/replay/replay-function-modal-filled-2025-05-05.png)
 
 
 Once you have selected the runs you want to replay, click the replay button to start the replay. You
 will be redirected to the replay page where you can see the progress of the replay.
 
-![List of all Replays](/assets/docs/platform/replay/replay-function-replays.png)
+![List of all Replays](/assets/docs/platform/replay/replay-function-replays-2025-05-05.png)
 
 The replay will spread out the runs over time as to not overwhelm your application with requests.
 Depending on the number of runs to be replayed, this could take seconds or minutes to complete.
