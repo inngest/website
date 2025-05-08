@@ -1,25 +1,89 @@
-import { CodeGroup, VersionBadge } from "src/shared/Docs/mdx";
+import { CodeGroup, CardGroup, Card, VersionBadge } from "src/shared/Docs/mdx";
 
-# Fetch <VersionBadge version="TypeScript only" />
+# Fetch: performing API requests or fetching data <VersionBadge version="TypeScript only" />
 
-A Fetch API-compatible function is exported to allow you to make any HTTP
-requests durable if they're called within an Inngest function.
+The Inngest TypeScript SDK provides a `step.fetch()` API and a `fetch()` utility, enabling you to make requests to third-party APIs or fetch data in a durable way by offloading them to the Inngest Platform:
 
-<CodeGroup>
-```ts {{ title: "TypeScript" }}
-import { fetch } from "inngest";
+- `step.fetch()` is a shorthand for making HTTP requests from within an Inngest function, and it also makes it easier to start parallel HTTP requests.
+- The `fetch()` utility can be passed to packages that accept a custom `fetch` implementation, such as `axios`.
 
-const api = new MyProductApi({ fetch });
+![Using Fetch offloads the HTTP request to the Inngest Platform](/assets/docs/features/inngest-functions/steps-workflows/fetch/step-fetch.png)
+
+
+## Using `step.fetch()`
+
+You can use `step.fetch()` to make HTTP requests within an Inngest function.
+
+`step.fetch()` offloads the HTTP request to the Inngest Platform, so your service does not need to be active and waiting for the response.
+
+```ts {{ title: "src/inngest/functions.ts" }}
+import { inngest } from "./client";
+
+export const retrieveTextFile = inngest.createFunction(
+  { id: "retrieveTextFile" },
+  { event: "textFile/retrieve" },
+  async ({ step }) => {
+    // The fetching of the text file is offloaded to the Inngest Platform
+    const response = await step.fetch(
+      "https://example-files.online-convert.com/document/txt/example.txt"
+    );
+
+    // The Inngest function run is resumed when the HTTP request is complete
+    await step.run("extract-text", async () => {
+      const text = await response.text();
+      const exampleOccurences = text.match(/example/g);
+      return exampleOccurences?.length;
+    });
+  }
+);
 ```
-</CodeGroup>
 
-The request itself is also made by Inngest's servers, meaning your service does
-not have to be active and waiting for the response.
+<CardGroup cols={1}>
 
-## Within steps
+  <Card
+    href={"/docs/examples/fetch"}
+    title={"step.fetch() example"}
+    iconPlacement="top"
+  >
+    See the complete step.fetch() example including the source code and other use cases.
+  </Card>
 
-By default, using Inngest's `fetch` should retain all functionality of requests
-outside of an endpoint, but ensure those from inside are durable.
+</CardGroup>
+
+`step.fetch()` is useful:
+- In serverless environments, to offload long-running HTTP requests that might trigger timeouts.
+- As a shorthand for making HTTP requests within an Inngest function, making it easier to start parallel HTTP requests using `Promise.all()`.
+- As a best practice to ensure that all HTTP requests are durable and can be inspected in the Inngest Platform or Dev Server.
+
+
+## Using the `fetch()` utility
+
+A Fetch API-compatible function is exported, allowing you to make any HTTP requests durable if they're called within an Inngest function.
+
+For example, a `MyProductApi` class that relies on axios can take a `fetch` parameter:
+
+
+```ts {{ title: "TypeScript" }}
+import { fetch } from "inngest";
+
+const api = new MyProductApi({ fetch });
+
+// A call outside an Inngest function will fall back to the global fetch
+await api.getProduct(1);
+
+// A call from inside an Inngest function will be made durable and offloaded to the Inngest Platform
+inngest.createFunction(
+  { id: "my-fn" },
+  { event: "product/activated" },
+  async () => {
+    await api.getProduct(1);
+  },
+);
+```
+
+### Within steps
+
+By default, using Inngest's `fetch` retains all the functionality of requests made outside of an endpoint, but ensures that those made from inside are durable.
 
 <CodeGroup>
 ```ts {{ title: "TypeScript" }}
@@ -27,7 +91,7 @@ import { fetch } from "inngest";
 
 const api = new MyProductApi({ fetch });
 
-// A call outside will fall back to the global fetch
+// A call outside an Inngest function will fall back to the global fetch
 await api.getProduct(1);
 
 // A call from inside an Inngest function will be made durable
@@ -41,8 +105,7 @@ inngest.createFunction(
 ```
 </CodeGroup>
 
-The same `fetch` is, however, also exported as `step.fetch`, allowing you to
-create your APIs isolated within the function instead:
+However, the same `fetch` is also exported as `step.fetch`, allowing you to create your APIs isolated within the function instead:
 
 <CodeGroup>
 ```ts {{ title: "TypeScript" }}
@@ -58,11 +121,9 @@ inngest.createFunction(
 ```
 </CodeGroup>
 
-## Fallbacks
+### Fallbacks
 
-By default, it will gracefully fall back to the global `fetch` if called outside
-of an Inngest function, though a custom fallback can also be set using the
-`config` method:
+By default, it will gracefully fall back to the global `fetch` if called outside of an Inngest function, though you can also set a custom fallback using the `config` method:
 
 <CodeGroup>
 ```ts {{ title: "TypeScript" }}
@@ -86,18 +147,14 @@ const api = new MyProductApi({
 ```
 </CodeGroup>
 
-## How it works
+### How it works
 
-Inngest's `fetch` function uses some of the basic building blocks of Inngest to allow
-seamless creation of optionally-durable code. When it's called, it will:
+Inngest's `fetch` function uses some of the basic building blocks of Inngest to allow seamless creation of optionally durable code. When it's called, it will:
 
-- Check the context we're running in
-- If we're not in an Inngest function, optionally use the fallback, else
-- Report the request we want to make to Inngest
+- Check the context in which it's running
+- If not in an Inngest function, optionally use the fallback; otherwise,
+- Report the request to Inngest
 - Inngest makes the request
-- Inngest continues the function with the `Response` we received from making
-  your request
+- Inngest continues the function with the `Response` received from your request
 
-Critically, this means that your service does not have to be active for the
-duration of the call; we'll continue your function when we have a result, as
-well as keeping it durable!
+Critically, this means that your service does not have to be active for the duration of the call; we'll continue your function when we have a result, while also keeping it durable!
