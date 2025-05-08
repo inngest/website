@@ -1,4 +1,6 @@
-import { Callout, ImageTheme } from "src/shared/Docs/mdx";
+import { Callout, Info, ImageTheme } from "src/shared/Docs/mdx";
+
+export const description = `Trigger functions from your Neon Postgres database updates.`;
 
 # Neon
 
@@ -19,7 +21,12 @@ Beyond the architectural benefit, some specific Inngest features go perfectly wi
 - [**Flow control**](/docs/guides/flow-control) - Combine database triggers with flow control functionality like throttling, debouncing, or rate limiting for better resource management and efficiency. For example, use throttling for working with third party API rate limits or use debounce for operations that may happen frequently, helping to avoid redundant work.
 
 ## How it works
-Once you connect Neon to Inngest, any changes to data in your database will automatically send new events to your Inngest account. 
+Once you connect Neon to Inngest, any changes to data in your database will automatically send new events to your Inngest account.
+
+<Info>
+  The Neon integration currently only supports a single database connection per-account to the Inngest production environment.
+  No other environments are supported at this time.
+</Info>
 
 ## Connecting Neon to Inngest
 Connecting Neon will require some configuration changes on your Postgres database and Neon project.
@@ -27,7 +34,7 @@ Connecting Neon will require some configuration changes on your Postgres databas
 There are three steps to install the Neon integration in Inngest:
 
 1. **Authorization:** by adding your postgres credentials, Inngest can access your database to proceed with the installation
-2. **Enable logical replication:** change the `wal_level` configuration to `logical` 
+2. **Enable logical replication:** change the `wal_level` configuration to `logical`
 3. **Connect the Neon database to Inngest**
 
 You will find Neon in the integrations page inside your Inngest dashboard. Click "Connect" to begin the setup process:
@@ -51,7 +58,7 @@ Insert your postgres credentials and hit the “Verify” button to start the va
 
 
 ### 2. Enable logical replication
-You will need to make sure your Neon project has enabled logical replication. 
+You will need to make sure your Neon project has enabled logical replication.
 
 Enable logical replication either automatically using the Neon dashboard:
 <ImageTheme
