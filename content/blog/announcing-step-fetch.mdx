@@ -12,16 +12,15 @@ category: product-updates
 We are thrilled to release [Fetch](/docs/features/inngest-functions/steps-workflows/fetch), a set of new APIs to make durable HTTP requests within an Inngest function.
 Now available in our TypeScript SDK, the `step.fetch()` API and the `fetch()` utility enable you to make requests to third-party APIs or fetch data in a durable way by offloading them to the Inngest Platform.
 
-Dealing with 3rd party API requests and data fetching comes with its sets of challenges, from handling rate limits to reliability and slow response times.
-While Inngest Flow Control features such as [Throttling](/docs/guides/throttling) or [Concurrency](/docs/guides/concurrency) help with the first two, the Fetch APIs now close the loop with a simple way to
-make all HTTP requests durable and performant on any compute platform.
+Dealing with third-party API requests and data fetching comes with its set of challenges, from handling rate limits to ensuring reliability and managing slow response times.
+While Inngest Flow Control features such as [Throttling](/docs/guides/throttling) or [Concurrency](/docs/guides/concurrency) help with the first two, the Fetch APIs now close the loop with a simple way to make all HTTP requests durable and performant on any compute platform.
 
 ```typescript
 const processFiles = inngest.createFunction(
   { id: "process-files" },
   { event: "files/process" },
   async ({ step }) => {
-    // the request is offloaded to the Inngest Platform
+    // The request is offloaded to the Inngest Platform
     const response = await step.fetch("https://api.example.com/files", {
       method: "GET",
       headers: {
@@ -29,7 +28,7 @@ const processFiles = inngest.createFunction(
       }
     })
 
-    // your Inngest function get resumed here with the response
+    // Your Inngest function is resumed here with the response
     await step.run("process-file", async (file) => {
       const body = await response.json()
       // body.files
@@ -45,10 +44,9 @@ Both APIs offload the HTTP request to the Inngest Platform, freeing up more capa
 
 ## `step.fetch()` in a nutshell
 
-The new `step.fetch()` API brings all the benefits of `step.run()` with the added benefit of offloading the HTTP request to the Inngest Platform,
-saving you compute and removing potential Serverless timeout issues.
+The new `step.fetch()` API brings all the benefits of `step.run()` with the added advantage of offloading the HTTP request to the Inngest Platform, saving you compute and removing potential serverless timeout issues.
 
-Being part of the `step` API, `step.fetch()` is alo compatible with `Promise` API, enabling you to perform multiple requests in parallel and use the `Promise.all()` API to speed up your functions:
+As part of the `step` API, `step.fetch()` is also compatible with the `Promise` API, enabling you to perform multiple requests in parallel and use the `Promise.all()` API to speed up your functions:
 
 ```typescript
 const processFiles = inngest.createFunction(
@@ -60,7 +58,7 @@ const processFiles = inngest.createFunction(
       return step.fetch(`https://api.example.com/files/${file.id}`)
     }))
 
-    // your Inngest function get resumed here with the responses
+    // Your Inngest function is resumed here with the responses
     await step.run("process-file", async (file) => {
       const body = await response.json()
       // body.files
@@ -76,9 +74,9 @@ All `step.fetch()` (and `fetch()` helper) calls appear in your Inngest Traces, i
 
 ## Inngest's `fetch()` utility: a durable `fetch` for all platforms
 
-The Fetch APIs also exposes a `fetch()` utility that works exactly like the native `fetch()` API but is compatible with the `step.fetch()` API.
+The Fetch APIs also expose a `fetch()` utility that works exactly like the native `fetch()` API but is compatible with the `step.fetch()` API.
 
-Inngest's `fetch()` utility can be passed as a custom fetch handle to make all axios request durable:
+Inngest's `fetch()` utility can be passed as a custom fetch handler to make all axios requests durable:
 
 ```typescript
 import { fetch } from "inngest";
@@ -86,7 +84,7 @@ import { fetch } from "inngest";
 const api = new MyProductApi({ fetch });
 ```
 
-The `fetch()` utility is context aware and will choose to fallback to the native `fetch()` API if it is not running within an Inngest function:
+The `fetch()` utility is context-aware and will fall back to the native `fetch()` API if it is not running within an Inngest function:
 
 ```typescript
 import { fetch } from "inngest";
