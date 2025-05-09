@@ -72,37 +72,37 @@ All `step.fetch()` (and `fetch()` helper) calls appear in your Inngest Traces, i
 ![Inngest Traces showing a step.fetch() call](/assets/blog/announcing-step-fetch/step-fetch-trace.png)
 
 
-## Inngest's `fetch()` utility: a durable `fetch` for all platforms
+## The `fetch()` utility: make 3rd party library HTTP requests durable
 
 The Fetch APIs also expose a `fetch()` utility that works exactly like the native `fetch()` API but is compatible with the `step.fetch()` API.
 
-Inngest's `fetch()` utility can be passed as a custom fetch handler to make all axios requests durable:
+For example, you can pass the `fetch()` utility to the OpenAI node client as follows:
 
 ```typescript
 import { fetch } from "inngest";
+import OpenAI from 'openai';
 
-const api = new MyProductApi({ fetch });
+const client = new OpenAI({ fetch });
+
+// use the global fetch
+const completion = await client.chat.completions.create({
+  model: "gpt-3.5-turbo",
+  messages: [{ role: "user", content: "Hello, world!" }],
+});
+
+const weatherFunction = inngest.createFunction(
+  { id: "weather-function" },
+  { event: "weather/get" },
+  async ({ step }) => {
+    // The OpenAI request is automatically offloaded to the Inngest Platform
+    const completion = await client.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [{ role: "user", content: "What's the weather in London?" }],
+    });
+  }
+)
 ```
 
-The `fetch()` utility is context-aware and will fall back to the native `fetch()` API if it is not running within an Inngest function:
-
-```typescript
-import { fetch } from "inngest";
-
-const api = new MyProductApi({ fetch });
-
-// A call outside an Inngest function will fall back to the global fetch
-await api.getProduct(1);
-
-// A call from inside an Inngest function will be made durable and offloaded to the Inngest Platform
-inngest.createFunction(
-  { id: "my-fn" },
-  { event: "product/activated" },
-  async () => {
-    await api.getProduct(1);
-  },
-);
-```
 
 ## Get started
 

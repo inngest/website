@@ -74,3 +74,33 @@ const processFiles = inngest.createFunction(
 ```
 Note that `step.fetch()`, like all other `step` APIs, matches your function's configuration such as [concurrency](/docs/guides/concurrency) or [throttling](/docs/guides/throttling).
 
+## Make 3rd party library HTTP requests durable with the `fetch()` utility
+
+Inngest's `fetch()` utility can be passed as a custom fetch handler to make all the requests made by a 3rd party library durable.
+
+For example, you can pass the `fetch()` utility to the OpenAI node client as follows:
+
+```typescript
+import { fetch } from "inngest";
+import OpenAI from 'openai';
+
+const client = new OpenAI({ fetch });
+
+// use the global fetch
+const completion = await client.chat.completions.create({
+  model: "gpt-3.5-turbo",
+  messages: [{ role: "user", content: "Hello, world!" }],
+});
+
+const weatherFunction = inngest.createFunction(
+  { id: "weather-function" },
+  { event: "weather/get" },
+  async ({ step }) => {
+    // The OpenAI request is automatically offloaded to the Inngest Platform
+    const completion = await client.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [{ role: "user", content: "What's the weather in London?" }],
+    });
+  }
+)
+```
