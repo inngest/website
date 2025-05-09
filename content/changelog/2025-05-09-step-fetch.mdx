@@ -1,0 +1,29 @@
+export const title = "Introducing the Fetch APIs";
+export const date = "2025-05-09";
+
+We are thrilled to release [Fetch](/docs/features/inngest-functions/steps-workflows/fetch), a set of new APIs to make durable HTTP requests within an Inngest function.
+Now available in our TypeScript SDK, the `step.fetch()` API and the `fetch()` utility enable you to make requests to third-party APIs or fetch data in a durable way by offloading them to the Inngest Platform.
+
+```typescript
+const processFiles = inngest.createFunction(
+  { id: "process-files" },
+  { event: "files/process" },
+  async ({ step }) => {
+    // The request is offloaded to the Inngest Platform
+    const response = await step.fetch("https://api.example.com/files", {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${process.env.API_KEY}`
+      }
+    })
+
+    // Your Inngest function is resumed here with the response
+    await step.run("process-file", async (file) => {
+      const body = await response.json()
+      // body.files
+    })
+  }
+)
+```
+
+Read more about the new Fetch APIs in the [release blog post](/blog/announcing-step-fetch).
