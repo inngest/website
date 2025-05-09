@@ -55,6 +55,14 @@ export const retrieveTextFile = inngest.createFunction(
 - As a shorthand for making HTTP requests within an Inngest function, making it easier to start parallel HTTP requests using `Promise.all()`.
 - As a best practice to ensure that all HTTP requests are durable and can be inspected in the Inngest Platform or Dev Server.
 
+### `step.fetch()` observability
+
+All `step.fetch()` calls are visible in your [Inngest Traces](/docs/platform/monitor/observability-metrics), allowing you to monitor and debug your HTTP requests:
+
+![Inngest Traces showing a step.fetch() call](/assets/blog/announcing-step-fetch/step-fetch-trace.png)
+
+
+
 
 ## Using the `fetch()` utility
 

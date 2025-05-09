@@ -904,6 +904,10 @@ const sectionExamples: NavGroup[] = [
         title: "Cleanup after function cancellation",
         href: `/docs/examples/cleanup-after-function-cancellation`,
       },
+      {
+        title: "Fetch: Durable HTTP requests",
+        href: `/docs/examples/fetch`,
+      },
     ],
   },
   {
