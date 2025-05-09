@@ -146,6 +146,19 @@ const modeScript = `
 
   document.documentElement.classList.add('docs');
 
+  const styleEl = document.createElement('style');
+  styleEl.id = 'dark-mode-styles';
+  styleEl.textContent = \`
+    html.dark {
+      background-color: rgb(var(--color-carbon-1000)) !important;
+      min-height: 100vh;
+    }
+    html.dark body {
+      background-color: rgb(var(--color-carbon-1000)) !important;
+    }
+  \`;
+  document.head.appendChild(styleEl);
+
   // change to "let = darkModeMediaQuery" if/when this moves to the _document
   window.darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
 
