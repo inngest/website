@@ -1,0 +1,113 @@
+---
+heading: "Introducing: step.fetch()"
+image: /assets/blog/announcing-step-fetch/featured-image.png
+showSubtitle: true
+subtitle: Offload HTTP requests to the Inngest Platform to save compute and improve reliability.
+date: 2025-05-09
+author: Charly Poly
+category: product-updates
+---
+
+
+We are thrilled to release [Fetch](/docs/features/inngest-functions/steps-workflows/fetch), a set of new APIs to make durable HTTP requests within an Inngest function.
+Now available in our TypeScript SDK, the `step.fetch()` API and the `fetch()` utility enable you to make requests to third-party APIs or fetch data in a durable way by offloading them to the Inngest Platform.
+
+Dealing with third-party API requests and data fetching comes with its set of challenges, from handling rate limits to ensuring reliability and managing slow response times.
+While Inngest Flow Control features such as [Throttling](/docs/guides/throttling) or [Concurrency](/docs/guides/concurrency) help with the first two, the Fetch APIs now close the loop with a simple way to make all HTTP requests durable and performant on any compute platform.
+
+```typescript
+const processFiles = inngest.createFunction(
+  { id: "process-files" },
+  { event: "files/process" },
+  async ({ step }) => {
+    // The request is offloaded to the Inngest Platform
+    const response = await step.fetch("https://api.example.com/files", {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${process.env.API_KEY}`
+      }
+    })
+
+    // Your Inngest function is resumed here with the response
+    await step.run("process-file", async (file) => {
+      const body = await response.json()
+      // body.files
+    })
+  }
+)
+```
+
+Both APIs offload the HTTP request to the Inngest Platform, freeing up more capacity for your service to handle other incoming requests:
+
+![Using Fetch offloads the HTTP requests to the Inngest Platform](/assets/blog/announcing-step-fetch/step-fetch-diagram.png)
+
+
+## `step.fetch()` in a nutshell
+
+The new `step.fetch()` API brings all the benefits of `step.run()` with the added advantage of offloading the HTTP request to the Inngest Platform, saving you compute and removing potential serverless timeout issues.
+
+As part of the `step` API, `step.fetch()` is also compatible with the `Promise` API, enabling you to perform multiple requests in parallel and use the `Promise.all()` API to speed up your functions:
+
+```typescript
+const processFiles = inngest.createFunction(
+  { id: "process-files", concurrency: 10 },
+  { event: "files/process" },
+  async ({ step, event }) => {
+    // All requests will be offloaded and processed in parallel while matching the concurrency limit
+    const responses = await Promise.all(event.data.files.map(async (file) => {
+      return step.fetch(`https://api.example.com/files/${file.id}`)
+    }))
+
+    // Your Inngest function is resumed here with the responses
+    await step.run("process-file", async (file) => {
+      const body = await response.json()
+      // body.files
+    })
+  }
+)
+```
+
+All `step.fetch()` (and `fetch()` helper) calls appear in your Inngest Traces, improving observability and helping you debug issues with your HTTP requests:
+
+![Inngest Traces showing a step.fetch() call](/assets/blog/announcing-step-fetch/step-fetch-trace.png)
+
+
+## The `fetch()` utility: make 3rd party library HTTP requests durable
+
+The Fetch APIs also expose a `fetch()` utility that works exactly like the native `fetch()` API but is compatible with the `step.fetch()` API.
+
+For example, you can pass the `fetch()` utility to the OpenAI node client as follows:
+
+```typescript
+import { fetch } from "inngest";
+import OpenAI from 'openai';
+
+const client = new OpenAI({ fetch });
+
+// use the global fetch
+const completion = await client.chat.completions.create({
+  model: "gpt-3.5-turbo",
+  messages: [{ role: "user", content: "Hello, world!" }],
+});
+
+const weatherFunction = inngest.createFunction(
+  { id: "weather-function" },
+  { event: "weather/get" },
+  async ({ step }) => {
+    // The OpenAI request is automatically offloaded to the Inngest Platform
+    const completion = await client.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [{ role: "user", content: "What's the weather in London?" }],
+    });
+  }
+)
+```
+
+
+## Get started
+
+Inngest's `fetch()` and `step.fetch()` APIs are available in our TypeScript SDK.
+
+Get started by reading the [Fetch documentation](/docs/features/inngest-functions/steps-workflows/fetch) and by checking out the [examples](/docs/examples/fetch).
+
+`step.fetch()` is a unique feature that tackles complex use cases while improving the developer experience. Take a [look and participate in our roadmap](https://roadmap.inngest.com/roadmap?ref=footer) as we continue to push the limits of Inngest's APIs!
