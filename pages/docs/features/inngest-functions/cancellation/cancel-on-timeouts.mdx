@@ -19,7 +19,7 @@ In the following examples, we'll explore how to configure the timeout property a
   ]}>
 
 
-### `timeouts.start` - Adding timeouts to queued runs (before start)
+## `timeouts.start` - Adding timeouts to queued runs (before start)
 
 Runs may stay in the queue waiting to start due to concurrency backlogs, throttling configurations, or other delays. You can automatically cancel these runs if they are queued for too long prior to starting.
 
@@ -67,7 +67,7 @@ return inngestgo.CreateFunction(
 ```
 </GuideSection>
 
-### `timeouts.finish` - Adding timeouts to executing runs
+## `timeouts.finish` - Adding timeouts to executing runs
 
 You may want to limit the overall duration of a run after the run starts executing. You can cancel functions automatically if they're executing for too long.
 
@@ -121,10 +121,15 @@ return inngestgo.CreateFunction(
 
 </GuideSelector>
 
-### Tips
+## Tips
 
 * The `timeouts.start` duration limits how long a run waits in the queue for the first step to start
 * Once the first attempt of a step begins, the `timeouts.start` property no longer applies.  Instead, the `timeouts.finish` duration begins.
 * Once started, the `timeouts.finish` duration limits how long a run can execute
 * Both properties can be stacked to control the overall length of a function run
 * Runs that are cancelled due to a timeout trigger an [`inngest/function.cancelled`](/docs/reference/system-events/inngest-function-cancelled) event
+
+## Limitations
+
+- Step duration is unaffected by timeouts. For example, a 5 minute timeout will not prematurely cancel a step after 5 minutes.
+- Concurrency can delay timeouts. For example, if a function is configured with a 5 minute timeout but concurrency delays the function run for 10 minutes, then the run will take 10 minutes to cancel.
