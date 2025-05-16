@@ -1119,6 +1119,11 @@ ul.check li {
   }
 }
 
+html.docs.dark {
+  min-height: 100vh !important;
+  background-color: rgb(var(--color-carbon-1000)) !important;
+}
+
 /* default colors */
 body {
   background-color: rgb(var(--color-background-canvas-base));
