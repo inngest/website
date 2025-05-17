@@ -38,7 +38,7 @@ $ pnpm dev
 
 This will start a local server that will automatically rebuild the app and refresh the page when you
 make changes to the code. The app will be available at
-[http://localhost:3000](http://localhost:3000).
+[http://localhost:3001](http://localhost:3001).
 
 This is how you will run the app most of the time.
 
