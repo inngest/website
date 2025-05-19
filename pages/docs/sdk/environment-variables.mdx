@@ -56,7 +56,7 @@ appropriate to also set `INNGEST_BASE_URL=http://host.docker.internal:8288`. Lea
 Use this to force an SDK to be in Dev Mode with `INNGEST_DEV=1`, or Cloud mode
 with `INNGEST_DEV=0`. A URL for the dev server can be set at the same time with `INNGEST_DEV=http://localhost:8288`.
 
-Can be overwritten by manually specifying `isDev` is `new Inngest()`.
+Can be overwritten by manually specifying `isDev` in `new Inngest()`.
 
 Explicitly setting either mode will change the URLs used to communicate with
 Inngest, as well as turning **off** signature verification in Dev mode, or **on** in
@@ -70,7 +70,7 @@ as `NODE_ENV`.
 
 ## INNGEST_ENV
 
-Use this to tell Inngest which [Inngest Envionment](/docs/platform/environments?ref=environment-variables) you're wanting to send and receive events from.
+Use this to tell Inngest which [Inngest Environment](/docs/platform/environments?ref=environment-variables) you're wanting to send and receive events from.
 
 Can be overwritten by manually specifying `env` in `new Inngest()`.
 
