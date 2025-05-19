@@ -104,6 +104,7 @@
     "ignore-loader": "0.1.2",
     "postcss": "8.4.19",
     "prettier": "2.8.1",
+    "prettier-plugin-tailwindcss": "0.4.1",
     "tailwindcss": "3.4.16",
     "typescript": "5.7.3",
     "vercel": "32.4.1"
