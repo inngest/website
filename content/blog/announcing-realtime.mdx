@@ -13,15 +13,13 @@ We are thrilled to announce a new developer preview: [**Realtime**](/docs/featur
 
 This feature allows you to stream updates from your Inngest functions to your users using a new `publish()` method available in the Inngest TypeScript and Go SDKs.
 
-Realtime updates is now a core requirement for any web applications, especially when long running tasks are involved.
-The rise of AI patterns such as AI Agents has even more stressed the need for such features for the numerous developers building AI applications with Inngest.
+Realtime updates are now a core requirement for any web application, especially when long-running tasks are involved. The rise of AI patterns such as AI Agents has further emphasized the need for such features among the many developers building AI applications with Inngest.
 
-With Realtime, keep your users informed of a specific task's progress (ex: a long running AI Agent execution), or even from multiple tasks at once (ex: a workflow involving multiple Inngest functions).
-Enable bi-directional communication between your users and your Inngest functions by combining Realtime with [`waitForEvent()`](/docs/features/inngest-functions/steps-workflows/wait-for-event) (ex: a Human in the loop).
+With Realtime, you can keep your users informed of a specific task's progress (e.g., a long-running AI Agent execution), or even of multiple tasks at once (e.g., a workflow involving multiple Inngest functions). Enable bi-directional communication between your users and your Inngest functions by combining Realtime with [`waitForEvent()`](/docs/features/inngest-functions/steps-workflows/wait-for-event) (e.g., a Human in the Loop).
 
 ## `publish()`: a flexible and fully typed Realtime API
 
-As all features in the Inngest TypeScript SDK, `publish()` is fully type-safe and behaves as a building blocks for multiple use cases.
+As with all features in the Inngest TypeScript SDK, `publish()` is fully type-safe and serves as a building block for multiple use cases.
 
 The subscriber/publisher communication is built around typed channels, which encompass optional topics for more fine-grained control:
 
@@ -52,9 +50,9 @@ export const someTask = inngest.createFunction(
 Then, subscribing to a channel is easily achieved by using the `useInngestSubscription()` hook from your React components:
 
 ```ts src/actions.tsx
+"use server";
 // securely fetch an Inngest Realtime subscription token from the server as a server action
 export async function fetchSubscriptionToken(): Promise<Realtime.Token<typeof helloChannel, ["logs"]>> {
-  "use server";
   const token = await getSubscriptionToken(getInngestApp(), {
     channel: helloChannel(),
     topics: ["logs"],
@@ -172,13 +170,12 @@ export const someTask = inngest.createFunction(
 );
 ```
 
-By creating a channel accepting a parameter, we easily implemented run-specific channels, allowing users to get updates from a specific run.
+By creating a channel that accepts a parameter, we easily implemented run-specific channels, allowing users to get updates from a specific run.
 
 
 **Implementation of a Human in the loop**
 
-Combining Realtime with `waitForEvent()` enables a bi-directional communication between your users and your Inngest functions, allowing you to implement a Human in the loop pattern,
-enabling your users to review an ongoing AI workflow.
+Combining Realtime with `waitForEvent()` enables bi-directional communication between your users and your Inngest functions, allowing you to implement a Human-in-the-Loop pattern and enable your users to review an ongoing AI workflow.
 
 Here, our Agentic Workflow sends an update to the user and waits for their confirmation to proceed:
 
@@ -236,7 +233,7 @@ export const agenticWorkflow = inngest.createFunction(
 );
 ```
 
-In the above example, the `confirmationUUid` is passed from the published message to the reply event, allowing to identify a unique user confirmation.
+In the above example, the `confirmationUUid` is passed from the published message to the reply event, allowing you to identify a unique user confirmation.
 
 
 You will find the complete source code of the above examples in the [Realtime examples page](/docs/realtime).
@@ -248,4 +245,4 @@ Realtime is now available as a developer preview in the Inngest TypeScript and G
 Some details including APIs are still subject to change during this period. Read more about the [developer preview here](/docs/features/realtime#developer-preview).
 
 
-We are excited to see what you will build with Realtime and are looking forward to [your feedback](/discord)!
+We are excited to see what you will build with Realtime and look forward to [your feedback](/discord)!
