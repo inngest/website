@@ -36,8 +36,8 @@ module.exports = {
         background: theme2024.black, // TODO - Change to carbon-1000
 
         // Redesign 2025
-        inngestLux: "#CBB26A",
-        inngestLuxDark: "#AD8513",
+        inngestLux: "rgb(var(--color-inngest-lux) / <alpha-value>)",
+        inngestLuxDark: "rgb(var(--color-inngest-lux-dark) / <alpha-value>)",
 
         // Redesign 2024
         cta: "#10B981",

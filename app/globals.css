@@ -109,6 +109,10 @@ body {
     --color-purplehaze-800: 77 31 196;
     --color-purplehaze-900: 67 34 175;
 
+    /* Redesign 2025 Colors */
+    --color-inngest-lux: 203 178 106;
+    --color-inngest-lux-dark: 173 133 19;
+
     /* Token Colors */
     --color-background-canvas-base: var(--color-carbon-0);
     --color-background-canvas-subtle: var(--color-carbon-50);
