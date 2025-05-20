@@ -35,6 +35,10 @@ module.exports = {
         inngestBlack: theme2024.black,
         background: theme2024.black, // TODO - Change to carbon-1000
 
+        // Redesign 2025
+        inngestLux: "rgb(var(--color-inngest-lux) / <alpha-value>)",
+        inngestLuxDark: "rgb(var(--color-inngest-lux-dark) / <alpha-value>)",
+
         // Redesign 2024
         cta: "#10B981",
         ctaHover: "#2fe4a8",
@@ -307,6 +311,10 @@ module.exports = {
       // We can use these temporary classes while we transition to the new fonts
       circular:
         'CircularXX, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto',
+      whyte:
+        'Whyte, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      whyteInktrap:
+        'Whyte Inktrap, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
     },
   },
   plugins: [require("@tailwindcss/typography")],
