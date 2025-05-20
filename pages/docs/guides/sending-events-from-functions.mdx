@@ -111,89 +111,99 @@ First, the function fetches all users, then it maps over all users to create a `
 package main
 
 import (
-    "context"
-    "github.com/inngest/inngest-go"
-    "github.com/inngest/inngest-go/step"
+	"context"
+
+	"github.com/inngest/inngestgo"
+	"github.com/inngest/inngestgo/step"
 )
 
-func loadCron(client *inngest.Client) *inngest.FunctionDefinition {
-    return client.CreateFunction(
-        inngest.FunctionOpts{
-            ID: "weekly-activity-load-users",
-        },
-        inngest.CronTrigger("0 12 * * 5"),
-        func(ctx context.Context, event *inngest.Event) error {
-            // Fetch all users
-            var users []User
-            if err := step.Run("fetch-users", func() error {
-                var err error
-                users, err = fetchUsers()
-                return err
-            }); err != nil {
-                return err
-            }
+func loadCron(client inngestgo.Client) (inngestgo.ServableFunction, error) {
+	return inngestgo.CreateFunction(
+		client,
+		inngestgo.FunctionOpts{
+			ID: "weekly-activity-load-users",
+		},
+		inngestgo.CronTrigger("0 12 * * 5"),
+		func(ctx context.Context, input inngestgo.Input[any]) (any, error) {
+			// Fetch all users
+			users, err := step.Run(ctx, "fetch-users", func(ctx context.Context) ([]User, error) {
+				return fetchUsers()
+			})
+			if err != nil {
+				return nil, err
+			}
 
-            // For each user, send us an event. Inngest supports batches of events
-            // as long as the entire payload is less than 512KB.
-            events := make([]inngest.Event, len(users))
-            for i, user := range users {
-                events[i] = inngest.Event{
-                    Name: "app/weekly-email-activity.send",
-                    Data: map[string]interface{}{
-                        "user": user,
-                    },
-                }
-            }
+			// For each user, send us an event. Inngest supports batches of events
+			// as long as the entire payload is less than 512KB.
+			events := make([]inngestgo.Event, len(users))
+			for i, user := range users {
+				events[i] = inngestgo.Event{
+					Name: "app/weekly-email-activity.send",
+					Data: map[string]interface{}{
+						"user": user,
+					},
+				}
+			}
 
-            // Send all events to Inngest, which triggers any functions listening to
-            // the given event names.
-            if err := inngestgo.Send(ctx, events); err != nil {
-                return err
-            }
+			// Send all events to Inngest, which triggers any functions listening to
+			// the given event names.
+			_, err = step.SendMany(ctx, "send-events", events)
+			if err != nil {
+				return nil, err
+			}
 
-            // Return the number of users triggered
-            return step.Return(map[string]interface{}{
-                "count": len(users),
-            })
-        },
-    )
+			// Return the number of users triggered
+			return map[string]any{
+				"count": len(users),
+			}, nil
+		},
+	)
 }
 ```
 
 Next, create a function that listens for the `"app/weekly-email-activity.send"` event. This function will be triggered for each user that was sent an event in the previous function.
 
 ```go
+package main
+
 import (
-    "context"
-    "github.com/inngest/inngest-go"
-    "github.com/inngest/inngest-go/step"
+	"context"
+
+	"github.com/inngest/inngestgo"
+	"github.com/inngest/inngestgo/step"
 )
 
-func sendReminder(client *inngest.Client) *inngest.FunctionDefinition {
-    return client.CreateFunction(
-        inngest.FunctionOpts{
-            ID: "weekly-activity-send-email",
-        },
-        inngest.TriggerEvent("app/weekly-email-activity.send"),
-        func(ctx *inngest.Context) error {
-            var data interface{}
-            if err := step.Run("load-user-data", func() error {
-                var err error
-                data, err = loadUserData(ctx.Event.Data["user"].(map[string]interface{})["id"].(string))
-                return err
-            }); err != nil {
-                return err
-            }
+func sendReminder(client inngestgo.Client) (inngestgo.ServableFunction, error) {
+	type Data struct {
+		User struct {
+			ID string
+		}
+	}
 
-            if err := step.Run("email-user", func() error {
-                return sendEmail(ctx.Event.Data["user"], data)
-            }); err != nil {
-                return err
-            }
+	return inngestgo.CreateFunction(
+		client,
+		inngestgo.FunctionOpts{
+			ID: "weekly-activity-send-email",
+		},
+		inngestgo.EventTrigger("app/weekly-email-activity.send", nil),
+		func(ctx context.Context, input inngestgo.Input[Data]) (any, error) {
+			data, err := step.Run(ctx, "load-user-data", func(ctx context.Context) (any, error) {
+				return loadUserData(input.Event.Data.User.ID)
+			})
+			if err != nil {
+				return nil, err
+			}
 
-            return nil
-        },
-    )
+			_, err = step.Run(ctx, "email-user", func(ctx context.Context) (any, error) {
+				return sendEmail(input.Event.Data.User, data)
+			})
+			if err != nil {
+				return nil, err
+			}
+
+			return nil, nil
+		},
+	)
 }
 ```
 
