@@ -1,9 +1,9 @@
 "use client";
 import { useEffect, useState, useRef, useMemo, useCallback } from "react";
 
-const INNGEST_LUX = "#ad8513";
+const INNGEST_LUX = "#78716C";
 
-const PATTERN_COUNT = 60;
+const PATTERN_COUNT = 90;
 const THROTTLE_MS = 16;
 
 export default function FooterCTABackground() {
@@ -68,7 +68,7 @@ export default function FooterCTABackground() {
 
   return (
     <div ref={containerRef} className="absolute inset-0 z-0">
-      <div className="grid grid-cols-10 gap-y-6">
+      <div className="grid grid-cols-10 grid-rows-10 gap-y-2">
         {Array.from({ length: PATTERN_COUNT }).map((_, i) => (
           <div
             key={i}
@@ -147,11 +147,11 @@ function BackgroundPattern({
 
   return (
     <svg
-      width="47"
-      height="47"
-      viewBox="0 0 47 47"
-      fill="none"
       xmlns="http://www.w3.org/2000/svg"
+      width="36"
+      height="36"
+      viewBox="0 0 36 36"
+      fill="none"
       style={{
         transform: inViewport ? `rotate(${angle}deg)` : "none",
         transformOrigin: "center",
@@ -159,15 +159,14 @@ function BackgroundPattern({
         willChange: inViewport ? "transform" : "auto",
       }}
     >
-      <mask id={`path-1-inside-1_${id}`} fill="white">
-        <path d="M0.770996 27.6587L27.9716 46.3436L46.6565 19.143L19.4559 0.458082L0.770996 27.6587Z" />
-      </mask>
-      <path
-        d="M27.9716 46.3436L27.1473 45.7774L45.8323 18.5768L46.6565 19.143L47.4808 19.7092L28.7959 46.9098L27.9716 46.3436ZM19.4559 0.458082L20.2802 1.02429L1.59526 28.2249L0.770996 27.6587L-0.0532648 27.0925L18.6317 -0.108128L19.4559 0.458082Z"
-        fill={color}
-        mask={`url(#path-1-inside-1_${id})`}
-        style={{ transition: inViewport ? "fill 0.2s ease-out" : "none" }}
-      />
+      <g transform="rotate(90 18 18)">
+        <path
+          d="M5.27222 5.27246L30.7281 30.7283"
+          stroke={color}
+          strokeWidth="1.5"
+          style={{ transition: inViewport ? "stroke 0.2s ease-out" : "none" }}
+        />
+      </g>
     </svg>
   );
 }
