@@ -67,9 +67,6 @@ export async function fetchSubscriptionToken(): Promise<Realtime.Token<typeof he
 "use client";
 
 import { useInngestSubscription } from "@inngest/realtime/hooks";
-import { getSubscriptionToken, Realtime } from "@inngest/realtime";
-import { getInngestApp } from "@/inngest";
-import { helloChannel } from "@/inngest/functions/helloWorld";
 // import the server action to securely fetch the Realtime subscription token
 import { fetchRealtimeSubscriptionToken } from "./actions";
 
