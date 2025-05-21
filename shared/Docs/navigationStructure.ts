@@ -508,6 +508,7 @@ const sectionHome: (NavGroup | NavLink)[] = [
           },
           {
             title: "Steps & Workflows",
+            tag: "new",
             links: [
               {
                 title: "Overview",
@@ -677,11 +678,7 @@ const sectionHome: (NavGroup | NavLink)[] = [
             href: "/docs/features/realtime",
           },
           {
-            title: "Usage with Next.js",
-            href: "/docs/features/realtime/nextjs",
-          },
-          {
-            title: "React hooks",
+            title: "React hooks / Next.js",
             href: "/docs/features/realtime/react-hooks",
           },
         ],
@@ -907,6 +904,10 @@ const sectionExamples: NavGroup[] = [
       {
         title: "Fetch: Durable HTTP requests",
         href: `/docs/examples/fetch`,
+      },
+      {
+        title: "Stream updates from functions",
+        href: `/docs/examples/realtime`,
       },
     ],
   },

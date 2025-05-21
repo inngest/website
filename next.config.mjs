@@ -74,6 +74,8 @@ const permanentRedirects = [
   ["/blog/nextjs-openai-o1", "/blog/agentic-workflow-example"],
 
   ["/docs/agent-kit/:any*", "https://agentkit.inngest.com"],
+
+  ["/docs/features/realtime/nextjs", "/docs/features/realtime/react-hooks"],
 ];
 
 async function redirects() {
