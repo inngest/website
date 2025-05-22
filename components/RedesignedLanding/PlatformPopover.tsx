@@ -138,17 +138,17 @@ export default function PlatformPopover() {
                 <h3 className="text-sm font-medium leading-6 text-stone-400">
                   What's new
                 </h3>
-                <div className="mt-2 flow-root hover:bg-stone-800">
+                <div className="mt-2 flow-root">
                   <div className="-my-2">
-                    <article className="relative isolate flex flex-col gap-y-3">
+                    <article className="relative isolate flex flex-col gap-y-3 p-2 hover:bg-stone-800">
                       <div className="relative flex-none">
                         <img
                           alt=""
                           src="/assets/blog/announcing-realtime/featured-image.png"
-                          className="aspect-[2/1] max-h-32 rounded-lg bg-gray-100 object-cover"
+                          className="aspect-[2/1] max-h-32  bg-gray-100 object-cover"
                         />
 
-                        <div className="absolute inset-0 rounded-lg ring-1 ring-inset ring-gray-900/10" />
+                        <div className="absolute inset-0 ring-1 ring-inset ring-gray-900/10" />
                       </div>
                       <div>
                         <h4 className="mt-2 text-base  text-stone-50">
