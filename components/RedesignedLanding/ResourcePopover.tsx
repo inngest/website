@@ -130,22 +130,20 @@ export default function ResourcePopover() {
             <div className="lg:pl-3">
               <div className="flex flex-col items-start gap-1 pb-4">
                 <h3 className="text-sm font-medium leading-6 text-stone-400">
-                  Latest Blog
+                  What's new
                 </h3>
                 <div className="mt-2 flow-root w-full">
                   <div className="-my-2">
-                    <article className="relative isolate flex flex-col gap-y-3 p-2 hover:bg-stone-800">
-                      <div className="relative flex-none">
+                    <article className="relative isolate p-2 hover:bg-stone-800">
+                      <div className="max-h-[120px]">
                         <img
                           alt=""
                           src="/assets/blog/announcing-realtime/featured-image.png"
-                          className="aspect-[2/1] max-h-32  bg-gray-100 object-cover"
+                          className="h-32 w-full rounded-md object-cover"
                         />
-
-                        <div className="absolute inset-0 ring-1 ring-inset ring-gray-900/10" />
                       </div>
-                      <div>
-                        <h4 className="mt-2 text-base  text-stone-50">
+                      <div className="max-w-[240px]">
+                        <h4 className="mt-2 text-base text-stone-50">
                           <Link
                             href="#"
                             className="font-whyte text-base font-semibold leading-[1.05rem] text-stone-50"
@@ -154,10 +152,9 @@ export default function ResourcePopover() {
                             Boost your conversion rate
                           </Link>
                         </h4>
-                        <p className="mt-2 max-w-[30ch] break-words text-xs text-stone-400">
+                        <p className="mt-2 line-clamp-2 font-circular text-xs font-normal text-stone-400">
                           Et et dolore officia quis nostrud esse aute cillum
-                          irure do esse. Eiusmod ad deserunt cupidatat est magna
-                          Lorem.
+                          irure do esse.
                         </p>
                       </div>
                     </article>
