@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 
-import Nav from "src/components/Nav";
 import Footer from "src/shared/Footer";
 import { HeaderInit, PageViews } from "@/components/InngestClientSDK";
 import GoogleTagManger from "@/components/GoogleTagManager";
@@ -9,6 +8,7 @@ import { getFullURL } from "src/utils/social";
 
 import "./globals.css";
 import AnnouncementBanner from "src/components/AnnouncementBanner";
+import Header from "src/components/RedesignedLanding/Header";
 
 export const metadata: Metadata = {
   title: {
@@ -58,7 +58,7 @@ export default function RootLayout({
       <body className="dark font-sans">
         <AnnouncementBanner />
 
-        <Nav />
+        <Header />
 
         <main className="text-basis">{children}</main>
 
