@@ -528,7 +528,7 @@ export function Card<T extends React.ElementType = "div">({
 
 export function Steps({ children }: { children: React.ReactNode[] }) {
   return (
-    <div className="ml-3.5 mt-10 mb-6" role="list">
+    <div className="pl-3.5 mt-10 mb-6" role="list">
       {(Array.isArray(children) ? children : [children]).map((child, index) => (
         <div key={index} className="relative flex items-start pb-2">
           {index < children.length - 1 && (
