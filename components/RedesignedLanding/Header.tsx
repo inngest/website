@@ -17,13 +17,9 @@ import Link from "next/link";
 import Dropdown from "src/components/RedesignedLanding/GithubDropdown";
 import { RiGithubFill } from "@remixicon/react";
 import githubData from "src/data/github.json";
-import PlatformPopover, {
-  platformDropdown,
-} from "src/components/RedesignedLanding/PlatformPopover";
 import { Button } from "src/components/RedesignedLanding/Button";
-import ResourcePopover, {
-  resourceDropdown,
-} from "src/components/RedesignedLanding/ResourcePopover";
+import PlatformPopover, { platformDropdown } from "./PlatformPopover";
+import ResourcePopover, { resourceDropdown } from "./ResourcePopover";
 
 const navigation = [
   { name: "Docs", href: "#" },
