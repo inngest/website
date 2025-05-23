@@ -83,10 +83,14 @@ export const resourceDropdown = [
 export default function ResourcePopover() {
   return (
     <Popover className="relative">
-      <PopoverButton className="inline-flex items-center font-circular text-sm/6 font-semibold">
+      <PopoverButton className="inline-flex items-center font-circular text-sm/6 font-semibold focus:outline-none">
         {({ open }) => (
           <>
-            <span className={`${open ? "border-b border-current" : ""}`}>
+            <span
+              className={`${
+                open ? "border-b border-current" : "border-b border-transparent"
+              } focus:border-none`}
+            >
               RESOURCES
             </span>
             <ChevronDownIcon aria-hidden="true" className="size-4" />
