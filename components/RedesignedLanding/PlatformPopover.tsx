@@ -1,6 +1,13 @@
-import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
+"use client";
+
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import Link from "next/link";
+import { useState } from "react";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "src/components/RedesignedLanding/Popover";
 
 export const platformDropdown = [
   {
@@ -84,28 +91,43 @@ export const platformDropdown = [
 ];
 
 export default function PlatformPopover() {
-  return (
-    <Popover className="relative">
-      <PopoverButton className="inline-flex items-center font-circular text-sm/6 font-semibold focus:outline-none">
-        {({ open }) => (
-          <>
-            <span
-              className={`${
-                open ? "border-b border-current" : "border-b border-transparent"
-              }`}
-            >
-              PLATFORM
-            </span>
-            <ChevronDownIcon aria-hidden="true" className="size-4" />
-          </>
-        )}
-      </PopoverButton>
+  const [isOpen, setIsOpen] = useState(false);
 
-      <PopoverPanel
-        transition
-        className="absolute left-0 z-10 mt-5 w-screen max-w-max origin-top-left transition data-[closed]:translate-y-1 data-[closed]:opacity-0 data-[enter]:duration-200 data-[leave]:duration-150 data-[enter]:ease-out data-[leave]:ease-in"
+  const handleMouseEnter = () => {
+    setIsOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsOpen(false);
+  };
+
+  return (
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger asChild>
+        <button
+          className="inline-flex items-center font-circular text-sm/6 font-semibold focus:outline-none"
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
+          <span
+            className={`${
+              isOpen ? "border-b border-current" : "border-b border-transparent"
+            } flex items-center`}
+          >
+            PLATFORM
+            <ChevronDownIcon aria-hidden="true" className="size-4" />
+          </span>
+        </button>
+      </PopoverTrigger>
+
+      <PopoverContent
+        side="bottom"
+        align="start"
+        className="mt-1 w-screen max-w-max rounded-none border border-stone-700 bg-stone-900 p-0 text-sm/6 shadow-lg ring-1 ring-gray-900/5 focus:outline-none"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
       >
-        <div className="mx-auto w-full max-w-md overflow-hidden border border-stone-700 bg-stone-900 text-sm/6 shadow-lg ring-1 ring-gray-900/5 lg:max-w-3xl">
+        <div className="mx-auto w-full max-w-md overflow-hidden lg:max-w-3xl">
           <div className="grid grid-cols-1 gap-y-1 p-4 lg:grid-cols-2 lg:gap-0">
             <div className="lg:border-r lg:border-stone-700 lg:pr-3">
               <div className="flex flex-col items-start gap-1 pb-4">
@@ -171,7 +193,7 @@ export default function PlatformPopover() {
             </div>
           </div>
         </div>
-      </PopoverPanel>
+      </PopoverContent>
     </Popover>
   );
 }
