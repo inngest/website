@@ -9,6 +9,7 @@ import { getFullURL } from "src/utils/social";
 import "./globals.css";
 import AnnouncementBanner from "src/components/AnnouncementBanner";
 import Header from "src/components/RedesignedLanding/Header";
+import { PopoverGroup } from "@headlessui/react";
 
 export const metadata: Metadata = {
   title: {
@@ -57,12 +58,13 @@ export default function RootLayout({
       </head>
       <body className="dark font-sans">
         <AnnouncementBanner />
+        <PopoverGroup>
+          <Header />
 
-        <Header />
+          <main className="text-basis">{children}</main>
 
-        <main className="text-basis">{children}</main>
-
-        <Footer disableCta={true} />
+          <Footer disableCta={true} />
+        </PopoverGroup>
 
         <Suspense>
           <PageViews />
