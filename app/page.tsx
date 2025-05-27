@@ -1,9 +1,7 @@
 import { type Metadata } from "next";
 
-import Footer from "src/components/RedesignedLanding/Footer";
-import { generateMetadata } from "src/utils/social";
-import Hero2 from "../components/RedesignedLanding/Hero";
 import TestimonialCarousel from "components/RedesignedLanding/TestimonialCarousel";
+import { generateMetadata } from "src/utils/social";
 
 export const metadata: Metadata = generateMetadata({
   title: "AI and backend workflows, orchestrated at any scale",
@@ -15,9 +13,7 @@ export const metadata: Metadata = generateMetadata({
 export default function Page() {
   return (
     <div>
-      <Hero2 />
       <TestimonialCarousel />
-      <Footer />
     </div>
   );
 }
