@@ -164,10 +164,11 @@ function DraggableItem({
             height: `${elementSize}px`,
           }}
         />
-        <div className="absolute bottom-0 right-0 flex flex-col gap-y-1">
+        {/* going to remove this before merging */}
+        {/* <div className="absolute bottom-0 right-0 flex flex-col gap-y-1">
           <div>{position.x}</div>
           <div>{position.y}</div>
-        </div>
+        </div> */}
       </div>
     </div>
   );
