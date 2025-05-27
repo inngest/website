@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 
-import Footer from "src/shared/Footer";
 import { HeaderInit, PageViews } from "@/components/InngestClientSDK";
 import GoogleTagManger from "@/components/GoogleTagManager";
 import { getFullURL } from "src/utils/social";
@@ -60,8 +59,6 @@ export default function RootLayout({
         <Header />
 
         <main className="text-basis">{children}</main>
-
-        <Footer disableCta={true} />
 
         <Suspense>
           <PageViews />
