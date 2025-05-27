@@ -119,7 +119,6 @@ const DRAGGABLE_IMAGE_CONFIGS: DraggableImageConfig[] = [
 
 const SCREEN_BREAKPOINTS = {
   sm: 768,
-  md: 768,
   lg: 1024,
   ipad: 1100,
   xl: 1536,
