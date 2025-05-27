@@ -4,7 +4,7 @@ import { MultipleDraggableElements } from "./MultipleDraggableElements";
 import Image from "next/image";
 import { Button } from "src/components/RedesignedLanding/Button";
 
-export default function Hero2() {
+export default function Hero() {
   return (
     <div className="bg-stone-950">
       <main className="relative mx-auto w-full bg-stone-950 px-4 pb-16 pt-20 md:pt-52 lg:pt-56">

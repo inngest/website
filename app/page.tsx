@@ -14,7 +14,7 @@ import SocialProof from "./new-homepage/SocialProof";
 import Community from "./new-homepage/Community";
 import { FullWidthCTA } from "src/components/FullWidthCTA";
 import { generateMetadata, getFullURL } from "src/utils/social";
-import Hero2 from "../components/RedesignedLanding/Hero";
+import Hero from "../components/RedesignedLanding/Hero";
 
 export const metadata: Metadata = generateMetadata({
   title: "AI and backend workflows, orchestrated at any scale",
@@ -26,7 +26,7 @@ export const metadata: Metadata = generateMetadata({
 export default function Page() {
   return (
     <div>
-      <Hero2 />
+      <Hero />
       <HeroScreenshot />
       <div className="my-32">
         <USPs />
