@@ -27,7 +27,6 @@ export default function GridBackground({
         height: "100%", // Match parent height
       }}
     >
-      {/* Default grid - visible on large screens */}
       <div
         className="hidden h-full w-full bg-stone-950 lg:block"
         style={{
@@ -36,7 +35,6 @@ export default function GridBackground({
         }}
       ></div>
 
-      {/* Medium grid - visible on md screens */}
       {typeof gridSize !== "string" && gridSize.md && (
         <div
           className="hidden h-full w-full bg-stone-950 md:block lg:hidden"
@@ -50,7 +48,6 @@ export default function GridBackground({
         ></div>
       )}
 
-      {/* Small grid - visible only on sm screens and smaller */}
       {typeof gridSize !== "string" && gridSize.sm && (
         <div
           className="block h-full w-full bg-stone-950 sm:block md:hidden"
