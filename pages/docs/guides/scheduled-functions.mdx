@@ -176,7 +176,7 @@ You can create scheduled functions that run in any timezone using the SDK's [`cr
 ```py
 from inngest import Inngest
 
-inngest_client = Inngest(id="signup-flow")
+inngest_client = Inngest(app_id="signup-flow")
 
 # This weekly digest function will run at 12:00pm on Friday in the Paris timezone
 @inngest_client.create_function(

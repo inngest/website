@@ -830,6 +830,10 @@ const sectionHome: (NavGroup | NavLink)[] = [
           },
           { title: "Integrations" },
           {
+            title: "Datadog",
+            href: "/docs/platform/monitor/datadog-integration",
+          },
+          {
             title: "Prometheus metrics",
             href: "/docs/platform/monitor/prometheus-metrics-export-integration",
           },
