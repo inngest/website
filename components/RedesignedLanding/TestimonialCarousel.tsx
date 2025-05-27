@@ -119,30 +119,38 @@ function highlightText(text: string, highlights: string[]) {
 
 const getRandomBackgroundSVG = (id: number) => {
   // Use the testimonial ID as seed for consistent randomization
-  const svgType = id % 2; // Alternates between 0 and 1
 
   // Card dimensions: h-80 = 320px height, variable width
-  // SVG original dimensions: 666w x 376h
-  // Calculate scale to fit card height: 320/376 ≈ 0.85
-  const baseScale = 320 / 376; // Scale to match card height
+  // SVG original dimensions: 1156w x 1156h (square)
+  // Calculate scale to fit card: 320/1156 ≈ 0.28
+  const baseScale = 320 / 1156; // Scale to match card height
 
+  // Define positions with balanced distribution across left and right
+  // Push positions further from center for more spacing
   const positions = [
-    { top: "-35%", right: "-40%", scale: baseScale * 1.3 },
-    { bottom: "-40%", left: "-35%", scale: baseScale * 1.2 },
-    { top: "-30%", left: "-45%", scale: baseScale * 1.4 },
-    { bottom: "-35%", right: "-40%", scale: baseScale * 1.1 },
-    { top: "-45%", right: "-30%", scale: baseScale * 1.3 },
-    { bottom: "-25%", left: "-50%", scale: baseScale * 1.2 },
+    { left: "10%", top: "25%", scale: baseScale * 3.2 }, // Left side - further left
+    { left: "90%", top: "25%", scale: baseScale * 3.5 }, // Right side - further right
+    { left: "15%", top: "75%", scale: baseScale * 2.9 }, // Left side - further left
+    { left: "85%", top: "75%", scale: baseScale * 3.3 }, // Right side - further right
+    { left: "20%", top: "15%", scale: baseScale * 3.1 }, // Left side - further left
+    { left: "80%", top: "85%", scale: baseScale * 3.4 }, // Right side - further right
+    { left: "5%", top: "50%", scale: baseScale * 3.0 }, // Left side - further left
+    { left: "95%", top: "50%", scale: baseScale * 3.2 }, // Right side - further right
+    { left: "15%", top: "35%", scale: baseScale * 3.1 }, // Left side - further left
+    { left: "85%", top: "65%", scale: baseScale * 3.3 }, // Right side - further right
+    { left: "25%", top: "80%", scale: baseScale * 3.0 }, // Left side - further left
+    { left: "75%", top: "20%", scale: baseScale * 3.2 }, // Right side - further right
   ];
 
   const position = positions[id % positions.length];
 
   return {
-    component: svgType === 0 ? CircleSVG : CircleSVG2,
+    component: FullCircleSVG,
     style: {
       position: "absolute" as const,
-      ...position,
-      transform: `scale(${position.scale})`,
+      left: position.left,
+      top: position.top,
+      transform: `scale(${position.scale}) translate(-50%, -50%)`,
       opacity: 0.15,
       zIndex: 0,
     },
@@ -279,34 +287,17 @@ export default function TestimonialsCarousel() {
   );
 }
 
-function CircleSVG() {
+function FullCircleSVG() {
   return (
     <svg
-      width="666"
-      height="376"
-      viewBox="0 0 666 376"
+      width="1156"
+      height="1156"
+      viewBox="0 0 1156 1156"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
       <path
-        d="M685.617 332.977C685.617 651.874 427.1 910.391 108.203 910.391C-210.694 910.391 -469.211 651.874 -469.211 332.977C-469.211 14.0796 -210.694 -244.438 108.203 -244.438C427.1 -244.438 685.617 14.0796 685.617 332.977ZM-124.537 332.977C-124.537 461.515 -20.3357 565.717 108.203 565.717C236.742 565.717 340.943 461.515 340.943 332.977C340.943 204.438 236.742 100.236 108.203 100.236C-20.3357 100.236 -124.537 204.438 -124.537 332.977Z"
-        fill="#44403c"
-      />
-    </svg>
-  );
-}
-
-function CircleSVG2() {
-  return (
-    <svg
-      width="666"
-      height="376"
-      viewBox="0 0 666 376"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M1186.44 399.299C1186.44 727.771 920.163 994.051 591.69 994.051C263.218 994.051 -3.06152 727.771 -3.06152 399.299C-3.06152 70.8264 263.218 -195.453 591.69 -195.453C920.163 -195.453 1186.44 70.8264 1186.44 399.299ZM320.136 399.299C320.136 549.274 441.715 670.853 591.69 670.853C741.666 670.853 863.245 549.274 863.245 399.299C863.245 249.323 741.666 127.744 591.90 127.744C441.715 127.744 320.136 249.323 320.136 399.299Z"
+        d="M1155.62 577.977C1155.62 896.874 897.1 1155.39 578.203 1155.39C259.306 1155.39 0.789062 896.874 0.789062 577.977C0.789062 259.08 259.306 0.5625 578.203 0.5625C897.1 0.5625 1155.62 259.08 1155.62 577.977ZM345.463 577.977C345.463 706.515 449.664 810.717 578.203 810.717C706.742 810.717 810.943 706.515 810.943 577.977C810.943 449.438 706.742 345.236 578.203 345.236C449.664 345.236 345.463 449.438 345.463 577.977Z"
         fill="#44403c"
       />
     </svg>
