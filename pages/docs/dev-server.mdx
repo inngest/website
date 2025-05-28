@@ -215,3 +215,17 @@ npx inngest-cli@latest dev --no-discovery -u http://localhost:3000/api/inngest
 ```
 </CodeGroup>
 
+## Flags 
+
+`inngest-cli dev` command supports the following flags:
+
+| **Long form**  | **Short form** | **Type** | **Default value**                 | **Description**                       |
+|:--------------:|:--------------:|:--------:|:---------------------------------:|:-------------------------------------:|
+| --config       | -              | string   | -                                 | Path to an Inngest configuration file |
+| --help         | -h             | -        | -                                 | Output the help information           |
+| --host         | -              | string   | http://localhost                  | Inngest server host                   |
+| --no-discovery | -              | boolean  | false                             | Disable app auto-discovery            |
+| --no-poll      | -              | boolean  | false                             | Disable polling of apps for updates   |
+| --port         | -p             | int      | 8288                              | Inngest server port                   |
+| --sdk-url      | -u             | strings  | http://localhost:3000/api/inngest | App serve URLs to sync                |
+
