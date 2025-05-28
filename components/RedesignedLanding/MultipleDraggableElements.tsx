@@ -20,7 +20,6 @@ interface DraggableImageConfig {
     md: Position;
     sm: Position;
   };
-  glowColor: string;
 }
 
 const DRAGGABLE_IMAGE_CONFIGS: DraggableImageConfig[] = [
@@ -33,7 +32,6 @@ const DRAGGABLE_IMAGE_CONFIGS: DraggableImageConfig[] = [
       md: { x: 200, y: 100 },
       sm: { x: 60, y: 30 },
     },
-    glowColor: "bg-emerald-500/30",
   },
   {
     src: "/draggable/draggable2.png",
@@ -44,7 +42,6 @@ const DRAGGABLE_IMAGE_CONFIGS: DraggableImageConfig[] = [
       md: { x: 400, y: 100 },
       sm: { x: 240, y: 60 },
     },
-    glowColor: "bg-inngest-lux/30",
   },
   {
     src: "/draggable/draggable3.png",
@@ -56,7 +53,6 @@ const DRAGGABLE_IMAGE_CONFIGS: DraggableImageConfig[] = [
       md: { x: 700, y: 400 },
       sm: { x: 390, y: 450 },
     },
-    glowColor: "bg-emerald-500/30",
   },
   {
     src: "/draggable/draggable4.png",
@@ -68,7 +64,6 @@ const DRAGGABLE_IMAGE_CONFIGS: DraggableImageConfig[] = [
       md: { x: 750, y: 200 },
       sm: { x: 330, y: 300 },
     },
-    glowColor: "bg-emerald-500/30",
   },
   {
     src: "/draggable/draggable5.png",
@@ -79,7 +74,6 @@ const DRAGGABLE_IMAGE_CONFIGS: DraggableImageConfig[] = [
       md: { x: 50, y: 250 },
       sm: { x: 30, y: 150 },
     },
-    glowColor: "bg-inngest-lux/30",
   },
   {
     src: "/draggable/draggable6.png",
@@ -90,7 +84,6 @@ const DRAGGABLE_IMAGE_CONFIGS: DraggableImageConfig[] = [
       md: { x: 250, y: 300 },
       sm: { x: 60, y: 300 },
     },
-    glowColor: "bg-emerald-500/30",
   },
   {
     src: "/draggable/draggable7.png",
@@ -102,7 +95,6 @@ const DRAGGABLE_IMAGE_CONFIGS: DraggableImageConfig[] = [
       md: { x: 350, y: 400 },
       sm: { x: 30, y: 540 },
     },
-    glowColor: "bg-emerald-500/30",
   },
   {
     src: "/draggable/draggable8.png",
@@ -113,7 +105,6 @@ const DRAGGABLE_IMAGE_CONFIGS: DraggableImageConfig[] = [
       md: { x: 650, y: 100 },
       sm: { x: 360, y: 120 },
     },
-    glowColor: "bg-inngest-lux/30",
   },
 ];
 
@@ -223,7 +214,6 @@ export function MultipleDraggableElements() {
             }}
             gridSize={currentGridSize}
             id={`draggable-element-${index}`}
-            glowColor={imageConfig.glowColor}
             scale={scaleFactor}
           />
         );
