@@ -14,7 +14,6 @@ interface DraggableElementProps {
   gridSize?: number;
   imageSrc?: string;
   id?: string;
-  glowColor?: string;
   scale?: number;
 }
 
@@ -23,7 +22,6 @@ export function DraggableElement({
   gridSize = 75,
   imageSrc = "/draggable/draggable.png",
   id = "draggable",
-  glowColor = "bg-inngest-lux/30",
   scale = 1,
 }: DraggableElementProps) {
   const [currentPosition, setCurrentPosition] = useState({
@@ -88,7 +86,6 @@ export function DraggableElement({
         isDragging={isDragging}
         imageSrc={imageSrc}
         id={id}
-        glowColor={glowColor}
         elementSize={elementSize}
         scale={scale}
       />
@@ -101,7 +98,6 @@ interface DraggableItemProps {
   isDragging: boolean;
   imageSrc?: string;
   id: string;
-  glowColor: string;
   elementSize: number;
   scale?: number;
 }
@@ -111,7 +107,6 @@ function DraggableItem({
   isDragging,
   imageSrc,
   id,
-  glowColor,
   elementSize,
   scale = 1,
 }: DraggableItemProps) {
@@ -150,7 +145,7 @@ function DraggableItem({
         } relative flex h-full w-full items-center justify-center transition-transform duration-100`}
       >
         <div
-          className={`absolute inset-0 -z-10 ${glowColor} rounded-full blur-xl`}
+          className={`absolute inset-0 -z-10 rounded-full blur-xl`}
         />
         <Image
           src={imageSrc || "/draggable/draggable.png"}
