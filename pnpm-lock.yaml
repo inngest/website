@@ -138,7 +138,7 @@ importers:
         version: 5.0.0(@types/react@19.1.2)(acorn@8.14.0)(react@19.0.0)
       next-sitemap:
         specifier: 3.1.44
-        version: 3.1.44(@next/env@15.3.2)(next@15.3.2(react-dom@19.0.0(react@19.0.0))(react@19.0.0))
+        version: 3.1.44(@next/env@15.3.2)(next@15.3.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0))
       react:
         specifier: 19.0.0
         version: 19.0.0
@@ -649,6 +649,9 @@ packages:
 
   '@motionone/utils@10.15.1':
     resolution: {integrity: sha512-p0YncgU+iklvYr/Dq4NobTRdAPv9PveRDUXabPEeOjBLSO/1FNB2phNTZxOxpi1/GZwYpAoECEa0Wam+nsmhSw==}
+
+  '@next/env@15.3.2':
+    resolution: {integrity: sha512-xURk++7P7qR9JG1jJtLzPzf0qEvqCN0A/T3DXf8IPMKo9/6FfjxtEffRJIIew/bIL4T3C2jLLqBor8B/zVlx6g==}
 
   '@next/env@15.3.2':
     resolution: {integrity: sha512-xURk++7P7qR9JG1jJtLzPzf0qEvqCN0A/T3DXf8IPMKo9/6FfjxtEffRJIIew/bIL4T3C2jLLqBor8B/zVlx6g==}
@@ -5841,6 +5844,8 @@ snapshots:
 
   '@next/env@15.3.2': {}
 
+  '@next/env@15.3.2': {}
+
   '@next/eslint-plugin-next@15.1.6':
     dependencies:
       fast-glob: 3.3.1
@@ -9650,7 +9655,7 @@ snapshots:
       - acorn
       - supports-color
 
-  next-sitemap@3.1.44(@next/env@15.3.2)(next@15.3.2(react-dom@19.0.0(react@19.0.0))(react@19.0.0)):
+  next-sitemap@3.1.44(@next/env@15.3.2)(next@15.3.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0)):
     dependencies:
       '@corex/deepmerge': 4.0.29
       '@next/env': 15.3.2
