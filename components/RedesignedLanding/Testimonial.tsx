@@ -1,10 +1,12 @@
 import { Card } from "./Card";
 import Image from "next/image";
+import GridBackground from "./GridBackground";
 
 export default function Testimonial() {
   return (
     <div className="relative z-50 mx-auto w-full px-4 py-32 sm:px-8 md:px-12 lg:px-16 xl:max-w-6xl">
-      <Card className="overflow-hidden rounded-none border-0 border-stone-800 bg-stone-900">
+      <GridBackground />
+      <Card className="relative z-10 overflow-hidden rounded-none border-0 border-stone-800 bg-stone-900">
         <div className="flex flex-col sm:flex-row">
           <div className="flex w-full items-center justify-center lg:w-1/2 ">
             <div className="flex h-32 w-full flex-row border-0 sm:h-full sm:w-full">
