@@ -1,50 +1,63 @@
-import { Card } from "./Card";
 import Image from "next/image";
 import GridBackground from "./GridBackground";
 
 export default function Testimonial() {
   return (
-    <div className="relative z-50 mx-auto w-full px-4 py-32 sm:px-8 md:px-12 lg:px-16 xl:max-w-6xl">
+    <section className="isolate overflow-hidden  px-6 lg:px-8">
       <GridBackground />
-      <Card className="relative z-10 overflow-hidden rounded-none border-0 border-stone-800 bg-stone-900">
-        <div className="flex flex-col sm:flex-row">
-          <div className="flex w-full items-center justify-center lg:w-1/2 ">
-            <div className="relative flex h-32 w-full flex-row border-0 sm:h-full sm:w-full">
+      <div className="relative mx-auto max-w-2xl py-24 sm:py-32 lg:max-w-5xl">
+        <figure className="relative z-10 grid grid-cols-1 items-center gap-x-6 bg-stone-900 lg:gap-x-10 lg:pr-8">
+          <div className="relative order-2 col-span-1 p-4 sm:p-6 lg:order-none lg:col-span-2 lg:col-start-1 lg:row-start-2 lg:p-0">
+            <blockquote className="font-whyteInktrap text-base font-normal text-stone-50 sm:text-lg">
+              <p>
+                "The DX and visibility with Inngest is really incredible. We are
+                able to develop functions locally easier and faster that with
+                our previous queue. Also, Inngest's tools give us the visibility
+                to debug issues much quicker than before."{" "}
+              </p>
+            </blockquote>
+          </div>
+          <div className="order-1 col-span-1 h-40 w-full border-none lg:order-none lg:col-end-1 lg:row-span-4 lg:h-auto lg:w-72">
+            <div className="relative h-full w-full">
               <Image
+                width={640}
+                height={160}
+                src="/image2.png"
+                alt=""
+                className="h-full w-full rounded-none object-cover object-bottom lg:hidden"
+              />
+              <Image
+                width={288}
+                height={287.23}
                 src="/image.png"
-                alt="Pattern"
-                fill
-                className="object-cover"
+                alt=""
+                className="hidden lg:block"
               />
             </div>
           </div>
-
-          <div className="flex w-full flex-col justify-center p-6 sm:p-8 md:p-10 xl:p-12">
-            <blockquote className="mb-8 font-whyte text-lg font-normal leading-[2.4rem] text-stone-50 lg:mb-12 xl:text-xl 2xl:text-2xl">
-              "The DX and visibility with Inngest is really incredible. We are
-              able to develop functions locally easier and faster that with our
-              previous queue. Also, Inngest's tools give us the visibility to
-              debug issues much quicker than before."
-            </blockquote>
-
-            <div className="flex items-center gap-4">
+          <figcaption className="order-3 px-4 pb-4 pt-6 text-base sm:px-6 sm:pb-6 lg:order-none lg:col-start-1 lg:row-start-3 lg:px-0 lg:pb-0">
+            <div className="flex items-center gap-3 sm:gap-4">
               <Image
                 src="/assets/customers/resend.svg"
                 alt="Resend"
                 title="Resend"
-                width={96}
-                height={24}
-                className="width-auto opacity-90"
+                width={80}
+                height={20}
+                className="width-auto opacity-90 sm:h-6 sm:w-24"
               />
-              <div className="h-8 w-px bg-stone-600"></div>
-              <div className="text-stone-50">
-                <div className="font-medium">Bu Kinoshita</div>
-                <div className="font-stone-400 text-sm">Co-founder</div>
+              <div className="h-6 w-px bg-stone-600 sm:h-8"></div>
+              <div className="font-circular text-stone-50">
+                <div className=" text-sm font-normal sm:text-lg">
+                  Bu Kinoshita
+                </div>
+                <div className="font-stone-400 text-base sm:text-sm">
+                  Co-founder
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-      </Card>
-    </div>
+          </figcaption>
+        </figure>
+      </div>
+    </section>
   );
 }
