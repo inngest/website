@@ -93,7 +93,7 @@ export default function TrustFeaturesSection() {
 function BackgroundPattern() {
   return (
     <svg
-      className=" h-full w-full object-cover"
+      className=" mx-auto h-full w-full max-w-screen-2xl object-cover"
       viewBox="0 0 1726 596"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
