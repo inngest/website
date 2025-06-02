@@ -169,7 +169,7 @@ export function MultipleDraggableElements() {
   }
 
   return (
-    <>
+    <div className="absolute inset-0 left-1/2 right-1/2 z-10 -ml-[50vw] -mr-[50vw] h-full w-screen">
       {DRAGGABLE_IMAGE_CONFIGS.map((imageConfig, index) => {
         const scaleFactor = calculateScaleFactor();
 
@@ -218,6 +218,6 @@ export function MultipleDraggableElements() {
           />
         );
       })}
-    </>
+    </div>
   );
 }
