@@ -1,3 +1,5 @@
+import GridBackground from "./GridBackground";
+
 export default function TrustFeaturesSection() {
   const features = [
     {
@@ -32,9 +34,13 @@ export default function TrustFeaturesSection() {
   ];
 
   return (
-    <section className="relative flex min-h-[500px] items-end justify-center overflow-hidden bg-stone-900 text-stone-50 md:min-h-[600px] lg:min-h-[500px]">
-      <div className="absolute inset-0 z-0">
-        <BackgroundPattern />
+    <section className="relative flex min-h-[500px] items-end justify-center overflow-hidden text-stone-50 md:min-h-[600px] lg:min-h-[500px]">
+      <GridBackground className="!bg-stone-950" />
+
+      <div className="absolute inset-0 z-0 flex justify-center">
+        <div className="w-full max-w-screen-2xl bg-stone-900">
+          <BackgroundPattern />
+        </div>
       </div>
 
       <div className="relative z-10 w-full">
