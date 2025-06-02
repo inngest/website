@@ -129,7 +129,7 @@ importers:
         version: 5.0.0(@types/react@19.1.2)(acorn@8.14.0)(react@19.0.0)
       next-sitemap:
         specifier: 3.1.44
-        version: 3.1.44(@next/env@15.3.1)(next@15.3.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0))
+        version: 3.1.44(@next/env@15.3.2)(next@15.3.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0))
       react:
         specifier: 19.0.0
         version: 19.0.0
@@ -627,6 +627,9 @@ packages:
 
   '@next/env@15.3.1':
     resolution: {integrity: sha512-cwK27QdzrMblHSn9DZRV+DQscHXRuJv6MydlJRpFSqJWZrTYMLzKDeyueJNN9MGd8NNiUKzDQADAf+dMLXX7YQ==}
+
+  '@next/env@15.3.2':
+    resolution: {integrity: sha512-xURk++7P7qR9JG1jJtLzPzf0qEvqCN0A/T3DXf8IPMKo9/6FfjxtEffRJIIew/bIL4T3C2jLLqBor8B/zVlx6g==}
 
   '@next/eslint-plugin-next@15.1.6':
     resolution: {integrity: sha512-+slMxhTgILUntZDGNgsKEYHUvpn72WP1YTlkmEhS51vnVd7S9jEEy0n9YAMcI21vUG4akTw9voWH02lrClt/yw==}
@@ -5518,6 +5521,8 @@ snapshots:
 
   '@next/env@15.3.1': {}
 
+  '@next/env@15.3.2': {}
+
   '@next/eslint-plugin-next@15.1.6':
     dependencies:
       fast-glob: 3.3.1
@@ -9134,10 +9139,10 @@ snapshots:
       - acorn
       - supports-color
 
-  next-sitemap@3.1.44(@next/env@15.3.1)(next@15.3.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0)):
+  next-sitemap@3.1.44(@next/env@15.3.2)(next@15.3.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0)):
     dependencies:
       '@corex/deepmerge': 4.0.29
-      '@next/env': 15.3.1
+      '@next/env': 15.3.2
       minimist: 1.2.7
       next: 15.3.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
 
