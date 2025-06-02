@@ -111,7 +111,7 @@ function highlightText(text: string, highlights: string[]) {
     const regex = new RegExp(`(${highlight})`, "gi");
     highlightedText = highlightedText.replace(
       regex,
-      '<span class="bg-inngestLux text-stone-900 px-1 rounded">$1</span>'
+      '<span class="bg-inngestLux text-stone-900 px-1 rounded whitespace-nowrap">$1</span>'
     );
   });
   return highlightedText;
