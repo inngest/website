@@ -1,5 +1,11 @@
 "use client";
-import { useEffect, useState, useRef, useMemo, useCallback } from "react";
+import React, {
+  useEffect,
+  useState,
+  useRef,
+  useMemo,
+  useCallback,
+} from "react";
 
 const INNGEST_LUX = "#78716C";
 
@@ -16,8 +22,10 @@ export default function FooterCTABackground() {
 
   useEffect(() => {
     patternRefs.current = Array(PATTERN_COUNT).fill(null);
+
     if (containerRef.current) {
-      parentSectionRef.current = containerRef.current.closest("section");
+      const section = containerRef.current.closest("section");
+      parentSectionRef.current = section;
     }
   }, []);
 
@@ -35,16 +43,19 @@ export default function FooterCTABackground() {
 
       if (section) {
         const rect = section.getBoundingClientRect();
-        setMousePosition({
+        const newPosition = {
           x: event.clientX - rect.left,
           y: event.clientY - rect.top,
-        });
+        };
+
+        setMousePosition(newPosition);
       }
     });
   }, []);
 
   useEffect(() => {
     document.addEventListener("mousemove", handleMouseMove);
+
     return () => {
       document.removeEventListener("mousemove", handleMouseMove);
       if (rafRef.current) {
@@ -55,32 +66,44 @@ export default function FooterCTABackground() {
 
   const isInViewport = useCallback((element: HTMLElement) => {
     const rect = element.getBoundingClientRect();
-    return (
-      rect.top <=
-        (window.innerHeight || document.documentElement.clientHeight) &&
-      rect.bottom >= 0
-    );
+    const windowHeight =
+      window.innerHeight || document.documentElement.clientHeight;
+    const inView = rect.top <= windowHeight && rect.bottom >= 0;
+
+    return inView;
   }, []);
 
-  const setPatternRef = (index: number) => (el: HTMLDivElement | null) => {
-    patternRefs.current[index] = el;
-  };
+  const setPatternRef = useCallback(
+    (index: number) => (el: HTMLDivElement | null) => {
+      patternRefs.current[index] = el;
+    },
+    []
+  );
+
+  const patterns = useMemo(() => {
+    return Array.from({ length: PATTERN_COUNT }).map((_, i) => ({
+      id: `pattern-${i}`,
+      index: i,
+      key: i,
+    }));
+  }, []);
 
   return (
     <div ref={containerRef} className="absolute inset-0 z-0">
       <div className="grid grid-cols-10 grid-rows-10 gap-y-2">
-        {Array.from({ length: PATTERN_COUNT }).map((_, i) => (
+        {patterns.map((pattern) => (
           <div
-            key={i}
-            ref={setPatternRef(i)}
+            key={pattern.key}
+            ref={setPatternRef(pattern.index)}
             className="relative flex items-center justify-center"
           >
             <BackgroundPattern
-              id={`pattern-${i}`}
+              id={pattern.id}
               mousePosition={mousePosition}
-              patternRef={patternRefs.current[i]}
+              patternRef={patternRefs.current[pattern.index]}
               parentSection={parentSectionRef.current}
               isInViewport={isInViewport}
+              index={pattern.index}
             />
           </div>
         ))}
@@ -95,14 +118,16 @@ type BackgroundPatternProps = {
   patternRef: HTMLDivElement | null;
   parentSection: HTMLElement | null;
   isInViewport: (element: HTMLElement) => boolean;
+  index: number;
 };
 
-function BackgroundPattern({
+const BackgroundPattern = React.memo(function BackgroundPattern({
   id,
   mousePosition,
   patternRef,
   parentSection,
   isInViewport,
+  index,
 }: BackgroundPatternProps) {
   const inViewport = useMemo(() => {
     if (!patternRef) return false;
@@ -129,6 +154,7 @@ function BackgroundPattern({
 
   const color = useMemo(() => {
     if (!inViewport) return "#57534E";
+
     const normalizedAngle = ((angle % 360) + 360) % 360;
 
     const r = parseInt(INNGEST_LUX.slice(1, 3), 16);
@@ -169,4 +195,4 @@ function BackgroundPattern({
       </g>
     </svg>
   );
-}
+});
