@@ -2,7 +2,7 @@
 
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   Popover,
   PopoverTrigger,
@@ -92,13 +92,20 @@ export const platformDropdown = [
 
 export default function PlatformPopover() {
   const [isOpen, setIsOpen] = useState(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleMouseEnter = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
     setIsOpen(true);
   };
 
   const handleMouseLeave = () => {
-    setIsOpen(false);
+    timeoutRef.current = setTimeout(() => {
+      setIsOpen(false);
+    }, 100);
   };
 
   return (
