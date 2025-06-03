@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "./Card";
 
 export default function OrchestrationSection() {
   return (
-    <section className="relative flex items-center bg-stone-900 text-white">
+    <section className="relative flex items-center bg-stone-900 py-16 text-white md:py-24">
       <div className="absolute left-0 top-0 h-32 w-32 opacity-5">
         {[...Array(4)].map((_, i) => (
           <div key={i} className="grid grid-cols-2 gap-px">
