@@ -110,7 +110,7 @@ function WorkflowsCard() {
 
           <div className="space-y-3 sm:space-y-4 lg:space-y-6">
             <div className="flex items-start space-x-2 sm:items-center sm:space-x-4">
-              <div className="flex-shrink-0">
+              <div className="flex flex-shrink-0 flex-col items-center">
                 <div className="scale-50 sm:scale-75 lg:scale-100">
                   <WorkflowIcon />
                 </div>
@@ -119,14 +119,53 @@ function WorkflowsCard() {
                 </p>
               </div>
               <div className="relative flex-grow space-y-2 sm:space-y-3 lg:space-y-4">
-                <div className="absolute bottom-0 left-2 top-0 hidden w-0.5 bg-stone-600 lg:left-3.5 lg:block"></div>
+                <div className="absolute bottom-0 left-[7px] top-0 hidden lg:left-[13px] lg:block">
+                  <svg
+                    width="16"
+                    height="100%"
+                    viewBox="0 0 16 100"
+                    className="h-full w-4"
+                    preserveAspectRatio="none"
+                  >
+                    {/* Top horizontal line */}
+                    <line
+                      x1="1"
+                      y1="0"
+                      x2="9"
+                      y2="0"
+                      stroke="#78716c"
+                      strokeWidth="2"
+                      vectorEffect="non-scaling-stroke"
+                    />
+                    {/* Vertical line */}
+                    <line
+                      x1="1"
+                      y1="0"
+                      x2="1"
+                      y2="100"
+                      stroke="#78716c"
+                      strokeWidth="2"
+                      vectorEffect="non-scaling-stroke"
+                    />
+                    {/* Bottom horizontal line */}
+                    <line
+                      x1="1"
+                      y1="100"
+                      x2="9"
+                      y2="100"
+                      stroke="#78716c"
+                      strokeWidth="2"
+                      vectorEffect="non-scaling-stroke"
+                    />
+                  </svg>
+                </div>
 
                 {workflowSteps.map((step, index) => (
                   <div
                     key={index}
                     className="relative flex items-start space-x-2 pl-0 sm:items-center sm:space-x-3 lg:pl-8"
                   >
-                    <div className="bg-custom-card-dark absolute left-0 top-3 z-10 -translate-y-1/2 rounded-full p-0.5 lg:left-3.5 lg:top-1/2 lg:-translate-x-1/2">
+                    <div className="absolute left-2 top-3 z-10 -translate-x-1/2 -translate-y-1/2 rounded-full p-0.5 lg:left-3.5 lg:top-1/2">
                       <div className="flex h-4 w-4 items-center justify-center rounded-full border border-stone-600 bg-stone-950 font-mono text-xs text-stone-50 sm:h-5 sm:w-5 lg:h-7 lg:w-7">
                         {step.num}
                       </div>
