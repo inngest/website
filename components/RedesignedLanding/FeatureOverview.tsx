@@ -78,8 +78,10 @@ function WorkflowsCard() {
   ];
 
   return (
-    <div className="border-2 border-stone-800 bg-gradient-to-br from-[#CD9FFE] via-stone-900 to-stone-900 p-3 shadow-xl sm:p-6">
-      <Card className="w-full overflow-hidden rounded-none border-none bg-stone-800 shadow-2xl">
+    <div className="relative overflow-hidden border-2 border-stone-800 bg-stone-900 p-3 shadow-xl sm:p-6">
+      <div className="pointer-events-none absolute -left-3/4 -top-3/4 h-[150%] w-[150%] rounded-full bg-[#655279]" />
+
+      <Card className="relative w-full overflow-hidden rounded-none border-none bg-stone-800 shadow-2xl">
         <div className="h-1.5"></div>
         <CardHeader className="p-3 sm:p-4 lg:p-6">
           <CardTitle className="text-lg font-light text-stone-50 sm:text-xl lg:text-2xl xl:text-3xl">
@@ -170,7 +172,7 @@ function WorkflowsCard() {
                         {step.num}
                       </div>
                     </div>
-                    <div className="flex-shrink-0 rounded-lg bg-[#655279] p-1.5 font-circular text-xs shadow-md sm:p-2 lg:p-3">
+                    <div className="flex-shrink-0  bg-[#655279] p-1.5 font-circular text-xs shadow-md sm:p-2 lg:p-3">
                       <code className="text-xs text-stone-50">{step.text}</code>
                     </div>
                     <div className="flex-grow flex-col items-center pt-2 lg:flex lg:pt-4">
@@ -200,9 +202,11 @@ function WorkflowsCard() {
 
 function AgentsCard() {
   return (
-    <div className="border-2 border-stone-800 bg-gradient-to-tl from-inngestLux via-stone-900 to-stone-900 p-3 shadow-xl sm:p-6">
-      <div className="p-1">
-        <div className="relative h-full overflow-hidden rounded-lg bg-stone-800 p-4 sm:p-6 lg:p-8">
+    <div className="relative overflow-hidden border-2 border-stone-800 bg-stone-900 p-3 shadow-xl sm:p-6">
+      <div className="pointer-events-none absolute -bottom-3/4 -right-3/4 h-[150%] w-[150%] rounded-full bg-inngestLux" />
+
+      <div className="h-full p-1">
+        <div className="relative h-full overflow-hidden  bg-stone-800 p-4 sm:p-6 lg:p-8">
           <div className="pointer-events-none absolute -right-1/3 -top-1/2 h-2/3 w-2/3 rounded-full bg-yellow-500/70 opacity-15 blur-[120px]" />
 
           <h3 className="relative z-10 mb-2 font-whyte text-xl font-light text-stone-50 sm:mb-3 sm:text-2xl lg:text-3xl">
