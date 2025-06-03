@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "./Card";
 
 export default function OrchestrationSection() {
   return (
-    <section className="relative bg-stone-900 py-16 text-white md:py-24">
+    <section className="relative flex items-center bg-stone-900 text-white">
       <div className="absolute left-0 top-0 h-32 w-32 opacity-5">
         {[...Array(4)].map((_, i) => (
           <div key={i} className="grid grid-cols-2 gap-px">
@@ -136,13 +136,10 @@ function WorkflowsCard() {
                     </div>
                     <div className="flex-grow flex-col items-center pt-2 lg:flex lg:pt-4">
                       <div className="relative flex w-full flex-grow items-center">
-                        <div
-                          className={`absolute ${step.dotPosition} -translate-x-1/2`}
-                        >
-                          <GlowSquare />
-                        </div>
-                        <div className="h-0.5 w-full bg-[#78716c]" />
-                        <ArrowRight className="absolute right-0 h-3 w-3 text-[#78716c] sm:h-4 sm:w-4" />
+                        <ArrowLine
+                          dotPosition={step.dotPosition}
+                          label={step.label}
+                        />
                       </div>
                       <span className="mt-1 whitespace-nowrap font-circular text-sm text-stone-100 sm:mt-2">
                         {step.label}
@@ -446,5 +443,51 @@ function UsersSVG() {
         fill="#D6D3D1"
       />
     </svg>
+  );
+}
+
+function ArrowLine({
+  dotPosition,
+  label,
+}: {
+  dotPosition: string;
+  label: string;
+}) {
+  const isStreaming = label === "streaming";
+
+  return (
+    <div className="relative h-2 w-full">
+      <svg
+        width="100%"
+        height="8"
+        viewBox="0 0 300 8"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="absolute inset-0"
+      >
+        {/* Main horizontal line */}
+        <line
+          x1={isStreaming ? "0" : "12"}
+          y1="4"
+          x2="288"
+          y2="4"
+          stroke="#78716c"
+          strokeWidth="2"
+        />
+
+        {/* Left arrow pointing outward (left) - only render if not streaming */}
+        {!isStreaming && <path d="M4 4 L12 1 L12 7 Z" fill="#78716c" />}
+
+        {/* Right arrow pointing outward (right) */}
+        <path d="M296 4 L288 1 L288 7 Z" fill="#78716c" />
+      </svg>
+
+      {/* Glow square at the specified position */}
+      <div
+        className={`absolute ${dotPosition} top-1/2 -translate-x-1/2 -translate-y-1/2`}
+      >
+        <GlowSquare />
+      </div>
+    </div>
   );
 }
