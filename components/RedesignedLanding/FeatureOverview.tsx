@@ -460,29 +460,27 @@ function ArrowLine({
       <svg
         width="100%"
         height="8"
-        viewBox="0 0 300 8"
+        viewBox="0 0 100 8"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         className="absolute inset-0"
+        preserveAspectRatio="none"
       >
-        {/* Main horizontal line */}
         <line
-          x1={isStreaming ? "0" : "12"}
+          x1={isStreaming ? "0" : "4"}
           y1="4"
-          x2="288"
+          x2="96"
           y2="4"
           stroke="#78716c"
           strokeWidth="2"
+          vectorEffect="non-scaling-stroke"
         />
 
-        {/* Left arrow pointing outward (left) - only render if not streaming */}
-        {!isStreaming && <path d="M4 4 L12 1 L12 7 Z" fill="#78716c" />}
+        {!isStreaming && <path d="M1 4 L4 1 L4 7 Z" fill="#78716c" />}
 
-        {/* Right arrow pointing outward (right) */}
-        <path d="M296 4 L288 1 L288 7 Z" fill="#78716c" />
+        <path d="M99 4 L96 1 L96 7 Z" fill="#78716c" />
       </svg>
 
-      {/* Glow square at the specified position */}
       <div
         className={`absolute ${dotPosition} top-1/2 -translate-x-1/2 -translate-y-1/2`}
       >
