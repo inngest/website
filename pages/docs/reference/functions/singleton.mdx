@@ -40,31 +40,30 @@ export default inngest.createFunction(
         * Ensure exclusive execution of a function per customer ID: `'event.data.customer_id'`
         * Ensure exclusive execution of a function per account and email address: `'event.data.account_id + "-" + event.user.email'`
       </Property>
-      <Property name="mode" type="string" required>
+      <Property name="mode" type="string">
         The mode to use for the singleton function:
 
         * `"skip"`: Skip the new run.
-        * `"cancel"`: Cancel the existing run and start the new one.
+        {/* * `"cancel"`: Cancel the existing run and start the new one. */}
       </Property>
     </Properties>
   </Property>
 </Properties>
 
-## Examples
+{/* ## Examples
 
 ### Ensure executing only upon the latest event
 
 In this example, the active run of our `data-sync` function will be cancelled if another event with the same `user_id` is received:
 
 ```ts
-/** Example event payload:
-{
-  name: "data-sync.start",
-  data: {
-    user_id: "123456789",
-  }
-}
-*/
+// Example event payload:
+// {
+//   name: "data-sync.start",
+//   data: {
+//     user_id: "123456789",
+//   }
+// }
 export default inngest.createFunction(
   {
     id: "data-sync",
@@ -91,4 +90,4 @@ export default inngest.createFunction(
 
 While similar to [Debounce](/docs/guides/debounce), Singleton Functions are designed to ensure that only a single run of a function is happening at a time, whereas Debounce ensures that only a single event is processed within a given time window.
 
-Refer to the [Singleton Functions guide](/docs/guides/singleton) for more information about how this feature works.
+Refer to the [Singleton Functions guide](/docs/guides/singleton) for more information about how this feature works. */}

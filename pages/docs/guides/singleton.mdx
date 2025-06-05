@@ -51,7 +51,6 @@ const dataSync = inngest.createFunction({
     id: "data-sync",
     singleton: {
       key: "event.data.user_id",
-      mode: "skip",
     }  
   },
   { event: "data-sync.start" },
@@ -64,14 +63,14 @@ const dataSync = inngest.createFunction({
 Refer to the [reference documentation](/docs/reference/functions/singleton) for more details.
 
 
-### Two modes: Skip vs Cancel
+{/* ### Two modes: Skip vs Cancel
 
 Singleton Functions can be configured to either skip the new run or cancel the existing run and start a new one.
 
 The `mode` property configures the behavior of the Singleton Function.
 
 - `"skip"` skips the new run.
-- `"cancel"` cancels the existing run and starts the new one.
+- `"cancel"` cancels the existing run and starts the new one. */}
 
 
 ## Compatibility with other flow control features
