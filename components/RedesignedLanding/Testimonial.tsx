@@ -1,10 +1,8 @@
 import Image from "next/image";
-import GridBackground from "./GridBackground";
 
 export default function Testimonial() {
   return (
-    <section className="relative isolate overflow-hidden px-6 lg:px-8">
-      <GridBackground />
+    <section className="relative isolate overflow-hidden bg-stone-950 px-6 lg:px-8">
       <div className="relative mx-auto max-w-2xl py-24 sm:py-32 lg:max-w-5xl">
         <figure className="relative z-10 grid grid-cols-1 items-center gap-x-6 bg-stone-900 lg:gap-x-10 lg:pr-8">
           <div className="relative order-2 col-span-1 p-4 sm:p-6 lg:order-none lg:col-span-2 lg:col-start-1 lg:row-start-2 lg:p-0">
