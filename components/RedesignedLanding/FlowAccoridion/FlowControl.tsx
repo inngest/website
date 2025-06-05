@@ -22,7 +22,7 @@ export default function FlowAccordion() {
   const initialOpenItem = "item-1";
   const [openItemValue, setOpenItemValue] = useState<string>(initialOpenItem);
 
-  // Toggle state for fairness section
+  // Toggle state for 'with Inngest' vs 'without Inngest' modes
   const [mode, setMode] = useState("with-inngest");
 
   // Handler to update the state when an accordion item is opened or closed
@@ -57,60 +57,55 @@ export default function FlowAccordion() {
     <>
       <div className="relative z-10 mx-auto my-20 flex max-w-7xl flex-col gap-8 bg-stone-950 p-8 lg:flex-row lg:items-start xl:gap-12">
         <div className="overflow-hidden text-gray-100 lg:flex-[3]">
-          {openItemValue === "item-1" && (
-            <>
-              <div className="mb-4 flex justify-center">
-                <ToggleGroup
-                  type="single"
-                  defaultValue="with-inngest"
-                  value={mode}
-                  onValueChange={(value) => {
-                    if (value) setMode(value);
-                  }}
-                  className="rounded-full bg-neutral-800 p-1"
-                >
-                  <ToggleGroupItem
-                    value="with-inngest"
-                    className="px-4 py-1.5 text-sm text-gray-300 hover:text-white data-[state=on]:rounded-full data-[state=on]:bg-neutral-700 data-[state=on]:text-white"
-                  >
-                    with Inngest
-                  </ToggleGroupItem>
-                  <ToggleGroupItem
-                    value="without-inngest"
-                    className="px-4 py-1.5 text-sm text-gray-300 hover:text-white data-[state=on]:rounded-full data-[state=on]:bg-neutral-700 data-[state=on]:text-white"
-                  >
-                    without Inngest
-                  </ToggleGroupItem>
-                </ToggleGroup>
-              </div>
+          {/* Mode toggle visible for all sections */}
+          <div className="mb-4 flex justify-center">
+            <ToggleGroup
+              type="single"
+              defaultValue="with-inngest"
+              value={mode}
+              onValueChange={(value) => {
+                if (value) setMode(value);
+              }}
+              className="rounded-full bg-neutral-800 p-1"
+            >
+              <ToggleGroupItem
+                value="with-inngest"
+                className="px-4 py-1.5 text-sm text-gray-300 hover:text-white data-[state=on]:rounded-full data-[state=on]:bg-neutral-700 data-[state=on]:text-white"
+              >
+                with Inngest
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                value="without-inngest"
+                className="px-4 py-1.5 text-sm text-gray-300 hover:text-white data-[state=on]:rounded-full data-[state=on]:bg-neutral-700 data-[state=on]:text-white"
+              >
+                without Inngest
+              </ToggleGroupItem>
+            </ToggleGroup>
+          </div>
 
-              <div className="flex w-full items-center justify-center">
-                {mode === "with-inngest" ? (
-                  <PrioritySVG />
-                ) : (
-                  <FairnessWithoutInngestSVG />
-                )}
-              </div>
-            </>
-          )}
-
-          {openItemValue === "item-2" && (
-            <div className="flex w-full items-center justify-center">
-              <ConcurrencySVG />
-            </div>
-          )}
-
-          {openItemValue === "item-3" && (
-            <div className="flex w-full items-center justify-center">
-              <PrioritySVG />
-            </div>
-          )}
-
-          {!openItemValue && (
-            <div className="flex w-full items-center justify-center">
+          <div className="flex w-full items-center justify-center">
+            {openItemValue === "item-1" ? (
+              mode === "with-inngest" ? (
+                <FairnessSVG />
+              ) : (
+                <FairnessWithoutInngestSVG />
+              )
+            ) : openItemValue === "item-2" ? (
+              mode === "with-inngest" ? (
+                <ConcurrencySVG />
+              ) : (
+                <div className="text-stone-300">Concurrency placeholder</div>
+              )
+            ) : openItemValue === "item-3" ? (
+              mode === "with-inngest" ? (
+                <PrioritySVG />
+              ) : (
+                <div className="text-stone-300">Priority placeholder</div>
+              )
+            ) : (
               <FairnessSVG />
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         <div className="flex min-h-[420px] flex-col pb-8 text-stone-50 md:pt-0 lg:min-h-0 lg:flex-[2]">
