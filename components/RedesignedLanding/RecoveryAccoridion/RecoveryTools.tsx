@@ -13,21 +13,14 @@ import CancellationSVG from "./Cancellation";
 import MetricsSVG from "./Metrics";
 import ReplaySVG from "./Replay";
 
-export default function RecoveryAccordion() {
-  // Define the default open item. Use "" if no item should be open by default.
+export default function TestRecoverTools() {
   const initialOpenItem = "item-1";
   const [openItemValue, setOpenItemValue] = useState<string>(initialOpenItem);
 
-  // Toggle state for fairness section
-  const [mode, setMode] = useState("with-inngest");
-
-  // Handler to update the state when an accordion item is opened or closed
   const handleValueChange = (value: string) => {
-    // For a collapsible single accordion, `value` is an empty string if all are closed.
     setOpenItemValue(value);
   };
 
-  // Accordion items configuration
   const accordionItems = [
     {
       value: "item-1",
@@ -51,15 +44,14 @@ export default function RecoveryAccordion() {
 
   return (
     <>
-      {/* <div className="relative mx-auto w-full max-w-7xl rounded-xl bg-stone-950 py-20 shadow-2xl backdrop-blur-sm">
-      {/* <GridBackground /> */}
-      <div className="relative z-10 m-6 flex flex-col gap-8 bg-stone-950 p-8 lg:flex-row xl:gap-12">
+      <div className="relative z-10 mx-auto my-20 flex max-w-7xl flex-col gap-8 bg-stone-950 p-8 lg:flex-row lg:items-start xl:gap-12">
         <div className="overflow-hidden text-gray-100 lg:flex-[3]">
           {openItemValue === "item-1" && (
             <div className="flex w-full items-center justify-center">
               <ReplaySVG />
             </div>
           )}
+
           {openItemValue === "item-2" && (
             <div className="flex w-full items-center justify-center">
               <CancellationSVG />
@@ -73,8 +65,7 @@ export default function RecoveryAccordion() {
           )}
         </div>
 
-        {/* Accordion Section */}
-        <div className="pb-8 text-stone-50 md:pt-0 lg:flex-[2]">
+        <div className="flex min-h-[420px] flex-col pb-8 text-stone-50 md:pt-0 lg:min-h-0 lg:flex-[2]">
           <h1 className="mb-3 font-whyte text-3xl font-light text-stone-50 md:text-4xl">
             Recovery Tools
           </h1>
@@ -85,10 +76,10 @@ export default function RecoveryAccordion() {
           </p>
           <Accordion
             type="single"
-            collapsible={false} // Allows all items to be closed. Set to false if one should always be open.
+            collapsible={false}
             className="w-full"
-            value={openItemValue} // Controlled component: current open item's value
-            onValueChange={handleValueChange} // Update state on change
+            value={openItemValue}
+            onValueChange={handleValueChange}
           >
             {accordionItems.map((item) => (
               <AccordionItem key={item.value} value={item.value}>
@@ -111,12 +102,13 @@ export default function RecoveryAccordion() {
               </AccordionItem>
             ))}
           </Accordion>
-          <Button variant="outline" className="mt-8 w-auto px-5 py-2.5 text-sm">
-            Learn more
-          </Button>
+          <div className="mt-auto pt-8">
+            <Button variant="outline" className="w-auto px-5 py-2.5 text-sm">
+              Learn more
+            </Button>
+          </div>
         </div>
       </div>
-      {/* </div> */}
     </>
   );
 }

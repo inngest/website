@@ -8,7 +8,7 @@ export default function MetricsSVG() {
       xmlns="http://www.w3.org/2000/svg"
     >
       <rect width="939" height="562" fill="#0C0A09" />
-      <g clip-path="url(#clip0_4268_10647)">
+      <g clipPath="url(#clip0_4268_10647)">
         <rect x="539.5" y="291.5" width="32" height="32" fill="#1C1917" />
         <rect x="539.5" y="291.5" width="32" height="32" stroke="#44403C" />
         <path
@@ -89,7 +89,7 @@ export default function MetricsSVG() {
         />
       </g>
       <g filter="url(#filter0_d_4268_10647)">
-        <g clip-path="url(#clip1_4268_10647)">
+        <g clipPath="url(#clip1_4268_10647)">
           <path
             d="M130 75.5098C130 68.8823 135.373 63.5098 142 63.5098H596C602.627 63.5098 608 68.8823 608 75.5098V114.51H130V75.5098Z"
             fill="#1C1917"
@@ -104,7 +104,7 @@ export default function MetricsSVG() {
             transform="translate(130 114.51)"
             fill="#1C1917"
           />
-          <g clip-path="url(#clip2_4268_10647)">
+          <g clipPath="url(#clip2_4268_10647)">
             <path d="M154 130.51H948" stroke="#44403C" />
             <path d="M154 163.51H948" stroke="#44403C" />
             <path d="M154 196.51H948" stroke="#44403C" />
@@ -124,7 +124,7 @@ export default function MetricsSVG() {
               opacity="0.8"
               d="M1260.45 196.58L-159.767 196.58"
               stroke="#FF7300"
-              stroke-width="1.2"
+              strokeWidth="1.2"
               stroke-linecap="round"
             />
           </g>
@@ -132,7 +132,7 @@ export default function MetricsSVG() {
         <path
           d="M607.5 64.0098V344.01H130.5V64.0098H607.5Z"
           stroke="#44403C"
-          shape-rendering="crispEdges"
+          shapeRendering="crispEdges"
         />
       </g>
       <defs>
@@ -143,9 +143,9 @@ export default function MetricsSVG() {
           width="486"
           height="289"
           filterUnits="userSpaceOnUse"
-          color-interpolation-filters="sRGB"
+          colorInterpolationFilters="sRGB"
         >
-          <feFlood flood-opacity="0" result="BackgroundImageFix" />
+          <feFlood floodOpacity="0" result="BackgroundImageFix" />
           <feColorMatrix
             in="SourceAlpha"
             type="matrix"

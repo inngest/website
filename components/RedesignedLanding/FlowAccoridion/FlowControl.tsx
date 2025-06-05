@@ -17,11 +17,8 @@ import PrioritySVG from "./Priority";
 import ConcurrencySVG from "./Concurrency";
 import FairnessSVG from "./Fairness";
 import FairnessWithoutInngestSVG from "./FairnessWithoutInngest";
-import GridBackground from "../GridBackground";
-import RecoveryAccordion from "../RecoveryAccoridion/RecoveryTools";
 
 export default function FlowAccordion() {
-  // Define the default open item. Use "" if no item should be open by default.
   const initialOpenItem = "item-1";
   const [openItemValue, setOpenItemValue] = useState<string>(initialOpenItem);
 
@@ -58,13 +55,10 @@ export default function FlowAccordion() {
 
   return (
     <>
-      {/* <div className="relative mx-auto w-full max-w-7xl rounded-xl bg-stone-950 py-20 shadow-2xl backdrop-blur-sm"> */}
-      <div className="relative z-10 mx-auto my-20 flex max-w-7xl flex-col gap-8 bg-stone-950 p-8 lg:flex-row xl:gap-12">
-        {/* Conditionally render different content based on which accordion item is open */}
+      <div className="relative z-10 mx-auto my-20 flex max-w-7xl flex-col gap-8 bg-stone-950 p-8 lg:flex-row lg:items-start xl:gap-12">
         <div className="overflow-hidden text-gray-100 lg:flex-[3]">
           {openItemValue === "item-1" && (
             <>
-              {/* Toggle group for fairness section */}
               <div className="mb-4 flex justify-center">
                 <ToggleGroup
                   type="single"
@@ -90,7 +84,6 @@ export default function FlowAccordion() {
                 </ToggleGroup>
               </div>
 
-              {/* Render fairness SVG based on toggle state */}
               <div className="flex w-full items-center justify-center">
                 {mode === "with-inngest" ? (
                   <PrioritySVG />
@@ -113,7 +106,6 @@ export default function FlowAccordion() {
             </div>
           )}
 
-          {/* Fallback when no item is selected */}
           {!openItemValue && (
             <div className="flex w-full items-center justify-center">
               <FairnessSVG />
@@ -121,8 +113,7 @@ export default function FlowAccordion() {
           )}
         </div>
 
-        {/* Accordion Section */}
-        <div className="pb-8 text-stone-50 md:pt-0 lg:flex-[2]">
+        <div className="flex min-h-[420px] flex-col pb-8 text-stone-50 md:pt-0 lg:min-h-0 lg:flex-[2]">
           <h1 className="mb-3 font-whyte text-3xl font-light text-stone-50 md:text-4xl">
             Flow control
           </h1>
@@ -133,10 +124,10 @@ export default function FlowAccordion() {
           </p>
           <Accordion
             type="single"
-            collapsible={false} // Allows all items to be closed. Set to false if one should always be open.
+            collapsible={false}
             className="w-full"
-            value={openItemValue} // Controlled component: current open item's value
-            onValueChange={handleValueChange} // Update state on change
+            value={openItemValue}
+            onValueChange={handleValueChange}
           >
             {accordionItems.map((item) => (
               <AccordionItem key={item.value} value={item.value}>
@@ -159,13 +150,13 @@ export default function FlowAccordion() {
               </AccordionItem>
             ))}
           </Accordion>
-          <Button variant="outline" className="mt-8 w-auto px-5 py-2.5 text-sm">
-            Learn more
-          </Button>
+          <div className="mt-auto pt-8">
+            <Button variant="outline" className="w-auto px-5 py-2.5 text-sm">
+              Learn more
+            </Button>
+          </div>
         </div>
       </div>
-      {/* </div>
-      <RecoveryAccordion /> */}
     </>
   );
 }

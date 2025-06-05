@@ -8,7 +8,7 @@ export default function ReplaySVG() {
       xmlns="http://www.w3.org/2000/svg"
     >
       <rect width="939" height="562" fill="#0C0A09" />
-      <g clip-path="url(#clip0_4268_10457)">
+      <g clipPath="url(#clip0_4268_10457)">
         <rect x="130.5" y="63.5" width="32" height="32" fill="#1C1917" />
         <rect x="130.5" y="63.5" width="32" height="32" stroke="#44403C" />
         <path
@@ -71,7 +71,7 @@ export default function ReplaySVG() {
         />
       </g>
       <g filter="url(#filter0_d_4268_10457)">
-        <g clip-path="url(#clip1_4268_10457)">
+        <g clipPath="url(#clip1_4268_10457)">
           <rect
             width="511"
             height="51"
@@ -139,7 +139,7 @@ export default function ReplaySVG() {
           <path
             d="M325 395.5H780C781.933 395.5 783.5 397.067 783.5 399V423C783.5 424.933 781.933 426.5 780 426.5H325C323.067 426.5 321.5 424.933 321.5 423V399C321.5 397.067 323.067 395.5 325 395.5Z"
             stroke="#EFE9D6"
-            stroke-opacity="0.53"
+            strokeOpacity="0.53"
           />
           <path
             d="M341.375 404.925H344.075C344.254 404.925 344.426 404.996 344.552 405.123C344.679 405.249 344.75 405.421 344.75 405.6V416.4C344.75 416.579 344.679 416.751 344.552 416.877C344.426 417.004 344.254 417.075 344.075 417.075H331.925C331.746 417.075 331.574 417.004 331.448 416.877C331.321 416.751 331.25 416.579 331.25 416.4V405.6C331.25 405.421 331.321 405.249 331.448 405.123C331.574 404.996 331.746 404.925 331.925 404.925H334.625V403.575H335.975V404.925H340.025V403.575H341.375V404.925ZM343.4 408.975V406.275H341.375V407.625H340.025V406.275H335.975V407.625H334.625V406.275H332.6V408.975H343.4ZM343.4 410.325H332.6V415.725H343.4V410.325ZM333.95 411.675H337.325V414.375H333.95V411.675Z"
@@ -167,7 +167,7 @@ export default function ReplaySVG() {
           width="510"
           height="326"
           stroke="#44403C"
-          shape-rendering="crispEdges"
+          shapeRendering="crispEdges"
         />
       </g>
       <defs>
@@ -178,9 +178,9 @@ export default function ReplaySVG() {
           width="519"
           height="335"
           filterUnits="userSpaceOnUse"
-          color-interpolation-filters="sRGB"
+          colorInterpolationFilters="sRGB"
         >
-          <feFlood flood-opacity="0" result="BackgroundImageFix" />
+          <feFlood floodOpacity="0" result="BackgroundImageFix" />
           <feColorMatrix
             in="SourceAlpha"
             type="matrix"
