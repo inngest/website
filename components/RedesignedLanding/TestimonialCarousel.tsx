@@ -14,7 +14,6 @@ import {
 } from "@heroicons/react/24/outline";
 import { Button } from "components/RedesignedLanding/Button";
 import { useState } from "react";
-import GridBackground from "./GridBackground";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -170,7 +169,6 @@ export default function TestimonialsCarousel() {
 
   return (
     <div className="relative bg-stone-950 py-24 text-white md:px-4 md:py-48">
-      <GridBackground />
       <div className="relative z-10 mx-auto max-w-6xl">
         <div className="mb-12 flex flex-col gap-4 px-4 md:flex-row md:items-center md:justify-between md:px-0">
           <div className="max-w-lg font-whyte">
