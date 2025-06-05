@@ -137,14 +137,21 @@ export function Layout({
               </a>
             </p>
             <div className="mt-2 pt-8 border-t border-slate-100/10">
-              <p className="mb-4 font-medium text-slate-50">
+              {companyName === 'Resend' ? <><p className="mb-4 font-medium text-slate-50">
+                Build Next.js applications with Inngest
+              </p>
+              <Button
+                href={`https://app.inngest.com/sign-up?ref=case-study-${companyName.toLowerCase()}`}
+              >
+                Get started with Inngest
+              </Button></> : <><p className="mb-4 font-medium text-slate-50">
                 Interested in Inngest?
               </p>
               <Button
                 href={`/contact?ref=case-study-${companyName.toLowerCase()}`}
               >
                 Talk to a product expert
-              </Button>
+              </Button></>}
             </div>
           </aside>
         </div>
