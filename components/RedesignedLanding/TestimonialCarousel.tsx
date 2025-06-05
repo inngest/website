@@ -14,7 +14,6 @@ import {
 } from "@heroicons/react/24/outline";
 import { Button } from "components/RedesignedLanding/Button";
 import { useState } from "react";
-import GridBackground from "./GridBackground";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -169,10 +168,9 @@ export default function TestimonialsCarousel() {
   };
 
   return (
-    <div className="relative bg-stone-950 py-48 text-white md:px-4">
-      <GridBackground />
+    <div className="relative bg-stone-950 py-24 text-white md:px-4 md:py-48">
       <div className="relative z-10 mx-auto max-w-6xl">
-        <div className="mb-12 flex items-center justify-between">
+        <div className="mb-12 flex flex-col gap-4 px-4 md:flex-row md:items-center md:justify-between md:px-0">
           <div className="max-w-lg font-whyte">
             <h2 className="text-3xl font-light leading-tight md:text-4xl">
               Trusted by software companies
@@ -180,7 +178,7 @@ export default function TestimonialsCarousel() {
               at scale, <span className="font-semibold">worldwide.</span>
             </h2>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 self-end md:self-auto">
             <Button
               variant="outline"
               size="icon"
@@ -208,13 +206,13 @@ export default function TestimonialsCarousel() {
             containScroll: "trimSnaps",
             dragFree: true,
           }}
-          className="w-full"
+          className="w-screen"
         >
           <CarouselContent className="-ml-4 pl-8 md:pl-16 lg:pl-24">
             {testimonials.map((testimonial) => (
               <CarouselItem
                 key={testimonial.id}
-                className="basis-[90%] pl-4 md:basis-[70%] lg:basis-[50%]"
+                className="basis-[90%] pl-4 md:basis-[70%] lg:basis-[40%] xl:basis-[30%]"
               >
                 <Card className="h-80 rounded-none border-stone-900 bg-stone-900">
                   <CardContent className="relative h-full overflow-hidden p-8">
