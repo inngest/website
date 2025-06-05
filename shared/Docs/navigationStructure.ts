@@ -878,6 +878,10 @@ const sectionHome: (NavGroup | NavLink)[] = [
         href: `/docs/faq`,
       },
       {
+        title: "Release Phases",
+        href: `/docs/release-phases`,
+      },
+      {
         title: "Glossary",
         href: `/docs/learn/glossary`,
       },
