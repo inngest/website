@@ -76,6 +76,10 @@ const sectionReference: (NavGroup | NavLink)[] = [
         href: `/docs/reference/functions/rate-limit`,
       },
       {
+        title: "Singleton",
+        href: `/docs/reference/functions/singleton`,
+      },
+      {
         title: "Debounce",
         href: `/docs/reference/functions/debounce`,
       },
@@ -563,10 +567,16 @@ const sectionHome: (NavGroup | NavLink)[] = [
           },
           {
             title: "Flow Control",
+            tag: "new",
             links: [
               {
                 title: "Overview",
                 href: `/docs/guides/flow-control`,
+              },
+              {
+                title: "Singleton Functions",
+                href: `/docs/guides/singleton`,
+                tag: "new",
               },
               {
                 title: "Concurrency",

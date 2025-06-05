@@ -1,0 +1,90 @@
+import { Callout, Info, Tip, Warning, CodeGroup, Properties, Property, VersionBadge } from "src/shared/Docs/mdx";
+
+# Singleton Functions <VersionBadge version="TypeScript v3.38.0+" />
+
+Singleton Functions enable you to ensure that only a single run of your function (_or a set of specific function runs, based on specific event properties_) is happening at a time.
+
+{/* TODO: illustration */}
+
+<Callout variant="info">
+
+    Singleton Functions are available in the TypeScript SDK starting from version 3.38.0.
+
+</Callout>
+
+## When to use Singleton Functions
+
+Singleton Functions are useful when you want to ensure that only a single instance of a function is running at a time, for example:
+- A third-party data synchronization workflow
+- A compute- or time-intensive function that should not be run multiple times at the same time (ex: AI processing)
+
+
+### Singleton compared to concurrency:
+
+While [Concurrency](/docs/guides/concurrency) set to `1` ensures that only a single step of a given function is running at a time, Singleton Functions ensure that only a single run of a given function is happening at a time.
+
+
+### Singleton compared to Rate Limiting:
+
+[Rate Limiting](/docs/guides/rate-limiting) is similar to Singleton Functions, but it is designed to limit the number of concurrent runs of a function, whereas Singleton Functions are designed to ensure that only a single run of a function occurs over a given time window.
+
+Rate Limiting is useful for controlling the rate of execution of a function, while Singleton Functions are useful for ensuring that only a single run of a function occurs over a given time window.
+
+
+
+
+
+
+## How it works
+
+Singleton Functions are configured using the `singleton` property in the function definition.
+
+The following `data-sync` function will skip new runs if another run of the same function is already running for the same user:
+
+```ts
+const dataSync = inngest.createFunction({
+    id: "data-sync",
+    singleton: {
+      key: "event.data.user_id",
+      mode: "skip",
+    }  
+  },
+  { event: "data-sync.start" },
+  async ({ event }) => {
+    // ...
+  },
+);
+```
+
+Refer to the [reference documentation](/docs/reference/functions/singleton) for more details.
+
+
+### Two modes: Skip vs Cancel
+
+Singleton Functions can be configured to either skip the new run or cancel the existing run and start a new one.
+
+The `mode` property configures the behavior of the Singleton Function.
+
+- `"skip"` skips the new run.
+- `"cancel"` cancels the existing run and starts the new one.
+
+
+## Compatibility with other flow control features
+
+Singleton Functions can be combined with other flow control features, with the following considerations:
+
+| Flow control | Compatibility | Considerations |
+| --- | --- | --- |
+| [Debounce](/docs/guides/debounce) | ✅ | Can be used together without issues. |
+| [Rate limiting](/docs/guides/rate-limiting) | ✅ | Similar functionality but rate limiting operates over a predefined time window rather than function execution duration. | 
+| [Throttling](/docs/guides/throttling) | ✅ | Similar functionality but throttling enqueues events over time rather than discarding/canceling them. |
+| [Concurrency](/docs/guides/concurrency) | ❌ | Singleton functions implicitly have a concurrency of 1. Concurrency settings are ignored, as singleton discards or cancels other runs. |
+| [Batching](/docs/guides/batching) | ❌ | Not compatible with singleton functions. |
+
+
+
+## FAQ
+
+- possible limitations
+- how does it work with retries
+- observability of discarded runs
