@@ -574,7 +574,7 @@ const sectionHome: (NavGroup | NavLink)[] = [
                 href: `/docs/guides/flow-control`,
               },
               {
-                title: "Singleton Functions",
+                title: "Singleton",
                 href: `/docs/guides/singleton`,
                 tag: "new",
               },
