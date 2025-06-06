@@ -40,7 +40,7 @@ export default inngest.createFunction(
         * Ensure exclusive execution of a function per customer ID: `'event.data.customer_id'`
         * Ensure exclusive execution of a function per account and email address: `'event.data.account_id + "-" + event.user.email'`
       </Property>
-      <Property name="mode" type="string">
+      <Property name="mode" type="string" required>
         The mode to use for the singleton function:
 
         * `"skip"`: Skip the new run.
