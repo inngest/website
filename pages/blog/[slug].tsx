@@ -50,7 +50,7 @@ const components: MDXComponents = {
   Callout,
   WorkflowKitProductOfTheDay: ProductHunt,
   Col,
-  Row,
+  Row
 };
 
 type Props = {
