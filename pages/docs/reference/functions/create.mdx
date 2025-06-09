@@ -39,6 +39,13 @@ The `createFunction` method accepts a series of arguments to define your functio
       <Property name="limit" type="number" required>
         The maximum number of concurrently running steps.
       </Property>
+      <Property name="scope" type="'account' | 'env' | 'fn'">
+        The scope for the concurrency limit, which impacts whether concurrency is managed on an individual function, across an environment, or across your entire account.
+    
+        * `fn` (default):  only the runs of this function affects the concurrency limit
+        * `env`:  all runs within the same environment that share the same evaluated key value will affect the concurrency limit.  This requires setting a `key` which evaluates to a virtual queue name.
+        * `account`:  every run that shares the same evaluated key value will affect the concurrency limit, across every environment.  This requires setting a `key` which evaluates to a virtual queue name.
+      </Property>
       <Property name="key" type="string">
         A unique key expression for which to restrict concurrently running steps to. The expression is evaluated for each triggering event and a unique key is generate. Read [our guide to writing expressions](/docs/guides/writing-expressions) for more info.
       </Property>
@@ -290,6 +297,6 @@ export interface Logger {
 
 It is a proxy object that is either backed by `console` or the logger you provided ([reference](/docs/guides/logging)).
 
-### `attempt` <VersionBadge version="v2.5.0+" />
+#### `attempt` <VersionBadge version="v2.5.0+" />
 
 The current zero-indexed attempt number for this function execution. The first attempt will be 0, the second 1, and so on. The attempt number is incremented every time the function throws an error and is retried.
