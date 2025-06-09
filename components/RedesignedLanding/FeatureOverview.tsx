@@ -5,25 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "./Card";
 export default function OrchestrationSection() {
   return (
     <section className="relative flex items-center bg-stone-900 py-16 text-white md:py-24">
-      <div className="absolute left-0 top-0 h-32 w-32 opacity-5">
-        {[...Array(4)].map((_, i) => (
-          <div key={i} className="grid grid-cols-2 gap-px">
-            {[...Array(4)].map((_, j) => (
-              <div key={j} className="h-8 w-8 bg-neutral-700" />
-            ))}
-          </div>
-        ))}
-      </div>
-      <div className="absolute bottom-0 right-0 h-32 w-32 rotate-180 transform opacity-5">
-        {[...Array(4)].map((_, i) => (
-          <div key={i} className="grid grid-cols-2 gap-px">
-            {[...Array(4)].map((_, j) => (
-              <div key={j} className="h-8 w-8 bg-neutral-700" />
-            ))}
-          </div>
-        ))}
-      </div>
-
       <div className="container mx-auto px-4">
         <div className="mb-12 text-center md:mb-20">
           <h1 className="mb-4 font-whyte text-4xl font-light text-stone-50 md:text-5xl lg:text-6xl">
