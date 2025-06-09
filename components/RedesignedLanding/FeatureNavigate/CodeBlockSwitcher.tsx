@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Fence } from "./CodeBlock";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./Card";
-import { Button } from "./Button";
+import { Button } from "../Button";
 import { ArrowRightIcon } from "@heroicons/react/24/outline";
 
 // Languages that can be selected. Each entry holds an id, the syntax highlighter name, and an icon renderer.
