@@ -6,7 +6,7 @@ export default function DeploySVG() {
       viewBox="0 0 661 321"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      xmlns:xlink="http://www.w3.org/1999/xlink"
+      xmlnsXlink="http://www.w3.org/1999/xlink"
     >
       <rect
         width="506"
@@ -16,7 +16,7 @@ export default function DeploySVG() {
       />
       <mask
         id="mask0_5140_1815"
-        style="mask-type:luminance"
+        style={{ maskType: "luminance" }}
         maskUnits="userSpaceOnUse"
         x="345"
         y="275"
@@ -243,9 +243,7 @@ export default function DeploySVG() {
           patternContentUnits="objectBoundingBox"
           width="1"
           height="1"
-        >
-          <use xlink:href="#image0_5140_1815" transform="scale(0.00146413)" />
-        </pattern>
+        ></pattern>
         <clipPath id="clip0_5140_1815">
           <rect
             width="24"
