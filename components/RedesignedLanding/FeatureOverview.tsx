@@ -34,7 +34,6 @@ function WorkflowsCard() {
       <div className="pointer-events-none absolute -left-3/4 -top-3/4 h-[150%] w-[150%] rounded-full bg-[#655279]" />
 
       <Card className="relative h-full w-full overflow-hidden rounded-none border-none bg-stone-800 shadow-2xl">
-        <div className="h-1.5"></div>
         <CardHeader className="p-3 sm:p-4 lg:p-6">
           <CardTitle className="text-lg font-light text-stone-50 sm:text-xl lg:text-2xl xl:text-3xl">
             <span className="font-whyteInktrap font-semibold">Workflows:</span>{" "}
@@ -87,8 +86,6 @@ function AgentsCard() {
           </CardTitle>
         </CardHeader>
         <CardContent className="p-3 pt-0 font-circular text-sm font-normal sm:p-4 lg:p-6 lg:pt-0 lg:text-base">
-          <div className="pointer-events-none absolute -right-1/3 -top-1/2 h-2/3 w-2/3 rounded-full bg-yellow-500/70 opacity-15 blur-[120px]" />
-
           <p className="relative z-10 mb-4 text-base font-normal leading-relaxed text-stone-200 sm:mb-6 lg:text-lg">
             Combine <span className="font-medium text-inngestLux">memory</span>{" "}
             with deterministic routing,{" "}
