@@ -1,6 +1,9 @@
 "use client";
 
-import { Card, CardContent } from "components/RedesignedLanding/Card";
+import {
+  Card,
+  CardContent,
+} from "src/components/RedesignedLanding/FeatureNavigate/Card";
 import {
   Carousel,
   CarouselContent,

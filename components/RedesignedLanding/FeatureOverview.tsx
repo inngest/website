@@ -1,6 +1,11 @@
 import { ArrowRightIcon } from "@heroicons/react/24/outline";
 import { Button } from "./Button";
-import { Card, CardContent, CardHeader, CardTitle } from "./Card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "src/components/RedesignedLanding/FeatureNavigate/Card";
 
 export default function OrchestrationSection() {
   return (

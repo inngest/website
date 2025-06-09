@@ -7,6 +7,7 @@ import TestimonialCarousel from "src/components/RedesignedLanding/TestimonialCar
 import Testimonial from "src/components/RedesignedLanding/Testimonial";
 import TrustFeaturesSection from "src/components/RedesignedLanding/Trust";
 import OrchestrationSection from "src/components/RedesignedLanding/FeatureOverview";
+import FeatureNavigate from "src/components/RedesignedLanding/FeatureNavigate/FeatureNavigate";
 
 export const metadata: Metadata = generateMetadata({
   title: "AI and backend workflows, orchestrated at any scale",
@@ -20,6 +21,7 @@ export default function Page() {
     <div>
       <Hero2 />
       <OrchestrationSection />
+      <FeatureNavigate />
       <TrustFeaturesSection />
       <Testimonial />
       <TestimonialCarousel />
