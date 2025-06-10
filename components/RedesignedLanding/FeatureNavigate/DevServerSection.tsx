@@ -2,8 +2,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "./Card";
 
 export default function DevServerSection() {
   return (
-    <div className="mx-auto my-16 flex max-w-5xl flex-col items-center md:flex-row">
-      <Card className="mb-8 flex h-full max-w-2xl flex-col justify-center rounded-none border-none bg-stone-950 md:mb-0">
+    <div className="mx-auto my-16 flex max-w-7xl flex-col items-center xl:flex-row">
+      <Card className="order-2 mb-8 flex h-full max-w-2xl flex-col justify-center rounded-none border-none bg-stone-950 md:mb-0 xl:order-1">
         <CardHeader className="pl-10 pr-6 pt-16">
           <CardTitle className="font-whyte text-3xl font-light">
             Frictionless local debugging
@@ -14,7 +14,12 @@ export default function DevServerSection() {
           input and outputs, all running locally.
         </CardContent>
       </Card>
-      <DevServerSVG />
+      <div className="order-1 flex flex-col items-center xl:order-2">
+        <h2 className="font-sm text-center font-circular font-light">
+          INSTANT DEVELOPMENT ENVIRONMENT
+        </h2>
+        <DevServerSVG />
+      </div>
     </div>
   );
 }
@@ -22,9 +27,6 @@ export default function DevServerSection() {
 function DevServerSVG() {
   return (
     <div className="flex w-full flex-col items-center">
-      <h2 className="font-sm mx-auto font-circular font-light">
-        INSTANT DEVELOPMENT ENVIRONMENT
-      </h2>
       <svg
         width="660"
         height="420"

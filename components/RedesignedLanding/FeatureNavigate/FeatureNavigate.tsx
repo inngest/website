@@ -10,13 +10,19 @@ import {
 import CodeBlockSwitcher from "src/components/RedesignedLanding/FeatureNavigate/CodeBlockSwitcher";
 import DevServerSection from "src/components/RedesignedLanding/FeatureNavigate/DevServerSection";
 import Terminal from "src/components/RedesignedLanding/FeatureNavigate/Terminal";
+import LineTo, {
+  SteppedLineTo,
+} from "src/components/RedesignedLanding/FeatureNavigate/Lineto";
+import GridBackground from "../GridBackground";
 
 export default function FeatureNavigate() {
   return (
     <>
-      <div className="bg-stone-950">
+      <div>
         <CodeBlockSwitcher />
-        <Terminal />
+        <div className="-ml-36">
+          <Terminal />
+        </div>
         <DevServerSection />
         <div className="bg-stone-900">
           <div className="mx-auto max-w-5xl pt-20">
@@ -29,11 +35,11 @@ export default function FeatureNavigate() {
               nisl iaculis. Sed molestie imperdiet metus ac laoreet.
             </p>
           </div>
-          <div className="mx-auto flex max-w-screen-xl flex-col pb-28 pt-20 md:flex-row md:justify-end">
+          <div className="mx-auto flex max-w-screen-2xl flex-col pb-28 pt-20 md:flex-row md:justify-end">
             <DeploySVG />
 
             <Card className="mt-8 flex h-full max-w-xs flex-col justify-center rounded-none border-none bg-stone-900 md:ml-8 md:mt-0">
-              <CardHeader className="">
+              <CardHeader className="pt-0">
                 <CardTitle className="font-whyte text-3xl font-light">
                   Deploy anywhere
                 </CardTitle>
@@ -51,21 +57,22 @@ export default function FeatureNavigate() {
               </CardFooter>
             </Card>
           </div>
+
           <div className="mx-auto flex max-w-5xl flex-col items-start py-20">
             <FaultToleranceSVG />
             <Card className="flex h-full max-w-sm flex-col justify-center rounded-none border-none bg-stone-900">
-              <CardHeader className="">
+              <CardHeader className="pl-0">
                 <CardTitle className="font-whyte text-3xl font-light">
                   Fault tolerance
                 </CardTitle>
               </CardHeader>
-              <CardContent className="max-w-2xl font-circular text-base font-normal text-stone-300">
+              <CardContent className="max-w-2xl pl-0 font-circular text-base font-normal text-stone-300">
                 <p className="font-sans text-base font-normal leading-[26.24px] tracking-[-0.304px] text-stone-300">
                   Fault-tolerant AI app from day one with automatic retries and
                   flow control
                 </p>
               </CardContent>
-              <CardFooter>
+              <CardFooter className="pl-0">
                 <Button className="bg-stone-900" variant="outline">
                   Read Documentation <ArrowRightIcon />
                 </Button>
@@ -76,18 +83,18 @@ export default function FeatureNavigate() {
             <div className="flex flex-col items-start">
               <FullObservabilitySVG />
               <Card className="mt-8 flex h-full max-w-sm flex-col justify-center rounded-none border-none bg-stone-900">
-                <CardHeader>
-                  <CardTitle className="font-whyte text-3xl font-light">
+                <CardHeader className="pl-0">
+                  <CardTitle className="pl-0 font-whyte text-3xl font-light">
                     Full observability
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="max-w-2xl font-circular text-base font-normal text-stone-300">
+                <CardContent className="max-w-2xl pl-0 font-circular text-base font-normal text-stone-300">
                   <p className="font-sans text-base font-normal leading-[26.24px] tracking-[-0.304px] text-stone-300">
                     Get full visibility over our AI workflows, and Agents with
                     live traces and metrics
                   </p>
                 </CardContent>
-                <CardFooter>
+                <CardFooter className="pl-0">
                   <Button className="bg-stone-900" variant="outline">
                     Read Documentation <ArrowRightIcon />
                   </Button>
@@ -95,6 +102,17 @@ export default function FeatureNavigate() {
               </Card>
             </div>
           </div>
+
+          {/* <SteppedLineTo
+            from="fault-tolerance-card"
+            to="observability-card"
+            fromAnchor="bottom center"
+            toAnchor="left"
+            borderColor="#57534E"
+            borderWidth={2}
+            delay={0}
+            zIndex={10}
+          /> */}
         </div>
       </div>
     </>
