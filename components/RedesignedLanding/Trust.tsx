@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { Button } from "./Button";
 import GridBackground from "./GridBackground";
 
 export default function TrustFeaturesSection() {
@@ -57,9 +59,9 @@ export default function TrustFeaturesSection() {
                   for your most complex workflows, so your team can focus on
                   building products, not managing infrastructure.
                 </p>
-                <button className="border border-white px-6 py-3 text-white transition-colors hover:bg-white hover:text-black">
-                  Contact us
-                </button>
+                <Button variant="outline" asChild>
+                  <Link href="#">Contact us</Link>
+                </Button>
               </div>
 
               <div className="grid gap-x-8 gap-y-6 md:grid-cols-2 md:gap-y-8">
