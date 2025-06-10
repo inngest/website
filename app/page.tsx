@@ -1,4 +1,5 @@
 import { type Metadata } from "next";
+import AccordionSection from "src/components/RedesignedLanding/AccordionSection";
 
 import Footer from "src/components/RedesignedLanding/Footer";
 import { generateMetadata } from "src/utils/social";
