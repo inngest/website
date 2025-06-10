@@ -47,7 +47,7 @@ export default function TrustFeaturesSection() {
 
       <div className="relative z-10 w-full">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="bg-stone-900 p-6 lg:p-8">
+          <div className="bg-stone-900 p-6 lg:px-12 lg:pt-16">
             <div className="grid gap-8 lg:grid-cols-[1fr,2fr]">
               <div>
                 <h2 className="mb-4 font-whyte text-3xl font-light tracking-[-2px] sm:text-4xl">
@@ -77,6 +77,7 @@ export default function TrustFeaturesSection() {
                       {feature.description}
                       {feature.link && (
                         <>
+                          {" "}
                           <a
                             href={feature.linkHref}
                             className="text-gray-300 underline transition-colors hover:text-white"
