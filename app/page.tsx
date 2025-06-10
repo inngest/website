@@ -25,6 +25,7 @@ export default function Page() {
       <FeatureNavigate />
       <TrustFeaturesSection />
       <Testimonial />
+      <AccordionSection />
       <TestimonialCarousel />
       <Footer />
     </div>
