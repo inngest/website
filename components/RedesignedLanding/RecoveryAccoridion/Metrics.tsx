@@ -6,6 +6,7 @@ export default function MetricsSVG() {
       viewBox="0 0 939 562"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
+      className="h-full w-full max-w-full"
     >
       <rect width="939" height="562" fill="#0C0A09" />
       <g clipPath="url(#clip0_4268_10647)">
@@ -125,7 +126,7 @@ export default function MetricsSVG() {
               d="M1260.45 196.58L-159.767 196.58"
               stroke="#FF7300"
               strokeWidth="1.2"
-              stroke-linecap="round"
+              strokeLinecap="round"
             />
           </g>
         </g>
