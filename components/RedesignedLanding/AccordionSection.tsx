@@ -20,9 +20,7 @@ export default function AccordionSection() {
             infrastructure handles it 3B+ monthly runs
           </p>
           <FlowAccordion />
-          <div className="mt-28">
-            <RecoveryAccordion />
-          </div>
+          <RecoveryAccordion />
         </div>
       </div>
     </div>

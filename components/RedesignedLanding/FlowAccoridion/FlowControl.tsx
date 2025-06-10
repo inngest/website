@@ -55,7 +55,7 @@ export default function FlowAccordion() {
 
   return (
     <>
-      <div className="relative z-10 mx-auto my-20 flex max-w-7xl flex-col gap-8 bg-stone-950 p-8 lg:flex-row lg:items-start xl:gap-12">
+      <div className="relative z-10 mx-auto mb-16 mt-20 flex max-w-7xl flex-col gap-8 bg-stone-950 p-8 lg:flex-row lg:items-start xl:gap-12">
         <div className="overflow-hidden text-gray-100 lg:flex-[3]">
           {/* Mode toggle visible for all sections */}
           <div className="mb-4 flex justify-center">
