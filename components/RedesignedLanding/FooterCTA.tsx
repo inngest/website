@@ -12,7 +12,7 @@ export default function FooterCTA() {
           <h2 className="text-base/7 font-semibold text-inngestLux">
             In the middle of chaos
           </h2>
-          <p className="mt-2 text-balance text-4xl font-semibold tracking-tight text-white sm:text-5xl">
+          <p className="mb-4 mt-2 text-balance text-4xl font-semibold tracking-tight text-white sm:text-5xl">
             Develop reliable AI products, everytime
           </p>
           <div className="flex flex-col items-center justify-center gap-x-6 sm:flex-row">
@@ -24,7 +24,7 @@ export default function FooterCTA() {
 
             <div className="mt-4 flex w-64 justify-center sm:w-auto">
               <Button variant="outline" className="w-full sm:w-auto" asChild>
-                <a href="/docs">I'd Rather Look at the Docs First</a>
+                <a href="/docs">I'd rather look at the docs first</a>
               </Button>
             </div>
           </div>
