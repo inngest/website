@@ -6,6 +6,7 @@ export default function ReplaySVG() {
       viewBox="0 0 939 562"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
+      className="h-full w-full max-w-full"
     >
       <rect width="939" height="562" fill="#0C0A09" />
       <g clipPath="url(#clip0_4268_10457)">
