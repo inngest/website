@@ -49,42 +49,114 @@ inngest.createFunction(
   }
 );
 `,
-    "step.run": `// TypeScript example\nconst result = await step.run("task", async () => {/* ... */});`,
-    step: `// TypeScript example\nstep("log", () => console.log("hello"));`,
+    "step.run": `// TypeScript example\nconst result = await step.run("task", async () => {/* ... */});
+    //
+    //
+    //
+    //
+    //
+    //
+    //
+    //
+    //
+    //
+    
+    `,
+    step: `// TypeScript example\nstep("log", () => console.log("hello"));
+    //     
+    //
+    //
+    //
+    //
+    //
+    //
+    //
+    //
+    //
+    
+    `,
   },
   python: {
     "step.sleep": `
     import inngest
-
 inngest_client = inngest.Inngest(app_id="my_app")
-
-# Call the "send" method if you're using async/await
-ids = await inngest_client.send(
-    inngest.Event(name="my_event", data={"msg": "Hello!"})
-)
-
 # Call the "send_sync" method if you aren't using async/await
 ids = inngest_client.send_sync(
     inngest.Event(name="my_event", data={"msg": "Hello!"})
 )
-
 # Can pass a list of events
 ids = await inngest_client.send(
     [
         inngest.Event(name="my_event", data={"msg": "Hello!"}),
-        inngest.Event(name="my_other_event", data={"name": "Alice"}),
     ]
 )
     `,
-    "step.run":
-      '# Python example\nresult = await step.run("task", lambda: ...)',
-    step: '# Python example\nstep("log", lambda: print("hello"))',
+    "step.run": `
+    import inngest
+inngest_client = inngest.Inngest(app_id="my_app")
+# Call the "send_sync" method if you aren't using async/await
+ids = inngest_client.send_sync(
+    inngest.Event(name="my_event2", data={"msg": "Hello!"})
+)
+# Can pass a list of events
+ids = await inngest_client.send(
+    [
+        inngest.Event(name="my_event2", data={"msg": "Hello!"}),
+    ]
+)
+    `,
+    step: `
+    import inngest
+inngest_client = inngest.Inngest(app_id="my_app")
+# Call the "send_sync" method if you aren't using async/await
+ids = inngest_client.send_sync(
+    inngest.Event(name="my_event3", data={"msg": "Hello!"})
+)
+# Can pass a list of events
+ids = await inngest_client.send(
+    [
+        inngest.Event(name="my_event3", data={"msg": "Hello!"}),
+    ]
+)
+    `,
   },
   go: {
-    "step.sleep": "// Go example\nstep.Sleep(ctx, 10 * time.Minute)",
-    "step.run":
-      '// Go example\nresult := step.Run(ctx, "task", func(ctx context.Context) error { /* ... */ return nil })',
-    step: '// Go example\nstep.Log(ctx, "hello")',
+    "step.sleep": `func main() {
+	client := inngestgo.NewClient(inngestgo.ClientOpts{AppID: "core"})
+	fn := inngestgo.CreateFunction(
+		client,
+		inngestgo.FunctionOpts{ID: "account-created"},
+		inngestgo.EventTrigger("api/account.created", nil),
+		AccountCreated,
+	)
+	if err := fn.Serve(":8080"); err != nil {
+		log.Fatal(err)
+	}
+}`,
+    "step.run": `func main() {
+	client := inngestgo.NewClient(inngestgo.ClientOpts{AppID: "core"})
+	fn := inngestgo.CreateFunction(
+		client,
+		inngestgo.FunctionOpts{ID: "account-created"},
+		inngestgo.EventTrigger("api/account.created", nil),
+		AccountCreated,
+	)
+	if err := fn.Serve(":8080"); err != nil {
+		log.Fatal(err)
+	}
+}`,
+    step: `func main() {
+	client := inngestgo.NewClient(inngestgo.ClientOpts{AppID: "core"})
+	fn := inngestgo.CreateFunction(
+		client,
+		inngestgo.FunctionOpts{ID: "account-created"},
+		inngestgo.EventTrigger("api/account.created", nil),
+		AccountCreated,
+	)
+	if err := fn.Serve(":8080"); err != nil {
+		log.Fatal(err)
+	}
+}`,
   },
 };
 
@@ -97,7 +169,7 @@ export default function CodeBlockSwitcher() {
   const syntax = LANGUAGES.find((l) => l.id === activeLanguage)!.syntax;
 
   return (
-    <div className="mx-auto my-16 flex max-w-5xl flex-col justify-center md:flex-row">
+    <div className="mx-auto my-16 flex max-w-7xl flex-col justify-center md:flex-row">
       <div className="flex flex-col ">
         {/* 1 ─ heading */}
         <h1 className="pb-20 font-whyteInktrap text-5xl font-normal">
@@ -122,8 +194,8 @@ export default function CodeBlockSwitcher() {
         {/* 3 ─ row that should have equal heights */}
         <div className="flex flex-col items-stretch md:flex-row">
           {/* left: step-tabs + code */}
-          <div className="w-full max-w-3xl overflow-hidden ">
-            <div className="flex h-9 border border-stone-800 bg-stone-900 px-[15px]">
+          <div className="max-w-3xl overflow-hidden border-2 border-stone-700 md:w-[48rem]">
+            <div className="flex h-9 border-b-2 border-stone-700 bg-stone-900 px-[15px]">
               {STEPS.map((stepId) => (
                 <button
                   key={stepId}

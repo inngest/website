@@ -6,7 +6,6 @@ export default function DeploySVG() {
       viewBox="0 0 661 321"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      xmlnsXlink="http://www.w3.org/1999/xlink"
     >
       <rect
         width="506"
@@ -16,7 +15,6 @@ export default function DeploySVG() {
       />
       <mask
         id="mask0_5140_1815"
-        style={{ maskType: "luminance" }}
         maskUnits="userSpaceOnUse"
         x="345"
         y="275"

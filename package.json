@@ -45,6 +45,7 @@
     "@sindresorhus/slugify": "2.1.1",
     "@types/mdx": "2.0.13",
     "@vercel/og": "0.6.5",
+    "@xyflow/react": "12.6.4",
     "acorn": "8.14.0",
     "algoliasearch": "4.14.3",
     "class-variance-authority": "0.7.1",
