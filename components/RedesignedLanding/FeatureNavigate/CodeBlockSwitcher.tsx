@@ -192,9 +192,9 @@ export default function CodeBlockSwitcher() {
         </div>
 
         {/* 3 ─ row that should have equal heights */}
-        <div className="flex flex-col items-stretch md:flex-row">
+        <div className="flex flex-col items-stretch xl:flex-row">
           {/* left: step-tabs + code */}
-          <div className="max-w-3xl overflow-hidden border-2 border-stone-700 md:w-[48rem]">
+          <div className="max-w-3xl border-2 border-stone-700 md:w-[48rem]">
             <div className="flex h-9 border-b-2 border-stone-700 bg-stone-900 px-[15px]">
               {STEPS.map((stepId) => (
                 <button
