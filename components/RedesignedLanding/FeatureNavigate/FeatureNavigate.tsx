@@ -19,7 +19,7 @@ export default function FeatureNavigate() {
         <Terminal />
         <DevServerSection />
         <div className="bg-stone-900">
-          <div className="mx-auto max-w-5xl py-28">
+          <div className="mx-auto max-w-5xl pt-20">
             <h1 className=" mb-2 font-whyte text-4xl font-light">
               Ship at the speed of AI
             </h1>
@@ -29,10 +29,9 @@ export default function FeatureNavigate() {
               nisl iaculis. Sed molestie imperdiet metus ac laoreet.
             </p>
           </div>
-          <div className="flex flex-col py-28 md:flex-row md:justify-end">
-            <div className="w-full overflow-x-auto md:w-auto">
-              <DeploySVG />
-            </div>
+          <div className="mx-auto flex max-w-screen-xl flex-col pb-28 pt-20 md:flex-row md:justify-end">
+            <DeploySVG />
+
             <Card className="mt-8 flex h-full max-w-xs flex-col justify-center rounded-none border-none bg-stone-900 md:ml-8 md:mt-0">
               <CardHeader className="">
                 <CardTitle className="font-whyte text-3xl font-light">
@@ -52,7 +51,7 @@ export default function FeatureNavigate() {
               </CardFooter>
             </Card>
           </div>
-          <div className="mx-auto flex max-w-5xl flex-col items-start py-28">
+          <div className="mx-auto flex max-w-5xl flex-col items-start py-20">
             <FaultToleranceSVG />
             <Card className="flex h-full max-w-sm flex-col justify-center rounded-none border-none bg-stone-900">
               <CardHeader className="">
@@ -73,26 +72,28 @@ export default function FeatureNavigate() {
               </CardFooter>
             </Card>
           </div>
-          <div className="mx-auto flex max-w-5xl flex-col items-end py-28">
-            <FullObservabilitySVG />
-            <Card className="flex h-full max-w-sm flex-col justify-center rounded-none border-none bg-stone-900">
-              <CardHeader className="">
-                <CardTitle className="font-whyte text-3xl font-light">
-                  Full observability
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="max-w-2xl font-circular text-base font-normal text-stone-300">
-                <p className="font-sans text-base font-normal leading-[26.24px] tracking-[-0.304px] text-stone-300">
-                  Get full visibility over our AI workflows, and Agents with
-                  live traces and metrics
-                </p>
-              </CardContent>
-              <CardFooter>
-                <Button className="bg-stone-900" variant="outline">
-                  Read Documentation <ArrowRightIcon />
-                </Button>
-              </CardFooter>
-            </Card>
+          <div className="mx-auto flex max-w-5xl flex-col items-end">
+            <div className="flex flex-col items-start">
+              <FullObservabilitySVG />
+              <Card className="mt-8 flex h-full max-w-sm flex-col justify-center rounded-none border-none bg-stone-900">
+                <CardHeader>
+                  <CardTitle className="font-whyte text-3xl font-light">
+                    Full observability
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="max-w-2xl font-circular text-base font-normal text-stone-300">
+                  <p className="font-sans text-base font-normal leading-[26.24px] tracking-[-0.304px] text-stone-300">
+                    Get full visibility over our AI workflows, and Agents with
+                    live traces and metrics
+                  </p>
+                </CardContent>
+                <CardFooter>
+                  <Button className="bg-stone-900" variant="outline">
+                    Read Documentation <ArrowRightIcon />
+                  </Button>
+                </CardFooter>
+              </Card>
+            </div>
           </div>
         </div>
       </div>

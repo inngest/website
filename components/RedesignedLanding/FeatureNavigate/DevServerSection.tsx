@@ -14,17 +14,14 @@ export default function DevServerSection() {
           input and outputs, all running locally.
         </CardContent>
       </Card>
-
-      <div className="w-full overflow-x-auto">
-        <DevServerSVG />
-      </div>
+      <DevServerSVG />
     </div>
   );
 }
 
 function DevServerSVG() {
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex w-full flex-col items-center">
       <h2 className="font-sm mx-auto font-circular font-light">
         INSTANT DEVELOPMENT ENVIRONMENT
       </h2>

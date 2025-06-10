@@ -26,9 +26,9 @@ export default function Terminal() {
       <h2 className="font-sm mx-auto font-circular font-light">
         ONE-COMMAND SETUP
       </h2>
-      <div className="mx-auto w-full max-w-xs   overflow-hidden  border border-stone-800 bg-stone-900 text-sm shadow-lg">
+      <div className="mx-auto w-full max-w-xs overflow-hidden  border-2 border-stone-700 bg-stone-900 text-sm shadow-lg">
         {/* Header with traffic lights and copy button */}
-        <div className="flex h-9 items-center justify-between px-4">
+        <div className="flex h-9 items-center justify-between border-b-2 border-stone-700 px-4">
           {/* Faux traffic lights */}
           <div className="flex space-x-2">
             <span className="h-3 w-3 rounded-full border border-stone-700" />
@@ -37,7 +37,7 @@ export default function Terminal() {
           </div>
           <button
             onClick={copyToClipboard}
-            className="flex items-center gap-1 rounded border border-stone-700 border-transparent px-2 py-1 font-mono text-xs text-stone-300 transition-opacity hover:opacity-80"
+            className="flex items-center gap-1 border border-stone-700 px-2 py-1 font-mono text-xs text-stone-300 transition-opacity hover:opacity-80"
           >
             <ClipboardDocumentIcon className="h-4 w-4" />
             {copied ? "Copied" : "Copy command"}
