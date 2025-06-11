@@ -1,0 +1,361 @@
+export type Plan = {
+  name: string;
+  cost: {
+    startsAt?: boolean;
+    between?: boolean;
+    // Use numbers for calculators
+    basePrice: number | string;
+    endPrice?: number;
+    includedRuns: number | string;
+    additionalRunsPrice: number | string | null;
+    additionalRunsRate?: number;
+    includedSteps: number | string;
+    additionalStepsPrice: number | string | null;
+    additionalStepsRate?: number;
+    includedConcurrency: number | string;
+    additionalConcurrencyPrice: number | string | null;
+    additionalConcurrencyRate?: number;
+    includedUsers: number | string;
+    additionalUsersPrice: number | string | null;
+    additionalUsersRate?: number;
+    period?: string;
+  };
+  description: React.ReactNode | string;
+  hideFromCards?: boolean;
+  recommended?: boolean;
+  primaryCTA?: boolean;
+  cta: {
+    href: string;
+    text: string;
+  };
+  highlights: {
+    runs: string;
+    concurrency: string;
+    realtime: string;
+    users: string;
+  };
+  planIncludes: string;
+  features: string[];
+};
+
+export type Feature = {
+  name: string;
+  description?: string;
+  section:
+    | "platform"
+    | "recovery"
+    | "observability"
+    | "data"
+    | "connectivity"
+    | "organization";
+  all?: boolean | string; // All plans offer this
+  plans?: {
+    [key: string]: string | boolean | { value: string; description?: string };
+  };
+  infoUrl?: string;
+};
+
+export const PLAN_NAMES = {
+  basicFree: "Free",
+  pro: "Pro",
+  enterprise: "Enterprise",
+};
+
+export const PLANS: Plan[] = [
+  {
+    name: PLAN_NAMES.basicFree,
+    cost: {
+      basePrice: 0,
+      includedRuns: 100_000,
+      additionalRunsPrice: "-",
+      additionalRunsRate: null,
+      includedSteps: 5,
+      additionalStepsPrice: "-",
+      additionalStepsRate: null,
+      includedConcurrency: 25,
+      additionalConcurrencyPrice: "-",
+      additionalConcurrencyRate: null,
+      includedUsers: 3,
+      additionalUsersPrice: "-",
+      additionalUsersRate: null,
+      period: "mo",
+      between: true,
+      endPrice: 75,
+    },
+    primaryCTA: false,
+    description:
+      "Get started with modern durable execution for free, with the future to grow",
+    cta: {
+      href: `${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=pricing-card-free`,
+      text: "Get started for free",
+    },
+    highlights: {
+      runs: "100,000 executions",
+      concurrency: "25 concurrent steps",
+      realtime: "3 realtime connections",
+      users: "3 users",
+    },
+    planIncludes: "INCLUDED IN FREE PLAN",
+    features: [
+      "Unlimited branch and staging envs",
+      "Logs, traces, and observability",
+      "Basic alerting",
+      "Community support",
+    ],
+  },
+  {
+    name: PLAN_NAMES.pro,
+    cost: {
+      startsAt: true,
+      basePrice: 75,
+      includedRuns: 1_000_000,
+      additionalRunsPrice: 5,
+      additionalRunsRate: 200_000,
+      includedSteps: 5,
+      additionalStepsPrice: 4,
+      additionalStepsRate: 200_000,
+      includedConcurrency: 200,
+      additionalConcurrencyPrice: 10,
+      additionalConcurrencyRate: 10,
+      includedUsers: 20,
+      additionalUsersPrice: 10,
+      additionalUsersRate: 1,
+      period: "mo",
+    },
+    description:
+      "Production-ready systems with extended features for scaling companies",
+    primaryCTA: true,
+    recommended: true,
+    cta: {
+      href: `${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=pricing-card-pro`,
+      text: "Get started for free",
+    },
+    highlights: {
+      runs: "1,000,000+ runs included",
+      concurrency: "100+ concurrent steps",
+      realtime: "1000+ realtime connections",
+      users: "15+ users",
+    },
+    planIncludes: "INCLUDED IN PRO PLAN",
+    features: [
+      "Granular metrics",
+      "Increased scale and throughput",
+      "Height usage limits",
+      "14 day trace retention",
+    ],
+  },
+  {
+    name: PLAN_NAMES.enterprise,
+    cost: {
+      basePrice: "Contact us",
+      includedRuns: "Custom",
+      additionalRunsPrice: "Custom",
+      additionalRunsRate: null,
+      includedSteps: "Custom",
+      additionalStepsPrice: "Custom",
+      additionalStepsRate: null,
+      includedConcurrency: "Custom",
+      additionalConcurrencyPrice: "Custom",
+      additionalConcurrencyRate: null,
+      includedUsers: "Custom",
+      additionalUsersPrice: "Custom",
+      additionalUsersRate: null,
+    },
+    description:
+      "Get started with modern durable execution for free, with the future to grow",
+    cta: {
+      href: "/contact?ref=pricing-card-enterprise",
+      text: "Get started for free",
+    },
+    highlights: {
+      runs: "Custom executions",
+      concurrency: "500 concurrent steps",
+      realtime: "1000+ realtime connections",
+      users: "50 users",
+    },
+    planIncludes: "INCLUDED IN ENTERPRISE PLAN",
+    features: [
+      "SAML, RBAC, and audit trails",
+      "Exportable observability",
+      "90 day trace retention",
+      "Dedicated slack channel",
+    ],
+  },
+];
+
+export function getPlan(
+  planName: typeof PLAN_NAMES[keyof typeof PLAN_NAMES]
+): Plan {
+  return PLANS.find((p) => p.name === planName);
+}
+
+export const sections: { key: string; name: string; description?: string }[] = [
+  { key: "platform", name: "Plan comparison" },
+  { key: "connectivity", name: "Realtime" },
+  { key: "observability", name: "Observability" },
+];
+
+export const FEATURES: Feature[] = [
+  {
+    name: "Base price",
+    plans: {
+      [PLAN_NAMES.basicFree]: "$0 - $75",
+      [PLAN_NAMES.pro]: "$75 /mo",
+      [PLAN_NAMES.enterprise]: "Contact us",
+    },
+    section: "platform",
+  },
+  {
+    name: "Executions",
+    description: "A single durable function run or step execution",
+    plans: {
+      [PLAN_NAMES.basicFree]: "100k /mo included",
+      [PLAN_NAMES.pro]: {
+        value: "1m /mo included",
+        description: "then $2.5 per 1m",
+      },
+      [PLAN_NAMES.enterprise]: "Custom",
+    },
+    infoUrl: "/docs/features/inngest-functions?ref=pricing",
+    section: "platform",
+  },
+  {
+    name: "Events",
+    description: "A single durable function run or step execution",
+    plans: {
+      [PLAN_NAMES.basicFree]: "1m /mo included",
+      [PLAN_NAMES.pro]: {
+        value: "5m /mo included",
+        description: "then $2.5 per 1m",
+      },
+      [PLAN_NAMES.enterprise]: "Custom",
+    },
+    infoUrl: "/docs/features/events?ref=pricing",
+    section: "platform",
+  },
+  {
+    name: "Concurrency",
+    description: "Process steps in parallel while smoothing load",
+    plans: {
+      [PLAN_NAMES.basicFree]: "1m /mo included",
+      [PLAN_NAMES.pro]: {
+        value: "5m /mo included",
+        description: "then $2.5 per 1m",
+      },
+      [PLAN_NAMES.enterprise]: "Custom",
+    },
+    infoUrl: "/docs/guides/concurrency?ref=pricing",
+    section: "platform",
+  },
+  {
+    name: "Users",
+    description: "Develop with your entire team",
+    plans: {
+      [PLAN_NAMES.basicFree]: {
+        value: "3",
+        description: "then $10/user",
+      },
+      [PLAN_NAMES.pro]: {
+        value: "15",
+        description: "then $10/user",
+      },
+      [PLAN_NAMES.enterprise]: "50-100",
+    },
+    section: "platform",
+  },
+  {
+    name: "Workers",
+    description: "Some new copy about workers",
+    plans: {
+      [PLAN_NAMES.basicFree]: "3",
+      [PLAN_NAMES.pro]: {
+        value: "20",
+        description: "then $10/worker",
+      },
+      [PLAN_NAMES.enterprise]: "Custom",
+    },
+    infoUrl: "/docs/features/workers?ref=pricing",
+    section: "platform",
+  },
+  {
+    name: "Serverless workers",
+    description: "Serverless endpoints for your apps",
+    all: "Unlimited",
+    infoUrl: "/docs/features/serverless-workers?ref=pricing",
+    section: "platform",
+  },
+  {
+    name: "Dedicated slack channel",
+    description: "Some copy about slack",
+    plans: {
+      [PLAN_NAMES.basicFree]: false,
+      [PLAN_NAMES.pro]: "$200",
+      [PLAN_NAMES.enterprise]: true,
+    },
+    section: "platform",
+  },
+  {
+    name: "Connections",
+    plans: {
+      [PLAN_NAMES.basicFree]: "50",
+      [PLAN_NAMES.pro]: "1000",
+      [PLAN_NAMES.enterprise]: "1000",
+    },
+    infoUrl: "/docs/features/realtime?ref=pricing",
+    section: "connectivity",
+  },
+  {
+    name: "Messages",
+    plans: {
+      [PLAN_NAMES.basicFree]: "250k per day",
+      [PLAN_NAMES.pro]: "1m per day",
+      [PLAN_NAMES.enterprise]: "1m per day",
+    },
+    infoUrl: "/docs/features/realtime-messages?ref=pricing",
+    section: "connectivity",
+  },
+  {
+    name: "Metrics granularity",
+    description: "Real-time function metrics",
+    plans: {
+      [PLAN_NAMES.basicFree]: "30 minutes",
+      [PLAN_NAMES.pro]: "15 minutes",
+      [PLAN_NAMES.enterprise]: "20 seconds",
+    },
+    infoUrl: "/docs/platform/monitor/observability-metrics?ref=pricing",
+    section: "observability",
+  },
+  {
+    name: "Trace and log history",
+    description: "Tracing for every function run",
+    plans: {
+      [PLAN_NAMES.basicFree]: "24 hours",
+      [PLAN_NAMES.pro]: "14 days",
+      [PLAN_NAMES.enterprise]: "90 days",
+    },
+    infoUrl: "/docs/platform/monitor/inspecting-function-runs?ref=pricing",
+    section: "observability",
+  },
+  {
+    name: "Trace and log exports",
+    description: "Push traces and logs to other systems",
+    plans: {
+      [PLAN_NAMES.basicFree]: false,
+      [PLAN_NAMES.pro]: false,
+      [PLAN_NAMES.enterprise]: "Contact us",
+    },
+    infoUrl: "/docs/platform/monitor/trace-log-exports?ref=pricing",
+    section: "observability",
+  },
+  {
+    name: "Advanced observability",
+    description: "Integration with Datadog, etc",
+    plans: {
+      [PLAN_NAMES.basicFree]: false,
+      [PLAN_NAMES.pro]: "$300",
+      [PLAN_NAMES.enterprise]: true,
+    },
+    infoUrl: "/docs/platform/monitor/advanced-observability?ref=pricing",
+    section: "observability",
+  },
+];
