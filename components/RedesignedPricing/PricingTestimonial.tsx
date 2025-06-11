@@ -76,7 +76,8 @@ export default function PricingTestimonial() {
   };
 
   const getCardDimensions = (company: string) => {
-    return "sm:h-[188px] sm:w-[470px]";
+    // Fixed width at small screens, but allow cards to flex within the grid on desktop
+    return "sm:h-[188px] sm:w-[470px] lg:w-full";
   };
 
   const getBackgroundSVG = (company: string) => {
@@ -102,7 +103,7 @@ export default function PricingTestimonial() {
         testimonial.company
       )}`}
     >
-      <CardContent className="relative h-full overflow-hidden p-4 sm:p-8">
+      <CardContent className="relative h-full overflow-hidden p-4 sm:p-6">
         <div style={getBackgroundPosition(testimonial.id)}>
           {getBackgroundSVG(testimonial.company)}
         </div>
@@ -187,7 +188,7 @@ export default function PricingTestimonial() {
         </div>
 
         <div className="hidden sm:block">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mx-auto grid max-w-[1222px] gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {testimonials.slice(0, 3).map((testimonial) => (
               <TestimonialCard key={testimonial.id} testimonial={testimonial} />
             ))}
