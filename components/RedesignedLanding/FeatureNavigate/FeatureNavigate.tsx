@@ -122,7 +122,6 @@ export default function FeatureNavigate() {
 function DeploySVG() {
   return (
     <svg
-      className="max-w-screen h-full md:max-w-full"
       width="661"
       height="321"
       viewBox="0 0 661 321"
