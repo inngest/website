@@ -148,10 +148,7 @@ export default function PlanCard({
 
         {/* Desktop */}
         <div className="hidden md:block">
-          <p className="text-inngestLux">
-            {/* {content.planIncludes} */}
-            Features
-          </p>
+          <p className="text-inngestLux">FEATURES</p>
           <ul className="flex flex-col">
             {content.features.map((feature, i) => (
               <li
