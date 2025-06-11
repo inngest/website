@@ -9,7 +9,10 @@ export default function FooterCTA() {
 
       <div className="relative z-10 mx-auto max-w-7xl px-6">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-base/7 font-semibold text-inngestLux">
+          <h2
+            id="cta-hover-target"
+            className="text-base/7 font-semibold text-inngestLux"
+          >
             In the middle of chaos
           </h2>
           <p className="mb-4 mt-2 text-balance text-4xl font-semibold tracking-tight text-white sm:text-5xl">
