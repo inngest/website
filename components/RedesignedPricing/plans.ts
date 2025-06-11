@@ -147,7 +147,7 @@ export const PLANS: Plan[] = [
   {
     name: PLAN_NAMES.enterprise,
     cost: {
-      basePrice: 2500,
+      basePrice: "Contact us",
       includedRuns: "Custom",
       additionalRunsPrice: "Custom",
       additionalRunsRate: null,

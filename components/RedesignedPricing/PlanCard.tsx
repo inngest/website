@@ -67,15 +67,15 @@ export default function PlanCard({
             {content.description}
           </p>
           {content.cost.between ? (
-            <p className="pt-4 text-xs font-bold uppercase text-inngestLux">
+            <p className="pb-2 pt-2 text-xs font-bold uppercase text-inngestLux">
               Between
             </p>
           ) : content.cost.startsAt ? (
-            <p className="pt-4 text-xs font-bold uppercase text-inngestLux">
+            <p className="pb-2 pt-2 text-xs font-bold uppercase text-inngestLux">
               Starting at
             </p>
           ) : (
-            <p className="pt-4 text-xs font-bold uppercase text-inngestLux">
+            <p className="pb-2 pt-2 text-xs font-bold uppercase text-inngestLux">
               To learn more
             </p>
           )}
@@ -84,7 +84,9 @@ export default function PlanCard({
             <span
               className={`font-circular text-[24px] font-normal leading-[32px] text-[#FAFAF9]`}
             >
-              {!!content.cost.period ? `/${content.cost.period}` : ""}
+              {!!content.cost.period && typeof price !== "string"
+                ? `/${content.cost.period}`
+                : ""}
             </span>
           </p>
           <div className="my-8">
