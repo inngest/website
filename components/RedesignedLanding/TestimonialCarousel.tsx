@@ -213,10 +213,10 @@ export default function TestimonialsCarousel() {
             {testimonials.map((testimonial) => (
               <CarouselItem
                 key={testimonial.id}
-                className="basis-[90%] pl-4 md:basis-[70%] lg:basis-[40%] xl:basis-[30%]"
+                className="basis-[95%] pl-4 sm:basis-[85%] md:basis-[65%] lg:basis-[45%] xl:basis-[38%] 2xl:basis-[32%]"
               >
                 <Card className="h-80 rounded-none border-stone-900 bg-stone-900">
-                  <CardContent className="relative h-full overflow-hidden p-8">
+                  <CardContent className="relative h-full overflow-hidden p-6 md:p-8">
                     {(() => {
                       const bgSVG = getRandomBackgroundSVG(testimonial.id);
                       const SVGComponent = bgSVG.component;
@@ -226,9 +226,9 @@ export default function TestimonialsCarousel() {
                         </div>
                       );
                     })()}
-                    <div className="relative z-10 grid h-full grid-cols-1 md:grid-cols-2">
+                    <div className="relative z-10 flex h-full flex-col justify-between lg:grid lg:grid-cols-2 lg:gap-6">
                       <div className="flex flex-col justify-between">
-                        <div>
+                        <div className="mb-4 lg:mb-0">
                           <Image
                             src={testimonial.logo.src}
                             alt={testimonial.logo.name}
@@ -239,7 +239,7 @@ export default function TestimonialsCarousel() {
                           />
                         </div>
 
-                        <div className="space-y-6">
+                        <div className="space-y-4 lg:space-y-6">
                           <div>
                             <div className="text-sm font-medium text-white">
                               {testimonial.author}
@@ -252,7 +252,7 @@ export default function TestimonialsCarousel() {
                       </div>
 
                       <div className="flex flex-col items-start justify-between">
-                        <div>
+                        <div className="mb-4 lg:mb-0">
                           <p
                             className="text-sm leading-relaxed text-gray-300"
                             dangerouslySetInnerHTML={{
