@@ -23,55 +23,42 @@ import Link from "next/link";
 const testimonials = [
   {
     id: 1,
-    company: "Resend",
-    logo: {
-      src: "/assets/customers/resend.svg",
-      name: "Resend",
-      scale: 0.8,
-    },
-    testimonial:
-      "The DX and visibility with Inngest is really incredible. We are able to develop functions locally easier and faster that with our previous queue. Also, Inngest's tools give us the visibility to debug issues much quicker than before.",
-    author: "BU KINOSHITA",
-    role: "Co-founder, Resend",
-  },
-  {
-    id: 2,
     company: "SoundCloud",
     logo: {
       src: "/assets/customers/soundcloud-logo-white-horizontal.svg",
       name: "SoundCloud",
       scale: 1.5,
     },
-    testimonial:
-      "Switching from GCP Composer (Airflow) to Inngest unified our backend and reduced our costs by 50%! Switching from GCP Composer (Airflow) to Inngest unified our backend and reduced our costs by 50%!",
-    author: "JANE SMITH",
-    role: "Engineering Lead, SoundCloud",
+    testimonial: "Deployed within in 1 week",
+  },
+  {
+    id: 2,
+    company: "Fey",
+    logo: {
+      src: "/assets/customers/fey/fey-icon-name.svg",
+      name: "Fey",
+      scale: 0.8,
+    },
+    testimonial: "50x faster processing",
   },
   {
     id: 3,
-    company: "TripAdvisor",
+    company: "Gitbook",
     logo: {
-      src: "/assets/customers/tripadvisor.svg",
-      name: "TripAdvisor",
+      src: "/assets/customers/gitbook-logo-white.svg",
+      name: "Gitbook",
       scale: 1.4,
     },
-    testimonial:
-      "The developer experience with Inngest has been phenomenal. The local development tools and debugging capabilities have significantly improved our workflow and productivity.",
-    author: "ALEX JOHNSON",
-    role: "Senior Developer, TripAdvisor",
+    testimonial: "Solved bi-directional synchronization",
   },
 ];
 
 const getBackgroundPosition = (id: number) => {
-  // Generate random position pushed extremely close to top left corner (0-2% left, 0-2% top)
-  const leftPercent = Math.floor(Math.random() * 2);
-  const topPercent = Math.floor(Math.random() * 2);
-
   return {
     position: "absolute" as const,
-    left: `${leftPercent}%`,
-    top: `${topPercent}%`,
-    transform: "scale(0.8) translate(-50%, -50%)",
+    inset: 0,
+    width: "100%",
+    height: "100%",
     opacity: 0.15,
     zIndex: 0,
   };
@@ -93,14 +80,14 @@ export default function PricingTestimonial() {
   }: {
     testimonial: typeof testimonials[0];
   }) => (
-    <Card className="h-80 rounded-none border-stone-900 bg-stone-900">
-      <CardContent className="relative h-full overflow-hidden p-8">
+    <Card className="h-48 rounded-none border-stone-900 bg-stone-900 sm:h-[188px] sm:w-[407px]">
+      <CardContent className="relative h-full overflow-hidden p-4 sm:p-8">
         <div style={getBackgroundPosition(testimonial.id)}>
-          <FullCircleSVG />
+          <BackgroundSVG />
         </div>
 
-        <div className="relative z-10 grid h-full grid-cols-1 md:grid-cols-2">
-          <div className="flex flex-col justify-between">
+        <div className="relative z-10 flex h-full flex-col justify-between">
+          <div className="mb-3 sm:mb-6">
             <Image
               src={testimonial.logo.src}
               alt={testimonial.logo.name}
@@ -108,23 +95,15 @@ export default function PricingTestimonial() {
               height={30 * testimonial.logo.scale}
               className="width-auto opacity-90"
             />
-
-            <div>
-              <div className="text-sm font-medium text-white">
-                {testimonial.author}
-              </div>
-              <div className="text-sm text-gray-400">{testimonial.role}</div>
-            </div>
           </div>
 
-          <div className="flex flex-col justify-between">
-            <p className="text-sm leading-relaxed text-gray-300">
+          <div className="flex flex-1 flex-col justify-between">
+            <p className="mb-3 text-sm font-light leading-5 text-stone-50 sm:mb-6 sm:text-base sm:leading-6 md:font-whyteInktrap md:text-2xl md:font-normal md:leading-9 md:tracking-[-1]">
               {testimonial.testimonial}
             </p>
-
             <Link
               href="/customers"
-              className="group inline-flex items-center border-b border-transparent pb-0.5 text-sm text-stone-50 transition-all hover:border-inngestLux hover:text-inngestLux"
+              className="group inline-flex w-fit items-center border-b border-transparent pb-0.5 text-sm text-stone-50 transition-all hover:border-inngestLux hover:text-inngestLux"
             >
               Read customer story
               <ArrowRightIcon className="ml-2 h-4 w-4 transition-transform" />
@@ -197,19 +176,16 @@ export default function PricingTestimonial() {
   );
 }
 
-function FullCircleSVG() {
+function BackgroundSVG() {
   return (
     <svg
-      width="1156"
-      height="1156"
-      viewBox="0 0 1156 1156"
+      className="h-full w-full"
+      viewBox="0 0 407 188"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
+      preserveAspectRatio="xMidYMid slice"
     >
-      <path
-        d="M1155.62 577.977C1155.62 896.874 897.1 1155.39 578.203 1155.39C259.306 1155.39 0.789062 896.874 0.789062 577.977C0.789062 259.08 259.306 0.5625 578.203 0.5625C897.1 0.5625 1155.62 259.08 1155.62 577.977ZM345.463 577.977C345.463 706.515 449.664 810.717 578.203 810.717C706.742 810.717 810.943 706.515 810.943 577.977C810.943 449.438 706.742 345.236 578.203 345.236C449.664 345.236 345.463 449.438 345.463 577.977Z"
-        fill="#44403c"
-      />
+      <circle cx="96.1431" cy="-29.25" r="310.083" fill="#655279" />
     </svg>
   );
 }
