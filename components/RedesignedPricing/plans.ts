@@ -131,7 +131,7 @@ export const PLANS: Plan[] = [
       text: "Get started for free",
     },
     highlights: {
-      runs: "1,000,000+ runs included",
+      runs: "1,000,000+ executions",
       concurrency: "100 concurrent steps",
       realtime: "1000+ realtime connections",
       users: "15 users",
