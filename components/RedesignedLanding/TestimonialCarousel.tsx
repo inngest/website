@@ -117,28 +117,21 @@ function highlightText(text: string, highlights: string[]) {
 }
 
 const getRandomBackgroundSVG = (id: number) => {
-  // Use the testimonial ID as seed for consistent randomization
+  const baseScale = 320 / 1156;
 
-  // Card dimensions: h-80 = 320px height, variable width
-  // SVG original dimensions: 1156w x 1156h (square)
-  // Calculate scale to fit card: 320/1156 ≈ 0.28
-  const baseScale = 320 / 1156; // Scale to match card height
-
-  // Define positions with balanced distribution across left and right
-  // Push positions further from center for more spacing
   const positions = [
-    { left: "10%", top: "25%", scale: baseScale * 3.2 }, // Left side - further left
-    { left: "90%", top: "25%", scale: baseScale * 3.5 }, // Right side - further right
-    { left: "15%", top: "75%", scale: baseScale * 2.9 }, // Left side - further left
-    { left: "85%", top: "75%", scale: baseScale * 3.3 }, // Right side - further right
-    { left: "20%", top: "15%", scale: baseScale * 3.1 }, // Left side - further left
-    { left: "80%", top: "85%", scale: baseScale * 3.4 }, // Right side - further right
-    { left: "5%", top: "50%", scale: baseScale * 3.0 }, // Left side - further left
-    { left: "95%", top: "50%", scale: baseScale * 3.2 }, // Right side - further right
-    { left: "15%", top: "35%", scale: baseScale * 3.1 }, // Left side - further left
-    { left: "85%", top: "65%", scale: baseScale * 3.3 }, // Right side - further right
-    { left: "25%", top: "80%", scale: baseScale * 3.0 }, // Left side - further left
-    { left: "75%", top: "20%", scale: baseScale * 3.2 }, // Right side - further right
+    { left: "10%", top: "25%", scale: baseScale * 3.2 },
+    { left: "90%", top: "25%", scale: baseScale * 3.5 },
+    { left: "15%", top: "75%", scale: baseScale * 2.9 },
+    { left: "85%", top: "75%", scale: baseScale * 3.3 },
+    { left: "20%", top: "15%", scale: baseScale * 3.1 },
+    { left: "80%", top: "85%", scale: baseScale * 3.4 },
+    { left: "5%", top: "50%", scale: baseScale * 3.0 },
+    { left: "95%", top: "50%", scale: baseScale * 3.2 },
+    { left: "15%", top: "35%", scale: baseScale * 3.1 },
+    { left: "85%", top: "65%", scale: baseScale * 3.3 },
+    { left: "25%", top: "80%", scale: baseScale * 3.0 },
+    { left: "75%", top: "20%", scale: baseScale * 3.2 },
   ];
 
   const position = positions[id % positions.length];
