@@ -23,9 +23,9 @@ export default function Page() {
       <Hero2 />
       <OrchestrationSection />
       <FeatureNavigate />
-      <TrustFeaturesSection />
       <Testimonial />
       <AccordionSection />
+      <TrustFeaturesSection />
       <TestimonialCarousel />
       <Footer />
     </div>
