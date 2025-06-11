@@ -7,6 +7,7 @@ import {
   RiCloseCircleFill,
   RiCheckboxCircleFill,
   RiArrowDownSLine,
+  RiCheckboxFill,
 } from "@remixicon/react";
 import * as Accordion from "@radix-ui/react-accordion";
 
@@ -189,9 +190,36 @@ const renderTable = (sectionFeatures, sectionName, plans, selectedPlan) => {
                           </>
                         ) : bool !== null ? (
                           bool ? (
-                            <RiCheckboxCircleFill className="h-5 w-5 text-primary-xSubtle" />
+                            <svg
+                              width="18"
+                              height="18"
+                              viewBox="0 0 18 18"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M0 9C0 4.02944 4.02944 0 9 0C13.9706 0 18 4.02944 18 9C18 13.9706 13.9706 18 9 18C4.02944 18 0 13.9706 0 9Z"
+                                fill="#027A48"
+                              />
+                              <path
+                                d="M7.94999 10.6653L12.7758 5.83899L13.5187 6.58134L7.94999 12.15L4.60889 8.80891L5.35124 8.06656L7.94999 10.6653Z"
+                                fill="#FBFAF5"
+                              />
+                            </svg>
                           ) : (
-                            <RiCloseCircleFill className="h-5 w-5 text-disabled" />
+                            <svg
+                              width="14"
+                              height="14"
+                              viewBox="0 0 14 14"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <rect width="14" height="14" fill="#44403C" />
+                              <path
+                                d="M6.99979 6.25769L9.59854 3.65894L10.3409 4.40129L7.74214 7.00004L10.3409 9.59879L9.59854 10.3411L6.99979 7.74239L4.40104 10.3411L3.65869 9.59879L6.25744 7.00004L3.65869 4.40129L4.40104 3.65894L6.99979 6.25769Z"
+                                fill="#F5F5F4"
+                              />
+                            </svg>
                           )
                         ) : null}
                       </td>
