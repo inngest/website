@@ -40,7 +40,7 @@ export default function ComparisonTable({ plans, features, sections }) {
 
   return (
     <div className="bg-stone-900 py-16 text-basis">
-      <h2 className="font-whyte-inktrap text-center text-[48px] font-normal leading-[1.2] tracking-[-2.4px] text-[#FAFAF9]">
+      <h2 className="font-whyte-inktrap text-center text-[48px] font-normal leading-[1.2] tracking-[-2.4px] text-[#FAFAF9] md:py-16">
         Plan features
       </h2>
       {renderPlanTabs()}

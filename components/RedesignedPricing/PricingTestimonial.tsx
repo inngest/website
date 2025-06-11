@@ -59,7 +59,7 @@ const getBackgroundPosition = (id: number) => {
     inset: 0,
     width: "100%",
     height: "100%",
-    opacity: 0.15,
+    // opacity: 0.15,
     zIndex: 0,
   };
 };
@@ -75,30 +75,52 @@ export default function PricingTestimonial() {
     api?.scrollNext();
   };
 
+  const getCardDimensions = (company: string) => {
+    return "sm:h-[188px] sm:w-[470px]";
+  };
+
+  const getBackgroundSVG = (company: string) => {
+    switch (company) {
+      case "SoundCloud":
+        return <SoundCloudBackgroundSVG />;
+      case "Fey":
+        return <FeyBackgroundSVG />;
+      case "Gitbook":
+        return <GitbookBackgroundSVG />;
+      default:
+        return <SoundCloudBackgroundSVG />;
+    }
+  };
+
   const TestimonialCard = ({
     testimonial,
   }: {
     testimonial: typeof testimonials[0];
   }) => (
-    <Card className="h-48 rounded-none border-stone-900 bg-stone-900 sm:h-[188px] sm:w-[407px]">
+    <Card
+      className={`h-48 rounded-none border-stone-900 bg-stone-900 ${getCardDimensions(
+        testimonial.company
+      )}`}
+    >
       <CardContent className="relative h-full overflow-hidden p-4 sm:p-8">
         <div style={getBackgroundPosition(testimonial.id)}>
-          <BackgroundSVG />
+          {getBackgroundSVG(testimonial.company)}
         </div>
 
         <div className="relative z-10 flex h-full flex-col justify-between">
           <div className="mb-3 sm:mb-6">
-            <Image
-              src={testimonial.logo.src}
-              alt={testimonial.logo.name}
-              width={120 * testimonial.logo.scale}
-              height={30 * testimonial.logo.scale}
-              className="width-auto opacity-90"
-            />
+            <div className="relative h-6 w-full max-w-[120px] sm:h-8">
+              <Image
+                src={testimonial.logo.src}
+                alt={testimonial.logo.name}
+                fill
+                className="object-contain opacity-90"
+              />
+            </div>
           </div>
 
           <div className="flex flex-1 flex-col justify-between">
-            <p className="mb-3 text-sm font-light leading-5 text-stone-50 sm:mb-6 sm:text-base sm:leading-6 md:font-whyteInktrap md:text-2xl md:font-normal md:leading-9 md:tracking-[-1]">
+            <p className="mb-3 whitespace-nowrap text-sm font-light leading-5 text-stone-50 sm:mb-6 sm:text-base sm:leading-6 md:font-whyteInktrap md:text-2xl md:font-normal md:leading-9 md:tracking-[-0.05em]">
               {testimonial.testimonial}
             </p>
             <Link
@@ -116,7 +138,7 @@ export default function PricingTestimonial() {
 
   return (
     <div className="relative bg-stone-950 py-24 text-white md:px-4 md:py-48">
-      <div className="relative z-10 mx-auto max-w-7xl px-4">
+      <div className="relative z-10 mx-auto max-w-[1440px] px-4">
         <div className="mb-12 flex justify-between gap-4 md:flex-row md:items-center md:justify-center">
           <div className="max-w-lg font-whyte">
             <h2 className="font-whyteInktrap text-3xl font-light leading-tight sm:text-center">
@@ -176,7 +198,7 @@ export default function PricingTestimonial() {
   );
 }
 
-function BackgroundSVG() {
+function SoundCloudBackgroundSVG() {
   return (
     <svg
       className="h-full w-full"
@@ -186,6 +208,34 @@ function BackgroundSVG() {
       preserveAspectRatio="xMidYMid slice"
     >
       <circle cx="96.1431" cy="-29.25" r="310.083" fill="#655279" />
+    </svg>
+  );
+}
+
+function FeyBackgroundSVG() {
+  return (
+    <svg
+      className="h-full w-full"
+      viewBox="0 0 404 188"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      preserveAspectRatio="xMidYMid slice"
+    >
+      <circle cx="93.1426" cy="-21.25" r="310.083" fill="#2C9B63" />
+    </svg>
+  );
+}
+
+function GitbookBackgroundSVG() {
+  return (
+    <svg
+      className="h-full w-full"
+      viewBox="0 0 470 188"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      preserveAspectRatio="xMidYMid slice"
+    >
+      <circle cx="183.922" cy="-21.25" r="310.083" fill="#CB5C32" />
     </svg>
   );
 }
