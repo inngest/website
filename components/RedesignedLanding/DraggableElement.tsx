@@ -144,9 +144,7 @@ function DraggableItem({
           isDragging ? "scale-110" : "scale-100"
         } relative flex h-full w-full items-center justify-center transition-transform duration-100`}
       >
-        <div
-          className={`absolute inset-0 -z-10 rounded-full blur-xl`}
-        />
+        <div className={`absolute inset-0 -z-10 rounded-full blur-xl`} />
         <Image
           src={imageSrc || "/draggable/draggable.png"}
           alt="Draggable element"
