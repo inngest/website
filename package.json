@@ -26,6 +26,7 @@
   "dependencies": {
     "@algolia/autocomplete-core": "1.7.4",
     "@algolia/autocomplete-preset-algolia": "1.7.4",
+    "@dnd-kit/core": "6.3.1",
     "@fullstory/browser": "1.6.2",
     "@headlessui/react": "2.2.0",
     "@heroicons/react": "2.0.18",
