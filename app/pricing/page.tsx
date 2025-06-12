@@ -8,6 +8,7 @@ import {
   FEATURES,
   PLANS,
   sections,
+  PLAN_NAMES,
 } from "src/components/RedesignedPricing/plans";
 
 import GridBackground from "src/components/RedesignedLanding/GridBackground";
@@ -27,24 +28,31 @@ export const metadata: Metadata = generateMetadata({
 export default function Pricing() {
   return (
     <>
-      <div className="max-w-screen">
+      <div className="max-w-screen relative">
         <GridBackground />
-        <PricingTitle />
-        <div className="z-10 mx-auto mb-8 grid max-w-[1222px] grid-cols-1 gap-2 text-center md:grid-cols-2 lg:grid-cols-3 lg:gap-x-0">
-          {PLANS.filter((p) => p.hideFromCards !== true).map((p, idx) => (
-            <PlanCard key={p.name} content={p} idx={idx} total={PLANS.length} />
-          ))}
+        <div className="relative">
+          <PricingTitle />
+          <div className="z-10 mx-auto mb-8 grid max-w-[1222px] grid-cols-1 gap-2 text-center md:grid-cols-2 lg:grid-cols-3 lg:gap-x-0">
+            {PLANS.filter((p) => p.hideFromCards !== true).map((p, idx) => (
+              <PlanCard
+                key={p.name}
+                content={p}
+                idx={idx}
+                total={PLANS.length}
+              />
+            ))}
+          </div>
+          <PaygCard />
+          <PricingCalculatorPage />
+          <PricingTestimonial />
+          <ComparisonTable
+            plans={PLANS.filter((p) => p.name !== PLAN_NAMES.payAsYouGo)}
+            features={FEATURES}
+            sections={sections}
+          />
+          <PricingTrustSection />
+          <PricingFooter />
         </div>
-        <PaygCard />
-        <PricingCalculatorPage />
-        <PricingTestimonial />
-        <ComparisonTable
-          plans={PLANS}
-          features={FEATURES}
-          sections={sections}
-        />
-        <PricingTrustSection />
-        <PricingFooter />
       </div>
     </>
   );

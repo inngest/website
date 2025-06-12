@@ -56,9 +56,10 @@ export type Feature = {
 };
 
 export const PLAN_NAMES = {
-  basicFree: "Free",
+  basicFree: "Hobby",
   pro: "Pro",
   enterprise: "Enterprise",
+  payAsYouGo: "Hobby (Pay as you go)",
 };
 
 export const PLANS: Plan[] = [
@@ -79,8 +80,6 @@ export const PLANS: Plan[] = [
       additionalUsersPrice: 10,
       additionalUsersRate: 1,
       period: "mo",
-      between: true,
-      endPrice: 75,
     },
     primaryCTA: false,
     description:
@@ -95,13 +94,53 @@ export const PLANS: Plan[] = [
       realtime: "50 realtime connections",
       users: "3 users",
     },
-    planIncludes: "INCLUDED IN FREE PLAN",
+    planIncludes: "INCLUDED IN HOBBY PLAN",
     features: [
       "Unlimited branch and staging envs",
       "Logs, traces, and observability",
       "Basic alerting",
       "Community support",
     ],
+  },
+  {
+    name: PLAN_NAMES.payAsYouGo,
+    cost: {
+      basePrice: "Usage",
+      includedRuns: 0,
+      additionalRunsPrice: 0.5, // $0.5 per 1k runs
+      additionalRunsRate: 1000,
+      includedSteps: 5,
+      additionalStepsPrice: 0.5,
+      additionalStepsRate: 1000,
+      includedConcurrency: 10,
+      additionalConcurrencyPrice: 10,
+      additionalConcurrencyRate: 10,
+      includedUsers: 1,
+      additionalUsersPrice: 10,
+      additionalUsersRate: 1,
+      period: "mo",
+      //   between: true,
+      //   endPrice: 75,
+    },
+    description: "Pay only for what you use with no upfront commitment",
+    cta: {
+      href: `${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=pricing-card-payg`,
+      text: "Get started",
+    },
+    highlights: {
+      runs: "Pay per execution",
+      concurrency: "10 concurrent steps",
+      realtime: "25 realtime connections",
+      users: "1 user",
+    },
+    planIncludes: "INCLUDED IN HOBBY PLAN",
+    features: [
+      "Unlimited branch and staging envs",
+      "Logs, traces, and observability",
+      "Basic alerting",
+      "Community support",
+    ],
+    hideFromCards: true,
   },
   {
     name: PLAN_NAMES.pro,
