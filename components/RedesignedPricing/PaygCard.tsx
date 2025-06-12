@@ -37,7 +37,7 @@ export default function PaygCard() {
               <div className="grid grid-cols-1 flex-row gap-x-16 px-9 pt-8 lg:grid-cols-[641px_641px]">
                 <div className="flex flex-col gap-y-8">
                   <div>
-                    <h2 className="font-whyte text-[48px] font-light leading-[1.2] tracking-[-2.4px] text-white">
+                    <h2 className="pb-2 font-whyte text-[48px] font-light leading-[1.2] tracking-[-2.4px] text-white">
                       Pay as you go
                     </h2>
                     <p className="font-circular text-base font-light leading-[1.4] text-[#E7E5E4]">
@@ -120,7 +120,7 @@ export default function PaygCard() {
                   </div>
                 </div>
               </div>
-              <div className="px-9 py-6">
+              <div className="px-9 pb-6">
                 <p className="max-w-[641px] font-circular text-sm font-light leading-[1.4] tracking-[1.12px] text-[#A8A29E]">
                   *Free plan charged at $.000083 per execution until 1m
                   executions are reached. For Enterprise,{" "}
