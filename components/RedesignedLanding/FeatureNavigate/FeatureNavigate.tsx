@@ -18,7 +18,7 @@ import GridBackground from "../GridBackground";
 export default function FeatureNavigate() {
   return (
     <>
-      <div>
+      <div className="bg-stone-950">
         <CodeBlockSwitcher />
         <div className="-ml-36">
           <Terminal />
