@@ -20,17 +20,6 @@ export default function FooterCTABackground({
   shouldTrackMouse = false,
 }: FooterCTABackgroundProps) {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [isHovering, setIsHovering] = useState(false);
-  const [patterns, setPatterns] = useState<
-    {
-      id: string;
-      key: number;
-      index: number;
-      top: number;
-      left: number;
-      initialRotation: number;
-    }[]
-  >([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const patternRefs = useRef<(HTMLDivElement | null)[]>([]);
   const rafRef = useRef<number | null>(null);
@@ -45,62 +34,31 @@ export default function FooterCTABackground({
       const section = containerRef.current.closest("section");
       parentSectionRef.current = section;
     }
-
-    // Generate random pattern positions ONLY on the client after mount
-    const generated = Array.from({ length: PATTERN_COUNT }).map((_, i) => ({
-      id: `pattern-${i}`,
-      index: i,
-      key: i,
-      top: Math.random() * 100, // percentage
-      left: Math.random() * 100, // percentage
-      initialRotation: Math.random() * 360,
-    }));
-    setPatterns(generated);
-
-    // Set up hover listeners on the CTA heading
-    const target = document.getElementById("cta-hover-target");
-    if (target) {
-      const enter = () => setIsHovering(true);
-      const leave = () => setIsHovering(false);
-
-      target.addEventListener("mouseenter", enter);
-      target.addEventListener("mouseleave", leave);
-
-      return () => {
-        target.removeEventListener("mouseenter", enter);
-        target.removeEventListener("mouseleave", leave);
-      };
-    }
   }, []);
 
-  const handleMouseMove = useCallback(
-    (event: MouseEvent) => {
-      if (!isHovering) return; // Only react when hovering the CTA
+  const handleMouseMove = useCallback((event: MouseEvent) => {
+    const now = Date.now();
+    if (now - lastUpdateRef.current < THROTTLE_MS) return;
+    lastUpdateRef.current = now;
 
-      const now = Date.now();
-      if (now - lastUpdateRef.current < THROTTLE_MS) return;
-      lastUpdateRef.current = now;
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+    }
 
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(() => {
+      const section = parentSectionRef.current;
+
+      if (section) {
+        const rect = section.getBoundingClientRect();
+        const newPosition = {
+          x: event.clientX - rect.left,
+          y: event.clientY - rect.top,
+        };
+
+        setMousePosition(newPosition);
       }
-
-      rafRef.current = requestAnimationFrame(() => {
-        const section = parentSectionRef.current;
-
-        if (section) {
-          const rect = section.getBoundingClientRect();
-          const newPosition = {
-            x: event.clientX - rect.left,
-            y: event.clientY - rect.top,
-          };
-
-          setMousePosition(newPosition);
-        }
-      });
-    },
-    [isHovering]
-  );
+    });
+  }, []);
 
   useEffect(() => {
     document.addEventListener("mousemove", handleMouseMove);
@@ -259,7 +217,7 @@ const BackgroundPattern = React.memo(function BackgroundPattern({
           d="M5.27222 5.27246L30.7281 30.7283"
           stroke={color}
           strokeWidth="1.5"
-          style={{ transition: isActive ? "stroke 0.2s ease-out" : "none" }}
+          style={{ transition: inViewport ? "stroke 0.2s ease-out" : "none" }}
         />
       </g>
     </svg>
