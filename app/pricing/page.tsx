@@ -38,7 +38,6 @@ export default function Pricing() {
           ))}
         </div>
         <PaygCard />
-        <PricingCalculator plans={PLANS} />
         <PricingCalculatorPage />
         <PricingTestimonial />
         <ComparisonTable
