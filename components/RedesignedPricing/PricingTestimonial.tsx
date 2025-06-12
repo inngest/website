@@ -138,7 +138,7 @@ export default function PricingTestimonial() {
   );
 
   return (
-    <div className="relative bg-stone-950 py-24 text-white md:px-4 md:py-48">
+    <div className="relative bg-stone-950 py-24 text-white md:px-4 md:py-20">
       <div className="relative z-10 mx-auto max-w-[1440px] px-4">
         <div className="mb-12 flex justify-between gap-4 md:flex-row md:items-center md:justify-center">
           <div className="max-w-lg font-whyte">
