@@ -94,13 +94,13 @@ export default function FlowAccordion() {
               mode === "with-inngest" ? (
                 <ConcurrencySVG />
               ) : (
-                <div className="text-stone-300">Concurrency placeholder</div>
+                <FairnessWithoutInngestSVG />
               )
             ) : openItemValue === "item-3" ? (
               mode === "with-inngest" ? (
                 <PrioritySVG />
               ) : (
-                <div className="text-stone-300">Priority placeholder</div>
+                <FairnessWithoutInngestSVG />
               )
             ) : (
               <FairnessSVG />
@@ -136,7 +136,7 @@ export default function FlowAccordion() {
                 </AccordionTrigger>
                 <AccordionContent
                   className={cn(
-                    "pb-4 pt-1 font-circular text-sm font-normal text-stone-300",
+                    "pb-0 pt-1 font-circular text-sm font-normal text-stone-300",
                     openItemValue === item.value && "border-b border-[#B7B7B7]"
                   )}
                 >
