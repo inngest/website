@@ -1,9 +1,7 @@
 import { type Metadata } from "next";
 
 import PlanCard from "src/components/RedesignedPricing/PlanCard";
-import PricingCalculator, {
-  PricingCalculatorPage,
-} from "src/components/RedesignedPricing/PricingCalculator";
+import { PricingCalculatorPage } from "src/components/RedesignedPricing/PricingCalculator";
 import { generateMetadata } from "src/utils/social";
 
 import {
