@@ -9,7 +9,7 @@ export default function FooterCTA() {
 
       <div className="relative z-10 mx-auto max-w-7xl px-6">
         <div className="mx-auto max-w-md text-center">
-          <p className="font-inktrap mt-2 text-center font-normal leading-[1.2] tracking-[-4.2px] text-white sm:text-5xl">
+          <p className="font-inktrap mt-2 text-center text-[32px] font-normal leading-[32px] tracking-[-1.6px] text-white sm:text-5xl sm:leading-[1.2] sm:tracking-[-4.2px]">
             Need help deciding which plan to choose?
           </p>
           <div className="flex flex-col items-center justify-center gap-x-6 sm:flex-row">
