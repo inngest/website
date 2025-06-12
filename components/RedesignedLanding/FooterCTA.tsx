@@ -1,17 +1,22 @@
+"use client";
 import Link from "src/components/Link";
 import { Button } from "src/components/RedesignedLanding/Button";
 import FooterCTABackground from "./FooterCTABackground";
+import { useState } from "react";
 
 export default function FooterCTA() {
+  const [trackMouse, setTrackMouse] = useState(false);
+
   return (
     <section className="relative overflow-hidden bg-stone-950 pb-24 pt-24">
-      <FooterCTABackground />
+      <FooterCTABackground shouldTrackMouse={trackMouse} />
 
       <div className="relative z-10 mx-auto max-w-7xl px-6">
         <div className="mx-auto max-w-2xl text-center">
           <h2
-            id="cta-hover-target"
             className="text-base/7 font-semibold text-inngestLux"
+            onMouseEnter={() => setTrackMouse(true)}
+            onMouseLeave={() => setTrackMouse(false)}
           >
             In the middle of chaos
           </h2>

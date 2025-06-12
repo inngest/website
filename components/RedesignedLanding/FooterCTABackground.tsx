@@ -12,7 +12,13 @@ const INNGEST_LUX = "#78716C";
 const PATTERN_COUNT = 90;
 const THROTTLE_MS = 16;
 
-export default function FooterCTABackground() {
+type FooterCTABackgroundProps = {
+  shouldTrackMouse?: boolean;
+};
+
+export default function FooterCTABackground({
+  shouldTrackMouse = false,
+}: FooterCTABackgroundProps) {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
   const [patterns, setPatterns] = useState<
@@ -30,6 +36,7 @@ export default function FooterCTABackground() {
   const rafRef = useRef<number | null>(null);
   const parentSectionRef = useRef<HTMLElement | null>(null);
   const lastUpdateRef = useRef<number>(0);
+  const [, forceRerender] = useState(0);
 
   useEffect(() => {
     patternRefs.current = Array(PATTERN_COUNT).fill(null);
@@ -106,14 +113,12 @@ export default function FooterCTABackground() {
     };
   }, [handleMouseMove]);
 
-  const isInViewport = useCallback((element: HTMLElement) => {
+  const isInViewport = (element: HTMLElement) => {
     const rect = element.getBoundingClientRect();
     const windowHeight =
       window.innerHeight || document.documentElement.clientHeight;
-    const inView = rect.top <= windowHeight && rect.bottom >= 0;
-
-    return inView;
-  }, []);
+    return rect.top <= windowHeight && rect.bottom >= 0;
+  };
 
   const setPatternRef = useCallback(
     (index: number) => (el: HTMLDivElement | null) => {
@@ -122,31 +127,39 @@ export default function FooterCTABackground() {
     []
   );
 
+  useEffect(() => {
+    forceRerender((v) => v + 1);
+  }, []);
+
+  const patterns = useMemo(() => {
+    return Array.from({ length: PATTERN_COUNT }).map((_, i) => ({
+      id: `pattern-${i}`,
+      index: i,
+      key: i,
+    }));
+  }, []);
+
   return (
     <div ref={containerRef} className="absolute inset-0 z-0">
-      {patterns.map((pattern) => (
-        <div
-          key={pattern.key}
-          ref={setPatternRef(pattern.index)}
-          className="absolute flex items-center justify-center"
-          style={{
-            top: `${pattern.top}%`,
-            left: `${pattern.left}%`,
-            transform: "translate(-50%, -50%)",
-            pointerEvents: "none",
-          }}
-        >
-          <BackgroundPattern
-            id={pattern.id}
-            mousePosition={mousePosition}
-            patternRef={patternRefs.current[pattern.index]}
-            parentSection={parentSectionRef.current}
-            isInViewport={isInViewport}
-            initialRotation={pattern.initialRotation}
-            isActive={isHovering}
-          />
-        </div>
-      ))}
+      <div className="grid grid-cols-10 grid-rows-10 gap-y-2">
+        {patterns.map((pattern) => (
+          <div
+            key={pattern.key}
+            ref={setPatternRef(pattern.index)}
+            className="relative flex items-center justify-center"
+          >
+            <BackgroundPattern
+              id={pattern.id}
+              mousePosition={mousePosition}
+              patternRef={patternRefs.current[pattern.index]}
+              parentSection={parentSectionRef.current}
+              isInViewport={isInViewport}
+              index={pattern.index}
+              shouldTrackMouse={shouldTrackMouse}
+            />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -157,8 +170,8 @@ type BackgroundPatternProps = {
   patternRef: HTMLDivElement | null;
   parentSection: HTMLElement | null;
   isInViewport: (element: HTMLElement) => boolean;
-  initialRotation: number;
-  isActive: boolean;
+  index: number;
+  shouldTrackMouse: boolean;
 };
 
 const BackgroundPattern = React.memo(function BackgroundPattern({
@@ -167,18 +180,22 @@ const BackgroundPattern = React.memo(function BackgroundPattern({
   patternRef,
   parentSection,
   isInViewport,
-  initialRotation,
-  isActive,
+  index,
+  shouldTrackMouse,
 }: BackgroundPatternProps) {
   const inViewport = useMemo(() => {
     if (!patternRef) return false;
     return isInViewport(patternRef);
   }, [patternRef, isInViewport]);
 
-  const angle = useMemo(() => {
-    if (!inViewport) return initialRotation;
+  const initialAngle = useMemo(() => {
+    const PRIME = 997;
+    return (index * PRIME) % 360;
+  }, [index]);
 
-    if (!isActive || !patternRef || !parentSection) return initialRotation;
+  const angle = useMemo(() => {
+    if (!shouldTrackMouse || !patternRef || !parentSection || !inViewport)
+      return initialAngle;
 
     const rect = patternRef.getBoundingClientRect();
     const sectionRect = parentSection.getBoundingClientRect();
@@ -194,13 +211,13 @@ const BackgroundPattern = React.memo(function BackgroundPattern({
 
     return angleDeg;
   }, [
+    shouldTrackMouse,
     mousePosition.x,
     mousePosition.y,
     patternRef,
     parentSection,
     inViewport,
-    isActive,
-    initialRotation,
+    initialAngle,
   ]);
 
   const color = useMemo(() => {
@@ -232,8 +249,9 @@ const BackgroundPattern = React.memo(function BackgroundPattern({
       style={{
         transform: `rotate(${angle}deg)`,
         transformOrigin: "center",
-        transition: isActive ? "transform 0.1s ease-out" : "none",
-        willChange: isActive ? "transform" : "auto",
+        transition:
+          shouldTrackMouse && inViewport ? "transform 0.1s ease-out" : "none",
+        willChange: shouldTrackMouse && inViewport ? "transform" : "auto",
       }}
     >
       <g transform="rotate(90 18 18)">
