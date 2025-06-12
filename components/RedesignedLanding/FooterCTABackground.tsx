@@ -12,13 +12,20 @@ const INNGEST_LUX = "#78716C";
 const PATTERN_COUNT = 90;
 const THROTTLE_MS = 16;
 
-export default function FooterCTABackground() {
+type FooterCTABackgroundProps = {
+  shouldTrackMouse?: boolean;
+};
+
+export default function FooterCTABackground({
+  shouldTrackMouse = false,
+}: FooterCTABackgroundProps) {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
   const patternRefs = useRef<(HTMLDivElement | null)[]>([]);
   const rafRef = useRef<number | null>(null);
   const parentSectionRef = useRef<HTMLElement | null>(null);
   const lastUpdateRef = useRef<number>(0);
+  const [, forceRerender] = useState(0);
 
   useEffect(() => {
     patternRefs.current = Array(PATTERN_COUNT).fill(null);
@@ -64,14 +71,12 @@ export default function FooterCTABackground() {
     };
   }, [handleMouseMove]);
 
-  const isInViewport = useCallback((element: HTMLElement) => {
+  const isInViewport = (element: HTMLElement) => {
     const rect = element.getBoundingClientRect();
     const windowHeight =
       window.innerHeight || document.documentElement.clientHeight;
-    const inView = rect.top <= windowHeight && rect.bottom >= 0;
-
-    return inView;
-  }, []);
+    return rect.top <= windowHeight && rect.bottom >= 0;
+  };
 
   const setPatternRef = useCallback(
     (index: number) => (el: HTMLDivElement | null) => {
@@ -79,6 +84,10 @@ export default function FooterCTABackground() {
     },
     []
   );
+
+  useEffect(() => {
+    forceRerender((v) => v + 1);
+  }, []);
 
   const patterns = useMemo(() => {
     return Array.from({ length: PATTERN_COUNT }).map((_, i) => ({
@@ -104,6 +113,7 @@ export default function FooterCTABackground() {
               parentSection={parentSectionRef.current}
               isInViewport={isInViewport}
               index={pattern.index}
+              shouldTrackMouse={shouldTrackMouse}
             />
           </div>
         ))}
@@ -119,6 +129,7 @@ type BackgroundPatternProps = {
   parentSection: HTMLElement | null;
   isInViewport: (element: HTMLElement) => boolean;
   index: number;
+  shouldTrackMouse: boolean;
 };
 
 const BackgroundPattern = React.memo(function BackgroundPattern({
@@ -128,14 +139,21 @@ const BackgroundPattern = React.memo(function BackgroundPattern({
   parentSection,
   isInViewport,
   index,
+  shouldTrackMouse,
 }: BackgroundPatternProps) {
   const inViewport = useMemo(() => {
     if (!patternRef) return false;
     return isInViewport(patternRef);
   }, [patternRef, isInViewport]);
 
+  const initialAngle = useMemo(() => {
+    const PRIME = 997;
+    return (index * PRIME) % 360;
+  }, [index]);
+
   const angle = useMemo(() => {
-    if (!patternRef || !parentSection || !inViewport) return 0;
+    if (!shouldTrackMouse || !patternRef || !parentSection || !inViewport)
+      return initialAngle;
 
     const rect = patternRef.getBoundingClientRect();
     const sectionRect = parentSection.getBoundingClientRect();
@@ -150,7 +168,15 @@ const BackgroundPattern = React.memo(function BackgroundPattern({
     const angleDeg = (angleRad * 180) / Math.PI + 45;
 
     return angleDeg;
-  }, [mousePosition.x, mousePosition.y, patternRef, parentSection, inViewport]);
+  }, [
+    shouldTrackMouse,
+    mousePosition.x,
+    mousePosition.y,
+    patternRef,
+    parentSection,
+    inViewport,
+    initialAngle,
+  ]);
 
   const color = useMemo(() => {
     if (!inViewport) return "#57534E";
@@ -179,10 +205,11 @@ const BackgroundPattern = React.memo(function BackgroundPattern({
       viewBox="0 0 36 36"
       fill="none"
       style={{
-        transform: inViewport ? `rotate(${angle}deg)` : "none",
+        transform: `rotate(${angle}deg)`,
         transformOrigin: "center",
-        transition: inViewport ? "transform 0.1s ease-out" : "none",
-        willChange: inViewport ? "transform" : "auto",
+        transition:
+          shouldTrackMouse && inViewport ? "transform 0.1s ease-out" : "none",
+        willChange: shouldTrackMouse && inViewport ? "transform" : "auto",
       }}
     >
       <g transform="rotate(90 18 18)">
