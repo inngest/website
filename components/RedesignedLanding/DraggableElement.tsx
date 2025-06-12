@@ -134,6 +134,7 @@ function DraggableItem({
         zIndex: 10,
         width: `${elementSize}px`,
         height: `${elementSize}px`,
+        pointerEvents: "auto",
         ...transformStyle,
       }}
       {...listeners}
