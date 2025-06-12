@@ -179,7 +179,7 @@ export default function CodeBlockSwitcher() {
         </h1>
 
         {/* 2 ─ language icons */}
-        <div className="flex items-center gap-2 px-3 pb-2">
+        <div className="flex items-center gap-2 pb-2">
           {LANGUAGES.map(({ id, Icon }) => (
             <button
               key={id}
