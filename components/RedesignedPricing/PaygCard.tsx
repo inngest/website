@@ -27,7 +27,7 @@ export default function PaygCard() {
   return (
     <section className="relative flex items-center py-16 text-white md:py-14">
       <div className="container mx-auto px-4">
-        <div className="relative mx-auto max-w-[1222px] overflow-hidden border-2 border-stone-800 bg-stone-900 shadow-xl sm:p-3">
+        <div className="relative mx-auto max-w-[1222px] overflow-hidden border-2 border-stone-800 shadow-xl sm:p-3">
           <div className="pointer-events-none absolute bottom-0 right-0">
             <BackgroundSVG />
           </div>
@@ -38,7 +38,7 @@ export default function PaygCard() {
                 <div className="flex flex-col gap-y-8">
                   <div>
                     <h2 className="pb-2 font-whyte text-[48px] font-light leading-[1.2] tracking-[-2.4px] text-white">
-                      Pay as you go
+                      Usage that scales
                     </h2>
                     <p className="font-circular text-base font-light leading-[1.4] text-[#E7E5E4]">
                       Lorem ipsum this is some information on the unit economics

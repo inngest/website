@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { RiArrowDownSLine } from "@remixicon/react";
 
 import classNames from "src/utils/classNames";
@@ -220,6 +220,21 @@ export function PricingCalculatorPage() {
     };
   }, [runs, steps, concurrency]);
 
+  // Update CSS custom properties so we can position slider tooltips using Tailwind arbitrary values
+  useEffect(() => {
+    // Runs slider thumb position
+    document.documentElement.style.setProperty(
+      "--runs-thumb-position",
+      calculateThumbPosition(runs, runsMin, runsMax)
+    );
+
+    // Steps slider thumb position
+    document.documentElement.style.setProperty(
+      "--steps-thumb-position",
+      calculateThumbPosition(steps, stepsMin, stepsMax)
+    );
+  }, [runs, steps]);
+
   return (
     <div
       id="calculator"
@@ -250,7 +265,7 @@ export function PricingCalculatorPage() {
 
                 {/* Number of Runs Slider */}
                 <div className="space-y-1">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between pb-2">
                     <label
                       htmlFor="runs-slider"
                       className="flex items-center text-sm font-medium text-neutral-300"
@@ -263,17 +278,7 @@ export function PricingCalculatorPage() {
                     </label>
                   </div>
                   <div className="relative">
-                    <div
-                      className="pointer-events-none absolute z-10 -translate-y-1/2 transform  bg-white px-3 py-1.5 text-sm font-semibold text-neutral-900 shadow-lg"
-                      style={{
-                        left: `calc(${calculateThumbPosition(
-                          runs,
-                          runsMin,
-                          runsMax
-                        )} + 18px)`,
-                        top: "50%",
-                      }}
-                    >
+                    <div className="pointer-events-none absolute left-[calc(var(--runs-thumb-position)+18px)] top-1/2 z-10 -translate-y-1/2 transform bg-white px-3 py-1.5 text-sm font-semibold text-neutral-900 shadow-lg">
                       {runs.toLocaleString()}
                       <div className="absolute right-full top-1/2 h-0 w-0 -translate-y-1/2 border-y-[6px] border-r-[6px] border-y-transparent border-r-white" />
                     </div>
@@ -292,7 +297,7 @@ export function PricingCalculatorPage() {
 
                 {/* Average Number of Steps Slider */}
                 <div className="space-y-1">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between pb-2">
                     <label
                       htmlFor="steps-slider"
                       className="flex items-center text-sm font-medium text-neutral-300"
@@ -305,17 +310,7 @@ export function PricingCalculatorPage() {
                     </label>
                   </div>
                   <div className="relative">
-                    <div
-                      className="pointer-events-none absolute z-10 -translate-y-1/2 transform  bg-white px-3 py-1.5 text-sm font-semibold text-neutral-900 shadow-lg"
-                      style={{
-                        left: `calc(${calculateThumbPosition(
-                          steps,
-                          stepsMin,
-                          stepsMax
-                        )} + 18px)`,
-                        top: "50%",
-                      }}
-                    >
+                    <div className="pointer-events-none absolute left-[calc(var(--steps-thumb-position)+18px)] top-1/2 z-10 -translate-y-1/2 transform bg-white px-3 py-1.5 text-sm font-semibold text-neutral-900 shadow-lg">
                       {steps.toLocaleString()}
                       <div className="absolute right-full top-1/2 h-0 w-0 -translate-y-1/2 border-y-[6px] border-r-[6px] border-y-transparent border-r-white" />
                     </div>
