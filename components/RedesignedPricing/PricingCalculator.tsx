@@ -259,7 +259,7 @@ export function PricingCalculatorPage() {
             <div className="grid grid-cols-1 gap-8 lg:grid-cols-[2fr_1fr] lg:gap-0">
               {/* Left Column: Controls */}
               <div className="space-y-8 bg-stone-900 p-8">
-                <h1 className="font-whyte text-2xl font-[350] leading-[1.2] tracking-[-1.2px] text-[#FAFAF9]">
+                <h1 className="font-whyte text-2xl font-medium leading-[1.2] tracking-[-1.2px] text-[#FAFAF9]">
                   Which plan is right for me?
                 </h1>
 
@@ -276,12 +276,11 @@ export function PricingCalculatorPage() {
                         aria-label="More information about number of runs"
                       />
                     </label>
+                    <span className="font-bold text-stone-50">
+                      {runs.toLocaleString()}
+                    </span>
                   </div>
                   <div className="relative">
-                    <div className="pointer-events-none absolute left-[calc(var(--runs-thumb-position)+18px)] top-1/2 z-10 -translate-y-1/2 transform bg-white px-3 py-1.5 text-sm font-semibold text-neutral-900 shadow-lg">
-                      {runs.toLocaleString()}
-                      <div className="absolute right-full top-1/2 h-0 w-0 -translate-y-1/2 border-y-[6px] border-r-[6px] border-y-transparent border-r-white" />
-                    </div>
                     <Slider
                       id="runs-slider"
                       value={[runs]}
@@ -308,12 +307,11 @@ export function PricingCalculatorPage() {
                         aria-label="More information about average number of steps per run"
                       />
                     </label>
+                    <span className="font-bold text-stone-50">
+                      {steps.toLocaleString()}
+                    </span>
                   </div>
                   <div className="relative">
-                    <div className="pointer-events-none absolute left-[calc(var(--steps-thumb-position)+18px)] top-1/2 z-10 -translate-y-1/2 transform bg-white px-3 py-1.5 text-sm font-semibold text-neutral-900 shadow-lg">
-                      {steps.toLocaleString()}
-                      <div className="absolute right-full top-1/2 h-0 w-0 -translate-y-1/2 border-y-[6px] border-r-[6px] border-y-transparent border-r-white" />
-                    </div>
                     <Slider
                       id="steps-slider"
                       value={[steps]}
