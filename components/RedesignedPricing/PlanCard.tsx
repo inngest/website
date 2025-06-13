@@ -14,10 +14,7 @@ import * as Accordion from "@radix-ui/react-accordion";
 import classNames from "src/utils/classNames";
 import Link from "next/link";
 import { cn } from "../utils/classNames";
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "components/RedesignedLanding/toggle-group";
+import { Tabs, TabsList, TabsTrigger } from "./Tabs";
 
 const CLOSED_VALUE = "CLOSED";
 export default function PlanCard({
@@ -76,25 +73,24 @@ export default function PlanCard({
               <h2 className="font-whyte text-3xl font-light text-white">
                 Hobby
               </h2>
-              <ToggleGroup
-                type="single"
-                defaultValue="hobby"
-                onValueChange={handlePlanChange}
-                className="-m-0.5 rounded-full bg-canvasMuted p-0.5"
-              >
-                <ToggleGroupItem
-                  value="hobby"
-                  className="px-5 py-1.5 font-circular text-sm font-normal leading-5 text-[#F6F6F6] hover:text-white data-[state=on]:rounded-full data-[state=on]:bg-canvasBase data-[state=on]:text-white"
-                >
-                  Free
-                </ToggleGroupItem>
-                <ToggleGroupItem
-                  value="payg"
-                  className="px-5 py-1.5 font-circular text-sm font-normal leading-5 text-[#F6F6F6] hover:text-white data-[state=on]:rounded-full data-[state=on]:bg-canvasBase data-[state=on]:text-white"
-                >
-                  Pay as you go
-                </ToggleGroupItem>
-              </ToggleGroup>
+              <Tabs defaultValue="hobby" className="max-w-xs">
+                <TabsList className="rounded-full bg-stone-600">
+                  <TabsTrigger
+                    value="hobby"
+                    className="data-[state=active]:text-brand-foreground data-[state=inactive]:text-brand-muted focus-visible:ring-ring focus-visible:ring-offset-brand-background rounded-full px-4 py-2 text-sm font-medium transition-colors duration-200 ease-in-out focus-visible:ring-2 focus-visible:ring-offset-2 data-[state=active]:bg-[#080808]"
+                    onClick={() => handlePlanChange("hobby")}
+                  >
+                    Free
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="payg"
+                    className="data-[state=active]:text-brand-foreground data-[state=inactive]:text-brand-muted focus-visible:ring-ring focus-visible:ring-offset-brand-background rounded-full px-4 py-2 text-sm font-medium transition-colors duration-200 ease-in-out focus-visible:ring-2 focus-visible:ring-offset-2 data-[state=active]:bg-[#080808]"
+                    onClick={() => handlePlanChange("payg")}
+                  >
+                    Pay as you go
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
             </div>
           ) : (
             <h2 className="font-whyte text-3xl font-light text-white">
