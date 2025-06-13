@@ -1,0 +1,54 @@
+---
+heading: "Introducing: Metrics exports to Datadog, Grafana and more"
+image: /assets/blog/announcing-metrics-export/featured-image.png
+showSubtitle: true
+subtitle: Leverage our new Datadog and Prometheus integrations to build custom metrics and alerting.
+date: 2025-06-13
+author: Charly Poly
+category: product-updates
+focus: true
+---
+
+
+**Observability is one of the core focuses of Inngest**. Following the [revamp of our traces view and monitoring last September](/blog/enhanced-observability-traces-and-metrics), we are
+thrilled to introduce the Datadog and Prometheus integrations.
+
+As more and more customers are growing with Inngest, we've seen a need to integrate Inngest metrics into existing monitoring and alerting systems.
+The [Datadog](/docs/platform/monitor/datadog-integration) and [Prometheus](/docs/platform/monitor/prometheus-metrics-export-integration) integrations **are now available on all paid plans to export a wide range of metrics**, from function runs, SDK requests, to step executions, into your existing monitoring and alerting systems.
+
+
+
+## Datadog integration: ready-to-use dashboards and custom alerting
+
+Our Datadog integration can be installed in a few clicks, without any agent configuration.
+
+Once installed, you can use our [ready-to-use dashboards](/docs/platform/monitor/datadog-integration) to monitor your Inngest functions and build custom alerting:
+
+![A Datadog dashboard using Inngest metrics](/assets/docs/platform/monitor/datadog-integration/example-dashboard-2025-05-23.png "The default dashboard for the Inngest Datadog integration")
+
+The Datadog integration exports over 12 metrics, with a granularity down to the minute and in real-time ([depending on your plan](/docs/platform/monitor/datadog-integration#metrics)).
+
+
+Get started with the [Datadog integration](/docs/platform/monitor/datadog-integration).
+
+
+## Prometheus integration: metrics for New Relic, Grafana, and more
+
+The [Prometheus integration](/docs/platform/monitor/prometheus-metrics-export-integration) enables exporting up to 9 metrics to [Prometheus](https://prometheus.io/)-compatible monitoring systems such as [New Relic](https://newrelic.com/), [Grafana](https://grafana.com/).
+
+This integration is available on all paid plans and offers more flexibility by enabling self-hosted or custom monitoring systems support.
+
+Get started with the [Prometheus integration](/docs/platform/monitor/prometheus-metrics-export-integration).
+
+
+
+
+## Looking forward
+
+The observability of Inngest Functions is constantly evolving.
+
+Here is a glimpse of what we are working on:
+- **Alerting**: we are working on an alerting feature, allowing you to create alerts in the Inngest dashboard.
+- **More metrics**: We are also exploring the possibility of including [our AI traces](/blog/ai-orchestration-with-agentkit-step-ai) in these integrations.
+
+All Inngest features are built with the community in mind. If you have any feature requests, please vote or submit them on our [roadmap page](/roadmap).
