@@ -1,4 +1,4 @@
-import { CodeGroup, CardGroup, Card, VersionBadge } from "src/shared/Docs/mdx";
+import { CodeGroup, CardGroup, Card, VersionBadge, Callout } from "src/shared/Docs/mdx";
 
 # Fetch: performing API requests or fetching data <VersionBadge version="TypeScript only" />
 
@@ -88,6 +88,15 @@ inngest.createFunction(
   },
 );
 ```
+
+<Callout variant="warning">
+  ⚠️ `fetch()` and `step.run()`
+
+  Inngest's `fetch()` calls should not be performed inside of `step.run()` blocks.
+  Doing so will result in `fetch()` to fallback to the global `fetch` implementation.
+
+  Why? The `fetch()` utility transforms the `fetch` calls into `step.run()` calls, [which cannot be nested](/docs/sdk/eslint#inngest-no-nested-steps).
+</Callout>
 
 ### Within steps
 

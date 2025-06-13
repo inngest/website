@@ -194,6 +194,11 @@ event will be sent with an appropriate error and the step will fail with a
 If the `timeout` has been reached and the invoked function is still running, the
 step will fail with a `NonRetriableError`.
 
+### Invoked function is rate limited
+
+If the called function has a rate limit configuration and is skipped, the step will fail with a `NonRetriableError`.
+It's recommended to wrap the `step.invoke` with a `try catch` if the invoked function is expected to be executing occassionally.
+
 ## Usage limits
 
 See [usage limits][usage-limits] for more details.
