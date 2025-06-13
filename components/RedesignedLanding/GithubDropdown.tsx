@@ -22,7 +22,7 @@ export default function Dropdown({
    */
   return (
     <div
-      className={`group relative z-20 rounded-md border border-subtle text-sm text-basis ${className}`}
+      className={`border-input group relative z-20 border text-sm text-basis ${className}`}
     >
       <div
         className="flex flex-row flex-nowrap items-center justify-start gap-2 text-nowrap rounded-md px-3 py-1 group-hover:bg-canvasSubtle"
@@ -44,7 +44,7 @@ export default function Dropdown({
         <div className="h-2 bg-transparent">
           {/* transparent element to persist hover */}
         </div>
-        <ul className="flex flex-col gap-2 rounded-md border border-subtle bg-surfaceBase px-3 py-2 text-sm">
+        <ul className="border-input flex flex-col gap-2 border bg-surfaceBase px-3 py-2 text-sm">
           {items.map((item, idx) => (
             <li className="" key={idx}>
               <Link
