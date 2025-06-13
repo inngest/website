@@ -82,7 +82,7 @@ export default function Header() {
               />
             </svg>
           </Link>
-          <div className="hidden lg:gap-x-6 xl:flex">
+          <div className="hidden lg:flex lg:gap-x-6">
             <PlatformPopover />
             <Link
               href={"#"}
@@ -108,10 +108,10 @@ export default function Header() {
 
         <div className="flex items-center space-x-4">
           <div className="items-center rounded-md border border-gray-700 md:flex lg:flex">
-            <OpenSourceButton className="rounded-none border-none" />
+            <OpenSourceButton className="rounded-none" />
           </div>
-          <div className="hidden space-x-4 xl:flex">
-            <Button variant="outline" asChild>
+          <div className="hidden space-x-4 lg:flex">
+            <Button variant="outline" className="hidden xl:flex" asChild>
               <Link href="/signin">Sign In</Link>
             </Button>
             <Button variant="default" asChild>
@@ -120,7 +120,7 @@ export default function Header() {
               </Link>
             </Button>
           </div>
-          <div className="flex xl:hidden">
+          <div className="flex lg:hidden">
             <button
               type="button"
               onClick={() => setMobileMenuOpen(true)}
