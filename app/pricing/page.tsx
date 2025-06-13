@@ -50,7 +50,9 @@ export default function Pricing() {
             features={FEATURES}
             sections={sections}
           />
-          <PricingTrustSection />
+          <div className="py-16 md:py-24">
+            <PricingTrustSection />
+          </div>
           <PricingFooter />
         </div>
       </div>
