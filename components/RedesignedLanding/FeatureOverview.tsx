@@ -55,10 +55,9 @@ function WorkflowsCard() {
           </p>
           <Button
             variant="outline"
-            className="group mb-4 border-gray-600 bg-transparent text-gray-300 hover:bg-gray-700/50 hover:text-white sm:mb-6 lg:mb-8"
+            className="group mb-4 bg-stone-800 text-stone-50 hover:bg-stone-700 sm:mb-6 lg:mb-8"
           >
-            Learn more{" "}
-            <ArrowRightIcon className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+            Learn more <ArrowRightIcon className="h-4 w-4" />
           </Button>
 
           <div className="mx-auto">
@@ -96,10 +95,9 @@ function AgentsCard() {
 
           <Button
             variant="outline"
-            className="group relative z-10 mb-4 border-gray-600 bg-transparent text-gray-300 hover:bg-gray-700/50 hover:text-white sm:mb-6 lg:mb-8"
+            className="group relative z-10 mb-4 bg-stone-800 text-stone-50 hover:bg-stone-700 sm:mb-6 lg:mb-8"
           >
-            Learn more
-            <ArrowRightIcon className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+            Learn more <ArrowRightIcon className="h-4 w-4" />
           </Button>
 
           <div className="relative z-10">
