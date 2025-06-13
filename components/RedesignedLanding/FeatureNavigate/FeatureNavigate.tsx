@@ -24,8 +24,8 @@ export default function FeatureNavigate() {
           <Terminal />
         </div>
         <DevServerSection />
-        <div className="bg-stone-900">
-          <div className="mx-auto max-w-5xl pt-20">
+        <div className="bg-stone-900 py-20 md:py-40">
+          <div className="mx-auto max-w-5xl">
             <h1 className=" mb-2 font-whyte text-4xl font-light">
               Ship at the speed of AI
             </h1>
