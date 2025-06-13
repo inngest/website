@@ -160,8 +160,8 @@ export default function PlanCard({
               {selectedPlan.highlights.runs.split(" ").slice(1).join(" ")}
             </div>
           </div>
-          <hr className="my-2 w-11 border-muted" />
-          <div className="mb-3 flex items-center gap-2">
+          <hr className="my-4 w-11 border-muted" />
+          <div className="mb-4 flex items-center gap-2">
             <RiGitPrDraftLine className="rotate-90 text-inngestLux" />
             <div className="font-circular text-lg font-light leading-[1.4] text-stone-50">
               <span className="font-circular text-lg font-bold leading-[25.2px] text-stone-50">
@@ -173,7 +173,7 @@ export default function PlanCard({
                 .join(" ")}
             </div>
           </div>
-          <div className="mb-3 flex items-center gap-2">
+          <div className="mb-4 flex items-center gap-2">
             <RiDiscussLine className="text-inngestLux" />
             <div className="font-circular text-lg font-light leading-[1.4] text-stone-50">
               <span className="font-circular text-lg font-bold leading-[25.2px] text-stone-50">
@@ -182,7 +182,7 @@ export default function PlanCard({
               {selectedPlan.highlights.realtime.split(" ").slice(1).join(" ")}
             </div>
           </div>
-          <div className="mb-3 flex items-center gap-2">
+          <div className="mb-4 flex items-center gap-2">
             <RiGitPrDraftLine className="rotate-90 text-inngestLux" />
             <div className="font-circular text-lg font-light leading-[1.4] text-stone-50">
               <span className="font-circular text-lg font-bold leading-[25.2px] text-stone-50">
