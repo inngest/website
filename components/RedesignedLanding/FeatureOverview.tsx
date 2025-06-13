@@ -10,25 +10,6 @@ import {
 export default function OrchestrationSection() {
   return (
     <section className="relative flex items-center bg-stone-900 py-16 text-white md:py-24">
-      <div className="absolute left-0 top-0 h-32 w-32 opacity-5">
-        {[...Array(4)].map((_, i) => (
-          <div key={i} className="grid grid-cols-2 gap-px">
-            {[...Array(4)].map((_, j) => (
-              <div key={j} className="h-8 w-8 bg-neutral-700" />
-            ))}
-          </div>
-        ))}
-      </div>
-      <div className="absolute bottom-0 right-0 h-32 w-32 rotate-180 transform opacity-5">
-        {[...Array(4)].map((_, i) => (
-          <div key={i} className="grid grid-cols-2 gap-px">
-            {[...Array(4)].map((_, j) => (
-              <div key={j} className="h-8 w-8 bg-neutral-700" />
-            ))}
-          </div>
-        ))}
-      </div>
-
       <div className="container mx-auto px-4">
         <div className="mb-12 text-center md:mb-20">
           <h1 className="mb-4 font-whyte text-4xl font-light text-stone-50 md:text-5xl lg:text-6xl">
@@ -58,7 +39,6 @@ function WorkflowsCard() {
       <div className="pointer-events-none absolute -left-3/4 -top-3/4 h-[150%] w-[150%] rounded-full bg-[#655279]" />
 
       <Card className="relative h-full w-full overflow-hidden rounded-none border-none bg-stone-800 shadow-2xl">
-        <div className="h-1.5"></div>
         <CardHeader className="p-3 sm:p-4 lg:p-6">
           <CardTitle className="text-lg font-light text-stone-50 sm:text-xl lg:text-2xl xl:text-3xl">
             <span className="font-whyteInktrap font-semibold">Workflows:</span>{" "}
@@ -80,10 +60,9 @@ function WorkflowsCard() {
           </p>
           <Button
             variant="outline"
-            className="group mb-4 border-gray-600 bg-transparent text-gray-300 hover:bg-gray-700/50 hover:text-white sm:mb-6 lg:mb-8"
+            className="group mb-4 bg-stone-800 text-stone-50 hover:bg-stone-700 sm:mb-6 lg:mb-8"
           >
-            Learn more{" "}
-            <ArrowRightIcon className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+            Learn more <ArrowRightIcon className="h-4 w-4" />
           </Button>
 
           <div className="mx-auto">
@@ -111,8 +90,6 @@ function AgentsCard() {
           </CardTitle>
         </CardHeader>
         <CardContent className="p-3 pt-0 font-circular text-sm font-normal sm:p-4 lg:p-6 lg:pt-0 lg:text-base">
-          <div className="pointer-events-none absolute -right-1/3 -top-1/2 h-2/3 w-2/3 rounded-full bg-yellow-500/70 opacity-15 blur-[120px]" />
-
           <p className="relative z-10 mb-4 text-base font-normal leading-relaxed text-stone-200 sm:mb-6 lg:text-lg">
             Combine <span className="font-medium text-inngestLux">memory</span>{" "}
             with deterministic routing,{" "}
@@ -123,10 +100,9 @@ function AgentsCard() {
 
           <Button
             variant="outline"
-            className="group relative z-10 mb-4 border-gray-600 bg-transparent text-gray-300 hover:bg-gray-700/50 hover:text-white sm:mb-6 lg:mb-8"
+            className="group relative z-10 mb-4 bg-stone-800 text-stone-50 hover:bg-stone-700 sm:mb-6 lg:mb-8"
           >
-            Learn more
-            <ArrowRightIcon className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+            Learn more <ArrowRightIcon className="h-4 w-4" />
           </Button>
 
           <div className="relative z-10">
