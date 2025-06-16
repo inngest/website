@@ -83,7 +83,7 @@ export const PLANS: Plan[] = [
     },
     primaryCTA: false,
     description:
-      "Get started with modern durable execution for free, with the future to grow",
+      "Get started with modern durable execution for free, no credit card required",
     cta: {
       href: `${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=pricing-card-free`,
       text: "Get started for free",
@@ -128,10 +128,10 @@ export const PLANS: Plan[] = [
       text: "Get started",
     },
     highlights: {
-      runs: "Pay per execution",
-      concurrency: "10 concurrent steps",
-      realtime: "25 realtime connections",
-      users: "1 user",
+      runs: "Pay per execution (100k included)",
+      concurrency: "25 concurrent steps",
+      realtime: "50 realtime connections",
+      users: "3 users",
     },
     planIncludes: "INCLUDED IN HOBBY PLAN",
     features: [

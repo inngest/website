@@ -108,9 +108,17 @@ export default function PlanCard({
             <p className="pb-2 pt-2 text-xs font-bold uppercase text-inngestLux">
               Starting at
             </p>
-          ) : (
+          ) : selectedPlan.name === PLAN_NAMES.payAsYouGo ? (
+            <p className="pb-2 pt-2 text-xs font-bold uppercase text-inngestLux">
+              Billed by
+            </p>
+          ) : selectedPlan.name === PLAN_NAMES.enterprise ? (
             <p className="pb-2 pt-2 text-xs font-bold uppercase text-inngestLux">
               To learn more
+            </p>
+          ) : (
+            <p className="pb-2 pt-2 text-xs font-bold uppercase text-inngestLux">
+              Always
             </p>
           )}
           <p className="font-whyte text-[40px] font-light leading-[1.2] tracking-[-2px] text-[#FAFAF9]">

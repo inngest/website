@@ -5,7 +5,7 @@ import FooterLogo from "./FooterLogo";
 export default async function PricingFooter() {
   return (
     <>
-      <footer className="relative w-screen bg-stone-950">
+      <footer className="relative w-screen border border-t-stone-700 bg-stone-950">
         <FooterCTA />
         <FooterLinks />
         <FooterLogo />
