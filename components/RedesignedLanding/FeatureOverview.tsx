@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "./Card";
 
 export default function OrchestrationSection() {
   return (
-    <section className="relative flex items-center bg-stone-900 py-16 text-white md:py-24">
+    <section className="relative flex items-center bg-stone-900 py-16 text-white md:py-40">
       <div className="container mx-auto px-4">
         <div className="mb-12 text-center md:mb-20">
           <h1 className="mb-4 font-whyte text-4xl font-light text-stone-50 md:text-5xl lg:text-6xl">
