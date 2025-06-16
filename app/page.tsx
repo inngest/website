@@ -19,7 +19,7 @@ export const metadata: Metadata = generateMetadata({
 
 export default function Page() {
   return (
-    <div>
+    <div className="bg-stone-950">
       <Hero2 />
       <OrchestrationSection />
       <FeatureNavigate />
