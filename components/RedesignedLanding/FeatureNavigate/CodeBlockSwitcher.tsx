@@ -169,7 +169,7 @@ export default function CodeBlockSwitcher() {
   const syntax = LANGUAGES.find((l) => l.id === activeLanguage)!.syntax;
 
   return (
-    <div className="mx-auto my-16 flex max-w-7xl flex-col justify-center md:flex-row">
+    <div className="mx-auto mb-40 mt-40 flex max-w-7xl flex-col justify-center md:flex-row">
       <div className="flex flex-col ">
         {/* 1 ─ heading */}
         <h1 className="pb-20 font-whyteInktrap text-5xl font-normal">

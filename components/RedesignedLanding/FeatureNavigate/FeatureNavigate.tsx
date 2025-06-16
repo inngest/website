@@ -35,7 +35,7 @@ export default function FeatureNavigate() {
               nisl iaculis. Sed molestie imperdiet metus ac laoreet.
             </p>
           </div>
-          <div className="mx-auto flex max-w-screen-2xl flex-col pb-28 pt-20 md:flex-row md:justify-end">
+          <div className="mx-auto flex max-w-screen-2xl flex-col pb-32 pt-20 md:flex-row md:justify-end">
             <DeploySVG />
 
             <Card className="mt-8 flex h-full max-w-xs flex-col justify-center rounded-none border-none bg-stone-900 md:ml-8 md:mt-0">
@@ -58,7 +58,7 @@ export default function FeatureNavigate() {
             </Card>
           </div>
 
-          <div className="mx-auto flex max-w-5xl flex-col items-start py-20">
+          <div className="mx-auto flex max-w-5xl flex-col items-start pt-32">
             <FaultToleranceSVG />
             <Card className="flex h-full max-w-sm flex-col justify-center rounded-none border-none bg-stone-900">
               <CardHeader className="pl-0">

@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "./Card";
 
 export default function DevServerSection() {
   return (
-    <div className="mx-auto my-16 flex max-w-7xl flex-col items-center xl:flex-row">
+    <div className="mx-auto mb-40 mt-40 flex max-w-7xl flex-col items-center xl:flex-row">
       <Card className="order-2 mb-8 flex h-full max-w-2xl flex-col justify-center rounded-none border-none bg-stone-950 md:mb-0 xl:order-1">
         <CardHeader className="pl-10 pr-6 pt-16">
           <CardTitle className="font-whyte text-3xl font-light">
