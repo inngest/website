@@ -165,7 +165,7 @@ export default function TestimonialsCarousel() {
 
   return (
     <div className="relative bg-stone-950 py-24 text-white md:px-4 md:py-48">
-      <div className="relative z-10 mx-[calc((100vw-72rem)/2)]">
+      <div className="relative z-10 xl:mx-[calc((100vw-72rem)/2)]">
         <div className="mb-12  flex flex-col gap-4 px-4 md:flex-row md:items-center md:justify-between md:px-0">
           <div className="max-w-lg font-whyte">
             <h2 className="text-3xl font-light leading-tight md:text-4xl">
@@ -194,7 +194,7 @@ export default function TestimonialsCarousel() {
           </div>
         </div>
       </div>
-      <div className="ml-0 md:ml-[calc((100vw-72rem)/2)]">
+      <div className="ml-0 xl:ml-[calc((100vw-72rem)/2)]">
         <Carousel
           setApi={setApi}
           opts={{
