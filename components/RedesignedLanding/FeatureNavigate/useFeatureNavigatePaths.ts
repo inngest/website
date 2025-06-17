@@ -7,22 +7,15 @@ export interface Point {
 }
 
 interface LineData {
-  /** SVG path string */
   path: string;
-  /** Random point on the path for glow dot */
   dotPos: Point | null;
 }
 
 export interface FeatureNavigatePaths {
-  /** Lines that are only shown on desktop (xl breakpoint and up) */
   desktopLines: LineData[];
-  /** Single vertical line for mobile */
   mobileLine: LineData | null;
 }
 
-/**
- * Calculates all the dynamic connector lines for the FeatureNavigate section.
- */
 export function useFeatureNavigatePaths(): FeatureNavigatePaths {
   const [desktopLines, setDesktopLines] = useState<LineData[]>([
     { path: "", dotPos: null },
@@ -33,7 +26,6 @@ export function useFeatureNavigatePaths(): FeatureNavigatePaths {
   ]);
   const [mobileLine, setMobileLine] = useState<LineData | null>(null);
 
-  // Stable random numbers – 5 for desktop + 1 for mobile
   const randomsRef = useRef([...Array(6)].map(() => Math.random()));
 
   useLayoutEffect(() => {
@@ -178,13 +170,10 @@ export function useFeatureNavigatePaths(): FeatureNavigatePaths {
       ]);
     };
 
-    // Initial calc
     calcPaths();
 
-    // Recalc on resize
     window.addEventListener("resize", calcPaths);
 
-    // Observe key elements for size changes
     const ro = new ResizeObserver(calcPaths);
     [
       ".code-block-anchor",

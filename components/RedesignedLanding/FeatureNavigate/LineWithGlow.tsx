@@ -19,6 +19,10 @@ interface LineWithGlowProps {
    */
   visibilityClass: string;
   orientation?: Orientation;
+  /**
+   * When true, the line is rendered with a solid stone color instead of the gradient.
+   */
+  solid?: boolean;
 }
 
 export default function LineWithGlow({
@@ -27,12 +31,17 @@ export default function LineWithGlow({
   index,
   visibilityClass,
   orientation = "horizontal",
+  solid = false,
 }: LineWithGlowProps) {
   const gradientId = `feature-nav-gradient-${index}-${visibilityClass.replace(
     /\s+/g,
     "-"
   )}`;
   const svgClasses = `pointer-events-none absolute left-0 top-0 z-10 ${visibilityClass}`;
+
+  const strokeValue = solid
+    ? "#57534E" /* Tailwind stone-neutral shade used in original gradient */
+    : `url(#${gradientId})`;
 
   return (
     <>
@@ -53,7 +62,7 @@ export default function LineWithGlow({
         {path && (
           <motion.path
             d={path}
-            stroke={`url(#${gradientId})`}
+            stroke={strokeValue}
             strokeWidth={1}
             fill="none"
             vectorEffect="non-scaling-stroke"

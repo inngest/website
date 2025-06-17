@@ -15,6 +15,7 @@ export default function Lines() {
           index={idx}
           visibilityClass="hidden xl:block"
           orientation="horizontal"
+          solid
         />
       ))}
 
@@ -26,6 +27,7 @@ export default function Lines() {
           index={0}
           visibilityClass="block md:hidden"
           orientation="vertical"
+          solid
         />
       )}
     </>

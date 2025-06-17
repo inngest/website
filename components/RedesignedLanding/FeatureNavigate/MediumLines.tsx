@@ -15,6 +15,7 @@ export default function MediumLines() {
           index={idx}
           visibilityClass="hidden md:block xl:hidden"
           orientation="horizontal"
+          solid
         />
       ))}
 
@@ -26,6 +27,7 @@ export default function MediumLines() {
           index={0}
           visibilityClass="hidden"
           orientation="vertical"
+          solid
         />
       )}
     </>
