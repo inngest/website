@@ -66,10 +66,7 @@
     "mdast-util-to-string": "4.0.0",
     "mdx-annotations": "0.1.4",
     "monaco-editor": "0.28.1",
-<<<<<<< HEAD
-=======
     "motion": "12.18.1",
->>>>>>> origin/jakob/inn-4863-feature-navigate
     "next": "15.3.2",
     "next-mdx-remote": "5.0.0",
     "next-sitemap": "3.1.44",
