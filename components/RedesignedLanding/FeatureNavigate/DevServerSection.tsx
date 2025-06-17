@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "./Card";
 export default function DevServerSection() {
   return (
     <div className="mx-auto my-20 flex max-w-7xl flex-col items-center md:my-40 xl:flex-row">
-      <Card className="dev-card-anchor order-2 mb-8 flex h-full max-w-2xl flex-col justify-center rounded-none border-none bg-stone-950 md:mb-0 xl:order-1">
+      <Card className="dev-card-anchor order-1 mb-8 flex h-full max-w-2xl flex-col justify-center rounded-none border-none bg-stone-950 sm:order-2 md:mb-0 xl:order-1">
         <CardHeader className="pl-6 pr-6 pt-16 md:pl-10">
           <CardTitle className="font-whyte text-3xl font-light">
             Frictionless local debugging

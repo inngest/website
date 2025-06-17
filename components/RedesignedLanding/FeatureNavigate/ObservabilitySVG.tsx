@@ -4,7 +4,7 @@ export default function FullObservabilitySVG() {
       width="470"
       height="253"
       viewBox="0 0 470 253"
-      className="observability-anchor h-auto w-full xl:h-[253px] xl:w-[470px]"
+      className="observability-anchor order-2 h-auto w-full sm:order-1 xl:h-[253px] xl:w-[470px]"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >

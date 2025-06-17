@@ -23,7 +23,7 @@ export default function FeatureNavigate() {
     <>
       <div className="feature-nav-container relative bg-stone-950">
         <div className="mx-auto w-full max-w-7xl">
-          <h1 className="ml-2 mt-20 w-full font-whyteInktrap text-4xl font-normal sm:ml-0 md:text-5xl">
+          <h1 className="mt-20 w-full pl-8 font-whyteInktrap text-4xl font-normal md:text-5xl xl:pl-0">
             Start locally,
             <br />
             <span className="feature-h1-anchor font-whyte">
@@ -51,14 +51,14 @@ export default function FeatureNavigate() {
               </p>
             </div>
             <div className="mx-auto flex max-w-screen-2xl flex-col pb-12 pt-12 md:flex-row md:justify-end md:pb-32 md:pt-20">
-              <div className="hidden md:block">
+              <div className="order-2 hidden sm:order-1 md:block">
                 <DeploySVG />
               </div>
-              <div className="block md:hidden">
+              <div className="order-2 block sm:order-1 md:hidden">
                 <MobileDeploySVG />
               </div>
 
-              <Card className="mt-8 flex h-full max-w-xs flex-col justify-center rounded-none border-none bg-stone-900 md:ml-8 md:mt-0">
+              <Card className="order-1 mt-8 flex h-full max-w-xs flex-col justify-center rounded-none border-none bg-stone-900 sm:order-2 md:ml-8 md:mt-0">
                 <CardHeader className="pt-0">
                   <CardTitle className="font-whyte text-3xl font-light">
                     Deploy anywhere
@@ -81,7 +81,7 @@ export default function FeatureNavigate() {
             <div className="mx-auto flex max-w-5xl flex-col items-start pb-12 pt-12 md:pb-0 md:pt-32">
               <div className="flex w-fit flex-col items-start">
                 <FaultToleranceSVG />
-                <Card className="flex h-full max-w-sm flex-col justify-center rounded-none border-none bg-stone-900 md:z-0 md:self-end xl:self-start">
+                <Card className="flex h-full max-w-sm flex-col justify-center rounded-none border-none bg-stone-900 sm:order-1 md:z-0 md:self-end xl:self-start">
                   <CardHeader className="pl-6 xl:pl-0">
                     <CardTitle className="font-whyte text-3xl font-light">
                       Fault tolerance
@@ -101,10 +101,10 @@ export default function FeatureNavigate() {
                 </Card>
               </div>
             </div>
-            <div className="mx-auto flex max-w-5xl flex-col items-end pt-12 md:pt-0">
+            <div className="mx-auto flex max-w-lg flex-col pt-12 md:max-w-5xl md:items-end md:pt-0">
               <div className="flex flex-col items-start">
                 <FullObservabilitySVG />
-                <Card className="mt-8 flex h-full max-w-sm flex-col justify-center rounded-none border-none bg-stone-900">
+                <Card className="mt-8 flex h-full max-w-sm flex-col justify-center rounded-none border-none bg-stone-900 sm:order-1">
                   <CardHeader className="pl-6 md:pl-0">
                     <CardTitle className="font-whyte text-3xl font-light">
                       Full observability
