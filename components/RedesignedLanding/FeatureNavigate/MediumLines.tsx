@@ -200,7 +200,6 @@ export default function MediumLines() {
       // Fourth path: from bottom-left of fault tolerance svg to mid-left of observability svg
       const startX4 = endX5;
       const startY4 = faultRect.bottom - containerRect.top - 20;
-      console.log("startY4", startY4);
 
       const endX4 = observRect.left - containerRect.left;
       const endY4 = observRect.top + observRect.height / 2 - containerRect.top;
