@@ -58,10 +58,7 @@ inngest_client = inngest.Inngest(app_id="flask_example", logger=logger)
     fn_id="hello-world",
     trigger=inngest.TriggerEvent(event="say-hello"),
 )
-def hello(
-    ctx: inngest.Context,
-    step: inngest.StepSync,
-) -> str:
+def hello(ctx: inngest.ContextSync) -> str:
 
 inngest.flask.serve(
     app,
@@ -88,10 +85,7 @@ inngest_client = inngest.Inngest(app_id="fast_api_example", logger=logger)
     fn_id="hello-world",
     trigger=inngest.TriggerEvent(event="say-hello"),
 )
-async def hello(
-    ctx: inngest.Context,
-    step: inngest.Step,
-) -> str:
+async def hello(ctx: inngest.Context) -> str:
     return "Hello world!"
 
 app = fastapi.FastAPI()

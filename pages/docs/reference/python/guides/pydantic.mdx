@@ -58,9 +58,6 @@ When defining your Inngest function, use the `name` class field when specifying 
     fn_id="handle-upvoted-post",
     trigger=inngest.TriggerEvent(event=PostUpvotedEvent.name),
 )
-def fn(
-    ctx: inngest.Context,
-    step: inngest.StepSync,
-) -> None:
+def fn(ctx: inngest.ContextSync) -> None:
     event = PostUpvotedEvent.from_event(ctx.event)
 ```

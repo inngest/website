@@ -225,7 +225,7 @@ The following is an example of adding a OpenAI client to all Inngest functions, 
                 fn_id="user-create",
                 trigger=inngest.TriggerEvent(event="app/user.create"),
             )
-            async def fn(ctx: inngest.Context, step: inngest.Step):
+            async def fn(ctx: inngest.Context):
                 chat_completion = ctx.openai.chat.completions.create(
                     messages=[
                         {

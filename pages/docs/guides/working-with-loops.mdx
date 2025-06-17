@@ -248,20 +248,20 @@ Let's start with a simple example to illustrate the concept:
     fn_id="simple-function",
     trigger=inngest.TriggerEvent(event="test/simple.function")
 )
-async def simple_function(ctx: inngest.Context, step: inngest.Step):
+async def simple_function(ctx: inngest.Context):
     print("hello")
 
     async def step_a():
         print("a")
-    await step.run("a", step_a)
+    await ctx.step.run("a", step_a)
 
     async def step_b():
         print("b") 
-    await step.run("b", step_b)
+    await ctx.step.run("b", step_b)
 
     async def step_c():
         print("c")
-    await step.run("c", step_c)
+    await ctx.step.run("c", step_c)
 ```
 
 In the above example, you will see "hello" printed four times, once for the initial function entry and once for each step execution (`a`, `b`, and `c`).
@@ -313,12 +313,12 @@ from src.inngest.client import inngest_client
     id="simple-function",
     trigger=inngest.TriggerEvent(event="test/simple.function")
 )
-async def simple_function(ctx: inngest.Context, step: inngest.Step):
-    await step.run("hello", lambda: print("hello"))
+async def simple_function(ctx: inngest.Context):
+    await ctx.step.run("hello", lambda: print("hello"))
 
-    await step.run("a", lambda: print("a"))
-    await step.run("b", lambda: print("b")) 
-    await step.run("c", lambda: print("c"))
+    await ctx.step.run("a", lambda: print("a"))
+    await ctx.step.run("b", lambda: print("b")) 
+    await ctx.step.run("c", lambda: print("c"))
 
 # hello
 # a
@@ -448,7 +448,7 @@ Here's an example of an Inngest function that imports all products from a Shopif
     id="shopify-product-import",
     trigger=inngest.TriggerEvent(event="shopify/import.requested")
 )
-async def shopify_product_import(ctx: inngest.Context, step: inngest.Step):
+async def shopify_product_import(ctx: inngest.Context):
     all_products = []
     cursor = None
     has_more = True
@@ -459,7 +459,7 @@ async def shopify_product_import(ctx: inngest.Context, step: inngest.Step):
     session = await database.get_shopify_session(ctx.event.data["store_id"])
 
     while has_more:
-        page = await step.run(f"fetch-products-{cursor}", lambda: shopify.Product.all(
+        page = await ctx.step.run(f"fetch-products-{cursor}", lambda: shopify.Product.all(
             session=session,
             since_id=cursor
         ))

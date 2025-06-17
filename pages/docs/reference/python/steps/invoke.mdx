@@ -28,21 +28,15 @@ Calls another Inngest function, waits for its completion, and returns its output
     fn_id="fn-1",
     trigger=inngest.TriggerEvent(event="app/fn-1"),
 )
-async def fn_1(
-    ctx: inngest.Context,
-    step: inngest.Step,
-) -> None:
+async def fn_1(ctx: inngest.Context) -> None:
     return "Hello!"
 
 @inngest_client.create_function(
     fn_id="fn-2",
     trigger=inngest.TriggerEvent(event="app/fn-2"),
 )
-async def fn_2(
-    ctx: inngest.Context,
-    step: inngest.Step,
-) -> None:
-    output = await step.invoke(
+async def fn_2(ctx: inngest.Context) -> None:
+    output = await ctx.step.invoke(
         "invoke",
         function=fn_1,
     )
