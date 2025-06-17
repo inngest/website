@@ -8,7 +8,7 @@ interface LineData {
 }
 
 export interface FeatureNavigatePathsMedium {
-  desktopLines: LineData[]; // lines shown on md breakpoint (so call them mediumLines)
+  desktopLines: LineData[];
   mobileLine: LineData | null;
 }
 
