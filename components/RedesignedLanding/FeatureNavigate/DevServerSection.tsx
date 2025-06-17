@@ -2,20 +2,20 @@ import { Card, CardContent, CardHeader, CardTitle } from "./Card";
 
 export default function DevServerSection() {
   return (
-    <div className="mx-auto mb-40 mt-40 flex max-w-7xl flex-col items-center xl:flex-row">
-      <Card className="order-2 mb-8 flex h-full max-w-2xl flex-col justify-center rounded-none border-none bg-stone-950 md:mb-0 xl:order-1">
-        <CardHeader className="pl-10 pr-6 pt-16">
+    <div className="mx-auto my-20 flex max-w-7xl flex-col items-center md:my-40 xl:flex-row">
+      <Card className="dev-card-anchor order-2 mb-8 flex h-full max-w-2xl flex-col justify-center rounded-none border-none bg-stone-950 md:mb-0 xl:order-1">
+        <CardHeader className="pl-6 pr-6 pt-16 md:pl-10">
           <CardTitle className="font-whyte text-3xl font-light">
             Frictionless local debugging
           </CardTitle>
         </CardHeader>
-        <CardContent className="max-w-lg px-5 pb-16 pl-10 pr-6 font-circular text-base font-normal text-stone-300">
+        <CardContent className="max-w-lg pb-16 pl-6 pr-6 font-circular text-base font-normal text-stone-300 md:pl-10 md:pr-6">
           Replace floods of console.logs with rich logs, live traces with LLM
           input and outputs, all running locally.
         </CardContent>
       </Card>
-      <div className="order-1 flex flex-col items-center xl:order-2">
-        <h2 className="font-sm text-center font-circular font-light">
+      <div className="devsvg-anchor relative z-30 order-1 flex flex-col items-center xl:order-2">
+        <h2 className="devserver-anchor z-30 text-center font-circular text-xs font-light md:text-sm">
           INSTANT DEVELOPMENT ENVIRONMENT
         </h2>
         <DevServerSVG />
@@ -26,8 +26,9 @@ export default function DevServerSection() {
 
 function DevServerSVG() {
   return (
-    <div className="flex w-full flex-col items-center">
+    <div className=" flex w-full flex-col items-center">
       <svg
+        className="h-auto w-full xl:h-[420px] xl:w-[660px]"
         width="660"
         height="420"
         viewBox="0 0 660 420"
