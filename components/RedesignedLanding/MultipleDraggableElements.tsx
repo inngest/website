@@ -115,17 +115,24 @@ const SCREEN_BREAKPOINTS = {
   xl: 1536,
 };
 
+const HERO_MAX_WIDTH = 1800; // Width at which the hero stops growing and gains side-margins
+
 export function MultipleDraggableElements() {
   const [currentScreenSize, setCurrentScreenSize] =
     useState<ScreenSize>("default");
   const [currentGridSize, setCurrentGridSize] = useState<number>(75);
   const [isClientMounted, setIsClientMounted] = useState(false);
+  const [offsetX, setOffsetX] = useState<number>(0);
 
   useEffect(() => {
     setIsClientMounted(true);
 
     const handleWindowResize = () => {
       const width = window.innerWidth;
+
+      // Calculate horizontal offset beyond the hero's max width.
+      const newOffsetX = Math.max(0, (width - HERO_MAX_WIDTH) / 2);
+      setOffsetX(newOffsetX);
 
       if (width < SCREEN_BREAKPOINTS.sm) {
         setCurrentScreenSize("sm");
@@ -195,8 +202,10 @@ export function MultipleDraggableElements() {
             selectedPosition = imageConfig.positions.default;
         }
 
+        // Apply horizontal offset so elements stay centered with the hero on
+        // ultra-wide screens, then snap to the nearest grid point.
         const alignedX = alignPositionToGrid(
-          selectedPosition.x,
+          selectedPosition.x + offsetX,
           currentGridSize
         );
         const alignedY = alignPositionToGrid(

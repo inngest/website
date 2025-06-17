@@ -7,7 +7,7 @@ import { Button } from "src/components/RedesignedLanding/Button";
 export default function Hero() {
   return (
     <div className="bg-stone-950">
-      <main className="relative mx-auto w-full bg-stone-950 px-4 pb-16 pt-20 md:pt-52 lg:pt-56">
+      <main className="relative mx-auto w-full max-w-[1800px] bg-stone-950 px-4 pb-16 pt-20 md:pt-52 lg:pt-56">
         <GridBackground
           lineColor="rgba(70, 70, 70, 0.3)"
           gridSize={{
@@ -23,7 +23,7 @@ export default function Hero() {
               <h1 className="block font-whyteInktrap">Develop AI products</h1>
               <h2 className="block font-whyte">at the speed of thought</h2>
             </div>
-            <div className="relative z-10 mx-auto max-w-60 text-left font-circular text-sm md:max-w-sm md:text-base lg:mr-44 lg:max-w-md lg:text-xl 2xl:mr-96">
+            <div className="relative z-10 mx-auto max-w-60 text-left font-circular text-sm md:max-w-sm md:text-base lg:mr-44 lg:max-w-[500px] lg:text-xl 2xl:mr-96">
               <p className="mb-8 font-circular text-base font-normal leading-8 text-stone-200 md:font-light lg:text-2xl">
                 Inngest is the platform for building agentic workflows and
                 agents powering AI products from experiment to production.
