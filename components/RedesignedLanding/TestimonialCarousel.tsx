@@ -209,7 +209,7 @@ export default function TestimonialsCarousel() {
             {testimonials.map((testimonial) => (
               <CarouselItem
                 key={testimonial.id}
-                className="basis-[95%] pl-4 sm:basis-[85%] md:basis-[65%] lg:basis-[45%] xl:basis-[38%] 2xl:basis-[32%]"
+                className="basis-[95%] pl-4 sm:basis-[85%] md:basis-[65%] lg:basis-[45%] xl:basis-[38%] 2xl:basis-[40%]"
               >
                 <Card className="h-80 rounded-none border-stone-900 bg-stone-900">
                   <CardContent className="relative h-full overflow-hidden p-6 md:p-8">
