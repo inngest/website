@@ -169,17 +169,15 @@ export default function CodeBlockSwitcher() {
   const syntax = LANGUAGES.find((l) => l.id === activeLanguage)!.syntax;
 
   return (
-    <div className="mx-auto mb-40 mt-40 flex max-w-7xl flex-col justify-center md:flex-row">
+    <div
+      id="code-block-switcher"
+      className="code-block-switcher mx-auto mb-20 mt-8 flex max-w-7xl flex-col justify-center md:mb-40 xl:flex-row"
+    >
       <div className="flex flex-col ">
         {/* 1 ─ heading */}
-        <h1 className="pb-20 font-whyteInktrap text-5xl font-normal">
-          Start locally,
-          <br />
-          <span className="font-whyte">with your stack.</span>
-        </h1>
 
         {/* 2 ─ language icons */}
-        <div className="flex items-center gap-2 pb-2">
+        <div className="z-30 flex items-center gap-2 pb-2">
           {LANGUAGES.map(({ id, Icon }) => (
             <button
               key={id}
@@ -194,7 +192,7 @@ export default function CodeBlockSwitcher() {
         {/* 3 ─ row that should have equal heights */}
         <div className="flex flex-col items-stretch xl:flex-row">
           {/* left: step-tabs + code */}
-          <div className="max-w-3xl border-2 border-stone-700 md:w-[48rem]">
+          <div className="code-block-anchor relative z-30 w-full max-w-3xl overflow-x-auto border-2 border-stone-700 md:w-[48rem]">
             <div className="flex h-9 border-b-2 border-stone-700 bg-stone-900 px-[15px]">
               {STEPS.map((stepId) => (
                 <button
@@ -216,7 +214,7 @@ export default function CodeBlockSwitcher() {
           </div>
 
           {/* right: card */}
-          <Card className="mt-8 flex h-full max-w-2xl flex-col justify-center rounded-none border-none bg-stone-950 md:ml-8 md:mt-0">
+          <Card className="code-card-anchor mt-8 flex h-full max-w-2xl flex-col justify-center rounded-none border-none bg-stone-950 md:ml-8 md:mt-0">
             <CardHeader className="">
               <CardTitle className="font-whyte text-3xl font-light">
                 Stop fighting abstraction, build your product

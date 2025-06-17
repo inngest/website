@@ -55,7 +55,9 @@ export function Fence({
       theme={themes.gruvboxMaterialDark}
     >
       {({ className, style, tokens, getTokenProps }) => (
-        <pre className={`bg-stone-800 ${className} flex pt-3 text-sm`}>
+        <pre
+          className={`bg-stone-800 ${className} flex overflow-x-auto pt-3 text-sm`}
+        >
           <code
             aria-hidden
             className="w-10 select-none pr-4 text-right  text-[#ADADAD]"
