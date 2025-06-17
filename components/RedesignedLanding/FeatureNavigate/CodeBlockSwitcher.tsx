@@ -174,8 +174,6 @@ export default function CodeBlockSwitcher() {
       className="code-block-switcher mx-auto mb-20 mt-8 flex max-w-7xl flex-col justify-center md:mb-40 xl:flex-row"
     >
       <div className="flex flex-col">
-        {/* 1 ─ heading */}
-
         <div className="flex flex-col items-stretch xl:flex-row">
           <div className="z-30 order-2 flex-col sm:order-1">
             {/* 2 ─ language icons */}
@@ -193,7 +191,7 @@ export default function CodeBlockSwitcher() {
 
             {/* 3 ─ row that should have equal heights */}
             {/* left: step-tabs + code */}
-            <div className="code-block-anchor relative z-30 order-2 w-full max-w-3xl overflow-x-auto border-2 border-stone-700 sm:order-1 md:w-[48rem]">
+            <div className="code-block-anchor relative z-30 order-2 w-full overflow-x-auto border-2 border-stone-700 sm:order-1 md:w-[48rem] md:max-w-full">
               <div className="flex h-9 border-b-2 border-stone-700 bg-stone-900 px-[15px]">
                 {STEPS.map((stepId) => (
                   <button
