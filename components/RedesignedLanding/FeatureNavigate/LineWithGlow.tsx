@@ -68,7 +68,7 @@ export default function LineWithGlow({
             vectorEffect="non-scaling-stroke"
             initial={{ pathLength: 0 }}
             animate={{ pathLength: 1 }}
-            transition={{ duration: 2, delay: 0.5, ease: "easeInOut" }}
+            transition={{ duration: 0.5 }}
             // Path 3 needs a higher z-index so it sits above the deploy card.
             className={index === 2 ? "z-20" : undefined}
           />
