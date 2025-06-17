@@ -73,8 +73,8 @@ export default function PlanCard({
               <h2 className="font-whyte text-3xl font-light text-white">
                 Hobby
               </h2>
-              <Tabs defaultValue="hobby" className="max-w-xs">
-                <TabsList className="rounded-full bg-stone-600">
+              <Tabs defaultValue="hobby" className="max-w-sm">
+                <TabsList className="h-7 rounded-full bg-stone-600 p-[1.75px]">
                   <TabsTrigger
                     value="hobby"
                     className="data-[state=active]:text-brand-foreground data-[state=inactive]:text-brand-muted focus-visible:ring-ring focus-visible:ring-offset-brand-background rounded-full px-4 py-2 text-sm font-medium transition-colors duration-200 ease-in-out focus-visible:ring-2 focus-visible:ring-offset-2 data-[state=active]:bg-[#080808]"
