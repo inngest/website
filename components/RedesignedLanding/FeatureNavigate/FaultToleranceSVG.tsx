@@ -1,7 +1,7 @@
 export default function FaultToleranceSVG() {
   return (
     <svg
-      className="faulttolerance-anchor relative z-30 h-auto w-full md:h-[275px] md:w-[503px] xl:h-[275px] xl:w-[503px]"
+      className="faulttolerance-anchor relative z-30 order-2 h-auto w-full sm:order-1 md:h-[275px] md:w-[503px] xl:h-[275px] xl:w-[503px]"
       width="503"
       viewBox="0 0 503 275"
       fill="none"

@@ -56,7 +56,8 @@ export function useFeatureNavigatePaths(): FeatureNavigatePaths {
         const h1Rect = h1El.getBoundingClientRect();
         const observRect = observEl.getBoundingClientRect();
 
-        const startXM = h1Rect.left + h1Rect.width / 6 - containerRect.left;
+        const startXM =
+          h1Rect.left + h1Rect.width / 6 - containerRect.left - 28;
         const startYM = h1Rect.bottom - containerRect.top;
 
         const endXM = startXM;

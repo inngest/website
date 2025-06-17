@@ -24,7 +24,7 @@ export default function Lines() {
           path={mobileLine.path}
           dotPos={mobileLine.dotPos}
           index={0}
-          visibilityClass="block sm:hidden"
+          visibilityClass="block md:hidden"
           orientation="vertical"
         />
       )}
