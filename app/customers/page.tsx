@@ -9,18 +9,11 @@ import FooterCallout from "src/shared/Footer/FooterCallout";
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/20/solid";
 import CaseStudyCard from "src/shared/CaseStudy/CaseStudyCard";
 
-export async function getStaticProps() {
-  return {
-    props: {
-      designVersion: "2",
-      meta: {
-        title: "Customer success stories",
-        description:
-          "From startups to public companies, these customers chose Inngest to build reliable products.",
-      },
-    },
-  };
-}
+export const metadata = {
+  title: "Customer success stories",
+  description:
+    "From startups to public companies, these customers chose Inngest to build reliable products.",
+};
 
 const caseStudies: {
   href: string;
@@ -223,18 +216,6 @@ const gridQuotes: GridItem[] = [
       avatar: "/assets/customers/otto-sully.jpg",
     },
   },
-  // {
-  //   type: "quote",
-  //   name: "NiftyKit",
-  //   quote: {
-  //     text: `I can't stress enough how integral Inngest has been to our operations. It's more than just "battle tested" for us—it's been a game-changer and a cornerstone of our processes.`,
-  //     attribution: {
-  //       name: "Robin Curbelo",
-  //       title: "Engineer",
-  //     },
-  //     avatar: "/assets/customers/niftykit-robin-curbelo.jpg",
-  //   },
-  // },
 ];
 
 const grid: GridItem[] = [
@@ -378,7 +359,6 @@ for (const quote of gridQuotes) {
 export default function Customers() {
   return (
     <div>
-      <Header />
       <Container className="py-8">
         <div className="my-12 tracking-tight">
           <h1 className="mx-auto max-w-5xl text-center text-5xl font-semibold">
@@ -481,17 +461,6 @@ export default function Customers() {
           </div>
         </div>
       </Container>
-
-      <FooterCallout
-        title="Talk to a product expert"
-        description="Chat with sales engineering to learn how Inngest can help your team ship more reliable products, faster"
-        ctaHref="/contact"
-        ctaText="Contact sales engineering"
-        ctaRef={"customers"}
-        showCliCmd={false}
-      />
-
-      <Footer disableCta={true} />
     </div>
   );
 }
