@@ -2,7 +2,7 @@ import FooterCTA from "./FooterCTA";
 import FooterLinks, { FooterLinks2 } from "./FooterLinks";
 import FooterLogo from "./FooterLogo";
 
-export default async function Footer() {
+export default function Footer() {
   return (
     <>
       <footer className="relative bg-stone-950">
