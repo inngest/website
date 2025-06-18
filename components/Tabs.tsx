@@ -19,7 +19,7 @@ export function Tabs<T extends TabItem>({
     <div
       className={`relative grid grid-cols-${content.length / 2} sm:grid-cols-${
         content.length
-      } gap-y-2 justify-stretch`}
+      } justify-stretch gap-y-2`}
     >
       {content.map(({ title, ...tab }, idx) => (
         <Tab
@@ -28,7 +28,7 @@ export function Tabs<T extends TabItem>({
           onClick={() => setSelected(idx)}
         >
           {tab.icon && (
-            <tab.icon className="h-4 w-4 md:h-6 md:w-6 fill-[#1CB4D5]" />
+            <tab.icon className="h-4 w-4 fill-[#1CB4D5] md:h-6 md:w-6" />
           )}
           {title}
         </Tab>
@@ -36,7 +36,7 @@ export function Tabs<T extends TabItem>({
       <div
         className={clsx(
           `absolute -bottom-px left-0 w-1/${content.length} h-0.5`,
-          `bg-[#1CB4D5] bg-gradient-to-b from-cyan-500 to-blue-500`,
+          `bg-inngestLux`,
           `transform transition-transform duration-300`
         )}
         style={{
@@ -52,11 +52,11 @@ export function Tab({ isSelected = false, onClick, children }) {
     <button
       onClick={onClick}
       className={clsx(
-        `flex flex-row grow gap-2 items-center justify-center p-2 sm:p-4 -mb-px whitespace-nowrap `,
+        `-mb-px flex grow flex-row items-center justify-center gap-2 whitespace-nowrap p-2 sm:p-4 `,
         `font-semibold transition-all`,
         isSelected
           ? "border-[#1CB4D5] text-basis"
-          : "text-muted hover:text-basis border-transparent"
+          : "border-transparent text-muted hover:text-basis"
       )}
     >
       {children}

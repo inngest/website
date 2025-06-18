@@ -14,8 +14,8 @@ export default function Button({
     <Link
       href={href}
       className={clsx(
-        "inline-flex items-center gap-1 rounded-md font-medium px-6 py-2 transition-all whitespace-nowrap",
-        variant === "primary" && "bg-cta hover:bg-ctaHover text-carbon-1000",
+        "inline-flex items-center gap-1 whitespace-nowrap px-6 py-2 font-medium transition-all",
+        variant === "primary" && "bg-cta text-carbon-1000 hover:bg-ctaHover",
         variant === "link" &&
           "bg-transparent text-carbon-50 hover:text-carbon-200"
       )}

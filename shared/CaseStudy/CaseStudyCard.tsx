@@ -22,22 +22,22 @@ export default function CaseStudyCard({
   tags?: string[];
 }) {
   return (
-    <Link href={href} className="group text-basis block md:flex">
+    <Link href={href} className="group block text-basis md:flex">
       <Card variant="hover" className="p-8">
-        <div className="grow flex flex-col gap-4 justify-items-start">
-          <div className="h-10 mb-1">
+        <div className="flex grow flex-col justify-items-start gap-4">
+          <div className="mb-1 h-10">
             <img
               src={logo}
               alt={`${name} logo`}
               title={name}
-              className="shrink-0 text-white width-auto transition-all"
+              className="width-auto shrink-0 text-white transition-all"
               style={{
                 height: `${40 * logoScale}px`,
               }}
             />
           </div>
-          <h2 className="font-bold text-xl">{title}</h2>
-          <div className="grow min-h-20 lg:h-24 flex flex-row md:flex-col lg:flex-row items-center space-between gap-8">
+          <h2 className="text-xl font-bold">{title}</h2>
+          <div className="space-between flex min-h-20 grow flex-row items-center gap-8 md:flex-col lg:h-24 lg:flex-row">
             <p className="text-slate-300">{snippet}</p>
           </div>
           <div className="flex items-center justify-between">
@@ -46,9 +46,9 @@ export default function CaseStudyCard({
                 <span key={tag}>{tag}</span>
               ))}
             </div>
-            <div className="flex flex-row text-link">
+            <div className="flex flex-row text-[#CBB26A]">
               Read the story{" "}
-              <RiArrowRightSLine className="group-hover:translate-x-1 relative top-px transition-transform duration-150 " />
+              <RiArrowRightSLine className="relative top-px transition-transform duration-150 group-hover:translate-x-1 " />
             </div>
           </div>
         </div>

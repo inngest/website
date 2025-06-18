@@ -1,8 +1,9 @@
 import Image from "next/image";
 import clsx from "clsx";
 import { H3 } from "./Heading";
-import Button from "./Button";
+import { Button } from "components/RedesignedLanding/Button";
 import CodeWindow from "src/shared/CodeWindow";
+import Link from "next/dist/client/link";
 
 export default function Feature({
   heading,
@@ -36,7 +37,7 @@ export default function Feature({
     <div>
       <div
         className={clsx(
-          "my-24 mx-auto px-6 grid sm:grid-cols-2 gap-12 sm:gap-24",
+          "mx-auto my-24 grid gap-12 px-6 sm:grid-cols-2 sm:gap-24",
           // Full bleed removes the max width and moves the width constraint to the nested component
           !content.fullBleed && "max-w-[1270px]"
         )}
@@ -45,7 +46,7 @@ export default function Feature({
           className={clsx(
             "flex flex-col justify-center",
             layout === "right" && "sm:order-2",
-            content.fullBleed && "w-[587px] ml-auto"
+            content.fullBleed && "ml-auto w-[587px]"
           )}
         >
           <div className="flex flex-col gap-8">
@@ -55,10 +56,10 @@ export default function Feature({
               {ctas.map((cta, idx) => (
                 <Button
                   key={idx}
-                  href={cta.href}
-                  variant={idx === 0 ? "primary" : "link"}
+                  variant={idx === 0 ? "default" : "link"}
+                  asChild
                 >
-                  {cta.text}
+                  <Link href={cta.href}>{cta.text}</Link>
                 </Button>
               ))}
             </div>
@@ -75,7 +76,7 @@ export default function Feature({
               className="md:px-7 md:py-4"
               snippet={content.code.snippet}
               style={{
-                background: `linear-gradient(108deg, rgba(204, 204, 204, 0.12) 9.67%, rgba(0, 0, 0, 0.00) 49.19%), #141414`,
+                background: `bg-stone-800`,
               }}
             />
           ) : (
