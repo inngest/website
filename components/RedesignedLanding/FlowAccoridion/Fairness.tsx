@@ -10,20 +10,20 @@ export default function FairnessSVG() {
       <rect x="96.5" y="366.5" width="239" height="110" fill="#1C1917" />
       <rect x="96.5" y="366.5" width="239" height="110" stroke="#44403C" />
       <path
-        fill-rule="evenodd"
-        clip-rule="evenodd"
+        fillRule="evenodd"
+        clipRule="evenodd"
         d="M114.642 389.955C117.782 389.955 120.284 387.479 120.284 384.477C120.284 381.476 117.782 379 114.642 379C111.502 379 109 381.476 109 384.477C109 387.479 111.502 389.955 114.642 389.955ZM114.642 390.955C118.31 390.955 121.284 388.055 121.284 384.477C121.284 380.9 118.31 378 114.642 378C110.974 378 108 380.9 108 384.477C108 388.055 110.974 390.955 114.642 390.955Z"
         fill="#A8A29E"
       />
       <path
-        fill-rule="evenodd"
-        clip-rule="evenodd"
+        fillRule="evenodd"
+        clipRule="evenodd"
         d="M130.583 389.955C133.723 389.955 136.225 387.479 136.225 384.477C136.225 381.476 133.723 379 130.583 379C127.444 379 124.941 381.476 124.941 384.477C124.941 387.479 127.444 389.955 130.583 389.955ZM130.583 390.955C134.252 390.955 137.225 388.055 137.225 384.477C137.225 380.9 134.252 378 130.583 378C126.915 378 123.941 380.9 123.941 384.477C123.941 388.055 126.915 390.955 130.583 390.955Z"
         fill="#A8A29E"
       />
       <path
-        fill-rule="evenodd"
-        clip-rule="evenodd"
+        fillRule="evenodd"
+        clipRule="evenodd"
         d="M146.523 389.955C149.663 389.955 152.165 387.479 152.165 384.477C152.165 381.476 149.663 379 146.523 379C143.383 379 140.881 381.476 140.881 384.477C140.881 387.479 143.383 389.955 146.523 389.955ZM146.523 390.955C150.191 390.955 153.165 388.055 153.165 384.477C153.165 380.9 150.191 378 146.523 378C142.855 378 139.881 380.9 139.881 384.477C139.881 388.055 142.855 390.955 146.523 390.955Z"
         fill="#A8A29E"
       />
@@ -43,20 +43,20 @@ export default function FairnessSVG() {
       <rect x="349.5" y="366.5" width="239" height="110" fill="#1C1917" />
       <rect x="349.5" y="366.5" width="239" height="110" stroke="#44403C" />
       <path
-        fill-rule="evenodd"
-        clip-rule="evenodd"
+        fillRule="evenodd"
+        clipRule="evenodd"
         d="M367.642 389.955C370.782 389.955 373.284 387.479 373.284 384.477C373.284 381.476 370.782 379 367.642 379C364.502 379 362 381.476 362 384.477C362 387.479 364.502 389.955 367.642 389.955ZM367.642 390.955C371.31 390.955 374.284 388.055 374.284 384.477C374.284 380.9 371.31 378 367.642 378C363.974 378 361 380.9 361 384.477C361 388.055 363.974 390.955 367.642 390.955Z"
         fill="#A8A29E"
       />
       <path
-        fill-rule="evenodd"
-        clip-rule="evenodd"
+        fillRule="evenodd"
+        clipRule="evenodd"
         d="M383.583 389.955C386.723 389.955 389.225 387.479 389.225 384.477C389.225 381.476 386.723 379 383.583 379C380.444 379 377.941 381.476 377.941 384.477C377.941 387.479 380.444 389.955 383.583 389.955ZM383.583 390.955C387.252 390.955 390.225 388.055 390.225 384.477C390.225 380.9 387.252 378 383.583 378C379.915 378 376.941 380.9 376.941 384.477C376.941 388.055 379.915 390.955 383.583 390.955Z"
         fill="#A8A29E"
       />
       <path
-        fill-rule="evenodd"
-        clip-rule="evenodd"
+        fillRule="evenodd"
+        clipRule="evenodd"
         d="M399.523 389.955C402.663 389.955 405.165 387.479 405.165 384.477C405.165 381.476 402.663 379 399.523 379C396.383 379 393.881 381.476 393.881 384.477C393.881 387.479 396.383 389.955 399.523 389.955ZM399.523 390.955C403.191 390.955 406.165 388.055 406.165 384.477C406.165 380.9 403.191 378 399.523 378C395.855 378 392.881 380.9 392.881 384.477C392.881 388.055 395.855 390.955 399.523 390.955Z"
         fill="#A8A29E"
       />
@@ -76,20 +76,20 @@ export default function FairnessSVG() {
       <rect x="603.5" y="366.5" width="239" height="110" fill="#1C1917" />
       <rect x="603.5" y="366.5" width="239" height="110" stroke="#44403C" />
       <path
-        fill-rule="evenodd"
-        clip-rule="evenodd"
+        fillRule="evenodd"
+        clipRule="evenodd"
         d="M621.642 389.955C624.782 389.955 627.284 387.479 627.284 384.477C627.284 381.476 624.782 379 621.642 379C618.502 379 616 381.476 616 384.477C616 387.479 618.502 389.955 621.642 389.955ZM621.642 390.955C625.31 390.955 628.284 388.055 628.284 384.477C628.284 380.9 625.31 378 621.642 378C617.974 378 615 380.9 615 384.477C615 388.055 617.974 390.955 621.642 390.955Z"
         fill="#A8A29E"
       />
       <path
-        fill-rule="evenodd"
-        clip-rule="evenodd"
+        fillRule="evenodd"
+        clipRule="evenodd"
         d="M637.583 389.955C640.723 389.955 643.225 387.479 643.225 384.477C643.225 381.476 640.723 379 637.583 379C634.444 379 631.941 381.476 631.941 384.477C631.941 387.479 634.444 389.955 637.583 389.955ZM637.583 390.955C641.252 390.955 644.225 388.055 644.225 384.477C644.225 380.9 641.252 378 637.583 378C633.915 378 630.941 380.9 630.941 384.477C630.941 388.055 633.915 390.955 637.583 390.955Z"
         fill="#A8A29E"
       />
       <path
-        fill-rule="evenodd"
-        clip-rule="evenodd"
+        fillRule="evenodd"
+        clipRule="evenodd"
         d="M653.523 389.955C656.663 389.955 659.165 387.479 659.165 384.477C659.165 381.476 656.663 379 653.523 379C650.383 379 647.881 381.476 647.881 384.477C647.881 387.479 650.383 389.955 653.523 389.955ZM653.523 390.955C657.191 390.955 660.165 388.055 660.165 384.477C660.165 380.9 657.191 378 653.523 378C649.855 378 646.881 380.9 646.881 384.477C646.881 388.055 649.855 390.955 653.523 390.955Z"
         fill="#A8A29E"
       />
@@ -106,9 +106,9 @@ export default function FairnessSVG() {
         rx="6.5"
         fill="#2C9B63"
       />
-      <path d="M216 173.111V366.111" stroke="#57534E" stroke-width="2" />
-      <path d="M469 173.111V366.111" stroke="#57534E" stroke-width="2" />
-      <path d="M723 173.111V366.111" stroke="#57534E" stroke-width="2" />
+      <path d="M216 173.111V366.111" stroke="#57534E" strokeWidth="2" />
+      <path d="M469 173.111V366.111" stroke="#57534E" strokeWidth="2" />
+      <path d="M723 173.111V366.111" stroke="#57534E" strokeWidth="2" />
       <rect x="676.5" y="84.6328" width="93" height="93" fill="#1C1917" />
       <rect x="676.5" y="84.6328" width="93" height="93" stroke="#44403C" />
       <path
@@ -171,9 +171,9 @@ export default function FairnessSVG() {
           width="115.52"
           height="115.52"
           filterUnits="userSpaceOnUse"
-          color-interpolation-filters="sRGB"
+          colorInterpolationFilters="sRGB"
         >
-          <feFlood flood-opacity="0" result="BackgroundImageFix" />
+          <feFlood floodOpacity="0" result="BackgroundImageFix" />
           <feColorMatrix
             in="SourceAlpha"
             type="matrix"
@@ -239,9 +239,9 @@ export default function FairnessSVG() {
           width="115.52"
           height="115.52"
           filterUnits="userSpaceOnUse"
-          color-interpolation-filters="sRGB"
+          colorInterpolationFilters="sRGB"
         >
-          <feFlood flood-opacity="0" result="BackgroundImageFix" />
+          <feFlood floodOpacity="0" result="BackgroundImageFix" />
           <feColorMatrix
             in="SourceAlpha"
             type="matrix"
@@ -307,9 +307,9 @@ export default function FairnessSVG() {
           width="115.52"
           height="115.52"
           filterUnits="userSpaceOnUse"
-          color-interpolation-filters="sRGB"
+          colorInterpolationFilters="sRGB"
         >
-          <feFlood flood-opacity="0" result="BackgroundImageFix" />
+          <feFlood floodOpacity="0" result="BackgroundImageFix" />
           <feColorMatrix
             in="SourceAlpha"
             type="matrix"
