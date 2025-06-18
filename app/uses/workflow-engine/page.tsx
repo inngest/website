@@ -98,7 +98,7 @@ export default function Page() {
 
       <section className="my-28 py-14">
         <Heading
-          title="Announcing: Workflow Kit by Inngest"
+          title="Workflow Kit: User-defined workflows in minutes"
           description={[
             "Workflow Kit enables you to build user-defined workflows with Inngest by providing a set of workflow actions to the Workflow Engine while using the pre-built React components to build your Workflow Editor UI.",
             "Fully open source and available on npm. Install and start building today.",
