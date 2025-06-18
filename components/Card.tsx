@@ -15,7 +15,7 @@ export default function Card({
     <div
       className={clsx(
         "rounded-lg bg-gradient-to-r p-px",
-        "bg-inngestLux",
+        "bg-stone-700",
         wrapperClassName
       )}
     >
