@@ -14,7 +14,7 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
-import Dropdown from "src/components/RedesignedLanding/GithubDropdown";
+import Dropdown from "src/components/RedesignedLanding/Header/GithubDropdown";
 import { RiGithubFill } from "@remixicon/react";
 import githubData from "src/data/github.json";
 import { Button } from "src/components/RedesignedLanding/Button";
