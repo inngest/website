@@ -8,7 +8,7 @@ import { getFullURL } from "src/utils/social";
 
 import "./globals.css";
 import AnnouncementBanner from "src/components/AnnouncementBanner";
-import Header from "src/components/RedesignedLanding/Header";
+import Header from "src/components/RedesignedLanding/Header/Header";
 
 export const metadata: Metadata = {
   title: {

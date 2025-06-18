@@ -25,7 +25,7 @@ export default function Dropdown({
       className={`border-input group relative z-20 border text-sm text-basis ${className}`}
     >
       <div
-        className="flex flex-row flex-nowrap items-center justify-start gap-2 text-nowrap rounded-md px-3 py-1 group-hover:bg-canvasSubtle"
+        className="flex h-full flex-row flex-nowrap items-center justify-start gap-2 text-nowrap px-3 py-1 group-hover:bg-[#44403C]"
         onClick={() => setOpen(!open)}
       >
         {title}
