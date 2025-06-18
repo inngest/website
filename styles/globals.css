@@ -911,7 +911,7 @@ ul.check li {
     --color-purplehaze-900: 67 34 175;
 
     /* Token Colors */
-    --color-background-canvas-base: var(--color-carbon-0);
+    --color-background-canvas-base: var(--color-stone-950);
     --color-background-canvas-subtle: var(--color-carbon-50);
     --color-background-canvas-muted: var(--color-carbon-100);
     --color-background-surface-base: var(--color-carbon-0);
