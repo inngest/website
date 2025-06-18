@@ -22,7 +22,7 @@ export default function CaseStudyCard({
   tags?: string[];
 }) {
   return (
-    <Link href={href} className="group block text-basis md:flex">
+    <Link href={href} className="group block bg-stone-950 text-basis md:flex">
       <Card variant="hover" className="p-8">
         <div className="flex grow flex-col justify-items-start gap-4">
           <div className="mb-1 h-10">
