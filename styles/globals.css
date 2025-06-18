@@ -1128,11 +1128,3 @@ html.docs.dark {
 body {
   background-color: rgb(var(--color-background-canvas-base));
 }
-
-/* Apply bg-stone-950 for screens 7xl and larger (1536px+) */
-@media (min-width: 1536px) {
-  html,
-  body {
-    background-color: #1c1917 !important; /* stone-950 */
-  }
-}
