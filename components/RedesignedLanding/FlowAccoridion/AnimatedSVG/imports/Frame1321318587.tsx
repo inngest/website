@@ -46,6 +46,7 @@ function Frame1321318234({ progress }: { progress: number }) {
     <div className="relative h-[13px] w-[154px] shrink-0">
       <div className="absolute left-0 top-[0.045px] h-[13px] w-[180px] rounded-[1000px] bg-stone-700" />
       <motion.div
+        // @ts-ignore
         className="absolute left-0 top-[0.047px] h-[13px] rounded-[1000px] bg-[#2c9b63]"
         animate={{ width: progressWidth }}
         transition={{ duration: 0.5, ease: "easeOut" }}
@@ -118,6 +119,7 @@ function Frame1321318235({ progress }: { progress: number }) {
     <div className="relative h-[13px] w-full shrink-0">
       <div className="absolute left-0 top-[0.045px] h-[13px] w-[180px] rounded-[1000px] bg-stone-700" />
       <motion.div
+        // @ts-ignore
         className="absolute left-0 top-[0.047px] h-[13px] rounded-[1000px] bg-[#2c9b63]"
         animate={{ width: progressWidth }}
         transition={{ duration: 0.5, ease: "easeOut" }}
@@ -190,6 +192,7 @@ function Frame1321318236({ progress }: { progress: number }) {
     <div className="relative h-[13px] w-[154px] shrink-0">
       <div className="absolute left-0 top-[0.045px] h-[13px] w-[180px] rounded-[1000px] bg-stone-700" />
       <motion.div
+        // @ts-ignore
         className="absolute left-0 top-[0.047px] h-[13px] rounded-[1000px] bg-[#2c9b63]"
         animate={{ width: progressWidth }}
         transition={{ duration: 0.5, ease: "easeOut" }}
@@ -326,6 +329,7 @@ function Frame1321318162() {
 function AnimatedDot({ x, delay }: { x: number; delay: number }) {
   return (
     <motion.div
+      // @ts-ignore
       className="absolute flex size-2 items-center justify-center"
       style={{ left: x }}
       animate={{
