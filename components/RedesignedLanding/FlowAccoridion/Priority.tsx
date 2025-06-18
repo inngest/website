@@ -41,7 +41,7 @@ export default function PrioritySVG() {
         d="M194.7 154.329C192.768 154.329 191.424 153.307 191.424 151.277V144.207H192.586V151.165C192.586 152.481 193.412 153.223 194.7 153.223C195.988 153.223 196.814 152.481 196.814 151.165V144.207H197.976V151.277C197.976 153.307 196.632 154.329 194.7 154.329ZM203.319 154.329C201.429 154.329 200.477 153.111 200.295 152.355L201.317 151.935C201.513 152.635 202.227 153.321 203.347 153.321C204.243 153.321 204.761 152.901 204.761 152.355C204.761 151.865 204.439 151.571 203.697 151.417L202.395 151.151C201.135 150.899 200.575 150.171 200.575 149.303C200.575 148.169 201.625 147.231 203.109 147.231C204.607 147.231 205.573 148.001 205.881 149.065L204.929 149.443C204.705 148.799 204.131 148.211 203.109 148.211C202.255 148.211 201.681 148.617 201.681 149.219C201.681 149.653 201.947 149.989 202.619 150.115L203.893 150.367C205.223 150.633 205.881 151.291 205.881 152.299C205.881 153.237 205.097 154.329 203.319 154.329ZM211.587 154.329C209.837 154.329 208.255 153.055 208.255 150.759C208.255 148.603 209.823 147.231 211.475 147.231C213.463 147.231 214.667 148.603 214.667 150.619C214.667 150.759 214.653 150.913 214.639 151.011H209.403V151.109C209.403 152.369 210.425 153.293 211.587 153.293C212.721 153.293 213.365 152.663 213.631 151.879L214.597 152.229C214.219 153.391 213.141 154.329 211.587 154.329ZM213.505 150.059C213.449 149.065 212.721 148.225 211.489 148.225C210.369 148.225 209.501 149.093 209.431 150.059H213.505ZM223.048 148.659C222.866 148.603 222.586 148.533 222.11 148.533C220.724 148.533 219.982 149.317 219.982 150.857V153.139H222.096V154.133H216.874V153.139H218.862V148.421H217.084V147.427H219.954V148.743C220.346 147.707 221.326 147.329 222.124 147.329C222.614 147.329 222.88 147.399 223.048 147.455V148.659ZM236.351 153.083V147.651H233.775V146.881C235.357 146.881 236.407 146.153 236.463 145.061H237.499V153.083H239.823V154.133H233.957V153.083H236.351Z"
         fill="white"
       />
-      <path d="M216 178L216 237H294.5H373" stroke="#57534E" stroke-width="2" />
+      <path d="M216 178L216 237H294.5H373" stroke="#57534E" strokeWidth="2" />
       <g filter="url(#filter0_ddd_5642_3322)">
         <rect
           width="8"
@@ -58,29 +58,29 @@ export default function PrioritySVG() {
           fill="#CBB26A"
         />
       </g>
-      <path d="M723 178L723 315H374" stroke="#57534E" stroke-width="2" />
+      <path d="M723 178L723 315H374" stroke="#57534E" strokeWidth="2" />
       <path
         d="M468.85 178.217V237H373.795L373.795 367.002"
         stroke="#57534E"
-        stroke-width="2"
+        strokeWidth="2"
       />
       <rect x="96.5" y="366.5" width="746" height="111" fill="#1C1917" />
       <rect x="96.5" y="366.5" width="746" height="111" stroke="#44403C" />
       <path
-        fill-rule="evenodd"
-        clip-rule="evenodd"
+        fillRule="evenodd"
+        clipRule="evenodd"
         d="M114.642 389.955C117.782 389.955 120.284 387.479 120.284 384.477C120.284 381.476 117.782 379 114.642 379C111.502 379 109 381.476 109 384.477C109 387.479 111.502 389.955 114.642 389.955ZM114.642 390.955C118.31 390.955 121.284 388.055 121.284 384.477C121.284 380.9 118.31 378 114.642 378C110.974 378 108 380.9 108 384.477C108 388.055 110.974 390.955 114.642 390.955Z"
         fill="#A8A29E"
       />
       <path
-        fill-rule="evenodd"
-        clip-rule="evenodd"
+        fillRule="evenodd"
+        clipRule="evenodd"
         d="M130.583 389.955C133.723 389.955 136.225 387.479 136.225 384.477C136.225 381.476 133.723 379 130.583 379C127.444 379 124.941 381.476 124.941 384.477C124.941 387.479 127.444 389.955 130.583 389.955ZM130.583 390.955C134.252 390.955 137.225 388.055 137.225 384.477C137.225 380.9 134.252 378 130.583 378C126.915 378 123.941 380.9 123.941 384.477C123.941 388.055 126.915 390.955 130.583 390.955Z"
         fill="#A8A29E"
       />
       <path
-        fill-rule="evenodd"
-        clip-rule="evenodd"
+        fillRule="evenodd"
+        clipRule="evenodd"
         d="M146.523 389.955C149.663 389.955 152.165 387.479 152.165 384.477C152.165 381.476 149.663 379 146.523 379C143.383 379 140.881 381.476 140.881 384.477C140.881 387.479 143.383 389.955 146.523 389.955ZM146.523 390.955C150.191 390.955 153.165 388.055 153.165 384.477C153.165 380.9 150.191 378 146.523 378C142.855 378 139.881 380.9 139.881 384.477C139.881 388.055 142.855 390.955 146.523 390.955Z"
         fill="#A8A29E"
       />
@@ -146,9 +146,9 @@ export default function PrioritySVG() {
           width="115.52"
           height="115.52"
           filterUnits="userSpaceOnUse"
-          color-interpolation-filters="sRGB"
+          colorInterpolationFilters="sRGB"
         >
-          <feFlood flood-opacity="0" result="BackgroundImageFix" />
+          <feFlood floodOpacity="0" result="BackgroundImageFix" />
           <feColorMatrix
             in="SourceAlpha"
             type="matrix"
@@ -214,9 +214,9 @@ export default function PrioritySVG() {
           width="115.52"
           height="115.52"
           filterUnits="userSpaceOnUse"
-          color-interpolation-filters="sRGB"
+          colorInterpolationFilters="sRGB"
         >
-          <feFlood flood-opacity="0" result="BackgroundImageFix" />
+          <feFlood floodOpacity="0" result="BackgroundImageFix" />
           <feColorMatrix
             in="SourceAlpha"
             type="matrix"
@@ -282,9 +282,9 @@ export default function PrioritySVG() {
           width="115.52"
           height="115.52"
           filterUnits="userSpaceOnUse"
-          color-interpolation-filters="sRGB"
+          colorInterpolationFilters="sRGB"
         >
-          <feFlood flood-opacity="0" result="BackgroundImageFix" />
+          <feFlood floodOpacity="0" result="BackgroundImageFix" />
           <feColorMatrix
             in="SourceAlpha"
             type="matrix"
@@ -350,9 +350,9 @@ export default function PrioritySVG() {
           width="115.52"
           height="115.52"
           filterUnits="userSpaceOnUse"
-          color-interpolation-filters="sRGB"
+          colorInterpolationFilters="sRGB"
         >
-          <feFlood flood-opacity="0" result="BackgroundImageFix" />
+          <feFlood floodOpacity="0" result="BackgroundImageFix" />
           <feColorMatrix
             in="SourceAlpha"
             type="matrix"
@@ -418,9 +418,9 @@ export default function PrioritySVG() {
           width="115.52"
           height="115.52"
           filterUnits="userSpaceOnUse"
-          color-interpolation-filters="sRGB"
+          colorInterpolationFilters="sRGB"
         >
-          <feFlood flood-opacity="0" result="BackgroundImageFix" />
+          <feFlood floodOpacity="0" result="BackgroundImageFix" />
           <feColorMatrix
             in="SourceAlpha"
             type="matrix"
@@ -486,9 +486,9 @@ export default function PrioritySVG() {
           width="115.52"
           height="115.52"
           filterUnits="userSpaceOnUse"
-          color-interpolation-filters="sRGB"
+          colorInterpolationFilters="sRGB"
         >
-          <feFlood flood-opacity="0" result="BackgroundImageFix" />
+          <feFlood floodOpacity="0" result="BackgroundImageFix" />
           <feColorMatrix
             in="SourceAlpha"
             type="matrix"
@@ -554,9 +554,9 @@ export default function PrioritySVG() {
           width="115.52"
           height="115.52"
           filterUnits="userSpaceOnUse"
-          color-interpolation-filters="sRGB"
+          colorInterpolationFilters="sRGB"
         >
-          <feFlood flood-opacity="0" result="BackgroundImageFix" />
+          <feFlood floodOpacity="0" result="BackgroundImageFix" />
           <feColorMatrix
             in="SourceAlpha"
             type="matrix"
@@ -622,9 +622,9 @@ export default function PrioritySVG() {
           width="115.52"
           height="115.52"
           filterUnits="userSpaceOnUse"
-          color-interpolation-filters="sRGB"
+          colorInterpolationFilters="sRGB"
         >
-          <feFlood flood-opacity="0" result="BackgroundImageFix" />
+          <feFlood floodOpacity="0" result="BackgroundImageFix" />
           <feColorMatrix
             in="SourceAlpha"
             type="matrix"

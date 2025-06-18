@@ -40,20 +40,20 @@ export default function ConcurrencySVG() {
       <rect x="96.5" y="366.5" width="330" height="111" fill="#1C1917" />
       <rect x="96.5" y="366.5" width="330" height="111" stroke="#44403C" />
       <path
-        fill-rule="evenodd"
-        clip-rule="evenodd"
+        fillRule="evenodd"
+        clipRule="evenodd"
         d="M114.642 389.955C117.782 389.955 120.284 387.479 120.284 384.477C120.284 381.476 117.782 379 114.642 379C111.502 379 109 381.476 109 384.477C109 387.479 111.502 389.955 114.642 389.955ZM114.642 390.955C118.31 390.955 121.284 388.055 121.284 384.477C121.284 380.9 118.31 378 114.642 378C110.974 378 108 380.9 108 384.477C108 388.055 110.974 390.955 114.642 390.955Z"
         fill="#A8A29E"
       />
       <path
-        fill-rule="evenodd"
-        clip-rule="evenodd"
+        fillRule="evenodd"
+        clipRule="evenodd"
         d="M130.583 389.955C133.723 389.955 136.225 387.479 136.225 384.477C136.225 381.476 133.723 379 130.583 379C127.444 379 124.941 381.476 124.941 384.477C124.941 387.479 127.444 389.955 130.583 389.955ZM130.583 390.955C134.252 390.955 137.225 388.055 137.225 384.477C137.225 380.9 134.252 378 130.583 378C126.915 378 123.941 380.9 123.941 384.477C123.941 388.055 126.915 390.955 130.583 390.955Z"
         fill="#A8A29E"
       />
       <path
-        fill-rule="evenodd"
-        clip-rule="evenodd"
+        fillRule="evenodd"
+        clipRule="evenodd"
         d="M146.523 389.955C149.663 389.955 152.165 387.479 152.165 384.477C152.165 381.476 149.663 379 146.523 379C143.383 379 140.881 381.476 140.881 384.477C140.881 387.479 143.383 389.955 146.523 389.955ZM146.523 390.955C150.191 390.955 153.165 388.055 153.165 384.477C153.165 380.9 150.191 378 146.523 378C142.855 378 139.881 380.9 139.881 384.477C139.881 388.055 142.855 390.955 146.523 390.955Z"
         fill="#A8A29E"
       />
@@ -66,20 +66,20 @@ export default function ConcurrencySVG() {
       <rect x="512.5" y="366.5" width="330" height="111" fill="#1C1917" />
       <rect x="512.5" y="366.5" width="330" height="111" stroke="#44403C" />
       <path
-        fill-rule="evenodd"
-        clip-rule="evenodd"
+        fillRule="evenodd"
+        clipRule="evenodd"
         d="M530.642 389.955C533.782 389.955 536.284 387.479 536.284 384.477C536.284 381.476 533.782 379 530.642 379C527.502 379 525 381.476 525 384.477C525 387.479 527.502 389.955 530.642 389.955ZM530.642 390.955C534.31 390.955 537.284 388.055 537.284 384.477C537.284 380.9 534.31 378 530.642 378C526.974 378 524 380.9 524 384.477C524 388.055 526.974 390.955 530.642 390.955Z"
         fill="#A8A29E"
       />
       <path
-        fill-rule="evenodd"
-        clip-rule="evenodd"
+        fillRule="evenodd"
+        clipRule="evenodd"
         d="M546.583 389.955C549.723 389.955 552.225 387.479 552.225 384.477C552.225 381.476 549.723 379 546.583 379C543.444 379 540.941 381.476 540.941 384.477C540.941 387.479 543.444 389.955 546.583 389.955ZM546.583 390.955C550.252 390.955 553.225 388.055 553.225 384.477C553.225 380.9 550.252 378 546.583 378C542.915 378 539.941 380.9 539.941 384.477C539.941 388.055 542.915 390.955 546.583 390.955Z"
         fill="#A8A29E"
       />
       <path
-        fill-rule="evenodd"
-        clip-rule="evenodd"
+        fillRule="evenodd"
+        clipRule="evenodd"
         d="M562.523 389.955C565.663 389.955 568.165 387.479 568.165 384.477C568.165 381.476 565.663 379 562.523 379C559.383 379 556.881 381.476 556.881 384.477C556.881 387.479 559.383 389.955 562.523 389.955ZM562.523 390.955C566.191 390.955 569.165 388.055 569.165 384.477C569.165 380.9 566.191 378 562.523 378C558.855 378 555.881 380.9 555.881 384.477C555.881 388.055 558.855 390.955 562.523 390.955Z"
         fill="#A8A29E"
       />
@@ -89,17 +89,17 @@ export default function ConcurrencySVG() {
       />
       <rect x="524" y="438" width="307" height="13" rx="6.5" fill="#44403C" />
       <rect x="524" y="438" width="231" height="13" rx="6.5" fill="#2C9B63" />
-      <path d="M216 178V237H470" stroke="#57534E" stroke-width="2" />
-      <path d="M723 178V237H469" stroke="#57534E" stroke-width="2" />
+      <path d="M216 178V237H470" stroke="#57534E" strokeWidth="2" />
+      <path d="M723 178V237H469" stroke="#57534E" strokeWidth="2" />
       <path
         d="M469 182V314.73H460.677H451.156H260V367"
         stroke="#57534E"
-        stroke-width="2"
+        strokeWidth="2"
       />
       <path
         d="M469 178V314.871H487.699H572.5H676V367"
         stroke="#57534E"
-        stroke-width="2"
+        strokeWidth="2"
       />
       <g filter="url(#filter0_ddd_5639_10587)">
         <rect
@@ -181,9 +181,9 @@ export default function ConcurrencySVG() {
           width="115.52"
           height="115.52"
           filterUnits="userSpaceOnUse"
-          color-interpolation-filters="sRGB"
+          colorInterpolationFilters="sRGB"
         >
-          <feFlood flood-opacity="0" result="BackgroundImageFix" />
+          <feFlood floodOpacity="0" result="BackgroundImageFix" />
           <feColorMatrix
             in="SourceAlpha"
             type="matrix"
@@ -249,9 +249,9 @@ export default function ConcurrencySVG() {
           width="115.52"
           height="115.52"
           filterUnits="userSpaceOnUse"
-          color-interpolation-filters="sRGB"
+          colorInterpolationFilters="sRGB"
         >
-          <feFlood flood-opacity="0" result="BackgroundImageFix" />
+          <feFlood floodOpacity="0" result="BackgroundImageFix" />
           <feColorMatrix
             in="SourceAlpha"
             type="matrix"
@@ -317,9 +317,9 @@ export default function ConcurrencySVG() {
           width="115.52"
           height="115.52"
           filterUnits="userSpaceOnUse"
-          color-interpolation-filters="sRGB"
+          colorInterpolationFilters="sRGB"
         >
-          <feFlood flood-opacity="0" result="BackgroundImageFix" />
+          <feFlood floodOpacity="0" result="BackgroundImageFix" />
           <feColorMatrix
             in="SourceAlpha"
             type="matrix"
@@ -385,9 +385,9 @@ export default function ConcurrencySVG() {
           width="115.52"
           height="115.52"
           filterUnits="userSpaceOnUse"
-          color-interpolation-filters="sRGB"
+          colorInterpolationFilters="sRGB"
         >
-          <feFlood flood-opacity="0" result="BackgroundImageFix" />
+          <feFlood floodOpacity="0" result="BackgroundImageFix" />
           <feColorMatrix
             in="SourceAlpha"
             type="matrix"
@@ -453,9 +453,9 @@ export default function ConcurrencySVG() {
           width="115.52"
           height="115.52"
           filterUnits="userSpaceOnUse"
-          color-interpolation-filters="sRGB"
+          colorInterpolationFilters="sRGB"
         >
-          <feFlood flood-opacity="0" result="BackgroundImageFix" />
+          <feFlood floodOpacity="0" result="BackgroundImageFix" />
           <feColorMatrix
             in="SourceAlpha"
             type="matrix"
@@ -521,9 +521,9 @@ export default function ConcurrencySVG() {
           width="115.52"
           height="115.52"
           filterUnits="userSpaceOnUse"
-          color-interpolation-filters="sRGB"
+          colorInterpolationFilters="sRGB"
         >
-          <feFlood flood-opacity="0" result="BackgroundImageFix" />
+          <feFlood floodOpacity="0" result="BackgroundImageFix" />
           <feColorMatrix
             in="SourceAlpha"
             type="matrix"
@@ -589,9 +589,9 @@ export default function ConcurrencySVG() {
           width="115.52"
           height="115.52"
           filterUnits="userSpaceOnUse"
-          color-interpolation-filters="sRGB"
+          colorInterpolationFilters="sRGB"
         >
-          <feFlood flood-opacity="0" result="BackgroundImageFix" />
+          <feFlood floodOpacity="0" result="BackgroundImageFix" />
           <feColorMatrix
             in="SourceAlpha"
             type="matrix"
@@ -657,9 +657,9 @@ export default function ConcurrencySVG() {
           width="115.52"
           height="115.52"
           filterUnits="userSpaceOnUse"
-          color-interpolation-filters="sRGB"
+          colorInterpolationFilters="sRGB"
         >
-          <feFlood flood-opacity="0" result="BackgroundImageFix" />
+          <feFlood floodOpacity="0" result="BackgroundImageFix" />
           <feColorMatrix
             in="SourceAlpha"
             type="matrix"
@@ -725,9 +725,9 @@ export default function ConcurrencySVG() {
           width="115.52"
           height="115.52"
           filterUnits="userSpaceOnUse"
-          color-interpolation-filters="sRGB"
+          colorInterpolationFilters="sRGB"
         >
-          <feFlood flood-opacity="0" result="BackgroundImageFix" />
+          <feFlood floodOpacity="0" result="BackgroundImageFix" />
           <feColorMatrix
             in="SourceAlpha"
             type="matrix"
