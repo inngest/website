@@ -7,7 +7,7 @@ import {
   Popover,
   PopoverTrigger,
   PopoverContent,
-} from "src/components/RedesignedLanding/Popover";
+} from "src/components/RedesignedLanding/Header/Popover";
 
 export const resourceDropdown = [
   {
