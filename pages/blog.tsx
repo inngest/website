@@ -6,7 +6,7 @@ import { Rss } from "react-feather";
 import { RiCalendarLine } from "@remixicon/react";
 import ArrowRight from "src/shared/Icons/ArrowRight";
 import { RiArrowRightLine } from "@remixicon/react";
-import Footer from "../shared/Footer";
+import Footer from "src/components/RedesignedLanding/Footer";
 import Header from "src/components/RedesignedLanding/Header/Header";
 import Container from "../shared/layout/Container";
 import Tags from "../shared/Blog/Tags";

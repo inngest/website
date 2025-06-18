@@ -5,7 +5,7 @@ import rehypeRaw from "rehype-raw";
 import type { MDXComponents } from "mdx/types";
 import { serialize } from "next-mdx-remote/serialize";
 import { MDXRemote } from "next-mdx-remote";
-import Footer from "../../shared/Footer";
+import Footer from "src/components/RedesignedLanding/Footer";
 import { rehypeRemoveTwoSlashMarkup, rehypeShiki } from "../../utils/code";
 import { rehypeParseCodeBlocks } from "../../mdx/rehype.mjs";
 import Tags from "../../shared/Blog/Tags";
