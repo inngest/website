@@ -328,8 +328,8 @@ function Frame1321318162() {
 
 function AnimatedDot({ x, delay }: { x: number; delay: number }) {
   return (
+    // @ts-expect-error – Framer-Motion's typings don't yet include `children` when used with the latest React typings.
     <motion.div
-      // @ts-ignore
       className="absolute flex size-2 items-center justify-center"
       style={{ left: x }}
       animate={{
