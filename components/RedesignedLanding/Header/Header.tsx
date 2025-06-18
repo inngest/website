@@ -107,9 +107,7 @@ export default function Header() {
         </div>
 
         <div className="flex items-center space-x-4">
-          <div className="items-center rounded-md border border-gray-700 md:flex lg:flex">
-            <OpenSourceButton className="rounded-none" />
-          </div>
+          <OpenSourceButton className="h-9 rounded-none border" />
           <div className="hidden space-x-4 lg:flex">
             <Button variant="outline" className="hidden xl:flex" asChild>
               <Link href="/signin">Sign In</Link>
