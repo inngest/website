@@ -26,6 +26,7 @@ export default function Page() {
           level={1}
           title="Your application reliability layer"
           context="Platform"
+          className="font-whyteInktrap"
           lede={
             <>
               Inngest's architecture combines an event stream, queues, and
