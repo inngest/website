@@ -26,24 +26,20 @@ export default function Quote({
   return (
     <blockquote
       className={cn(
-        "mx-4 sm:mx-auto rounded-lg",
+        "mx-4 sm:mx-auto",
         variant === "default" && "max-w-[860px]",
-        variant === "box" &&
-          "max-w-[830px] p-px bg-gradient-to-br from-[rgba(var(--color-carbon-400)/0.4)] to-transparent",
+        variant === "box" && "max-w-[830px] bg-stone-800 p-px",
         className
       )}
     >
       <div
         className={cn(
-          "flex flex-col items-start gap-4 text-basis rounded-lg",
+          "flex flex-col items-start gap-4 rounded-lg text-basis",
           variant === "default" && "px-8 md:p-12 ",
           variant === "box" && "p-8"
         )}
         style={{
-          background:
-            variant === "box"
-              ? `linear-gradient(108deg, rgba(204, 204, 204, 0.12) 9.67%, rgba(0, 0, 0, 0.00) 49.19%), #141414`
-              : "transparent",
+          background: variant === "box" ? `` : "transparent",
         }}
       >
         <p className="relative text-lg leading-7">
@@ -53,13 +49,13 @@ export default function Quote({
         </p>
         <div
           className={cn(
-            "flex gap-4 w-full",
+            "flex w-full gap-4",
             variant === "box"
               ? "flex-row items-end justify-between"
               : "flex-col"
           )}
         >
-          <footer className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <footer className="flex w-full flex-col justify-between gap-4 sm:flex-row sm:items-center">
             <div className="flex flex-row items-center gap-4">
               {!!avatar && (
                 <Image
@@ -67,11 +63,11 @@ export default function Quote({
                   alt={`Image of ${name}`}
                   height="72"
                   width="72"
-                  className="rounded-full h-12 w-12 lg:h-16 lg:w-16"
+                  className="h-12 w-12 rounded-full lg:h-16 lg:w-16"
                 />
               )}
-              <cite className="flex flex-col justify-center leading-8 not-italic text-sm">
-                <div className="font-semibold text-lg">{name}</div>
+              <cite className="flex flex-col justify-center text-sm not-italic leading-8">
+                <div className="text-lg font-semibold">{name}</div>
                 <div>{title}</div>
               </cite>
             </div>
@@ -81,7 +77,7 @@ export default function Quote({
                 alt={`Logo of ${name}`}
                 height="72"
                 width="128"
-                className="min-w-[140px] sm:w-full max-w-[220px] max-h-12"
+                className="max-h-12 min-w-[140px] max-w-[220px] sm:w-full"
               />
             )}
           </footer>

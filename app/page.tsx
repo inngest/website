@@ -27,7 +27,6 @@ export default function Page() {
       <AccordionSection />
       <TrustFeaturesSection />
       <TestimonialCarousel />
-      <Footer />
     </div>
   );
 }

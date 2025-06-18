@@ -1,4 +1,4 @@
-import type { UseCase } from "../../pages/uses/[case]";
+import type { UseCase } from "../../pages/deezuses/[case]";
 
 export const data: UseCase = {
   title: "Background tasks, without the queues or workers",

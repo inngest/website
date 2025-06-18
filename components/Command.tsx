@@ -6,11 +6,11 @@ export default function Command({ command }: { command: string }) {
     navigator.clipboard?.writeText(copy);
   };
   return (
-    <div className="bg-carbon-900 backdrop-blur-md flex rounded-md text-sm text-slate-200 shadow-lg border border-carbon-600 divide-x divide-carbon-600">
-      <pre className="pl-3 pr-2.5 py-2">
-        <code className="bg-transparent text-matcha-200">$ {command}</code>
+    <div className="flex divide-x divide-carbon-600 rounded-md border border-carbon-600 bg-carbon-900 text-sm text-slate-200 shadow-lg backdrop-blur-md">
+      <pre className="py-2 pl-3 pr-2.5">
+        <code className="bg-transparent text-inngestLux">$ {command}</code>
       </pre>
-      <div className="rounded-r-md flex items-center justify-center pl-1.5 pr-2">
+      <div className="flex items-center justify-center rounded-r-md pl-1.5 pr-2">
         <CopyBtn btnAction={handleCopyClick} copy={command} />
       </div>
     </div>

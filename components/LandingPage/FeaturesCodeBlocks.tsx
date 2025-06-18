@@ -14,23 +14,23 @@ export default function FeaturesCodeBlocks({
 }) {
   const [selected, setSelected] = useState<number>(0);
   return (
-    <div className="max-w-6xl mx-auto my-12 px-4 lg:px-0 flex flex-col gap-12 items-center justify-center">
-      <div className="flex flex-row md:flex-col gap-2 md:gap-1.5">
+    <div className="mx-auto my-12 flex max-w-6xl flex-col items-center justify-center gap-12 px-4 lg:px-0">
+      <div className="flex flex-row gap-2 md:flex-col md:gap-1.5">
         <div
-          className={`order-last md:order-first grid grid-cols-1 grid-rows-${features.length} md:grid-cols-${features.length} md:grid-rows-1 gap-6`}
+          className={`order-last grid grid-cols-1 md:order-first grid-rows-${features.length} md:grid-cols-${features.length} gap-6 md:grid-rows-1`}
         >
           {features.map(({ title, description }, idx) => (
             <div key={idx}>
               <div
                 className={clsx(
                   "h-full md:h-auto", // mobile
-                  "p-3 flex flex-col gap-2 cursor-pointer rounded hover:bg-canvasMuted",
+                  "flex cursor-pointer flex-col gap-2 rounded p-3 hover:bg-canvasMuted",
                   selected === idx && "border-bottom border-primary"
                 )}
                 role="button"
                 onClick={() => setSelected(idx)}
               >
-                <h3 className="text-basis font-medium text-lg">{title}</h3>
+                <h3 className="text-lg font-medium text-basis">{title}</h3>
                 <p className="text-subtle">{description}</p>
               </div>
             </div>
@@ -47,7 +47,7 @@ export default function FeaturesCodeBlocks({
           snippet={features[selected].codeBlock}
           className="md:px-7 md:py-4"
           style={{
-            background: `linear-gradient(108deg, rgba(204, 204, 204, 0.12) 9.67%, rgba(0, 0, 0, 0.00) 49.19%), #141414`,
+            background: `bg-stone-700`,
           }}
         />
       </div>
@@ -67,11 +67,11 @@ function TabSelectorBar({
   return (
     <div className="relative">
       {/* Horizontal */}
-      <div className="hidden md:block h-0.5 w-full bg-canvasMuted"></div>
+      <div className="hidden h-0.5 w-full bg-canvasMuted md:block"></div>
       <div
         className={clsx(
-          `hidden md:block absolute top-0 left-0 h-0.5`,
-          `bg-[rgb(var(--color-foreground-success))]`,
+          `absolute left-0 top-0 hidden h-0.5 md:block`,
+          `bg-inngestLux`,
           `transform transition-transform duration-300`
         )}
         style={{
@@ -82,11 +82,11 @@ function TabSelectorBar({
         }}
       ></div>
       {/* Vertical */}
-      <div className="md:hidden w-0.5 h-full bg-canvasMuted"></div>
+      <div className="h-full w-0.5 bg-canvasMuted md:hidden"></div>
       <div
         className={clsx(
-          `md:hidden absolute top-0 left-0 w-0.5`,
-          `bg-[rgb(var(--color-foreground-success))]`,
+          `absolute left-0 top-0 w-0.5 md:hidden`,
+          `bg-inngestLux`,
           `transform transition-transform duration-300`
         )}
         style={{

@@ -31,33 +31,33 @@ export default function Hero({
   return (
     <header className="relative pb-8">
       {/* bg gradient - nested containers to fix overflow issues and viewport sizing on mobile */}
-      <div className="absolute top-[-84px] w-full h-full min-h-[500px] overflow-hidden">
-        <div
-          className="absolute z-0 h-full lg:h-[660px] w-full rotate-45 translate-y-[-50%] translate-x-[-15%]"
+      <div className="absolute top-[-84px] h-full min-h-[500px] w-full overflow-hidden">
+        {/* <div
+          className="absolute z-0 h-full w-full translate-x-[-15%] translate-y-[-50%] rotate-45 lg:h-[660px]"
           style={{
             background:
               "radial-gradient(ellipse at center, rgba(var(--color-primary-xIntense) / 0.3) 0%,rgba(var(--color-primary-xIntense) / 0) 80%)",
           }}
-        ></div>
+        ></div> */}
       </div>
       <div
         className={cn(
-          "relative z-10 flex flex-col items-center gap-8 mx-auto py-28 px-4 sm:px-8 text-basis text-balance",
-          logos?.length > 0 ? "pt-28 pb-12" : "py-28",
+          "relative z-10 mx-auto flex flex-col items-center gap-8 text-balance px-4 py-28 text-basis sm:px-8",
+          logos?.length > 0 ? "pb-12 pt-28" : "py-28",
           layout === "default" && "max-w-4xl text-center",
-          layout === "horizontal" && "max-w-7xl flex flex-row"
+          layout === "horizontal" && "flex max-w-7xl flex-row"
         )}
       >
         <div>
-          <h1 className="text-5xl leading-tight md:text-6xl md:leading-tight font-semibold bg-clip-text text-transparent bg-gradient-to-bl from-[rgb(var(--color-carbon-300))] to-[rgb(var(--color-carbon-50))]">
+          <h1 className="bg-gradient-to-bl from-[rgb(var(--color-carbon-300))] to-[rgb(var(--color-carbon-50))] bg-clip-text text-5xl font-semibold leading-tight text-transparent md:text-6xl md:leading-tight">
             {headline}
           </h1>
-          <p className="mt-6 text-xl md:text-2xl text-subtle bg-clip-text text-transparent bg-gradient-to-bl from-[rgb(var(--color-carbon-300))] to-[rgba(var(--color-carbon-200)/0.8)]">
+          <p className="mt-6 bg-gradient-to-bl from-[rgb(var(--color-carbon-300))] to-[rgba(var(--color-carbon-200)/0.8)] bg-clip-text text-xl text-subtle text-transparent md:text-2xl">
             {subheadline}
           </p>
           <div
             className={cn(
-              "mt-10 flex flex-row flex-wrap justify-center items-center gap-4",
+              "mt-10 flex flex-row flex-wrap items-center justify-center gap-4",
               layout === "horizontal" && "justify-start"
             )}
           >
@@ -67,7 +67,7 @@ export default function Hero({
                   <Link
                     key={idx}
                     href={cta.href}
-                    className="inline-flex items-center gap-1 rounded-md font-medium px-6 py-2 bg-cta hover:bg-ctaHover transition-all text-carbon-1000 whitespace-nowrap"
+                    className="inline-flex items-center gap-1  whitespace-nowrap bg-cta px-6 py-2 font-medium text-carbon-1000 transition-all hover:bg-ctaHover"
                   >
                     {cta.text}
                   </Link>
@@ -77,7 +77,7 @@ export default function Hero({
                 <Link
                   key={idx}
                   href={cta.href}
-                  className="inline-flex items-center gap-1 font-medium px-6 py-2 hover:underline transition-all text-basis whitespace-nowrap"
+                  className="inline-flex items-center gap-1 whitespace-nowrap px-6 py-2 font-medium text-basis transition-all hover:underline"
                 >
                   {cta.text}
                 </Link>
@@ -88,11 +88,11 @@ export default function Hero({
         {children}
       </div>
       {logos?.length > 0 && (
-        <div className="relative z-10 my-12 flex flex-col gap-6 items-center sm:pb-8">
-          <p className="mx-8 text-sm text-balance text-subtle">
+        <div className="relative z-10 my-12 flex flex-col items-center gap-6 sm:pb-8">
+          <p className="mx-8 text-balance text-sm text-subtle">
             {logosHeading}
           </p>
-          <div className="grid grid-cols-2 sm:flex flex-wrap lg:flex-nowrap gap-x-4 sm:gap-x-10 gap-y-6 sm:gap-y-8 mx-8">
+          <div className="mx-8 grid grid-cols-2 flex-wrap gap-x-4 gap-y-6 sm:flex sm:gap-x-10 sm:gap-y-8 lg:flex-nowrap">
             {logos.map(({ src, name, scale = 1 }, idx) => (
               <Image
                 key={idx}
@@ -102,7 +102,7 @@ export default function Hero({
                 width={120 * 0.8 * scale}
                 height={30 * 0.8 * scale}
                 className={cn(
-                  "m-auto width-auto transition-all grayscale opacity-80 invert dark:invert-0",
+                  "width-auto m-auto opacity-80 grayscale invert transition-all dark:invert-0",
                   `max-h-[${36 * scale}px]`,
                   idx === 4 && "hidden sm:block",
                   idx > 4 && "hidden xl:block"
@@ -112,7 +112,7 @@ export default function Hero({
           </div>
         </div>
       )}
-      <span className="block mx-auto h-0.5 w-[84px] bg-[rgba(var(--color-foreground-base)/0.3)]"></span>
+      <span className="mx-auto block h-0.5 w-[84px] bg-[rgba(var(--color-foreground-base)/0.3)]"></span>
     </header>
   );
 }

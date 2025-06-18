@@ -1,4 +1,4 @@
-import { GetStaticProps, GetStaticPaths } from "next";
+import { notFound } from "next/navigation";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { atomOneDark as syntaxThemeDark } from "react-syntax-highlighter/dist/cjs/styles/hljs";
 import Footer from "src/shared/Footer";
@@ -25,7 +25,7 @@ import {
   IconFiles,
   IconCompiling,
   IconPower,
-} from "../../shared/Icons/duotone";
+} from "src/shared/Icons/duotone";
 
 const Icons: { [key: string]: React.FC<IconProps> } = {
   Retry: IconRetry,
@@ -85,47 +85,56 @@ export type UseCase = {
   };
 };
 
-export const getStaticProps: GetStaticProps = async (ctx) => {
-  const {
-    data,
-  }: { data: UseCase } = require(`../../data/uses/${ctx.params.case}.tsx`);
-  const stringData = JSON.stringify({ ...data, slug: ctx.params.case });
-  return {
-    props: {
-      stringData,
-      meta: {
-        title: data.title,
-        description: data.lede,
-      },
-      designVersion: "2",
-    },
-  };
-};
+async function getUseCase(slug: string): Promise<UseCase | null> {
+  try {
+    const { data } = require(`../../../data/uses/${slug}.tsx`);
+    return { ...data, slug };
+  } catch (error) {
+    return null;
+  }
+}
 
-export const getStaticPaths: GetStaticPaths = async () => {
+export async function generateStaticParams() {
   const fs = require("node:fs");
   const fileNames = fs.readdirSync("./data/uses");
 
-  const paths = fileNames.map((fileName) => {
+  return fileNames.map((fileName) => ({
+    case: fileName.replace(/\.tsx$/, ""),
+  }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { case: string };
+}) {
+  const data = await getUseCase(params.case);
+
+  if (!data) {
     return {
-      params: {
-        case: fileName.replace(/\.tsx$/, ""),
-      },
+      title: "Not Found",
     };
-  });
+  }
 
   return {
-    paths,
-    fallback: false,
+    title: data.title,
+    description: data.lede,
   };
-};
+}
 
-export default function useCase({ stringData }) {
-  const data: UseCase = JSON.parse(stringData);
+export default async function UseCasePage({
+  params,
+}: {
+  params: { case: string };
+}) {
+  const data = await getUseCase(params.case);
+
+  if (!data) {
+    notFound();
+  }
+
   return (
     <PageContainer>
-      <Header />
-
       <Container>
         <PageHeader
           title={data.title}
@@ -142,16 +151,16 @@ export default function useCase({ stringData }) {
       </Container>
 
       <Container>
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 mt-8 gap-2">
+        <div className="mt-8 grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
           {data.keyFeatures.map((feature, i) => (
             <div
               key={i}
-              className="max-w-[600px] m-auto md:m-0 bg-surfaceSubtle overflow-hidden rounded-lg border-slate-900/10"
+              className="m-auto max-w-[600px] overflow-hidden rounded-lg border-slate-900/10 bg-surfaceSubtle md:m-0"
             >
               {Boolean(feature.img) && (
                 <Image
                   alt={`Graphic of ${feature.title}`}
-                  className="rounded-t-lg lg:rounded-t-none lg:rounded-r-lg group-hover:rounded-lg"
+                  className="rounded-t-lg group-hover:rounded-lg lg:rounded-r-lg lg:rounded-t-none"
                   src={`/assets/use-cases/${feature.img}`}
                   width={600}
                   height={340}
@@ -159,11 +168,11 @@ export default function useCase({ stringData }) {
                 />
               )}
               <div className="p-6 lg:p-10">
-                <h3 className="text-lg lg:text-xl text-basis mb-2.5">
+                <h3 className="mb-2.5 text-lg text-basis lg:text-xl">
                   {feature.title}
                 </h3>
                 <p
-                  className="text-sm text-subtle leading-6"
+                  className="text-sm leading-6 text-subtle"
                   dangerouslySetInnerHTML={{ __html: feature.description }}
                 ></p>
               </div>
@@ -176,24 +185,24 @@ export default function useCase({ stringData }) {
         <SectionHeader title={data.codeSection.title} />
         {data.codeSection.examples.map((example) => (
           <div
-            className="mt-16 grid lg:grid-cols-5 md:grid-cols-1"
+            className="mt-16 grid md:grid-cols-1 lg:grid-cols-5"
             key={example.title}
           >
-            <div className="text-slate-200 mb-10 lg:mb-0 lg:pr-20 max-w-[480px] justify-center flex flex-col gap-3 col-span-2">
+            <div className="col-span-2 mb-10 flex max-w-[480px] flex-col justify-center gap-3 text-slate-200 lg:mb-0 lg:pr-20">
               {!!example.title && (
-                <h3 className="mb-12 text-xl md:text-3xl font-semibold">
+                <h3 className="mb-12 text-xl font-semibold md:text-3xl">
                   {example.title}
                 </h3>
               )}
               {example.steps.map((step, idx) => (
                 <p className="flex items-start gap-3" key={idx}>
-                  <span className="bg-surfaceMuted rounded flex items-center justify-center w-6 h-6 text-xs font-bold shrink-0">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-surfaceMuted text-xs font-bold">
                     {example?.steps?.length === 1 ? "→" : idx + 1}
                   </span>{" "}
                   {step}
                 </p>
               ))}
-              <p className="text-sm text-slate-300 mt-4 ml-9">
+              <p className="ml-9 mt-4 text-sm text-slate-300">
                 {example.description}
               </p>
             </div>
@@ -207,7 +216,7 @@ export default function useCase({ stringData }) {
       </Container>
 
       {!!data.quote && (
-        <Container className="flex flex-col items-center gap-4 my-48">
+        <Container className="my-48 flex flex-col items-center gap-4">
           <Quote
             text={data.quote.text}
             attribution={{
@@ -224,10 +233,10 @@ export default function useCase({ stringData }) {
         <SectionHeader
           title={data.featureOverflowTitle || "Everything you need to build"}
         />
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 xl:gap-16 mt-20">
+        <div className="mt-20 grid grid-cols-1 gap-8 md:grid-cols-2 xl:grid-cols-3 xl:gap-16">
           {data.featureOverflow.map((feature, i) => (
             <div key={i}>
-              <h3 className="text-slate-50 text-lg lg:text-xl mb-2 flex items-center gap-1 -ml-2">
+              <h3 className="-ml-2 mb-2 flex items-center gap-1 text-lg text-slate-50 lg:text-xl">
                 {feature.icon && (
                   <Icon name={feature.icon} size={30} color="matcha" />
                 )}
@@ -241,7 +250,7 @@ export default function useCase({ stringData }) {
 
       <Container>
         <SectionHeader title="Learn more" lede={data.learnMore.description} />
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mt-16">
+        <div className="mt-16 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
           {data.learnMore.resources.map((learningItem, i) => (
             <Learning
               key={i}
@@ -253,7 +262,6 @@ export default function useCase({ stringData }) {
           ))}
         </div>
       </Container>
-      <Footer ctaRef={`use-case-${data.slug}`} />
     </PageContainer>
   );
 }

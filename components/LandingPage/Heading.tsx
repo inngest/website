@@ -1,6 +1,6 @@
 import clsx from "clsx";
 export const commonClassNames = `font-semibold leading-tight sm:leading-tight`;
-export const gradientClassNames = `bg-clip-text text-transparent bg-gradient-to-br from-[rgb(var(--color-carbon-400))] to-[rgb(var(--color-carbon-50))]`;
+export const gradientClassNames = `text-stone-50`;
 
 export function H1({
   children,
@@ -12,7 +12,7 @@ export function H1({
   return (
     <h1
       className={clsx(
-        `text-5xl md:text-6xl leading-tight ${commonClassNames}`,
+        `text-5xl leading-tight md:text-6xl ${commonClassNames}`,
         variant === "gradient" && gradientClassNames,
         variant === "contrast" && "text-basis"
       )}

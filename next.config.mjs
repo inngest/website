@@ -145,6 +145,14 @@ const nextConfig = {
   experimental: {
     scrollRestoration: true,
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "resend.com",
+      },
+    ],
+  },
   outputFileTracingExcludes: {
     "*": ["./.git/*", "./public/**/*", "./.pnpm-store/*"],
     "!(/api)": ["./.next/*"],
