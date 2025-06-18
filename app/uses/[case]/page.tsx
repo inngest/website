@@ -106,9 +106,11 @@ export async function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: {
-  params: { case: string };
+  // `params` is provided as a Promise based on Next.js generated `PageProps`
+  params: Promise<{ case: string }>;
 }) {
-  const data = await getUseCase(params.case);
+  const { case: caseSlug } = await params;
+  const data = await getUseCase(caseSlug);
 
   if (!data) {
     return {
@@ -125,9 +127,11 @@ export async function generateMetadata({
 export default async function UseCasePage({
   params,
 }: {
-  params: { case: string };
+  // The `params` prop is typed as a Promise to satisfy Next.js's generated `PageProps`.
+  params: Promise<{ case: string }>;
 }) {
-  const data = await getUseCase(params.case);
+  const { case: caseSlug } = await params;
+  const data = await getUseCase(caseSlug);
 
   if (!data) {
     notFound();
