@@ -12,7 +12,7 @@ export function H1({
   return (
     <h1
       className={clsx(
-        `text-5xl leading-tight md:text-6xl ${commonClassNames}`,
+        `font-whyteInktrap text-5xl leading-tight md:text-6xl ${commonClassNames}`,
         variant === "gradient" && gradientClassNames,
         variant === "contrast" && "text-basis"
       )}

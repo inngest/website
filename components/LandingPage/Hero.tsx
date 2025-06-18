@@ -49,7 +49,7 @@ export default function Hero({
         )}
       >
         <div>
-          <h1 className="bg-gradient-to-bl from-[rgb(var(--color-carbon-300))] to-[rgb(var(--color-carbon-50))] bg-clip-text text-5xl font-semibold leading-tight text-transparent md:text-6xl md:leading-tight">
+          <h1 className="font-whyteInktrap text-5xl font-semibold leading-tight text-stone-50 md:text-6xl md:leading-tight">
             {headline}
           </h1>
           <p className="mt-6 bg-gradient-to-bl from-[rgb(var(--color-carbon-300))] to-[rgba(var(--color-carbon-200)/0.8)] bg-clip-text text-xl text-subtle text-transparent md:text-2xl">
