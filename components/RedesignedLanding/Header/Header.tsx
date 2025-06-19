@@ -133,7 +133,7 @@ export default function Header() {
         <DialogPanel className="fixed inset-y-0 right-0 z-10 w-full overflow-y-auto bg-stone-950 px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
           <div className="mt-2 flex items-center justify-between">
             <Link href="#" className="-m-1.5 p-1.5">
-              <span className="sr-only">Your Company</span>
+              <span className="sr-only">Inngest</span>
               <img
                 alt=""
                 src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
@@ -189,29 +189,6 @@ export default function Header() {
                           </div>
                         </a>
                       ))}
-                    </div>
-                    <div className="mt-4 px-6">
-                      <h3 className="pb-2 text-sm font-medium leading-6 text-stone-400">
-                        What's new
-                      </h3>
-                      <article className="relative isolate flex flex-row gap-y-3 pb-2">
-                        <div className="relative flex-none">
-                          <img
-                            alt=""
-                            src="/assets/blog/announcing-realtime/featured-image.png"
-                            className="aspect-[2/1] max-h-16 rounded-lg bg-gray-100 object-cover"
-                          />
-                          <div className="absolute inset-0 rounded-lg ring-1 ring-inset ring-gray-900/10" />
-                        </div>
-                        <div className="flex items-center">
-                          <h4 className="ml-4 font-whyte text-sm font-normal leading-[1.05rem] text-stone-50">
-                            <a href="#">
-                              <span className="absolute inset-0" />
-                              Introducing the Fetch APIs: Longer Title mock
-                            </a>
-                          </h4>
-                        </div>
-                      </article>
                     </div>
                   </DisclosurePanel>
                 </Disclosure>
