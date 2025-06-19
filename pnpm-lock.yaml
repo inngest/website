@@ -136,15 +136,9 @@ importers:
       inngest:
         specifier: 0.5.3
         version: 0.5.3
-<<<<<<< HEAD
-      install:
-        specifier: 0.13.0
-        version: 0.13.0
-=======
       lottie-react:
         specifier: 2.4.1
         version: 2.4.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
->>>>>>> origin/jakob/inn-4865-feature-2
       mdast-util-to-string:
         specifier: 4.0.0
         version: 4.0.0
@@ -3339,10 +3333,6 @@ packages:
   inngest@0.5.3:
     resolution: {integrity: sha512-FLUeLNWbGUSWwOiKHe2xi5jnu//ncNBzD2uLzi77pS2Fo0+0tzNroHU/9jurpoAMYKMgTBVIEpvVm4kbETumWQ==}
     hasBin: true
-
-  install@0.13.0:
-    resolution: {integrity: sha512-zDml/jzr2PKU9I8J/xyZBQn8rPCAY//UOYNmR01XwNwyfhEWObo2SWfSl1+0tm1u6PhxLwDnfsT/6jB7OUxqFA==}
-    engines: {node: '>= 0.10'}
 
   internal-slot@1.0.4:
     resolution: {integrity: sha512-tA8URYccNzMo94s5MQZgH8NB/XTa6HsOo0MLfXTKKEnHVVdegzaQoFZ7Jp44bdvLvY2waT5dc+j5ICEswhi7UQ==}
@@ -9159,8 +9149,6 @@ snapshots:
       zod: 3.19.1
     transitivePeerDependencies:
       - encoding
-
-  install@0.13.0: {}
 
   internal-slot@1.0.4:
     dependencies:
