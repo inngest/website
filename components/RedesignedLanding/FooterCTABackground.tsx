@@ -97,14 +97,31 @@ export default function FooterCTABackground({
     }));
   }, []);
 
+  // Calculate an even distribution based on a square-ish grid so that the
+  // patterns fill the entire section. We use the square root of the pattern
+  // count to determine the number of columns, and then derive the number of
+  // rows. Each pattern wrapper is absolutely positioned using percentages so
+  // that it scales with the sectionʼs size.
+
+  const columns = Math.ceil(Math.sqrt(PATTERN_COUNT));
+  const rows = Math.ceil(PATTERN_COUNT / columns);
+
   return (
     <div ref={containerRef} className="absolute inset-0 z-0">
-      <div className="grid grid-cols-10 grid-rows-10 gap-y-2">
-        {patterns.map((pattern) => (
+      {patterns.map((pattern) => {
+        const col = pattern.index % columns;
+        const row = Math.floor(pattern.index / columns);
+
+        // Use +0.5 so that each pattern is centered inside its virtual cell.
+        const left = `${((col + 0.5) / columns) * 100}%`;
+        const top = `${((row + 0.5) / rows) * 100}%`;
+
+        return (
           <div
             key={pattern.key}
             ref={setPatternRef(pattern.index)}
-            className="relative flex items-center justify-center"
+            className="absolute flex items-center justify-center"
+            style={{ left, top, transform: "translate(-50%, -50%)" }}
           >
             <BackgroundPattern
               id={pattern.id}
@@ -116,8 +133,8 @@ export default function FooterCTABackground({
               shouldTrackMouse={shouldTrackMouse}
             />
           </div>
-        ))}
-      </div>
+        );
+      })}
     </div>
   );
 }
