@@ -3,13 +3,26 @@ import { ArrowRightIcon } from "@heroicons/react/24/outline";
 import { Button } from "./Button";
 import { Card, CardContent, CardHeader, CardTitle } from "./Card";
 import { useEffect } from "react";
-import { useAnimate } from "motion/react";
+import { useAnimate, useInView } from "motion/react";
 
 export default function OrchestrationSection() {
+  const [headerScope, headerAnimate] = useAnimate();
+  const headerInView = useInView(headerScope, { amount: 0.3, once: true });
+  useEffect(() => {
+    if (!headerScope.current || !headerInView) return;
+    headerAnimate(
+      headerScope.current,
+      { opacity: [0, 1], y: [20, 0] },
+      { duration: 0.6, ease: "easeOut" }
+    );
+  }, [headerAnimate, headerScope, headerInView]);
   return (
     <section className="relative flex items-center bg-stone-900 py-16 text-white md:py-40">
       <div className="container mx-auto px-4">
-        <div className="mb-12 text-center md:mb-20">
+        <div
+          ref={headerScope as any}
+          className="mb-12 text-center opacity-0 md:mb-20"
+        >
           <h1 className="mb-4 font-whyte text-4xl font-light text-stone-50 md:text-5xl lg:text-6xl">
             Orchestration for{" "}
             <span className="font-whyteInktrap font-normal text-stone-50">
@@ -33,20 +46,21 @@ export default function OrchestrationSection() {
 
 function WorkflowsCard() {
   const [scope, animate] = useAnimate();
+  const isInView = useInView(scope, { amount: 0.4, once: true });
+
   useEffect(() => {
-    if (!scope.current) return;
+    if (!scope.current || !isInView) return;
     animate(
       scope.current,
       { opacity: [0, 1], x: [-50, 0] },
       { duration: 0.6, ease: "easeOut" }
     );
-  }, [animate, scope]);
+  }, [animate, scope, isInView]);
 
   return (
     <div
       ref={scope as any}
-      className="relative overflow-hidden border-2 border-stone-800 bg-stone-900 p-3 shadow-xl sm:p-6"
-      style={{ opacity: 0 }}
+      className="relative overflow-hidden border-2 border-stone-800 bg-stone-900 p-3 opacity-0 shadow-xl sm:p-6"
     >
       <div className="pointer-events-none absolute -left-3/4 -top-3/4 h-[150%] w-[150%] rounded-full bg-[#655279]" />
 
@@ -90,19 +104,21 @@ function WorkflowsCard() {
 
 function AgentsCard() {
   const [scope, animate] = useAnimate();
+  const isInView = useInView(scope, { amount: 0.4, once: true });
+
   useEffect(() => {
-    if (!scope.current) return;
+    if (!scope.current || !isInView) return;
     animate(
       scope.current,
       { opacity: [0, 1], x: [50, 0] },
       { duration: 0.6, ease: "easeOut" }
     );
-  }, [animate, scope]);
+  }, [animate, scope, isInView]);
+
   return (
     <div
       ref={scope as any}
-      className="relative overflow-hidden border-2 border-stone-800 bg-stone-900 p-3 shadow-xl sm:p-6"
-      style={{ opacity: 0 }}
+      className="relative overflow-hidden border-2 border-stone-800 bg-stone-900 p-3 opacity-0 shadow-xl sm:p-6"
     >
       <div className="pointer-events-none absolute -bottom-3/4 -right-3/4 h-[150%] w-[150%] rounded-full bg-inngestLux" />
 
