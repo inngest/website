@@ -51,9 +51,9 @@ export const platformDropdown = [
     ),
   },
   {
-    name: "Monitoring",
-    href: "#",
-    description: "Monitor your Inngest functions",
+    name: "Queueing",
+    href: "/compare-to-legacy-queues?ref=nav",
+    description: "Learn about queueing, retries, and more",
     icon: (
       <svg
         width="20"
@@ -70,9 +70,9 @@ export const platformDropdown = [
     ),
   },
   {
-    name: "Recovery",
-    href: "#",
-    description: "Recover from failures with Inngest",
+    name: "Platform",
+    href: "/platform?ref=nav",
+    description: "Learn about features, flow control, and more",
     icon: (
       <svg
         width="20"
