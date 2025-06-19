@@ -14,13 +14,13 @@ export default function FooterCTA() {
       <div className="relative z-10 mx-auto max-w-7xl px-6">
         <div className="mx-auto max-w-2xl text-center">
           <h2
-            className="text-base/7 font-semibold text-inngestLux"
+            className="p-3 text-base/7 font-semibold text-inngestLux"
             onMouseEnter={() => setTrackMouse(true)}
             onMouseLeave={() => setTrackMouse(false)}
           >
             In the middle of chaos
           </h2>
-          <p className="mb-4 mt-2 text-balance text-4xl font-semibold tracking-tight text-white sm:text-5xl">
+          <p className="mb-4 text-balance font-whyteInktrap text-4xl font-semibold tracking-tight text-white sm:text-6xl">
             Develop reliable AI products, everytime
           </p>
           <div className="flex flex-col items-center justify-center gap-x-6 sm:flex-row">
