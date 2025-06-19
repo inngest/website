@@ -58,6 +58,7 @@
     "heroicons": "2.0.13",
     "highlight.js": "11.7.0",
     "inngest": "0.5.3",
+    "lottie-react": "2.4.1",
     "mdast-util-to-string": "4.0.0",
     "mdx-annotations": "0.1.4",
     "monaco-editor": "0.28.1",
