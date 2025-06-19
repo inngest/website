@@ -1,6 +1,6 @@
 "use client";
 import { ArrowRightIcon } from "@heroicons/react/24/outline";
-import Lottie from "lottie-react";
+import Lottie, { LottieRefCurrentProps } from "lottie-react";
 import { Button } from "src/components/RedesignedLanding/Button";
 import {
   Card,
@@ -18,8 +18,20 @@ import Lines from "./Lines";
 import animationData from "./Lottie/observability.json";
 import MediumLines from "./MediumLines";
 import MobileDeploySVG from "./MoblieDeploySVG";
+import { useRef, useEffect } from "react";
+import { useInView } from "framer-motion";
 
 export default function FeatureNavigate() {
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const lottieRef = useRef<LottieRefCurrentProps>(null);
+  const inView = useInView(wrapperRef, { amount: 0.3, once: true });
+
+  useEffect(() => {
+    if (inView) {
+      lottieRef.current?.play();
+    }
+  }, [inView]);
+
   return (
     <>
       <div className="feature-nav-container relative bg-stone-950">
@@ -104,10 +116,15 @@ export default function FeatureNavigate() {
             </div>
             <div className="mx-auto flex max-w-lg flex-col pt-12 md:max-w-5xl md:items-end md:pt-0">
               <div className="flex flex-col items-start">
-                <Lottie
-                  animationData={animationData}
-                  className="observability-anchor"
-                />
+                <div ref={wrapperRef}>
+                  <Lottie
+                    lottieRef={lottieRef}
+                    animationData={animationData}
+                    className="observability-anchor"
+                    loop={false}
+                    autoplay={false}
+                  />
+                </div>
                 <Card className="mt-8 flex h-full max-w-sm flex-col justify-center rounded-none border-none bg-stone-900 sm:order-1">
                   <CardHeader className="pl-6 md:pl-0">
                     <CardTitle className="font-whyte text-3xl font-light">
