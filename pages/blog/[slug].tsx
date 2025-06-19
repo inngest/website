@@ -195,7 +195,7 @@ export default function BlogLayout(props) {
         <Header />
         <Container>
           <article>
-            <main className="relative m-auto max-w-3xl pt-16">
+            <main className="relative m-auto max-w-3xl py-16">
               {scope.image && (
                 <figure className="mx-auto flex max-w-[768px] flex-col items-end">
                   <Image
@@ -304,7 +304,7 @@ function CTAs({
   const visibleCTAs =
     primary === "sales" ? [ctas.sales, ctas.docs] : [ctas.docs, ctas.sales];
   return (
-    <aside className="m-auto grid max-w-[70ch] gap-16 border-t-[2px] border-stone-700 pt-16 text-indigo-500 sm:grid-cols-2">
+    <aside className="m-auto grid max-w-[70ch] gap-16 border-t-[2px] border-stone-700 pt-8 text-indigo-500 sm:grid-cols-2">
       {visibleCTAs.map((c, idx) => (
         <div key={idx} className="flex flex-col items-start">
           <h2 className="mt-6 text-xl font-medium text-basis">{c.title}</h2>
