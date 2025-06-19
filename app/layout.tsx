@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 
 import Nav from "src/components/Nav";
-import Footer from "src/shared/Footer";
+import Footer from "@/components/RedesignedLanding/Footer";
 import { HeaderInit, PageViews } from "@/components/InngestClientSDK";
 import GoogleTagManger from "@/components/GoogleTagManager";
 import { getFullURL } from "src/utils/social";
