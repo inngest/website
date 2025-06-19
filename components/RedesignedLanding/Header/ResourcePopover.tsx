@@ -12,7 +12,7 @@ import {
 export const resourceDropdown = [
   {
     name: "Blog",
-    href: "#",
+    href: "/blog?ref=nav",
     description: "Read our latest articles",
     icon: (
       <svg
@@ -31,7 +31,7 @@ export const resourceDropdown = [
   },
   {
     name: "Changelog",
-    href: "#",
+    href: "/changelog?ref=nav",
     description: "See what's new in Inngest",
     icon: (
       <svg
