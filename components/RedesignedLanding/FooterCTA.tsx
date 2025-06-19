@@ -11,13 +11,13 @@ export default function FooterCTA() {
     <section className="relative overflow-hidden bg-stone-950 pb-24 pt-24">
       <FooterCTABackground shouldTrackMouse={trackMouse} />
 
-      <div className="relative z-10 mx-auto max-w-7xl px-6">
+      <div
+        className="relative z-10 mx-auto max-w-7xl"
+        onMouseEnter={() => setTrackMouse(true)}
+        onMouseLeave={() => setTrackMouse(false)}
+      >
         <div className="mx-auto max-w-2xl text-center">
-          <h2
-            className="p-3 text-base/7 font-semibold text-inngestLux"
-            onMouseEnter={() => setTrackMouse(true)}
-            onMouseLeave={() => setTrackMouse(false)}
-          >
+          <h2 className="text-base/7 font-semibold text-inngestLux">
             In the middle of chaos
           </h2>
           <p className="mb-4 text-balance font-whyteInktrap text-4xl font-semibold tracking-tight text-white sm:text-6xl">
