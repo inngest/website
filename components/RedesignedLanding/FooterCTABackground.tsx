@@ -9,8 +9,9 @@ import React, {
 
 const INNGEST_LUX = "#78716C";
 
-const PATTERN_COUNT = 90;
+const PATTERN_COUNT = 252;
 const THROTTLE_MS = 16;
+const HORIZONTAL_COMPRESSION_FACTOR = 1.75;
 
 type FooterCTABackgroundProps = {
   shouldTrackMouse?: boolean;
@@ -97,13 +98,15 @@ export default function FooterCTABackground({
     }));
   }, []);
 
-  // Calculate an even distribution based on a square-ish grid so that the
-  // patterns fill the entire section. We use the square root of the pattern
-  // count to determine the number of columns, and then derive the number of
-  // rows. Each pattern wrapper is absolutely positioned using percentages so
-  // that it scales with the sectionʼs size.
+  // Calculate the distribution for the pattern grid. We start with a square-ish
+  // grid (√PATTERN_COUNT) then multiply by a horizontal compression factor to
+  // introduce additional columns. This squeezes the patterns closer together
+  // horizontally while automatically reducing the number of rows so the total
+  // pattern count stays the same.
 
-  const columns = Math.ceil(Math.sqrt(PATTERN_COUNT));
+  const columns = Math.ceil(
+    Math.sqrt(PATTERN_COUNT) * HORIZONTAL_COMPRESSION_FACTOR
+  );
   const rows = Math.ceil(PATTERN_COUNT / columns);
 
   return (
