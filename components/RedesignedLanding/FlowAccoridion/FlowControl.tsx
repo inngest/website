@@ -17,7 +17,7 @@ import PrioritySVG from "./Priority";
 import ConcurrencySVG from "./Concurrency";
 import FairnessSVG from "./Fairness";
 import FairnessWithoutInngestSVG from "./FairnessWithoutInngest";
-import TestAnimation from "./AnimatedSVG/App";
+import AutoplayVideo from "src/shared/Blog/AutoplayVideo";
 
 export default function FlowAccordion() {
   const initialOpenItem = "item-1";
@@ -87,7 +87,10 @@ export default function FlowAccordion() {
           <div className="flex h-full w-full items-center justify-center">
             {openItemValue === "item-1" ? (
               mode === "with-inngest" ? (
-                <TestAnimation />
+                <AutoplayVideo
+                  src="/assets/redesignedLanding/testvideo.mov"
+                  controls={false}
+                />
               ) : (
                 <FairnessWithoutInngestSVG />
               )
