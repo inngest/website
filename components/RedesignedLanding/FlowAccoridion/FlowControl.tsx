@@ -17,7 +17,11 @@ import PrioritySVG from "./Priority";
 import ConcurrencySVG from "./Concurrency";
 import FairnessSVG from "./Fairness";
 import FairnessWithoutInngestSVG from "./FairnessWithoutInngest";
-import TestAnimation from "./AnimatedSVG/App";
+import Lottie from "lottie-react";
+import Fairness from "./Lottie/Fairness.json";
+import WithoutInngest from "./Lottie/Without-Inngest.json";
+import Concurrency from "./Lottie/Concurrency.json";
+import Priority from "./Lottie/Priority.json";
 
 export default function FlowAccordion() {
   const initialOpenItem = "item-1";
@@ -87,24 +91,24 @@ export default function FlowAccordion() {
           <div className="flex h-full w-full items-center justify-center">
             {openItemValue === "item-1" ? (
               mode === "with-inngest" ? (
-                <TestAnimation />
+                <Lottie animationData={Fairness} loop={true} />
               ) : (
-                <FairnessWithoutInngestSVG />
+                <Lottie animationData={WithoutInngest} loop={true} />
               )
             ) : openItemValue === "item-2" ? (
               mode === "with-inngest" ? (
-                <ConcurrencySVG />
+                <Lottie animationData={Concurrency} loop={true} />
               ) : (
-                <FairnessWithoutInngestSVG />
+                <Lottie animationData={WithoutInngest} loop={true} />
               )
             ) : openItemValue === "item-3" ? (
               mode === "with-inngest" ? (
-                <PrioritySVG />
+                <Lottie animationData={Priority} loop={true} />
               ) : (
-                <FairnessWithoutInngestSVG />
+                <Lottie animationData={WithoutInngest} loop={true} />
               )
             ) : (
-              <FairnessSVG />
+              <Lottie animationData={Fairness} loop={true} />
             )}
           </div>
         </div>
