@@ -3,7 +3,7 @@ import AccordionSection from "src/components/RedesignedLanding/AccordionSection"
 
 import Footer from "src/components/RedesignedLanding/Footer";
 import { generateMetadata } from "src/utils/social";
-import Hero2 from "../components/RedesignedLanding/Hero";
+import Hero from "../components/RedesignedLanding/Hero";
 import TestimonialCarousel from "src/components/RedesignedLanding/TestimonialCarousel";
 import Testimonial from "src/components/RedesignedLanding/Testimonial";
 import TrustFeaturesSection from "src/components/RedesignedLanding/Trust";
@@ -20,7 +20,7 @@ export const metadata: Metadata = generateMetadata({
 export default function Page() {
   return (
     <div className="bg-stone-950">
-      <Hero2 />
+      <Hero />
       <OrchestrationSection />
       <FeatureNavigate />
       <Testimonial />
