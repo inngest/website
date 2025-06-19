@@ -69,7 +69,7 @@ export default function PlanCard({
         {/* Prevent weird button wrap on enterprise from mis-aligning rows */}
         <div className="sm:min-h-[272px] min-[933px]:min-h-[252px] min-[1272px]:min-h-0">
           {content.name === PLAN_NAMES.basicFree ? (
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center justify-between gap-4 py-3">
               <h2 className="font-whyte text-3xl font-light text-white">
                 Hobby
               </h2>
@@ -93,7 +93,7 @@ export default function PlanCard({
               </Tabs>
             </div>
           ) : (
-            <h2 className="font-whyte text-3xl font-light text-white">
+            <h2 className="py-3 font-whyte text-3xl font-light text-white">
               {content.name}
             </h2>
           )}
