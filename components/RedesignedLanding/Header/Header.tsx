@@ -37,7 +37,7 @@ export default function Header() {
         className="m-auto flex max-w-container-desktop items-center justify-between p-6 lg:px-8"
       >
         <div className="relative z-10 flex items-center gap-x-6 font-circular text-sm font-medium leading-[1.05rem] text-neutral-50">
-          <Link href="#" className="-m-1.5 p-1.5">
+          <Link href="/" className="-m-1.5 p-1.5">
             <span className="sr-only">Inngest</span>
             <svg
               xmlns="http://www.w3.org/2000/svg"

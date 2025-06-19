@@ -133,7 +133,7 @@ export default function ResourcePopover() {
         onMouseLeave={handleMouseLeave}
       >
         <div className="mx-auto w-full max-w-md overflow-hidden lg:max-w-3xl">
-          <div className="grid grid-cols-1 gap-y-1 p-4 lg:grid-cols-2 lg:gap-0">
+          <div className="grid grid-cols-1 gap-y-1 lg:grid-cols-2 lg:gap-0">
             <div className="lg:border-r lg:border-stone-700 lg:pr-3">
               <div className="flex flex-col items-start gap-1 pb-4">
                 <div className="mt-2 flow-root w-full">
