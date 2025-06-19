@@ -12,7 +12,7 @@ import {
 export const platformDropdown = [
   {
     name: "AI & Agents",
-    href: "#",
+    href: "/ai?ref=nav",
     description: "Build AI agents with Inngest",
     icon: (
       <svg
@@ -135,7 +135,7 @@ export default function PlatformPopover() {
         onMouseLeave={handleMouseLeave}
       >
         <div className="mx-auto w-full max-w-md overflow-hidden lg:max-w-3xl">
-          <div className="grid grid-cols-1 gap-y-1 p-4 lg:grid-cols-2 lg:gap-0">
+          <div className="grid grid-cols-1 gap-y-1 lg:grid-cols-2 lg:gap-0">
             <div className="lg:border-r lg:border-stone-700 lg:pr-3">
               <div className="flex flex-col items-start gap-1 pb-4">
                 <h3 className="text-sm font-medium leading-6 text-stone-400">
