@@ -787,6 +787,11 @@ const sectionHome: (NavGroup | NavLink)[] = [
             title: "Guides",
           },
           {
+            title: "Connect",
+            href: `/docs/setup/connect`,
+            tag: "new"
+          },
+          {
             title: "Self hosting",
             href: `/docs/self-hosting`,
           },
