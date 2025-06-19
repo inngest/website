@@ -3,7 +3,7 @@ heading: "Introducing Connect: a better way to run Inngest Functions on servers"
 image: /assets/blog/announcing-connect/featured-image.png
 showSubtitle: false
 subtitle: Connect is a new API to connect your application to Inngest over a outbound persistent connection. This brings better support for servers (Render, Fly.io, etc.) and lower latency.
-date: 2025-06-06
+date: 2025-20-06
 author: Charly Poly
 category: product-updates
 focus: true
@@ -13,7 +13,7 @@ focus: true
 While Inngest has been primarly successful among Serverless developers, we've seen a growing demand from developers running Inngest Functions on their long-running servers such as Render, AWS EC2, DigitalOcean and such.
 Additionally, some customers scaling large applications with Inngest were also looking for a lower latency and better support for long-running functions.
 
-After a few weeks of private alpha, we are happy to rollout Connect as a [Developer Preview](https://docs.inngest.com/docs/release-phases#developer-preview) in our TypeScript, Python and Go SDKs.
+After a few weeks of private alpha, we are happy to rollout Connect as a [Developer Preview](/docs/release-phases#developer-preview) in our TypeScript, Python and Go SDKs.
 
 [Connect](/docs/setup/connect) is drop-in replacement to [`serve()`](/docs/learn/serving-inngest-functions) to connect your application to Inngest over one or multiple outbound persistent connections, **dramatically improving the latency and scalability of your functions**.
 
@@ -35,7 +35,7 @@ This new deployment method relying the [WebSocket protocol](https://en.wikipedia
 
 </Row>
 
-Beyond huge performance and scalability benefit, Connect also brings a better developer experience, enabling colocate all your Inngest-related code in a single file:
+Beyond huge performance and scalability benefit, Connect also brings a better developer experience, **enabling colocate all your Inngest-related code in a single file**:
 
 
 ```ts
@@ -75,12 +75,9 @@ on your application health and load:
 Beyond observability, Connect also brings a finer control over production deployments with supports for rollbacks, rolling releases and more.
 
 
-## Don't trust our words, trust our early users
+## Get started with Connect
 
---
-Customer testimonial section
---
-
-If your application is running on servers, or if you are looking for a finer horizontal scaling control or lower latency, give Connect a try and let us know what you think!
+If your application is running on servers, or if you are looking for a finer horizontal scaling control or lower latency, give Connect a try and [share your feedback during our developer preview](/discord)!
 
 The [Connect documentation](/docs/setup/connect) will drive you from setup to advanced deployment configuration 🚀
+
