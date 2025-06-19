@@ -164,7 +164,7 @@ export default function ResourcePopover() {
             <div className="lg:pl-3">
               <div className="flex flex-col items-start gap-1 pb-4">
                 <h3 className="text-sm font-medium leading-6 text-stone-400">
-                  What's new
+                  Latest blog
                 </h3>
                 <div className="mt-2 flow-root w-full">
                   <div className="-my-2">
