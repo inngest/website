@@ -30,9 +30,9 @@ export const platformDropdown = [
     ),
   },
   {
-    name: "Orchestration",
-    href: "#",
-    description: "Orchestrate your workflows with Inngest",
+    name: "Durable Workflows",
+    href: "/uses/durable-workflows?ref=nav",
+    description: "Learn about durable workflows, retries, and more",
     icon: (
       <svg
         width="20"
@@ -53,7 +53,7 @@ export const platformDropdown = [
   {
     name: "Queueing",
     href: "/compare-to-legacy-queues?ref=nav",
-    description: "Learn about queueing, retries, and more",
+    description: "Compare Inngest to legacy queues",
     icon: (
       <svg
         width="20"
@@ -73,6 +73,63 @@ export const platformDropdown = [
     name: "Platform",
     href: "/platform?ref=nav",
     description: "Learn about features, flow control, and more",
+    icon: (
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 20 20"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M13 1.75C13.414 1.75 13.75 2.086 13.75 2.5V4.75H16.75C17.164 4.75 17.5 5.086 17.5 5.5V16C17.5 16.414 17.164 16.75 16.75 16.75H3.25C2.836 16.75 2.5 16.414 2.5 16V5.5C2.5 5.086 2.836 4.75 3.25 4.75H6.25V2.5C6.25 2.086 6.586 1.75 7 1.75H13ZM16 6.25H4V15.25H16V6.25ZM10.75 7.75V10H13V11.5H10.7492L10.75 13.75H9.25L9.24925 11.5H7V10H9.25V7.75H10.75ZM12.25 3.25H7.75V4.75H12.25V3.25Z"
+          fill="#8F75B7"
+        />
+      </svg>
+    ),
+  },
+  {
+    name: "Workflow Engines",
+    href: "/uses/workflow-engine?ref=nav",
+    description: "Learn about workflow engines",
+    icon: (
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 20 20"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M13 1.75C13.414 1.75 13.75 2.086 13.75 2.5V4.75H16.75C17.164 4.75 17.5 5.086 17.5 5.5V16C17.5 16.414 17.164 16.75 16.75 16.75H3.25C2.836 16.75 2.5 16.414 2.5 16V5.5C2.5 5.086 2.836 4.75 3.25 4.75H6.25V2.5C6.25 2.086 6.586 1.75 7 1.75H13ZM16 6.25H4V15.25H16V6.25ZM10.75 7.75V10H13V11.5H10.7492L10.75 13.75H9.25L9.24925 11.5H7V10H9.25V7.75H10.75ZM12.25 3.25H7.75V4.75H12.25V3.25Z"
+          fill="#8F75B7"
+        />
+      </svg>
+    ),
+  },
+  {
+    name: "Background Jobs",
+    href: "/uses/serverless-node-background-jobs?ref=nav",
+    description: "Learn about background jobs",
+    icon: (
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 20 20"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M13 1.75C13.414 1.75 13.75 2.086 13.75 2.5V4.75H16.75C17.164 4.75 17.5 5.086 17.5 5.5V16C17.5 16.414 17.164 16.75 16.75 16.75H3.25C2.836 16.75 2.5 16.414 2.5 16V5.5C2.5 5.086 2.836 4.75 3.25 4.75H6.25V2.5C6.25 2.086 6.586 1.75 7 1.75H13ZM16 6.25H4V15.25H16V6.25ZM10.75 7.75V10H13V11.5H10.7492L10.75 13.75H9.25L9.24925 11.5H7V10H9.25V7.75H10.75ZM12.25 3.25H7.75V4.75H12.25V3.25Z"
+          fill="#8F75B7"
+        />
+      </svg>
+    ),
+  },
+  {
+    name: "Scheduled and eron jobs",
+    href: "/uses/serverless-cron-jobs?ref=nav",
+    description: "Learn about scheduled and recurring jobs",
     icon: (
       <svg
         width="20"
@@ -136,14 +193,14 @@ export default function PlatformPopover() {
       >
         <div className="mx-auto w-full max-w-md overflow-hidden lg:max-w-3xl">
           <div className="grid grid-cols-1 gap-y-1 lg:grid-cols-2 lg:gap-0">
-            <div className="lg:border-r lg:border-stone-700 lg:pr-3">
+            <div className="lg:pr-3">
               <div className="flex flex-col items-start gap-1 pb-4">
                 <h3 className="text-sm font-medium leading-6 text-stone-400">
                   Features
                 </h3>
                 <div className="mt-2 flow-root w-full">
                   <div className="-my-2">
-                    {platformDropdown.map((item) => (
+                    {platformDropdown.slice(0, 4).map((item) => (
                       <Link
                         key={item.name}
                         href={item.href}
@@ -168,32 +225,30 @@ export default function PlatformPopover() {
             </div>
             <div className="lg:pl-3">
               <div className="flex flex-col items-start gap-1 pb-4">
-                <h3 className="text-sm font-medium leading-6 text-stone-400">
-                  What's new
+                <h3 className="invisible text-sm font-medium leading-6 text-stone-400">
+                  Latest blog
                 </h3>
                 <div className="mt-2 flow-root w-full">
                   <div className="-my-2">
-                    <article className="relative isolate p-2 hover:bg-stone-800">
-                      <div className="max-h-[120px]">
-                        <img
-                          alt=""
-                          src="/assets/blog/announcing-realtime/featured-image.png"
-                          className="h-32 w-full rounded-md object-cover"
-                        />
-                      </div>
-                      <div className="max-w-[240px]">
-                        <h4 className="mt-2 text-base text-stone-50">
-                          <Link href="#">
-                            <span className="absolute inset-0" />
-                            Boost your conversion rate
-                          </Link>
-                        </h4>
-                        <p className="mt-2 line-clamp-2 font-circular text-xs font-normal text-stone-400">
-                          Et et dolore officia quis nostrud esse aute cillum
-                          irure do esse.
-                        </p>
-                      </div>
-                    </article>
+                    {platformDropdown.slice(4).map((item) => (
+                      <Link
+                        key={item.name}
+                        href={item.href}
+                        className="flex gap-x-2 rounded-sm px-2 py-2 text-sm font-semibold leading-6 text-stone-50 transition-colors hover:bg-stone-800"
+                      >
+                        <div className="flex items-center gap-x-2">
+                          {item.icon}
+                          <div className="flex flex-col">
+                            <span className="text-base text-stone-50">
+                              {item.name}
+                            </span>
+                            <span className="text-xs font-normal text-stone-400">
+                              {item.description}
+                            </span>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
                   </div>
                 </div>
               </div>
