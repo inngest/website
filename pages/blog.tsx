@@ -54,10 +54,9 @@ export default function BlogIndex(props) {
           <div className="pt-16">
             {focus && (
               <a
-                className="group relative mb-32 flex flex-col-reverse rounded-lg border border-stone-600 bg-inngestLux bg-stone-700 shadow-lg transition-all lg:flex-row xl:max-w-[1160px]"
+                className="group relative mb-32 flex flex-col-reverse rounded-lg border border-stone-600 bg-stone-700 shadow-lg transition-all lg:flex-row xl:max-w-[1160px]"
                 href={focus.redirect ?? `/blog/${focus.slug}`}
               >
-                {/*<div className="absolute -left-[40px] -right-[40px] bottom-0 top-0 -z-0 mx-5 rotate-1 rounded-lg bg-stone-800"></div>*/}
                 <div
                   className={`${
                     focus.image ? "lg:w-2/5" : "w-full"
@@ -76,7 +75,7 @@ export default function BlogIndex(props) {
                     </p>
                     <p className="text-stone-50">{focus.subtitle}</p>
                   </div>
-                  <span className="mt-4 flex inline-flex flex-row items-center gap-1 rounded-lg bg-[#CBB26A] px-4 py-1.5 text-sm font-medium text-stone-950 group-hover:bg-[#AD8513]">
+                  <span className="mt-4 flex flex-row items-center gap-1 rounded-lg bg-inngestLux px-4 py-1.5 text-sm font-medium text-stone-950 group-hover:bg-inngestLuxDark">
                     Read article
                     <RiArrowRightLine className="h-4 w-4" />
                   </span>
