@@ -21,12 +21,6 @@ import { Button } from "src/components/RedesignedLanding/Button";
 import PlatformPopover, { platformDropdown } from "./PlatformPopover";
 import ResourcePopover, { resourceDropdown } from "./ResourcePopover";
 
-const navigation = [
-  { name: "Docs", href: "#" },
-  { name: "Resources", href: "#" },
-  { name: "Pricing", href: "#" },
-];
-
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -85,20 +79,20 @@ export default function Header() {
           <div className="hidden lg:flex lg:gap-x-6">
             <PlatformPopover />
             <Link
-              href={"#"}
+              href={"/customers?ref=nav"}
               className="flex items-center gap-x-1 text-sm/6 font-semibold text-white"
             >
               CUSTOMERS
             </Link>
             <ResourcePopover />
             <Link
-              href={"#"}
+              href={"/docs?ref=nav"}
               className="flex items-center gap-x-1 text-sm/6 font-semibold text-white"
             >
               DOCS
             </Link>
             <Link
-              href={"#"}
+              href={"/pricing?ref=nav"}
               className="flex items-center gap-x-1 text-sm/6 font-semibold text-white"
             >
               PRICING
