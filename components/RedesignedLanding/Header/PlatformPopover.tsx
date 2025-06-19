@@ -30,9 +30,9 @@ export const platformDropdown = [
     ),
   },
   {
-    name: "Orchestration",
-    href: "#",
-    description: "Orchestrate your workflows with Inngest",
+    name: "Durable Workflows",
+    href: "/uses/durable-workflows?ref=nav",
+    description: "Learn about durable workflows, retries, and more",
     icon: (
       <svg
         width="20"
@@ -51,9 +51,28 @@ export const platformDropdown = [
     ),
   },
   {
+    name: "Platform",
+    href: "/platform?ref=nav",
+    description: "Learn about features, flow control, and more",
+    icon: (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="20"
+        height="20"
+        viewBox="0 0 20 20"
+        fill="none"
+      >
+        <path
+          d="M5.875 9.625C5.43179 9.625 4.99292 9.5377 4.58344 9.36809C4.17397 9.19848 3.80191 8.94988 3.48851 8.63649C3.17512 8.32309 2.92652 7.95103 2.75691 7.54156C2.5873 7.13208 2.5 6.69321 2.5 6.25C2.5 5.80679 2.5873 5.36792 2.75691 4.95844C2.92652 4.54897 3.17512 4.17691 3.48851 3.86351C3.80191 3.55012 4.17397 3.30152 4.58344 3.13191C4.99292 2.9623 5.43179 2.875 5.875 2.875C6.77011 2.875 7.62855 3.23058 8.26149 3.86351C8.89442 4.49645 9.25 5.35489 9.25 6.25C9.25 7.14511 8.89442 8.00355 8.26149 8.63649C7.62855 9.26942 6.77011 9.625 5.875 9.625ZM6.25 17.125C5.35489 17.125 4.49645 16.7694 3.86351 16.1365C3.23058 15.5035 2.875 14.6451 2.875 13.75C2.875 12.8549 3.23058 11.9965 3.86351 11.3635C4.49645 10.7306 5.35489 10.375 6.25 10.375C7.14511 10.375 8.00355 10.7306 8.63649 11.3635C9.26942 11.9965 9.625 12.8549 9.625 13.75C9.625 14.6451 9.26942 15.5035 8.63649 16.1365C8.00355 16.7694 7.14511 17.125 6.25 17.125ZM13.75 9.625C13.3068 9.625 12.8679 9.5377 12.4584 9.36809C12.049 9.19848 11.6769 8.94988 11.3635 8.63649C11.0501 8.32309 10.8015 7.95103 10.6319 7.54156C10.4623 7.13208 10.375 6.69321 10.375 6.25C10.375 5.80679 10.4623 5.36792 10.6319 4.95844C10.8015 4.54897 11.0501 4.17691 11.3635 3.86351C11.6769 3.55012 12.049 3.30152 12.4584 3.13191C12.8679 2.9623 13.3068 2.875 13.75 2.875C14.6451 2.875 15.5035 3.23058 16.1365 3.86351C16.7694 4.49645 17.125 5.35489 17.125 6.25C17.125 7.14511 16.7694 8.00355 16.1365 8.63649C15.5035 9.26942 14.6451 9.625 13.75 9.625ZM13.75 17.125C12.8549 17.125 11.9965 16.7694 11.3635 16.1365C10.7306 15.5035 10.375 14.6451 10.375 13.75C10.375 12.8549 10.7306 11.9965 11.3635 11.3635C11.9965 10.7306 12.8549 10.375 13.75 10.375C14.6451 10.375 15.5035 10.7306 16.1365 11.3635C16.7694 11.9965 17.125 12.8549 17.125 13.75C17.125 14.6451 16.7694 15.5035 16.1365 16.1365C15.5035 16.7694 14.6451 17.125 13.75 17.125ZM5.875 8.125C6.37228 8.125 6.84919 7.92746 7.20083 7.57583C7.55246 7.22419 7.75 6.74728 7.75 6.25C7.75 5.75272 7.55246 5.27581 7.20083 4.92417C6.84919 4.57254 6.37228 4.375 5.875 4.375C5.37772 4.375 4.90081 4.57254 4.54917 4.92417C4.19754 5.27581 4 5.75272 4 6.25C4 6.74728 4.19754 7.22419 4.54917 7.57583C4.90081 7.92746 5.37772 8.125 5.875 8.125ZM6.25 15.625C6.74728 15.625 7.22419 15.4275 7.57583 15.0758C7.92746 14.7242 8.125 14.2473 8.125 13.75C8.125 13.2527 7.92746 12.7758 7.57583 12.4242C7.22419 12.0725 6.74728 11.875 6.25 11.875C5.75272 11.875 5.27581 12.0725 4.92417 12.4242C4.57254 12.7758 4.375 13.2527 4.375 13.75C4.375 14.2473 4.57254 14.7242 4.92417 15.0758C5.27581 15.4275 5.75272 15.625 6.25 15.625ZM13.75 8.125C14.2473 8.125 14.7242 7.92746 15.0758 7.57583C15.4275 7.22419 15.625 6.74728 15.625 6.25C15.625 5.75272 15.4275 5.27581 15.0758 4.92417C14.7242 4.57254 14.2473 4.375 13.75 4.375C13.2527 4.375 12.7758 4.57254 12.4242 4.92417C12.0725 5.27581 11.875 5.75272 11.875 6.25C11.875 6.74728 12.0725 7.22419 12.4242 7.57583C12.7758 7.92746 13.2527 8.125 13.75 8.125ZM13.75 15.625C14.2473 15.625 14.7242 15.4275 15.0758 15.0758C15.4275 14.7242 15.625 14.2473 15.625 13.75C15.625 13.2527 15.4275 12.7758 15.0758 12.4242C14.7242 12.0725 14.2473 11.875 13.75 11.875C13.2527 11.875 12.7758 12.0725 12.4242 12.4242C12.0725 12.7758 11.875 13.2527 11.875 13.75C11.875 14.2473 12.0725 14.7242 12.4242 15.0758C12.7758 15.4275 13.2527 15.625 13.75 15.625Z"
+          fill="#8F75B7"
+        />
+      </svg>
+    ),
+  },
+  {
     name: "Queueing",
     href: "/compare-to-legacy-queues?ref=nav",
-    description: "Learn about queueing, retries, and more",
+    description: "Compare Inngest to legacy queues",
     icon: (
       <svg
         width="20"
@@ -70,20 +89,58 @@ export const platformDropdown = [
     ),
   },
   {
-    name: "Platform",
-    href: "/platform?ref=nav",
-    description: "Learn about features, flow control, and more",
+    name: "Workflow Engines",
+    href: "/uses/workflow-engine?ref=nav",
+    description: "Learn about workflow engines",
     icon: (
       <svg
+        xmlns="http://www.w3.org/2000/svg"
         width="20"
         height="20"
         viewBox="0 0 20 20"
         fill="none"
-        xmlns="http://www.w3.org/2000/svg"
       >
         <path
-          d="M13 1.75C13.414 1.75 13.75 2.086 13.75 2.5V4.75H16.75C17.164 4.75 17.5 5.086 17.5 5.5V16C17.5 16.414 17.164 16.75 16.75 16.75H3.25C2.836 16.75 2.5 16.414 2.5 16V5.5C2.5 5.086 2.836 4.75 3.25 4.75H6.25V2.5C6.25 2.086 6.586 1.75 7 1.75H13ZM16 6.25H4V15.25H16V6.25ZM10.75 7.75V10H13V11.5H10.7492L10.75 13.75H9.25L9.24925 11.5H7V10H9.25V7.75H10.75ZM12.25 3.25H7.75V4.75H12.25V3.25Z"
-          fill="#8F75B7"
+          d="M5.5 17.1249C4.05025 17.1249 2.875 15.9496 2.875 14.4999C2.875 13.0501 4.05025 11.8749 5.5 11.8749C6.68875 11.8749 7.693 12.6654 8.01625 13.7499H12.25V12.2499H13.75V7.93139L12.0677 6.24989H7.75V7.7499H3.25V3.24989H7.75V4.74989H12.0677L14.5 2.31689L17.6822 5.49989L15.25 7.93064V12.2499H16.75V16.7499H12.25V15.2499H8.01625C7.69375 16.3344 6.68875 17.1249 5.5 17.1249ZM5.5 13.3749C4.879 13.3749 4.375 13.8789 4.375 14.4999C4.375 15.1209 4.879 15.6249 5.5 15.6249C6.121 15.6249 6.625 15.1209 6.625 14.4999C6.625 13.8789 6.121 13.3749 5.5 13.3749ZM15.25 13.7499H13.75V15.2499H15.25V13.7499ZM14.5 4.43939L13.4395 5.49989L14.5 6.56039L15.5605 5.49989L14.5 4.43939ZM6.25 4.74989H4.75V6.24989H6.25V4.74989Z"
+          fill="#2389F1"
+        />
+      </svg>
+    ),
+  },
+  {
+    name: "Background Jobs",
+    href: "/uses/serverless-node-background-jobs?ref=nav",
+    description: "Learn about background jobs",
+    icon: (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="20"
+        height="20"
+        viewBox="0 0 20 20"
+        fill="none"
+      >
+        <path
+          d="M6.25005 6.19647L4.81699 7.62954L3.93311 6.74565L6.87505 3.80371L9.817 6.74565L8.93312 7.62954L7.50005 6.19647L7.50004 9.37507H6.25005L6.25005 6.19647ZM13.1251 8.43759C13.988 8.43759 14.6876 7.73804 14.6876 6.87509C14.6876 6.01215 13.988 5.31259 13.1251 5.31259C12.2621 5.31259 11.5626 6.01215 11.5626 6.87509C11.5626 7.73804 12.2621 8.43759 13.1251 8.43759ZM13.1251 9.68757C11.5717 9.68757 10.3126 8.42839 10.3126 6.87509C10.3126 5.32179 11.5717 4.06259 13.1251 4.06259C14.6784 4.06259 15.9376 5.32179 15.9376 6.87509C15.9376 8.42839 14.6784 9.68757 13.1251 9.68757ZM16.067 13.2545L15.1831 12.3706L13.7501 13.8037V10.6251H12.5001V13.8037L11.067 12.3706L10.1831 13.2545L13.1251 16.1964L16.067 13.2545ZM5.62505 14.3751H8.12504L8.12505 11.8751H5.62505V14.3751ZM8.75006 10.6251C9.09525 10.6251 9.37506 10.9049 9.37506 11.2501L9.37506 15.0001C9.37506 15.3453 9.09525 15.6251 8.75006 15.6251H5.00004C4.65487 15.6251 4.37504 15.3453 4.37505 15.0001L4.37505 11.2501C4.37505 10.9049 4.65487 10.6251 5.00005 10.6251H8.75006Z"
+          fill="#EFE9D6"
+        />
+      </svg>
+    ),
+  },
+  {
+    name: "Scheduled and cron jobs",
+    href: "/uses/serverless-cron-jobs?ref=nav",
+    description: "Learn about scheduled and recurring jobs",
+    icon: (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="20"
+        height="20"
+        viewBox="0 0 20 20"
+        fill="none"
+      >
+        <path
+          d="M10 2.5C14.1423 2.5 17.5 5.85775 17.5 10C17.5 14.1423 14.1423 17.5 10 17.5C5.85775 17.5 2.5 14.1423 2.5 10H4C4 13.3135 6.6865 16 10 16C13.3135 16 16 13.3135 16 10C16 6.6865 13.3135 4 10 4C7.9375 4 6.118 5.04025 5.03875 6.625L7 6.625V8.125H2.5L2.5 3.625H4V5.5C5.368 3.6775 7.54675 2.5 10 2.5ZM10.75 6.25L10.75 9.68875L13.1823 12.121L12.121 13.1823L9.25 10.3098V6.25L10.75 6.25Z"
+          fill="#B17A50"
         />
       </svg>
     ),
@@ -136,14 +193,14 @@ export default function PlatformPopover() {
       >
         <div className="mx-auto w-full max-w-md overflow-hidden lg:max-w-3xl">
           <div className="grid grid-cols-1 gap-y-1 lg:grid-cols-2 lg:gap-0">
-            <div className="lg:border-r lg:border-stone-700 lg:pr-3">
+            <div className="lg:pr-3">
               <div className="flex flex-col items-start gap-1 pb-4">
                 <h3 className="text-sm font-medium leading-6 text-stone-400">
                   Features
                 </h3>
                 <div className="mt-2 flow-root w-full">
                   <div className="-my-2">
-                    {platformDropdown.map((item) => (
+                    {platformDropdown.slice(0, 4).map((item) => (
                       <Link
                         key={item.name}
                         href={item.href}
@@ -168,32 +225,30 @@ export default function PlatformPopover() {
             </div>
             <div className="lg:pl-3">
               <div className="flex flex-col items-start gap-1 pb-4">
-                <h3 className="text-sm font-medium leading-6 text-stone-400">
-                  What's new
+                <h3 className="invisible text-sm font-medium leading-6 text-stone-400">
+                  Latest blog
                 </h3>
                 <div className="mt-2 flow-root w-full">
                   <div className="-my-2">
-                    <article className="relative isolate p-2 hover:bg-stone-800">
-                      <div className="max-h-[120px]">
-                        <img
-                          alt=""
-                          src="/assets/blog/announcing-realtime/featured-image.png"
-                          className="h-32 w-full rounded-md object-cover"
-                        />
-                      </div>
-                      <div className="max-w-[240px]">
-                        <h4 className="mt-2 text-base text-stone-50">
-                          <Link href="#">
-                            <span className="absolute inset-0" />
-                            Boost your conversion rate
-                          </Link>
-                        </h4>
-                        <p className="mt-2 line-clamp-2 font-circular text-xs font-normal text-stone-400">
-                          Et et dolore officia quis nostrud esse aute cillum
-                          irure do esse.
-                        </p>
-                      </div>
-                    </article>
+                    {platformDropdown.slice(4).map((item) => (
+                      <Link
+                        key={item.name}
+                        href={item.href}
+                        className="flex gap-x-2 rounded-sm px-2 py-2 text-sm font-semibold leading-6 text-stone-50 transition-colors hover:bg-stone-800"
+                      >
+                        <div className="flex items-center gap-x-2">
+                          {item.icon}
+                          <div className="flex flex-col">
+                            <span className="text-base text-stone-50">
+                              {item.name}
+                            </span>
+                            <span className="text-xs font-normal text-stone-400">
+                              {item.description}
+                            </span>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
                   </div>
                 </div>
               </div>
