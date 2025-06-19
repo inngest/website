@@ -1,6 +1,9 @@
+"use client";
 import { ArrowRightIcon } from "@heroicons/react/24/outline";
 import { Button } from "./Button";
 import { Card, CardContent, CardHeader, CardTitle } from "./Card";
+import { useEffect } from "react";
+import { useAnimate } from "motion/react";
 
 export default function OrchestrationSection() {
   return (
@@ -29,8 +32,22 @@ export default function OrchestrationSection() {
 }
 
 function WorkflowsCard() {
+  const [scope, animate] = useAnimate();
+  useEffect(() => {
+    if (!scope.current) return;
+    animate(
+      scope.current,
+      { opacity: [0, 1], x: [-50, 0] },
+      { duration: 0.6, ease: "easeOut" }
+    );
+  }, [animate, scope]);
+
   return (
-    <div className="relative overflow-hidden border-2 border-stone-800 bg-stone-900 p-3 shadow-xl sm:p-6">
+    <div
+      ref={scope as any}
+      className="relative overflow-hidden border-2 border-stone-800 bg-stone-900 p-3 shadow-xl sm:p-6"
+      style={{ opacity: 0 }}
+    >
       <div className="pointer-events-none absolute -left-3/4 -top-3/4 h-[150%] w-[150%] rounded-full bg-[#655279]" />
 
       <Card className="relative h-full w-full overflow-hidden rounded-none border-none bg-stone-800 shadow-2xl">
@@ -72,8 +89,21 @@ function WorkflowsCard() {
 }
 
 function AgentsCard() {
+  const [scope, animate] = useAnimate();
+  useEffect(() => {
+    if (!scope.current) return;
+    animate(
+      scope.current,
+      { opacity: [0, 1], x: [50, 0] },
+      { duration: 0.6, ease: "easeOut" }
+    );
+  }, [animate, scope]);
   return (
-    <div className="relative overflow-hidden border-2 border-stone-800 bg-stone-900 p-3 shadow-xl sm:p-6">
+    <div
+      ref={scope as any}
+      className="relative overflow-hidden border-2 border-stone-800 bg-stone-900 p-3 shadow-xl sm:p-6"
+      style={{ opacity: 0 }}
+    >
       <div className="pointer-events-none absolute -bottom-3/4 -right-3/4 h-[150%] w-[150%] rounded-full bg-inngestLux" />
 
       <Card className="relative h-full w-full overflow-hidden rounded-none border-none bg-stone-800 shadow-2xl">
