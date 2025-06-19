@@ -7,7 +7,7 @@ import { Button } from "src/components/RedesignedLanding/Button";
 export default function Hero() {
   return (
     <div className="bg-stone-950">
-      <main className="relative mx-auto w-full max-w-[1800px] bg-stone-950 px-4 pb-16 pt-20 md:pt-52 lg:pt-56">
+      <main className="relative mx-auto w-full max-w-[1800px] bg-stone-950 px-4 pb-12 pt-20 md:pt-52 lg:pt-56">
         <GridBackground
           lineColor="rgba(70, 70, 70, 0.3)"
           gridSize={{
