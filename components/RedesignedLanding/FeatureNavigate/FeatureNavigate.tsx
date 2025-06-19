@@ -1,5 +1,6 @@
 "use client";
 import { ArrowRightIcon } from "@heroicons/react/24/outline";
+import Lottie from "lottie-react";
 import { Button } from "src/components/RedesignedLanding/Button";
 import {
   Card,
@@ -13,10 +14,10 @@ import DevServerSection from "src/components/RedesignedLanding/FeatureNavigate/D
 import Terminal from "src/components/RedesignedLanding/FeatureNavigate/Terminal";
 import DeploySVG from "./DeploySVG";
 import FaultToleranceSVG from "./FaultToleranceSVG";
-import FullObservabilitySVG from "./ObservabilitySVG";
 import Lines from "./Lines";
-import MobileDeploySVG from "./MoblieDeploySVG";
+import animationData from "./Lottie/observability.json";
 import MediumLines from "./MediumLines";
+import MobileDeploySVG from "./MoblieDeploySVG";
 
 export default function FeatureNavigate() {
   return (
@@ -103,7 +104,10 @@ export default function FeatureNavigate() {
             </div>
             <div className="mx-auto flex max-w-lg flex-col pt-12 md:max-w-5xl md:items-end md:pt-0">
               <div className="flex flex-col items-start">
-                <FullObservabilitySVG />
+                <Lottie
+                  animationData={animationData}
+                  className="observability-anchor"
+                />
                 <Card className="mt-8 flex h-full max-w-sm flex-col justify-center rounded-none border-none bg-stone-900 sm:order-1">
                   <CardHeader className="pl-6 md:pl-0">
                     <CardTitle className="font-whyte text-3xl font-light">
