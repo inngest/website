@@ -15,7 +15,7 @@ export default function ComparisonTable({ plans, features, sections }) {
   const [selectedPlan, setSelectedPlan] = useState(plans[0].name);
 
   const renderPlanTabs = () => (
-    <div className="sticky top-14 z-10 mb-4 grid grid-cols-3 justify-center bg-stone-900 pt-4 md:hidden">
+    <div className="sticky top-14 z-10 mb-4 grid grid-cols-3 justify-center bg-stone-900 px-4 pt-4 md:hidden">
       {plans.map((plan, i) => (
         <button
           key={i}
@@ -40,7 +40,7 @@ export default function ComparisonTable({ plans, features, sections }) {
   );
 
   return (
-    <div className="bg-stone-900 py-24 text-basis">
+    <div className="bg-stone-900 px-4 py-24 text-basis">
       <h2 className="font-whyte-inktrap text-center text-[48px] font-normal leading-[1.2] tracking-[-2.4px] text-[#FAFAF9] md:py-11">
         Plan features
       </h2>
@@ -62,7 +62,8 @@ export default function ComparisonTable({ plans, features, sections }) {
 const renderTable = (sectionFeatures, sectionName, plans, selectedPlan) => {
   const CLOSED_VALUE = "CLOSED";
   // Solves the radix bug on undefined values in single accordions https://github.com/radix-ui/primitives/discussions/824
-  const [accordionValue, setAccordionValue] = useState(CLOSED_VALUE);
+  // Initialize with the section name so that the accordion starts **open** on mobile.
+  const [accordionValue, setAccordionValue] = useState(sectionName);
   const [isMediumScreen, setIsMediumScreen] = useState(false);
 
   useEffect(() => {
