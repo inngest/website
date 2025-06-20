@@ -16,8 +16,8 @@ export default function FooterCTA() {
 
       <div
         className="relative z-10 mx-auto max-w-7xl"
-        onMouseEnter={() => setTrackMouse(true)}
-        onMouseLeave={() => setTrackMouse(false)}
+        // onMouseEnter={() => setTrackMouse(true)}
+        // onMouseLeave={() => setTrackMouse(false)}
       >
         <div className="mx-auto max-w-2xl text-center">
           <h2
