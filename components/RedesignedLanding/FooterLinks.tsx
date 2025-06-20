@@ -2,31 +2,60 @@ import StatusWidget from "src/shared/StatusWidget";
 
 export const navigation = {
   platform: [
-    { name: "AI Orchestration", href: "#" },
-    { name: "Workflows", href: "#" },
-    { name: "Queuing", href: "#" },
-    { name: "Observability", href: "#" },
-    { name: "Recovery", href: "#" },
+    { name: "AI & Agents", href: "/ai?ref=homepage-footer-links" },
+    {
+      name: "Durable Workflows",
+      href: "/uses/durable-workflows?ref=homepage-footer-links",
+    },
+    { name: "Platform", href: "/platform?ref=homepage-footer-links" },
+    {
+      name: "Queueing",
+      href: "/compare-to-legacy-queues?ref=homepage-footer-links",
+    },
+    {
+      name: "Workflow Engines",
+      href: "/uses/workflow-engine?ref=homepage-footer-links",
+    },
+    {
+      name: "Background Jobs",
+      href: "/uses/serverless-node-background-jobs?ref=homepage-footer-links",
+    },
+    {
+      name: "Scheduled and cron jobs",
+      href: "/uses/serverless-cron-jobs?ref=homepage-footer-links",
+    },
   ],
   explore: [
-    { name: "Docs", href: "#" },
-    { name: "Inngest vs. Traditional Queues", href: "#" },
-    { name: "Inngest vs. Kafka", href: "#" },
-    { name: "Inngest vs. Temporal", href: "#" },
-    { name: "Solving for Vercel Timeouts", href: "#" },
+    { name: "Docs", href: "/docs?ref=homepage-footer-links" },
+    {
+      name: "Inngest vs. Traditional Queues",
+      href: "/compare-to-legacy-queues?ref=homepage-footer-links",
+    },
+    {
+      name: "Inngest vs. Kafka",
+      href: "/blog/simplifying-queues-modern-kafka-alternative",
+    },
+    {
+      name: "Inngest vs. Temporal",
+      href: "/compare-to-temporal?ref=homepage-footer-links",
+    },
+    {
+      name: "Solving for Vercel Timeouts",
+      href: "/blog/vercel-function-timeout",
+    },
   ],
   company: [
-    { name: "Blog", href: "#" },
-    { name: "Changelog", href: "#" },
-    { name: "Roadmap", href: "#" },
-    { name: "About", href: "#" },
-    { name: "Careers", href: "#" },
+    { name: "Blog", href: "/blog?ref=homepage-footer-links" },
+    { name: "Changelog", href: "/changelog?ref=homepage-footer-links" },
+    { name: "Roadmap", href: "https://roadmap.inngest.com/roadmap?ref=footer" },
+    { name: "About", href: "/about?ref=homepage-footer-links" },
+    { name: "Careers", href: "/careers?ref=homepage-footer-links" },
   ],
   community: [
-    { name: "Discord", href: "#" },
-    { name: "GitHub", href: "#" },
-    { name: "X.com", href: "#" },
-    { name: "Bluesky", href: "#" },
+    { name: "Discord", href: "https://www.inngest.com/discord?ref=footer" },
+    { name: "GitHub", href: "https://github.com/inngest/inngest" },
+    { name: "X.com", href: "https://x.com/inngest" },
+    { name: "Bluesky", href: "https://bsky.app/profile/inngest.com" },
   ],
   social: [
     {
