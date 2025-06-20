@@ -122,7 +122,7 @@ export default function FeatureNavigate() {
             </div>
             <div className="mx-auto flex max-w-lg flex-col pt-12 md:max-w-5xl md:items-end md:pt-0">
               <div className="flex flex-col items-start">
-                <div ref={wrapperRef}>
+                <div className="order-2 sm:order-1" ref={wrapperRef}>
                   <Lottie
                     lottieRef={lottieRef}
                     animationData={animationData}
