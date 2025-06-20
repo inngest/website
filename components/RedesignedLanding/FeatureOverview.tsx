@@ -29,7 +29,7 @@ export default function OrchestrationSection() {
           ref={headerScope as any}
           className="mb-12 text-center opacity-0 md:mb-20"
         >
-          <h1 className="mb-4 font-whyte text-4xl font-light text-stone-50 md:text-5xl ">
+          <h1 className="mb-4 text-balance font-whyte text-4xl font-light text-stone-50 md:text-5xl ">
             The orchestration engine for{" "}
             <span className="font-whyteInktrap font-normal text-stone-50">
               Workflows + Agents
