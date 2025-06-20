@@ -40,7 +40,7 @@ export default function TrustFeaturesSection() {
       {/* <GridBackground className="!bg-stone-950" /> */}
 
       <div className="absolute inset-0 z-0 flex justify-center">
-        <div className="max-w-screen-2xl bg-stone-900">
+        <div className="h-full max-w-screen-2xl flex-none bg-stone-950">
           <BackgroundPattern />
         </div>
       </div>
@@ -102,7 +102,7 @@ export default function TrustFeaturesSection() {
 function BackgroundPattern() {
   return (
     <svg
-      className="mx-auto h-full w-full max-w-screen-2xl object-cover"
+      className="mx-auto h-full w-full object-cover"
       viewBox="0 0 1726 596"
       width="1726"
       height="596"
