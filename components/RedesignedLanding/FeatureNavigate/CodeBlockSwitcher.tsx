@@ -5,6 +5,7 @@ import { Fence } from "./CodeBlock";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./Card";
 import { Button } from "../Button";
 import { ArrowRightIcon } from "@heroicons/react/24/outline";
+import Link from "next/link";
 
 // Languages that can be selected. Each entry holds an id, the syntax highlighter name, and an icon renderer.
 const LANGUAGES = [
@@ -13,19 +14,19 @@ const LANGUAGES = [
     syntax: "typescript",
     Icon: TypescriptSVG,
   },
-  {
-    id: "python",
-    syntax: "python",
-    Icon: PythonSVG,
-  },
-  {
-    id: "go",
-    syntax: "go",
-    Icon: GoSVG,
-  },
+  // {
+  //   id: "python",
+  //   syntax: "python",
+  //   Icon: PythonSVG,
+  // },
+  // {
+  //   id: "go",
+  //   syntax: "go",
+  //   Icon: GoSVG,
+  // },
 ] as const;
 
-const STEPS = ["step.sleep", "step.run", "step"] as const;
+const STEPS = ["step.run", "step.ai", "step.sleep"] as const;
 
 type LanguageId = typeof LANGUAGES[number]["id"];
 
@@ -35,135 +36,145 @@ type StepId = typeof STEPS[number];
 // In a real implementation these would be replaced with real code examples.
 const SNIPPETS: Record<LanguageId, Record<StepId, string>> = {
   typescript: {
-    "step.sleep": `
-inngest.createFunction(
-  { id: "research-agent", throttle: { limit: 30, period: "60s"} },
-  { event: "agent/request.received"},
-  async ({ event, step }) => {
-
-    // Use step.run to create workflows with
-    // steps that are automatically retried on failure
-    const response = await step.run("call-llm", {
-      return openai.call(prompt, tools)
-    });  
-  }
-);
-`,
-    "step.run": `// TypeScript example\nconst result = await step.run("task", async () => {/* ... */});
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    
-    `,
-    step: `// TypeScript example\nstep("log", () => console.log("hello"));
-    //     
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    
-    `,
-  },
-  python: {
-    "step.sleep": `
-    import inngest
-inngest_client = inngest.Inngest(app_id="my_app")
-# Call the "send_sync" method if you aren't using async/await
-ids = inngest_client.send_sync(
-    inngest.Event(name="my_event", data={"msg": "Hello!"})
-)
-# Can pass a list of events
-ids = await inngest_client.send(
-    [
-        inngest.Event(name="my_event", data={"msg": "Hello!"}),
-    ]
-)
-    `,
     "step.run": `
-    import inngest
-inngest_client = inngest.Inngest(app_id="my_app")
-# Call the "send_sync" method if you aren't using async/await
-ids = inngest_client.send_sync(
-    inngest.Event(name="my_event2", data={"msg": "Hello!"})
-)
-# Can pass a list of events
-ids = await inngest_client.send(
-    [
-        inngest.Event(name="my_event2", data={"msg": "Hello!"}),
-    ]
-)
+// step.run is a code-level transaction:  it retries automatically
+  // on failure and only runs once on success.
+  const transcript = await step.run('transcribe-video',
+    async () => deepgram.transcribe(event.data.videoUrl)
+  )
+
+  // function state is automatically managed for fault tolerance
+  // across steps.
+  const summary = await step.run('summarize-transcript',
+    async () => llm.createCompletion({
+      model: "gpt-4o",
+      prompt: createSummaryPrompt(transcript),
+    })
+  )
+    
     `,
-    step: `
-    import inngest
-inngest_client = inngest.Inngest(app_id="my_app")
-# Call the "send_sync" method if you aren't using async/await
-ids = inngest_client.send_sync(
-    inngest.Event(name="my_event3", data={"msg": "Hello!"})
-)
-# Can pass a list of events
-ids = await inngest_client.send(
-    [
-        inngest.Event(name="my_event3", data={"msg": "Hello!"}),
-    ]
-)
+    "step.ai": `
+// Use step.ai to proxy AI requests w/ automatic retries,
+// caching and improved observability
+const response = await step.ai.infer("call-openai", {
+  model: step.ai.models.openai({ model: "gpt-4o" }),
+  body: {
+    messages: [
+      {
+        role: "assistant",
+        content: 'You are an expert...',
+      },
+    ],
+    tools: [/* ... */],
+  },
+});
+`,
+    "step.sleep": `
+ await step.run('send-welcome-email', () => {
+  // ...
+});
+
+// Pause execution, Inngest resumes execution automatically
+await step.sleep('wait-a-week', '7d');
+
+await step.run('send-follow-up-email', () => {
+  // ...
+});
+//
+//
+//
+//
+    
     `,
   },
-  go: {
-    "step.sleep": `func main() {
-	client := inngestgo.NewClient(inngestgo.ClientOpts{AppID: "core"})
-	fn := inngestgo.CreateFunction(
-		client,
-		inngestgo.FunctionOpts{ID: "account-created"},
-		inngestgo.EventTrigger("api/account.created", nil),
-		AccountCreated,
-	)
-	if err := fn.Serve(":8080"); err != nil {
-		log.Fatal(err)
-	}
-}`,
-    "step.run": `func main() {
-	client := inngestgo.NewClient(inngestgo.ClientOpts{AppID: "core"})
-	fn := inngestgo.CreateFunction(
-		client,
-		inngestgo.FunctionOpts{ID: "account-created"},
-		inngestgo.EventTrigger("api/account.created", nil),
-		AccountCreated,
-	)
-	if err := fn.Serve(":8080"); err != nil {
-		log.Fatal(err)
-	}
-}`,
-    step: `func main() {
-	client := inngestgo.NewClient(inngestgo.ClientOpts{AppID: "core"})
-	fn := inngestgo.CreateFunction(
-		client,
-		inngestgo.FunctionOpts{ID: "account-created"},
-		inngestgo.EventTrigger("api/account.created", nil),
-		AccountCreated,
-	)
-	if err := fn.Serve(":8080"); err != nil {
-		log.Fatal(err)
-	}
-}`,
-  },
+  //   python: {
+  //     "step.run": `
+  //     import inngest
+  // inngest_client = inngest.Inngest(app_id="my_app")
+  // # Call the "send_sync" method if you aren't using async/await
+  // ids = inngest_client.send_sync(
+  //     inngest.Event(name="my_event", data={"msg": "Hello!"})
+  // )
+  // # Can pass a list of events
+  // ids = await inngest_client.send(
+  //     [
+  //         inngest.Event(name="my_event", data={"msg": "Hello!"}),
+  //     ]
+  // )
+  //     `,
+  //     "step.ai": `
+  //     import inngest
+  // inngest_client = inngest.Inngest(app_id="my_app")
+  // # Call the "send_sync" method if you aren't using async/await
+  // ids = inngest_client.send_sync(
+  //     inngest.Event(name="my_event2", data={"msg": "Hello!"})
+  // )
+  // # Can pass a list of events
+  // ids = await inngest_client.send(
+  //     [
+  //         inngest.Event(name="my_event2", data={"msg": "Hello!"}),
+  //     ]
+  // )
+  //     `,
+  //     "step.sleep": `
+  //     import inngest
+  // inngest_client = inngest.Inngest(app_id="my_app")
+  // # Call the "send_sync" method if you aren't using async/await
+  // ids = inngest_client.send_sync(
+  //     inngest.Event(name="my_event3", data={"msg": "Hello!"})
+  // )
+  // # Can pass a list of events
+  // ids = await inngest_client.send(
+  //     [
+  //         inngest.Event(name="my_event3", data={"msg": "Hello!"}),
+  //     ]
+  // )
+  //     `,
+  //   },
+  //   go: {
+  //     "step.run": `func main() {
+  // 	client := inngestgo.NewClient(inngestgo.ClientOpts{AppID: "core"})
+  // 	fn := inngestgo.CreateFunction(
+  // 		client,
+  // 		inngestgo.FunctionOpts{ID: "account-created"},
+  // 		inngestgo.EventTrigger("api/account.created", nil),
+  // 		AccountCreated,
+  // 	)
+  // 	if err := fn.Serve(":8080"); err != nil {
+  // 		log.Fatal(err)
+  // 	}
+  // }`,
+  //     "step.ai": `func main() {
+  // 	client := inngestgo.NewClient(inngestgo.ClientOpts{AppID: "core"})
+  // 	fn := inngestgo.CreateFunction(
+  // 		client,
+  // 		inngestgo.FunctionOpts{ID: "account-created"},
+  // 		inngestgo.EventTrigger("api/account.created", nil),
+  // 		AccountCreated,
+  // 	)
+  // 	if err := fn.Serve(":8080"); err != nil {
+  // 		log.Fatal(err)
+  // 	}
+  // }`,
+  //     step: `func main() {
+  // 	client := inngestgo.NewClient(inngestgo.ClientOpts{AppID: "core"})
+  // 	fn := inngestgo.CreateFunction(
+  // 		client,
+  // 		inngestgo.FunctionOpts{ID: "account-created"},
+  // 		inngestgo.EventTrigger("api/account.created", nil),
+  // 		AccountCreated,
+  // 	)
+  // 	if err := fn.Serve(":8080"); err != nil {
+  // 		log.Fatal(err)
+  // 	}
+  // }`,
+  //   },
 };
 
 export default function CodeBlockSwitcher() {
   const [activeLanguage, setActiveLanguage] =
     useState<LanguageId>("typescript");
-  const [activeStep, setActiveStep] = useState<StepId>("step.sleep");
+  const [activeStep, setActiveStep] = useState<StepId>("step.run");
 
   const snippet = SNIPPETS[activeLanguage][activeStep];
   const syntax = LANGUAGES.find((l) => l.id === activeLanguage)!.syntax;
@@ -216,20 +227,22 @@ export default function CodeBlockSwitcher() {
           {/* right: card */}
           <Card className="code-card-anchor order-1 mt-8 flex h-full max-w-2xl flex-col justify-center rounded-none border-none bg-stone-950 sm:order-2 md:ml-8 md:mt-0">
             <CardHeader className="">
-              <CardTitle className="font-whyte text-3xl font-light">
-                Stop fighting abstraction, build your product
+              <CardTitle className="text-balance font-whyte text-3xl font-light">
+                Skip boilerplate code, and build with steps
               </CardTitle>
             </CardHeader>
             <CardContent className="max-w-2xl font-circular text-base font-normal text-stone-300">
               <p className="font-sans text-base font-normal leading-[26.24px] tracking-[-0.304px] text-stone-300">
-                Our Inngest and AgentKit SDKs provide simple building blocks and
-                integrations with your favourite tools to let you focus on what
-                matters the most: your product.
+                Our SDKs provide simple building blocks and integrations with
+                your favorite tools to let you focus on what matters the most:
+                your product.
               </p>
             </CardContent>
             <CardFooter>
-              <Button variant="outline">
-                Read Documentation <ArrowRightIcon />
+              <Button variant="outline" asChild>
+                <Link href="/docs?ref=homepage-sdk">
+                  Read Documentation <ArrowRightIcon />
+                </Link>
               </Button>
             </CardFooter>
           </Card>

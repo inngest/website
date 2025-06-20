@@ -20,6 +20,8 @@ import MediumLines from "./MediumLines";
 import MobileDeploySVG from "./MoblieDeploySVG";
 import { useRef, useEffect } from "react";
 import { useInView } from "framer-motion";
+import GridBackground from "../GridBackground";
+import Link from "next/link";
 
 export default function FeatureNavigate() {
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -35,6 +37,7 @@ export default function FeatureNavigate() {
   return (
     <>
       <div className="feature-nav-container relative bg-stone-950">
+        {/* <GridBackground /> */}
         <div className="mx-auto w-full max-w-7xl">
           <h1 className="mt-20 w-full pl-8 font-whyteInktrap text-4xl font-normal md:text-5xl xl:pl-0">
             Start locally,
@@ -55,12 +58,12 @@ export default function FeatureNavigate() {
           <div className="px-10 sm:px-6 md:px-8">
             <div className="relative z-30 mx-auto max-w-5xl bg-stone-900 md:z-0">
               <h1 className="mb-2 font-whyte text-4xl font-light">
-                Ship at the speed of AI
+                Production ready from day 1
               </h1>
-              <p className="max-w-sm font-circular text-lg font-light text-stone-200">
-                it amet, consectetur adipiscing elit. Duis mollis maximus
-                pretium. Vestibulum faucibus tellus nec justo bibendum, vehicula
-                finibus nisl iaculis. Sed molestie imperdiet metus ac laoreet.
+              <p className="max-w-lg font-circular text-lg font-light text-stone-200">
+                Go from local prototype to production application with
+                fault-tolerance and full observability for servers or serverless
+                deployments.
               </p>
             </div>
             <div className="mx-auto flex max-w-screen-2xl flex-col pb-12 pt-12 md:flex-row md:justify-end md:pb-32 md:pt-20">
@@ -74,18 +77,20 @@ export default function FeatureNavigate() {
               <Card className="order-1 mt-8 flex h-full max-w-xs flex-col justify-center rounded-none border-none bg-stone-900 sm:order-2 md:ml-8 md:mt-0">
                 <CardHeader className="pt-0">
                   <CardTitle className="font-whyte text-3xl font-light">
-                    Deploy anywhere
+                    Ship anywhere
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="max-w-2xl font-circular text-base font-normal text-stone-300">
-                  <p className="font-sans text-base font-normal leading-[26.24px] tracking-[-0.304px] text-stone-300">
-                    Deploy your Inngest workflows on your favorite cloud
-                    provider in one click
+                  <p className="text-balance font-sans text-base font-normal leading-[26.24px] tracking-[-0.304px] text-stone-300">
+                    Deploy Inngest workflows to your favorite cloud provider in
+                    one click
                   </p>
                 </CardContent>
                 <CardFooter>
-                  <Button className="bg-stone-900" variant="outline">
-                    Read Documentation <ArrowRightIcon />
+                  <Button className="bg-stone-900" variant="outline" asChild>
+                    <Link href="/docs/platform/deployment?ref=homepage-deploy">
+                      Read Documentation <ArrowRightIcon />
+                    </Link>
                   </Button>
                 </CardFooter>
               </Card>
@@ -101,14 +106,15 @@ export default function FeatureNavigate() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="max-w-2xl pl-6 font-circular text-base font-normal text-stone-300 xl:pl-0">
-                    <p className="font-sans text-base font-normal leading-[26.24px] tracking-[-0.304px] text-stone-300">
-                      Fault-tolerant AI app from day one with automatic retries
-                      and flow control
+                    <p className="text-balance font-sans text-base font-normal leading-[26.24px] tracking-[-0.304px] text-stone-300">
+                      Automatically retry on error for reliable AI applications
                     </p>
                   </CardContent>
                   <CardFooter className="pl-6 xl:pl-0">
-                    <Button className="bg-stone-900" variant="outline">
-                      Read Documentation <ArrowRightIcon />
+                    <Button className="bg-stone-900" variant="outline" asChild>
+                      <Link href="/docs/guides/error-handling?ref=homepage-fault-tolerance">
+                        Read Documentation <ArrowRightIcon />
+                      </Link>
                     </Button>
                   </CardFooter>
                 </Card>
@@ -138,8 +144,10 @@ export default function FeatureNavigate() {
                     </p>
                   </CardContent>
                   <CardFooter className="pl-6 md:pl-0">
-                    <Button className="bg-stone-900" variant="outline">
-                      Read Documentation <ArrowRightIcon />
+                    <Button className="bg-stone-900" variant="outline" asChild>
+                      <Link href="/docs/platform/monitor/observability-metrics?ref=homepage-observability">
+                        Read Documentation <ArrowRightIcon />
+                      </Link>
                     </Button>
                   </CardFooter>
                 </Card>

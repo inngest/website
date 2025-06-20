@@ -23,17 +23,17 @@ import Link from "next/link";
 const testimonials = [
   {
     id: 1,
-    company: "Resend",
+    company: "Aomni",
     logo: {
-      src: "/assets/customers/resend.svg",
-      name: "Resend",
+      src: "/assets/customers/aomni-logo.svg",
+      name: "Aomni",
       scale: 0.8,
     },
     testimonial:
-      "The DX and visibility with Inngest is really incredible. We are able to develop functions locally easier and faster that with our previous queue. Also, Inngest's tools give us the visibility to debug issues much quicker than before.",
-    author: "BU KINOSHITA",
-    role: "Co-founder, Resend",
-    highlight: ["DX", "visibility"],
+      "For anyone who is building multi-step AI agents (such as AutoGPT type systems), I highly recommend building it on top of Inngest's job queue orchestration framework, the traceability it provides out of the box is super useful, plus you get timeouts & retries for free.",
+    author: "David Zhang",
+    role: "Founder, Aomni",
+    highlight: ["traceability", "timeouts & retries"],
   },
   {
     id: 2,
@@ -44,53 +44,53 @@ const testimonials = [
       scale: 1.5,
     },
     testimonial:
-      "Switching from GCP Composer (Airflow) to Inngest unified our backend and reduced our costs by 50%! Switching from GCP Composer (Airflow) to Inngest unified our backend and reduced our costs by 50%!",
+      "One of my goals was to simplify a complex workflow in a cloud world. If the abstractions exist, let's use them so engineers can focus on the business problem, not the infrastructure-as-code and primitives problem.",
     author: "JANE SMITH",
     role: "Engineering Lead, SoundCloud",
-    highlight: ["costs by 50%"],
+    highlight: ["abstractions", "primitives"],
   },
   {
     id: 3,
-    company: "TripAdvisor",
+    company: "Otto",
     logo: {
-      src: "/assets/customers/tripadvisor.svg",
-      name: "TripAdvisor",
-      scale: 1.4,
+      src: "/assets/customers/otto-logo.svg",
+      name: "Otto",
+      scale: 0.75,
     },
     testimonial:
-      "The developer experience with Inngest has been phenomenal. The local development tools and debugging capabilities have significantly improved our workflow and productivity.",
-    author: "ALEX JOHNSON",
-    role: "Senior Developer, TripAdvisor",
-    highlight: ["developer experience", "debugging capabilities"],
+      "Inngest completely transformed how we handle AI orchestration for us. Its intuitive DX, built-in multi-tenant concurrency, and flow control allowed us to scale without the complexity of other tools.",
+    author: "Sully Omar",
+    role: "Co-founder, CEO, Otto",
+    highlight: ["developer experience", "multi-tenant concurrency"],
   },
-  {
-    id: 4,
-    company: "Contentful",
-    logo: {
-      src: "/assets/customers/contentful-logo-white.svg",
-      name: "Contentful",
-      scale: 1.2,
-    },
-    testimonial:
-      "The developer experience with Inngest has been phenomenal. The local development tools and debugging capabilities have significantly improved our workflow and productivity.",
-    author: "SARAH WILSON",
-    role: "Product Manager, Contentful",
-    highlight: ["developer experience", "debugging capabilities"],
-  },
-  {
-    id: 5,
-    company: "Browser Use",
-    logo: {
-      src: "/assets/customers/browser-use-white.svg",
-      name: "Browser Use",
-      scale: 1.5,
-    },
-    testimonial:
-      "The developer experience with Inngest has been phenomenal. The local development tools and debugging capabilities have significantly improved our workflow and productivity.",
-    author: "MIKE CHEN",
-    role: "CTO, Browser Use",
-    highlight: ["developer experience", "debugging capabilities"],
-  },
+  // {
+  //   id: 4,
+  //   company: "Contentful",
+  //   logo: {
+  //     src: "/assets/customers/contentful-logo-white.svg",
+  //     name: "Contentful",
+  //     scale: 1.2,
+  //   },
+  //   testimonial:
+  //     "The developer experience with Inngest has been phenomenal. The local development tools and debugging capabilities have significantly improved our workflow and productivity.",
+  //   author: "SARAH WILSON",
+  //   role: "Product Manager, Contentful",
+  //   highlight: ["developer experience", "debugging capabilities"],
+  // },
+  // {
+  //   id: 5,
+  //   company: "Browser Use",
+  //   logo: {
+  //     src: "/assets/customers/browser-use-white.svg",
+  //     name: "Browser Use",
+  //     scale: 1.5,
+  //   },
+  //   testimonial:
+  //     "The developer experience with Inngest has been phenomenal. The local development tools and debugging capabilities have significantly improved our workflow and productivity.",
+  //   author: "MIKE CHEN",
+  //   role: "CTO, Browser Use",
+  //   highlight: ["developer experience", "debugging capabilities"],
+  // },
   {
     id: 6,
     company: "Gitbook",
@@ -100,10 +100,10 @@ const testimonials = [
       scale: 1.3,
     },
     testimonial:
-      "The developer experience with Inngest has been phenomenal. The local development tools and debugging capabilities have significantly improved our workflow and productivity.",
-    author: "EMMA DAVIS",
-    role: "Head of Engineering, Gitbook",
-    highlight: ["developer experience", "debugging capabilities"],
+      "Configuration with Inngest is really easy. When we read our code base, we can immediately understand what it is and what it does. We are going to be gradually migrating most features to Inngest.",
+    author: "Johan Preynat",
+    role: "Engineering Lead, GitBook",
+    highlight: ["configuration", "read our code base"],
   },
 ];
 

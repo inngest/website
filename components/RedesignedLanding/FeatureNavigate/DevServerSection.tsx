@@ -22,12 +22,12 @@ export default function DevServerSection() {
       <Card className="dev-card-anchor order-1 mb-8 flex h-full max-w-2xl flex-col justify-center rounded-none border-none bg-stone-950 sm:order-2 md:mb-0 xl:order-1">
         <CardHeader className="pl-6 pr-6 pt-16 md:pl-10">
           <CardTitle className="font-whyte text-3xl font-light">
-            Frictionless local debugging
+            Instant, local step-by-step debugging
           </CardTitle>
         </CardHeader>
         <CardContent className="max-w-lg pb-16 pl-6 pr-6 font-circular text-base font-normal text-stone-300 md:pl-10 md:pr-6">
-          Replace floods of console.logs with rich logs, live traces with LLM
-          input and outputs, all running locally.
+          Structured logs and real-time traces – including every prompt /
+          response pair – with one CLI command.
         </CardContent>
       </Card>
       <div className="devsvg-anchor relative z-30 order-1 flex flex-col items-center xl:order-2">

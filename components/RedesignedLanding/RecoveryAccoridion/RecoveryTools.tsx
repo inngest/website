@@ -12,6 +12,7 @@ import { useState } from "react";
 import CancellationSVG from "./Cancellation";
 import MetricsSVG from "./Metrics";
 import ReplaySVG from "./Replay";
+import Link from "next/link";
 
 export default function TestRecoverTools() {
   const initialOpenItem = "item-1";
@@ -26,19 +27,19 @@ export default function TestRecoverTools() {
       value: "item-1",
       triggerText: "Replay",
       contentText:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus venenatis nisl ligula, at tempor urna porttitor nec. Pellentesq at tempor urna porttitor nec. Pellentesq.",
+        "Recover from bugs or system issues by re-running failed workflows in bulk. Forget dead-letter queues.",
     },
     {
       value: "item-2",
       triggerText: "Bulk Cancellation",
       contentText:
-        "Manage simultaneous requests effectively. Concurrency controls ensure your AI services remain responsive and stable under varying load conditions by intelligently queuing and processing tasks.",
+        "Manage unanticipated backlogs or runaway failures by cancelling thousands of workflows in bulk. Fix the issue, then replay.",
     },
     {
       value: "item-3",
       triggerText: "Metrics",
       contentText:
-        "Allocate resources based on importance. Priority settings allow you to define which tasks or users get preferential treatment, ensuring critical operations are always handled swiftly.",
+        "Get full visibility over your workflows and agents with live traces and metrics",
     },
   ];
 
@@ -103,8 +104,12 @@ export default function TestRecoverTools() {
             ))}
           </Accordion>
           <div className="mt-auto pt-8">
-            <Button variant="outline" className="w-auto px-5 py-2.5 text-sm">
-              Learn more
+            <Button
+              variant="outline"
+              className="w-auto px-5 py-2.5 text-sm"
+              asChild
+            >
+              <Link href="/docs/platform/replay?ref=homepage">Learn more</Link>
             </Button>
           </div>
         </div>

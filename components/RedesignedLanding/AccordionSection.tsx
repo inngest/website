@@ -5,19 +5,18 @@ export default function AccordionSection() {
   return (
     <div className="bg-stone-950">
       <div className="relative mx-auto w-full max-w-7xl rounded-xl bg-stone-950 px-6 py-20 shadow-2xl backdrop-blur-sm sm:px-8 lg:px-10 xl:px-16">
-        <div className="relative flex flex-col">
+        <div className="relative flex flex-col gap-y-4">
           <h1 className="gap-0 font-whyte text-3xl font-light text-stone-100">
             Scale like the{" "}
             <span className="max-w-3xl font-whyteInktrap font-normal">
-              ~3 billion
+              billions
             </span>{" "}
-            workflows <br className="hidden sm:block" />
+            of workflows <br className="hidden sm:block" />
             processed this month
           </h1>
-          <p className="mb-4 font-sans text-lg font-light leading-[25.2px] text-stone-200">
-            Configure limits, monitor and act on your workflows while our
-            <br className="hidden sm:block" />
-            infrastructure handles it 3B+ monthly runs
+          <p className="mb-4 max-w-md font-sans text-lg font-light leading-[25.2px] text-stone-200">
+            Configure, manage, and monitor your workflows while our platform
+            scales for your needs.
           </p>
           <FlowAccordion />
           <RecoveryAccordion />

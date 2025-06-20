@@ -56,7 +56,7 @@ export default function TrustFeaturesSection() {
                   you can trust it to run your most critical workloads.
                 </p>
                 <Button variant="outline" asChild>
-                  <Link href="#">Contact us</Link>
+                  <Link href="/contact?ref=homepage-trust">Contact us</Link>
                 </Button>
               </div>
 

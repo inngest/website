@@ -30,11 +30,15 @@ export default function Hero() {
               </p>
               <div className="flex flex-col gap-4 sm:flex-row">
                 <Button variant="default" asChild>
-                  <Link href="/chat">Chat with us</Link>
+                  <a
+                    href={`${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=homepage-hero`}
+                  >
+                    Start building for free
+                  </a>
                 </Button>
                 <Button variant="outline" asChild>
-                  <Link href="/get-started">
-                    Get started <span aria-hidden="true">→</span>
+                  <Link href="/contact?ref=homepage-hero">
+                    Get a demo<span aria-hidden="true">→</span>
                   </Link>
                 </Button>
               </div>

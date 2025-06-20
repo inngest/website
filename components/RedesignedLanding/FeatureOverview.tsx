@@ -12,15 +12,15 @@ export default function OrchestrationSection() {
     <section className="relative flex items-center bg-stone-900 py-16 text-white md:py-40">
       <div className="container mx-auto px-4">
         <div className="mb-12 text-center md:mb-20">
-          <h1 className="mb-4 font-whyte text-4xl font-light text-stone-50 md:text-5xl lg:text-6xl">
-            Orchestration for{" "}
+          <h1 className="mb-4 font-whyte text-4xl font-light text-stone-50 md:text-5xl ">
+            The orchestration engine for{" "}
             <span className="font-whyteInktrap font-normal text-stone-50">
-              the AI age
+              Workflows + Agents
             </span>
           </h1>
-          <p className="mx-auto max-w-3xl text-lg font-light text-stone-200">
-            Inngest workflows power all AI use cases, from AI workflows to
-            autonomous Agents
+          <p className="mx-auto max-w-3xl text-balance text-lg font-light text-stone-200">
+            Use Inngest workflows to build reliable AI products. Layer AgentKit
+            to add memory, planning, and tool use.
           </p>
         </div>
 
@@ -41,29 +41,28 @@ function WorkflowsCard() {
       <Card className="relative h-full w-full overflow-hidden rounded-none border-none bg-stone-800 shadow-2xl">
         <CardHeader className="p-3 sm:p-4 lg:p-6">
           <CardTitle className="text-lg font-light text-stone-50 sm:text-xl lg:text-2xl xl:text-3xl">
-            <span className="font-whyteInktrap font-semibold">Workflows:</span>{" "}
-            the backbone of quick AI App development
+            {/* <span className="font-whyteInktrap font-semibold">Workflows:</span>{" "} */}
+            Build reliable AI applications
           </CardTitle>
         </CardHeader>
         <CardContent className="p-3 pt-0 font-circular text-sm font-normal sm:p-4 lg:p-6 lg:pt-0 lg:text-base">
           <p className="relative z-10 mb-4 text-base font-normal leading-relaxed text-stone-200 sm:mb-6 lg:text-lg">
-            Quickly build{" "}
+            Develop{" "}
             <span className="font-medium text-[#CD9FFE]">fault tolerant</span>{" "}
             and scalable AI workflows with{" "}
             <span className="font-medium text-[#CD9FFE]">steps</span> performing
-            inference calls without serverless timeouts, retrieving or storing
-            data at scale and{" "}
+            inference calls without retrieving or storing data at scale and{" "}
             <span className="font-medium text-[#CD9FFE]">
               streaming updates
             </span>{" "}
             to users.
           </p>
-          <Button
+          {/* <Button
             variant="outline"
             className="group mb-4 bg-stone-800 text-stone-50 hover:bg-stone-700 sm:mb-6 lg:mb-8"
           >
             Learn more <ArrowRightIcon className="h-4 w-4" />
-          </Button>
+          </Button> */}
 
           <div className="mx-auto">
             <DesktopWorkflow />
@@ -85,8 +84,8 @@ function AgentsCard() {
         <div className="h-1.5"></div>
         <CardHeader className="p-3 sm:p-4 lg:p-6">
           <CardTitle className="text-lg font-light text-stone-50 sm:text-xl lg:text-2xl xl:text-3xl">
-            Build fully autonomous and fault tolerant{" "}
-            <span className="font-whyteInktrap font-semibold">Agents</span>
+            Fully autonomous{" "}
+            <span className="font-whyteInktrap font-semibold">agents</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="p-3 pt-0 font-circular text-sm font-normal sm:p-4 lg:p-6 lg:pt-0 lg:text-base">
@@ -98,12 +97,12 @@ function AgentsCard() {
             while benefiting from Inngest's reliable orchestration engine.
           </p>
 
-          <Button
+          {/* <Button
             variant="outline"
             className="group relative z-10 mb-4 bg-stone-800 text-stone-50 hover:bg-stone-700 sm:mb-6 lg:mb-8"
           >
             Learn more <ArrowRightIcon className="h-4 w-4" />
-          </Button>
+          </Button> */}
 
           <div className="relative z-10">
             <div className="flex items-center justify-center">

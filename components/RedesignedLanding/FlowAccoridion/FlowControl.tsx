@@ -22,6 +22,7 @@ import Fairness from "./Lottie/Fairness.json";
 import WithoutInngest from "./Lottie/Without-Inngest.json";
 import Concurrency from "./Lottie/Concurrency.json";
 import Priority from "./Lottie/Priority.json";
+import Link from "next/link";
 
 export default function FlowAccordion() {
   const initialOpenItem = "item-1";
@@ -42,7 +43,7 @@ export default function FlowAccordion() {
       value: "item-1",
       triggerText: "Fairness",
       contentText:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus venenatis nisl ligula, at tempor urna porttitor nec. Pellentesq at tempor urna porttitor nec. Pellentesq.",
+        "Ensure fair resource distribution and eliminate noisy-neighbor issues to scale efficiently as your user base grows",
     },
     {
       value: "item-2",
@@ -141,7 +142,7 @@ export default function FlowAccordion() {
                 </AccordionTrigger>
                 <AccordionContent
                   className={cn(
-                    "pb-0 pt-1 font-circular text-sm font-normal text-stone-300",
+                    "pb-4 pt-1 font-circular text-sm font-normal text-stone-300",
                     openItemValue === item.value && "border-b border-[#B7B7B7]"
                   )}
                 >
@@ -151,8 +152,14 @@ export default function FlowAccordion() {
             ))}
           </Accordion>
           <div className="mt-auto pt-8">
-            <Button variant="outline" className="w-auto px-5 py-2.5 text-sm">
-              Learn more
+            <Button
+              variant="outline"
+              className="w-auto px-5 py-2.5 text-sm"
+              asChild
+            >
+              <Link href="/docs/guides/flow-control?ref=homepage">
+                Learn more
+              </Link>
             </Button>
           </div>
         </div>
