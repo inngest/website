@@ -14,7 +14,6 @@ import {
 import GridBackground from "src/components/RedesignedLanding/GridBackground";
 import ComparisonTable from "src/components/RedesignedPricing/ComparisonTable";
 import PaygCard from "src/components/RedesignedPricing/PaygCard";
-import PricingFooter from "src/components/RedesignedPricing/PricingFooter";
 import PricingTestimonial from "src/components/RedesignedPricing/PricingTestimonial";
 import PricingTrustSection from "src/components/RedesignedPricing/PricingTrust";
 import PricingTitle from "src/components/RedesignedPricing/Title";
@@ -53,7 +52,6 @@ export default function Pricing() {
           <div className="py-16 md:py-24">
             <PricingTrustSection />
           </div>
-          <PricingFooter />
         </div>
       </div>
     </>
