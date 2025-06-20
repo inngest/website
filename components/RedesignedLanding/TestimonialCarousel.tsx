@@ -24,13 +24,14 @@ const testimonials = [
   {
     id: 1,
     company: "Aomni",
+    href: "/customers/aomni",
     logo: {
       src: "/assets/customers/aomni-logo.svg",
       name: "Aomni",
       scale: 0.8,
     },
     testimonial:
-      "For anyone who is building multi-step AI agents (such as AutoGPT type systems), I highly recommend building it on top of Inngest's job queue orchestration framework, the traceability it provides out of the box is super useful, plus you get timeouts & retries for free.",
+      "For anyone who is building multi-step AI agents, I highly recommend building it on top of Inngest, the traceability it provides is super useful, plus you get timeouts & retries for free.",
     author: "David Zhang",
     role: "Founder, Aomni",
     highlight: ["traceability", "timeouts & retries"],
@@ -38,20 +39,22 @@ const testimonials = [
   {
     id: 2,
     company: "SoundCloud",
+    href: "/customers/soundcloud",
     logo: {
       src: "/assets/customers/soundcloud-logo-white-horizontal.svg",
       name: "SoundCloud",
       scale: 1.5,
     },
     testimonial:
-      "One of my goals was to simplify a complex workflow in a cloud world. If the abstractions exist, let's use them so engineers can focus on the business problem, not the infrastructure-as-code and primitives problem.",
-    author: "JANE SMITH",
-    role: "Engineering Lead, SoundCloud",
-    highlight: ["abstractions", "primitives"],
+      "Our context switching dropped significantly, because the code is just business logic. If you read the code, you know that the steps that will execute without having to manage any infrastructure.",
+    author: "Matthew Drooker",
+    role: "CTO, SoundCloud",
+    highlight: ["business logic", "infrastructure"],
   },
   {
     id: 3,
     company: "Otto",
+    href: "/customers/otto",
     logo: {
       src: "/assets/customers/otto-logo.svg",
       name: "Otto",
@@ -94,16 +97,17 @@ const testimonials = [
   {
     id: 6,
     company: "Gitbook",
+    href: "/customers/gitbook",
     logo: {
       src: "/assets/customers/gitbook-logo-white.svg",
       name: "Gitbook",
       scale: 1.3,
     },
     testimonial:
-      "Configuration with Inngest is really easy. When we read our code base, we can immediately understand what it is and what it does. We are going to be gradually migrating most features to Inngest.",
+      "When we read our code base, we can immediately understand what it is and what it does. We are going to be gradually migrating most features to Inngest.",
     author: "Johan Preynat",
     role: "Engineering Lead, GitBook",
-    highlight: ["configuration", "read our code base"],
+    highlight: [" immediately understand"],
   },
 ];
 
@@ -262,7 +266,7 @@ export default function TestimonialsCarousel() {
 
                         <div>
                           <Link
-                            href="/customers"
+                            href={`${testimonial.href}?ref=homepage-testimonials`}
                             className="group inline-flex items-center border-b border-transparent pb-0.5 text-sm text-stone-50 transition-all hover:border-inngestLux hover:text-inngestLux"
                           >
                             Read customer story
