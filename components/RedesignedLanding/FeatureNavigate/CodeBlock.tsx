@@ -43,14 +43,31 @@ export function Fence({
   children,
   language,
   showLineNumbers = false,
+  rows = 14,
 }: {
   children: string;
   language: string;
   showLineNumbers?: boolean;
+  /**
+   * Ensures that each rendered code block is the same height by padding
+   * the snippet with blank lines until it reaches the desired row count.
+   * Defaults to 14 to align with other homepage snippets.
+   */
+  rows?: number;
 }) {
+  // Remove leading/trailing whitespace so intentional padding comes only from
+  // the logic below. This replicates the original behaviour while letting us
+  // add the required number of empty rows afterwards.
+  const trimmed = children.trim();
+
+  // Calculate how many additional empty lines we need and append them.
+  const currentLines = trimmed.split("\n").length;
+  const padded =
+    currentLines < rows ? trimmed + "\n".repeat(rows - currentLines) : trimmed;
+
   return (
     <Highlight
-      code={children.trim()}
+      code={padded}
       language={language}
       theme={themes.gruvboxMaterialDark}
     >

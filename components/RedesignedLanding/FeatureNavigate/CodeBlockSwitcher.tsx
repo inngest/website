@@ -79,12 +79,7 @@ await step.sleep('wait-a-week', '7d');
 
 await step.run('send-follow-up-email', () => {
   // ...
-});
-//
-//
-//
-//
-    
+}); 
     `,
   },
   //   python: {
