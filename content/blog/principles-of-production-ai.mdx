@@ -94,19 +94,16 @@ Restricting the number of invocation of our AI workflows per user is achieved wi
        period=datetime.timedelta(seconds=60),
      ),
 )
-async def fn(
-    ctx: inngest.Context,
-    step: inngest.Step,
-) -> None:
-    contacts = await step.run("load_contacts", load_contacts)
+async def fn(ctx: inngest.Context) -> None:
+    contacts = await ctx.step.run("load_contacts", load_contacts)
 
-    sanitized_contacts = await step.run(
+    sanitized_contacts = await ctx.step.run(
 "sanitize_contacts",
 sanitize_contacts,
 contacts
     )
 
-    await step.run("embed_contacts", embed_contacts, sanitized_contacts)
+    await ctx.step.run("embed_contacts", embed_contacts, sanitized_contacts)
 
 
 # load_contacts, sanitize_contacts, embed_contacts...

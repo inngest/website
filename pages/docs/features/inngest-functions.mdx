@@ -60,12 +60,12 @@ inngest.createFunction({
         count=2, period=datetime.timedelta(minutes=1)
     ),
 )
-def sync_systems(ctx: inngest.Context, step: inngest.StepSync) -> None:
+def sync_systems(ctx: inngest.ContextSync) -> None:
     # step is retried if it throws an error
-    data = step.run("Get data", get_data_from_external_source)
+    data = ctx.step.run("Get data", get_data_from_external_source)
 
     # Steps can reuse data from previous ones
-    step.run("Save data", db.syncs.insert_one, data)
+    ctx.step.run("Save data", db.syncs.insert_one, data)
 ```
 ```go {{ title: "Go" }}
 inngestgo.CreateFunction(

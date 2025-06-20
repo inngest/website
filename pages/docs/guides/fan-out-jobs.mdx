@@ -305,10 +305,7 @@ Next, define two functions: `sendWelcomeEmail` and `startStripeTrial`. As you ca
     fn_id="send-welcome-email",
     trigger=inngest.TriggerEvent(event="app/user.signup"),
 )
-async def send_welcome_email(
-    ctx: inngest.Context,
-    step: inngest.Step,
-) -> None:
+async def send_welcome_email(ctx: inngest.Context) -> None:
     await step.run("send-email", lambda: send_email(
         email=ctx.event.data["user"]["email"],
         template="welcome"

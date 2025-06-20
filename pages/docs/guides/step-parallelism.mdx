@@ -58,19 +58,16 @@ When each step is finished, Inngest will aggregate each step's state and re-invo
 
 Inngest supports parallel steps regardless of whether you're using asynchronous or synchronous code. For both approaches, you can use `step.parallel`:
 
-#### async - with `inngest.Step` and `await step.parallel()` 
+#### async - with `inngest.Step` and `await ctx.group.parallel()` 
 ```py
 @client.create_function(
   fn_id="my-fn",
   trigger=inngest.TriggerEvent(event="my-event"),
 )
-async def fn(
-  ctx: inngest.Context,
-  step: inngest.Step,
-) -> None:
+async def fn(ctx: inngest.Context) -> None:
   user_id = ctx.event.data["user_id"]
 
-  (updated_user, sent_email) = await step.parallel(
+  (updated_user, sent_email) = await ctx.group.parallel(
     (
       lambda: step.run("update-user", update_user, user_id),
       lambda: step.run("send-email", send_email, user_id),
@@ -78,22 +75,19 @@ async def fn(
   )
 ```
 
-#### sync - with `inngest.StepSync` and `step.parallel()` 
+#### sync - with `inngest.StepSync` and `group.parallel()` 
 ```py
 @client.create_function(
   fn_id="my-fn",
   trigger=inngest.TriggerEvent(event="my-event"),
 )
-def fn(
-  ctx: inngest.Context,
-  step: inngest.StepSync,
-) -> None:
+def fn(ctx: inngest.ContextSync) -> None:
   user_id = ctx.event.data["user_id"]
 
-  (updated_user, sent_email) = step.parallel(
+  (updated_user, sent_email) = ctx.group.parallel(
     (
-      lambda: step.run("update-user", update_user, user_id),
-      lambda: step.run("send-email", send_email, user_id),
+      lambda: ctx.step.run("update-user", update_user, user_id),
+      lambda: ctx.step.run("send-email", send_email, user_id),
     )
   )
 ```
@@ -106,15 +100,12 @@ At this time, Inngest does not have stable support for `asyncio.gather` or `asyn
   trigger=inngest.TriggerEvent(event="my-event"),
   _experimental_execution=True,
 )
-def fn(
-  ctx: inngest.Context,
-  step: inngest.StepSync,
-) -> None:
+def fn(ctx: inngest.ContextSync) -> None:
   user_id = ctx.event.data["user_id"]
 
   (updated_user, sent_email) = asyncio.gather(
-    asyncio.create_task(step.run("update-user", update_user, user_id)),
-    asyncio.create_task(step.run("send-email", send_email, user_id)),
+    asyncio.create_task(ctx.step.run("update-user", update_user, user_id)),
+    asyncio.create_task(ctx.step.run("send-email", send_email, user_id)),
   )
 ```
 

@@ -68,7 +68,7 @@ inngest_client = inngest.Inngest(
     # Event that triggers this function
     trigger=inngest.TriggerEvent(event="app/my_function"),
 )
-async def my_function(ctx: inngest.Context, step: inngest.Step) -> str:
+async def my_function(ctx: inngest.Context) -> str:
     ctx.logger.info(ctx.event)
     return "done"
 

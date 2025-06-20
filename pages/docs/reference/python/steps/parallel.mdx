@@ -20,16 +20,13 @@ Running two steps in parallel:
     fn_id="my-function",
     trigger=inngest.TriggerEvent(event="my-event"),
 )
-async def fn(
-    ctx: inngest.Context,
-    step: inngest.Step,
-) -> None:
+async def fn(ctx: inngest.Context) -> None:
     user_id = ctx.event.data["user_id"]
 
-    (updated_user, sent_email) = await step.parallel(
+    (updated_user, sent_email) = await ctx.group.parallel(
         (
-            lambda: step.run("update-user", update_user, user_id),
-            lambda: step.run("send-email", send_email, user_id),
+            lambda: ctx.step.run("update-user", update_user, user_id),
+            lambda: ctx.step.run("send-email", send_email, user_id),
         )
     )
 ```
@@ -40,23 +37,20 @@ Dynamically building a tuple of parallel steps:
     fn_id="my-function",
     trigger=inngest.TriggerEvent(event="my-event"),
 )
-async def fn(
-    ctx: inngest.Context,
-    step: inngest.Step,
-) -> None:
+async def fn(ctx: inngest.Context) -> None:
     parallel_steps = tuple[typing.Callable[[], typing.Awaitable[bool]]]()
     for user_id in ctx.event.data["user_ids"]:
         parallel_steps += tuple(
             [
                 functools.partial(
-                    step.run,
+                    ctx.step.run,
                     f"get-user-{user_id}",
                     functools.partial(update_user, user_id),
                 )
             ]
         )
 
-    updated_users = await step.parallel(parallel_steps)
+    updated_users = await ctx.group.parallel(parallel_steps)
 ```
 
 <Callout variant="warning">

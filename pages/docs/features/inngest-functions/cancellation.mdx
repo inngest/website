@@ -70,18 +70,15 @@ const scheduleReminder = inngest.createFunction(
                 if_exp="event.data.id == async.data.id"
             )],
 )
-async def fn(
-    ctx: inngest.Context,
-    step: inngest.Step,
-) -> None:
+async def fn(ctx: inngest.Context) -> None:
     # Step 1
-    await step.sleep_until(
+    await ctx.step.sleep_until(
         "sleep-until-remind-at-time",
          ctx.event.data["remind_at"],
     )
 
     # Step 2
-    await step.run("send-reminder-push", send_reminder_push)
+    await ctx.step.run("send-reminder-push", send_reminder_push)
 
 
 

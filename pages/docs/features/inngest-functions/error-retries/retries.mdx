@@ -129,12 +129,12 @@ inngestgo.CreateFunction(
     fn_id="sync-systems",
     trigger=inngest.TriggerEvent(event="auto/sync.request"),
 )
-def sync_systems(ctx: inngest.Context, step: inngest.StepSync) -> None:
+def sync_systems(ctx: inngest.ContextSync) -> None:
     # Can be retried up to 4 times
-    data = step.run("Get data", get_data_from_external_source)
+    data = ctx.step.run("Get data", get_data_from_external_source)
 
     # Can also be retried up to 4 times
-    step.run("Save data", db.syncs.insert_one, data)
+    ctx.step.run("Save data", db.syncs.insert_one, data)
 ```
 </CodeGroup>
 
@@ -207,15 +207,15 @@ from inngest.errors import NonRetriableError
     fn_id="user-weekly-digest",
     trigger=inngest.TriggerEvent(event="user/weekly.digest.requested"),
 )
-def user_weekly_digest(ctx: inngest.Context, step: inngest.StepSync) -> None:
+def user_weekly_digest(ctx: inngest.ContextSync) -> None:
     try:
-        user = step.run("get-user-email", db.users.find_one, ctx.event.data["userId"])
+        user = ctx.step.run("get-user-email", db.users.find_one, ctx.event.data["userId"])
     except Exception as err:
         if err.name == "UserNotFoundError":
             raise NonRetriableError("User no longer exists; stopping")
         raise
 
-    step.run("send-digest", send_digest, user["email"])
+    ctx.step.run("send-digest", send_digest, user["email"])
 ```
 </CodeGroup>
 
@@ -280,7 +280,7 @@ from src.inngest.client import inngest_client
     fn_id="send-welcome-notification",
     trigger=inngest.TriggerEvent(event="user.created"),
 )
-def send_welcome_notification(ctx: inngest.Context, step: inngest.StepSync) -> None:
+def send_welcome_notification(ctx: inngest.ContextSync) -> None:
 	success, retryAfter, err = twilio.Messages.Create(twilio.MessageOpts{
 		To:   ctx.event.data["user"]["phoneNumber"],
 		Body: "Welcome to our service!",

@@ -202,7 +202,7 @@ from src.inngest.client import inngest_client
     fn_id="compute-square",
     trigger=inngest.TriggerEvent(event="calculate/square")
 )
-async def compute_square(ctx: inngest.Context, step: inngest.Step):
+async def compute_square(ctx: inngest.Context):
     return {"result": ctx.event.data["number"] * ctx.event.data["number"]}  # Result typed as { result: number }
 
 # In this function, we'll call compute_square
@@ -210,8 +210,8 @@ async def compute_square(ctx: inngest.Context, step: inngest.Step):
     fn_id="main-function",
     trigger=inngest.TriggerEvent(event="main/event")
 )
-async def main_function(ctx: inngest.Context, step: inngest.Step):
-    square = await step.invoke(
+async def main_function(ctx: inngest.Context):
+    square = await ctx.step.invoke(
         "compute-square-value",
         function=compute_square,
         data={"number": 4}  # input data is typed, requiring input if it's needed

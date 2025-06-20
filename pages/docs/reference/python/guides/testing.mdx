@@ -24,11 +24,8 @@ client = inngest.Inngest(app_id="my-app")
     fn_id="greet",
     trigger=inngest.TriggerEvent(event="user.login"),
 )
-async def greet(
-    ctx: inngest.Context,
-    step: inngest.Step,
-) -> str:
-    message = await step.run(
+async def greet(ctx: inngest.Context) -> str:
+    message = await ctx.step.run(
         "create-message",
         create_message,
         ctx.event.data["name"],
@@ -66,13 +63,13 @@ class TestGreet(unittest.TestCase):
 ### Limitations
 
 The `mocked` library has some notable limitations:
-- `step.invoke` and `step.wait_for_event` must be stubbed using the `step_stubs` parameter of `mocked.trigger`.
+- `ctx.step.invoke` and `ctx.step.wait_for_event` must be stubbed using the `step_stubs` parameter of `mocked.trigger`.
 - `step.send_event` does not send events. It returns a stubbed value.
 - `step.sleep` and `step.sleep_until` always sleep for 0 seconds.
 
 ### Stubbing
 
-Stubbing is required for `step.invoke` and `step.wait_for_event`. Here's an example of how to stub these functions:
+Stubbing is required for `ctx.step.invoke` and `ctx.step.wait_for_event`. Here's an example of how to stub these functions:
 
 ```python
 # Real production function
@@ -80,16 +77,13 @@ Stubbing is required for `step.invoke` and `step.wait_for_event`. Here's an exam
     fn_id="signup",
     trigger=inngest.TriggerEvent(event="user.signup"),
 )
-def signup(
-    ctx: inngest.Context,
-    step: inngest.StepSync,
-) -> bool:
-    email_id = step.invoke(
+def signup(ctx: inngest.ContextSync) -> bool:
+    email_id = ctx.step.invoke(
         "send-email",
         function=send_email,
     )
 
-    event = step.wait_for_event(
+    event = ctx.step.wait_for_event(
         "wait-for-reply",
         event="email.reply",
         if_exp=f"async.data.email_id == '{email_id}'",
@@ -121,7 +115,7 @@ class TestSignup(unittest.TestCase):
         assert res.output is True
 ```
 
-To simulate a `step.wait_for_event` timeout, stub the step with `mocked.Timeout`.
+To simulate a `ctx.step.wait_for_event` timeout, stub the step with `mocked.Timeout`.
 
 ## Integration testing
 

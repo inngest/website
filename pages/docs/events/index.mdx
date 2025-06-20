@@ -278,11 +278,8 @@ from src.inngest.client import inngest_client
     fn_id="my_function",
     trigger=inngest.TriggerEvent(event="app/my_function"),
 )
-async def fn(
-    ctx: inngest.Context,
-    step: inngest.Step,
-) -> list[str]:
-    return await step.send_event("send", inngest.Event(name="foo"))
+async def fn(ctx: inngest.Context) -> list[str]:
+    return await ctx.step.send_event("send", inngest.Event(name="foo"))
 ```
 
 ## Using Event IDs

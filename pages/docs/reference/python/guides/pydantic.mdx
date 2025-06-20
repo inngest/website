@@ -1,6 +1,79 @@
+import { Info } from "src/shared/Docs/mdx";
+
 # Pydantic
 
 This guide will help you use Pydantic to perform runtime type validation when sending and receiving events.
+
+## Step output
+
+Steps can return Pydantic objects as long as the `output_type` parameter is set to the Pydantic model return type.
+
+```py
+client = inngest.Inngest(
+    app_id="my-app",
+
+    # Must set the client serializer when using Pydantic output
+    serializer=inngest.PydanticSerializer(),
+)
+
+class User(pydantic.BaseModel):
+    name: str
+
+async def get_user() -> User:
+    return User(name="Alice")
+
+@client.create_function(
+    fn_id="my-fn",
+    trigger=inngest.TriggerEvent(event="my-event"),
+)
+async def my_fn(ctx: inngest.Context) -> None:
+    # user object is a Pydantic object at both runtime and compile time
+    user = await ctx.step.run("get-user", get_user, output_type=User)
+```
+
+More complex types work as well. For example, if the `get_user` function returned an `list[Admin | User]` type, you could set the `output_type` to `list[Admin | User]`.
+
+```py
+await ctx.step.run("get-person", get_users, output_type=list[User | Admin])
+```
+
+<Info>
+Why do I need to set the `output_type` parameter?
+
+Since step output is transmitted as JSON back to the Inngest server, we lose the reference to the original Python class. So the `output_type` parameter is used to deserialize the JSON back into the correct type.
+</Info>
+
+<Info>
+Why can't the SDK infer the output type from my type annotations?
+
+The could sometimes work, but there are common patterns that break it. Runtime return type inference is impossible if the return type:
+- Is implicit (i.e. not specified but your type checker figures it out).
+- Is a generic.
+</Info>
+
+## Function output
+
+Functions can return Pydantic objects as long as the `output_type` parameter is set to the Pydantic model return type.
+
+```py
+client = inngest.Inngest(
+    app_id="my-app",
+
+    # Must set the client serializer when using Pydantic output
+    serializer=inngest.PydanticSerializer(),
+)
+
+class User(pydantic.BaseModel):
+    name: str
+
+@client.create_function(
+    fn_id="my-fn",
+    output_type=User,
+    trigger=inngest.TriggerEvent(event="my-event"),
+)
+async def my_fn(ctx: inngest.Context) -> None:
+    return User(name="Alice")
+```
 
 ## Sending events
 
@@ -58,9 +131,6 @@ When defining your Inngest function, use the `name` class field when specifying 
     fn_id="handle-upvoted-post",
     trigger=inngest.TriggerEvent(event=PostUpvotedEvent.name),
 )
-def fn(
-    ctx: inngest.Context,
-    step: inngest.StepSync,
-) -> None:
+def fn(ctx: inngest.ContextSync) -> None:
     event = PostUpvotedEvent.from_event(ctx.event)
 ```

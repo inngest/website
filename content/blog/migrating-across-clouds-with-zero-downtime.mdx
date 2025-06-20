@@ -100,23 +100,23 @@ export const processAudio = inngest.createFunction(
     fn_id="process-audio",
     trigger=inngest.TriggerEvent(event="podcast/audio.uploaded"),
 )
-async def fn(ctx: inngest.Context, step: inngest.Step) -> None:
+async def fn(ctx: inngest.Context) -> None:
     async def transcode_audio() -> str:
         filename = download(ctx.event.data["url"])
         return await transcode(filename, 'aac')
-    new_file_url = await step.run("transcode-audio", transcode_audio)
+    new_file_url = await ctx.step.run("transcode-audio", transcode_audio)
 
     async def generate_transcript():
         return # ... business logic omitted ...
-    transcript = await step.run("generate-transcript", generate_transcript)
+    transcript = await ctx.step.run("generate-transcript", generate_transcript)
 
     async def summarize():
         return # ...
-    summary = await step.run("summarize-with-ai", summarize)
+    summary = await ctx.step.run("summarize-with-ai", summarize)
 
     async def save_to_db():
         return # ...
-    await step.run("save-to-db", save_to_db)
+    await ctx.step.run("save-to-db", save_to_db)
 ```
 
 We, of course, don’t expect many developers to take this path, although it's fun to highlight what is possible with the architectural design of Inngest.

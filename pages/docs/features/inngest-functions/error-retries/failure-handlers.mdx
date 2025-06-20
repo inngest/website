@@ -36,7 +36,7 @@ inngest.createFunction(
 
 ```python {{ title: "Python" }}
 # Option 1: give the inngest function an [`on_failure`] handler.
-async def update_subscription_failed(ctx: inngest.Context, step: inngest.Step):
+async def update_subscription_failed(ctx: inngest.Context):
     # if the subscription check fails after all retries, unsubscribe the user
     await unsubscribe_user(ctx.data.userId)
 
@@ -45,7 +45,7 @@ async def update_subscription_failed(ctx: inngest.Context, step: inngest.Step):
     retries=5,
     on_failure=update_subscription_failed,
     trigger=TriggerEvent(event="user/subscription.check"))
-async def update_subscription(ctx: Context, step: Step):
+async def update_subscription(ctx: Context):
     pass # ...
 
 
@@ -58,7 +58,7 @@ async def update_subscription(ctx: Context, step: Step):
         #TriggerEvent(event="inngest/function.cancelled")
     ],
 )
-async def global_failure_handler(ctx: Context, step: Step):
+async def global_failure_handler(ctx: Context):
     pass # handle all failures, e.g. to send to sentry
 ```
 ```go

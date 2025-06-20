@@ -55,16 +55,13 @@ All thrown Errors are handled by Inngest and [retried automatically](/docs/featu
     retries=0,
     trigger=inngest.TriggerEvent(event="store/import.requested"),
 )
-async def fn_async(
-    ctx: inngest.Context,
-    step: inngest.Step,
-) -> None:
+async def fn_async(ctx: inngest.Context) -> None:
 
     def foo() -> None:
         raise ValueError("foo")
 
     # a retry will be attempted
-    await step.run("foo", foo)
+    await ctx.step.run("foo", foo)
 ```
 </GuideSection>
 
@@ -165,14 +162,11 @@ Use `NonRetriableError` to prevent Inngest from retrying the function _or_ step.
     retries=0,
     trigger=inngest.TriggerEvent(event="store/import.requested"),
 )
-async def fn_async(
-    ctx: inngest.Context,
-    step: inngest.Step,
-) -> None:
+async def fn_async(ctx: inngest.Context) -> None:
     def step_1() -> None:
         raise inngest.NonRetriableError("non-retriable-step-error")
 
-    step.run("step_1", step_1)
+    ctx.step.run("step_1", step_1)
 ``` 
 
 </GuideSection>
@@ -287,14 +281,11 @@ If `RetryAfterError` is not used, Inngest will use [the default retry backoff po
     retries=0,
     trigger=inngest.TriggerEvent(event="store/import.requested"),
 )
-async def fn_async(
-        ctx: inngest.Context,
-    step: inngest.Step,
-) -> None:
+async def fn_async(ctx: inngest.Context) -> None:
   def step_1() -> None:
       raise inngest.RetryAfterError("rate-limit-hit", 1000) # delay in milliseconds
 
-  step.run("step_1", step_1)
+  ctx.step.run("step_1", step_1)
 ``` 
 
 ### Parameters
@@ -448,15 +439,12 @@ After a step exhausts all of its retries, it will throw a `StepError` which can 
     retries=0,
     trigger=inngest.TriggerEvent(event="store/import.requested"),
 )
-async def fn_async(
-    ctx: inngest.Context,
-    step: inngest.Step,
-) -> None:
+async def fn_async(ctx: inngest.Context) -> None:
     def foo() -> None:
         raise ValueError("foo")
 
     try:
-        step.run("foo", foo)
+        ctx.step.run("foo", foo)
     except inngest.StepError:
         raise MyError("I am new")
 ``` 

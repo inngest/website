@@ -83,21 +83,21 @@ inngestgo.CreateFunction(
     fn_id="generate-result",
     trigger=inngest.TriggerEvent(event="prompt.created"),
 )
-def generate_result(ctx: inngest.Context, step: inngest.StepSync) -> None:
+def generate_result(ctx: inngest.ContextSync) -> None:
     image_url = None
     via = None
 
     try:
-        image_url = step.run("generate-image-dall-e", lambda: open_api_call_to_generate_image())
+        image_url = ctx.step.run("generate-image-dall-e", open_api_call_to_generate_image)
         via = "dall-e"
     except Exception as err:
-        image_url = step.run("generate-image-midjourney", lambda: midjourney_call_to_generate_image())
+        image_url = ctx.step.run("generate-image-midjourney", midjourney_call_to_generate_image)
         via = "midjourney"
 
     def _notify_user() -> None:
         pusher.trigger(ctx.event.data["channelID"], "image-result", {"imageURL": image_url, "via": via})
 
-    step.run("notify-user", _notify_user)
+    ctx.step.run("notify-user", _notify_user)
 ``` */}
 </CodeGroup>
 
@@ -166,18 +166,18 @@ inngestgo.CreateFunction(
     fn_id="add-data",
     trigger=inngest.TriggerEvent(event="app/row.data.added"),
 )
-def add_data(ctx: inngest.Context, step: inngest.StepSync) -> None:
+def add_data(ctx: inngest.ContextSync) -> None:
     # ignore the error - this step is fine if it fails
     try:
-        step.run("Non-critical step", lambda: update_metric())
+        ctx.step.run("Non-critical step", update_metric)
     except Exception:
         pass
 
     # Add a rollback to a step
     try:
-        step.run("Create row", lambda: create_row_and_add_detail(ctx.event.data["rowId"], ctx.event.data["entry"]))
+        ctx.step.run("Create row", create_row_and_add_detail, ctx.event.data["rowId"], ctx.event.data["entry"])
     except Exception as err:
-        step.run("Rollback row creation", lambda: remove_row(ctx.event.data["rowId"]))
+        ctx.step.run("Rollback row creation", remove_row, ctx.event.data["rowId"])
 
 def create_row_and_add_detail(row_id, entry):
     create_row(row_id)

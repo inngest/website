@@ -160,7 +160,7 @@ inngest_client = inngest.Inngest(
     fn_id="send-signup-email",
     trigger=inngest.TriggerEvent(event="app/user.created")
 )
-async def send_signup_email(ctx: inngest.Context, step: inngest.Step):
+async def send_signup_email(ctx: inngest.Context):
     async def send_email():
         await sesclient.send_email(
             to=ctx.event.data["user_email"],
@@ -168,15 +168,15 @@ async def send_signup_email(ctx: inngest.Context, step: inngest.Step):
             message="..."
         )
 
-    await step.run("send-the-user-a-signup-email", send_email)
+    await ctx.step.run("send-the-user-a-signup-email", send_email)
 
-    await step.sleep_until("wait-for-the-future", "2023-02-01T16:30:00")
+    await ctx.step.sleep_until("wait-for-the-future", "2023-02-01T16:30:00")
 
     async def future_work():
         # Code here runs in the future automatically
         pass
 
-    await step.run("do-some-work-in-the-future", future_work)
+    await ctx.step.run("do-some-work-in-the-future", future_work)
 ```
 
 

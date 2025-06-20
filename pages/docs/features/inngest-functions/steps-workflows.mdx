@@ -69,13 +69,13 @@ inngest.createFunction(
     fn_id="sync-systems",
     trigger=inngest.TriggerEvent(event="auto/sync.request"),
 )
-def sync_systems(ctx: inngest.Context, step: inngest.StepSync) -> None:
+def sync_systems(ctx: inngest.ContextSync) -> None:
     # By wrapping code in step.run, the code will be retried if it throws an error and when successfuly.
     # It's result is saved to prevent unnecessary re-execution
-    data = step.run("Get data", get_data_from_external_source)
+    data = ctx.step.run("Get data", get_data_from_external_source)
 
     # Can also be retried up to 4 times
-    step.run("Save data", db.syncs.insert_one, data)
+    ctx.step.run("Save data", db.syncs.insert_one, data)
 ```
 ```go {{ title: "Go" }}
 inngestgo.CreateFunction(

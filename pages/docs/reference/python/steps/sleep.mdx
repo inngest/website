@@ -23,9 +23,6 @@ Sleep for a period of time. Accepts either a `datetime.timedelta` object or a nu
     fn_id="my_function",
     trigger=inngest.TriggerEvent(event="app/my_function"),
 )
-async def fn(
-    ctx: inngest.Context,
-    step: inngest.Step,
-) -> None:
-    await step.sleep("zzz", datetime.timedelta(seconds=2))
+async def fn(ctx: inngest.Context) -> None:
+    await ctx.step.sleep("zzz", datetime.timedelta(seconds=2))
 ```

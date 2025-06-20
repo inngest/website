@@ -41,7 +41,7 @@ export default inngest.createFunction(
       return copyAllImagesToS3(event.data.imageURLs);
     });
     // You can include numerous steps in your function
-    await step.run('resize-images', async () => {
+    await ctx.step.run('resize-images', async () => {
       await resizer.bulk({ urls: s3Urls, quality: 0.9, maxWidth: 1024 });
     })
   };
@@ -107,16 +107,16 @@ from src.inngest.client import inngest_client
     # trigger (event or cron)
     trigger=inngest.Trigger(event="shop/product.imported")
 )
-async def import_product_images(ctx: inngest.Context, step: inngest.Step):
+async def import_product_images(ctx: inngest.Context):
     # Here goes the business logic
     # By wrapping code in steps, it will be retried automatically on failure
-    s3_urls = await step.run(
+    s3_urls = await ctx.step.run(
         "copy-images-to-s3",
         lambda: copy_all_images_to_s3(ctx.event.data["imageURLs"])
     )
 
     # You can include numerous steps in your function
-    await step.run(
+    await ctx.step.run(
         "resize-images",
         lambda: resizer.bulk(
             urls=s3_urls,

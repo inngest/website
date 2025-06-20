@@ -167,11 +167,8 @@ export default inngest.createFunction(
     fn_id="my_function",
     trigger=inngest.TriggerEvent(event="app/my_function"),
 )
-async def fn(
-    ctx: inngest.Context,
-    step: inngest.Step,
-) -> None:
-    res = await step.wait_for_event(
+async def fn(ctx: inngest.Context) -> None:
+    res = await ctx.step.wait_for_event(
         "wait",
         event="app/wait_for_event.fulfill",
         timeout=datetime.timedelta(seconds=2),

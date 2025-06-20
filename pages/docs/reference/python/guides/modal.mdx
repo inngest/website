@@ -70,7 +70,7 @@ inngest_client = inngest.Inngest(app_id="fast_api_example")
     fn_id="my-fn",
     trigger=inngest.TriggerEvent(event="my-event"),
 )
-async def fn(ctx: inngest.Context, step: inngest.Step) -> str:
+async def fn(ctx: inngest.Context) -> str:
     print(ctx.event)
     return "done"
 

@@ -23,11 +23,8 @@ Sleep until a specific time. Accepts a `datetime.datetime` object.
     fn_id="my_function",
     trigger=inngest.TriggerEvent(event="app/my_function"),
 )
-async def fn(
-    ctx: inngest.Context,
-    step: inngest.Step,
-) -> None:
-    await step.sleep_until(
+async def fn(ctx: inngest.Context) -> None:
+    await ctx.step.sleep_until(
         "zzz",
         datetime.datetime.now() + datetime.timedelta(seconds=2),
     )
