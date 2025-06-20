@@ -239,7 +239,7 @@ export const FEATURES: Feature[] = [
   {
     name: "Base price",
     plans: {
-      [PLAN_NAMES.basicFree]: "$0 - $75",
+      [PLAN_NAMES.basicFree]: "$0",
       [PLAN_NAMES.pro]: "$75 /mo",
       [PLAN_NAMES.enterprise]: "Contact us",
     },
