@@ -1,8 +1,8 @@
 "use client";
-import Link from "src/components/Link";
 import { Button } from "src/components/RedesignedLanding/Button";
 import FooterCTABackground from "./FooterCTABackground";
 import { useState } from "react";
+import Link from "next/link";
 
 export default function FooterCTA() {
   const [trackMouse, setTrackMouse] = useState(false);
