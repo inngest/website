@@ -24,13 +24,13 @@ export const metadata: Metadata = {
       {
         url: process.env.NEXT_PUBLIC_FAVICON
           ? `/${process.env.NEXT_PUBLIC_FAVICON}`
-          : "/favicon-june-2024-light.png",
+          : "/favicon-june-2025-light.png",
         media: "(prefers-color-scheme: light)",
       },
       {
         url: process.env.NEXT_PUBLIC_FAVICON
           ? `/${process.env.NEXT_PUBLIC_FAVICON}`
-          : "/favicon-june-2024-dark.png",
+          : "/favicon-june-2025-dark.png",
         media: "(prefers-color-scheme: dark)",
       },
     ],
