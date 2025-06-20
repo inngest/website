@@ -61,7 +61,6 @@ export default function RootLayout({
 
         <main className="text-basis">{children}</main>
 
-        {/* <Footer disableCta={true} /> */}
         <Footer />
 
         <Suspense>
