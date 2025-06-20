@@ -1,0 +1,83 @@
+---
+heading: "Introducing Connect: Run low-latency Inngest Functions on servers"
+image: /assets/blog/announcing-connect/featured-image.png
+showSubtitle: false
+subtitle: Connect is a new API to connect your application to Inngest over a outbound persistent connection. This brings better support for servers (Render, Fly.io, etc.) and lower latency.
+date: 2025-20-06
+author: Charly Poly
+category: product-updates
+focus: true
+---
+
+
+While Inngest has been primarly successful among Serverless developers, we've seen a growing demand from developers running Inngest Functions on their long-running servers such as Render, AWS EC2, DigitalOcean and such.
+Additionally, some customers scaling large applications with Inngest were also looking for a lower latency and better support for long-running functions.
+
+After a few weeks of private alpha, we are happy to rollout Connect as a [Developer Preview](/docs/release-phases#developer-preview) in our TypeScript, Python and Go SDKs.
+
+[Connect](/docs/setup/connect) is drop-in replacement to [`serve()`](/docs/learn/serving-inngest-functions) to connect your application to Inngest over one or multiple outbound persistent connections, **dramatically improving the latency and scalability of your functions**.
+
+
+This new deployment method relying the [WebSocket protocol](https://en.wikipedia.org/wiki/WebSocket#:~:text=WebSocket%20is%20a%20computer%20communications,as%20RFC%206455%20in%202011.) brings:
+<Row>
+
+<Col>
+![Connect](/assets/blog/announcing-connect/connect-illustration.png)
+</Col>
+
+<Col>
+- **Lower latency** - No need for multiple HTTP requests to Inngest to process a single function.
+- **Elastic horizontal scaling** - Easily add more capacity by running additional workers.
+- **Ideal for container runtimes** -  Deploy on Kubernetes or ECS without the need of a load balancer for inbound traffic
+- **Simpler long running steps** - Step execution is not bound by platform http timeouts.
+
+</Col>
+
+</Row>
+
+Beyond huge performance and scalability benefit, Connect also brings a better developer experience, **enabling colocate all your Inngest-related code in a single file**:
+
+
+```ts
+import { Inngest } from 'inngest'
+import { connect } from 'inngest/connect';
+import { ConnectionState } from 'inngest/components/connect/types';
+
+const inngest = new Inngest({
+  id: 'my-app'
+});
+
+const handleSignupFunction = inngest.createFunction(
+  { id: 'handle-signup' },
+  { event: 'user.created'}
+  async ({ event, step }) => {
+    console.log('Function called', event);
+  }
+);
+
+(async () => {
+  const connection = await connect({
+    apps: [{ client: inngest, functions: [handleSignupFunction] }]
+  });
+
+  console.log('Worker: connected', connection);
+})();
+```
+
+_Find examples in Go and Python in the [Connect documentation page](/docs/setup/connect)_
+
+
+Once your application deployed using Connect, each active connection get listed as workers in the Inngest Platform, bringing you full visibility
+on your application health and load:
+
+![Cloud App Workers](/assets/docs/connect/cloud-app-workers.png)
+
+Beyond observability, Connect also brings a finer control over production deployments with supports for rollbacks, rolling releases and more.
+
+
+## Get started with Connect
+
+If your application is running on servers, or if you are looking for a finer horizontal scaling control or lower latency, give Connect a try and [share your feedback during our developer preview](/discord)!
+
+The [Connect documentation](/docs/setup/connect) will drive you from setup to advanced deployment configuration 🚀
+

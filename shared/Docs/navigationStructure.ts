@@ -787,6 +787,11 @@ const sectionHome: (NavGroup | NavLink)[] = [
             title: "Guides",
           },
           {
+            title: "Connect",
+            href: `/docs/setup/connect`,
+            tag: "new"
+          },
+          {
             title: "Self hosting",
             href: `/docs/self-hosting`,
           },
@@ -876,6 +881,10 @@ const sectionHome: (NavGroup | NavLink)[] = [
       {
         title: "FAQ",
         href: `/docs/faq`,
+      },
+      {
+        title: "Release Phases",
+        href: `/docs/release-phases`,
       },
       {
         title: "Glossary",
