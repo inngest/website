@@ -124,12 +124,6 @@ export function PricingCalculatorPage() {
   const stepsMin = 0,
     stepsMax = 100;
 
-  const calculateThumbPosition = (value: number, min: number, max: number) => {
-    if (max === min) return "0%"; // Avoid division by zero
-    const percentage = ((value - min) / (max - min)) * 100;
-    return `${Math.max(0, Math.min(100, percentage))}%`; // Clamp between 0% and 100%
-  };
-
   const selectOptions = [
     {
       label: "Number of users",
