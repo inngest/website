@@ -19,24 +19,32 @@ export default function Hero() {
         <MultipleDraggableElements />
         <div className="relative isolate overflow-hidden">
           <div className="relative z-10 mb-16">
-            <div className="mx-auto mb-16 max-w-60 text-[2.25rem] sm:max-w-60 md:ml-16 md:max-w-4xl md:text-6xl lg:mx-auto lg:text-7xl">
+            <div className="mx-auto mb-16 mt-4 max-w-[76%] text-[2.5rem] leading-[2.75rem] sm:mt-0 md:ml-16 md:max-w-4xl md:text-6xl lg:mx-auto lg:text-7xl">
               <h1 className="block font-whyteInktrap">Develop AI products</h1>
               <h2 className="block font-whyte">at the speed of thought</h2>
             </div>
-            <div className="relative z-10 mx-auto max-w-60 text-left font-circular text-sm md:max-w-sm md:text-base lg:mr-44 lg:max-w-[500px] lg:text-xl 2xl:mr-96">
-              <p className="mb-8 font-circular text-base font-normal leading-8 text-stone-200 md:font-light lg:text-2xl">
+            <div className="relative z-10 mx-auto max-w-[76%] text-left font-circular text-[1.25rem] md:max-w-sm md:text-base lg:mr-44 lg:max-w-[500px] lg:text-xl 2xl:mr-96">
+              <p className="mb-8 font-circular text-[1.25rem] font-normal leading-8 text-stone-200 md:font-light lg:text-2xl">
                 Inngest is the platform for building agentic workflows and
                 agents powering AI products from experiment to production.
               </p>
               <div className="flex flex-col gap-4 sm:flex-row">
-                <Button variant="default" asChild>
+                <Button
+                  variant="default"
+                  asChild
+                  className="max-[520px]:py-6 max-[520px]:text-[1.1rem]"
+                >
                   <a
                     href={`${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=homepage-hero`}
                   >
                     Start building for free
                   </a>
                 </Button>
-                <Button variant="outline" asChild>
+                <Button
+                  variant="outline"
+                  asChild
+                  className="max-[520px]:py-6 max-[520px]:text-[1.1rem]"
+                >
                   <Link href="/contact?ref=homepage-hero">
                     Get a demo<span aria-hidden="true">→</span>
                   </Link>
