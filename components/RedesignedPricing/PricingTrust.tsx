@@ -82,7 +82,7 @@ export default function TestPricingTrustFeaturesSection() {
               </div>
               <div className="mx-auto">
                 <Button className="max-w-lg" asChild>
-                  <Link href="#">Chat with sales</Link>
+                  <Link href="/contact?ref=pricing-trust">Chat with sales</Link>
                 </Button>
               </div>
             </div>
