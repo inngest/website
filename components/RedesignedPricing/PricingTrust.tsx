@@ -96,546 +96,540 @@ export default function TestPricingTrustFeaturesSection() {
 function BackgroundPattern() {
   return (
     <svg
-      className=" mx-auto h-full w-full max-w-screen-2xl object-cover"
+      className="mx-auto h-full w-full max-w-screen-2xl object-cover"
       viewBox="0 0 1726 596"
+      width="1726"
+      height="596"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      preserveAspectRatio="xMidYMid slice"
     >
-      <g clipPath="url(#clip0_4268_10284)">
-        <g clipPath="url(#clip1_4268_10284)">
-          <rect
-            width="192.476"
-            height="194.714"
-            transform="translate(-43)"
-            fill="#CBB26A"
-          />
-          <circle cx="96.8011" cy="162.077" r="100.684" fill="#292524" />
-        </g>
-        <g clipPath="url(#clip2_4268_10284)">
-          <rect
-            width="194.714"
-            height="192.476"
-            transform="translate(156.476)"
-            fill="#292524"
-          />
-          <path
-            d="M255.369 -7.83594L398.322 239.766H112.415L255.369 -7.83594Z"
-            fill="#2C9B63"
-          />
-        </g>
-        <g clipPath="url(#clip3_4268_10284)">
-          <rect
-            width="192.476"
-            height="194.714"
-            transform="translate(358.19)"
-            fill="#CB5C32"
-          />
-          <circle cx="453.297" cy="128.581" r="100.684" fill="#292524" />
-        </g>
-        <g clipPath="url(#clip4_4268_10284)">
-          <rect
-            width="194.714"
-            height="192.476"
-            transform="translate(557.667)"
-            fill="#292524"
-          />
-          <path
-            d="M762.571 -96.2656L905.524 151.337H619.618L762.571 -96.2656Z"
-            fill="#CBB26A"
-          />
-        </g>
-        <g clipPath="url(#clip5_4268_10284)">
-          <rect
-            width="194.714"
-            height="192.476"
-            transform="translate(759.381)"
-            fill="#292524"
-          />
-          <path
-            d="M861.098 15.5061L1004.05 263.109H718.145L861.098 15.5061Z"
-            fill="#2C9B63"
-          />
-        </g>
-        <g clipPath="url(#clip6_4268_10284)">
-          <rect
-            width="192.476"
-            height="194.714"
-            transform="translate(1153.57 194.714) rotate(180)"
-            fill="#655279"
-          />
-          <circle
-            cx="1068.2"
-            cy="143.919"
-            r="126.796"
-            transform="rotate(180 1068.2 143.919)"
-            fill="#292524"
-          />
-        </g>
-        <g clipPath="url(#clip7_4268_10284)">
-          <rect
-            width="192.476"
-            height="194.714"
-            transform="translate(1160.57)"
-            fill="#CBB26A"
-          />
-          <circle cx="1341.07" cy="87.9024" r="100.684" fill="#292524" />
-        </g>
-        <g clipPath="url(#clip8_4268_10284)">
-          <rect
-            width="194.714"
-            height="192.476"
-            transform="translate(1360.05)"
-            fill="#292524"
-          />
-          <path
-            d="M1457.82 -7.83594L1600.77 239.766H1314.86L1457.82 -7.83594Z"
-            fill="#CB5C32"
-          />
-        </g>
-        <g clipPath="url(#clip9_4268_10284)">
-          <rect
-            width="192.476"
-            height="194.714"
-            transform="translate(1561.76)"
-            fill="#CBB26A"
-          />
-          <circle cx="1730.06" cy="55.5411" r="100.684" fill="#292524" />
-        </g>
-        <g clipPath="url(#clip10_4268_10284)">
-          <rect
-            width="194.714"
-            height="192.476"
-            transform="translate(-43 201.714)"
-            fill="#292524"
-          />
-          <path
-            d="M4.89981 175.282L147.853 422.884H-138.053L4.89981 175.282Z"
-            fill="#655279"
-          />
-        </g>
-        <g clipPath="url(#clip11_4268_10284)">
-          <rect
-            width="192.476"
-            height="194.714"
-            transform="translate(351.19 396.428) rotate(180)"
-            fill="#655279"
-          />
-          <circle
-            cx="265.821"
-            cy="345.633"
-            r="126.796"
-            transform="rotate(180 265.821 345.633)"
-            fill="#292524"
-          />
-        </g>
-        <g clipPath="url(#clip12_4268_10284)">
-          <rect
-            width="194.714"
-            height="192.476"
-            transform="translate(358.19 201.714)"
-            fill="#292524"
-          />
-          <path
-            d="M563.095 105.449L706.048 353.051H420.141L563.095 105.449Z"
-            fill="#CB5C32"
-          />
-        </g>
-        <g clipPath="url(#clip13_4268_10284)">
-          <rect
-            width="192.476"
-            height="194.714"
-            transform="translate(559.905 201.714)"
-            fill="#CBB26A"
-          />
-          <circle cx="780.401" cy="401.617" r="100.684" fill="#292524" />
-        </g>
-        <g clipPath="url(#clip14_4268_10284)">
-          <rect
-            width="192.476"
-            height="194.714"
-            transform="translate(951.857 396.428) rotate(180)"
-            fill="#655279"
-          />
-          <circle
-            cx="866.487"
-            cy="345.633"
-            r="126.796"
-            transform="rotate(180 866.487 345.633)"
-            fill="#292524"
-          />
-        </g>
-        <g clipPath="url(#clip15_4268_10284)">
-          <rect
-            width="194.714"
-            height="192.476"
-            transform="translate(958.857 201.714)"
-            fill="#292524"
-          />
-          <path
-            d="M1038.88 193.878L1181.83 441.481H895.925L1038.88 193.878Z"
-            fill="#2C9B63"
-          />
-        </g>
-        <g clipPath="url(#clip16_4268_10284)">
-          <rect
-            width="194.714"
-            height="192.476"
-            transform="translate(1160.57 201.714)"
-            fill="#292524"
-          />
-          <path
-            d="M1365.48 105.449L1508.43 353.051H1222.52L1365.48 105.449Z"
-            fill="#CB5C32"
-          />
-        </g>
-        <g clipPath="url(#clip17_4268_10284)">
-          <rect
-            width="192.476"
-            height="194.714"
-            transform="translate(1362.29 201.714)"
-            fill="#CBB26A"
-          />
-          <circle cx="1356.29" cy="273.203" r="100.684" fill="#292524" />
-        </g>
-        <g clipPath="url(#clip18_4268_10284)">
-          <rect
-            width="194.714"
-            height="192.476"
-            transform="translate(1561.76 201.714)"
-            fill="#292524"
-          />
-          <path
-            d="M1582.31 111.035L1725.26 358.638H1439.36L1582.31 111.035Z"
-            fill="#2C9B63"
-          />
-        </g>
-        <g clipPath="url(#clip19_4268_10284)">
-          <rect
-            width="194.714"
-            height="192.476"
-            transform="translate(-43 403.429)"
-            fill="#292524"
-          />
-          <path
-            d="M130.308 376.11L273.261 623.712H-12.6453L130.308 376.11Z"
-            fill="#CB5C32"
-          />
-        </g>
-        <g clipPath="url(#clip20_4268_10284)">
-          <rect
-            width="192.476"
-            height="194.714"
-            transform="translate(158.714 403.429)"
-            fill="#CBB26A"
-          />
-          <circle cx="379.211" cy="603.331" r="100.684" fill="#292524" />
-        </g>
-        <g clipPath="url(#clip21_4268_10284)">
-          <rect
-            width="194.714"
-            height="192.476"
-            transform="translate(358.19 403.429)"
-            fill="#292524"
-          />
-          <path
-            d="M438.212 395.593L581.165 643.195H295.259L438.212 395.593Z"
-            fill="#2C9B63"
-          />
-        </g>
-        <g clipPath="url(#clip22_4268_10284)">
-          <rect
-            width="194.714"
-            height="192.476"
-            transform="translate(559.905 403.429)"
-            fill="#292524"
-          />
-          <path
-            d="M764.809 307.163L907.762 554.765H621.856L764.809 307.163Z"
-            fill="#CB5C32"
-          />
-        </g>
-        <g clipPath="url(#clip23_4268_10284)">
-          <rect
-            width="194.714"
-            height="192.476"
-            transform="translate(761.619 403.429)"
-            fill="#292524"
-          />
-          <path
-            d="M841.637 395.593L984.59 643.195H698.683L841.637 395.593Z"
-            fill="#2C9B63"
-          />
-        </g>
-        <g clipPath="url(#clip24_4268_10284)">
-          <rect
-            width="192.476"
-            height="194.714"
-            transform="translate(963.333 403.429)"
-            fill="#CBB26A"
-          />
-          <circle cx="1183.83" cy="603.331" r="100.684" fill="#292524" />
-        </g>
-        <g clipPath="url(#clip25_4268_10284)">
-          <rect
-            width="194.714"
-            height="192.476"
-            transform="translate(1162.81 403.429)"
-            fill="#292524"
-          />
-          <path
-            d="M1367.71 307.163L1510.67 554.765H1224.76L1367.71 307.163Z"
-            fill="#CB5C32"
-          />
-        </g>
-        <g clipPath="url(#clip26_4268_10284)">
-          <rect
-            width="192.476"
-            height="194.714"
-            transform="translate(1364.52 403.429)"
-            fill="#CBB26A"
-          />
-          <circle cx="1585.02" cy="603.331" r="100.684" fill="#292524" />
-        </g>
-        <g clipPath="url(#clip27_4268_10284)">
-          <rect
-            width="192.476"
-            height="194.714"
-            transform="translate(1756.48 598.143) rotate(180)"
-            fill="#655279"
-          />
-          <circle
-            cx="1659.35"
-            cy="419.578"
-            r="126.796"
-            transform="rotate(180 1659.35 419.578)"
-            fill="#292524"
-          />
-        </g>
+      <g clipPath="url(#clip0_4268_6272)">
+        <rect
+          width="192"
+          height="192"
+          transform="translate(-43)"
+          fill="#CBB26A"
+        />
+        <circle cx="70.1224" cy="156.928" r="100.684" fill="#292524" />
+      </g>
+      <g clipPath="url(#clip1_4268_6272)">
+        <rect
+          width="192"
+          height="192"
+          transform="translate(156)"
+          fill="#292524"
+        />
+        <path
+          d="M254.892 -7.83594L397.846 239.766H111.939L254.892 -7.83594Z"
+          fill="#2C9B63"
+        />
+      </g>
+      <g clipPath="url(#clip2_4268_6272)">
+        <rect
+          width="192"
+          height="192"
+          transform="translate(355)"
+          fill="#CB5C32"
+        />
+        <circle cx="450.106" cy="128.581" r="100.684" fill="#292524" />
+      </g>
+      <g clipPath="url(#clip3_4268_6272)">
+        <rect
+          width="192"
+          height="192"
+          transform="translate(554)"
+          fill="#292524"
+        />
+        <path
+          d="M758.904 -96.2656L901.858 151.337H615.951L758.904 -96.2656Z"
+          fill="#CBB26A"
+        />
+      </g>
+      <g clipPath="url(#clip4_4268_6272)">
+        <rect
+          width="192"
+          height="192"
+          transform="translate(753)"
+          fill="#292524"
+        />
+        <path
+          d="M854.717 15.5061L997.671 263.109H711.764L854.717 15.5061Z"
+          fill="#2C9B63"
+        />
+      </g>
+      <g clipPath="url(#clip5_4268_6272)">
+        <rect
+          width="192"
+          height="192"
+          transform="translate(1144 192) rotate(180)"
+          fill="#655279"
+        />
+        <circle
+          cx="1058.63"
+          cy="141.204"
+          r="126.796"
+          transform="rotate(180 1058.63 141.204)"
+          fill="#292524"
+        />
+      </g>
+      <g clipPath="url(#clip6_4268_6272)">
+        <rect
+          width="192"
+          height="192"
+          transform="translate(1151)"
+          fill="#CBB26A"
+        />
+        <circle cx="1331.5" cy="87.9024" r="100.684" fill="#292524" />
+      </g>
+      <g clipPath="url(#clip7_4268_6272)">
+        <rect
+          width="192"
+          height="192"
+          transform="translate(1350)"
+          fill="#292524"
+        />
+        <path
+          d="M1447.77 -7.83594L1590.72 239.766H1304.82L1447.77 -7.83594Z"
+          fill="#CB5C32"
+        />
+      </g>
+      <g clipPath="url(#clip8_4268_6272)">
+        <rect
+          width="192"
+          height="192"
+          transform="translate(1549)"
+          fill="#CBB26A"
+        />
+        <circle cx="1717.3" cy="55.5411" r="100.684" fill="#292524" />
+      </g>
+      <g clipPath="url(#clip9_4268_6272)">
+        <rect
+          width="192"
+          height="192"
+          transform="translate(149 391) rotate(180)"
+          fill="#655279"
+        />
+        <circle
+          cx="63.6302"
+          cy="340.204"
+          r="126.796"
+          transform="rotate(180 63.6302 340.204)"
+          fill="#292524"
+        />
+      </g>
+      <g clipPath="url(#clip10_4268_6272)">
+        <rect
+          width="192"
+          height="192"
+          transform="translate(156 199)"
+          fill="#292524"
+        />
+        <path
+          d="M360.904 102.734L503.858 350.337H217.951L360.904 102.734Z"
+          fill="#CB5C32"
+        />
+      </g>
+      <g clipPath="url(#clip11_4268_6272)">
+        <rect
+          width="192"
+          height="192"
+          transform="translate(355 199)"
+          fill="#CBB26A"
+        />
+        <circle cx="575.496" cy="398.902" r="100.684" fill="#292524" />
+      </g>
+      <g clipPath="url(#clip12_4268_6272)">
+        <rect
+          width="192"
+          height="192"
+          transform="translate(746 391) rotate(180)"
+          fill="#655279"
+        />
+        <circle
+          cx="660.63"
+          cy="340.204"
+          r="126.796"
+          transform="rotate(180 660.63 340.204)"
+          fill="#292524"
+        />
+      </g>
+      <g clipPath="url(#clip13_4268_6272)">
+        <rect
+          width="192"
+          height="192"
+          transform="translate(753 199)"
+          fill="#292524"
+        />
+        <path
+          d="M833.021 191.164L975.975 438.766H690.068L833.021 191.164Z"
+          fill="#2C9B63"
+        />
+      </g>
+      <g clipPath="url(#clip14_4268_6272)">
+        <rect
+          width="192"
+          height="192"
+          transform="translate(952 199)"
+          fill="#292524"
+        />
+        <path
+          d="M1156.9 102.734L1299.86 350.337H1013.95L1156.9 102.734Z"
+          fill="#CB5C32"
+        />
+      </g>
+      <g clipPath="url(#clip15_4268_6272)">
+        <rect
+          width="192"
+          height="192"
+          transform="translate(1151 199)"
+          fill="#CBB26A"
+        />
+        <circle cx="1145" cy="270.488" r="100.684" fill="#292524" />
+      </g>
+      <g clipPath="url(#clip16_4268_6272)">
+        <rect
+          width="192"
+          height="192"
+          transform="translate(1350 199)"
+          fill="#292524"
+        />
+        <path
+          d="M1370.55 108.321L1513.5 355.923H1227.6L1370.55 108.321Z"
+          fill="#2C9B63"
+        />
+      </g>
+      <g clipPath="url(#clip17_4268_6272)">
+        <rect
+          width="192"
+          height="192"
+          transform="translate(1549 199)"
+          fill="#292524"
+        />
+        <path
+          d="M1629.02 215.164L1771.97 462.766H1486.07L1629.02 215.164Z"
+          fill="#2C9B63"
+        />
+      </g>
+      <g clipPath="url(#clip18_4268_6272)">
+        <rect
+          width="192"
+          height="192"
+          transform="translate(-43 398)"
+          fill="#292524"
+        />
+        <path
+          d="M37.0214 390.164L179.975 637.766H-105.932L37.0214 390.164Z"
+          fill="#2C9B63"
+        />
+      </g>
+      <g clipPath="url(#clip19_4268_6272)">
+        <rect
+          width="192"
+          height="192"
+          transform="translate(156 398)"
+          fill="#292524"
+        />
+        <path
+          d="M360.904 301.734L503.858 549.337H217.951L360.904 301.734Z"
+          fill="#CB5C32"
+        />
+      </g>
+      <g clipPath="url(#clip20_4268_6272)">
+        <rect
+          width="192"
+          height="192"
+          transform="translate(355 398)"
+          fill="#292524"
+        />
+        <path
+          d="M435.017 390.164L577.971 637.766H292.064L435.017 390.164Z"
+          fill="#2C9B63"
+        />
+      </g>
+      <g clipPath="url(#clip21_4268_6272)">
+        <rect
+          width="192"
+          height="192"
+          transform="translate(554 398)"
+          fill="#CBB26A"
+        />
+        <circle cx="774.496" cy="597.902" r="100.684" fill="#292524" />
+      </g>
+      <g clipPath="url(#clip22_4268_6272)">
+        <rect
+          width="192"
+          height="192"
+          transform="translate(753 398)"
+          fill="#292524"
+        />
+        <path
+          d="M957.904 301.734L1100.86 549.337H814.951L957.904 301.734Z"
+          fill="#CB5C32"
+        />
+      </g>
+      <g clipPath="url(#clip23_4268_6272)">
+        <rect
+          width="192"
+          height="192"
+          transform="translate(952 398)"
+          fill="#CBB26A"
+        />
+        <circle cx="1172.5" cy="597.902" r="100.684" fill="#292524" />
+      </g>
+      <g clipPath="url(#clip24_4268_6272)">
+        <rect
+          width="192"
+          height="192"
+          transform="translate(1343 590) rotate(180)"
+          fill="#655279"
+        />
+        <circle
+          cx="1245.87"
+          cy="411.435"
+          r="126.796"
+          transform="rotate(180 1245.87 411.435)"
+          fill="#292524"
+        />
+      </g>
+      <g clipPath="url(#clip25_4268_6272)">
+        <rect
+          width="192"
+          height="192"
+          transform="translate(1350 398)"
+          fill="#292524"
+        />
+        <path
+          d="M1430.02 390.164L1572.97 637.766H1287.07L1430.02 390.164Z"
+          fill="#2C9B63"
+        />
+      </g>
+      <g clipPath="url(#clip26_4268_6272)">
+        <rect
+          width="192"
+          height="192"
+          transform="translate(1549 398)"
+          fill="#292524"
+        />
+        <path
+          d="M1753.9 301.734L1896.86 549.337H1610.95L1753.9 301.734Z"
+          fill="#CB5C32"
+        />
       </g>
       <defs>
-        <clipPath id="clip0_4268_10284">
+        <clipPath id="clip0_4268_6272">
           <rect
-            width="2191"
-            height="599"
+            width="192"
+            height="192"
             fill="white"
             transform="translate(-43)"
           />
         </clipPath>
-        <clipPath id="clip1_4268_10284">
+        <clipPath id="clip1_4268_6272">
           <rect
-            width="192.476"
-            height="194.714"
+            width="192"
+            height="192"
             fill="white"
-            transform="translate(-43)"
+            transform="translate(156)"
           />
         </clipPath>
-        <clipPath id="clip2_4268_10284">
+        <clipPath id="clip2_4268_6272">
           <rect
-            width="194.714"
-            height="192.476"
+            width="192"
+            height="192"
             fill="white"
-            transform="translate(156.476)"
+            transform="translate(355)"
           />
         </clipPath>
-        <clipPath id="clip3_4268_10284">
+        <clipPath id="clip3_4268_6272">
           <rect
-            width="192.476"
-            height="194.714"
+            width="192"
+            height="192"
             fill="white"
-            transform="translate(358.19)"
+            transform="translate(554)"
           />
         </clipPath>
-        <clipPath id="clip4_4268_10284">
+        <clipPath id="clip4_4268_6272">
           <rect
-            width="194.714"
-            height="192.476"
+            width="192"
+            height="192"
             fill="white"
-            transform="translate(557.667)"
+            transform="translate(753)"
           />
         </clipPath>
-        <clipPath id="clip5_4268_10284">
+        <clipPath id="clip5_4268_6272">
           <rect
-            width="194.714"
-            height="192.476"
+            width="192"
+            height="192"
             fill="white"
-            transform="translate(759.381)"
+            transform="translate(1144 192) rotate(180)"
           />
         </clipPath>
-        <clipPath id="clip6_4268_10284">
+        <clipPath id="clip6_4268_6272">
           <rect
-            width="192.476"
-            height="194.714"
+            width="192"
+            height="192"
             fill="white"
-            transform="translate(1153.57 194.714) rotate(180)"
+            transform="translate(1151)"
           />
         </clipPath>
-        <clipPath id="clip7_4268_10284">
+        <clipPath id="clip7_4268_6272">
           <rect
-            width="192.476"
-            height="194.714"
+            width="192"
+            height="192"
             fill="white"
-            transform="translate(1160.57)"
+            transform="translate(1350)"
           />
         </clipPath>
-        <clipPath id="clip8_4268_10284">
+        <clipPath id="clip8_4268_6272">
           <rect
-            width="194.714"
-            height="192.476"
+            width="192"
+            height="192"
             fill="white"
-            transform="translate(1360.05)"
+            transform="translate(1549)"
           />
         </clipPath>
-        <clipPath id="clip9_4268_10284">
+        <clipPath id="clip9_4268_6272">
           <rect
-            width="192.476"
-            height="194.714"
+            width="192"
+            height="192"
             fill="white"
-            transform="translate(1561.76)"
+            transform="translate(149 391) rotate(180)"
           />
         </clipPath>
-        <clipPath id="clip10_4268_10284">
+        <clipPath id="clip10_4268_6272">
           <rect
-            width="194.714"
-            height="192.476"
+            width="192"
+            height="192"
             fill="white"
-            transform="translate(-43 201.714)"
+            transform="translate(156 199)"
           />
         </clipPath>
-        <clipPath id="clip11_4268_10284">
+        <clipPath id="clip11_4268_6272">
           <rect
-            width="192.476"
-            height="194.714"
+            width="192"
+            height="192"
             fill="white"
-            transform="translate(351.19 396.428) rotate(180)"
+            transform="translate(355 199)"
           />
         </clipPath>
-        <clipPath id="clip12_4268_10284">
+        <clipPath id="clip12_4268_6272">
           <rect
-            width="194.714"
-            height="192.476"
+            width="192"
+            height="192"
             fill="white"
-            transform="translate(358.19 201.714)"
+            transform="translate(746 391) rotate(180)"
           />
         </clipPath>
-        <clipPath id="clip13_4268_10284">
+        <clipPath id="clip13_4268_6272">
           <rect
-            width="192.476"
-            height="194.714"
+            width="192"
+            height="192"
             fill="white"
-            transform="translate(559.905 201.714)"
+            transform="translate(753 199)"
           />
         </clipPath>
-        <clipPath id="clip14_4268_10284">
+        <clipPath id="clip14_4268_6272">
           <rect
-            width="192.476"
-            height="194.714"
+            width="192"
+            height="192"
             fill="white"
-            transform="translate(951.857 396.428) rotate(180)"
+            transform="translate(952 199)"
           />
         </clipPath>
-        <clipPath id="clip15_4268_10284">
+        <clipPath id="clip15_4268_6272">
           <rect
-            width="194.714"
-            height="192.476"
+            width="192"
+            height="192"
             fill="white"
-            transform="translate(958.857 201.714)"
+            transform="translate(1151 199)"
           />
         </clipPath>
-        <clipPath id="clip16_4268_10284">
+        <clipPath id="clip16_4268_6272">
           <rect
-            width="194.714"
-            height="192.476"
+            width="192"
+            height="192"
             fill="white"
-            transform="translate(1160.57 201.714)"
+            transform="translate(1350 199)"
           />
         </clipPath>
-        <clipPath id="clip17_4268_10284">
+        <clipPath id="clip17_4268_6272">
           <rect
-            width="192.476"
-            height="194.714"
+            width="192"
+            height="192"
             fill="white"
-            transform="translate(1362.29 201.714)"
+            transform="translate(1549 199)"
           />
         </clipPath>
-        <clipPath id="clip18_4268_10284">
+        <clipPath id="clip18_4268_6272">
           <rect
-            width="194.714"
-            height="192.476"
+            width="192"
+            height="192"
             fill="white"
-            transform="translate(1561.76 201.714)"
+            transform="translate(-43 398)"
           />
         </clipPath>
-        <clipPath id="clip19_4268_10284">
+        <clipPath id="clip19_4268_6272">
           <rect
-            width="194.714"
-            height="192.476"
+            width="192"
+            height="192"
             fill="white"
-            transform="translate(-43 403.429)"
+            transform="translate(156 398)"
           />
         </clipPath>
-        <clipPath id="clip20_4268_10284">
+        <clipPath id="clip20_4268_6272">
           <rect
-            width="192.476"
-            height="194.714"
+            width="192"
+            height="192"
             fill="white"
-            transform="translate(158.714 403.429)"
+            transform="translate(355 398)"
           />
         </clipPath>
-        <clipPath id="clip21_4268_10284">
+        <clipPath id="clip21_4268_6272">
           <rect
-            width="194.714"
-            height="192.476"
+            width="192"
+            height="192"
             fill="white"
-            transform="translate(358.19 403.429)"
+            transform="translate(554 398)"
           />
         </clipPath>
-        <clipPath id="clip22_4268_10284">
+        <clipPath id="clip22_4268_6272">
           <rect
-            width="194.714"
-            height="192.476"
+            width="192"
+            height="192"
             fill="white"
-            transform="translate(559.905 403.429)"
+            transform="translate(753 398)"
           />
         </clipPath>
-        <clipPath id="clip23_4268_10284">
+        <clipPath id="clip23_4268_6272">
           <rect
-            width="194.714"
-            height="192.476"
+            width="192"
+            height="192"
             fill="white"
-            transform="translate(761.619 403.429)"
+            transform="translate(952 398)"
           />
         </clipPath>
-        <clipPath id="clip24_4268_10284">
+        <clipPath id="clip24_4268_6272">
           <rect
-            width="192.476"
-            height="194.714"
+            width="192"
+            height="192"
             fill="white"
-            transform="translate(963.333 403.429)"
+            transform="translate(1343 590) rotate(180)"
           />
         </clipPath>
-        <clipPath id="clip25_4268_10284">
+        <clipPath id="clip25_4268_6272">
           <rect
-            width="194.714"
-            height="192.476"
+            width="192"
+            height="192"
             fill="white"
-            transform="translate(1162.81 403.429)"
+            transform="translate(1350 398)"
           />
         </clipPath>
-        <clipPath id="clip26_4268_10284">
+        <clipPath id="clip26_4268_6272">
           <rect
-            width="192.476"
-            height="194.714"
+            width="192"
+            height="192"
             fill="white"
-            transform="translate(1364.52 403.429)"
-          />
-        </clipPath>
-        <clipPath id="clip27_4268_10284">
-          <rect
-            width="192.476"
-            height="194.714"
-            fill="white"
-            transform="translate(1756.48 598.143) rotate(180)"
+            transform="translate(1549 398)"
           />
         </clipPath>
       </defs>
