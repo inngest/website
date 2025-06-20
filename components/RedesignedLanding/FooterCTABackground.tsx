@@ -9,9 +9,10 @@ import React, {
 
 const INNGEST_LUX = "#78716C";
 
-const PATTERN_COUNT = 252;
+// These are the defaults used for the xl breakpoint and above.
+const DEFAULT_PATTERN_COUNT = 200;
 const THROTTLE_MS = 16;
-const HORIZONTAL_COMPRESSION_FACTOR = 1.75;
+const DEFAULT_HORIZONTAL_COMPRESSION_FACTOR = 1.75;
 
 type FooterCTABackgroundProps = {
   shouldTrackMouse?: boolean;
@@ -28,14 +29,46 @@ export default function FooterCTABackground({
   const lastUpdateRef = useRef<number>(0);
   const [, forceRerender] = useState(0);
 
+  // Dynamically control how many patterns are rendered and how tightly they are packed.
+  const [patternCount, setPatternCount] = useState<number>(
+    DEFAULT_PATTERN_COUNT
+  );
+  const [compressionFactor, setCompressionFactor] = useState<number>(
+    DEFAULT_HORIZONTAL_COMPRESSION_FACTOR
+  );
+
+  // Update pattern config when the viewport size changes so the pattern density
+  // gracefully scales down on smaller viewports.
   useEffect(() => {
-    patternRefs.current = Array(PATTERN_COUNT).fill(null);
+    const updateConfig = () => {
+      if (typeof window === "undefined") return;
+      const width = window.innerWidth;
+
+      if (width >= 1280) {
+        setPatternCount(DEFAULT_PATTERN_COUNT);
+        setCompressionFactor(DEFAULT_HORIZONTAL_COMPRESSION_FACTOR); // 1.75
+      } else if (width >= 768) {
+        setPatternCount(72);
+        setCompressionFactor(0.9);
+      } else {
+        setPatternCount(64);
+        setCompressionFactor(0.9);
+      }
+    };
+
+    updateConfig();
+    window.addEventListener("resize", updateConfig);
+    return () => window.removeEventListener("resize", updateConfig);
+  }, []);
+
+  useEffect(() => {
+    patternRefs.current = Array(patternCount).fill(null);
 
     if (containerRef.current) {
       const section = containerRef.current.closest("section");
       parentSectionRef.current = section;
     }
-  }, []);
+  }, [patternCount]);
 
   const handleMouseMove = useCallback((event: MouseEvent) => {
     const now = Date.now();
@@ -86,17 +119,21 @@ export default function FooterCTABackground({
     []
   );
 
+  // Ensure components that rely on refs (eg, BackgroundPattern) re-render once
+  // the refs for the current pattern set have been attached. We run this both
+  // on initial mount and whenever the pattern count changes (eg, at a
+  // breakpoint change).
   useEffect(() => {
     forceRerender((v) => v + 1);
-  }, []);
+  }, [patternCount]);
 
   const patterns = useMemo(() => {
-    return Array.from({ length: PATTERN_COUNT }).map((_, i) => ({
+    return Array.from({ length: patternCount }).map((_, i) => ({
       id: `pattern-${i}`,
       index: i,
       key: i,
     }));
-  }, []);
+  }, [patternCount]);
 
   // Calculate the distribution for the pattern grid. We start with a square-ish
   // grid (√PATTERN_COUNT) then multiply by a horizontal compression factor to
@@ -104,10 +141,8 @@ export default function FooterCTABackground({
   // horizontally while automatically reducing the number of rows so the total
   // pattern count stays the same.
 
-  const columns = Math.ceil(
-    Math.sqrt(PATTERN_COUNT) * HORIZONTAL_COMPRESSION_FACTOR
-  );
-  const rows = Math.ceil(PATTERN_COUNT / columns);
+  const columns = Math.ceil(Math.sqrt(patternCount) * compressionFactor);
+  const rows = Math.ceil(patternCount / columns);
 
   return (
     <div ref={containerRef} className="absolute inset-0 z-0">
