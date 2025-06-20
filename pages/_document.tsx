@@ -3,14 +3,14 @@ import Document, { Html, Head, Main, NextScript } from "next/document";
 export default class MyDocument extends Document {
   render() {
     return (
-      <Html className="scroll-smooth dark">
+      <Html className="dark scroll-smooth">
         <Head>
           <link
             rel="icon"
             href={
               process.env.NEXT_PUBLIC_FAVICON
                 ? `/${process.env.NEXT_PUBLIC_FAVICON}`
-                : "/favicon-june-2024-light.png"
+                : "/favicon-june-2025-light.png"
             }
             media="(prefers-color-scheme: light)"
           />
@@ -19,7 +19,7 @@ export default class MyDocument extends Document {
             href={
               process.env.NEXT_PUBLIC_FAVICON
                 ? `/${process.env.NEXT_PUBLIC_FAVICON}`
-                : "/favicon-june-2024-dark.png"
+                : "/favicon-june-2025-dark.png"
             }
             media="(prefers-color-scheme: dark)"
           />

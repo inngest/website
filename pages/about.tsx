@@ -3,7 +3,7 @@ import clsx from "clsx";
 
 import Header from "src/shared/Header";
 import Container from "src/shared/layout/Container";
-import Footer from "src/shared/Footer";
+import Footer from "src/components/RedesignedLanding/Footer";
 import ArrowRight from "src/shared/Icons/ArrowRight";
 import { Button } from "src/shared/Button";
 import Card from "src/components/Card";
@@ -209,22 +209,22 @@ export default function About() {
       <main className="pt-16">
         <Container className="m-auto text-basis">
           <div className="mx-auto max-w-4xl">
-            <header className="lg:my-24 my-8 text-center">
+            <header className="my-8 text-center lg:my-24">
               {IS_HIRING && (
                 <div className="mb-4">
                   <HiringCallout />
                 </div>
               )}
-              <h1 className="mt-2 mb-6 pr-4 text-3xl md:text-5xl tracking-tight font-semibold bg-clip-text text-transparent bg-gradient-to-r from-[#f2e3ff] via-white to-[#e3e9ff] drop-shadow">
+              <h1 className="mb-6 mt-2 bg-gradient-to-r from-[#f2e3ff] via-white to-[#e3e9ff] bg-clip-text pr-4 text-3xl font-semibold tracking-tight text-transparent drop-shadow md:text-5xl">
                 About Inngest
               </h1>
-              <p className="mt-8 mx-auto max-w-lg text-lg font-regular text-balance">
+              <p className="font-regular mx-auto mt-8 max-w-lg text-balance text-lg">
                 Inngest is the developer platform for easily building reliable
                 workflows with zero infrastructure.
               </p>
             </header>
 
-            <div className="mx-auto max-w-[800px] text-center flex flex-col gap-8 text-balance">
+            <div className="mx-auto flex max-w-[800px] flex-col gap-8 text-balance text-center">
               <p>
                 Shipping reliable background jobs and workflows are a time
                 consuming and frustrating experience for any software team.
@@ -238,20 +238,20 @@ export default function About() {
               </p>
             </div>
 
-            <div className="mt-8 lg:mt-12 flex justify-center">
+            <div className="mt-8 flex justify-center lg:mt-12">
               <Button
                 href="/blog/announcing-funding-from-a16z?ref=about"
                 className="group"
               >
                 <span className="hidden md:inline">News: </span>Inngest raises
                 $6.1M led by a16z
-                <ArrowRight className="group-hover:translate-x-1.5 relative top-px transition-transform duration-150 " />
+                <ArrowRight className="relative top-px transition-transform duration-150 group-hover:translate-x-1.5 " />
               </Button>
             </div>
           </div>
 
-          <div className="my-32 mx-auto text-slate-300">
-            <h2 className="text-xl sm:text-2xl lg:text-3xl font-medium text-center text-white">
+          <div className="mx-auto my-32 text-slate-300">
+            <h2 className="text-center text-xl font-medium text-white sm:text-2xl lg:text-3xl">
               Our Team
             </h2>
             <p className="mt-2 text-center text-subtle">
@@ -260,7 +260,7 @@ export default function About() {
             </p>
             <div
               className={clsx(
-                "mt-20 mb-6 grid md:px-24 gap-x-10 gap-y-16 items-center",
+                "mb-6 mt-20 grid items-center gap-x-10 gap-y-16 md:px-24",
                 "grid-cols-2 lg:grid-cols-4"
               )}
             >
@@ -276,7 +276,7 @@ export default function About() {
                   >
                     <img className="w-20 rounded-lg" src={person.avatar} />
 
-                    <h3 className="mt-4 mb-1 text-base text-slate-200 font-medium">
+                    <h3 className="mb-1 mt-4 text-base font-medium text-slate-200">
                       {person.name}
                     </h3>
                     <p
@@ -291,12 +291,12 @@ export default function About() {
             </div>
           </div>
 
-          <aside className="max-w-[720px] m-auto mt-32">
-            <Card className="rounded-lg px-6 py-8 md:px-10 md:p-12 border border-slate-900 text-center shadow items-center">
-              <h3 className="text-md lg:text-lg font-semibold text-white mb-4">
+          <aside className="m-auto mt-32 max-w-[720px]">
+            <Card className="items-center rounded-lg border border-slate-900 px-6 py-8 text-center shadow md:p-12 md:px-10">
+              <h3 className="text-md mb-4 font-semibold text-white lg:text-lg">
                 Want to join the team?
               </h3>
-              <p className="text-base mb-8">
+              <p className="mb-8 text-base">
                 We're just getting started and are looking for people that want
                 to contribute highly to an early-stage startup focused on
                 solving developer problems.
@@ -311,22 +311,22 @@ export default function About() {
             </Card>
           </aside>
         </Container>
-        <div className="bg-surfaceSubtle pt-60 pb-32 -mt-36">
+        <div className="-mt-36 bg-surfaceSubtle pb-32 pt-60">
           <Container className="m-auto">
             <div className="mx-auto py-6">
-              <h2 className="text-xl sm:text-2xl lg:text-3xl font-medium text-center text-white mb-10">
+              <h2 className="mb-10 text-center text-xl font-medium text-white sm:text-2xl lg:text-3xl">
                 Our Investors
               </h2>
             </div>
-            <div className="pb-6 grid sm:grid-cols-2 md:grid-cols-8 gap-8 mb-12 items-center">
+            <div className="mb-12 grid items-center gap-8 pb-6 sm:grid-cols-2 md:grid-cols-8">
               {INVESTORS.map((investor) => {
                 return (
                   <div
                     className={classNames(
                       investor.featured
-                        ? "md:col-span-4 mx-auto"
-                        : "md:col-span-2 mx-auto",
-                      "flex items-center rounded w-full justify-center px-10 py-4 h-[130px]"
+                        ? "mx-auto md:col-span-4"
+                        : "mx-auto md:col-span-2",
+                      "flex h-[130px] w-full items-center justify-center rounded px-10 py-4"
                     )}
                   >
                     <img
@@ -340,7 +340,7 @@ export default function About() {
               })}
             </div>
 
-            <div className="grid sm:grid-cols-2 gap-4 mt-20 text-center">
+            <div className="mt-20 grid gap-4 text-center sm:grid-cols-2">
               {ANGELS.map((a, idx) =>
                 a.featured ? (
                   <div
@@ -350,7 +350,7 @@ export default function About() {
                     <img
                       src={a.avatar}
                       alt={`Image of ${a.name}`}
-                      className="rounded-lg h-16 w-16"
+                      className="h-16 w-16 rounded-lg"
                     />
                     <span>
                       {a.name}
@@ -371,12 +371,12 @@ export default function About() {
         </div>
         <Container>
           {FEATURED_BLOG_POSTS.length && (
-            <div className="pt-32 pb-16">
-              <h2 className="text-xl sm:text-3xl font-medium text-center mb-8">
+            <div className="pb-16 pt-32">
+              <h2 className="mb-8 text-center text-xl font-medium sm:text-3xl">
                 From our blog
               </h2>
 
-              <div className=" flex flex-col gap-4 justify-center items-center">
+              <div className=" flex flex-col items-center justify-center gap-4">
                 {FEATURED_BLOG_POSTS.map((p, idx) => (
                   <p key={p.href} className="text-base">
                     <a
@@ -386,7 +386,7 @@ export default function About() {
                       {p.title} →
                     </a>
                     {p.date && (
-                      <span className="text-basis ml-2">{p.date}</span>
+                      <span className="ml-2 text-basis">{p.date}</span>
                     )}
                   </p>
                 ))}

@@ -5,14 +5,14 @@ import rehypeRaw from "rehype-raw";
 import type { MDXComponents } from "mdx/types";
 import { serialize } from "next-mdx-remote/serialize";
 import { MDXRemote } from "next-mdx-remote";
-import Footer from "../../shared/Footer";
+import Footer from "src/components/RedesignedLanding/Footer";
 import { rehypeRemoveTwoSlashMarkup, rehypeShiki } from "../../utils/code";
 import { rehypeParseCodeBlocks } from "../../mdx/rehype.mjs";
 import Tags from "../../shared/Blog/Tags";
 
 // MDX Components
 import DiscordCTA from "../../shared/Blog/DiscordCTA";
-import Header from "src/shared/Header";
+import Header from "src/components/RedesignedLanding/Header/Header";
 import Container from "src/shared/layout/Container";
 import { Button } from "src/shared/Button";
 import { RiCalendarLine } from "@remixicon/react";
@@ -191,13 +191,13 @@ export default function BlogLayout(props) {
 
       {/* <ThemeToggleButton isFloating={true} /> */}
 
-      <div className="font-sans">
+      <div className="bg-stone-950 font-sans">
         <Header />
         <Container>
           <article>
-            <main className="m-auto max-w-3xl pt-16 relative">
+            <main className="relative m-auto max-w-3xl py-16">
               {scope.image && (
-                <figure className="mx-auto flex flex-col items-end max-w-[768px]">
+                <figure className="mx-auto flex max-w-[768px] flex-col items-end">
                   <Image
                     className="rounded-lg shadow-lg"
                     src={scope.image}
@@ -208,23 +208,23 @@ export default function BlogLayout(props) {
                   />
                   {scope.imageCredits && (
                     <figcaption
-                      className="text-xs text-slate-400 mt-2"
+                      className="mt-2 text-xs text-slate-400"
                       dangerouslySetInnerHTML={{ __html: scope.imageCredits }}
                     ></figcaption>
                   )}
                 </figure>
               )}
-              <div className="max-w-[76ch] m-auto pt-12 lg:pt-18">
+              <div className="lg:pt-18 m-auto max-w-[76ch] pt-12">
                 <header className="">
-                  <h1 className="text-basis font-medium text-2xl md:text-4xl xl:text-5xl mb-2 md:mb-4 tracking-tighter lg:leading-loose">
+                  <h1 className="mb-2 text-2xl font-medium tracking-tighter text-basis md:mb-4 md:text-4xl lg:leading-loose xl:text-5xl">
                     {scope.heading}
                   </h1>
                   {scope.showSubtitle && (
-                    <p className="text-subtle text-lg font-bold mb-6 flex gap-1 items-center">
+                    <p className="mb-6 flex items-center gap-1 text-lg font-bold text-subtle">
                       {scope.subtitle}
                     </p>
                   )}
-                  <p className="text-subtle text-sm mt-2 flex items-center gap-2">
+                  <p className="mt-2 flex items-center gap-2 text-sm text-subtle">
                     {!!scope.author ? (
                       authorURLs[scope.author] ? (
                         <>
@@ -244,7 +244,7 @@ export default function BlogLayout(props) {
                       ""
                     )}
                     <span className="flex items-center gap-1">
-                      <RiCalendarLine className="h-3 w-3 mr-px" />{" "}
+                      <RiCalendarLine className="mr-px h-3 w-3" />{" "}
                       {scope.humanDate}{" "}
                       {!!dateUpdated && <> (Updated: {dateUpdated})</>}
                     </span>{" "}
@@ -253,7 +253,7 @@ export default function BlogLayout(props) {
                   </p>
                 </header>
                 <SectionProvider sections={[]}>
-                  <div className="prose mt-12 mb-20 prose-img:rounded-lg prose-code:tracking-tight prose-pre:border prose-pre:border-subtle text-basis prose-a:no-underline hover:prose-a:underline prose-a:font-medium prose-a:transition-all prose-invert blog-content">
+                  <div className="prose-invert blog-content prose mb-20 mt-12 text-basis prose-a:font-medium prose-a:no-underline prose-a:transition-all hover:prose-a:underline prose-code:tracking-tight prose-pre:border prose-pre:border-subtle prose-img:rounded-lg">
                     {/* @ts-ignore */}
                     <MDXRemote
                       compiledSource={props.post.compiledSource}
@@ -304,11 +304,11 @@ function CTAs({
   const visibleCTAs =
     primary === "sales" ? [ctas.sales, ctas.docs] : [ctas.docs, ctas.sales];
   return (
-    <aside className="max-w-[70ch] grid sm:grid-cols-2 gap-16 border-t-[2px] border-slate-800 pt-16 m-auto text-indigo-500">
+    <aside className="m-auto grid max-w-[70ch] gap-16 border-t-[2px] border-stone-700 pt-8 text-indigo-500 sm:grid-cols-2">
       {visibleCTAs.map((c, idx) => (
         <div key={idx} className="flex flex-col items-start">
-          <h2 className="text-basis text-xl font-medium mt-6">{c.title}</h2>
-          <p className="text-subtle mb-6 mt-2 text-sm text-balance">
+          <h2 className="mt-6 text-xl font-medium text-basis">{c.title}</h2>
+          <p className="mb-6 mt-2 text-balance text-sm text-subtle">
             {c.description}
           </p>
           <Button

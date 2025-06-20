@@ -6,11 +6,10 @@ export default function Video({ src }: { src: string }) {
       loop
       muted
       className={`
-        mt-14 mx-auto w-full max-w-6xl
-        rounded-lg scale-80 origin-center
-        pointer-events-none
+        scale-80 pointer-events-none mx-auto mt-14
+        w-full max-w-6xl origin-center
+        rounded-lg
         border border-subtle
-        shadow-[0_0_220px_16px_rgba(20,284,286,0.2)]
       `}
     />
   );

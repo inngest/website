@@ -40,8 +40,8 @@ module.exports = {
         inngestLuxDark: "rgb(var(--color-inngest-lux-dark) / <alpha-value>)",
 
         // Redesign 2024
-        cta: "#10B981",
-        ctaHover: "#2fe4a8",
+        cta: "#CBB26A",
+        ctaHover: "#AD8513",
 
         // Design System 2024
         carbon: {

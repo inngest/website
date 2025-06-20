@@ -10,11 +10,12 @@ import {
   gradientClassNames,
 } from "src/components/LandingPage/Heading";
 import CTA from "src/components/LandingPage/CTA";
-import Button from "src/components/LandingPage/Button";
+import { Button } from "components/RedesignedLanding/Button";
 import FeaturesCodeBlocks from "src/components/LandingPage/FeaturesCodeBlocks";
 import Resources from "src/components/LandingPage/Resources";
 import CaseStudy from "src/components/LandingPage/CaseStudy";
 import Quote from "src/components/Quote";
+import Link from "next/link";
 
 const ref = "product-ai";
 
@@ -30,16 +31,16 @@ export function AIPage({
   return (
     <div className="relative text-basis">
       {/* The background needs to be here with negative position to bleed under the header nav */}
-      <div className="absolute z-0 top-[-84px] w-full h-[200vw] sm:h-[calc(100vw/1728*1219)] bg-[url(/assets/ai/2024-11-27-hero-background.png)] bg-cover bg-no-repeat bg-top"></div>
+      {/* <div className="absolute top-[-84px] z-0 h-[200vw] w-full bg-[url(/assets/ai/2024-11-27-hero-background.png)] bg-cover bg-top bg-no-repeat sm:h-[calc(100vw/1728*1219)]"></div> */}
 
       <div className="relative z-10">
         <Hero ctas={heroCTAs} featured={heroFeature} />
 
-        <div className="my-12 flex flex-col gap-6 items-center sm:pb-8">
-          <p className="mx-8 text-sm text-balance text-subtle">
+        <div className="my-12 flex flex-col items-center gap-6 sm:pb-8">
+          <p className="mx-8 text-balance text-sm text-subtle">
             Trusted by companies innovating with AI:
           </p>
-          <div className="grid grid-cols-2 sm:flex flex-wrap lg:flex-nowrap gap-x-4 sm:gap-x-10 gap-y-6 sm:gap-y-8 mx-8">
+          <div className="mx-8 grid grid-cols-2 flex-wrap gap-x-4 gap-y-6 sm:flex sm:gap-x-10 sm:gap-y-8 lg:flex-nowrap">
             {[
               {
                 src: "/assets/customers/browser-use-white.svg",
@@ -85,7 +86,7 @@ export function AIPage({
                 width={120 * 0.8 * scale}
                 height={30 * 0.8 * scale}
                 className={clsx(
-                  "m-auto width-auto transition-all grayscale opacity-80 invert dark:invert-0",
+                  "width-auto m-auto opacity-80 grayscale invert transition-all dark:invert-0",
                   `max-h-[${36 * scale}px]`,
                   idx === 4 && "hidden sm:block",
                   idx > 4 && "hidden xl:block"
@@ -101,7 +102,7 @@ export function AIPage({
           >
             Built to support any AI use case
           </h2>
-          <div className="w-[300px] mx-auto grid grid-cols-3 gap-6 text-sm">
+          <div className="mx-auto grid w-[300px] grid-cols-3 gap-6 text-sm">
             {[
               "RAG",
               "Multi-model chains",
@@ -120,7 +121,7 @@ export function AIPage({
               <span
                 key={idx}
                 className={clsx(
-                  "font-mono text-subtle uppercase",
+                  "font-mono uppercase text-subtle",
                   idx % 2 === 1 && "text-right",
                   u.length > 10 ? "col-span-2" : "col-span-1"
                 )}
@@ -359,12 +360,12 @@ export default inngest.createFunction(
           />
         </section>
 
-        {showCTAs && (
+        {/* {showCTAs && (
           <section>
-            <div className="mt-12 px-6 flex items-center justify-center tracking-tight text-basis text-center">
-              <div className="max-w-xl mx-auto mt-4 flex flex-col gap-6">
+            <div className="mt-12 flex items-center justify-center px-6 text-center tracking-tight text-basis">
+              <div className="mx-auto mt-4 flex max-w-xl flex-col gap-6">
                 <H2>This is AI product development, redefined</H2>
-                <p className="text-lg md:text-xl text-balance">
+                <p className="text-balance text-lg md:text-xl">
                   Want to know more about how Inngest can level up your
                   production? Let's talk.
                 </p>
@@ -372,11 +373,11 @@ export default inngest.createFunction(
               </div>
             </div>
             <img
-              className="max-w-6xl w-full mx-auto"
+              className="mx-auto w-full max-w-6xl"
               src="/assets/ai/early-access-isometric-ui-image.png"
             />
           </section>
-        )}
+        )} */}
       </div>
     </div>
   );
@@ -387,7 +388,7 @@ function Hero({
     {
       href: `/contact?ref=${ref}`,
       text: "Book a demo",
-      variant: "primary",
+      variant: "default",
     },
     {
       href: `/docs/features/inngest-functions/steps-workflows/step-ai-orchestration?ref=${ref}`,
@@ -400,27 +401,27 @@ function Hero({
   ctas?: {
     href: string;
     text: string | React.ReactNode;
-    variant?: "primary" | "link";
+    variant?: "default" | "link";
   }[];
   featured?: React.ReactNode;
 }) {
   return (
-    <div className="py-8 px-4 sm:px-auto mx-auto max-w-[1728px] grid md:grid-cols-2 gap-12">
+    <div className="sm:px-auto mx-auto grid max-w-[1728px] gap-12 px-4 py-8 md:grid-cols-2">
       <div className="flex flex-row items-center justify-end text-center md:text-left">
-        <div className="flex flex-col gap-8 md:pl-4 md:py-8 lg:max-w-[580px] shrink">
+        <div className="flex shrink flex-col gap-8 md:py-8 md:pl-4 lg:max-w-[580px]">
           <H1 variant="contrast">
             Ship AI workflows and Agents to production faster
           </H1>
-          <p className="text-subtle text-lg sm:text-xl text-balance md:max-w-[540px]">
+          <p className="text-balance text-lg text-subtle sm:text-xl md:max-w-[540px]">
             Iterate rapidly, orchestrate reliably, and scale with complete
             control. With a developer-first approach, Inngest handles the
             infrastructure, so you can focus on building AI applications — not
             backend complexity.
           </p>
-          <div className="flex flex-row flex-wrap gap-4 justify-center md:justify-start">
+          <div className="flex flex-row flex-wrap justify-center gap-4 md:justify-start">
             {ctas.map((cta) => (
-              <Button variant={cta.variant} href={cta.href}>
-                {cta.text}
+              <Button variant={cta.variant} asChild>
+                <Link href={cta.href}>{cta.text}</Link>
               </Button>
             ))}
           </div>
@@ -443,6 +444,6 @@ function Hero({
 
 function Code({ children }: { children: React.ReactNode }) {
   return (
-    <code className="text-accent-xIntense tracking-tight">{children}</code>
+    <code className="tracking-tight text-accent-xIntense">{children}</code>
   );
 }

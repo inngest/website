@@ -2,12 +2,12 @@ import Link from "next/link";
 import Image from "next/image";
 import clsx from "clsx";
 
-import Header from "src/shared/Header";
 import Container from "src/shared/layout/Container";
-import Footer from "src/shared/Footer";
 import FooterCallout from "src/shared/Footer/FooterCallout";
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/20/solid";
 import CaseStudyCard from "src/shared/CaseStudy/CaseStudyCard";
+import Header from "src/components/RedesignedLanding/Header/Header";
+import Footer from "src/components/RedesignedLanding/Footer";
 
 export async function getStaticProps() {
   return {
@@ -381,26 +381,26 @@ export default function Customers() {
       <Header />
       <Container className="py-8">
         <div className="my-12 tracking-tight">
-          <h1 className="max-w-5xl mx-auto text-center text-5xl font-semibold">
+          <h1 className="mx-auto max-w-5xl text-center text-5xl font-semibold">
             <em>Our</em> customers deliver reliable products <br />
             for <em>their</em> customers
           </h1>
-          <p className="mx-auto my-8 text-subtle text-center text-lg">
+          <p className="mx-auto my-8 text-center text-lg text-subtle">
             From startups to public companies, our customers chose Inngest to
             power their products.
           </p>
         </div>
-        <div className="max-w-6xl mx-auto">
-          <div className="my-20 grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+        <div className="mx-auto max-w-6xl">
+          <div className="my-20 grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-6">
             {caseStudies.map((props, idx) => (
               <CaseStudyCard {...props} key={idx} />
             ))}
           </div>
 
-          <div className="mt-20 mb-4 md:mb-6 grid md:grid-cols-3 gap-4 md:gap-6">
+          <div className="mb-4 mt-20 grid gap-4 md:mb-6 md:grid-cols-3 md:gap-6">
             {featuredCompanies.map(({ src, name, scale = 1, url }, idx) => (
-              <div className="group relative p-6 flex flex-col justify-items-start items-center border border-subtle rounded-2xl">
-                <div className="my-10 md:my-20 h-20 md:h-24 flex items-center">
+              <div className="group relative flex flex-col items-center justify-items-start rounded-2xl border border-subtle p-6">
+                <div className="my-10 flex h-20 items-center md:my-20 md:h-24">
                   <Image
                     key={idx}
                     src={src}
@@ -409,7 +409,7 @@ export default function Customers() {
                     width={240 * 0.8 * scale}
                     height={120 * 0.8 * scale}
                     className={clsx(
-                      "text-white mx-auto width-auto transition-all",
+                      "width-auto mx-auto text-white transition-all",
                       `max-h-[${36 * scale}px]`
                     )}
                   />
@@ -419,7 +419,7 @@ export default function Customers() {
             ))}
           </div>
 
-          <div className="mt-4 md:mt-6 mb-36 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+          <div className="mb-36 mt-4 grid grid-cols-2 gap-4 sm:grid-cols-2 md:mt-6 md:gap-6 lg:grid-cols-3">
             {gridItems.map(({ type, name, ...item }, idx) => {
               if (type === "quote") {
                 const { quote } = item;
@@ -427,9 +427,9 @@ export default function Customers() {
                   return <></>;
                 }
                 return (
-                  <blockquote className="mx-auto row-span-2 col-span-2 sm:col-span-1 my-8 max-w-3xl px-8 flex flex-col gap-8 bg-[url(/assets/textures/wave.svg)] bg-contain bg-center bg-no-repeat">
-                    <p className="text-lg leading-7 relative">
-                      <span className="absolute top-1 -left-4 text-2xl leading-3 text-slate-400/80">
+                  <blockquote className="col-span-2 row-span-2 mx-auto my-8 flex max-w-3xl flex-col gap-8 bg-[url(/assets/textures/wave.svg)] bg-contain bg-center bg-no-repeat px-8 sm:col-span-1">
+                    <p className="relative text-lg leading-7">
+                      <span className="absolute -left-4 top-1 text-2xl leading-3 text-slate-400/80">
                         &ldquo;
                       </span>
                       {quote.text}
@@ -437,16 +437,16 @@ export default function Customers() {
                         &rdquo;
                       </span>
                     </p>
-                    <footer className="min-w-[180px] flex flex-row items-center gap-4">
+                    <footer className="flex min-w-[180px] flex-row items-center gap-4">
                       <Image
                         src={quote.avatar}
                         alt={`Image of ${quote.attribution.name}`}
                         height="72"
                         width="72"
-                        className="rounded-full h-12 w-12"
+                        className="h-12 w-12 rounded-full"
                       />
-                      <cite className="leading-8 not-italic">
-                        <div className="text-basis text-base">
+                      <cite className="not-italic leading-8">
+                        <div className="text-base text-basis">
                           {quote.attribution.name}
                         </div>
                         <div className="text-sm text-subtle">
@@ -459,7 +459,7 @@ export default function Customers() {
               }
               const { src, scale = 0.8 } = item;
               return (
-                <div className="group relative px-6 py-8 h-full min-h-[148px] border border-subtle rounded-2xl flex items-center">
+                <div className="group relative flex h-full min-h-[148px] items-center rounded-2xl border border-subtle px-6 py-8">
                   {!!src && (
                     <Image
                       key={idx}
@@ -469,7 +469,7 @@ export default function Customers() {
                       width={120 * scale}
                       height={30 * scale}
                       className={clsx(
-                        "text-white m-auto width-auto transition-all",
+                        "width-auto m-auto text-white transition-all",
                         `max-h-[${36 * scale}px]`
                       )}
                     />
@@ -481,17 +481,7 @@ export default function Customers() {
           </div>
         </div>
       </Container>
-
-      <FooterCallout
-        title="Talk to a product expert"
-        description="Chat with sales engineering to learn how Inngest can help your team ship more reliable products, faster"
-        ctaHref="/contact"
-        ctaText="Contact sales engineering"
-        ctaRef={"customers"}
-        showCliCmd={false}
-      />
-
-      <Footer disableCta={true} />
+      <Footer />
     </div>
   );
 }
@@ -501,7 +491,7 @@ function VisitWebsite({ url }) {
     <a
       href={url}
       target="_blank"
-      className="absolute hidden group-hover:flex flex-row gap-1 items-center bottom-2 right-2  px-3 py-1.5 text-xs bg-surfaceSubtle hover:bg-canvasSubtle rounded-xl text-link"
+      className="absolute bottom-2 right-2 hidden flex-row items-center gap-1 rounded-xl  bg-surfaceSubtle px-3 py-1.5 text-xs text-link hover:bg-canvasSubtle group-hover:flex"
     >
       Visit website <ArrowTopRightOnSquareIcon className="h-3" />
     </a>

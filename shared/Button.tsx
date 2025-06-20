@@ -30,9 +30,9 @@ export function Button({
   ...props
 }: ButtonProps) {
   const sizes = {
-    sm: "text-sm px-3 py-1.5 rounded",
-    md: "text-base px-6 py-2.5 rounded-lg",
-    lg: "text-lg px-8 py-4 rounded-lg",
+    sm: "text-sm px-3 py-1.5 ",
+    md: "text-base px-6 py-2.5 ",
+    lg: "text-lg px-8 py-4 ",
   };
   // For aligning borders with border-box
   const heights = {
@@ -66,7 +66,7 @@ export function Button({
     <a
       target={target}
       href={props.href}
-      className={`whitespace-nowrap button group inline-flex items-center justify-center gap-0.5 font-medium tracking-tight ${variants[variant]} ${sizes[size]} ${props.className} ${width}`}
+      className={`group button inline-flex items-center justify-center gap-0.5 whitespace-nowrap font-medium tracking-tight ${variants[variant]} ${sizes[size]} ${props.className} ${width}`}
     >
       {arrow && arrow === "left" ? (
         <RiArrowLeftSLine className="-ml-1.5" />

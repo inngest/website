@@ -15,7 +15,7 @@ export default function Tiles({
   const width = tiles.length < 5 ? "large" : "default";
   return (
     <div>
-      <div className="my-12 mx-auto max-w-[1270px] px-2 flex flex-row flex-wrap items-center justify-center gap-6 text-subtle text-base sm:text-lg leading-6">
+      <div className="mx-auto my-12 flex max-w-[1270px] flex-row flex-wrap items-center justify-center gap-6 px-2 text-base leading-6 text-subtle sm:text-lg">
         {tiles.map((tile, idx) => (
           <div
             key={idx}
@@ -25,21 +25,20 @@ export default function Tiles({
               width === "default" && "sm:w-[400px]",
               height === "default" && "sm:h-[120px]",
               height === "large" && "sm:h-[175px]",
-              "rounded-lg bg-gradient-to-br from-[rgba(var(--color-carbon-400)/0.4)] to-transparent overflow-clip"
+              "overflow-clip bg-stone-800"
             )}
           >
             <div
-              className="p-6 h-full flex items-center rounded-lg"
+              className="flex h-full items-center p-6"
               style={{
-                background:
-                  "linear-gradient(108deg, rgba(204, 204, 204, 0.12) 9.67%, rgba(0, 0, 0, 0.00) 49.19%), #141414",
+                background: "bg-stone-800",
               }}
             >
               <div className="flex gap-3">
                 {tile.icon === "check" ? (
-                  <RiCheckLine className="text-success h-5 w-5 mt-1 shrink-0" />
+                  <RiCheckLine className="mt-1 h-5 w-5 shrink-0 text-inngestLux" />
                 ) : tile.icon === "x" ? (
-                  <RiCloseCircleLine className="text-error h-5 w-5 mt-1 shrink-0" />
+                  <RiCloseCircleLine className="mt-1 h-5 w-5 shrink-0 text-error" />
                 ) : (
                   ""
                 )}

@@ -1,7 +1,7 @@
 "use client"; // Required for app router server components
 import React from "react";
 import SyntaxHighlighter from "react-syntax-highlighter";
-import { atomOneDark } from "react-syntax-highlighter/dist/cjs/styles/hljs";
+import { gruvboxDark } from "react-syntax-highlighter/dist/cjs/styles/hljs";
 
 export const removeLeadingSpaces = (snippet: string): string => {
   const lines = snippet.split("\n");
@@ -32,12 +32,12 @@ const colors = {
 };
 
 const theme = {
-  ...atomOneDark,
-  "hljs-keyword": { color: colors.green },
-  "hljs-attr": { color: colors.orange },
-  "hljs-string": { color: colors.blue },
-  "hljs-number": { color: "rgb(var(--color-quaternary-cool-xIntense))" },
-  "hljs-comment": { color: colors.carbon500 },
+  ...gruvboxDark,
+  // "hljs-keyword": { color: colors.green },
+  // "hljs-attr": { color: colors.orange },
+  // "hljs-string": { color: colors.blue },
+  // "hljs-number": { color: "rgb(var(--color-quaternary-cool-xIntense))" },
+  // "hljs-comment": { color: colors.carbon500 },
 };
 
 const CodeWindow = ({
@@ -57,13 +57,13 @@ const CodeWindow = ({
 }) => {
   return (
     <div
-      className={`rounded-lg border border-subtle text-sm leading-relaxed bg-canvasBase ${className}`}
+      className={`border border-subtle bg-stone-800 text-sm leading-relaxed ${className}`}
       style={style}
     >
       {header && <div className="mb-1 bg-canvasSubtle px-2">{header}</div>}
-      <div className="flex flex-row p-2 items-stretch">
+      <div className="flex flex-row items-stretch p-2">
         {Boolean(lineHighlights?.length) && (
-          <div className="h-full w-[2px] py-1 relative">
+          <div className="relative h-full w-[2px] py-1">
             {/* leading-relaxed is 1.625 */}
             {lineHighlights.map(([highlightStart, highlightEnd]) => {
               return (

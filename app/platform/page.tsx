@@ -10,6 +10,7 @@ import HeaderCard from "./Card";
 import PlatformComparison from "./PlatformComparison";
 import Card from "src/components/Card";
 import { generateMetadata } from "src/utils/social";
+import TrustFeaturesSection from "./Trust";
 
 export const metadata: Metadata = generateMetadata({
   title: "Platform overview",
@@ -19,12 +20,13 @@ export const metadata: Metadata = generateMetadata({
 
 export default function Page() {
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="mx-auto max-w-6xl">
       <section className="mt-32">
         <Heading
           level={1}
           title="Your application reliability layer"
           context="Platform"
+          className="font-whyteInktrap"
           lede={
             <>
               Inngest's architecture combines an event stream, queues, and
@@ -64,16 +66,16 @@ export default function Page() {
 
         <PlatformComparison />
 
-        <p className="max-w-[720px] my-4 text-sm sm:text-base md:text-lg text-body">
+        <p className="my-4 max-w-[720px] text-sm text-body sm:text-base md:text-lg">
           Inngest can be run in local development or CI as a single binary. This
           means simpler, faster feedback loops during dev and integration
           testing.
         </p>
-        <div className="my-8 flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-8 text-body">
+        <div className="my-8 flex flex-col items-start gap-4 text-body md:flex-row md:items-center md:gap-8">
           <Button
             href="https://github.com/inngest/inngest"
             arrow="right"
-            variant="secondary"
+            className="hover:[#AD8513] rounded-none bg-inngestLux"
           >
             <Github className="mr-2" />
             View the open source repo
@@ -95,7 +97,7 @@ export default function Page() {
             </>
           }
         />
-        <div className="my-16 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+        <div className="my-16 grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-3">
           <FeatureCard
             title="Send events via SDK, API or Webhook"
             description="Send events from any application to our low latency Event API using JSON. Inngest can also receive webhooks directly from a provider."
@@ -207,7 +209,7 @@ export default function Page() {
       </section>
 
       <section>
-        <Card className="px-8 py-8">
+        {/* <Card className="px-8 py-8">
           <Heading
             level={2}
             title="Enterprise ready"
@@ -221,32 +223,13 @@ export default function Page() {
             className="text-center"
             ledeClassName="mx-auto"
           />
-          <div className="mt-16 mb-8 grid grid-cols-3 gap-x-8 gap-y-16">
+          <div className="mb-8 mt-16 grid grid-cols-3 gap-x-8 gap-y-16">
             {enterpriseFeatures.map(({ title, description }, idx) => (
               <FeatureCard title={title} description={description} key={idx} />
             ))}
           </div>
-        </Card>
-      </section>
-
-      <section className="my-32">
-        <Heading
-          level={2}
-          title="Ready to learn more?"
-          className="text-center"
-          lede={
-            <>
-              Chat with a solutions engineer that can answer all of your
-              questions:
-            </>
-          }
-          ledeClassName="mx-auto"
-        />
-        <div className="my-16 text-center">
-          <Button href="/contact?ref=platform" size="lg" arrow="right">
-            Get in touch
-          </Button>
-        </div>
+        </Card> */}
+        <TrustFeaturesSection />
       </section>
     </div>
   );
@@ -422,14 +405,14 @@ function FeatureCard({
 }) {
   return (
     <div className="flex flex-col items-start gap-4 text-body">
-      {icon && <img src={icon} className="w-8 h-8" />}
+      {icon && <img src={icon} className="h-8 w-8" />}
       {img && (
         <Image
           src={img}
           width="512"
           height="192"
           alt={title || ""}
-          className="rounded-md w-full mb-2"
+          className="mb-2 w-full rounded-md"
         />
       )}
       <h3 className="text-lg font-semibold">{title}</h3>

@@ -22,14 +22,14 @@ import { TabItem } from "./Navigation";
 
 function Separator() {
   return (
-    <div className="hidden lg:block md:h-5 md:w-px md:bg-slate-900/10 md:dark:bg-white/15" />
+    <div className="hidden md:h-5 md:w-px md:bg-slate-900/10 md:dark:bg-white/15 lg:block" />
   );
 }
 
 function DocsLogo() {
   return (
-    <a href="/" className="flex gap-1.5 group/logo items-center pt-1">
-      <Logo className="w-20 text-black dark:text-white" />
+    <a href="/" className="group/logo flex items-center gap-1.5 pt-1">
+      <Logo className="w-24 text-black dark:text-white" />
     </a>
   );
 }
@@ -71,11 +71,11 @@ export const Header = forwardRef<HTMLDivElement>(function Header(
           <DocsLogo />
         </div>
 
-        <div className="hidden lg:flex items-center space-x-4 ml-2">
+        <div className="ml-2 hidden items-center space-x-4 lg:flex">
           <DocsLogo />
         </div>
 
-        <nav className="hidden lg:block ml-4">
+        <nav className="ml-4 hidden lg:block">
           <ul role="list" className="flex items-center">
             {menuTabs.map((tab) => (
               <TabItem key={tab.title} href={tab.href} matcher={tab.matcher}>
@@ -85,7 +85,7 @@ export const Header = forwardRef<HTMLDivElement>(function Header(
           </ul>
         </nav>
       </div>
-      <div className="flex items-center justify-end flex-auto space-x-4">
+      <div className="flex flex-auto items-center justify-end space-x-4">
         <div
           className={clsx(
             "absolute inset-x-0 top-full h-px transition",
@@ -98,7 +98,7 @@ export const Header = forwardRef<HTMLDivElement>(function Header(
 
         <div className="flex items-center gap-4">
           <Separator />
-          <div className="flex gap-4 justify-center items-center">
+          <div className="flex items-center justify-center gap-4">
             <a href="/discord" target="_blank" className="group">
               <svg
                 width={23}
@@ -148,7 +148,7 @@ export const Header = forwardRef<HTMLDivElement>(function Header(
             <ModeToggle />
           </div>
           <Separator />
-          <div className="hidden sm:flex items-center gap-2">
+          <div className="hidden items-center gap-2 sm:flex">
             <Button
               href={`/contact?ref=docs-header`}
               size="sm"

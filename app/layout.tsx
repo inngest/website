@@ -1,36 +1,36 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 
-import Nav from "src/components/Nav";
-import Footer from "src/shared/Footer";
 import { HeaderInit, PageViews } from "@/components/InngestClientSDK";
 import GoogleTagManger from "@/components/GoogleTagManager";
 import { getFullURL } from "src/utils/social";
 
 import "./globals.css";
 import AnnouncementBanner from "src/components/AnnouncementBanner";
+import Header from "src/components/RedesignedLanding/Header/Header";
+import Footer from "src/components/RedesignedLanding/Footer";
 
 export const metadata: Metadata = {
   title: {
-    default: "Inngest - Ship reliable code, no extra infrastructure",
+    default: "Inngest - Develop AI products at the speed of thought",
     template: "%s - Inngest",
   },
   openGraph: {
     // We cannot dynamically set the image URL with the page title, so we use this default
-    images: [getFullURL("/assets/homepage/open-graph.png")],
+    images: [getFullURL("/assets/homepage/open-graph-june-2025.png?v=2")],
   },
   icons: {
     icon: [
       {
         url: process.env.NEXT_PUBLIC_FAVICON
           ? `/${process.env.NEXT_PUBLIC_FAVICON}`
-          : "/favicon-june-2024-light.png",
+          : "/favicon-june-2025-light.svg",
         media: "(prefers-color-scheme: light)",
       },
       {
         url: process.env.NEXT_PUBLIC_FAVICON
           ? `/${process.env.NEXT_PUBLIC_FAVICON}`
-          : "/favicon-june-2024-dark.png",
+          : "/favicon-june-2025-dark.svg",
         media: "(prefers-color-scheme: dark)",
       },
     ],
@@ -57,12 +57,11 @@ export default function RootLayout({
       </head>
       <body className="dark font-sans">
         <AnnouncementBanner />
-
-        <Nav />
+        <Header />
 
         <main className="text-basis">{children}</main>
 
-        <Footer disableCta={true} />
+        <Footer />
 
         <Suspense>
           <PageViews />

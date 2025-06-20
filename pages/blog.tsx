@@ -6,8 +6,8 @@ import { Rss } from "react-feather";
 import { RiCalendarLine } from "@remixicon/react";
 import ArrowRight from "src/shared/Icons/ArrowRight";
 import { RiArrowRightLine } from "@remixicon/react";
-import Footer from "../shared/Footer";
-import Header from "../shared/Header";
+import Footer from "src/components/RedesignedLanding/Footer";
+import Header from "src/components/RedesignedLanding/Header/Header";
 import Container from "../shared/layout/Container";
 import Tags from "../shared/Blog/Tags";
 import { loadMarkdownFilesMetadata } from "../utils/markdown";
@@ -45,7 +45,7 @@ export default function BlogIndex(props) {
         <meta property="og:description" content={description} />
       </Head>
 
-      <div className="font-sans">
+      <div className="bg-stone-950 font-sans">
         <Header />
 
         <Container className="pt-8">
@@ -54,37 +54,36 @@ export default function BlogIndex(props) {
           <div className="pt-16">
             {focus && (
               <a
-                className="relative flex flex-col-reverse lg:flex-row xl:max-w-[1160px] transition-all bg-[rgba(var(--color-foreground-success)/0.9)] hover:bg-[rgba(var(--color-foreground-success)/1)] rounded-lg mb-32 group shadow-lg"
+                className="group relative mb-32 flex flex-col-reverse rounded-lg border border-stone-600 bg-stone-700 shadow-lg transition-all lg:flex-row xl:max-w-[1160px]"
                 href={focus.redirect ?? `/blog/${focus.slug}`}
               >
-                <div className="absolute top-0 bottom-0 -left-[40px] -right-[40px] rounded-lg bg-[rgba(var(--color-foreground-success)/0.2)] rotate-1 -z-0 mx-5"></div>
                 <div
                   className={`${
                     focus.image ? "lg:w-2/5" : "w-full"
-                  } p-8 flex flex-col items-start justify-between relative z-10`}
+                  } relative z-10 flex flex-col items-start justify-between p-8`}
                 >
                   <div className="text-alwaysBlack">
-                    <span className="inline-flex mb-3 text-xs font-semibold bg-[rgba(var(--color-carbon-50)/0.2)] px-3 py-1.5 rounded">
+                    <span className="mb-3 inline-flex rounded bg-stone-800 px-3 py-1.5 text-xs font-semibold text-stone-50">
                       Latest Post
                     </span>
-                    <h2 className="text-xl md:text-2xl lg:text-xl xl:text-2xl mb-1 font-medium">
+                    <h2 className="mb-1 text-xl font-medium text-stone-50 md:text-2xl lg:text-xl xl:text-2xl">
                       {focus.heading}
                     </h2>
-                    <p className="text-sm font-medium mb-4 flex gap-1 items-center">
+                    <p className="mb-4 flex items-center gap-1 text-sm font-medium text-stone-50">
                       <RiCalendarLine className="h-3 w-3" />
                       {focus.humanDate} <Tags tags={focus.tags || []} />
                     </p>
-                    <p className="">{focus.subtitle}</p>
+                    <p className="text-stone-50">{focus.subtitle}</p>
                   </div>
-                  <span className="flex flex-row items-center gap-1 px-4 text-sm font-medium inline-flex mt-4 bg-carbon-900 text-carbon-50 py-1.5 rounded-lg group-hover:bg-carbon-800">
+                  <span className="mt-4 flex flex-row items-center gap-1 rounded-lg bg-inngestLux px-4 py-1.5 text-sm font-medium text-stone-950 group-hover:bg-inngestLuxDark">
                     Read article
                     <RiArrowRightLine className="h-4 w-4" />
                   </span>
                 </div>
                 {focus.image && (
-                  <div className="lg:w-3/5 flex p-2 relative">
+                  <div className="relative flex p-2 lg:w-3/5">
                     <Image
-                      className="z-10 w-full m-auto rounded-lg group-hover:rounded-lg"
+                      className="z-10 m-auto w-full rounded-lg group-hover:rounded-lg"
                       src={focus.image}
                       alt={`Featured image for ${focus.heading} blog post`}
                       width={900}

@@ -1,10 +1,11 @@
-import Button from "./Button";
+import { Button } from "components/RedesignedLanding/Button";
+import Link from "next/link";
 
 export default function CTA({ href, text }: { href: string; text: string }) {
   return (
     <div className="flex items-center justify-center">
-      <Button href={href} variant="primary">
-        {text}
+      <Button variant="default" asChild>
+        <Link href={href}>{text}</Link>
       </Button>
     </div>
   );
