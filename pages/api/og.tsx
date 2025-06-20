@@ -62,14 +62,14 @@ export default async function handler(req: NextApiRequest) {
             justifyContent: "flex-start",
             flexDirection: "column",
             flexWrap: "nowrap",
-            fontFamily: "Metropolis, sans-serif",
+            fontFamily: "Whyte, sans-serif",
           }}
         >
           <div
             style={{
               fontSize: isLongTitle ? 72 : 96,
               fontStyle: "normal",
-              fontWeight: 500,
+              fontWeight: 300,
               letterSpacing: "-2.4px",
               color: "white",
               marginTop: isLongTitle ? 116 : 94,
@@ -87,10 +87,10 @@ export default async function handler(req: NextApiRequest) {
         height: 630,
         fonts: [
           {
-            name: "Metropolis",
+            name: "Whyte",
             data: fontData,
             style: "normal",
-            weight: 500,
+            weight: 300,
           },
         ],
       }
