@@ -205,7 +205,7 @@ export const PLANS: Plan[] = [
       "Get started with modern durable execution for free, with the future to grow",
     cta: {
       href: "/contact?ref=pricing-card-enterprise",
-      text: "Get started for free",
+      text: "Request a demo",
     },
     highlights: {
       runs: "Custom executions",

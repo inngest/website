@@ -145,7 +145,9 @@ export default function PlanCard({
               asChild
             >
               <Link href={selectedPlan.cta.href}>
-                {selectedPlan.name === PLAN_NAMES.payAsYouGo
+                {selectedPlan.name === PLAN_NAMES.enterprise
+                  ? "Request a demo"
+                  : selectedPlan.name === PLAN_NAMES.payAsYouGo
                   ? "Get started"
                   : "Get started for free"}
               </Link>
