@@ -13,10 +13,10 @@ const pricingData = {
     { range: "50m-100m", price: "$0.000015" },
   ],
   events: [
-    { range: "1m-5m", price: "$0.000040" },
-    { range: "5m-15m", price: "$0.000020" },
-    { range: "15m-50m", price: "$0.000015" },
-    { range: "50m-100m", price: "$0.000010" },
+    { range: "1m-10m", price: "$0.0000005" },
+    { range: "10m-25m", price: "$0.0000004" },
+    { range: "25m-50m", price: "$0.0000003" },
+    { range: "50m-150m", price: "$0.0000002" },
   ],
 };
 
