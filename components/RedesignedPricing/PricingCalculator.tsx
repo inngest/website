@@ -60,8 +60,7 @@ function calculatePlanCost({
   const additionalStepsCost =
     Math.ceil(additionalSteps / num(plan.cost.additionalStepsRate)) *
     num(plan.cost.additionalStepsPrice);
-  // If there is additional concurrency, but there is no available rate,
-  // the cost is NaN (which means it isn't possible)
+
   const concurrencyCost =
     additionalConcurrency === 0
       ? 0
@@ -118,7 +117,6 @@ export function PricingCalculatorPage() {
   const [concurrency, setConcurrency] = useState<string | undefined>();
   const [workers, setWorkers] = useState<string | undefined>();
 
-  // Controls dropdown visibility
   const [isOpen, setOpen] = useState<boolean>(false);
 
   const runsMin = 0,
@@ -161,15 +159,11 @@ export function PricingCalculatorPage() {
     },
   ];
 
-  // Calculate results using plan data
   const results: CalculatorResults = useMemo(() => {
-    // Total runs selected with the slider
     const runsCount = runs;
 
-    // The slider represents average steps per run, so calculate total estimated steps
     const estimatedSteps = runsCount * steps;
 
-    // Parse a numeric concurrency value out of the select value (eg. "2-5-concurrent-runs" -> 2)
     const concurrencyNumber = concurrency
       ? parseInt(concurrency.match(/\d+/)?.[0] || "0", 10)
       : 0;
@@ -220,21 +214,6 @@ export function PricingCalculatorPage() {
     };
   }, [runs, steps, concurrency]);
 
-  // Update CSS custom properties so we can position slider tooltips using Tailwind arbitrary values
-  useEffect(() => {
-    // Runs slider thumb position
-    document.documentElement.style.setProperty(
-      "--runs-thumb-position",
-      calculateThumbPosition(runs, runsMin, runsMax)
-    );
-
-    // Steps slider thumb position
-    document.documentElement.style.setProperty(
-      "--steps-thumb-position",
-      calculateThumbPosition(steps, stepsMin, stepsMax)
-    );
-  }, [runs, steps]);
-
   return (
     <div
       id="calculator"
@@ -252,18 +231,15 @@ export function PricingCalculatorPage() {
           />
         </Button>
       </div>
-      {/* Dropdown Content */}
       <div className={classNames(isOpen ? "block" : "hidden")}>
         <div className="z-10 flex max-w-[#1222px] items-center justify-center  p-4 text-neutral-100 sm:p-8 lg:p-12">
           <div className="w-full max-w-[1222px] shadow-2xl">
             <div className="grid grid-cols-1 gap-8 lg:grid-cols-[2fr_1fr] lg:gap-0">
-              {/* Left Column: Controls */}
               <div className="space-y-8 bg-stone-900 p-8">
                 <h1 className="font-whyte text-2xl font-medium leading-[1.2] tracking-[-1.2px] text-[#FAFAF9]">
                   Which plan is right for me?
                 </h1>
 
-                {/* Number of Runs Slider */}
                 <div className="space-y-1">
                   <div className="flex items-center justify-between pb-2">
                     <label
@@ -294,7 +270,6 @@ export function PricingCalculatorPage() {
                   </div>
                 </div>
 
-                {/* Average Number of Steps Slider */}
                 <div className="space-y-1">
                   <div className="flex items-center justify-between pb-2">
                     <label
@@ -325,7 +300,6 @@ export function PricingCalculatorPage() {
                   </div>
                 </div>
 
-                {/* Selects Grid */}
                 <div className="grid grid-cols-1 gap-x-4 gap-y-6 pt-4 sm:grid-cols-3">
                   {selectOptions.map((selectProps) => (
                     <div key={selectProps.label} className="space-y-1.5">
@@ -375,7 +349,6 @@ export function PricingCalculatorPage() {
                 </div>
               </div>
 
-              {/* Right Column: Dynamic Plan Details */}
               {(() => {
                 const plan = getPlan(results.plan);
                 const priceDisplay =
