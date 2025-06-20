@@ -47,7 +47,7 @@ const DRAGGABLE_IMAGE_CONFIGS: DraggableImageConfig[] = [
     src: "/draggable/draggable3.png",
     positions: {
       xl: { x: 1650, y: 675 },
-      default: { x: 1050, y: 600 },
+      default: { x: 1050, y: 675 },
       ipad: { x: 900, y: 675 },
       lg: { x: 750, y: 450 },
       md: { x: 700, y: 400 },
