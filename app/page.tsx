@@ -1,11 +1,10 @@
 import { type Metadata } from "next";
 import AccordionSection from "src/components/RedesignedLanding/AccordionSection";
 
-import Footer from "src/components/RedesignedLanding/Footer";
 import { generateMetadata } from "src/utils/social";
 import Hero from "../components/RedesignedLanding/Hero";
-import TestimonialCarousel from "src/components/RedesignedLanding/TestimonialCarousel";
 import Testimonial from "src/components/RedesignedLanding/Testimonial";
+import TestimonialCarousel from "src/components/RedesignedLanding/TestimonialCarousel";
 import TrustFeaturesSection from "src/components/RedesignedLanding/Trust";
 import OrchestrationSection from "src/components/RedesignedLanding/FeatureOverview";
 import FeatureNavigate from "src/components/RedesignedLanding/FeatureNavigate/FeatureNavigate";
