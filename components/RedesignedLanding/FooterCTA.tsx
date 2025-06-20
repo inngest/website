@@ -26,13 +26,15 @@ export default function FooterCTA() {
           <div className="flex flex-col items-center justify-center gap-x-6 sm:flex-row">
             <div className="mt-4 flex w-64 justify-center sm:w-auto">
               <Button className="w-full sm:w-auto" variant="default" asChild>
-                <a href="#">Let's Talk</a>
+                <Link href="/contact?ref=homepage-footer-cta">Let's Talk</Link>
               </Button>
             </div>
 
             <div className="mt-4 flex w-64 justify-center sm:w-auto">
               <Button variant="outline" className="w-full sm:w-auto" asChild>
-                <a href="/docs">I'd rather look at the docs first</a>
+                <Link href="/docs?ref=homepage-footer-cta">
+                  I'd rather look at the docs first
+                </Link>
               </Button>
             </div>
           </div>
