@@ -4,6 +4,7 @@ import { Button } from "./Button";
 import {
   Card,
   CardContent,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "src/components/RedesignedLanding/FeatureNavigate/Card";
@@ -76,7 +77,7 @@ function WorkflowsCard() {
             Build reliable AI applications
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-3 pt-0 font-circular text-sm font-normal sm:p-4 lg:p-6 lg:pt-0 lg:text-base">
+        <CardContent className="flex flex-1 flex-col p-3 pt-0 font-circular text-sm font-normal sm:p-4 lg:p-6 lg:pt-0 lg:text-base">
           <p className="relative z-10 mb-4 text-base font-normal leading-relaxed text-stone-200 sm:mb-6 lg:text-lg">
             Develop{" "}
             <span className="font-medium text-[#CD9FFE]">fault tolerant</span>{" "}
@@ -95,7 +96,7 @@ function WorkflowsCard() {
             Learn more <ArrowRightIcon className="h-4 w-4" />
           </Button> */}
 
-          <div className="mx-auto">
+          <div className="mx-auto mt-auto">
             <DesktopWorkflow />
             <IpadWorkflow />
             <MobileWorkflow />
@@ -134,7 +135,7 @@ function AgentsCard() {
             <span className="font-whyteInktrap font-semibold">agents</span>
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-3 pt-0 font-circular text-sm font-normal sm:p-4 lg:p-6 lg:pt-0 lg:text-base">
+        <CardContent className="flex flex-1 flex-col p-3 pt-0 font-circular text-sm font-normal sm:p-4 lg:p-6 lg:pt-0 lg:text-base">
           <p className="relative z-10 mb-4 text-base font-normal leading-relaxed text-stone-200 sm:mb-6 lg:text-lg">
             Combine <span className="font-medium text-inngestLux">memory</span>{" "}
             with deterministic routing,{" "}
@@ -149,13 +150,10 @@ function AgentsCard() {
           >
             Learn more <ArrowRightIcon className="h-4 w-4" />
           </Button> */}
-
-          <div className="relative z-10">
-            <div className="flex items-center justify-center">
-              <FeatureCardSVG />
-            </div>
-          </div>
         </CardContent>
+        <CardFooter className="mx-auto">
+          <FeatureCardSVG />
+        </CardFooter>
       </Card>
     </div>
   );
