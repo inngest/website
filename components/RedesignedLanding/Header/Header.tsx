@@ -20,6 +20,7 @@ import githubData from "src/data/github.json";
 import { Button } from "src/components/RedesignedLanding/Button";
 import PlatformPopover, { platformDropdown } from "./PlatformPopover";
 import ResourcePopover, { resourceDropdown } from "./ResourcePopover";
+import { featuredBlogPost } from "./helpers";
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -76,11 +77,11 @@ export default function Header() {
               />
             </svg>
           </Link>
-          <div className="hidden lg:flex lg:gap-x-6">
+          <div className="hidden md:flex md:gap-x-6">
             <PlatformPopover />
             <Link
               href={"/customers?ref=nav"}
-              className="flex items-center gap-x-1 text-sm/6 font-semibold text-white"
+              className="flex hidden items-center gap-x-1 text-sm/6 font-semibold text-white min-[920px]:flex"
             >
               CUSTOMERS
             </Link>
@@ -93,7 +94,7 @@ export default function Header() {
             </Link>
             <Link
               href={"/pricing?ref=nav"}
-              className="flex items-center gap-x-1 text-sm/6 font-semibold text-white"
+              className="flex hidden items-center gap-x-1 text-sm/6 font-semibold text-white min-[820px]:flex"
             >
               PRICING
             </Link>
@@ -102,17 +103,17 @@ export default function Header() {
 
         <div className="flex items-center space-x-4">
           <OpenSourceButton className="h-9 rounded-none border" />
-          <div className="hidden space-x-4 lg:flex">
+          <div className="hidden space-x-4 md:flex">
             <Button variant="outline" className="hidden xl:flex" asChild>
-              <Link href="/signin">Sign In</Link>
+              <Link href="/signin?ref=nav">Sign In</Link>
             </Button>
             <Button variant="default" asChild>
-              <Link href="/signup">
+              <Link href="/signup?ref=nav">
                 Sign up <span aria-hidden="true">→</span>
               </Link>
             </Button>
           </div>
-          <div className="flex lg:hidden">
+          <div className="flex md:hidden">
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -203,7 +204,7 @@ export default function Header() {
                   as="div"
                   className="-mx-3 border-b border-stone-700"
                 >
-                  <DisclosureButton className="group flex w-full items-center justify-between py-2 pl-3 pr-3.5 text-base/7 font-semibold uppercase text-stone-50">
+                  <DisclosureButton className="group flex w-full items-center justify-between py-4 pl-3 pr-3.5 text-base/7 font-semibold uppercase text-stone-50">
                     Platform
                     <ChevronDownIcon
                       aria-hidden="true"
@@ -241,14 +242,14 @@ export default function Header() {
                 </Disclosure>
 
                 <Link
-                  href="#"
+                  href="/docs?ref=nav"
                   className="-mx-3 block border-b border-stone-700 px-3 py-4 text-base/7 font-semibold uppercase text-stone-50 hover:bg-stone-800"
                 >
                   Docs
                 </Link>
 
                 <Link
-                  href="#"
+                  href="/customers?ref=nav"
                   className="-mx-3 block border-b border-stone-700 px-3 py-4 text-base/7 font-semibold uppercase text-stone-50 hover:bg-stone-800"
                 >
                   Customers
@@ -291,22 +292,22 @@ export default function Header() {
                     </div>
                     <div className="mt-4 px-6">
                       <h3 className="pb-2 text-sm font-medium leading-6 text-stone-400">
-                        Latest Blog
+                        Latest blog
                       </h3>
                       <article className="relative isolate flex flex-row gap-y-3 pb-2">
                         <div className="relative flex-none">
                           <img
                             alt=""
-                            src="/assets/blog/announcing-realtime/featured-image.png"
+                            src={featuredBlogPost.image}
                             className="aspect-[2/1] max-h-16 rounded-lg bg-gray-100 object-cover"
                           />
                           <div className="absolute inset-0 rounded-lg ring-1 ring-inset ring-gray-900/10" />
                         </div>
                         <div className="flex items-center">
-                          <h4 className="ml-4 font-whyte text-sm font-normal leading-[1.05rem] text-stone-50">
-                            <a href="#">
+                          <h4 className="ml-4 mt-2 font-whyte text-sm font-normal leading-[1.05rem] text-stone-50">
+                            <a href={featuredBlogPost.href}>
                               <span className="absolute inset-0" />
-                              Introducing the Fetch APIs: Longer Title mock
+                              {featuredBlogPost.title}
                             </a>
                           </h4>
                         </div>
@@ -325,10 +326,10 @@ export default function Header() {
               <div className="border-none py-6">
                 <div className="flex space-x-4">
                   <Button variant="outline" asChild>
-                    <Link href="/signin">Sign In</Link>
+                    <Link href="/signin?ref=nav">Sign In</Link>
                   </Button>
                   <Button variant="default" asChild>
-                    <Link href="/signup">
+                    <Link href="/signup?ref=nav">
                       Sign up <span aria-hidden="true">→</span>
                     </Link>
                   </Button>
@@ -351,7 +352,6 @@ const repos = [
   "inngest/inngestgo",
   "inngest/inngest-kt",
   "inngest/agent-kit",
-  "inngest/workflow-kit",
 ];
 
 function OpenSourceButton({ className = "" }: { className?: string }) {

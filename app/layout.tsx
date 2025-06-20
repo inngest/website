@@ -12,7 +12,7 @@ import Footer from "src/components/RedesignedLanding/Footer";
 
 export const metadata: Metadata = {
   title: {
-    default: "Inngest - Ship reliable code, no extra infrastructure",
+    default: "Inngest - Develop AI products at the speed of thought",
     template: "%s - Inngest",
   },
   openGraph: {

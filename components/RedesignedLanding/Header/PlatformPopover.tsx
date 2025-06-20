@@ -194,7 +194,7 @@ export default function PlatformPopover() {
         <div className="mx-auto w-full max-w-md overflow-hidden lg:max-w-3xl">
           <div className="grid grid-cols-1 gap-y-1 lg:grid-cols-2 lg:gap-0">
             <div className="lg:pr-3">
-              <div className="flex flex-col items-start gap-1 pb-4">
+              <div className="flex flex-col items-start gap-1 lg:pb-4">
                 <h3 className="text-sm font-medium leading-6 text-stone-400">
                   Features
                 </h3>
@@ -225,7 +225,7 @@ export default function PlatformPopover() {
             </div>
             <div className="lg:pl-3">
               <div className="flex flex-col items-start gap-1 pb-4">
-                <h3 className="invisible text-sm font-medium leading-6 text-stone-400">
+                <h3 className="hidden text-sm font-medium leading-6 text-stone-400 lg:invisible lg:block">
                   Latest blog
                 </h3>
                 <div className="mt-2 flow-root w-full">

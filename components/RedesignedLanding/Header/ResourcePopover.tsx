@@ -8,6 +8,7 @@ import {
   PopoverTrigger,
   PopoverContent,
 } from "src/components/RedesignedLanding/Header/Popover";
+import { featuredBlogPost } from "./helpers";
 
 export const resourceDropdown = [
   {
@@ -172,23 +173,22 @@ export default function ResourcePopover() {
                       <div className="max-h-[120px]">
                         <img
                           alt=""
-                          src="/assets/blog/announcing-realtime/featured-image.png"
+                          src={featuredBlogPost.image}
                           className="h-32 w-full rounded-md object-cover"
                         />
                       </div>
                       <div className="max-w-[240px]">
-                        <h4 className="mt-2 text-base text-stone-50">
+                        <h4 className="mt-4 text-base text-stone-50">
                           <Link
-                            href="/blog/announcing-realtime"
+                            href={featuredBlogPost.href}
                             className="font-whyte text-base font-semibold leading-[1.05rem] text-stone-50"
                           >
                             <span className="absolute inset-0" />
-                            Developer Preview: Realtime
+                            {featuredBlogPost.title}
                           </Link>
                         </h4>
                         <p className="mt-2 line-clamp-2 font-circular text-xs font-normal text-stone-400">
-                          Stream updates from your Inngest functions to your
-                          users
+                          {featuredBlogPost.description}
                         </p>
                       </div>
                     </article>
