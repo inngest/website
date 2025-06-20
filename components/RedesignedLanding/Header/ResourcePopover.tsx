@@ -50,7 +50,7 @@ export const resourceDropdown = [
   },
   {
     name: "About",
-    href: "#",
+    href: "/about?ref=nav",
     description: "Learn more about Inngest",
     icon: (
       <svg
@@ -69,7 +69,7 @@ export const resourceDropdown = [
   },
   {
     name: "Support",
-    href: "#",
+    href: "https://app.inngest.com/support?ref=nav",
     description: "Get help from the Inngest team",
     icon: (
       <svg
@@ -179,16 +179,16 @@ export default function ResourcePopover() {
                       <div className="max-w-[240px]">
                         <h4 className="mt-2 text-base text-stone-50">
                           <Link
-                            href="#"
+                            href="/blog/announcing-realtime"
                             className="font-whyte text-base font-semibold leading-[1.05rem] text-stone-50"
                           >
                             <span className="absolute inset-0" />
-                            Boost your conversion rate
+                            Developer Preview: Realtime
                           </Link>
                         </h4>
                         <p className="mt-2 line-clamp-2 font-circular text-xs font-normal text-stone-400">
-                          Et et dolore officia quis nostrud esse aute cillum
-                          irure do esse.
+                          Stream updates from your Inngest functions to your
+                          users
                         </p>
                       </div>
                     </article>
