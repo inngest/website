@@ -44,12 +44,9 @@ export default async function handler(req: NextApiRequest) {
       ? searchParams.get("title")?.slice(0, 100)
       : "Inngest";
     const isLongTitle = (title || "").length > 40;
-    const backgroundImageURL = `${process.env.NEXT_PUBLIC_HOST}/assets/open-graph/background-compressed.png`;
+    const backgroundImageURL = `${process.env.NEXT_PUBLIC_HOST}/assets/open-graph/og-background-2025.png`;
 
-    // const fontData = await loadGoogleFont("Inter", "Inngest");
-    const fontData = await loadInngestCDNFont(
-      "Metropolis/Metropolis-SemiBold.otf"
-    );
+    const fontData = await loadInngestCDNFont("Whyte/ABCWhyte-Light.otf");
 
     return new ImageResponse(
       (
@@ -59,32 +56,25 @@ export default async function handler(req: NextApiRequest) {
             backgroundImage: `url("${backgroundImageURL}")`,
             height: "100%",
             width: "100%",
-            padding: "7% 6%",
+            padding: "10% 6%",
             display: "flex",
             alignItems: "flex-start",
             justifyContent: "flex-start",
             flexDirection: "column",
             flexWrap: "nowrap",
-            fontFamily: "Metropolis, sans-serif",
+            fontFamily: "Whyte, sans-serif",
           }}
         >
-          <Logo
-            width={180}
-            fill={"#fefefe"} // carbon-50
-            style={{
-              display: "flex",
-            }}
-          />
           <div
             style={{
-              fontSize: isLongTitle ? 84 : 110,
+              fontSize: isLongTitle ? 72 : 96,
               fontStyle: "normal",
-              fontWeight: 500,
+              fontWeight: 300,
               letterSpacing: "-2.4px",
               color: "white",
-              marginTop: 48,
-              padding: "0",
-              lineHeight: 1.4,
+              marginTop: isLongTitle ? 116 : 94,
+              padding: "0 0 0 154px",
+              lineHeight: isLongTitle ? 1.22 : 1.2,
               whiteSpace: "normal",
             }}
           >
@@ -97,10 +87,10 @@ export default async function handler(req: NextApiRequest) {
         height: 630,
         fonts: [
           {
-            name: "Metropolis",
+            name: "Whyte",
             data: fontData,
             style: "normal",
-            weight: 500,
+            weight: 300,
           },
         ],
       }
