@@ -28,6 +28,7 @@ const testimonials = [
       src: "/assets/customers/soundcloud-logo-white-horizontal.svg",
       name: "SoundCloud",
       scale: 1.5,
+      link: "/customers/soundcloud?ref=pricing-testimonial",
     },
     testimonial: "Deployed within in 1 week",
   },
@@ -38,6 +39,7 @@ const testimonials = [
       src: "/assets/customers/fey/fey-icon-name.svg",
       name: "Fey",
       scale: 0.8,
+      link: "/customers/fey?ref=pricing-testimonial",
     },
     testimonial: "50x faster processing",
   },
@@ -48,6 +50,7 @@ const testimonials = [
       src: "/assets/customers/gitbook-logo-white.svg",
       name: "Gitbook",
       scale: 1.4,
+      link: "/customers/gitbook?ref=pricing-testimonial",
     },
     testimonial: "Solved bi-directional synchronization",
   },
@@ -125,7 +128,7 @@ export default function PricingTestimonial() {
               {testimonial.testimonial}
             </p>
             <Link
-              href="/customers"
+              href={testimonial.logo.link}
               className="group inline-flex w-fit items-center border-b border-transparent pb-0.5 text-sm text-stone-50 transition-all hover:border-inngestLux hover:text-inngestLux"
             >
               Read customer story
