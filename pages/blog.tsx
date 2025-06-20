@@ -45,7 +45,7 @@ export default function BlogIndex(props) {
         <meta property="og:description" content={description} />
       </Head>
 
-      <div className="font-sans">
+      <div className="bg-stone-950 font-sans">
         <Header />
 
         <Container className="pt-8">

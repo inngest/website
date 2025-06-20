@@ -191,7 +191,7 @@ export default function BlogLayout(props) {
 
       {/* <ThemeToggleButton isFloating={true} /> */}
 
-      <div className="font-sans">
+      <div className="bg-stone-950 font-sans">
         <Header />
         <Container>
           <article>
