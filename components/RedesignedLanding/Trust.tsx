@@ -37,7 +37,7 @@ export default function TrustFeaturesSection() {
 
   return (
     <section className="relative flex min-h-[500px] items-end justify-center overflow-hidden text-stone-50 md:min-h-[600px] lg:min-h-[500px]">
-      <GridBackground className="!bg-stone-950" />
+      {/* <GridBackground className="!bg-stone-950" /> */}
 
       <div className="absolute inset-0 z-0 flex justify-center">
         <div className="max-w-screen-2xl bg-stone-900">
