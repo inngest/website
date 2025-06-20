@@ -1,7 +1,7 @@
 import { type Metadata } from "next";
 
 // Use the image version to bust social network's caches
-const openGraphImageVersion = 3;
+const openGraphImageVersion = 4;
 
 /*
  * Generates a URL to dynamically generate an open graph image for posts on social media
