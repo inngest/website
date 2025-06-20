@@ -105,10 +105,12 @@ export default function Header() {
           <OpenSourceButton className="h-9 rounded-none border" />
           <div className="hidden space-x-4 md:flex">
             <Button variant="outline" className="hidden xl:flex" asChild>
-              <Link href="/signin?ref=nav">Sign In</Link>
+              <Link href={`${process.env.NEXT_PUBLIC_SIGNIN_URL}?ref=nav`}>
+                Sign In
+              </Link>
             </Button>
             <Button variant="default" asChild>
-              <Link href="/signup?ref=nav">
+              <Link href={`${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=nav`}>
                 Sign up <span aria-hidden="true">→</span>
               </Link>
             </Button>
@@ -326,10 +328,16 @@ export default function Header() {
               <div className="border-none py-6">
                 <div className="flex space-x-4">
                   <Button variant="outline" asChild>
-                    <Link href="/signin?ref=nav">Sign In</Link>
+                    <Link
+                      href={`${process.env.NEXT_PUBLIC_SIGNIN_URL}?ref=nav`}
+                    >
+                      Sign In
+                    </Link>
                   </Button>
                   <Button variant="default" asChild>
-                    <Link href="/signup?ref=nav">
+                    <Link
+                      href={`${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=nav`}
+                    >
                       Sign up <span aria-hidden="true">→</span>
                     </Link>
                   </Button>
