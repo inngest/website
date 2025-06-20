@@ -314,7 +314,7 @@ export const FEATURES: Feature[] = [
   },
   {
     name: "Workers",
-    description: "Some new copy about workers",
+    description: "Low latency always-connected workers",
     plans: {
       [PLAN_NAMES.basicFree]: "3",
       [PLAN_NAMES.pro]: {
@@ -335,7 +335,7 @@ export const FEATURES: Feature[] = [
   },
   {
     name: "Dedicated slack channel",
-    description: "Some copy about slack",
+    description: "Direct P0 support from our team",
     plans: {
       [PLAN_NAMES.basicFree]: false,
       [PLAN_NAMES.pro]: "$200",
