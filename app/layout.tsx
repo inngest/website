@@ -17,20 +17,20 @@ export const metadata: Metadata = {
   },
   openGraph: {
     // We cannot dynamically set the image URL with the page title, so we use this default
-    images: [getFullURL("/assets/homepage/open-graph.png")],
+    images: [getFullURL("/assets/homepage/open-graph-june-2025.png")],
   },
   icons: {
     icon: [
       {
         url: process.env.NEXT_PUBLIC_FAVICON
           ? `/${process.env.NEXT_PUBLIC_FAVICON}`
-          : "/favicon-june-2025-light.png",
+          : "/favicon-june-2025-light.svg",
         media: "(prefers-color-scheme: light)",
       },
       {
         url: process.env.NEXT_PUBLIC_FAVICON
           ? `/${process.env.NEXT_PUBLIC_FAVICON}`
-          : "/favicon-june-2025-dark.png",
+          : "/favicon-june-2025-dark.svg",
         media: "(prefers-color-scheme: dark)",
       },
     ],
