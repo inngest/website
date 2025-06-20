@@ -8,9 +8,9 @@ type Props = {
   className?: any;
 };
 
-const defaultWidth = 100;
-const defaultHeight = 30;
-const widthToHeight = 100 / 30;
+const defaultWidth = 144;
+const defaultHeight = 27;
+const widthToHeight = 144 / 27;
 
 const Logo = ({
   width,
