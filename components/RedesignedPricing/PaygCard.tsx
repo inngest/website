@@ -1,12 +1,9 @@
-import { ArrowRightIcon } from "@heroicons/react/24/outline";
-import { Button } from "src/components/RedesignedLanding/Button";
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
+  CardFooter,
 } from "src/components/RedesignedLanding/FeatureNavigate/Card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "./Tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./Tabs";
 
 const pricingData = {
   executions: [
@@ -25,7 +22,7 @@ const pricingData = {
 
 export default function PaygCard() {
   return (
-    <section className="relative flex items-center py-16 text-white md:py-14">
+    <section className="relative flex items-center py-12 text-white sm:py-14 md:py-16">
       <div className="container mx-auto px-4">
         <div className="relative mx-auto max-w-[1222px] overflow-hidden border-2 border-stone-800 shadow-xl sm:p-3">
           <div className="pointer-events-none absolute bottom-0 right-0">
@@ -34,15 +31,17 @@ export default function PaygCard() {
 
           <Card className="relative h-full w-full overflow-hidden rounded-none border-none bg-stone-800 shadow-2xl sm:flex-row">
             <div>
-              <div className="grid grid-cols-1 flex-row gap-x-16 px-9 pt-8 lg:grid-cols-[641px_641px]">
+              {/* <div className="grid grid-cols-1 flex-row gap-x-16 px-9 pt-8 lg:grid-cols-[641px_641px]"> */}
+              <div className="grid grid-cols-1 flex-row gap-x-16 px-9 pt-8 lg:grid-cols-2">
                 <div className="flex flex-col gap-y-8">
                   <div>
                     <h2 className="pb-2 font-whyte text-[48px] font-light leading-[1.2] tracking-[-2.4px] text-white">
                       Usage that scales
                     </h2>
                     <p className="font-circular text-base font-light leading-[1.4] text-[#E7E5E4]">
-                      Lorem ipsum this is some information on the unit economics
-                      of Inngest and
+                      Choose the model that fits your workload and only pay for
+                      what you run. Automatic tiered discounts kick in as your
+                      usage grows.
                     </p>
                   </div>
                   <div>
@@ -50,9 +49,9 @@ export default function PaygCard() {
                       Executions
                     </h4>
                     <p className="font-circular text-base font-light leading-[1.4] text-[#E7E5E4]">
-                      Lorem ipsum this is some information on Executions dolor
-                      sit amet, consectetur adipiscing elit purus hendrerit,
-                      ultricies ante id, tristique nulla.
+                      Billed each time a function starts. Your first 100k
+                      executions every month are free, and the price per run
+                      drops as you scale.
                     </p>
                   </div>
                   <div>
@@ -60,14 +59,17 @@ export default function PaygCard() {
                       Events
                     </h4>
                     <p className="font-circular text-base font-light leading-[1.4] text-[#E7E5E4]">
-                      Lorem ipsum this is some information on events dolor sit
-                      amet, consectetur adipiscing elit. Nam elementum pulvinar
+                      Charged for each event that actually triggers a function.
+                      Volume discounts apply automatically.
                     </p>
                   </div>
                 </div>
                 <div className="mt-[72px]">
                   <div>
-                    <Tabs defaultValue="executions" className="max-w-xs">
+                    <Tabs
+                      defaultValue="executions"
+                      className="mx-auto max-w-xs"
+                    >
                       <TabsList className="rounded-full bg-stone-600">
                         <TabsTrigger
                           value="executions"
@@ -120,20 +122,20 @@ export default function PaygCard() {
                   </div>
                 </div>
               </div>
-              <div className="px-9 pb-6">
-                <p className="max-w-[641px] font-circular text-sm font-light leading-[1.4] tracking-[1.12px] text-[#A8A29E]">
-                  *Free plan charged at $.000083 per execution until 1m
-                  executions are reached. For Enterprise,{" "}
-                  <a
-                    href="mailto:sales@inngest.com"
-                    className="cursor-pointer text-[#CBB26A] hover:underline"
-                  >
-                    contact us
-                  </a>{" "}
-                  for more information
-                </p>
-              </div>
             </div>
+            <CardFooter className="px-9 pb-6">
+              <p className="max-w-[641px] font-circular text-sm font-light leading-[1.4] tracking-[1.12px] text-[#A8A29E]">
+                *Free plan charged at $.000083 per execution until 1m executions
+                are reached. For Enterprise,{" "}
+                <a
+                  href="mailto:sales@inngest.com"
+                  className="cursor-pointer text-[#CBB26A] hover:underline"
+                >
+                  contact us
+                </a>{" "}
+                for more information
+              </p>
+            </CardFooter>
           </Card>
         </div>
       </div>
