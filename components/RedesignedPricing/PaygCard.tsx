@@ -11,12 +11,14 @@ const pricingData = {
     { range: "5m-15m", price: "$0.000025" },
     { range: "15m-50m", price: "$0.000020" },
     { range: "50m-100m", price: "$0.000015" },
+    { range: "100m+", price: "Contact us" },
   ],
   events: [
     { range: "1m-10m", price: "$0.0000005" },
     { range: "10m-25m", price: "$0.0000004" },
     { range: "25m-50m", price: "$0.0000003" },
     { range: "50m-150m", price: "$0.0000002" },
+    { range: "150m+", price: "Contact us" },
   ],
 };
 
@@ -59,8 +61,8 @@ export default function PaygCard() {
                       Events
                     </h4>
                     <p className="font-circular text-base font-light leading-[1.4] text-[#E7E5E4]">
-                      Charged for each event that actually triggers a function.
-                      Volume discounts apply automatically.
+                      Charged for each event received. Volume discounts apply
+                      automatically.
                     </p>
                   </div>
                 </div>
