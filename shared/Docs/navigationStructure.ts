@@ -290,6 +290,10 @@ const sectionReference: (NavGroup | NavLink)[] = [
         title: "Migrations",
         links: [
           {
+            title: "v0.4 to v0.5",
+            href: `/docs/reference/python/migrations/v0.4-to-v0.5`,
+          },
+          {
             title: "v0.3 to v0.4",
             href: `/docs/reference/python/migrations/v0.3-to-v0.4`,
           },

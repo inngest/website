@@ -38,21 +38,15 @@ This method behaves identically to the [invoke](/docs/reference/python/steps/inv
     fn_id="fn-1",
     trigger=inngest.TriggerEvent(event="app/fn-1"),
 )
-async def fn_1(
-    ctx: inngest.Context,
-    step: inngest.Step,
-) -> str:
+async def fn_1(ctx: inngest.Context) -> str:
     return "Hello!"
 
 @inngest_client.create_function(
     fn_id="fn-2",
     trigger=inngest.TriggerEvent(event="app/fn-2"),
 )
-async def fn_2(
-    ctx: inngest.Context,
-    step: inngest.Step,
-) -> None:
-    output = step.invoke_by_id(
+async def fn_2(ctx: inngest.Context) -> None:
+    output = ctx.step.invoke_by_id(
         "invoke",
         function_id="fn-1",
     )
@@ -71,21 +65,15 @@ inngest_client_2 = inngest.Inngest(app_id="app-2")
     fn_id="fn-1",
     trigger=inngest.TriggerEvent(event="app/fn-1"),
 )
-async def fn_1(
-    ctx: inngest.Context,
-    step: inngest.Step,
-) -> str:
+async def fn_1(ctx: inngest.Context) -> str:
     return "Hello!"
 
 @inngest_client_2.create_function(
     fn_id="fn-2",
     trigger=inngest.TriggerEvent(event="app/fn-2"),
 )
-async def fn_2(
-    ctx: inngest.Context,
-    step: inngest.Step,
-) -> None:
-    output = step.invoke_by_id(
+async def fn_2(ctx: inngest.Context) -> None:
+    output = ctx.step.invoke_by_id(
         "invoke",
         app_id="app-1",
         function_id="fn-1",

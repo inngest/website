@@ -92,7 +92,7 @@ inngestgo.CreateFunction(
         key="event.data.user_id"  # Optional: batch events by user ID
     ),
 )
-async def record_api_calls(ctx: inngest.Context, step: inngest.Step):
+async def record_api_calls(ctx: inngest.Context):
     # NOTE: Use the events from ctx, which is an array of event payloads
     attrs = [
         {
@@ -106,7 +106,7 @@ async def record_api_calls(ctx: inngest.Context, step: inngest.Step):
     async def record_data():
         return await db.bulk_write(attrs)
 
-    result = await step.run("record-data-to-db", record_data)
+    result = await ctx.step.run("record-data-to-db", record_data)
 
     return {"success": True, "recorded": len(result)}
 ```

@@ -230,12 +230,12 @@ from src.inngest.client import inngest_client
     fn_id="weekly-activity-load-users",
     trigger=inngest.TriggerCron(cron="0 12 * * 5")
 )
-async def load_cron(ctx: inngest.Context, step: inngest.Step):
+async def load_cron(ctx: inngest.Context):
     # Fetch all users
     async def fetch():
         return await fetch_users()
     
-    users = await step.run("fetch-users", fetch)
+    users = await ctx.step.run("fetch-users", fetch)
 
     # For each user, send us an event. Inngest supports batches of events
     # as long as the entire payload is less than 512KB.
@@ -253,7 +253,7 @@ async def load_cron(ctx: inngest.Context, step: inngest.Step):
 
     # Send all events to Inngest, which triggers any functions listening to
     # the given event names.
-    await step.send_event("fan-out-weekly-emails", events)
+    await ctx.step.send_event("fan-out-weekly-emails", events)
 
     # Return the number of users triggered.
     return {"count": len(users)}
@@ -266,16 +266,16 @@ Next, create a function that listens for the `"app/weekly-email-activity.send"` 
     fn_id="weekly-activity-send-email",
     trigger=inngest.TriggerEvent(event="app/weekly-email-activity.send")
 )
-async def send_reminder(ctx: inngest.Context, step: inngest.Step):
+async def send_reminder(ctx: inngest.Context):
     async def load_data():
         return await load_user_data(ctx.event.data["user"]["id"])
     
-    data = await step.run("load-user-data", load_data)
+    data = await ctx.step.run("load-user-data", load_data)
 
     async def send():
         return await send_email(ctx.event.data["user"], data)
     
-    await step.run("email-user", send)
+    await ctx.step.run("email-user", send)
 ```
 
 Each of these functions will run in parallel and individually retry on error, resulting in a faster, more reliable system.

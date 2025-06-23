@@ -396,8 +396,8 @@ from src.inngest.client import inngest_client
     fn_id="import-product-images",
     event="shop/product.imported"
 )
-async def import_product_images(ctx: inngest.Context, step: inngest.Step):
-    uploaded_image_urls = await step.run(
+async def import_product_images(ctx: inngest.Context):
+    uploaded_image_urls = await ctx.step.run(
         # step ID
         "copy-images-to-s3",
         # other arguments, in this case: a handler
@@ -430,10 +430,10 @@ from src.inngest.client import inngest_client
     fn_id="import-product-images",
     event="shop/product.imported"
 )
-async def import_product_images(ctx: inngest.Context, step: inngest.Step):
+async def import_product_images(ctx: inngest.Context):
     # Here goes the business logic
     # By wrapping code in steps, it will be retried automatically on failure
-    uploaded_image_urls = await step.run(
+    uploaded_image_urls = await ctx.step.run(
         # step ID
         "copy-images-to-s3",
         # other arguments, in this case: a handler
@@ -457,8 +457,8 @@ from src.inngest.client import inngest_client
     fn_id="send-delayed-email",
     trigger=inngest.Trigger(event="app/user.signup")
 )
-async def send_delayed_email(ctx: inngest.Context, step: inngest.Step):
-    await step.sleep("wait-a-couple-of-days", datetime.timedelta(days=2))
+async def send_delayed_email(ctx: inngest.Context):
+    await ctx.step.sleep("wait-a-couple-of-days", datetime.timedelta(days=2))
     # Do something else
 ```
 
@@ -475,9 +475,9 @@ from datetime import datetime
     fn_id="send-scheduled-reminder",
     trigger=inngest.Trigger(event="app/reminder.scheduled")
 )
-async def send_scheduled_reminder(ctx: inngest.Context, step: inngest.Step):
+async def send_scheduled_reminder(ctx: inngest.Context):
     date = datetime.fromisoformat(ctx.event.data["remind_at"])
-    await step.sleep_until("wait-for-the-date", date)
+    await ctx.step.sleep_until("wait-for-the-date", date)
     # Do something else
 ```
 
@@ -493,8 +493,8 @@ from src.inngest.client import inngest_client
     fn_id="send-onboarding-nudge-email",
     trigger=inngest.Trigger(event="app/account.created")
 )
-async def send_onboarding_nudge_email(ctx: inngest.Context, step: inngest.Step):
-    onboarding_completed = await step.wait_for_event(
+async def send_onboarding_nudge_email(ctx: inngest.Context):
+    onboarding_completed = await ctx.step.wait_for_event(
       "wait-for-onboarding-completion",
       event="app/wait_for_event.fulfill",
       if_exp="event.data.user_id == async.data.user_id",
@@ -517,21 +517,15 @@ from src.inngest.client import inngest_client
     fn_id="fn-1",
     trigger=inngest.TriggerEvent(event="app/fn-1"),
 )
-async def fn_1(
-    ctx: inngest.Context,
-    step: inngest.Step,
-) -> None:
+async def fn_1(ctx: inngest.Context) -> None:
     return "Hello!"
 
 @inngest_client.create_function(
     fn_id="fn-2",
     trigger=inngest.TriggerEvent(event="app/fn-2"),
 )
-async def fn_2(
-    ctx: inngest.Context,
-    step: inngest.Step,
-) -> None:
-    output = await step.invoke(
+async def fn_2(ctx: inngest.Context) -> None:
+    output = await ctx.step.invoke(
         "invoke",
         function=fn_1,
     )
@@ -552,11 +546,8 @@ from src.inngest.client import inngest_client
     fn_id="my_function",
     trigger=inngest.TriggerEvent(event="app/my_function"),
 )
-async def fn(
-    ctx: inngest.Context,
-    step: inngest.Step,
-) -> list[str]:
-    return await step.send_event("send", inngest.Event(name="foo"))
+async def fn(ctx: inngest.Context) -> list[str]:
+    return await ctx.step.send_event("send", inngest.Event(name="foo"))
 
 ```
 

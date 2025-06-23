@@ -420,7 +420,7 @@ inngestgo.CreateFunction(
       )
     ]
 )
-async def func_a(ctx: inngest.Context, step: inngest.Step):
+async def func_a(ctx: inngest.Context):
     pass
 
 @inngest_client.create_function(
@@ -434,7 +434,7 @@ async def func_a(ctx: inngest.Context, step: inngest.Step):
       )
     ]
 )
-async def func_b(ctx: inngest.Context, step: inngest.Step):
+async def func_b(ctx: inngest.Context):
     pass
 ```
 
@@ -557,12 +557,12 @@ inngestgo.CreateFunction(
         )
     ]
 )
-async def process_csv_import(ctx: inngest.Context, step: inngest.Step):
+async def process_csv_import(ctx: inngest.Context):
     async def process_file():
         file = await bucket.fetch(ctx.event.data.file_uri)
         # ...
 
-    await step.run("process-file", process_file)
+    await ctx.step.run("process-file", process_file)
     return {"message": "success"}
 ```
 

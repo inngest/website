@@ -90,7 +90,7 @@ inngest_client = inngest.Inngest(
         DatadogMiddleware # This is executed fourth
     ],
 )
-async def fn(ctx: inngest.Context, step: inngest.Step):
+async def fn(ctx: inngest.Context):
     # ...
 
 ```

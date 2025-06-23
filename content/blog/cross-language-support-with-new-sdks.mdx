@@ -52,10 +52,7 @@ To make this example simple, let’s assume you have an Inngest function which r
     fn_id="total",
     trigger=inngest.TriggerEvent(event="python-app/total"),
 )
-def fn(
-    ctx: inngest.Context,
-    step: inngest.StepSync,
-) -> int:
+def fn(ctx: inngest.ContextSync) -> int:
     values = ctx.event.data.get("values")
     if not isinstance(values, list):
         raise inngest.NonRetriableError("values must be a list")

@@ -1,0 +1,122 @@
+---
+heading: "Python SDK v0.5: AI, Pydantic, and more"
+image: /assets/blog/2025-06-23-python-v0.5/featured-image.png
+showSubtitle: true
+subtitle: The latest version of the Inngest Python SDK is now stable and ready for production use.
+date: 2025-06-23
+author: Aaron Harper
+category: product-updates
+focus: true
+---
+
+We are thrilled to announce the release of the Inngest Python SDK v0.5. This release brings a number of new features and improvements to the SDK, including:
+
+- [First-class Pydantic support in step and function output](#pydantic)
+- [Experimental AI orchestration with `step.infer`](#ai-orchestration)
+- [Connect is stable](#connect)
+- [Python 3.13 support](#python-313)
+- [Event-sending retries](#event-sending-retries)
+- [Function singletons](#function-singletons)
+- [Function timeouts](#function-timeouts)
+- [Improved parallel step performance](#improved-parallel-step-performance)
+
+# New features
+
+## Pydantic
+
+Pydantic is a popular library for runtime data validation and serialization. Inngest now supports Pydantic models as step and function output. You can read more about Pydantic support in the [Pydantic guide](/docs/reference/python/guides/pydantic).
+
+First, ensure that the Pydantic serializer is set on the Inngest client:
+```py
+client = inngest.Inngest(
+    app_id="my-app",
+    serializer=inngest.PydanticSerializer(),
+)
+```
+
+Then you can specify the `output_type` parameter for `step.run`:
+
+```py
+class User(pydantic.BaseModel):
+    name: str
+
+async def get_user() -> User:
+    return User(name="Alice")
+
+@client.create_function(
+    fn_id="my-fn",
+    trigger=inngest.TriggerEvent(event="my-event"),
+)
+async def my_fn(ctx: inngest.Context) -> None:
+    # user object is a Pydantic object at both runtime and compile time
+    user = await ctx.step.run("get-user", get_user, output_type=User)
+```
+
+If you want to return a Pydantic object from a function, you can set the `output_type` parameter on the function:
+
+```py
+@client.create_function(
+    fn_id="my-fn",
+    output_type=User,
+    trigger=inngest.TriggerEvent(event="my-event"),
+)
+async def my_fn(ctx: inngest.Context) -> None:
+    return User(name="Alice")
+```
+
+## AI orchestration
+
+The Python SDK now supports the same `step.ai.infer` AI orchestration as the TypeScript SDK. You can read more about AI orchestration in the [AI orchestration guide](/docs/features/inngest-functions/steps-workflows/step-ai-orchestration).
+
+```py
+import inngest
+from inngest.experimental import ai
+
+@inngest_client.create_function(
+    fn_id="hello-world",
+    trigger=inngest.TriggerEvent(event="say-hello"),
+)
+async def hello(ctx: inngest.Context) -> object:
+    res = await ctx.step.ai.infer(
+        "say-hello",
+        adapter=ai.anthropic.Adapter(
+            auth_key="sk-ant-000000",
+            model="claude-3-5-sonnet-latest",
+        ),
+        body={
+            "max_tokens": 1024,
+            "messages": [{"role": "user", "content": "Hello, how are you?"}],
+        },
+    )
+    return res["content"][0]["text"]
+```
+
+Note that AI orchestration is still experimental. It's ready for production use, but the interface may change.
+
+## Connect
+
+Connect is now stable. The feature is still in developer preview across all languages, but the Python API is stable. You can read more about Connect in the [Connect guide](/docs/setup/connect).
+
+## Python 3.13
+
+Python 3.13 is now supported. Note that Python 3.9 is no longer supported.
+
+## Event-sending retries
+
+Whenever an event is sent using our client or `step.send`, the SDK will now retry the request if it fails. Idempotency is automatic, so you don't need to worry about duplicate events.
+
+## Function singletons
+
+Function singletons are now supported. You can read more about function singletons in the [function singletons guide](/docs/guides/singleton).
+
+## Function timeouts
+
+Function timeouts are now supported. You can read more about function timeouts in the [function timeouts guide](/docs/features/inngest-functions/cancellation/cancel-on-timeouts).
+
+## Improved parallel step performance
+
+The number of requests required to perform parallel steps is reduced by up to 50%.
+
+# Breaking changes
+
+See the [migration guide](/docs/reference/python/migrations/v0.4-to-v0.5) for more details.

@@ -319,10 +319,7 @@ from src.inngest.client import inngest_client
     fn_id="activation-email",
     trigger=inngest.TriggerEvent(event="app/user.created"),
 )
-async def fn(
-    ctx: inngest.Context,
-    step: inngest.Step,
-) -> None:
+async def fn(ctx: inngest.Context) -> None:
     await sendEmail({ email: ctx.event.user.email, template: "welcome" })
 ```
 </CodeGroup>
@@ -345,11 +342,8 @@ from src.inngest.client import inngest_client
     fn_id="activation-email",
     trigger=inngest.TriggerEvent(event="app/user.created"),
 )
-async def fn(
-    ctx: inngest.Context,
-    step: inngest.Step,
-) -> None:
-    await step.run("send-welcome-email", lambda: sendEmail({
+async def fn(ctx: inngest.Context) -> None:
+    await ctx.step.run("send-welcome-email", lambda: sendEmail({
         "email": ctx.event.user.email,
         "template": "welcome"
     }))
@@ -374,17 +368,14 @@ from src.inngest.client import inngest_client
     fn_id="activation-email",
     trigger=inngest.TriggerEvent(event="app/user.created"),
 )
-async def fn(
-    ctx: inngest.Context,
-    step: inngest.Step,
-) -> None:
-    await step.run("send-welcome-email", lambda: sendEmail({
+async def fn(ctx: inngest.Context) -> None:
+    await ctx.step.run("send-welcome-email", lambda: sendEmail({
         "email": ctx.event.user.email,
         "template": "welcome"
     }))
 
     # Wait for an "app/post.created" event
-    post_created = await step.wait_for_event("wait-for-post-creation", {
+    post_created = await ctx.step.wait_for_event("wait-for-post-creation", {
         "event": "app/post.created",
         "match": "data.user.id",  # the field "data.user.id" must match
         "timeout": "24h",  # wait at most 24 hours
@@ -407,17 +398,14 @@ from src.inngest.client import inngest_client
     fn_id="activation-email",
     trigger=inngest.TriggerEvent(event="app/user.created"),
 )
-async def fn(
-    ctx: inngest.Context,
-    step: inngest.Step,
-) -> None:
-    await step.run("send-welcome-email", lambda: sendEmail({
+async def fn(ctx: inngest.Context) -> None:
+    await ctx.step.run("send-welcome-email", lambda: sendEmail({
         "email": ctx.event.user.email,
         "template": "welcome"
     }))
 
     # Wait for an "app/post.created" event
-    post_created = await step.wait_for_event("wait-for-post-creation", {
+    post_created = await ctx.step.wait_for_event("wait-for-post-creation", {
         "event": "app/post.created",
         "match": "data.user.id",  # the field "data.user.id" must match
         "timeout": "24h",  # wait at most 24 hours
@@ -425,7 +413,7 @@ async def fn(
 
     if not post_created:
         # If no post was created, send a reminder email
-        await step.run("send-reminder-email", lambda: sendEmail({
+        await ctx.step.run("send-reminder-email", lambda: sendEmail({
             "email": ctx.event.user.email,
             "template": "reminder"
         }))
@@ -635,20 +623,20 @@ Always use `sleep()` if you'd like to wait a particular time from _now_.
 ```py
 # ❌ Bad
 tomorrow = datetime.now() + timedelta(days=1)
-await step.sleepUntil("wait-until-tomorrow", tomorrow);
+await ctx.step.sleepUntil("wait-until-tomorrow", tomorrow);
 
 # ✅ Good
-await step.sleep("wait-a-day", "1 day");
+await ctx.step.sleep("wait-a-day", "1 day");
 ```
 
 ```py
 # ✅ Good
-user_birthday = await step.run("get-user-birthday", async () => {
+user_birthday = await ctx.step.run("get-user-birthday", async () => {
   user = await get_user();
   return user.birthday; # Date
 });
 
-await step.sleep_until("wait-for-user-birthday", user_birthday);
+await ctx.step.sleep_until("wait-for-user-birthday", user_birthday);
 ```
 
 ### Unexpected loop behavior
