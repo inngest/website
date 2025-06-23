@@ -10,7 +10,7 @@ export default class MyDocument extends Document {
             href={
               process.env.NEXT_PUBLIC_FAVICON
                 ? `/${process.env.NEXT_PUBLIC_FAVICON}`
-                : "/favicon-june-2025-light.png"
+                : "/favicon-june-2025-light.svg"
             }
             media="(prefers-color-scheme: light)"
           />
@@ -19,7 +19,7 @@ export default class MyDocument extends Document {
             href={
               process.env.NEXT_PUBLIC_FAVICON
                 ? `/${process.env.NEXT_PUBLIC_FAVICON}`
-                : "/favicon-june-2025-dark.png"
+                : "/favicon-june-2025-dark.svg"
             }
             media="(prefers-color-scheme: dark)"
           />
