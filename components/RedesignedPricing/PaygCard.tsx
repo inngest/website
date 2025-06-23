@@ -16,7 +16,7 @@ const pricingData = {
     { range: "100m+", price: "Contact us" },
   ],
   events: [
-    { range: "1m-10m", price: "$0.0000005" },
+    { range: "5m-10m", price: "$0.0000005" },
     { range: "10m-25m", price: "$0.0000004" },
     { range: "25m-50m", price: "$0.0000003" },
     { range: "50m-150m", price: "$0.0000002" },
@@ -63,8 +63,9 @@ export default function PaygCard() {
                       Events
                     </h4>
                     <p className="font-circular text-base font-light leading-[1.4] text-[#E7E5E4]">
-                      Charged for each event received. Volume discounts apply
-                      automatically.
+                      Charged for each event received. Your first 1-5m events
+                      every day are free, with automatic volume discounts as
+                      you scale
                     </p>
                   </div>
                 </div>
