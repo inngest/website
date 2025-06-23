@@ -4,6 +4,8 @@ import {
   CardFooter,
 } from "src/components/RedesignedLanding/FeatureNavigate/Card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./Tabs";
+import { Button } from "../RedesignedLanding/Button";
+import Link from "next/link";
 
 const pricingData = {
   executions: [
@@ -51,9 +53,9 @@ export default function PaygCard() {
                       Executions
                     </h4>
                     <p className="font-circular text-base font-light leading-[1.4] text-[#E7E5E4]">
-                      Billed each time a function starts. Your first 100k
-                      executions every month are free, and the price per run
-                      drops as you scale.
+                      Each run or step in your code. Your first 100k executions
+                      every month are free, with automatic volume discounts as
+                      you scale
                     </p>
                   </div>
                   <div>
@@ -96,9 +98,24 @@ export default function PaygCard() {
                               <span className="text-brand-muted text-sm">
                                 {item.range}
                               </span>
-                              <span className="text-brand-foreground text-sm font-semibold">
-                                {item.price}
-                              </span>
+                              {item.price === "Contact us" ? (
+                                <Button
+                                  variant="link"
+                                  className="px-0 py-0 text-sm hover:text-inngestLux"
+                                  asChild
+                                >
+                                  <Link
+                                    className="h-full"
+                                    href="/contact?ref=pricing-card-payg-executions"
+                                  >
+                                    Contact us
+                                  </Link>
+                                </Button>
+                              ) : (
+                                <span className="text-brand-foreground text-sm font-semibold">
+                                  {item.price}
+                                </span>
+                              )}
                             </div>
                           ))}
                         </div>
@@ -108,14 +125,29 @@ export default function PaygCard() {
                           {pricingData.events.map((item, index) => (
                             <div
                               key={index}
-                              className="flex items-center justify-between border-b border-stone-600  py-4"
+                              className="flex items-center justify-between border-b border-stone-600 py-4"
                             >
                               <span className="text-brand-muted text-sm">
                                 {item.range}
                               </span>
-                              <span className="text-brand-foreground text-sm font-semibold">
-                                {item.price}
-                              </span>
+                              {item.price === "Contact us" ? (
+                                <Button
+                                  variant="link"
+                                  className="px-0 py-0 text-sm hover:text-inngestLux"
+                                  asChild
+                                >
+                                  <Link
+                                    className="h-full"
+                                    href="/contact?ref=pricing-card-payg-events"
+                                  >
+                                    Contact us
+                                  </Link>
+                                </Button>
+                              ) : (
+                                <span className="text-brand-foreground text-sm font-semibold">
+                                  {item.price}
+                                </span>
+                              )}
                             </div>
                           ))}
                         </div>
