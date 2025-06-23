@@ -211,7 +211,7 @@ export const PLANS: Plan[] = [
       runs: "Custom executions",
       concurrency: "500 concurrent steps",
       realtime: "1000+ realtime connections",
-      users: "50 users",
+      users: "Custom users",
     },
     planIncludes: "INCLUDED IN ENTERPRISE PLAN",
     features: [

@@ -61,8 +61,8 @@ export default function PaygCard() {
                       Events
                     </h4>
                     <p className="font-circular text-base font-light leading-[1.4] text-[#E7E5E4]">
-                      Charged for each event that actually triggers a function.
-                      Volume discounts apply automatically.
+                      Charged for each event received. Volume discounts apply
+                      automatically.
                     </p>
                   </div>
                 </div>
