@@ -1,18 +1,12 @@
 "use client";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { RiArrowDownSLine } from "@remixicon/react";
 
 import classNames from "src/utils/classNames";
 import { type Plan, PLAN_NAMES, getPlan } from "./plans";
 
 import { Slider } from "components/RedesignedPricing/Slider";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "components/RedesignedPricing/Select";
+import { Input } from "components/RedesignedPricing/Input";
 import { Button } from "components/RedesignedLanding/Button";
 import { InformationCircleIcon } from "@heroicons/react/24/outline";
 
@@ -25,6 +19,8 @@ type EstimatedCosts = {
   additionalRunsCost: number;
   additionalStepsCost: number;
   concurrencyCost: number;
+  additionalUsersCost: number;
+  additionalWorkersCost: number;
 };
 type CalculatorResults = {
   cost: EstimatedCosts;
@@ -38,11 +34,15 @@ function calculatePlanCost({
   runs,
   steps,
   concurrency,
+  users,
+  workers,
 }: {
   planName: typeof PLAN_NAMES[keyof typeof PLAN_NAMES];
   runs: number;
   steps: number;
   concurrency: number;
+  users: number;
+  workers: number;
 }): EstimatedCosts {
   const plan = getPlan(planName);
   const additionalRuns = Math.max(runs - num(plan.cost.includedRuns), 0);
@@ -52,6 +52,16 @@ function calculatePlanCost({
     concurrency - num(plan.cost.includedConcurrency),
     0
   );
+
+  const additionalUsers =
+    plan.cost.includedUsers !== undefined
+      ? Math.max(users - num(plan.cost.includedUsers), 0)
+      : 0;
+
+  const additionalWorkers =
+    plan.cost.includedWorkers !== undefined
+      ? Math.max(workers - num(plan.cost.includedWorkers), 0)
+      : 0;
 
   const baseCost = num(plan.cost.basePrice);
   const additionalRunsCost =
@@ -70,14 +80,33 @@ function calculatePlanCost({
         ) * num(plan.cost.additionalConcurrencyPrice)
       : NaN;
 
+  const additionalUsersCost =
+    additionalUsers === 0 || !plan.cost.additionalUsersRate
+      ? 0
+      : Math.ceil(additionalUsers / num(plan.cost.additionalUsersRate)) *
+        num(plan.cost.additionalUsersPrice ?? 0);
+
+  const additionalWorkersCost =
+    additionalWorkers === 0 || !plan.cost.additionalWorkersRate
+      ? 0
+      : Math.ceil(additionalWorkers / num(plan.cost.additionalWorkersRate)) *
+        num(plan.cost.additionalWorkersPrice ?? 0);
+
   const totalCost =
-    baseCost + additionalRunsCost + additionalStepsCost + concurrencyCost;
+    baseCost +
+    additionalRunsCost +
+    additionalStepsCost +
+    concurrencyCost +
+    additionalUsersCost +
+    additionalWorkersCost;
   return {
     baseCost,
     totalCost,
     additionalRunsCost,
     additionalStepsCost,
     concurrencyCost,
+    additionalUsersCost,
+    additionalWorkersCost,
   };
 }
 
@@ -85,10 +114,14 @@ function calculatePlanCosts({
   runs,
   steps,
   concurrency,
+  users,
+  workers,
 }: {
   runs: number;
   steps: number;
   concurrency: number;
+  users: number;
+  workers: number;
 }) {
   return {
     [PLAN_NAMES.pro]: {
@@ -97,6 +130,8 @@ function calculatePlanCosts({
         runs,
         steps,
         concurrency,
+        users,
+        workers,
       }),
     },
   };
@@ -110,12 +145,38 @@ function num(v: string | number): number {
   return v;
 }
 
+function PlanSummary({ plan, price }: { plan: Plan; price: string }) {
+  return (
+    <div className="flex flex-col items-start justify-center  bg-stone-800 p-6 sm:p-8">
+      <h2 className="font-whyteInktrap text-[40px] font-medium leading-[1] tracking-[-2px] text-[#EEECE6]">
+        {plan.name}
+      </h2>
+      {plan.description && (
+        <p className="mb-6 mt-3 font-circular text-sm font-normal leading-5 text-[#EEECE6]">
+          {plan.description as any}
+        </p>
+      )}
+      <div className="my-4">
+        <span className="text-6xl font-extrabold text-neutral-100">
+          {price}
+        </span>
+        {price !== "$Infinity" && (
+          <span className="text-xl text-neutral-400"> /month</span>
+        )}
+      </div>
+      <Button className="mt-auto h-11 w-full bg-[#C2A46A] py-3 text-base font-semibold text-[#212121] hover:bg-[#b3955d]">
+        {plan.cta.text}
+      </Button>
+    </div>
+  );
+}
+
 export function PricingCalculatorPage() {
   const [runs, setRuns] = useState(50000);
   const [steps, setSteps] = useState(20);
-  const [users, setUsers] = useState<string | undefined>();
-  const [concurrency, setConcurrency] = useState<string | undefined>();
-  const [workers, setWorkers] = useState<string | undefined>();
+  const [users, setUsers] = useState<number>(3);
+  const [concurrency, setConcurrency] = useState<number>(25);
+  const [workers, setWorkers] = useState<number>(3);
 
   const [isOpen, setOpen] = useState<boolean>(false);
 
@@ -124,49 +185,22 @@ export function PricingCalculatorPage() {
   const stepsMin = 0,
     stepsMax = 100;
 
-  const selectOptions = [
-    {
-      label: "Number of users",
-      value: users,
-      setter: setUsers,
-      options: ["1-10 users", "11-50 users", "51-200 users", "200+ users"],
-      placeholder: "Select users",
-    },
-    {
-      label: "Run concurrency",
-      value: concurrency,
-      setter: setConcurrency,
-      options: [
-        "1 concurrent run",
-        "2-5 concurrent runs",
-        "6-10 concurrent runs",
-        "10+ concurrent runs",
-      ],
-      placeholder: "Select concurrency",
-    },
-    {
-      label: "Number of workers",
-      value: workers,
-      setter: setWorkers,
-      options: ["1 worker", "2-4 workers", "5-8 workers", "8+ workers"],
-      placeholder: "Select workers",
-    },
-  ];
-
   const results: CalculatorResults = useMemo(() => {
     const runsCount = runs;
 
     const estimatedSteps = runsCount * steps;
 
-    const concurrencyNumber = concurrency
-      ? parseInt(concurrency.match(/\d+/)?.[0] || "0", 10)
-      : 0;
+    const concurrencyNumber = concurrency;
+    const usersNumber = users;
+    const workersNumber = workers;
 
-    // If the usage fits entirely within the free plan limits, recommend the Free plan
+    // If the usage fits entirely within the free plan limits (runs, steps, concurrency, users, workers), recommend the Free plan
     if (
       runsCount <= num(FREE_PLAN.cost.includedRuns) &&
       estimatedSteps <= runsCount * num(FREE_PLAN.cost.includedSteps) &&
-      concurrencyNumber <= num(FREE_PLAN.cost.includedConcurrency)
+      concurrencyNumber <= num(FREE_PLAN.cost.includedConcurrency) &&
+      usersNumber <= num(FREE_PLAN.cost.includedUsers) &&
+      workersNumber <= num(FREE_PLAN.cost.includedWorkers ?? 0)
     ) {
       return {
         cost: {
@@ -175,6 +209,8 @@ export function PricingCalculatorPage() {
           additionalRunsCost: 0,
           additionalStepsCost: 0,
           concurrencyCost: 0,
+          additionalUsersCost: 0,
+          additionalWorkersCost: 0,
         },
         includedSteps: runsCount * num(FREE_PLAN.cost.includedSteps),
         estimatedSteps,
@@ -182,11 +218,12 @@ export function PricingCalculatorPage() {
       };
     }
 
-    // Otherwise, estimate the Pro plan cost (Enterprise is custom pricing)
     const estimates = calculatePlanCosts({
       runs: runsCount,
       steps: estimatedSteps,
       concurrency: concurrencyNumber,
+      users: usersNumber,
+      workers: workersNumber,
     });
 
     const recommendedPlan =
@@ -201,12 +238,22 @@ export function PricingCalculatorPage() {
         additionalRunsCost: Infinity,
         additionalStepsCost: Infinity,
         concurrencyCost: Infinity,
+        additionalUsersCost: Infinity,
+        additionalWorkersCost: Infinity,
       },
       includedSteps: runsCount * num(PRO_PLAN.cost.includedSteps),
       estimatedSteps,
       plan: recommendedPlan,
     };
-  }, [runs, steps, concurrency]);
+  }, [runs, steps, concurrency, users, workers]);
+
+  const plan = getPlan(results.plan);
+  const priceDisplay =
+    results.cost.totalCost === Infinity
+      ? typeof plan.cost.basePrice === "number"
+        ? `$${plan.cost.basePrice}`
+        : plan.cost.basePrice
+      : `$${results.cost.totalCost.toLocaleString()}`;
 
   return (
     <div
@@ -295,90 +342,81 @@ export function PricingCalculatorPage() {
                 </div>
 
                 <div className="grid grid-cols-1 gap-x-4 gap-y-6 pt-4 sm:grid-cols-3">
-                  {selectOptions.map((selectProps) => (
-                    <div key={selectProps.label} className="space-y-1.5">
-                      <label
-                        htmlFor={selectProps.label
-                          .toLowerCase()
-                          .replace(/\s+/g, "-")}
-                        className="flex items-center text-xs font-medium text-neutral-400"
-                      >
-                        {selectProps.label}
-                        <InformationCircleIcon
-                          className="ml-1 h-4 w-4 cursor-pointer text-neutral-500"
-                          aria-label={`More information about ${selectProps.label}`}
-                        />
-                      </label>
-                      <Select
-                        value={selectProps.value}
-                        onValueChange={selectProps.setter}
-                      >
-                        <SelectTrigger
-                          id={selectProps.label
-                            .toLowerCase()
-                            .replace(/\s+/g, "-")}
-                          className="h-10 w-full border-[#4A4A4A] bg-[#383838] text-sm text-neutral-100 focus:ring-1 focus:ring-[#C2A46A] focus:ring-offset-0"
-                          aria-label={selectProps.label}
-                        >
-                          <SelectValue
-                            placeholder={
-                              selectProps.placeholder || "Select one"
-                            }
-                          />
-                        </SelectTrigger>
-                        <SelectContent className="border-[#4A4A4A] bg-[#383838] text-neutral-100">
-                          {selectProps.options.map((option) => (
-                            <SelectItem
-                              key={option}
-                              value={option.toLowerCase().replace(/\s+/g, "-")}
-                              className="text-sm focus:bg-[#4A4A4A] focus:text-neutral-100"
-                            >
-                              {option}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  ))}
+                  <div className="space-y-1.5">
+                    <label
+                      htmlFor="users-input"
+                      className="flex items-center text-xs font-medium text-neutral-400"
+                    >
+                      Number of users
+                      <InformationCircleIcon
+                        className="ml-1 h-4 w-4 cursor-pointer text-neutral-500"
+                        aria-label="More information about number of users"
+                      />
+                    </label>
+                    <Input
+                      id="users-input"
+                      type="number"
+                      min={0}
+                      value={users}
+                      onChange={(e) =>
+                        setUsers(parseInt(e.target.value || "0", 10))
+                      }
+                      className="h-10 w-full border-[#4A4A4A] bg-[#383838] text-sm text-neutral-100 focus:ring-1 focus:ring-[#C2A46A] focus:ring-offset-0"
+                      aria-label="Number of users"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label
+                      htmlFor="concurrency-input"
+                      className="flex items-center text-xs font-medium text-neutral-400"
+                    >
+                      Step concurrency
+                      <InformationCircleIcon
+                        className="ml-1 h-4 w-4 cursor-pointer text-neutral-500"
+                        aria-label="More information about step concurrency"
+                      />
+                    </label>
+                    <Input
+                      id="concurrency-input"
+                      type="number"
+                      min={0}
+                      value={concurrency}
+                      onChange={(e) =>
+                        setConcurrency(parseInt(e.target.value || "0", 10))
+                      }
+                      className="h-10 w-full border-[#4A4A4A] bg-[#383838] text-sm text-neutral-100 focus:ring-1 focus:ring-[#C2A46A] focus:ring-offset-0"
+                      aria-label="Step concurrency"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label
+                      htmlFor="workers-input"
+                      className="flex items-center text-xs font-medium text-neutral-400"
+                    >
+                      Number of workers
+                      <InformationCircleIcon
+                        className="ml-1 h-4 w-4 cursor-pointer text-neutral-500"
+                        aria-label="More information about number of workers"
+                      />
+                    </label>
+                    <Input
+                      id="workers-input"
+                      type="number"
+                      min={0}
+                      value={workers}
+                      onChange={(e) =>
+                        setWorkers(parseInt(e.target.value || "0", 10))
+                      }
+                      className="h-10 w-full border-[#4A4A4A] bg-[#383838] text-sm text-neutral-100 focus:ring-1 focus:ring-[#C2A46A] focus:ring-offset-0"
+                      aria-label="Number of workers"
+                    />
+                  </div>
                 </div>
               </div>
 
-              {(() => {
-                const plan = getPlan(results.plan);
-                const priceDisplay =
-                  results.cost.totalCost === Infinity
-                    ? typeof plan.cost.basePrice === "number"
-                      ? `$${plan.cost.basePrice}`
-                      : plan.cost.basePrice
-                    : `$${results.cost.totalCost.toLocaleString()}`;
-
-                return (
-                  <div className="flex flex-col items-start justify-center  bg-stone-800 p-6 sm:p-8">
-                    <h2 className="font-whyteInktrap text-[40px] font-medium leading-[1] tracking-[-2px] text-[#EEECE6]">
-                      {plan.name}
-                    </h2>
-                    {plan.description && (
-                      <p className="mb-6 mt-3 font-circular text-sm font-normal leading-5 text-[#EEECE6]">
-                        {plan.description as any}
-                      </p>
-                    )}
-                    <div className="my-4">
-                      <span className="text-6xl font-extrabold text-neutral-100">
-                        {priceDisplay}
-                      </span>
-                      {results.cost.totalCost !== Infinity && (
-                        <span className="text-xl text-neutral-400">
-                          {" "}
-                          /month
-                        </span>
-                      )}
-                    </div>
-                    <Button className="mt-auto h-11 w-full bg-[#C2A46A] py-3 text-base font-semibold text-[#212121] hover:bg-[#b3955d]">
-                      {plan.cta.text}
-                    </Button>
-                  </div>
-                );
-              })()}
+              <PlanSummary plan={plan} price={priceDisplay} />
             </div>
           </div>
         </div>

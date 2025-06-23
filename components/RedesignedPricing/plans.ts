@@ -19,6 +19,9 @@ export type Plan = {
     additionalUsersPrice: number | string | null;
     additionalUsersRate?: number;
     period?: string;
+    includedWorkers?: number | string;
+    additionalWorkersPrice?: number | string | null;
+    additionalWorkersRate?: number;
   };
   description: React.ReactNode | string;
   hideFromCards?: boolean;
@@ -80,6 +83,9 @@ export const PLANS: Plan[] = [
       additionalUsersPrice: 10,
       additionalUsersRate: 1,
       period: "mo",
+      includedWorkers: 3,
+      additionalWorkersPrice: 10,
+      additionalWorkersRate: 1,
     },
     primaryCTA: false,
     description:
@@ -119,6 +125,9 @@ export const PLANS: Plan[] = [
       additionalUsersPrice: 10,
       additionalUsersRate: 1,
       period: "mo",
+      includedWorkers: 3,
+      additionalWorkersPrice: 10,
+      additionalWorkersRate: 1,
       //   between: true,
       //   endPrice: 75,
     },
@@ -160,6 +169,9 @@ export const PLANS: Plan[] = [
       additionalUsersPrice: 10,
       additionalUsersRate: 1,
       period: "mo",
+      includedWorkers: 20,
+      additionalWorkersPrice: 10,
+      additionalWorkersRate: 1,
     },
     description:
       "Production-ready systems with extended features for scaling companies",
@@ -200,6 +212,9 @@ export const PLANS: Plan[] = [
       additionalUsersPrice: "Custom",
       additionalUsersRate: null,
       period: "mo",
+      includedWorkers: "Custom",
+      additionalWorkersPrice: "Custom",
+      additionalWorkersRate: null,
     },
     description:
       "Get started with modern durable execution for free, with the future to grow",
