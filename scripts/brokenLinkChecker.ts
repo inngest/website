@@ -46,6 +46,7 @@ const options = {
     "https://app.datadoghq.com",
     "https://www.notion.so/blog",
     "http://localhost",
+    "https://github.com/zerodevx",
   ],
 };
 
