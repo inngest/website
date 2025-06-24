@@ -25,7 +25,7 @@ Most developer workflows are centered around branching, whether feature branches
 Branch deployments:
 
 -   Are created on-demand when you send events or register your functions for a given environment
--   Share Event Keys and Signing Keys to streamline your developer workflow (see: Configuring Branch Environments)
+-   Share Event Keys and Signing Keys to streamline your developer workflow (see: [Configuring Branch Environments](#configuring-branch-environments))
 
 It can be helpful to visualize the typical Inngest developer workflow using Branch environments and your platform's deploy previews:
 
@@ -94,9 +94,9 @@ inngest_client = inngest.Inngest(
 
 ### Sending Events to Branch Environments
 
-As all branch environments share Event Keys, all you need to do to send events to your branch environment is set the `env` option with the SDK. This will configure the SDK's `send()` method to automatically routes events to the correct environment.
+As all branch environments share Event Keys, all you need to do to send events to your branch environment is set the `env` option with the SDK. This will configure the SDK's `send()` method to automatically route events to the correct environment.
 
-If you are sending events without an Inngest SDK, you'll need pass the `x-inngest-env` header along with your request. For more information about this and sending events from any environment with **the Event API**, [read the `send()` reference](/docs/reference/events/send#send-events-via-http-event-api).
+If you are sending events without an Inngest SDK, you'll need to pass the `x-inngest-env` header along with your request. For more information about this and sending events from any environment with **the Event API**, [read the `send()` reference](/docs/reference/events/send#send-events-via-http-event-api).
 
 ### Archiving Branch Environments
 
