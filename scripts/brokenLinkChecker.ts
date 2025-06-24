@@ -43,6 +43,9 @@ const options = {
     "https://roadmap.inngest.com",
     "https://docs.anthropic.com",
     "https://redwoodjs.com",
+    "https://app.datadoghq.com",
+    "https://www.notion.so/blog",
+    "http://localhost",
   ],
 };
 
