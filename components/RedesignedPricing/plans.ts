@@ -183,16 +183,16 @@ export const PLANS: Plan[] = [
     },
     highlights: {
       runs: "1,000,000+ executions",
-      concurrency: "100 concurrent steps",
+      concurrency: "100+ concurrent steps",
       realtime: "1000+ realtime connections",
-      users: "15 users",
+      users: "15+ users",
     },
     planIncludes: "INCLUDED IN PRO PLAN",
     features: [
       "Granular metrics",
       "Increased scale and throughput",
       "Height usage limits",
-      "14 day trace retention",
+      "7 day trace retention",
     ],
   },
   {
