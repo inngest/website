@@ -192,11 +192,12 @@ import (
 )
 
 func main() {
-	f := inngestgo.CreateFunction(
+	inngestgo.CreateFunction(
+		client,
 		inngestgo.FunctionOpts{
 			ID:   "schedule-reminder",
 			Name: "Schedule reminder",
-			Cancel: []inngestgo.Cancel{
+			Cancel: []inngestgo.ConfigCancel{
 				{
 					Event: "tasks/reminder.deleted",
 					IfExp: "event.data.id == async.data.id",

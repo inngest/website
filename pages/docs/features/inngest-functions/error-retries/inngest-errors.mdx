@@ -77,30 +77,27 @@ import (
 
 // Register the function
 inngestgo.CreateFunction(
-    &inngest.FunctionOptions{
+    client,
+    inngestgo.FunctionOpts{
         ID: "send-user-email",
     },
-    inngest.FunctionTrigger{
-        Event: "user/created",
+    inngestgo.EventTrigger("user/created", nil),
+    func(ctx context.Context, input inngestgo.Input[UserCreatedEvent]) (any, error) {
+        // Run a step which emails the user.  This automatically retries on error.
+        // This returns the fully typed result of the lambda.
+        result, err := step.Run(ctx, "on-user-created", func(ctx context.Context) (bool, error) {
+            // Run any code inside a step.
+            result, err := emails.Send(emails.Opts{})
+            return result, err
+        })
+        if err != nil {
+            // This step retried 5 times by default and permanently failed.
+            return nil, err
+        }
+
+        return result, nil
     },
-    SendUserEmail,
 )
-
-func SendUserEmail(ctx *inngest.FunctionContext) (any, error) {
-    // Run a step which emails the user.  This automatically retries on error.
-    // This returns the fully typed result of the lambda.
-    result, err := step.Run(ctx, "on-user-created", func(ctx context.Context) (bool, error) {
-      // Run any code inside a step.
-      result, err := emails.Send(emails.Opts{})
-      return result, err
-    })
-    if err != nil {
-      // This step retried 5 times by default and permanently failed.
-      return nil, err
-    }
-
-    return nil, nil
-}
 ```
 </GuideSection>
 
@@ -183,31 +180,28 @@ import (
 
 // Register the function
 inngestgo.CreateFunction(
-    &inngest.FunctionOptions{
+    client,
+    inngestgo.FunctionOpts{
         ID: "send-user-email",
     },
-    inngest.FunctionTrigger{
-        Event: "user/created",
+    inngestgo.EventTrigger("user/created", nil),
+    func(ctx context.Context, input inngestgo.Input[UserCreatedEvent]) (any, error) {
+        // Run a step which emails the user.  This automatically retries on error.
+        // This returns the fully typed result of the lambda.
+        result, err := step.Run(ctx, "on-user-created", func(ctx context.Context) (bool, error) {
+            // Run any code inside a step.
+            result, err := emails.Send(emails.Opts{})
+            return result, err
+        })
+        if err != nil {
+            // This step retried 5 times by default and permanently failed.
+            // we return a NoRetryError to prevent Inngest from retrying the function
+            return nil, inngestgo.NoRetryError(err)
+        }
+
+        return result, nil
     },
-    SendUserEmail,
 )
-
-func SendUserEmail(ctx *inngest.FunctionContext) (any, error) {
-    // Run a step which emails the user.  This automatically retries on error.
-    // This returns the fully typed result of the lambda.
-    result, err := step.Run(ctx, "on-user-created", func(ctx context.Context) (bool, error) {
-      // Run any code inside a step.
-      result, err := emails.Send(emails.Opts{})
-      return result, err
-    })
-    if err != nil {
-      // This step retried 5 times by default and permanently failed.
-      // we return a NoRetryError to prevent Inngest from retrying the function
-      return nil, inngestgo.NoRetryError(err)
-    }
-
-    return nil, nil
-}
 ```
 
 </GuideSection>
@@ -326,31 +320,28 @@ import (
 
 // Register the function
 inngestgo.CreateFunction(
-    &inngest.FunctionOptions{
+    client,
+    inngestgo.FunctionOpts{
         ID: "send-user-email",
     },
-    inngest.FunctionTrigger{
-        Event: "user/created",
+    inngestgo.EventTrigger("user/created", nil),
+    func(ctx context.Context, input inngestgo.Input[UserCreatedEvent]) (any, error) {
+        // Run a step which emails the user.  This automatically retries on error.
+        // This returns the fully typed result of the lambda.
+        result, err := step.Run(ctx, "on-user-created", func(ctx context.Context) (bool, error) {
+            // Run any code inside a step.
+            result, err := emails.Send(emails.Opts{})
+            return result, err
+        })
+        if err != nil {
+            // This step retried 5 times by default and permanently failed.
+            // We delay the next retry attempt by 5 hours
+            return nil, inngestgo.RetryAtError(err, time.Now().Add(5*time.Hour))
+        }
+
+        return result, nil
     },
-    SendUserEmail,
 )
-
-func SendUserEmail(ctx *inngest.FunctionContext) (any, error) {
-    // Run a step which emails the user.  This automatically retries on error.
-    // This returns the fully typed result of the lambda.
-    result, err := step.Run(ctx, "on-user-created", func(ctx context.Context) (bool, error) {
-      // Run any code inside a step.
-      result, err := emails.Send(emails.Opts{})
-      return result, err
-    })
-    if err != nil {
-      // This step retried 5 times by default and permanently failed.
-      // We delay the next retry attempt by 5 hours
-      return nil, inngestgo.RetryAtError(err, time.Now().Add(5*time.Hour))
-    }
-
-    return nil, nil
-}
 ```
 
 </GuideSection>

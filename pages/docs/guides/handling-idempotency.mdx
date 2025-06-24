@@ -47,7 +47,7 @@ await inngest.send({
 
 ```go {{ title: "Go" }}
 cart_id := "CGo5Q5ekAxilN92d27asEoDO"
-await inngest.Send(context.Background(), inngest.Event{
+inngest.Send(context.Background(), inngestgo.Event{
   ID: fmt.Sprintf("checkout-completed-%s", cart_id), // <-- This is the idempotency key
   Name: "cart/checkout.completed",
   Data: map[string]any{"email": "taylor@example.com", "cart_id": cart_id},

@@ -156,16 +156,17 @@ import (
 )
 
 inngestgo.CreateFunction(
-    inngestgo.FunctionOpts{
-        ID: "activation-email",
-    },
-    inngestgo.EventTrigger("app/user.created"),
-    func(ctx *inngestgo.Context) (any, error) {
-        if err := sendEmail(ctx.Event.Data["user"].(map[string]interface{})["email"].(string), "welcome"); err != nil {
-            return err
-        }
-        return nil, nil
-    },
+	client,
+	inngestgo.FunctionOpts{
+		ID: "activation-email",
+	},
+	inngestgo.EventTrigger("app/user.created", nil),
+	func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
+		if err := sendEmail(input.Event.Data["user"].(map[string]interface{})["email"].(string), "welcome"); err != nil {
+			return nil, err
+		}
+		return nil, nil
+	},
 )
 ```
 </CodeGroup>
@@ -187,19 +188,20 @@ import (
 )
 
 inngestgo.CreateFunction(
-    inngestgo.FunctionOpts{
-        ID: "activation-email",
-    },
-    inngestgo.EventTrigger("app/user.created"),
-    func(ctx *inngestgo.Context) (any, error) {
-        _, err := step.Run("send-welcome-email", func() (any, error) {
-            return nil, sendEmail(ctx.Event.Data["user"].(map[string]interface{})["email"].(string), "welcome")
-        })
-        if err != nil {
-            return err
-        }
-        return nil, nil
-    },
+	client,
+	inngestgo.FunctionOpts{
+		ID: "activation-email",
+	},
+	inngestgo.EventTrigger("app/user.created", nil),
+	func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
+		_, err := step.Run(ctx, "send-welcome-email", func(ctx context.Context) (any, error) {
+			return nil, sendEmail(input.Event.Data["user"].(map[string]interface{})["email"].(string), "welcome")
+		})
+		if err != nil {
+			return nil, err
+		}
+		return nil, nil
+	},
 )
 ```
 
@@ -221,30 +223,35 @@ import (
 )
 
 inngestgo.CreateFunction(
-    inngestgo.FunctionOpts{
-        ID: "activation-email",
-    },
-    inngestgo.EventTrigger("app/user.created"),
-    func(ctx *inngestgo.Context) (any, error) {
-        _, err := step.Run("send-welcome-email", func() (any, error) {
-            return nil, sendEmail(ctx.Event.Data["user"].(map[string]interface{})["email"].(string), "welcome")
-        })
-        if err != nil {
-            return nil, err
-        }
+	client,
+	inngestgo.FunctionOpts{
+		ID: "activation-email",
+	},
+	inngestgo.EventTrigger("app/user.created", nil),
+	func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
+		_, err := step.Run(ctx, "send-welcome-email", func(ctx context.Context) (any, error) {
+			return nil, sendEmail(input.Event.Data["user"].(map[string]interface{})["email"].(string), "welcome")
+		})
+		if err != nil {
+			return nil, err
+		}
 
-        // Wait for an "app/post.created" event
-        postCreated, err := step.WaitForEvent("wait-for-post-creation", &step.WaitForEventOpts{
-            Event:   "app/post.created",
-            Match:   "data.user.id", // the field "data.user.id" must match
-            Timeout: "24h",          // wait at most 24 hours
-        })
-        if err != nil {
-            return nil, err
-        }
+		// Wait for an "app/post.created" event
+		postCreated, err := step.WaitForEvent[map[string]any](
+			ctx,
+			"wait-for-post-creation",
+			step.WaitForEventOpts{
+				Event:   "app/post.created",
+				Match:   "data.user.id", // the field "data.user.id" must match
+				Timeout: "24h",          // wait at most 24 hours
+			},
+		)
+		if err != nil {
+			return nil, err
+		}
 
-        return postCreated, nil
-    },
+		return postCreated, nil
+	},
 )
 ```
 </CodeGroup>
@@ -263,41 +270,46 @@ import (
 )
 
 inngestgo.CreateFunction(
-    inngestgo.FunctionOpts{
-        ID: "activation-email",
-    },
-    inngestgo.EventTrigger("app/user.created", nil),
-    func(ctx context.Context, input inngestgo.Input) (any, error) {
-        // Send welcome email
-        _, err := step.Run("send-welcome-email", func() (any, error) {
-            return nil, sendEmail(input.Event.Data["user"].(map[string]interface{})["email"].(string), "welcome")
-        })
-        if err != nil {
-            return nil, err
-        }
+	client,
+	inngestgo.FunctionOpts{
+		ID: "activation-email",
+	},
+	inngestgo.EventTrigger("app/user.created", nil),
+	func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
+		// Send welcome email
+		_, err := step.Run(ctx, "send-welcome-email", func(ctx context.Context) (any, error) {
+			return nil, sendEmail(input.Event.Data["user"].(map[string]interface{})["email"].(string), "welcome")
+		})
+		if err != nil {
+			return nil, err
+		}
 
-        // Wait for post creation event
-        postCreated, err := step.WaitForEvent("wait-for-post-creation", &step.WaitForEventOpts{
-            Event:   "app/post.created",
-            Match:   "data.user.id",
-            Timeout: "24h",
-        })
-        if err != nil {
-            return nil, err
-        }
+		// Wait for post creation event
+		postCreated, err := step.WaitForEvent[map[string]any](
+			ctx,
+			"wait-for-post-creation",
+			step.WaitForEventOpts{
+				Event:   "app/post.created",
+				Match:   "data.user.id",
+				Timeout: "24h",
+			},
+		)
+		if err != nil {
+			return nil, err
+		}
 
-        // If no post was created, send reminder email
-        if postCreated == nil {
-            _, err := step.Run("send-reminder-email", func() (any, error) {
-                return nil, sendEmail(input.Event.Data["user"].(map[string]interface{})["email"].(string), "reminder")
-            })
-            if err != nil {
-                return nil, err
-            }
-        }
+		// If no post was created, send reminder email
+		if postCreated == nil {
+			_, err := step.Run(ctx, "send-reminder-email", func(ctx context.Context) (any, error) {
+				return nil, sendEmail(input.Event.Data["user"].(map[string]interface{})["email"].(string), "reminder")
+			})
+			if err != nil {
+				return nil, err
+			}
+		}
 
-        return nil, nil
-    },
+		return nil, nil
+	},
 )
 ```
 </CodeGroup>
