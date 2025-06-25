@@ -291,7 +291,8 @@ export const FEATURES: Feature[] = [
       },
       [PLAN_NAMES.enterprise]: "Custom",
     },
-    infoUrl: "/docs/features/events?ref=pricing",
+    infoUrl:
+      "/docs/guides/sending-events-from-functions?ref=pricing-comparison-table",
     section: "platform",
   },
   {
@@ -308,7 +309,7 @@ export const FEATURES: Feature[] = [
       },
       [PLAN_NAMES.enterprise]: "500 included",
     },
-    infoUrl: "/docs/guides/concurrency?ref=pricing",
+    infoUrl: "/docs/guides/concurrency?ref=pricing-comparison-table",
     section: "platform",
   },
   {
@@ -338,14 +339,12 @@ export const FEATURES: Feature[] = [
       },
       [PLAN_NAMES.enterprise]: "Custom",
     },
-    infoUrl: "/docs/features/workers?ref=pricing",
     section: "platform",
   },
   {
     name: "Serverless workers",
     description: "Serverless endpoints for your apps",
     all: "Unlimited",
-    infoUrl: "/docs/features/serverless-workers?ref=pricing",
     section: "platform",
   },
   {
@@ -375,7 +374,6 @@ export const FEATURES: Feature[] = [
       [PLAN_NAMES.pro]: "1m per day",
       [PLAN_NAMES.enterprise]: "1m per day",
     },
-    infoUrl: "/docs/features/realtime-messages?ref=pricing",
     section: "connectivity",
   },
   {
@@ -408,7 +406,6 @@ export const FEATURES: Feature[] = [
       [PLAN_NAMES.pro]: false,
       [PLAN_NAMES.enterprise]: "Contact us",
     },
-    infoUrl: "/docs/platform/monitor/trace-log-exports?ref=pricing",
     section: "observability",
   },
   {
@@ -419,7 +416,6 @@ export const FEATURES: Feature[] = [
       [PLAN_NAMES.pro]: "$300",
       [PLAN_NAMES.enterprise]: true,
     },
-    infoUrl: "/docs/platform/monitor/advanced-observability?ref=pricing",
     section: "observability",
   },
 ];
