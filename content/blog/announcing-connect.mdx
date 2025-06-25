@@ -10,12 +10,12 @@ focus: true
 ---
 
 
-While Inngest has been primarly successful among Serverless developers, we've seen a growing demand from developers running Inngest Functions on their long-running servers such as Render, AWS EC2, DigitalOcean and such.
+While Inngest has been primarily successful among Serverless developers, we've seen a growing demand from developers running Inngest Functions on their long-running servers such as Render, AWS EC2, DigitalOcean and such.
 Additionally, some customers scaling large applications with Inngest were also looking for a lower latency and better support for long-running functions.
 
 After a few weeks of private alpha, we are happy to rollout Connect as a [Developer Preview](/docs/release-phases#developer-preview) in our TypeScript, Python and Go SDKs.
 
-[Connect](/docs/setup/connect) is drop-in replacement to [`serve()`](/docs/learn/serving-inngest-functions) to connect your application to Inngest over one or multiple outbound persistent connections, **dramatically improving the latency and scalability of your functions**.
+[Connect](/docs/setup/connect) is a drop-in replacement to [`serve()`](/docs/learn/serving-inngest-functions) to connect your application to Inngest over one or multiple outbound persistent connections, **dramatically improving the latency and scalability of your functions**.
 
 
 This new deployment method relying the [WebSocket protocol](https://en.wikipedia.org/wiki/WebSocket#:~:text=WebSocket%20is%20a%20computer%20communications,as%20RFC%206455%20in%202011.) brings:
@@ -35,7 +35,7 @@ This new deployment method relying the [WebSocket protocol](https://en.wikipedia
 
 </Row>
 
-Beyond huge performance and scalability benefit, Connect also brings a better developer experience, **enabling colocate all your Inngest-related code in a single file**:
+Beyond huge performance and scalability benefit, Connect also brings a better developer experience, **enabling you to colocate all your Inngest-related code in a single file**:
 
 
 ```ts
@@ -67,7 +67,7 @@ const handleSignupFunction = inngest.createFunction(
 _Find examples in Go and Python in the [Connect documentation page](/docs/setup/connect)_
 
 
-Once your application deployed using Connect, each active connection get listed as workers in the Inngest Platform, bringing you full visibility
+Once your application is deployed using Connect, each active connection get listed as a worker in the Inngest Platform, bringing you full visibility
 on your application health and load:
 
 ![Cloud App Workers](/assets/docs/connect/cloud-app-workers.png)
