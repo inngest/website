@@ -76,7 +76,7 @@ type UserCreatedEvent struct {
 func main() {
 	ctx := context.Background()
 
-	app, err := inngestgo.NewClient(inngestgo.ClientOpts{
+	client, err := inngestgo.NewClient(inngestgo.ClientOpts{
 		AppID:      "my-app",
 		Logger:     logger.StdlibLogger(ctx),
 		AppVersion: nil, // Optional, defaults to the git commit SHA
@@ -85,8 +85,8 @@ func main() {
 		panic(err)
 	}
 
-	f := inngestgo.CreateFunction(
-    app,
+	_, err = inngestgo.CreateFunction(
+		client,
 		inngestgo.FunctionOpts{ID: "handle-signup", Name: "Handle signup"},
 		inngestgo.EventTrigger("user.created", nil),
 		func(ctx context.Context, input inngestgo.Input[UserCreatedEvent]) (any, error) {
@@ -94,27 +94,28 @@ func main() {
 			return map[string]any{"success": true}, nil
 		},
 	)
+	if err != nil {
+		panic(err)
+	}
 
 	fmt.Println("Worker: connecting")
 
-	ws, err := inngestgo.Connect(ctx, inngestgo.ConnectOpts{
+	conn, err := inngestgo.Connect(ctx, inngestgo.ConnectOpts{
 		InstanceID: inngestgo.Ptr("example-worker"),
-		Apps:       []inngestgo.Handler{
-      app,
-    },
+		Apps:       []inngestgo.Client{client},
 	})
 	if err != nil {
 		fmt.Printf("ERROR: %#v\n", err)
 		os.Exit(1)
 	}
 
-  defer func(ws connect.WorkerConnection) {
+  defer func(conn connect.WorkerConnection) {
 		<-ctx.Done()
-		err := ws.Close()
+		err := conn.Close()
 		if err != nil {
 			fmt.Printf("could not close connection: %s\n", err)
 		}
-	}(ws)
+	}(conn)
 }
 ```
 ```python

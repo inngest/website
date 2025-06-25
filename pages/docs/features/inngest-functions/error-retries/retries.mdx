@@ -18,10 +18,12 @@ inngest.createFunction(
 ```
 ```go {{ title: "Go" }}
 inngestgo.CreateFunction(
+	client,
 	inngestgo.FunctionOpts{ID: "click-recorder"},
 	inngestgo.EventTrigger("app/button.clicked", nil),
 	func(ctx context.Context, input inngestgo.Input[ButtonClickedEvent]) (any, error) {
-		result, err := db.Clicks.InsertOne(input.Event["data"])
+		result, err := db.Clicks.InsertOne(input.Event.Data)
+		return result, err
 	},
 )
 ```
@@ -50,6 +52,7 @@ inngest.createFunction(
 ```
 ```go {{ title: "Go" }}
 inngestgo.CreateFunction(
+	client,
 	inngestgo.FunctionOpts{
 		ID:      "click-recorder",
 		Retries: 10, // choose how many retries you'd like
@@ -57,6 +60,7 @@ inngestgo.CreateFunction(
 	inngestgo.EventTrigger("app/button.clicked", nil),
 	func(ctx context.Context, input inngestgo.Input[ButtonClickedEvent]) (any, error) {
 		// ...
+		return nil, nil
 	},
 )
 ```
@@ -101,6 +105,7 @@ inngest.createFunction(
 ```
 ```go {{ title: "Go" }}
 inngestgo.CreateFunction(
+	client,
 	inngestgo.FunctionOpts{ID: "sync-systems"},
 	inngestgo.EventTrigger("auto/sync.request", nil),
 	func(ctx context.Context, input inngestgo.Input[SyncRequestEvent]) (any, error) {
@@ -176,6 +181,7 @@ inngest.createFunction(
 ```
 ```go {{ title: "Go" }}
 inngestgo.CreateFunction(
+	client,
 	inngestgo.FunctionOpts{ID: "user-weekly-digest"},
 	inngestgo.EventTrigger("user/weekly.digest.requested", nil),
 	func(ctx context.Context, input inngestgo.Input[WeeklyDigestRequestedEvent]) (any, error) {
@@ -253,6 +259,7 @@ inngest.createFunction(
 ```
 ```go
 inngestgo.CreateFunction(
+	client,
 	inngestgo.FunctionOpts{ID: "send-welcome-notification"},
 	inngestgo.EventTrigger("user.created", nil),
 	func(ctx context.Context, input inngestgo.Input[SignedUpEvent]) (any, error) {

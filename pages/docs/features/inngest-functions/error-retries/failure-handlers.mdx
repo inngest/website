@@ -66,6 +66,7 @@ async def global_failure_handler(ctx: Context):
 // but you can define one by create a new function that uses
 // the "inngest/function.failed" event and an expression:
 myFailureHandler := inngestgo.CreateFunction(
+	client,
 	inngestgo.FunctionOpts{
 			ID:   "account-created-on-failure",
 			Name: "Account creation flow: On Failure",
@@ -81,6 +82,7 @@ myFailureHandler := inngestgo.CreateFunction(
 		input inngestgo.Input[inngestgo.GenericEvent[functionFailedEventData, any]],
 	) (any, error) {
 		// Handle your failure here
+		return nil, nil
 	}
 )
 
@@ -98,6 +100,7 @@ type functionFailedEventData struct {
 h := inngestgo.NewHandler("my-app", inngestgo.HandlerOpts{})
 // 2. Get the FunctionOpts's ID parameter:
 f := inngestgo.CreateFunction(
+	client,
 	inngestgo.FunctionOpts{
 			ID:   "account-created",
 			Name: "Account creation flow",

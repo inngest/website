@@ -999,8 +999,14 @@ import (
 )
 
 func main() {
-	h := inngestgo.NewHandler("core", inngestgo.HandlerOpts{})
-	f := inngestgo.CreateFunction(
+	client, err := inngestgo.NewClient(inngestgo.ClientOpts{
+		AppID: "core",
+	})
+	if err != nil {
+		panic(err)
+	}
+	_, err = inngestgo.CreateFunction(
+		client,
 		inngestgo.FunctionOpts{
 			ID:   "account-created",
 			Name: "Account creation flow",
@@ -1009,8 +1015,10 @@ func main() {
 		inngestgo.EventTrigger("api/account.created", nil),
 		AccountCreated,
 	)
-	h.Register(f)
-	http.ListenAndServe(":8080", h)
+	if err != nil {
+		panic(err)
+	}
+	http.ListenAndServe(":8080", client.Serve())
 }
 ```
 

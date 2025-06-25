@@ -131,50 +131,50 @@ If you don't need to define granular configuration or if your function won't be 
 
 ```go
 import (
-  "github.com/inngest/inngestgo"
-  "github.com/inngest/inngestgo/step"
+	"context"
+	"fmt"
+
+	"github.com/inngest/inngestgo"
+	"github.com/inngest/inngestgo/step"
 )
 
 // Some function we'll call
-inngest.CreateFunction(
-	inngest.FunctionOpts{ID: "compute-square"},
-	inngest.EventTrigger("calculate/square"),
-	ComputeSquare,
+inngestgo.CreateFunction(
+	client,
+	inngestgo.FunctionOpts{Name: "compute-square"},
+	inngestgo.EventTrigger("calculate/square", nil),
+	func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
+		number, ok := input.Event.Data["number"].(float64)
+		if !ok {
+			return nil, fmt.Errorf("invalid number")
+		}
+
+		return map[string]any{
+			"result": int(number * number),
+		}, nil
+	},
 )
-func ComputeSquare(ctx *inngest.Context) error {
-	data := struct {
-		Number int `json:"number"`
-	}{}
-	if err := ctx.Event.Data.Decode(&data); err != nil {
-		return err
-	}
 
-	return ctx.Return(map[string]int{
-		"result": data.Number * data.Number,
-	})
-}
+// In this function, we'll call the compute-square function
+inngestgo.CreateFunction(
+	client,
+	inngestgo.FunctionOpts{Name: "main-function"},
+	inngestgo.EventTrigger("main/event", nil),
+	func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
+		square, err := step.Invoke(ctx, "compute-square-value", &inngestgo.InvokeOpts{
+			Function: "compute-square",
+			Data: map[string]any{
+				"number": 4,
+			},
+		})
+		if err != nil {
+			return nil, err
+		}
 
-
-// In this function, we'll call ComputeSquare
-inngest.CreateFunction(
-	inngest.FunctionOpts{ID: "main-function"},
-	inngest.EventTrigger("main/event"),
-	MainFunction,
+		result := square.Data["result"].(int)
+		return fmt.Sprintf("Square of 4 is %d.", result), nil
+	},
 )
-func MainFunction(ctx *inngest.Context) error {
-	square, err := step.Invoke("compute-square-value", &inngest.InvokeOpts{
-		Function: "compute-square",
-		Data: map[string]interface{}{
-			"number": 4,
-		},
-	})
-	if err != nil {
-		return err
-	}
-
-	result := square.Data["result"].(int)
-	return ctx.Return(fmt.Sprintf("Square of 4 is %d.", result))
-}
 
 ```
 

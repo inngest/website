@@ -49,20 +49,19 @@ inngest.createFunction(
 );
 ```
 ```go
-inngest.CreateFunction(
-  &inngestgo.FunctionOpts{
-    Name: "generate-ai-summary",
-    Concurrency: []inngest.Concurrency{
-      {
-        Limit: 10,
-      }
-    },
-  },
-  inngestgo.EventTrigger("ai/summary.requested", nil),
-  func(ctx context.Context, input inngestgo.Input) (any, error) {
-    // Your function handler here
-    return nil, nil
-  },
+inngestgo.CreateFunction(
+	client,
+	inngestgo.FunctionOpts{
+		Name: "generate-ai-summary",
+		Concurrency: []inngestgo.ConfigConcurrency{
+			{Limit: 10},
+		},
+	},
+	inngestgo.EventTrigger("ai/summary.requested", nil),
+	func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
+		// Your function handler here
+		return nil, nil
+	},
 )
 ```
 ```python
@@ -103,21 +102,22 @@ inngest.createFunction(
 ```
 ```go
 inngest.CreateFunction(
-  &inngestgo.FunctionOpts{
-    Name: "generate-ai-summary",
-    Concurrency: []inngest.Concurrency{
-      {
-        Scope: "fn",
-        Key:   "event.data.account_id",
-        Limit: 10,
-      }
-    },
-  },
-  inngestgo.EventTrigger("ai/summary.requested", nil),
-  func(ctx context.Context, input inngestgo.Input) (any, error) {
-    // Your function handler here
-    return nil, nil
-  },
+	client,
+	inngestgo.FunctionOpts{
+		Name: "generate-ai-summary",
+		Concurrency: []inngestgo.ConfigConcurrency{
+			{
+				Scope: "fn",
+				Key:   "event.data.account_id",
+				Limit: 10,
+			},
+		},
+	},
+	inngestgo.EventTrigger("ai/summary.requested", nil),
+	func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
+		// Your function handler here
+		return nil, nil
+	},
 )
 ```
 ```python
@@ -167,21 +167,22 @@ inngest.createFunction(
 ```
 ```go
 inngest.CreateFunction(
-  &inngestgo.FunctionOpts{
-    Name: "generate-ai-summary",
-    Concurrency: []inngest.Concurrency{
-      {
-        Scope: "account",
-        Key:   `"openai"`,
-        Limit: 60,
-      }
-    },
-  },
-  inngestgo.EventTrigger("ai/summary.requested", nil),
-  func(ctx context.Context, input inngestgo.Input) (any, error) {
-    // Your function handler here
-    return nil, nil
-  },
+	client,
+	inngestgo.FunctionOpts{
+		Name: "generate-ai-summary",
+		Concurrency: []inngestgo.ConfigConcurrency{
+			{
+				Scope: "account",
+				Key:   `"openai"`,
+				Limit: 60,
+			},
+		},
+	},
+	inngestgo.EventTrigger("ai/summary.requested", nil),
+	func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
+		// Your function handler here
+		return nil, nil
+	},
 )
 ```
 ```python
@@ -244,33 +245,34 @@ inngest.createFunction(
 
 ```go {{ title: "Go" }}
 inngestgo.CreateFunction(
-  &inngestgo.FunctionOpts{
-    Name: "unique-function-id",
-    Concurrency: []inngest.Concurrency{
-      {
-        // Use an account-level concurrency limit for this function, using the
-        // "openai" key as a virtual queue. Any other function which
-        // runs using the same "openai" key counts towards this limit.
-        Scope: "account",
-        Key:   `"openai"`,
-        Limit: 10,
-      },
-      {
-        // Create another virtual concurrency queue for this function only. This
-        // limits all accounts to a single execution for this function, based off
-        // of the `event.data.account_id` field.
-        // NOTE - "fn" is the default scope, so we could omit this field.
-        Scope: "fn",
-        Key:   "event.data.account_id",
-        Limit: 1,
-      },
-    },
-  },
-  inngestgo.EventTrigger("ai/summary.requested", nil),
-  func(ctx context.Context, input inngestgo.Input) (any, error) {
-    // Function implementation here
-    return nil, nil
-  },
+	client,
+	inngestgo.FunctionOpts{
+		Name: "unique-function-id",
+		Concurrency: []inngestgo.ConfigConcurrency{
+			{
+				// Use an account-level concurrency limit for this function, using the
+				// "openai" key as a virtual queue. Any other function which
+				// runs using the same "openai" key counts towards this limit.
+				Scope: "account",
+				Key:   `"openai"`,
+				Limit: 10,
+			},
+			{
+				// Create another virtual concurrency queue for this function only. This
+				// limits all accounts to a single execution for this function, based off
+				// of the `event.data.account_id` field.
+				// NOTE - "fn" is the default scope, so we could omit this field.
+				Scope: "fn",
+				Key:   "event.data.account_id",
+				Limit: 1,
+			},
+		},
+	},
+	inngestgo.EventTrigger("ai/summary.requested", nil),
+	func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
+		// Function implementation here
+		return nil, nil
+	},
 )
 
 ```
@@ -371,38 +373,40 @@ inngest.createFunction(
 
 ```go {{ title: "Go" }}
 inngestgo.CreateFunction(
-  &inngestgo.FunctionConfig{
-    Name: "func-a",
-    Concurrency: []inngest.Concurrency{
-      {
-        Scope: "account",
-        Key:   `"openai"`,
-        Limit: 5,
-      }
-    },
-  },
-  inngestgo.EventTrigger("ai/summary.requested"),
-  func(ctx context.Context, event *inngestgo.Event, step inngestgo.StepFunction) (any, error) {
-    return nil, nil
-  },
+	client,
+	inngestgo.FunctionOpts{
+		Name: "func-a",
+		Concurrency: []inngestgo.ConfigConcurrency{
+			{
+				Scope: "account",
+				Key:   `"openai"`,
+				Limit: 5,
+			},
+		},
+	},
+	inngestgo.EventTrigger("ai/summary.requested", nil),
+	func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
+		return nil, nil
+	},
 )
 
 
 inngestgo.CreateFunction(
-  &inngestgo.FunctionConfig{
-    Name: "func-b",
-    Concurrency: []inngest.Concurrency{
-      {
-        Scope: "account",
-        Key:   `"openai"`,
-        Limit: 50,
-      }
-    },
-  },
-  inngestgo.EventTrigger("ai/summary.requested"),
-  func(ctx context.Context, event *inngestgo.Event, step inngestgo.StepFunction) (any, error) {
-    return nil, nil
-  },
+	client,
+	inngestgo.FunctionOpts{
+		Name: "func-b",
+		Concurrency: []inngestgo.ConfigConcurrency{
+			{
+				Scope: "account",
+				Key:   `"openai"`,
+				Limit: 50,
+			},
+		},
+	},
+	inngestgo.EventTrigger("ai/summary.requested", nil),
+	func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
+		return nil, nil
+	},
 )
 
 ```
@@ -515,33 +519,39 @@ export const send = inngest.createFunction(
 ```
 
 ```go {{ title: "Go" }}
-inngestgo.CreateFunction(
-  &inngestgo.FunctionConfig{
-    Name: "Process customer csv import",
-    ID: "process-customer-csv-import",
-    Concurrency: []inngest.Concurrency{
-      {
-        Limit: 1,
-        Key: `event.data.customerId`, // You can use any piece of data from the event payload
-      },
-    },
-  },
-  inngestgo.EventTrigger("csv/file.uploaded"),
-  func(ctx context.Context, event *inngestgo.Event, step inngestgo.StepFunction) (any, error) {
-    _, err := step.Run(ctx, "process-file", func(ctx context.Context) (any, error) {
-      file, err := bucket.Fetch(event.Data.FileURI)
-      if err != nil {
-        return nil, err
-      }
-      // ...
-      return nil, nil
-    })
-    if err != nil {
-      return err, nil
-    }
+type EventData struct {
+	CustomerID string `json:"customer_id"`
+	FileURI    string `json:"file_uri"`
+}
 
-    return nil, nil
-  },
+inngestgo.CreateFunction(
+	client,
+	inngestgo.FunctionOpts{
+		Name: "Process customer csv import",
+		ID:   "process-customer-csv-import",
+		Concurrency: []inngestgo.ConfigConcurrency{
+			{
+				Limit: 1,
+				Key:   `event.data.customer_id`, // You can use any piece of data from the event payload
+			},
+		},
+	},
+	inngestgo.EventTrigger("csv/file.uploaded", nil),
+	func(ctx context.Context, input inngestgo.Input[EventData]) (any, error) {
+		_, err := step.Run(ctx, "process-file", func(ctx context.Context) (any, error) {
+			file, err := bucket.Fetch(input.Event.Data.FileURI)
+			if err != nil {
+				return nil, err
+			}
+			// ...
+			return nil, nil
+		})
+		if err != nil {
+			return err, nil
+		}
+
+		return nil, nil
+	},
 )
 ```
 
