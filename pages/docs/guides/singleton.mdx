@@ -1,6 +1,6 @@
-import { VersionBadge, Callout, ImageTheme, Info } from "src/shared/Docs/mdx";
+import { VersionBadge, Callout, ImageTheme, Info, CodeGroup } from "src/shared/Docs/mdx";
 
-# Singleton Functions <VersionBadge version="TypeScript v3.38.0+" /> <VersionBadge version="Python v0.5+" />
+# Singleton Functions <VersionBadge version="TypeScript v3.39.0+" /> <VersionBadge version="Go SDK v0.12.0+" /> <VersionBadge version="Python v0.5+" />
 
 <Info>
   These docs are part of a developer preview for Inngest's Singleton Functions API. Learn more about the [developer preview here](#developer-preview).
@@ -10,17 +10,17 @@ import { VersionBadge, Callout, ImageTheme, Info } from "src/shared/Docs/mdx";
 
 Singleton Functions enable you to ensure that only a single run of your function (_or a set of specific function runs, based on specific event properties_) is happening at a time.
 
-<ImageTheme
-  dark={'/assets/docs/features/inngest-functions/flow-control/singleton-functions/diagram-dark.png'}
-  light={'/assets/docs/features/inngest-functions/flow-control/singleton-functions/diagram-light.png'}
-  className="my-0"
-  alt={'Singleton Functions only process one run at a time.'}
-/>
+<p>
+  <ImageTheme
+    dark={'/assets/docs/features/inngest-functions/flow-control/singleton-functions/diagram-dark.png'}
+    light={'/assets/docs/features/inngest-functions/flow-control/singleton-functions/diagram-light.png'}
+    className="my-0"
+    alt={'Singleton Functions only process one run at a time.'}
+  />
+</p>
 
 <Callout variant="info">
-
-    Singleton Functions are available in the TypeScript SDK starting from version 3.38.0.
-
+  Singleton Functions are available in the TypeScript SDK starting from version 3.39.0.
 </Callout>
 
 ## When to use Singleton Functions
@@ -50,7 +50,7 @@ Rate Limiting is useful for controlling the rate of execution of a function, whi
 
 Singleton Functions are configured using the `singleton` property in the function definition.
 
-The following `data-sync` function will skip new runs if another run of the same function is already running for the same user:
+The following `data-sync` function demonstrates singleton behavior scoped to individual users. Depending on the `mode`, new runs will either be skipped or will cancel the existing run:
 
 ```ts
 const dataSync = inngest.createFunction({
@@ -75,14 +75,64 @@ When a `key` is added, the unique runs rule is applied for each unique value of 
 each user would have their individual singleton rule applied to functions runs, ensuring that only a single run of the function is happening at a time for each user. Read [our guide to writing expressions](/docs/guides/writing-expressions) for more information.
 
 
-{/* ### Two modes: Skip vs Cancel
+### Two modes: Skip vs Cancel
 
 Singleton Functions can be configured to either skip the new run or cancel the existing run and start a new one.
 
-The `mode` property configures the behavior of the Singleton Function.
+The `mode` property configures the behavior of the Singleton Function:
 
-- `"skip"` skips the new run.
-- `"cancel"` cancels the existing run and starts the new one. */}
+- `"skip"` - Skips the new run if another run is already executing.
+- `"cancel"` - Cancels the existing run and starts the new one.
+
+<Callout variant="info">
+  **Cancel mode behavior**: Triggering multiple function runs with the same key in very rapid succession may result in some runs being skipped rather than cancelled, similar to a debounce effect. This prevents excessive cancellation overhead when events are triggered in quick bursts.
+</Callout>
+
+#### When should I use "cancel" mode vs "skip" mode?
+
+Use `"skip"` mode when you want to prevent duplicate work and preserve the currently running function. Use `"cancel"` mode when you want to ensure the most recent event is always processed, even if it means cancelling an in-progress run.
+
+<CodeGroup>
+```ts {{ title: "Skip mode" }}
+const dataSync = inngest.createFunction({
+    id: "data-sync",
+    singleton: {
+      key: "event.data.user_id",
+      mode: "skip",
+    }  
+  },
+  { event: "data-sync.start" },
+  async ({ event }) => {
+    const userId = event.data.user_id;
+    
+    // This long-running sync process will not be interrupted
+    // If another sync is triggered for this user, it will be skipped
+    const data = await syncUserDataFromExternalAPI(userId);
+    const processed = await processLargeDataset(data);
+    await updateDatabase(processed);
+  },
+);
+```
+```ts {{ title: "Cancel mode" }}
+const latestDataSync = inngest.createFunction({
+    id: "latest-data-sync",
+    singleton: {
+      key: "event.data.user_id",
+      mode: "cancel",
+    }  
+  },
+  { event: "data-sync.start" },
+  async ({ event }) => {
+    const userId = event.data.user_id;
+    
+    // If a newer sync is triggered, this run will be cancelled
+    // ensuring only the most recent data is processed
+    const payload = await fetchLatestUserData(userId);
+    await applyRealTimeUpdates(payload);
+  },
+);
+```
+</CodeGroup>
 
 
 ## Compatibility with other flow control features
@@ -117,4 +167,3 @@ Read the [release phases](/docs/release-phases) for more details.
 ### How does Singleton Functions work with retries?
 
 If a singleton function fails and is retrying, it should still skip new incoming runs.
-
