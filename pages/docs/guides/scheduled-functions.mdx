@@ -132,7 +132,7 @@ func init() {
 			}
 
 			// 2️⃣ Now, we'll send all events in a single batch:
-			err = step.SendEvent(ctx, "send-digest-events", events)
+			err = step.SendMany(ctx, "send-digest-events", events)
 			if err != nil {
 				return nil, err
 			}
