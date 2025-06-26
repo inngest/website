@@ -64,9 +64,31 @@ function calculatePlanCost({
       : 0;
 
   const baseCost = num(plan.cost.basePrice);
-  const additionalRunsCost =
-    Math.ceil(additionalRuns / num(plan.cost.additionalRunsRate)) *
-    num(plan.cost.additionalRunsPrice);
+
+  let additionalRunsCost = 0;
+  if (planName === PLAN_NAMES.pro && additionalRuns > 0) {
+    const tiers = [
+      { from: 0, to: 4_000_000, pricePerMillion: 50 },
+      { from: 4_000_000, to: 14_000_000, pricePerMillion: 25 },
+      { from: 14_000_000, to: 49_000_000, pricePerMillion: 20 },
+      { from: 49_000_000, to: 99_000_000, pricePerMillion: 15 },
+    ];
+    let remainingRuns = additionalRuns;
+    for (const tier of tiers) {
+      if (remainingRuns <= 0) break;
+      const runsInTier = Math.min(
+        remainingRuns,
+        tier.to - (tier.from > 0 ? tier.from : 0)
+      );
+      additionalRunsCost += (runsInTier / 1_000_000) * tier.pricePerMillion;
+      remainingRuns -= runsInTier;
+    }
+  } else if (plan.cost.additionalRunsRate && plan.cost.additionalRunsPrice) {
+    additionalRunsCost =
+      Math.ceil(additionalRuns / num(plan.cost.additionalRunsRate)) *
+      num(plan.cost.additionalRunsPrice);
+  }
+
   const additionalStepsCost =
     Math.ceil(additionalSteps / num(plan.cost.additionalStepsRate)) *
     num(plan.cost.additionalStepsPrice);
@@ -101,7 +123,7 @@ function calculatePlanCost({
     additionalWorkersCost;
   return {
     baseCost,
-    totalCost,
+    totalCost: Math.ceil(totalCost),
     additionalRunsCost,
     additionalStepsCost,
     concurrencyCost,
@@ -160,7 +182,7 @@ function PlanSummary({ plan, price }: { plan: Plan; price: string }) {
         <span className="text-6xl font-extrabold text-neutral-100">
           {price}
         </span>
-        {price !== "$Infinity" && (
+        {price.startsWith("$") && price !== "$Infinity" && (
           <span className="text-xl text-neutral-400"> /month</span>
         )}
       </div>
@@ -173,7 +195,7 @@ function PlanSummary({ plan, price }: { plan: Plan; price: string }) {
 
 export function PricingCalculatorPage() {
   const [runs, setRuns] = useState(50000);
-  const [steps, setSteps] = useState(20);
+  const [steps, setSteps] = useState(3);
   const [users, setUsers] = useState<number>(3);
   const [concurrency, setConcurrency] = useState<number>(25);
   const [workers, setWorkers] = useState<number>(3);
@@ -181,9 +203,9 @@ export function PricingCalculatorPage() {
   const [isOpen, setOpen] = useState<boolean>(false);
 
   const runsMin = 0,
-    runsMax = 1_000_000;
+    runsMax = 100_000_000;
   const stepsMin = 0,
-    stepsMax = 100;
+    stepsMax = 1000;
 
   const results: CalculatorResults = useMemo(() => {
     const runsCount = runs;
