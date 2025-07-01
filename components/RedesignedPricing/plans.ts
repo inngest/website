@@ -381,7 +381,7 @@ export const FEATURES: Feature[] = [
         value: "5",
       },
       [PLAN_NAMES.pro]: {
-        value: "1000",
+        value: "100",
       },
       [PLAN_NAMES.enterprise]: "Custom",
     },
