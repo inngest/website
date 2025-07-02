@@ -48,8 +48,10 @@ export const navigation = {
     { name: "Blog", href: "/blog?ref=homepage-footer-links" },
     { name: "Changelog", href: "/changelog?ref=homepage-footer-links" },
     { name: "Roadmap", href: "https://roadmap.inngest.com/roadmap?ref=footer" },
-    { name: "About", href: "/about?ref=homepage-footer-links" },
     { name: "Careers", href: "/careers?ref=homepage-footer-links" },
+    { name: "Privacy", href: "/privacy?ref=homepage-footer-links" },
+    { name: "Terms", href: "/terms?ref=homepage-footer-links" },
+    { name: "Security", href: "/security?ref=homepage-footer-links" },
   ],
   community: [
     { name: "Discord", href: "https://www.inngest.com/discord?ref=footer" },
