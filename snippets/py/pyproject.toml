@@ -1,0 +1,7 @@
+[project]
+name = "py"
+version = "0.0.0"
+requires-python = ">=3.10"
+dependencies = [
+    "inngest>=0.5.1",
+]

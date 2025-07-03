@@ -6,6 +6,8 @@ import rehypeCodeTitles from "rehype-code-titles";
 import rehypeMdxTitle from "rehype-mdx-title";
 import shiki from "shiki";
 import { visit } from "unist-util-visit";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 
 import * as sourceFilePath from "./plugins/sourceFilePath.mjs";
 
@@ -13,10 +15,47 @@ export function rehypeParseCodeBlocks() {
   return (tree) => {
     visit(tree, "element", (node, _nodeIndex, parentNode) => {
       if (node.tagName === "code" && node.properties.className) {
+        // Set the language for the code block
         parentNode.properties.language = node.properties.className[0]?.replace(
           /^language-/,
           ""
         );
+
+        if (node.children[0]) {
+          let value = node.children[0].value;
+          if (typeof value === "string") {
+            const parts = value.trim().split("\n");
+
+            // Check if we need to load the content from a file
+            const isContentInFile = parts.length === 1 && parts[0].startsWith("!path=")
+
+            if (isContentInFile) {
+              const loadRelativePath = parts[0].slice("!path=".length);
+
+              // The path may be suffixed with a line range (e.g.
+              // `!path=snippets/py/example.py#L8-L13`)
+              const [loadPath, lines] = path.join(process.cwd(), loadRelativePath).split("#")
+
+              let fileContent = readFileSync(loadPath, "utf-8");
+
+              if (lines) {
+                const [startStr, endStr] = lines.replaceAll("L", "").split("-");
+                const start = parseInt(startStr, 10);
+                const end = parseInt(endStr, 10);
+
+                // Only use the specified line range
+                fileContent = fileContent.split("\n").slice(start - 1, end).join("\n");
+              }
+
+              node.children = [
+                {
+                  type: "text",
+                  value: fileContent,
+                },
+              ];
+            }
+          }
+        }
       }
     });
   };
