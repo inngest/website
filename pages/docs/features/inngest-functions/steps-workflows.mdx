@@ -79,6 +79,7 @@ def sync_systems(ctx: inngest.ContextSync) -> None:
 ```
 ```go {{ title: "Go" }}
 inngestgo.CreateFunction(
+	client,
 	inngestgo.FunctionOpts{ID: "sync-systems"},
 	inngestgo.EventTrigger("auto/sync.request", nil),
 	func(ctx context.Context, input inngestgo.Input[SyncRequestEvent]) (any, error) {

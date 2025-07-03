@@ -59,37 +59,38 @@ import (
 )
 
 inngestgo.CreateFunction(
-  // config
-  &inngestgo.FunctionOpts{
-    ID: "import-product-images",
-  },
-  // trigger (event or cron)
-  inngestgo.EventTrigger("shop/product.imported", nil),
-  // handler function
-  func(ctx context.Context, input inngestgo.Input) (any, error) {
-    // Here goes the business logic
-    // By wrapping code in steps, it will be retried automatically on failure
-    s3Urls, err := step.Run("copy-images-to-s3", func() ([]string, error) {
-      return copyAllImagesToS3(input.Event.Data["imageURLs"].([]string))
-    })
-    if err != nil {
-      return nil, err
-    }
+	client,
+	// config
+	inngestgo.FunctionOpts{
+		ID: "import-product-images",
+	},
+	// trigger (event or cron)
+	inngestgo.EventTrigger("shop/product.imported", nil),
+	// handler function
+	func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
+		// Here goes the business logic
+		// By wrapping code in steps, it will be retried automatically on failure
+		s3Urls, err := step.Run(ctx, "copy-images-to-s3", func(ctx context.Context) ([]string, error) {
+			return copyAllImagesToS3(input.Event.Data["imageURLs"].([]string))
+		})
+		if err != nil {
+			return nil, err
+		}
 
-    // You can include numerous steps in your function
-    _, err = step.Run("resize-images", func() (any, error) {
-      return nil, resizer.Bulk(ResizerOpts{
-        URLs:     s3Urls,
-        Quality:  0.9,
-        MaxWidth: 1024,
-      })
-    })
-    if err != nil {
-      return nil, err
-    }
+		// You can include numerous steps in your function
+		_, err = step.Run(ctx, "resize-images", func(ctx context.Context) (any, error) {
+			return nil, resizer.Bulk(ResizerOpts{
+				URLs:     s3Urls,
+				Quality:  0.9,
+				MaxWidth: 1024,
+			})
+		})
+		if err != nil {
+			return nil, err
+		}
 
-    return nil, nil
-  },
+		return nil, nil
+	},
 )
 ```
 

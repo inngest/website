@@ -112,30 +112,31 @@ import (
 )
 
 inngestgo.CreateFunction(
+	client,
 	inngestgo.FunctionOpts{ID: "simple-function"},
 	inngestgo.EventTrigger("test/simple.function", nil),
-	func(ctx context.Context, input inngestgo.Input) (any, error) {
+	func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
 		fmt.Println("hello")
 
-		_, err := step.Run("a", func() error {
+		_, err := step.Run(ctx, "a", func(ctx context.Context) (any, error) {
 			fmt.Println("a")
-			return nil
+			return nil, nil
 		})
 		if err != nil {
 			return nil, err
 		}
 
-		_, err = step.Run("b", func() error {
+		_, err = step.Run(ctx, "b", func(ctx context.Context) (any, error) {
 			fmt.Println("b")
-			return nil
+			return nil, nil
 		})
 		if err != nil {
 			return nil, err
 		}
 
-		_, err = step.Run("c", func() error {
+		_, err = step.Run(ctx, "c", func(ctx context.Context) (any, error) {
 			fmt.Println("c")
-			return nil
+			return nil, nil
 		})
 		if err != nil {
 			return nil, err
@@ -194,39 +195,40 @@ import (
     "github.com/inngest/inngest-go/step"
 )
 
-inngest.CreateFunction(
-	"simple-function",
-	inngest.EventTrigger("test/simple.function"),
-	func(ctx context.Context, step inngest.Step) error {
-		if _, err := step.Run("hello", func() error {
+inngestgo.CreateFunction(
+	client,
+	inngestgo.FunctionOpts{ID: "simple-function"},
+	inngestgo.EventTrigger("test/simple.function", nil),
+	func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
+		if _, err := step.Run(ctx, "hello", func(ctx context.Context) (any, error) {
 			fmt.Println("hello")
-			return nil
+			return nil, nil
 		}); err != nil {
-			return err
+			return nil, err
 		}
 
-		if _, err := step.Run("a", func() error {
+		if _, err := step.Run(ctx, "a", func(ctx context.Context) (any, error) {
 			fmt.Println("a")
-			return nil
+			return nil, nil
 		}); err != nil {
-			return err
+			return nil, err
 		}
 
-		if _, err := step.Run("b", func() error {
+		if _, err := step.Run(ctx, "b", func(ctx context.Context) (any, error) {
 			fmt.Println("b")
-			return nil
+			return nil, nil
 		}); err != nil {
-			return err
+			return nil, err
 		}
 
-		if _, err := step.Run("c", func() error {
+		if _, err := step.Run(ctx, "c", func(ctx context.Context) (any, error) {
 			fmt.Println("c")
-			return nil
+			return nil, nil
 		}); err != nil {
-			return err
+			return nil, err
 		}
 
-		return nil
+		return nil, nil
 	},
 )
 
