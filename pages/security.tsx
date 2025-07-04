@@ -1,7 +1,7 @@
 import React from "react";
 import Header from "src/shared/Header";
 import Container from "src/shared/layout/Container";
-import Footer from "src/shared/Footer";
+import Footer from "components/RedesignedLanding/Footer";
 import { Button } from "src/shared/Button";
 
 export async function getStaticProps() {
@@ -23,8 +23,8 @@ const Security = () => {
       <Container>
         <article>
           <main className="m-auto max-w-[80ch] pt-16">
-            <header className="pt-12 lg:pt-24 m-auto">
-              <h1 className="text-white font-medium text-2xl md:text-4xl xl:text-5xl mb-2 md:mb-4 tracking-tighter lg:leading-loose">
+            <header className="m-auto pt-12 lg:pt-24">
+              <h1 className="mb-2 text-2xl font-medium tracking-tighter text-white md:mb-4 md:text-4xl lg:leading-loose xl:text-5xl">
                 Security
               </h1>
               <Button href="#contact-us" arrow="right">
@@ -32,7 +32,7 @@ const Security = () => {
               </Button>
             </header>
 
-            <div className="flex flex-row gap-8 items-center my-16">
+            <div className="my-16 flex flex-row items-center gap-8">
               <img
                 src="/assets/compliance/soc2.webp"
                 alt="SOC 2"
@@ -45,21 +45,21 @@ const Security = () => {
                 <p>
                   <a
                     href="/blog/soc2-compliant?ref=security"
-                    className="text-link hover:underline font-medium"
+                    className="font-medium text-link hover:underline"
                   >
                     Read our announcement
                   </a>
                   ,{" "}
                   <a
                     href="https://trust.inngest.com/"
-                    className="text-link hover:underline font-medium"
+                    className="font-medium text-link hover:underline"
                   >
                     request a copy of the report
                   </a>{" "}
                   or{" "}
                   <a
                     href="/contact?ref=security"
-                    className="text-link hover:underline font-medium"
+                    className="font-medium text-link hover:underline"
                   >
                     contact us
                   </a>{" "}
@@ -72,13 +72,13 @@ const Security = () => {
               To read how we handle SDK and function security,{" "}
               <a
                 href="/docs/learn/security"
-                className="text-link hover:underline font-medium"
+                className="font-medium text-link hover:underline"
               >
                 read our docs on security
               </a>
               .
             </p>
-            <div className="my-20 mx-auto prose prose-img:rounded-lg prose-code:bg-slate-800 prose-code:tracking-tight text-slate-300 prose-a:text-link prose-a:no-underline hover:prose-a:underline prose-a:font-medium prose-a:transition-all prose-invert">
+            <div className="prose-invert prose mx-auto my-20 text-slate-300 prose-a:font-medium prose-a:text-link prose-a:no-underline prose-a:transition-all hover:prose-a:underline prose-code:bg-slate-800 prose-code:tracking-tight prose-img:rounded-lg">
               <h2>Organizational Security</h2>
               <h3>Information Security Program</h3>
               <p>

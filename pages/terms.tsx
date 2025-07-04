@@ -1,6 +1,6 @@
 import Header from "src/shared/Header";
 import Container from "src/shared/layout/Container";
-import Footer from "src/shared/Footer";
+import Footer from "components/RedesignedLanding/Footer";
 
 export async function getStaticProps() {
   return {
@@ -21,7 +21,7 @@ export default function Terms() {
       <Container>
         <iframe
           src="https://www.iubenda.com/terms-and-conditions/26885259"
-          className="border-0 w-full min-h-[1200px] my-12"
+          className="my-12 min-h-[1200px] w-full border-0"
         />
       </Container>
 
