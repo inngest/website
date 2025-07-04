@@ -8,7 +8,7 @@ focus: false
 ---
 import Blockquote from "src/shared/Blog/Blockquote";
 
-It's now even easier for Vercel users to get started with Inngest. Inngest is now available to all on the Vercel Marketplace. This combines our seamless integration with features like branch environments that exists today with unified billing to your Vercel account.
+It’s now even easier for Vercel users to get started with Inngest. We're excited to announce Inngest is now available on the Vercel Marketplace. This combines our seamless integration with features like branch environments with unified billing to your Vercel account.
 
 <Blockquote
   text="Not a *week* goes by that I don't run into a happy customer using @vercel + @inngest to make async, serverless workflows & queues a breeze."
@@ -21,21 +21,21 @@ It's now even easier for Vercel users to get started with Inngest. Inngest is no
 
 ### AI workflows and agent orchestration
 
-Inngest enables developers to create stateful AI workflows on Vercel's serverless functions. Use Inngest's flexible SDK to define workflows using “steps” that chain LLM calls, database operations, and tool calling. Inngest handles the orchestration of long-running workflows by automatically splitting up execution across one or more serverless invocations then combining the responses into a single cohesive result.
+Inngest enables developers to build stateful AI workflows using Vercel’s serverless functions. With Inngest’s flexible SDK, you can define workflows using “steps” that chain together LLM calls, database operations, and tool executions. Inngest handles the orchestration of long-running workflows by automatically splitting execution across multiple serverless invocations and combining the results into a single cohesive response.
 
-Try out our [AgentKit](https://agentkit.inngest.com/?ref=blog-vercel-marketplace) SDK with Inngest to make building AI agents that reason, research, and route work to other agents.
+Try our [AgentKit](https://agentkit.inngest.com/) SDK with Inngest to build AI agents that reason, research, and route work to other agents.
 
 ### Handle failures with automatic retries
 
-Every Inngest function is automatically retried to gracefully handle issues including the occasional error, third-party API outages, or flaky LLM responses. Inngest's [durable execution engine](/docs/learn/how-functions-are-executed?ref=blog-vercel-marketplace) ensures that only the failed steps are re-run and successful ones are never run again.
+Every Inngest function is automatically retried to gracefully handle issues including the occasional error, third-party API outages, or flaky LLM responses. Inngest's [durable execution engine](/docs/learn/how-functions-are-executed?ref=blog-vercel-marketplace) ensures that only failed steps are re-run, while successful ones are never repeated.
 
 ### Realtime updates
 
-Use Inngest's [Realtime feature](/docs/features/realtime?ref=blog-vercel-marketplace) to push or stream data from your workflows running in the background to the browser to build interactive applications and show status updates. Quickly add this with [our React hooks and Next.js examples](/docs/features/realtime/react-hooks?ref=blog-vercel-marketplace).
+Use Inngest's [Realtime feature](/docs/features/realtime?ref=blog-vercel-marketplace) to stream data from background workflows to the browser, enabling interactive applications and live status updates. Easily integrate it using our [our React hooks and Next.js examples](/docs/features/realtime/react-hooks?ref=blog-vercel-marketplace).
 
 ### Branch environments
 
-Inngest automatically creates a new, isolated environment for every Vercel preview deployment. This means that every member of your team gets a completely isolated full-stack test environment for every pull request. Branch environments are created instantly, on-demand whenever you deploy your Vercel project. [Learn more about branch environments](/docs/platform/environments#branch-environments?ref=blog-vercel-marketplace).
+Inngest automatically creates a new, isolated environment for every Vercel preview deployment, giving each team member a completely isolated full-stack test environment for every pull request. Branch environments are created instantly and on-demand whenever you deploy your Vercel project. [Learn more about branch environments](/docs/platform/environments?ref=blog-vercel-marketplace#branch-environments).
 
 ## Setting up Inngest
 
@@ -61,7 +61,7 @@ Follow the rest of the Getting started guide and when you next deploy your proje
 
 ## Unified billing through Vercel
 
-Our new Marketplace integration unifies your billing via your Vercel account. At end of each month, your account will be billed for your subscription and any additional usage beyond the included executions. There are two billing plans to select from
+Our new Marketplace integration unifies billing through your Vercel account. At the end of each month, your account is charged for your subscription and any additional usage beyond the included executions. You can choose from two billing plans.
 
 - **Hobby ($0/month)** - Great for side projects and proofs of concepts. Get started with Inngest for free! Includes 100k monthly executions and 25 concurrently running steps.
 - **Pro ($75/month)**- Ideal for production use cases with higher included usage (1M executions) and additional concurrency (100 concurrent steps). The Pro plan also includes extended history and observability. Additional usage beyond 1M executions will be added to your invoice at the end of each month.
@@ -70,4 +70,4 @@ Our new Marketplace integration unifies your billing via your Vercel account. At
 
 Any Vercel user can get started by visiting Inngest in the Vercel Marketplace [here](https://vercel.com/marketplace/inngest).
 
-If you're a Next.js user new to Inngest, check out [our quick start guide](/docs/getting-started/nextjs-quick-start?ref=blog-vercel-marketplace) or visit our new project template (TODO).
+If you’re building a [Next.js](http://next.js/) project and are new to Inngest, check out [our quick start guide](/docs/getting-started/nextjs-quick-start?ref=blog-vercel-marketplace) or visit [our new project template](https://github.com/inngest/inngest-js/tree/main/examples/framework-nextjs-starter).
