@@ -27,30 +27,31 @@ export function rehypeParseCodeBlocks() {
             const parts = value.trim().split("\n");
 
             // Check if we need to load the content from a file
-            const isContentInFile = parts.length === 1 && parts[0].startsWith("!path=")
+            const isContentInFile =
+              parts.length === 1 && parts[0].startsWith("!path=");
 
             if (isContentInFile) {
               const loadRelativePath = parts[0].slice("!path=".length);
 
               // The path may be suffixed with a line range (e.g.
               // `!path=snippets/py/example.py#L8-L13`)
-              const [loadPath, lines] = path.join(process.cwd(), loadRelativePath).split("#")
+              const [loadPath, lines] = path
+                .join(process.cwd(), loadRelativePath)
+                .split("#");
 
-              let fileContent = readFileSync(loadPath, "utf-8");
+              const fileContent = readFileSync(loadPath, "utf-8");
 
+              let start, end;
               if (lines) {
                 const [startStr, endStr] = lines.replaceAll("L", "").split("-");
-                const start = parseInt(startStr, 10);
-                const end = parseInt(endStr, 10);
-
-                // Only use the specified line range
-                fileContent = fileContent.split("\n").slice(start - 1, end).join("\n");
+                start = parseInt(startStr, 10);
+                end = parseInt(endStr, 10);
               }
 
               node.children = [
                 {
                   type: "text",
-                  value: fileContent,
+                  value: formatCode(fileContent, start, end),
                 },
               ];
             }
@@ -59,6 +60,43 @@ export function rehypeParseCodeBlocks() {
       }
     });
   };
+}
+
+// Format a code file's content.
+// @param {string} content
+// @param {number} [start]
+// @param {number} [end]
+// @returns {string}
+function formatCode(content, start, end) {
+  let lines = content.split("\n");
+
+  if (start && end) {
+    // Only use the specified line range
+    lines = lines.slice(start - 1, end);
+  }
+
+  lines = lines.filter((line, i) => {
+    if (i > 0 && line.trim() === "" && lines[i - 1].trim() === "") {
+      // Remove sequential empty lines(if this line is empty and the previous
+      // line is empty)
+      return false;
+    }
+
+    return true;
+  });
+
+  // Use this to trim left whitespace if necessary. This will prevent codeblocks
+  // where everything is indented (e.g. code in a function)
+  const leftWhitespaceToTrim = lines[0].match(/^\s*/)?.[0];
+
+  lines = lines.map((line) => {
+    if (line.startsWith(leftWhitespaceToTrim)) {
+      return line.substring(leftWhitespaceToTrim.length);
+    }
+    return line;
+  });
+
+  return lines.join("\n");
 }
 
 let highlighter;

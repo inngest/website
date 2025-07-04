@@ -4,4 +4,6 @@ version = "0.0.0"
 requires-python = ">=3.10"
 dependencies = [
     "inngest>=0.5.1",
+    "mypy>=1.16.1",
+    "ruff>=0.12.2",
 ]
