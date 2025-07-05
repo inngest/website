@@ -20,6 +20,3 @@ class TransformOutputStepInfo:
     id: str
     op: Opcode
     opts: typing.Optional[dict[str, object]]
-
-
-# !snippet:end

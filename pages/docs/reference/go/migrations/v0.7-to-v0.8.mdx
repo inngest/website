@@ -9,7 +9,7 @@ This guide will help you migrate your Inngest Go SDK from v0.7 to v0.8 by provid
 A minimal Inngest app looks like this:
 
 ```go
-!snippet:path=snippets/go/v0_8/migration/high_level.go
+!snippet:path=snippets/go/v0_8/migration_to/high_level.go
 ```
 
 ## `Client`
@@ -17,7 +17,7 @@ A minimal Inngest app looks like this:
 The `DefaultClient` was removed. You should now use the `NewClient` function to create a new client:
 
 ```go
-!snippet:path=snippets/go/v0_8/migration/client.go
+!snippet:path=snippets/go/v0_8/migration_to/client.go
 ```
 
 <Warning>
@@ -35,7 +35,7 @@ The `Handler` was removed, along with `DefaultHandler` and the `NewHandler` func
 `CreateFunction` now accepts a `Client` argument and returns an error. Calling `CreateFunction` automatically registers the function, obviating the `Handler.Register` method.
 
 ```go
-!snippet:path=snippets/go/v0_8/migration/create_function.go
+!snippet:path=snippets/go/v0_8/migration_to/create_function.go
 ```
 
 <Warning>
