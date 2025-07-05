@@ -4,6 +4,7 @@ import typing
 Opcode = typing.Any
 
 
+# !snippet:start
 class TransformOutputResult:
     # Mutations to these fields within middleware will be kept after running
     # middleware
@@ -19,3 +20,6 @@ class TransformOutputStepInfo:
     id: str
     op: Opcode
     opts: typing.Optional[dict[str, object]]
+
+
+# !snippet:end

@@ -26,32 +26,29 @@ export function rehypeParseCodeBlocks() {
           if (typeof value === "string") {
             const parts = value.trim().split("\n");
 
-            // Check if we need to load the content from a file
-            const isContentInFile =
-              parts.length === 1 && parts[0].startsWith("!path=");
+            // Snippet references are single-line code blocks that start with
+            // `!snippet:path=`. For example:
+            // ```py
+            // !snippet:path=snippets/py/path/to/file.py
+            // ```
+            const isSnippetRef =
+              parts.length === 1 && parts[0].startsWith("!snippet:path=");
 
-            if (isContentInFile) {
-              const loadRelativePath = parts[0].slice("!path=".length);
+            if (isSnippetRef) {
+              // This is a snippet reference, so we need to load the content
+              // from that referenced file
 
-              // The path may be suffixed with a line range (e.g.
-              // `!path=snippets/py/example.py#L8-L13`)
-              const [loadPath, lines] = path
-                .join(process.cwd(), loadRelativePath)
-                .split("#");
+              const snippetRelPath = parts[0].slice("!snippet:path=".length);
 
-              const fileContent = readFileSync(loadPath, "utf-8");
-
-              let start, end;
-              if (lines) {
-                const [startStr, endStr] = lines.replaceAll("L", "").split("-");
-                start = parseInt(startStr, 10);
-                end = parseInt(endStr, 10);
-              }
+              const fileContent = readFileSync(
+                path.join(process.cwd(), snippetRelPath),
+                "utf-8"
+              );
 
               node.children = [
                 {
                   type: "text",
-                  value: formatCode(fileContent, start, end),
+                  value: formatCode(fileContent),
                 },
               ];
             }
@@ -62,41 +59,59 @@ export function rehypeParseCodeBlocks() {
   };
 }
 
-// Format a code file's content.
-// @param {string} content
-// @param {number} [start]
-// @param {number} [end]
-// @returns {string}
-function formatCode(content, start, end) {
-  let lines = content.split("\n");
+// Format a code file's content
+function formatCode(content) {
+  console.log("formatCode");
+  let sourceLines = content.split("\n");
 
-  if (start && end) {
-    // Only use the specified line range
-    lines = lines.slice(start - 1, end);
-  }
-
-  lines = lines.filter((line, i) => {
-    if (i > 0 && line.trim() === "" && lines[i - 1].trim() === "") {
-      // Remove sequential empty lines(if this line is empty and the previous
-      // line is empty)
-      return false;
+  let parsedLines = [];
+  for (let i = 0; i < sourceLines.length; i++) {
+    const line = sourceLines[i];
+    if (i > 0 && line.trim() === "" && sourceLines[i - 1].trim() === "") {
+      // This is a sequential empty line, so we must exclude it. In other words,
+      // both this line and the previous line are empty
+      continue;
     }
 
-    return true;
-  });
+    if (line.trim() === "# !snippet:start") {
+      // There's a start marker, so we must exclude all previous lines
+      parsedLines = [];
+      continue;
+    } else if (line.trim() === "# !snippet:end") {
+      // There's an end marker, so we must exclude all subsequent lines
+      break;
+    }
+    parsedLines.push(line);
+  }
+
+  // Remove leading whitespace lines
+  for (let line of parsedLines) {
+    if (line.trim() !== "") {
+      break;
+    }
+    parsedLines.shift();
+  }
+
+  // Remove trailing whitespace lines
+  for (let i = parsedLines.length - 1; i >= 0; i--) {
+    if (parsedLines[i].trim() !== "") {
+      break;
+    }
+    parsedLines.pop();
+  }
 
   // Use this to trim left whitespace if necessary. This will prevent codeblocks
   // where everything is indented (e.g. code in a function)
-  const leftWhitespaceToTrim = lines[0].match(/^\s*/)?.[0];
+  const leftWhitespaceToTrim = parsedLines[0].match(/^\s*/)?.[0];
 
-  lines = lines.map((line) => {
+  parsedLines = parsedLines.map((line) => {
     if (line.startsWith(leftWhitespaceToTrim)) {
       return line.substring(leftWhitespaceToTrim.length);
     }
     return line;
   });
 
-  return lines.join("\n");
+  return parsedLines.join("\n");
 }
 
 let highlighter;

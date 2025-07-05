@@ -2,6 +2,9 @@ import createMDX from "@next/mdx";
 import { remarkPlugins } from "./mdx/remark.mjs";
 import { rehypePlugins } from "./mdx/rehype.mjs";
 import { recmaPlugins } from "./mdx/recma.mjs";
+import chokidar from "chokidar";
+import fs from "fs";
+import path from "path";
 
 // All permanent redirects (source -> destination)
 const permanentRedirects = [
@@ -137,6 +140,33 @@ const withMDX = createMDX({
   },
 });
 
+// Necessary for hot reloading after snippet changes. Watches for snippet
+// changes and invalidates the cache for all files that reference the snippet
+chokidar.watch("./snippets/**/*").on("change", (path) => {
+  console.log(`Snippet changed: ${path}`);
+  touchFilesWithString(`!snippet:path=${path}`);
+});
+
+// Recursively find all files in the current directory that contain the given
+// string, and then touch them to invalidate the cache
+function touchFilesWithString(str, { dir = "./pages", ext = "mdx" } = {}) {
+  const files = fs.readdirSync(dir);
+  for (const file of files) {
+    const filePath = path.join(dir, file);
+    if (fs.statSync(filePath).isDirectory()) {
+      touchFilesWithString(str, { dir: filePath, ext });
+    } else {
+      if (
+        fs.readFileSync(filePath, "utf-8").includes(str) &&
+        filePath.endsWith(ext)
+      ) {
+        const now = new Date();
+        fs.utimesSync(filePath, now, now);
+      }
+    }
+  }
+}
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   redirects,
@@ -166,6 +196,12 @@ const nextConfig = {
       test: /_\w+\/.+\.mdx?$/,
       use: "ignore-loader",
     });
+
+    // config.module.rules.push({
+    //   test: /\.(py|go)$/,
+    //   type: "asset/source",
+    // });
+
     // Disable cache for production builds to reduce bundle size on Vercel
     if (config.cache && !dev) {
       config.cache = Object.freeze({
