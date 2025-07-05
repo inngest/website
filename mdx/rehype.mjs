@@ -48,7 +48,7 @@ export function rehypeParseCodeBlocks() {
               node.children = [
                 {
                   type: "text",
-                  value: formatCode(fileContent),
+                  value: formatSnippetFileContent(fileContent),
                 },
               ];
             }
@@ -59,9 +59,8 @@ export function rehypeParseCodeBlocks() {
   };
 }
 
-// Format a code file's content
-function formatCode(content) {
-  console.log("formatCode");
+// Format a snippet file's content
+function formatSnippetFileContent(content) {
   let sourceLines = content.split("\n");
 
   let parsedLines = [];
@@ -73,11 +72,11 @@ function formatCode(content) {
       continue;
     }
 
-    if (line.trim() === "# !snippet:start") {
+    if (isSnippetStart(line)) {
       // There's a start marker, so we must exclude all previous lines
       parsedLines = [];
       continue;
-    } else if (line.trim() === "# !snippet:end") {
+    } else if (isSnippetEnd(line)) {
       // There's an end marker, so we must exclude all subsequent lines
       break;
     }
@@ -112,6 +111,34 @@ function formatCode(content) {
   });
 
   return parsedLines.join("\n");
+}
+
+function isSnippetStart(line) {
+  // Python
+  if (line.trim() === "# !snippet:start") {
+    return true;
+  }
+
+  // TypeScript, Go
+  if (line.trim() === "// !snippet:start") {
+    return true;
+  }
+
+  return false;
+}
+
+function isSnippetEnd(line) {
+  // Python
+  if (line.trim() === "# !snippet:end") {
+    return true;
+  }
+
+  // TypeScript, Go
+  if (line.trim() === "// !snippet:end") {
+    return true;
+  }
+
+  return false;
 }
 
 let highlighter;

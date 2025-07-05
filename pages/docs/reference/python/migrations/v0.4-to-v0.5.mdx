@@ -18,44 +18,19 @@ The `step` object will be moved to `ctx.step`.
 
 Before:
 ```py
-@inngest_client.create_function(
-    fn_id="provision-user",
-    trigger=inngest.TriggerEvent(event="user.signup"),
-)
-async def fn(ctx: inngest.Context, step: inngest.Step) -> None:
-    await step.run("create-user", create_db_user)
+!snippet:path=snippets/py/v0_4/migration_from/step.py
 ```
 
 After:
 ```py
-@inngest_client.create_function(
-    fn_id="provision-user",
-    trigger=inngest.TriggerEvent(event="user.signup"),
-)
-async def fn(ctx: inngest.Context) -> None:
-    await ctx.step.run("create-user", create_db_user)
+!snippet:path=snippets/py/v0_5/migration_to/step.py
 ```
 
 ### Parallel steps
 `step.parallel` will be removed in favor of a new `ctx.group.parallel` method. This method will behave the same way, so it's a drop-in replacement for `step.parallel`.
 
 ```py
-@client.create_function(
-  fn_id="my-fn",
-  trigger=inngest.TriggerEvent(event="my-event"),
-)
-async def fn(
-  ctx: inngest.Context,
-  step: inngest.Step,
-) -> None:
-  user_id = ctx.event.data["user_id"]
-
-  await ctx.group.parallel(
-    (
-      lambda: step.run("update-user", update_user, user_id),
-      lambda: step.run("send-email", send_email, user_id),
-    )
-  )
+!snippet:path=snippets/py/v0_5/migration_to/parallel.py
 ```
 
 ### Remove `event.user`
@@ -65,46 +40,19 @@ We're sunsetting `event.user`. It's already incompatible with some features (e.g
 Setting an async `on_failure` on a non-async Inngest function will throw an error:
 
 ```py
-async def on_failure(ctx: inngest.Context) -> None:
-    pass
-
-@client.create_function(
-    fn_id="foo",
-    trigger=inngest.TriggerEvent(event="foo"),
-    on_failure=on_failure,
-)
-def fn(ctx: inngest.ContextSync) -> None:
-    pass
+!snippet:path=snippets/py/v0_5/migration_to/mixed_async_sync_fn.py
 ```
 
 Setting a non-async `on_failure` on an async Inngest function will throw an error:
 ```py
-def on_failure(ctx: inngest.ContextSync) -> None:
-    pass
-
-@client.create_function(
-    fn_id="foo",
-    trigger=inngest.TriggerEvent(event="foo"),
-    on_failure=on_failure,
-)
-async def fn(ctx: inngest.Context) -> None:
-    pass
+!snippet:path=snippets/py/v0_5/migration_to/mixed_async_async_fn.py
 ```
 
 ### Static error when passing a non-async callback to an async `step.run`
 When passing a non-async callback to an async `step.run`, it will work at runtime but there will be a static type error.
 
 ```py
-@client.create_function(
-    fn_id="foo",
-    trigger=inngest.TriggerEvent(event="foo"),
-)
-async def fn(ctx: inngest.Context) -> None:
-    # Type error because `lambda: "hello"` is non-async.
-    msg = await step.run("step", lambda: "hello")
-
-    # Runtime value is "hello", as expected.
-    print(msg)
+!snippet:path=snippets/py/v0_5/migration_to/non_async_step_run_callback.py
 ```
 
 ### `inngest.Function` is generic
@@ -116,24 +64,7 @@ Use LIFO for the "after" hooks. In other words, when multiple middleware is spec
 
 For example, let's say the following middleware is defined and used:
 ```py
-class A(inngest.MiddlewareSync):
-    def before_execution(self) -> None:
-        # ...
-
-    def after_execution(self) -> None:
-        # ...
-
-class B(inngest.MiddlewareSync):
-    def before_execution(self) -> None:
-        # ...
-
-    def after_execution(self) -> None:
-        # ...
-
-inngest.Inngest(
-    app_id="my-app",
-    middleware=[A, B],
-)
+!snippet:path=snippets/py/v0_5/migration_to/middleware_order.py
 ```
 
 The middleware will be executed in the following order for each hook:

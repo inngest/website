@@ -142,10 +142,24 @@ const withMDX = createMDX({
 
 // Necessary for hot reloading after snippet changes. Watches for snippet
 // changes and invalidates the cache for all files that reference the snippet
-chokidar.watch("./snippets/**/*").on("change", (path) => {
-  console.log(`Snippet changed: ${path}`);
-  touchFilesWithString(`!snippet:path=${path}`);
-});
+chokidar
+  .watch(
+    "./snippets/**/*.{cs,ex,go,java,kt,php,py,json,rs,sh,sql,toml,ts,zig}",
+    {
+      ignored: [
+        "**/.mypy_cache/**/*",
+        "**/.ruff_cache/**/*",
+        "**/.pytest_cache/**/*",
+        "**/.venv/**/*",
+        "**/node_modules/**/*",
+        "**/vendor/**/*",
+      ],
+    }
+  )
+  .on("change", (path) => {
+    console.log(`Snippet changed: ${path}`);
+    touchFilesWithString(`!snippet:path=${path}`);
+  });
 
 // Recursively find all files in the current directory that contain the given
 // string, and then touch them to invalidate the cache
@@ -196,12 +210,6 @@ const nextConfig = {
       test: /_\w+\/.+\.mdx?$/,
       use: "ignore-loader",
     });
-
-    // config.module.rules.push({
-    //   test: /\.(py|go)$/,
-    //   type: "asset/source",
-    // });
-
     // Disable cache for production builds to reduce bundle size on Vercel
     if (config.cache && !dev) {
       config.cache = Object.freeze({
