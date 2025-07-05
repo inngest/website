@@ -9,36 +9,7 @@ This guide will help you migrate your Inngest Go SDK from v0.7 to v0.8 by provid
 A minimal Inngest app looks like this:
 
 ```go
-import (
-	"context"
-	"net/http"
-
-	"github.com/inngest/inngestgo"
-)
-
-func main() {
-	client, err := inngestgo.NewClient(inngestgo.ClientOpts{AppID: "my-app"})
-	if err != nil {
-		panic(err)
-	}
-
-	_, err = inngestgo.CreateFunction(
-		client,
-		inngestgo.FunctionOpts{ID: "my-fn"},
-		inngestgo.EventTrigger("my-event", nil),
-		func(
-			ctx context.Context,
-			input inngestgo.Input[inngestgo.GenericEvent[any, any]],
-		) (any, error) {
-			return "Hello, world!", nil
-		},
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	_ = http.ListenAndServe(":8080", client.Serve())
-}
+!snippet:path=snippets/go/v0_8/migration_to/high_level.go
 ```
 
 ## `Client`
@@ -46,7 +17,7 @@ func main() {
 The `DefaultClient` was removed. You should now use the `NewClient` function to create a new client:
 
 ```go
-client, err := inngest.NewClient(inngest.ClientOpts{AppID: "my-app"})
+!snippet:path=snippets/go/v0_8/migration_to/client.go
 ```
 
 <Warning>
@@ -64,17 +35,7 @@ The `Handler` was removed, along with `DefaultHandler` and the `NewHandler` func
 `CreateFunction` now accepts a `Client` argument and returns an error. Calling `CreateFunction` automatically registers the function, obviating the `Handler.Register` method.
 
 ```go
-_, err := inngestgo.CreateFunction(
-	client,
-	inngestgo.FunctionOpts{ID: "my-fn"},
-	inngestgo.EventTrigger("my-event", nil),
-	func(
-		ctx context.Context,
-		input inngestgo.Input[inngestgo.GenericEvent[any, any]],
-	) (any, error) {
-		return "Hello, world!", nil
-	},
-)
+!snippet:path=snippets/go/v0_8/migration_to/create_function.go
 ```
 
 <Warning>

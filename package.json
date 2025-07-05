@@ -50,6 +50,7 @@
     "@xyflow/react": "12.6.4",
     "acorn": "8.14.0",
     "algoliasearch": "4.14.3",
+    "chokidar": "4.0.3",
     "class-variance-authority": "0.7.1",
     "clsx": "1.2.1",
     "codehike": "1.0.4",

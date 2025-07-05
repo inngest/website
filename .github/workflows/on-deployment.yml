@@ -48,3 +48,33 @@ jobs:
           algolia-app-id: ${{ secrets.ALGOLIA_APP_ID }}
           algolia-api-key: ${{ secrets.ALGOLIA_API_KEY }}
           site-url: "https://www.inngest.com/docs"
+
+  go:
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: "actions/checkout@v4"
+      - name: Setup
+        uses: actions/setup-go@v3
+        with:
+          go-version: "1.24"
+      - name: "Check"
+        run: "make check"
+        working-directory: "./snippets/go"
+
+  py:
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: "actions/checkout@v4"
+      - name: "Install uv"
+        uses: astral-sh/setup-uv@v4
+        with:
+          python-version: "3.10"
+      - name: "Install"
+        run: "make install"
+        working-directory: "./snippets/py"
+      - name: "Lint"
+        run: "make lint"
+        working-directory: "./snippets/py"
+      - name: "Type check"
+        run: "make type-check"
+        working-directory: "./snippets/py"
