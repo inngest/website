@@ -20,20 +20,7 @@ Its return type is now `None` since modifying data should happen by mutating arg
 
 Replaced the `output` arg with `result` arg. Its type is the new `inngest.TransformOutputResult` class:
 ```py
-class TransformOutputResult:
-    # Mutations to these fields within middleware will be kept after running
-    # middleware
-    error: typing.Optional[Exception]
-    output: object
-
-    # Mutations to these fields within middleware will be discarded after
-    # running middleware
-    step: typing.Optional[TransformOutputStepInfo]
-
-class TransformOutputStepInfo:
-    id: str
-    op: execution.Opcode
-    opts: typing.Optional[dict[str, object]]
+!snippet:path=snippets/py/v0_4/migration_to/transform_output.py
 ```
 
 Its return type is now `None` since modifying data should happen by mutating args.

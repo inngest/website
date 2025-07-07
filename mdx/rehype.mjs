@@ -6,6 +6,8 @@ import rehypeCodeTitles from "rehype-code-titles";
 import rehypeMdxTitle from "rehype-mdx-title";
 import shiki from "shiki";
 import { visit } from "unist-util-visit";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 
 import * as sourceFilePath from "./plugins/sourceFilePath.mjs";
 
@@ -13,13 +15,130 @@ export function rehypeParseCodeBlocks() {
   return (tree) => {
     visit(tree, "element", (node, _nodeIndex, parentNode) => {
       if (node.tagName === "code" && node.properties.className) {
+        // Set the language for the code block
         parentNode.properties.language = node.properties.className[0]?.replace(
           /^language-/,
           ""
         );
+
+        if (node.children[0]) {
+          let value = node.children[0].value;
+          if (typeof value === "string") {
+            const parts = value.trim().split("\n");
+
+            // Snippet references are single-line code blocks that start with
+            // `!snippet:path=`. For example:
+            // ```py
+            // !snippet:path=snippets/py/path/to/file.py
+            // ```
+            const isSnippetRef =
+              parts.length === 1 && parts[0].startsWith("!snippet:path=");
+
+            if (isSnippetRef) {
+              // This is a snippet reference, so we need to load the content
+              // from that referenced file
+
+              const snippetRelPath = parts[0].slice("!snippet:path=".length);
+
+              const fileContent = readFileSync(
+                path.join(process.cwd(), snippetRelPath),
+                "utf-8"
+              );
+
+              node.children = [
+                {
+                  type: "text",
+                  value: formatSnippetFileContent(fileContent),
+                },
+              ];
+            }
+          }
+        }
       }
     });
   };
+}
+
+// Format a snippet file's content
+function formatSnippetFileContent(content) {
+  let sourceLines = content.split("\n");
+
+  let parsedLines = [];
+  for (let i = 0; i < sourceLines.length; i++) {
+    const line = sourceLines[i];
+    if (i > 0 && line.trim() === "" && sourceLines[i - 1].trim() === "") {
+      // This is a sequential empty line, so we must exclude it. In other words,
+      // both this line and the previous line are empty
+      continue;
+    }
+
+    if (isSnippetStart(line)) {
+      // There's a start marker, so we must exclude all previous lines
+      parsedLines = [];
+      continue;
+    } else if (isSnippetEnd(line)) {
+      // There's an end marker, so we must exclude all subsequent lines
+      break;
+    }
+    parsedLines.push(line);
+  }
+
+  // Remove leading whitespace lines
+  for (let line of parsedLines) {
+    if (line.trim() !== "") {
+      break;
+    }
+    parsedLines.shift();
+  }
+
+  // Remove trailing whitespace lines
+  for (let i = parsedLines.length - 1; i >= 0; i--) {
+    if (parsedLines[i].trim() !== "") {
+      break;
+    }
+    parsedLines.pop();
+  }
+
+  // Use this to trim left whitespace if necessary. This will prevent codeblocks
+  // where everything is indented (e.g. code in a function)
+  const leftWhitespaceToTrim = parsedLines[0].match(/^\s*/)?.[0];
+
+  parsedLines = parsedLines.map((line) => {
+    if (line.startsWith(leftWhitespaceToTrim)) {
+      return line.substring(leftWhitespaceToTrim.length);
+    }
+    return line;
+  });
+
+  return parsedLines.join("\n");
+}
+
+function isSnippetStart(line) {
+  // Python
+  if (line.trim() === "# !snippet:start") {
+    return true;
+  }
+
+  // TypeScript, Go
+  if (line.trim() === "// !snippet:start") {
+    return true;
+  }
+
+  return false;
+}
+
+function isSnippetEnd(line) {
+  // Python
+  if (line.trim() === "# !snippet:end") {
+    return true;
+  }
+
+  // TypeScript, Go
+  if (line.trim() === "// !snippet:end") {
+    return true;
+  }
+
+  return false;
 }
 
 let highlighter;
