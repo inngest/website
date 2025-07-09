@@ -8,26 +8,6 @@ import { trackPageView } from "src/utils/tracking";
 
 export function PageViews() {
   const { anonymousID, existing } = useAnonymousID();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-
-  // Client side navigation via next/link
-  useEffect(() => {
-    if (typeof window.Inngest === "undefined") {
-      console.warn("Inngest is not initialized");
-      return;
-    }
-    const ref = searchParams.get("ref");
-
-    window.Inngest.event({
-      name: "website/page.viewed",
-      data: {
-        first_touch: false,
-        ref,
-      },
-      v: "2022-12-27.1",
-    });
-  }, [pathname, searchParams]);
 
   return (
     <Script
@@ -36,18 +16,16 @@ export function PageViews() {
       // @ts-ignore this should inherit base html props
       src="/inngest-sdk.js"
       onLoad={() => {
+        if (typeof window.Inngest === "undefined") {
+          console.warn("Inngest is not initialized");
+          return;
+        }
         window.Inngest.init(process.env.NEXT_PUBLIC_INNGEST_KEY);
         window.Inngest.identify({ anonymous_id: anonymousID });
         // The hook should tell us if the anon id is an existing one, or it's just been set
         const firstTouch = !existing;
         // See tracking for next/link based transitions in tracking.ts
-        window.Inngest.event({
-          name: "website/page.viewed",
-          data: {
-            first_touch: firstTouch,
-          },
-          v: "2022-12-27.1",
-        });
+        window.Inngest.page(firstTouch);
         if (
           typeof window !== "undefined" &&
           window._inngestQueue &&
