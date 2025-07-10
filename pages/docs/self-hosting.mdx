@@ -58,10 +58,10 @@ Now that you have the CLI installed, you can start the Inngest server using the 
 
 <CodeGroup>
 ```plaintext {{ title: "shell" }}
-inngest start
+inngest start --event-key abc --signing-key xyz
 ```
 ```plaintext {{ title: "Docker" }}
-docker run -p 8288:8288 inngest/inngest inngest start
+docker run -p 8288:8288 -p 8289:8289 -e INNGEST_EVENT_KEY=abc -e INNGEST_SIGNING_KEY=xyz inngest/inngest inngest start
 ```
 </CodeGroup>
 
@@ -73,7 +73,7 @@ Configuring the server can be done via command line flags, environment variables
 
 By default, the server will:
 
-* Run on `localhost:8288`, including the Event API, API, and Dashboard UI.
+* Run on `localhost:8288` to serve the Event API, API, and Dashboard UI. `localhost:8289` is used for `connect` workers ([see docs for more connect-specific configuration](/docs/setup/connect#self-hosted-inngest)).
 * Use an in-memory Redis server for the queue and state store. (See [Using external services](#using-external-services) for more information)
 * Use SQLite for persistence. The default database is located at `./.inngest/main.db`. Queue and state store snapshots are periodically saved to the SQLite database, including prior to shutdown.
 * Disable app sync polling to check for new functions or updated configurations (see `--poll-interval` flag).
@@ -181,13 +181,9 @@ With goal of simplifying the initial setup, the Inngest server will run an in-me
 
 To use an external Redis server, set the `redis-uri` flag to the Redis server URI.
 
-**External Postgres database (experimental)**
+**External Postgres database**
 
 By default, the Inngest server uses SQLite for persistence. This is convenient for zero-dependency deployments, but does not support scaling beyond a single node. You may choose to run your own Postgres database or use a cloud-based Postgres service like AWS RDS, Neon, Supabase, etc.
-
-<Warning>
-  Postgres support is experimental and should be used with caution.
-</Warning>
 
 To use an external Postgres database, set the `postgres-uri` flag to your Postgres connection string URI.
 
@@ -259,9 +255,12 @@ networks:
 
 Planned features for self-hosting include:
 
-* Postgres external database support.
+* Improved health checks.
+* Backlog monitoring endpoints for auto-scaling.
+* High availability guide.
+* Helm chart for easy deployment to Kubernetes.
+* Data retention guides and recommendations.
 * Event key and signing key management via API and UI.
-* Multi-node Inngest server support. Run standalone services (API, Executor, etc.) instead of all services in a single process.
 
 To suggest additional features, please submit feedback on our [public roadmap](https://roadmap.inngest.com/roadmap).
 
