@@ -516,7 +516,6 @@ const sectionHome: (NavGroup | NavLink)[] = [
           },
           {
             title: "Steps & Workflows",
-            tag: "new",
             links: [
               {
                 title: "Overview",
@@ -793,7 +792,7 @@ const sectionHome: (NavGroup | NavLink)[] = [
           {
             title: "Connect",
             href: `/docs/setup/connect`,
-            tag: "new"
+            tag: "new",
           },
           {
             title: "Self hosting",
