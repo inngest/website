@@ -72,7 +72,8 @@ function CopyButton({ code }) {
         "bg-surfaceBase hover:border-contrast hover:bg-canvasSubtle"
       )}
       onClick={() => {
-        window.navigator.clipboard.writeText(code).then(() => {
+        const trimmedCode = (code || "").trimEnd();
+        window.navigator.clipboard.writeText(trimmedCode).then(() => {
           setCopyCount((count) => count + 1);
         });
       }}
