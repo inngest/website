@@ -627,11 +627,82 @@ By combining these concepts, you can build responsive, user-friendly application
 
 **Q: Can I limit the number of concurrent background jobs running at once?**
 
+You can limit the number of concurrent runs for a given background job by configuring a `concurrency`.
+The background job below will only have 2 concurrent runs at the same time (at most).
+
+```ts
+export const contactImport = inngest.createFunction(
+  { id: "contact-import", concurrency: 2 },
+  { event: "app/contact.import" },
+  async ({ event, step }) => {
+   // ...
+  }
+)
+```
+
 **Q: Can I limit the background jobs retries?**
+
+Background are retried up to 4 by default and can be configured using the `retries` option.
+The example below showcases a function with no retries:
+
+
+```ts
+export const contactImport = inngest.createFunction(
+  { id: "contact-import", retries: 0 },
+  { event: "app/contact.import" },
+  async ({ event, step }) => {
+   // ...
+  }
+)
+```
 
 **Q: What happens if the client loses connection during a background job?**
 
+The `useInngestSubscription()` React hook provided by `@inngest/realtime` will resume any lost connection automatically.
+Any permanent lost of connection will be reflected in the `error` and `state` properties returned by the hook:
+
+```tsx
+// ...
+
+const { data, error, state } = useInngestSubscription({
+   refreshToken: () => fetchSubscriptionToken(id as string),
+   bufferInterval: 500,
+   enabled,
+});
+
+// state === "closed"
+
+// ...
+```
+
 **Q: Is it possible to subscribe to multiple channels or topics at once?**
+
+Every subscription is bound to a channel and its one or multiple topics.
+
+To subscribe to multiple topics from a given channel, list them in the `topics` arguments passed to `getSubscriptionToken()`:
+
+```ts app/actions.ts
+"use server";
+
+import { inngest } from "@/lib/inngest";
+import { myChannel } from "@/src/inngest/functions";
+import { getSubscriptionToken, Realtime } from "@inngest/realtime";
+
+// securely fetch an Inngest Realtime subscription token from the server as a server action
+export async function fetchSubscriptionToken(
+  campaignId: string
+): Promise<Realtime.Token<typeof myChannel, ["progress"]>> {
+  const token = await getSubscriptionToken(inngest, {
+    channel: myChannel(campaignId),
+    topics: ["topic1", "topic2", "topic3"],
+  });
+
+  return token;
+
+```
+
+To subscribe to multiple channels, create multiple subscription tokens and perform one call to `useInngestSubscription()` per channel.
 
 **Q: How do I handle errors or retries in the background job and reflect them in the UI?**
 
+Inngest offers multiple ways to handle errors, described [in this guide](/docs/guides/error-handling).
