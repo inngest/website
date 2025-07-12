@@ -1,5 +1,5 @@
 ---
-heading: How to add background jobs with real-time updates to an Next.js application
+heading: How to add background jobs with real-time updates to a Next.js application
 subtitle: Learn how to implement background jobs in Next.js using Inngest.
 image: "/assets/blog/background-jobs-realtime-nextjs/featured-image.png"
 date: 2025-07-11
@@ -7,39 +7,35 @@ author: Charly Poly
 showSubtitle: true
 ---
 
-Backgound jobs are core to web-applications, keeping the user experience responsive by moving some backend work outside of the API.
+Background jobs are core to web applications, keeping the user experience responsive by moving some backend work outside of the API.
 
-
-With background jobs, any backend work not directly tied to the user experience or slow operations such as importing contacts is moved into asynchronous back-end operations.
-These background jobs can send updates upon completion, for example, via emails, or send realtime updates with streamed messages to keep users informed of the process (for example, sending a batch of emails)
-
+With background jobs, any backend work not directly tied to the user experience or slow operations such as importing contacts is moved into asynchronous backend operations.
+These background jobs can send updates upon completion, for example, via emails, or send real-time updates with streamed messages to keep users informed of the process (for example, sending a batch of emails).
 
 In this article, you'll learn how to add background jobs with real-time updates in Next.js using Inngest.
 
 ## Project overview: CampaignCraft
 
-CampaignCraft is a Next.js application that helps in sending personalized email campaign by automatically
-segmenting the uploaded contacts CSV files and AI campaigns drafts.
+CampaignCraft is a Next.js application that helps in sending personalized email campaigns by automatically segmenting uploaded contacts CSV files and drafting AI campaigns.
 
 _TODO: video_
 
-CampaignCraft is built with the following tech:
+CampaignCraft is built with the following technologies:
 - **Next.js** - The full-stack application framework
 - **Shadcn** - The UIKit library providing all UI components
-- **Vercel** - The defacto deployment platform for Next.js applications
+- **Vercel** - The de facto deployment platform for Next.js applications
 - **OpenAI** - To power all AI features
 - **Neon** - Our Postgres database to store contacts and campaigns
 - **Drizzle** - The ORM used to interact with the Neon database
 - **Inngest** - The background jobs engine powering our contacts import and campaign sending features
 
-The two primary features of CampaignCraft, automatically segmenting uploaded contacts file and sending campaigns
-are leveraging background jobs with realtime updates for a smoother user experience.
+The two primary features of CampaignCraft—automatically segmenting uploaded contact files and sending campaigns—leverage background jobs with real-time updates for a smoother user experience.
 
 The final project is [available on GitHub](#TODO) along with README setup instructions.
 
 ## Implementation overview
 
-Our project relies on two main concepts to deliver a smooth user experience: background jobs and realtime updates.
+Our project relies on two main concepts to deliver a smooth user experience: background jobs and real-time updates.
 
 ### How do background jobs work?
 
@@ -47,8 +43,8 @@ Background jobs allow your application to handle time-consuming or resource-inte
 
 _TODO: illustration_
 
-When invoked, a background job gets added to a queue processed by a background jobs engine (ex, Inngest) that pick background jobs from the queue in the right order.
-On top of moving time-consuming work outside of the API, background jobs also enables to retry failed jobs, bringing more reliability to backend work coupled to external services like LLM APIs or email providers:
+When invoked, a background job gets added to a queue processed by a background jobs engine (e.g., Inngest) that picks jobs from the queue in the correct order.
+In addition to moving time-consuming work outside of the API, background jobs also enable retrying failed jobs, bringing more reliability to backend work coupled with external services like LLM APIs or email providers:
 
 _TODO: illustration_
 
@@ -69,11 +65,11 @@ Here's how it works in a Next.js app:
 
 
 
-### How do Realtime updates work?
+### How do real-time updates work?
 
-Realtime updates allow your application to instantly inform users about the progress of long-running background jobs—without requiring them to refresh the page or poll for updates. This is especially important for workflows like sending bulk emails, where users want to see live feedback on the status of their actions.
+Real-time updates allow your application to instantly inform users about the progress of long-running background jobs—without requiring them to refresh the page or poll for updates. This is especially important for workflows like sending bulk emails, where users want to see live feedback on the status of their actions.
 
-Realtime updates are made possible by a technology called **[WebSocket](https://en.wikipedia.org/wiki/WebSocket)**.
+Real-time updates are made possible by a technology called **[WebSocket](https://en.wikipedia.org/wiki/WebSocket)**.
 WebSocket is a protocol that enables persistent, two-way communication between the browser and the server.
 Unlike traditional HTTP requests, which require the client to repeatedly ask the server for new information (polling), a WebSocket connection stays open, allowing the server to instantly push updates to the client as soon as something changes.
 This makes it ideal for delivering live progress, notifications, and logs from your background jobs directly to the user's browser in real time (without the latency of polling every _x_ seconds).
@@ -87,7 +83,7 @@ Here's how it works:
 
 _TODO: illustration_
 
-**Benefits of realtime updates:**
+**Benefits of real-time updates:**
 - **Transparency**: Users can see exactly what's happening, reducing uncertainty.
 - **Engagement**: Live feedback keeps users engaged and informed, especially during long operations.
 - **Error handling**: If something goes wrong, users are notified immediately and can take action.
@@ -96,15 +92,13 @@ _TODO: illustration_
 
 ## Inngest as a background jobs engine
 
-While this guide focuses on two primary use cases requiring background jobs, improving the user experience or scaling your web applications
-is a wider topic involving other concepts such as scalability with Flow Control, recovery tactics for production use cases and more.
+While this guide focuses on two primary use cases requiring background jobs, improving the user experience or scaling your web applications is a wider topic involving other concepts such as scalability with Flow Control, recovery tactics for production use cases, and more.
 
-Inngest is an orchestration engine enabling developers to build, operate and scale background jobs and workflows.
-Its TypeScript provide features ranging from simple background jobs to more advanced scalable workflows designed for scale.
-On top of its SDKs, Inngest also provides a platform providing observability (charts & usage), recovery tools (bulk cancelations, replay of jobs) and
-integrations with other platforms like Vercel. Finally, Inngest's Realtime feature provide an API to send realtime updates to users for long running background jobs.
+Inngest is an orchestration engine enabling developers to build, operate, and scale background jobs and workflows.
+Its TypeScript SDK provides features ranging from simple background jobs to more advanced scalable workflows designed for scale.
+In addition to its SDKs, Inngest also provides a platform offering observability (charts & usage), recovery tools (bulk cancellations, job replays), and integrations with other platforms like Vercel. Finally, Inngest's Realtime feature provides an API to send real-time updates to users for long-running background jobs.
 
-You can install and configure Inngest to your Next.js app in under 5-minutes [by following this quickstart](/docs/getting-started/nextjs-quick-start?ref=blogpost-nextjs-bg-jobs-realtime).
+You can install and configure Inngest in your Next.js app in under 5 minutes [by following this quickstart](/docs/getting-started/nextjs-quick-start?ref=blogpost-nextjs-bg-jobs-realtime).
 
 
 ## Installing new dependencies
@@ -117,7 +111,7 @@ npm i inngest @inngest/realtime
 
 ## Setting up Inngest
 
-Let's start by installing and configuring Inngest to CampaignCraft.
+Let's start by installing and configuring Inngest in CampaignCraft.
 
 First, we'll create a new `inngest/functions.ts` file as follows:
 
@@ -131,7 +125,7 @@ export const client = new Inngest({
 // our background jobs definition will go here
 ```
 
-Then, we will create a new Next.js API Routes to enable the Inngest orchestration engine to trigger background jobs defined in the application:
+Then, we will create a new Next.js API Route to enable the Inngest orchestration engine to trigger background jobs defined in the application:
 
 ```ts app/api/inngest/routes.ts
 import { serve } from "inngest/next";
@@ -146,18 +140,18 @@ export const { GET, POST, PUT } = serve({
 
 ```
 
-Inngest is now setup in the Next.js app. Let's now look at how to implement the contacts importer feature using a background job.
+Inngest is now set up in the Next.js app. Let's now look at how to implement the contacts importer feature using a background job.
 
 ## Import contacts from a background job
 
-CampaignCraft's first main feature is a CSV contacts import which segment the newly imported contacts using AI (OpenAI).
+CampaignCraft's first main feature is a CSV contacts import which segments the newly imported contacts using AI (OpenAI).
 
 Implementing this feature directly in a Next.js API Route comes with many drawbacks:
 - The import and AI processes are tied to the user request
-- The import and AI processes are slow, forcing the user to stay on the page until the import finishes (even with a Next.js streaming response)
-- A single LLM request failure will cancel the whole import, without retry
+- The import and AI processes are slow, forcing the user to stay on the page until the import finishes (even with a Next.js streaming response).
+- A single LLM request failure will cancel the whole import, without retrying.
 
-For this reason, we will implement this feature using a background job:
+For this reason, we will implement this feature using a background job,
 - Enabling the user to leave the page after submitting the file and getting notified by email when the import is complete
 - Enforcing automatic isolated retries, making the import and AI processing more resilient
 
@@ -186,7 +180,7 @@ export async function POST(req: NextRequest) {
 <aside className="max-w-[65ch] m-auto bg-indigo-900/20 text-indigo-100 leading-relaxed rounded-lg py-0 px-6  my-12 border border-indigo-900/50">
   **Inngest background jobs are triggered using events**
 
-  You can see events as arguments of backgound jobs. `inngest.send()` is used to send an event to Inngest which will enqueue an execution of our `contact-import` background job.
+  You can see events as arguments of background jobs. `inngest.send()` is used to send an event to Inngest which will enqueue an execution of our `contact-import` background job.
 </aside>
 
 Let's now implement the `contact-import` background job.
@@ -284,23 +278,18 @@ export const contactImport = inngest.createFunction(
 <aside className="max-w-[65ch] m-auto bg-indigo-900/20 text-indigo-100 leading-relaxed rounded-lg py-0 px-6  my-12 border border-indigo-900/50">
   **Inngest background jobs are composed of steps**
 
-  The `step.run()` block present in the `contact-import` background jobs helps in dividing our backgroud job into
-  individual retriable units. When a steps fails, this enables Inngest to recover your background jobs from where it failed,
-  without re-running all the steps.
-  This prevents any unwanted duplicated database inserts or costly LLM requests.
+  The `step.run()` block present in the `contact-import` background job helps in dividing our background job into individual retriable units. When a step fails, this enables Inngest to recover your background job from where it failed, without re-running all the steps.
+  This prevents any unwanted duplicate database inserts or costly LLM requests.
 </aside>
 
-Let's now create a background job sending realtime updates for the campaign sending feature.
+Let's now create a background job sending real-time updates for the campaign sending feature.
 
 
-## Sending campaigns using a realtime background job
+## Sending campaigns using a real-time background job
 
-Sending a campaign is a quicker process than importing contact.
-Still, it benefits from running inside a background job to enable the user to leave the page before it completes or
-to make it more resilient to failures.
+Sending a campaign is a quicker process than importing contacts. Still, it benefits from running inside a background job to enable the user to leave the page before it completes or to make it more resilient to failures.
 
-To keep the user informed of the progress of the batch sending of emails, our `campaign-send` background jobs will send regular
-realtime updates.
+To keep the user informed of the progress of the batch email sending, our `campaign-send` background job will send regular real-time updates.
 
 
 ### Configuring Inngest Realtime
@@ -323,7 +312,7 @@ export const inngest = new Inngest({
 // ...
 ```
 
-Then, below the `contact-import` inngest function, let's define a unique channel that we will later use to send realtime messages:
+Then, below the `contact-import` Inngest function, let's define a unique channel that we will later use to send real-time messages:
 
 ```ts src/inngest/functions.ts
 import { channel, topic } from "@inngest/realtime";
@@ -355,15 +344,15 @@ export const campaignSendChannel = channel(
 <aside className="max-w-[65ch] m-auto bg-indigo-900/20 text-indigo-100 leading-relaxed rounded-lg py-0 px-6  my-12 border border-indigo-900/50">
   **Inngest Realtime: channels and topics**
 
-  Inngest Realtime enables you to send realtime updates from background jobs to React components using 2 concepts: channels and topics.
+  Inngest Realtime enables you to send real-time updates from background jobs to React components using 2 concepts: channels and topics.
 
-  - Channels contains different types of message belonging to the same background job, for example: a batch sending of emails for a given campaign.
+  - Channels contain different types of messages belonging to the same background job, for example: a batch sending of emails for a given campaign.
   - Topics are different types of messages belonging to a given channel.
 </aside>
 
-### Sending Realtime messages
+### Sending Real-time messages
 
-Our second background job, `campaign-send` features some new calls to a new API: `publish()`.
+Our second background job, `campaign-send`, features some new calls to a new API: `publish()`.
 This API enables you to send messages to a given channel and topic:
 
 ```ts src/inngest/functions.ts
@@ -484,13 +473,13 @@ export const campaignSend = inngest.createFunction(
 );
 ```
 
-Let's now update our front-end (React components) to subscribe to the realtime updates!
+Let's now update our front-end (React components) to subscribe to the real-time updates!
 
-### Subscribing to Realtime messages from the front-end
+### Subscribing to real-time messages from the front-end
 
-Subscribing from realtime updates sent from Inngest background requires two changes.
+Subscribing to real-time updates sent from Inngest background jobs requires two changes.
 
-First, create a `app/actions.ts` file as follows:
+First, create an `app/actions.ts` file as follows:
 
 ```ts app/actions.ts
 "use server";
@@ -515,12 +504,12 @@ export async function fetchSubscriptionToken(
 <aside className="max-w-[65ch] m-auto bg-indigo-900/20 text-indigo-100 leading-relaxed rounded-lg py-0 px-6  my-12 border border-indigo-900/50">
   **Inngest Realtime: subscription token**
 
-  Inngest Realtime requires to create a Server Action to securely fetch a subscription token from the server.
+  Inngest Realtime requires you to create a Server Action to securely fetch a subscription token from the server.
 
   This subscription token is later used by the `useInngestSubscription()` React hook to subscribe to live updates.
 </aside>
 
-Let's now add the `useInngestSubscription()` to our Next.js page to subscribe to live updates:
+Let's now add the `useInngestSubscription()` hook to our Next.js page to subscribe to live updates:
 
 ```tsx app/campaign/[id]/page.tsx
 "use client";
@@ -578,7 +567,7 @@ export default function CampaignViewPage() {
 }
 ```
 
-CampaignCraft is now leveraiging two background jobs powering a smooth user experience, let's test it out!
+CampaignCraft is now leveraging two background jobs to power a smooth user experience. Let's test it out!
 
 ## Try it!
 
@@ -597,28 +586,28 @@ npx inngest-cli@latest dev
 
 Open the Inngest DevServer ([127.0.0.1:8288/runs](http://127.0.0.1:8288/runs)) in a new tab.
 
-Then, open CampaignCraft at [http://localhost:3000](http://localhost:3000) and click on "Import contacts".
+Then, open CampaignCraft at [http://localhost:3000](http://localhost:3000) and click on "Import contacts."
 From the import page, select the `fake_contacts.csv` file available in the repository and import it.
 
-You should see the import process run in the Inngest DevServer.
+You should see the import process running in the Inngest DevServer.
 
 _TODO: video 1_
 
-Now navigate back to the home page, and click on the "Create Campaign" button. Create a campaign by selecting a segment, generate some AI content and send it. You will see the campaign being sent with realtime updates.
+Now navigate back to the home page, and click on the "Create Campaign" button. Create a campaign by selecting a segment, generating some AI content, and sending it. You will see the campaign being sent with real-time updates.
 
 _TODO: video 2_
 
 ## Conclusion
 
-In this article, we explored how to implement realtime updates for background jobs in a Next.js application using Inngest Realtime. The main concepts covered include:
+In this article, we explored how to implement real-time updates for background jobs in a Next.js application using Inngest Realtime. The main concepts covered include:
 
 - **Background Jobs**: Offloading long-running or resource-intensive tasks (like sending email campaigns) to run asynchronously in the background, improving user experience and scalability.
-- **Inngest Realtime**: Leveraging Inngest's realtime capabilities to send live updates from background jobs to the frontend, enabling users to see progress and results as they happen.
-- **Channels and Topics**: Organizing realtime messages using channels (grouping messages for a specific backgound job) and topics (categorizing message types within a channel).
+- **Inngest Realtime**: Leveraging Inngest's real-time capabilities to send live updates from background jobs to the frontend, enabling users to see progress and results as they happen.
+- **Channels and Topics**: Organizing real-time messages using channels (grouping messages for a specific background job) and topics (categorizing message types within a channel).
 - **Subscription Tokens**: Securely generating tokens on the server to allow clients to subscribe to specific channels and topics, ensuring only authorized access to updates.
 - **React Integration**: Using the `useInngestSubscription` hook in React components to subscribe to updates, and updating the UI in response to new messages from background jobs.
 
-By combining these concepts, you can build responsive, user-friendly applications that keep users informed about the status of their background processes in realtime.
+By combining these concepts, you can build responsive, user-friendly applications that keep users informed about the status of their background processes in real time.
 
 
 ## FAQ
@@ -627,8 +616,8 @@ By combining these concepts, you can build responsive, user-friendly application
 
 **Q: Can I limit the number of concurrent background jobs running at once?**
 
-You can limit the number of concurrent runs for a given background job by configuring a `concurrency`.
-The background job below will only have 2 concurrent runs at the same time (at most).
+You can limit the number of concurrent runs for a given background job by configuring `concurrency`.
+The background job below will only have 2 concurrent runs at the same time (at most):
 
 ```ts
 export const contactImport = inngest.createFunction(
@@ -642,8 +631,8 @@ export const contactImport = inngest.createFunction(
 
 **Q: Can I limit the background jobs retries?**
 
-Background are retried up to 4 by default and can be configured using the `retries` option.
-The example below showcases a function with no retries:
+Background jobs are retried up to 4 times by default and can be configured using the `retries` option.
+The example below shows a function with no retries:
 
 
 ```ts
@@ -658,8 +647,8 @@ export const contactImport = inngest.createFunction(
 
 **Q: What happens if the client loses connection during a background job?**
 
-The `useInngestSubscription()` React hook provided by `@inngest/realtime` will resume any lost connection automatically.
-Any permanent lost of connection will be reflected in the `error` and `state` properties returned by the hook:
+The `useInngestSubscription()` React hook provided by `@inngest/realtime` will automatically resume any lost connection.
+Any permanent loss of connection will be reflected in the `error` and `state` properties returned by the hook:
 
 ```tsx
 // ...
@@ -677,9 +666,9 @@ const { data, error, state } = useInngestSubscription({
 
 **Q: Is it possible to subscribe to multiple channels or topics at once?**
 
-Every subscription is bound to a channel and its one or multiple topics.
+Every subscription is bound to a channel and one or more of its topics.
 
-To subscribe to multiple topics from a given channel, list them in the `topics` arguments passed to `getSubscriptionToken()`:
+To subscribe to multiple topics from a given channel, list them in the `topics` argument passed to `getSubscriptionToken()`:
 
 ```ts app/actions.ts
 "use server";
@@ -701,8 +690,8 @@ export async function fetchSubscriptionToken(
 
 ```
 
-To subscribe to multiple channels, create multiple subscription tokens and perform one call to `useInngestSubscription()` per channel.
+To subscribe to multiple channels, create multiple subscription tokens and call `useInngestSubscription()` once per channel.
 
 **Q: How do I handle errors or retries in the background job and reflect them in the UI?**
 
-Inngest offers multiple ways to handle errors, described [in this guide](/docs/guides/error-handling).
+Inngest offers multiple ways to handle errors, as described [in this guide](/docs/guides/error-handling).
