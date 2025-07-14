@@ -189,7 +189,7 @@ The agent's internal monologue drives the process, deciding which tools to call 
 
 To address the unpredictability of a single agent, we can build a more deterministic, multi-agent network with a structured sequence of specialized agents, orchestrated by a code-based router.
 
-With this multi-agent system, each agent has a clearly defined purpose and single job to do. Our “router” is basically a function used to orchestrate/route between these different agents. Many mutli-agent networks may have complex routing, but here, we use our router to force a linear path between the following agents:
+With this multi-agent system, each agent has a clearly defined purpose and single job to do. Our “router” is basically a function used to orchestrate/route between these different agents. Many multi-agent networks may have complex routing, but here, we use our router to force a linear path between the following agents:
 
 1. **Memory Retrieval Agent**: Its sole job is to use the `recall_memories` tool.
 2. **Personal Assistant Agent**: Has no memory tools. Its only job is to synthesize the final answer based on the retrieved memories.
