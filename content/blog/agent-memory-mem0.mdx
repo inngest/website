@@ -3,7 +3,7 @@ heading: "Empowering Agents with Memory"
 image: /assets/blog/agent-memory-mem0/mem0-cover.png
 showSubtitle: false
 subtitle: "Integrate Mem0 with AgentKit"
-date: 2025-07-11
+date: 2025-07-14
 author: Ted Werbel
 disableCTA: true
 ---
@@ -38,6 +38,7 @@ episodic memory (recalling specific past events) and semantic memory (generalize
 By equipping agents with these different types of memory, we can evolve agents into genuine collaborators.
 
 ![Stateful Agents](/assets/blog/agent-memory-mem0/mem0-stateful-agents.png)
+*Source: [Memory in Agents: What, Why and How](https://mem0.ai/blog/memory-in-agents-what-why-and-how/)*
 
 In this article, we will explore two simple examples of how one would integrate Mem0 into an agent or network of
 agents using both a deterministic and non-deterministic approach.
@@ -118,6 +119,7 @@ When an agent needs to create, update or delete a memory - it simply sends an ev
 To empower an agent with memory, we provide it with [tools](https://agentkit.inngest.com/concepts/tools?ref=blog-agent-memory-mem0). The core idea is to abstract memory operations (create, read, update, delete) into functions that an agent can call, just like any other tool.
 
 ![Stateful Agents](/assets/blog/agent-memory-mem0/mem0-flow.png)
+*Source: [Memory in Agents: What, Why and How](https://mem0.ai/blog/memory-in-agents-what-why-and-how/)*
 
 These tools can then use Inngest to perform the actual database writes asynchronously.
 
@@ -231,8 +233,6 @@ Giving your agents memory is a fundamental step toward creating more intelligent
 By combining the power of AgentKit, Inngest durable execution and tools like Mem0 - you have everything you need to build agents that can learn over time.
 There’s a lot more we have not yet covered including graph-based memory and the notion of having multiple memory stores for different purposes.
 
-We’ll be posting more advanced guides and tutorials for implementing memory very soon! Until then, feel free to check out the AgentKit and Mem0 docs to learn more:
-
-Mem0: https://docs.mem0.ai/what-is-mem0
+We’ll be posting more advanced guides and tutorials for implementing more in-depth agents with memory very soon! There's a lot we have not covered like graph-based memory and other ways to configure Mem0 which you can learn all about in [their docs](https://docs.mem0.ai/what-is-mem0).
 
 Ready to get started? Check out [our docs](https://agentkit.inngest.com/concepts/memory?ref=blog-agent-memory-mem0) for a full deep-dive into everything memory and take a look at a complete [Mem0 Memory Example](https://github.com/inngest/agent-kit/tree/main/examples/mem0-memory) to see these patterns in action.
