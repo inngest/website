@@ -340,6 +340,16 @@ export const FEATURES: Feature[] = [
     section: "platform",
   },
   {
+    name: "HIPAA",
+    description: "BAAs for healthcare compliance",
+    plans: {
+      [PLAN_NAMES.basicFree]: false,
+      [PLAN_NAMES.pro]: "Add-on",
+      [PLAN_NAMES.enterprise]: true,
+    },
+    section: "platform",
+  },
+  {
     name: "Events",
     description: "Received/processed",
     plans: {
