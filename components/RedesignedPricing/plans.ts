@@ -285,7 +285,6 @@ export const FEATURES: Feature[] = [
     plans: {
       [PLAN_NAMES.basicFree]: {
         value: "25 included",
-        description: "then $25 per 25",
       },
       [PLAN_NAMES.pro]: {
         value: "100 included",
@@ -302,7 +301,6 @@ export const FEATURES: Feature[] = [
     plans: {
       [PLAN_NAMES.basicFree]: {
         value: "3",
-        description: "then $10/user",
       },
       [PLAN_NAMES.pro]: {
         value: "15",
