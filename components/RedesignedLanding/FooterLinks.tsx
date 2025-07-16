@@ -1,24 +1,25 @@
+import Link from "next/link";
 import StatusWidget from "src/shared/StatusWidget";
 
 export const navigation = {
   platform: [
-    { name: "AI & Agents", href: "/ai?ref=homepage-footer-links" },
+    { name: "AI & Agents", href: "/ai?ref=footer-links" },
     {
       name: "Durable Workflows",
-      href: "/uses/durable-workflows?ref=homepage-footer-links",
+      href: "/uses/durable-workflows?ref=footer-links",
     },
-    { name: "Platform", href: "/platform?ref=homepage-footer-links" },
+    { name: "Platform", href: "/platform?ref=footer-links" },
     {
       name: "Queueing",
-      href: "/compare-to-legacy-queues?ref=homepage-footer-links",
+      href: "/compare-to-legacy-queues?ref=footer-links",
     },
     {
       name: "Workflow Engines",
-      href: "/uses/workflow-engine?ref=homepage-footer-links",
+      href: "/uses/workflow-engine?ref=footer-links",
     },
     {
       name: "Background Jobs",
-      href: "/uses/serverless-node-background-jobs?ref=homepage-footer-links",
+      href: "/uses/serverless-node-background-jobs?ref=footer-links",
     },
     {
       name: "Scheduled and cron jobs",
@@ -26,33 +27,39 @@ export const navigation = {
     },
   ],
   explore: [
-    { name: "Docs", href: "/docs?ref=homepage-footer-links" },
+    { name: "Docs", href: "/docs?ref=footer-links" },
     {
       name: "Inngest vs. Traditional Queues",
-      href: "/compare-to-legacy-queues?ref=homepage-footer-links",
+      href: "/compare-to-legacy-queues?ref=footer-links",
     },
     {
       name: "Inngest vs. Kafka",
-      href: "/blog/simplifying-queues-modern-kafka-alternative",
+      href: "/blog/simplifying-queues-modern-kafka-alternative?ref=footer-links",
     },
     {
       name: "Inngest vs. Temporal",
-      href: "/compare-to-temporal?ref=homepage-footer-links",
+      href: "/compare-to-temporal?ref=footer-links",
     },
     {
       name: "Solving for Vercel Timeouts",
-      href: "/blog/vercel-function-timeout",
+      href: "/blog/vercel-function-timeout?ref=footer-links",
     },
   ],
   company: [
-    { name: "Blog", href: "/blog?ref=homepage-footer-links" },
-    { name: "Changelog", href: "/changelog?ref=homepage-footer-links" },
-    { name: "Roadmap", href: "https://roadmap.inngest.com/roadmap?ref=footer" },
-    { name: "About", href: "/about?ref=homepage-footer-links" },
-    { name: "Careers", href: "/careers?ref=homepage-footer-links" },
+    { name: "Blog", href: "/blog?ref=footer-links" },
+    { name: "Changelog", href: "/changelog?ref=footer-links" },
+    {
+      name: "Roadmap",
+      href: "https://roadmap.inngest.com/roadmap?ref=footer-links",
+    },
+    { name: "About", href: "/about?ref=footer-links" },
+    { name: "Careers", href: "/careers?ref=footer-links" },
   ],
   community: [
-    { name: "Discord", href: "https://www.inngest.com/discord?ref=footer" },
+    {
+      name: "Discord",
+      href: "/discord?ref=footer-links",
+    },
     { name: "GitHub", href: "https://github.com/inngest/inngest" },
     { name: "X.com", href: "https://x.com/inngest" },
     { name: "Bluesky", href: "https://bsky.app/profile/inngest.com" },
@@ -137,12 +144,36 @@ export default function FooterLinks() {
         </div>
       </div>
       <div className="mx-auto my-12 max-w-6xl items-center justify-center pt-8 md:flex md:justify-between">
-        <div className="flex justify-center gap-6 md:order-1 md:items-start md:justify-start">
+        <div className="flex justify-center gap-6 md:items-start md:justify-start">
           <StatusWidget />
         </div>
-        <p className="mt-8 items-center text-center text-sm/6 text-gray-400 md:order-2 md:mt-0 md:text-end">
-          &copy; {new Date().getFullYear()} Inngest Inc. All rights reserved.
-        </p>
+        <div className="flex flex-col items-center justify-center md:items-end">
+          <p className="mt-8 items-center text-center text-sm/6 text-gray-400 md:mt-0 md:text-end">
+            &copy; {new Date().getFullYear()} Inngest Inc. All rights reserved.
+          </p>
+          <div className="flex flex-row justify-end  text-sm/6 text-stone-500">
+            <Link
+              href="/privacy?ref=footer-links"
+              className="px-1 hover:underline"
+            >
+              Privacy Policy
+            </Link>
+            <div>|</div>
+            <Link
+              href="/terms?ref=footer-links"
+              className="px-1 hover:underline"
+            >
+              Terms
+            </Link>
+            <div>|</div>
+            <Link
+              href="/security?ref=footer-links"
+              className="pl-1 hover:underline"
+            >
+              Security
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );

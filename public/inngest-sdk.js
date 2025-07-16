@@ -14,6 +14,9 @@
   // in with events with calls to track().
   var user = {};
 
+  var pageview = {};
+  var lastUrl;
+
   var Inngest = function () {};
   window.Inngest = Inngest;
 
@@ -29,6 +32,53 @@
     key = k;
     assign(self.options, options || {});
     user = get(CACHE_KEY) || {};
+
+    _startHistoryTracking();
+  };
+
+  function _startHistoryTracking() {
+    // monkey patch pushState
+    var originalPushState = history.pushState;
+    history.pushState = function () {
+      originalPushState.apply(this, arguments);
+      _capturePageView();
+    };
+
+    var originalReplaceState = history.replaceState;
+    history.replaceState = function () {
+      originalReplaceState.apply(this, arguments);
+      _capturePageView();
+    };
+
+    window.addEventListener("popstate", () => _capturePageView());
+  }
+
+  function _capturePageView(isFirstTouch) {
+    if (lastUrl === window.location.href) {
+      return;
+    }
+    lastUrl = window.location.href;
+
+    var previousPageviewId = pageview.id;
+    pageview.id =
+      "pv-" +
+      new Date().getTime() +
+      "-" +
+      Math.random().toString(36).substr(2, 9);
+    var event = {
+      name: "website/page.viewed",
+      data: {
+        first_touch: !!isFirstTouch,
+      },
+    };
+    if (previousPageviewId) {
+      event.data["$previous_pageview_id"] = previousPageviewId;
+    }
+    Inngest.event(event);
+  }
+
+  Inngest.page = function (isFirstTouch) {
+    _capturePageView(isFirstTouch);
   };
 
   Inngest.event = async function (event, options) {
@@ -39,6 +89,10 @@
     }
     event.data = event.data || {};
     assign(event.data, context(event.data));
+
+    if (pageview.id) {
+      event.data["$pageview_id"] = pageview.id;
+    }
 
     // The event.user object should take precedence over the identify() attributes
     // called.  Copy the event user attributes into a new variable so that we can

@@ -68,11 +68,12 @@ function CopyButton({ code }) {
       type="button"
       className={clsx(
         // Header is ~41px, button height
-        "absolute top-1.5 right-1.5 overflow-hidden rounded-md py-1 px-2 text-xs font-medium border border-muted",
-        "bg-surfaceBase hover:bg-canvasSubtle hover:border-contrast"
+        "absolute right-1.5 top-1.5 overflow-hidden rounded-md border border-muted px-2 py-1 text-xs font-medium",
+        "bg-surfaceBase hover:border-contrast hover:bg-canvasSubtle"
       )}
       onClick={() => {
-        window.navigator.clipboard.writeText(code).then(() => {
+        const trimmedCode = (code || "").trimEnd();
+        window.navigator.clipboard.writeText(trimmedCode).then(() => {
           setCopyCount((count) => count + 1);
         });
       }}
@@ -106,9 +107,9 @@ function CodePanelHeader({ tag, label }) {
 
   return (
     <div
-      className={`flex h-10 px-4 items-center gap-2
-        border-b border-b-subtle rounded-t-md
-        bg-surfaceBase
+      className={`flex h-10 items-center gap-2 rounded-t-md
+        border-b border-b-subtle bg-surfaceBase
+        px-4
       `}
     >
       {tag && (
@@ -143,7 +144,7 @@ function CodePanel({ tag, label, code, children }: CodePanelProps) {
       {/* Added wrapper to contain button within code area and prevent tab overlap */}
       <div className="relative">
         <CopyButton code={child.props.code ?? code} />
-        <pre className="overflow-x-auto px-6 py-5 text-xs text-basis leading-relaxed">
+        <pre className="overflow-x-auto px-6 py-5 text-xs leading-relaxed text-basis">
           {children}
         </pre>
       </div>
@@ -175,9 +176,9 @@ function CodeGroupHeader({
   return (
     <div
       className={`
-      px-4 flex min-h-[calc(theme(spacing.10)+1px)] flex-wrap items-center gap-x-4
-      bg-surfaceBase rounded-t-md
-      border-b border-b-subtle rounded-t-md
+      flex min-h-[calc(theme(spacing.10)+1px)] flex-wrap items-center gap-x-4 rounded-t-md
+      rounded-t-md border-b
+      border-b-subtle bg-surfaceBase px-4
       text-basis
       `}
     >
@@ -198,8 +199,8 @@ function CodeGroupHeader({
               className={clsx(
                 "border-b py-3 transition focus:outline-none",
                 childIndex === selectedIndex
-                  ? "border-breeze-500 text-link"
-                  : "border-transparent text-basis hover:text-link"
+                  ? "border-breeze-500 text-breeze-400"
+                  : "border-transparent text-basis hover:text-breeze-300"
               )}
             >
               {getPanelTitle(child.props)}
@@ -353,7 +354,7 @@ export function CodeGroup({
       <Container
         {...containerProps}
         // relative used for absolute positioning of CopyButton
-        className="not-prose my-6 overflow-hidden rounded-md border border-subtle relative"
+        className="not-prose relative my-6 overflow-hidden rounded-md border border-subtle"
       >
         <CodeGroupHeader
           title={title}
@@ -465,7 +466,7 @@ export function GuideSelector({
               className={clsx(
                 "border-b py-3 transition focus:outline-none",
                 option.key === selected
-                  ? "border-breeze-500 text-breeze-700 dark:text-breeze-300 dark:border-breeze-300"
+                  ? "border-breeze-500 text-breeze-700 dark:border-breeze-300 dark:text-breeze-300"
                   : "border-transparent text-slate-600 hover:text-breeze-600 dark:text-slate-400 dark:hover:text-breeze-300"
               )}
             >

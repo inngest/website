@@ -91,18 +91,19 @@ package main
 import (
 	"context"
 
-	"github.com/inngest/inngest-go"
-	"github.com/inngest/inngest-go/step"
+	"github.com/inngest/inngestgo"
+	"github.com/inngest/inngestgo/step"
 )
 
 func init() {
 	// This weekly digest function will run at 12:00pm on Friday in the Paris timezone
 	inngestgo.CreateFunction(
-		inngestgo.FunctionOpts{ID: "prepare-weekly-digest", Name: "Prepare Weekly Digest"},
+		client,
+		inngestgo.FunctionOpts{Name: "prepare-weekly-digest"},
 		inngestgo.CronTrigger("TZ=Europe/Paris 0 12 * * 5"),
-		func(ctx context.Context, input inngestgo.Input[any]) (any, error) {
+		func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
 			// Load all the users from your database:
-			users, err := step.Run("load-users", func() ([]*User, error) {
+			users, err := step.Run(ctx, "load-users", func(ctx context.Context) ([]*User, error) {
 				return loadUsers()
 			})
 			if err != nil {
@@ -131,7 +132,7 @@ func init() {
 			}
 
 			// 2️⃣ Now, we'll send all events in a single batch:
-			err = step.SendEvent("send-digest-events", events)
+			err = step.SendMany(ctx, "send-digest-events", events)
 			if err != nil {
 				return nil, err
 			}
@@ -147,9 +148,10 @@ func init() {
 
 	// Since we are "fanning out" with events, these functions can all run in parallel
 	inngestgo.CreateFunction(
-		inngestgo.FunctionOpts{ID: "send-weekly-digest-email"},
+		client,
+		inngestgo.FunctionOpts{Name: "send-weekly-digest-email"},
 		inngestgo.EventTrigger("app/send.weekly.digest", nil),
-		func(ctx context.Context, input inngestgo.Input) (any, error) {
+		func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
 			// 3️⃣ We can now grab the email and user id from the event payload
 			email := input.Event.Data["email"].(string)
 			userID := input.Event.Data["user_id"].(string)

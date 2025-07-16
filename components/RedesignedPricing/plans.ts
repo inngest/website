@@ -50,7 +50,8 @@ export type Feature = {
     | "observability"
     | "data"
     | "connectivity"
-    | "organization";
+    | "organization"
+    | "events";
   all?: boolean | string; // All plans offer this
   plans?: {
     [key: string]: string | boolean | { value: string; description?: string };
@@ -246,6 +247,7 @@ export function getPlan(
 
 export const sections: { key: string; name: string; description?: string }[] = [
   { key: "platform", name: "Plan comparison" },
+  { key: "events", name: "Events" },
   { key: "connectivity", name: "Realtime" },
   { key: "observability", name: "Observability" },
 ];
@@ -278,30 +280,11 @@ export const FEATURES: Feature[] = [
     section: "platform",
   },
   {
-    name: "Events",
-    description: "A single 32kb event ingested/processed",
-    plans: {
-      [PLAN_NAMES.basicFree]: {
-        value: "1m /day included",
-        description: "then $0.5 per 1m",
-      },
-      [PLAN_NAMES.pro]: {
-        value: "5m /day included",
-        description: "then $0.5 per 1m",
-      },
-      [PLAN_NAMES.enterprise]: "Custom",
-    },
-    infoUrl:
-      "/docs/guides/sending-events-from-functions?ref=pricing-comparison-table",
-    section: "platform",
-  },
-  {
     name: "Concurrency",
     description: "Process steps in parallel while smoothing load",
     plans: {
       [PLAN_NAMES.basicFree]: {
         value: "25 included",
-        description: "then $25 per 25",
       },
       [PLAN_NAMES.pro]: {
         value: "100 included",
@@ -318,7 +301,6 @@ export const FEATURES: Feature[] = [
     plans: {
       [PLAN_NAMES.basicFree]: {
         value: "3",
-        description: "then $10/user",
       },
       [PLAN_NAMES.pro]: {
         value: "15",
@@ -356,6 +338,76 @@ export const FEATURES: Feature[] = [
       [PLAN_NAMES.enterprise]: true,
     },
     section: "platform",
+  },
+  {
+    name: "HIPAA",
+    description: "BAAs for healthcare compliance",
+    plans: {
+      [PLAN_NAMES.basicFree]: false,
+      [PLAN_NAMES.pro]: "Add-on",
+      [PLAN_NAMES.enterprise]: true,
+    },
+    section: "platform",
+  },
+  {
+    name: "Events",
+    description: "Received/processed",
+    plans: {
+      [PLAN_NAMES.basicFree]: {
+        value: "1m /mo included",
+        description: "then $0.5 per 1m",
+      },
+      [PLAN_NAMES.pro]: {
+        value: "5m /mo included",
+        description: "then $0.5 per 1m",
+      },
+      [PLAN_NAMES.enterprise]: "Custom",
+    },
+    infoUrl:
+      "/docs/guides/sending-events-from-functions?ref=pricing-comparison-table",
+    section: "events",
+  },
+  {
+    name: "Size",
+    description: "Size of a single event",
+    plans: {
+      [PLAN_NAMES.basicFree]: {
+        value: "256 KiB",
+      },
+      [PLAN_NAMES.pro]: {
+        value: "3 MiB",
+      },
+      [PLAN_NAMES.enterprise]: "Custom",
+    },
+    section: "events",
+  },
+  {
+    name: "Batch capacity",
+    description: "Number of events in a single batch",
+    plans: {
+      [PLAN_NAMES.basicFree]: {
+        value: "5",
+      },
+      [PLAN_NAMES.pro]: {
+        value: "100",
+      },
+      [PLAN_NAMES.enterprise]: "Custom",
+    },
+    section: "events",
+  },
+  {
+    name: "Batch timeout",
+    description: "Time to wait for a batch to be full",
+    plans: {
+      [PLAN_NAMES.basicFree]: {
+        value: "30 seconds",
+      },
+      [PLAN_NAMES.pro]: {
+        value: "5 minutes",
+      },
+      [PLAN_NAMES.enterprise]: "Custom",
+    },
+    section: "events",
   },
   {
     name: "Connections",

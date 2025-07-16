@@ -48,17 +48,18 @@ const scheduleReminder = inngest.createFunction(
 
 <GuideSection show="go">
 ```go {{ title: "inngest/function.go" }}
-return inngestgo.CreateFunction(
+inngestgo.CreateFunction(
+	client,
 	inngestgo.FunctionOpts{
 		Name: "A function",
-		Timeouts: &inngestgo.Timeouts{
+		Timeouts: &inngestgo.ConfigTimeouts{
 			// If the run takes longer than 10s to start, cancel the run.
-			Start: inngestgo.Ptr(10*time.Second),
+			Start: inngestgo.Ptr(10 * time.Second),
 		},
 	},
 	inngestgo.EventTrigger("tasks/reminder.created", nil),
-	func(ctx context.Context, input inngestgo.Input[ReminderEvent]) (any, error) {
-		return step.Run(ctx, "send-reminder", func (ctx context.Context) (bool, error) {
+	func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
+		return step.Run(ctx, "send-reminder", func(ctx context.Context) (bool, error) {
 			// ...
 			return false, nil
 		})
@@ -98,19 +99,20 @@ const scheduleReminder = inngest.createFunction(
 
 <GuideSection show="go">
 ```go {{ title: "inngest/function.go" }}
-return inngestgo.CreateFunction(
+inngestgo.CreateFunction(
+	client,
 	inngestgo.FunctionOpts{
 		Name: "A function",
-		Timeouts: &inngestgo.Timeouts{
+		Timeouts: &inngestgo.ConfigTimeouts{
 			// If the run takes longer than 10s to start, cancel the run.
-			Start: inngestgo.Ptr(10*time.Second),
+			Start: inngestgo.Ptr(10 * time.Second),
 			// And if the run takes longer than 30s to finish after starting, cancel the run.
-			Finish: inngestgo.Ptr(30*time.Second),
+			Finish: inngestgo.Ptr(30 * time.Second),
 		},
 	},
 	inngestgo.EventTrigger("tasks/reminder.createad", nil),
-	func(ctx context.Context, input inngestgo.Input[ReminderEvent]) (any, error) {
-		return step.Run(ctx, "send-reminder", func (ctx context.Context) (bool, error) {
+	func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
+		return step.Run(ctx, "send-reminder", func(ctx context.Context) (bool, error) {
 			// ...
 			return false, nil
 		})

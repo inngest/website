@@ -1,4 +1,4 @@
-import { Callout, Warning, CodeGroup } from "src/shared/Docs/mdx";
+import { Callout, Warning, CodeGroup, DownloadLink } from "src/shared/Docs/mdx";
 
 export const description = 'Learn how to self-host Inngest. Includes configuration options and instructions for using external services.'
 
@@ -23,13 +23,13 @@ To best understand how to self-host Inngest, it's important to understand the sy
 The system is composed of the following services:
 
 * **Event API** - Receives events from SDKs via HTTP requests. Authenticates client requests via [Event Keys](/docs/events/creating-an-event-key?ref=docs-self-hosting). The Event API publishes event payloads to an internal event stream.
-* **Event stream** - Acts as buffer between the _Event API_ and the _Runner_.
+* **Event stream** - Acts as a buffer between the _Event API_ and the _Runner_.
 * **Runner** - Consumes incoming events and performs several actions:
   * Scheduling of new “function runs” (aka jobs) given the event type, creating initial run state in the _State store_ database. Runs are added to queues given the function's flow control configuration.
-  * Resume functions paused via [`waitForEvent`](/docs/features/inngest-functions/steps-workflows/wait-for-event?ref=docs-self-hosting) with matching expressions.
-  * Cancels running functions with matching [`cancelOn`](/docs/features/inngest-functions/cancellation/cancel-on-events?ref=docs-self-hosting) expressions
+  * Resumes functions paused via [`waitForEvent`](/docs/features/inngest-functions/steps-workflows/wait-for-event?ref=docs-self-hosting) with matching expressions.
+  * Cancels running functions with matching [`cancelOn`](/docs/features/inngest-functions/cancellation/cancel-on-events?ref=docs-self-hosting) expressions.
   * Writes ingested events to a database for historical record and future replay.
-* **Queue** - A multi-tenant aware, multi-tier queue designed for fairness and various [flow control](/docs/guides/flow-control?ref=docs-self-hosting) methods (concurrency, throttling, prioritization, debouncing, rate limiting) and [batching](/docs/guides/batching?ref=docs-self-hosting).
+* **Queue** - A multitenant-aware, multitier queue designed for fairness and various [flow control](/docs/guides/flow-control?ref=docs-self-hosting) methods (concurrency, throttling, prioritization, debouncing, rate limiting) and [batching](/docs/guides/batching?ref=docs-self-hosting).
 * **Executor** - Responsible for executing functions, from initial execution, step execution, writing incremental function run state to the _State store_, and retries after failures.
 * **State store (database)** - Persists data for pending and ongoing function runs. Data includes initial triggering event(s), step output and step errors.
 * **Database** - Persists system data and history including Apps, Functions, Events, Function run results.
@@ -40,7 +40,7 @@ The source code for Inngest and all services is [available on GitHub](https://gi
 
 ## How to self-host Inngest
 
-To begin self-hosting Inngest, you only need to install the Inngest CLI. The Inngest CLI is a single binary which includes all Inngest services and can be run in any environment. Alternatively, you download the binary directly from [GitHub releases](https://github.com/inngest/inngest/releases).
+To begin self-hosting Inngest, you only need to install the Inngest CLI. The Inngest CLI is a single binary that includes all Inngest services and can be run in any environment. Alternatively, you can download the binary directly from [GitHub releases](https://github.com/inngest/inngest/releases).
 
 <CodeGroup>
 ```plaintext {{ title: "npm" }}
@@ -58,10 +58,10 @@ Now that you have the CLI installed, you can start the Inngest server using the 
 
 <CodeGroup>
 ```plaintext {{ title: "shell" }}
-inngest start
+inngest start --event-key abc --signing-key xyz
 ```
 ```plaintext {{ title: "Docker" }}
-docker run -p 8288:8288 inngest/inngest inngest start
+docker run -p 8288:8288 -p 8289:8289 -e INNGEST_EVENT_KEY=abc -e INNGEST_SIGNING_KEY=xyz inngest/inngest inngest start
 ```
 </CodeGroup>
 
@@ -69,16 +69,16 @@ This will start the Inngest server on the default port `8288` and use the defaul
 
 ### Configuration
 
-Configuring the server can be done via command line flags, environment variables, or a configuration file.
+Configuring the server can be done via command-line flags, environment variables, or a configuration file.
 
 By default, the server will:
 
-* Run on `localhost:8288`, including the Event API, API, and Dashboard UI.
-* Use an in-memory Redis server for the queue and state store. (See [Using external services](#using-external-services) for more information)
+* Run on `localhost:8288` to serve the Event API, API, and Dashboard UI. `localhost:8289` is used for `connect` workers ([see docs for more connect-specific configuration](/docs/setup/connect#self-hosted-inngest)).
+* Use an in-memory Redis server for the queue and state store. (See [Using external services](#using-external-services) for more information.)
 * Use SQLite for persistence. The default database is located at `./.inngest/main.db`. Queue and state store snapshots are periodically saved to the SQLite database, including prior to shutdown.
 * Disable app sync polling to check for new functions or updated configurations (see `--poll-interval` flag).
 
-To securely configure your server, create your event and signing keys using whatever format that you choose and start the Inngest server using them. You can also pass them via environment variable (see below):
+To securely configure your server, create your event and signing keys using whatever format you choose and start the Inngest server using them. You can also pass them via environment variable (see below):
 
 ```plaintext
 inngest start --event-key <YOUR_EVENT_KEY> --signing-key <YOUR_SIGNING_KEY>
@@ -173,35 +173,96 @@ INNGEST_EVENT_KEY=<YOUR_EVENT_KEY> \
 
 ### Using external services
 
-Inngest can be configured to use external services for the queue and state store, and soon, the database
+Inngest can be configured to use external services for the queue and state store, and soon, the database.
 
 **External Redis server**
 
-With goal of simplifying the initial setup, the Inngest server will run an in-memory Redis server for the queue and state store. As this is running within the same process as the Inngest server, running your own Redis server can improve performance and reliability of the system. You may choose to run your own Redis server or use a cloud-based Redis service like AWS ElastiCache, Redis Cloud, etc.
+With the goal of simplifying the initial setup, the Inngest server will run an in-memory Redis server for the queue and state store. As this is running within the same process as the Inngest server, running your own Redis server can improve performance and reliability of the system. You may choose to run your own Redis server or use a cloud-based Redis service like AWS ElastiCache, Redis Cloud, etc.
 
 To use an external Redis server, set the `redis-uri` flag to the Redis server URI.
 
-**External Postgres database (experimental)**
+**External Postgres database**
 
 By default, the Inngest server uses SQLite for persistence. This is convenient for zero-dependency deployments, but does not support scaling beyond a single node. You may choose to run your own Postgres database or use a cloud-based Postgres service like AWS RDS, Neon, Supabase, etc.
-
-<Warning>
-  Postgres support is experimental and should be used with caution.
-</Warning>
 
 To use an external Postgres database, set the `postgres-uri` flag to your Postgres connection string URI.
 
 ## Docker compose example
 
-_Coming soon_
+```yaml
+services:
+  inngest:
+    image: inngest/inngest
+    command: "inngest start"
+    ports:
+      - "8288:8288"
+      - "8289:8289"
+    environment:
+      - INNGEST_EVENT_KEY=your_event_key_here
+      - INNGEST_SIGNING_KEY=your_signing_key_here
+      - INNGEST_POSTGRES_URI=postgres://inngest:password@postgres:5432/inngest
+      - INNGEST_REDIS_URI=redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - inngest-network
+
+  postgres:
+    image: postgres:17
+    environment:
+      - POSTGRES_DB=inngest
+      - POSTGRES_USER=inngest
+      - POSTGRES_PASSWORD=password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - inngest-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U inngest -d inngest"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - inngest-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  inngest-network:
+    driver: bridge
+```
+
+<DownloadLink url="/files/docker-compose.yml" children="Download docker-compose.yml" filename="docker-compose.yml" />
 
 ## Roadmap & feature requests
 
 Planned features for self-hosting include:
 
-* Postgres external database support.
+* Improved health checks.
+* Backlog monitoring endpoints for auto-scaling.
+* High availability guide.
+* Helm chart for easy deployment to Kubernetes.
+* Data retention guides and recommendations.
 * Event key and signing key management via API and UI.
-* Multi-node Inngest server support. Run standalone services (API, Executor, etc.) instead of all services in a single process.
 
 To suggest additional features, please submit feedback on our [public roadmap](https://roadmap.inngest.com/roadmap).
 

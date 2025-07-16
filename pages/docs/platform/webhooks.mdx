@@ -14,7 +14,7 @@ This guide will show you how to use Inngest to consume your webhook events and t
 
 When talking about webhooks, it's useful to define some terminology:
 
-- **Producer** - The service sending the webhook events as HTTP post requests.
+- **Provider** - The service sending the webhook events as HTTP post requests.
 - **Consumer** - The URL endpoint which receives the HTTP post requests.
 
 Inngest enables you to create any number of unique URLs which act as webhook consumers. You can create a webhook for each third party service that you use (e.g. Stripe, Github, Clerk) along with custom rules on how to handle that webhook.
@@ -23,7 +23,7 @@ Inngest enables you to create any number of unique URLs which act as webhook con
 
 First, you'll need to head to the **Manage** tab in the Inngest dashboard and then click **Webhooks**. From there, click **Create Webhook**.
 
-Now you'll have a uniquely generated URL that you can provide to any Producer service to start sending events. These URLs are configured in different ways for different producer services. For example, with Stripe, you need to enter "developer mode" and configure your webhook URLs.
+Now you'll have a uniquely generated URL that you can provide to any provider service to start sending events. These URLs are configured in different ways for different provider services. For example, with Stripe, you need to enter "developer mode" and configure your webhook URLs.
 
 Give your webhook a name and save it. Next we'll explore how to turn the request payload into Inngest events.
 
@@ -32,7 +32,7 @@ Give your webhook a name and save it. Next we'll explore how to turn the request
 
 ## Defining a transform function
 
-Most webhooks send event data as JSON within the POST request body. These raw events must be transformed slightly to be compatible with [the Inngest event payload format](/docs/reference/events/send#inngest-send-event-payload-event-payload-promise). Mainly, we must have `name` and `data` set in the Inngest event.
+Most webhooks send event data as JSON within the POST request body. These raw events must be transformed slightly to be compatible with [the Inngest event payload format](/docs/features/events-triggers/event-format). Mainly, we must have `name` and `data` set in the Inngest event.
 
 Fortunately, Inngest includes **_transform_** functions for every webhook. You can define a short JavaScript function used to transform the shape of the payload. This transform runs on Inngest's servers so there is no added load or cost to your infra.
 
@@ -111,7 +111,7 @@ function transform(evt, headers = {}, queryParams = {}) {
 ```
 
 <Callout>
-  👉 We also recommend prefixing each event name with the name of the producer service, e.g. `clerk/user.created`, `stripe/charge.failed`.
+  👉 We also recommend prefixing each event name with the name of the provider service, e.g. `clerk/user.created`, `stripe/charge.failed`.
 </Callout>
 
 ### Example transforms
@@ -201,11 +201,11 @@ function transform(evt, headers = {}, queryParams = {}) {
 
 ### Testing transforms
 
-The Inngest dashboard includes a tool to quickly test your transform function. You can paste the incoming payload from the webhook producer in the "Incoming Event JSON" editor and immediately preview what the transformed event will look like.
+The Inngest dashboard includes a tool to quickly test your transform function. You can paste the incoming payload from the webhook provider in the "Incoming Event JSON" editor and immediately preview what the transformed event will look like.
 
 ![Inngest dashboard transform testing](/assets/docs/platform/dashboard-webhook-transform-testing.png)
 
-Some webhook producers do not provide example payloads in their documentation. If that's the case, you can use a tool that we built, [TypedWebhooks.tools](https://typedwebhook.tools/?ref=) to test webhooks and browse payloads.
+Some webhook providers do not provide example payloads in their documentation. If that's the case, you can use a tool that we built, [TypedWebhooks.tools](https://typedwebhook.tools/?ref=) to test webhooks and browse payloads.
 
 ## Advanced configuration
 
@@ -268,7 +268,7 @@ inngest.createFunction(
 
 ## Verifying request signatures
 
-Many webhook producers sign their requests with a secret key to ensure that the request is coming from them. This establishes trust with the webhook producer and ensures that the event data has not been tampered with.
+Many webhook providers sign their requests with a secret key to ensure that the request is coming from them. This establishes trust with the webhook provider and ensures that the event data has not been tampered with.
 
 To verify a webhook signature, you'll need to return the signature and raw request body string in your transform. For example, the following transform function could be used for Stripe webhooks:
 
@@ -316,3 +316,7 @@ If the branch environment is not specified with the header or query param, the w
 <Callout>
   The value for `x-inngest-env` is the name of the branch environment, not the ID in the URL.
 </Callout>
+
+## Building webhook integrations
+
+Inngest has a feature called **webhook intents** that allows you to build webhook integrations with any application. [Read more about building webhook integrations here](/docs/platform/webhooks/build-an-integration).
