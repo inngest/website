@@ -16,18 +16,71 @@ const PRO_PLAN = getPlan(PLAN_NAMES.pro);
 type EstimatedCosts = {
   baseCost: number;
   totalCost: number;
-  additionalRunsCost: number;
-  additionalStepsCost: number;
+  executionsCost: number;
   concurrencyCost: number;
   additionalUsersCost: number;
   additionalWorkersCost: number;
 };
+
 type CalculatorResults = {
   cost: EstimatedCosts;
-  includedSteps: number;
-  estimatedSteps: number;
+  totalExecutions: number;
+  includedExecutions: number;
   plan: string;
 };
+
+// Tiered execution pricing rates (per execution)
+const EXECUTION_TIERS = {
+  payAsYouGo: [
+    { min: 100_000, max: 1_000_000, rate: 0.000083 },
+    { min: 1_000_000, max: 5_000_000, rate: 0.00005 },
+    { min: 5_000_000, max: 15_000_000, rate: 0.000025 },
+    { min: 15_000_000, max: 50_000_000, rate: 0.00002 },
+    { min: 50_000_000, max: 100_000_000, rate: 0.000015 },
+  ],
+  pro: [
+    { min: 1_000_000, max: 5_000_000, rate: 0.00005 },
+    { min: 5_000_000, max: 15_000_000, rate: 0.000025 },
+    { min: 15_000_000, max: 50_000_000, rate: 0.00002 },
+    { min: 50_000_000, max: 100_000_000, rate: 0.000015 },
+  ],
+  enterprise: [
+    { min: 10_000_000, max: 15_000_000, rate: 0.0000575 }, // 15% markup over pay-as-you-go
+    { min: 15_000_000, max: 50_000_000, rate: 0.0000287 },
+    { min: 50_000_000, max: 100_000_000, rate: 0.000023 },
+    { min: 100_000_000, max: Infinity, rate: 0.000017 },
+  ],
+};
+
+function calculateExecutionsCost(
+  totalExecutions: number,
+  includedExecutions: number,
+  planType: "payAsYouGo" | "pro" | "enterprise"
+): number {
+  const excessExecutions = Math.max(totalExecutions - includedExecutions, 0);
+  if (excessExecutions === 0) return 0;
+
+  const tiers = EXECUTION_TIERS[planType];
+  let cost = 0;
+  let remaining = excessExecutions;
+  let processed = includedExecutions;
+
+  for (const tier of tiers) {
+    if (remaining <= 0) break;
+
+    const tierStart = Math.max(tier.min, processed);
+    const tierEnd = Math.min(tier.max, processed + remaining);
+    const tierExecutions = Math.max(tierEnd - tierStart, 0);
+
+    if (tierExecutions > 0) {
+      cost += tierExecutions * tier.rate;
+      remaining -= tierExecutions;
+      processed += tierExecutions;
+    }
+  }
+
+  return cost;
+}
 
 function calculatePlanCost({
   planName,
@@ -45,9 +98,50 @@ function calculatePlanCost({
   workers: number;
 }): EstimatedCosts {
   const plan = getPlan(planName);
-  const additionalRuns = Math.max(runs - num(plan.cost.includedRuns), 0);
-  const includedSteps = runs * num(plan.cost.includedSteps);
-  const additionalSteps = Math.max(steps - includedSteps, 0);
+  const totalExecutions = runs * steps;
+
+  let baseCost = 0;
+  let executionsCost = 0;
+  let includedExecutions = 0;
+
+  // Calculate base costs and execution costs based on plan
+  if (planName === PLAN_NAMES.basicFree) {
+    baseCost = 0;
+    includedExecutions = 100_000;
+    // Free plan excess goes to pay-as-you-go pricing
+    executionsCost = calculateExecutionsCost(
+      totalExecutions,
+      includedExecutions,
+      "payAsYouGo"
+    );
+  } else if (planName === PLAN_NAMES.payAsYouGo) {
+    baseCost = 0;
+    includedExecutions = 100_000;
+    executionsCost = calculateExecutionsCost(
+      totalExecutions,
+      includedExecutions,
+      "payAsYouGo"
+    );
+  } else if (planName === PLAN_NAMES.pro) {
+    baseCost = 75;
+    includedExecutions = 1_000_000;
+    executionsCost = calculateExecutionsCost(
+      totalExecutions,
+      includedExecutions,
+      "pro"
+    );
+  } else if (planName === PLAN_NAMES.enterprise) {
+    // Enterprise pricing is more complex, using simplified model for calculator
+    baseCost = totalExecutions <= 10_000_000 ? 1000 : 2500;
+    includedExecutions = 10_000_000;
+    executionsCost = calculateExecutionsCost(
+      totalExecutions,
+      includedExecutions,
+      "enterprise"
+    );
+  }
+
+  // Calculate additional costs for other resources
   const additionalConcurrency = Math.max(
     concurrency - num(plan.cost.includedConcurrency),
     0
@@ -63,14 +157,6 @@ function calculatePlanCost({
       ? Math.max(workers - num(plan.cost.includedWorkers), 0)
       : 0;
 
-  const baseCost = num(plan.cost.basePrice);
-  const additionalRunsCost =
-    Math.ceil(additionalRuns / num(plan.cost.additionalRunsRate)) *
-    num(plan.cost.additionalRunsPrice);
-  const additionalStepsCost =
-    Math.ceil(additionalSteps / num(plan.cost.additionalStepsRate)) *
-    num(plan.cost.additionalStepsPrice);
-
   const concurrencyCost =
     additionalConcurrency === 0
       ? 0
@@ -78,7 +164,7 @@ function calculatePlanCost({
       ? Math.ceil(
           additionalConcurrency / num(plan.cost.additionalConcurrencyRate)
         ) * num(plan.cost.additionalConcurrencyPrice)
-      : NaN;
+      : 0;
 
   const additionalUsersCost =
     additionalUsers === 0 || !plan.cost.additionalUsersRate
@@ -94,16 +180,15 @@ function calculatePlanCost({
 
   const totalCost =
     baseCost +
-    additionalRunsCost +
-    additionalStepsCost +
+    executionsCost +
     concurrencyCost +
     additionalUsersCost +
     additionalWorkersCost;
+
   return {
     baseCost,
     totalCost,
-    additionalRunsCost,
-    additionalStepsCost,
+    executionsCost,
     concurrencyCost,
     additionalUsersCost,
     additionalWorkersCost,
@@ -124,9 +209,39 @@ function calculatePlanCosts({
   workers: number;
 }) {
   return {
+    [PLAN_NAMES.basicFree]: {
+      cost: calculatePlanCost({
+        planName: PLAN_NAMES.basicFree,
+        runs,
+        steps,
+        concurrency,
+        users,
+        workers,
+      }),
+    },
+    [PLAN_NAMES.payAsYouGo]: {
+      cost: calculatePlanCost({
+        planName: PLAN_NAMES.payAsYouGo,
+        runs,
+        steps,
+        concurrency,
+        users,
+        workers,
+      }),
+    },
     [PLAN_NAMES.pro]: {
       cost: calculatePlanCost({
         planName: PLAN_NAMES.pro,
+        runs,
+        steps,
+        concurrency,
+        users,
+        workers,
+      }),
+    },
+    [PLAN_NAMES.enterprise]: {
+      cost: calculatePlanCost({
+        planName: PLAN_NAMES.enterprise,
         runs,
         steps,
         concurrency,
@@ -160,7 +275,7 @@ function PlanSummary({ plan, price }: { plan: Plan; price: string }) {
         <span className="text-6xl font-extrabold text-neutral-100">
           {price}
         </span>
-        {price !== "$Infinity" && (
+        {price !== "$Infinity" && price !== "Contact us" && (
           <span className="text-xl text-neutral-400"> /month</span>
         )}
       </div>
@@ -173,7 +288,7 @@ function PlanSummary({ plan, price }: { plan: Plan; price: string }) {
 
 export function PricingCalculatorPage() {
   const [runs, setRuns] = useState(50000);
-  const [steps, setSteps] = useState(20);
+  const [steps, setSteps] = useState(5);
   const [users, setUsers] = useState<number>(3);
   const [concurrency, setConcurrency] = useState<number>(25);
   const [workers, setWorkers] = useState<number>(3);
@@ -182,67 +297,68 @@ export function PricingCalculatorPage() {
 
   const runsMin = 0,
     runsMax = 1_000_000;
-  const stepsMin = 0,
+  const stepsMin = 1,
     stepsMax = 100;
 
   const results: CalculatorResults = useMemo(() => {
     const runsCount = runs;
-
-    const estimatedSteps = runsCount * steps;
+    const totalExecutions = runsCount * steps;
 
     const concurrencyNumber = concurrency;
     const usersNumber = users;
     const workersNumber = workers;
 
-    // If the usage fits entirely within the free plan limits (runs, steps, concurrency, users, workers), recommend the Free plan
-    if (
-      runsCount <= num(FREE_PLAN.cost.includedRuns) &&
-      estimatedSteps <= runsCount * num(FREE_PLAN.cost.includedSteps) &&
-      concurrencyNumber <= num(FREE_PLAN.cost.includedConcurrency) &&
-      usersNumber <= num(FREE_PLAN.cost.includedUsers) &&
-      workersNumber <= num(FREE_PLAN.cost.includedWorkers ?? 0)
-    ) {
-      return {
-        cost: {
-          baseCost: 0,
-          totalCost: 0,
-          additionalRunsCost: 0,
-          additionalStepsCost: 0,
-          concurrencyCost: 0,
-          additionalUsersCost: 0,
-          additionalWorkersCost: 0,
-        },
-        includedSteps: runsCount * num(FREE_PLAN.cost.includedSteps),
-        estimatedSteps,
-        plan: PLAN_NAMES.basicFree,
-      };
-    }
-
+    // Calculate costs for all plans
     const estimates = calculatePlanCosts({
       runs: runsCount,
-      steps: estimatedSteps,
+      steps,
       concurrency: concurrencyNumber,
       users: usersNumber,
       workers: workersNumber,
     });
 
-    const recommendedPlan =
-      estimates[PLAN_NAMES.pro].cost.totalCost < 2_000
-        ? PLAN_NAMES.pro
-        : PLAN_NAMES.enterprise;
+    // Determine the best plan based on total executions and cost
+    let recommendedPlan = PLAN_NAMES.basicFree;
+    let bestCost = estimates[PLAN_NAMES.basicFree].cost;
+
+    // If usage exceeds free plan limits, compare other plans
+    if (
+      totalExecutions > 100_000 ||
+      concurrencyNumber > num(FREE_PLAN.cost.includedConcurrency) ||
+      usersNumber > num(FREE_PLAN.cost.includedUsers) ||
+      workersNumber > num(FREE_PLAN.cost.includedWorkers ?? 0)
+    ) {
+      // Compare Pro and Pay-as-you-go
+      const proCost = estimates[PLAN_NAMES.pro].cost.totalCost;
+      const payAsYouGoCost = estimates[PLAN_NAMES.payAsYouGo].cost.totalCost;
+
+      if (proCost <= payAsYouGoCost) {
+        recommendedPlan = PLAN_NAMES.pro;
+        bestCost = estimates[PLAN_NAMES.pro].cost;
+      } else {
+        recommendedPlan = PLAN_NAMES.payAsYouGo;
+        bestCost = estimates[PLAN_NAMES.payAsYouGo].cost;
+      }
+
+      // If cost is very high, recommend enterprise
+      if (bestCost.totalCost > 2000) {
+        recommendedPlan = PLAN_NAMES.enterprise;
+        bestCost = estimates[PLAN_NAMES.enterprise].cost;
+      }
+    }
+
+    const includedExecutions =
+      recommendedPlan === PLAN_NAMES.basicFree ||
+      recommendedPlan === PLAN_NAMES.payAsYouGo
+        ? 100_000
+        : recommendedPlan === PLAN_NAMES.pro
+        ? 1_000_000
+        : 10_000_000; // Enterprise
 
     return {
-      cost: estimates[recommendedPlan]?.cost ?? {
-        baseCost: Infinity,
-        totalCost: Infinity,
-        additionalRunsCost: Infinity,
-        additionalStepsCost: Infinity,
-        concurrencyCost: Infinity,
-        additionalUsersCost: Infinity,
-        additionalWorkersCost: Infinity,
-      },
-      includedSteps: runsCount * num(PRO_PLAN.cost.includedSteps),
-      estimatedSteps,
+      cost: bestCost,
+      totalExecutions,
+      includedExecutions,
       plan: recommendedPlan,
     };
   }, [runs, steps, concurrency, users, workers]);
@@ -253,7 +369,7 @@ export function PricingCalculatorPage() {
       ? typeof plan.cost.basePrice === "number"
         ? `$${plan.cost.basePrice}`
         : plan.cost.basePrice
-      : `$${results.cost.totalCost.toLocaleString()}`;
+      : `$${Math.round(results.cost.totalCost).toLocaleString()}`;
 
   return (
     <div
@@ -339,6 +455,23 @@ export function PricingCalculatorPage() {
                       className="[&>span:first-child>span:first-child]:bg-[#C2A46A] [&>span:first-child]:h-1.5 [&>span:first-child]:bg-neutral-500 [&_[role=slider]]:h-4 [&_[role=slider]]:w-4 [&_[role=slider]]:border-2 [&_[role=slider]]:border-[#C2A46A] [&_[role=slider]]:bg-white [&_[role=slider]]:shadow-none [&_[role=slider]]:focus-visible:ring-1 [&_[role=slider]]:focus-visible:ring-[#C2A46A] [&_[role=slider]]:focus-visible:ring-offset-2 [&_[role=slider]]:focus-visible:ring-offset-[#2B2B2B]"
                     />
                   </div>
+                </div>
+
+                {/* Display total executions */}
+                <div className="rounded-lg bg-stone-800 p-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-neutral-300">
+                      Total executions per month
+                    </span>
+                    <span className="text-lg font-bold text-[#C2A46A]">
+                      {results.totalExecutions.toLocaleString()}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs text-neutral-400">
+                    {runs.toLocaleString()} runs × {steps.toLocaleString()}{" "}
+                    steps = {results.totalExecutions.toLocaleString()}{" "}
+                    executions
+                  </p>
                 </div>
 
                 <div className="grid grid-cols-1 gap-x-4 gap-y-6 pt-4 sm:grid-cols-3">
