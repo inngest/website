@@ -846,6 +846,10 @@ const sectionHome: (NavGroup | NavLink)[] = [
             title: "Inspecting function runs",
             href: "/docs/platform/monitor/inspecting-function-runs",
           },
+          {
+            title: "Inspecting events",
+            href: "/docs/platform/monitor/inspecting-events",
+          },
           { title: "Integrations" },
           {
             title: "Datadog",
