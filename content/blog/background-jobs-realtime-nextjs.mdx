@@ -1,8 +1,8 @@
 ---
 heading: How to add background jobs with real-time updates to a Next.js application
 subtitle: Learn how to implement background jobs in Next.js using Inngest.
-image: "/assets/blog/background-jobs-realtime-nextjs/featured-image.png"
-date: 2025-07-18
+image: "/assets/blog/background-jobs-realtime-nextjs/featured-image.jpg"
+date: 2025-07-23
 author: Charly Poly
 showSubtitle: true
 ---
@@ -18,7 +18,8 @@ In this article, you'll learn how to add background jobs with real-time updates 
 
 CampaignCraft is a Next.js application that helps in sending personalized email campaigns by automatically segmenting uploaded contacts CSV files and drafting AI campaigns.
 
-{/* <AutoplayVideo src={''} /> */}
+<AutoplayVideo src={'/assets/blog/background-jobs-realtime-nextjs/campaigndraft-loop-video.mp4'} /> 
+
 
 CampaignCraft is built with the following technologies:
 - **Next.js** - The full-stack application framework
@@ -41,12 +42,12 @@ Our project relies on two main concepts to deliver a smooth user experience: bac
 
 Background jobs allow your application to handle time-consuming or resource-intensive tasks outside of the main user request/response cycle. Instead of making users wait for operations like importing large CSV files, sending bulk emails, or generating AI-powered content, you can offload these tasks to run asynchronously in the background.
 
-_TODO: illustration_
+![Processing the uploaded CSV contact files within the API leads to slower user response than processing it in a background job](/assets/blog/background-jobs-realtime-nextjs/diagram1-api_vs_background_jobs.png)
 
 When invoked, a background job gets added to a queue processed by a background jobs engine (e.g., [Inngest](/docs?ref=blogpost-nextjs-bg-jobs-realtime)) that picks jobs from the queue in the correct order.
 In addition to moving time-consuming work outside of the API, background jobs also enable retrying failed jobs, bringing more reliability to backend work coupled with external services like LLM APIs or email providers:
 
-_TODO: illustration_
+![Calling a background job from an API endpoint enqueues a new job in Inngest's queue. Inngest then, process queue item in order. When an item is pickup up by Inngest, its associated background job function gets executed.](/assets/blog/background-jobs-realtime-nextjs/diagram2-how_queues_work.png)
 
 
 Here's how it works in a Next.js app:
@@ -81,7 +82,7 @@ Here's how it works:
 2. **Frontend subscribes to updates**: Your React components use a hook or subscription to listen for these messages, scoped to the current user or job.
 3. **UI updates instantly**: As soon as a new message is received, the UI updates in real time—showing progress bars, logs, or notifications.
 
-_TODO: illustration_
+![Inngest Realtime enables us to keep users updated of the progress of a slow background job with realtime messages.](/assets/blog/background-jobs-realtime-nextjs/diagram3-realtime_updates.png)
 
 **Benefits of real-time updates:**
 - **Transparency**: Users can see exactly what's happening, reducing uncertainty.
