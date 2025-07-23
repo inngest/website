@@ -1,6 +1,6 @@
 export const featuredBlogPost = {
-  title: "Metrics exports to Datadog & Prometheus",
-  image: "/assets/blog/announcing-metrics-export/featured-image.png",
-  description: "Export metrics for more observability and alerting",
-  href: "/blog/announcing-metrics-export",
+  title: "Inngest is now on Vercel Marketplace",
+  image: "/assets/blog/vercel-partner-marketplace/featured-image.png",
+  description: "Making it easier than ever to get started with Inngest for all Vercel developers",
+  href: "/blog/vercel-partner-marketplace",
 };
