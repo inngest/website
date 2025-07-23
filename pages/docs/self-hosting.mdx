@@ -58,10 +58,10 @@ Now that you have the CLI installed, you can start the Inngest server using the 
 
 <CodeGroup>
 ```plaintext {{ title: "shell" }}
-inngest start --event-key abc --signing-key xyz
+inngest start --event-key abcd --signing-key 1234
 ```
 ```plaintext {{ title: "Docker" }}
-docker run -p 8288:8288 -p 8289:8289 -e INNGEST_EVENT_KEY=abc -e INNGEST_SIGNING_KEY=xyz inngest/inngest inngest start
+docker run -p 8288:8288 -p 8289:8289 -e INNGEST_EVENT_KEY=abcd -e INNGEST_SIGNING_KEY=1234 inngest/inngest inngest start
 ```
 </CodeGroup>
 
@@ -79,6 +79,13 @@ By default, the server will:
 * Disable app sync polling to check for new functions or updated configurations (see `--poll-interval` flag).
 
 To securely configure your server, create your event and signing keys using whatever format you choose and start the Inngest server using them. You can also pass them via environment variable (see below):
+
+<Callout>
+The signing key must be a hexadecimal string. You can generate a secure signing key using: 
+```plaintext
+openssl rand -hex 32
+```
+</Callout>
 
 ```plaintext
 inngest start --event-key <YOUR_EVENT_KEY> --signing-key <YOUR_SIGNING_KEY>
