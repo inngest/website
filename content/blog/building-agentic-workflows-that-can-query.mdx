@@ -75,7 +75,7 @@ Rather than relying on embeddings or retrieval-based search, this approach allow
 
 ## Designing a Structured Prompt for Code-Based Tooling
 
-We defined a dedicated agent the **Meet performance analyst** responsible for converting natural language into structured tool calls. This agent exclusively invoked the `get_meet_results()` function, which abstracts over a SQL query targeting a ClickHouse database.
+We defined a dedicated agent the **Meet performance analyst** responsible for converting natural language into structured tool calls. This agent exclusively invoked the `getMeetResults()` function, which abstracts over a SQL query targeting a ClickHouse database.
 
 The system prompt provided:
 - A detailed schema definition
