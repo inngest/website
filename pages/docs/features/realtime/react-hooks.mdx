@@ -79,7 +79,7 @@ export default function Home() {
 - `freshData: Array<Realtime.Message>` - If `bufferInterval` is active, this will be the last batch of messages released from the buffer. If `bufferInterval` is inactive, this is always the latest message.
 - `error: Error | null` - If truthy, this indicates an error with the subscription.
 - `state: InngestSubscriptionState` - The current state of the subscription, one of `"closed"`, `"error"`, `"refresh_token"`, `"connecting"`, `"active"`, or `"closing"`.
-- `clear: () => void` — A function to clear all accumulated message data from the internal state. This includes `data`, `freshData`, and `latestData` arrays. Does not affect the connection or error state.
+- `clear: () => void` - A function to clear all accumulated message data from the internal state. This includes `data`, `freshData`, and `latestData` arrays. Does not affect the connection or error state.
 
 
 ## Examples
