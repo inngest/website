@@ -47,3 +47,13 @@ Enterprise users can enable SAML authentication to access their account. In orde
 4. Your account manager will work with you to correctly map attributes to ensure fully functioning sign in.
 
 It's important to note that once SAML is enabled, users **must** sign in via SAML. If you're not on an enterprise plan, [contact us here](/contact?ref=docs-security), and we'll get you set up. There is no additional charge for SAML authentication below 200 users.
+
+## IP Addresses
+
+For security and networking purposes, you may need to know the IP addresses that Inngest uses for outbound requests to your functions and webhooks. These IP addresses are used by Inngest's infrastructure to make authenticated requests to your endpoints.
+
+You can find the current list of IP addresses at:
+- [IPv4 addresses](https://www.inngest.com/ips-v4)
+- [IPv6 addresses](https://www.inngest.com/ips-v6)
+
+These IP ranges are used for all Inngest function invocations and webhook deliveries. If you need to whitelist these IPs in your firewall or security groups, please use the complete ranges listed on these pages.
