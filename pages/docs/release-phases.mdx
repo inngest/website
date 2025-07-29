@@ -1,4 +1,4 @@
-import { Callout } from "src/shared/Docs/mdx";
+import { Callout, ImageTheme } from "src/shared/Docs/mdx";
 
 export const description = "How Inngest features are released";
 
@@ -9,7 +9,12 @@ This pages outlines how Inngest features and products are released through 3 dis
 
 The release flow varies depending on the security or scalability requirements of the newly available feature or product:
 
-![Release Phases](/assets/docs/release-phases.png)
+<ImageTheme
+  dark={'/assets/docs/release_phases-dark.webp'}
+  light={'/assets/docs/release_phases-light.webp'}
+  className="my-0"
+  alt={'Inngest Release Phases'}
+/>
 
 Releases can follow a non-linear flow to GA, the above graphic is not strict, but an idea of how features may flow from internal development to GA.
 Additionally (_not pictured_), small features might go from internal development directly to GA for a launch.
