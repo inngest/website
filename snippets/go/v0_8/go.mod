@@ -2,6 +2,8 @@ module github.com/inngest/website/snippets/go/v0_8
 
 go 1.24.1
 
+require github.com/inngest/inngestgo v0.8.0
+
 require (
 	github.com/aead/chacha20 v0.0.0-20180709150244-8b13a72661da // indirect
 	github.com/antlr4-go/antlr/v4 v4.13.1 // indirect
@@ -25,7 +27,6 @@ require (
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inngest/expr v0.0.0-20241106234328-863dff7deec0 // indirect
 	github.com/inngest/inngest v1.4.9-0.20250304181501-2f80c604dee7 // indirect
-	github.com/inngest/inngestgo v0.8.0 // indirect
 	github.com/karlseguin/ccache/v2 v2.0.8 // indirect
 	github.com/klauspost/compress v1.17.11 // indirect
 	github.com/liushuangls/go-anthropic/v2 v2.12.2 // indirect
@@ -75,7 +76,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.28.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.3.1 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/crypto v0.33.0 // indirect
+	golang.org/x/crypto v0.35.0 // indirect
 	golang.org/x/exp v0.0.0-20241009180824-f66d83c29e7c // indirect
 	golang.org/x/net v0.33.0 // indirect
 	golang.org/x/sync v0.11.0 // indirect
