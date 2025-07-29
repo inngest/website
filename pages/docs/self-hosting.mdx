@@ -260,6 +260,12 @@ networks:
 
 <DownloadLink url="/files/docker-compose.yml" children="Download docker-compose.yml" filename="docker-compose.yml" />
 
+If you are locally testing your Inngest app with the docker compose setup, you will likely need to set [`INNGEST_SERVE_HOST`](/docs/sdk/environment-variables#inngest-serve-host) to docker's [special host DNS name `host.docker.internal`](https://docs.docker.com/desktop/features/networking/#i-want-to-connect-from-a-container-to-a-service-on-the-host), e.g.
+
+```
+INNGEST_SERVE_HOST=http://host.docker.internal:3000
+```
+
 ## Roadmap & feature requests
 
 Planned features for self-hosting include:
