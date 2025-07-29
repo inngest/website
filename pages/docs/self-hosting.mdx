@@ -121,10 +121,12 @@ Persistence Flags:
       --sqlite-dir string     Directory for where to write SQLite database.
 
 Advanced Flags:
-      --poll-interval int    Interval in seconds between polling for updates to apps
-      --queue-workers int    Number of executor workers to execute steps from the queue (default 100)
-      --retry-interval int   Retry interval in seconds for linear backoff when retrying functions - must be 1 or above
-      --tick int             The interval (in milliseconds) at which the executor polls the queue (default 150)
+      --connect-gateway-port int   Port to expose connect gateway endpoint (default 8289)
+      --no-ui                      Disable the web UI and GraphQL API endpoint
+      --poll-interval int          Interval in seconds between polling for updates to apps
+      --queue-workers int          Number of executor workers to execute steps from the queue (default 100)
+      --retry-interval int         Retry interval in seconds for linear backoff when retrying functions - must be 1 or above
+      --tick int                   The interval (in milliseconds) at which the executor polls the queue (default 150)
 
 Global Flags:
       --json               Output logs as JSON.  Set to true if stdout is not a TTY.
