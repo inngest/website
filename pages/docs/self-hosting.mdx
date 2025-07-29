@@ -121,10 +121,12 @@ Persistence Flags:
       --sqlite-dir string     Directory for where to write SQLite database.
 
 Advanced Flags:
-      --poll-interval int    Interval in seconds between polling for updates to apps
-      --queue-workers int    Number of executor workers to execute steps from the queue (default 100)
-      --retry-interval int   Retry interval in seconds for linear backoff when retrying functions - must be 1 or above
-      --tick int             The interval (in milliseconds) at which the executor polls the queue (default 150)
+      --connect-gateway-port int   Port to expose connect gateway endpoint (default 8289)
+      --no-ui                      Disable the web UI and GraphQL API endpoint
+      --poll-interval int          Interval in seconds between polling for updates to apps
+      --queue-workers int          Number of executor workers to execute steps from the queue (default 100)
+      --retry-interval int         Retry interval in seconds for linear backoff when retrying functions - must be 1 or above
+      --tick int                   The interval (in milliseconds) at which the executor polls the queue (default 150)
 
 Global Flags:
       --json               Output logs as JSON.  Set to true if stdout is not a TTY.
@@ -205,8 +207,8 @@ services:
       - "8288:8288"
       - "8289:8289"
     environment:
-      - INNGEST_EVENT_KEY=your_event_key_here
-      - INNGEST_SIGNING_KEY=your_signing_key_here
+      - INNGEST_EVENT_KEY=your_event_key_here # Must be a hexadecimal string
+      - INNGEST_SIGNING_KEY=your_signing_key_here # Must be a hexadecimal string
       - INNGEST_POSTGRES_URI=postgres://inngest:password@postgres:5432/inngest
       - INNGEST_REDIS_URI=redis://redis:6379
     depends_on:
@@ -216,6 +218,12 @@ services:
         condition: service_healthy
     networks:
       - inngest-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8288/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   postgres:
     image: postgres:17
@@ -256,6 +264,7 @@ volumes:
 networks:
   inngest-network:
     driver: bridge
+
 ```
 
 <DownloadLink url="/files/docker-compose.yml" children="Download docker-compose.yml" filename="docker-compose.yml" />

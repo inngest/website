@@ -6,8 +6,8 @@ services:
       - "8288:8288"
       - "8289:8289"
     environment:
-      - INNGEST_EVENT_KEY=your_event_key_here
-      - INNGEST_SIGNING_KEY=your_signing_key_here
+      - INNGEST_EVENT_KEY=your_event_key_here # Must be a hexadecimal string
+      - INNGEST_SIGNING_KEY=your_signing_key_here # Must be a hexadecimal string
       - INNGEST_POSTGRES_URI=postgres://inngest:password@postgres:5432/inngest
       - INNGEST_REDIS_URI=redis://redis:6379
     depends_on:
@@ -17,6 +17,12 @@ services:
         condition: service_healthy
     networks:
       - inngest-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8288/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   postgres:
     image: postgres:17
