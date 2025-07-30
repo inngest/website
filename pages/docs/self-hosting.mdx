@@ -1,4 +1,5 @@
 import { Callout, Warning, CodeGroup, DownloadLink } from "src/shared/Docs/mdx";
+import Github from "src/shared/Icons/Github.tsx";
 
 export const description = 'Learn how to self-host Inngest. Includes configuration options and instructions for using external services.'
 
@@ -268,6 +269,32 @@ networks:
 ```
 
 <DownloadLink url="/files/docker-compose.yml" children="Download docker-compose.yml" filename="docker-compose.yml" />
+
+## Helm chart
+
+Inngest provides a Helm chart for production-ready Kubernetes deployments. Key features include:
+
+**Quick Setup & Production Ready**
+- Supports Kubernetes 1.20+ and Helm 3.0+ with simple installation
+- Bundled PostgreSQL and Redis for easy setup, with support for external databases
+- Consistent resource naming across all environments regardless of Helm release name
+- Deployment examples for development, production, and hybrid scenarios
+
+**Autoscaling & Performance**
+- KEDA-based autoscaling using Inngest's Prometheus metrics
+- Configurable replica counts, resource limits, and queue worker settings
+- Horizontal pod autoscaling based on queue depth
+
+**Security & Access**
+- Security-first design with non-root execution and read-only filesystem
+- Database credentials stored securely in Kubernetes Secrets
+- Network policy support for additional cluster isolation
+- Built-in ingress support with SSL certificate provisioning via cert-manager
+- Let's Encrypt integration for production HTTPS endpoints
+
+You can find the chart, documentation, and configuration examples here:
+
+[<Github size="1.25em" className="inline-block mr-1"/> inngest/inngest-helm](https://github.com/inngest/inngest-helm)
 
 ## Roadmap & feature requests
 
