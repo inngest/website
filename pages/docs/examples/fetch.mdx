@@ -1,4 +1,4 @@
-import { CardGroup, Card, VersionBadge } from "src/shared/Docs/mdx";
+import { CodeGroup, CardGroup, Card, VersionBadge } from "src/shared/Docs/mdx";
 
 
 export const description = "Make durable HTTP requests within an Inngest function.";
@@ -78,9 +78,33 @@ Note that `step.fetch()`, like all other `step` APIs, matches your function's co
 
 Inngest's `fetch()` utility can be passed as a custom fetch handler to make all the requests made by a 3rd party library durable.
 
-For example, you can pass the `fetch()` utility to the OpenAI node client as follows:
+For example, you can pass the `fetch()` utility to the AI SDK or the OpenAI libraries:
 
-```typescript
+<CodeGroup>
+```typescript {{ title: "AI SDK" }}
+import { fetch as inngestFetch } from 'inngest';
+import { generateText } from 'ai';
+import { createAnthropic } from '@ai-sdk/anthropic';
+
+// Pass the Inngest fetch utility to the AI SDK's model constructor:
+const anthropic = createAnthropic({
+  fetch: inngestFetch,
+});
+
+const weatherFunction = inngest.createFunction(
+  { id: "weather-function" },
+  { event: "weather/get" },
+  async ({ step }) => {
+    // This request is offloaded to the Inngest platform
+    // and it also retries automatically if it fails!
+    const response = await generateText({
+      model: anthropic('claude-3-5-sonnet-20240620'),
+      prompt: `What's the weather in London?`,
+    });
+  }
+)
+```
+```typescript {{ title: "OpenAI SDK" }}
 import { fetch } from "inngest";
 import OpenAI from 'openai';
 
@@ -104,3 +128,4 @@ const weatherFunction = inngest.createFunction(
   }
 )
 ```
+</CodeGroup>

@@ -104,19 +104,31 @@ By default, using Inngest's `fetch` retains all the functionality of requests ma
 
 <CodeGroup>
 ```ts {{ title: "TypeScript" }}
-import { fetch } from "inngest";
+import { fetch as inngestFetch } from 'inngest';
+import { generateText } from 'ai';
+import { createAnthropic } from '@ai-sdk/anthropic';
 
-const api = new MyProductApi({ fetch });
+// The AI SDK's createAnthropic objects can be passed a custom fetch implementation
+const anthropic = createAnthropic({
+  fetch: inngestFetch,
+});
 
-// A call outside an Inngest function will fall back to the global fetch
-await api.getProduct(1);
+// NOTE - Using this fetch outside of an Inngest function will fall back to the global fetch
+const response = await generateText({
+  model: anthropic('claude-3-5-sonnet-20240620'),
+  prompt: 'Hello, world!',
+});
 
 // A call from inside an Inngest function will be made durable
 inngest.createFunction(
-  { id: "my-fn" },
-  { event: "product/activated" },
-  async () => {
-    await api.getProduct(1);
+  { id: "generate-summary" },
+  { event: "post.created" },
+  async ({ event }) => {
+    // This will use step.fetch automatically!
+    const response = await generateText({
+      model: anthropic('claude-3-5-sonnet-20240620'),
+      prompt: `Summarize the following post: ${event.data.content}`,
+    });
   },
 );
 ```
@@ -127,12 +139,17 @@ However, the same `fetch` is also exported as `step.fetch`, allowing you to crea
 <CodeGroup>
 ```ts {{ title: "TypeScript" }}
 inngest.createFunction(
-  { id: "my-fn" },
-  { event: "product/activated" },
+  { id: "generate-summary" },
+  { event: "post.created" },
   async ({ step }) => {
-    const api = new MyProductApi({ fetch: step.fetch });
+    const anthropic = createAnthropic({
+      fetch: step.fetch,
+    });
 
-    await api.getProduct(1);
+    const response = await generateText({
+      model: anthropic('claude-3-5-sonnet-20240620'),
+      prompt: `Summarize the following post: ${event.data.content}`,
+    });
   },
 );
 ```
