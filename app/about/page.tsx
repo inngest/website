@@ -83,19 +83,9 @@ const TEAM = [
     avatar: "/assets/team/riadh-d-2025-06-24.jpg",
   },
   {
-    name: "Albert Chae",
-    role: "Engineer",
-    avatar: "/assets/team/albert-chae-2025-06-24.png",
-  },
-  {
     name: "Jakob Evangelista",
     role: "Engineer",
     avatar: "/assets/team/jakob-evangelista-2025-06-24.png",
-  },
-  {
-    name: "Justice Olagbaiye",
-    role: "Engineer",
-    avatar: "/assets/team/justice-o-2025-06-24.png",
   },
   {
     name: "Shathar Campbell",
