@@ -92,6 +92,11 @@ const TEAM = [
     role: "Success Engineer",
     avatar: "/assets/team/shathar-c-2025-06-24.png",
   },
+  {
+    name: "Andy Lawrence",
+    role: "Success Engineer",
+    avatar: "/assets/team/andy-lawrence-2025-08-01.jpg",
+  },
 ];
 
 const INVESTORS: {
