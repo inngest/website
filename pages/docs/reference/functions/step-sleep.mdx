@@ -23,7 +23,7 @@ import { Callout, CodeGroup, Col, Properties, Property, Row, VersionBadge } from
   <CodeGroup>
   ```ts {{ title: "v3" }}
   // Sleep for 30 minutes
-  const thirtyMins = Temporal.Duration.from({ minutes: 5 });
+  const thirtyMins = Temporal.Duration.from({ minutes: 30 });
   await step.sleep("wait-with-temporal", thirtyMins);
 
   await step.sleep("wait-with-string", "30m");
