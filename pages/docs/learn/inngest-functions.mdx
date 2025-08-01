@@ -41,7 +41,7 @@ export default inngest.createFunction(
       return copyAllImagesToS3(event.data.imageURLs);
     });
     // You can include numerous steps in your function
-    await ctx.step.run('resize-images', async () => {
+    await step.run('resize-images', async () => {
       await resizer.bulk({ urls: s3Urls, quality: 0.9, maxWidth: 1024 });
     })
   }
