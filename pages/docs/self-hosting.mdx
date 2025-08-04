@@ -82,7 +82,7 @@ By default, the server will:
 To securely configure your server, create your event and signing keys using whatever format you choose and start the Inngest server using them. You can also pass them via environment variable (see below):
 
 <Callout>
-The signing key must be a hexadecimal string. You can generate a secure signing key using: 
+The signing key must be a valid hexadecimal string with an even number of characters. You can generate a secure signing key using: 
 ```plaintext
 openssl rand -hex 32
 ```
@@ -208,8 +208,8 @@ services:
       - "8288:8288"
       - "8289:8289"
     environment:
-      - INNGEST_EVENT_KEY=your_event_key_here # Must be a hexadecimal string
-      - INNGEST_SIGNING_KEY=your_signing_key_here # Must be a hexadecimal string
+      - INNGEST_EVENT_KEY=your_event_key_here # Must be hex string with even number of chars
+      - INNGEST_SIGNING_KEY=your_signing_key_here # Must be hex string with even number of chars
       - INNGEST_POSTGRES_URI=postgres://inngest:password@postgres:5432/inngest
       - INNGEST_REDIS_URI=redis://redis:6379
     depends_on:
