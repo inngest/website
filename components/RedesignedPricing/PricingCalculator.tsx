@@ -98,7 +98,7 @@ function calculatePlanCost({
   workers: number;
 }): EstimatedCosts {
   const plan = getPlan(planName);
-  const totalExecutions = runs * steps;
+  const totalExecutions = runs * steps + runs;
 
   let baseCost = 0;
   let executionsCost = 0;
@@ -302,7 +302,7 @@ export function PricingCalculatorPage() {
 
   const results: CalculatorResults = useMemo(() => {
     const runsCount = runs;
-    const totalExecutions = runsCount * steps;
+    const totalExecutions = runsCount * steps + runsCount;
 
     const concurrencyNumber = concurrency;
     const usersNumber = users;
@@ -457,7 +457,6 @@ export function PricingCalculatorPage() {
                   </div>
                 </div>
 
-                {/* Display total executions */}
                 <div className="rounded-lg bg-stone-800 p-4">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium text-neutral-300">
@@ -468,9 +467,9 @@ export function PricingCalculatorPage() {
                     </span>
                   </div>
                   <p className="mt-1 text-xs text-neutral-400">
-                    {runs.toLocaleString()} runs × {steps.toLocaleString()}{" "}
-                    steps = {results.totalExecutions.toLocaleString()}{" "}
-                    executions
+                    ({runs.toLocaleString()} runs × {steps.toLocaleString()}{" "}
+                    steps per run) + {runs.toLocaleString()} runs ={" "}
+                    {results.totalExecutions.toLocaleString()} executions
                   </p>
                 </div>
 
