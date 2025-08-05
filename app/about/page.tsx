@@ -68,11 +68,6 @@ const TEAM = [
     avatar: "/assets/team/charly-poly-2024-11-11.jpg",
   },
   {
-    name: "Andrew Dahl",
-    role: "Engineer",
-    avatar: "/assets/team/andrew-dahl-2024-11-11.jpg",
-  },
-  {
     name: "Ted Werbel",
     role: "AI Engineer",
     avatar: "/assets/team/ted-werbel-2025-04-22.jpg",
@@ -94,8 +89,8 @@ const TEAM = [
   },
   {
     name: "Andy Lawrence",
-    role: "Success Engineer",
-    avatar: "/assets/team/andy-lawrence-2025-08-01.jpg",
+    role: "Engineer",
+    avatar: "/assets/team/andy-l-2025-08-01.jpg",
   },
 ];
 
