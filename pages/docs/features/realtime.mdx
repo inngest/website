@@ -185,13 +185,14 @@ Subscribing can be done using an Inngest client that either has a valid signing 
     ```
 
     ```ts {{ title: "Express" }}
+    import { getInngestApp } from "@/inngest";
     import { getSubscriptionToken } from "@inngest/realtime";
     import { getAuth } from "src/auth"; // this could be any auth provider
 
     app.post("/get-subscribe-token", async (req, res) => {
       const { userId } = getAuth(req)
 
-      const token = await getSubscriptionToken({
+      const token = await getSubscriptionToken(getInngestApp(), {
         channel: `user:${userId}`,
         topics: ["ai"],
       })
