@@ -1,0 +1,114 @@
+export const title = 'How Windmill\'s AI Agent helps manage thousands of employees using Inngest'
+export const companyName = 'Windmill'
+export const logo = '/assets/customers/windmill-logo.svg'
+export const companyEmployees = '2-20'
+export const companyIndustry = 'SaaS / AI Agents'
+export const companyUseCase = 'AI Agents'
+export const quote = {
+  text: `LLMs APIs are pretty different than other traditional APIs, which are usually pretty fast and reliable; they are slow and pretty brittle.
+Inngest makes solving both of those things straightforward!`,
+  attribution: {
+    name: 'Max Shaw',
+    title: 'Co-founder',
+  },
+  avatar: '/assets/customers/windmill-max-shaw.png',
+}
+export const companyURL = 'https://gowindmill.com'
+export const companyDescription = 'Your AI Manager Assistant'
+export const ogImage = '/assets/customers/case-study/og-image-resend.png'
+
+[Windmill](https://gowindmill.com/) is an AI-powered management platform that streamlines team feedback and performance processes. Its AI bot, Windy, simplifies feedback collection, helping teams easily share and process insights. Windmill integrates with common work tools like Linear, Slack, and Google Calendar to create a unified workspace that boosts team collaboration and communication.
+
+## From solving Serverless timeouts to scaling integration to millions of daily events
+
+Having previously used Inngest for side projects, Max Shaw quickly leveraged it to build Windmill when he encountered **timeout issues** while deploying their initial integrations on Vercel. At that time, Windmill was primarily a collection of integrations that retrieved large data volumes to generate on-demand reports.
+
+### Beyond solving Vercel timeouts: the DX and observability benefits
+
+On top of solving Vercel timeouts issues, **Inngest enabled Max and his team to quickly build new integrations** as Inngest's DX made it easy to write asynchronous code while benefiting from detailed observability:
+
+> "**I would say we found a lot of successes in the developer experience**. The ability of **easily spin up queues** and different asynchronous workflows natively alongside the rest of our code base is super nice. And then the second is the **observability piece, enabling us to see all the functions and the runs and the steps, both locally and for deployed environments**. " - Max Shaw
+> 
+
+Windmill decided to keep Inngest while replatforming to AWS, acknowledging that the DX and observability brought by Inngest **would be impossible to match with AWS SQS**:
+
+> "There are some benefits to have everything in AWS, but my lead engineer has worked with many of the other queuing systems and from a performance perspective I feel like we could make it happen, but **I think we'd lose a ton in terms of developer experience and observability; it would slow us down. It was obvious to stay with Inngest.** " - Max Shaw
+> 
+
+### The challenges of building a deeply integrated product: smoothing the database's load and API rate-limits
+
+After completing the initial development phase, Max and his team faced a new challenge: **scaling their integration system to handle database load spikes during periods of high usage**.
+
+Windmill integrates with [20+ productivity tools](https://gowindmill.com/integrations) via webhooks and APIs. Activities from employees during working hours result in spikes in webhooks, which put pressure on both the database and workflows relying on rate-limited APIs.
+
+*[TODO: Illustration of webhooks leading to pressure on database and rate-limited workflows]*
+
+By using Inngest's [retries](https://www.inngest.com/docs/features/inngest-functions/error-retries/retries), [rate limit control](https://www.inngest.com/docs/guides/rate-limiting), and [batching](https://www.inngest.com/docs/guides/batching) features, their integrations are guaranteed to run reliably, without data loss or database outage:
+
+> "We got tons of webhooks, we put everything onto a queue**. We can have huge spikes in messages**. **The load during the day is obviously much higher than the load at night**.
+**We want to spread out the load on our database so that it does not all come at once**. And we also don't miss anything. So, we **use In nngest to help kind of spread out that load as we're pulling in all this data**.
+This is a ****heavy data load and data synchronization process that we want to smooth out **and we want to make sure we don't miss anything and also handle API failures and API rate limits**" - Max Shaw
+> 
+
+## The challenges of building swift interactions with long-running AI workflows
+
+Windmill's extensive integration system is complemented by their AI Agent, Windy, which fills the gap of data missing from integrations by proactively asking employees for feedback.
+
+### Building AI conversational experiences: priority queues
+
+Windy interacts with employees as a Slack bot, relying on Inngest's event-driven nature and native webhooks support. Building a smooth AI experience through Slack presents its own set of challenges, as it must keep the user experience interactive despite the slow nature of LLM. Windmill solved this UX challenge by having Windy react live to user answers, informing the user that the message is being processed:
+
+
+<video
+  src={'/assets/customers/windmill/windy-demo.mov'}
+  playsInline
+  loop={true}
+  controls={true}
+  preload="auto"
+  autoPlay
+  muted
+/>
+
+
+This conversational UX pattern was made possible by relying on Inngest's [priority queues](https://www.inngest.com/docs/guides/priority), as Max explains:
+
+> "**A lot of our interfaces in Slack**, and so when we're responding to a message, **we want to as quickly as possible let the user know that we saw the message**. And so when we get a message from Slack (via a webhook), **we'll put it on a prioritized queue** before proceeding with the LLM workflow." - Max Shaw
+> 
+
+### Generating reports reliably with Inngest steps
+
+The data gathered through the integration pipelines and Windy feedback conversation are essential to another core Windmill feature: **Reports**.
+
+<div className="flex gap-8 justify-between">
+
+<div className="w-1/2 flex-col self-center">
+Reports answer high-level and complex questions directly from Slack or via the Windmill web dashboard.
+
+These reports utilize Inngest's steps flexibility, functioning as dynamically evolving agentic workflows that adapt based on the question's complexity.
+
+When a slow meeting report is initiated (*as featured on the right*), the system immediately notifies the employee that they will be pinged once the report is ready.
+</div>
+
+![image.png](/assets/customers/windmill/windmill-windy-slack-thread.png)
+
+</div>
+
+
+
+> "Those are pretty long workflows where we're gathering data, we're summarizing data, and there's a lot going on there. **Calling these LLMs is relatively slow and they often fail**. All these different models are always having capacity issues.
+And so the ability to have **multiple steps in one workflow and break things apart logically and retry individual steps on their own is extremely helpful**" - Max Shaw
+> 
+
+With Inngest, Max and his teams get all the tools to reliably operate their reporting workflows, with:
+
+- [**Durability**](https://www.notion.so/How-B-RSkin-Tactical-Supply-Co-achieved-100-event-deliverability-by-switching-from-Kafka-to-Innges-238b64753bbd8030843ccc2bed56915b?pvs=21): Inngest's steps split each workflow into retriable steps, gracefully handling any 3rd party or LLM APIs failures.
+- [**Multitenancy and Flow control**](https://www.inngest.com/docs/guides/flow-control): Evenly spreading the execution of reporting workflows, to avoid scenarios when a single user asking multiple reports slows down the global user experience.
+- [**Observability**](https://www.inngest.com/docs/platform/monitor/observability-metrics): Each workflow's step becomes introspectable with access to its input and output, along with metrics to quickly evaluate the overall user experience.
+
+## Building AI Agents with Inngest
+
+Inngest's orchestration engine, with its rich SDK and Flow Control features, enabled Windmill to develop the multiple architectural parts of its product.
+
+From quickly getting their 20+ productivity tool integrations off the ground and scaling them to millions of events per day to powering the swift Slack user experience and long-running workflow of their Windy AI Agents, **Inngest has been critical in developing, shipping, and scaling Windmill**.
+
+If you're looking for a better way to orchestrate workflows, manage concurrency, and scale AI-powered applications, [**book a demo**](https://www.inngest.com/contact?ref=case-study-otto) today and see how Inngest can streamline your infrastructure.

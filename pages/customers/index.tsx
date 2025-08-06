@@ -74,6 +74,30 @@ const caseStudies: {
     tags: ["Serverless"],
   },
   {
+    href: "/customers/windmill",
+    logo: "/assets/customers/windmill-logo.svg",
+    name: "Windmill",
+    logoScale: 0.8,
+    title:
+      "How Windmill's AI Agent helps manage thousands of employees using Inngest",
+    snippet: (
+      <>
+        How Windmill integrates with 20+ productivity tools to power their AI
+        Agent using Inngest.
+      </>
+    ),
+    tags: ["AI"],
+  },
+  {
+    href: "/customers/aomni",
+    logo: "/assets/customers/aomni-logo.svg",
+    name: "Aomni",
+    title: "Productionizing AI-driven sales flows using serverless LLMs",
+    snippet:
+      "Leveraging Inngest for production-grade complex state management and LLM chaining.",
+    tags: ["AI"],
+  },
+  {
     href: "/customers/megaseo",
     logo: "/assets/customers/megaseo-logo.svg",
     name: "Mega SEO",
@@ -86,15 +110,6 @@ const caseStudies: {
         run smoothly in production."
       </>
     ),
-    tags: ["AI"],
-  },
-  {
-    href: "/customers/aomni",
-    logo: "/assets/customers/aomni-logo.svg",
-    name: "Aomni",
-    title: "Productionizing AI-driven sales flows using serverless LLMs",
-    snippet:
-      "Leveraging Inngest for production-grade complex state management and LLM chaining.",
     tags: ["AI"],
   },
   {
