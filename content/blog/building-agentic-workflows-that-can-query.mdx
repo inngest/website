@@ -50,17 +50,6 @@ We structured our agent system using AgentKit to orchestrate three roles:
 
 Each agent is defined in isolation, tested independently, and composed into a single network for full orchestration. AgentKit provides fine-grained control over execution flow, streaming behavior, and model selection.
 
-
-## Streaming, State Management & Race Conditions
-
-AgentKit provides WebSocket-based real-time streaming out of the box. Initially, we streamed final responses directly to the UI and persisted chat history in MySQL.
-
-This introduced issues:
-- The frontend depended on the DB for the initial chat load
-- If the WebSocket closed prematurely (e.g. during inference), the UI could get stuck in an inconsistent state
-
-To resolve this, we migrated to **Convex** as our reactive database layer. Now, the agent writes once to the DB, and Convex pushes updates directly to the frontend ensuring a single source of truth and eliminating race conditions.
-
 ## Letting LLMs Query 3.5M Rows
 
 To enable LLMs to access millions of structured records, we implemented a language-to-SQL pattern:
