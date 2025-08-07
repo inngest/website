@@ -445,7 +445,7 @@ export const FEATURES: Feature[] = [
     plans: {
       [PLAN_NAMES.basicFree]: "24 hours",
       [PLAN_NAMES.pro]: "7 days",
-      [PLAN_NAMES.enterprise]: "30 days",
+      [PLAN_NAMES.enterprise]: "90 days",
     },
     infoUrl: "/docs/platform/monitor/inspecting-function-runs?ref=pricing",
     section: "observability",
