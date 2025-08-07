@@ -15,7 +15,7 @@ Inngest makes solving both of those things straightforward!`,
 }
 export const companyURL = 'https://gowindmill.com'
 export const companyDescription = 'Your AI Manager Assistant'
-export const ogImage = '/assets/customers/case-study/og-image-resend.png'
+export const ogImage = '/assets/customers/windmill/cover.jpg'
 
 [Windmill](https://gowindmill.com/) is an AI-powered management platform that streamlines team feedback and performance processes. Its AI bot, Windy, simplifies feedback collection, helping teams easily share and process insights. Windmill integrates with common work tools like Linear, Slack, and Google Calendar to create a unified workspace that boosts team collaboration and communication.
 
@@ -41,7 +41,7 @@ After completing the initial development phase, Max and his team faced a new cha
 
 Windmill integrates with [20+ productivity tools](https://gowindmill.com/integrations) via webhooks and APIs. Activities from employees during working hours result in spikes in webhooks, which put pressure on both the database and workflows relying on rate-limited APIs.
 
-*[TODO: Illustration of webhooks leading to pressure on database and rate-limited workflows]*
+![Illustration of webhooks leading to pressure on database and rate-limited workflows](/assets/customers/windmill/diagram.png)
 
 By using Inngest's [retries](https://www.inngest.com/docs/features/inngest-functions/error-retries/retries), [rate limit control](https://www.inngest.com/docs/guides/rate-limiting), and [batching](https://www.inngest.com/docs/guides/batching) features, their integrations are guaranteed to run reliably, without data loss or database outage:
 
