@@ -41,8 +41,8 @@ export const navigation = {
       href: "/compare-to-temporal?ref=footer-links",
     },
     {
-      name: "Solving for Vercel Timeouts",
-      href: "/blog/vercel-function-timeout?ref=footer-links",
+      name: "Solving for Next.js Timeouts",
+      href: "/blog/how-to-solve-nextjs-timeouts?ref=footer-links",
     },
   ],
   company: [
