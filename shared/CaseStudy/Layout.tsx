@@ -31,6 +31,9 @@ export type Props = {
   };
   companyDescription: string;
   companyURL: string;
+  companyEmployees?: string;
+  companyIndustry?: string;
+  companyUseCase?: string;
   ogImage?: string;
 };
 
@@ -43,6 +46,9 @@ export function Layout({
   quote,
   companyDescription,
   companyURL,
+  companyEmployees,
+  companyIndustry,
+  companyUseCase,
   ogImage = "/assets/customers/case-study/og-image-default.png",
 }: Props) {
   const metaTitle = `Customer story - ${companyName}`;
@@ -70,20 +76,20 @@ export function Layout({
       <AnnouncementBanner />
       <Header />
       <Container>
-        <div className="mx-auto my-12 flex flex-col lg:flex-row items-start justify-between gap-8 max-w-[1200px]">
+        <div className="mx-auto my-12 flex max-w-[1200px] flex-col items-start justify-between gap-8 lg:flex-row">
           <div>
             <article className="w-full lg:max-w-[80ch]">
               <div className="mb-4 text-sm font-medium text-subtle">
                 Customer story - {companyName}
               </div>
-              <h1 className="mr-8 text-4xl leading-[3rem] font-medium">
+              <h1 className="mr-8 text-4xl font-medium leading-[3rem]">
                 {title}
               </h1>
 
               {quote && (
-                <blockquote className="mx-auto my-8 max-w-3xl px-8 md:p-12 flex flex-col md:flex-row gap-8 bg-[url(/assets/textures/wave.svg)] bg-[length:auto_80%] bg-center bg-no-repeat">
-                  <p className="text-lg leading-7 relative">
-                    <span className="absolute top-1 -left-4 text-2xl leading-3 text-muted">
+                <blockquote className="mx-auto my-8 flex max-w-3xl flex-col gap-8 bg-[url(/assets/textures/wave.svg)] bg-[length:auto_80%] bg-center bg-no-repeat px-8 md:flex-row md:p-12">
+                  <p className="relative text-lg leading-7">
+                    <span className="absolute -left-4 top-1 text-2xl leading-3 text-muted">
                       &ldquo;
                     </span>
                     {quote.text}
@@ -91,15 +97,15 @@ export function Layout({
                       &rdquo;
                     </span>
                   </p>
-                  <footer className="min-w-[180px] flex flex-col gap-4">
+                  <footer className="flex min-w-[180px] flex-col gap-4">
                     <Image
                       src={quote.avatar}
                       alt={`Image of ${quote.attribution.name}`}
                       height="72"
                       width="72"
-                      className="rounded-full h-12 w-12 lg:h-20 lg:w-20"
+                      className="h-12 w-12 rounded-full lg:h-20 lg:w-20"
                     />
-                    <cite className="text-subtle leading-8 not-italic">
+                    <cite className="not-italic leading-8 text-subtle">
                       <span className="text-lg">{quote.attribution.name}</span>
                       <br />
                       <span className="text-sm">{quote.attribution.title}</span>
@@ -109,7 +115,7 @@ export function Layout({
               )}
 
               <SectionProvider sections={[]}>
-                <div className="md:max-w-[70ch] prose mt-12 mb-20 prose-img:rounded-lg prose-code:bg-slate-800 prose-code:tracking-tight text-basis prose-invert blog-content">
+                <div className="prose-invert blog-content prose mb-20 mt-12 text-basis prose-code:bg-slate-800 prose-code:tracking-tight prose-img:rounded-lg md:max-w-[70ch]">
                   {children}
                 </div>
               </SectionProvider>
@@ -117,18 +123,18 @@ export function Layout({
             <p>
               <Link
                 href="/customers"
-                className="hover:underline underline-offset-2 font-medium"
+                className="font-medium underline-offset-2 hover:underline"
               >
                 Read more customer success stories →
               </Link>
             </p>
           </div>
-          <aside className="md:sticky top-32 flex flex-col gap-6 min-w-[260px] md:w-[360px] px-8 py-4 mt-8 items-start justify-between border-l border-slate-100/10">
+          <aside className="top-32 mt-8 flex min-w-[260px] flex-col items-start justify-between gap-6 border-l border-slate-100/10 px-8 py-4 md:sticky md:w-[360px]">
             <img
               src={logo}
               alt={`${companyName}'s logo`}
               style={{ transform: `scale(${logoScale})` }}
-              className="inline-flex min-w-[160px] max-h-[40px] mb-4"
+              className="mb-4 inline-flex max-h-[40px] min-w-[160px]"
             />
             <p>{companyDescription}</p>
             <p>
@@ -136,22 +142,46 @@ export function Layout({
                 {companyURL.replace(/https\:\/\//, "")}
               </a>
             </p>
-            <div className="mt-2 pt-8 border-t border-slate-100/10">
-              {companyName === 'Resend' ? <><p className="mb-4 font-medium text-slate-50">
-                Build Next.js applications with Inngest
+            {companyEmployees && (
+              <p>
+                <span className="font-medium">Employees:</span>{" "}
+                {companyEmployees}
               </p>
-              <Button
-                href={`https://app.inngest.com/sign-up?ref=case-study-${companyName.toLowerCase()}`}
-              >
-                Get started with Inngest
-              </Button></> : <><p className="mb-4 font-medium text-slate-50">
-                Interested in Inngest?
+            )}
+            {companyIndustry && (
+              <p>
+                <span className="font-medium">Industry:</span> {companyIndustry}
               </p>
-              <Button
-                href={`/contact?ref=case-study-${companyName.toLowerCase()}`}
-              >
-                Talk to a product expert
-              </Button></>}
+            )}
+            {companyUseCase && (
+              <p>
+                <span className="font-medium">Use case:</span> {companyUseCase}
+              </p>
+            )}
+            <div className="mt-2 border-t border-slate-100/10 pt-8">
+              {companyName === "Resend" ? (
+                <>
+                  <p className="mb-4 font-medium text-slate-50">
+                    Build Next.js applications with Inngest
+                  </p>
+                  <Button
+                    href={`https://app.inngest.com/sign-up?ref=case-study-${companyName.toLowerCase()}`}
+                  >
+                    Get started with Inngest
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <p className="mb-4 font-medium text-slate-50">
+                    Interested in Inngest?
+                  </p>
+                  <Button
+                    href={`/contact?ref=case-study-${companyName.toLowerCase()}`}
+                  >
+                    Talk to a product expert
+                  </Button>
+                </>
+              )}
             </div>
           </aside>
         </div>
