@@ -1118,7 +1118,9 @@ provider or `.env` file locally, which lets the SDK securely communicate with In
 provide this as a signing key, you can pass it in to `serve` when setting up your framework. [Read
 the reference for more information](/docs/sdk/reference/serve#reference).
 
+### Other configuration
 
+When using `serve`, allow requests up to 4 MB in size. This is the maximum request size that Inngest will send to your app. Configurating maximum request size is framework-specific, so check the documentation for your framework for more information.
 
 ## Reference
 
