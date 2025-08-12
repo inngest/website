@@ -142,24 +142,21 @@ const withMDX = createMDX({
 
 // Necessary for hot reloading after snippet changes. Watches for snippet
 // changes and invalidates the cache for all files that reference the snippet
-chokidar
-  .watch(
-    "./snippets/**/*.{cs,ex,go,java,kt,php,py,json,rs,sh,sql,toml,ts,zig}",
-    {
-      ignored: [
-        "**/.mypy_cache/**/*",
-        "**/.ruff_cache/**/*",
-        "**/.pytest_cache/**/*",
-        "**/.venv/**/*",
-        "**/node_modules/**/*",
-        "**/vendor/**/*",
-      ],
+try {
+  fs.watch('./snippets', { recursive: true }, (eventType, filename) => {
+    if (filename && eventType === 'change') {
+      const fullPath = path.join(dir, filename).replace(/\\/g, '/');
+      const relativePath = path.relative('.', fullPath).replace(/\\/g, '/');
+      console.log(`File changed: ${relativePath}`);
+      console.log(`Looking for files containing: !snippet:path=${relativePath}`);
+      touchFilesWithString(`!snippet:path=${relativePath}`);
     }
-  )
-  .on("change", (path) => {
-    console.log(`Snippet changed: ${path}`);
-    touchFilesWithString(`!snippet:path=${path}`);
   });
+  console.log('File watcher ready');
+} catch (error) {
+  console.error('File watcher error:', error);
+}
+
 
 // Recursively find all files in the current directory that contain the given
 // string, and then touch them to invalidate the cache
