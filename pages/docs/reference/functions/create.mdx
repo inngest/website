@@ -140,7 +140,7 @@ The `createFunction` method accepts a series of arguments to define your functio
   <Property name="batchEvents" type="object">
     Configure how the function should consume batches of events ([reference](/docs/guides/batching))
 
-    <Properties nested={true} collapse={true}>
+    <Properties nested={true} collapse={true}>  
       <Property name="maxSize" type="number" required>
         The maximum number of events a batch can have. Current limit is `100`.
       </Property>
@@ -155,6 +155,13 @@ The `createFunction` method accepts a series of arguments to define your functio
 
         * Batch events per customer id: `'event.data.customer_id'`
         * Batch events per account and email address: `'event.data.account_id + "-" + event.user.email'`
+      </Property>
+      <Property name="if" type="string">
+        A boolean expression to conditionally batch events that evaluate to true on this expression. The expression is evaluated for each triggering event.
+
+        Expressions are defined using the Common Expression Language (CEL) with the original event accessible using dot-notation. Read [our guide to writing expressions](/docs/guides/writing-expressions) for more info. Examples:
+
+        * Batch events for free account types: `'event.data.account_type == "free"'`
       </Property>
     </Properties>
   </Property>
