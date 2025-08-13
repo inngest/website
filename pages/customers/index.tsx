@@ -51,13 +51,23 @@ const caseStudies: {
     tags: ["AI"],
   },
   {
-    href: "/customers/gitbook",
-    logo: "/assets/customers/gitbook-logo-white.svg",
-    name: "GitBook",
-    title: "Solving bi-directional data synchronization",
-    snippet:
-      "How the GitBook team cut sync times from hours to minutes with Inngest's concurrency management.",
-    tags: ["Workflows", "Serverless"],
+    href: "/customers/baerskintactical",
+    logo: "/assets/customers/baerskintactical-logo-white.svg",
+    name: "BÆRSkin Tactical Supply Co.",
+    logoScale: 0.8,
+    title:
+      "How BÆRSkin Tactical Supply Co. achieved 100% event deliverability by switching from Kafka to Inngest",
+    snippet: (
+      <>
+        "We were losing roughly 6% of events going through Kafka.{" "}
+        <strong>
+          Now that we switched to Inngest, we're super confident that everything
+          is working!
+        </strong>
+        ."
+      </>
+    ),
+    tags: ["E-commerce"],
   },
   {
     href: "/customers/resend",
@@ -96,6 +106,15 @@ const caseStudies: {
     snippet:
       "Leveraging Inngest for production-grade complex state management and LLM chaining.",
     tags: ["AI"],
+  },
+  {
+    href: "/customers/gitbook",
+    logo: "/assets/customers/gitbook-logo-white.svg",
+    name: "GitBook",
+    title: "Solving bi-directional data synchronization",
+    snippet:
+      "How the GitBook team cut sync times from hours to minutes with Inngest's concurrency management.",
+    tags: ["Workflows", "Serverless"],
   },
   {
     href: "/customers/megaseo",
