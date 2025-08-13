@@ -43,7 +43,7 @@ export const fn = inngest.createFunction(
     // parallelized state here.
     //
     // This ensures that all steps complete as fast as possible, and we still have
-    // access to each step's data once they're compelte.
+    // access to each step's data once they're complete.
     const [emailID, updates] = await Promise.all([sendEmail, updateUser]);
 
     return { emailID, updates };
