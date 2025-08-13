@@ -22,6 +22,7 @@ inngest.createFunction(
       maxSize: 100,
       timeout: "5s",
       key: "event.data.user_id", // Optional: batch events by user ID
+      if: "event.data.account_type == \"free\"", // Optional: Only batch events from free accounts 
     },
   },
   { event: "log/api.call" },
@@ -32,6 +33,7 @@ inngest.createFunction(
         user_id: evt.data.user_id,
         endpoint: evt.data.endpoint,
         timestamp: toDateTime(evt.ts),
+        account_type: evt.data.account_type,
       };
     });
 
@@ -53,6 +55,7 @@ inngestgo.CreateFunction(
 			MaxSize: 100,
 			Timeout: "5s",
 			Key: inngestgo.StrPtr("event.data.user_id"), // Optional: batch events by user ID
+      If: inngestgo.StrPtr("event.data.account_type == \"free\""), // Optional: Only batch events from free accounts 
 		},
 	},
 	inngestgo.EventTrigger("log/api.call", nil),
@@ -65,6 +68,7 @@ inngestgo.CreateFunction(
 				"user_id":   evt.Data["user_id"],
 				"endpoint":  evt.Data["endpoint"],
 				"timestamp": toDateTime(evt.Ts),
+        "account_type": evt.Data["account_type"],
 			}
 		}
 
@@ -91,6 +95,7 @@ inngestgo.CreateFunction(
         max_size=100,
         timeout=datetime.timedelta(seconds=5),
         key="event.data.user_id"  # Optional: batch events by user ID
+        if="event.data.account_type == \"free\"" # Optional: Only batch events from free accounts 
     ),
 )
 async def record_api_calls(ctx: inngest.Context):
@@ -99,7 +104,8 @@ async def record_api_calls(ctx: inngest.Context):
         {
             "user_id": evt.data.user_id,
             "endpoint": evt.data.endpoint,
-            "timestamp": to_datetime(evt.ts)
+            "timestamp": to_datetime(evt.ts),
+            "account_type": evt.data.account_type
         }
         for evt in ctx.events
     ]
@@ -119,6 +125,7 @@ async def record_api_calls(ctx: inngest.Context):
 * `maxSize` - The maximum number of events to add to a single batch.
 * `timeout` - The duration of time to wait to add events to a batch. If the batch is not full after this time, the function will be invoked with whatever events are in the current batch, regardless of size.
 * `key` - An optional [expression](/docs/guides/writing-expressions) using event data to batch events by. Each unique value of the `key` will receive its own batch, enabling you to batch events by any particular key, like a user ID.
+* `if` - An optional [boolean expression](/docs/guides/writing-expressions) using event data to conditionally batch events that evaluate to true on this expression. 
 
 
 <Callout>
@@ -133,6 +140,9 @@ async def record_api_calls(ctx: inngest.Context):
 When batching is enabled, Inngest creates a new batch when the first event is received. The batch is filled with events until the `maxSize` is reached _or_ the `timeout` is up. The function is then invoked with the full list of events in the batch. When `key` is set, Inngest will maintain a batch for each unique key, which allows you to batch events belonging to a single entity, for example a customer.
 
 Depending on your SDK, the `events` argument will contain the full list of events within a batch. This allows you to operate on all of them within a single function.
+
+### Conditional Batching
+Conditional Batching can be enabled by providing a boolean expression in `if`.  If the expression cannot be evaluated to a boolean value or if the expression evaluates to `false`, batching will be skipped for this event and the event will be scheduled for execution immediately.
 
 ## Combining with other flow control methods
 
