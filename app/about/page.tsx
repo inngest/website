@@ -83,11 +83,6 @@ const TEAM = [
     avatar: "/assets/team/jakob-evangelista-2025-06-24.png",
   },
   {
-    name: "Shathar Campbell",
-    role: "Success Engineer",
-    avatar: "/assets/team/shathar-c-2025-06-24.png",
-  },
-  {
     name: "Andy Lawrence",
     role: "Engineer",
     avatar: "/assets/team/andy-l-2025-08-01.jpg",
