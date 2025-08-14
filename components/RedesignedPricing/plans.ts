@@ -96,8 +96,8 @@ export const PLANS: Plan[] = [
       text: "Get started for free",
     },
     highlights: {
-      runs: "100,000 executions",
-      concurrency: "25 concurrent steps",
+      runs: "50,000 executions",
+      concurrency: "5 concurrent steps",
       realtime: "50 realtime connections",
       users: "3 users",
     },
@@ -267,8 +267,7 @@ export const FEATURES: Feature[] = [
     description: "A single durable function run or step execution",
     plans: {
       [PLAN_NAMES.basicFree]: {
-        value: "100k /mo included",
-        description: "then $50 per 1m",
+        value: "50k /mo included",
       },
       [PLAN_NAMES.pro]: {
         value: "1m /mo included",
@@ -284,7 +283,7 @@ export const FEATURES: Feature[] = [
     description: "Process steps in parallel while smoothing load",
     plans: {
       [PLAN_NAMES.basicFree]: {
-        value: "25 included",
+        value: "5 included",
       },
       [PLAN_NAMES.pro]: {
         value: "100 included",
@@ -354,11 +353,10 @@ export const FEATURES: Feature[] = [
     description: "Received/processed",
     plans: {
       [PLAN_NAMES.basicFree]: {
-        value: "1m /mo included",
-        description: "then $0.5 per 1m",
+        value: "100k/mo included",
       },
       [PLAN_NAMES.pro]: {
-        value: "5m /mo included",
+        value: "5m/mo included",
         description: "then $0.5 per 1m",
       },
       [PLAN_NAMES.enterprise]: "Custom",

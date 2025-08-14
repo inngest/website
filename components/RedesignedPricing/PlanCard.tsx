@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Button } from "src/components/RedesignedLanding/Button";
 import { type Plan, PLAN_NAMES, getPlan } from "./plans";
 import {
@@ -14,7 +14,6 @@ import * as Accordion from "@radix-ui/react-accordion";
 import classNames from "src/utils/classNames";
 import Link from "next/link";
 import { cn } from "../utils/classNames";
-import { Tabs, TabsList, TabsTrigger } from "./Tabs";
 
 const CLOSED_VALUE = "CLOSED";
 export default function PlanCard({
@@ -73,24 +72,6 @@ export default function PlanCard({
               <h2 className="font-whyte text-3xl font-light text-white">
                 Hobby
               </h2>
-              <Tabs defaultValue="hobby" className="max-w-sm">
-                <TabsList className="h-7 rounded-full bg-stone-600 p-[1.75px]">
-                  <TabsTrigger
-                    value="hobby"
-                    className="data-[state=active]:text-brand-foreground data-[state=inactive]:text-brand-muted focus-visible:ring-ring focus-visible:ring-offset-brand-background rounded-full px-4 py-2 text-sm font-medium transition-colors duration-200 ease-in-out focus-visible:ring-2 focus-visible:ring-offset-2 data-[state=active]:bg-[#080808]"
-                    onClick={() => handlePlanChange("hobby")}
-                  >
-                    Free
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="payg"
-                    className="data-[state=active]:text-brand-foreground data-[state=inactive]:text-brand-muted focus-visible:ring-ring focus-visible:ring-offset-brand-background rounded-full px-4 py-2 text-sm font-medium transition-colors duration-200 ease-in-out focus-visible:ring-2 focus-visible:ring-offset-2 data-[state=active]:bg-[#080808]"
-                    onClick={() => handlePlanChange("payg")}
-                  >
-                    Pay as you go
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
             </div>
           ) : (
             <h2 className="py-3 font-whyte text-3xl font-light text-white">
