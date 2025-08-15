@@ -51,7 +51,7 @@ const caseStudies: {
     tags: ["AI"],
   },
   {
-    href: "/customers/baerskintactical",
+    href: "/customers/baerskin-tactical",
     logo: "/assets/customers/baerskintactical-logo-white.svg",
     name: "BÆRSkin Tactical Supply Co.",
     logoScale: 0.8,
