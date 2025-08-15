@@ -53,7 +53,7 @@ export default function PaygCard() {
                       Executions
                     </h4>
                     <p className="font-circular text-base font-light leading-[1.4] text-[#E7E5E4]">
-                      Each run or step in your code. Your first 100k executions
+                      Each run or step in your code. Your first 50k executions
                       every month are free, with automatic volume discounts as
                       you scale
                     </p>
