@@ -1,0 +1,78 @@
+export const title = 'How BÆRSkin Tactical Supply Co. achieved 100% event deliverability by switching from Kafka to Inngest'
+export const companyName = 'BÆRSkin Tactical Supply Co.'
+export const logo = '/assets/customers/baerskintactical-logo-white.svg'
+export const companyEmployees = '20-1000'
+export const companyIndustry = 'E-Commerce'
+export const companyUseCase = 'Operational and Analytics data processing'
+export const quote = {
+  text: `We figured out we were losing roughly 6% of events going through Kafka with customers complaining they didn't get their order confirmation emails, it was super hard to tackle. Now that we switched to Inngest, we're super confident that everything is working as what I'll call tip-top shape.`,
+  attribution: {
+    name: 'Gus Fune',
+    title: 'CTO',
+  },
+  avatar: '/assets/customers/baerskin-gus-fune.png',
+}
+export const companyURL = 'https://baerskintactical.com'
+export const companyDescription = 'BÆRSkin Tactical Supply Co. is a viral outdoor gear brand known for reliability.'
+export const ogImage = '/assets/customers/baerskin/cover.jpg'
+
+Founded in 2019, BÆRSkin Tactical Supply Co. created notable military-grade outdoor gear for adventurers, gathering up to 30,000 reviews on Trustpilot. Starting with the viral BÆRSkin Tactical Hoodie, they expanded to modular, weather-resistant gear designed to work hard, last long, and be comfortable both on the trail and at home. Their products, from 10-pocket fleece hoodies to the BÆR-Kit system, are built for reliability—no fashion statements or disposable junk—just durable gear for wild comfort.
+
+## Building an in-house e-commerce platform
+
+BÆRSkin Tactical Supply Co. adopted a unique approach to e-commerce, taking data-driven decisions to target niche markets worldwide. This strategy is backed by the choice to build an in-house e-commerce platform, bringing them complete flexibility and control of the shopping experience compared to solutions like Shopify:
+
+> we ended up **developing our own e-commerce platform in-house. So we didn't use Shopify** or anything like that because we want **to keep control of a few elements that they don't allow us to control, like checkout**
+
+BÆRSkin Tactical Supply Co. is built as a multi-cloud and multi-region event-driven system, composed of analytics systems used internally to make data-driven decisions, as well as operational data processing that powers core e-commerce features, such as order processing and logistics.
+
+In late 2024, Gus and his team started to face issues with their recent Kafka replatforming (*migrating an existing application without major rewrites*).
+
+## The Kafka replatforming failure: 6% event loss
+
+BÆRSkin Tactical Supply Co. adopted Kafka in late 2023 to power their analytics and order processing systems. As the replatforming progressed, they realized that some events were dropped, resulting in customers' complaints about missing orders.
+
+Events dropped by Kafka, combined with its lack of native production tooling, made it hard for the engineering team to identify the root cause and impact on customers. Facing this challenge, Gus started to research a new technology to replace Kafka, matching the following requirements:
+
+- **Reliability**: Events should be delivered reliably and can be replayed in case of processing issues. Producing and consuming events should be scalable without requiring extra infrastructure work.
+- **Event-driven**: The researched solution needs to match BÆRSkin Tactical Supply Co.'s event-driven architecture
+- **Observability**: Events and their associated processing should be easily monitored with metrics and alerts.
+- **Monitoring & Recovery tooling**: Ideally, the chosen solution would provide production tools to mitigate any processing issues.
+
+Compared to other solutions like Temporal, Inngest stood out as a promising candidate with the added value of its [**great DX**](https://www.inngest.com/docs/features/inngest-functions) and [**Bun support**](https://www.inngest.com/docs/learn/serving-inngest-functions#bun-serve), which is the primary runtime of BÆRSkin Tactical Supply Co.'s codebase.
+
+## Choosing Inngest: a reliable event-driven workflow engine, coming with essential production tools
+
+
+The Inngest migration followed a strategic phased approach, beginning with a proof of concept on several peripheral workflows. Gradually, as confidence in Inngest grew, the team expanded its implementation to more business-critical systems, including order processing and analytics pipelines. After completing the full migration, the system achieved zero event loss.
+
+### **Beyond reliability: observability, monitoring, and recovery tools**
+
+Beyond solving the reliability issues faced with Kafka, replatforming to Inngest brought a set of new advantages in operating their operational data and analytics processing in production:
+
+> The reliable transportation of events and making sure the **replayability**, being able to **monitor** how things are going, and catch things before they become a problem. Those are super important for us
+
+Using Inngest, Gus's team got access to ready-to-use [monitoring dashboards](https://www.inngest.com/docs/platform/monitor/observability-metrics), production recovery tools such as [Replays](https://www.inngest.com/docs/platform/replay):
+
+![image.png](/assets/customers/baerskin/inngest-dashboard-observability.png)
+
+## Achieving 10x performance improvements on their logistics system
+
+Once the initial reliability issue was resolved by replatforming to Inngest, Gus and his team began exploring ways to expand Inngest to address other challenges they faced with their logistics system.
+
+BÆRSkin Tactical Supply Co.'s logistics system faced a recurring challenge during Black Friday and Cyber Monday, a well-known challenge for most E-Commerce actors. The large number of orders concentrated during this short period was putting a lot of pressure on their database-based queuing system (*utilizing Postgres's SKIP LOCKED design*), which failed to process orders and initiate shipments in a reasonable timeframe.
+
+While short-term solutions such as drastically upscaling their infrastructure helped, Gus and his team started a PoC to evaluate the performance of their logistics system once powered by Inngest. Again, the results were there:
+
+> The preliminary results show that from **40 orders per minute we managed to increase to 500 orders per minute to process in the new system**. So this is probably the biggest gain we've seen in the new system
+> 
+
+## Inngest for E-Commerce
+
+For BÆRSkin Tactical Supply Co., what started as a replatforming effort to address Kafka reliability issues ultimately evolved into a **modernization of their analytical and operational data processing**, resulting in **significant gains in processing performance** (a 10x faster logistics system) and **operational productivity** (through production tools like [Replay](https://www.inngest.com/docs/platform/replay)).
+
+**Inngest's event-driven workflow engine bridges the gap between the two main components of E-Commerce solutions**: operational data (e.g., order processing, 3rd-party integrations) and analytical data (BI) processing. Its combination of [events](https://www.inngest.com/docs/features/events-triggers), queuing, [advanced flow control](https://www.inngest.com/docs/guides/flow-control), and [durable steps](https://www.inngest.com/docs/features/inngest-functions/steps-workflows) removes the need to combine multiple solutions to support critical E-Commerce use cases such as order processing, logistics, or BI.
+
+Finally, where alternatives like Kafka, AWS SQS, or Temporal require significant investment in infrastructure, monitoring, and production tools, Inngest comes with a **fully managed and auto-scaled service** that provides **essential production monitoring and recovery tools**.
+
+If you're interested in learning how Inngest can help your team, [**reach out to us**](https://www.inngest.com/contact?ref=case-study-baerskin) to chat with an expert.
