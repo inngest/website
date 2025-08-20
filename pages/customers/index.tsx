@@ -99,6 +99,20 @@ const caseStudies: {
     tags: ["AI"],
   },
   {
+    href: "/customers/day-ai",
+    logo: "/assets/customers/day-ai-wordmark.png",
+    name: "Day AI",
+    title: "How Day AI built a CRM that can reason using Inngest",
+    snippet: (
+      <>
+        "Inngest is like the <strong>nervous system of Day AI</strong>, it makes
+        things reliable by default so <strong>we can focus on building</strong>
+        ."
+      </>
+    ),
+    tags: ["AI"],
+  },
+  {
     href: "/customers/aomni",
     logo: "/assets/customers/aomni-logo.svg",
     name: "Aomni",
