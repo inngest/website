@@ -83,6 +83,11 @@ const TEAM = [
     avatar: "/assets/team/jakob-evangelista-2025-06-24.png",
   },
   {
+    name: "Keoni Murray",
+    role: "Marketing",
+    avatar: "/assets/team/keoni-murray-2025-08-20.jpeg",
+  },
+  {
     name: "Andy Lawrence",
     role: "Engineer",
     avatar: "/assets/team/andy-l-2025-08-01.jpg",
