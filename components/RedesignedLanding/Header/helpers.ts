@@ -1,6 +1,8 @@
 export const featuredBlogPost = {
-  title: "Inngest is now on Vercel Marketplace",
-  image: "/assets/blog/vercel-partner-marketplace/featured-image.png",
-  description: "Making it easier than ever to get started with Inngest for all Vercel developers",
-  href: "/blog/vercel-partner-marketplace",
+  title: "Context engineering is just software engineering for LLMs",
+  image:
+    "/assets/blog/context-engineering-is-software-engineering-for-llms/cover.jpg",
+  description:
+    "The keystone of Context Engineering is a flexible and robust orchestration layer that connects LLM apps to various data sources to provide the richest context to your Agents.",
+  href: "/blog/context-engineering-is-software-engineering-for-llms",
 };
