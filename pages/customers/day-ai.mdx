@@ -32,7 +32,7 @@ The integration layer powers Day AI's system of record by connecting directly to
 
 Technically, this translates into a system handling a large number of webhooks (*with spikes during working hours*) while interacting with multiple stateful external services:
 
-*[illustration: on the left, incoming webhooks from GCal, at the center* [Day AI](http://Day.ai) *with Inngest, on the right, Recall.ai for bot fleet and Mux API]*
+![on the left, incoming webhooks from GCal, at the center Day AI with Inngest, on the right, Recall.ai for bot fleet and Mux API](/assets/customers/day-ai/diagram-1.jpg)
 
 > **Inngest choreographs these services, acting as the orchestration hub that coordinates everything**. We use a vendor API for meeting bots that sends a bot to a meeting at a specific time. **Inngest handles everything else** - processing incoming calendar events, figuring out what to do with the bots, tracking their current state, and more. **It's like the nervous system for our entire operation**, using our database state and communicating with third-party systems. Everything is ultimately triggered by webhooks from various sources.
 
@@ -59,7 +59,7 @@ Once more, Inngest addresses another challenge: handling large volumes of data t
 
 > **We had problems with just managing the complexity of the flows**. There are so many different things that play off of each other and **create unexpected emergent behavior**. In a complicated event-driven system, things can take on a life of their own - you get overloaded in one component, or components are spamming each other. **A big advantage is being able to debounce, throttle, and set concurrency on different parts of the system**. We can have everything flow into one choke point with a debounce, which reduces unpredictability because we know that point will flow in a specific way no matter what gets thrown at it.
 
-*[illustration: at the center, a two-layered Day AI block with at the top “raw data” and underneath “AI & enrichment workflows”; on the right, LLM and other 3rd party APIs.]*
+![at the center, a two-layered Day AI block with at the top “raw data” and underneath “AI & enrichment workflows”; on the right, LLM and other 3rd party APIs.](/assets/customers/day-ai/diagram-2.jpg)
 
 Day AI fully utilizes Inngest Flow Control to guarantee their CRM data pipeline functions correctly, regardless of input volume or external disruptions.
 
