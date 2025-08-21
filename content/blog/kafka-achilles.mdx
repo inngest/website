@@ -2,7 +2,7 @@
 heading: "Kafka's Achilles, it wasn't designed for application queuing"
 image: /assets/blog/kafka-achilles/cover.jpg
 showSubtitle: false
-subtitle: "Kafka is effective for data-streaming and application queuing. This blog explores its shortcomings by implementing Flow Control like concurrency."
+subtitle: "Kafka is effective for data-streaming and often used for application queuing. This blog explores its shortcomings by implementing Flow Control like concurrency."
 date: 2025-08-20
 author: Keoni Murray
 ---
@@ -26,7 +26,7 @@ To implement them, you set up Kafka and Redis: using Redis to cache recent resum
 
 ![Implementing Flow Control with Kafka requires Redis as a state store along with its associated coordination logic.](/assets/blog/kafka-achilles/illustration.png)
 
-At first, it seems manageable. But soon your team realizes you're spending more time stitching Kafka and Redis together, and  end up writing **custom coordination logic (**e.g., deduplicating/rescheduling messages, rate limiting per user), then fighting **race conditions** when multiple consumers grab similar jobs at once, and finally **managing retries, visibility, and weird edge cases** by hand, building delay/retry topics, dead-letter queues, and lots of logging just to keep the pipeline stable.
+At first, it seems manageable. But soon your team realizes you're spending more time stitching Kafka and Redis together, and  end up writing **custom coordination logic** (e.g., deduplicating/rescheduling messages, rate limiting per user), then fighting **race conditions** when multiple consumers grab similar jobs at once, and finally **managing retries, visibility, and weird edge cases** by hand, building delay/retry topics, dead-letter queues, and lots of logging just to keep the pipeline stable.
 
 ### Coordination logic (Redis dedupe + per-user rate limit)
 
@@ -157,7 +157,7 @@ The infrastructure you hoped would speed you up is now slowing you down.
 
 Growing frustrated with the complexity, one of your engineers starts looking for a simpler solution. After some research, they stumble across Inngest's Flow Control .
 
-Flow Control in Inngest lets you manage **how and when your functions run**. You can control things like **resource usage** (CPU, concurrency), **event execution order**, how functions behave in a **queue**, and **how often** they run per event.
+[Flow Control](/docs/guides/flow-control) in Inngest lets you manage **how and when your functions run**. You can control things like **resource usage** (CPU, concurrency), **event execution order**, how functions behave in a **queue**, and **how often** they run per event.
 
 The team realizes that everything the team was trying to build manually, rate limiting, deduplication, retries, and prioritization, is already handled natively within Inngest.
 
@@ -224,7 +224,7 @@ The team is shipping faster. Bugs related to duplicate resume processing have di
 
 Kafka is powerful, no doubt, but for most teams, especially those building product workflows, it's too much. You end up writing glue code, managing extra infrastructure, and solving problems that have already been solved a hundred times.
 
-Inngest Flow Control  gives you those same capabilities, **without the overhead**. You get retries, rate limiting, debouncing, throttling, prioritization, and more,  all built-in, all configurable, and all production-ready.
+Inngest's [Flow Control](/docs/guides/flow-control)  gives you those same capabilities, **without the overhead**. You get [retries](/docs/features/inngest-functions/error-retries/retries), [rate limiting](/docs/guides/debounce), [debouncing](), [throttling](/docs/guides/throttling), [prioritization](/docs/guides/priority), and more,  all built-in, all configurable, and all production-ready.
 
 So if you're spending more time managing queues than delivering features, maybe it's time to ask a better question:
 
