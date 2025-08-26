@@ -27,13 +27,11 @@ Having previously used Inngest for side projects, Max Shaw quickly leveraged it 
 
 On top of solving Vercel timeouts issues, **Inngest enabled Max and his team to quickly build new integrations** as Inngest's DX made it easy to write asynchronous code while benefiting from detailed observability:
 
-> "**I would say we found a lot of successes in the developer experience**. The ability of **easily spin up queues** and different asynchronous workflows natively alongside the rest of our code base is super nice. And then the second is the **observability piece, enabling us to see all the functions and the runs and the steps, both locally and for deployed environments**. " - Max Shaw
-> 
+> **I would say we found a lot of successes in the developer experience**. The ability of **easily spin up queues** and different asynchronous workflows natively alongside the rest of our code base is super nice. And then the second is the **observability piece, enabling us to see all the functions and the runs and the steps, both locally and for deployed environments**.
 
 Windmill decided to keep Inngest while replatforming to AWS, acknowledging that the DX and observability brought by Inngest **would be impossible to match with AWS SQS**:
 
-> "There are some benefits to have everything in AWS, but my lead engineer has worked with many of the other queuing systems and from a performance perspective I feel like we could make it happen, but **I think we'd lose a ton in terms of developer experience and observability; it would slow us down. It was obvious to stay with Inngest.** " - Max Shaw
-> 
+> There are some benefits to have everything in AWS, but my lead engineer has worked with many of the other queuing systems and from a performance perspective I feel like we could make it happen, but **I think we'd lose a ton in terms of developer experience and observability; it would slow us down. It was obvious to stay with Inngest.**
 
 ### The challenges of building a deeply integrated product: smoothing the database's load and API rate-limits
 
@@ -45,10 +43,9 @@ Windmill integrates with [20+ productivity tools](https://gowindmill.com/integra
 
 By using Inngest's [retries](https://www.inngest.com/docs/features/inngest-functions/error-retries/retries), [rate limit control](https://www.inngest.com/docs/guides/rate-limiting), and [batching](https://www.inngest.com/docs/guides/batching) features, their integrations are guaranteed to run reliably, without data loss or database outage:
 
-> "We got tons of webhooks, we put everything onto a queue. **We can have huge spikes in messages**. **The load during the day is obviously much higher than the load at night**.
+> We got tons of webhooks, we put everything onto a queue. **We can have huge spikes in messages**. **The load during the day is obviously much higher than the load at night**.
 **We want to spread out the load on our database so that it does not all come at once**. And we also don't miss anything. So, we **use Innngest to help kind of spread out that load as we're pulling in all this data**.
-This is an heavy data load and data synchronization process that we want to smooth out **and we want to make sure we don't miss anything and also handle API failures and API rate limits**" - Max Shaw
-> 
+This is an heavy data load and data synchronization process that we want to smooth out **and we want to make sure we don't miss anything and also handle API failures and API rate limits**
 
 ## The challenges of building swift interactions with long-running AI workflows
 
@@ -72,8 +69,7 @@ Windy interacts with employees as a Slack bot, relying on Inngest's event-driven
 
 This conversational UX pattern was made possible by relying on Inngest's [priority queues](https://www.inngest.com/docs/guides/priority), as Max explains:
 
-> "**A lot of our interfaces in Slack**, and so when we're responding to a message, **we want to as quickly as possible let the user know that we saw the message**. And so when we get a message from Slack (via a webhook), **we'll put it on a prioritized queue** before proceeding with the LLM workflow." - Max Shaw
-> 
+> **A lot of our interfaces in Slack**, and so when we're responding to a message, **we want to as quickly as possible let the user know that we saw the message**. And so when we get a message from Slack (via a webhook), **we'll put it on a prioritized queue** before proceeding with the LLM workflow.
 
 ### Generating reports reliably with Inngest steps
 
@@ -95,9 +91,8 @@ When a slow meeting report is initiated (*as featured on the right*), the system
 
 
 
-> "Those are pretty long workflows where we're gathering data, we're summarizing data, and there's a lot going on there. **Calling these LLMs is relatively slow and they often fail**. All these different models are always having capacity issues.
-And so the ability to have **multiple steps in one workflow and break things apart logically and retry individual steps on their own is extremely helpful**" - Max Shaw
-> 
+> Those are pretty long workflows where we're gathering data, we're summarizing data, and there's a lot going on there. **Calling these LLMs is relatively slow and they often fail**. All these different models are always having capacity issues.
+And so the ability to have **multiple steps in one workflow and break things apart logically and retry individual steps on their own is extremely helpful**
 
 With Inngest, Max and his teams get all the tools to reliably operate their reporting workflows, with:
 
