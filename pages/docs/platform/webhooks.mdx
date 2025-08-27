@@ -317,6 +317,18 @@ If the branch environment is not specified with the header or query param, the w
   The value for `x-inngest-env` is the name of the branch environment, not the ID in the URL.
 </Callout>
 
+## Content types
+
+Webhooks currently support the following content types:
+
+- `application/json`
+- `application/x-www-form-urlencoded`
+- `multipart/form-data`
+
+<Callout>
+  The `application/x-www-form-urlencoded` and `multipart/form-data` content types are currently in beta.
+</Callout>
+
 ## Building webhook integrations
 
 Inngest has a feature called **webhook intents** that allows you to build webhook integrations with any application. [Read more about building webhook integrations here](/docs/platform/webhooks/build-an-integration).
