@@ -33,7 +33,7 @@ export default function Hero() {
         <MultipleDraggableElements />
         <div className="relative isolate overflow-hidden">
           <div className="relative z-10 mb-16">
-            <div className="mx-auto mb-16 mt-4 max-w-[76%] text-[2.5rem] leading-[2.75rem] sm:mt-0 md:ml-16 md:max-w-4xl md:text-6xl lg:mx-auto lg:text-7xl">
+            <div className="mx-auto mb-16 mt-4 max-w-[80%] text-[2.5rem] leading-[2.75rem] sm:mt-0 md:ml-16 md:max-w-5xl md:text-6xl lg:mx-auto lg:text-7xl">
               <span className="font-whyteInktrap">{h1s[h1Index]}</span>
               <span className="font-whyt inline-flex gap-2 pl-2">
                 {" for "}
