@@ -283,7 +283,7 @@ require type casting to ensure backward compatibility.
 
 <CodeGroup>
 ```ts {{ title: "Vercel AI SDK" }}
-import { generateText as vercelGenerateText } from "ai";
+import { generateObject as vercelGenerateObject } from "ai";
 import { openai as vercelOpenAI } from "@ai-sdk/openai";
 
 export const vercelWrapSchema = inngest.createFunction(
