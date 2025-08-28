@@ -232,6 +232,9 @@ importers:
       tailwind-merge:
         specifier: 2.6.0
         version: 2.6.0
+      typewriter-effect:
+        specifier: 2.22.0
+        version: 2.22.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       unist-builder:
         specifier: 3.0.0
         version: 3.0.0
@@ -4559,6 +4562,9 @@ packages:
   queue-microtask@1.2.3:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
 
+  raf@3.4.1:
+    resolution: {integrity: sha512-Sq4CW4QhwOHE8ucn6J34MqtZCeWFP2aQSmrlroYgqAV1PjStIhJXxYuTgUIfkEk7zTLjmIjLmU5q+fbD1NnOJA==}
+
   raw-body@2.4.1:
     resolution: {integrity: sha512-9WmIKF6mkvA0SLmA2Knm9+qj89e+j1zqgyn8aXGd7+nAduPoqgI9lO57SAZNn/Byzo5P7JhXTyg9PzaJbH73bA==}
     engines: {node: '>= 0.8'}
@@ -5373,6 +5379,12 @@ packages:
     resolution: {integrity: sha512-84MVSjMEHP+FQRPy3pX9sTVV/INIex71s9TL2Gm5FG/WG1SqXeKyZ0k7/blY/4FdOzI12CBy1vGc4og/eus0fw==}
     engines: {node: '>=14.17'}
     hasBin: true
+
+  typewriter-effect@2.22.0:
+    resolution: {integrity: sha512-01HCRYY462wT8Fxps/epwGCioZd/GMXY0aLKhFKrfJ5Xhgf54/SiDx7Oq7PoES5kGqOEAdW8FS8HYVM2WSvfhQ==}
+    peerDependencies:
+      react: '>=17.0.0'
+      react-dom: '>=17.0.0'
 
   uid-promise@1.0.0:
     resolution: {integrity: sha512-R8375j0qwXyIu/7R0tjdF06/sElHqbmdmWC9M2qQHpEVbvE4I5+38KJI7LUUmQMp7NVq4tKHiBMkT0NFM453Ig==}
@@ -10587,6 +10599,10 @@ snapshots:
 
   queue-microtask@1.2.3: {}
 
+  raf@3.4.1:
+    dependencies:
+      performance-now: 2.1.0
+
   raw-body@2.4.1:
     dependencies:
       bytes: 3.1.0
@@ -11654,6 +11670,13 @@ snapshots:
   typescript@4.9.5: {}
 
   typescript@5.7.3: {}
+
+  typewriter-effect@2.22.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
+    dependencies:
+      prop-types: 15.8.1
+      raf: 3.4.1
+      react: 19.0.0
+      react-dom: 19.0.0(react@19.0.0)
 
   uid-promise@1.0.0: {}
 

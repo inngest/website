@@ -1,12 +1,26 @@
+"use client";
+import Typewriter from "typewriter-effect";
 import Link from "next/link";
 import GridBackground from "./GridBackground";
 import { MultipleDraggableElements } from "./MultipleDraggableElements";
 import Image from "next/image";
 import { Button } from "src/components/RedesignedLanding/Button";
+import { useCallback, useState } from "react";
+
+const h1s = [
+  "The leading orchestration engine",
+  "Leading workflows orchestration",
+];
 
 export default function Hero() {
+  const [h1Index, updateH1Index] = useState(0);
+
+  const onClick = useCallback(() => {
+    updateH1Index((prev) => (prev + 1) % h1s.length);
+  }, []);
+
   return (
-    <div className="bg-stone-950">
+    <div className="bg-stone-950" onClick={onClick}>
       <main className="relative mx-auto w-full max-w-[1800px] bg-stone-950 px-4 pb-12 pt-20 md:pt-52 lg:pt-56">
         <GridBackground
           lineColor="rgba(70, 70, 70, 0.3)"
@@ -20,13 +34,22 @@ export default function Hero() {
         <div className="relative isolate overflow-hidden">
           <div className="relative z-10 mb-16">
             <div className="mx-auto mb-16 mt-4 max-w-[76%] text-[2.5rem] leading-[2.75rem] sm:mt-0 md:ml-16 md:max-w-4xl md:text-6xl lg:mx-auto lg:text-7xl">
-              <h1 className="block font-whyteInktrap">Develop AI products</h1>
-              <h2 className="block font-whyte">at the speed of thought</h2>
+              <span className="font-whyteInktrap">{h1s[h1Index]}</span>
+              <span className="font-whyt inline-flex gap-2 pl-2">
+                {" for "}
+                <Typewriter
+                  options={{
+                    strings: ["AI Agents", "E-Commerce", "Ambitious products"],
+                    autoStart: true,
+                    loop: true,
+                  }}
+                />
+              </span>
             </div>
             <div className="relative z-10 mx-auto max-w-[76%] text-left font-circular text-[1.25rem] md:max-w-sm md:text-base lg:mr-44 lg:max-w-[500px] lg:text-xl 2xl:mr-96">
               <p className="mb-8 font-circular text-[1.25rem] font-normal leading-8 text-stone-200 md:font-light lg:text-2xl">
-                Inngest is the platform for building agentic workflows and
-                agents powering AI products from experiment to production.
+                Inngest's orchestration engine empowers the best product teams
+                from experiment to production.
               </p>
               <div className="flex flex-col gap-4 sm:flex-row">
                 <Button
@@ -45,8 +68,8 @@ export default function Hero() {
                   asChild
                   className="max-[520px]:py-6 max-[520px]:text-[1.1rem]"
                 >
-                  <Link href="/contact?ref=homepage-hero">
-                    Get a demo<span aria-hidden="true">→</span>
+                  <Link href="/docs?ref=homepage-hero">
+                    Read the docs<span aria-hidden="true">→</span>
                   </Link>
                 </Button>
               </div>
@@ -56,7 +79,7 @@ export default function Hero() {
 
         <div className="relative z-10 mx-auto mt-8 max-w-7xl px-6 sm:mt-24 lg:px-8">
           <h2 className="text-center font-circular text-base font-light text-stone-50">
-            Trusted by AI product teams
+            Trusted by product teams at
           </h2>
           <div className="mx-auto mt-10 grid grid-cols-2 items-center justify-items-center gap-8 sm:grid-cols-3 lg:grid-cols-6">
             {[
