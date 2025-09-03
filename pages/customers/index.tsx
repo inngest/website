@@ -41,13 +41,14 @@ const caseStudies: {
     tags: ["Workflows"],
   },
   {
-    href: "/customers/otto",
-    logo: "/assets/customers/otto-logo.svg",
+    href: "/customers/cubic",
+    logo: "/assets/customers/cubic/logo.svg",
     logoScale: 0.8,
-    name: "Otto",
-    title: "Leveraging multi-tenant concurrency to scale AI workflows",
+    name: "cubic",
+    title:
+      "How cubic reduced false positives by 51% by orchestrating their multi-agent system with Inngest",
     snippet:
-      "How Otto uses flow control and orchestration to build AI Agents that are as easy as a spreadsheet.",
+      "For teams looking to build and ship AI Agent systems, cubic's experience highlights the importance of selecting the right orchestration layer.",
     tags: ["AI"],
   },
   {
@@ -110,6 +111,16 @@ const caseStudies: {
         ."
       </>
     ),
+    tags: ["AI"],
+  },
+  {
+    href: "/customers/otto",
+    logo: "/assets/customers/otto-logo.svg",
+    logoScale: 0.8,
+    name: "Otto",
+    title: "Leveraging multi-tenant concurrency to scale AI workflows",
+    snippet:
+      "How Otto uses flow control and orchestration to build AI Agents that are as easy as a spreadsheet.",
     tags: ["AI"],
   },
   {
