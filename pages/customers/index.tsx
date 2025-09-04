@@ -85,16 +85,17 @@ const caseStudies: {
     tags: ["Serverless"],
   },
   {
-    href: "/customers/windmill",
-    logo: "/assets/customers/windmill-logo.svg",
-    name: "Windmill",
-    logoScale: 0.8,
+    href: "/customers/outtake",
+    logo: "/assets/customers/outtake/outtake-logo.svg",
+    name: "Outtake",
+    logoScale: 0.7,
     title:
-      "How Windmill's AI Agent helps manage thousands of employees using Inngest",
+      "Securing the Internet: How Outtake's AI Agents Dismantle Cyber Attacks at Scale with Inngest",
     snippet: (
       <>
-        How Windmill integrates with 20+ productivity tools to power their AI
-        Agent using Inngest.
+        Outtake's approach demonstrates that effective AI agents require a
+        robust architecture to handle large datasets, manage rate limits, and
+        ensure reliability
       </>
     ),
     tags: ["AI"],
@@ -109,6 +110,21 @@ const caseStudies: {
         "Inngest is like the <strong>nervous system of Day AI</strong>, it makes
         things reliable by default so <strong>we can focus on building</strong>
         ."
+      </>
+    ),
+    tags: ["AI"],
+  },
+  {
+    href: "/customers/windmill",
+    logo: "/assets/customers/windmill-logo.svg",
+    name: "Windmill",
+    logoScale: 0.8,
+    title:
+      "How Windmill's AI Agent helps manage thousands of employees using Inngest",
+    snippet: (
+      <>
+        How Windmill integrates with 20+ productivity tools to power their AI
+        Agent using Inngest.
       </>
     ),
     tags: ["AI"],
