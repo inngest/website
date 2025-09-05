@@ -92,6 +92,11 @@ const TEAM = [
     role: "Engineer",
     avatar: "/assets/team/andy-l-2025-08-01.jpg",
   },
+  {
+    name: "Linell Bonnette",
+    role: "Engineer",
+    avatar: "/assets/team/linell-b-2025-09-04.jpg"
+  }
 ];
 
 const INVESTORS: {
