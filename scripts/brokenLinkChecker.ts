@@ -23,7 +23,9 @@ const options = {
     "https://postmarkapp.com",
     "https://api-docs.inngest.com/docs/inngest-api",
     "http://localhost:8288",
+    "http://127.0.0.1:8288",
     "http://localhost:",
+    "http://localhost",
     "https://www.uber.com",
     "https://www.tripadvisor.com",
     "https://linkedin.com",
@@ -45,8 +47,9 @@ const options = {
     "https://redwoodjs.com",
     "https://app.datadoghq.com",
     "https://www.notion.so/blog",
-    "http://localhost",
     "https://github.com/zerodevx",
+    "https://fresh.deno.dev/",
+    "https://deno.com/",
   ],
 };
 

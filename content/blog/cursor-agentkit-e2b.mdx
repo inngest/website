@@ -86,7 +86,7 @@ const agent = createAgent({
     model: anthropic({
     model: "claude-3-5-sonnet-latest",
     max_tokens: 4096,
-}),  
+}),
 })
 ```
 
@@ -242,7 +242,7 @@ const agent = createAgent({
             network?.state.kv.set("task_summary", lastAssistantMessageText);
         }
     }
-    
+
     return result;
     },
 },
@@ -278,7 +278,7 @@ Success! Created todo-list-demo at /home/user/todo-list-demo
     --- Iteration #1 ---
 Agent response > undefined
 terminal <  cd todo-list-demo && npm install --save-dev @testing-library/react @testing-library/jest-dom @testing-library/user-event jest jest-environment-jsdom
-terminal result > 
+terminal result >
 added 329 packages, and audited 709 packages in 14s
 
 [...]
@@ -298,22 +298,22 @@ createOrUpdateFiles < [ 'todo-list-demo/jest.setup.js' ]
     --- Iteration #6 ---
 Agent response > undefined
 terminal <  cd todo-list-demo && npm pkg set scripts.test="jest" scripts.test:coverage="jest --coverage"
-terminal result > 
+terminal result >
     --- Iteration #7 ---
 Agent response > undefined
 createOrUpdateFiles < [ 'todo-list-demo/src/app/page.tsx' ]
     --- Iteration #8 ---
 Agent response > undefined
 terminal <  cd todo-list-demo && npm run test:coverage
-terminal result > 
+terminal result >
 > todo-list-demo@0.1.0 test:coverage
 > jest --coverage
 
 --------------|---------|----------|---------|---------|-------------------
-File          | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+File          | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s
 --------------|---------|----------|---------|---------|-------------------
-All files     |     100 |    85.71 |     100 |     100 |                   
-    TodoList.tsx |     100 |    85.71 |     100 |     100 | 28                
+All files     |     100 |    85.71 |     100 |     100 |
+    TodoList.tsx |     100 |    85.71 |     100 |     100 | 28
 --------------|---------|----------|---------|---------|-------------------
 
     --- Iteration #9 ---
@@ -363,7 +363,7 @@ Conclusion
 
 As we saw together, combining E2B and [AgentKit](https://github.com/inngest/agentkit/) only requires a few hundred lines of code to build a competent Coding Agent. The most essential part of creating a Coding Agent (and any kind of Agent) resides in the design of its tools, which consists of putting yourself in the shoes of the LLM.
 
-You might say, “Right, but Cursor also performs searches on the web and can navigate documentations”. The good news is that AgentKit also supports Anthropic's MCP servers ([Model Context Protocol](https://github.com/modelcontextprotocol)), which could enable our Coding Agent to interact with external tools such as Neon to create databases on the fly or [Stagehand](https://github.com/browserbase/mcp-server-browserbase/blob/main/stagehand/README.md) to browse the web autonomously:
+You might say, “Right, but Cursor also performs searches on the web and can navigate documentations”. The good news is that AgentKit also supports Anthropic's MCP servers ([Model Context Protocol](https://github.com/modelcontextprotocol)), which could enable our Coding Agent to interact with external tools such as Neon to create databases on the fly or [Stagehand](https://www.stagehand.dev/) to browse the web autonomously:
 
 ```typescript
 import { createAgent, anthropic } from "@inngest/agent-kit"
@@ -388,7 +388,7 @@ const agent = createAgent({
         },
         },
     },
-    ],  
+    ],
 })
 ```
 
