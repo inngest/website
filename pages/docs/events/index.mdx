@@ -1,4 +1,4 @@
-import { CodeGroup, Callout, GuideSelector, GuideSection } from "src/shared/Docs/mdx";
+import { CodeGroup, Callout, GuideSelector, GuideSection, Note } from "src/shared/Docs/mdx";
 
 export const description = 'Learn how to send events with the Inngest SDK, set the Event Key, and send events from other languages via HTTP.';
 
@@ -406,6 +406,11 @@ $response = json_decode($json_response, true);
 ```
 
 </CodeGroup>
+
+
+<Note>
+  When using the dev server, use `http://localhost:8288/e/<fake-key>` as the endpoint. If self-hosting, replace with the url for your self-hosted instance.
+</Note>
 
 The response will contain the `ids` of the events that were sent:
 
