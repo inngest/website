@@ -41,14 +41,19 @@ const caseStudies: {
     tags: ["Workflows"],
   },
   {
-    href: "/customers/cubic",
-    logo: "/assets/customers/cubic/logo.svg",
-    logoScale: 0.8,
-    name: "cubic",
+    href: "/customers/outtake",
+    logo: "/assets/customers/outtake/outtake-logo.svg",
+    name: "Outtake",
+    logoScale: 0.7,
     title:
-      "How cubic reduced false positives by 51% by orchestrating their multi-agent system with Inngest",
-    snippet:
-      "For teams looking to build and ship AI Agent systems, cubic's experience highlights the importance of selecting the right orchestration layer.",
+      "Securing the Internet: How Outtake's AI Agents Dismantle Cyber Attacks at Scale with Inngest",
+    snippet: (
+      <>
+        Outtake's approach demonstrates that effective AI agents require a
+        robust architecture to handle large datasets, manage rate limits, and
+        ensure reliability
+      </>
+    ),
     tags: ["AI"],
   },
   {
@@ -85,19 +90,14 @@ const caseStudies: {
     tags: ["Serverless"],
   },
   {
-    href: "/customers/outtake",
-    logo: "/assets/customers/outtake/outtake-logo.svg",
-    name: "Outtake",
-    logoScale: 0.7,
+    href: "/customers/cubic",
+    logo: "/assets/customers/cubic/logo.svg",
+    logoScale: 0.8,
+    name: "cubic",
     title:
-      "Securing the Internet: How Outtake's AI Agents Dismantle Cyber Attacks at Scale with Inngest",
-    snippet: (
-      <>
-        Outtake's approach demonstrates that effective AI agents require a
-        robust architecture to handle large datasets, manage rate limits, and
-        ensure reliability
-      </>
-    ),
+      "How cubic reduced false positives by 51% by orchestrating their multi-agent system with Inngest",
+    snippet:
+      "For teams looking to build and ship AI Agent systems, cubic's experience highlights the importance of selecting the right orchestration layer.",
     tags: ["AI"],
   },
   {
