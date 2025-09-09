@@ -2,11 +2,6 @@ import { VersionBadge, Callout, ImageTheme, Info, CodeGroup } from "src/shared/D
 
 # Singleton Functions <VersionBadge version="TypeScript v3.39.0+" /> <VersionBadge version="Go SDK v0.12.0+" /> <VersionBadge version="Python v0.5+" />
 
-<Info>
-  These docs are part of a developer preview for Inngest's Singleton Functions API. Learn more about the [developer preview here](#developer-preview).
-</Info>
-
-
 
 Singleton Functions enable you to ensure that only a single run of your function (_or a set of specific function runs, based on specific event properties_) is happening at a time.
 
@@ -145,21 +140,7 @@ Singleton Functions can be combined with other flow control features, with the f
 | [Rate limiting](/docs/guides/rate-limiting) | ✅ | Similar functionality but rate limiting operates over a predefined time window rather than function execution duration. | 
 | [Throttling](/docs/guides/throttling) | ✅ | Similar functionality but throttling enqueues events over time rather than discarding/canceling them. |
 | [Concurrency](/docs/guides/concurrency) | ❌ | Singleton functions implicitly have a concurrency of 1. A concurrency setting can be set but should be used with caution. |
-| [Batching](/docs/guides/batching) | ❌ | Not compatible with singleton functions. |
-
-
-## Developer preview
-
-Singleton Functions is a developer preview feature and are subject to change without following semver.
-
-Developer preview help us getting early feedback from the community. You can share your feedback in the [Inngest Discord](https://discord.gg/inngest) or via our [support channel](https://app.inngest.com/support).
-
-The following limitations are known and will be addressed in a future release:
-
-- Skipped runs are not visible in the Inngest dashboard.
-- Singleton isn't compatible with batching; function registration will fail if both are set.
-
-Read the [release phases](/docs/release-phases) for more details.
+| [Batching](/docs/guides/batching) | ❌ | Singleton isn't compatible with batching; function registration will fail if both are set. |
 
 
 ## FAQ
