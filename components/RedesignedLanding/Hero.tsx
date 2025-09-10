@@ -20,7 +20,7 @@ export default function Hero() {
         <div className="relative isolate overflow-hidden">
           <div className="relative z-10 mb-16">
             <div className="mx-auto max-w-[76%] md:ml-16 md:max-w-5xl lg:mx-auto">
-              <div className="mb-16 mt-4 text-[2.5rem] leading-[2.75rem] sm:mt-0 md:text-6xl lg:text-6xl">
+              <div className="mb-16 mt-4 text-[2.5rem] leading-[2.75rem] sm:mt-0 md:text-6xl lg:text-7xl">
                 <h1 className="block font-whyte">
                   Build unbreakable workflows.
                 </h1>
