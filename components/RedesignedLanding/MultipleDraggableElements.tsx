@@ -26,7 +26,7 @@ const DRAGGABLE_IMAGE_CONFIGS: DraggableImageConfig[] = [
   {
     src: "/draggable/draggable.png",
     positions: {
-      default: { x: 300, y: 75 },
+      default: { x: 225, y: 75 },
       ipad: { x: 75, y: 0 },
       lg: { x: 50, y: 50 },
       md: { x: 200, y: 100 },
@@ -46,7 +46,7 @@ const DRAGGABLE_IMAGE_CONFIGS: DraggableImageConfig[] = [
   {
     src: "/draggable/draggable3.png",
     positions: {
-      xl: { x: 1650, y: 675 },
+      xl: { x: 1425, y: 675 },
       default: { x: 1050, y: 675 },
       ipad: { x: 900, y: 675 },
       lg: { x: 750, y: 450 },
@@ -58,18 +58,18 @@ const DRAGGABLE_IMAGE_CONFIGS: DraggableImageConfig[] = [
     src: "/draggable/draggable4.png",
     positions: {
       xl: { x: 1500, y: 225 },
-      default: { x: 1125, y: 300 },
+      default: { x: 1200, y: 300 },
       ipad: { x: 1050, y: 375 },
-      lg: { x: 800, y: 200 },
+      lg: { x: 800, y: 150 },
       md: { x: 750, y: 200 },
-      sm: { x: 330, y: 300 },
+      sm: { x: 390, y: 300 },
     },
   },
   {
     src: "/draggable/draggable5.png",
     positions: {
       default: { x: 75, y: 375 },
-      ipad: { x: 75, y: 375 },
+      ipad: { x: 225, y: 150 },
       lg: { x: 0, y: 350 },
       md: { x: 50, y: 250 },
       sm: { x: 30, y: 150 },
@@ -78,20 +78,20 @@ const DRAGGABLE_IMAGE_CONFIGS: DraggableImageConfig[] = [
   {
     src: "/draggable/draggable6.png",
     positions: {
-      default: { x: 375, y: 450 },
-      ipad: { x: 225, y: 600 },
-      lg: { x: 50, y: 600 },
+      default: { x: 75, y: 675 },
+      ipad: { x: 675, y: 450 },
+      lg: { x: 400, y: 650 },
       md: { x: 250, y: 300 },
-      sm: { x: 60, y: 300 },
+      sm: { x: 30, y: 300 },
     },
   },
   {
     src: "/draggable/draggable7.png",
     positions: {
-      xl: { x: 825, y: 600 },
-      default: { x: 525, y: 600 },
+      xl: { x: 1050, y: 450 },
+      default: { x: 900, y: 525 },
       ipad: { x: 525, y: 675 },
-      lg: { x: 150, y: 450 },
+      lg: { x: 550, y: 400 },
       md: { x: 350, y: 400 },
       sm: { x: 30, y: 540 },
     },
@@ -103,7 +103,7 @@ const DRAGGABLE_IMAGE_CONFIGS: DraggableImageConfig[] = [
       ipad: { x: 900, y: 225 },
       lg: { x: 450, y: 150 },
       md: { x: 650, y: 100 },
-      sm: { x: 360, y: 120 },
+      sm: { x: 360, y: 60 },
     },
   },
 ];
@@ -176,7 +176,7 @@ export function MultipleDraggableElements() {
   }
 
   return (
-    <div className="pointer-events-none absolute inset-0 left-1/2 right-1/2 z-10 -ml-[50vw] -mr-[50vw] h-full w-screen overflow-hidden">
+    <div className="pointer-events-none absolute inset-0 left-1/2 right-1/2 z-0 -ml-[50vw] -mr-[50vw] h-full w-screen overflow-hidden">
       {DRAGGABLE_IMAGE_CONFIGS.map((imageConfig, index) => {
         const scaleFactor = calculateScaleFactor();
 
