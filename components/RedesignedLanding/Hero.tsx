@@ -24,11 +24,11 @@ export default function Hero() {
                 <h1 className="block font-whyte">
                   Build unbreakable workflows.
                 </h1>
-                <h2 className="block max-w-[46rem] font-whyteInktrap">
+                <h2 className="block max-w-[52rem] font-whyteInktrap">
                   Scale to millions of users in a day.
                 </h2>
               </div>
-              <div className="relative z-10 text-left font-circular text-[1.25rem] md:max-w-sm md:text-base lg:max-w-[500px] lg:text-xl">
+              <div className="relative z-10 text-left font-circular text-[1.25rem] md:max-w-sm md:text-base lg:max-w-lg lg:text-xl">
                 <p className="mb-8 font-circular text-[1.25rem] font-normal leading-8 text-stone-200 md:font-light lg:text-2xl">
                   Inngest lets you auto-scale queues, monitor runs, and replay
                   errors—without touching infrastructure. Ship fast, iterate
@@ -62,7 +62,7 @@ export default function Hero() {
                 <h2 className="font-circular text-base font-light text-stone-50">
                   Trusted by AI product teams
                 </h2>
-                <div className="mt-10 grid grid-cols-2 items-center gap-8 sm:grid-cols-3 md:justify-items-start lg:mx-auto lg:grid-cols-6 lg:justify-items-center">
+                <div className="mt-10 grid grid-cols-2 items-center gap-8 sm:grid-cols-3 md:justify-between lg:mx-auto lg:grid-cols-6">
                   {[
                     {
                       src: "/assets/customers/soundcloud-logo-white-horizontal.svg",
