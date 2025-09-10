@@ -19,14 +19,19 @@ export default function Hero() {
         <MultipleDraggableElements />
         <div className="relative isolate overflow-hidden">
           <div className="relative z-10 mb-16">
-            <div className="mx-auto mb-16 mt-4 max-w-[76%] text-[2.5rem] leading-[2.75rem] sm:mt-0 md:ml-16 md:max-w-4xl md:text-6xl lg:mx-auto lg:text-7xl">
-              <h1 className="block font-whyteInktrap">Develop AI products</h1>
-              <h2 className="block font-whyte">at the speed of thought</h2>
+            <div className="mx-auto mb-16 mt-4 max-w-[76%] text-[2.5rem] leading-[2.75rem] sm:mt-0 md:ml-16 md:max-w-5xl md:text-6xl lg:mx-auto lg:text-6xl">
+              <h1 className="block font-whyteInktrap">
+                Build unbreakable workflows.
+              </h1>
+              <h2 className="block font-whyte">
+                Scale to millions of users in a day.
+              </h2>
             </div>
-            <div className="relative z-10 mx-auto max-w-[76%] text-left font-circular text-[1.25rem] md:max-w-sm md:text-base lg:mr-44 lg:max-w-[500px] lg:text-xl 2xl:mr-96">
+            <div className="relative z-10 mx-auto max-w-[76%] text-left font-circular text-[1.25rem] md:max-w-sm md:text-base lg:mr-36 lg:max-w-[500px] lg:text-xl 2xl:mr-96">
               <p className="mb-8 font-circular text-[1.25rem] font-normal leading-8 text-stone-200 md:font-light lg:text-2xl">
-                Inngest is the platform for building agentic workflows and
-                agents powering AI products from experiment to production.
+                Inngest lets you auto-scale queues, monitor runs, and replay
+                errors—without touching infrastructure. Ship fast, iterate
+                faster.
               </p>
               <div className="flex flex-col gap-4 sm:flex-row">
                 <Button
