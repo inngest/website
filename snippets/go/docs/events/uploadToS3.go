@@ -7,8 +7,6 @@ import (
 	"github.com/inngest/inngestgo"
 )
 
-// !snippet:end
-
 func sendEventToUploadToS3() {
 	// !snippet:start
 
