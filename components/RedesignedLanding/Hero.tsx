@@ -60,7 +60,7 @@ export default function Hero() {
 
               <div className="mt-8 sm:mt-24">
                 <h2 className="font-circular text-base font-light text-stone-50">
-                  Trusted by AI product teams
+                  Trusted by product teams at
                 </h2>
                 <div className="mt-10 grid grid-cols-2 items-center gap-8 sm:grid-cols-3 md:justify-between lg:mx-auto lg:grid-cols-6">
                   {[
