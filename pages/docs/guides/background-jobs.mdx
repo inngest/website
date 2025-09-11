@@ -94,8 +94,8 @@ Let's walk through the code step by step:
 ```go
 import (
     "time"
-    "github.com/inngest/inngest-go"
-    "github.com/inngest/inngest-go/step"
+    "github.com/inngest/inngestgo"
+    "github.com/inngest/inngestgo/step"
 )
 
 inngestgo.CreateFunction(
@@ -132,7 +132,7 @@ inngestgo.CreateFunction(
 Your `sendSignUpEmail` function will be triggered whenever Inngest receives an event called `app/user.created`. is received. You send this event to Inngest like so:
 
 ```go
-_, err := inngestgo.Send(context.Background(), inngestgo.Event{
+_, err := client.Send(context.Background(), inngestgo.Event{
     Name: "app/user.created", // This matches the event used in `createFunction`
     Data: map[string]interface{}{
         "email": "test@example.com",
