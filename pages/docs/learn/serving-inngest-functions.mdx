@@ -68,6 +68,7 @@ serve({
 * [Cloudflare Pages](#framework-cloudflare-pages-functions)
 * [Cloudflare Workers](#framework-cloudflare-workers)
 * [DigitalOcean Functions](#framework-digital-ocean-functions)
+* [ElysiaJS](#framework-elysia-js)
 * [Express](#framework-express)
 </Col>
 <Col>
@@ -286,6 +287,38 @@ const main = serve(inngest, [fnA], {
 module.exports.main = main;
 ```
 </CodeGroup>
+
+### Framework: ElysiaJS
+
+For [deployment options](https://elysiajs.com/patterns/deploy.html), Elysia can compile to a binary or to JavaScript, or you can deploy with Docker or Railway.
+
+
+```ts {{ title: "src/index.ts" }}
+import { Elysia } from "elysia";
+import { serve } from "inngest/bun";
+import { functions, inngest } from "./inngest";
+
+const handler = serve({
+  client: inngest,
+  functions,
+});
+
+const inngestHandler = new Elysia().all("/api/inngest", ({ request }) =>
+  handler(request)
+);
+
+// register the handler with Elysia
+const app = new Elysia()
+.use(inngestHandler)
+
+```
+
+Elysia's `use` function expects a single argument. We make use of the `all` method for the inngest api route to handle the expected
+methods and then get the request off of the context object passed to elysia handlers.
+
+See the [ElysiaJS
+example](https://github.com/inngest/inngest-js/tree/main/examples/framework-elysiajs)
+for more information.
 
 ### Framework: Express
 
