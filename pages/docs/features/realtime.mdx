@@ -4,7 +4,7 @@ import {
 } from "@remixicon/react";
 import { Info, CodeGroup, Steps, Step, CardGroup, Card, VersionBadge } from "src/shared/Docs/mdx";
 
-export const description = 'Learn how to use realtime to stream data from workflows to your users.'
+export const description = 'Learn how to use realtime to stream data from Inngest functions to your users.';
 
 # Realtime <VersionBadge version="TypeScript SDK v3.32.0+" /> <VersionBadge version="Go SDK v0.9.0+" />
 
@@ -12,7 +12,11 @@ export const description = 'Learn how to use realtime to stream data from workfl
   Realtime is currently in developer preview. Some details including APIs are still subject to change during this period. Read more about the [developer preview here](#developer-preview).
 </Info>
 
-Realtime allows you to stream data from workflows to your users without configuring infrastructure or maintaining state. This enables you to build interactive applications, show status updates, or stream AI responses to your users directly in your existing code.
+Realtime enables you to stream updates from your Inngest functions to your users, power live UIs, and implement bi-directional workflows such as Human-in-the-Loop.
+
+Realtime user experience is a core requirement for any web application, especially when long-running tasks are involved. This is supported natively in Inngest without any additional infrastructure or configuration. Inngest manages the WebSocket server and the connection to your users.
+
+**Jump to a guide**:
 
 
 <CardGroup cols={2}>
@@ -37,21 +41,27 @@ Realtime allows you to stream data from workflows to your users without configur
 
 </CardGroup>
 
+## Concepts
 
+There are two core parts of Realtime: **publishing** and **subscribing**. You **publish** data from your functions and **subscribe** to data in your application, either browser or server.
 
-## Usage
+Publishing data is done using the `publish()` function and has three components:
 
-There are two core parts of Realtime: **publishing** and **subscribing**. You must publish data from your functions for it to be visible. Publishing data accepts three parameters:
+* `channel` - A namespace for which data belongs to, e.g., `user:123`. This is helpful to segment data to ensure that users only receive data that they are authorized to see.
+* `topic` - A category of data within a `channel`, e.g., `llm_text_stream` or `upload_progress`. This is helpful to differentiate between types of data that you might use in different parts of your application.
+* `data` - The data to be published to the realtime stream.
 
-- `data`, the data to be published to the realtime stream
-- `channel`, the name for a group of topics, e.g., `user:123`
-- `topic`, the (optionally typed and validated) topic name, allowing you to differentiate between types of data
+Subscribing is done with the `subscribe()` function and also requires `channel` and `topic` to be specified.
 
-Subscriptions receive data by subscribing to topics within a channel. We manage the WebSocket connections, publishing, subscribing, and state for you.
+To securely subscribe to data, you must create a **subscription token**. Your application uses the Inngest SDK to create a token, which is then used by the subscribe function to connect to the Inngest WebSocket server.
 
-### Getting started
+<Info>
+  During **local development**, you are able to subscribe to data without a token for testing purposes. Tokens are required for production.
+</Info>
 
-To use realtime, start by installing the `@inngest/realtime` package:
+## Quick start
+
+In this guide, we'll cover how to use realtime with our TypeScript SDK, subscribing from the client (browser). Start by installing the `@inngest/realtime` package:
 
 <CodeGroup>
 ```shell {{ title: "npm" }}
@@ -73,20 +83,62 @@ deno add jsr:@inngest/realtime
 
 ### Publishing
 
-Using our APIs, you publish specific data that users can subscribe to. Here's a basic example:
+To publish data from your Inngest functions, you'll need to add the `realtimeMiddleware()` to your Inngest client. This will automatically add the `publish()` function to your Inngest functions.
 
-<CodeGroup>
-```tsx {{ title: "Typed channels (recommended)" }}
+```ts {{ title: "client.ts" }}
 import { Inngest } from "inngest";
-import { realtimeMiddleware, channel, topic } from "@inngest/realtime";
+import { realtimeMiddleware } from "@inngest/realtime";
 
-const inngest = new Inngest({
+export const inngest = new Inngest({
   id: "my-app",
-  // Whenever you create your app, include the `realtimeMiddleware()`
   middleware: [realtimeMiddleware()],
 });
+```
 
-// create a channel for each user, given a user ID. A channel is a namespace for one or more topics of streams.
+Now, in your Inngest functions, the `publish()` function will be available as a parameter to your handler function. When publishing data, you'll need to specify the `channel` and `topic` you want to publish to and any data you want to publish.
+
+<CodeGroup>
+
+```tsx {{ title: "Basic (untyped)" }}
+import { inngest } from "./client";
+
+inngest.createFunction(
+  { id: "create-recommendation" },
+  { event: "ai/recommendation.requested" },
+  async ({ event, step, publish }) => {
+
+    const response = await step.run('generate-response', () => {
+      return llm.generateResponse(event.data.prompt);
+    });
+
+    // Publish data to a user-specific channel, on the "ai" topic.
+    await publish({
+      channel: `user:${event.data.userId}`,
+      topic: "ai",
+      data: {
+        response: response,
+        success: true,
+      },
+    });
+    // ℹ️ Want type-safety with channels and topics? See the typed channels tab above.
+  }
+);
+
+```
+```tsx {{ title: "Typed channels (recommended)" }}
+import { inngest } from "./client";
+import { channel, topic } from "@inngest/realtime";
+
+// Use the "channel" and "topic" functions to create helpers to
+// add type-safety when using realtime:
+
+// The "channel" builder function can accept a string as a channel name,
+// or a function that returns a string. Here we create a channel for all logs:
+const logsChannel = channel("logs").addTopic(topic("info").type<string>());
+
+// Here we create a channel using the function pattern, which allows us to pass
+// a parameter to the channel name. Here we create a channel for each user:
+// The "topic" builder function can accept a schema or a type
 const userChannel = channel((userId: string) => `user:${userId}`)
   // Add a specific topic, eg. "ai" for all AI data within the user's channel
   .addTopic(
@@ -99,17 +151,19 @@ const userChannel = channel((userId: string) => `user:${userId}`)
     )
   );
 
-// we can also create global channels that do not require input
-const logsChannel = channel("logs").addTopic(topic("info").type<string>());
-
 inngest.createFunction(
-  { id: "some-task" },
-  { event: "ai/ai.requested" },
+  { id: "create-recommendation" },
+  { event: "ai/recommendation.requested" },
   async ({ event, step, publish }) => {
-    // Publish data to the given channel, on the given topic.
+
+    const response = await step.run('generate-response', () => {
+      return llm.generateResponse(event.data.prompt);
+    });
+
+    // Publish data to a user-specific channel, on the "ai" topic.
     await publish(
       userChannel(event.data.userId).ai({
-        response: "an llm response here",
+        response: response,
         success: true,
       })
     );
@@ -118,48 +172,20 @@ inngest.createFunction(
   }
 );
 ```
-
-```tsx {{ title: "Minimal (untyped)" }}
-// NOTE: This is an untyped, minimal example. To view typed channels, use the code tabs above.
-
-import { Inngest } from "inngest";
-import { realtimeMiddleware } from "@inngest/realtime";
-
-const inngest = new Inngest({
-  id: "my-app",
-  // Whenever you create your app, include the `realtimeMiddleware()`
-  middleware: [realtimeMiddleware()],
-});
-
-inngest.createFunction(
-  { id: "some-task" },
-  { event: "ai/ai.requested" },
-  async ({ event, step, publish }) => {
-
-    // Publish data to a user's channel, on the given topic. Channel names are custom and act as a container for a group of topics. Each topic is a stream of data.
-    await publish({
-      channel: `user:${event.data.userId}`,
-      topic: "ai",
-      data: {
-        response: "an llm response here",
-        success: true,
-      },
-    });
-  }
-);
-
-```
 </CodeGroup>
+
+{/* TODO - More on channels and topics, perhaps in a new page? */}
 
 ### Subscribing
 
-Subscribing can be done using an Inngest client that either has a valid signing key or a subscription token. You can subscribe from the [client](#subscribe-from-the-client) or the [backend](#subscribe-from-the-backend).
+To subscribe to data on the client (browser), you'll need to create a subscription token and use the `subscribe()` function. {/* Subscribing from the server side is covered in the [subscribing reference](/docs/features/realtime/subscribing) */}
 
-### Subscribe from the client
 
 <Steps>
   <Step title="Create a subscription token">
-    Subscription tokens should be created on the server and passed to the client. You can create a new endpoint to generate a token, checking things like user permissions or channel subscriptions.
+    Subscription tokens are required to securely establish a connection to the Inngest WebSocket server.
+
+    Your application must create tokens on the server and pass them to the client. You can create a new endpoint to generate a token, ensuring that the user is authorized to subscribe to a given channel and topics.
 
     Here's an example of a server endpoint that creates a token, scoped to a user's channel and specific topics.
 
@@ -168,16 +194,21 @@ Subscribing can be done using an Inngest client that either has a valid signing 
     // ex. /app/actions/get-subscribe-token.ts
     "use server";
 
-    import { getInngestApp } from "@/inngest";
-    import { helloChannel } from "@/inngest/functions/helloWorld";
+    import { inngest } from "@/inngest/client";
+    // See the "Typed channels (recommended)" section above for more details:
+    import { userChannel } from "@/inngest/functions/helloWorld";
     import { getSubscriptionToken, Realtime } from "@inngest/realtime";
+    import { getSession } from "@/app/lib/session"; // this could be any auth provider
 
-    export type HelloToken = Realtime.Token<typeof helloChannel, ["logs"]>;
+    export type UserChannelToken = Realtime.Token<typeof userChannel, ["ai"]>;
 
-    export async function fetchRealtimeSubscriptionToken(): Promise<HelloToken> {
-      const token = await getSubscriptionToken(getInngestApp(), {
-        channel: helloChannel(),
-        topics: ["logs"],
+    export async function fetchRealtimeSubscriptionToken(): Promise<UserChannelToken> {
+      const { userId } = await getSession();
+
+      // This creates a token using the Inngest API that is bound to the channel and topic:
+      const token = await getSubscriptionToken(inngest, {
+        channel: `user:${userId}`,
+        topics: ["ai"],
       });
 
       return token;
@@ -185,14 +216,15 @@ Subscribing can be done using an Inngest client that either has a valid signing 
     ```
 
     ```ts {{ title: "Express" }}
-    import { getInngestApp } from "@/inngest";
+    import { inngest } from "./inngest/client";
     import { getSubscriptionToken } from "@inngest/realtime";
-    import { getAuth } from "src/auth"; // this could be any auth provider
+    import { getSession } from "src/session"; // this could be any auth provider
 
-    app.post("/get-subscribe-token", async (req, res) => {
-      const { userId } = getAuth(req)
+    app.post("/api/get-subscribe-token", async (req, res) => {
+      const { userId } = getSession(req)
 
-      const token = await getSubscriptionToken(getInngestApp(), {
+      // This creates a token using the Inngest API that is bound to the channel and topic:
+      const token = await getSubscriptionToken(inngest, {
         channel: `user:${userId}`,
         topics: ["ai"],
       })
@@ -211,11 +243,15 @@ Subscribing can be done using an Inngest client that either has a valid signing 
     // ex: ./app/page.tsx
     "use client";
 
+    // ℹ️ Import the hook from the hooks sub-package:
     import { useInngestSubscription } from "@inngest/realtime/hooks";
     import { useState } from "react";
     import { fetchRealtimeSubscriptionToken } from "./actions";
 
     export default function Home() {
+      // The hook automatically fetches the token from the server.
+      // The server checks that the user is authorized to subscribe to
+      // the channel and topic, then returns a token:
       const { data, error, freshData, state, latestData } = useInngestSubscription({
         refreshToken: fetchRealtimeSubscriptionToken,
       });
@@ -231,26 +267,30 @@ Subscribing can be done using an Inngest client that either has a valid signing 
     ```
 
     ```ts {{ title: "Basic subscribe" }}
-    import { subscribe, typeOnlyChannel } from "@inngest/realtime";
-    import { helloChannel } from "@/inngest/functions/helloWorld";
+    // ℹ️ Import the browser-specific subscribe function from the browser sub-package:
+    import { subscribe } from "@inngest/realtime/browser";
 
-    const token = await fetch("/api/get-subscribe-token", {
+    // The server checks that the user is authorized to subscribe to
+    // the channel and topic, then returns a token:
+    const { token } = await fetch("/api/get-subscribe-token", {
       method: "POST",
       credentials: "include",
     }).then(res => res.json());
 
-    const stream = await subscribe({
-      channel: typeOnlyChannel<typeof helloChannel>(),
-      topics: ["logs"],
-    });
+    // The token is bound to the channel and topic, so we can
+    // subscribe to the channel and topic:
+    const stream = await subscribe(token);
 
     for await (const message of stream) {
       console.log(message)
     }
     ```
-    
+
     </CodeGroup>
 
+
+    {/* TODO - We need other docs for typing - it's complex and needs more examples with different
+      frameworks and whatnot.
 
     <Info>
       Both Next.js Server Actions and `subscribe()` approaches offer a fully typed experience.
@@ -258,109 +298,17 @@ Subscribing can be done using an Inngest client that either has a valid signing 
       The Next.js Server Action relies on the `Realtime.Token<>` type helper to get a typed token.
 
       The `subscribe()` approach uses the `typeOnlyChannel()` helper to get a typed channel.
-    </Info>
+    </Info>*/}
 
     That's all you need to do to subscribe to a channel from the client!
   </Step>
 </Steps>
 
 
-### Subscribe from the backend
-
-Subscribing on the backend is simple:
-
-<CodeGroup>
-
-```ts {{ title: "Typed channels (recommended)" }}
-import { subscribe } from "@inngest/realtime";
-import { userChannel } from "./channels";
-
-const stream = await subscribe({
-  channel: userChannel("123"),
-  topics: ["ai"], // subscribe to one or more topics in the user channel
-});
-
-// The returned `stream` from `subscribe()` is a `ReadableStream` that can be
-// used with `getReader()`
-
-// Example 1: ReadableStream
-// Example 1: ReadableStream
-const reader = stream.getReader();
-const { done, value } = await reader.read();
-if (!done) {
-  console.log(value); // `value` is fully typed
-}
-
-// Example 2: Convert to an async iterator to enable for await loops
-async function* streamAsyncIterator<T>(stream: ReadableStream<T>): AsyncGenerator<T> {
-  // Get a lock on the stream
-  const reader = stream.getReader();
-
-  try {
-    while (true) {
-      // Read from the stream
-      const { done, value } = await reader.read();
-      // Exit if we're done
-      if (done) return;
-      // Else yield the chunk
-      yield value;
-    }
-  } finally {
-    reader.releaseLock();
-  }
-}
-
-for await (const message of streamAsyncIterator(stream)) {
-  console.log(message); // `message` is fully typed
-}
-```
-
-```ts {{ title: "Minimal (untyped)" }}
-import { subscribe } from "@inngest/realtime";
-
-const stream = await subscribe({
-  channel: "user:123",
-  topics: ["ai"], // subscribe to one or more topics in the user channel
-});
-
-// The returned `stream` from `subscribe()` is a `ReadableStream` that can be
-// used with `getReader()`
-
-// Example 1: ReadableStream
-const reader = stream.getReader();
-const { done, value } = await reader.read();
-if (!done) {
-  console.log(value); // `value` is fully typed
-}
 
 
-// Example 2: Convert to an async iterator to enable for await loops
-async function* streamAsyncIterator<T>(stream: ReadableStream<T>): AsyncGenerator<T> {
-  // Get a lock on the stream
-  const reader = stream.getReader();
 
-  try {
-    while (true) {
-      // Read from the stream
-      const { done, value } = await reader.read();
-      // Exit if we're done
-      if (done) return;
-      // Else yield the chunk
-      yield value;
-    }
-  } finally {
-    reader.releaseLock();
-  }
-}
-
-for await (const message of streamAsyncIterator(stream)) {
-  console.log(message); // `message` is fully typed
-}
-```
-</CodeGroup>
-
-
-## Concepts
+{/*
 
 ### Channels
 
@@ -382,6 +330,8 @@ Benefits of separating data by topics include:
 ### Subscription Tokens
 
 Subscription tokens allow you to subscribe to the specified channel's topics. Tokens expire 1 minute after creation for security purposes. Once connected, you do not need to manage authentication or re-issue tokens to keep the connection active.
+
+*/}
 
 ## SDK Support
 
