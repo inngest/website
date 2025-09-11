@@ -16,31 +16,6 @@ Realtime enables you to stream updates from your Inngest functions to your users
 
 Realtime user experience is a core requirement for any web application, especially when long-running tasks are involved. This is supported natively in Inngest without any additional infrastructure or configuration. Inngest manages the WebSocket server and the connection to your users.
 
-**Jump to a guide**:
-
-
-<CardGroup cols={2}>
-
-  <Card
-    href="/docs/features/realtime/react-hooks"
-    title={"Use Realtime React hooks in Next.js"}
-    icon={<RiNextjsFill className="text-basis h-8 w-8"/>}
-    iconPlacement="top"
-  >
-   Leverage the `useInngestSubscription()` hook to subscribe to realtime streams in your Next.js application.
-  </Card>
-
-  <Card
-    href="/docs/examples/realtime"
-    title={"Explore patterns and examples"}
-    icon={<RiNodejsFill className="text-basis h-8 w-8"/>}
-    iconPlacement="top"
-  >
-   Use Realtime to stream updates from one or multiple Inngest functions, or to implement a Human-in-the-Loop mechanism.
-  </Card>
-
-</CardGroup>
-
 ## Concepts
 
 There are two core parts of Realtime: **publishing** and **subscribing**. You **publish** data from your functions and **subscribe** to data in your application, either browser or server.
@@ -81,13 +56,18 @@ deno add jsr:@inngest/realtime
 ```
 </CodeGroup>
 
+<Info>
+  This guide requires `@inngest/realtime` version `0.4.0` or higher.
+</Info>
+
 ### Publishing
 
 To publish data from your Inngest functions, you'll need to add the `realtimeMiddleware()` to your Inngest client. This will automatically add the `publish()` function to your Inngest functions.
 
 ```ts {{ title: "client.ts" }}
 import { Inngest } from "inngest";
-import { realtimeMiddleware } from "@inngest/realtime";
+// ℹ️ Import the middleware from the middleware sub-package:
+import { realtimeMiddleware } from "@inngest/realtime/middleware";
 
 export const inngest = new Inngest({
   id: "my-app",
@@ -267,8 +247,7 @@ To subscribe to data on the client (browser), you'll need to create a subscripti
     ```
 
     ```ts {{ title: "Basic subscribe" }}
-    // ℹ️ Import the browser-specific subscribe function from the browser sub-package:
-    import { subscribe } from "@inngest/realtime/browser";
+    import { subscribe } from "@inngest/realtime";
 
     // The server checks that the user is authorized to subscribe to
     // the channel and topic, then returns a token:
@@ -332,6 +311,32 @@ Benefits of separating data by topics include:
 Subscription tokens allow you to subscribe to the specified channel's topics. Tokens expire 1 minute after creation for security purposes. Once connected, you do not need to manage authentication or re-issue tokens to keep the connection active.
 
 */}
+
+## Guides
+
+Explore guides for using realtime with different frameworks and patterns:
+
+<CardGroup cols={2}>
+
+  <Card
+    href="/docs/features/realtime/react-hooks"
+    title={"Use Realtime React hooks in Next.js"}
+    icon={<RiNextjsFill className="text-basis h-8 w-8"/>}
+    iconPlacement="top"
+  >
+   Leverage the `useInngestSubscription()` hook to subscribe to realtime streams in your Next.js application.
+  </Card>
+
+  <Card
+    href="/docs/examples/realtime"
+    title={"Explore patterns and examples"}
+    icon={<RiNodejsFill className="text-basis h-8 w-8"/>}
+    iconPlacement="top"
+  >
+   Use Realtime to stream updates from one or multiple Inngest functions, or to implement a Human-in-the-Loop mechanism.
+  </Card>
+
+</CardGroup>
 
 ## SDK Support
 
