@@ -94,41 +94,13 @@ await inngest_client.send(
 <GuideSection show="go">
 
 ```go {{ title: "Go" }}
-  import "github.com/inngest/inngestgo"
-
-  func main() {
-    client, err := inngestgo.NewClient(inngestgo.ClientOpts{
-		  AppID: "acme-storefront-app",
-    })
-    if err != nil {
-      panic(err)
-    }
-  }
+!snippet:path=snippets/go/docs/clients/new_client_acme_storefront_app.go
 ```
 
 Now with this client, you can send events from anywhere in your app. You can send a single event, or [multiple events at once](#sending-multiple-events-at-once).
 
 ```go {{ title: "Go" }}
-package main
-
-import "github.com/inngest/inngestgo"
-
-func main() {
-  // ...
-  // ...
-  
-  client.Send(context.Background(), inngestgo.Event{
-    Name: "storefront/cart.checkout.completed",
-    Data: map[string]any{
-      "cartId": "ed12c8bde",
-      "itemIds": []string{"9f08sdh84", "sdf098487", "0fnun498n"},
-      "account": map[string]any{
-        "id": 123,
-        "email": "test@example.com",
-      },
-    },
-  })
-}
+!snippet:path=snippets/go/docs/events/send_event_checkout_completed.go
 ```
 
 

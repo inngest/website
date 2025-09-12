@@ -44,13 +44,16 @@ export function rehypeParseCodeBlocks() {
                 path.join(process.cwd(), snippetRelPath),
                 "utf-8"
               );
-
-              node.children = [
-                {
-                  type: "text",
-                  value: formatSnippetFileContent(fileContent),
-                },
-              ];
+              try{
+                node.children = [
+                  {
+                    type: "text",
+                    value: formatSnippetFileContent(fileContent),
+                  },
+                ];
+              } catch (err) {
+                  throw new Error("Failed to format SnippetFileContent on file: " + snippetRelPath + " error:" + err.message);
+              }
             }
           }
         }
@@ -64,6 +67,8 @@ function formatSnippetFileContent(content) {
   let sourceLines = content.split("\n");
 
   let parsedLines = [];
+  let snippetLines = [];
+  let insideSnippet = false;
   for (let i = 0; i < sourceLines.length; i++) {
     const line = sourceLines[i];
     if (i > 0 && line.trim() === "" && sourceLines[i - 1].trim() === "") {
@@ -73,14 +78,20 @@ function formatSnippetFileContent(content) {
     }
 
     if (isSnippetStart(line)) {
-      // There's a start marker, so we must exclude all previous lines
-      parsedLines = [];
-      continue;
+      if(insideSnippet){
+        throw new Error("nested snippets not allow");
+      }
+      insideSnippet = true;
     } else if (isSnippetEnd(line)) {
-      // There's an end marker, so we must exclude all subsequent lines
-      break;
+     insideSnippet = false;
+    } else if (insideSnippet) {
+      snippetLines.push(line);
+    }else{
+      parsedLines.push(line)
     }
-    parsedLines.push(line);
+  }
+  if(snippetLines.length  > 0){
+    parsedLines = snippetLines 
   }
 
   // Remove leading whitespace lines
