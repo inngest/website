@@ -28,6 +28,6 @@ func sendEventCheckoutCompleted() {
 			},
 		},
 	})
-	// !snippet:start
+	// !snippet:end
 
 }

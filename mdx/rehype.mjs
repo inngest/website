@@ -68,6 +68,7 @@ function formatSnippetFileContent(content) {
   let sourceLines = content.split("\n");
 
   let parsedLines = [];
+  let snippetLines = [];
   let insideSnippet = false;
   for (let i = 0; i < sourceLines.length; i++) {
     const line = sourceLines[i];
@@ -85,8 +86,14 @@ function formatSnippetFileContent(content) {
     } else if (isSnippetEnd(line)) {
      insideSnippet = false;
     } else if (insideSnippet) {
-      parsedLines.push(line);
+      snippetLines.push(line);
+    }else{
+      parsedLines.push(line)
     }
+  }
+  
+  if(snippetLines.length ==0){
+    snippetLines = parsedLines
   }
 
   // Remove leading whitespace lines
@@ -107,6 +114,7 @@ function formatSnippetFileContent(content) {
 
   // Use this to trim left whitespace if necessary. This will prevent codeblocks
   // where everything is indented (e.g. code in a function)
+  console.log("HULU, parsed lines len=", parsedLines.length)
   const leftWhitespaceToTrim = parsedLines[0].match(/^\s*/)?.[0];
 
   parsedLines = parsedLines.map((line) => {
