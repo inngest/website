@@ -76,7 +76,7 @@ await inngest.send(events);
 // this `events` list will need to be <= 5000
 events := []inngestgo.Event{{Name: "<event-name>", Data: {}}}
 
-ids, err := inngestgo.SendMany(ctx, events)
+ids, err := client.SendMany(ctx, events)
 ```
 
 ```python {{ title: "Python" }}

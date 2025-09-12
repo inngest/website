@@ -93,16 +93,31 @@ await inngest_client.send(
 
 <GuideSection show="go">
 
-You can send a single event, or [multiple events at once](#sending-multiple-events-at-once).
+```go {{ title: "Go" }}
+  import "github.com/inngest/inngestgo"
 
+  func main() {
+    client, err := inngestgo.NewClient(inngestgo.ClientOpts{
+		  AppID: "acme-storefront-app",
+    })
+    if err != nil {
+      panic(err)
+    }
+  }
+```
+
+Now with this client, you can send events from anywhere in your app. You can send a single event, or [multiple events at once](#sending-multiple-events-at-once).
 
 ```go {{ title: "Go" }}
 package main
 
-import "github.com/inngest/inngest-go"
+import "github.com/inngest/inngestgo"
 
 func main() {
-  inngestgo.Send(context.Background(), inngestgo.Event{
+  // ...
+  // ...
+  
+  client.Send(context.Background(), inngestgo.Event{
     Name: "storefront/cart.checkout.completed",
     Data: map[string]any{
       "cartId": "ed12c8bde",
@@ -306,7 +321,7 @@ ids = await inngest_client.send(
 <GuideSection show="go">
 
 ```go
-_, err := inngestgo.SendMany(ctx, []inngestgo.Event{
+_, err := client.SendMany(ctx, []inngestgo.Event{
   {
     Name: "storefront/cart.checkout.completed",
     Data: data,
@@ -324,10 +339,10 @@ _, err := inngestgo.SendMany(ctx, []inngestgo.Event{
 
 ## Using Event IDs
 
-Each event sent to Inngest is assigned a unique Event ID. These `ids` are returned from `inngestgo.SendMany()` . Event IDs can be used to look up the event in the Inngest dashboard or via [the REST API](https://api-docs.inngest.com/docs/inngest-api/pswkqb7u3obet-get-an-event). You can choose to log or save these Event IDs if you want to look them up later.
+Each event sent to Inngest is assigned a unique Event ID. These `ids` are returned from `client.SendMany()` . Event IDs can be used to look up the event in the Inngest dashboard or via [the REST API](https://api-docs.inngest.com/docs/inngest-api/pswkqb7u3obet-get-an-event). You can choose to log or save these Event IDs if you want to look them up later.
 
 ```go
-ids, err := inngestgo.SendMany(ctx, []inngestgo.Event{
+ids, err := client.SendMany(ctx, []inngestgo.Event{
   {
     Name: "storefront/cart.checkout.completed",
     Data: data,
@@ -458,10 +473,17 @@ await inngest_client.send(
 ```go {{ title: "Go" }}
 package main
 
-import "github.com/inngest/inngest-go"
+import "github.com/inngest/inngestgo"
 
 func main() {
-  inngestgo.Send(context.Background(), inngestgo.Event{
+  client, err := inngestgo.NewClient(inngestgo.ClientOpts{
+		AppID: "core",
+  })
+  if err != nil {
+    panic(err)
+  }
+  
+  client.Send(context.Background(), inngestgo.Event{
     Name: "storefront/cart.checkout.completed",
     ID: "cart-checkout-completed-ed12c8bde",
     Data: map[string]any{
