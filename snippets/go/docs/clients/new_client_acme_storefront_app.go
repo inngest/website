@@ -1,9 +1,6 @@
 package client
 
-// !snippet:start
 import "github.com/inngest/inngestgo"
-
-// !snippet:end
 
 func createClientForStoreFrontApp() {
 	// !snippet:start

@@ -1,13 +1,10 @@
 package events
 
-// !snippet:start
 import (
 	"context"
 
 	"github.com/inngest/inngestgo"
 )
-
-// !snippet:end
 
 func sendEventCheckoutCompleted() {
 	client, err := inngestgo.NewClient(inngestgo.ClientOpts{
