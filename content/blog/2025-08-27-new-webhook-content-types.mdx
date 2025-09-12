@@ -1,0 +1,42 @@
+---
+heading: "New webhook content types"
+image: /assets/blog/2025-06-23-python-v0.5/featured-image.png
+showSubtitle: true
+subtitle: We've added support for x-www-form-urlencoded and multipart/form-data webhook content types.
+date: 2025-08-27
+author: Aaron Harper
+category: product-updates
+---
+
+Webhooks are now more flexible with the addition of `x-www-form-urlencoded` and `multipart/form-data` content types. When sending a request with either of these content types, your webhook transform will have access to both a JSON object representation of the body and the raw body as a string.
+
+For example, if you send a webhook request like the following:
+
+```sh
+curl https://inn.gs/e/REDACTED \
+  -H "content-type: application/x-www-form-urlencoded" \
+  -d "name=Alice&messages=hello&messages=world"
+```
+
+And your webhook transform looks like this:
+```js
+function transform(json, headers, queryParams, raw) {
+  return {
+    name: "hi",
+    data: { json, raw },
+  };
+};
+```
+
+Then the resulting event data will be:
+```json
+{
+  "json": {
+    "messages": ["hello", "world"],
+    "name": ["Alice"]
+  },
+  "raw": "name=Alice&messages=hello&messages=world"
+}
+```
+
+Note that the JSON object's values are always arrays of strings.
