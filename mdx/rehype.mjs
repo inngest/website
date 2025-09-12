@@ -44,13 +44,17 @@ export function rehypeParseCodeBlocks() {
                 path.join(process.cwd(), snippetRelPath),
                 "utf-8"
               );
-
-              node.children = [
-                {
-                  type: "text",
-                  value: formatSnippetFileContent(fileContent),
-                },
-              ];
+              try{
+                node.children = [
+                  {
+                    type: "text",
+                    value: formatSnippetFileContent(fileContent),
+                  },
+                ];
+              } catch (err) {
+                  console.error("Failed to format SnippetFileContent:", snippetRelPath);
+                  throw err;
+              }
             }
           }
         }
@@ -75,7 +79,7 @@ function formatSnippetFileContent(content) {
 
     if (isSnippetStart(line)) {
       if(insideSnippet){
-        throw new Error("nested snippets not allowed");
+        throw new Error("nested snippets not allow");
       }
       insideSnippet = true;
     } else if (isSnippetEnd(line)) {

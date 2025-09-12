@@ -10,7 +10,12 @@ import (
 // !snippet:end
 
 func sendEventCheckoutCompleted() {
-
+	client, err := inngestgo.NewClient(inngestgo.ClientOpts{
+		AppID: "acme-storefront-app",
+	})
+	if err != nil {
+		panic(err)
+	}
 	// !snippet:start
 	client.Send(context.Background(), inngestgo.Event{
 		Name: "storefront/cart.checkout.completed",
@@ -23,5 +28,6 @@ func sendEventCheckoutCompleted() {
 			},
 		},
 	})
-	// !snippet:end
+	// !snippet:start
+
 }
