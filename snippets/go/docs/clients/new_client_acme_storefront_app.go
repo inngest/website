@@ -15,4 +15,6 @@ func createClientForStoreFrontApp() {
 		panic(err)
 	}
 	// !snippet:end
+
+	_ = client
 }
