@@ -52,8 +52,7 @@ export function rehypeParseCodeBlocks() {
                   },
                 ];
               } catch (err) {
-                  console.error("Failed to format SnippetFileContent:", snippetRelPath);
-                  throw err;
+                  throw new Error("Failed to format SnippetFileContent on file: " + snippetRelPath + " error:" + err.message);
               }
             }
           }
@@ -91,9 +90,8 @@ function formatSnippetFileContent(content) {
       parsedLines.push(line)
     }
   }
-  
-  if(snippetLines.length ==0){
-    snippetLines = parsedLines
+  if(snippetLines.length  > 0){
+    parsedLines = snippetLines 
   }
 
   // Remove leading whitespace lines
@@ -114,7 +112,6 @@ function formatSnippetFileContent(content) {
 
   // Use this to trim left whitespace if necessary. This will prevent codeblocks
   // where everything is indented (e.g. code in a function)
-  console.log("HULU, parsed lines len=", parsedLines.length)
   const leftWhitespaceToTrim = parsedLines[0].match(/^\s*/)?.[0];
 
   parsedLines = parsedLines.map((line) => {
