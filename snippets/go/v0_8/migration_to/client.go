@@ -1,6 +1,5 @@
 package migration
 
-// !snippet:start
 import (
 	"github.com/inngest/inngestgo"
 )
