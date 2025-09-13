@@ -151,7 +151,7 @@ Consider this simple [Inngest function](/docs/learn/inngest-functions) which sen
 
 <CodeGroup>
 ```go
-!snippet:path=snippets/go/docs/multi_step_functions/v1/send_activation_email_function.go
+!snippet:path=snippets/go/docs/functions/multi_step_functions/v1/send_activation_email_function.go
 ```
 </CodeGroup>
 
@@ -166,7 +166,7 @@ First, let's convert this function into a multi-step function:
 - Wrap `sendEmail()` call in a [`step.Run()`](https://pkg.go.dev/github.com/inngest/inngestgo@v0.7.4/step#Run) method.
 
 ```go
-!snippet:path=snippets/go/docs/multi_step_functions/v2/send_activation_email_function.go
+!snippet:path=snippets/go/docs/functions/multi_step_functions/v2/send_activation_email_function.go
 ```
 
 The main difference is that we've wrapped our `sendEmail()` call in a `step.run()` call. This is how we tell Inngest that this is an individual step in our function. This step can be retried independently, just like a single-step function would.
@@ -181,7 +181,7 @@ To do this, we can use the [`step.WaitForEvent()`](https://pkg.go.dev/github.com
 
 <CodeGroup>
 ```go
-!snippet:path=snippets/go/docs/multi_step_functions/v3/send_activation_email_function.go
+!snippet:path=snippets/go/docs/functions/multi_step_functions/v3/send_activation_email_function.go
 ```
 </CodeGroup>
 
@@ -193,7 +193,7 @@ Finally, we can use the `postCreated` variable to send the reminder email if the
 
 <CodeGroup>
 ```go
-!snippet:path=snippets/go/docs/multi_step_functions/v4/send_activation_email_function.go
+!snippet:path=snippets/go/docs/functions/multi_step_functions/v4/send_activation_email_function.go
 ```
 </CodeGroup>
 

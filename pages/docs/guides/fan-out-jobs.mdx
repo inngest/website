@@ -115,7 +115,7 @@ Since Inngest is powered by events, implementing fan-out is as straightforward a
 First, set up a `/signup` route handler to send an event to Inngest when a user signs up:
 
 ```go {{ filename: "main.go" }}
-!snippet:path=snippets/go/docs/fan_out_jobs/main.go
+!snippet:path=snippets/go/docs/examples/fan_out_jobs/main.go
 ```
 
 Now, with this event, any function using `"app/user.signup"` as its event trigger will be automatically invoked.
