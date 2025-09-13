@@ -9,7 +9,6 @@ import (
 )
 
 func main() {
-
 	client, _ := inngestgo.NewClient(inngestgo.ClientOpts{
 		AppID: "my_app",
 	})
