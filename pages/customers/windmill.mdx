@@ -41,7 +41,7 @@ Windmill integrates with [20+ productivity tools](https://gowindmill.com/integra
 
 ![Illustration of webhooks leading to pressure on database and rate-limited workflows](/assets/customers/windmill/diagram.png)
 
-By using Inngest's [retries](https://www.inngest.com/docs/features/inngest-functions/error-retries/retries), [rate limit control](https://www.inngest.com/docs/guides/rate-limiting), and [batching](https://www.inngest.com/docs/guides/batching) features, their integrations are guaranteed to run reliably, without data loss or database outage:
+By using Inngest's [retries](/docs/features/inngest-functions/error-retries/retries?ref=case-study-windmill), [rate limit control](/docs/guides/rate-limiting?ref=case-study-windmill), and [batching](/docs/guides/batching?ref=case-study-windmill) features, their integrations are guaranteed to run reliably, without data loss or database outage:
 
 > We got tons of webhooks, we put everything onto a queue. **We can have huge spikes in messages**. **The load during the day is obviously much higher than the load at night**.
 **We want to spread out the load on our database so that it does not all come at once**. And we also don't miss anything. So, we **use Innngest to help kind of spread out that load as we're pulling in all this data**.
@@ -67,7 +67,7 @@ Windy interacts with employees as a Slack bot, relying on Inngest's event-driven
 />
 
 
-This conversational UX pattern was made possible by relying on Inngest's [priority queues](https://www.inngest.com/docs/guides/priority), as Max explains:
+This conversational UX pattern was made possible by relying on Inngest's [priority queues](/docs/guides/priority?ref=case-study-windmill), as Max explains:
 
 > **A lot of our interfaces in Slack**, and so when we're responding to a message, **we want to as quickly as possible let the user know that we saw the message**. And so when we get a message from Slack (via a webhook), **we'll put it on a prioritized queue** before proceeding with the LLM workflow.
 
@@ -96,9 +96,9 @@ And so the ability to have **multiple steps in one workflow and break things apa
 
 With Inngest, Max and his teams get all the tools to reliably operate their reporting workflows, with:
 
-- [**Durability**](https://www.notion.so/How-B-RSkin-Tactical-Supply-Co-achieved-100-event-deliverability-by-switching-from-Kafka-to-Innges-238b64753bbd8030843ccc2bed56915b?pvs=21): Inngest's steps split each workflow into retriable steps, gracefully handling any 3rd party or LLM APIs failures.
-- [**Multitenancy and Flow control**](https://www.inngest.com/docs/guides/flow-control): Evenly spreading the execution of reporting workflows, to avoid scenarios when a single user asking multiple reports slows down the global user experience.
-- [**Observability**](https://www.inngest.com/docs/platform/monitor/observability-metrics): Each workflow's step becomes introspectable with access to its input and output, along with metrics to quickly evaluate the overall user experience.
+- [**Durability**](/customers/baerskin-tactical?ref=case-study-windmill): Inngest's steps split each workflow into retriable steps, gracefully handling any 3rd party or LLM APIs failures.
+- [**Multitenancy and Flow control**](/docs/guides/flow-control?ref=case-study-windmill): Evenly spreading the execution of reporting workflows, to avoid scenarios when a single user asking multiple reports slows down the global user experience.
+- [**Observability**](/docs/platform/monitor/observability-metrics?ref=case-study-windmill): Each workflow's step becomes introspectable with access to its input and output, along with metrics to quickly evaluate the overall user experience.
 
 ## Building AI Agents with Inngest
 
@@ -106,4 +106,4 @@ Inngest's orchestration engine, with its rich SDK and Flow Control features, ena
 
 From quickly getting their 20+ productivity tool integrations off the ground and scaling them to millions of events per day to powering the swift Slack user experience and long-running workflow of their Windy AI Agents, **Inngest has been critical in developing, shipping, and scaling Windmill**.
 
-If you're looking for a better way to orchestrate workflows, manage concurrency, and scale AI-powered applications, [**book a demo**](https://www.inngest.com/contact?ref=case-study-windmill) today and see how Inngest can streamline your infrastructure.
+If you're looking for a better way to orchestrate workflows, manage concurrency, and scale AI-powered applications, [**book a demo**](/contact?ref=case-study-windmill) today and see how Inngest can streamline your infrastructure.

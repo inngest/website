@@ -1,0 +1,86 @@
+---
+heading: "Iteration is the new product moat"
+image: /assets/blog/announcing-inngest-series-a/cover.jpg
+showSubtitle: false
+subtitle: "We raised a $21M Series A to help companies ship and iterate faster. Inngest's step-function architecture and built-in observability let any engineer quickly productionize workflows and agents—without touching infrastructure."
+date: 2025-09-16
+author: Tony Holdstock-Brown
+disableCTA: false
+featured: true
+---
+
+_*TLDR; we raised a $21M Series A to help companies ship and iterate faster. Inngest's step-function architecture and built-in observability let any engineer quickly productionize workflows and agents—without touching infrastructure. This round was led by [Altimeter](https://www.altimeter.com/home), with continued participation from [A16z](https://a16z.com/), [Notable](https://www.notablecap.com/), [Afore](https://www.afore.vc/), and [Guillermo Rauch](https://x.com/rauchg).*_
+
+_____
+
+Every product is becoming an AI product. And when everyone has access to the same models, APIs and infra, the real advantage isn't what you build—it's how fast you iterate. 
+
+For a little while, the biggest bottleneck was just getting from 0-1. Vibe coding tools like Replit have all but solved this part, helping anyone prototype ideas quickly, and collaboratively. The new problem (or really the persisting problem) is what comes next. You can't vibe code infrastructure, queues, workflows, integrations… the core part of real-world products.
+
+But options for building reliable solutions that scale are limited:
+
+- Legacy queuing solutions still require backend engineers to hand-roll custom workflows, retries, and state management. This is useful for strictly defined workflows, but brutal for managing modern high complexity products like those using non-deterministic AI models.
+- Modern low-code orchestration tools now abstract away complexity in building background jobs and queues, but are severely limited in ability to handle complex workflows—like those requiring observability, flow control, and fairness.
+- And of course durable execution allows you to write workflows, but these tools weren't built with the the ability to observe, replay, and iterate on baseline features like real-time communication to the frontend—table stakes for AI or otherwise modern products.
+
+There's a theme here. None of these solutions consider how fast engineers are now forced to iterate—to create products that actually persist. With separate tools for queueing, events, tracing, and resolving issues, the gap between building and iterating is widening.
+
+## The case for iterative execution
+
+We believe every engineer must be empowered to build, ship, and iterate on highly reliable products, without being weighed down by bad abstractions, complex infrastructure, and disconnected tools.
+
+It's no longer enough to build systems that *withstand* change.
+
+We need systems that *embrace* change.
+
+We need to shift from code that wrangles streams to code that reacts to live events. From hand-wired queues to functions that track their own progress. From death-by-DAGs to simple steps in code. From debugging blind to replaying exactly what happened, and fixing fast.
+
+It's time to shift from durable workflows to durable *products*—built with an expectation of change.
+
+This is **iterative execution.** It's marked by 4 key features:
+
+1. **Durable**
+    
+    Every workflow must be stateful and resilient by default, so failures, restarts, or outages don't stop a run from eventually completing. This is the non-negotiable baseline for all modern workflows, but it hasn't gone far enough. Modern durable execution now requires *flow control* to allow engineers to meter runs with respect to upstream rate limits, or limit how often their users can execute runs.
+    
+2. **Observable**
+    
+    Products need to grow and adapt faster than ever—whether to failures, new models, or changing inputs. Execution must be fully observable, testable, replayable, and recoverable—without requiring users to match information across tooling.  If you can't see and replay functions, you're flying blind. And if you can't easily adapt your code, locally test, then push to production in the same breath you've lost an edge.
+    
+3. **Asynchronous**
+    
+    AI calls are non-deterministic, taking seconds or minutes to complete, and often depend on human-in-the-loop inputs. This *must* be asynchronous. And to architect this well, event-driven orchestration allows functions to instantly react to events from users and tools, dynamically branching or resuming work when new information arrives. Truly robust asynchronous and event-driven platforms support scale in the same codebase, so parallelism, resource allocation, and business logic can be tuned without redeploys.
+    
+
+4. **Abstracted**
+    
+    In order to build and ship quickly, teams can't be bottlenecked on backend engineers. APIs need to be simple, understandable, and declarative—and work in your existing codebase, on your current cloud, so that any engineer can ship quickly.
+
+These are the principles we held tight while building Inngest. 
+
+## How Inngest is helping teams iterate faster
+
+When feature gaps can be closed in hours, **speed of iteration becomes the new moat**. Inngest's platform lets teams build and iterate on workflows directly in their existing codebase—without changing underlying infrastructure. A step-function architecture with built-in observability makes it incredibly easy for product engineers to ship high-complexity products in days—not months. 
+
+Erik Munson, Founding Engineer at Sequoia-backed startup, [Day.ai](/customers/day-ai), shares just what made building reliable AI-enabled products so difficult, and how Inngest helps:
+
+> We had problems with just managing the complexity of flows. In a complicated event-driven system, things can take on a life of their own—you get overloaded in one component, or components are spamming each other. A big advantage of Inngest is being able to debounce, throttle, and set concurrency on different parts of the system. This enables us to have everything flow into one choke point, which reduces unpredictability. We know that point will flow in a specific way, no matter what gets thrown at it.
+> 
+
+[SoundCloud](/customers/soundcloud) CTO, Matthew Drooker, shares an refreshingly pragmatic view of how Inngest helps his team focus on higher leverage work:
+
+> I wanted to find a solution that would let us just write the code, not manage the infrastructure around queues, concurrency, retries, error handling, prioritization... I don't think that developers should be configuring and managing queues themselves in 2024.
+> 
+
+## **Where we go from here**
+
+The only thing we know about the next 12-18 months is how much change it will bring. 
+
+We're building for the teams leaning into that uncertainty, with foundational resiliency designed to help them adapt at the speed of thought. To further support this mission, we're using our latest funding round to double-down in four key areas: 
+
+- Pushing access to the endpoints to democratize control
+- Accelerating the prototype → production pipeline
+- Increasing observability built for AI
+- Broadening agentic support
+
+There's a **lot** more to say about each, which we'll share next week to kick off our September launch series. Follow us on [X](https://x.com/inngest) and [LinkedIn](https://www.linkedin.com/company/inngest-inc/) for more.

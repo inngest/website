@@ -116,6 +116,14 @@ First, set up a `/signup` route handler to send an event to Inngest when a user 
 
 ```go {{ filename: "main.go" }}
 func main() {
+    // Initialize the Inngest SDK client
+    client, err := inngestgo.NewClient(inngestgo.ClientOpts{
+		  AppID: "core",
+	  })
+	  if err != nil {
+		  panic(err)
+	  }
+
     // Initialize your HTTP server
     mux := http.NewServeMux()
 
@@ -136,7 +144,7 @@ func main() {
         }
 
         // Send event to Inngest
-        _, err := inngestgo.Send(r.Context(), inngestgo.Event{
+        _, err := client.Send(r.Context(), inngestgo.Event{
             Name: "app/user.signup",
             Data: map[string]interface{}{
                 "user": map[string]interface{}{
@@ -164,8 +172,8 @@ Next, define two functions: `sendWelcomeEmail` and `startStripeTrial`. As you ca
 
 ```go {{ filename: "inngest/functions.go" }}
 import (
-    "github.com/inngest/inngest-go"
-    "github.com/inngest/inngest-go/step"
+    "github.com/inngest/inngestgo"
+    "github.com/inngest/inngestgo/step"
 )
 
 func sendWelcomeEmail(client inngestgo.Client) (inngestgo.ServableFunction, error) {

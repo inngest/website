@@ -83,7 +83,7 @@ When using the Inngest SDK locally, it tries to detect if the dev server is runn
 ```ts {{ title: "Node.js" }}
 import { Inngest } from "inngest";
 
-const inngest = new Inngest({ id: "my-app" });
+const inngest = new Inngest({ id: "my_app" });
 await inngest.send({
   name: "user.avatar.uploaded",
   data: { url: "https://a-bucket.s3.us-west-2.amazonaws.com/..." },
@@ -103,10 +103,14 @@ await inngest_client.send(
 ```go {{ title: "Go" }}
 package main
 
-import "github.com/inngest/inngest-go"
+import "github.com/inngest/inngestgo"
 
 func main() {
-  inngestgo.Send(context.Background(), inngestgo.Event{
+  client, err := inngestgo.NewClient(inngestgo.ClientOpts{
+		AppID: "my_app",
+	})
+  
+  client.Send(context.Background(), inngestgo.Event{
     Name: "user.avatar.uploaded",
     Data: map[string]any{"url": "https://a-bucket.s3.us-west-2.amazonaws.com/..."},
   })
