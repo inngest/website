@@ -70,6 +70,11 @@ export default function Hero() {
                       scale: 1.5,
                     },
                     {
+                      src: "/assets/customers/cohere-logo-white.svg",
+                      name: "Cohere",
+                      scale: 1.5,
+                    },
+                    {
                       src: "/assets/customers/tripadvisor.svg",
                       name: "TripAdvisor",
                       scale: 1.4,
@@ -88,11 +93,6 @@ export default function Hero() {
                       src: "/assets/customers/browser-use-white.svg",
                       name: "Browser Use",
                       scale: 1.5,
-                    },
-                    {
-                      src: "/assets/customers/gitbook-logo-white.svg",
-                      name: "Gitbook",
-                      scale: 1.3,
                     },
                   ].map(({ src, name, scale = 1 }, idx) => (
                     <Image
