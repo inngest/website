@@ -21,6 +21,7 @@ import { Button } from "src/components/RedesignedLanding/Button";
 import PlatformPopover, { platformDropdown } from "./PlatformPopover";
 import ResourcePopover, { resourceDropdown } from "./ResourcePopover";
 import { featuredBlogPost } from "./helpers";
+import classNames from "src/utils/classNames";
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -29,7 +30,10 @@ export default function Header() {
     <header className="sticky left-0 right-0 top-0 z-50 w-full border-b border-stone-700 bg-stone-950 backdrop-blur-sm">
       <nav
         aria-label="Global"
-        className="m-auto flex max-w-container-desktop  items-center justify-between p-6 lg:px-8"
+        className={classNames(
+          "m-auto flex max-w-container-desktop  items-center justify-between p-6 lg:px-8",
+          mobileMenuOpen && "hidden lg:block"
+        )}
       >
         <div className="relative z-10 flex items-center gap-x-6 font-circular text-sm font-medium leading-[1.05rem] text-neutral-50">
           <Link href="/" className="-m-1.5 p-1.5">
@@ -140,7 +144,7 @@ export default function Header() {
       >
         <div className="fixed inset-0 z-10" />
         <DialogPanel className="fixed inset-y-0 right-0 z-10 w-full overflow-y-auto bg-stone-950 px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
-          <div className="mt-4 flex items-center justify-between">
+          <div className="flex h-[36px] items-center justify-between">
             <Link
               href="/"
               className="-m-1.5 p-1.5"
