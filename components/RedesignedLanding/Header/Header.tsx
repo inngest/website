@@ -27,7 +27,12 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <header className="sticky left-0 right-0 top-0 z-50 w-full border-b border-stone-700 bg-stone-950 backdrop-blur-sm">
+    <header
+      className={classNames(
+        "sticky left-0 right-0 top-0 z-50 w-full border-b border-stone-700 bg-stone-950 backdrop-blur-sm",
+        mobileMenuOpen && "border-none"
+      )}
+    >
       <nav
         aria-label="Global"
         className={classNames(
