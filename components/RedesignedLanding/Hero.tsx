@@ -86,9 +86,9 @@ export default function Hero() {
                 scale: 1.5,
               },
               {
-                src: "/assets/customers/gitbook-logo-white.svg",
-                name: "Gitbook",
-                scale: 1.3,
+                src: "/assets/customers/cohere-logo-white.svg",
+                name: "Cohere",
+                scale: 1.5,
               },
             ].map(({ src, name, scale = 1 }, idx) => (
               <Image

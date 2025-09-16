@@ -63,9 +63,9 @@ export function AIPage({
                 scale: 1.3,
               },
               {
-                src: "/assets/customers/otto-logo.svg",
-                name: "Otto",
-                scale: 0.7,
+                src: "/assets/customers/cohere-logo-white.svg",
+                name: "Cohere",
+                scale: 1.3,
               },
               // {
               //   src: "/assets/customers/leap-logo-white.svg",
