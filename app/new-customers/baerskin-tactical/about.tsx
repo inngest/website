@@ -12,19 +12,25 @@ export default function About() {
             <div className="flex flex-col justify-between md:flex-row">
               {/* Quote */}
               <div className="order-1 max-w-[48rem] md:order-2">
-                <blockquote className="max-w-4xl font-whyte text-2xl font-light leading-[120%] tracking-[-1.2px] text-[#FEFEFE] md:text-2xl md:leading-relaxed md:tracking-normal md:text-white">
-                  "We figured out{" "}
-                  <span className="font-whyteInktrapVariable text-2xl font-normal leading-[120%] tracking-[-1.2px] text-[#FEFEFE] underline md:text-3xl md:leading-[1.4] md:tracking-[-0.05em] md:text-[#FAFAF9]">
-                    we were losing roughly 6% of events going through Kafka
-                  </span>{" "}
-                  with customers complaining they didn't get their order
-                  confirmation emails. But it was super hard to tackle.{" "}
-                  <span className="font-whyteInktrapVariable text-2xl font-normal leading-[120%] tracking-[-1.2px] text-[#FEFEFE] underline md:text-3xl md:leading-[1.4] md:tracking-[-0.05em] md:text-[#FAFAF9]">
-                    Now that we switched to Inngest, we're super confident that
-                    everything is working
-                  </span>{" "}
-                  as what I'll call tip top shape."
-                </blockquote>
+                <div className="flex">
+                  {/* Hanging quote mark */}
+                  <div className="font-whyte text-4xl font-light leading-[120%] tracking-[-1.2px] text-stone-400">
+                    "
+                  </div>
+                  <blockquote className="max-w-4xl font-whyte text-2xl font-light leading-[120%] tracking-[-1.2px] text-[#FEFEFE] md:text-2xl md:leading-relaxed md:tracking-normal md:text-white">
+                    We figured out{" "}
+                    <span className="font-whyteInktrapVariable text-2xl font-normal leading-[120%] tracking-[-1.2px] text-[#FEFEFE] underline md:text-3xl md:leading-[1.4] md:tracking-[-0.05em] md:text-[#FAFAF9]">
+                      we were losing roughly 6% of events going through Kafka
+                    </span>{" "}
+                    with customers complaining they didn't get their order
+                    confirmation emails. But it was super hard to tackle.{" "}
+                    <span className="font-whyteInktrapVariable text-2xl font-normal leading-[120%] tracking-[-1.2px] text-[#FEFEFE] underline md:text-3xl md:leading-[1.4] md:tracking-[-0.05em] md:text-[#FAFAF9]">
+                      Now that we switched to Inngest, we're super confident
+                      that everything is working
+                    </span>{" "}
+                    as what I'll call tip top shape."
+                  </blockquote>
+                </div>
               </div>
 
               {/* Portrait and attribution */}
