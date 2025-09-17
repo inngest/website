@@ -1,10 +1,6 @@
 export default function BaerskinTacticalHeader() {
   return (
-    <div
-      className="relative h-[calc(100vh-89px)] overflow-hidden bg-[#fafaf9]"
-      // have to do this because the header is 89px high
-      //   style={{ height: "calc(100vh - 89px)" }}
-    >
+    <div className="relative h-full overflow-hidden bg-[#fafaf9]">
       {/* Geometric background shapes */}
       <div className="absolute inset-0">
         <div className="absolute right-0 top-0 h-full w-2/3 origin-top-right skew-x-12 transform bg-[#e2e2e2]"></div>
@@ -13,56 +9,56 @@ export default function BaerskinTacticalHeader() {
 
       {/* Desktop layout - Extra large screens (1280px+) */}
       <div className="relative z-10 hidden h-full xl:block">
-        {/* Left content area */}
-        <div className="flex h-full items-end p-12 pb-36">
-          <div className="max-w-5xl">
-            <h1 className="text-balance font-whyte text-7xl font-normal leading-none tracking-tight text-slate-800">
+        <div className="mx-auto flex h-full max-w-container-desktop items-start justify-between gap-6 px-8 pb-20 2xl:gap-12">
+          {/* Left content */}
+          <div className="max-w-5xl self-end pb-36">
+            <h1 className="text-balance font-whyte text-7xl font-normal leading-none tracking-tight text-stone-800">
               How BÆRSkin Tactical Supply Co. achieved{" "}
-              <span className="font-whyteInktrap font-bold">
+              <span className="font-whyteInktrap">
                 100% event deliverability
               </span>{" "}
               by switching from Kafka to Inngest.
             </h1>
           </div>
-        </div>
 
-        {/* Right sidebar */}
-        <div className="absolute right-12 top-12 flex h-[calc(100%-6rem)] w-96 flex-col justify-between pb-8">
-          {/* Company info grid */}
-          <div className="space-y-8">
-            <div className="grid grid-cols-2 gap-8">
-              <InfoBlock
-                header="Case Study:"
-                description="BÆRSkin Tactical Supply Co."
-              />
-              <InfoBlock
-                header="Use Cases:"
-                description="Analytics + Operational Data Processing"
-              />
+          {/* Right sidebar */}
+          <div className="mr-5 mt-12 flex w-96 flex-col justify-between pb-8">
+            {/* Company info grid */}
+            <div className="space-y-8">
+              <div className="grid grid-cols-2 gap-8">
+                <InfoBlock
+                  header="Case Study:"
+                  description="BÆRSkin Tactical Supply Co."
+                />
+                <InfoBlock
+                  header="Use Cases:"
+                  description="Analytics + Operational Data Processing"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-8">
+                <InfoBlock header="Industry:" description="E-Commerce" />
+                <InfoBlock header="Employees:" description="20—100" />
+              </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-8">
-              <InfoBlock header="Industry:" description="E-Commerce" />
-              <InfoBlock header="Employees:" description="20—100" />
-            </div>
-          </div>
+            {/* Company logo and details */}
+            <div className="space-y-6">
+              <div className="flex items-center space-x-3 py-28">
+                <BaerskinLogo />
+              </div>
 
-          {/* Company logo and details */}
-          <div className="space-y-6">
-            <div className="flex items-center space-x-3 pb-20">
-              <BaerskinLogo />
-            </div>
+              <div>
+                <p className="font-whyteMono text-2xl text-stone-800">[www]</p>
+                <p className="mb-6 font-whyteMono text-2xl font-normal text-stone-800">
+                  baerskintactical.com
+                </p>
 
-            <div>
-              <p className="text-2xl text-slate-800">[www]</p>
-              <p className="mb-6 text-2xl font-normal text-slate-800">
-                baerskintactical.com
-              </p>
-
-              <p className="font-circular text-2xl font-light leading-[1.4] text-slate-800">
-                Data-driven e-commerce platform powering 17 brand operating in
-                19 countries across the world.
-              </p>
+                <p className="pt-10 font-circular text-2xl font-light leading-[1.4] text-stone-800">
+                  Data-driven e-commerce platform powering 17 brand operating in
+                  19 countries across the world.
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -70,58 +66,58 @@ export default function BaerskinTacticalHeader() {
 
       {/* Tablet layout - Large screens (1024px-1279px) */}
       <div className="relative z-10 hidden h-full lg:block xl:hidden">
-        {/* Left content area */}
-        <div className="flex h-full items-end p-8 pb-24">
-          <div className="max-w-4xl">
-            <h1 className="text-balance font-whyte text-5xl font-normal leading-tight tracking-tight text-slate-800">
+        <div className="flex h-full items-start gap-8 p-8 pb-24">
+          {/* Left content */}
+          <div className="max-w-4xl self-end">
+            <h1 className="text-balance font-whyte text-5xl font-normal leading-tight tracking-tight text-stone-800">
               How BÆRSkin Tactical Supply Co. achieved{" "}
-              <span className="font-whyteInktrap font-bold">
+              <span className="font-whyteInktrap">
                 100% event deliverability
               </span>{" "}
               by switching from Kafka to Inngest.
             </h1>
           </div>
-        </div>
 
-        {/* Right sidebar - smaller */}
-        <div className="absolute right-8 top-8 flex h-[calc(100%-4rem)] w-80 flex-col justify-between pb-6">
-          {/* Company info grid */}
-          <div className="space-y-6">
-            <div className="grid grid-cols-2 gap-6">
-              <InfoBlockTablet
-                header="Case Study:"
-                description="BÆRSkin Tactical Supply Co."
-              />
-              <InfoBlockTablet
-                header="Use Cases:"
-                description="Analytics + Operational Data Processing"
-              />
-            </div>
+          {/* Right sidebar - smaller */}
+          <div className="mt-8 flex w-80 flex-col justify-between pb-6">
+            {/* Company info grid */}
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-6">
+                <InfoBlockTablet
+                  header="Case Study:"
+                  description="BÆRSkin Tactical Supply Co."
+                />
+                <InfoBlockTablet
+                  header="Use Cases:"
+                  description="Analytics + Operational Data Processing"
+                />
+              </div>
 
-            <div className="grid grid-cols-2 gap-6">
-              <InfoBlockTablet header="Industry:" description="E-Commerce" />
-              <InfoBlockTablet header="Employees:" description="20—100" />
-            </div>
-          </div>
-
-          {/* Company logo and details */}
-          <div className="space-y-4">
-            <div className="flex items-center space-x-3 pb-12">
-              <div className="scale-75">
-                <BaerskinLogo />
+              <div className="grid grid-cols-2 gap-6">
+                <InfoBlockTablet header="Industry:" description="E-Commerce" />
+                <InfoBlockTablet header="Employees:" description="20—100" />
               </div>
             </div>
 
-            <div>
-              <p className="text-xl text-slate-800">[www]</p>
-              <p className="mb-4 text-xl font-normal text-slate-800">
-                baerskintactical.com
-              </p>
+            {/* Company logo and details */}
+            <div className="space-y-4">
+              <div className="items-center justify-start space-x-3 py-12">
+                <div className="origin-left scale-75">
+                  <BaerskinLogo />
+                </div>
+              </div>
 
-              <p className="font-circular text-xl font-light leading-[1.4] text-slate-800">
-                Data-driven e-commerce platform powering 17 brand operating in
-                19 countries across the world.
-              </p>
+              <div>
+                <p className="text-xl text-stone-800">[www]</p>
+                <p className="mb-4 text-xl font-normal text-stone-800">
+                  baerskintactical.com
+                </p>
+
+                <p className="font-circular text-xl font-light leading-[1.4] text-stone-800">
+                  Data-driven e-commerce platform powering 17 brand operating in
+                  19 countries across the world.
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -131,11 +127,9 @@ export default function BaerskinTacticalHeader() {
       <div className="relative z-10 hidden flex-col p-8 md:flex lg:hidden">
         {/* Main heading */}
         <div className="mb-8">
-          <h1 className="text-balance font-whyte text-4xl font-normal leading-tight tracking-tight text-slate-800 md:text-5xl">
+          <h1 className="text-balance font-whyte text-4xl font-normal leading-tight tracking-tight text-stone-800 md:text-5xl">
             How BÆRSkin Tactical Supply Co. achieved{" "}
-            <span className="font-whyteInktrap font-bold">
-              100% event deliverability
-            </span>{" "}
+            <span className="font-whyteInktrap">100% event deliverability</span>{" "}
             by switching from Kafka to Inngest.
           </h1>
         </div>
@@ -146,22 +140,22 @@ export default function BaerskinTacticalHeader() {
           <div className="space-y-8">
             {/* Website link */}
             <div>
-              <p className="text-xl text-slate-800">[www]</p>
-              <p className="text-xl font-normal text-slate-800">
+              <p className="text-xl text-stone-800">[www]</p>
+              <p className="text-xl font-normal text-stone-800">
                 baerskintactical.com
               </p>
             </div>
 
             {/* Logo */}
             <div>
-              <div className="scale-90">
+              <div className="origin-left scale-90">
                 <BaerskinLogo />
               </div>
             </div>
 
             {/* Description */}
             <div>
-              <p className="font-circular text-xl font-light leading-relaxed text-slate-800">
+              <p className="font-circular text-xl font-light leading-relaxed text-stone-800">
                 Data-driven e-commerce platform powering 17 brand operating in
                 19 countries across the world.
               </p>
@@ -187,12 +181,12 @@ export default function BaerskinTacticalHeader() {
       </div>
 
       {/* Mobile layout */}
-      <div className="relative z-10 flex flex-col p-6 md:hidden">
+      <div className="relative z-10 flex flex-col p-6 pt-24 md:hidden">
         {/* Main heading */}
         <div className="mb-8">
-          <h1 className="text-balance font-whyte text-4xl font-normal leading-tight tracking-tight text-slate-800">
+          <h1 className="text-balance font-whyte text-4xl font-normal leading-tight tracking-tight text-stone-800">
             How BÆRSkin Tactical Supply Co. achieved{" "}
-            <span className="font-whyteInktrap font-bold">
+            <span className="font-whyteInktrap font-normal">
               100% event deliverability
             </span>{" "}
             by switching from Kafka to Inngest.
@@ -201,20 +195,22 @@ export default function BaerskinTacticalHeader() {
 
         {/* Website link */}
         <div className="mb-8">
-          <p className="text-lg text-slate-800">[www]</p>
-          <p className="text-lg font-normal text-slate-800">
+          <p className="text-lg text-stone-800">[www]</p>
+          <p className="text-lg font-normal text-stone-800">
             baerskintactical.com
           </p>
         </div>
 
         {/* Logo */}
         <div className="mb-8">
-          <BaerskinLogo />
+          <div className="origin-left scale-90">
+            <BaerskinLogo />
+          </div>
         </div>
 
         {/* Description */}
         <div className="mb-8">
-          <p className="font-circular text-lg font-light leading-relaxed text-slate-800">
+          <p className="font-circular text-lg font-light leading-relaxed text-stone-800">
             Data-driven e-commerce platform powering 17 brand operating in 19
             countries across the world.
           </p>
@@ -222,7 +218,7 @@ export default function BaerskinTacticalHeader() {
 
         {/* Info grid */}
         <div className="space-y-6">
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <div className="grid grid-cols-2 gap-6">
             <InfoBlock
               header="Case Study:"
               description="BÆRSkin Tactical Supply Co."
@@ -233,7 +229,7 @@ export default function BaerskinTacticalHeader() {
             />
           </div>
 
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <div className="grid grid-cols-2 gap-6">
             <InfoBlock header="Industry:" description="E-Commerce" />
             <InfoBlock header="Employees:" description="20—100" />
           </div>
