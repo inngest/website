@@ -94,41 +94,13 @@ await inngest_client.send(
 <GuideSection show="go">
 
 ```go {{ title: "Go" }}
-  import "github.com/inngest/inngestgo"
-
-  func main() {
-    client, err := inngestgo.NewClient(inngestgo.ClientOpts{
-		  AppID: "acme-storefront-app",
-    })
-    if err != nil {
-      panic(err)
-    }
-  }
+!snippet:path=snippets/go/docs/clients/new_client_acme_storefront_app.go
 ```
 
 Now with this client, you can send events from anywhere in your app. You can send a single event, or [multiple events at once](#sending-multiple-events-at-once).
 
 ```go {{ title: "Go" }}
-package main
-
-import "github.com/inngest/inngestgo"
-
-func main() {
-  // ...
-  // ...
-  
-  client.Send(context.Background(), inngestgo.Event{
-    Name: "storefront/cart.checkout.completed",
-    Data: map[string]any{
-      "cartId": "ed12c8bde",
-      "itemIds": []string{"9f08sdh84", "sdf098487", "0fnun498n"},
-      "account": map[string]any{
-        "id": 123,
-        "email": "test@example.com",
-      },
-    },
-  })
-}
+!snippet:path=snippets/go/docs/events/checkout_completed.go
 ```
 
 
@@ -321,20 +293,7 @@ ids = await inngest_client.send(
 <GuideSection show="go">
 
 ```go
-_, err := client.SendMany(ctx, []inngestgo.Event{
-  {
-    Name: "storefront/cart.checkout.completed",
-    Data: data,
-  },
-  {
-    Name: "storefront/coupon.used",
-    Data: data,
-  },
-  {
-    Name: "storefront/loyalty.program.joined",
-    Data: data,
-  },
-})
+!snippet:path=snippets/go/docs/events/send_many_events.go
 ```
 
 ## Using Event IDs
@@ -342,26 +301,7 @@ _, err := client.SendMany(ctx, []inngestgo.Event{
 Each event sent to Inngest is assigned a unique Event ID. These `ids` are returned from `client.SendMany()` . Event IDs can be used to look up the event in the Inngest dashboard or via [the REST API](https://api-docs.inngest.com/docs/inngest-api/pswkqb7u3obet-get-an-event). You can choose to log or save these Event IDs if you want to look them up later.
 
 ```go
-ids, err := client.SendMany(ctx, []inngestgo.Event{
-  {
-    Name: "storefront/cart.checkout.completed",
-    Data: data,
-  },
-  {
-    Name: "storefront/coupon.used",
-    Data: data,
-  },
-  {
-    Name: "storefront/loyalty.program.joined",
-    Data: data,
-  },
-})
-#
-#  ids = [
-#    "01HQ8PTAESBZPBDS8JTRZZYY3S",
-#    "01HQ8PTFYYKDH1CP3C6PSTBZN5"
-#  ]
-# 
+!snippet:path=snippets/go/docs/events/send_many_events_return_ids.go
 ```
 
 </GuideSection>
@@ -471,31 +411,7 @@ await inngest_client.send(
 <GuideSection show="go">
 
 ```go {{ title: "Go" }}
-package main
-
-import "github.com/inngest/inngestgo"
-
-func main() {
-  client, err := inngestgo.NewClient(inngestgo.ClientOpts{
-		AppID: "core",
-  })
-  if err != nil {
-    panic(err)
-  }
-  
-  client.Send(context.Background(), inngestgo.Event{
-    Name: "storefront/cart.checkout.completed",
-    ID: "cart-checkout-completed-ed12c8bde",
-    Data: map[string]any{
-      "cartId": "ed12c8bde",
-      "itemIds": []string{"9f08sdh84", "sdf098487", "0fnun498n"},
-      "account": map[string]any{
-        "id": 123,
-        "email": "test@example.com",
-      },
-    },
-  })
-}
+!snippet:path=snippets/go/docs/events/event_idempotency.go
 ```
 </GuideSection> 
 

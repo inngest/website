@@ -101,20 +101,7 @@ await inngest_client.send(
 ```
 
 ```go {{ title: "Go" }}
-package main
-
-import "github.com/inngest/inngestgo"
-
-func main() {
-  client, err := inngestgo.NewClient(inngestgo.ClientOpts{
-		AppID: "my_app",
-	})
-  
-  client.Send(context.Background(), inngestgo.Event{
-    Name: "user.avatar.uploaded",
-    Data: map[string]any{"url": "https://a-bucket.s3.us-west-2.amazonaws.com/..."},
-  })
-}
+!snippet:path=snippets/go/docs/examples/devserver/main.go
 ```
 </CodeGroup>
 **Note** - During local development, you can use a dummy value for your [`INNGEST_EVENT_KEY`](/docs/sdk/environment-variables#inngest-event-key?ref=local-development) environment variable. The dev server does not validate keys locally.

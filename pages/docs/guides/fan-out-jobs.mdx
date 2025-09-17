@@ -115,55 +115,7 @@ Since Inngest is powered by events, implementing fan-out is as straightforward a
 First, set up a `/signup` route handler to send an event to Inngest when a user signs up:
 
 ```go {{ filename: "main.go" }}
-func main() {
-    // Initialize the Inngest SDK client
-    client, err := inngestgo.NewClient(inngestgo.ClientOpts{
-		  AppID: "core",
-	  })
-	  if err != nil {
-		  panic(err)
-	  }
-
-    // Initialize your HTTP server
-    mux := http.NewServeMux()
-
-    // Handle signup route
-    mux.HandleFunc("/signup", func(w http.ResponseWriter, r *http.Request) {
-        if r.Method != http.MethodPost {
-            http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-            return
-        }
-
-        // Parse request body - in a real app you'd validate the input
-        var user struct {
-            Email string `json:"email"`
-        }
-        if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-            http.Error(w, err.Error(), http.StatusBadRequest)
-            return
-        }
-
-        // Send event to Inngest
-        _, err := client.Send(r.Context(), inngestgo.Event{
-            Name: "app/user.signup",
-            Data: map[string]interface{}{
-                "user": map[string]interface{}{
-                    "email": user.email,
-                },
-            },
-        })
-        if err != nil {
-            http.Error(w, err.Error(), http.StatusInternalServerError)
-            return
-        }
-
-        w.WriteHeader(http.StatusOK)
-    })
-
-    // Start the server
-    log.Fatal(http.ListenAndServe(":8080", mux))
-}
-
+!snippet:path=snippets/go/docs/examples/fan_out_jobs/main.go
 ```
 
 Now, with this event, any function using `"app/user.signup"` as its event trigger will be automatically invoked.
@@ -171,58 +123,7 @@ Now, with this event, any function using `"app/user.signup"` as its event trigge
 Next, define two functions: `sendWelcomeEmail` and `startStripeTrial`. As you can see below, both functions use the same event trigger, but perform different work.
 
 ```go {{ filename: "inngest/functions.go" }}
-import (
-    "github.com/inngest/inngestgo"
-    "github.com/inngest/inngestgo/step"
-)
-
-func sendWelcomeEmail(client inngestgo.Client) (inngestgo.ServableFunction, error) {
-	return inngestgo.CreateFunction(
-		client,
-		inngestgo.FunctionOpts{
-			ID: "send-welcome-email",
-		},
-		inngestgo.EventTrigger("app/user.signup", nil),
-		func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
-			_, err := step.Run(ctx, "send-email", func(ctx context.Context) (any, error) {
-				return sendEmail(&SendEmailInput{
-					Email:    input.Event.Data["user"].(map[string]interface{})["email"].(string),
-					Template: "welcome",
-				})
-			})
-			return nil, err
-		},
-	)
-}
-
-func startStripeTrial(client inngestgo.Client) (inngestgo.ServableFunction, error) {
-	return inngestgo.CreateFunction(
-		client,
-		inngestgo.FunctionOpts{
-			ID: "start-stripe-trial",
-		},
-		inngestgo.EventTrigger("app/user.signup", nil),
-		func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
-			customer, err := step.Run(ctx, "create-customer", func(ctx context.Context) (any, error) {
-				return stripe.Customers.Create(&stripe.CustomerParams{
-					Email: input.Event.Data["user"].(map[string]interface{})["email"].(string),
-				})
-			})
-			if err != nil {
-				return nil, err
-			}
-
-			_, err = step.Run(ctx, "create-subscription", func(ctx context.Context) (any, error) {
-				return stripe.Subscriptions.Create(&stripe.SubscriptionParams{
-					Customer:        customer.ID,
-					Items:          []*stripe.SubscriptionItemsParams{{Price: "price_1MowQULkdIwHu7ixraBm864M"}},
-					TrialPeriodDays: 14,
-				})
-			})
-			return nil, err
-		},
-	)
-}
+!snippet:path=snippets/go/docs/functions/fan_out_functions.go
 ```
 
 You've now successfully implemented fan-out in our application. Each function will run independently and in parallel. If one function fails, the others will not be disrupted.

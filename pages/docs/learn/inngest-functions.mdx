@@ -53,45 +53,7 @@ export default inngest.createFunction(
 <GuideSection show="go">
 
 ```go
-import (
-  "github.com/inngest/inngestgo"
-  "github.com/inngest/inngestgo/step"
-)
-
-inngestgo.CreateFunction(
-	client,
-	// config
-	inngestgo.FunctionOpts{
-		ID: "import-product-images",
-	},
-	// trigger (event or cron)
-	inngestgo.EventTrigger("shop/product.imported", nil),
-	// handler function
-	func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
-		// Here goes the business logic
-		// By wrapping code in steps, it will be retried automatically on failure
-		s3Urls, err := step.Run(ctx, "copy-images-to-s3", func(ctx context.Context) ([]string, error) {
-			return copyAllImagesToS3(input.Event.Data["imageURLs"].([]string))
-		})
-		if err != nil {
-			return nil, err
-		}
-
-		// You can include numerous steps in your function
-		_, err = step.Run(ctx, "resize-images", func(ctx context.Context) (any, error) {
-			return nil, resizer.Bulk(ResizerOpts{
-				URLs:     s3Urls,
-				Quality:  0.9,
-				MaxWidth: 1024,
-			})
-		})
-		if err != nil {
-			return nil, err
-		}
-
-		return nil, nil
-	},
-)
+!snippet:path=snippets/go/docs/functions/import_product_images_function.go
 ```
 
 </GuideSection>
