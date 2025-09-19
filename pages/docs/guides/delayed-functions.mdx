@@ -88,30 +88,7 @@ For more information on `step.sleepUntil()` [read the reference](/docs/reference
 You can delay jobs using the [`step.Sleep()`](https://pkg.go.dev/github.com/inngest/inngestgo@v0.7.4/step#Sleep) method:
 
 ```go
-import (
-    "time"
-    "github.com/inngest/inngestgo"
-    "github.com/inngest/inngestgo/step"
-)
-
-inngestgo.CreateFunction(
-	client,
-	inngestgo.FunctionOpts{
-		ID: "send-signup-email",
-	},
-	inngestgo.EventTrigger("app/user.created", nil),
-	func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
-		// business logic
-
-		step.Sleep(ctx, "wait-for-the-future", 4*time.Hour)
-
-		_, err := step.Run(ctx, "do-some-work-in-the-future", func(ctx context.Context) (any, error) {
-			// Code here runs in the future automatically.
-			return nil, nil
-		})
-		return nil, err
-	},
-)
+!snippet:path=snippets/go/docs/functions/delayed_function.go
 ```
 
 

@@ -78,31 +78,7 @@ def sync_systems(ctx: inngest.ContextSync) -> None:
     ctx.step.run("Save data", db.syncs.insert_one, data)
 ```
 ```go {{ title: "Go" }}
-inngestgo.CreateFunction(
-	client,
-	inngestgo.FunctionOpts{ID: "sync-systems"},
-	inngestgo.EventTrigger("auto/sync.request", nil),
-	func(ctx context.Context, input inngestgo.Input[SyncRequestEvent]) (any, error) {
-		// By wrapping code in step.run, the code will be retried if it throws an error and when successfuly.
-		// It's result is saved to prevent unnecessary re-execution
-		data, err := step.Run(ctx, "get-data", func(ctx context.Context) (any, error) {
-			return getDataFromExternalSource()
-		})
-		if err != nil {
-			return nil, err
-		}
-
-		// can also be retried up to 4 times
-		_, err = step.Run(ctx, "save-data", func(ctx context.Context) (any, error) {
-			return db.Syncs.InsertOne(data.(DataType))
-		})
-		if err != nil {
-			return nil, err
-		}
-
-		return nil, nil
-	},
-)
+!snippet:path=snippets/go/docs/functions/sync_systems_function.go
 ```
 </CodeGroup>
 
