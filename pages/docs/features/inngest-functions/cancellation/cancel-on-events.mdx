@@ -183,36 +183,7 @@ When defining a function, you can also specify the `Cancel` option which allows 
 Here is our schedule reminders function that leverages `Cancel`:
 
 ```go {{ title: "main.go" }}
-package main
-
-import (
-	"context"
-	"github.com/inngest/inngestgo"
-	"github.com/inngest/inngestgo/step"
-)
-
-func main() {
-	inngestgo.CreateFunction(
-		client,
-		inngestgo.FunctionOpts{
-			ID:   "schedule-reminder",
-			Name: "Schedule reminder",
-			Cancel: []inngestgo.ConfigCancel{
-				{
-					Event: "tasks/reminder.deleted",
-					IfExp: "event.data.id == async.data.id",
-				},
-			},
-		},
-		// Run on every tasks/reminder.created event.
-		inngestgo.EventTrigger("tasks/reminder.created", nil),
-		ScheduleReminder,
-	)
-}
-
-func ScheduleReminder(ctx context.Context, input inngestgo.Input[ScheduleReminderEvent]) (any, error) {
-	// ...
-}
+!snippet:path=snippets/go/docs/functions/cancel_function.go
 ```
 
 Let's break down how this works:

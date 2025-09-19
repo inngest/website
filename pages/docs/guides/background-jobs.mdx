@@ -92,39 +92,7 @@ Let's walk through the code step by step:
 4. We resume execution and perform other tasks.
 
 ```go
-import (
-    "time"
-    "github.com/inngest/inngest-go"
-    "github.com/inngest/inngest-go/step"
-)
-
-inngestgo.CreateFunction(
-	client,
-	inngestgo.FunctionOpts{
-		ID: "send-signup-email",
-	},
-	inngestgo.EventTrigger("app/user.created", nil),
-	func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
-		_, err := step.Run(ctx, "send-the-user-a-signup-email", func(ctx context.Context) (any, error) {
-			return nil, sesclient.SendEmail(&ses.SendEmailInput{
-				To:      input.Event.Data["user_email"].(string),
-				Subject: "Welcome to Inngest!",
-				Message: "...",
-			})
-		})
-		if err != nil {
-			return nil, err
-		}
-
-		step.Sleep(ctx, "wait-for-the-future", 4*time.Hour)
-
-		_, err = step.Run(ctx, "do-some-work-in-the-future", func(ctx context.Context) (any, error) {
-			// Code here runs in the future automatically.
-			return nil, nil
-		})
-		return nil, err
-	},
-)
+!snippet:path=snippets/go/docs/functions/delayed_function.go
 ```
 
 ### 2. Trigger the function
@@ -132,13 +100,7 @@ inngestgo.CreateFunction(
 Your `sendSignUpEmail` function will be triggered whenever Inngest receives an event called `app/user.created`. is received. You send this event to Inngest like so:
 
 ```go
-_, err := inngestgo.Send(context.Background(), inngestgo.Event{
-    Name: "app/user.created", // This matches the event used in `createFunction`
-    Data: map[string]interface{}{
-        "email": "test@example.com",
-        // any data you want to send
-    },
-})
+!snippet:path=snippets/go/docs/events/user_created.go
 ```
 
 </GuideSection>

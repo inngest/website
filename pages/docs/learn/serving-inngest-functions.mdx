@@ -68,6 +68,7 @@ serve({
 * [Cloudflare Pages](#framework-cloudflare-pages-functions)
 * [Cloudflare Workers](#framework-cloudflare-workers)
 * [DigitalOcean Functions](#framework-digital-ocean-functions)
+* [ElysiaJS](#framework-elysia-js)
 * [Express](#framework-express)
 </Col>
 <Col>
@@ -78,15 +79,17 @@ serve({
 * [H3](#framework-h3)
 * [Hono](#framework-hono)
 * [Koa](#framework-koa)
+* [NestJS](#framework-nest-js)
 </Col>
 <Col>
-* [NestJS](#framework-nest-js)
 * [Next.js](#framework-next-js)
 * [Nitro](#framework-nitro)
 * [Nuxt](#framework-nuxt)
 * [Redwood](#framework-redwood)
 * [Remix](#framework-remix)
 * [SvelteKit](#framework-svelte-kit)
+* [Tanstack Start](#framework-tanstack-start)
+
 </Col>
 
 </div>
@@ -146,20 +149,17 @@ export const handler = serve(inngest, [fnA]);
 You can use the `inngest/bun` handler with `Bun.serve()` for a lightweight
 Inngest server:
 
-```ts
+```ts {{ title: "index.ts" }}
 import { serve } from "inngest/bun";
 import { functions, inngest } from "./inngest";
 
 Bun.serve({
   port: 3000,
-  fetch(request: Request) {
-    const url = new URL(request.url);
-
-    if (url.pathname === "/api/inngest") {
+  routes: {
+    // ...other routes...
+    "/api/inngest": (request: Request) => {
       return serve({ client: inngest, functions })(request);
-    }
-
-    return new Response("Not found", { status: 404 });
+    },
   },
 });
 ```
@@ -286,6 +286,38 @@ const main = serve(inngest, [fnA], {
 module.exports.main = main;
 ```
 </CodeGroup>
+
+### Framework: ElysiaJS
+
+For [deployment options](https://elysiajs.com/patterns/deploy.html), Elysia can compile to a binary or to JavaScript, or you can deploy with Docker or Railway.
+
+
+```ts {{ title: "src/index.ts" }}
+import { Elysia } from "elysia";
+import { serve } from "inngest/bun";
+import { functions, inngest } from "./inngest";
+
+const handler = serve({
+  client: inngest,
+  functions,
+});
+
+const inngestHandler = new Elysia().all("/api/inngest", ({ request }) =>
+  handler(request)
+);
+
+// register the handler with Elysia
+const app = new Elysia()
+.use(inngestHandler)
+
+```
+
+Elysia's `use` function expects a single argument. We make use of the `all` method for the inngest api route to handle the expected
+methods and then get the request off of the context object passed to elysia handlers.
+
+See the [ElysiaJS
+example](https://github.com/inngest/inngest-js/tree/main/examples/framework-elysiajs)
+for more information.
 
 ### Framework: Express
 
@@ -957,6 +989,30 @@ export const PUT = inngestServe.PUT;
 </CodeGroup>
 
 See the [SvelteKit example](https://github.com/inngest/inngest-js/tree/main/examples/framework-sveltekit) for more information.
+
+### Framework: Tanstack Start 
+
+Add the following to `./src/routes/api/inngest.ts`:
+
+<CodeGroup>
+```ts 
+import { createServerFileRoute } from '@tanstack/react-start/server'
+
+import { serve } from "inngest/edge";
+import { inngest, functions } from "../../inngest";
+
+const handler = serve({ client: inngest, functions });
+    
+export const ServerRoute = createServerFileRoute('/api/inngest').methods({
+  GET: async ({ request }) => handler(request),
+  POST: async ({ request }) => handler(request),
+  PUT: async ({ request }) => handler(request)
+})
+
+```
+</CodeGroup>
+
+See the [Tanstack Start example](https://github.com/inngest/inngest-js/tree/main/examples/framework-tanstack-start) for more information.
 
 ### Custom frameworks
 

@@ -85,7 +85,7 @@ type Scope = {
   humanDate: string;
   dateUpdated?: string;
 
-  primaryCTA?: "sales" | "docs";
+  primaryCTA?: "sales" | "docs" | "signUp";
   floatingCTA?: boolean;
 
   reading: {
@@ -278,7 +278,7 @@ function CTAs({
   primary = "docs",
   ctaRef = "",
 }: {
-  primary: "docs" | "sales";
+  primary: "docs" | "sales" | "signUp";
   ctaRef: string;
 }) {
   const ctas = {
@@ -300,9 +300,18 @@ function CTAs({
         text: "Read the docs",
       },
     },
+    signUp: {
+      title: "Get started with Inngest",
+      description:
+        "Sign up for free and start building reliable workflows today.",
+      button: {
+        href: `/sign-up?ref=${ctaRef}`,
+        text: "Start for free",
+      },
+    },
   };
   const visibleCTAs =
-    primary === "sales" ? [ctas.sales, ctas.docs] : [ctas.docs, ctas.sales];
+    primary === "sales" ? [ctas.sales, ctas.signUp] : [ctas.signUp, ctas.sales];
   return (
     <aside className="m-auto grid max-w-[70ch] gap-16 border-t-[2px] border-stone-700 pt-8 text-indigo-500 sm:grid-cols-2">
       {visibleCTAs.map((c, idx) => (

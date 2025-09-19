@@ -68,30 +68,7 @@ def sync_systems(ctx: inngest.ContextSync) -> None:
     ctx.step.run("Save data", db.syncs.insert_one, data)
 ```
 ```go {{ title: "Go" }}
-inngestgo.CreateFunction(
-	inngestgo.FunctionOpts{ID: "sync-systems", },
-	// Functions are triggered by events
-	inngestgo.EventTrigger("auto/sync.request", nil),
-	func(ctx context.Context, input inngestgo.Input[SyncRequestEvent]) (any, error) {
-		// step is retried if it throws an error
-		data, err := step.Run(ctx, "get-data", func(ctx context.Context) (any, error) {
-			return getDataFromExternalSource()
-		})
-		if err != nil {
-			return nil, err
-		}
-
-		// steps can reuse data from previous ones
-		_, err = step.Run(ctx, "save-data", func(ctx context.Context) (any, error) {
-			return db.Syncs.InsertOne(data.(DataType))
-		})
-		if err != nil {
-			return nil, err
-		}
-
-		return nil, nil
-	},
-)
+!snippet:path=snippets/go/docs/functions/sync_systems_function.go
 ```
 </CodeGroup>
 

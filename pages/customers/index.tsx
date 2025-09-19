@@ -41,13 +41,19 @@ const caseStudies: {
     tags: ["Workflows"],
   },
   {
-    href: "/customers/otto",
-    logo: "/assets/customers/otto-logo.svg",
-    logoScale: 0.8,
-    name: "Otto",
-    title: "Leveraging multi-tenant concurrency to scale AI workflows",
-    snippet:
-      "How Otto uses flow control and orchestration to build AI Agents that are as easy as a spreadsheet.",
+    href: "/customers/outtake",
+    logo: "/assets/customers/outtake/outtake-logo.svg",
+    name: "Outtake",
+    logoScale: 0.7,
+    title:
+      "Securing the Internet: How Outtake's AI Agents Dismantle Cyber Attacks at Scale with Inngest",
+    snippet: (
+      <>
+        Outtake's approach demonstrates that effective AI agents require a
+        robust architecture to handle large datasets, manage rate limits, and
+        ensure reliability
+      </>
+    ),
     tags: ["AI"],
   },
   {
@@ -84,6 +90,31 @@ const caseStudies: {
     tags: ["Serverless"],
   },
   {
+    href: "/customers/cubic",
+    logo: "/assets/customers/cubic/logo.svg",
+    logoScale: 0.8,
+    name: "cubic",
+    title:
+      "How cubic reduced false positives by 51% by orchestrating their multi-agent system with Inngest",
+    snippet:
+      "For teams looking to build and ship AI Agent systems, cubic's experience highlights the importance of selecting the right orchestration layer.",
+    tags: ["AI"],
+  },
+  {
+    href: "/customers/day-ai",
+    logo: "/assets/customers/day-ai-wordmark.png",
+    name: "Day AI",
+    title: "How Day AI built a CRM that can reason using Inngest",
+    snippet: (
+      <>
+        "Inngest is like the <strong>nervous system of Day AI</strong>, it makes
+        things reliable by default so <strong>we can focus on building</strong>
+        ."
+      </>
+    ),
+    tags: ["AI"],
+  },
+  {
     href: "/customers/windmill",
     logo: "/assets/customers/windmill-logo.svg",
     name: "Windmill",
@@ -99,17 +130,13 @@ const caseStudies: {
     tags: ["AI"],
   },
   {
-    href: "/customers/day-ai",
-    logo: "/assets/customers/day-ai-wordmark.png",
-    name: "Day AI",
-    title: "How Day AI built a CRM that can reason using Inngest",
-    snippet: (
-      <>
-        "Inngest is like the <strong>nervous system of Day AI</strong>, it makes
-        things reliable by default so <strong>we can focus on building</strong>
-        ."
-      </>
-    ),
+    href: "/customers/otto",
+    logo: "/assets/customers/otto-logo.svg",
+    logoScale: 0.8,
+    name: "Otto",
+    title: "Leveraging multi-tenant concurrency to scale AI workflows",
+    snippet:
+      "How Otto uses flow control and orchestration to build AI Agents that are as easy as a spreadsheet.",
     tags: ["AI"],
   },
   {

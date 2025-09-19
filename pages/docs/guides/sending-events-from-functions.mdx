@@ -101,110 +101,20 @@ By using [`step.sendEvent()`](/docs/reference/functions/step-send-event) Inngest
 </GuideSection>
 <GuideSection show="go">
 
-To send events from within functions, you  will use [`inngestgo.Send()`](https://pkg.go.dev/github.com/inngest/inngestgo#Send). This method takes a single event, or an array of events. The example below uses an array of events.
+To send events from within functions, you  will use [`step.Send()`](https://pkg.go.dev/github.com/inngest/inngestgo/step#Send) or [`step.SendMany()`](https://pkg.go.dev/github.com/inngest/inngestgo/step#SendMany)
 
 This is an example of a [scheduled function](/docs/guides/scheduled-functions) that sends a weekly activity email to all users.
 
 First, the function fetches all users, then it maps over all users to create a `"app/weekly-email-activity.send"` event for each user, and finally it sends all events to Inngest.
 
 ```go
-package main
-
-import (
-	"context"
-
-	"github.com/inngest/inngestgo"
-	"github.com/inngest/inngestgo/step"
-)
-
-func loadCron(client inngestgo.Client) (inngestgo.ServableFunction, error) {
-	return inngestgo.CreateFunction(
-		client,
-		inngestgo.FunctionOpts{
-			ID: "weekly-activity-load-users",
-		},
-		inngestgo.CronTrigger("0 12 * * 5"),
-		func(ctx context.Context, input inngestgo.Input[any]) (any, error) {
-			// Fetch all users
-			users, err := step.Run(ctx, "fetch-users", func(ctx context.Context) ([]User, error) {
-				return fetchUsers()
-			})
-			if err != nil {
-				return nil, err
-			}
-
-			// For each user, send us an event. Inngest supports batches of events
-			// as long as the entire payload is less than 512KB.
-			events := make([]inngestgo.Event, len(users))
-			for i, user := range users {
-				events[i] = inngestgo.Event{
-					Name: "app/weekly-email-activity.send",
-					Data: map[string]interface{}{
-						"user": user,
-					},
-				}
-			}
-
-			// Send all events to Inngest, which triggers any functions listening to
-			// the given event names.
-			_, err = step.SendMany(ctx, "send-events", events)
-			if err != nil {
-				return nil, err
-			}
-
-			// Return the number of users triggered
-			return map[string]any{
-				"count": len(users),
-			}, nil
-		},
-	)
-}
+!snippet:path=snippets/go/docs/functions/sending_events_from_functions_part1.go
 ```
 
 Next, create a function that listens for the `"app/weekly-email-activity.send"` event. This function will be triggered for each user that was sent an event in the previous function.
 
 ```go
-package main
-
-import (
-	"context"
-
-	"github.com/inngest/inngestgo"
-	"github.com/inngest/inngestgo/step"
-)
-
-func sendReminder(client inngestgo.Client) (inngestgo.ServableFunction, error) {
-	type Data struct {
-		User struct {
-			ID string
-		}
-	}
-
-	return inngestgo.CreateFunction(
-		client,
-		inngestgo.FunctionOpts{
-			ID: "weekly-activity-send-email",
-		},
-		inngestgo.EventTrigger("app/weekly-email-activity.send", nil),
-		func(ctx context.Context, input inngestgo.Input[Data]) (any, error) {
-			data, err := step.Run(ctx, "load-user-data", func(ctx context.Context) (any, error) {
-				return loadUserData(input.Event.Data.User.ID)
-			})
-			if err != nil {
-				return nil, err
-			}
-
-			_, err = step.Run(ctx, "email-user", func(ctx context.Context) (any, error) {
-				return sendEmail(input.Event.Data.User, data)
-			})
-			if err != nil {
-				return nil, err
-			}
-
-			return nil, nil
-		},
-	)
-}
+!snippet:path=snippets/go/docs/functions/sending_events_from_functions_part2.go
 ```
 
 Each of these functions will run in parallel and individually retry on error, resulting in a faster, more reliable system.
