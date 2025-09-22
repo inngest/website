@@ -11,25 +11,29 @@ export default function BlogHeader({ description }: { description: string }) {
     text: "Changelog",
   });
   return (
-    <div className="flex flex-col xl:flex-row gap-2 lg:gap-4 items-start xl:items-center">
-      <div className="flex flex-row items-center justify-between w-full lg:w-auto">
-        <h2 className="font-bold text-base text-white lg:border-r border-carbon-600/50 pr-4">
+    <div className="flex flex-col items-start gap-2 lg:gap-4 xl:flex-row xl:items-center">
+      <div className="flex w-full flex-row items-center justify-between lg:w-auto">
+        <h2 className="border-carbon-600/50 pr-4 text-base font-bold text-white lg:border-r">
           Blog
         </h2>
       </div>
-      <div className="flex flex-row gap-2 lg:gap-4 items-center">
-        <p className="text-carbon-200 text-sm">{description}</p>
+      <div className="flex flex-row items-center gap-2 lg:gap-4">
+        <p className="text-sm text-carbon-200">{description}</p>
         <a
           href="/api/rss.xml"
-          className="hidden md:block py-1 rounded-md transition-all text-subtle hover:text-white border border-transparent hover:border-carbon-200/30"
+          className="hidden rounded-md border border-transparent py-1 text-subtle transition-all hover:border-carbon-200/30 hover:text-white md:block"
         >
           <Rss className="h-4" />
         </a>
       </div>
-      <div className="flex flex-row gap-2 lg:gap-4 items-center">
-        <span className="text-basis text-sm">Categories:</span>
+      <div className="flex flex-row items-center gap-2 lg:gap-4">
+        <span className="text-sm text-basis">Categories:</span>
         {categoryLinks.map((link) => (
-          <a href={link.href} className="text-subtle text-sm hover:text-link">
+          <a
+            href={link.href}
+            key={link.href}
+            className="text-sm text-subtle hover:text-link"
+          >
             {link.text}
           </a>
         ))}
