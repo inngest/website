@@ -15,7 +15,7 @@ Inngest Insights allows you to query and analyze your event data using SQL direc
 Insights provides an in-app SQL editor and query interface where you can:
 - Query event data using familiar SQL syntax
 - Save and reuse common queries
-- Analyze patterns in your event streams
+- Analyze patterns in your event triggers
 - Extract business intelligence from your workflows
 
 Currently, you can **only query events**. Support for querying function runs will be added in future releases.
@@ -53,7 +53,7 @@ When querying events, you have access to the following columns:
 | `ts` | Unix timestamp (ms) | Unix timestamp in milliseconds when the event occurred - [reference](https://www.unixtimestamp.com/) |
 | `v` | String | Event format version |
 
-For more details on the event format, see the [Inngest Event Format documentation](https://www.inngest.com/docs/features/events-triggers/event-format).
+For more details on the event format, see the [Inngest Event Format documentation](/docs/features/events-triggers/event-format).
 
 ### Data Retention
 
@@ -154,7 +154,7 @@ LIMIT 10;
 
 ## Saved Queries
 
-You can save frequently used queries for quick access.
+You can save frequently used queries for quick access. Queries are only saved private for you to use; they are not shared across your Inngest organization.
 
 ## Roadmap
 
