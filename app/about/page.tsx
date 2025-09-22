@@ -93,10 +93,15 @@ const TEAM = [
     avatar: "/assets/team/andy-l-2025-08-01.jpg",
   },
   {
+    name: "Sophia Umansky",
+    role: "Designer",
+    avatar: "/assets/team/sophia-u-2025-09-16.jpg",
+  },
+  {
     name: "Linell Bonnette",
     role: "Engineer",
-    avatar: "/assets/team/linell-b-2025-09-04.jpg"
-  }
+    avatar: "/assets/team/linell-b-2025-09-04.jpg",
+  },
 ];
 
 const INVESTORS: {
