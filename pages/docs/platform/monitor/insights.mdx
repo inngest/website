@@ -50,7 +50,7 @@ When querying events, you have access to the following columns:
 | `id` | String | Unique identifier for the event |
 | `name` | String | The name/type of the event |
 | **`data`** | **JSON** | **The event payload data - users can send any JSON structure here** |
-| `ts` | Unix timestamp | Unix timestamp when the event occurred - [reference](https://www.unixtimestamp.com/)  |
+| `ts` | Unix timestamp (ms) | Unix timestamp in milliseconds when the event occurred - [reference](https://www.unixtimestamp.com/) |
 | `v` | String | Event format version |
 
 For more details on the event format, see the [Inngest Event Format documentation](https://www.inngest.com/docs/features/events-triggers/event-format).
