@@ -305,7 +305,7 @@ function CTAs({
       description:
         "Sign up for free and start building reliable workflows today.",
       button: {
-        href: `/sign-up?ref=${ctaRef}`,
+        href: `${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=${ctaRef}`,
         text: "Start for free",
       },
     },
