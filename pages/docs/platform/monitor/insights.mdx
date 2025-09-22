@@ -7,7 +7,7 @@ export const description = 'Query and analyze event data with SQL in the Inngest
 Inngest Insights allows you to query and analyze your event data using SQL directly within the Inngest platform. Every event sent to Inngest contains valuable information, and Insights gives you the power to extract meaningful patterns and analytics from that data.
 
 <Info>
-  Insights support is currently in Public Beta. Some details including SQL syntax and feature availability are still subject to change during this period. Read more about the Public Beta [roadmap here](#roadmap).
+  Insights support is currently in Public Beta. Some details including SQL syntax and feature availability are still subject to change during this period. Read more about the [Public Beta release phase here](/docs/release-phases#public-beta) and the [roadmap here](#roadmap).
 </Info>
 
 ## Overview
@@ -47,23 +47,22 @@ When querying events, you have access to the following columns:
 
 | Column | Type | Description |
 |--------|------|-------------|
-| `event_id` | String | Unique identifier for the event |
-| `event_name` | String | The name/type of the event |
-| **`event_data`** | **JSON** | **The event payload data - users can send any JSON structure here** |
-| `event_ts` | DateTime | Timestamp when the event occurred |
-| `event_v` | String | Event format version |
+| `id` | String | Unique identifier for the event |
+| `name` | String | The name/type of the event |
+| **`data`** | **JSON** | **The event payload data - users can send any JSON structure here** |
+| `ts` | Unix timestamp | Unix timestamp when the event occurred - [reference](https://www.unixtimestamp.com/)  |
+| `v` | String | Event format version |
 
 For more details on the event format, see the [Inngest Event Format documentation](https://www.inngest.com/docs/features/events-triggers/event-format).
 
 ### Data Retention
 
-You can query events from **up to 30 days in the past**. Older events are not available through Insights.
+Refer to [pricing plans](/pricing) for data retention limits.
 
 ### Result Limits
 
 - Current page limit: **1000 rows**
 - Future updates will support larger result sets through async data exports
-- Pagination support is planned for future releases
 
 ## SQL Support
 
@@ -83,7 +82,7 @@ String manipulation and search capabilities.
 - [String manipulation functions](https://clickhouse.com/docs/sql-reference/functions/string-functions)
 
 #### JSON Functions
-Essential for working with `event_data` payloads.
+Essential for working with `events.data` payloads.
 [View ClickHouse JSON functions documentation](https://clickhouse.com/docs/sql-reference/functions/json-functions)
 
 #### Date/Time Functions
@@ -103,21 +102,19 @@ The following aggregate functions are supported:
 
 | Function | Description |
 |----------|-------------|
-| `ARRAY_AGG()` | Aggregates values into an array* |
-| `AVG()` | Calculates average |
-| `COUNT()` | Counts rows |
-| `MAX()` | Finds maximum value |
-| `MIN()` | Finds minimum value |
-| `STDDEV_POP()` | Population standard deviation |
-| `STDDEV_SAMP()` | Sample standard deviation |
-| `SUM()` | Calculates sum |
-| `VAR_POP()` | Population variance |
-| `VAR_SAMP()` | Sample variance |
-| `median()` | Finds median value |
+| `ARRAY_AGG()` | [Aggregates values into an array](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/grouparray)  * |
+| `AVG()` | [Calculates average](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/avg) |
+| `COUNT()` | [Counts rows](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/count) |
+| `MAX()` | [Finds maximum value](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/max) |
+| `MIN()` | [Finds minimum value](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/min) |
+| `STDDEV_POP()` | [Population standard deviation](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/stddevpop) |
+| `STDDEV_SAMP()` | [Sample standard deviation](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/stddevsamp) |
+| `SUM()` | [Calculates sum](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/sum) |
+| `VAR_POP()` | [Population variance](https://clickhouse.com/docs/en/sql-reference/aggregate-functions/reference/varPop) |
+| `VAR_SAMP()` | [Sample variance](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/varSamp) |
+| `median()` | [Finds median value](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/median) |
 
-> **\*Note on ARRAY_AGG**: Due to a current serialization bug, you need to convert arrays to strings using `toString(ARRAY_AGG(column_name))`.
 
-[View complete ClickHouse aggregate functions documentation](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference)
 
 ### SQL Syntax Limitations
 
@@ -130,16 +127,9 @@ Some SQL features are not yet supported but are planned for future releases:
 
 ## Working with Event Data
 
-### Common Schema vs Event-Specific Schema
+### Event-Specific Schema
 
-**Common Schema**: These columns are available for every user and every event:
-- `event_id`
-- `event_name` 
-- `event_ts`
-- `event_v`
-- `event_data`
-
-**Event-Specific Schema**: Within **`event_data`**, users can send any JSON they want, so the structure and available fields will be specific to their payloads. You can use ClickHouse's JSON functions to extract and query specific fields within your event data.
+Within **`events.data`**, users can send any JSON they want, so the structure and available fields will be specific to their payloads. You can use ClickHouse's JSON functions to extract and query specific fields within your event data.
 
 ### Example Queries
 
@@ -147,16 +137,16 @@ Some SQL features are not yet supported but are planned for future releases:
 ```sql
 SELECT count(*)
 FROM events
-WHERE event_name = 'inngest/function.failed'
-AND simpleJSONExtractString(event_data, 'function_id') = 'generate-report'
-AND event_ts > toUnixTimestamp(addHours(now(), -1)) * 1000;
+WHERE name = 'inngest/function.failed'
+AND simpleJSONExtractString(data, 'function_id') = 'generate-report'
+AND ts > toUnixTimestamp(addHours(now(), -1)) * 1000;
 ```
 
 #### Extracting JSON Data and Aggregating
 ```sql
-SELECT simpleJSONExtractString(event_data, 'user_id') as user_id, count(*) 
+SELECT simpleJSONExtractString(data, 'user_id') as user_id, count(*) 
 FROM events
-WHERE event_name = 'order.created'
+WHERE name = 'order.created'
 GROUP BY user_id
 ORDER BY count(*) DESC
 LIMIT 10;
@@ -164,24 +154,7 @@ LIMIT 10;
 
 ## Saved Queries
 
-You can save frequently used queries for quick access. Currently, saved queries are stored in your browser's local storage.
-
-> **Note**: Saved queries are only available on the device and browser where you created them. Cloud synchronization of saved queries is planned for a future release.
-
-## Common Errors and Troubleshooting
-
-### Array Serialization Issues
-When using `ARRAY_AGG()`, you must convert the result to a string:
-
-**Correct:**
-```sql
-SELECT toString(ARRAY_AGG(event_id)) as event_ids FROM events
-```
-
-**Incorrect:**
-```sql
-SELECT ARRAY_AGG(event_id) as event_ids FROM events  -- This will cause serialization errors
-```
+You can save frequently used queries for quick access.
 
 ## Roadmap
 
@@ -194,7 +167,6 @@ SELECT ARRAY_AGG(event_id) as event_ids FROM events  -- This will cause serializ
 ### Future Enhancements
 - Support for CTEs (Common Table Expressions)
 - `IS` and `NOT` operators
-- Cloud synchronization for saved queries
 - Advanced visualization capabilities
 
 ## Need Help?
