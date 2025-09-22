@@ -79,8 +79,6 @@ WHERE name = 'generate-summary'
   AND date(timestamp) = current_date - 1
 GROUP BY model
 ORDER BY sum(tokens) DESC;
-
-SELECT model, sum(tokens)
 ```
 
 No extra data plumbing required—you can run these queries right from the dashboard, right now.
