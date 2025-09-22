@@ -50,6 +50,7 @@ const options = {
     "https://github.com/zerodevx",
     "https://fresh.deno.dev/",
     "https://deno.com/",
+    "https://news.ycombinator.com/",
   ],
 };
 

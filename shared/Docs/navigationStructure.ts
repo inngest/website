@@ -657,6 +657,11 @@ const sectionHome: (NavGroup | NavLink)[] = [
             ],
           },
           {
+            title: "REST Endpoints",
+            href: "/docs/learn/rest-endpoints",
+            tag: "new",
+          },
+          {
             title: "Versioning",
             href: `/docs/learn/versioning`,
             // links: [
