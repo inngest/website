@@ -1,0 +1,89 @@
+---
+heading: "Introducing Step.Run Everywhere: Build Unbreakable APIs"
+image: /assets/blog/launch-week-day-1-unbreakable-apis/cover.png
+showSubtitle: false
+subtitle: "We're bringing one-step durability to APIs. Add a single line of code to any REST API to immediately add durability, automatic retries, and observability to your applications, without ever having to think about queues, workers, or extra infra."
+date: 2025-09-22
+author: Tony Holdstock-Brown
+disableCTA: false
+featured: true
+---
+
+_*TLDR: We're bringing one-step durability to APIs. Add a single line of code to any REST API to immediately add durability, automatic retries, and observability to your applications, without ever having to think about queues, workers, or extra infra.*_
+
+_____
+
+APIs are doing a lot more than they used to. Kicking off AI models, stitching together third-party services, running background jobs… if you're building in 2025, you know durability at the endpoint level is a non-negotiable. 
+
+The question isn't why—it's how.
+
+Historically, we've only had a couple (painful) options for making an API reliable:
+
+- **Push work to a queue:** Wire up SQS/Kafka, publish messages, write a consumer, and wait for workers to process jobs. Congrats, now you have two code paths—the API route and the job handler—to maintain, deploy, and debug.
+- **Roll your own background system:** Have your backend engineer build a transactional outbox architecture, write cron pollers, manually add retry logic, and hope you don't miss an edge case that double-processes or drops data. *The downsides here are self-explanatory.*
+
+While adding durability to *background jobs* got a bit easier (or significantly so if you're using Inngest 😉) in recent years, adding durability to APIs still required users to manage duplicate business logic for APIs and jobs.
+
+Until now.
+
+*You saw this coming, didn't you?*
+
+## Step.Run: The fastest path to durable APIs
+
+Today's APIs need the same thing backend jobs have now enjoyed for years: easy to roll durability designed to expect iteration, not just withstand it. They need:
+
+- **Durability:** Survive crashes, deploys, and cold starts.
+- **Automatic retries:** Handle flakiness without double-processing nightmares.
+- **Observability:** A single place to see every request, input, output, and error—so you can fix issues and iterate fast.
+- **Abstraction:** A way to get all of this without learning infra, wiring queues, or splitting code into "API" vs. "background."
+
+Today, we're bringing all of this to APIs, with step.run(everywhere).
+
+One line of setup. No queues. No workers. No separate system to babysit.
+
+Simply wrap logic inside `step.run()` for instant durability, automatic retries, and superpowered observability, without touching infrastructure.
+
+```tsx
+import { createFunction, step } from "inngest/express";
+
+app.post("/api/process", createFunction(async (req, res) => {
+  const summary = await step.run("summarize document", async () => {
+    return await ai.summarize(req.body.text);
+  });
+
+  await step.run("index summary", async () => {
+    await search.index(summary);
+  });
+
+  res.json({ ok: true, summary })
+}));
+```
+
+Crash the server halfway through — we'll resume from the last completed step.
+
+Need to retry a flaky model call — we'll handle it with backoff.
+
+Want to know what happened — open the dashboard and replay the entire request.
+
+## One code path to manage
+
+Instead of building and maintaining two systems, you now have one code path—your API route—that is automatically durable, retryable, and fully observable.
+
+- **For AI endpoints:** keep long-running, multi-step calls from timing out.
+- **For flaky external services:** add automatic retries without duct-taping loops together.
+- **For debugging:** get a full trace of every request, input, and output without leaving the dashboard.
+
+It's like giving your API superpowers, without teaching your team to be distributed systems engineers.
+
+## Get Started
+
+Today, step.run (everywhere) is in developer preview on Go. TypeScript support will enter closed beta next month, with a developer preview soon after.
+
+- **[Read the docs](/docs/learn/rest-endpoints?ref=blog-launch-week-day-1-unbreakable-apis)** and wrap your first API call with `step.run()`.
+- **Watch runs appear in the dashboard** in real time.
+- **Crash your server for fun** and watch the request still finish.
+
+Once you've seen it work, you won't want to ship another endpoint without it.
+
+<CTACallout text={'Want to be among the first to try step.run everywhere with TypeScript support?'} cta={{ href: 'https://www.inngest.com/newsletter?tag=launch-week-day-1-unbreakable-apis', text: 'Join the TypeScript Preview' }} />
+
