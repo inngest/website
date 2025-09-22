@@ -10,6 +10,9 @@ export default function FooterCTA() {
   const [trackMouse, setTrackMouse] = useState(false);
   const pathname = usePathname();
 
+  const refSlug =
+    pathname === "/" ? "homepage" : pathname.replaceAll(/\//g, "-");
+
   return (
     <section className="relative overflow-hidden bg-stone-950 pb-24 pt-24">
       <FooterCTABackground shouldTrackMouse={trackMouse} />
@@ -31,12 +34,12 @@ export default function FooterCTA() {
           <p className="mb-4 text-balance font-whyteInktrap text-4xl font-semibold tracking-tight text-white sm:text-6xl">
             {pathname.startsWith("/pricing")
               ? "Need help deciding which plan to choose?"
-              : "Develop reliable AI products, everytime"}
+              : "Develop reliable AI products, every time"}
           </p>
           <div className="flex flex-col items-center justify-center gap-x-6 sm:flex-row">
             <div className="mt-4 flex w-64 justify-center sm:w-auto">
               <Button className="w-full sm:w-auto" variant="default" asChild>
-                <Link href={`/contact?ref=${pathname}-footer-cta`}>
+                <Link href={`/contact?ref=${refSlug}-footer-cta`}>
                   Let's Talk
                 </Link>
               </Button>
@@ -49,7 +52,7 @@ export default function FooterCTA() {
               )}
             >
               <Button variant="outline" className="w-full sm:w-auto" asChild>
-                <Link href="/docs?ref=homepage-footer-cta">
+                <Link href={`/docs?ref=${refSlug}-footer-cta`}>
                   I'd rather look at the docs first
                 </Link>
               </Button>

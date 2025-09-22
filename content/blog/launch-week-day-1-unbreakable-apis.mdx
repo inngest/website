@@ -43,7 +43,7 @@ One line of setup. No queues. No workers. No separate system to babysit.
 
 Simply wrap logic inside `step.run()` for instant durability, automatic retries, and superpowered observability, without touching infrastructure.
 
-```tsx
+```typescript
 import { createFunction, step } from "inngest/express";
 
 app.post("/api/process", createFunction(async (req, res) => {
@@ -85,5 +85,5 @@ Today, step.run (everywhere) is in developer preview on Go. TypeScript support w
 
 Once you've seen it work, you won't want to ship another endpoint without it.
 
-<CTACallout text={'Want to be among the first to try step.run everywhere with TypeScript support?'} cta={{ href: 'https://www.inngest.com/newsletter?tag=launch-week-day-1-unbreakable-apis', text: 'Join the TypeScript Preview' }} />
+<CTACallout text={'Want to be among the first to try step.run everywhere with TypeScript support?'} cta={{ href: '/newsletter?tag=launch-week-day-1-unbreakable-apis', text: 'Join the TypeScript Preview' }} />
 
