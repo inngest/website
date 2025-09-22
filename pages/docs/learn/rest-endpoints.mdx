@@ -43,18 +43,18 @@ import (
 
 func setuphttp() {
 	// provider adds inngest support to http handlers
-	provider := stephttp.setup(stephttp.setupopts{
-		domain: "api.example.com", // add your api domain here.
+	provider := stephttp.Setup(stephttp.SetupOpts{
+		Domain: "api.example.com", // add your api domain here.
 	})
 
   // provider allows you to wrap individual http handlers via `provider.servehttp`,
   // and provides stdlib-compatible middleware via `provider.middleware`
-  http.handlefunc("/users", provider.servehttp(handleusers))
+  http.HandleFunc("/users", provider.ServeHTTP(handleUsers))
 
   // or, via middleware with, for example, chi:
-  r := chi.newrouter()
-  r.use(provider.middleware)
-  r.get("/users", handleusers)
+  r := chi.NewRouter()
+  r.Use(provider.Middleware)
+  r.Get("/users", handleUsers)
 }
 ```
 
@@ -102,6 +102,7 @@ REST Support works by applying middleware that tracks each HTTP request to your 
 3. Track all steps, such as `step.run`
 4. If the function finishes, send the step information, input, and output to Inngest for observability
 5. If a step errors or any async step is used (eg. `step.waitForEvent`), send the step information to Inngest and switch the API endpoint from sync to async.
+    * Issue a redirect (which awaits the function's results) or custom HTTP response on async switching.
 
 ### Switching REST Endpoints from sync to async
 
