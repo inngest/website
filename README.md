@@ -9,14 +9,14 @@ Before being able to run the app for the first time, you need to follow the step
 ### Prerequisites
 
 - [Git](https://git-scm.com/downloads)
-- [Node.js 18](https://nodejs.org/en/download/)
+- [Node.js 22](https://nodejs.org/en/download/)
 - _Optional\*_ - Join the team on Vercel with your GitHub account.
 
 ### Instructions
 
 1. Clone this repository
 2. Install [`pnpm`](https://pnpm.io/) with
-   [Corepack](https://nodejs.org/docs/latest-v18.x/api/corepack.html) by running
+   [Corepack](https://nodejs.org/docs/latest-v22.x/api/corepack.html) by running
    `corepack enable; corepack prepare`
 3. Install dependencies by running `pnpm install`
 4. _Optional\*_ - Link local project to its Vercel project by running `pnpm vercel link`
