@@ -18,7 +18,7 @@ author: Lauren Craigie
 
 **Your options:** Before today, no queue or workflow engine let you natively query run history, so you'd need to go outside these tools to understand performance. You could…
 
-- **Grep logs** and write one-off scripts ****until you get a halfway decent answer.
+- **Grep logs** and write one-off scripts until you get a halfway decent answer.
 - **Write an ETL pipeline** to dump event data into a warehouse, and wait for your transformation tool to finish a run before you can even query it.
 - **Build a dashboard** in BI or AI observability tools, and update that model every time you make a change in your workflow tool.
 
@@ -38,7 +38,7 @@ Developers wanting to ship and iterate faster need:
 
 ## Meet Insights
 
-Today we're excited to announce the public beta of our new **Insights** feature. As of today, all users are now able to access the Insights Explorer, to extract aggregate, actionable intelligence from their account's events and (soon) traces—using just SQL.
+Today we're excited to announce the public beta of our new **Insights** feature. As of today, all users are now able to access the [Insights Explorer](https://app.inngest.com/env/production/insights?ref=blog-insights-query-events-and-runs), to extract aggregate, actionable intelligence from their account's events and (soon) traces—using just SQL.
 
 <AutoplayVideo src={"https://cdn.inngest.com/blog/insights-query-events-and-runs/insights-launch-v3-720p.mp4"} />
 
@@ -76,12 +76,12 @@ ORDER BY
 SELECT model, sum(tokens)
 FROM runs
 WHERE name = 'generate-summary'
-  AND date(timestamp) = current_date - 1
+  AND date(timestamp) = addDays(now(), -1)
 GROUP BY model
 ORDER BY sum(tokens) DESC;
 ```
 
-No extra data plumbing required—you can run these queries right from the dashboard, right now.
+No extra data plumbing required—you can [run these queries right from the dashboard](https://app.inngest.com/env/production/insights?ref=blog-insights-query-events-and-runs), right now.
 
 ## Why Now
 
