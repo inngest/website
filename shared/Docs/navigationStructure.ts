@@ -844,6 +844,11 @@ const sectionHome: (NavGroup | NavLink)[] = [
         title: "Monitor",
         links: [
           {
+            title: "Insights",
+            tag: "new",
+            href: "/docs/platform/monitor/insights",
+          },
+          {
             title: "Observability & metrics",
             href: "/docs/platform/monitor/observability-metrics",
           },
