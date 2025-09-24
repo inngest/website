@@ -63,7 +63,7 @@ No WebSocket management, no state stores, no connection handling. Just `useAgent
 Here's what it looks like in React:
 
 ```tsx
-import { useAgents } from "@inngest/use-agents";
+import { useAgents } from "@inngest/use-agent";
 
 export function MyAgentUI() {
   const { messages, sendMessage, status } = useAgents();
@@ -108,7 +108,7 @@ Until now, teams had to reinvent this wheel every time. `useAgent` makes it one 
 
 ## Get Started
 
-- **Install the package:** `npm install @inngest/use-agents`
+- **Install the package:** `npm install @inngest/use-agent`
 - **Wrap your UI:** with `<AgentProvider>` and `useAgent()`
 - **See your first streaming agent:** in minutes, not days
 
