@@ -63,10 +63,10 @@ No WebSocket management, no state stores, no connection handling. Just `useAgent
 Here's what it looks like in React:
 
 ```tsx
-import { useAgents } from "@inngest/use-agent";
+import { useAgent } from "@inngest/use-agent";
 
 export function MyAgentUI() {
-  const { messages, sendMessage, status } = useAgents();
+  const { messages, sendMessage, status } = useAgent();
 
   const onSubmit = (e) => {
     e.preventDefault();
