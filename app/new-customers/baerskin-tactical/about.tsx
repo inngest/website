@@ -1,12 +1,116 @@
 import Image from "next/image";
 import { Button } from "src/components/RedesignedLanding/Button";
 
+// Interfaces for composable About section
+interface TestimonialData {
+  quote: string;
+  highlightedParts: string[];
+  author: string;
+  title: string;
+  company: string;
+  image: string;
+  imageAlt: string;
+}
+
+interface CTAData {
+  primaryText: string;
+  secondaryText: string;
+  buttonText: string;
+}
+
+interface ComposableAboutProps {
+  testimonial: TestimonialData;
+  cta: CTAData;
+  backgroundColor?: string;
+}
+
+// Default Baerskin About data
+const BAERSKIN_ABOUT_DATA: ComposableAboutProps = {
+  testimonial: {
+    quote:
+      "We figured out we were losing roughly 6% of events going through Kafka with customers complaining they didn't get their order confirmation emails. But it was super hard to tackle. Now that we switched to Inngest, we're super confident that everything is working as what I'll call tip top shape.",
+    highlightedParts: [
+      "we were losing roughly 6% of events going through Kafka",
+      "Now that we switched to Inngest, we're super confident that everything is working",
+    ],
+    author: "Gus Fune → CEO",
+    title: "CEO",
+    company: "[ BÆRSkin Tactical Supply Co. ]",
+    image: "/assets/customers/baerskin/gusDither.png",
+    imageAlt: "Gus Fune, CEO",
+  },
+  cta: {
+    primaryText: "Interested in Inngest?",
+    secondaryText: "Talk to an Inngest product expert today.",
+    buttonText: "Get in touch [+]",
+  },
+  backgroundColor: "stone-800",
+};
+
 export default function About() {
+  return <ComposableAbout {...BAERSKIN_ABOUT_DATA} />;
+}
+
+// Export the composable component for reuse
+export { ComposableAbout };
+
+// Main composable About component
+function ComposableAbout({
+  testimonial,
+  cta,
+  backgroundColor = "stone-800",
+}: ComposableAboutProps) {
+  // Helper function to render quote with highlighted parts
+  const renderQuoteWithHighlights = (
+    quote: string,
+    highlightedParts: string[]
+  ) => {
+    let processedQuote = quote;
+    const elements: React.ReactNode[] = [];
+    let lastIndex = 0;
+
+    highlightedParts.forEach((highlight, index) => {
+      const highlightIndex = processedQuote.indexOf(highlight, lastIndex);
+      if (highlightIndex !== -1) {
+        // Add text before highlight
+        if (highlightIndex > lastIndex) {
+          elements.push(
+            <span key={`text-${index}`}>
+              {processedQuote.substring(lastIndex, highlightIndex)}
+            </span>
+          );
+        }
+
+        // Add highlighted text
+        elements.push(
+          <span
+            key={`highlight-${index}`}
+            className="font-whyteInktrapVariable text-2xl font-normal leading-[120%] tracking-[-1.2px] text-[#FEFEFE] underline md:text-3xl md:leading-[1.4] md:tracking-[-0.05em] md:text-[#FAFAF9]"
+          >
+            {highlight}
+          </span>
+        );
+
+        lastIndex = highlightIndex + highlight.length;
+      }
+    });
+
+    // Add remaining text
+    if (lastIndex < processedQuote.length) {
+      elements.push(
+        <span key="text-end">{processedQuote.substring(lastIndex)}</span>
+      );
+    }
+
+    return elements;
+  };
+
   return (
     <>
-      {/* Second section with same height */}
-      <div className="relative z-10 bg-stone-800 px-6 py-20 md:px-12 md:py-32">
-        {/* Testimonial section */}
+      {/* Testimonial section */}
+      <div
+        className={`relative z-10 bg-${backgroundColor} px-6 py-20 md:px-12 md:py-32`}
+      >
         <div className="mx-auto max-w-container-desktop px-8">
           <div className="m-auto">
             <div className="flex flex-col justify-between md:flex-row">
@@ -15,20 +119,14 @@ export default function About() {
                 <div className="flex">
                   {/* Hanging quote mark */}
                   <div className="font-whyte text-4xl font-light leading-[120%] tracking-[-1.2px] text-stone-400">
-                    "
+                    ‟
                   </div>
                   <blockquote className="max-w-4xl font-whyte text-2xl font-light leading-[120%] tracking-[-1.2px] text-[#FEFEFE] md:text-2xl md:leading-relaxed md:tracking-normal md:text-white">
-                    We figured out{" "}
-                    <span className="font-whyteInktrapVariable text-2xl font-normal leading-[120%] tracking-[-1.2px] text-[#FEFEFE] underline md:text-3xl md:leading-[1.4] md:tracking-[-0.05em] md:text-[#FAFAF9]">
-                      we were losing roughly 6% of events going through Kafka
-                    </span>{" "}
-                    with customers complaining they didn't get their order
-                    confirmation emails. But it was super hard to tackle.{" "}
-                    <span className="font-whyteInktrapVariable text-2xl font-normal leading-[120%] tracking-[-1.2px] text-[#FEFEFE] underline md:text-3xl md:leading-[1.4] md:tracking-[-0.05em] md:text-[#FAFAF9]">
-                      Now that we switched to Inngest, we're super confident
-                      that everything is working
-                    </span>{" "}
-                    as what I'll call tip top shape."
+                    {renderQuoteWithHighlights(
+                      testimonial.quote,
+                      testimonial.highlightedParts
+                    )}
+                    ”
                   </blockquote>
                 </div>
               </div>
@@ -39,14 +137,14 @@ export default function About() {
                   <Image
                     width={224}
                     height={224}
-                    src="/assets/customers/baerskin/gusDither.png"
-                    alt="Gus Fune, CEO"
+                    src={testimonial.image}
+                    alt={testimonial.imageAlt}
                     className="h-full w-full object-cover filter"
                   />
                 </div>
                 <div className="max-w-sm border-t pt-2 font-whyteMono text-sm font-normal leading-[140%] text-[#E7E5E4] md:text-2xl md:leading-[1.3] md:tracking-[0.075em] md:text-[#FEFEFE]">
-                  <p>Gus Fune → CEO</p>
-                  <p>[ BÆRSkin Tactical Supply Co. ]</p>
+                  <p>{testimonial.author}</p>
+                  <p>{testimonial.company}</p>
                 </div>
               </div>
             </div>
@@ -57,21 +155,21 @@ export default function About() {
               <div className="flex items-center justify-start gap-3">
                 <div className="h-3 w-3 bg-inngestLux"></div>
                 <p className="font-whyte text-2xl font-light leading-tight tracking-tight text-white">
-                  Interested in Inngest?
+                  {cta.primaryText}
                 </p>
               </div>
-              <div className="w-full md:w-auto">
+              <div className="-mr-[19rem] w-full md:w-auto">
                 <div className="w-full border-t border-stone-50 md:hidden"></div>
                 <div className="flex items-start justify-start gap-3 pt-6 md:pt-0">
                   <div className="flex max-w-xs items-start gap-3 font-whyte text-2xl font-light leading-tight tracking-tight text-white">
                     <div className="mt-2 h-3 w-3 flex-shrink-0 bg-inngestLux"></div>
-                    <p>Talk to an Inngest product expert today.</p>
+                    <p>{cta.secondaryText}</p>
                   </div>
                 </div>
               </div>
               <div className="flex w-full flex-col items-center gap-6 md:w-auto md:flex-row md:items-center md:gap-8">
                 <Button className="flex h-[52px] w-[212px] flex-shrink-0 items-center justify-center gap-[10px] px-[13px] py-[15px] text-right font-whyte text-2xl font-normal leading-[120%] text-stone-800 transition-colors">
-                  Get in touch [+]
+                  {cta.buttonText}
                 </Button>
               </div>
             </div>
@@ -90,3 +188,6 @@ export default function About() {
     </>
   );
 }
+
+// Export types for reuse
+export type { ComposableAboutProps, TestimonialData, CTAData };

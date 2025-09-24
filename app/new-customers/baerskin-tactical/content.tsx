@@ -5,24 +5,249 @@ import { Tabs, TabsList, TabsTrigger } from "./caseStudyTabs";
 import { cn } from "src/components/utils/classNames";
 import { useEffect, useState } from "react";
 
+// Interfaces for composable content structure
+interface Requirement {
+  label: string;
+  description: string;
+}
+
+interface QuoteBlock {
+  quote: string;
+  author: string;
+  company: string;
+}
+
+interface NumberedSection {
+  number: string;
+  text: string;
+  highlightedText?: string;
+}
+
+type ContentBlock =
+  | { type: "paragraph"; content: string; imagePath?: string }
+  | {
+      type: "requirements";
+      requirements: Requirement[];
+      imagePath?: string;
+    }
+  | { type: "quote"; quote: QuoteBlock; imagePath?: string }
+  | { type: "label"; content: string; imagePath?: string }
+  | { type: "numbered"; numbered: NumberedSection; imagePath?: string }
+  | { type: "cta"; ctaText: string; imagePath?: string };
+
+interface ContentSectionData {
+  id: string;
+  title: string;
+  header: string;
+  contentBlocks: ContentBlock[];
+  image?: React.ReactNode;
+}
+
+interface ComposableCaseStudyProps {
+  intro: {
+    title: string;
+    logo: React.ReactNode;
+  };
+  sections: ContentSectionData[];
+  footer: {
+    title: string;
+    subtitle: string;
+    ctaText: string;
+  };
+}
+
+// Default content for Baerskin case study
+const BAERSKIN_CONTENT: ComposableCaseStudyProps = {
+  intro: {
+    title:
+      "BÆRSkin Tactical Supply Co. adopted a unique approach to e-commerce, taking data-driven decisions to target niche markets worldwide. This strategy is backed by the choice to build an in-house e-commerce platform, bringing them complete flexibility and control of the shopping experience compared to solutions like Shopify.",
+    logo: <BaerskinLogo />,
+  },
+  sections: [
+    {
+      id: "first",
+      title: "BUILDING IN-HOUSE E-COMMERCE PLATFORM",
+      header:
+        "BÆRSkin Tactical Supply Co. adopted a unique approach to e-commerce, taking data-driven decisions to target niche markets worldwide. This strategy is backed by the choice to build an in-house e-commerce platform, bringing them complete flexibility and control of the shopping experience compared to solutions like Shopify.",
+      contentBlocks: [
+        {
+          type: "quote",
+          quote: {
+            author: "Gus Fune → CTO",
+            company: "[ BÆRSkin Tactical Supply Co. ]",
+            quote:
+              "We ended up developing our own E commerce platform in house. So we didn’t use Shopify or anything like that because we wantto keep control of a few elements that they don't allow us to controllike checkout",
+          },
+        },
+        {
+          type: "paragraph",
+          content:
+            "BÆRSkin Tactical Supply Co. is built as a multi-cloud and multi-region event-driven system, composed of analytics systems used internally to make data-driven decisions, as well as operational data processing that powers core e-commerce features, such as order processing and logistics. \n\n In late 2024, Gus and his team started to face issues with their recent Kafka replatforming (migrating an existing application without major rewrites).",
+        },
+      ],
+      image: <PlaceholderImage2 />,
+    },
+    {
+      id: "deez",
+      title: "THE KAFKA REPLATFORMING FAILURE: 6% EVENT LOSS",
+      header:
+        "BÆRSkin Tactical Supply Co. adopted Kafka in late 2023 to power their analytics and order processing systems. As the replatforming progressed, they realized that some events were dropped, resulting in customers' complaints about missing orders.",
+      contentBlocks: [
+        {
+          type: "paragraph",
+          content:
+            "Events dropped by Kafka, combined with its lack of native production tooling, made it hard for the engineering team to identify the root cause and impact on customers. Facing this challenge, Gus started to research a new technology to replace Kafka, matching the following requirements:",
+        },
+        {
+          type: "requirements",
+          requirements: [
+            {
+              label: "Reliability:",
+              description:
+                "Events should be delivered reliably and can be replayed in case of processing issues. Producing and consuming events should be scalable without requiring extra infrastructure work.",
+            },
+            {
+              label: "Event-driven:",
+              description:
+                "The researched solution needs to match BÆRSkin Tactical Supply Co.' event-driven architecture.",
+            },
+            {
+              label: "Observability:",
+              description:
+                "Events and their associated processing should be easily monitored with metrics and alerts.",
+            },
+            {
+              label: "Monitoring & Recovery tooling:",
+              description:
+                "Events should be delivered reliably and can be replayed in case of processing issues. Producing and consuming events should be scalable without requiring extra infrastructure work.",
+            },
+          ],
+        },
+        {
+          type: "paragraph",
+          content:
+            "Compared to other solutions like Temporal, Inngest stood out as a promising candidate with the added value of its great DX and Bun support, which is the primary runtime of BÆRSkin Tactical Supply Co.'s codebase.",
+        },
+      ],
+      image: <PlaceholderImage />,
+    },
+    {
+      id: "second",
+      title:
+        "CHOOSING INNGEST: A RELIABLE EVENT-DRIVEN WORKFLOW ENGINE, COMING WITH ESSENTIAL PRODUCTION TOOLS",
+      header:
+        "BÆRSkin Tactical Supply Co. adopted a unique approach to e-commerce, taking data-driven decisions to target niche markets worldwide. This strategy is backed by the choice to build an in-house e-commerce platform, bringing them complete flexibility and control of the shopping experience compared to solutions like Shopify.",
+      contentBlocks: [
+        {
+          type: "requirements",
+          requirements: [
+            {
+              label: "Beyond Reliability:",
+              description:
+                "( observability / monitoring / recovery tools ) Beyond solving the reliability issues faced with Kafka, replatforming to Inngest brought a set of new advantages in operating their operational data and analytics processing in production. ",
+            },
+          ],
+        },
+        {
+          type: "quote",
+          quote: {
+            author: "Gus Fune → CTO",
+            company: "[ BÆRSkin Tactical Supply Co. ]",
+            quote:
+              "The reliable transportation of events and making sure the replayability, being able to monitor how things are going, and catch things before they become a problem. Those are super important for us.",
+          },
+        },
+        {
+          type: "label",
+          content:
+            "Using Inngest, Gus's team got access to ready-to-use monitoring dashboards, production recovery tools such as Replays  [↙ ]",
+          imagePath: "/assets/customers/baerskin/baerskinImage.png",
+        },
+      ],
+    },
+    {
+      id: "third",
+      title: "Achieving 10x performance improvements on their logistics system",
+      header:
+        "Once the initial reliability issue was resolved by replatforming to Inngest, Gus and his team began exploring ways to expand Inngest to address other challenges they faced with their logistics system.",
+      contentBlocks: [
+        {
+          type: "paragraph",
+          content:
+            "BÆRSkin Tactical Supply Co.'s logistics system faced a recurring challenge during Black Friday and Cyber Monday, a well-known challenge for most E-Commerce actors. The large number of orders concentrated during this short period was putting a lot of pressure on their database-based queuing system (utilizing Postgres's SKIP LOCKED design), which failed to process orders and initiate shipments in a reasonable timeframe. \n\n While short-term solutions such as drastically upscaling their infrastructure helped, Gus and his team started a PoC to evaluate the performance of their logistics system once powered by Inngest. Again, the results were there.",
+        },
+        {
+          type: "quote",
+          quote: {
+            author: "Gus Fune → CTO",
+            company: "[ BÆRSkin Tactical Supply Co. ]",
+            quote:
+              "The preliminary results show that from 40 orders per minute we managed to increase to 500 orders per minute to process in the new system. So this is probably the biggest gain we've seen in the new system.",
+          },
+        },
+      ],
+    },
+    {
+      id: "fourth",
+      title: "INNGEST FOR E-COMMERCE",
+      header:
+        "For BÆRSkin Tactical Supply Co., what started as a replatforming effort to address Kafka reliability issues ultimately evolved into a modernization of their analytical and operational data processing, resulting in significant gains in processing performance (a 10x faster logistics system) and operational productivity (through production tools like Replay).",
+      contentBlocks: [
+        {
+          type: "paragraph",
+          content:
+            "BÆRSkin Tactical Supply Co.'s logistics system faced a recurring challenge during Black Friday and Cyber Monday, a well-known challenge for most E-Commerce actors. The large number of orders concentrated during this short period was putting a lot of pressure on their database-based queuing system (utilizing Postgres's SKIP LOCKED design), which failed to process orders and initiate shipments in a reasonable timeframe. \n\n Finally, where alternatives like Kafka, AWS SQS, or Temporal require significant investment in infrastructure, monitoring, and production tools, Inngest comes with a fully managed and auto-scaled service that provides essential production monitoring and recovery tools.",
+        },
+        {
+          type: "paragraph",
+          content:
+            "If you’re interested in learning how Inngest can help your team? → Reach out to us to chat with an expert.",
+        },
+        {
+          type: "cta",
+          ctaText: "Read more [↗]",
+        },
+      ],
+    },
+  ],
+  footer: {
+    title: "Check out other customer success stories",
+    subtitle: "Talk to an Inngest product expert today.",
+    ctaText: "Get in touch [+]",
+  },
+};
+
 export default function BaerskinTacticalContent() {
-  const [activeTab, setActiveTab] = useState("first");
+  return <ComposableCaseStudy {...BAERSKIN_CONTENT} />;
+}
+
+// Export the composable component for reuse
+export { ComposableCaseStudy };
+
+// Main composable component
+function ComposableCaseStudy({
+  intro,
+  sections,
+  footer,
+}: ComposableCaseStudyProps) {
+  const [activeTab, setActiveTab] = useState(sections[0]?.id || "");
   const [isScrolling, setIsScrolling] = useState(false);
+
+  const sectionIds = sections.map((section) => section.id);
 
   useEffect(() => {
     const handleScroll = () => {
       // Don't update tabs during programmatic scrolling
       if (isScrolling) return;
 
-      const sections = ["first", "second", "third"];
       const offset = 150; // Offset to account for sticky header + tabs
 
-      for (const section of sections) {
-        const element = document.querySelector(`.${section}`);
+      for (const sectionId of sectionIds) {
+        const element = document.querySelector(`.${sectionId}`);
         if (element) {
           const rect = element.getBoundingClientRect();
           if (rect.top <= offset && rect.bottom > offset) {
-            setActiveTab(section);
+            setActiveTab(sectionId);
             break;
           }
         }
@@ -33,10 +258,10 @@ export default function BaerskinTacticalContent() {
     handleScroll(); // Check initial position
 
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [isScrolling]);
+  }, [isScrolling, sectionIds]);
 
-  const scrollToSection = (section: string) => {
-    const element = document.querySelector(`.${section}`);
+  const scrollToSection = (sectionId: string) => {
+    const element = document.querySelector(`.${sectionId}`);
     if (element) {
       setIsScrolling(true);
 
@@ -60,29 +285,19 @@ export default function BaerskinTacticalContent() {
     }
   };
 
-  const getSectionNumber = (section: string) => {
-    switch (section) {
-      case "first":
-        return 1;
-      case "second":
-        return 2;
-      case "third":
-        return 3;
-      default:
-        return 1;
-    }
+  const getSectionNumber = (sectionId: string) => {
+    return sectionIds.indexOf(sectionId) + 1;
   };
 
   const navigateToSection = (direction: "prev" | "next") => () => {
-    const sections = ["first", "second", "third"];
-    const currentIndex = sections.indexOf(activeTab);
+    const currentIndex = sectionIds.indexOf(activeTab);
 
     if (direction === "prev" && currentIndex > 0) {
-      const prevSection = sections[currentIndex - 1];
+      const prevSection = sectionIds[currentIndex - 1];
       setActiveTab(prevSection);
       scrollToSection(prevSection);
-    } else if (direction === "next" && currentIndex < sections.length - 1) {
-      const nextSection = sections[currentIndex + 1];
+    } else if (direction === "next" && currentIndex < sectionIds.length - 1) {
+      const nextSection = sectionIds[currentIndex + 1];
       setActiveTab(nextSection);
       scrollToSection(nextSection);
     }
@@ -94,122 +309,87 @@ export default function BaerskinTacticalContent() {
         <div className="mx-auto w-full max-w-container-desktop px-8">
           <div className="max-w-[60rem] border-carbon-1000 pb-20">
             <div className="relative z-10 flex h-full">
-              <p className="font-whyte text-base font-light leading-[140%] tracking-[-0.8px] text-[#242424] md:text-[32px] md:leading-[140%] md:tracking-[-1.6px] md:text-[#292524]">
-                BÆRSkin Tactical Supply Co. adopted a unique approach to
-                e-commerce, taking data-driven decisions to target niche markets
-                worldwide. This strategy is backed by the choice to build an
-                in-house e-commerce platform, bringing them complete flexibility
-                and control of the shopping experience compared to solutions
-                like Shopify.
+              <p className="whitespace-pre-line font-whyte text-base font-light leading-[140%] tracking-[-0.8px] text-[#242424] md:text-[32px] md:leading-[140%] md:tracking-[-1.6px] md:text-[#292524]">
+                {intro.title}
               </p>
             </div>
           </div>
           {/* replace bottom border with switcher */}
           <div className="flex justify-end border-t border-carbon-1000 py-10">
             <div className="origin-left scale-90 md:scale-75 lg:scale-90 xl:scale-100">
-              <BaerskinLogo />
+              {intro.logo}
             </div>
           </div>
         </div>
-        {/* Sticky tabs container positioned below the header */}
-        <div className="sticky top-[73px] z-40 bg-carbon-100 py-4 shadow-sm">
+        {/* Desktop tabs container */}
+        <div className="sticky top-[73px] z-40 hidden bg-carbon-100 py-4 md:block">
           <div className="mx-auto w-full max-w-container-desktop px-8">
-            <div className="flex w-full items-center">
-              {/* Desktop tabs */}
-              <Tabs
-                value={activeTab}
-                onValueChange={setActiveTab}
-                className="hidden w-full md:block"
-              >
-                <TabsList className="w-full bg-transparent">
+            <Tabs
+              value={activeTab}
+              onValueChange={setActiveTab}
+              className="w-full"
+            >
+              <TabsList className="w-full bg-transparent">
+                {sections.map((section, index) => (
                   <TabsTrigger
-                    value="first"
-                    onClick={() => scrollToSection("first")}
+                    key={section.id}
+                    value={section.id}
+                    onClick={() => scrollToSection(section.id)}
                     className="cursor-pointer font-whyteMono"
                   >
-                    [01]
+                    [{(index + 1).toString().padStart(2, "0")}]
                   </TabsTrigger>
-                  <TabsTrigger
-                    value="second"
-                    onClick={() => scrollToSection("second")}
-                    className="cursor-pointer font-whyteMono"
-                  >
-                    [02]
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
+                ))}
+              </TabsList>
+            </Tabs>
+          </div>
+        </div>
 
-              {/* Mobile navigation */}
-              <div className="flex w-full items-center justify-between md:hidden">
-                <div className="flex-1">
-                  <span className="text-sm font-medium text-stone-800">
-                    Section {getSectionNumber(activeTab)} of 3
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={navigateToSection("prev")}
-                    className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-100 disabled:opacity-50"
-                    disabled={activeTab === "first"}
-                  >
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 16 16"
-                      fill="none"
-                      className="rotate-180"
-                    >
-                      <path
-                        d="M6 12L10 8L6 4"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={navigateToSection("next")}
-                    className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-100 disabled:opacity-50"
-                    disabled={activeTab === "third"}
-                  >
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                      <path
-                        d="M6 12L10 8L6 4"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            </div>
+        {/* Mobile navigation - Right edge of screen */}
+        <div className="sticky top-[73px] z-40 flex justify-end py-4 pr-4 md:hidden">
+          <div className="flex flex-col gap-1">
+            {sections.map((section, index) => (
+              <button
+                key={section.id}
+                onClick={() => {
+                  setActiveTab(section.id);
+                  scrollToSection(section.id);
+                }}
+                className={`flex h-6 w-10 items-center justify-center font-whyteMono text-xs font-normal ${
+                  activeTab === section.id
+                    ? "bg-stone-800 text-white"
+                    : "bg-transparent text-stone-600 hover:bg-stone-100"
+                }`}
+              >
+                [{(index + 1).toString().padStart(2, "0")}]
+              </button>
+            ))}
           </div>
         </div>
         <div className="mx-auto w-full max-w-container-desktop px-8">
-          <ContentSection section="first" />
-          <ContentSection section="second" />
+          {sections.map((section) => (
+            <ContentSection key={section.id} sectionData={section} />
+          ))}
 
           <div className="mx-auto mt-20 border-t border-stone-800 pt-8">
             <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
-              <div className="flex items-center justify-start gap-3">
-                <div className="h-3 w-3 bg-stone-800"></div>
-                <p className="max-w-xs font-whyte text-2xl font-light leading-tight tracking-tight text-stone-800">
-                  Check out other customer success stories
-                </p>
-              </div>
-              <div className="w-full md:-ml-[15rem] md:w-auto">
+              <div className="w-full md:w-auto">
                 <div className="w-full border-t border-stone-800 md:hidden"></div>
                 <div className="-mr-9 flex max-w-xs items-start gap-3 font-whyte text-2xl font-light leading-tight tracking-tight text-stone-800">
                   <div className="mt-2 h-3 w-3 flex-shrink-0 bg-stone-800"></div>
-                  <p>Talk to an Inngest product expert today.</p>
+                  <p>{footer.title}</p>
+                </div>
+              </div>
+              <div className="w-full md:-ml-[11rem] md:w-auto">
+                <div className="w-full border-t border-stone-800 md:hidden"></div>
+                <div className="-mr-9 flex max-w-xs items-start gap-3 font-whyte text-2xl font-light leading-tight tracking-tight text-stone-800">
+                  <div className="mt-2 h-3 w-3 flex-shrink-0 bg-stone-800"></div>
+                  <p>{footer.subtitle}</p>
                 </div>
               </div>
               <div className="flex w-full flex-col items-center gap-6 md:w-auto md:flex-row md:items-center md:gap-8">
                 <Button className="flex h-[52px] w-[212px] flex-shrink-0 items-center justify-center gap-[10px] bg-stone-800 px-[13px] py-[15px] text-right font-whyte text-2xl font-normal leading-[120%] text-alwaysWhite transition-colors hover:bg-stone-800/60">
-                  Get in touch [+]
+                  {footer.ctaText}
                 </Button>
               </div>
             </div>
@@ -228,17 +408,12 @@ export default function BaerskinTacticalContent() {
     </>
   );
 }
-interface Requirement {
-  label: string;
-  description: string;
-}
-
 interface RequirementsListProps {
   requirements: Requirement[];
 }
 function RequirementsList({ requirements }: RequirementsListProps) {
   return (
-    <div className="space-y-16 border-t border-stone-800 pt-8">
+    <div className="space-y-16">
       {requirements.map((requirement, index) => (
         <div key={index}>
           <div className="flex gap-8 pb-10">
@@ -271,22 +446,22 @@ function RequirementsList({ requirements }: RequirementsListProps) {
   );
 }
 
-function ContentSection({ section }: { section: string }) {
+function ContentSection({ sectionData }: { sectionData: ContentSectionData }) {
   return (
     <div
-      id={section}
+      id={sectionData.id}
       className={cn(
-        `my-12 flex scroll-mt-[140px] flex-col gap-6 md:flex-row md:justify-between ${section}`
+        `my-12 flex scroll-mt-[140px] flex-col gap-6 md:flex-row md:justify-between ${sectionData.id}`
       )}
     >
       {/* Left column - Title + SVG on mobile, Title + SVG side by side on desktop */}
       <div className="flex flex-col gap-6 md:min-h-[800px] md:justify-between">
-        <p className="font-abc-whyte-mono max-w-md text-[24px] font-normal leading-[1.3] tracking-[0.07em] text-[#292524]">
-          THE KAFKA REPLATFORMING FAILURE: 6% EVENT LOSS
+        <p className="max-w-md font-whyteMono text-[24px] font-normal uppercase leading-[1.3] tracking-[0.07em] text-[#292524]">
+          {sectionData.title}
         </p>
         {/* SVG - shows below title on mobile, in flex layout on desktop */}
         <div className="flex items-center justify-start md:flex-1">
-          <PlaceholderImage />
+          {sectionData.image}
         </div>
       </div>
       <div>
@@ -294,82 +469,141 @@ function ContentSection({ section }: { section: string }) {
           {/* Header Section */}
           <div className="mb-8">
             <p className="font-whyte text-2xl font-light leading-[120%] tracking-[-1.2px] text-[#242424] md:text-[48px] md:leading-[120%] md:tracking-[-2.4px]">
-              BÆRSkin Tactical Supply Co. adopted Kafka in late 2023 to power
-              their analytics and order processing systems. As the replatforming
-              progressed, they realized that some events were dropped, resulting
-              in customers' complaints about missing orders.
+              {sectionData.header}
             </p>
 
             {/* Black square element */}
             <div className="my-8 h-6 w-6 bg-[#242424]"></div>
           </div>
 
-          {/* Problem Description */}
-          <div className="mb-8 border-t border-stone-800 pt-8">
-            <p className="font-whyteInktrapVariable text-base font-light leading-[140%] tracking-[-0.8px] text-[#242424] md:text-[32px] md:leading-[140%] md:tracking-[-1.6px]">
-              Events dropped by Kafka, combined with its lack of native
-              production tooling, made it hard for the engineering team to
-              identify the root cause and impact on customers. Facing this
-              challenge, Gus started to research a new technology to replace
-              Kafka, matching the following requirements:
-            </p>
-          </div>
-
-          {/* Requirements Section */}
-          <RequirementsList
-            requirements={[
-              {
-                label: "Reliability:",
-                description:
-                  "Events should be delivered reliably and can be replayed in case of processing issues. Producing and consuming events should be scalable without requiring extra infrastructure work.",
-              },
-              {
-                label: "Event-driven:",
-                description:
-                  "The researched solution needs to match BÆRSkin Tactical Supply Co.' event-driven architecture.",
-              },
-              {
-                label: "Observability:",
-                description:
-                  "Events and their associated processing should be easily monitored with metrics and alerts.",
-              },
-              {
-                label: "Monitoring & Recovery tooling:",
-                description:
-                  "Events should be delivered reliably and can be replayed in case of processing issues. Producing and consuming events should be scalable without requiring extra infrastructure work.",
-              },
-            ]}
-          />
-
-          {/* Conclusion */}
-          <div className="border-t border-stone-800 pt-8">
-            <p className="font-whyte text-base font-light leading-[140%] tracking-[-0.8px] text-[#242424] md:text-[32px] md:leading-[140%] md:tracking-[-1.6px]">
-              Compared to other solutions like Temporal, Inngest stood out as a
-              promising candidate with the added value of its{" "}
-              <span className="underline">great DX</span> and{" "}
-              <span className="underline">Bun</span> support, which is the
-              primary runtime of BÆRSkin Tactical Supply Co.'s codebase.
-            </p>
-          </div>
-
-          {/* CTA Section */}
-          <div className="mx-auto mt-20 border-t border-stone-800 pt-8">
-            <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
-              <div className="flex max-w-xs items-start gap-3 font-whyte text-2xl font-light leading-tight tracking-tight text-stone-800">
-                <div className="mt-2 h-3 w-3 flex-shrink-0 bg-stone-800"></div>
-                <p>Talk to an Inngest product expert today.</p>
-              </div>
-              <div className="flex w-full flex-col items-center gap-6 md:w-auto md:flex-row md:items-center md:gap-8">
-                <Button className="flex h-[52px] w-[212px] flex-shrink-0 items-center justify-center gap-[10px] bg-stone-800 px-[13px] py-[15px] text-right font-whyte text-2xl font-normal leading-[120%] text-alwaysWhite transition-colors hover:bg-stone-800/60">
-                  Read more [↗]
-                </Button>
-              </div>
-            </div>
-          </div>
+          {/* Dynamic Content Blocks */}
+          {sectionData.contentBlocks.map((block, index) => (
+            <ContentBlock
+              key={index}
+              block={block}
+              isLast={index === sectionData.contentBlocks.length - 1}
+            />
+          ))}
         </div>
       </div>
     </div>
   );
+}
+
+// Component to render different types of content blocks
+function ContentBlock({
+  block,
+  isLast,
+}: {
+  block: ContentBlock;
+  isLast: boolean;
+}) {
+  const containerClasses =
+    isLast && block.type === "cta"
+      ? "mx-auto mt-20 border-t border-stone-800 pt-8"
+      : "py-14 border-t border-stone-800";
+
+  const renderImage = (imagePath?: string) => {
+    if (!imagePath) return null;
+
+    return (
+      <div className="justify-left flex">
+        <img
+          src={imagePath}
+          alt="Content block image"
+          className="h-auto w-full max-w-2xl pt-11"
+        />
+      </div>
+    );
+  };
+
+  switch (block.type) {
+    case "paragraph":
+      return (
+        <div className={containerClasses}>
+          <p className="whitespace-pre-line font-whyteInktrapVariable text-base font-light leading-[140%] tracking-[-0.8px] text-[#242424] md:text-[32px] md:leading-[140%] md:tracking-[-1.6px]">
+            {block.content}
+          </p>
+          {renderImage(block.imagePath)}
+        </div>
+      );
+
+    case "requirements":
+      return (
+        <div className={containerClasses}>
+          <RequirementsList requirements={block.requirements} />
+          {renderImage(block.imagePath)}
+        </div>
+      );
+
+    case "quote":
+      return (
+        <div className={containerClasses}>
+          <div className="relative">
+            {/* Hanging quote mark - positioned outside the content flow */}
+            <div className="absolute top-0 font-whyte text-4xl font-light leading-[120%] tracking-[-1.2px] text-stone-400 md:-left-5 md:text-6xl">
+              ‟
+            </div>
+            <blockquote className="font-whyte text-base font-light leading-[140%] tracking-[-0.8px] text-[#242424] md:text-[32px] md:leading-[140%] md:tracking-[-1.6px]">
+              {block.quote.quote}”
+            </blockquote>
+          </div>
+          <p className="max-w-sm pt-12 font-whyteMono font-normal leading-[140%] text-stone-800 md:leading-[1.3] md:tracking-[0.075em]">
+            {block.quote.author}
+            <br />
+            {block.quote.company}
+          </p>
+          {renderImage(block.imagePath)}
+        </div>
+      );
+
+    case "label":
+      return (
+        <div className={containerClasses}>
+          <div className="font-whyteMono text-[28px] font-normal leading-[1.4] tracking-[-0.05em] text-stone-800">
+            {block.content}
+          </div>
+          {renderImage(block.imagePath)}
+        </div>
+      );
+
+    case "numbered":
+      return (
+        <div className={containerClasses}>
+          <div className="font-whyte text-3xl font-normal leading-[1.4] tracking-[-0.05em] text-stone-800">
+            {block.numbered.number}{" "}
+            {block.numbered.highlightedText && (
+              <span className="underline">
+                {block.numbered.highlightedText}{" "}
+              </span>
+            )}
+            {block.numbered.text}
+          </div>
+          {renderImage(block.imagePath)}
+        </div>
+      );
+
+    case "cta":
+      return (
+        <div className={containerClasses}>
+          <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
+            <div className="flex max-w-xs items-start gap-3 font-whyte text-2xl font-light leading-tight tracking-tight text-stone-800">
+              <div className="mt-2 h-3 w-3 flex-shrink-0 bg-stone-800"></div>
+              <p>Talk to an Inngest product expert today.</p>
+            </div>
+            <div className="flex w-full flex-col items-center gap-6 md:w-auto md:flex-row md:items-center md:gap-8">
+              <Button className="flex h-[52px] w-[212px] flex-shrink-0 items-center justify-center gap-[10px] bg-stone-800 px-[13px] py-[15px] text-right font-whyte text-2xl font-normal leading-[120%] text-alwaysWhite transition-colors hover:bg-stone-800/60">
+                {block.ctaText}
+              </Button>
+            </div>
+          </div>
+          {renderImage(block.imagePath)}
+        </div>
+      );
+
+    default:
+      return null;
+  }
 }
 
 function PlaceholderImage() {
@@ -711,6 +945,36 @@ function PlaceholderImage() {
         <clipPath id="clip0_321_29285">
           <rect width="384.682" height="776.105" fill="white" />
         </clipPath>
+      </defs>
+    </svg>
+  );
+}
+
+function PlaceholderImage2() {
+  return (
+    <svg
+      width="542"
+      height="401"
+      viewBox="0 0 542 401"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <rect width="542" height="401" fill="url(#pattern0_321_29280)" />
+      <defs>
+        <pattern
+          id="pattern0_321_29280"
+          patternContentUnits="objectBoundingBox"
+          width="1"
+          height="1"
+        >
+          <use transform="matrix(0.000731079 0 0 0.000988142 -0.0760906 0)" />
+        </pattern>
+        <image
+          id="image0_321_29280"
+          width="1576"
+          height="1012"
+          preserveAspectRatio="none"
+        />
       </defs>
     </svg>
   );
