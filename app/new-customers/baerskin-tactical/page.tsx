@@ -96,7 +96,7 @@ const BAERSKIN_PAGE_DATA: CaseStudyPageProps = {
     title: "How BÆRSkin Tactical Supply Co. achieved ",
     highlightedText: "100% event deliverability",
     subtitle: " by switching from Kafka to Inngest.",
-    backgroundColor: "#fafaf9",
+    backgroundColor: "rgb(var(--color-carbon-50))",
     backgroundPatterns: {
       left: <Pattern3 />,
       right: <Pattern7 />,

@@ -48,7 +48,7 @@ const BAERSKIN_HEADER_DATA: ComposableHeaderProps = {
   title: "How BÆRSkin Tactical Supply Co. achieved ",
   highlightedText: "100% event deliverability",
   subtitle: " by switching from Kafka to Inngest.",
-  backgroundColor: "#fafaf9",
+  backgroundColor: "rgb(var(--color-carbon-50))",
   backgroundPatterns: {
     left: <Pattern3 />,
     right: <Pattern7 />,
@@ -94,7 +94,7 @@ function ComposableHeader({
   title,
   highlightedText,
   subtitle,
-  backgroundColor = "#fafaf9",
+  backgroundColor = "rgb(var(--color-carbon-50))",
   backgroundPatterns,
   infoBlocks,
   companyDetails,
@@ -376,8 +376,8 @@ function InfoBlock({
 }) {
   return (
     <div>
-      <h3 className="mb-2 text-2xl font-medium text-[#242424]">{header}</h3>
-      <p className="font-circular text-2xl font-light text-[#1c1917]">
+      <h3 className="mb-2 text-2xl font-medium text-carbon-800">{header}</h3>
+      <p className="font-circular text-2xl font-light text-carbon-900">
         {description}
       </p>
     </div>
@@ -393,8 +393,8 @@ function InfoBlockTablet({
 }) {
   return (
     <div>
-      <h3 className="mb-2 text-xl font-medium text-[#242424]">{header}</h3>
-      <p className="font-circular text-xl font-light text-[#1c1917]">
+      <h3 className="mb-2 text-xl font-medium text-carbon-800">{header}</h3>
+      <p className="font-circular text-xl font-light text-carbon-900">
         {description}
       </p>
     </div>

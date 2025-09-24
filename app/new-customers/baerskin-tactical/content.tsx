@@ -309,7 +309,7 @@ function ComposableCaseStudy({
         <div className="mx-auto w-full max-w-container-desktop px-8">
           <div className="max-w-[60rem] border-carbon-1000 pb-20">
             <div className="relative z-10 flex h-full">
-              <p className="whitespace-pre-line font-whyte text-base font-light leading-[140%] tracking-[-0.8px] text-[#242424] md:text-[32px] md:leading-[140%] md:tracking-[-1.6px] md:text-[#292524]">
+              <p className="whitespace-pre-line font-whyte text-base font-light leading-[140%] tracking-[-0.8px] text-carbon-800 md:text-[32px] md:leading-[140%] md:tracking-[-1.6px] md:text-carbon-800">
                 {intro.title}
               </p>
             </div>
@@ -418,7 +418,7 @@ function RequirementsList({ requirements }: RequirementsListProps) {
         <div key={index}>
           <div className="flex gap-8 pb-10">
             <div className="w-1/5 flex-shrink-0">
-              <div className="font-whyte text-base font-normal leading-[140%] tracking-[-0.8px] text-[#292524] md:text-[32px] md:leading-[140%] md:tracking-[-1.6px]">
+              <div className="font-whyte text-base font-normal leading-[140%] tracking-[-0.8px] text-carbon-800 md:text-[32px] md:leading-[140%] md:tracking-[-1.6px]">
                 [X]
                 <br />
                 {requirement.label.split("\n").map((line, lineIndex) => (
@@ -432,7 +432,7 @@ function RequirementsList({ requirements }: RequirementsListProps) {
               </div>
             </div>
             <div className="w-4/5">
-              <p className="font-whyte text-base font-light leading-[140%] tracking-[-0.8px] text-[#292524] md:text-[32px] md:leading-[140%] md:tracking-[-1.6px]">
+              <p className="font-whyte text-base font-light leading-[140%] tracking-[-0.8px] text-carbon-800 md:text-[32px] md:leading-[140%] md:tracking-[-1.6px]">
                 {requirement.description}
               </p>
             </div>
@@ -456,7 +456,7 @@ function ContentSection({ sectionData }: { sectionData: ContentSectionData }) {
     >
       {/* Left column - Title + SVG on mobile, Title + SVG side by side on desktop */}
       <div className="flex flex-col gap-6 md:min-h-[800px] md:justify-between">
-        <p className="max-w-md font-whyteMono text-[24px] font-normal uppercase leading-[1.3] tracking-[0.07em] text-[#292524]">
+        <p className="max-w-md font-whyteMono text-[24px] font-normal uppercase leading-[1.3] tracking-[0.07em] text-carbon-800">
           {sectionData.title}
         </p>
         {/* SVG - shows below title on mobile, in flex layout on desktop */}
@@ -468,12 +468,12 @@ function ContentSection({ sectionData }: { sectionData: ContentSectionData }) {
         <div className="mx-auto max-w-[60rem]">
           {/* Header Section */}
           <div className="mb-8">
-            <p className="font-whyte text-2xl font-light leading-[120%] tracking-[-1.2px] text-[#242424] md:text-[48px] md:leading-[120%] md:tracking-[-2.4px]">
+            <p className="font-whyte text-2xl font-light leading-[120%] tracking-[-1.2px] text-carbon-800 md:text-[48px] md:leading-[120%] md:tracking-[-2.4px]">
               {sectionData.header}
             </p>
 
             {/* Black square element */}
-            <div className="my-8 h-6 w-6 bg-[#242424]"></div>
+            <div className="my-8 h-6 w-6 bg-carbon-800"></div>
           </div>
 
           {/* Dynamic Content Blocks */}
@@ -521,7 +521,7 @@ function ContentBlock({
     case "paragraph":
       return (
         <div className={containerClasses}>
-          <p className="whitespace-pre-line font-whyteInktrapVariable text-base font-light leading-[140%] tracking-[-0.8px] text-[#242424] md:text-[32px] md:leading-[140%] md:tracking-[-1.6px]">
+          <p className="whitespace-pre-line font-whyteInktrapVariable text-base font-light leading-[140%] tracking-[-0.8px] text-carbon-800 md:text-[32px] md:leading-[140%] md:tracking-[-1.6px]">
             {block.content}
           </p>
           {renderImage(block.imagePath)}
@@ -544,7 +544,7 @@ function ContentBlock({
             <div className="absolute top-0 font-whyte text-4xl font-light leading-[120%] tracking-[-1.2px] text-stone-400 md:-left-5 md:text-6xl">
               ‟
             </div>
-            <blockquote className="font-whyte text-base font-light leading-[140%] tracking-[-0.8px] text-[#242424] md:text-[32px] md:leading-[140%] md:tracking-[-1.6px]">
+            <blockquote className="font-whyte text-base font-light leading-[140%] tracking-[-0.8px] text-carbon-800 md:text-[32px] md:leading-[140%] md:tracking-[-1.6px]">
               {block.quote.quote}”
             </blockquote>
           </div>

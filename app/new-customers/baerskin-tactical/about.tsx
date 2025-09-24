@@ -85,7 +85,7 @@ function ComposableAbout({
         elements.push(
           <span
             key={`highlight-${index}`}
-            className="font-whyteInktrapVariable text-2xl font-normal leading-[120%] tracking-[-1.2px] text-[#FEFEFE] underline md:text-3xl md:leading-[1.4] md:tracking-[-0.05em] md:text-[#FAFAF9]"
+            className="font-whyteInktrapVariable text-2xl font-normal leading-[120%] tracking-[-1.2px] text-carbon-0 underline md:text-3xl md:leading-[1.4] md:tracking-[-0.05em] md:text-carbon-50"
           >
             {highlight}
           </span>
@@ -121,7 +121,7 @@ function ComposableAbout({
                   <div className="font-whyte text-4xl font-light leading-[120%] tracking-[-1.2px] text-stone-400">
                     ‟
                   </div>
-                  <blockquote className="max-w-4xl font-whyte text-2xl font-light leading-[120%] tracking-[-1.2px] text-[#FEFEFE] md:text-2xl md:leading-relaxed md:tracking-normal md:text-white">
+                  <blockquote className="max-w-4xl font-whyte text-2xl font-light leading-[120%] tracking-[-1.2px] text-carbon-0 md:text-2xl md:leading-relaxed md:tracking-normal md:text-white">
                     {renderQuoteWithHighlights(
                       testimonial.quote,
                       testimonial.highlightedParts
@@ -142,7 +142,7 @@ function ComposableAbout({
                     className="h-full w-full object-cover filter"
                   />
                 </div>
-                <div className="max-w-sm border-t pt-2 font-whyteMono text-sm font-normal leading-[140%] text-[#E7E5E4] md:text-2xl md:leading-[1.3] md:tracking-[0.075em] md:text-[#FEFEFE]">
+                <div className="max-w-sm border-t pt-2 font-whyteMono text-sm font-normal leading-[140%] text-carbon-300 md:text-2xl md:leading-[1.3] md:tracking-[0.075em] md:text-carbon-0">
                   <p>{testimonial.author}</p>
                   <p>{testimonial.company}</p>
                 </div>
