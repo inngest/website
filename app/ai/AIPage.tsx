@@ -63,9 +63,9 @@ export function AIPage({
                 scale: 1.6,
               },
               {
-                src: "/assets/customers/aomni-logo.svg",
-                name: "Aomni",
-                scale: 1.3,
+                src: "/assets/customers/outtake/outtake-logo.svg",
+                name: "Outtake",
+                scale: 1.2,
               },
               {
                 src: "/assets/customers/11x-logo.svg",
@@ -302,21 +302,29 @@ export default inngest.createFunction(
 
         <section className="my-28 py-14">
           <CaseStudy
-            title="Aomni: Productionizing AI-driven sales flows using serverless LLMs"
+            title="Securing the Internet: How Outtake's AI Agents Dismantle Cyber Attacks at Scale with Inngest"
             description={[
-              "Learn how Aomni built and scaled their AI research analyst to deliver deal-critical insights, analysis and automations to strategic sellers.",
-              "Aomni leverages Inngest's platform for orchestration of chained LLM calls, including tree of thought, chain of thought, and retrieval augmented generation (RAG).",
+              "Outtake's approach demonstrates that effective AI agents require a robust architecture to handle large datasets, manage rate limits, and ensure reliability",
             ]}
-            href={`/customers/aomni?ref=${ref}`}
-            image="/assets/ai/2024-11-27-customer-aomni.webp"
+            href={`/customers/outtake?ref=${ref}`}
+            image="/assets/customers/outtake/Diagram_B_v2.png"
           />
 
-          <Quote
+          {/* <Quote
             text={`For anyone who is building multi-step AI agents (such as AutoGPT type systems), I highly recommend building it on top of Inngest's job queue orchestration framework, the traceability it provides out of the box is super useful, plus you get timeouts & retries for free.`}
             attribution={{
               name: "David Zhang",
               title: "Founder, Aomni",
               avatar: "/assets/customers/aomni-david.jpg",
+            }}
+            variant="box"
+          /> */}
+          <Quote
+            text={`Throttling and durable execution are essential for automating cybersecurity at scale. We have several rate limits in a variety of places, both incoming in terms of APIs and outgoing in terms of token spend. Inngest is helping our developers confidently create and deploy highly complex agentic AI workflows faster than ever.`}
+            attribution={{
+              name: "Diego Escobedo",
+              title: "Founding Engineer, Outtake",
+              avatar: "/assets/customers/outtake/diego.png",
             }}
             variant="box"
           />
