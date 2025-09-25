@@ -1,0 +1,61 @@
+---
+heading: "Announcing Inngest + Replit: Vibe code your agents"
+image: /assets/blog/replit-cover.jpg
+subtitle: "Replit’s agent builder is powered by Inngest. Novice builders can now vibe code durable, complex agents quickly. Not a vibe coder? Read on to learn exactly how Replit built on top of Inngest, so you can do the same."
+date: 2025-09-25
+author: Tony Holdstock-Brown
+---
+
+*TLDR: Replit’s agent builder is now powered by Inngest! Novice builders can now vibe code durable, complex agents quickly. Not a vibe coder? Read on to learn exactly how Replit built on top of Inngest, so you can do the same.*
+
+Agents are how developers productionize AI. They take single inference calls and make them *useful* — with tools, tasks, and context executed in a series of steps.
+
+But as you may have seen in Inngest’s `useAgent` release, building *production ready* agents is actually very hard. You need to worry about state, context, tool calling, retries, error handling, queueing, realtime streaming…
+
+Now, anyone can [vibe code](https://blog.replit.com/what-is-vibe-coding) durable agents that scale. Replit brought Inngest into [Agent 3](https://replit.com/agent3) so they could give their users all of the durability, retries, state, and observability they would have had to cobble together on their own.
+
+### The trouble with building production ready agents
+
+Let’s back up a moment to explain what Replit does: Replit lets you build apps by talking to an AI. You describe what you want, and it codes, tests, and deploys—all through conversation. It’s always been a great way to prototype ideas quickly.
+
+Before Agent 3, if users wanted their agent to handle real business workflows—like processing customer data, managing integrations, or automating critical processes, they had to string together a few solutions. Which might look like:
+
+1. **Use a visual workflow editor** - hoping you can bend it to what you need to do
+2. **Configure webhooks and API integrations** between multiple services - meaning brittle integrations
+3. **Learn distributed systems** to orchestrate multi-step agent processes - essentially building your own agent platform
+
+Of course, the above is either incredibly time-consuming, or incredibly brittle.  For Replit’s users, this is a non-starter. 
+
+### How Inngest helps Replit users build production ready agents
+
+With Agent 3, [durable orchestration](/blog/principles-of-durable-execution?ref=blog-inngest-replit-vibe-code-ai-agents) comes baked-in to the agents it creates—zero infrastructure knowledge required. Here’s how it works:
+
+1. Users chat with Replit’s Agent 3, which starts writing prompts, integrating tools, and writing the step functions that run on top of Inngest.
+2. Replit launches the [Inngest dev server](/docs/dev-server?ref=blog-inngest-replit-vibe-code-ai-agents) in the dev version of your Replit app.
+3. Using Agent 3, users iterate on the agent using plain english, continually testing via Replit and the dev server.
+4. Once users are ready to move to production, Replit deploys your app, the Inngest function, and syncs to Inngest, providing all of the reliability of Inngest directly in a Replit app, without any of the config.
+
+Builders on Replit now get:
+
+- **Automatic Retries**: Automatically retry on failure with exponential backoff. If the OpenAI API is down, the function waits and tries again rather than losing the request.
+- **Built-in Observability**: Every execution is logged with [full traces](/docs/platform/monitor/inspecting-function-runs?ref=blog-inngest-replit-vibe-code-ai-agents) which you can examine yourself in Inngest. No more guessing what went wrong.
+- **Durable State**: If the process crashes between fetching messages and posting the summary, Inngest picks up exactly where it left off. No duplicate work, no lost progress.
+- **Rate Limit Handling**: Inngest's [concurrency controls](/docs/guides/concurrency?ref=blog-inngest-replit-vibe-code-ai-agents) prevent the agent from overwhelming external APIs. Process 5 messages/minute instead of trying 100 at once.
+- **Graceful Degradation**: Individual steps can fail without killing the entire workflow. The agent can still post partial results or meaningful error messages.
+
+And if a user’s generated agent starts failing, they don't need to dig through logs or add debugging code. They can view the execution in Inngest's dashboard to examine errors, and reply executions to quickly fix issues.
+
+This observability is crucial for generated code because customers don't always understand what Agent 3 built for them. *E.g. they can see their bot failing to post messages and immediately identify that it's a permissions issue in step 3, not a code bug.*
+
+### **How you can build the same thing**
+
+It turns out, the `step.run` API makes building similar things yourself simple.  Before using Inngest, you’d have to provision workers, queues, and implement a bunch of state yourself.
+
+Using `step.run`, you can vibe code a literal bunch of steps as a workflow and have it guarantee to run start to finish without thinking about infrastructure.
+
+If you’re already vibe coding websites, vibe coding workflows is simple:  we already run via HTTP endpoints, so the deploy process remains the same.  And using our Partner API, it’s easy to spin up Inngest accounts on behalf of your users with a single request.
+
+## Get Started
+
+- **Start building with Inngest:** [read the docs](https://agentkit.inngest.com/streaming/overview?ref=blog-replit)
+- [**Chat with us about becoming a partner**](/contact?ref=blog-replit)
