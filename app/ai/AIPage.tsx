@@ -45,22 +45,22 @@ export function AIPage({
               {
                 src: "/assets/customers/cohere-logo-white.svg",
                 name: "Cohere",
-                scale: 1.3,
+                scale: 1.4,
               },
               {
                 src: "/assets/customers/browser-use-white.svg",
                 name: "Browser Use",
-                scale: 1.6,
+                scale: 1.5,
               },
               {
                 src: "/assets/customers/gumroad-logo.svg",
                 name: "Gumroad",
-                scale: 1.6,
+                scale: 1.5,
               },
               {
-                src: "/assets/customers/day-ai-logo.svg",
-                name: "Day.ai",
-                scale: 1.1,
+                src: "/assets/customers/replit-logo.svg",
+                name: "Replit",
+                scale: 1.6,
               },
               {
                 src: "/assets/customers/aomni-logo.svg",
@@ -70,7 +70,7 @@ export function AIPage({
               {
                 src: "/assets/customers/11x-logo.svg",
                 name: "11x",
-                scale: 0.9,
+                scale: 0.8,
               },
             ].map(({ src, name, scale = 1 }, idx) => (
               <Image

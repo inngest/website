@@ -212,6 +212,13 @@ const caseStudies: {
 
 const featuredCompanies = [
   {
+    src: "/assets/customers/replit-logo.svg",
+    name: "Replit",
+    url: "https://replit.com/",
+    scale: 1.4,
+    type: "company",
+  },
+  {
     src: "/assets/customers/tripadvisor.svg",
     name: "TripAdvisor",
     url: "https://www.tripadvisor.com/",
@@ -222,13 +229,6 @@ const featuredCompanies = [
     name: "Contenful",
     url: "https://www.contentful.com/",
     scale: 1.1,
-    type: "company",
-  },
-  {
-    src: "/assets/customers/browser-use-white.svg",
-    name: "Browser Use",
-    url: "https://browser-use.com/",
-    scale: 1.7,
     type: "company",
   },
 ];
@@ -320,7 +320,13 @@ const grid: GridItem[] = [
     scale: 1.4,
     type: "company",
   },
-
+  {
+    src: "/assets/customers/browser-use-white.svg",
+    name: "Browser Use",
+    url: "https://browser-use.com/",
+    scale: 1.7,
+    type: "company",
+  },
   {
     src: "/assets/customers/documenso-logo-white.svg",
     name: "Documenso",
@@ -401,13 +407,6 @@ const grid: GridItem[] = [
     src: "/assets/customers/finta-logo.png?v=1",
     name: "Finta.io",
     url: "https://www.finta.io/",
-    type: "company",
-  },
-  {
-    src: "/assets/customers/lynq-logo.svg",
-    name: "Lynq.ai",
-    url: "https://www.lynq.ai/",
-    scale: 1,
     type: "company",
   },
   {
