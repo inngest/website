@@ -51,6 +51,8 @@ const options = {
     "https://fresh.deno.dev/",
     "https://deno.com/",
     "https://news.ycombinator.com/",
+    "https://www.npmjs.com/",
+    "https://www.npm.im/",
   ],
 };
 
