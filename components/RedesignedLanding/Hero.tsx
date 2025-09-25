@@ -65,6 +65,11 @@ export default function Hero() {
                 <div className="mt-10 grid grid-cols-2 items-center gap-8 sm:grid-cols-3 md:justify-between lg:mx-auto lg:grid-cols-6">
                   {[
                     {
+                      src: "/assets/customers/replit-logo.svg",
+                      name: "Replit",
+                      scale: 1.5,
+                    },
+                    {
                       src: "/assets/customers/soundcloud-logo-white-horizontal.svg",
                       name: "SoundCloud",
                       scale: 1.5,
@@ -85,15 +90,15 @@ export default function Hero() {
                       scale: 0.8,
                     },
                     {
-                      src: "/assets/customers/contentful-logo-white.svg",
-                      name: "Contentful",
+                      src: "/assets/customers/outtake/outtake-logo.svg",
+                      name: "Outtake",
                       scale: 1.2,
                     },
-                    {
-                      src: "/assets/customers/browser-use-white.svg",
-                      name: "Browser Use",
-                      scale: 1.5,
-                    },
+                    // {
+                    //   src: "/assets/customers/contentful-logo-white.svg",
+                    //   name: "Contentful",
+                    //   scale: 1.2,
+                    // },
                   ].map(({ src, name, scale = 1 }, idx) => (
                     <Image
                       key={idx}
