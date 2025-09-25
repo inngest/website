@@ -43,6 +43,11 @@ export function AIPage({
           <div className="mx-8 grid grid-cols-2 flex-wrap gap-x-4 gap-y-6 sm:flex sm:gap-x-10 sm:gap-y-8 lg:flex-nowrap">
             {[
               {
+                src: "/assets/customers/replit-logo.svg",
+                name: "Replit",
+                scale: 1.6,
+              },
+              {
                 src: "/assets/customers/cohere-logo-white.svg",
                 name: "Cohere",
                 scale: 1.4,
@@ -57,21 +62,17 @@ export function AIPage({
                 name: "Gumroad",
                 scale: 1.5,
               },
-              {
-                src: "/assets/customers/replit-logo.svg",
-                name: "Replit",
-                scale: 1.6,
-              },
+
               {
                 src: "/assets/customers/outtake/outtake-logo.svg",
                 name: "Outtake",
                 scale: 1.2,
               },
-              {
-                src: "/assets/customers/11x-logo.svg",
-                name: "11x",
-                scale: 0.8,
-              },
+              // {
+              //   src: "/assets/customers/aomni-logo.svg",
+              //   name: "Aomni",
+              //   scale: 1.2,
+              // },
             ].map(({ src, name, scale = 1 }, idx) => (
               <Image
                 key={idx}

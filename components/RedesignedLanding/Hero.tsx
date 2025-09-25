@@ -90,10 +90,15 @@ export default function Hero() {
                       scale: 0.8,
                     },
                     {
-                      src: "/assets/customers/contentful-logo-white.svg",
-                      name: "Contentful",
+                      src: "/assets/customers/outtake/outtake-logo.svg",
+                      name: "Outtake",
                       scale: 1.2,
                     },
+                    // {
+                    //   src: "/assets/customers/contentful-logo-white.svg",
+                    //   name: "Contentful",
+                    //   scale: 1.2,
+                    // },
                   ].map(({ src, name, scale = 1 }, idx) => (
                     <Image
                       key={idx}
