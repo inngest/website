@@ -38,7 +38,7 @@ With Agent 3, durable orchestration comes baked-in to the agents it creates—ze
 Builders on Replit now get:
 
 - **Automatic Retries**: Automatically retry on failure with exponential backoff. If the OpenAI API is down, the function waits and tries again rather than losing the request.
-- **Built-in Observability**: Every execution is logged with full traces which you can examine yourself in Inngest. No more guessing what went wrong.
+- **Built-in Observability**: Every execution is logged with [full traces](/docs/platform/monitor/inspecting-function-runs?ref=blog-inngest-replit-vibe-code-ai-agents) which you can examine yourself in Inngest. No more guessing what went wrong.
 - **Durable State**: If the process crashes between fetching messages and posting the summary, Inngest picks up exactly where it left off. No duplicate work, no lost progress.
 - **Rate Limit Handling**: Inngest's concurrency controls prevent the agent from overwhelming external APIs. Process 5 messages/minute instead of trying 100 at once.
 - **Graceful Degradation**: Individual steps can fail without killing the entire workflow. The agent can still post partial results or meaningful error messages.
