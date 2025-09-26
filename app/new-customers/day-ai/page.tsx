@@ -17,6 +17,7 @@ interface QuoteBlock {
   quote: string;
   author: string;
   company: string;
+  label?: string;
 }
 
 interface NumberedSection {
@@ -26,7 +27,7 @@ interface NumberedSection {
 }
 
 type ContentBlock =
-  | { type: "paragraph"; content: string; imagePath?: string }
+  | { type: "paragraph"; content: string; label?: string; imagePath?: string }
   | {
       type: "requirements";
       requirements: Requirement[];
@@ -35,7 +36,12 @@ type ContentBlock =
   | { type: "quote"; quote: QuoteBlock; imagePath?: string }
   | { type: "label"; content: string; imagePath?: string }
   | { type: "numbered"; numbered: NumberedSection; imagePath?: string }
-  | { type: "cta"; ctaText: string; imagePath?: string };
+  | {
+      type: "cta";
+      ctaText: string;
+      ctaDescription?: string;
+      imagePath?: string;
+    };
 
 interface ContentSectionData {
   id: string;
@@ -172,14 +178,11 @@ const BAERSKIN_PAGE_DATA: CaseStudyPageProps = {
               "The integration layer powers Day AI's system of record by connecting directly to all the systems where customer conversations happen. This includes productivity software like Google Workspace, Zoom, and Slack, along with third-party services like Recall.ai to record meetings and Mux to process video.",
           },
           {
-            type: "label",
-            content:
-              "Handling webhooks at scale and managing external state with Inngest events [↙]",
-          },
-          {
             type: "paragraph",
             content:
               "Technically, this translates into a system handling a large number of webhooks (with spikes during working hours) while interacting with multiple stateful external services:",
+            label:
+              "Handling webhooks at scale and managing external state with Inngest events [↙]",
             imagePath: "/assets/customers/day-ai/diagram.png",
           },
           {
@@ -192,28 +195,22 @@ const BAERSKIN_PAGE_DATA: CaseStudyPageProps = {
             },
           },
           {
-            type: "label",
-            content:
-              "This integration system depends significantly on Inngest's event-driven architecture, converting incoming webhooksinto events and coordinating external services through workflow synchronization with awaitable events [↙]",
-          },
-          {
             type: "quote",
             quote: {
               author: "Max Shaw → Founding Engineer",
               company: "[ Day AI ]",
               quote:
                 "For this part of the system, “wait for events” makes our work much easier because we can start a process with many steps, pause it, and then continue when something happens in another part of the system. We can have one process start work, then wait for a completely different process on another computer to finish its task before continuing, it's like magic!",
+              label:
+                "This integration system depends significantly on Inngest's event-driven architecture, converting incoming webhooksinto events and coordinating external services through workflow synchronization with awaitable events [↙]",
             },
-          },
-          {
-            type: "label",
-            content:
-              "Day AI's reliability layer: Inngest durable workflows and events replay [↙]",
           },
           {
             type: "paragraph",
             content:
               "On top of Inngest's native event-driven support comes its durable component, enabling any workflow to retry and resume from its last checkpoint upon failure. \n\n Erik and his team heavily rely on workflow durability to build complex and long-running workflows which require a carefully ordered and orchestrated approach to ensure reliability, as seen in their meeting recording workflows, which interact with their meeting bot and video providers, along with a constellation of LLM jobs that consume incoming meeting data. \n\n Another Inngest feature that saves Erik and his team's time is Events Replay, which helps them recover from intermittent failures that happen in such systems:",
+            label:
+              "Day AI's reliability layer: Inngest durable workflows and events replay [↙]",
           },
           {
             type: "quote",
@@ -302,17 +299,14 @@ const BAERSKIN_PAGE_DATA: CaseStudyPageProps = {
             },
           },
           {
-            type: "label",
-            content:
-              "By leveraging Inngest's event-driven architecture and its durable workflows, Day AI has successfully shipped its first Assistants to users with complete confidence [↙]",
-          },
-          {
             type: "quote",
             quote: {
               author: "Max Shaw → Founding Engineer",
               company: "[ Day AI ]",
               quote:
                 "It means that we can effortlessly have these things running in the background, doing work at the time horizons and level of sophistication that a person would. They can sit there and do stuff without us worrying about the mechanics. That kind of behavior is typically very hard to orchestrate, but for us it was a no-brainer to use Inngest and be done with it",
+              label:
+                "By leveraging Inngest's event-driven architecture and its durable workflows, Day AI has successfully shipped its first Assistants to users with complete confidence [↙]",
             },
           },
         ],
@@ -333,11 +327,16 @@ const BAERSKIN_PAGE_DATA: CaseStudyPageProps = {
             content:
               "Ready to build your own AI products with Inngest? → Book a call with our experts today to learn how we can help you orchestrate reliable, scalable AI workflows for your business.",
           },
+          {
+            type: "cta",
+            ctaText: "Read more [↗]",
+            ctaDescription: "Check out other customer success stories",
+          },
         ],
       },
     ],
     footer: {
-      title: "Check out other customer success stories",
+      title: "Interested in Inngest?",
       subtitle: "Talk to an Inngest product expert today.",
       ctaText: "Get in touch [+]",
     },

@@ -15,6 +15,8 @@ interface QuoteBlock {
   quote: string;
   author: string;
   company: string;
+  highlightedWords?: string[]; // Words to underline in the quote
+  label?: string; // Optional label section above the quote
 }
 
 interface NumberedSection {
@@ -24,7 +26,7 @@ interface NumberedSection {
 }
 
 type ContentBlock =
-  | { type: "paragraph"; content: string; imagePath?: string }
+  | { type: "paragraph"; content: string; label?: string; imagePath?: string }
   | {
       type: "requirements";
       requirements: Requirement[];
@@ -33,7 +35,12 @@ type ContentBlock =
   | { type: "quote"; quote: QuoteBlock; imagePath?: string }
   | { type: "label"; content: string; imagePath?: string }
   | { type: "numbered"; numbered: NumberedSection; imagePath?: string }
-  | { type: "cta"; ctaText: string; imagePath?: string };
+  | {
+      type: "cta";
+      ctaText: string;
+      ctaDescription?: string;
+      imagePath?: string;
+    };
 
 interface ContentSectionData {
   id: string;
@@ -76,7 +83,8 @@ const BAERSKIN_CONTENT: ComposableCaseStudyProps = {
             author: "Gus Fune → CTO",
             company: "[ BÆRSkin Tactical Supply Co. ]",
             quote:
-              "We ended up developing our own E commerce platform in house. So we didn’t use Shopify or anything like that because we wantto keep control of a few elements that they don't allow us to controllike checkout",
+              "We ended up developing our own E commerce platform in house. So we didn't use Shopify or anything like that because we want to keep control of a few elements that they don't allow us to controllike checkout",
+            highlightedWords: ["control", "checkout"], // Example of words to underline
           },
         },
         {
@@ -206,6 +214,7 @@ const BAERSKIN_CONTENT: ComposableCaseStudyProps = {
         {
           type: "cta",
           ctaText: "Read more [↗]",
+          ctaDescription: "Want to learn more about Inngest for e-commerce?",
         },
       ],
     },
@@ -285,23 +294,6 @@ function ComposableCaseStudy({
     }
   };
 
-  const getSectionNumber = (sectionId: string) => {
-    return sectionIds.indexOf(sectionId) + 1;
-  };
-
-  const navigateToSection = (direction: "prev" | "next") => () => {
-    const currentIndex = sectionIds.indexOf(activeTab);
-
-    if (direction === "prev" && currentIndex > 0) {
-      const prevSection = sectionIds[currentIndex - 1];
-      setActiveTab(prevSection);
-      scrollToSection(prevSection);
-    } else if (direction === "next" && currentIndex < sectionIds.length - 1) {
-      const nextSection = sectionIds[currentIndex + 1];
-      setActiveTab(nextSection);
-      scrollToSection(nextSection);
-    }
-  };
   return (
     <>
       <div className="relative mx-auto flex flex-col bg-carbon-100 py-20">
@@ -315,33 +307,38 @@ function ComposableCaseStudy({
             </div>
           </div>
           {/* replace bottom border with switcher */}
-          <div className="flex justify-end border-t border-carbon-1000 py-10">
-            <div className="origin-left scale-90 md:scale-75 lg:scale-90 xl:scale-100">
-              {intro.logo}
-            </div>
-          </div>
+          <div className="border-t border-carbon-1000"></div>
         </div>
-        {/* Desktop tabs container */}
-        <div className="sticky top-[73px] z-40 hidden bg-carbon-100 py-4 md:block">
-          <div className="mx-auto w-full max-w-container-desktop px-8">
-            <Tabs
-              value={activeTab}
-              onValueChange={setActiveTab}
-              className="w-full"
-            >
-              <TabsList className="w-full bg-transparent">
-                {sections.map((section, index) => (
-                  <TabsTrigger
-                    key={section.id}
-                    value={section.id}
-                    onClick={() => scrollToSection(section.id)}
-                    className="cursor-pointer font-whyteMono"
-                  >
-                    [{(index + 1).toString().padStart(2, "0")}]
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </Tabs>
+        {/* Desktop sticky container with logo and tabs */}
+        <div className="sticky top-[73px] z-40 hidden bg-carbon-100 md:block">
+          <div className="mx-auto w-full max-w-container-desktop px-8 pb-12">
+            {/* Logo section */}
+            <div className="flex justify-end py-10">
+              <div className="origin-left scale-90 md:scale-75 lg:scale-90 xl:scale-100">
+                {intro.logo}
+              </div>
+            </div>
+            {/* Tabs section */}
+            <div className="py-4">
+              <Tabs
+                value={activeTab}
+                onValueChange={setActiveTab}
+                className="w-full"
+              >
+                <TabsList className="w-full bg-transparent">
+                  {sections.map((section, index) => (
+                    <TabsTrigger
+                      key={section.id}
+                      value={section.id}
+                      onClick={() => scrollToSection(section.id)}
+                      className="cursor-pointer font-whyteMono"
+                    >
+                      [{(index + 1).toString().padStart(2, "0")}]
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </Tabs>
+            </div>
           </div>
         </div>
 
@@ -372,7 +369,7 @@ function ComposableCaseStudy({
           ))}
 
           <div className="mx-auto mt-20 border-t border-stone-800 pt-8">
-            <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
+            <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-start">
               <div className="w-full md:w-auto">
                 <div className="w-full border-t border-stone-800 md:hidden"></div>
                 <div className="-mr-9 flex max-w-xs items-start gap-3 font-whyte text-2xl font-light leading-tight tracking-tight text-stone-800">
@@ -382,7 +379,7 @@ function ComposableCaseStudy({
               </div>
               <div className="w-full md:-ml-[11rem] md:w-auto">
                 <div className="w-full border-t border-stone-800 md:hidden"></div>
-                <div className="-mr-9 flex max-w-xs items-start gap-3 font-whyte text-2xl font-light leading-tight tracking-tight text-stone-800">
+                <div className="-mr-28 flex max-w-xs items-start gap-3 font-whyte text-2xl font-light leading-tight tracking-tight text-stone-800">
                   <div className="mt-2 h-3 w-3 flex-shrink-0 bg-stone-800"></div>
                   <p>{footer.subtitle}</p>
                 </div>
@@ -418,7 +415,7 @@ function RequirementsList({ requirements }: RequirementsListProps) {
         <div key={index}>
           <div className="flex gap-8 pb-10">
             <div className="w-1/5 flex-shrink-0">
-              <div className="font-whyte text-base font-normal leading-[140%] tracking-[-0.8px] text-carbon-800 md:text-[32px] md:leading-[140%] md:tracking-[-1.6px]">
+              <div className="font-whyte text-base font-medium leading-[140%] tracking-[-0.8px] text-carbon-800 md:text-[32px] md:leading-[140%] md:tracking-[-1.6px]">
                 [X]
                 <br />
                 {requirement.label.split("\n").map((line, lineIndex) => (
@@ -451,7 +448,7 @@ function ContentSection({ sectionData }: { sectionData: ContentSectionData }) {
     <div
       id={sectionData.id}
       className={cn(
-        `my-12 flex scroll-mt-[140px] flex-col gap-6 md:flex-row md:justify-between ${sectionData.id}`
+        `my-12 flex scroll-mt-[140px] flex-col gap-6 border-t border-stone-800 pt-12 md:flex-row md:justify-between ${sectionData.id}`
       )}
     >
       {/* Left column - Title + SVG on mobile, Title + SVG side by side on desktop */}
@@ -467,7 +464,7 @@ function ContentSection({ sectionData }: { sectionData: ContentSectionData }) {
       <div>
         <div className="mx-auto max-w-[60rem]">
           {/* Header Section */}
-          <div className="mb-8">
+          <div className="mb-16">
             <p className="font-whyte text-2xl font-light leading-[120%] tracking-[-1.2px] text-carbon-800 md:text-[48px] md:leading-[120%] md:tracking-[-2.4px]">
               {sectionData.header}
             </p>
@@ -503,6 +500,53 @@ function ContentBlock({
       ? "mx-auto mt-20 border-t border-stone-800 pt-8"
       : "py-14 border-t border-stone-800";
 
+  // Helper function to render quote with highlighted words
+  const renderQuoteWithHighlights = (
+    quote: string,
+    highlightedWords?: string[]
+  ) => {
+    if (!highlightedWords || highlightedWords.length === 0) {
+      return quote;
+    }
+
+    // Split the quote into words and map over them
+    const words = quote.split(/(\s+)/); // Split on whitespace but keep the spaces
+
+    return (
+      <>
+        {words.map((word, index) => {
+          const cleanWord = word.replace(/[.,!?"]/g, "").trim(); // Remove punctuation for matching
+          const shouldUnderline = highlightedWords.some(
+            (highlightWord) =>
+              cleanWord.toLowerCase() === highlightWord.toLowerCase()
+          );
+
+          return (
+            <span
+              key={index}
+              className={cn(
+                shouldUnderline &&
+                  "font-whyte text-[32px] font-normal leading-[140%] tracking-[-1.6px] text-carbon-800 underline decoration-solid"
+              )}
+              style={
+                shouldUnderline
+                  ? {
+                      textDecorationSkipInk: "none",
+                      textDecorationThickness: "auto",
+                      textUnderlineOffset: "auto",
+                      textUnderlinePosition: "from-font",
+                    }
+                  : {}
+              }
+            >
+              {word}
+            </span>
+          );
+        })}
+      </>
+    );
+  };
+
   const renderImage = (imagePath?: string) => {
     if (!imagePath) return null;
 
@@ -521,6 +565,11 @@ function ContentBlock({
     case "paragraph":
       return (
         <div className={containerClasses}>
+          {block.label && (
+            <div className="mb-6 font-whyteMono text-[28px] font-normal leading-[1.4] tracking-[-0.05em] text-stone-800">
+              {block.label}
+            </div>
+          )}
           <p className="whitespace-pre-line font-whyteInktrapVariable text-base font-light leading-[140%] tracking-[-0.8px] text-carbon-800 md:text-[32px] md:leading-[140%] md:tracking-[-1.6px]">
             {block.content}
           </p>
@@ -539,13 +588,22 @@ function ContentBlock({
     case "quote":
       return (
         <div className={containerClasses}>
+          {block.quote.label && (
+            <div className="mb-6 font-whyteMono text-[28px] font-normal leading-[1.4] tracking-[-0.05em] text-stone-800">
+              {block.quote.label}
+            </div>
+          )}
           <div className="relative">
             {/* Hanging quote mark - positioned outside the content flow */}
-            <div className="absolute top-0 font-whyte text-4xl font-light leading-[120%] tracking-[-1.2px] text-stone-400 md:-left-5 md:text-6xl">
+            <div className="absolute top-0 font-whyte text-base font-light leading-[140%] tracking-[-0.8px] text-carbon-800 md:-left-3 md:text-[32px] md:leading-[140%] md:tracking-[-1.6px]">
               ‟
             </div>
             <blockquote className="font-whyte text-base font-light leading-[140%] tracking-[-0.8px] text-carbon-800 md:text-[32px] md:leading-[140%] md:tracking-[-1.6px]">
-              {block.quote.quote}”
+              {renderQuoteWithHighlights(
+                block.quote.quote,
+                block.quote.highlightedWords
+              )}
+              "
             </blockquote>
           </div>
           <p className="max-w-sm pt-12 font-whyteMono font-normal leading-[140%] text-stone-800 md:leading-[1.3] md:tracking-[0.075em]">
@@ -586,10 +644,13 @@ function ContentBlock({
     case "cta":
       return (
         <div className={containerClasses}>
-          <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
+          <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-start">
             <div className="flex max-w-xs items-start gap-3 font-whyte text-2xl font-light leading-tight tracking-tight text-stone-800">
               <div className="mt-2 h-3 w-3 flex-shrink-0 bg-stone-800"></div>
-              <p>Talk to an Inngest product expert today.</p>
+              <p>
+                {block.ctaDescription ||
+                  "Talk to an Inngest product expert today."}
+              </p>
             </div>
             <div className="flex w-full flex-col items-center gap-6 md:w-auto md:flex-row md:items-center md:gap-8">
               <Button className="flex h-[52px] w-[212px] flex-shrink-0 items-center justify-center gap-[10px] bg-stone-800 px-[13px] py-[15px] text-right font-whyte text-2xl font-normal leading-[120%] text-alwaysWhite transition-colors hover:bg-stone-800/60">

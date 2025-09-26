@@ -1,17 +1,4 @@
-import {
-  Pattern1,
-  Pattern2,
-  Pattern3,
-  Pattern4,
-  Pattern5,
-  Pattern6,
-  Pattern7,
-  Pattern8,
-  Pattern9,
-  Pattern10,
-  Pattern11,
-  Pattern12,
-} from "./patterns";
+import { getRandomPatterns } from "./patterns";
 
 // Interfaces for composable header structure
 interface InfoBlockData {
@@ -44,14 +31,15 @@ interface ComposableHeaderProps {
 }
 
 // Default data for Baerskin header
+const randomPatterns = getRandomPatterns();
 const BAERSKIN_HEADER_DATA: ComposableHeaderProps = {
   title: "How BÆRSkin Tactical Supply Co. achieved ",
   highlightedText: "100% event deliverability",
   subtitle: " by switching from Kafka to Inngest.",
-  backgroundColor: "rgb(var(--color-carbon-50))",
+  backgroundColor: "#E2E2E2",
   backgroundPatterns: {
-    left: <Pattern3 />,
-    right: <Pattern7 />,
+    left: <randomPatterns.left />,
+    right: <randomPatterns.right />,
   },
   infoBlocks: [
     {
@@ -94,16 +82,12 @@ function ComposableHeader({
   title,
   highlightedText,
   subtitle,
-  backgroundColor = "rgb(var(--color-carbon-50))",
   backgroundPatterns,
   infoBlocks,
   companyDetails,
 }: ComposableHeaderProps) {
   return (
-    <div
-      className="relative h-full overflow-hidden"
-      style={{ backgroundColor }}
-    >
+    <div className="relative h-full overflow-hidden bg-[#E2E2E2]">
       {/* Pattern grid background */}
       <div className="absolute inset-0">
         <div className="grid h-full w-full grid-cols-1 lg:grid-cols-2">

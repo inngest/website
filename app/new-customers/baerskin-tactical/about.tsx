@@ -118,7 +118,7 @@ function ComposableAbout({
               <div className="order-1 max-w-[48rem] md:order-2">
                 <div className="flex">
                   {/* Hanging quote mark */}
-                  <div className="font-whyte text-4xl font-light leading-[120%] tracking-[-1.2px] text-stone-400">
+                  <div className="font-whyte text-2xl font-light leading-[120%] tracking-[-1.2px] text-carbon-0 md:text-2xl md:leading-relaxed md:tracking-normal">
                     ‟
                   </div>
                   <blockquote className="max-w-4xl font-whyte text-2xl font-light leading-[120%] tracking-[-1.2px] text-carbon-0 md:text-2xl md:leading-relaxed md:tracking-normal md:text-white">

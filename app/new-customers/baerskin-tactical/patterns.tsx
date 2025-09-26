@@ -343,3 +343,49 @@ export function Pattern12() {
     </svg>
   );
 }
+
+// Utility function to get random patterns
+export function getRandomPatterns() {
+  const patterns = [
+    Pattern1,
+    Pattern2,
+    Pattern3,
+    Pattern4,
+    Pattern5,
+    Pattern6,
+    Pattern7,
+    Pattern8,
+    Pattern9,
+    Pattern10,
+    Pattern11,
+    Pattern12,
+  ];
+
+  // Get two different random patterns
+  const shuffled = [...patterns].sort(() => 0.5 - Math.random());
+  return {
+    left: shuffled[0],
+    right: shuffled[1],
+  };
+}
+
+// Get a single random pattern
+export function getRandomPattern() {
+  const patterns = [
+    Pattern1,
+    Pattern2,
+    Pattern3,
+    Pattern4,
+    Pattern5,
+    Pattern6,
+    Pattern7,
+    Pattern8,
+    Pattern9,
+    Pattern10,
+    Pattern11,
+    Pattern12,
+  ];
+
+  const randomIndex = Math.floor(Math.random() * patterns.length);
+  return patterns[randomIndex];
+}

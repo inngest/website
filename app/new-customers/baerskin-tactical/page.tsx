@@ -2,7 +2,7 @@ import { ComposableAbout, type ComposableAboutProps } from "./about";
 import { ComposableCaseStudy } from "./content";
 import { ComposableHeader } from "./header";
 import { BaerskinLogo } from "./header";
-import { Pattern3, Pattern7 } from "./patterns";
+import { getRandomPatterns } from "./patterns";
 
 // Interfaces for the complete page structure
 interface Requirement {
@@ -14,6 +14,7 @@ interface QuoteBlock {
   quote: string;
   author: string;
   company: string;
+  highlightedWords?: string[];
 }
 
 interface NumberedSection {
@@ -32,7 +33,12 @@ type ContentBlock =
   | { type: "quote"; quote: QuoteBlock; imagePath?: string }
   | { type: "label"; content: string; imagePath?: string }
   | { type: "numbered"; numbered: NumberedSection; imagePath?: string }
-  | { type: "cta"; ctaText: string; imagePath?: string };
+  | {
+      type: "cta";
+      ctaText: string;
+      ctaDescription?: string;
+      imagePath?: string;
+    };
 
 interface ContentSectionData {
   id: string;
@@ -91,15 +97,16 @@ interface CaseStudyPageProps {
 }
 
 // Default Baerskin data
+const randomPatterns = getRandomPatterns();
 const BAERSKIN_PAGE_DATA: CaseStudyPageProps = {
   header: {
     title: "How BÆRSkin Tactical Supply Co. achieved ",
     highlightedText: "100% event deliverability",
     subtitle: " by switching from Kafka to Inngest.",
-    backgroundColor: "rgb(var(--color-carbon-50))",
+    backgroundColor: "#E2E2E2",
     backgroundPatterns: {
-      left: <Pattern3 />,
-      right: <Pattern7 />,
+      left: <randomPatterns.left />,
+      right: <randomPatterns.right />,
     },
     infoBlocks: [
       {
@@ -170,6 +177,7 @@ const BAERSKIN_PAGE_DATA: CaseStudyPageProps = {
               company: "[ BÆRSkin Tactical Supply Co. ]",
               quote:
                 "We ended up developing our own E commerce platform in house. So we didn't use Shopify or anything like that because we wantto keep control of a few elements that they don't allow us to controllike checkout",
+              highlightedWords: ["control", "checkout"],
             },
           },
           {
@@ -251,7 +259,7 @@ const BAERSKIN_PAGE_DATA: CaseStudyPageProps = {
           {
             type: "label",
             content:
-              "Using Inngest, Gus's team got access to ready-to-use monitoring dashboards, production recovery tools such as Replays  [↙ ]",
+              "Using Inngest, Gus's team got access to ready-to-use monitoring dashboards, production recovery tools such as Replays  [↙]",
             imagePath: "/assets/customers/baerskin/baerskinImage.png",
           },
         ],
@@ -298,13 +306,14 @@ const BAERSKIN_PAGE_DATA: CaseStudyPageProps = {
           {
             type: "cta",
             ctaText: "Read more [↗]",
+            ctaDescription: "Want to learn more about Inngest for e-commerce?",
           },
         ],
       },
     ],
     footer: {
-      title: "Check out other customer success stories",
-      subtitle: "Talk to an Inngest product expert today.",
+      title: "Interested in Inngest?",
+      subtitle: "Check out other customer success stories",
       ctaText: "Get in touch [+]",
     },
   },
