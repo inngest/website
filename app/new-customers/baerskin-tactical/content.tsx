@@ -311,19 +311,17 @@ function ComposableCaseStudy({
           {/* replace bottom border with switcher */}
           <div className="border-t border-carbon-1000"></div>
         </div>
-        {/* Logo section */}
-        <div className="mx-auto w-full max-w-container-desktop px-8">
-          <div className="flex justify-end border-b border-carbon-1000 py-10 md:border-none">
-            <div className="origin-left scale-90 md:scale-75 lg:scale-90 xl:scale-100">
-              {intro.logo}
-            </div>
-          </div>
-        </div>
         {/* Desktop sticky container with logo and tabs */}
         <div className="sticky top-[73px] z-40 hidden bg-carbon-100 md:block">
-          <div className="mx-auto w-full max-w-container-desktop px-8 pb-12">
+          <div className="mx-auto w-full max-w-container-desktop px-8">
+            {/* Logo section */}
+            <div className="flex justify-end py-10">
+              <div className="origin-left scale-90 md:scale-75 lg:scale-90 xl:scale-100">
+                {intro.logo}
+              </div>
+            </div>
             {/* Tabs section */}
-            <div>
+            <div className="py-4">
               <Tabs
                 value={activeTab}
                 onValueChange={setActiveTab}

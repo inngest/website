@@ -403,6 +403,7 @@ type ContentBlock =
   | {
       type: "requirements";
       requirements: Requirement[];
+      defaultSymbol?: "X" | "✓";
       imagePath?: string;
     }
   | { type: "quote"; quote: QuoteBlock; imagePath?: string }
