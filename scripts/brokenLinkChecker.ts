@@ -52,7 +52,7 @@ const options = {
     "https://deno.com/",
     "https://news.ycombinator.com/",
     "https://www.npmjs.com/",
-    "https://www.npm.im/",
+    "https://npm.im/",
   ],
 };
 
