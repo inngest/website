@@ -8,7 +8,7 @@ export function Pattern1() {
       xmlns="http://www.w3.org/2000/svg"
     >
       <g clipPath="url(#clip0_381_1684)">
-        <rect width="210.123" height="210.123" fill="#E2E2E2" />
+        <rect width="211" height="211" fill="#E2E2E2" />
         <path
           d="M108.173 412.937H-269.842L-27.5031 92.2227H342.832L108.173 412.937Z"
           fill="#FAFAF9"
@@ -16,7 +16,7 @@ export function Pattern1() {
       </g>
       <defs>
         <clipPath id="clip0_381_1684">
-          <rect width="210.123" height="210.123" fill="white" />
+          <rect width="211" height="211" fill="white" />
         </clipPath>
       </defs>
     </svg>
@@ -34,8 +34,8 @@ export function Pattern2() {
     >
       <g clipPath="url(#clip0_381_1690)">
         <rect
-          width="210.123"
-          height="210.123"
+          width="211"
+          height="211"
           transform="translate(0.768555)"
           fill="#FAFAF9"
         />
@@ -47,8 +47,8 @@ export function Pattern2() {
       <defs>
         <clipPath id="clip0_381_1690">
           <rect
-            width="210.123"
-            height="210.123"
+            width="211"
+            height="211"
             fill="white"
             transform="translate(0.768555)"
           />
@@ -204,7 +204,7 @@ export function Pattern7() {
       xmlns="http://www.w3.org/2000/svg"
     >
       <g clipPath="url(#clip0_381_1680)">
-        <rect width="210.123" height="210.123" fill="#E2E2E2" />
+        <rect width="211" height="211" fill="#E2E2E2" />
         <path
           d="M415.746 163.675H37.7305L280.07 -157.04H650.405L415.746 163.675Z"
           fill="#FAFAF9"
@@ -212,7 +212,7 @@ export function Pattern7() {
       </g>
       <defs>
         <clipPath id="clip0_381_1680">
-          <rect width="210.123" height="210.123" fill="white" />
+          <rect width="211" height="211" fill="white" />
         </clipPath>
       </defs>
     </svg>
@@ -229,7 +229,7 @@ export function Pattern8() {
       xmlns="http://www.w3.org/2000/svg"
     >
       <g clipPath="url(#clip0_381_1692)">
-        <rect width="210.123" height="210.123" fill="#E2E2E2" />
+        <rect width="211" height="211" fill="#E2E2E2" />
         <path
           d="M384.651 320.714H6.6355L248.975 0H619.31L384.651 320.714Z"
           fill="#FAFAF9"
@@ -237,7 +237,7 @@ export function Pattern8() {
       </g>
       <defs>
         <clipPath id="clip0_381_1692">
-          <rect width="210.123" height="210.123" fill="white" />
+          <rect width="211" height="211" fill="white" />
         </clipPath>
       </defs>
     </svg>
@@ -254,7 +254,7 @@ export function Pattern9() {
       xmlns="http://www.w3.org/2000/svg"
     >
       <g clipPath="url(#clip0_381_1688)">
-        <rect width="210.123" height="210.123" fill="#E2E2E2" />
+        <rect width="211" height="211" fill="#E2E2E2" />
         <path
           d="M108.932 138.162H-269.083L-26.7441 -182.553H343.591L108.932 138.162Z"
           fill="#FAFAF9"
@@ -262,7 +262,7 @@ export function Pattern9() {
       </g>
       <defs>
         <clipPath id="clip0_381_1688">
-          <rect width="210.123" height="210.123" fill="white" />
+          <rect width="211" height="211" fill="white" />
         </clipPath>
       </defs>
     </svg>
@@ -279,7 +279,7 @@ export function Pattern10() {
       xmlns="http://www.w3.org/2000/svg"
     >
       <g clipPath="url(#clip0_381_1678)">
-        <rect width="210.123" height="210.123" fill="#FEFEFE" />
+        <rect width="211" height="211" fill="#FEFEFE" />
         <path
           d="M322.572 -347.619L605.122 141.773H40.0215L322.572 -347.619Z"
           fill="#E2E2E2"
@@ -287,7 +287,7 @@ export function Pattern10() {
       </g>
       <defs>
         <clipPath id="clip0_381_1678">
-          <rect width="210.123" height="210.123" fill="white" />
+          <rect width="211" height="211" fill="white" />
         </clipPath>
       </defs>
     </svg>
@@ -304,7 +304,7 @@ export function Pattern11() {
       xmlns="http://www.w3.org/2000/svg"
     >
       <g clipPath="url(#clip0_381_1686)">
-        <rect width="210.123" height="210.123" fill="#FEFEFE" />
+        <rect width="211" height="211" fill="#FEFEFE" />
         <path
           d="M-100.704 -349.354L181.846 140.037H-383.254L-100.704 -349.354Z"
           fill="#E2E2E2"
@@ -312,7 +312,7 @@ export function Pattern11() {
       </g>
       <defs>
         <clipPath id="clip0_381_1686">
-          <rect width="210.123" height="210.123" fill="white" />
+          <rect width="211" height="211" fill="white" />
         </clipPath>
       </defs>
     </svg>
@@ -329,7 +329,7 @@ export function Pattern12() {
       xmlns="http://www.w3.org/2000/svg"
     >
       <g clipPath="url(#clip0_381_1682)">
-        <rect width="210.123" height="210.123" fill="#FAFAF9" />
+        <rect width="211" height="211" fill="#FAFAF9" />
         <path
           d="M-26.6888 -4.25684L255.862 485.135H-309.239L-26.6888 -4.25684Z"
           fill="#E2E2E2"
@@ -337,7 +337,7 @@ export function Pattern12() {
       </g>
       <defs>
         <clipPath id="clip0_381_1682">
-          <rect width="210.123" height="210.123" fill="white" />
+          <rect width="211" height="211" fill="white" />
         </clipPath>
       </defs>
     </svg>

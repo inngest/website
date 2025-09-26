@@ -90,7 +90,7 @@ function ComposableHeader({
     <div className="relative h-full overflow-hidden bg-[#E2E2E2]">
       {/* Pattern grid background */}
       <div className="absolute inset-0">
-        <div className="grid h-full w-full grid-cols-1 lg:grid-cols-2">
+        <div className="grid h-full w-full grid-cols-1 gap-0 lg:grid-cols-2">
           <div className="h-full w-full overflow-hidden [&>svg]:h-full [&>svg]:min-h-full [&>svg]:w-full [&>svg]:min-w-full [&>svg]:scale-125 [&>svg]:object-cover lg:[&>svg]:scale-100 lg:[&>svg]:object-fill">
             {backgroundPatterns.left}
           </div>
@@ -246,7 +246,7 @@ function ComposableHeader({
         {/* Two column layout for content */}
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
           {/* Left column */}
-          <div className="space-y-8">
+          <div className="space-y-8 font-whyteMono">
             {/* Website link */}
             <div>
               <p className="text-xl text-stone-800">
@@ -286,7 +286,7 @@ function ComposableHeader({
       </div>
 
       {/* Mobile layout */}
-      <div className="relative z-10 flex flex-col p-6 pt-24 md:hidden">
+      <div className="relative z-10 flex flex-col p-6 py-20 md:hidden">
         {/* Main heading */}
         <div className="mb-8">
           <h1 className="text-balance font-whyte text-4xl font-normal leading-tight tracking-tight text-stone-800">
@@ -360,8 +360,10 @@ function InfoBlock({
 }) {
   return (
     <div>
-      <h3 className="mb-2 text-2xl font-medium text-carbon-800">{header}</h3>
-      <p className="font-circular text-2xl font-light text-carbon-900">
+      <h3 className="mb-2 font-circular text-sm font-[450] leading-[140%] text-carbon-800 md:text-2xl md:font-medium">
+        {header}
+      </h3>
+      <p className="font-circular text-sm font-light leading-[140%] text-carbon-900 md:text-2xl">
         {description}
       </p>
     </div>

@@ -299,9 +299,9 @@ function ComposableCaseStudy({
       <div className="relative mx-auto flex flex-col bg-carbon-100 py-20">
         {/* Content for third section will go here */}
         <div className="mx-auto w-full max-w-container-desktop px-8">
-          <div className="max-w-[60rem] border-carbon-1000 pb-20">
+          <div className="max-w-[60rem] border-carbon-1000 pb-14 md:pb-32">
             <div className="relative z-10 flex h-full">
-              <p className="whitespace-pre-line font-whyte text-base font-light leading-[140%] tracking-[-0.8px] text-carbon-800 md:text-[32px] md:leading-[140%] md:tracking-[-1.6px] md:text-carbon-800">
+              <p className="whitespace-pre-line font-whyte text-base font-light leading-[140%] text-carbon-800 md:text-[32px] md:leading-[140%] md:tracking-[-1.6px] md:text-carbon-800">
                 {intro.title}
               </p>
             </div>
@@ -309,17 +309,17 @@ function ComposableCaseStudy({
           {/* replace bottom border with switcher */}
           <div className="border-t border-carbon-1000"></div>
         </div>
+        {/* Logo section */}
+        <div className="flex justify-end border-b border-carbon-1000 py-10 md:border-none ">
+          <div className="origin-left scale-90 md:scale-75 lg:scale-90 xl:scale-100">
+            {intro.logo}
+          </div>
+        </div>
         {/* Desktop sticky container with logo and tabs */}
         <div className="sticky top-[73px] z-40 hidden bg-carbon-100 md:block">
           <div className="mx-auto w-full max-w-container-desktop px-8 pb-12">
-            {/* Logo section */}
-            <div className="flex justify-end py-10">
-              <div className="origin-left scale-90 md:scale-75 lg:scale-90 xl:scale-100">
-                {intro.logo}
-              </div>
-            </div>
             {/* Tabs section */}
-            <div className="py-4">
+            <div>
               <Tabs
                 value={activeTab}
                 onValueChange={setActiveTab}
@@ -331,7 +331,7 @@ function ComposableCaseStudy({
                       key={section.id}
                       value={section.id}
                       onClick={() => scrollToSection(section.id)}
-                      className="cursor-pointer font-whyteMono"
+                      className="cursor-pointer pl-0 font-whyteMono"
                     >
                       [{(index + 1).toString().padStart(2, "0")}]
                     </TabsTrigger>
@@ -342,30 +342,13 @@ function ComposableCaseStudy({
           </div>
         </div>
 
-        {/* Mobile navigation - Right edge of screen */}
-        <div className="sticky top-[73px] z-40 flex justify-end py-4 pr-4 md:hidden">
-          <div className="flex flex-col gap-1">
-            {sections.map((section, index) => (
-              <button
-                key={section.id}
-                onClick={() => {
-                  setActiveTab(section.id);
-                  scrollToSection(section.id);
-                }}
-                className={`flex h-6 w-10 items-center justify-center font-whyteMono text-xs font-normal ${
-                  activeTab === section.id
-                    ? "bg-stone-800 text-white"
-                    : "bg-transparent text-stone-600 hover:bg-stone-100"
-                }`}
-              >
-                [{(index + 1).toString().padStart(2, "0")}]
-              </button>
-            ))}
-          </div>
-        </div>
         <div className="mx-auto w-full max-w-container-desktop px-8">
-          {sections.map((section) => (
-            <ContentSection key={section.id} sectionData={section} />
+          {sections.map((section, index) => (
+            <ContentSection
+              key={section.id}
+              sectionData={section}
+              isFirst={index === 0}
+            />
           ))}
 
           <div className="mx-auto mt-20 border-t border-stone-800 pt-8">
@@ -415,7 +398,7 @@ function RequirementsList({ requirements }: RequirementsListProps) {
         <div key={index}>
           <div className="flex gap-8 pb-10">
             <div className="w-1/5 flex-shrink-0">
-              <div className="font-whyte text-base font-medium leading-[140%] tracking-[-0.8px] text-carbon-800 md:text-[32px] md:leading-[140%] md:tracking-[-1.6px]">
+              <div className="font-whyte text-base font-semibold leading-[140%] tracking-[-0.8px] text-carbon-800 md:text-[32px] md:leading-[140%] md:tracking-[-1.6px]">
                 [X]
                 <br />
                 {requirement.label.split("\n").map((line, lineIndex) => (
@@ -443,12 +426,19 @@ function RequirementsList({ requirements }: RequirementsListProps) {
   );
 }
 
-function ContentSection({ sectionData }: { sectionData: ContentSectionData }) {
+function ContentSection({
+  sectionData,
+  isFirst,
+}: {
+  sectionData: ContentSectionData;
+  isFirst?: boolean;
+}) {
   return (
     <div
       id={sectionData.id}
       className={cn(
-        `my-12 flex scroll-mt-[140px] flex-col gap-6 border-t border-stone-800 pt-12 md:flex-row md:justify-between ${sectionData.id}`
+        `my-12 flex scroll-mt-[140px] flex-col gap-6 md:flex-row md:justify-between ${sectionData.id}`,
+        !isFirst && "border-t border-stone-800 pt-12"
       )}
     >
       {/* Left column - Title + SVG on mobile, Title + SVG side by side on desktop */}
@@ -498,7 +488,7 @@ function ContentBlock({
   const containerClasses =
     isLast && block.type === "cta"
       ? "mx-auto mt-20 border-t border-stone-800 pt-8"
-      : "py-14 border-t border-stone-800";
+      : "pt-8 pb-20 border-t border-stone-800";
 
   // Helper function to render quote with highlighted words
   const renderQuoteWithHighlights = (
@@ -566,11 +556,11 @@ function ContentBlock({
       return (
         <div className={containerClasses}>
           {block.label && (
-            <div className="mb-6 font-whyteMono text-[28px] font-normal leading-[1.4] tracking-[-0.05em] text-stone-800">
+            <div className="mb-9 font-whyteMono text-[28px] font-normal leading-[1.4] tracking-[-0.05em] text-stone-800">
               {block.label}
             </div>
           )}
-          <p className="whitespace-pre-line font-whyteInktrapVariable text-base font-light leading-[140%] tracking-[-0.8px] text-carbon-800 md:text-[32px] md:leading-[140%] md:tracking-[-1.6px]">
+          <p className="whitespace-pre-line font-whyteInktrapVariable text-base font-light leading-[140%] text-carbon-800 md:text-[32px] md:leading-[140%] ">
             {block.content}
           </p>
           {renderImage(block.imagePath)}
