@@ -2,7 +2,7 @@ import { Steps, Step, CodeGroup } from "src/shared/Docs/mdx";
 
 export const description = 'Learn how to subscribe to data from Inngest functions.';
 
-# Subscribing
+### Subscribing
 
 To subscribe to data on the client (browser), you'll need to create a subscription token and use the `subscribe()` function which also requires `channel` and `topic` to be specified.
 
@@ -61,7 +61,7 @@ Your application uses the Inngest SDK to create a token, which is then used by t
     })
     ```
 
-    ```py {{ title: "Python" }}
+    ```py {{ title: "Python - Fast API" }}
     @app.get("/api/get_subscription_token")
     async def get_realtime_token():
     # Here, you can get params from the request to;

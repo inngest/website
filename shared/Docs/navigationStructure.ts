@@ -696,10 +696,6 @@ const sectionHome: (NavGroup | NavLink)[] = [
             href: "/docs/features/realtime",
           },
           {
-            title: "Subscribing",
-            href: "/docs/features/realtime/subscribe",
-          },
-          {
             title: "React hooks / Next.js",
             href: "/docs/features/realtime/react-hooks",
           },
