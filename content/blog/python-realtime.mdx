@@ -1,0 +1,80 @@
+---
+heading: "Realtime meets reliability in Python, now in Inngest"
+image: /assets/blog/python-realtime/cover.png
+subtitle: "We've released realtime support for Python, enabling developers to build interactive applications that push updates from durable workflows to the browser."
+date: 2025-09-26
+author:
+  - Keoni Murray
+  - Dan Farrelly
+---
+
+*TLDR: We've released realtime support for Python, enabling developers to build interactive applications that push updates from durable workflows to the browser.*
+
+Building applications in Python that are both reliable and interactive is a pain. Developers have to piece together solutions with Celery or RabbitMQ and WebSockets or long polling. These setups can become fragile, slow, and hard to scale. Bringing in solutions like Redis Streams or Kafka only add to the complexity and infrastructure overhead.
+
+The result? A massive bottleneck for anyone trying to build realtime applications in Python.
+
+Especially if you're building realtime AI applications you need a workflow that is, reliable  and can send realtime updates to the client with minimum latency.
+
+- Your RAG pipeline or AI workflow gets more complex, chaining together prompts while sending complex queries to your vector database at scale.  You need monitoring and observability or you risk dealing with complex bugs. This is a problem that Inngest's durable workflows solves.
+- To build interactive apps, you might stitch together long polling across a number of API endpoints or implement your own WebSockets solution (e.g. Python Socket.IO). State gets managed on server and client, spreading complexity throughout your application, creating a bad developer and user experience.
+
+## Realtime meets reliable execution
+
+Today, we're bringing realtime to our [Python SDK](/docs/reference/python?ref=blog-python-realtime), giving you managed WebSocket infrastructure on top of Inngest's durable workflows. With realtime you can:
+
+- Publish messages from your async workflows running on Inngest
+- Subscribe from the browser to build interactive applications
+
+This enables you to build richer experiences:
+
+- **Interactive AI apps** - Realtime RAG, chat applications, or human-in-the-loop agentic approval flows.
+- **Multi-player collaborative experiences** - From games in the browser to building collaborative software tools.
+- **Progress for long-running pipelines** - Push updates to the user as long-running background processes run.
+
+With our latest Python SDK, you can now import the new experimental `realtime` package and start publishing directly in your workflows:
+
+```python
+import inngest
+from inngest.experimental import realtime
+
+from .client import inngest_client
+from .agents import agent
+
+@inngest_client.create_function(
+    fn_id="long-running-agent",
+    trigger=inngest.TriggerEvent(event="agent.request"),
+)
+async def long_running_agent(ctx: inngest.Context) -> None:
+    async def llm_question() -> dict[str, str]:
+        result = await agent.run(ctx.event.data["question"])
+        # Push the result to the client:
+        await realtime.publish(
+            client=inngest_client,
+            channel=f"user:{ctx.event.data['user_id']}",,
+            topic="messages",
+            data=result.output,
+        )
+        return result
+
+    await ctx.step.run("llm-question", llm_question)
+
+```
+
+Inngest already powers async workflows at scale with durable execution in Python. Unlike Celery or RabbitMQ, you don't need to provision, monitor, or scale queues and workers yourself. Inngest automatically handles scaling, retries, and durability for you.
+
+With our new release we are bringing together async workflows and realtime into one platform.
+
+- Less complexity in wiring several components together (queues, retries, WebSockets, auth, etc.)
+- Now your code is cleaner and simpler - focus on the business logic of your application
+- This leads to faster execution, building reliable systems with interactive experiences.
+
+{/* Screen recording demo? */}
+
+## Get started
+
+Realtime is now included as an beta feature in the Python SDK ([`≥0.5.9`](https://github.com/inngest/inngest-py/releases/tag/inngest%400.5.9?utm_source=website&utm_medium=blog&utm_campaign=python-realtime&utm_term=python)). We're eager for [feedback](http://inngest.com/discord) on the APIs and ergonomics a stable release. Dive into these resources to learn more and start using realtime today:
+
+- **[Read the docs](/docs/features/realtime?ref=blog-python-realtime)** to get set up with realtime.
+- **[Run the example project](https://github.com/inngest/inngest-py/tree/main/examples/fast_api_realtime?utm_source=website&utm_medium=blog&utm_campaign=python-realtime&utm_term=python)** for an end-to-end demo.
+- **New to Inngest?** Check out the [Python quick start guide](/docs/getting-started/quick-start/python?ref=blog-python-realtime)
