@@ -96,6 +96,8 @@ Now, in your Inngest functions, the `publish()` function will be available as a 
 
 To publish data from your Inngest functions, you'll need to import the experimental.realtime module. This is where you'll find the publish and publish_sync functions.
 
+See the [Fast API example](https://github.com/inngest/inngest-py/tree/main/examples/fast_api_realtime) for more information.
+
 </GuideSection>
 
 <GuideSection show="typescript">
@@ -110,11 +112,7 @@ inngest.createFunction(
   async ({ event, step, publish }) => {
 
     const response = await step.run('generate-response', () => {
-      return llm.generateResponse(event.data.prompt);
-    });
-
-    // Publish data to a user-specific channel, on the "ai" topic.
-    await step.run("ai-response-to-user", () => {
+      const response = llm.generateResponse(event.data.prompt);
       await publish({
         channel: `user:${event.data.userId}`,
         topic: "ai",
@@ -124,6 +122,7 @@ inngest.createFunction(
         },
       })
     });
+
     // ℹ️ Want type-safety with channels and topics? See the typed channels tab above.
   }
 );
@@ -160,12 +159,8 @@ inngest.createFunction(
   { event: "ai/recommendation.requested" },
   async ({ event, step, publish }) => {
 
-    const response = await step.run('generate-response', () => {
-      return llm.generateResponse(event.data.prompt);
-    });
-
-    // Publish data to a user-specific channel, on the "ai" topic.
-    await step.run("ai-response-to-user", () => {
+    await step.run('generate-response', () => {
+      const response = llm.generateResponse(event.data.prompt)
       await publish(
         userChannel(event.data.userId).ai({
           response: response,
@@ -173,7 +168,6 @@ inngest.createFunction(
         })
       );
     });
-
 
     await step.run("log-all-went-well", () => {
       await publish(logsChannel().info("All went well"));
@@ -275,7 +269,7 @@ Your application uses the Inngest SDK to create a token, which is then used by t
     ```
 
     ```py {{ title: "Python - Fast API" }}
-    @app.get("/api/get_subscription_token")
+    @app.get("/api/get-subscription-token")
     async def get_realtime_token():
     # Here, you can get params from the request to;
     user_id = session["user_id"]
