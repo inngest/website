@@ -145,8 +145,9 @@ const withMDX = createMDX({
 try {
   fs.watch('./snippets', { recursive: true }, (eventType, filename) => {
     if (filename && eventType === 'change') {
-      const fullPath = path.join(dir, filename).replace(/\\/g, '/');
-      const relativePath = path.relative('.', fullPath).replace(/\\/g, '/');
+      filename = `./snippets/${filename}`;
+      // const fullPath = path.join(process.cwd(), filename).replace(/\\/g, '/');
+      const relativePath = path.relative('.', filename).replace(/\\/g, '/');
       console.log(`File changed: ${relativePath}`);
       console.log(`Looking for files containing: !snippet:path=${relativePath}`);
       touchFilesWithString(`!snippet:path=${relativePath}`);
