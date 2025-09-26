@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 interface Requirement {
   label: string;
   description: string;
+  symbol?: "X" | "✓";
 }
 
 interface QuoteBlock {
@@ -30,6 +31,7 @@ type ContentBlock =
   | {
       type: "requirements";
       requirements: Requirement[];
+      defaultSymbol?: "X" | "✓";
       imagePath?: string;
     }
   | { type: "quote"; quote: QuoteBlock; imagePath?: string }
@@ -310,9 +312,11 @@ function ComposableCaseStudy({
           <div className="border-t border-carbon-1000"></div>
         </div>
         {/* Logo section */}
-        <div className="flex justify-end border-b border-carbon-1000 py-10 md:border-none ">
-          <div className="origin-left scale-90 md:scale-75 lg:scale-90 xl:scale-100">
-            {intro.logo}
+        <div className="mx-auto w-full max-w-container-desktop px-8">
+          <div className="flex justify-end border-b border-carbon-1000 py-10 md:border-none">
+            <div className="origin-left scale-90 md:scale-75 lg:scale-90 xl:scale-100">
+              {intro.logo}
+            </div>
           </div>
         </div>
         {/* Desktop sticky container with logo and tabs */}
@@ -351,24 +355,25 @@ function ComposableCaseStudy({
             />
           ))}
 
-          <div className="mx-auto mt-20 border-t border-stone-800 pt-8">
+          <div className="mx-auto mt-12 border-t border-stone-800 pt-6 md:mt-20 md:pt-8">
             <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-start">
+              <div className="flex items-center justify-start gap-3">
+                <div className="h-3 w-3 bg-stone-800"></div>
+                <p className="font-whyte text-2xl font-light leading-tight tracking-tight text-stone-800">
+                  {footer.title}
+                </p>
+              </div>
               <div className="w-full md:w-auto">
                 <div className="w-full border-t border-stone-800 md:hidden"></div>
-                <div className="-mr-9 flex max-w-xs items-start gap-3 font-whyte text-2xl font-light leading-tight tracking-tight text-stone-800">
-                  <div className="mt-2 h-3 w-3 flex-shrink-0 bg-stone-800"></div>
-                  <p>{footer.title}</p>
-                </div>
-              </div>
-              <div className="w-full md:-ml-[11rem] md:w-auto">
-                <div className="w-full border-t border-stone-800 md:hidden"></div>
-                <div className="-mr-28 flex max-w-xs items-start gap-3 font-whyte text-2xl font-light leading-tight tracking-tight text-stone-800">
-                  <div className="mt-2 h-3 w-3 flex-shrink-0 bg-stone-800"></div>
-                  <p>{footer.subtitle}</p>
+                <div className="flex items-start justify-start gap-3 pt-6 md:pt-0">
+                  <div className="flex max-w-xs items-start gap-3 font-whyte text-2xl font-light leading-tight tracking-tight text-stone-800">
+                    <div className="mt-2 h-3 w-3 flex-shrink-0 bg-stone-800"></div>
+                    <p>{footer.subtitle}</p>
+                  </div>
                 </div>
               </div>
               <div className="flex w-full flex-col items-center gap-6 md:w-auto md:flex-row md:items-center md:gap-8">
-                <Button className="flex h-[52px] w-[212px] flex-shrink-0 items-center justify-center gap-[10px] bg-stone-800 px-[13px] py-[15px] text-right font-whyte text-2xl font-normal leading-[120%] text-alwaysWhite transition-colors hover:bg-stone-800/60">
+                <Button className="flex w-full flex-shrink-0 items-center justify-center gap-[7.153px] bg-stone-800 py-6 text-right font-whyte text-2xl font-normal leading-[120%] text-alwaysWhite transition-colors hover:bg-stone-800/60 md:h-[52px] md:w-[212px] md:gap-[10px] md:px-[13px] md:py-[15px] md:text-2xl">
                   {footer.ctaText}
                 </Button>
               </div>
@@ -376,12 +381,12 @@ function ComposableCaseStudy({
           </div>
 
           <div className="mt-16 flex shrink flex-col items-end gap-2">
-            <div className="h-[52px] w-[11.6%] bg-stone-800"></div>
-            <div className="h-[52px] w-[19.4%] bg-stone-800"></div>
-            <div className="h-[52px] w-full bg-stone-800"></div>
-            <div className="h-[52px] w-[50.6%] self-start bg-stone-800"></div>
-            <div className="mr-[19.4%] h-[52px] w-[30%] bg-stone-800"></div>
-            <div className="h-[52px] w-[19.4%] bg-stone-800"></div>
+            <div className="h-8 w-[11.6%] bg-stone-800 md:h-[52px]"></div>
+            <div className="h-8 w-[19.4%] bg-stone-800 md:h-[52px]"></div>
+            <div className="h-8 w-full bg-stone-800 md:h-[52px]"></div>
+            <div className="h-8 w-[50.6%] self-start bg-stone-800 md:h-[52px]"></div>
+            <div className="mr-[19.4%] h-8 w-[30%] bg-stone-800 md:h-[52px]"></div>
+            <div className="h-8 w-[19.4%] bg-stone-800 md:h-[52px]"></div>
           </div>
         </div>
       </div>
@@ -390,16 +395,20 @@ function ComposableCaseStudy({
 }
 interface RequirementsListProps {
   requirements: Requirement[];
+  defaultSymbol?: "X" | "✓";
 }
-function RequirementsList({ requirements }: RequirementsListProps) {
+function RequirementsList({
+  requirements,
+  defaultSymbol = "X",
+}: RequirementsListProps) {
   return (
     <div className="space-y-16">
       {requirements.map((requirement, index) => (
         <div key={index}>
-          <div className="flex gap-8 pb-10">
-            <div className="w-1/5 flex-shrink-0">
+          <div className="flex flex-col gap-4 pb-10 md:flex-row md:gap-8">
+            <div className="md:w-1/5 md:flex-shrink-0">
               <div className="font-whyte text-base font-semibold leading-[140%] tracking-[-0.8px] text-carbon-800 md:text-[32px] md:leading-[140%] md:tracking-[-1.6px]">
-                [X]
+                [{requirement.symbol || defaultSymbol}]
                 <br />
                 {requirement.label.split("\n").map((line, lineIndex) => (
                   <span key={lineIndex}>
@@ -411,7 +420,7 @@ function RequirementsList({ requirements }: RequirementsListProps) {
                 ))}
               </div>
             </div>
-            <div className="w-4/5">
+            <div className="md:w-4/5">
               <p className="font-whyte text-base font-light leading-[140%] tracking-[-0.8px] text-carbon-800 md:text-[32px] md:leading-[140%] md:tracking-[-1.6px]">
                 {requirement.description}
               </p>
@@ -443,7 +452,7 @@ function ContentSection({
     >
       {/* Left column - Title + SVG on mobile, Title + SVG side by side on desktop */}
       <div className="flex flex-col gap-6 md:min-h-[800px] md:justify-between">
-        <p className="max-w-md font-whyteMono text-[24px] font-normal uppercase leading-[1.3] tracking-[0.07em] text-carbon-800">
+        <p className="max-w-md font-whyteMono text-xs font-normal uppercase leading-[130%] tracking-[0.84px] text-carbon-800 md:text-[24px] md:leading-[1.3] md:tracking-[0.07em]">
           {sectionData.title}
         </p>
         {/* SVG - shows below title on mobile, in flex layout on desktop */}
@@ -487,8 +496,8 @@ function ContentBlock({
 }) {
   const containerClasses =
     isLast && block.type === "cta"
-      ? "mx-auto mt-20 border-t border-stone-800 pt-8"
-      : "pt-8 pb-20 border-t border-stone-800";
+      ? "mx-auto mt-12 pt-6 md:mt-20 md:pt-8"
+      : "pt-6 pb-12 border-t border-stone-800 md:pt-8 md:pb-20";
 
   // Helper function to render quote with highlighted words
   const renderQuoteWithHighlights = (
@@ -570,7 +579,10 @@ function ContentBlock({
     case "requirements":
       return (
         <div className={containerClasses}>
-          <RequirementsList requirements={block.requirements} />
+          <RequirementsList
+            requirements={block.requirements}
+            defaultSymbol={block.defaultSymbol}
+          />
           {renderImage(block.imagePath)}
         </div>
       );
@@ -585,7 +597,7 @@ function ContentBlock({
           )}
           <div className="relative">
             {/* Hanging quote mark - positioned outside the content flow */}
-            <div className="absolute top-0 font-whyte text-base font-light leading-[140%] tracking-[-0.8px] text-carbon-800 md:-left-3 md:text-[32px] md:leading-[140%] md:tracking-[-1.6px]">
+            <div className="absolute -left-2 top-0 font-whyte text-base font-light leading-[140%] tracking-[-0.8px] text-carbon-800 md:-left-3 md:text-[32px] md:leading-[140%] md:tracking-[-1.6px]">
               ‟
             </div>
             <blockquote className="font-whyte text-base font-light leading-[140%] tracking-[-0.8px] text-carbon-800 md:text-[32px] md:leading-[140%] md:tracking-[-1.6px]">
@@ -608,7 +620,7 @@ function ContentBlock({
     case "label":
       return (
         <div className={containerClasses}>
-          <div className="font-whyteMono text-[28px] font-normal leading-[1.4] tracking-[-0.05em] text-stone-800">
+          <div className="font-whyte text-base font-light leading-[140%] tracking-[-0.8px] text-carbon-800 md:font-whyteMono md:text-[28px] md:font-normal md:leading-[1.4] md:tracking-[-0.05em] md:text-stone-800">
             {block.content}
           </div>
           {renderImage(block.imagePath)}
@@ -634,7 +646,7 @@ function ContentBlock({
     case "cta":
       return (
         <div className={containerClasses}>
-          <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-start">
+          <div className="hidden flex-col items-start justify-between gap-6 md:flex md:flex-row md:items-start">
             <div className="flex max-w-xs items-start gap-3 font-whyte text-2xl font-light leading-tight tracking-tight text-stone-800">
               <div className="mt-2 h-3 w-3 flex-shrink-0 bg-stone-800"></div>
               <p>

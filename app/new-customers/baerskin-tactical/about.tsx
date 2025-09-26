@@ -140,7 +140,7 @@ function ComposableAbout({
                     className="h-full w-full object-cover filter"
                   />
                 </div>
-                <div className="max-w-sm border-t pt-2 font-whyteMono text-sm font-normal leading-[140%] text-carbon-300 md:text-2xl md:leading-[1.3] md:tracking-[0.075em] md:text-carbon-0">
+                <div className="max-w-sm border-t pt-2 font-whyteMono text-xs font-normal leading-[140%] tracking-[-0.24px] text-carbon-800 md:text-2xl md:leading-[1.3] md:tracking-[0.075em] md:text-carbon-0">
                   <p>{testimonial.author}</p>
                   <p>{testimonial.company}</p>
                 </div>

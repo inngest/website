@@ -626,6 +626,7 @@ const BAERSKIN_PAGE_DATA: CaseStudyPageProps = {
                   "( observability / monitoring / recovery tools ) Beyond solving the reliability issues faced with Kafka, replatforming to Inngest brought a set of new advantages in operating their operational data and analytics processing in production. ",
               },
             ],
+            defaultSymbol: "✓",
           },
           {
             type: "quote",
