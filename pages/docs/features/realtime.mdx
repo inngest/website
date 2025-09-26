@@ -2,11 +2,11 @@ import {
   RiNextjsFill,
   RiNodejsFill,
 } from "@remixicon/react";
-import { Info, CodeGroup, Steps, Step, CardGroup, Card, VersionBadge } from "src/shared/Docs/mdx";
+import { Info, CodeGroup, Steps, Step, CardGroup, Card, VersionBadge, GuideSelector, GuideSection } from "src/shared/Docs/mdx";
 
 export const description = 'Learn how to use realtime to stream data from Inngest functions to your users.';
 
-# Realtime <VersionBadge version="TypeScript SDK v3.32.0+" /> <VersionBadge version="Go SDK v0.9.0+" />
+# Realtime <VersionBadge version="TypeScript SDK v3.32.0+" /> <VersionBadge version="Go SDK v0.9.0+" /> <VersionBadge version="Python v0.5.9+" />
 
 <Info>
   Realtime is currently in developer preview. Some details including APIs are still subject to change during this period. Read more about the [developer preview here](#developer-preview).
@@ -18,7 +18,7 @@ Realtime user experience is a core requirement for any web application, especial
 
 ## Concepts
 
-There are two core parts of Realtime: **publishing** and **subscribing**. You **publish** data from your functions and **subscribe** to data in your application, either browser or server.
+There are two core parts of Realtime: **[publishing](#publishing)** and **[subscribing](#subscribing)**. You **publish** data from your functions and **subscribe** to data in your application, either browser or server.
 
 Publishing data is done using the `publish()` function and has three components:
 
@@ -26,17 +26,18 @@ Publishing data is done using the `publish()` function and has three components:
 * `topic` - A category of data within a `channel`, e.g., `llm_text_stream` or `upload_progress`. This is helpful to differentiate between types of data that you might use in different parts of your application.
 * `data` - The data to be published to the realtime stream.
 
-Subscribing is done with the `subscribe()` function and also requires `channel` and `topic` to be specified.
-
-To securely subscribe to data, you must create a **subscription token**. Your application uses the Inngest SDK to create a token, which is then used by the subscribe function to connect to the Inngest WebSocket server.
-
-<Info>
-  During **local development**, you are able to subscribe to data without a token for testing purposes. Tokens are required for production.
-</Info>
-
 ## Quick start
 
-In this guide, we'll cover how to use realtime with our TypeScript SDK, subscribing from the client (browser). Start by installing the `@inngest/realtime` package:
+In this guide, we'll cover how to use realtime, publishing from an Inngest function and subscribing from the client (browser). Start by installing the `@inngest/realtime` package:
+
+<GuideSelector
+  options={[
+    { key: "typescript", title: "TypeScript" },
+    { key: "python", title: "Python" },
+  ]}
+>
+
+<GuideSection show="typescript">
 
 <CodeGroup>
 ```shell {{ title: "npm" }}
@@ -56,11 +57,23 @@ deno add jsr:@inngest/realtime
 ```
 </CodeGroup>
 
-<Info>
-  This guide requires `@inngest/realtime` version `0.4.0` or higher.
-</Info>
+
+  <Info>
+    This guide requires `@inngest/realtime` version `0.4.0` or higher.
+  </Info>
+</GuideSection>
+
+<GuideSection show="python">
+  <Info>
+    This guide requires `inngest` version `0.5.9` or higher.
+  </Info>
+</GuideSection>
+
+
 
 ### Publishing
+
+<GuideSection show="typescript">
 
 To publish data from your Inngest functions, you'll need to add the `realtimeMiddleware()` to your Inngest client. This will automatically add the `publish()` function to your Inngest functions.
 
@@ -77,8 +90,19 @@ export const inngest = new Inngest({
 
 Now, in your Inngest functions, the `publish()` function will be available as a parameter to your handler function. When publishing data, you'll need to specify the `channel` and `topic` you want to publish to and any data you want to publish.
 
-<CodeGroup>
+</GuideSection>
 
+<GuideSection show="python">
+
+To publish data from your Inngest functions, you'll need to import the experimental.realtime module. This is where you'll find the publish and publish_sync functions.
+
+See the [Fast API example](https://github.com/inngest/inngest-py/tree/main/examples/fast_api_realtime) for more information.
+
+</GuideSection>
+
+<GuideSection show="typescript">
+
+<CodeGroup>
 ```tsx {{ title: "Basic (untyped)" }}
 import { inngest } from "./client";
 
@@ -88,18 +112,17 @@ inngest.createFunction(
   async ({ event, step, publish }) => {
 
     const response = await step.run('generate-response', () => {
-      return llm.generateResponse(event.data.prompt);
+      const response = llm.generateResponse(event.data.prompt);
+      await publish({
+        channel: `user:${event.data.userId}`,
+        topic: "ai",
+        data: {
+          response: response,
+          success: true,
+        },
+      })
     });
 
-    // Publish data to a user-specific channel, on the "ai" topic.
-    await publish({
-      channel: `user:${event.data.userId}`,
-      topic: "ai",
-      data: {
-        response: response,
-        success: true,
-      },
-    });
     // ℹ️ Want type-safety with channels and topics? See the typed channels tab above.
   }
 );
@@ -136,29 +159,61 @@ inngest.createFunction(
   { event: "ai/recommendation.requested" },
   async ({ event, step, publish }) => {
 
-    const response = await step.run('generate-response', () => {
-      return llm.generateResponse(event.data.prompt);
+    await step.run('generate-response', () => {
+      const response = llm.generateResponse(event.data.prompt)
+      await publish(
+        userChannel(event.data.userId).ai({
+          response: response,
+          success: true,
+        })
+      );
     });
 
-    // Publish data to a user-specific channel, on the "ai" topic.
-    await publish(
-      userChannel(event.data.userId).ai({
-        response: response,
-        success: true,
-      })
-    );
-
-    await publish(logsChannel().info("All went well"));
+    await step.run("log-all-went-well", () => {
+      await publish(logsChannel().info("All went well"));
+    });
   }
 );
 ```
 </CodeGroup>
 
-{/* TODO - More on channels and topics, perhaps in a new page? */}
+</GuideSection>
+
+<GuideSection show="python">
+
+```py {{ title: "Python" }}
+import inngest
+from inngest.experimental import realtime
+
+from .client import inngest_client
+
+
+@inngest_client.create_function(
+    fn_id="python-realtime-publish",
+    trigger=inngest.TriggerEvent(event="realtime.test"),
+)
+async def python_realtime_publish(ctx: inngest.Context) -> str:
+    async def my_first_step() -> dict[str, str]:
+        result = {"message": "My llm response from python!"}
+        await realtime.publish(
+            client=inngest_client,
+            channel="user:user_123456789",
+            topic="messages",
+            data=result,
+        )
+        return result
+
+    await ctx.step.run("my-first-step", my_first_step)
+
+    return "Finished!"
+```
+</GuideSection>
 
 ### Subscribing
 
-To subscribe to data on the client (browser), you'll need to create a subscription token and use the `subscribe()` function. {/* Subscribing from the server side is covered in the [subscribing reference](/docs/features/realtime/subscribing) */}
+To subscribe to data on the client (browser), you'll need to create a subscription token and use the `subscribe()` function which also requires `channel` and `topic` to be specified.
+
+Your application uses the Inngest SDK to create a token, which is then used by the subscribe function to connect to the Inngest WebSocket server.
 
 
 <Steps>
@@ -211,6 +266,20 @@ To subscribe to data on the client (browser), you'll need to create a subscripti
 
       res.json({ token })
     })
+    ```
+
+    ```py {{ title: "Python - Fast API" }}
+    @app.get("/api/get-subscription-token")
+    async def get_realtime_token():
+    # Here, you can get params from the request to;
+    user_id = session["user_id"]
+    # - Authorize what the user is allowed to subscribe to
+    # - Allow the client to specify what topics they want to subscribe to
+    return await realtime.get_subscription_token(
+        client=inngest_client,
+        channel=f"user:{user_id}",
+        topics=["messages"],
+    )
     ```
     </CodeGroup>
   </Step>
@@ -283,8 +352,9 @@ To subscribe to data on the client (browser), you'll need to create a subscripti
   </Step>
 </Steps>
 
+</GuideSelector>
 
-
+{/* TODO - More on channels and topics, perhaps in a new page? */}
 
 
 {/*
@@ -346,7 +416,7 @@ Realtime is supported in the following SDKs:
 | ---------- | ------- | --------- | ------- |
 | TypeScript | ✅      | ✅        | >=v3.32.0  |
 | Golang     | ✅      | ✅        | >=v0.9.0  |
-| Python     | In progress | In progress         | -       |
+| Python     | ✅      | -       | >=v0.5.9  |
 
 ## Limitations
 
