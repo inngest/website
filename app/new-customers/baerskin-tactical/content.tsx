@@ -65,173 +65,6 @@ interface ComposableCaseStudyProps {
   };
 }
 
-// Default content for Baerskin case study
-const BAERSKIN_CONTENT: ComposableCaseStudyProps = {
-  intro: {
-    title:
-      "BÆRSkin Tactical Supply Co. adopted a unique approach to e-commerce, taking data-driven decisions to target niche markets worldwide. This strategy is backed by the choice to build an in-house e-commerce platform, bringing them complete flexibility and control of the shopping experience compared to solutions like Shopify.",
-    logo: <BaerskinLogo />,
-  },
-  sections: [
-    {
-      id: "first",
-      title: "BUILDING IN-HOUSE E-COMMERCE PLATFORM",
-      header:
-        "BÆRSkin Tactical Supply Co. adopted a unique approach to e-commerce, taking data-driven decisions to target niche markets worldwide. This strategy is backed by the choice to build an in-house e-commerce platform, bringing them complete flexibility and control of the shopping experience compared to solutions like Shopify.",
-      contentBlocks: [
-        {
-          type: "quote",
-          quote: {
-            author: "Gus Fune → CTO",
-            company: "[ BÆRSkin Tactical Supply Co. ]",
-            quote:
-              "We ended up developing our own E commerce platform in house. So we didn't use Shopify or anything like that because we want to keep control of a few elements that they don't allow us to controllike checkout",
-            highlightedWords: ["control", "checkout"], // Example of words to underline
-          },
-        },
-        {
-          type: "paragraph",
-          content:
-            "BÆRSkin Tactical Supply Co. is built as a multi-cloud and multi-region event-driven system, composed of analytics systems used internally to make data-driven decisions, as well as operational data processing that powers core e-commerce features, such as order processing and logistics. \n\n In late 2024, Gus and his team started to face issues with their recent Kafka replatforming (migrating an existing application without major rewrites).",
-        },
-      ],
-      image: <PlaceholderImage2 />,
-    },
-    {
-      id: "deez",
-      title: "THE KAFKA REPLATFORMING FAILURE: 6% EVENT LOSS",
-      header:
-        "BÆRSkin Tactical Supply Co. adopted Kafka in late 2023 to power their analytics and order processing systems. As the replatforming progressed, they realized that some events were dropped, resulting in customers' complaints about missing orders.",
-      contentBlocks: [
-        {
-          type: "paragraph",
-          content:
-            "Events dropped by Kafka, combined with its lack of native production tooling, made it hard for the engineering team to identify the root cause and impact on customers. Facing this challenge, Gus started to research a new technology to replace Kafka, matching the following requirements:",
-        },
-        {
-          type: "requirements",
-          requirements: [
-            {
-              label: "Reliability:",
-              description:
-                "Events should be delivered reliably and can be replayed in case of processing issues. Producing and consuming events should be scalable without requiring extra infrastructure work.",
-            },
-            {
-              label: "Event-driven:",
-              description:
-                "The researched solution needs to match BÆRSkin Tactical Supply Co.' event-driven architecture.",
-            },
-            {
-              label: "Observability:",
-              description:
-                "Events and their associated processing should be easily monitored with metrics and alerts.",
-            },
-            {
-              label: "Monitoring & Recovery tooling:",
-              description:
-                "Events should be delivered reliably and can be replayed in case of processing issues. Producing and consuming events should be scalable without requiring extra infrastructure work.",
-            },
-          ],
-        },
-        {
-          type: "paragraph",
-          content:
-            "Compared to other solutions like Temporal, Inngest stood out as a promising candidate with the added value of its great DX and Bun support, which is the primary runtime of BÆRSkin Tactical Supply Co.'s codebase.",
-        },
-      ],
-      image: <PlaceholderImage />,
-    },
-    {
-      id: "second",
-      title:
-        "CHOOSING INNGEST: A RELIABLE EVENT-DRIVEN WORKFLOW ENGINE, COMING WITH ESSENTIAL PRODUCTION TOOLS",
-      header:
-        "BÆRSkin Tactical Supply Co. adopted a unique approach to e-commerce, taking data-driven decisions to target niche markets worldwide. This strategy is backed by the choice to build an in-house e-commerce platform, bringing them complete flexibility and control of the shopping experience compared to solutions like Shopify.",
-      contentBlocks: [
-        {
-          type: "requirements",
-          requirements: [
-            {
-              label: "Beyond Reliability:",
-              description:
-                "( observability / monitoring / recovery tools ) Beyond solving the reliability issues faced with Kafka, replatforming to Inngest brought a set of new advantages in operating their operational data and analytics processing in production. ",
-            },
-          ],
-        },
-        {
-          type: "quote",
-          quote: {
-            author: "Gus Fune → CTO",
-            company: "[ BÆRSkin Tactical Supply Co. ]",
-            quote:
-              "The reliable transportation of events and making sure the replayability, being able to monitor how things are going, and catch things before they become a problem. Those are super important for us.",
-          },
-        },
-        {
-          type: "label",
-          content:
-            "Using Inngest, Gus's team got access to ready-to-use monitoring dashboards, production recovery tools such as Replays  [↙ ]",
-          imagePath: "/assets/customers/baerskin/baerskinImage.png",
-        },
-      ],
-    },
-    {
-      id: "third",
-      title: "Achieving 10x performance improvements on their logistics system",
-      header:
-        "Once the initial reliability issue was resolved by replatforming to Inngest, Gus and his team began exploring ways to expand Inngest to address other challenges they faced with their logistics system.",
-      contentBlocks: [
-        {
-          type: "paragraph",
-          content:
-            "BÆRSkin Tactical Supply Co.'s logistics system faced a recurring challenge during Black Friday and Cyber Monday, a well-known challenge for most E-Commerce actors. The large number of orders concentrated during this short period was putting a lot of pressure on their database-based queuing system (utilizing Postgres's SKIP LOCKED design), which failed to process orders and initiate shipments in a reasonable timeframe. \n\n While short-term solutions such as drastically upscaling their infrastructure helped, Gus and his team started a PoC to evaluate the performance of their logistics system once powered by Inngest. Again, the results were there.",
-        },
-        {
-          type: "quote",
-          quote: {
-            author: "Gus Fune → CTO",
-            company: "[ BÆRSkin Tactical Supply Co. ]",
-            quote:
-              "The preliminary results show that from 40 orders per minute we managed to increase to 500 orders per minute to process in the new system. So this is probably the biggest gain we've seen in the new system.",
-          },
-        },
-      ],
-    },
-    {
-      id: "fourth",
-      title: "INNGEST FOR E-COMMERCE",
-      header:
-        "For BÆRSkin Tactical Supply Co., what started as a replatforming effort to address Kafka reliability issues ultimately evolved into a modernization of their analytical and operational data processing, resulting in significant gains in processing performance (a 10x faster logistics system) and operational productivity (through production tools like Replay).",
-      contentBlocks: [
-        {
-          type: "paragraph",
-          content:
-            "BÆRSkin Tactical Supply Co.'s logistics system faced a recurring challenge during Black Friday and Cyber Monday, a well-known challenge for most E-Commerce actors. The large number of orders concentrated during this short period was putting a lot of pressure on their database-based queuing system (utilizing Postgres's SKIP LOCKED design), which failed to process orders and initiate shipments in a reasonable timeframe. \n\n Finally, where alternatives like Kafka, AWS SQS, or Temporal require significant investment in infrastructure, monitoring, and production tools, Inngest comes with a fully managed and auto-scaled service that provides essential production monitoring and recovery tools.",
-        },
-        {
-          type: "paragraph",
-          content:
-            "If you’re interested in learning how Inngest can help your team? → Reach out to us to chat with an expert.",
-        },
-        {
-          type: "cta",
-          ctaText: "Read more [↗]",
-          ctaDescription: "Want to learn more about Inngest for e-commerce?",
-        },
-      ],
-    },
-  ],
-  footer: {
-    title: "Check out other customer success stories",
-    subtitle: "Talk to an Inngest product expert today.",
-    ctaText: "Get in touch [+]",
-  },
-};
-
-export default function BaerskinTacticalContent() {
-  return <ComposableCaseStudy {...BAERSKIN_CONTENT} />;
-}
-
 // Export the composable component for reuse
 export { ComposableCaseStudy };
 
@@ -303,13 +136,20 @@ function ComposableCaseStudy({
         <div className="mx-auto w-full max-w-container-desktop px-8">
           <div className="max-w-[60rem] border-carbon-1000 pb-14 md:pb-32">
             <div className="relative z-10 flex h-full">
-              <p className="whitespace-pre-line font-whyte text-base font-light leading-[140%] text-carbon-800 md:text-[32px] md:leading-[140%] md:tracking-[-1.6px] md:text-carbon-800">
+              <p className="whitespace-pre-line font-whyte text-base font-light leading-[140%] text-stone-950 md:text-[32px] md:leading-[140%] md:tracking-[-1.6px] md:text-carbon-800">
                 {intro.title}
               </p>
             </div>
           </div>
           {/* replace bottom border with switcher */}
           <div className="border-t border-carbon-1000"></div>
+        </div>
+        <div className="mx-auto w-full max-w-container-desktop  px-8 md:hidden">
+          <div className="flex justify-start border-b border-carbon-1000 py-10">
+            <div className="origin-left scale-[80%] md:scale-75 lg:scale-90 xl:scale-100">
+              {intro.logo}
+            </div>
+          </div>
         </div>
         {/* Desktop sticky container with logo and tabs */}
         <div className="sticky top-[73px] z-40 hidden bg-carbon-100 md:block">
@@ -321,7 +161,7 @@ function ComposableCaseStudy({
               </div>
             </div>
             {/* Tabs section */}
-            <div className="py-4">
+            <div className="pb-24">
               <Tabs
                 value={activeTab}
                 onValueChange={setActiveTab}
@@ -344,7 +184,7 @@ function ComposableCaseStudy({
           </div>
         </div>
 
-        <div className="mx-auto w-full max-w-container-desktop px-8">
+        <div className="mx-auto mb-12 w-full max-w-container-desktop px-8">
           {sections.map((section, index) => (
             <ContentSection
               key={section.id}
@@ -361,7 +201,7 @@ function ComposableCaseStudy({
                   {footer.title}
                 </p>
               </div>
-              <div className="w-full md:w-auto">
+              <div className="w-full md:-ml-[6rem] md:w-auto">
                 <div className="w-full border-t border-stone-800 md:hidden"></div>
                 <div className="flex items-start justify-start gap-3 pt-6 md:pt-0">
                   <div className="flex max-w-xs items-start gap-3 font-whyte text-2xl font-light leading-tight tracking-tight text-stone-800">
@@ -400,7 +240,7 @@ function RequirementsList({
   defaultSymbol = "X",
 }: RequirementsListProps) {
   return (
-    <div className="space-y-16">
+    <div className="space-y-6 md:space-y-16">
       {requirements.map((requirement, index) => (
         <div key={index}>
           <div className="flex flex-col gap-4 pb-10 md:flex-row md:gap-8">
@@ -444,13 +284,13 @@ function ContentSection({
     <div
       id={sectionData.id}
       className={cn(
-        `my-12 flex scroll-mt-[140px] flex-col gap-6 md:flex-row md:justify-between ${sectionData.id}`,
-        !isFirst && "border-t border-stone-800 pt-12"
+        `mb-12 mt-6 flex scroll-mt-[140px] flex-col gap-6 md:flex-row md:justify-between ${sectionData.id}`,
+        !isFirst && "border-t border-stone-800 pt-6 md:pt-12"
       )}
     >
       {/* Left column - Title + SVG on mobile, Title + SVG side by side on desktop */}
       <div className="flex flex-col gap-6 md:min-h-[800px] md:justify-between">
-        <p className="max-w-md font-whyteMono text-xs font-normal uppercase leading-[130%] tracking-[0.84px] text-carbon-800 md:text-[24px] md:leading-[1.3] md:tracking-[0.07em]">
+        <p className="max-w-[13rem] font-whyteMono text-xs font-normal uppercase leading-[130%] tracking-[0.84px] text-carbon-800 md:max-w-md md:text-[24px] md:leading-[1.3] md:tracking-[0.07em]">
           {sectionData.title}
         </p>
         {/* SVG - shows below title on mobile, in flex layout on desktop */}
@@ -494,8 +334,8 @@ function ContentBlock({
 }) {
   const containerClasses =
     isLast && block.type === "cta"
-      ? "mx-auto mt-12 pt-6 md:mt-20 md:pt-8"
-      : "pt-6 pb-12 border-t border-stone-800 md:pt-8 md:pb-20";
+      ? "mx-auto mb-12 mt-12 pt-6 md:mt-20 md:pt-8"
+      : "py-6 border-t border-stone-800 md:pt-8 md:pb-20";
 
   // Helper function to render quote with highlighted words
   const renderQuoteWithHighlights = (
@@ -563,7 +403,7 @@ function ContentBlock({
       return (
         <div className={containerClasses}>
           {block.label && (
-            <div className="mb-9 font-whyteMono text-[28px] font-normal leading-[1.4] tracking-[-0.05em] text-stone-800">
+            <div className="mb-14 font-whyteMono text-[28px] font-normal leading-[1.4] tracking-[-0.05em] text-stone-800">
               {block.label}
             </div>
           )}
@@ -589,7 +429,7 @@ function ContentBlock({
       return (
         <div className={containerClasses}>
           {block.quote.label && (
-            <div className="mb-6 font-whyteMono text-[28px] font-normal leading-[1.4] tracking-[-0.05em] text-stone-800">
+            <div className="mb-14 font-whyteMono text-[28px] font-normal leading-[1.4] tracking-[-0.05em] text-stone-800">
               {block.quote.label}
             </div>
           )}
@@ -603,10 +443,10 @@ function ContentBlock({
                 block.quote.quote,
                 block.quote.highlightedWords
               )}
-              "
+              ”
             </blockquote>
           </div>
-          <p className="max-w-sm pt-12 font-whyteMono font-normal leading-[140%] text-stone-800 md:leading-[1.3] md:tracking-[0.075em]">
+          <p className="max-w-sm pt-12 font-whyteMono text-sm font-normal leading-[140%] text-stone-800 md:text-[18px] md:text-base md:leading-[1.3] md:tracking-[0.075em]">
             {block.quote.author}
             <br />
             {block.quote.company}
@@ -629,7 +469,7 @@ function ContentBlock({
       return (
         <div className={containerClasses}>
           <div className="font-whyte text-3xl font-normal leading-[1.4] tracking-[-0.05em] text-stone-800">
-            {block.numbered.number}{" "}
+            [{block.numbered.number}]{" "}
             {block.numbered.highlightedText && (
               <span className="underline">
                 {block.numbered.highlightedText}{" "}
@@ -644,7 +484,7 @@ function ContentBlock({
     case "cta":
       return (
         <div className={containerClasses}>
-          <div className="hidden flex-col items-start justify-between gap-6 md:flex md:flex-row md:items-start">
+          <div className="hidden flex-col items-start justify-between gap-6 md:flex md:flex-row md:items-start md:border-t md:border-stone-800 md:pt-8">
             <div className="flex max-w-xs items-start gap-3 font-whyte text-2xl font-light leading-tight tracking-tight text-stone-800">
               <div className="mt-2 h-3 w-3 flex-shrink-0 bg-stone-800"></div>
               <p>
@@ -652,7 +492,7 @@ function ContentBlock({
                   "Talk to an Inngest product expert today."}
               </p>
             </div>
-            <div className="flex w-full flex-col items-center gap-6 md:w-auto md:flex-row md:items-center md:gap-8">
+            <div className="flex w-full flex-col items-start gap-6 md:w-auto md:flex-row md:items-center md:gap-8">
               <Button className="flex h-[52px] w-[212px] flex-shrink-0 items-center justify-center gap-[10px] bg-stone-800 px-[13px] py-[15px] text-right font-whyte text-2xl font-normal leading-[120%] text-alwaysWhite transition-colors hover:bg-stone-800/60">
                 {block.ctaText}
               </Button>

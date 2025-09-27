@@ -10,6 +10,8 @@ interface CompanyDetailsData {
   website: {
     prefix: string;
     url: string;
+    link?: string; // Optional full URL for linking
+    isLinked?: boolean; // Whether to make it a clickable link
   };
   logo: React.ReactNode;
   description: string;
@@ -63,6 +65,8 @@ const BAERSKIN_HEADER_DATA: ComposableHeaderProps = {
     website: {
       prefix: "[www]",
       url: "baerskintactical.com",
+      link: "https://baerskintactical.com",
+      isLinked: true,
     },
     logo: <BaerskinLogo />,
     description:
@@ -76,6 +80,43 @@ export default function BaerskinTacticalHeader() {
 
 // Export the composable component for reuse
 export { ComposableHeader };
+
+// Website link component that can optionally be clickable
+function WebsiteLink({
+  website,
+  className = "",
+}: {
+  website: CompanyDetailsData["website"];
+  className?: string;
+}) {
+  const content = (
+    <>
+      <p className={className}>{website.prefix}</p>
+      <p
+        className={`${className} ${
+          website.isLinked ? "cursor-pointer hover:underline" : ""
+        }`}
+      >
+        {website.url}
+      </p>
+    </>
+  );
+
+  if (website.isLinked && website.link) {
+    return (
+      <a
+        href={website.link}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block"
+      >
+        {content}
+      </a>
+    );
+  }
+
+  return <div>{content}</div>;
+}
 
 // Main composable header component
 function ComposableHeader({
@@ -148,12 +189,10 @@ function ComposableHeader({
               </div>
 
               <div>
-                <p className="font-whyteMono text-2xl text-stone-800">
-                  {companyDetails.website.prefix}
-                </p>
-                <p className="mb-6 font-whyteMono text-2xl font-normal text-stone-800">
-                  {companyDetails.website.url}
-                </p>
+                <WebsiteLink
+                  website={companyDetails.website}
+                  className="mb-6 font-whyteMono text-2xl text-stone-800"
+                />
 
                 <p className="pt-10 font-circular text-2xl font-light leading-[1.4] text-stone-800">
                   {companyDetails.description}
@@ -214,12 +253,10 @@ function ComposableHeader({
               </div>
 
               <div>
-                <p className="text-xl text-stone-800">
-                  {companyDetails.website.prefix}
-                </p>
-                <p className="mb-4 text-xl font-normal text-stone-800">
-                  {companyDetails.website.url}
-                </p>
+                <WebsiteLink
+                  website={companyDetails.website}
+                  className="mb-4 text-xl text-stone-800"
+                />
 
                 <p className="font-circular text-xl font-light leading-[1.4] text-stone-800">
                   {companyDetails.description}
@@ -249,12 +286,10 @@ function ComposableHeader({
           <div className="space-y-8 font-whyteMono">
             {/* Website link */}
             <div>
-              <p className="text-xl text-stone-800">
-                {companyDetails.website.prefix}
-              </p>
-              <p className="text-xl font-normal text-stone-800">
-                {companyDetails.website.url}
-              </p>
+              <WebsiteLink
+                website={companyDetails.website}
+                className="text-xl text-stone-800"
+              />
             </div>
 
             {/* Logo */}
@@ -301,18 +336,16 @@ function ComposableHeader({
         </div>
 
         {/* Website link */}
-        <div className="mb-8">
-          <p className="text-lg text-stone-800">
-            {companyDetails.website.prefix}
-          </p>
-          <p className="text-lg font-normal text-stone-800">
-            {companyDetails.website.url}
-          </p>
+        <div className="mb-8 font-whyteMono">
+          <WebsiteLink
+            website={companyDetails.website}
+            className="text-lg text-stone-800"
+          />
         </div>
 
         {/* Logo */}
         <div className="mb-8">
-          <div className="origin-left scale-90">{companyDetails.logo}</div>
+          <div className="origin-left scale-[70%]">{companyDetails.logo}</div>
         </div>
 
         {/* Description */}

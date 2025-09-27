@@ -140,7 +140,7 @@ function ComposableAbout({
                     className="h-full w-full object-cover filter"
                   />
                 </div>
-                <div className="max-w-sm border-t pt-2 font-whyteMono text-xs font-normal leading-[140%] tracking-[-0.24px] text-carbon-800 md:text-2xl md:leading-[1.3] md:tracking-[0.075em] md:text-carbon-0">
+                <div className="max-w-sm border-t pt-2 font-whyteMono text-xs font-normal leading-[140%] tracking-[-0.24px] text-carbon-0 md:text-2xl md:leading-[1.3] md:tracking-[0.075em]">
                   <p>{testimonial.author}</p>
                   <p>{testimonial.company}</p>
                 </div>
@@ -148,7 +148,16 @@ function ComposableAbout({
             </div>
           </div>
 
-          <div className="mx-4 mt-10 border-t border-stone-50 pt-6 md:mx-0">
+          <div className="mx-4 mt-16 flex shrink flex-col items-end gap-2 md:mx-0 md:hidden">
+            <div className="h-8 w-[11.6%] bg-white md:h-[52px]"></div>
+            <div className="h-8 w-[19.4%] bg-white md:h-[52px]"></div>
+            <div className="h-8 w-full bg-white md:h-[52px]"></div>
+            <div className="h-8 w-[50.6%] self-start bg-white md:h-[52px]"></div>
+            <div className="mr-[19.4%] h-8 w-[30%] bg-white md:h-[52px]"></div>
+            <div className="h-8 w-[19.4%] bg-white md:h-[52px]"></div>
+          </div>
+
+          <div className="mx-4 mt-24 border-t border-stone-50 pt-6 md:mx-0">
             <div className="flex flex-col justify-between gap-6 md:flex-row md:items-start">
               <div className="flex items-center justify-start gap-3">
                 <div className="h-3 w-3 bg-inngestLux"></div>
@@ -166,14 +175,14 @@ function ComposableAbout({
                 </div>
               </div>
               <div className="flex w-full flex-col items-center gap-6 md:w-auto md:flex-row md:items-center md:gap-8">
-                <Button className="flex w-full flex-shrink-0 items-center justify-center gap-[7.153px] py-6 text-right font-whyte text-2xl font-normal leading-[120%] text-stone-950 transition-colors md:h-[52px] md:w-[212px] md:gap-[10px] md:px-[13px] md:py-[15px] md:text-2xl">
+                <Button className="flex w-full flex-shrink-0 items-center justify-center gap-[7.153px] py-6 text-right font-whyte text-2xl font-normal leading-[120%] text-stone-950 text-stone-950 transition-colors md:h-[52px] md:w-[212px] md:gap-[10px] md:px-[13px] md:py-[15px] md:text-2xl">
                   {cta.buttonText}
                 </Button>
               </div>
             </div>
           </div>
 
-          <div className="mx-4 mt-16 flex shrink flex-col items-end gap-2 md:mx-0">
+          <div className="mx-4 mt-16 hidden shrink flex-col items-end gap-2 md:mx-0 md:flex">
             <div className="h-8 w-[11.6%] bg-white md:h-[52px]"></div>
             <div className="h-8 w-[19.4%] bg-white md:h-[52px]"></div>
             <div className="h-8 w-full bg-white md:h-[52px]"></div>

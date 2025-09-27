@@ -254,14 +254,14 @@ const BAERSKIN_PAGE_DATA: CaseStudyPageProps = {
             type: "requirements",
             requirements: [
               {
-                label: "Debouncing::",
+                label: "Debouncing:",
                 description:
-                  " prevents processing duplicate information and overwhelming downstream components during spikes, saving on LLM costs and speeding up overall processing.",
+                  "Prevents processing duplicate information and overwhelming downstream components during spikes, saving on LLM costs and speeding up overall processing.",
               },
               {
                 label: "Concurrency control:",
                 description:
-                  " Key to managing 3rd party API rate limits and keeping output data correct by preventing race conditions between competing jobs.",
+                  "Key to managing 3rd party API rate limits and keeping output data correct by preventing race conditions between competing jobs.",
               },
               {
                 label: "Multi-tenancy:",
@@ -288,14 +288,14 @@ const BAERSKIN_PAGE_DATA: CaseStudyPageProps = {
             type: "numbered",
             numbered: {
               number: "1",
-              text: "Waking up AI workflows reliably based on users' prompts",
+              text: "Waking up AI workflows reliably -> based on users' prompts",
             },
           },
           {
             type: "numbered",
             numbered: {
               number: "2",
-              text: "Running AI workflows for very long periods to perform multiple tool calls and reasoning",
+              text: "Running AI workflows for very long periods -> to perform multiple tool calls and reasoning",
             },
           },
           {
