@@ -71,7 +71,7 @@ await step.invoke("start-process", {
 });
 ```
 
-You can optionally provide `schemas`, which are a collection of [Zod](https://zod.dev) schemas used to provide typing to the input and output of the referenced function.
+You can optionally provide `schemas`, which are a collection of [Standard Schemas](https://standardschema.dev/) used to provide typing to the input and output of the referenced function.
 
 <Callout>
 In the future, this will also _validate_ the input and output.
@@ -128,10 +128,10 @@ await step.invoke("start-process", {
 
           <Properties nested>
                <Property name="data" type="zod">
-                    The [Zod](https://zod.dev) schema to use to provide typing to the `data` payload required by the referenced function.
+                    The [Standard Schema](https://standardschema.dev/) to use to provide typing to the `data` payload required by the referenced function.
                </Property>
                <Property name="return" type="zod">
-                    The [Zod](https://zod.dev) schema to use to provide typing to the return value of the referenced function when invoked.
+                    The [Standard Schema](https://standardschema.dev/) to use to provide typing to the return value of the referenced function when invoked.
                </Property>
           </Properties>
      </Property>
