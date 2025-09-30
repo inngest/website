@@ -8,7 +8,7 @@ export function PlaceholderImage() {
       viewBox="0 0 385 777"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className="h-auto w-full max-w-[120px] md:mx-auto md:max-w-[385px]"
+      className="h-auto w-full max-w-[120px] scale-[80%] md:mx-auto md:max-w-[385px]"
     >
       <g clipPath="url(#clip0_321_29285)">
         <path
@@ -382,7 +382,7 @@ export function PlaceholderImage3() {
       viewBox="0 0 385 777"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className="h-auto w-full max-w-[120px] md:mx-auto md:max-w-[385px]"
+      className="h-auto w-full max-w-[120px] scale-[80%] md:mx-auto md:max-w-[385px]"
     >
       <g clipPath="url(#clip0_697_9570)">
         <path

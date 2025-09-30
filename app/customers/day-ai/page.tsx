@@ -214,16 +214,16 @@ const pageData = {
             id: "third-numbered-1",
             type: "numbered" as const,
             numbered: {
-              number: "1",
-              text: "Waking up AI workflows reliably -> based on users' prompts",
+              number: "01",
+              text: "Waking up AI workflows reliably → based on users' prompts",
             },
           },
           {
             id: "third-numbered-2",
             type: "numbered" as const,
             numbered: {
-              number: "2",
-              text: "Running AI workflows for very long periods -> to perform multiple tool calls and reasoning",
+              number: "02",
+              text: "Running AI workflows for very long periods → to perform multiple tool calls and reasoning",
             },
           },
           {

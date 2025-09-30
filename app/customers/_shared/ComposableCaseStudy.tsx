@@ -164,10 +164,10 @@ export function ComposableCaseStudy({
               </p>
             </div>
           </div>
-          <div className="border-t border-carbon-1000"></div>
+          <div className="border-t border-carbon-400"></div>
         </div>
-        <div className="mx-auto w-full max-w-container-desktop  px-8 md:hidden">
-          <div className="flex justify-start border-b border-carbon-1000 py-10">
+        <div className="mx-auto w-full max-w-container-desktop px-8 md:hidden">
+          <div className="flex justify-start border-b border-carbon-400 py-4 md:py-10">
             <div className="origin-left scale-[80%] md:scale-75 lg:scale-90 xl:scale-100">
               {intro.logo}
             </div>
@@ -176,7 +176,7 @@ export function ComposableCaseStudy({
         <div className="sticky top-[73px] z-40 hidden bg-carbon-100 md:block">
           <div className="mx-auto w-full max-w-container-desktop px-8">
             <div className="flex justify-end py-10">
-              <div className="origin-left scale-90 md:scale-75 lg:scale-90 xl:scale-100">
+              <div className="origin-left scale-90 md:scale-75 lg:scale-90 xl:scale-[100%]">
                 {intro.logo}
               </div>
             </div>
@@ -212,26 +212,35 @@ export function ComposableCaseStudy({
             />
           ))}
 
+          <div className="flex shrink flex-col items-end gap-1 md:mx-0 md:hidden md:gap-2">
+            <div className="h-4 w-[11.6%] bg-stone-800 md:h-[52px]"></div>
+            <div className="h-4 w-[19.4%] bg-stone-800 md:h-[52px]"></div>
+            <div className="h-4 w-full bg-stone-800 md:h-[52px]"></div>
+            <div className="h-4 w-[50.6%] self-start bg-stone-800 md:h-[52px]"></div>
+            <div className="mr-[19.4%] h-4 w-[30%] bg-stone-800 md:h-[52px]"></div>
+            <div className="h-4 w-[19.4%] bg-stone-800 md:h-[52px]"></div>
+          </div>
+
           <div className="mx-auto mt-12 border-t border-stone-800 pt-6 md:mt-20 md:pt-8">
             <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-start">
-              <div className="flex items-center justify-start gap-3">
+              <div className="flex items-start justify-start gap-3">
                 <div className="h-3 w-3 bg-stone-800"></div>
-                <p className="font-whyte text-2xl font-light leading-tight tracking-tight text-stone-800">
+                <p className="font-whyte text-base font-light leading-tight tracking-tight text-stone-800 md:text-2xl">
                   {footer.title}
                 </p>
               </div>
-              <div className="w-full md:-ml-[6rem] md:w-auto">
+              <div className="w-full md:-ml-[1rem] md:w-auto">
                 <div className="w-full border-t border-stone-800 md:hidden"></div>
                 <div className="flex items-start justify-start gap-3 pt-6 md:pt-0">
-                  <div className="flex max-w-xs items-start gap-3 font-whyte text-2xl font-light leading-tight tracking-tight text-stone-800">
-                    <div className="mt-2 h-3 w-3 flex-shrink-0 bg-stone-800"></div>
+                  <div className="flex max-w-xs items-start gap-3 font-whyte text-base font-light leading-tight tracking-tight text-stone-800 md:text-2xl">
+                    <div className="mt-1 h-3 w-3 flex-shrink-0 bg-stone-800 md:mt-2"></div>
                     <p>{footer.subtitle}</p>
                   </div>
                 </div>
               </div>
               <div className="flex w-full flex-col items-center gap-6 md:w-auto md:flex-row md:items-center md:gap-8">
                 <Button
-                  className="flex w-full flex-shrink-0 items-center justify-center gap-[7.153px] bg-stone-800 py-6 text-right font-whyte text-2xl font-normal leading-[120%] text-alwaysWhite transition-colors hover:bg-stone-800/60 md:h-[52px] md:w-[212px] md:gap-[10px] md:px-[13px] md:py-[15px] md:text-2xl"
+                  className="flex w-full flex-shrink-0 items-center justify-center gap-[7.153px] bg-stone-800 py-6 text-right font-whyte text-base font-normal leading-[120%] text-alwaysWhite transition-colors hover:bg-stone-800/60 md:h-[52px] md:w-[212px] md:gap-[10px] md:px-[13px] md:py-[15px] md:text-xl"
                   asChild
                 >
                   <Link href="/contact?ref=customers">{footer.ctaText}</Link>
@@ -240,7 +249,7 @@ export function ComposableCaseStudy({
             </div>
           </div>
 
-          <div className="mt-16 flex shrink flex-col items-end gap-2">
+          <div className="mt-16 hidden shrink flex-col items-end gap-2 md:flex">
             <div className="h-8 w-[11.6%] bg-stone-800 md:h-[52px]"></div>
             <div className="h-8 w-[19.4%] bg-stone-800 md:h-[52px]"></div>
             <div className="h-8 w-full bg-stone-800 md:h-[52px]"></div>
@@ -264,12 +273,17 @@ function RequirementsList({
   defaultSymbol = "X",
 }: RequirementsListProps) {
   return (
-    <div className="space-y-6 md:space-y-16">
+    <div className="space-y-6">
       {requirements.map((requirement, index) => (
         <div key={`req-${requirement.label}-${index}`}>
-          <div className="flex flex-col gap-4 pb-10 md:flex-row md:gap-8">
+          <div
+            className={cn(
+              "flex flex-col gap-4 md:flex-row md:gap-8",
+              index < requirements.length - 1 && "pb-10"
+            )}
+          >
             <div className="md:w-1/5 md:flex-shrink-0">
-              <div className="font-whyte text-base font-semibold leading-[140%] tracking-[-0.8px] text-carbon-800 md:text-[32px] md:leading-[140%] md:tracking-[-1.6px]">
+              <div className="font-whyte text-base font-semibold leading-[140%] tracking-[-0.8px] text-carbon-800 md:text-2xl md:leading-[140%]">
                 [{requirement.symbol || defaultSymbol}]
                 <br />
                 {requirement.label.split("\n").map((line, lineIndex) => (
@@ -283,7 +297,7 @@ function RequirementsList({
               </div>
             </div>
             <div className="md:w-4/5">
-              <p className="font-whyte text-base font-light leading-[140%] tracking-[-0.8px] text-carbon-800 md:text-[32px] md:leading-[140%] md:tracking-[-1.6px]">
+              <p className="font-whyte text-base font-light leading-[140%] tracking-[-0.8px] text-carbon-800 md:text-2xl md:leading-[140%]">
                 {requirement.description}
               </p>
             </div>
@@ -308,22 +322,22 @@ function ContentSection({
     <div
       id={sectionData.id}
       className={cn(
-        `mb-12 mt-6 flex scroll-mt-[140px] flex-col gap-6 md:flex-row md:justify-between ${sectionData.id}`,
+        `mt-6 flex scroll-mt-[140px] flex-col gap-6 md:mb-24 md:flex-row md:justify-between ${sectionData.id}`,
         !isFirst && "border-t border-stone-800 pt-6 md:pt-12"
       )}
     >
       <div className="flex flex-col gap-6 md:min-h-[800px] md:justify-between">
-        <p className="max-w-[13rem] font-whyteMono text-xs font-normal uppercase leading-[130%] tracking-[0.84px] text-carbon-800 md:max-w-md md:text-[24px] md:leading-[1.3] md:tracking-[0.07em]">
+        <p className="max-w-[13rem] font-whyteMono text-xs font-normal uppercase leading-[130%] tracking-[0.84px] text-carbon-800 md:max-w-xs md:text-lg md:leading-[1.3] md:tracking-[0.07em]">
           {sectionData.title}
         </p>
-        <div className="flex items-center justify-start md:flex-1">
+        <div className="flex items-center justify-start md:flex-1 [&>*]:origin-left">
           {sectionData.image}
         </div>
       </div>
       <div>
-        <div className="mx-auto max-w-[60rem]">
-          <div className="mb-16">
-            <p className="font-whyte text-2xl font-light leading-[120%] tracking-[-1.2px] text-carbon-800 md:text-[48px] md:leading-[120%] md:tracking-[-2.4px]">
+        <div className="mx-auto max-w-[57.5rem]">
+          <div className="mb-8">
+            <p className="font-whyte text-2xl font-light leading-[120%] tracking-[-1.2px] text-carbon-800 md:text-4xl md:leading-[120%] md:tracking-[-1px]">
               {sectionData.header}
             </p>
             <div className="my-8 h-6 w-6 bg-carbon-800"></div>
@@ -352,7 +366,7 @@ function ContentBlock({
   const containerClasses =
     isLast && block.type === "cta"
       ? "mx-auto mb-12 mt-12 pt-6 md:mt-20 md:pt-8"
-      : "py-6 border-t border-stone-800 md:pt-8 md:pb-20";
+      : "border-t border-stone-800 pt-4 pb-8";
 
   const renderQuoteWithHighlights = (
     quote: string,
@@ -411,11 +425,11 @@ function ContentBlock({
       return (
         <div className={containerClasses}>
           {block.label && (
-            <div className="mb-14 font-whyteMono text-[28px] font-normal leading-[1.4] tracking-[-0.05em] text-stone-800">
+            <div className="mb-6 font-whyteMono text-sm font-normal leading-[1.4] tracking-[-0.05em] text-stone-800 md:mb-14 md:text-lg">
               {block.label}
             </div>
           )}
-          <p className="whitespace-pre-line font-whyteInktrapVariable text-base font-light leading-[140%] text-carbon-800 md:text-[32px] md:leading-[140%] ">
+          <p className="whitespace-pre-line font-whyteInktrapVariable text-base font-light leading-[140%] text-carbon-800 md:text-2xl md:leading-[140%] ">
             {block.content}
           </p>
           {renderImage(block.imagePath)}
@@ -437,24 +451,23 @@ function ContentBlock({
       return (
         <div className={containerClasses}>
           {block.quote.label && (
-            <div className="mb-14 font-whyteMono text-[28px] font-normal leading-[1.4] tracking-[-0.05em] text-stone-800">
+            <div className="mb-6 font-whyteMono text-sm font-normal leading-[1.3] text-stone-800 md:mb-14 md:text-lg">
               {block.quote.label}
             </div>
           )}
           <div className="relative">
-            {/* Hanging quote mark - positioned outside the content flow */}
-            <div className="absolute -left-2 top-0 font-whyte text-base font-light leading-[140%] tracking-[-0.8px] text-carbon-800 md:-left-3 md:text-[32px] md:leading-[140%] md:tracking-[-1.6px]">
+            <div className="absolute -left-1.5 top-0 font-whyte text-base font-light text-carbon-800 md:-left-2 md:text-2xl md:leading-[140%]">
               ‟
             </div>
-            <blockquote className="font-whyte text-base font-light leading-[140%] tracking-[-0.8px] text-carbon-800 md:text-[32px] md:leading-[140%] md:tracking-[-1.6px]">
+            <blockquote className="font-whyte text-base font-light leading-[140%] tracking-[-0.8px] text-carbon-800 md:text-2xl md:leading-[140%]">
               {renderQuoteWithHighlights(
                 block.quote.quote,
                 block.quote.highlightedWords
               )}
-              "
+              ”
             </blockquote>
           </div>
-          <p className="max-w-sm pt-12 font-whyteMono text-sm font-normal leading-[140%] text-stone-800 md:text-[18px] md:text-base md:leading-[1.3] md:tracking-[0.075em]">
+          <p className="max-w-sm pt-12 font-whyteMono text-sm font-normal leading-[140%] text-stone-800 md:text-base md:leading-[1.3] md:tracking-[0.075em]">
             {block.quote.author}
             <br />
             {block.quote.company}
@@ -466,7 +479,7 @@ function ContentBlock({
     case "label":
       return (
         <div className={containerClasses}>
-          <div className="font-whyte text-base font-light leading-[140%] tracking-[-0.8px] text-carbon-800 md:font-whyteMono md:text-[28px] md:font-normal md:leading-[1.4] md:tracking-[-0.05em] md:text-stone-800">
+          <div className="font-whyteMono text-base font-normal leading-[140%] tracking-[-0.8px] text-carbon-800 md:max-w-2xl md:text-lg md:leading-[1.4] md:tracking-[-0.05em] md:text-stone-800">
             {block.content}
           </div>
           {renderImage(block.imagePath)}
@@ -476,7 +489,7 @@ function ContentBlock({
     case "numbered":
       return (
         <div className={containerClasses}>
-          <div className="font-whyte text-3xl font-normal leading-[1.4] tracking-[-0.05em] text-stone-800">
+          <div className="font-whyte text-base font-normal leading-[1.4] tracking-[1.4] text-stone-800 md:text-2xl">
             [{block.numbered.number}]{" "}
             {block.numbered.highlightedText && (
               <span className="underline">
@@ -491,8 +504,13 @@ function ContentBlock({
 
     case "cta":
       return (
-        <div className={containerClasses}>
-          <div className="hidden flex-col items-start justify-between gap-6 md:flex md:flex-row md:items-start md:border-t md:border-stone-800 md:pt-8">
+        <div
+          className={cn(
+            containerClasses,
+            "hidden md:border-t md:border-stone-800 md:pt-6"
+          )}
+        >
+          <div className="flex-col items-start justify-between gap-6 md:flex md:flex-row md:items-start md:border-t md:border-stone-800 md:pt-6">
             <div className="flex max-w-xs items-start gap-3 font-whyte text-2xl font-light leading-tight tracking-tight text-stone-800">
               <div className="mt-2 h-3 w-3 flex-shrink-0 bg-stone-800"></div>
               <p>
@@ -502,7 +520,7 @@ function ContentBlock({
             </div>
             <div className="flex w-full flex-col items-start gap-6 md:w-auto md:flex-row md:items-center md:gap-8">
               <Button
-                className="flex h-[52px] w-[212px] flex-shrink-0 items-center justify-center gap-[10px] bg-stone-800 px-[13px] py-[15px] text-right font-whyte text-2xl font-normal leading-[120%] text-alwaysWhite transition-colors hover:bg-stone-800/60"
+                className="flex h-[52px] w-[212px] flex-shrink-0 items-center justify-center gap-[10px] bg-stone-800 px-[13px] py-[15px] text-right font-whyte text-xl font-normal leading-[120%] text-alwaysWhite transition-colors hover:bg-stone-800/60"
                 asChild
               >
                 <Link href="/blog?ref=blog-cta">{block.ctaText}</Link>

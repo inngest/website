@@ -40,7 +40,7 @@ function WebsiteLink({
 }) {
   const content = (
     <>
-      <p className={className}>{website.prefix}</p>
+      <p className={cn(className, "mb-0")}>{website.prefix}</p>
       <p
         className={cn(
           className,
@@ -79,11 +79,11 @@ export function ComposableHeader({
   return (
     <div className="relative h-full overflow-hidden bg-[#E2E2E2]">
       <div className="absolute inset-0">
-        <div className="grid h-full w-full grid-cols-1 gap-0 lg:grid-cols-2">
-          <div className="h-full w-full overflow-hidden [&>svg]:h-full [&>svg]:min-h-full [&>svg]:w-full [&>svg]:min-w-full [&>svg]:scale-125 [&>svg]:object-cover lg:[&>svg]:scale-100 lg:[&>svg]:object-fill">
+        <div className="flex h-full w-full flex-row">
+          <div className="h-full w-full overflow-hidden lg:w-1/2 [&>svg]:block [&>svg]:h-full [&>svg]:min-h-full [&>svg]:w-full [&>svg]:min-w-full [&>svg]:scale-125 [&>svg]:object-cover lg:[&>svg]:scale-100 lg:[&>svg]:object-fill">
             {backgroundPatterns.left}
           </div>
-          <div className="hidden h-full w-full lg:block [&>svg]:h-full [&>svg]:w-full [&>svg]:object-fill">
+          <div className="hidden h-full w-1/2 lg:-ml-px lg:block [&>svg]:block [&>svg]:h-full [&>svg]:w-full [&>svg]:object-fill">
             {backgroundPatterns.right}
           </div>
         </div>
@@ -92,7 +92,7 @@ export function ComposableHeader({
       <div className="relative z-10 hidden h-full xl:block">
         <div className="mx-auto flex h-full max-w-container-desktop items-start justify-between gap-6 px-8 pb-20 2xl:gap-12">
           <div className="max-w-5xl self-end pb-36">
-            <h1 className="text-balance font-whyte text-7xl font-normal leading-none tracking-tight text-stone-800">
+            <h1 className="text-balance font-whyte text-7xl font-normal leading-none text-stone-800 md:tracking-tight">
               {title}
               {highlightedText && (
                 <span className="font-whyteInktrap">{highlightedText}</span>
@@ -127,14 +127,14 @@ export function ComposableHeader({
             </div>
 
             <div className="space-y-6">
-              <div className="flex items-center space-x-3 py-28">
+              <div className="flex items-center space-x-3 text-balance py-28">
                 {companyDetails.logo}
               </div>
 
               <div>
                 <WebsiteLink
                   website={companyDetails.website}
-                  className="mb-6 font-whyteMono text-2xl text-stone-800"
+                  className="font-whyteMono text-2xl text-stone-800"
                 />
 
                 <p className="pt-10 font-circular text-2xl font-light leading-[1.4] text-stone-800">
@@ -150,7 +150,7 @@ export function ComposableHeader({
       <div className="relative z-10 hidden h-full lg:block xl:hidden">
         <div className="flex h-full items-start gap-8 p-8 pb-24">
           <div className="max-w-4xl self-end">
-            <h1 className="text-balance font-whyte text-5xl font-normal leading-tight tracking-tight text-stone-800">
+            <h1 className="text-balance font-whyte text-5xl font-normal text-stone-800 md:leading-tight md:tracking-tight">
               {title}
               {highlightedText && (
                 <span className="font-whyteInktrap">{highlightedText}</span>
@@ -255,7 +255,7 @@ export function ComposableHeader({
       {/* Mobile layout */}
       <div className="relative z-10 flex flex-col p-6 py-20 md:hidden">
         <div className="mb-8">
-          <h1 className="text-balance font-whyte text-4xl font-normal leading-tight tracking-tight text-stone-800">
+          <h1 className="text-balance font-whyte text-4xl font-normal tracking-tight text-stone-800">
             {title}
             {highlightedText && (
               <span className="font-whyteInktrap font-normal">
@@ -320,10 +320,10 @@ function InfoBlock({
 }) {
   return (
     <div>
-      <h3 className="mb-2 font-circular text-sm font-[450] leading-[140%] text-carbon-800 md:text-2xl md:font-medium">
+      <h3 className="mb-2 font-circular text-lg font-[450] leading-[140%] text-carbon-800 md:text-2xl md:font-medium">
         {header}
       </h3>
-      <p className="font-circular text-sm font-light leading-[140%] text-carbon-900 md:text-2xl">
+      <p className="font-circular text-lg font-light leading-[140%] text-carbon-900 md:text-2xl">
         {description}
       </p>
     </div>

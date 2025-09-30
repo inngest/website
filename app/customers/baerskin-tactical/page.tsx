@@ -104,6 +104,7 @@ const pageData = {
             alt="BÆRSkin Tactical e-commerce platform"
             width={542}
             height={401}
+            className="scale-90"
           />
         ),
       },
