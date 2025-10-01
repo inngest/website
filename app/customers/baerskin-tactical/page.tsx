@@ -52,10 +52,6 @@ const pageData = {
     testimonial: {
       quote:
         "We figured out we were losing roughly 6% of events going through Kafka with customers complaining they didn't get their order confirmation emails, it was super hard to tackle. Now that we switched to Inngest, we're super confident that everything is working as what I'll call tip-top shape.",
-      highlightedParts: [
-        "we were losing roughly 6% of events going through Kafka",
-        "Now that we switched to Inngest, we're super confident that everything is working",
-      ],
       author: "Gus Fune → CTO",
       title: "CTO",
       company: "[ BÆRSkin Tactical Supply Co. ]",

@@ -59,10 +59,6 @@ const pageData = {
     testimonial: {
       quote:
         "Day AI is a complex network of LLMs, data processing, and 3rd party services. Every component in the system needs to wake up at the right times, run for long periods of time, and react intelligently to behavior in other components. Inngest is like the nervous system for all of that, it makes things reliable by default so we can focus on building",
-      highlightedParts: [
-        "complex network of LLMs",
-        "it makes things reliable by default",
-      ],
       author: "Erik Munson → Founding Engineer",
       title: "Founding Engineer",
       company: "[ Day AI ]",

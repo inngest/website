@@ -4,7 +4,7 @@ import { Button } from "src/components/RedesignedLanding/Button";
 
 interface TestimonialData {
   quote: string;
-  highlightedParts: string[];
+  highlightedParts?: string[];
   author: string;
   title: string;
   company: string;
@@ -39,8 +39,13 @@ function DecorativeBars() {
 export function ComposableAbout({ testimonial, cta }: ComposableAboutProps) {
   const renderQuoteWithHighlights = (
     quote: string,
-    highlightedParts: string[]
+    highlightedParts?: string[]
   ) => {
+    // If no highlighted parts, just return the plain quote
+    if (!highlightedParts || highlightedParts.length === 0) {
+      return quote;
+    }
+
     let processedQuote = quote;
     const elements: React.ReactNode[] = [];
     let currentSearchStartIndex = 0;
