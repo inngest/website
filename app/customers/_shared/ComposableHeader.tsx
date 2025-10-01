@@ -39,17 +39,19 @@ function WebsiteLink({
   className?: string;
 }) {
   const content = (
-    <>
-      <p className={cn(className, "mb-0")}>{website.prefix}</p>
+    <div className="group">
+      <p className={cn(className, "mb-0 group-hover:underline")}>
+        {website.prefix}
+      </p>
       <p
         className={cn(
           className,
-          website.isLinked && "cursor-pointer hover:underline"
+          website.isLinked && "cursor-pointer group-hover:underline"
         )}
       >
         {website.url}
       </p>
-    </>
+    </div>
   );
 
   if (website.isLinked && website.link) {

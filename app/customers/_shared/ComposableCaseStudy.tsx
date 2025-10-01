@@ -224,7 +224,7 @@ export function ComposableCaseStudy({
           <div className="mx-auto mt-12 border-t border-stone-800 pt-6 md:mt-20 md:pt-8">
             <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-start">
               <div className="flex items-start justify-start gap-3">
-                <div className="h-3 w-3 bg-stone-800"></div>
+                <div className="mt-1 h-3 w-3 bg-stone-800 md:mt-2"></div>
                 <p className="font-whyte text-base font-light leading-tight tracking-tight text-stone-800 md:text-2xl">
                   {footer.title}
                 </p>
@@ -243,7 +243,9 @@ export function ComposableCaseStudy({
                   className="flex w-full flex-shrink-0 items-center justify-center gap-[7.153px] bg-stone-800 py-6 text-right font-whyte text-base font-normal leading-[120%] text-alwaysWhite transition-colors hover:bg-stone-800/60 md:h-[52px] md:w-[212px] md:gap-[10px] md:px-[13px] md:py-[15px] md:text-xl"
                   asChild
                 >
-                  <Link href="/contact?ref=customers">{footer.ctaText}</Link>
+                  <Link href="/contact?ref=customers-case-study-content-cta">
+                    {footer.ctaText}
+                  </Link>
                 </Button>
               </div>
             </div>

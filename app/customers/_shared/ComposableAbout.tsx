@@ -136,14 +136,14 @@ export function ComposableAbout({ testimonial, cta }: ComposableAboutProps) {
             <div className="flex flex-col justify-between gap-6 md:flex-row md:items-start">
               <div className="flex items-center justify-start gap-3">
                 <div className="h-3 w-3 bg-inngestLux"></div>
-                <p className="font-whyte text-base font-light leading-tight tracking-tight text-white">
+                <p className="font-whyte text-base font-light leading-tight tracking-tight text-white md:text-2xl">
                   {cta.primaryText}
                 </p>
               </div>
               <div className="-mr-[19rem] w-full md:w-auto">
                 <div className="w-full border-t-[0.75px] border-stone-50 md:hidden"></div>
                 <div className="flex items-start justify-start gap-3 pt-6 md:pt-0">
-                  <div className="flex max-w-xs items-start gap-3 font-whyte text-base font-light leading-tight tracking-tight text-white">
+                  <div className="flex max-w-xs items-start gap-3 font-whyte text-base font-light leading-tight tracking-tight text-white md:text-2xl">
                     <div className="mt-1 h-3 w-3 flex-shrink-0 bg-inngestLux md:mt-2"></div>
                     <p>{cta.secondaryText}</p>
                   </div>
@@ -154,7 +154,9 @@ export function ComposableAbout({ testimonial, cta }: ComposableAboutProps) {
                   className="flex w-full flex-shrink-0 items-center justify-center gap-[7.153px] py-6 text-right font-whyte text-base font-normal leading-[120%] text-stone-950 transition-colors md:h-[52px] md:w-[212px] md:gap-[10px] md:px-[13px] md:py-[15px] md:text-xl"
                   asChild
                 >
-                  <Link href="/contact?ref=blog-cta">{cta.buttonText}</Link>
+                  <Link href="/contact?ref=about-customer-cta">
+                    {cta.buttonText}
+                  </Link>
                 </Button>
               </div>
             </div>
