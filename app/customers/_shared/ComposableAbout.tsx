@@ -25,7 +25,7 @@ interface ComposableAboutProps {
 
 function DecorativeBars() {
   return (
-    <div className="mx-4 flex shrink flex-col items-end gap-1 md:mx-0 md:gap-2">
+    <div className="mx-4 flex shrink flex-col items-end gap-1 opacity-30 md:mx-0 md:gap-2">
       <div className="h-4 w-[11.6%] bg-white md:h-[52px]"></div>
       <div className="h-4 w-[19.4%] bg-white md:h-[52px]"></div>
       <div className="h-4 w-full bg-white md:h-[52px]"></div>
@@ -132,7 +132,7 @@ export function ComposableAbout({ testimonial, cta }: ComposableAboutProps) {
             <DecorativeBars />
           </div>
 
-          <div className="mx-4 mt-10 border-t-[0.75px] border-stone-50 pt-6 md:mx-0">
+          <div className="mx-4 mt-10 border-t-[0.75px] border-stone-50 pt-6 md:mx-0 md:mt-28">
             <div className="flex flex-col justify-between gap-6 md:flex-row md:items-start">
               <div className="flex items-center justify-start gap-3">
                 <div className="h-3 w-3 bg-inngestLux"></div>

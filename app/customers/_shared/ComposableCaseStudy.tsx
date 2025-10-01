@@ -251,7 +251,7 @@ export function ComposableCaseStudy({
             </div>
           </div>
 
-          <div className="mt-16 hidden shrink flex-col items-end gap-2 md:flex">
+          <div className="mt-16 hidden shrink flex-col items-end gap-2 opacity-20 md:flex">
             <div className="h-8 w-[11.6%] bg-stone-800 md:h-[52px]"></div>
             <div className="h-8 w-[19.4%] bg-stone-800 md:h-[52px]"></div>
             <div className="h-8 w-full bg-stone-800 md:h-[52px]"></div>
