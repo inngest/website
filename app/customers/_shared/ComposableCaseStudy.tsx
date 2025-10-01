@@ -305,7 +305,7 @@ function RequirementsList({
             </div>
           </div>
           {index < requirements.length - 1 && (
-            <hr className="border-t border-stone-800" />
+            <hr className="border-t border-stone-400" />
           )}
         </div>
       ))}
@@ -458,7 +458,7 @@ function ContentBlock({
             </div>
           )}
           <div className="relative">
-            <div className="absolute -left-1.5 font-whyte text-base font-light text-carbon-800 md:-left-2 md:text-2xl md:leading-[140%]">
+            <div className="absolute -left-[0.34rem] -top-[0.07rem] font-whyte text-base font-light text-carbon-800 md:-left-2 md:top-0 md:text-2xl md:leading-[140%]">
               “
             </div>
             <blockquote className="font-whyte text-base font-light leading-[140%] tracking-[-0.8px] text-carbon-800 md:text-2xl md:leading-[140%]">
