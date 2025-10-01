@@ -25,7 +25,7 @@ interface ComposableAboutProps {
 
 function DecorativeBars() {
   return (
-    <div className="mx-4 flex shrink flex-col items-end gap-1 opacity-30 md:mx-0 md:gap-2">
+    <div className="mx-4 flex shrink flex-col items-end gap-1 opacity-[0.07] md:mx-0 md:gap-2">
       <div className="h-4 w-[11.6%] bg-white md:h-[52px]"></div>
       <div className="h-4 w-[19.4%] bg-white md:h-[52px]"></div>
       <div className="h-4 w-full bg-white md:h-[52px]"></div>
@@ -67,7 +67,7 @@ export function ComposableAbout({ testimonial, cta }: ComposableAboutProps) {
         elements.push(
           <span
             key={`highlight-${index}`}
-            className="font-whyte text-[28px] font-light leading-[140%] tracking-[-1.6px] text-carbon-50 underline md:text-[32px]"
+            className="font-whyte text-[28px] font-semibold leading-[140%] text-carbon-50 md:text-[32px]"
           >
             {highlight}
           </span>
@@ -98,14 +98,14 @@ export function ComposableAbout({ testimonial, cta }: ComposableAboutProps) {
               <div className="order-1 max-w-[48rem] md:order-2">
                 <div className="flex">
                   <div className="font-whyte text-[28px] font-light leading-[140%] tracking-[-1.6px] text-carbon-50 md:text-[32px]">
-                    ‟
+                    “
                   </div>
                   <blockquote className="max-w-4xl font-whyte text-[28px] font-light leading-[140%] tracking-[-1.6px] text-carbon-50 md:text-[32px]">
                     {renderQuoteWithHighlights(
                       testimonial.quote,
                       testimonial.highlightedParts
                     )}
-                    "
+                    ”
                   </blockquote>
                 </div>
               </div>

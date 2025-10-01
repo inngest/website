@@ -212,7 +212,7 @@ export function ComposableCaseStudy({
             />
           ))}
 
-          <div className="flex shrink flex-col items-end gap-1 md:mx-0 md:hidden md:gap-2">
+          <div className="flex shrink flex-col items-end gap-1 opacity-20 md:mx-0 md:hidden md:gap-2">
             <div className="h-4 w-[11.6%] bg-stone-800 md:h-[52px]"></div>
             <div className="h-4 w-[19.4%] bg-stone-800 md:h-[52px]"></div>
             <div className="h-4 w-full bg-stone-800 md:h-[52px]"></div>
@@ -368,7 +368,7 @@ function ContentBlock({
   const containerClasses =
     isLast && block.type === "cta"
       ? "mx-auto mb-12 mt-12 pt-6 md:mt-20 md:pt-8"
-      : "border-t border-stone-800 pt-4 pb-8";
+      : "border-t border-stone-400 pt-4 pb-8";
 
   const renderQuoteWithHighlights = (
     quote: string,
@@ -458,8 +458,8 @@ function ContentBlock({
             </div>
           )}
           <div className="relative">
-            <div className="absolute -left-1.5 top-0 font-whyte text-base font-light text-carbon-800 md:-left-2 md:text-2xl md:leading-[140%]">
-              ‟
+            <div className="absolute -left-1.5 font-whyte text-base font-light text-carbon-800 md:-left-2 md:text-2xl md:leading-[140%]">
+              “
             </div>
             <blockquote className="font-whyte text-base font-light leading-[140%] tracking-[-0.8px] text-carbon-800 md:text-2xl md:leading-[140%]">
               {renderQuoteWithHighlights(
@@ -469,7 +469,7 @@ function ContentBlock({
               ”
             </blockquote>
           </div>
-          <p className="max-w-sm pt-12 font-whyteMono text-sm font-normal leading-[140%] text-stone-800 md:text-base md:leading-[1.3] md:tracking-[0.075em]">
+          <p className="max-w-sm pt-6 font-whyteMono text-sm font-normal leading-[140%] text-stone-800 md:pt-12 md:text-base md:leading-[1.3] md:tracking-[0.075em]">
             {block.quote.author}
             <br />
             {block.quote.company}
