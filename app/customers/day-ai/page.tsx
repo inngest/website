@@ -48,6 +48,8 @@ const pageData = {
       website: {
         prefix: "[www]",
         url: "day.ai",
+        link: "https://day.ai",
+        isLinked: true,
       },
       logo: <DayAILogo />,
       description: "The CRM for AI Native Companies",

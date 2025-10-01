@@ -93,7 +93,7 @@ export function ComposableHeader({
 
       <div className="relative z-10 hidden h-full xl:block">
         <div className="mx-auto flex h-full max-w-container-desktop items-start justify-between gap-6 px-8 pb-20 2xl:gap-12">
-          <div className="max-w-5xl self-end pb-36">
+          <div className="max-w-5xl self-end pb-32">
             <h1 className="text-balance font-whyte text-7xl font-normal leading-none text-stone-800 md:tracking-tight">
               {title}
               {highlightedText && (
@@ -128,21 +128,21 @@ export function ComposableHeader({
               )}
             </div>
 
-            <div className="space-y-6">
-              <div className="flex items-center space-x-3 text-balance py-28">
+            <div className="flex flex-col">
+              <div className="flex items-center space-x-3 text-balance pb-12 pt-20">
                 {companyDetails.logo}
               </div>
 
-              <div>
+              <div className="py-12">
                 <WebsiteLink
                   website={companyDetails.website}
                   className="font-whyteMono text-2xl text-stone-800"
                 />
-
-                <p className="pt-10 font-circular text-2xl font-light leading-[1.4] text-stone-800">
-                  {companyDetails.description}
-                </p>
               </div>
+
+              <p className="pt-12 font-circular text-2xl font-light leading-[1.4] text-stone-800">
+                {companyDetails.description}
+              </p>
             </div>
           </div>
         </div>
@@ -186,7 +186,7 @@ export function ComposableHeader({
               )}
             </div>
 
-            <div className="space-y-4">
+            <div className="flex flex-col">
               <div className="items-center justify-start space-x-3 py-12">
                 <div className="origin-left scale-75">
                   {companyDetails.logo}
