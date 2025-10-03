@@ -317,6 +317,54 @@ If the branch environment is not specified with the header or query param, the w
   The value for `x-inngest-env` is the name of the branch environment, not the ID in the URL.
 </Callout>
 
+## Supported content types
+
+Webhooks currently support the following content types:
+
+- `application/json`
+- `application/x-www-form-urlencoded`
+- `multipart/form-data`
+
+<Callout>
+  The `application/x-www-form-urlencoded` and `multipart/form-data` content types are currently in beta.
+</Callout>
+
+### Processing webhooks with URL params or Form Data content
+
+Given the following `application/x-www-form-urlencoded` webhook:
+
+```sh
+curl https://inn.gs/e/REDACTED \
+  -H "content-type: application/x-www-form-urlencoded" \
+  -d "name=Alice&messages=hello&messages=world"
+```
+
+And your webhook transform looks like this:
+```js
+function transform(json, headers, queryParams, raw) {
+  return {
+    name: "hi",
+    data: { json, raw },
+  };
+};
+```
+
+Then the resulting event data will be:
+```json
+{
+  "json": {
+    "messages": ["hello", "world"],
+    "name": ["Alice"]
+  },
+  "raw": "name=Alice&messages=hello&messages=world"
+}
+```
+
+<Callout variant="warning">
+  <span className="text-yellow-300">⚠️</span> **Note that the JSON object's values are always arrays of strings.**
+</Callout>
+
+
 ## Building webhook integrations
 
 Inngest has a feature called **webhook intents** that allows you to build webhook integrations with any application. [Read more about building webhook integrations here](/docs/platform/webhooks/build-an-integration).
