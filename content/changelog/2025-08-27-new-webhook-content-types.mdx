@@ -1,12 +1,6 @@
----
-heading: "New webhook content types"
-image: /assets/blog/2025-06-23-python-v0.5/featured-image.png
-showSubtitle: true
-subtitle: We've added support for x-www-form-urlencoded and multipart/form-data webhook content types.
-date: 2025-08-27
-author: Aaron Harper
-category: product-updates
----
+export const title = "New webhook content types";
+export const date = "2025-10-03";
+
 
 Webhooks are now more flexible with the addition of `x-www-form-urlencoded` and `multipart/form-data` content types. When sending a request with either of these content types, your webhook transform will have access to both a JSON object representation of the body and the raw body as a string.
 
