@@ -29,6 +29,9 @@ export default function ContactForm({
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [survey, setSurvey] = useState("");
+  const [ycVerificationBadgeURL, setYCVerificationBadgeURL] = useState<
+    string | undefined
+  >();
   const [disabled, setDisabled] = useState<boolean>(false);
   const [buttonCopy, setButtonCopy] = useState(button);
 
@@ -60,7 +63,7 @@ export default function ContactForm({
       await window.Inngest.event(
         {
           name: eventName,
-          data: { email, name, message, survey, ref },
+          data: { email, name, message, survey, ref, ycVerificationBadgeURL },
           user: { email, name },
           v: eventVersion,
         },
@@ -102,11 +105,11 @@ export default function ContactForm({
     <form
       onSubmit={onSubmit}
       className={cn(
-        "p-4 sm:p-6 bg-surfaceSubtle flex flex-col items-start gap-4 rounded-lg border border-subtle",
+        "flex flex-col items-start gap-4 rounded-lg border border-subtle bg-surfaceSubtle p-4 sm:p-6",
         className
       )}
     >
-      <label className="w-full flex flex-col gap-2">
+      <label className="flex w-full flex-col gap-2">
         <span>
           Your name <span className="text-warning">*</span>
         </span>
@@ -115,10 +118,10 @@ export default function ContactForm({
           name="name"
           onChange={(e) => setName(e.target.value)}
           required
-          className="w-full p-3 bg-canvasBase border border-muted outline-none rounded-md"
+          className="w-full rounded-md border border-muted bg-canvasBase p-3 outline-none"
         />
       </label>
-      <label className="w-full flex flex-col gap-2">
+      <label className="flex w-full flex-col gap-2">
         <span>
           Company email <span className="text-warning">*</span>
         </span>
@@ -127,10 +130,31 @@ export default function ContactForm({
           name="email"
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="w-full p-3 bg-canvasBase border border-muted outline-none rounded-md"
+          className="w-full rounded-md border border-muted bg-canvasBase p-3 outline-none"
         />
       </label>
-      <label className="w-full flex flex-col gap-2">
+      {eventName === "website/yc-deal.submitted" && (
+        <label className="flex w-full flex-col gap-2">
+          <span>
+            YC Verification Badge URL <span className="text-warning">*</span>{" "}
+            <a
+              className="ml-1 text-xs text-blue-300 underline"
+              target="_blank"
+              href="https://bookface.ycombinator.com/verify"
+            >
+              Get your YC verification badge
+            </a>
+          </span>
+          <input
+            type="text"
+            name="yc_verification_badge_url"
+            required
+            onChange={(e) => setYCVerificationBadgeURL(e.target.value)}
+            className="w-full rounded-md border border-muted bg-canvasBase p-3 outline-none"
+          />
+        </label>
+      )}
+      <label className="flex w-full flex-col gap-2">
         <span>
           How did you hear about us? <span className="text-warning">*</span>
         </span>
@@ -139,15 +163,15 @@ export default function ContactForm({
           name="survey"
           required
           onChange={(e) => setSurvey(e.target.value)}
-          className="w-full p-3 bg-canvasBase border border-muted outline-none rounded-md"
+          className="w-full rounded-md border border-muted bg-canvasBase p-3 outline-none"
         />
       </label>
-      <label className="w-full flex flex-col gap-2">
+      <label className="flex w-full flex-col gap-2">
         <span>What can we help you with?</span>
         <textarea
           name="message"
           onChange={(e) => setMessage(e.target.value)}
-          className="w-full min-h-[6rem] p-3 bg-canvasBase border border-muted outline-none rounded-md"
+          className="min-h-[6rem] w-full rounded-md border border-muted bg-canvasBase p-3 outline-none"
         />
       </label>
 
@@ -169,11 +193,11 @@ export default function ContactForm({
           <option value="100+">100+</option>
         </select>
       </label> */}
-      <div className="mt-4 w-full flex flex-row justify-items-end">
+      <div className="mt-4 flex w-full flex-row justify-items-end">
         <button
           type="submit"
           disabled={disabled}
-          className={`button group inline-flex items-center justify-center gap-0.5 rounded-lg text-base font-medium tracking-tight transition-all px-10 py-2.5 bg-cta hover:bg-ctaHover text-carbon-1000 font-medium ${
+          className={`group button inline-flex items-center justify-center gap-0.5 rounded-lg bg-cta px-10 py-2.5 text-base font-medium font-medium tracking-tight text-carbon-1000 transition-all hover:bg-ctaHover ${
             disabled ? "opacity-50" : ""
           }`}
         >

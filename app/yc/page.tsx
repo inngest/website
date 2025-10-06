@@ -30,7 +30,7 @@ export default function Page() {
             <div>
               <ContactForm
                 eventName="website/yc-deal.submitted"
-                eventVersion="2024-08-13.1"
+                eventVersion="2025-11-06.1"
                 gtmEvent="YC Lead Form Submitted"
               />
             </div>
