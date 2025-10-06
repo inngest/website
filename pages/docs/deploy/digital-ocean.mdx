@@ -1,0 +1,128 @@
+import { Callout, GuideSelector, GuideSection, ButtonDeploy, CodeGroup } from "src/shared/Docs/mdx";
+
+# DigitalOcean
+
+Inngest functions can be deployed to DigitalOcean's Functions, App Platform, or Droplets.
+This page covers how to configure the [Inngest Add-Ons](https://marketplace.digitalocean.com/add-ons/inngest) for your DigitalOcean App Platform projects or Droplets. To configure Inngest with DigitalOcean Functions, see the [`serve()` reference](/docs/learn/serving-inngest-functions#framework-digital-ocean-functions).
+
+- [Configure a DigitalOcean App Platform project or Droplet with a new Inngest account](#configure-a-digitalocean-app-platform-project-or-droplet-with-a-new-inngest-account)
+- [Configure a DigitalOcean App Platform project or Droplet with an existing Inngest account](#configure-a-digitalocean-app-platform-project-or-droplet-with-an-existing-inngest-account)
+- [Migrate an existing Inngest app from another provider to DigitalOcean](#migrate-an-existing-inngest-app-from-another-provider-to-digitalocean)
+
+## Configure a DigitalOcean App Platform project or Droplet with a new Inngest account
+
+### Prerequisites
+
+Before starting, make sure you have:
+
+- A DigitalOcean account with an application deployed on App Platform or on a Droplet.
+- Access to SaaS Add-Ons and environment variables in your App Platform project or Droplet.
+
+### Step 1: Add Inngest as a SaaS Add-On
+
+From your DigitalOcean dashboard:
+
+- Navigate to [the Inngest Add-Ons page](https://marketplace.digitalocean.com/add-ons/inngest)
+- Click the "Add Inngest" button in the top-right.
+- Select the region closest to your app's deployment.
+- Click "Create Resource".
+
+DigitalOcean will create an Inngest account for you.
+
+You can now proceed to step 2 to access your Inngest application credentials.
+
+### Step 2: Access your Inngest application credentials.
+
+Navigate to your [DigitalOcean Dashboard](https://cloud.digitalocean.com/) and click "Add-Ons" in the left sidebar.
+
+Once the Inngest Add-On is installed, click the "View Inngest" link to access the Inngest Dashboard:
+
+![image.png](</assets/external/digital-ocean-marketplace/inngest-dashboard.png>)
+
+From the Inngest Dashboard, click the keys icon in the top-left to access the Event and Signing keys:
+
+![image.png](</assets/external/digital-ocean-marketplace/digital-ocean-dashboard.png>)
+
+Visit both the Event key and Signing key pages to copy their values.
+
+### Step 3: Configure Environment Variables
+
+Back in your DigitalOcean Dashboard, copy the Event and Signing keys into your application's environment variables as follows:
+
+- `INNGEST_EVENT_KEY` → copy from the Inngest Dashboard
+- `INNGEST_SIGNING_KEY` → copy from the Inngest Dashboard
+
+### You're all set: install and configure the Inngest SDK
+
+Your DigitalOcean application is now configured with the Inngest Add-On. You can now install the Inngest SDK in your application and follow the tutorials below based on your language and framework:
+
+- [TypeScript quick start](</docs/getting-started/nodejs-quick-start>)
+- [Python quick start](</docs/getting-started/python-quick-start>)
+- [Go reference](<https://pkg.go.dev/github.com/inngest/inngestgo>)
+
+**Note:** Once your application is configured and deployed with the Inngest SDK, go to the Inngest Dashboard to [sync your application](/docs/apps/cloud).
+
+
+
+
+
+## Configure a DigitalOcean App Platform project or Droplet with an existing Inngest account
+
+To configure a DigitalOcean App Platform project or Droplet with an existing Inngest account, sync your DigitalOcean App Platform project or Droplet with an Inngest app:
+
+[Follow this guide](/docs/apps/cloud) to create and sync a new app in Inngest Cloud.
+
+
+## Migrate an existing Inngest app from another cloud provider to DigitalOcean
+
+Migrating an existing Inngest app from another cloud provider to DigitalOcean is a multi-step process.
+
+1. First, deploy and set up your app on DigitalOcean App Platform or Droplet following the [instructions above](#configure-a-digitalocean-app-platform-project-or-droplet-with-a-new-inngest-account).
+
+2. Once your app is deployed on DigitalOcean and synced with Inngest Cloud, move to the next step.
+
+3. In the app deployed on the other cloud provider, create a new Inngest client using the Event key of the Inngest app synced with DigitalOcean:
+
+<CodeGroup>
+
+```typescript
+import { Inngest } from "inngest";
+
+export const newInngestClient = new Inngest({
+  id: "my-app",
+  eventKey: process.env.INNGEST_NEW_EVENT_KEY
+});
+```
+
+```python
+import inngest
+import logging
+
+# Create a new Inngest client
+new_inngest_client = inngest.Inngest(
+    app_id="app_example",
+    event_key= os.environ.get("INNGEST_NEW_EVENT_KEY")
+)
+```
+
+```go
+newClient, err := inngestgo.NewClient(inngestgo.ClientOpts{
+    AppID: "core",
+    EventKey: "replace_with_new_value",
+})
+```
+
+
+</CodeGroup>
+
+_Note: this step might require creating a dedicated Git branch if both your previous Cloud Provider and DigitalOcean use a Git-based continuous deployment._
+
+4. Still in the previous codebase, ensure that all occurrences of event sending use the newly created Inngest client instance. Once the refactoring is applied, deploy it to your previous cloud provider.
+
+5. At this stage, all new Inngest events will trigger Inngest function runs on the DigitalOcean application.
+
+6. ⚠️ You will be able to archive the previous Inngest app (synced with the previous cloud provider) once no new events are being received and no runs are pending.
+
+<Callout>
+_**[Reach us on Discord](/discord)**_ for any assistance in migrating to DigitalOcean.
+</Callout>

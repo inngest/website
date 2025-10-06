@@ -535,12 +535,10 @@ const sectionHome: (NavGroup | NavLink)[] = [
               },
               {
                 title: "AI Inference",
-                tag: "new",
                 href: "/docs/features/inngest-functions/steps-workflows/step-ai-orchestration",
               },
               {
                 title: "Fetch",
-                tag: "new",
                 href: "/docs/features/inngest-functions/steps-workflows/fetch",
               },
               { title: "Guides" },
@@ -570,7 +568,6 @@ const sectionHome: (NavGroup | NavLink)[] = [
           },
           {
             title: "Flow Control",
-            tag: "new",
             links: [
               {
                 title: "Overview",
@@ -579,7 +576,6 @@ const sectionHome: (NavGroup | NavLink)[] = [
               {
                 title: "Singleton",
                 href: `/docs/guides/singleton`,
-                tag: "new",
               },
               {
                 title: "Concurrency",
@@ -744,6 +740,7 @@ const sectionHome: (NavGroup | NavLink)[] = [
     links: [
       {
         title: "Deployment",
+        tag: "new",
         links: [
           {
             title: "Overview",
@@ -766,8 +763,18 @@ const sectionHome: (NavGroup | NavLink)[] = [
             href: `/docs/platform/signing-keys`,
           },
           {
-            title: "Cloud Providers Setup",
+            title: "Cloud Providers",
+            tag: "new",
             links: [
+              {
+                title: "Vercel",
+                href: "/docs/deploy/vercel",
+              },
+              {
+                title: "DigitalOcean",
+                href: "/docs/deploy/digital-ocean",
+                tag: "new",
+              },
               {
                 title: "Cloudflare Pages",
                 href: `/docs/deploy/cloudflare`,
@@ -779,10 +786,6 @@ const sectionHome: (NavGroup | NavLink)[] = [
               {
                 title: "Render",
                 href: `/docs/deploy/render`,
-              },
-              {
-                title: "Vercel",
-                href: "/docs/deploy/vercel",
               },
               {
                 title: "Cloud Provider Usage Limits",
