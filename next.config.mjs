@@ -82,7 +82,29 @@ const permanentRedirects = [
 ];
 
 async function redirects() {
+  // Read blog redirects from MDX frontmatter
+  const fs = await import("fs");
+  const matter = await import("gray-matter");
+  const blogRedirects = fs.default
+    .readdirSync("./content/blog/")
+    .filter((fname) => fname.endsWith(".mdx") || fname.endsWith(".md"))
+    .map((fname) => {
+      const filePath = `./content/blog/${fname}`;
+      const source = fs.default.readFileSync(filePath, "utf-8");
+      const { data } = matter.default(source);
+      if (data.redirect) {
+        return {
+          source: `/blog/${fname.replace(/\.mdx?$/, "")}`,
+          destination: data.redirect,
+          permanent: true,
+        };
+      }
+      return null;
+    })
+    .filter(Boolean);
+
   return [
+    ...blogRedirects,
     {
       source: "/workflow-kit",
       destination: "/docs/reference/workflow-kit",
