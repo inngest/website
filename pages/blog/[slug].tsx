@@ -357,9 +357,18 @@ function CTAs({
 // called for each URL with the slug in params.
 export async function getStaticPaths() {
   const fs = require("fs");
-  const paths = fs.readdirSync("./content/blog/").map((fname) => {
-    return `/blog/${fname.replace(/.mdx?/, "")}`;
-  });
+  const matter = require("gray-matter");
+  const paths = fs.readdirSync("./content/blog/")
+    .filter((fname) => {
+      // Skip files that have redirect frontmatter
+      let filePath = `./content/blog/${fname}`;
+      const source = fs.readFileSync(filePath);
+      const { data } = matter(source);
+      return !data.redirect;
+    })
+    .map((fname) => {
+      return `/blog/${fname.replace(/.mdx?/, "")}`;
+    });
   return { paths, fallback: false };
 }
 
@@ -378,16 +387,6 @@ export async function getStaticProps({ params }) {
 
   const source = fs.readFileSync(filePath);
   const { content, data } = matter(source);
-
-  // Handle redirects
-  if (data.redirect) {
-    return {
-      redirect: {
-        destination: data.redirect,
-        permanent: true,
-      },
-    };
-  }
 
   data.path = `/blog/${params.slug}`;
   data.reading = readingTime(content);
