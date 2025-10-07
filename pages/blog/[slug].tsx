@@ -379,6 +379,16 @@ export async function getStaticProps({ params }) {
   const source = fs.readFileSync(filePath);
   const { content, data } = matter(source);
 
+  // Handle redirects
+  if (data.redirect) {
+    return {
+      redirect: {
+        destination: data.redirect,
+        permanent: true,
+      },
+    };
+  }
+
   data.path = `/blog/${params.slug}`;
   data.reading = readingTime(content);
   // Format the reading date.
