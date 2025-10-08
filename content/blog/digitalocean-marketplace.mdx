@@ -10,7 +10,7 @@ We are thrilled to announce that Inngest is joining the [DigitalOcean marketplac
 
 DigitalOcean no longer needs an introduction; it is the home of millions of developers looking to move from prototype to production as quickly as possible, using their managed infrastructure (Droplets, Databases), managed applications (AppPlatform), and now Gradient™ AI Agentic Cloud to build AI applications.
 
-Inngest and DigitalOcean share the [common goal](https://www.inngest.com/blog/announcing-inngest-series-a) that developers shouldn't be slowed down by infrastructure. By integrating Inngest with DigitalOcean's [App Platform](https://docs.digitalocean.com/products/app-platform/), developers can now go from prototype to millions of users without any infrastructure work.
+Inngest and DigitalOcean share the [common goal](/blog/announcing-inngest-series-a) that developers shouldn't be slowed down by infrastructure. By integrating Inngest with DigitalOcean's [App Platform](https://docs.digitalocean.com/products/app-platform/), developers can now go from prototype to millions of users without any infrastructure work.
 
 ## Combine Droplets with Inngest for elastic and cost-efficient apps
 
@@ -22,7 +22,7 @@ DigitalOcean's Droplet and Inngest combined usage-based pricing is the best comb
 
 ## Fully managed applications with DigitalOcean App Platform and Inngest
 
-Combining DigitalOcean App Platform and Inngest enables you to focus on code by deploying directly from GitHub pushes and configuring your application scalability from the code using Inngest's [Flow Control](https://www.inngest.com/docs/guides/flow-control). Your application is automatically scaled by the App Platform and Inngest, without requiring any infrastructure work—a perfect fit for SaaS or small e-commerce websites.
+Combining DigitalOcean App Platform and Inngest enables you to focus on code by deploying directly from GitHub pushes and configuring your application scalability from the code using Inngest's [Flow Control](/docs/guides/flow-control). Your application is automatically scaled by the App Platform and Inngest, without requiring any infrastructure work—a perfect fit for SaaS or e-commerce websites.
 
 ![day.ai_casesatudy-diagram2.jpg](/assets/blog/digital-ocean-marketplace/day.ai_casesatudy-diagram2.jpg)
 
@@ -37,7 +37,7 @@ Inngest's [AI inference API](https://www.inngest.com/docs/features/inngest-funct
 ```tsx
 import { inngest } from "./client";
 
-export const helloWorld = inngest.createFunction(
+export const customerSatisfactionAgent = inngest.createFunction(
   { id: "evaluate-customer-satisfaction" },
   { event: "agent/customer-satisfaction" },
   async ({ step }) => {
