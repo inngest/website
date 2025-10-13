@@ -436,7 +436,7 @@ import { connect, ConnectionState } from "inngest/connect";
 import { inngest, functions } from "./src/inngest";
 
 const connection = await connect({
-  apps: [{ client: inngest, functions: [helloWorld] }],
+  apps: [{ client: inngest, functions }],
 });
 
 console.log("Worker: connected", connection);
