@@ -38,28 +38,27 @@ Beyond huge performance and scalability benefit, Connect also brings a better de
 
 
 ```ts
-import { Inngest } from 'inngest'
-import { connect } from 'inngest/connect';
-import { ConnectionState } from 'inngest/components/connect/types';
+import { Inngest } from "inngest";
+import { connect } from "inngest/connect";
 
 const inngest = new Inngest({
-  id: 'my-app'
+  id: "my-app",
 });
 
 const handleSignupFunction = inngest.createFunction(
-  { id: 'handle-signup' },
-  { event: 'user.created'}
+  { id: "handle-signup" },
+  { event: "user.created" },
   async ({ event, step }) => {
-    console.log('Function called', event);
-  }
+    console.log("Function called", event);
+  },
 );
 
 (async () => {
   const connection = await connect({
-    apps: [{ client: inngest, functions: [handleSignupFunction] }]
+    apps: [{ client: inngest, functions: [handleSignupFunction] }],
   });
 
-  console.log('Worker: connected', connection);
+  console.log("Worker: connected", connection);
 })();
 ```
 
