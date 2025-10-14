@@ -119,7 +119,7 @@ const pageData = {
               quote:
                 "For this part of the system, “wait for events” makes our work much easier because we can start a process with many steps, pause it, and then continue when something happens in another part of the system. We can have one process start work, then wait for a completely different process on another computer to finish its task before continuing, it's like magic!",
               label:
-                "This integration system depends significantly on Inngest's event-driven architecture, converting incoming webhooksinto events and coordinating external services through workflow synchronization with awaitable events [↙]",
+                "This integration system depends significantly on Inngest's event-driven architecture, converting incoming webhooks into events and coordinating external services through workflow synchronization with awaitable events [↙]",
             },
           },
           {
