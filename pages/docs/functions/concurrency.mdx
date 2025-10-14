@@ -29,13 +29,13 @@ inngest.createFunction(
          // runs using the same "openai"` key counts towards this limit.
          scope: "account",
          key: `"openai"`,
-         // If there are 10 functions running with the "openai" key, this function's
+         // If there are 10 steps executing with the "openai" key, this function's
          // runs will wait for capacity before executing.
          limit: 10,
       },
       {
          // Create another virtual concurrency queue for this function only.  This
-         // limits all accounts to a single execution for this function, based off
+         // limits all accounts to a single executing step for this function, based off
          // of the `event.data.account_id` field.
          // "fn" is the default scope, so we could omit this field.
          scope: "fn",
