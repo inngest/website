@@ -315,6 +315,10 @@ module.exports = {
         'Whyte, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
       whyteInktrap:
         'Whyte Inktrap, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      whyteMono:
+        'WhyteMono, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      whyteInktrapVariable:
+        'WhyteInktrapVariable, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
     },
   },
   plugins: [require("@tailwindcss/typography")],

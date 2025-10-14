@@ -453,13 +453,15 @@ export default function Customers() {
   return (
     <div>
       <Header />
-      <Container className="py-8">
-        <div className="my-12 tracking-tight">
-          <h1 className="mx-auto max-w-5xl text-center text-5xl font-semibold">
-            <em>Our</em> customers deliver reliable products <br />
-            for <em>their</em> customers
+      <Container className="bg-[#E2E2E2] py-8">
+        <div className="mx-auto my-12 max-w-6xl tracking-tight">
+          <h1 className="max-w-[52rem] font-whyteInktrap text-5xl font-light tracking-tight text-stone-800">
+            Our customers{" "}
+            <span className="font-normal">
+              deliver reliable products for their customers
+            </span>
           </h1>
-          <p className="mx-auto my-8 text-center text-lg text-subtle">
+          <p className="my-8 max-w-sm font-circular text-lg text-stone-800">
             From startups to public companies, our customers chose Inngest to
             power their products.
           </p>
@@ -473,7 +475,7 @@ export default function Customers() {
 
           <div className="mb-4 mt-20 grid gap-4 md:mb-6 md:grid-cols-3 md:gap-6">
             {featuredCompanies.map(({ src, name, scale = 1, url }, idx) => (
-              <div className="group relative flex flex-col items-center justify-items-start rounded-2xl border border-subtle p-6">
+              <div className="group relative flex flex-col items-center justify-items-start rounded-2xl border border-subtle bg-canvasBase p-6">
                 <div className="my-10 flex h-20 items-center md:my-20 md:h-24">
                   <Image
                     key={idx}
@@ -502,28 +504,26 @@ export default function Customers() {
                 }
                 return (
                   <blockquote className="col-span-2 row-span-2 mx-auto my-8 flex max-w-3xl flex-col gap-8 bg-[url(/assets/textures/wave.svg)] bg-contain bg-center bg-no-repeat px-8 sm:col-span-1">
-                    <p className="relative text-lg leading-7">
-                      <span className="absolute -left-4 top-1 text-2xl leading-3 text-slate-400/80">
+                    <p className="relative text-lg leading-7 text-[#020202]">
+                      <span className="absolute -left-4 top-1 text-2xl leading-3">
                         &ldquo;
                       </span>
                       {quote.text}
-                      <span className="ml-1 text-2xl leading-3 text-slate-400/80">
-                        &rdquo;
-                      </span>
+                      <span className="ml-1 text-2xl leading-3">&rdquo;</span>
                     </p>
-                    <footer className="flex min-w-[180px] flex-row items-center gap-4">
+                    <footer className="flex min-w-[180px] flex-row items-center gap-4 border-t border-stone-800 pt-4">
                       <Image
                         src={quote.avatar}
                         alt={`Image of ${quote.attribution.name}`}
                         height="72"
                         width="72"
-                        className="h-12 w-12 rounded-full"
+                        className="h-12 w-12"
                       />
-                      <cite className="not-italic leading-8">
-                        <div className="text-base text-basis">
+                      <cite className="non-italic max-w-sm pt-2 font-whyteMono text-xs font-normal leading-[140%] text-stone-800">
+                        <div className="non-italic text-[#020202]">
                           {quote.attribution.name}
                         </div>
-                        <div className="text-sm text-subtle">
+                        <div className="non-italic text-[#020202]">
                           {quote.attribution.title} - {name}
                         </div>
                       </cite>
@@ -533,7 +533,7 @@ export default function Customers() {
               }
               const { src, scale = 0.8 } = item;
               return (
-                <div className="group relative flex h-full min-h-[148px] items-center rounded-2xl border border-subtle px-6 py-8">
+                <div className="group relative flex h-full min-h-[148px] items-center rounded-2xl border border-subtle bg-canvasBase px-6 py-8">
                   {!!src && (
                     <Image
                       key={idx}
