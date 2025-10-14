@@ -45,7 +45,7 @@ const pageData = {
       },
       logo: <BaerskinLogo />,
       description:
-        "Data-driven e-commerce platform powering 17 brand operating in 19 countries across the world.",
+        "Data-driven e-commerce platform powering 17 brands operating in 19 countries across the world.",
     },
   },
   about: {
