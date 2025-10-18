@@ -157,9 +157,7 @@ Bun.serve({
   port: 3000,
   routes: {
     // ...other routes...
-    "/api/inngest": (request: Request) => {
-      return serve({ client: inngest, functions })(request);
-    },
+    "/api/inngest": serve({ client: inngest, functions }),
   },
 });
 ```
