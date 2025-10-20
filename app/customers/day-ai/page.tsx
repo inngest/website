@@ -18,7 +18,7 @@ function DayAILogo() {
 
 const pageData = {
   header: {
-    title: "How Day AI built a CRM that can reason using Inngest ",
+    title: "How Day AI ",
     highlightedText: "built a CRM that can reason",
     subtitle: " using Inngest.",
     backgroundColor: "#fafaf9",
