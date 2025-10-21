@@ -868,6 +868,10 @@ const sectionHome: (NavGroup | NavLink)[] = [
             title: "Prometheus metrics",
             href: "/docs/platform/monitor/prometheus-metrics-export-integration",
           },
+          {
+            title: "OpenTelemetry",
+            href: "/docs/platform/monitor/open-telemetry"
+          }
         ],
       },
       {
