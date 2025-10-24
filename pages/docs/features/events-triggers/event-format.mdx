@@ -11,7 +11,7 @@ The event payload is a JSON object that must contain a `name` and `data` propert
 
 ### Optional properties
 
-* `id` is a unique identifier for the event used to prevent duplicate events. Learn more about [deduplication](#deduplication).
+* `id` is a unique identifier for the event used to prevent duplicate events. Learn more about [deduplication](/docs/events#deduplication).
 * `ts` is the timestamp of the event in milliseconds since the Unix epoch. If not provided, the timestamp will be set to the time the event was received by Inngest.
 * `v` is the event payload version. This is useful to track changes in the event payload shape over time. For example, `"2024-01-14.1"`
 * `user` is object for ease of grouping user-identifying data or attributes associated with the event. This data is encrypted at rest.
