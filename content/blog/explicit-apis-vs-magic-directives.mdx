@@ -22,6 +22,8 @@ Before we get to some of the architectural decisions, let’s just do a high lev
 
 **Inngest** is a compute and language agnostic orchestration platform. It’s built around events triggering functions, with a queue managing execution. You write step functions ([`step.run`](/docs/learn/inngest-steps)) that explicitly define steps with IDs, while Inngest handles coordination across concurrent runs with built-in flow control, observability, and recovery tools.
 
+For context, here's our TS SDK - which works on every platform and runtime (including Bun and Deno): [https://github.com/inngest/inngest-js](https://github.com/inngest/inngest-js)
+
 How you choose which to use may come down to what you’re trying to build.
 
 If you’re building **production-ready agents**, you might care more about:
