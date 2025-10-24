@@ -181,12 +181,6 @@ await step.sleep("delay", "10s");
 Now when you refactor:
 
 ```tsx
-*// Version 1*
-await step.run("create org", () => createOrg());
-const user = await step.run("create user", () => createUser(email));
-await step.run("send email", () => sendWelcomeEmail(user));
-await step.sleep("delay", "10s");
-
 *// Version 2 - safe to deploy over running workflows*
 await step.run("create org", () => createOrg());
 const user = await step.run("create user", () => createUser(email));
