@@ -249,6 +249,8 @@ All functions targeting the same API share a rate limit. Configured explicitly i
 
 **With directives:** Rate limiting isn't part of the visible API.
 
+**With explicit APIs:** Rate limit is a single line config.  [Here's how we do it.](/docs/guides/rate-limiting)
+
 ### Scenario 3: Fan-Out Event Processing
 
 A single event needs to trigger multiple independent workflows—send email, update analytics, provision resources.
