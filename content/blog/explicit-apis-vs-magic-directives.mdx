@@ -20,7 +20,7 @@ Before we get to some of the architectural decisions, let’s just do a high lev
 
 **Vercel WDK** is a durability framework. It makes individual async functions survive crashes and deployments, and uses build-time transformation (`"use workflow"`) to compile your code into isolated routes with state persistence. You must use Vercel as your compute layer.
 
-**Inngest** is a compute platform-agnostic orchestration platform. It’s built around events triggering functions, with a queue managing execution. You write step functions (`"step.run"`) that explicitly define steps with IDs, while Inngest handles coordination across concurrent runs with built-in flow control, observability, and recovery tools.
+**Inngest** is a compute and language agnostic orchestration platform. It’s built around events triggering functions, with a queue managing execution. You write step functions ([`step.run`](/docs/learn/inngest-steps)) that explicitly define steps with IDs, while Inngest handles coordination across concurrent runs with built-in flow control, observability, and recovery tools.
 
 How you choose which to use may come down to what you’re trying to build.
 
