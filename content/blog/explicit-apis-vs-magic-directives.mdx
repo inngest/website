@@ -371,6 +371,28 @@ const workflowEngine = new Engine({
 
 **With directives:** Building abstraction layers over transformed code is significantly more complex.
 
+### Scenario 8: Automatic cancellation
+
+You need to cancel a workflow...  maybe an appointment was cancelled or changed.
+
+**With Inngest:** [You can add cancellation clauses to workflow definitions, and cancellations happen automatically](/docs/features/inngest-functions/cancellation/cancel-on-events):
+
+```tsx
+
+const scheduleReminder = inngest.createFunction(
+  {
+    id: "schedule-reminder",
+    cancelOn: [{ event: "tasks/deleted", if: "event.data.id == async.data.id" }],
+  }
+  { event: "tasks/reminder.created" },
+  async ({ event, step }) => {
+    // ...
+  })
+);
+```
+
+**With directives:** You need to keep track of run IDs, store them in your DB, change your API handlers to load any run IDs, and cancel each run manually, any time something happens.
+
 Then, when you want to issue bulk cancellations, bulk replays, search for events, or handle low-latency workers via *proper* compute - important at high volumes - you’re going to need to move away from “use workflow” and into something else.  These scenarios and reasons are where Inngest really shines:  making the complex easy, in all situations.
 
 ## **When Durability Alone Isn't Enough**
