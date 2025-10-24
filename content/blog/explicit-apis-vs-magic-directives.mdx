@@ -26,10 +26,10 @@ How you choose which to use may come down to what you’re trying to build.
 
 If you’re building **production-ready agents**, you might care more about:
 
-- **Coordination.** Production agents don't run in isolation—you may have thousands executing simultaneously. Inngest handles this out of the box (queuing, backpressure, per-tenant limits). Vercel focuses on individual function durability; you'd build coordination yourself.
-- **Multi-tenancy.** If Customer A triggers 10K agent runs, can you prevent it from degrading Customer B's experience? Inngest has native primitives for this. Vercel doesn't address it.
+- **Coordination.** Production agents don't run in isolation—you may have thousands executing simultaneously. Inngest handles this out of the box (queuing, backpressure, per-tenant limits). WDK focuses on individual function durability; you'd build coordination yourself.
+- **Multi-tenancy.** If Customer A triggers 10K agent runs, can you prevent it from degrading Customer B's experience? Inngest has native primitives for this. WDK doesn't address it.
 - **Safe code evolution.** Long-running agents might be mid-execution when you deploy. With explicit IDs, workflows survive code changes. *This is a real production issue we hit ourselves when we used implicit IDs.*
-- **Event-driven vs RPC.** Inngest's event model naturally handles fan-out (one event → many functions), replay, and service decoupling. Vercel is function-call based. Different mental models.
+- **Event-driven vs RPC.** Inngest's event model naturally handles fan-out (one event → many functions), replay, and service decoupling. WDK is function-call based. Different mental models.
 - **Infrastructure independence.** If you're already running on AWS, you may not want to migrate everything **just to adopt a new workflow solution. Inngest runs on your infrastructure—whatever it is. This also means your secrets never exist on our servers.
 
 If you’re **prototyping**, you might care more about:
