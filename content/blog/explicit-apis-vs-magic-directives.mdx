@@ -78,7 +78,7 @@ export default inngest.createFunction(
 
 There's no transformation layer—`step.run()` is a function call to Inngest's execution engine. Each step has an explicit ID that becomes its state key. This means you can refactor code, add logging, even rewrite in a different language, and running workflows continue correctly as long as step IDs stay the same.
 
-Functions react to events rather than direct calls. Send an `order/created` event and this function runs. Multiple functions can react to the same event, enabling natural fan-out without tight coupling.
+Functions react to events rather than direct calls. Send an `order/created` event and this function runs. Multiple functions can react to the same event, enabling natural [fan-out](/docs/guides/fan-out-jobs) without tight coupling.
 
 ## Why We Switched to Explicit APIs
 
