@@ -1,0 +1,410 @@
+---
+heading: "Explicit APIs vs Magic Directives"
+image: /assets/blog/explicit-apis/cover.png
+showSubtitle: true
+subtitle: Comparing explicit APIs vs magic directives for workflows, queues, and durable execution.  Or, directives as an antipattern.
+date: 2025-10-24
+author: Tony Holdstock-Brown
+category: engineering
+---
+
+Vercel just launched their Workflow Development Kit, taking a directive-based approach to durable execution. It's an interesting solution that helps reduce complexity for the user, but the architecture reveals some fundamental tradeoffs that are worth examining. 
+
+We know, because we had to make the same decision when we built Inngest in 2022.
+
+Let's explore what we learned, why we shifted our approach *away* from the WDK's current model—and why that matters for production applications.
+
+## Core Differences Between Inngest and the Workflow Development Kit
+
+Before we get to some of the architectural decisions, let’s just do a high level review of how you might think about Inngest and Vercel’s Workflow Development Kit (WDK). 
+
+**Vercel WDK** is a durability framework. It makes individual async functions survive crashes and deployments, and uses build-time transformation (`"use workflow"`) to compile your code into isolated routes with state persistence. You must use Vercel as your compute layer.
+
+**Inngest** is a compute and language agnostic orchestration platform. It’s built around events triggering functions, with a queue managing execution. You write step functions ([`step.run`](/docs/learn/inngest-steps)) that explicitly define steps with IDs, while Inngest handles coordination across concurrent runs with built-in flow control, observability, and recovery tools.
+
+For context, here's our TS SDK - which works on every platform and runtime (including Bun and Deno): [https://github.com/inngest/inngest-js](https://github.com/inngest/inngest-js)
+
+How you choose which to use may come down to what you’re trying to build.
+
+If you’re building **production-ready agents**, you might care more about:
+
+- **Coordination.** Production agents don't run in isolation—you may have thousands executing simultaneously. Inngest handles this out of the box (queuing, backpressure, per-tenant limits). WDK focuses on individual function durability; you'd build coordination yourself.
+- **Multi-tenancy.** If Customer A triggers 10K agent runs, can you prevent it from degrading Customer B's experience? Inngest has native primitives for this. WDK doesn't address it.
+- **Safe code evolution.** Long-running agents might be mid-execution when you deploy. With explicit IDs, workflows survive code changes. *This is a real production issue we hit ourselves when we used implicit IDs.*
+- **Event-driven vs RPC.** Inngest's event model naturally handles fan-out (one event → many functions), replay, and service decoupling. WDK is function-call based. Different mental models.
+- **Infrastructure independence.** If you're already running on AWS, you may not want to migrate everything **just to adopt a new workflow solution. Inngest runs on your infrastructure—whatever it is. This also means your secrets never exist on our servers.
+
+If you’re **prototyping**, you might care more about:
+
+- **Speed to first workflow.** Inngest’s event model may be easier to iterate on, but directives are faster to implement for someone new to this work. Add `"use workflow"` and your function is durable. You don't actually need to learn how durable workflows work to use them.
+- **Simpler mental model for basic workflows.** For straightforward sequential tasks without coordination needs, WDK's approach means there’s less critical thinking to do.
+- **Keep everything with one provider.** You might already use Vercel for a lot. While Inngest works seamlessly with Vercel, you may still prefer consolidating your vendors.
+
+In short, if you're prototyping or building internal tools on Vercel, WDK might be faster for you to stand up. If you're scaling to enterprise with multiple tenants and complex coordination requirements, Inngest's architecture handles problems WDK doesn't address yet.
+
+## Understanding an Important Architectural Difference
+
+What exactly makes Inngest’s approach more suitable for removing complexity in production workflows? Some of it comes down to an early decision to switch from a directive model (Vercel’s approach) to explicit function calls.
+
+### The Directive Approach
+
+With directives, you write code that looks like a regular function:
+
+```tsx
+export async function processOrder(orderId: string) {
+  "use workflow";
+  
+  const order = await validateOrder(orderId);
+  const payment = await processPayment(order);
+  return await fulfillOrder(payment);
+}
+```
+
+When you write `"use workflow"` at the top of a function, something happens between your keyboard and production. Your code gets transformed, compiled into separate routes, and restructured in ways you don’t explicitly define. What you write isn't what runs—there's a compilation step that restructures your function into a durable workflow with hidden orchestration logic.
+
+### The Explicit Approach
+
+Inngest uses explicit function calls. What you write is what runs:
+
+```tsx
+export default inngest.createFunction(
+  { id: "process-order" },
+  { event: "order/created" },
+  async ({ event, step }) => {
+    const order = await step.run("validate", () => validateOrder(orderId));
+    const payment = await step.run("payment", () => processPayment(order));
+    return await step.run("fulfill", () => fulfillOrder(payment));
+  }
+);
+```
+
+There's no transformation layer—`step.run()` is a function call to Inngest's execution engine. Each step has an explicit ID that becomes its state key. This means you can refactor code, add logging, even rewrite in a different language, and running workflows continue correctly as long as step IDs stay the same.
+
+Functions react to events rather than direct calls. Send an `order/created` event and this function runs. Multiple functions can react to the same event, enabling natural [fan-out](/docs/guides/fan-out-jobs) without tight coupling.
+
+## Why We Switched to Explicit APIs
+
+To be clear, we started where Vercel’s WDK is now. When we first built Inngest's step execution, we did what seemed natural: implicit step identification. Steps were identified by their position in the code, their line number, or other implicit markers. It looked cleaner in examples. It made for great demos and clean documentation.
+
+Then our users started deploying to production and updating their code.
+
+We learned:
+
+### 1. You Need Type Safety To Catch Errors Before Deployment
+
+We tried string-based configuration early on. It looked cleaner in docs. Then TypeScript users showed us the problem: typos like `"use workfow"` pass all checks and only fail at runtime. In production. At 3 AM.
+
+With explicit APIs, `step` is a typed object. Your IDE catches mistakes before you commit. TypeScript validates event schemas before deployment. When you're handling payments, user data, or business-critical operations, compile-time safety beats runtime surprises.
+
+Directives can't give you this. They're processed at build time—after TypeScript has already checked your code.
+
+### 2. Testing Works Without Framework Knowledge
+
+If testing requires understanding framework transformations, teams won't write tests. With directives, you're testing transformed code. With libraries, you're testing what you wrote.
+
+Here's testing with explicit APIs:
+
+```tsx
+const mockStep = {
+  run: jest.fn((id, fn) => fn()),
+  sleep: jest.fn(),
+  waitForEvent: jest.fn()
+};
+
+await processOrder({ event: mockEvent, step: mockStep });
+expect(mockStep.run).toHaveBeenCalledWith("validate", expect.any(Function));
+```
+
+You're mocking an object. Any developer can read this. No special framework knowledge required. No need to understand what the compiler did to your code.
+
+### 3. Debugging Shows Your Actual Code
+
+When production breaks, you need clear visibility into what happened.
+
+**With directives:** Stack traces point to transformed code. Breakpoints might not align with your source. You're debugging something you didn't write. Good luck explaining that to your team at 3 AM.
+
+**With explicit libraries:** Stack traces show your actual code. Breakpoints work exactly where you set them. The debugger displays what you wrote. You can trace execution through the exact functions you deployed.
+
+This matters when you're diagnosing why a payment failed or why a notification didn't send. You need to see *your* code, not what the compiler generated.
+
+### 4. Safe Deployments Require Stable State Keys
+
+This was a painful lesson, but one of the most important. Here's what happens with implicit IDs when someone refactors while a sleep is happening:
+
+Code Version 1 runs as expected
+
+```tsx
+export async function handleUserSignup(email: string) {
+  "use workflow";
+  const user = await createUser(email);
+  await sendWelcomeEmail(user);
+  await sleep("10s");
+}
+```
+
+With the following result:
+
+<img src="/assets/blog/explicit-apis/first.png" alt="Steps with directives breaks" />
+
+Now, let’s look at what happens when a developer makes the following code change *while the sleep is happening:*
+
+```tsx
+export async function handleUserSignup(email: string) {
+  "use workflow";
+  await createOrg();
+  const user = await createUser(email);
+  await sendWelcomeEmail(user);
+  await sleep("10s");
+}
+```
+
+The result, when you manually upgrade the run to use new code:
+
+<img src="/assets/blog/explicit-apis/dupe.png" alt="Steps with directives breaks" />
+
+Workflows that were sleeping when you deployed your change are now corrupted. Because Vercel’s WDK steps don't have an explicit ID, they have to rely on “magic” to understand which steps have already been executed. Even tiny, seemingly inconsequential code changes can break its state, leading to re-executed logic. 
+
+To update past functions, you instead need to find all past run IDs, and hit an API endpoint to “migrate” all functions to the new version. **This is a major architectural gotcha.**
+
+You can try this for yourself, but allow us to save you the trouble based on our own experience in production. A few years back when we shipped implicit IDs for `step.sleep` and `step.waitForEvent`, we saw pretty quickly that teams couldn't iterate on their workflow code without breaking production. We knew we needed to change direction.
+
+## The Fix: Explicit IDs
+
+We made the call to require explicit IDs assigned to each of steps, so running workflows continue correctly. You can refactor, add steps, reorder logic—the explicit IDs mean your state stays stable. This allows us to avoid re-executions even if you completely rewrite your functions.
+
+```tsx
+*// After we learned our lesson (explicit IDs)*
+await step.run("create org", () => createOrg());
+const user = await step.run("create user", () => createUser(email));
+await step.run("send email", () => sendWelcomeEmail(user));
+await step.sleep("delay", "10s");
+```
+
+Now when you refactor:
+
+```tsx
+*// Version 2 - safe to deploy over running workflows*
+await step.run("create org", () => createOrg());
+const user = await step.run("create user", () => createUser(email));
+// new: create billing integration
+const user = await step.run("create billing", () => createBilling(email));
+// and continue on...
+await step.run("send email", () => sendWelcomeEmail(user));
+await step.sleep("delay", "10s");
+```
+
+**This is critical for production:**
+
+- Deploy new code without breaking running workflows
+- Refactor safely as your business logic evolves
+- Add logging, error handling, monitoring without state corruption
+- Change languages (TypeScript to Python) and workflows continue
+- Force steps to re-run by changing IDs, if you really need
+
+The explicit IDs make our quickstart examples a bit more verbose.  Importantly, they make production deployments actually work… and give you a lot more flexibility and transparency.
+
+## When the Approach You Choose Really Matters
+
+Let's look at some practical situations where the architectural differences matter.  This isn’t an exhaustive list…
+
+### Scenario 1: Multi-Tenant Concurrency Control
+
+You're building a SaaS product where users can trigger workflows. You need to ensure one user can't overwhelm your system, but different users should run concurrently.
+
+```tsx
+export default inngest.createFunction(
+  { 
+    id: "process-user-upload",
+    concurrency: { limit: 5, key: "event.data.userId" }
+  },
+  { event: "file/uploaded" },
+  async ({ event, step }) => {
+    *// Only 5 concurrent executions per user*
+  }
+);
+```
+
+The concurrency model is explicit, typed, and sits alongside your function definition.
+
+**With directives:** Configuration is scattered or implicit, making it harder to reason about behavior under load.
+
+**With explicit APIs:** Concurrency is easy to understand.  [Here's how we do it.](/docs/guides/concurrency)
+
+### Scenario 2: Rate Limiting External APIs
+
+You're calling a third-party API with strict rate limits—100 requests per minute.
+
+**With Inngest:**
+
+```tsx
+export default inngest.createFunction(
+  { 
+    id: "sync-external-data",
+    rateLimit: { limit: 100, period: "1m", key: "external-api" }
+  },
+  { event: "sync/requested" },
+  async ({ event, step }) => {
+    await step.run("call-api", () => externalAPI.fetch(event.data.id));
+  }
+);
+```
+
+All functions targeting the same API share a rate limit. Configured explicitly in one place.
+
+**With directives:** Rate limiting isn't part of the visible API.
+
+**With explicit APIs:** Rate limit is a single line config.  [Here's how we do it.](/docs/guides/rate-limiting)
+
+### Scenario 3: Fan-Out Event Processing
+
+A single event needs to trigger multiple independent workflows—send email, update analytics, provision resources.
+
+**With Inngest:** Multiple functions naturally react to the same event:
+
+```tsx
+inngest.createFunction(
+  { id: "send-welcome-email" },
+  { event: "user/signup" },
+  async ({ event, step }) => { */* ... */* }
+);
+
+inngest.createFunction(
+  { id: "create-analytics-profile" },
+  { event: "user/signup" },
+  async ({ event, step }) => { */* ... */* }
+);
+
+*// Trigger them all*
+await inngest.send({ name: "user/signup", data: { userId } });
+```
+
+Inngest's event-driven architecture makes fan-out a first-class pattern.
+
+**With directives:** You'd need to manually orchestrate calling multiple workflow functions.
+
+**With explicit APIs:**  You can set up any sorts of triggers, [and have functions automatically run whenever matching events are received](/docs/guides/fan-out-jobs).
+
+### Scenario 4: Human-in-the-Loop Approvals
+
+Your workflow needs approval from a manager before proceeding—and that approval might take days.
+
+**With Inngest:**
+
+```tsx
+await step.run("request-approval", () => sendApprovalRequest(manager.email));
+
+const result = await step.waitForEvent("approval/received", {
+  timeout: "7d",
+  match: "data.requestId"
+});
+
+if (result.data.approved) {
+  await step.run("complete", () => finalizeRequest());
+}
+```
+
+`waitForEvent` is explicit in your code. You can see exactly where the workflow pauses.
+
+**With directives:** The webhook/callback mechanism isn't clear from the code structure.
+
+**With explicit APIs:** [You can declaratively resume functions any time matching events are received](/docs/features/inngest-functions/steps-workflows/wait-for-event)
+
+### Scenario 5: Conditional Step Execution
+
+You need different steps to run based on runtime conditions, with each step properly durable.
+
+**With Inngest:** Conditional logic is just JavaScript:
+
+```tsx
+const userType = await step.run("check-type", () => getUserType(userId));
+
+if (userType === "enterprise") {
+  await step.run("enterprise-setup", () => enterpriseOnboarding());
+} else {
+  await step.run("standard-setup", () => standardOnboarding());
+}
+```
+
+**With directives:** Less clear how conditional execution interacts with the transformation layer.
+
+### Scenario 6: Parallel Step Execution
+
+You need to call three APIs in parallel, wait for all results, then proceed.
+
+**With Inngest:** Standard Promise.all() with explicit steps:
+
+```tsx
+const [users, orders, inventory] = await Promise.all([
+  step.run("fetch-users", () => api.getUsers()),
+  step.run("fetch-orders", () => api.getOrders()),
+  step.run("fetch-inventory", () => api.getInventory())
+]);
+
+await step.run("process-data", () => 
+  processBatch({ users, orders, inventory })
+);
+```
+
+The parallelism is clear from reading the code.
+
+**With directives:** Requires understanding the framework's transformation rules.
+
+### Scenario 7: Dynamic Workflow Composition
+
+You're building a system where users define their own workflows by chaining pre-built actions.
+
+**With Inngest:** You can build workflow engines on top of Inngest because the primitives are composable functions:
+
+```tsx
+const workflowEngine = new Engine({
+  actions: [
+    {
+      kind: "send-email",
+      handler: async ({ event, step }) => {
+        await step.run("send", () => sendEmail(event.data));
+      }
+    }
+  ],
+  loader: async (event) => loadUserWorkflow(event.userId)
+});
+```
+
+**With directives:** Building abstraction layers over transformed code is significantly more complex.
+
+Then, when you want to issue bulk cancellations, bulk replays, search for events, or handle low-latency workers via *proper* compute - important at high volumes - you’re going to need to move away from “use workflow” and into something else.  These scenarios and reasons are where Inngest really shines:  making the complex easy, in all situations.
+
+## **When Durability Alone Isn't Enough**
+
+Making individual functions durable is table stakes. The hard part is **coordinating thousands of them**.
+
+**We learned this shipping Inngest:** Durability brought teams to us. But what kept them was flow control—concurrency limits, rate limits, batching, throttling, prioritization.
+
+**Without proper flow control:**
+
+- **Thundering herd**: 10K events trigger 10K concurrent executions, overwhelming your database
+- **Rate limit violations**: Multiple workflows hit the same API without coordination
+- **Resource starvation**: Batch jobs block urgent customer workflows
+- **Duplicate work**: Rapid triggers create redundant executions
+
+Inngest's queue handle these things automatically. Events arrive, functions match, runs enqueue with your flow control rules applied, and execution happens with proper backpressure.
+
+With directive-based approaches, you get durability for individual function steps, but the coordination layer—the queue—is either missing or opaque.
+
+## The Architecture That Powers Production Use Cases
+
+The WDK can look elegant in examples. `"use workflow"` is easy to write.  But... we tried that approach. Unfortunately, we know it often breaks in unexpected (and unobservable) ways in production use cases. From our experience, explicit is always better than implicit.
+
+When workflows run for days, get deployed over mid-execution, need to survive refactoring, handle thousands of concurrent executions, coordinate across rate limits, and recover from failures—explicit wins. 
+
+Inngest is:
+
+- **Observable by Default:** Every function execution is automatically traced with full context—step-level performance metrics, input/output capture, error tracking, and visual execution timeline. No instrumentation required.
+- **Deployable Anywhere:** Because Inngest is just a library, your functions run in your infrastructure—not ours. Whether that's AWS Lambda, Vercel, Kubernetes, or traditional servers, Inngest handles orchestration while you keep control of compute.
+- **Replayable:** When something fails, you can replay from the failed step, skip steps that succeeded, modify event data and replay, or replay entire workflows or specific branches. Because steps have explicit IDs, replay is precise.
+- **Event-Driven to the Core:** Workflows are triggered by events, which enables clean decoupling between services, natural fan-out patterns, event replay for testing, and audit trails for compliance.
+
+With Inngest, the code you write is the code that runs, with type safety, testability, and flow control built in from day one.
+
+---
+
+**Ready to build production-grade workflows?** [Get started with Inngest](https://www.inngest.com/)
