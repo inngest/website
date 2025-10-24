@@ -390,7 +390,7 @@ With directive-based approaches, you get durability for individual function step
 
 ## The Architecture That Powers Production Use Cases
 
-Vercel's WDK looks elegant in examples. `"use workflow"` is simpler than `step.run("step-id", ...)` in documentation. We tried that approach. Unfortunately, we know it often breaks in unexpected (and unobservable) ways in production use cases.
+The WDK can look elegant in examples. `"use workflow"` is easy to write.  But... we tried that approach. Unfortunately, we know it often breaks in unexpected (and unobservable) ways in production use cases. From our experience, explicit is always better than implicit.
 
 When workflows run for days, get deployed over mid-execution, need to survive refactoring, handle thousands of concurrent executions, coordinate across rate limits, and recover from failures—explicit wins. 
 
