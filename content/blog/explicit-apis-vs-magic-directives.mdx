@@ -162,7 +162,7 @@ The result, when you manually upgrade the run to use new code:
 
 <img src="/assets/blog/explicit-apis/dupe.png" alt="Steps with directives breaks" />
 
-Workflows that were sleeping when you deployed your change are now corrupted. Because Vercel’s WDK steps don't have an explicit ID, they have to rely on “magic” to understand which steps have already been executed. Even tiny, seemingly inconsequential code changes can break its state, leading to re-executed logic. 
+Workflows that were sleeping when you deployed your change are now corrupted. Because WDK steps don't have an explicit ID, they have to rely on “magic” to understand which steps have already been executed. Even tiny, seemingly inconsequential code changes can break its state, leading to re-executed logic.
 
 To update past functions, you instead need to find all past run IDs, and hit an API endpoint to “migrate” all functions to the new version. **This is a major architectural gotcha.**
 
