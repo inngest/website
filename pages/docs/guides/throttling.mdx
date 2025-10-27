@@ -4,7 +4,7 @@ export const description = 'Limit the throughput of function execution over a pe
 
 # Throttling
 
-Throttling allows you to specify how many function runs can start within a time period. When the limit is reached, new function runs over the throttling limit will be _enqueued for the future_. Throttling is FIFO (first in first out). Some use cases for priority include:
+Throttling allows you to specify how many function runs can start within a time period. When the limit is reached, new function runs over the throttling limit will be _enqueued for the future_. Throttling is FIFO (first in first out). Some use cases for throttling include:
 
 * Evenly distributing function execution over time to reduce spikes.
 * Working around third-party API rate limits.
