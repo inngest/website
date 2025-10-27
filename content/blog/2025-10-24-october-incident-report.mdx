@@ -54,9 +54,9 @@ We have other research-based follow-ups that the team will work on in the coming
 
 Over the last two months, we've experienced some isolated system wide delays caused by our application database performance degradation. Our application database is run on Postgres and stores metadata and configuration of customer applications, functions and other data. Additional data for events, run history, traces are stored in ClickHouse and data for active function runs are stored in other low latency databases.
 
-Although we've shipped several improvements to mitigating performance issues in our application database, on October 20th, at around 16:00 UTC, it hit a new limit of scale which put a put a new level of load on our database. This immediately caused the Inngest dashboard to be unresponsive and severe system-wide delays on function scheduling and execution.
+Although we've shipped several improvements to mitigate performance issues in our application database, on October 20th, at around 16:00 UTC, it hit a new limit of scale which put a new level of load on our database. This immediately caused the Inngest dashboard to be unresponsive and severe system-wide delays on function scheduling and execution.
 
-For context, Inngest primarily runs on bare metal servers, but some legacy services are still hosted in AWS. This database was on of those remaining services, hosted on AWS RDS. This had mostly served us well with heavy use of a pull-through cache to ensure that we do not saturate the database with load. This setup has provided a stable state for the last 2-3 years.
+For context, Inngest primarily runs on bare metal servers, but some legacy services are still hosted in AWS. This database was one of those remaining services, hosted on AWS RDS. This had mostly served us well with heavy use of a pull-through cache to ensure that we do not saturate the database with load. This setup has provided a stable state for the last 2-3 years.
 
 More recently, we've observed a steady decline in our IOPS balance on this RDS database, and our operations have started to be throttled when this balance goes to zero.
 
@@ -68,11 +68,11 @@ In addition, as we had exhausted our IOPS, our efforts to quickly increase our I
 
 Over the previous weeks we had considered migrations away from RDS, but this event pushed the team to accelerate that decision. Several hours into the incident, the team started exploring a potential migration to [PlanetScale](https://planetscale.com/) in parallel to working on RDS.
 
-With some research and some experimentation, the team executed a migration to PlanetScale over the next few hours completing the cutover about 05:30 UTC on October 21st. There were some hiccups post-migration including issues with our database migration tool, which set an indefinite advisory lock when connecting via [PgBouncer](https://www.pgbouncer.org/) . We chose to temporarily shift connections for our API servers which handle migrations to connect directly to the database and not via PgBouncer.
+With some research and some experimentation, the team executed a migration to PlanetScale over the next few hours completing the cutover about 05:30 UTC on October 21st. There were some hiccups post-migration including issues with our database migration tool, which set an indefinite advisory lock when connecting via [PgBouncer](https://www.pgbouncer.org/). We chose to temporarily shift connections for our API servers which handle migrations to connect directly to the database and not via PgBouncer.
 
-The system remained in a stable until load started to increase hours later, around 8:40 UTC during normal daily usage increases. CPU utilization on our new database cluster was stuck at 100% which again caused slowness across our dashboard and function scheduling and execution.
+The system remained stable until load started to increase hours later, around 8:40 UTC during normal daily usage increases. CPU utilization on our new database cluster was stuck at 100% which again caused slowness across our dashboard and function scheduling and execution.
 
-We shipped several mitigations over the next few hours including query optimizations, rebuilding indexes after the migration, refactoring out some expensive queries, and also moving db migrations to a sidecar pod on startup. The last task enabled us to switch our connections for some services to connect back through PlanetScale's included PgBouncer which reduce connections to our 50% of what they were at peak. This, combined with other efforts enabled us to reduce CPU usage down to 30% in a short period of time. With CPU reduced, database performance now was at levels never previously reached on our RDS database.
+We shipped several mitigations over the next few hours including query optimizations, rebuilding indexes after the migration, refactoring out some expensive queries, and also moving db migrations to a sidecar pod on startup. The last task enabled us to switch our connections for some services to connect back through PlanetScale's included PgBouncer which reduced connections to about 50% of what they were at peak. This, combined with other efforts enabled us to reduce CPU usage down to 30% in a short period of time. With CPU reduced, database performance now was at levels never previously reached on our RDS database.
 
 Additionally, with our migration to our new PlanetScale cluster, our original IOPS issue is no longer a class of issue that we will encounter. The behavior of this system is much different from RDS and our new cluster has 10x the IOPS headroom than we need at peak volume.
 
@@ -107,7 +107,7 @@ Fixing this issue requires a couple of steps
 3. Reboot the problematic producers
 4. Observe error rates, and repeat from #1
 
-The throughput of the cluster gets better as the number of `OutOfOrderSequenceError` reduces, and we were able to confirm throughout of the system recovered with the Kafka brokers.
+The throughput of the cluster gets better as the number of `OutOfOrderSequenceError` reduces, and we were able to confirm throughput of the system recovered with the Kafka brokers.
 
 As the cluster throughput increased, function execution improved.
 
@@ -115,13 +115,13 @@ In an additional effort to mitigate this issue, we took this opportunity to refa
 
 ## Dashboard loading issues caused by high ClickHouse load
 
-Throughout the week, our entire system was seeing greater load across the board, including our APIs. Between October 22nd and 23rd, our ClickHouse database, which stores runs, traces, events, metrics and insights saw higher load than normal, resulting in a significant performance issue.  As the database stores all of this observability data that powers the Inngest dashboard, our dashboard started experiencing issues include slow loading times, timeouts, and dropped connections.
+Throughout the week, our entire system was seeing greater load across the board, including our APIs. Between October 22nd and 23rd, our ClickHouse database, which stores runs, traces, events, metrics and insights saw higher load than normal, resulting in a significant performance issue.  As this database stores all of this observability data that powers the Inngest dashboard, our dashboard started experiencing issues include slow loading times, timeouts, and dropped connections.
 
 While our system was experiencing higher load, the optimizations shipped the previous day in our execution workers also put even more load on our ClickHouse cluster as writes were higher than ever before. The cluster became CPU bound performance was heavily degraded.
 
 Throughout the incident response, we scaled up cluster resources and ran analysis on slow queries and API request patterns. With this data, we decided to isolate reads and writes into dedicated clusters, changing our setup to a [ClickHouse warehouse](https://clickhouse.com/docs/cloud/reference/warehouses). With both increased writes and reads, this setup should ensure better performance as both loads are isolated to their own compute resources.
 
-After this change rolled out, we still noticed inconsistent metrics, so we spun up a new dedicated cluster that serves API requests from our Inngest dashboard only, ensuring isolated resources from other public APIs and parts of our system. This setup let to more performant and consistent load times in our dashboard.
+After this change rolled out, we still noticed inconsistent metrics, so we spun up a new dedicated cluster that serves API requests from our Inngest dashboard only, ensuring isolated resources from other public APIs and parts of our system. This setup led to more performant and consistent load times in our dashboard.
 
 We are continuing with additional follow-up mitigations digging into our elevated Clickhouse usage for new tables including query optimization and revisiting how data is partitioned for faster lookups.
 
