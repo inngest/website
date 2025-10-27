@@ -1,0 +1,387 @@
+import { ResourceGrid, Resource } from "shared/Docs/Resources";
+import { Callout, CodeGroup } from "shared/Docs/mdx";
+
+import { BookOpenIcon, CodeBracketIcon, ComputerDesktopIcon, WrenchScrewdriverIcon } from "@heroicons/react/24/outline";
+
+export const description = "Integrate AI development tools with Inngest using Model Context Protocol (MCP). Test functions, monitor execution, and debug workflows with Claude Code, Cursor, and other AI assistants."
+
+# Model Context Protocol (MCP) Integration
+
+The Inngest dev server includes a comprehensive Model Context Protocol (MCP) server that provides AI assistants with direct access to your Inngest functions, events, and documentation. This enables powerful AI-assisted development workflows for testing, debugging, and building Inngest applications.
+
+## What is MCP?
+
+[Model Context Protocol (MCP)](https://modelcontextprotocol.io/introduction) is a standard for connecting AI assistants to external tools and data sources. The Inngest MCP integration provides AI tools like Claude Code and Cursor with:
+
+- **Complete function visibility** - List and inspect all registered functions
+- **Event triggering** - Send events to test functions and workflows
+- **Real-time monitoring** - Track function execution and debug failures
+- **Documentation access** - Search and read Inngest documentation offline
+- **Direct function invocation** - Execute functions synchronously with immediate results
+
+<Callout>
+The Inngest MCP server runs locally with your dev server and requires no external dependencies, API keys, or internet connection to function.
+</Callout>
+
+## Quick Start
+
+### 1. Start the Inngest Dev Server
+
+The MCP server is automatically available when you start the Inngest dev server:
+
+```bash
+npx inngest-cli dev
+```
+
+The MCP endpoint will be available at `http://127.0.0.1:8288/mcp`
+
+### 2. Connect Your AI Tool
+
+<CodeGroup>
+
+```bash {{ title: "Claude Code" }}
+# Add to your MCP configuration
+claude mcp add --transport http inngest-dev http://127.0.0.1:8288/mcp
+```
+
+```json {{ title: "Cursor" }}
+// Add to .cursor/mcp.json
+{
+  "mcpServers": {
+    "inngest-dev": {
+      "url": "http://127.0.0.1:8288/mcp"
+    }
+  }
+}
+```
+
+```json {{ title: "Claude Desktop" }}
+// Add to Claude Desktop configuration
+{
+  "mcpServers": {
+    "inngest-dev": {
+      "command": "curl",
+      "args": [
+        "-X", "POST",
+        "http://127.0.0.1:8288/mcp",
+        "-H", "Content-Type: application/json",
+        "-d", "@-"
+      ]
+    }
+  }
+}
+```
+
+</CodeGroup>
+
+### 3. Start Building with AI
+
+Once connected, you can ask your AI assistant to:
+
+```
+> "List all my Inngest functions and their triggers"
+> "Send a test event to trigger the user signup workflow"
+> "Monitor the function run and show me any errors"
+> "Search the docs for rate limiting examples"
+```
+
+## Available MCP Tools
+
+The Inngest MCP server provides 8 powerful tools organized into three categories:
+
+### Event Management Tools
+
+#### `send_event`
+Send an event to trigger functions and get immediate feedback on which runs were created.
+
+**Parameters:**
+- `name` (string, required): Event name (e.g., 'app/user.created')
+- `data` (object, optional): Event payload data
+- `user` (object, optional): User context information
+- `eventIdSeed` (string, optional): Seed for deterministic event IDs
+
+**Example usage:**
+```
+> "Send a test event called 'app/user.signup' with user email 'test@example.com'"
+```
+
+#### `list_functions`
+Discover all registered functions with their names, IDs, and trigger information.
+
+**Returns:** Complete function inventory with trigger details (events, crons, etc.)
+
+#### `invoke_function`
+Directly execute a function and wait for its complete result - perfect for testing specific functions.
+
+**Parameters:**
+- `functionId` (string, required): Function slug, ID, or name
+- `data` (object, optional): Input data for the function
+- `user` (object, optional): User context
+- `timeout` (int, optional): Wait timeout in seconds (default: 30)
+
+**Example usage:**
+```
+> "Invoke the 'process-payment' function with amount 100 and currency USD"
+```
+
+### Execution Monitoring Tools
+
+#### `get_run_status`
+Get detailed information about a specific function run, including step-by-step execution details.
+
+**Parameters:**
+- `runId` (string, required): The run ID from send_event or logs
+
+**Returns:** Complete run information including status, steps, outputs, and error details
+
+#### `poll_run_status`
+Monitor multiple function runs until completion - essential for integration testing workflows.
+
+**Parameters:**
+- `runIds` (array, required): Array of run IDs to monitor
+- `timeout` (int, optional): Total polling timeout in seconds (default: 30)
+- `pollInterval` (int, optional): Milliseconds between polls (default: 1000)
+
+**Example usage:**
+```
+> "Poll these 3 runs until they complete and show me a summary"
+```
+
+### Documentation Tools
+
+#### `grep_docs`
+Search through embedded Inngest documentation using pattern matching.
+
+**Parameters:**
+- `pattern` (string, required): Search pattern (regex supported)
+- `limit` (int, optional): Maximum results (default: 10)
+
+**Example usage:**
+```
+> "Search the docs for 'rate limiting' examples"
+```
+
+#### `read_doc`
+Read the complete content of a specific documentation file.
+
+**Parameters:**
+- `path` (string, required): Document path relative to docs directory
+
+#### `list_docs`
+Get an overview of all available documentation with category breakdown.
+
+**Returns:** Documentation structure with counts by category and SDK
+
+## Real-World Examples
+
+### Testing a User Signup Workflow
+
+```typescript
+// Your function
+export const handleSignup = inngest.createFunction(
+  { id: "handle-signup" },
+  { event: "app/user.signup" },
+  async ({ event, step }) => {
+    const user = await step.run("create-user", async () => {
+      return createUser(event.data.email);
+    });
+    
+    await step.run("send-welcome-email", async () => {
+      return sendWelcomeEmail(user.email);
+    });
+    
+    return { success: true, userId: user.id };
+  }
+);
+```
+
+With MCP, you can test this workflow by asking your AI assistant:
+
+```
+> "Send a test signup event with email 'alice@example.com' and monitor the function execution"
+```
+
+The AI will:
+1. Use `send_event` to trigger the function
+2. Use `poll_run_status` to monitor execution
+3. Show you step-by-step progress and final results
+4. Report any errors with detailed context
+
+### Debugging Failed Functions
+
+```
+> "Get the status of run 01J5QH90... and explain what went wrong"
+```
+
+The AI will use `get_run_status` to retrieve:
+- Complete execution trace
+- Step-by-step status
+- Error messages and stack traces
+- Function outputs and intermediate results
+
+### Integration Testing
+
+```
+> "Send events to trigger the complete order processing workflow and verify all steps complete successfully"
+```
+
+The AI can:
+1. Send multiple coordinated events
+2. Monitor all resulting function runs
+3. Verify the entire workflow completes
+4. Report any failures or timeouts
+
+## Best Practices
+
+### Function Testing
+- **Start simple:** Test individual functions before complex workflows
+- **Use descriptive events:** Clear event names help with debugging
+- **Monitor execution:** Always check run status after triggering events
+- **Test error scenarios:** Intentionally trigger failures to test error handling
+
+### Debugging Workflows
+- **Check step details:** Use `get_run_status` to see step-by-step execution
+- **Review error context:** Error messages include stack traces and context
+- **Verify data flow:** Check inputs and outputs at each step
+- **Use polling for async:** Monitor long-running workflows with `poll_run_status`
+
+### Documentation Usage
+- **Search before building:** Use `grep_docs` to find relevant examples
+- **Reference patterns:** Look for similar use cases in the documentation
+- **Cross-reference APIs:** Use `read_doc` for complete API documentation
+
+## Integration Examples
+
+### Claude Code Workflow
+
+```bash
+# 1. Add Inngest MCP server
+claude mcp add --transport http inngest-dev http://127.0.0.1:8288/mcp
+
+# 2. Start developing with AI assistance
+claude
+```
+
+```
+> "I'm building a payment processing function. Show me the available functions and help me test the payment workflow."
+
+> "Send a test payment event and monitor the execution. If it fails, help me debug the issue."
+
+> "Search the docs for retry configuration examples and update my function accordingly."
+```
+
+### Cursor Integration
+
+Add to your project's `.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "inngest-dev": {
+      "url": "http://127.0.0.1:8288/mcp"
+    }
+  }
+}
+```
+
+Then use Cursor's AI features:
+
+```
+> "List all my functions and their triggers, then help me create a comprehensive test suite"
+
+> "Monitor the user onboarding workflow and identify any performance bottlenecks"
+```
+
+## Troubleshooting
+
+### Common Issues
+
+**MCP server not found**
+- Ensure the Inngest dev server is running: `npx inngest-cli dev`
+- Verify the MCP endpoint is accessible: `curl http://127.0.0.1:8288/mcp`
+- Check your MCP client configuration
+
+**Functions not listed**
+- Confirm functions are properly registered with the dev server
+- Check the dev server logs for registration errors
+- Verify your app is correctly synced with the dev server
+
+**Runs not found after sending events**
+- Wait a moment for event processing (500ms delay is built-in)
+- Check if the event name matches your function triggers exactly
+- Verify the function is actually registered and listening
+
+**Polling timeouts**
+- Increase timeout values for long-running functions
+- Check function logs for hanging operations
+- Verify functions are actually completing vs. hanging indefinitely
+
+### Advanced Configuration
+
+**Custom timeouts:**
+The default polling timeout is 30 seconds. For longer-running functions:
+
+```
+> "Poll this run with a 60-second timeout instead of the default"
+```
+
+**Event ID seeding:**
+For deterministic testing, you can provide event ID seeds:
+
+```
+> "Send a test event with seed 'test-123' for reproducible testing"
+```
+
+**Documentation search:**
+Use regex patterns for advanced documentation searches:
+
+```
+> "Search docs for 'step\\.run.*retry' to find step retry examples"
+```
+
+## Resources
+
+<ResourceGrid cols={2}>
+
+<Resource resource={{
+href: "https://modelcontextprotocol.io/introduction",
+name: "Model Context Protocol Specification",
+icon: BookOpenIcon,
+description: "Learn more about the MCP standard and how it enables AI tool integrations.",
+pattern: 1,
+}}/>
+
+<Resource resource={{
+href: "/docs/dev-server",
+name: "Inngest Dev Server Documentation",
+icon: ComputerDesktopIcon,
+description: "Comprehensive guide to the Inngest dev server and local development.",
+pattern: 1,
+}}/>
+
+<Resource resource={{
+href: "/docs/examples/ai-agents-and-rag",
+name: "AI Agents and RAG Examples",
+icon: WrenchScrewdriverIcon,
+description: "Examples of building AI-powered applications with Inngest functions.",
+pattern: 1,
+}}/>
+
+<Resource resource={{
+href: "/blog/context-engineering-is-software-engineering-for-llms",
+name: 'Blog: "Context Engineering is Software Engineering for LLMs"',
+icon: BookOpenIcon,
+description: "Understanding how tools like MCP enable better AI development workflows.",
+pattern: 1,
+}}/>
+
+</ResourceGrid>
+
+## Related Concepts
+
+- [Inngest Functions](/docs/features/inngest-functions): Learn how to create and configure functions
+- [Event Triggers](/docs/features/events-triggers): Understanding event-driven architectures  
+- [Local Development](/docs/local-development): Setting up your development environment
+- [Testing Functions](/docs/reference/testing): Comprehensive testing strategies
+- [Dev Server](/docs/dev-server): Complete dev server documentation
+- [Error Handling](/docs/guides/error-handling): Debugging and error recovery patterns
