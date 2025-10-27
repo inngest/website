@@ -31,13 +31,6 @@ type CalculatorResults = {
 
 // Tiered execution pricing rates (per execution)
 const EXECUTION_TIERS = {
-  payAsYouGo: [
-    { min: 100_000, max: 1_000_000, rate: 0.000083 },
-    { min: 1_000_000, max: 5_000_000, rate: 0.00005 },
-    { min: 5_000_000, max: 15_000_000, rate: 0.000025 },
-    { min: 15_000_000, max: 50_000_000, rate: 0.00002 },
-    { min: 50_000_000, max: 100_000_000, rate: 0.000015 },
-  ],
   pro: [
     { min: 1_000_000, max: 5_000_000, rate: 0.00005 },
     { min: 5_000_000, max: 15_000_000, rate: 0.000025 },
@@ -55,7 +48,7 @@ const EXECUTION_TIERS = {
 function calculateExecutionsCost(
   totalExecutions: number,
   includedExecutions: number,
-  planType: "payAsYouGo" | "pro" | "enterprise"
+  planType: "pro" | "enterprise"
 ): number {
   const excessExecutions = Math.max(totalExecutions - includedExecutions, 0);
   if (excessExecutions === 0) return 0;
@@ -108,19 +101,11 @@ function calculatePlanCost({
   if (planName === PLAN_NAMES.basicFree) {
     baseCost = 0;
     includedExecutions = 100_000;
-    // Free plan excess goes to pay-as-you-go pricing
+    // Free plan excess goes to pro pricing
     executionsCost = calculateExecutionsCost(
       totalExecutions,
       includedExecutions,
-      "payAsYouGo"
-    );
-  } else if (planName === PLAN_NAMES.payAsYouGo) {
-    baseCost = 0;
-    includedExecutions = 100_000;
-    executionsCost = calculateExecutionsCost(
-      totalExecutions,
-      includedExecutions,
-      "payAsYouGo"
+      "pro"
     );
   } else if (planName === PLAN_NAMES.pro) {
     baseCost = 75;
@@ -219,16 +204,6 @@ function calculatePlanCosts({
         workers,
       }),
     },
-    [PLAN_NAMES.payAsYouGo]: {
-      cost: calculatePlanCost({
-        planName: PLAN_NAMES.payAsYouGo,
-        runs,
-        steps,
-        concurrency,
-        users,
-        workers,
-      }),
-    },
     [PLAN_NAMES.pro]: {
       cost: calculatePlanCost({
         planName: PLAN_NAMES.pro,
@@ -279,16 +254,27 @@ function PlanSummary({ plan, price }: { plan: Plan; price: string }) {
           <span className="text-xl text-neutral-400"> /month</span>
         )}
       </div>
-      <Button className="mt-auto h-11 w-full bg-[#C2A46A] py-3 text-base font-semibold text-[#212121] hover:bg-[#b3955d]">
-        {plan.cta.text}
+      <Button
+        className="mt-auto h-11 w-full bg-[#C2A46A] py-3 text-base font-semibold text-[#212121] hover:bg-[#b3955d]"
+        asChild
+      >
+        <a
+          href={
+            price !== "Contact us"
+              ? `${process.env.NEXT_PUBLIC_SIGNIN_URL}?ref=pricing-calculator`
+              : "/contact?ref=pricing-calculator"
+          }
+        >
+          {plan.cta.text}
+        </a>
       </Button>
     </div>
   );
 }
 
 export function PricingCalculatorPage() {
-  const [runs, setRuns] = useState(50000);
-  const [steps, setSteps] = useState(5);
+  const [runs, setRuns] = useState(30000);
+  const [steps, setSteps] = useState(2);
   const [users, setUsers] = useState<number>(3);
   const [concurrency, setConcurrency] = useState<number>(25);
   const [workers, setWorkers] = useState<number>(3);
@@ -321,35 +307,26 @@ export function PricingCalculatorPage() {
     let recommendedPlan = PLAN_NAMES.basicFree;
     let bestCost = estimates[PLAN_NAMES.basicFree].cost;
 
-    // If usage exceeds free plan limits, compare other plans
+    // If usage exceeds free plan limits, recommend Pro
     if (
       totalExecutions > 100_000 ||
       concurrencyNumber > num(FREE_PLAN.cost.includedConcurrency) ||
       usersNumber > num(FREE_PLAN.cost.includedUsers) ||
       workersNumber > num(FREE_PLAN.cost.includedWorkers ?? 0)
     ) {
-      // Compare Pro and Pay-as-you-go
-      const proCost = estimates[PLAN_NAMES.pro].cost.totalCost;
-      const payAsYouGoCost = estimates[PLAN_NAMES.payAsYouGo].cost.totalCost;
-
-      if (proCost <= payAsYouGoCost) {
-        recommendedPlan = PLAN_NAMES.pro;
-        bestCost = estimates[PLAN_NAMES.pro].cost;
-      } else {
-        recommendedPlan = PLAN_NAMES.payAsYouGo;
-        bestCost = estimates[PLAN_NAMES.payAsYouGo].cost;
-      }
+      // Recommend Pro plan
+      recommendedPlan = PLAN_NAMES.pro;
+      bestCost = estimates[PLAN_NAMES.pro].cost;
 
       // If cost is very high, recommend enterprise
-      if (bestCost.totalCost > 2000) {
+      if (bestCost.totalCost > 1500) {
         recommendedPlan = PLAN_NAMES.enterprise;
         bestCost = estimates[PLAN_NAMES.enterprise].cost;
       }
     }
 
     const includedExecutions =
-      recommendedPlan === PLAN_NAMES.basicFree ||
-      recommendedPlan === PLAN_NAMES.payAsYouGo
+      recommendedPlan === PLAN_NAMES.basicFree
         ? 100_000
         : recommendedPlan === PLAN_NAMES.pro
         ? 1_000_000
@@ -365,7 +342,9 @@ export function PricingCalculatorPage() {
 
   const plan = getPlan(results.plan);
   const priceDisplay =
-    results.cost.totalCost === Infinity
+    results.plan === PLAN_NAMES.enterprise
+      ? "Contact us"
+      : results.cost.totalCost === Infinity
       ? typeof plan.cost.basePrice === "number"
         ? `$${plan.cost.basePrice}`
         : plan.cost.basePrice
