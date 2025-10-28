@@ -74,6 +74,70 @@ const processFiles = inngest.createFunction(
 ```
 Note that `step.fetch()`, like all other `step` APIs, matches your function's configuration such as [concurrency](/docs/guides/concurrency) or [throttling](/docs/guides/throttling).
 
+## Caching expensive operations like LLM calls
+
+One of the most powerful features of `step.fetch()` is **automatic result caching**. This makes it perfect for expensive operations like calling LLMs, where you want to avoid re-running the same costly operation on retries:
+
+```typescript
+import { inngest } from "./client";
+
+export const summarizeWithAI = inngest.createFunction(
+  { id: "summarize-with-ai" },
+  { event: "article/summarize" },
+  async ({ step, event }) => {
+    // This LLM call is expensive, but step.fetch() caches the result
+    const response = await step.fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { 
+        "x-api-key": process.env.ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
+        "content-type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "claude-3-5-sonnet-20241022",
+        max_tokens: 1024,
+        messages: [{ 
+          role: "user", 
+          content: `Summarize this article: ${event.data.content}` 
+        }]
+      })
+    });
+    
+    const summary = await response.json();
+
+    // If this database write fails and triggers a retry,
+    // the LLM call above will NOT be re-executed - the cached result is used
+    await step.run("save-to-database", async () => {
+      await db.articles.update({
+        id: event.data.id,
+        summary: summary.content[0].text
+      });
+    });
+    
+    // Same here - if sending the email fails, the LLM is not called again
+    await step.run("send-notification", async () => {
+      await sendEmail({
+        to: event.data.author,
+        subject: "Your article summary is ready",
+        body: summary.content[0].text
+      });
+    });
+  }
+);
+```
+
+<Callout variant="info">
+  **Important: Order-based caching**
+
+  `step.fetch()` uses **order-based caching**, not URL-based caching like Redis or traditional HTTP caches.
+  
+  - The 1st `step.fetch()` call returns the 1st cached result
+  - The 2nd `step.fetch()` call returns the 2nd cached result
+  - And so on...
+  
+  This means the cache is matched by the position in your code, not by the URL or parameters. Keep this in mind when calling the same endpoint multiple times or using dynamic URLs.
+</Callout>
+
 ## Make 3rd party library HTTP requests durable with the `fetch()` utility
 
 Inngest's `fetch()` utility can be passed as a custom fetch handler to make all the requests made by a 3rd party library durable.

@@ -55,6 +55,49 @@ export const retrieveTextFile = inngest.createFunction(
 - As a shorthand for making HTTP requests within an Inngest function, making it easier to start parallel HTTP requests using `Promise.all()`.
 - As a best practice to ensure that all HTTP requests are durable and can be inspected in the Inngest Platform or Dev Server.
 
+### Result caching and retries
+
+**`step.fetch()` automatically caches results**, making it ideal for expensive operations like calling LLMs, large data fetches, or any costly API requests. If a later part of your function triggers a retry, the cached result is returned instantly — the API call is not made again.
+
+```ts {{ title: "src/inngest/functions.ts" }}
+export const processWithAI = inngest.createFunction(
+  { id: "process-with-ai" },
+  { event: "document/process" },
+  async ({ step, event }) => {
+    // This expensive LLM call is cached - if the function retries,
+    // the LLM will NOT be called again
+    const response = await step.fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${process.env.OPENAI_API_KEY}` },
+      body: JSON.stringify({
+        model: "gpt-4",
+        messages: [{ role: "user", content: event.data.prompt }]
+      })
+    });
+    
+    const aiResult = await response.json();
+
+    // If this step fails and retries, the LLM call above is NOT re-executed
+    await step.run("save-result", async () => {
+      await db.save(aiResult);
+    });
+  }
+);
+```
+
+<Callout variant="info">
+  **How caching works: Order-based, not URL-based**
+
+  Unlike typical API caching systems (like Redis) that cache based on URL + parameters, `step.fetch()` caches results based on the **order of fetch calls** in your function.
+
+  This means:
+  - The first `step.fetch()` call returns the first cached result
+  - The second `step.fetch()` call returns the second cached result
+  - And so on...
+
+  This order-based caching is essential to understand when working with dynamic URLs or when calling the same endpoint multiple times with different parameters.
+</Callout>
+
 ### `step.fetch()` observability
 
 All `step.fetch()` calls are visible in your [Inngest Traces](/docs/platform/monitor/observability-metrics), allowing you to monitor and debug your HTTP requests:
