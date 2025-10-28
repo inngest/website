@@ -41,28 +41,27 @@ Here is a one-file example of a fully-functioning app that connects to Inngest.
 
 <CodeGroup>
 ```ts
-import { Inngest } from 'inngest'
-import { connect } from 'inngest/connect';
-import { ConnectionState } from 'inngest/components/connect/types';
+import { Inngest } from "inngest";
+import { connect } from "inngest/connect";
 
 const inngest = new Inngest({
-  id: 'my-app'
+  id: "my-app",
 });
 
 const handleSignupFunction = inngest.createFunction(
-  { id: 'handle-signup' },
-  { event: 'user.created'}
+  { id: "handle-signup" },
+  { event: "user.created" },
   async ({ event, step }) => {
-    console.log('Function called', event);
-  }
+    console.log("Function called", event);
+  },
 );
 
 (async () => {
   const connection = await connect({
-    apps: [{ client: inngest, functions: [handleSignupFunction] }]
+    apps: [{ client: inngest, functions: [handleSignupFunction] }],
   });
 
-  console.log('Worker: connected', connection);
+  console.log("Worker: connected", connection);
 })();
 ```
 ```go
@@ -390,82 +389,80 @@ Here is an example of using `connect` with a basic Node.js http server to listen
 
 <CodeGroup>
 ```ts {{ title: "Node.js" }}
-import { createServer } from 'http';
-import { connect } from 'inngest/connect';
-import { ConnectionState } from 'inngest/components/connect/types';
-import { inngest, functions } from './src/inngest';
+import { createServer } from "http";
+import { connect, ConnectionState } from "inngest/connect";
+import { inngest, functions } from "./src/inngest";
 
 (async () => {
   const connection = await connect({
-    apps: [{ client: inngest, functions }]
+    apps: [{ client: inngest, functions }],
   });
 
-  console.log('Worker: connected', connection);
+  console.log("Worker: connected", connection);
 
   // This is a basic web server that only listens for the /ready endpoint
   // and returns a 200 status code when the connection to Inngest is active.
   const httpServer = createServer((req, res) => {
-    if (req.url === '/ready') {
+    if (req.url === "/ready") {
       if (connection.state === ConnectionState.ACTIVE) {
-        res.writeHead(200, { 'Content-Type': 'text/plain' });
-        res.end('OK');
+        res.writeHead(200, { "Content-Type": "text/plain" });
+        res.end("OK");
       } else {
-        res.writeHead(500, { 'Content-Type': 'text/plain' });
-        res.end('NOT OK');
+        res.writeHead(500, { "Content-Type": "text/plain" });
+        res.end("NOT OK");
       }
       return;
     }
-    res.writeHead(404, { 'Content-Type': 'text/plain' });
-    res.end('NOT FOUND');
+    res.writeHead(404, { "Content-Type": "text/plain" });
+    res.end("NOT FOUND");
   });
 
   // Start the server on a port of your choice
   httpServer.listen(8080, () => {
-    console.log('Worker: HTTP server listening on port 8080');
+    console.log("Worker: HTTP server listening on port 8080");
   });
 
   // When the Inngest connection has gracefully closed,
   // this will resolve and the app will exit.
   await connection.closed;
-  console.log('Worker: Shut down');
+  console.log("Worker: Shut down");
 
   // Stop the HTTP server
   httpServer.close();
 })();
 ```
 ```ts  {{ title: "Bun (JavaScript)" }}
-import { connect } from 'inngest/connect';
-import { ConnectionState } from 'inngest/components/connect/types';
-import { inngest, functions } from './src/inngest';
+import { connect, ConnectionState } from "inngest/connect";
+import { inngest, functions } from "./src/inngest";
 
 const connection = await connect({
-  apps: [{ client: inngest, functions: [helloWorld] }],
+  apps: [{ client: inngest, functions }],
 });
 
-console.log('Worker: connected', connection);
+console.log("Worker: connected", connection);
 
 // Start a basic web server that only listens for the /ready endpoint
 // and returns a 200 status code when the connection to Inngest is active.
 const server = Bun.serve({
   port: 8080,
   routes: {
-    '/ready': async () => {
+    "/ready": async () => {
       return connection.state === ConnectionState.ACTIVE
-        ? new Response('OK')
-        : new Response('Not Ready', { status: 500 });
+        ? new Response("OK")
+        : new Response("Not Ready", { status: 500 });
     },
   },
   fetch(req) {
-    return new Response('Not Found', { status: 404 });
+    return new Response("Not Found", { status: 404 });
   },
 });
 
-console.log('Worker: HTTP server listening on port 8080');
+console.log("Worker: HTTP server listening on port 8080");
 
 // When the Inngest connection has gracefully closed,
 // this will resolve and the app will exit.
 await connection.closed;
-console.log('Worker: Shut down');
+console.log("Worker: Shut down");
 
 // Stop the HTTP server
 await server.stop();

@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
 
-import Header from "../../shared/Header";
+import Header from "src/components/RedesignedLanding/Header/Header";
 import Footer from "../../shared/Footer";
 import Container from "../../shared/layout/Container";
 import HowInngestWorksGraphic from "src/shared/Graphics/HowInngestWorks";

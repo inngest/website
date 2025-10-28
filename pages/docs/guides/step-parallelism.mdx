@@ -128,8 +128,8 @@ export const fn = inngest.createFunction(
     const chunks = splitTextIntoChunks(event.data.text);
 
     const summaries = await Promise.all(
-      chunks.map((chunk) =>
-        step.run("summarize-chunk", () => summarizeChunk(chunk))
+      chunks.map((chunk, index) =>
+        step.run(`summarize-chunk-${index}`, () => summarizeChunk(chunk))
       )
     );
 
