@@ -45,7 +45,7 @@ inngest.createFunction(
 );
 ```
 
-Above, the key is the user ID, which limits each user to two concurrent executions of the function. We also can apply multiple levels of concurrency or combine concurrency with throttle controls which can be useful for working around third-party API rate limits:
+Above, the key is the user ID, which limits each user to two concurrently executing steps. We also can apply multiple levels of concurrency or combine concurrency with throttle controls which can be useful for working around third-party API rate limits:
 
 ```typescript
 inngest.createFunction(
