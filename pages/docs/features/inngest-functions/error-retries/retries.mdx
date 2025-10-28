@@ -83,7 +83,9 @@ Retries will be performed with backoff according to [the default schedule](https
 
 A function can be broken down into multiple steps, where each step is individually executed and retried.
 
-Here, both the "_get-data_" and "_save-data_" steps have their own set of retries. If the "_save-data_" step has a failure, it's retried, alone, in a separate request.
+**Each `step.run()` has its own independent retry counter.** The retry configuration you set on your function applies to each individual step, not as a shared pool across all steps. For example, if you configure a function with 5 retries, each `step.run()` will be retried up to 5 times independently.
+
+In the example below, both the "_get-data_" and "_save-data_" steps each get their own set of 4 retries (5 total attempts including the initial attempt). If the "_save-data_" step fails all 5 attempts, it doesn't affect the retry count of the "_get-data_" step - they are completely independent.
 
 <CodeGroup>
 ```ts {{ title: "TypeScript" }}
@@ -144,7 +146,9 @@ def sync_systems(ctx: inngest.ContextSync) -> None:
 </CodeGroup>
 
 <Callout>
-You can configure the number of [`retries`](/docs/reference/functions/create#inngest-create-function-configuration-trigger-handler-inngest-function) for each function. This excludes the initial attempt.  A retry count of `4` means that each step will be attempted up to 5 times.
+**Important:** Each step gets its own independent retry counter. You can configure the number of [`retries`](/docs/reference/functions/create#inngest-create-function-configuration-trigger-handler-inngest-function) for each function. This excludes the initial attempt. A retry count of `4` means that **each individual step** will be attempted up to 5 times (1 initial attempt + 4 retries).
+
+For example, if you have a function with 3 steps and `retries: 4` configured, each of the 3 steps can be retried up to 4 times independently. This means you could theoretically have up to 15 total attempts across all steps (5 attempts × 3 steps) if every step fails every time.
 </Callout>
 
 ## Preventing retries with Non-retriable errors

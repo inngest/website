@@ -82,6 +82,14 @@ Promise.all([
 ]);
 ```
 
+## Retries
+
+Each `step.run()` call has its own independent retry counter. When a step throws an error, it will be retried according to your function's retry configuration. The retry configuration applies to each individual step, not as a shared pool across all steps in your function.
+
+For example, if your function is configured with `retries: 4`, each `step.run()` will be retried up to 4 times independently (5 total attempts including the initial attempt). If you have multiple steps in your function, each step gets its own full set of retries.
+
+Learn more about [configuring retries](/docs/features/inngest-functions/error-retries/retries).
+
 ## Return values and serialization
 
 All data returned from `step.run` is serialized as JSON. This is done to enable the SDK to return a valid serialized response to the Inngest service.
