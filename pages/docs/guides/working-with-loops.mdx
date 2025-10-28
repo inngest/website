@@ -409,7 +409,7 @@ inngest.CreateFunction(
 		}
 
 		for hasMore {
-			if page, err := step.Run(fmt.Sprintf("fetch-products-%v", cursor), func() error {
+			if page, err := step.Run(ctx, fmt.Sprintf("fetch-products-%v", cursor), func(ctx context.Context) ([]&shopify.Product, error)  {
 				return shopify.Product.All(&shopify.ProductListOptions{
 					Session: session,
 					SinceID: cursor,
