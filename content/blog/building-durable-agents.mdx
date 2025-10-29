@@ -1,0 +1,427 @@
+---
+heading: "Building Durable AI Agents: A Guide to Context Engineering"
+image: /assets/blog/building-durable-agents/cover.png
+showSubtitle: false
+subtitle: "How to stop your AI agents from breaking in production — and start making them debuggable, deterministic, and durable."
+date: 2025-10-30
+author: Keoni Murray
+---
+**Your AI agent works perfectly in testing. Then you ship it.**
+
+Within 48 hours: it's stuck in a loop, burning $200/hour. The logs show nothing. The traces are useless. You can't reproduce the bug.
+
+You're staring at timestamps and status codes that tell you *nothing*. Was it the prompt? The retrieval? A tool call? You add more logging. Now you're drowning in 8,000-token dumps trying to spot what changed. You replay the exact input locally, and it works perfectly. The bug vanishes the moment you try to observe it.
+
+Eventually, you find it: the retrieval step returns documents in a different order in production. That changed the context. That changed the reasoning. That broke everything. Four hours on something that should've taken four minutes.
+
+This isn't a model problem. It's a context engineering problem, and nobody teaches you how to debug it.
+
+The difference between a prototype and a production agent isn't smarter prompts. It's **durable context management** and **workflow-level observability**. You need to see what the agent was thinking, why it made each decision, and how to fix it when it breaks.
+
+Below are the 5 ways agents break in production, and the best practices that fix them.
+
+## **The 5 Ways Agents Break (And How to Fix Them)**
+
+### **1. Problem: Your Agent's Memory Explodes Mid-Conversation**
+
+**What breaks:**
+
+```jsx
+User: "Summarize my last 50 support tickets"
+Agent: [thinks for 30 seconds]
+Agent: "I apologize, I seem to have lost context...
+```
+
+**Why does it happen:**
+
+Most teams dump everything into context, hoping the model will figure out
+what matters. But LLMs have hard context window limits, and when you exceed them, the model silently drops information (usually from the beginning or
+middle of context). You don't control what gets dropped unless you prioritize what goes in. When this happens mid-task, the agent doesn’t gracefully degrade. It **hallucinates or fails silently.**
+
+**The fix: Use a Vector database or an external memory source.**  
+
+Don't store everything in context. Build a **working memory source, like a vector database**  that your agent queries on demand:
+
+```tsx
+const context = `
+  System: You are a support agent
+  History: [50 tickets worth of text]
+  User: Summarize this
+`
+const summary = await llm.complete(context)
+
+// ✅ Good: Query memory on-demand
+const relevantTickets = await step.run('retrieve-tickets', async () => {
+  return await vectorDB.search(userQuery, { limit: 50 })
+})
+
+const summary = await step.ai.infer('summarize', {
+  model: openai({ model: "gpt-4o" }),
+  body: {
+    messages: [
+      { role: "system", content: "You are a support agent" },
+      { 
+        role: "user", 
+        content: `Summarize these tickets:\n${JSON.stringify(relevantTickets)}\n\nQuery: ${userQuery}` 
+      }
+    ]
+  }
+})
+```
+
+**Best practice:**
+
+- Use vector DB for semantic recall (Pinecone, Weaviate)
+- **File system for large artifacts,** "Store full documents, let agent read on demand" (S3, local storage)
+- Budget your context window and measure usage to prevent hitting the limit mid-reasoning:
+
+```tsx
+const estimateTokens = (text: string) => Math.ceil(text.length / 4)
+
+const totalTokens = estimateTokens(systemPrompt) + 
+                    estimateTokens(JSON.stringify(relevantTickets))
+
+if (totalTokens > MAX_CONTEXT * 0.8) {
+  console.warn(`⚠️ Context approaching limit: ${totalTokens}/${MAX_CONTEXT} tokens`)
+}
+```
+
+---
+
+### **2. Problem: Your Agent Gives Different Answers to the Same Question**
+
+**What breaks:**
+
+```tsx
+Monday:  "User X has 3 active subscriptions"
+Tuesday: "User X has 2 active subscriptions"  
+[Same user, same query, data hasn't changed]
+
+```
+
+This is a **context determinism problem**. Your agent gets different inputs
+each time because context assembly is non-deterministic, retrieval order
+changes, timestamps shift, tool outputs vary. Small input changes cause
+wildly different reasoning.
+
+**The fix: Design for deterministic context assembly**
+
+```tsx
+// ❌ Bad: Retrieval order is random
+const subscriptions = await db.query('SELECT * FROM subs WHERE user_id = ?')
+
+// ✅ Good: Sort deterministically
+const subscriptions = await step.run('get-subscriptions', async () => {
+  const results = await db.query('SELECT * FROM subs WHERE user_id = ? ORDER BY created_at')
+  return results.map(normalizeSchema) // Consistent shape
+})
+
+```
+
+**Key practices:**
+
+1. **Sort all retrieved data** (by ID, timestamp, relevance score)
+2. **Normalize schemas** (same key names, same structure)
+3. **Set temperature=0** unless you need creativity
+4. Use deterministic randomness: if you need variability, seed it with the input hash
+
+**Quick Tip:** **Snapshot your assembled context before every model call**. Store it alongside the output:
+
+```tsx
+const contextSnapshot = {
+  systemPrompt,
+  tools,
+  memory,
+  retrievedData,
+  timestamp: Date.now()
+}
+
+const result = await step.ai.infer('reason', {
+  model: openai({ model: "gpt-4o" }),
+  body: {
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userQuery }
+    ]
+  }
+})
+
+// Store for replay/debugging
+await step.run('log-context', async () => {
+  await db.storeSnapshot(runId, contextSnapshot, result)
+})
+```
+
+Now, when your agent breaks, you can replay the exact context it saw, and debug by changing just one variable.
+
+---
+
+### **3. Problem: Your Agent Loops Forever (And You Can't See Why)**
+
+**What breaks:**
+
+```jsx
+Agent: Searching for answer...
+Agent: Still searching...
+Agent: Let me search again...
+[10 minutes later, $50 in API calls]
+
+```
+
+**Why it happens:**
+
+- The agent can't tell it's repeating itself
+- Working memory doesn't include "what I've already tried"
+- No loop detection or exit conditions
+- You can't see the reasoning chain that led here
+
+This is the **observability black hole**. You know it looped. You don't know *why*.
+
+**The fix: Workflow-level observability with step replay**
+
+Stop treating your agent as one big function call. Break it into **observable steps**:
+
+```jsx
+// ❌ Bad: Black box agent
+const answer = await agent.run(query)
+// [agent loops internally, you see nothing]
+```
+
+```tsx
+// Good: Observable workflow
+export default inngest.createFunction(
+  { id: "research-agent" },
+  { event: "research.requested" },
+  async ({ event, step }) => {
+    
+    const searchResults = await step.run('search', async () => {
+      return await search(event.data.query)
+    })
+    
+    const analysis = await step.ai.infer('analyze', {
+      context: searchResults,
+      prompt: "Extract key insights"
+    })
+    
+    const needsMoreInfo = await step.run('check-completeness', async () => {
+      return analysis.confidence < 0.7
+    })
+    
+    if (needsMoreInfo && step.attempts < 3) {
+      // Visible retry logic
+      await step.sendEvent('research.retry', { ... })
+    }
+    
+    return analysis
+  }
+)
+```
+
+Now in your Inngest dashboard you see:
+
+- ✅ Step 1: search (200ms, $0.001)
+- ✅ Step 2: analyze (1.2s, $0.02)
+- ⚠️ Step 3: check-completeness (returned true 3 times)
+- 🔄 Loop detected at step 3
+
+**Best practices:**
+
+1. **One step = one atomic operation** (retrieve, reason, act)
+2. **Name steps descriptively** (validate-input, not step-1)
+3. **Set max attempts per step** (fail fast vs infinite loops)
+4. **Log why decisions were made** (confidence scores, thresholds hit)
+
+**Quick Tip: Make your loops replayable**. When something break
+
+```tsx
+// In Inngest dashboard:
+// Click "Replay Run" → select failed step → see exact context
+// Change one variable → rerun from that step → validate fix
+```
+
+This is what separates **debugging** from **divination**. You can reproduce the exact failure.
+
+---
+
+### **4. Problem: Your Agent Forgets What It's Doing**
+
+**What breaks:**
+
+```tsx
+User: "Analyze these 3 documents and compare them"
+Agent: [Analyzes doc 1]
+Agent: [Analyzes doc 2]
+Agent: "I've completed the analysis!" [never compared anything]
+```
+
+**Why it happens:**
+
+- Working memory doesn't persist between steps
+- The agent can't see its own reasoning history
+- State management is implicit, not explicit
+
+This is **context drift**:  The agent loses track of its own goals mid-execution.
+
+**The fix: Explicit state checkpointing**
+
+```tsx
+// ❌ Bad: Implicit state
+let analyzed = []
+for (let doc of docs) {
+  analyzed.push(await agent.analyze(doc))
+}
+// [If step 2 fails, start over from zero]
+
+// ✅ Good: Explicit checkpoints
+const state = await step.run('load-state', async () => {
+  return await kv.get(`agent-state-${runId}`) || { analyzed: [], step: 'init' }
+})
+
+for (let i = state.analyzed.length; i < docs.length; i++) {
+  const analysis = await step.run(`analyze-doc-${i}`, async () => {
+    return await agent.analyze(docs[i])
+  })
+  
+  state.analyzed.push(analysis)
+  state.step = `analyzed-${i+1}-of-${docs.length}`
+  
+  await step.run('checkpoint', async () => {
+    await kv.set(`agent-state-${runId}`, state)
+  })
+}
+
+const comparison = await step.ai.infer('compare', {
+  context: state.analyzed, // Full history available
+  goal: "Compare these documents"
+})
+
+```
+
+**Key practices:**
+
+1. **Store task goals in state** (so the agent remembers what it's supposed to do)
+2. **Update state after each major step** (checkpointing)
+3. **Pass state explicitly** to each reasoning call
+4. **Use structured state objects**, not loose variables
+
+**Quick Tip:** **Version your state schema**. When you change what you track:
+
+```tsx
+const state = migrateState(rawState, {
+  v1: { analyzed: [] },
+  v2: { analyzed: [], comparisons: [], goal: '' }
+})
+```
+
+---
+
+### **5. Problem: When Your Agent Crashes, You Can't Recover**
+
+**What breaks:**
+
+```tsx
+Agent: [Processes 45 minutes of user data]
+Agent: [Crashes on final step]
+User: "Where's my report?"
+You: "Uh... can you resubmit?"
+```
+
+**Why it happens:**
+
+- Agents are built like functions (all-or-nothing)
+- No retry logic for partial failures
+- Can't resume from where it crashed
+
+**The fix: Build recovery into your workflow**
+
+```tsx
+export default inngest.createFunction(
+  { 
+    id: "data-processor",
+    retries: 3, // Auto-retry on failure
+  },
+  { event: "data.process" },
+  async ({ event, step }) => {
+  
+   
+    // This persists across retries
+    const checkpoint = await step.run('load-progress', async () => {
+      return await kv.get(`progress-${event.data.id}`) || { completed: [] }
+    })
+    
+    for (let item of event.data.items) {
+      if (checkpoint.completed.includes(item.id)) {
+        continue // Skip already processed
+      }
+      
+      await step.run(`process-${item.id}`, async () => {
+        await processItem(item)
+        checkpoint.completed.push(item.id)
+        await kv.set(`progress-${event.data.id}`, checkpoint)
+      })
+    }
+    
+    // Even if this fails, individual steps are saved
+    return await step.run('finalize', async () => {
+      return await generateReport(checkpoint.completed)
+    })
+  }
+)
+```
+
+**Best Practices:**
+
+1. **Idempotent steps** (safe to retry)
+2. **Progress tracking** (know what's done)
+3. **Graceful degradation** (partial results better than nothing)
+4. **Clear error messages** (what failed and why)
+
+**Quick Tip:** **Test your recovery logic**:
+
+```tsx
+// In your test suite
+test('agent recovers from step 3 failure', async () => {
+  // Force failure at step 3
+  mockStep3ToFail()
+  
+  const result = await runAgent()
+  
+  // Verify: steps 1-2 didn't rerun, step 3 retried, step 4 completed
+  expect(step1CallCount).toBe(1)
+  expect(step3CallCount).toBe(2) // Original + retry
+})
+```
+
+## **Why Steps?**
+
+We’ve mentioned using “steps” in a few different places above. Steps improve observability and enable smooth retries. But why might you consider this particular methodology over others? 
+
+When you build AI agents, **steps turn invisible chaos into visible control.**
+
+They make your workflows **explicit instead of magical.** Every call, retry, and decision is something you can name, replay, and reason about.
+
+With steps, what you write is *exactly* what runs. No hidden directives, no compiler trickery. Each step is a small, typed transaction that you can test, mock, or swap across languages without breaking the flow.
+
+More importantly, steps give you **real observability**:
+
+- You see where the agent got stuck, not just that it failed.
+- You can replay from the failed step instead of rerunning everything.
+- You can measure cost, latency, and state across retries.
+- You can evolve workflows safely, one step at a time.
+
+Steps turn your “black box” agent into a series of **observable, recoverable, testable operations**.
+
+That’s what makes debugging possible — and production agents reliable.
+
+## **Next Time Your Agent Breaks**
+
+Don't try to fix everything at once. Start with your biggest pain point:
+
+- **If your agent is expensive:** Add per-step cost tracking and optimize for KV cache hits
+- **If it's unreliable:** Add context snapshots and replay capability
+- **If it's slow:** Externalize memory and measure your context budget
+- **If it's confusing:** Break it into named, observable workflow steps
+
+The goal isn't perfect context engineering on day one.
+
+The goal is **seeing what your agent actually does,** so you can make it better.
