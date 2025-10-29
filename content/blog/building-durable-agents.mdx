@@ -32,17 +32,24 @@ Agent: [thinks for 30 seconds]
 Agent: "I apologize, I seem to have lost context...
 ```
 
-**Why does it happen:**
+**Why it happen:**
+
+But LLMs have hard context window limits
 
 Most teams dump everything into context, hoping the model will figure out
-what matters. But LLMs have hard context window limits, and when you exceed them, the model silently drops information (usually from the beginning or
-middle of context). You don't control what gets dropped unless you prioritize what goes in. When this happens mid-task, the agent doesn’t gracefully degrade. It **hallucinates or fails silently.**
+what matters. But there are two problems: performance degrades long before
+you hit the limit ([research show](https://arxiv.org/pdf/2502.05167)s that at 32K tokens, most models drop below
+50% of their short-context baseline, even GPT-4o falls from 99.3% to 69.7%
+accuracy), and when you exceed the limit entirely, information gets silently
+dropped, usually from the beginning or middle. You don't control what gets
+cut. The agent doesn't gracefully degrade; it hallucinates or fails silently.
 
 **The fix: Use a Vector database or an external memory source.**  
 
 Don't store everything in context. Build a **working memory source, like a vector database**  that your agent queries on demand:
 
 ```tsx
+//  Bad: Cram everything into one prompt
 const context = `
   System: You are a support agent
   History: [50 tickets worth of text]
@@ -50,7 +57,7 @@ const context = `
 `
 const summary = await llm.complete(context)
 
-// ✅ Good: Query memory on-demand
+// Good: Query memory on-demand
 const relevantTickets = await step.run('retrieve-tickets', async () => {
   return await vectorDB.search(userQuery, { limit: 50 })
 })
@@ -73,7 +80,7 @@ const summary = await step.ai.infer('summarize', {
 
 - Use vector DB for semantic recall (Pinecone, Weaviate)
 - **File system for large artifacts,** "Store full documents, let agent read on demand" (S3, local storage)
-- Budget your context window and measure usage to prevent hitting the limit mid-reasoning:
+- Keep your context lean and measure usage, models reason better with shorter context, and you'll avoid hitting limits mid-task. Remember, models perform significantly worse at 32K+ tokens, so aim to use only what's necessary:
 
 ```tsx
 const estimateTokens = (text: string) => Math.ceil(text.length / 4)
@@ -122,7 +129,7 @@ const subscriptions = await step.run('get-subscriptions', async () => {
 
 1. **Sort all retrieved data** (by ID, timestamp, relevance score)
 2. **Normalize schemas** (same key names, same structure)
-3. **Set temperature=0** unless you need creativity
+3. Set temperature=0 unless you need reasoning variance
 4. Use deterministic randomness: if you need variability, seed it with the input hash
 
 **Quick Tip:** **Snapshot your assembled context before every model call**. Store it alongside the output:
@@ -199,8 +206,13 @@ export default inngest.createFunction(
     })
     
     const analysis = await step.ai.infer('analyze', {
-      context: searchResults,
-      prompt: "Extract key insights"
+      model: openai({ model: "gpt-4o" }),
+      body: {
+        messages: [
+          { role: "system", content: "Extract key insights from search results" },
+          { role: "user", content: JSON.stringify(searchResults) }
+        ]
+      }
     })
     
     const needsMoreInfo = await step.run('check-completeness', async () => {
@@ -209,7 +221,10 @@ export default inngest.createFunction(
     
     if (needsMoreInfo && step.attempts < 3) {
       // Visible retry logic
-      await step.sendEvent('research.retry', { ... })
+      await step.sendEvent('research.retry', { 
+        query: event.data.query,
+        previousAttempts: step.attempts 
+      })
     }
     
     return analysis
@@ -230,14 +245,15 @@ Now in your Inngest dashboard you see:
 2. **Name steps descriptively** (validate-input, not step-1)
 3. **Set max attempts per step** (fail fast vs infinite loops)
 4. **Log why decisions were made** (confidence scores, thresholds hit)
+5. 5. Always add an exit condition or max steps iteration
 
-**Quick Tip: Make your loops replayable**. When something break
+****Make failures reproducible:****
 
-```tsx
-// In Inngest dashboard:
-// Click "Replay Run" → select failed step → see exact context
-// Change one variable → rerun from that step → validate fix
-```
+The key to debugging agents is reproducibility. When you can [replay](https://www.inngest.com/docs/platform/replay) a failed
+workflow with the exact same context and state, debugging becomes systematic.
+You see what the agent saw at each decision point. You can change one variable
+and rerun to test your hypothesis. You validate fixes immediately instead of
+waiting for the bug to happen again in production.
 
 This is what separates **debugging** from **divination**. You can reproduce the exact failure.
 
@@ -411,7 +427,7 @@ More importantly, steps give you **real observability**:
 
 Steps turn your “black box” agent into a series of **observable, recoverable, testable operations**.
 
-That’s what makes debugging possible — and production agents reliable.
+That’s what makes debugging possible , and production agents reliable.
 
 ## **Next Time Your Agent Breaks**
 
