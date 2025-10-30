@@ -111,6 +111,117 @@ def fn(ctx: inngest.ContextSync) -> None:
 
 When using `asyncio.wait`, `asyncio.FIRST_COMPLETED` is supported. However, `asyncio.FIRST_EXCEPTION` is not supported due to the way Inngest interrupts the execution of the function.
 
+## Optimizing parallel step performance
+
+By default, parallel steps require 2 requests per step to your application. If you have many parallel steps (e.g., hundreds), this can lead to:
+- High number of HTTP requests to your application
+- Increased ingress bandwidth
+- Higher CPU usage from request parsing
+
+The `optimizeParallelism` feature reduces this to just 1 request per parallel step, significantly improving performance for functions with many parallel operations.
+
+### TypeScript: Opt-in via function configuration
+
+In TypeScript, you can enable optimized parallelism by adding `optimizeParallelism: true` to your function configuration:
+
+```ts
+import { Inngest } from "inngest";
+
+const inngest = new Inngest({ id: "my-app" });
+
+export const fn = inngest.createFunction(
+  { 
+    id: "process-batch",
+    optimizeParallelism: true  // Enable optimized parallelism
+  },
+  { event: "batch/process" },
+  async ({ event, step }) => {
+    // These parallel steps will now use only 1 request each instead of 2
+    const results = await Promise.all(
+      event.data.items.map((item, i) =>
+        step.run(`process-${i}`, () => processItem(item))
+      )
+    );
+    
+    return results;
+  }
+);
+```
+
+**Important considerations:**
+
+- **`Promise.race` behavior**: When using optimized parallelism, `Promise.race` will wait for all parallel steps to complete before returning the first result. This differs from the standard JavaScript behavior where it returns immediately when the first promise resolves. A future `group.race()` API may address this.
+
+- **Sequential steps in parallel groups**: Steps that run sequentially within different parallel branches may not execute in the order you expect. For example:
+
+```ts
+const stepOrder: string[] = [];
+
+export const fn = inngest.createFunction(
+  { id: "fn-1", optimizeParallelism: true },
+  { event: "event-1" },
+  async ({ step }) => {
+    await Promise.all([
+      (async () => {
+        await step.run("fast.1", async () => {
+          stepOrder.push("fast.1");
+        });
+        await step.run("fast.2", async () => {
+          stepOrder.push("fast.2");
+        });
+      })(),
+      (async () => {
+        await step.run("slow.1", async () => {
+          await sleep(1000);
+          stepOrder.push("slow.1");
+        });
+        await step.run("slow.2", async () => {
+          await sleep(1000);
+          stepOrder.push("slow.2");
+        });
+      })(),
+    ]);
+
+    // With optimizeParallelism: ['fast.1', 'slow.1', 'fast.2', 'slow.2']
+    // Without optimizeParallelism: ['fast.1', 'fast.2', 'slow.1', 'slow.2']
+  }
+);
+```
+
+### Python: Optimized by default with opt-out
+
+Python always uses optimized parallelism by default, as it doesn't have an equivalent to `Promise.race` to worry about. However, you can opt out at the group level if you need sequential steps within parallel groups to run independently.
+
+Use the `parallel_mode` parameter to control this behavior:
+
+```py
+import inngest
+import asyncio
+
+@inngest_client.create_function(
+    fn_id="my-fn",
+    trigger=inngest.TriggerEvent(event="my-event"),
+)
+async def fn(ctx: inngest.Context) -> None:
+    async def fast_group() -> None:
+        await ctx.step.run("a", lambda: asyncio.sleep(1))
+        await ctx.step.run("b", lambda: asyncio.sleep(1))
+
+    async def slow_group() -> None:
+        await ctx.step.run("x", lambda: asyncio.sleep(10))
+        await ctx.step.run("y", lambda: asyncio.sleep(10))
+
+    # Using RACE mode makes steps run in expected order: a, b, x, y
+    await ctx.group.parallel(
+        (fast_group, slow_group), 
+        parallel_mode=inngest.ParallelMode.RACE
+    )
+```
+
+**Without specifying `parallel_mode`**, the steps will run in the order: `a`, `x`, `b`, `y` (optimized mode). Everything is still correct, but step `b` doesn't run until step `x` completes.
+
+**With `parallel_mode=inngest.ParallelMode.RACE`**, the steps run in the expected order: `a`, `b`, `x`, `y`, but with the performance trade-off of more requests.
+
 ## Chunking jobs
 
 A common use case is to chunk work. For example, when using OpenAI's APIs you might need to chunk a user's input and run the API on many chunks, then aggregate all data:
