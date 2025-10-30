@@ -888,7 +888,7 @@ const sectionHome: (NavGroup | NavLink)[] = [
     title: "AI",
     links: [
       {
-        title: "MCP",
+        title: "Dev Server MCP",
         href: "/docs/ai-dev-tools/mcp",
       },
       {

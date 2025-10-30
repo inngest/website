@@ -30,7 +30,7 @@ The Inngest MCP server runs locally with your dev server and requires no externa
 The MCP server is automatically available when you start the Inngest dev server:
 
 ```bash
-npx inngest-cli dev
+npx inngest-cli@latest dev
 ```
 
 The MCP endpoint will be available at `http://127.0.0.1:8288/mcp`
@@ -79,11 +79,38 @@ claude mcp add --transport http inngest-dev http://127.0.0.1:8288/mcp
 Once connected, you can ask your AI assistant to:
 
 ```
-> "List all my Inngest functions and their triggers"
-> "Send a test event to trigger the user signup workflow"
-> "Monitor the function run and show me any errors"
-> "Search the docs for rate limiting examples"
+List all my Inngest functions and their triggers
 ```
+
+```
+Send a test event to trigger the user signup workflow
+```
+
+```
+Monitor the function run and show me any errors
+```
+```
+Search the docs for rate limiting examples
+```
+
+## Best Practices
+
+### Function Testing
+- **Start simple:** Test individual functions before complex workflows
+- **Use descriptive events:** Clear event names help with debugging
+- **Monitor execution:** Always check run status after triggering events
+- **Test error scenarios:** Intentionally trigger failures to test error handling
+
+### Debugging Workflows
+- **Check step details:** Use `get_run_status` to see step-by-step execution
+- **Review error context:** Error messages include stack traces and context
+- **Verify data flow:** Check inputs and outputs at each step
+- **Use polling for async:** Monitor long-running workflows with `poll_run_status`
+
+### Documentation Usage
+- **Search before building:** Use `grep_docs` to find relevant examples
+- **Reference patterns:** Look for similar use cases in the documentation
+- **Cross-reference APIs:** Use `read_doc` for complete API documentation
 
 ## Available MCP Tools
 
@@ -102,7 +129,7 @@ Send an event to trigger functions and get immediate feedback on which runs were
 
 **Example usage:**
 ```
-> "Send a test event called 'app/user.signup' with user email 'test@example.com'"
+Send a test event called 'app/user.signup' with user email 'test@example.com'
 ```
 
 #### `list_functions`
@@ -144,7 +171,7 @@ Monitor multiple function runs until completion - essential for integration test
 
 **Example usage:**
 ```
-> "Poll these 3 runs until they complete and show me a summary"
+Poll these 3 runs until they complete and show me a summary
 ```
 
 ### Documentation Tools
@@ -158,7 +185,7 @@ Search through embedded Inngest documentation using pattern matching.
 
 **Example usage:**
 ```
-> "Search the docs for 'rate limiting' examples"
+Search the docs for 'rate limiting' examples
 ```
 
 #### `read_doc`
@@ -198,7 +225,7 @@ export const handleSignup = inngest.createFunction(
 With MCP, you can test this workflow by asking your AI assistant:
 
 ```
-> "Send a test signup event with email 'alice@example.com' and monitor the function execution"
+Send a test signup event with email 'alice@example.com' and monitor the function execution
 ```
 
 The AI will:
@@ -210,7 +237,7 @@ The AI will:
 ### Debugging Failed Functions
 
 ```
-> "Get the status of run 01J5QH90... and explain what went wrong"
+Get the status of run 01J5QH90... and explain what went wrong
 ```
 
 The AI will use `get_run_status` to retrieve:
@@ -222,7 +249,7 @@ The AI will use `get_run_status` to retrieve:
 ### Integration Testing
 
 ```
-> "Send events to trigger the complete order processing workflow and verify all steps complete successfully"
+Send events to trigger the complete order processing workflow and verify all steps complete successfully
 ```
 
 The AI can:
@@ -231,73 +258,12 @@ The AI can:
 3. Verify the entire workflow completes
 4. Report any failures or timeouts
 
-## Best Practices
-
-### Function Testing
-- **Start simple:** Test individual functions before complex workflows
-- **Use descriptive events:** Clear event names help with debugging
-- **Monitor execution:** Always check run status after triggering events
-- **Test error scenarios:** Intentionally trigger failures to test error handling
-
-### Debugging Workflows
-- **Check step details:** Use `get_run_status` to see step-by-step execution
-- **Review error context:** Error messages include stack traces and context
-- **Verify data flow:** Check inputs and outputs at each step
-- **Use polling for async:** Monitor long-running workflows with `poll_run_status`
-
-### Documentation Usage
-- **Search before building:** Use `grep_docs` to find relevant examples
-- **Reference patterns:** Look for similar use cases in the documentation
-- **Cross-reference APIs:** Use `read_doc` for complete API documentation
-
-## Integration Examples
-
-### Claude Code Workflow
-
-```bash
-# 1. Add Inngest MCP server
-claude mcp add --transport http inngest-dev http://127.0.0.1:8288/mcp
-
-# 2. Start developing with AI assistance
-claude
-```
-
-```
-> "I'm building a payment processing function. Show me the available functions and help me test the payment workflow."
-
-> "Send a test payment event and monitor the execution. If it fails, help me debug the issue."
-
-> "Search the docs for retry configuration examples and update my function accordingly."
-```
-
-### Cursor Integration
-
-Add to your project's `.cursor/mcp.json`:
-
-```json
-{
-  "mcpServers": {
-    "inngest-dev": {
-      "url": "http://127.0.0.1:8288/mcp"
-    }
-  }
-}
-```
-
-Then use Cursor's AI features:
-
-```
-> "List all my functions and their triggers, then help me create a comprehensive test suite"
-
-> "Monitor the user onboarding workflow and identify any performance bottlenecks"
-```
-
 ## Troubleshooting
 
 ### Common Issues
 
 **MCP server not found**
-- Ensure the Inngest dev server is running: `npx inngest-cli dev`
+- Ensure the Inngest dev server is running: `npx inngest-cli@latest dev`
 - Verify the MCP endpoint is accessible: `curl http://127.0.0.1:8288/mcp`
 - Check your MCP client configuration
 
@@ -322,21 +288,21 @@ Then use Cursor's AI features:
 The default polling timeout is 30 seconds. For longer-running functions:
 
 ```
-> "Poll this run with a 60-second timeout instead of the default"
+Poll this run with a 60-second timeout instead of the default
 ```
 
 **Event ID seeding:**
 For deterministic testing, you can provide event ID seeds:
 
 ```
-> "Send a test event with seed 'test-123' for reproducible testing"
+Send a test event with seed 'test-123' for reproducible testing
 ```
 
 **Documentation search:**
 Use regex patterns for advanced documentation searches:
 
 ```
-> "Search docs for 'step\\.run.*retry' to find step retry examples"
+Search docs for 'step\\.run.*retry' to find step retry examples
 ```
 
 ## Resources
