@@ -888,6 +888,10 @@ const sectionHome: (NavGroup | NavLink)[] = [
     title: "AI",
     links: [
       {
+        title: "Dev Server MCP",
+        href: "/docs/ai-dev-tools/mcp",
+      },
+      {
         title: "AgentKit",
         href: "https://agentkit.inngest.com",
         target: "_blank",

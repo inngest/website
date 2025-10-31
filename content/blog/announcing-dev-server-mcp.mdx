@@ -1,0 +1,184 @@
+---
+title: "Announcing Model Context Protocol (MCP) for Inngest Dev Server"
+subtitle: "Connect Claude Code, Cursor, and other AI assistants directly to your local Inngest functions for seamless development workflows"
+image: "/assets/blog/dev-server-mcp/cover.png"
+date: 2025-11-01
+author: Jakob Evangelista
+---
+
+We're excited to announce the release of **Model Context Protocol (MCP)** for the Inngest dev server, bringing AI-assisted development workflows directly to your local function testing and debugging experience.
+
+With this integration, you can ask AI assistants like Claude Code and Cursor to test event-driven workflows, debug function failures with detailed traces, monitor execution in real-time, and search Inngest documentation—all without leaving your development environment.
+
+## The Challenge of Testing Async Workflows
+
+Testing and debugging async functions has always been challenging. Traditional debugging approaches break down when your functions are:
+- Triggered by external events
+- Running asynchronously with multiple steps
+- Dependent on complex state management
+- Part of larger workflow orchestrations
+
+Until now, debugging a failing Inngest function meant:
+1. Manually triggering events through the UI
+2. Switching between your code editor and browser
+3. Hunting through logs to understand what went wrong
+4. Recreating complex event scenarios by hand
+
+**With MCP integration, your AI assistant can handle all of this automatically.**
+
+## End-to-end Vibe Engineering
+
+### Automated Function Testing
+
+Your AI assistant can now test your functions directly:
+
+```typescript
+// AI can automatically test this function
+export const handleUserSignup = inngest.createFunction(
+  { id: "handle-user-signup" },
+  { event: "app/user.created" },
+  async ({ event, step }) => {
+    const user = await step.run("create-user", async () => {
+      return createUser(event.data);
+    });
+    
+    await step.run("send-welcome-email", async () => {
+      return sendEmail(user.email, "welcome");
+    });
+    
+    return { userId: user.id, emailSent: true };
+  }
+);
+```
+
+The AI can:
+1. Send a test `app/user.created` event with realistic data
+2. Monitor the function execution in real-time
+3. Verify each step completed successfully
+4. Check the final output matches expectations
+5. Debug any failures with detailed error traces
+
+### Real-Time Debugging Assistance
+
+When functions fail, AI can immediately investigate:
+
+```bash
+# AI automatically sends this event
+> send_event: "app/user.created" with data: { email: "test@example.com", name: "John Doe" }
+
+# AI monitors the execution
+> poll_run_status: waiting for runs [01J5QH90...] to complete
+
+# AI detects failure and investigates
+> get_run_status: analyzing failed run 01J5QH90...
+
+Function 'handle-user-signup' failed at step 'send-welcome-email'
+Error: SMTP connection timeout
+Duration: 15,234ms
+```
+
+The AI can then:
+- Analyze the error context
+- Search documentation for SMTP configuration guidance
+- Suggest fixes based on the specific failure mode
+- Test the fix immediately
+
+### Integration Testing Made Simple
+
+For complex workflows involving multiple functions, AI can orchestrate comprehensive testing:
+
+```typescript
+// AI can test this entire workflow
+const signupWorkflow = [
+  "app/user.created",      // Triggers user creation
+  "app/user.verified",     // Triggers account setup  
+  "app/welcome.sent"       // Triggers onboarding flow
+];
+```
+
+The AI sends all events, monitors all resulting function runs, and verifies the entire workflow completes successfully—automatically catching issues in multi-function integrations that are easy to miss manually.
+
+## Eight MCP Tools
+
+The Inngest MCP server provides eight tools organized into three categories:
+
+### Event Management
+- **`send_event`** - Trigger functions with test events and get immediate run IDs
+- **`list_functions`** - Discover available functions and their event triggers
+- **`invoke_function`** - Execute functions synchronously and get immediate results
+
+### Execution Monitoring  
+- **`get_run_status`** - Get detailed status and trace information for specific runs
+- **`poll_run_status`** - Monitor multiple runs until completion for integration testing
+
+### Documentation Access
+- **`grep_docs`** - Search embedded Inngest documentation with pattern matching
+- **`read_doc`** - Read complete documentation files for context
+- **`list_docs`** - Browse available documentation categories and SDK coverage
+
+All documentation is embedded directly in the CLI binary, providing instant offline access to the complete Inngest knowledge base.
+
+## Zero Setup
+
+The MCP integration runs entirely locally with your dev server—no API keys, no external services, no additional dependencies. Simply:
+
+1. **Start your dev server** as usual:
+   ```bash
+   npx inngest-cli dev
+   ```
+
+2. **Configure your AI tool** to connect to `http://localhost:8288/mcp`
+
+3. **Start building** with AI assistance immediately
+
+Your AI assistant now has complete access to your local Inngest development environment.
+
+## Getting Started
+
+### With Claude Code
+
+Add this configuration to connect Claude Code to your local dev server:
+
+```json
+{
+  "mcpServers": {
+    "inngest-dev": {
+      "command": "curl",
+      "args": [
+        "-X", "POST",
+        "http://127.0.0.1:8288/mcp",
+        "-H", "Content-Type: application/json",
+        "-d", "@-"
+      ]
+    }
+  }
+}
+```
+
+### With Cursor
+
+Configure Cursor's MCP settings to connect to your local Inngest dev server at `http://localhost:8288/mcp`.
+
+### With Other AI Tools
+
+Any MCP-compatible AI assistant can connect using the standard MCP HTTP transport protocol.
+
+## The Future of Function Development
+
+This integration represents a fundamental shift in how we build and debug serverless functions. Instead of functions being black boxes that we probe from the outside, AI can now work alongside the execution environment, providing real-time insight and assistance.
+
+We're just getting started. Future enhancements will include:
+- AI-assisted function optimization based on execution traces
+- Automatic test generation from function behavior patterns  
+- Intelligent error diagnosis with suggested fixes
+- Integration with production monitoring for AI-assisted debugging
+
+## Try It Today
+
+The MCP integration is available now in the latest version of the Inngest CLI. Start your dev server and experience AI-assisted function development firsthand.
+
+[Get started with MCP integration →](/docs/ai-dev-tools/mcp)
+
+---
+
+*Have feedback or questions about the MCP integration? Join the discussion in our [Discord community](https://www.inngest.com/discord) or [open an issue on GitHub](https://github.com/inngest/inngest).*
