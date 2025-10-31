@@ -16,7 +16,7 @@ Inngest supports OpenTelemetry for distributed tracing and observability across 
   and any
   [instrumentation](https://opentelemetry.io/docs/concepts/instrumentation/) has
   time to patch code in order to collect traces and spans from all parts of your
-  application. Loading running `otelMiddleware()` after any other code risks not
+  application. Loading running `extendedTracesMiddleware()` after any other code risks not
   instrumenting it.
 </Callout>
 
