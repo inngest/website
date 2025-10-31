@@ -187,9 +187,8 @@ OpenTelemetry](https://www.prisma.io/docs/orm/prisma-client/observability-and-lo
 
 ```ts
 import { PrismaInstrumentation } from "@prisma/instrumentation";
-import { otelMiddleware } from "inngest/experimental";
+import { extendedTracesMiddleware } from "inngest/experimental";
 
-const otel = otelMiddleware({
+const extendedTraces = extendedTracesMiddleware({
   instrumentations: [new PrismaInstrumentation()],
 });
-```
