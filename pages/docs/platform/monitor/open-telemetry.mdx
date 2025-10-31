@@ -105,18 +105,17 @@ Add an `InngestSpanExporter` to your provider:
 ```ts
 // Create your client the same as you would normally
 import { Inngest } from "inngest";
-import { otelMiddleware } from "inngest/experimental";
+import { extendedTracesMiddleware } from "inngest/experimental";
 
 export const inngest = new Inngest({
   id: "my-app",
   middleware: [
-    otelMiddleware({
+    extendedTracesMiddleware({
       // Make sure the middleware doesn't try to automatically instrument
       behaviour: "off",
     }),
   ],
 });
-```
 
 ```ts
 // Then when you create your provider, pass the client to it
