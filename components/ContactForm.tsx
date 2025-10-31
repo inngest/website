@@ -35,6 +35,12 @@ export default function ContactForm({
   const [disabled, setDisabled] = useState<boolean>(false);
   const [buttonCopy, setButtonCopy] = useState(button);
 
+  const doesMentionSoc2 =
+    message.match(/soc 2/i) ||
+    message.match(/soc2/i) ||
+    message.match(/security/i) ||
+    message.match(/compliance/i);
+
   const onSubmit = async (e) => {
     e.preventDefault();
     setDisabled(true);
@@ -174,6 +180,23 @@ export default function ContactForm({
           className="min-h-[6rem] w-full rounded-md border border-muted bg-canvasBase p-3 outline-none"
         />
       </label>
+
+      {doesMentionSoc2 && (
+        <div className="w-full rounded-lg border border-subtle p-2 px-4 py-2">
+          <p>
+            Need a SOC2 report?{" "}
+            <a
+              href="https://trust.inngest.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-link hover:underline"
+            >
+              Request one here
+            </a>
+            .
+          </p>
+        </div>
+      )}
 
       {/* <label className="w-full flex flex-col gap-2">
         What's the size of your engineering team?

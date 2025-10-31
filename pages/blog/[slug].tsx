@@ -243,20 +243,22 @@ export default function BlogLayout(props) {
                     </p>
                   )}
                   <p className="mt-2 flex items-center gap-2 text-sm text-subtle">
-                    {authors.map((author, idx) => (
+                    {authors.map((author, idx, arr) => (
                       <>
-                        {idx > 0 && ", "}
-                        {authorURLs[author] ? (
-                          <a
-                            href={authorURLs[author]}
-                            target="_blank"
-                            className="text-subtle hover:underline"
-                          >
-                            {author}
-                          </a>
-                        ) : (
-                          <>{author}</>
-                        )}
+                        <span>
+                          {authorURLs[author] ? (
+                            <a
+                              href={authorURLs[author]}
+                              target="_blank"
+                              className="text-subtle hover:underline"
+                            >
+                              {author}
+                            </a>
+                          ) : (
+                            <>{author}</>
+                          )}
+                          {idx < arr.length - 1 && ", "}
+                        </span>
                       </>
                     ))}
                     {authors.length > 0 && <>&middot; </>}
@@ -358,7 +360,8 @@ function CTAs({
 export async function getStaticPaths() {
   const fs = require("fs");
   const matter = require("gray-matter");
-  const paths = fs.readdirSync("./content/blog/")
+  const paths = fs
+    .readdirSync("./content/blog/")
     .filter((fname) => {
       // Skip files that have redirect frontmatter
       let filePath = `./content/blog/${fname}`;
