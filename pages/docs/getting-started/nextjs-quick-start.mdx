@@ -92,10 +92,13 @@ yarn dlx inngest-cli@latest dev
 pnpm dlx inngest-cli@latest dev
 ```
 ```shell {{ title: "bun" }}
-bun add global inngest-cli@latest
-inngest-cli dev
+npx inngest-cli@latest dev
 ```
 </CodeGroup>
+
+<Callout>
+  👉 For bun we also use `npx`. The Inngest npm package relies on lifecycle scripts to install the CLI binary, which Bun doesn't allow by default
+</Callout>
 
 <details>
   <summary><strong>You should see a similar output to the following:</strong></summary>
