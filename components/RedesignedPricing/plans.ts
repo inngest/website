@@ -192,7 +192,7 @@ export const PLANS: Plan[] = [
     features: [
       "Granular metrics",
       "Increased scale and throughput",
-      "Height usage limits",
+      "Higher usage limits",
       "7 day trace retention",
     ],
   },
