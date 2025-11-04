@@ -1,0 +1,159 @@
+---
+heading: "Five Critical Lessons for Context Engineering"
+image: /assets/blog/five-lessons-for-context-engineering/cover.png
+showSubtitle: true
+subtitle: "An interview with Paul Sanglé-Ferrière, Founder of cubic, on how context engineering informs AI product success"
+date: 2025-11-04
+author: Lauren Craigie
+disableCTA: false
+---
+*Paul Sanglé-Ferrière is co-founder of [cubic](https://www.cubic.dev/), an AI code review platform helping hyper-growth companies with complex codebases – like n8n and Granola – ship code 28% faster.*
+
+*While founding previous startups, Paul experienced firsthand how AI code generation accelerated development, and how code review became the new bottleneck. cubic aims to rebalance that equation. When your AI needs to understand a million-line codebase but can only see 150,000 tokens at a time, high fidelity context engineering is a non-negotiable.*
+
+*In this interview with Inngest, Paul shares five important tips for better context engineering at scale.*
+
+## **Context Engineering is Product Engineering**
+
+***Q: What is Context Engineering, and how is it used at cubic?***
+
+Paul: “Context engineering is the systematic practice of managing what information your AI sees and how it retrieves that information to make reliable decisions. It's foundational to how cubic works, because the only input that matters for an LLM is context.
+
+No code review solution can fit an entire code base into a standard LLM's context window, so the quality of the context we feed cubic is the only lever we have to ensure it focuses on the right things, and surfaces real, exploitable bugs. It's really what differentiates our product against anything else in market.”
+
+***Q: So you're saying the fundamental constraint is what information the AI can actually see?***
+
+Paul: “Exactly. We're trying to catch bugs, identify anti-patterns, and understand architectural implications across potentially millions of lines of code. No context window handles that. So, for example, we have to decide how we intelligently select the 150,000 tokens that matter most for reviewing this specific pull request. At that point, you're architecting an entire system for information retrieval, prioritization, and delivery.”
+
+## **Five Hard-Earned Lessons from Production Context Engineering**
+
+### **1. Let the AI determine the context it needs (pull, don't push)**
+
+***Q: It sounds like context selection is one of the most important steps in context engineering; how does cubic approach this?***
+
+Paul: “When we first started cubic, we tried to manually guide the AI towards context we thought it might need to do proper reviews, but quickly realized that wasn't working. It's a common theme in AI; users assume they're the best source of context, and end up over-engineering directions, which ultimately just limit the AI's capabilities. In the end, for those users and for us, it's usually best to let the model determine what context is necessary.”
+
+***Q: So you shifted from "context pushing" to "context pulling"?***
+
+Paul: “Yes. We give cubic a bit of context to understand the context in which it's operating—some prior knowledge on the customer's business as a whole, and what they're trying to achieve. But then it's up to cubic's AI to call the tool it needs to navigate the code.”
+
+***Q: What are the tradeoffs between those different approaches, and what advice would you give to another engineer designing this system?***
+
+Paul: “The tradeoff is reliability. Context pulling requires orchestrating multiple tool calls that may fail, which means you need infrastructure that handles retries and doesn't lose progress when something breaks. But the upside is better decisions. The AI gathers exactly the context it needs based on what it's actually seeing, not what you predicted it would need.
+
+Give your AI a small set of reliable tools it can use to gather context dynamically, and design your system so the AI makes multiple small, focused tool calls rather than trying to load everything at once. Plan for infrastructure that can handle that level of orchestration without failing halfway through.”
+
+### **2. The way context is pulled is very dependent on the model you select**
+
+***Q: You mentioned cubic's AI is responsible for calling its own tools. What does that mean for context engineering, and what dependencies exist for ensuring this work is performed as expected?***
+
+Paul: “When we talk about calling tools, we're really just talking about the LLM's ability to decide to execute external functions/APIs rather than just generating text. This is crucial for cubic since code review would normally require us to either dump the entire codebase into context (impossible—doesn't fit), or only review changed files (useless—since bugs often come from how changes interact with existing code). This is what we mean when we say it's “pulling” context instead of relying on us to “push” context.
+
+But we learned how this work is performed is *very* particular to the model in use.
+
+As an example, if your agent needs to analyze and “remember” very long context, you'll probably choose a model like a Gemini 2.5 Flash or 2.5 Pro. But these models aren't very good at remembering to call tools, so you'll need to account for that when designing that agent to begin with.
+
+On the flip side, if you know you're going to need an agent that focuses on small things with a high degree of accuracy, you might use a model like GPT-5. This model is much better at remembering to call tools, but often does so unnecessarily. You really have to pay attention to the words that you use, and how you describe the tools that it has access to.”
+
+***Q: So it's a balance between finding the right model for the job, and that model's ability to call the context that's most critical?***
+
+Paul: “Right. Your context architecture has to match your model's strengths and weaknesses. And honestly, most teams don't think about this until they've already built their entire system around one model.”
+
+### **3. Fewer Tools Win**
+
+***Q: How do you think about tool selection for context engineering?***
+
+Paul: “It's really important to be judicious about the tools your AI has access to. The simpler the context, the better the outcome.”
+
+And this isn't really revolutionary. A lot of research (and probably your own personal experience!) has shown that even models that have long context windows degrade in performance as that context window gets filled. So we've found it's incredibly effective, and important to make sure that the instructions you give it are as clear and simple as possible.”
+
+***Q: So you think adding tools can add "cognitive overhead," even for LLMs?***
+
+Paul: “Yes, but it's not an unavoidable problem—just reduce the number of tools you provide access to, to reduce complexity and improve outcomes. What's probably more important is ensuring your AI knows *how* to use those tools. And that's quite hard. It's quite hard to know what models know and what they don't.”
+
+***Q: So what tool selection advice would you give to other developers?***
+
+Paul: “Audit your tools ruthlessly. Every tool you give the AI adds cognitive overhead, so remove any tool that gets used less than 10% of the time. Prioritize tools the model already knows like terminal commands, standard APIs, and common operations, over custom abstractions you invented. When you do need custom tools, make them as simple as possible with clear, single-purpose descriptions. If a tool does three things, split it into three tools and let the AI decide which one it needs. The simpler and fewer your tools, the better your AI's context decisions will be.”
+
+### **4. Plan for Rate Limits and Parallel Execution**
+
+***Q: What challenges do you hit in production that you didn't expect during development?***
+
+Paul: “A big learning for us was rate limits. By definition, when you're doing this sort of context pulling, the AI operates a lot faster than a human would. Which means you can't really predict what it's going to do. We have sometimes dozens of these agents running in parallel for a single pull request that someone might open. Scale that out at the level of multiple companies, one company pushing multiple PRs at the same time and over hundreds of different companies… managing rate limits has been a huge focus for us.”
+
+***Q: Can you say more about the challenges with parallel runs?***
+
+Paul: “When you run agents in parallel for context pulling, you hit problems that single-threaded systems never face. First, multiple agents will independently decide they need the same file. You'll have three agents all calling read_file("auth.js") at the same time, which is wasteful and hits your rate limits faster. Second, if the agents don't know about each other's work, you might have one searching for authentication patterns while another searches for security issues, only to surface a large overlap in files. You'd be duplicating 70% of the context gathering work if you haven't accounted for this. And third, you need to think about isolation. If one customer pushes 50 PRs at once, you don't want their agents consuming all your API quota and slowing down everyone else's reviews.
+
+You need to account for both per-customer limits, and queue management.”
+
+***Q: Returning for a moment to duplication, how do you solve for that?***
+
+Paul: “The more you end up trying to run things in parallel, the more agents tend to duplicate each other's work. And so when you fan out, you need to have a way to deduplicate work and figure out how these work. The challenge is you can't just deduplicate at the output level because by then you've already wasted the API calls and context gathering. You need intelligent batching at the execution level. When you're running dozens of agents in parallel across hundreds of companies, flow control becomes critical. Concurrency management prevents the "noisy neighbor" problem—i.e.one company's PR surge doesn't slow down everyone else.”
+
+### **5. Build for Fast Iteration With Observability**
+
+***Q: This has all been great, tactical advice. So what's one macro-level issue folks miss when thinking about context engineering?***
+
+Paul: “This pertains to building anything with AI, or building software in general, but being able to iterate fast is really important. The only way to really do that is to bring observability to the logic layer behind your agent. That's really how you debug as fast as possible. If you're not using reasoning models, you can still observe what your AI is doing by forcing it to output,so you know what it's thinking. That's what has helped us improve our prompts the most, because we can see really quickly when the output isn't what we would expect.”
+
+***Q: What specifically should engineers be tracking?***
+
+Paul: “Log every tool call with full inputs, outputs, and timing. Not just "called search_codebase," but the exact query, reasoning, results count, and duration. You need to reconstruct the decision tree: why did the agent read a particular file after that search? What triggered that choice?
+
+Per-step timing reveals bottlenecks. Thirty file reads at 2 seconds each is a full minute on I/O, so maybe you need batching or better search specificity.”
+
+***Q: How does this help with improving context engineering?***
+
+Paul: “Without observability, you wait for user complaints. With it, you compare the last 50 reviews after a prompt change and know within an hour if you've improved performance. Your observability data becomes your eval dataset. You can replay failures and spot patterns like "agents always miss auth bugs because they never check the middleware folder."
+
+## **Key Takeaways for Product Engineers**
+
+Paul's lessons learned highlight exactly why context engineering often fails in production: it's an infrastructure problem disguised as a prompting problem. When your AI pulls context dynamically through dozens of tool calls, you need three things:
+
+1. Durable execution so failures don't restart everything,
+2. Full observability to debug wrong decisions, and
+3. Orchestration to handle parallel agents without duplicate work or rate limit chaos.
+
+Most teams spend two months rebuilding these primitives before they can iterate on the actual context engineering. The teams moving fastest recognized this early—they either built the infrastructure once or used a platform that provides it, and spent those two months improving their product instead.
+
+## **How cubic Built Better Context Engineering with Inngest**
+
+When an AI agent is calling terminals, grepping through code, and pulling context dynamically—sometimes dozens of times per code review—you need orchestration that doesn't fall over. cubic uses Inngest to handle the reliability and observability that makes their context-pulling architecture work in production.
+
+### **Durable Execution for Context Gathering**
+
+Each context-gathering operation becomes a durable step in Inngest. When cubic's agent calls a terminal command, reads a file, or performs a git operation, that work is wrapped in step.run() with automatic retries and failure handling.
+
+If a worker crashes mid-review, Inngest picks up exactly where it left off without re-executing completed work. If a terminal command times out, Inngest retries it automatically. The agent code stays focused on just the business/context engineering logic, while Inngest handles all the reliability and orchestration underneath.
+
+For context pulling systems, this matters enormously. You can't afford to re-run 15 successful context-gathering operations just because the 16th one failed. Inngest's step-based execution model ensures you only retry what failed.
+
+### **Flow Control and Concurrency Management**
+
+When you're running dozens of agents in parallel across hundreds of companies, flow control becomes critical. Inngest's concurrency management prevents the "noisy neighbor" problem, i.e. one company's PR surge doesn't slow down everyone else.
+
+Virtual queues using keys automatically shard work across agents, isolating execution by company, PR, or file. Built-in batching at the worker level (not the producer level) means you can intelligently deduplicate context-gathering operations. Event-driven architecture makes it straightforward to trigger follow-up work only when context gathering completes, not before.
+
+cubic doesn't build queue infrastructure. They write agent logic in Inngest functions, and the platform handles parallelism, rate limiting, and orchestration automatically.
+
+### **Full Observability for Iteration**
+
+Inngest provides observability by default. Every step execution, every tool call, every model inference gets logged with full input/output history. When an agent makes a wrong decision, cubic can trace back through the entire execution graph to see:
+
+- Which tools were called and in what order
+- What context was retrieved at each step
+- What the model reasoning was (using step.ai.infer with reasoning models)
+- Where failures or timeouts occurred
+
+For AI systems, this isn't optional. Observability is how you improve your context engineering. Inngest's DevServer shows live traces of agent execution locally, and in production, you get full execution history for debugging and building evals.
+
+### **AI-Native Infrastructure**
+
+Inngest's [step.ai](/docs/features/inngest-functions/steps-workflows/step-ai-orchestration) APIs are built specifically for AI model calls with automatic retries, failover between providers, cost tracking, and enhanced telemetry for every prompt and response. When cubic needs to call multiple models, handle reasoning chains, or manage tool execution, Inngest provides the infrastructure layer that makes it reliable.
+
+The companies winning at AI aren't the ones with the best models, they're the ones with the best context engineering and the infrastructure to support it reliably at scale.
+
+---
+
+*cubic uses Inngest to handle the orchestration, reliability, and observability that makes their context-pulling architecture work in production. Learn more about building reliable AI workflows at [inngest.com](/).*
