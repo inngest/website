@@ -104,8 +104,14 @@ By default, using Inngest's `fetch` retains all the functionality of requests ma
 
 <CodeGroup>
 ```ts {{ title: "TypeScript" }}
+import { fetch as inngestFetch } from 'inngest';
 import { generateText } from 'ai';
-import { anthropic } from '@ai-sdk/anthropic';
+import { createAnthropic } from '@ai-sdk/anthropic';
+
+// The AI SDK's createAnthropic objects can be passed a custom fetch implementation
+const anthropic = createAnthropic({
+  fetch: inngestFetch,
+});
 
 // NOTE - Using this fetch outside of an Inngest function will fall back to the global fetch
 const response = await generateText({
@@ -146,7 +152,12 @@ The AI SDK has built-in retry logic that can interfere with Inngest's retry hand
 <CodeGroup>
 ```ts {{ title: "generateText() with maxRetries: 0" }}
 import { generateText } from 'ai';
-import { openai } from '@ai-sdk/openai';
+import { createOpenAI } from '@ai-sdk/openai';
+import { fetch as inngestFetch } from 'inngest';
+
+const openai = createOpenAI({
+  fetch: inngestFetch,
+});
 
 inngest.createFunction(
   { id: "generate-with-o3" },
@@ -166,7 +177,12 @@ inngest.createFunction(
 
 ```ts {{ title: "streamText() with maxRetries: 0" }}
 import { streamText } from 'ai';
-import { anthropic } from '@ai-sdk/anthropic';
+import { createAnthropic } from '@ai-sdk/anthropic';
+import { fetch as inngestFetch } from 'inngest';
+
+const anthropic = createAnthropic({
+  fetch: inngestFetch,
+});
 
 inngest.createFunction(
   { id: "stream-completion" },
@@ -195,7 +211,13 @@ However, the same `fetch` is also exported as `step.fetch`, allowing you to crea
 
 <CodeGroup>
 ```ts {{ title: "TypeScript" }}
-import { anthropic } from '@ai-sdk/anthropic';
+import { createAnthropic } from '@ai-sdk/anthropic';
+import { fetch as inngestFetch } from 'inngest';
+import { generateText } from 'ai';
+
+const anthropic = createAnthropic({
+  fetch: inngestFetch,
+});
 
 inngest.createFunction(
   { id: "generate-summary" },
