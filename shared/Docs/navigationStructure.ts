@@ -92,6 +92,10 @@ const sectionReference: (NavGroup | NavLink)[] = [
       //   href: `/docs/reference/functions/logging`,
       // },
       {
+        title: "Extended Traces",
+        href: "/docs/reference/typescript/extended-traces"
+      },
+      {
         title: "Referencing functions",
         href: `/docs/functions/references`,
       },
@@ -869,8 +873,8 @@ const sectionHome: (NavGroup | NavLink)[] = [
             href: "/docs/platform/monitor/prometheus-metrics-export-integration",
           },
           {
-            title: "OpenTelemetry",
-            href: "/docs/platform/monitor/open-telemetry"
+            title: "Extended Traces",
+            href: "/docs/platform/monitor/extended-traces"
           }
         ],
       },

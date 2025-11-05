@@ -1,0 +1,110 @@
+import { Callout, Note, Tip } from "src/shared/Docs/mdx";
+
+export const description = "Extended Traces provide deep observability into your Inngest functions using OpenTelemetry, giving you detailed insights into function execution, step timing, and external service calls.";
+
+# Extended Traces
+
+Extended Traces bring OpenTelemetry powered distributed tracing to your Inngest functions, providing comprehensive visibility into every aspect of your function execution, from individual steps and external API calls to database queries and third-party service interactions.
+
+## Overview
+
+When you enable Extended Traces, Inngest automatically instruments your functions to capture detailed trace data about:
+
+- **Step execution timing** - See exactly how long each step in your function takes
+- **External service calls** - Track API requests, database queries, and third-party integrations
+- **Function flow** - Visualize the complete execution path including retries and error handling
+- **Performance bottlenecks** - Identify slow operations and optimize your functions
+
+Extended Traces integrate seamlessly with your existing observability stack through OpenTelemetry, the industry standard for distributed tracing.
+
+## What You'll See
+
+Once Extended Traces are enabled, you'll see trace information directly in your function run details in the Inngest dashboard.
+
+### Accessing Traces
+
+Every function run includes detailed trace information showing the complete execution timeline:
+
+![Basic function trace showing step execution and timing](/assets/docs/platform/monitor/extended-traces/basic-otel.png)
+
+You can drill down into individual spans to see detailed timing information:
+
+![Detailed view of individual trace spans](/assets/docs/platform/monitor/extended-traces/basic-otel-zoomed.png)
+
+For complex workflows with multiple steps, Extended Traces provides a complete picture of your function's execution:
+
+![Workflow trace showing multiple steps and operations](/assets/docs/platform/monitor/extended-traces/workflow-otel.png)
+
+<Note>
+  Extended Traces automatically capture spans from popular libraries including HTTP clients, database drivers, and more. See the full list of [automatic instrumentation](/docs/reference/typescript/open-telemetry#instrumentation).
+</Note>
+
+### Detailed Span Information
+
+Each span includes rich metadata about the operation:
+
+![Detailed span information with attributes and timing](/assets/docs/platform/monitor/extended-traces/workflow-otel-details.png)
+
+You can inspect attributes, timing data, and relationships between spans:
+
+![Additional span details showing context and relationships](/assets/docs/platform/monitor/extended-traces/workflow-otel-details-2.png)
+
+## Getting Started
+
+Setting up Extended Traces is straightforward. The basic setup requires just a few lines of code:
+
+```ts
+// Import the middleware first (before other imports)
+import { extendedTracesMiddleware } from "inngest/experimental";
+const extendedTraces = extendedTracesMiddleware();
+
+// Then import and configure Inngest
+import { Inngest } from "inngest";
+
+const inngest = new Inngest({
+  id: "my-app",
+  middleware: [extendedTraces],
+});
+```
+
+<Callout>
+  The `extendedTracesMiddleware()` must be imported and initialized before any other code to ensure proper instrumentation. This allows the OpenTelemetry tracer provider to patch libraries and collect traces from all parts of your application.
+</Callout>
+
+### Integration with Existing Providers
+
+If you're already using an observability platform like Sentry, Datadog, or any other OpenTelemetry-compatible service, Extended Traces will automatically extend your existing provider. This means your Inngest function traces will appear alongside your other application traces in your existing observability platform.
+
+## Use Cases
+
+Extended Traces are particularly valuable for:
+
+- **Debugging performance issues** - Quickly identify which steps or external calls are slowing down your functions
+- **Understanding function behavior** - Visualize the complete execution flow, including retries and error handling
+- **Optimizing workflows** - Discover opportunities to parallelize operations or cache expensive calls
+- **Monitoring third-party services** - Track the performance and reliability of external APIs and services
+- **Compliance and auditing** - Maintain detailed records of function execution for compliance requirements
+
+## What's Captured
+
+Extended Traces automatically capture:
+
+- **Function lifecycle events** - Start, completion, and failure of function runs
+- **Step execution** - Individual step timing, inputs, and outputs
+- **HTTP requests** - All outbound HTTP/HTTPS calls with timing and status codes
+- **Database operations** - Queries to PostgreSQL, MongoDB, MySQL, Redis, and more
+- **External service calls** - AWS SDK, GraphQL, gRPC, and other integrations
+- **Error information** - Stack traces and error details when operations fail
+
+## Next Steps
+
+Ready to add Extended Traces to your functions?
+
+- [View the complete setup guide](/docs/reference/typescript/extended-traces) - Learn about advanced configuration options
+- [Explore automatic instrumentation](/docs/reference/typescript/extended-traces#instrumentation) - See what libraries are automatically instrumented
+- [Add custom instrumentation](/docs/reference/typescript/extended-traces#custom-instrumentation) - Instrument additional libraries or custom code
+
+<Tip>
+  Extended Traces work with all Inngest functions, including scheduled jobs, event-driven functions, and functions that use flow control features like `step.run()`, `step.waitForEvent()`, and `step.sleep()`.
+</Tip>
+
