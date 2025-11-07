@@ -80,6 +80,12 @@ Inngest's `fetch()` utility can be passed as a custom fetch handler to make all 
 
 For example, you can pass the `fetch()` utility to the AI SDK or the OpenAI libraries:
 
+<Callout variant="warning">
+  When using the `fetch()` utility with the AI SDK, you need to disable the AI SDK's built-in retry mechanism and let Inngest handle retries instead.
+
+  Below you can see we are using the `fetch()` utility with the AI SDK and disabling the AI SDK's built-in retry mechanism by setting `maxRetries: 0`.
+</Callout>
+
 <CodeGroup>
 ```typescript {{ title: "AI SDK" }}
 import { fetch as inngestFetch } from 'inngest';
@@ -100,6 +106,7 @@ const weatherFunction = inngest.createFunction(
     const response = await generateText({
       model: anthropic('claude-3-5-sonnet-20240620'),
       prompt: `What's the weather in London?`,
+      maxRetries: 0,
     });
   }
 )
