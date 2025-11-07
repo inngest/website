@@ -24,15 +24,15 @@ For example,
 
 ```ts
 // Import this first
-import { otelMiddleware } from "inngest/experimental";
-const otel = otelMiddleware();
+import { extendedTracesMiddleware } from "inngest/experimental";
+const extendedTraces = extendedTracesMiddleware();
 
 // Then everything else
 import { Inngest } from "inngest";
 
 const inngest = new Inngest({
   id: "my-app",
-  middleware: [otel],
+  middleware: [extendedTraces],
 });
 ```
 
@@ -63,11 +63,11 @@ export const { GET, POST, PUT } = serve({
 A JavaScript process can only have a single OpenTelemetry Provider. Some
 libraries such as Sentry also create their own provider.
 
-`otelMiddleware()` will first try to _extend_ an existing provider and will only
+`extendedTracesMiddleware()` will first try to _extend_ an existing provider and will only
 create one if none has been found. If an existing provider is extended, we won't
 contribute any automatic [instrumentation](#instrumentation).
 
-In the case of Sentry, `otelMiddleware()` will extend Sentry's provider as long
+In the case of Sentry, `extendedTracesMiddleware()` will extend Sentry's provider as long
 as it's run after `Sentry.init()`.
 
 <Note>
