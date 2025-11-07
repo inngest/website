@@ -169,6 +169,9 @@ When Inngest receives the request to invoke a function, it'll do so and wait for
 
 Similar to `step.run()`, all data returned from `step.invoke()` is serialized as JSON. This is done to enable the SDK to return a valid serialized response to the Inngest service.
 
+## Timeout
+If not explicity configured, the default timeout for `step.invoke` is 1 year. 
+
 ## Retries
 
 The invoked function will be executed as a regular Inngest function: it will have its own set of retries and can be seen as a brand new run.
@@ -198,6 +201,10 @@ step will fail with a `NonRetriableError`.
 
 If the called function has a rate limit configuration and is skipped, the step will fail with a `NonRetriableError`.
 It's recommended to wrap the `step.invoke` with a `try catch` if the invoked function is expected to be executing occasionally.
+
+### Invoked function is debounced
+
+If the called function has a debounce configuration and is skipped, the step will fail with a `NonRetriableError` after the timeout has been reached. It is preferable to always set a meaningful timeout when invoking a function with debounce configuration.
 
 ## Usage limits
 
