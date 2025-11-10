@@ -392,47 +392,7 @@ Read more about this use case in the [blog post](/blog/import-ecommerce-api-data
 Here's an example of an Inngest function that imports all products from a Shopify store into a local system. This function iterates over all pages combining all products into a single array.
 
 ```go
-inngest.CreateFunction(
-	"shopify-product-import",
-	inngest.EventTrigger("shopify/import.requested"),
-	func(ctx context.Context, event inngest.Event) error {
-		var allProducts []Product
-		var cursor *string
-		hasMore := true
-
-		// Use the event's "data" to pass key info like IDs
-		// Note: in this example is deterministic across multiple requests
-		// If the returned results must stay in the same order, wrap the db call in step.run()
-		session, err := database.GetShopifySession(event.Data["storeId"].(string))
-		if err != nil {
-			return err
-		}
-
-		for hasMore {
-			if page, err := step.Run(ctx, fmt.Sprintf("fetch-products-%v", cursor), func(ctx context.Context) ([]&shopify.Product, error)  {
-				return shopify.Product.All(&shopify.ProductListOptions{
-					Session: session,
-					SinceID: cursor,
-				})
-			}); err != nil {
-				return err
-			}
-
-			// Combine all of the data into a single list
-			allProducts = append(allProducts, page.Products...)
-
-			if len(page.Products) == 50 {
-				id := page.Products[49].ID
-				cursor = &id
-			} else {
-				hasMore = false
-			}
-		}
-
-		// Now we have the entire list of products within allProducts!
-		return nil
-	},
-)
+!snippet:path=snippets/go/v0_11/examples/working-with-loops.go
 ```
 
 In the example above, each iteration of the loop is managed using `step.Run()`, ensuring that **all non-deterministic logic (like fetching products from Shopify) is encapsulated within a step**. This approach guarantees that if the request fails, it will be retried automatically, in the correct order. This structure aligns with Inngest's execution model, where each step is a separate HTTP request, ensuring robust and consistent loop behavior.
