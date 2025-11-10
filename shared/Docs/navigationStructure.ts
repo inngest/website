@@ -93,7 +93,7 @@ const sectionReference: (NavGroup | NavLink)[] = [
       // },
       {
         title: "Extended Traces",
-        href: "/docs/reference/typescript/extended-traces"
+        href: "/docs/reference/typescript/extended-traces",
       },
       {
         title: "Referencing functions",
@@ -863,6 +863,10 @@ const sectionHome: (NavGroup | NavLink)[] = [
             title: "Inspecting events",
             href: "/docs/platform/monitor/inspecting-events",
           },
+          {
+            title: "Traces",
+            href: "/docs/platform/monitor/traces",
+          },
           { title: "Integrations" },
           {
             title: "Datadog",
@@ -872,10 +876,6 @@ const sectionHome: (NavGroup | NavLink)[] = [
             title: "Prometheus metrics",
             href: "/docs/platform/monitor/prometheus-metrics-export-integration",
           },
-          {
-            title: "Extended Traces",
-            href: "/docs/platform/monitor/extended-traces"
-          }
         ],
       },
       {
