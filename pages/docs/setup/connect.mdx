@@ -550,11 +550,62 @@ If both the option and environment variable are set, the option takes precedence
 If `maxWorkerConcurrency` is not set (or set to `0`), there is no limit on concurrent step execution.
 Inngest will send as many steps as limited by your account's concurrency limit.
 
-**Connection-level concurrency:**
+### Connection-level concurrency
 
 If you have multiple connections from the same worker, but with different `instanceId` values, they can each specify a different `maxWorkerConcurrency` limits.
 This will allow you to have different `maxWorkerConcurrency` limits for different connections.
 
+<CodeGroup>
+```ts
+// Connection 1 with different concurrency limit
+await connect({
+  apps: [{ client: inngest, functions }],
+  instanceId: "worker-1-conn-1",
+  maxWorkerConcurrency: 50,
+})
+
+// Connection 2 with different concurrency limit
+await connect({
+  apps: [{ client: inngest, functions }],
+  instanceId: "worker-1-conn-2",
+  maxWorkerConcurrency: 20,
+})
+```
+```go
+// Connection 1 with different concurrency limit
+conn1, err := inngestgo.Connect(ctx, inngestgo.ConnectOpts{
+  InstanceID:           inngestgo.Ptr("worker-1-conn-1"),
+  MaxWorkerConcurrency: inngestgo.Ptr(int64(50)),
+  Apps:                 []inngestgo.Client{client},
+})
+
+// Connection 2 with different concurrency limit
+conn2, err := inngestgo.Connect(ctx, inngestgo.ConnectOpts{
+  InstanceID:           inngestgo.Ptr("worker-1-conn-2"),
+  MaxWorkerConcurrency: inngestgo.Ptr(int64(20)),
+  Apps:                 []inngestgo.Client{client},
+})
+```
+```python
+# Connection 1 with different concurrency limit
+asyncio.run(
+    connect(
+        apps=[(client, functions)],
+        instance_id="worker-1-conn-1",
+        max_worker_concurrency=50,
+    ).start()
+)
+
+# Connection 2 with different concurrency limit
+asyncio.run(
+    connect(
+        apps=[(client, functions)],
+        instance_id="worker-1-conn-2",
+        max_worker_concurrency=20,
+    ).start()
+)
+```
+</CodeGroup>
 
 ## Self hosted Inngest
 
