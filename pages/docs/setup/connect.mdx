@@ -552,8 +552,10 @@ Inngest will send as many steps as limited by your account's concurrency limit.
 
 ### Connection-level concurrency
 
-If you have multiple connections from the same worker, but with different `instanceId` values, they can each specify a different `maxWorkerConcurrency` limits.
+You can set a different `maxWorkerConcurrency` for each connection from the same worker by specifying a unique `instanceId` for each connection.
 This will allow you to have different `maxWorkerConcurrency` limits for different connections.
+
+Due to different `instanceId` value, Inngest will consider each connection as a separate worker and will not share the same `maxWorkerConcurrency` limit.
 
 <CodeGroup>
 ```ts
