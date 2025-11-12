@@ -92,6 +92,10 @@ const sectionReference: (NavGroup | NavLink)[] = [
       //   href: `/docs/reference/functions/logging`,
       // },
       {
+        title: "Extended Traces",
+        href: "/docs/reference/typescript/extended-traces",
+      },
+      {
         title: "Referencing functions",
         href: `/docs/functions/references`,
       },
@@ -858,6 +862,10 @@ const sectionHome: (NavGroup | NavLink)[] = [
           {
             title: "Inspecting events",
             href: "/docs/platform/monitor/inspecting-events",
+          },
+          {
+            title: "Traces",
+            href: "/docs/platform/monitor/traces",
           },
           { title: "Integrations" },
           {
