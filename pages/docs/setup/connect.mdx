@@ -253,17 +253,14 @@ No signing or event keys are required in local development mode.
     </CodeGroup>
   </Step>
   <Step title="Set the max concurrency (recommended)">
-    The `maxConcurrency` option is used to limit the number of concurrent steps that can be executed by the worker instance. This allows Inngest to distribute load across multiple workers and not overload a single worker.
-
-    <Warning>
-      The `maxConcurrency` option is not yet supported. It will be supported in a future release before general availability.
-    </Warning>
+    The `maxWorkerConcurrency` option is used to limit the number of concurrent steps that can be executed by the worker instance.
+    This allows Inngest to distribute load across multiple workers and not overload a single worker.
 
     <CodeGroup>
     ```ts
     await connect({
       apps: [...],
-      maxConcurrency: 100,
+      maxWorkerConcurrency: 10,
     })
     ```
     </CodeGroup>
