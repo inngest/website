@@ -201,7 +201,7 @@ No signing or event keys are required in local development mode.
       appVersion: process.env.RENDER_GIT_COMMIT,
     })
     ```
-    ```ts { {title: "Fly.io" }}
+    ```ts {{ title: "Fly.io" }}
     // Fly includes a machine version env var at runtime.
     // https://fly.io/docs/machines/runtime-environment/
     const inngest = new Inngest({
@@ -483,6 +483,82 @@ readinessProbe:
   failureThreshold: 3
 ```
 
+## Worker concurrency
+
+{/* TODO: Mention minimum supported version for this feature */}
+
+Each worker can configure the maximum number of concurrent steps it can execute simultaneously using the `maxWorkerConcurrency` option.
+This allows you to control resource usage and prevent a single worker from being overwhelmed with too many concurrent requests.
+
+By default, there is no limit on concurrent step execution. The worker will accept as many steps as Inngest sends to it.
+
+When you set `maxWorkerConcurrency`, Inngest will distribute load across multiple workers based on their available capacity.
+Workers with available capacity will receive more work, while workers at their limit will not receive additional steps until capacity becomes available.
+
+Inngest uses the `instanceId` to track the `maxWorkerConcurrency` for each worker.
+This means that if you have multiple workers with the same `instanceId`, they will share the same `maxWorkerConcurrency` limit.
+
+Inngest considers the `maxWorkerConcurrency` from the latest connection request.
+This means that if you update the `maxWorkerConcurrency` after a worker is connected and create a new connection, the worker's `maxWorkerConcurrency` will be updated to the new limit.
+
+**Benefits:**
+- Prevents worker resource exhaustion (CPU, memory, connections)
+- Enables predictable resource allocation per worker
+- Helps with horizontal scaling over both homogeneous and heterogenous workers
+
+{/* TODO: Uncomment when we have intelligent load balancing
+- Allows Inngest to intelligently distribute load across your worker fleet
+- Helps with horizontal scaling by ensuring even distribution
+*/}
+
+<CodeGroup>
+```ts
+await connect({
+  apps: [{ client: inngest, functions }],
+  instanceId: "example-worker",
+  maxWorkerConcurrency: 10, // Max 10 concurrent steps on this worker
+})
+```
+```go
+conn, err := inngestgo.Connect(ctx, inngestgo.ConnectOpts{
+  InstanceID:           inngestgo.Ptr("example-worker"),
+  MaxWorkerConcurrency: inngestgo.Ptr(int64(10)), // Max 10 concurrent steps
+  Apps:                 []inngestgo.Client{client},
+})
+```
+```python
+asyncio.run(
+    connect(
+        apps=[(client, functions)],
+        instance_id="example-worker",
+        max_worker_concurrency=10,  # Max 10 concurrent steps
+    ).start()
+)
+```
+</CodeGroup>
+
+**Environment variable:**
+
+You can also set the maximum worker concurrency via the `INNGEST_CONNECT_MAX_WORKER_CONCURRENCY` environment variable.
+This is useful for configuring concurrency without changing code.
+
+```bash
+INNGEST_CONNECT_MAX_WORKER_CONCURRENCY=100
+```
+
+If both the option and environment variable are set, the option takes precedence.
+
+**Default behavior:**
+
+If `maxWorkerConcurrency` is not set (or set to `0`), there is no limit on concurrent step execution.
+Inngest will send as many steps as limited by your account's concurrency limit.
+
+**Connection-level concurrency:**
+
+If you have multiple connections from the same worker, but with different `instanceId` values, they can each specify a different `maxWorkerConcurrency` limits.
+This will allow you to have different `maxWorkerConcurrency` limits for different connections.
+
+
 ## Self hosted Inngest
 
 <Info>
@@ -536,8 +612,4 @@ Read the [release phases](/docs/release-phases) for more details.
 
 During the developer preview, there are some limitations to using `connect` to be aware of. Please [contact us](https://app.inngest.com/support) if you'd like clarity on any of the following:
 
-* **Worker-level maximum concurrency** - This is not yet supported. When completed, each worker can configure the maximum number of concurrent steps it can handle. This allows Inngest to distribute load across multiple workers and not overload a single worker.
 * **Reconnection policy is not configurable** - The SDK will attempt to reconnect to Inngest an infinite number of times. We will expose a configurable reconnection policy in the future.
-
-
-
