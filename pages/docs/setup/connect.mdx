@@ -484,6 +484,11 @@ readinessProbe:
 
 {/* TODO: Mention minimum supported version for this feature */}
 
+Worker concurrency is supported in the following versions of the SDK:
+- **TypeScript**: SDK `3.45.1` or higher.
+- **Go**: SDK `0.14.3` or higher.
+- **Python**: SDK `0.5.12` or higher.
+
 Each worker can configure the maximum number of concurrent steps it can execute simultaneously using the `maxWorkerConcurrency` option.
 This allows you to control resource usage and prevent a single worker from being overwhelmed with too many concurrent requests.
 
