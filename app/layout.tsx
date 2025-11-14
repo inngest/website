@@ -9,6 +9,7 @@ import "./globals.css";
 import AnnouncementBanner from "src/components/AnnouncementBanner";
 import Header from "src/components/RedesignedLanding/Header/Header";
 import Footer from "src/components/RedesignedLanding/Footer";
+import Analytics from "@/components/Analytics";
 
 export const metadata: Metadata = {
   title: {
@@ -66,6 +67,7 @@ export default function RootLayout({
         <Suspense>
           <PageViews />
           <GoogleTagManger />
+          <Analytics />
         </Suspense>
       </body>
     </html>
