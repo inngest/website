@@ -87,6 +87,7 @@ serve({
 * [Nuxt](#framework-nuxt)
 * [Redwood](#framework-redwood)
 * [Remix](#framework-remix)
+* [Supabase Edge Functions](#framework-supabase-edge-functions)
 * [SvelteKit](#framework-svelte-kit)
 * [Tanstack Start](#framework-tanstack-start)
 
@@ -972,6 +973,45 @@ const handler = serve(inngest, [...fns], {
 </CodeGroup>
 
 For more information, check out the [Streaming](/docs/streaming) page.
+
+
+### Framework: Supabase Edge Functions
+
+Supabase Edge Functions can use our `inngest/edge` package.
+
+<CodeGroup>
+```ts
+import { serve } from "https://esm.sh/inngest/edge";
+import { inngest } from "./src/inngest/client";
+import fnA from "./src/inngest/fnA"; // Your own function
+
+Deno.serve(serve({
+  client: inngest,
+  functions: [fnA],
+  servePath: "your-function-name",
+}));
+```
+</CodeGroup>
+
+Ensure that `servePath` matches your Supabase Edge Function name. Alternatively, you can set this with the `INNGEST_SERVE_PATH` environment variable.
+
+### Framework: Firebase Cloud Functions
+
+Based on the Google Cloud Function architecture, the Firebase Cloud Functions provide a different API to serve functions using `onRequest`:
+
+```typescript
+import { onRequest } from "firebase-functions/v2/https";
+
+import { serve } from "inngest/express";
+import { inngest as inngestClient } from "./inngest/client";
+
+export const inngest = onRequest(
+  serve({
+    client: inngestClient,
+    functions: [/* ...functions... */],
+  })
+);
+```
 
 ### Framework: SvelteKit <VersionBadge version="v3.5.0+" />
 
