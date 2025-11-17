@@ -988,7 +988,7 @@ import fnA from "./src/inngest/fnA"; // Your own function
 Deno.serve(serve({
   client: inngest,
   functions: [fnA],
-  servePath: "your-function-name",
+  servePath: "/functions/v1/your-function-name",
 }));
 ```
 </CodeGroup>
