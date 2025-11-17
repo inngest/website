@@ -993,7 +993,7 @@ Deno.serve(serve({
 ```
 </CodeGroup>
 
-Ensure that `servePath` matches your Supabase Edge Function name. Alternatively, you can set this with the `INNGEST_SERVE_PATH` environment variable.
+Ensure that `servePath` matches your Supabase Edge Function name. Alternatively, you can set this with the `INNGEST_SERVE_PATH` environment variable. This is necessary because Supabase Edge Functions rewrite the request path.
 
 ### Framework: Firebase Cloud Functions
 
