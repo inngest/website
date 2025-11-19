@@ -52,7 +52,13 @@ const options = {
     "https://deno.com/",
     "https://news.ycombinator.com/",
     "https://www.npmjs.com/",
+    "https://npmjs.com/",
     "https://npm.im/",
+    "https://www.assurancelab.cpa/",
+    "https://www.deeplearning.ai/",
+    "https://cloud.digitalocean.com/",
+    "https://weaviate.io/", // reset connections
+    "https://mux.com/", // 429's during testing
   ],
 };
 

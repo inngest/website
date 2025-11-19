@@ -73,15 +73,25 @@ export default inngest.createFunction(
     while (hasMore) {
       // step.run will be retried automatically if the request fails
       const page = await step.run("fetch-products", async () => {
-        return await shopify.rest.Product.all({
-          session,
-          since_id: cursor,
-        })
+        return await client.query({
+          data: `query GetProducts {
+            products(first: 50, after: "${cursor}") {
+              nodes {
+                id
+                title
+              }
+              pageInfo {
+                hasNextPage
+                endCursor
+              }
+            }
+          }`,
+        });
       })
       // Combine all of the data into a single list
-      allProducts.push(...page.products)
-      if (page.products.length === 50) {
-        cursor = page.products[49].id
+      allProducts.push(...page.data.products.nodes)
+      if (page.data.products.pageInfo.hasNextPage) {
+        cursor = page.data.products.pageInfo.endCursor
       } else {
         hasMore = false
       }
@@ -153,7 +163,7 @@ inngest.createFunction(
 
 ```
 
-You can combine these step tools in any way that you want. For example, you may prefer to batch your database inserts or you may want an additional step for each product that fetches and imports [all product images](https://shopify.dev/docs/api/admin-rest/2023-01/resources/product-image#get-products-product-id-images) into your database or copies them to your image storage bucket.
+You can combine these step tools in any way that you want. For example, you may prefer to batch your database inserts or you may want an additional step for each product that fetches and imports [all product images](https://shopify.dev/docs/api/admin-graphql/latest/objects/product#field-Product.fields.media) into your database or copies them to your image storage bucket.
 
 ## Using fan-out for faster parallel processing
 
@@ -170,18 +180,28 @@ inngest.createFunction(
 
     for (let product of allProducts) {
       // Fetch all images from each product
-      const response = await step.run("fetch-images-product", async () => {
-        return await shopify.rest.Image.all({
-          session: session,
-          product_id: product.id,
-        })
+      const imagesData = await step.run("fetch-images-product", async () => {
+        return await client.query({
+          data: `query GetImages {
+            product(id: "${product.id}") {
+              media(first: 50, query: { media_type: "IMAGE" }) {
+                nodes {
+                  id
+                  image {
+                    url
+                  }
+                }
+              }
+            }
+          }`,
+        });
       })
       // Turn the image list into a series of events to send
-      const events = response.images.map((image) => ({
+      const events = imagesData.data.product.media.nodes.map((image) => ({
         name: "shopify/copy.image",
         data: {
           imageId: image.id,
-          imageUrl: image.src,
+          imageUrl: image.image.url,
           storeId: event.data.storeId,
           productId: product.id,
         },
