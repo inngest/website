@@ -1,4 +1,4 @@
-import { CodeGroup, VersionBadge } from "src/shared/Docs/mdx";
+import { CodeGroup, VersionBadge, Tip } from "src/shared/Docs/mdx";
 import { Tag } from "src/shared/Docs/Tag";
 
 # Logging in Inngest
@@ -13,10 +13,10 @@ A log statement outside of `step` function could end up running multiple times, 
 
 ```ts {{ title: "example-fn.ts" }}
 async ({ event, step }) => {
-  logger.info("something") // this can be run three times
+  console.log("something") // this can be run three times
 
   await step.run("fn", () => {
-    logger.info("something else") // this will always be run once
+    console.log("something else") // this will always be run once
   })
 
   await step.run(...)
@@ -27,14 +27,13 @@ We provide a thin wrapper over existing logging tools, and export it to Inngest 
 
 ## Usage
 
-A `logger` object is available within all Inngest functions. You can use it with the logger of your choice,
-or if absent, `logger` will default to use `console`.
+A `logger` object is available within all Inngest functions as a handler argument. You can use it with the logger of your choice, or if absent, `logger` will default to use `console`.
 
 ```ts
 inngest.createFunction(
   { id: "my-awesome-function" },
   { event: "func/awesome" },
-  async ({ event, step, logger }) => {
+  async ({ event, step, logger }) => { // <== logger is available as an argument
     logger.info("starting function", { metadataKey: "metadataValue" });
 
     const val = await step.run("do-something", () => {
@@ -45,6 +44,10 @@ inngest.createFunction(
   }
 );
 ```
+
+<Tip>
+We recommend using a logger library that supports a child logger `.child()` implementation which automatically adds function runtime metadata to your logs. Read more about [enriched logs with function metadata](#enriched-logs-with-function-metadata) for more details.
+</Tip>
 
 The exported logger provides the following interface methods:
 
@@ -62,12 +65,30 @@ These are very typical interfaces and are also on the [RFC5424 guidelines](https
 
 ## Using your preferred logger
 
-Running `console.log` is good for local development, but you probably want something more when running workloads in Production.
+While `console.log` may be good enough for local development, other logging libraries provide more features that are suitable for production use.
 
-The following is an example using [winston][winston] as the logger to be passed into Inngest functions.
+The following examples use [winston][winston] for the logging library, including a basic example and an example with a Datadog transport.
 
-<CodeGroup filename="inngest/client.ts">
-```ts
+<CodeGroup>
+```ts {{ title: "Winston basic example" }}
+import { Inngest } from "inngest";
+import winston from "winston";
+
+const logger = winston.createLogger({
+  level: "info",
+  exitOnError: false,
+  format: winston.format.json(),
+  transports: [new winston.transports.Console()],
+});
+
+// Pass `logger` to the Inngest client, and this winston logger will be accessible within functions
+export const inngest = new Inngest({
+  id: "my-awesome-app",
+  logger: logger,
+  // ...
+});
+```
+```ts {{ title: "Winston with Datadog transport" }}
 import { Inngest } from "inngest";
 import winston from "winston";
 
@@ -99,19 +120,24 @@ export const inngest = new Inngest({
 ```
 </CodeGroup>
 
-## How it works
+## Enriched logs with function metadata
 
-There is a built-in [logging middleware](/docs/reference/middleware/examples#logging) that provides a good default to work
-with.
+If the logger library supports a child logger `.child()` implementation, the built-in middleware will utilize it to add function runtime metadata to your logs automatically:
 
-### child logger
+- Function name
+- Event name
+- Run ID
 
-If the logger library supports a child logger `.child()` implementation, the built-in middleware will utilize it to add
-function runtime metadata for you:
-
-- function name
-- event name
-- run ID
+```ts {{ title: "Example usage with Winston logger" }}
+await step.run("summarize-content", async ({ step, logger }) => {
+  logger.info("calling Claude", { max_tokens: 1000 });
+});
+```
+```json {{ title: "Example log output" }}
+{"eventName":"inngest/function.invoked","functionName":"Summarize content via GPT-4",
+"level":"info","max_tokens":1000,"message":"Querying vector database",
+"runID":"01KB7YQXYNPEX3XB257A3RQDRX"}
+```
 
 ## Loggers supported
 
@@ -126,5 +152,9 @@ The following is a list of loggers we're aware of that work, but is not an exhau
 - [npmlog](https://github.com/npm/npmlog) (doesn't have `.debug()` but has a way to add custom levels)
 - [Tracer](https://github.com/baryon/tracer)
 - [Signale](https://github.com/klaudiosinani/signale)
+
+## Customizing the logger
+
+The built-in logger is implemented using [middleware](/docs/features/middleware). You can create your own middleware to customize the logger to your needs. See the [logging middleware example](/docs/reference/middleware/examples#logging) for more details.
 
 [winston]: https://github.com/winstonjs/winston
