@@ -45,7 +45,7 @@ First, set up a `/signup` route handler to send an event to Inngest when a user 
 import { inngest } from '../inngest/client';
 
 export async function POST(request: Request) {
-  // NOTE - this code is simplified for the of the example:
+  // NOTE - this code is simplified for the example:
   const { email, password } = await request.json();
   const user = await createUser({ email, password });
   await createSession(user.id);
