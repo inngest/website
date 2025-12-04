@@ -15,6 +15,8 @@ Inngest Insights allows you to query and analyze your event data using SQL direc
 Insights provides an in-app SQL editor and query interface where you can:
 - Query event data using familiar SQL syntax
 - Save and reuse common queries
+- Share them with your team
+- Browse your event schemas directly in the editor
 - Analyze patterns in your event triggers
 - Extract business intelligence from your workflows
 
@@ -38,6 +40,9 @@ The Insights interface includes a full-featured SQL editor where you can:
 - Save frequently used queries for later access
 - View query results in an organized table format
 - Access query history and templates from the sidebar
+- Autocomplete for writing sql and choosing events 
+
+
 
 ![Sql Editor View](/assets/docs/platform/monitor/insights/insights_sql_editor.png)
 
@@ -63,6 +68,18 @@ Refer to [pricing plans](/pricing) for data retention limits.
 
 - Current page limit: **1000 rows**
 - Future updates will support larger result sets through async data exports
+
+## Schema Explorer
+
+You can now access your schemas within the Schema Explorer located on the right side of the insights page. Browser and search your event schemas without leaving the editor. 
+
+The two types of schemas you will notice are: 
+- Common Schemas - Standard fields across all events (`id`, `name`, `ts`, etc) 
+- Event-specific schemas - The structure of each event type's `data` payload
+
+Search is also available for more efficient filtering of fields. After you have located the field you want, you can click to copy and past it in your SQL editor. 
+
+![Schema Explorer](/assets/docs/platform/monitor/insights/insights_schema_explorer.png)
 
 ## SQL Support
 
@@ -154,7 +171,16 @@ LIMIT 10;
 
 ## Saved Queries
 
-You can save frequently used queries for quick access. Queries are only saved private for you to use; they are not shared across your Inngest organization.
+You can save frequently used queries for quick access. Saved queries are private to you by default.
+
+### Shared Queries
+
+Some queries are valuable to the whole organization and now you can more easily share those across your org. Once you save a query you can select the actions dropdown and share with your organization.
+
+Shared queries will be added to a `Shared queries` navigation dropdown within the Insights Sidebar. 
+
+![Share With Org](/assets/docs/platform/monitor/insights/insights_share_with_org.png)
+![Shared Queries Navigation](/assets/docs/platform/monitor/insights/insights_shared_queries.png)
 
 ## Roadmap
 
