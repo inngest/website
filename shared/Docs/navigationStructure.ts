@@ -741,6 +741,7 @@ const sectionHome: (NavGroup | NavLink)[] = [
       {
         title: "Deployment",
         tag: "new",
+        defaultOpen: true,
         links: [
           {
             title: "Overview",
@@ -806,6 +807,11 @@ const sectionHome: (NavGroup | NavLink)[] = [
             title: "Self hosting",
             href: `/docs/self-hosting`,
           },
+          {
+            title: "Improve Performance",
+            href: '/docs/improve-performance',
+            tag: 'new'
+          }
           // {
           //   title: "Migrating across clouds",
           //   href: "/todo", // TODO later
