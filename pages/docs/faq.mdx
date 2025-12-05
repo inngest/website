@@ -127,7 +127,7 @@ The dev server will automatically detect and connect to apps running on common p
 You can disable auto-discovery by passing the `--no-discovery` flag to the `dev` command:
 
 ```sh
-npx inngest-cli@latest dev --no-discovery
+npx --ignore-scripts=false inngest-cli@latest dev --no-discovery
 ```
 
 Learn more about this in the [dev server](/docs/dev-server#auto-discovery) docs.

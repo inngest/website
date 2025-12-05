@@ -30,7 +30,7 @@ The Inngest MCP server runs locally with your dev server and requires no externa
 The MCP server is automatically available when you start the Inngest dev server:
 
 ```bash
-npx inngest-cli@latest dev
+npx --ignore-scripts=false inngest-cli@latest dev
 ```
 
 The MCP endpoint will be available at `http://127.0.0.1:8288/mcp`
@@ -263,7 +263,7 @@ The AI can:
 ### Common Issues
 
 **MCP server not found**
-- Ensure the Inngest dev server is running: `npx inngest-cli@latest dev`
+- Ensure the Inngest dev server is running: `npx --ignore-scripts=false inngest-cli@latest dev`
 - Verify the MCP endpoint is accessible: `curl http://127.0.0.1:8288/mcp`
 - Check your MCP client configuration
 
