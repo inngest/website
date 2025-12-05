@@ -90,7 +90,7 @@ _, err := inngestgo.CreateFunction(
 
 ## Connect
 
-The `connect` API allows your app to create an outbound persistent connection to Inngest. This is another way to reduce latency — by keeping a WebSocket connection open rather than making HTTP requests for each step.
+The `connect` API allows your app to create an outbound persistent connection to Inngest (_workers-style approach_). This is another way to reduce latency — by keeping a WebSocket connection open rather than making HTTP requests for each step.
 
 ### Performance Benefits
 
