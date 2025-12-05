@@ -1,0 +1,121 @@
+import { Info, Warning, CodeGroup, GuideSelector, GuideSection } from "shared/Docs/mdx";
+
+# Checkpointing
+
+<Info>
+  Checkpointing is currently in developer preview. Learn more about the [developer preview limitations](#developer-preview).
+</Info>
+
+Checkpointing is a performance optimization for Inngest functions that executes steps eagerly rather than waiting on internal orchestration. The result is dramatically lower latency — ideal for real-time AI workflows.
+
+## Minimum Requirements
+
+### Language
+
+- **TypeScript**: SDK `3.46.0` or higher.
+- **Go**: SDK version TBD.
+
+### Runtime
+
+{/* TODO: Confirm runtime requirements with Jack */}
+
+## Getting Started
+
+<GuideSelector
+  options={[
+    { key: "typescript", title: "TypeScript" },
+    { key: "go", title: "Go" },
+  ]}
+>
+
+<GuideSection show="typescript">
+
+To enable checkpointing:
+
+1. Install `inngest@3.46.0` or higher
+2. Set `experimentalCheckpointing: true` on your Inngest client
+
+```ts
+import { Inngest } from "inngest";
+
+export const inngest = new Inngest({
+  id: "my-app",
+  experimentalCheckpointing: true,
+});
+```
+
+</GuideSection>
+
+<GuideSection show="go">
+
+To enable checkpointing:
+
+1. Install the checkpoint package:
+
+```shell
+go get github.com/inngest/inngestgo/pkg/checkpoint
+```
+
+2. Set `Checkpoint` on your function options:
+
+```go
+import (
+  "github.com/inngest/inngestgo"
+  "github.com/inngest/inngestgo/pkg/checkpoint"
+)
+
+_, err := inngestgo.CreateFunction(
+  client,
+  inngestgo.FunctionOpts{
+    ID:         "my-function",
+    Name:       "My Function",
+    Checkpoint: checkpoint.ConfigSafe,
+  },
+  // ... triggers and handler
+)
+```
+
+</GuideSection>
+
+</GuideSelector>
+
+## How Does It Work?
+
+With the standard execution model, Inngest orchestrates your function by making network round-trips between each step. This is reliable, but adds latency.
+
+![With and Without Checkpointing](/assets/docs/checkpointing/checkpointing_with_without.png)
+
+Checkpointing flips this: the SDK orchestrates steps locally and executes them immediately. As steps complete, checkpoint messages are sent to Inngest to track progress.
+
+![Inngest Workflow Execution](/assets/docs/checkpointing/checkpointing_inngest_workflow.png)
+
+### Failures and Retries
+
+What happens when something goes wrong? If a step fails and needs to retry, the execution engine falls back to standard orchestration to handle it properly. You get speed when things work, and safety when they don't.
+
+## Local Development
+
+{/* TODO: Confirm local dev support with Jack */}
+
+## Self-Hosted Inngest
+
+{/* TODO: Confirm self-hosting support with Jack */}
+
+<Info>
+  Self-hosting support for checkpointing is TBD. Please [contact us](https://app.inngest.com/support) for more info.
+</Info>
+
+## Developer Preview
+
+Checkpointing is currently in developer preview. This means the API is not yet recommended for critical production workloads and is subject to breaking changes.
+
+Read the [release phases](/docs/release-phases) for more details.
+
+### Limitations
+
+{/* TODO: Confirm limitations with Jack */}
+
+During the developer preview, there are some limitations to be aware of:
+
+- TBD
+

@@ -804,6 +804,11 @@ const sectionHome: (NavGroup | NavLink)[] = [
             tag: "new",
           },
           {
+            title: "Checkpointing",
+            href: '/docs/setup/checkpointing',
+            tag: "new"
+          },
+          {
             title: "Self hosting",
             href: `/docs/self-hosting`,
           },
