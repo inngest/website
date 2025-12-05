@@ -16,7 +16,7 @@ Checkpointing is a performance optimization for Inngest functions that executes 
 
 The [Inngest default execution model](/docs/learn/how-functions-are-executed) is a complete handoff to the Inngest Platform, where an HTTP request is performed to store the execution state upon each step completion, leading to inter-step latency.
 
-Checkpointing uses the SDK to orchestrate steps and run them locally resulting in immediate execution of subsequent steps in a function. As steps execute, checkpointing 'messages' are passed to Inngest to keep track of progress.
+Checkpointing uses the SDK to orchestrate steps and run them on the client side, resulting in the immediate execution of subsequent synchronous steps (ex, `step.run()`) in a function. As steps execute, checkpointing requests are sent to Inngest to keep track of progress when an async step is met (ex, `step.sleep()`).
 
 With the standard execution model, Inngest orchestrates your function by making network round-trips between each step. This is reliable, but adds latency.
 
