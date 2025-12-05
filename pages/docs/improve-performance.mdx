@@ -20,7 +20,7 @@ Checkpointing uses the SDK to orchestrate steps and run them on the client side,
 
 With the standard execution model, Inngest orchestrates your function by making network round-trips between each step. This is reliable, but adds latency.
 
-Checkpointing flips this: the SDK orchestrates steps locally and executes them immediately. As steps complete, checkpoint messages are sent to Inngest to track progress. The result is dramatically lower latency — ideal for real-time AI workflows.
+Checkpointing flips this: the SDK orchestrates steps on the client-side (_on your server_) and executes them immediately. As steps completed, checkpoint messages are sent to Inngest to track progress. The result is dramatically lower latency — ideal for real-time AI workflows.
 
 ### Failures and Retries
 
