@@ -50,7 +50,7 @@ export function FullWidthCTA({
         {description}
       </p>
       <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-        {/* <Command command="npx inngest-cli@latest dev" /> */}
+        {/* <Command command="npx --ignore-scripts=false inngest-cli@latest dev" /> */}
         {ctas.map(({ href, text, variant = "dark" }, idx) => (
           <Button href={`${href}?ref=${ref}`} key={idx} variant={variant}>
             {text}

@@ -441,7 +441,7 @@ In this same vein, we've also refactored some configuration options when creatin
 - `serve()`
   - **✅ Added `baseUrl`** - Sets the URL to communicate with Inngest in one place, e.g. `"http://localhost:8288"`. Synonymous with setting the `INNGEST_BASE_URL` environment variable above or using `baseUrl` when creating the client.
   - **🛑 Removed `inngestBaseUrl`** - Set `baseUrl` instead.
-  - **🛑 Removed `landingPage`** - The landing page for the SDK was deprecated in v2. Use the Inngest Dev Server instead via `npx inngest-cli@latest dev`.
+  - **🛑 Removed `landingPage`** - The landing page for the SDK was deprecated in v2. Use the Inngest Dev Server instead via `npx --ignore-scripts=false inngest-cli@latest dev`.
 
 ## Handling in-progress runs triggered from v2
 
