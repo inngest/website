@@ -741,7 +741,7 @@ const sectionHome: (NavGroup | NavLink)[] = [
       {
         title: "Deployment",
         tag: "new",
-        defaultOpen: true,
+        defaultOpen: false,
         links: [
           {
             title: "Overview",
