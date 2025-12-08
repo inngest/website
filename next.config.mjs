@@ -79,6 +79,9 @@ const permanentRedirects = [
   ["/docs/agent-kit/:any*", "https://agentkit.inngest.com"],
 
   ["/docs/features/realtime/nextjs", "/docs/features/realtime/react-hooks"],
+
+  // New IA restructure redirects
+  ["/docs/deploy/improve-performance", "/docs/improve-performance"],
 ];
 
 async function redirects() {
