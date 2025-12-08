@@ -13,11 +13,7 @@ Checkpointing is a performance optimization for Inngest functions that executes 
 ### Language
 
 - **TypeScript**: SDK `3.46.0` or higher.
-- **Go**: SDK version TBD.
-
-### Runtime
-
-{/* TODO: Confirm runtime requirements with Jack */}
+- **Go**: SDK version `v0.15.0`.
 
 ## Getting Started
 
@@ -33,7 +29,9 @@ Checkpointing is a performance optimization for Inngest functions that executes 
 To enable checkpointing:
 
 1. Install `inngest@3.46.0` or higher
-2. Set `checkpointing: true` on your Inngest client
+2. Set `checkpointing: true` on your Inngest client or on individual functions
+
+**For all functions:**
 
 ```ts
 import { Inngest } from "inngest";
@@ -42,6 +40,21 @@ export const inngest = new Inngest({
   id: "my-app",
   checkpointing: true,
 });
+```
+
+**Per-function:**
+
+```ts
+export const myFunction = inngest.createFunction(
+  {
+    id: "my-function",
+    checkpointing: true,
+  },
+  { event: "app/my.event" },
+  async ({ step }) => {
+    // This function uses checkpointing
+  }
+);
 ```
 
 </GuideSection>
