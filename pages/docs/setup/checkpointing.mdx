@@ -93,29 +93,20 @@ Checkpointing uses the SDK orchestrates steps on the client-side (_on your serve
 
 What happens when something goes wrong? If a step fails and needs to retry, the execution engine falls back to standard orchestration to handle it properly. You get speed when things work, and safety when they don't.
 
-## Local Development
-
-{/* TODO: Confirm local dev support with Jack */}
-
-## Self-Hosted Inngest
-
-{/* TODO: Confirm self-hosting support with Jack */}
-
-<Info>
-  Self-hosting support for checkpointing is TBD. Please [contact us](https://app.inngest.com/support) for more info.
-</Info>
-
 ## Developer Preview
 
-Checkpointing is currently in developer preview. This means the API is not yet recommended for critical production workloads and is subject to breaking changes.
+Checkpointing is currently in developer preview. This means the API is subject to change as we iterate based on feedback. Read the [release phases](/docs/release-phases) for more details.
 
-Read the [release phases](/docs/release-phases) for more details.
+| Feature | Supported |
+|---------|-----------|
+| Local development | ✅ |
+| Self-hosted Inngest | ✅ |
+| Inngest Cloud | ✅ |
 
 ### Limitations
 
-{/* TODO: Confirm limitations with Jack */}
-
 During the developer preview, there are some limitations to be aware of:
 
-- TBD
+- **Parallel step execution** — When a function branches into parallel steps, execution switches to standard orchestration for the remainder of the run. Checkpointing does not resume after parallel execution.
+- **Limited configuration options** — Customization of checkpointing buffer size and buffer timeout is not yet available.
 
