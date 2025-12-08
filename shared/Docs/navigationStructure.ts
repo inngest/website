@@ -681,6 +681,10 @@ const sectionHome: (NavGroup | NavLink)[] = [
             title: "Logging",
             href: "/docs/guides/logging",
           },
+          {
+            title: "Metadata",
+            href: "/docs/features/metadata"
+          }
         ],
       },
       {

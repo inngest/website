@@ -1,0 +1,210 @@
+import { Note } from "src/shared/Docs/mdx";
+
+export const description = "Inngest supports durably attaching metadata to your functions and your steps using the metadataMiddleware.";
+
+# Metadata
+
+It's often useful to attach metadata to a function or steps. For example, let's say that you want to be able to easily see which customer may be associated with a specific function run. Your function may look something like this:
+
+```typescript
+export const queryKnowledgeBase = inngest.createFunction(
+  { id: "query-knowledge-base" },
+  { event: "query-knowledge-base" },
+  async ({ event, step }) => {
+    const user = await step.run("fetch-user-from-db", async () => {
+      const user = await fetchUser(event.data.userId);
+      return user;
+    });
+
+    const result = await step.run("query-knowledge-base", async () => {
+      return await queryUserKnowledgeBase(user);
+    });
+
+    return result;
+  },
+);
+```
+
+Running this function works, but you have to look at the step's output to see which user that event is for and the customer with which that user is associated. We can modify the function so that the `"fetch-user-from-db"` step attaches metadata to the run.
+
+```typescript
+    const user = await step.run("fetch-user-from-db", async () => {
+      const user = await fetchUser(event.data.userId);
+      await inngest.metadata.run().update({ company: user.company });
+      return user;
+    });
+```
+
+Now the run has the user's company name directly associated with the run.
+
+## Getting Started
+
+<Note>
+  **Metadata** is currently in **DEVELOPER PREVIEW**. In the future, we plan on this feature being included directly without an explicit import.
+</Note>
+
+To start using metadata, you just need to import and use the middleware.
+
+```typescript
+import { Inngest } from "inngest";
+import { metadataMiddleware } from "inngest/experimental"; // add this import
+
+export const inngest = new Inngest({
+  id: "sandbox-ts-express",
+  middleware: [metadataMiddleware()], // and then use it here
+});
+```
+
+## Basic Usage
+
+The metadata API uses a builder pattern to specify where metadata should be attached:
+
+```typescript
+inngest.metadata        // defaults to the 'current scope', whether that's a run or a step
+inngest.metadata.run()  // explicitly targets the current run
+inngest.metadata.step() // explicitly targets the current step
+```
+
+Whenever you're ready to add metadata, use `update`:
+
+```typescript
+await inngest.metadata.update({ company: user.company })
+```
+
+For most use cases, simply calling `inngest.metadata.update()` within a step is all you need:
+
+```typescript
+const user = await step.run("fetch-user-from-db", async () => {
+  const user = await fetchUser(event.data.userId);
+  await inngest.metadata.run().update({ company: user.company });
+  return user;
+});
+```
+
+## Advanced Usage
+
+### Durable Execution Considerations
+
+Because Inngest executions are durable, your function's code may run multiple times. Accounting for this in your metadata works the same way as everything else—we recommend wrapping metadata updates in a step so they only execute once.
+
+```typescript
+export const durableExecutionExample = inngest.createFunction(
+  { id: "durable-execution-example" },
+  { event: "durable-execution-example" },
+  async ({ event, step }) => {
+    // This metadata update could run multiple times, so the timestamp will reflect
+    // the last time that this was updated instead of the *first* time.
+    await inngest.metadata.run().update({ update_ts: Date.now() })
+
+    // This metadata update will only run once, when the associated step is run.
+    await step.run("set-metadata", async () => {
+      await inngest.metadata.run().update({ original_update_ts: Date.now() })
+    });
+
+    // You can also call `step.metadata(<your_step_identifier>)`, which is just syntax sugar
+    // for the code block above.
+    await step.metadata("set-metadata").update({ other_update_ts: Date.now() });
+
+    return { success: true };
+  }
+);
+```
+
+### Targeting Previous Runs or Steps
+
+You can attach metadata to a prior run or step by specifying the IDs:
+
+```typescript
+inngest.metadata.run(previousRunId).step(stepId)
+```
+
+### Step vs Run Level Metadata
+
+You can attach metadata at either the **run level** or the **step level**, depending on your needs. By default, metadata is attached to whichever scope you're in when you call `update()`.
+
+Note that **step level metadata** is **not** "rolled up" to the **run level**:
+
+```typescript
+export const queryKnowledgeBase = inngest.createFunction(
+  { id: "query-knowledge-base" },
+  { event: "query-knowledge-base" },
+  async ({ event, step }) => {
+    const user = await step.run("fetch-user-from-db", async () => {
+      const user = await fetchUser(event.data.userId);
+      // only visible on the step, because we're within a step and didn't specify that it's at the run level
+      await inngest.metadata.update(user);
+      await inngest.metadata.run().update({ company: user.company, importantCustomer: false }); // only visible on the run
+      return user;
+    });
+
+    if (user.company === "Acme, Inc") {
+      // overwrites the false value set above
+      await inngest.metadata.update({ importantCustomer: true })
+    }
+
+    const result = await step.run("query-knowledge-base", async () => {
+      return await queryUserKnowledgeBase(user);
+    });
+
+    return result;
+  },
+);
+```
+
+### Metadata "Kind"
+
+By default, all user-attached metadata is placed under a `userland` prefix with a default `kind` of "default", resulting in metadata listed as "userland.default".
+
+Most users don't need to modify this, but customizing the kind enables use cases like A/B testing:
+
+```typescript
+export const metadataKindExample = inngest.createFunction(
+  { id: "metadata-kind-example" },
+  { event: "metadata-kind-example" },
+  async ({ event, step }) => {
+    if (event.data.variant === "a") {
+      await inngest.metadata.update({ bar: "baz" }, 'variant-a');
+      doVariantAWork();
+    } else {
+      await inngest.metadata.update({ bar: "baz" }, 'variant-default');
+      doDefaultWork();
+    }
+    return { success: true };
+  }
+);
+```
+
+Now when inspecting the run's metadata you can easily identify which test variant was used. Comparing that to a success metric—which you could _also_ set via the metadata—makes it straightforward to understand which variant has a higher success rate.
+
+### Available Operations
+
+You are able to perform `update`, `set`, and `delete` operations on metadata.
+
+```typescript
+export const operationExample = inngest.createFunction(
+  { id: "operation-example" },
+  { event: "operation-example" },
+  async ({ event, step }) => {
+    let dog = { name: 'Josie', breed: 'Golden Retriever', status: 'asleep' }
+
+    // Most things are just updates.
+    await step.metadata("set-metadata").update({ ...dog });
+
+    dog.breed = 'Goofball Retriever'
+    dog.status = 'goofin'
+    await step.metadata("set-metadata").update({ status: dog.status });
+
+    // You can use set to explicitly overwrite a value.
+    await step.metadata("set-metadata").set({ ... dog });
+
+    // You can use delete to delete a value.
+    await step.metadata("set-metadata").delete(["name", "breed", "status"]);
+
+    return { success: true };
+  }
+);
+```
+
+### Attempt Handling
+
+When attaching metadata to a step, by default is is attached to the **current attempt** of the step. This means that it is possible to get different metadata attached to different step attempts, which can be useful for use cases like tracking different failure modes. If you need to manually specify which attempt metadata should be attached to, you can use the `attempt()` function on the builder. The default value is `-1`, which is the latest attempt, and you're able to send in a zero-indexed value representing the attempt.
