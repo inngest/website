@@ -6,6 +6,7 @@ import {
   useMemo,
   useRef,
   useState,
+  useCallback,
 } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -33,6 +34,51 @@ import {
 import * as Accordion from "@radix-ui/react-accordion";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import { MobileSearch } from "./Search";
+
+// =============================================================================
+// ACTIVE SECTION CONTEXT - Controls which sidebar (Learn/Reference) is shown
+// =============================================================================
+type ActiveSectionContextType = {
+  activeSection: string;
+  setActiveSection: (section: string) => void;
+};
+
+const ActiveSectionContext = createContext<ActiveSectionContextType>({
+  activeSection: "Learn",
+  setActiveSection: () => {},
+});
+
+export function ActiveSectionProvider({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  const pathname = router.pathname;
+
+  // Determine initial section based on current URL
+  const getInitialSection = useCallback(() => {
+    // Check if current path matches Reference section
+    const referenceTab = menuTabs.find(tab => tab.title === "Reference");
+    if (referenceTab?.matcher && !!referenceTab.matcher(pathname)) {
+      return "Reference";
+    }
+    return "Learn";
+  }, [pathname]);
+
+  const [activeSection, setActiveSection] = useState(getInitialSection);
+
+  // Update active section when URL changes (e.g., direct navigation)
+  useEffect(() => {
+    setActiveSection(getInitialSection());
+  }, [pathname, getInitialSection]);
+
+  return (
+    <ActiveSectionContext.Provider value={{ activeSection, setActiveSection }}>
+      {children}
+    </ActiveSectionContext.Provider>
+  );
+}
+
+export function useActiveSection() {
+  return useContext(ActiveSectionContext);
+}
 
 const BASE_DIR = "/docs";
 
@@ -73,24 +119,29 @@ function TopLevelNavItem({ href, matcher, title, icon: Icon }) {
   );
 }
 
-export function TabItem({ href, children, matcher }) {
-  const router = useRouter();
-  const pathname = router.pathname;
-  const isActive = isMatch(matcher, pathname) || href === pathname;
+export function TabItem({ href, children, matcher, title }) {
+  const { activeSection, setActiveSection } = useActiveSection();
+  const isActive = activeSection === title;
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setActiveSection(title);
+  };
+
   return (
     <li>
-      <Link
-        href={href}
+      <button
+        onClick={handleClick}
         className={clsx(
-          "font-medium text-sm leading-5 transition whitespace-nowrap px-3 py-4 relative top-0.5",
+          "font-medium text-sm leading-5 transition whitespace-nowrap px-3 py-4 relative top-0.5 cursor-pointer",
           isActive &&
-            "text-black dark:text-carbon-100 border-b-2 dark:border-b-carbon-300 border-b-black  hover:text-black",
+            "text-black dark:text-carbon-100 border-b-2 dark:border-b-carbon-300 border-b-black hover:text-black",
           !isActive &&
-            "text-carbon-600  dark:text-carbon-400 hover:text-carbon-900 dark:hover:text-white"
+            "text-carbon-600 dark:text-carbon-400 hover:text-carbon-900 dark:hover:text-white"
         )}
       >
         <span className="relative -top-0.5">{children}</span>
-      </Link>
+      </button>
     </li>
   );
 }
@@ -125,7 +176,7 @@ function NavLink({
       aria-current={active ? "page" : undefined}
       target={linkTarget}
       className={clsx(
-        "flex rounded justify-between items-center gap-2 py-2 pl-2 text-sm transition group", // group for nested hovers
+        "flex rounded justify-between items-center gap-2 py-1 pl-2 text-sm transition group", // group for nested hovers
         active
           ? "font-medium rounded bg-secondary-3xSubtle text-info hover:bg-secondary-2xSubtle"
           : "font-medium hover:bg-canvasSubtle text-subtle hover:text-basis",
@@ -180,8 +231,8 @@ function VisibleSectionHighlight({ listItems }) {
       animate={{ opacity: 1, transition: { delay: 0.2 } }}
       exit={{ opacity: 0 }}
       // @ts-ignore
-      className="absolute -left-2 right-0 top-0 bg-slate-500/10 will-change-transform dark:bg-white/10"
-      style={{ borderRadius: 4, height, top }}
+      className="absolute left-0 top-0 w-[2px] bg-breeze-600 dark:bg-breeze-300 will-change-transform"
+      style={{ height, top }}
     />
   );
 }
@@ -337,14 +388,15 @@ function NavigationGroup({
         <NavigationGroupStructure.Trigger className="w-full animate-accordion-trigger">
           <h2
             className={clsx("flex justify-between m-0", {
-              "py-2": nestingLevel > 0,
-              "mt-4 mb-1": nestingLevel === 0,
+              "py-1": nestingLevel > 0,
+              "mt-8 mb-2": nestingLevel === 0,
             })}
           >
             <span
               className={clsx("pl-2", {
-                "text-sm font-medium text-basis": nestingLevel > 0,
-                "text-xs font-semibold uppercase text-[rgb(var(--color-carbon-400))] dark:text-[rgb(var(--color-carbon-500))]":
+                "text-sm font-medium text-subtle hover:text-basis":
+                  nestingLevel > 0,
+                "text-sm font-semibold text-carbon-900 dark:text-carbon-50":
                   nestingLevel == 0,
               })}
             >
@@ -418,7 +470,7 @@ function NavigationGroup({
                     >
                       <span
                         className={clsx(
-                          "flex justify-between items-center text-sm transition group py-2 pl-2",
+                          "flex justify-between items-center text-sm transition group py-1 pl-2",
                           "text-xs font-semibold text-carbon-300 dark:text-carbon-600",
                           className
                         )}
@@ -505,18 +557,20 @@ function findRecursiveSectionLinkMatch(sections, pathname) {
 export const DefaultOpenSectionsContext = createContext([]);
 
 const defaultSection = getAllSections(topLevelNav).find(
-  (section) => section.title === "Home"
+  (section) => section.title === "Learn"
 );
 
 export function Navigation(props) {
   const router = useRouter();
   // Remove query params and hash from pathname
   const pathname = router.asPath.replace(/(\?|#).+$/, "");
+  const { activeSection } = useActiveSection();
 
-  // Find the section this path is in or show default
+  // Find the section based on the active tab (Learn/Reference)
   const nestedSection =
-    findRecursiveSectionLinkMatch(getAllSections(topLevelNav), pathname) ??
-    defaultSection;
+    getAllSections(topLevelNav).find(
+      (section) => section.title === activeSection
+    ) ?? defaultSection;
 
   const isNested = !!nestedSection;
   const nestedNavigation = nestedSection;
