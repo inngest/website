@@ -741,6 +741,7 @@ const sectionHome: (NavGroup | NavLink)[] = [
       {
         title: "Deployment",
         tag: "new",
+        defaultOpen: false,
         links: [
           {
             title: "Overview",
@@ -803,9 +804,19 @@ const sectionHome: (NavGroup | NavLink)[] = [
             tag: "new",
           },
           {
+            title: "Checkpointing",
+            href: '/docs/setup/checkpointing',
+            tag: "new"
+          },
+          {
             title: "Self hosting",
             href: `/docs/self-hosting`,
           },
+          {
+            title: "Improve Performance",
+            href: '/docs/improve-performance',
+            tag: 'new'
+          }
           // {
           //   title: "Migrating across clouds",
           //   href: "/todo", // TODO later
