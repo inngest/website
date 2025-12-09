@@ -35,9 +35,6 @@ import * as Accordion from "@radix-ui/react-accordion";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import { MobileSearch } from "./Search";
 
-// =============================================================================
-// ACTIVE SECTION CONTEXT - Controls which sidebar (Learn/Reference) is shown
-// =============================================================================
 type ActiveSectionContextType = {
   activeSection: string;
   setActiveSection: (section: string) => void;

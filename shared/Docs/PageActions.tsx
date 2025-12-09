@@ -1,7 +1,5 @@
-"use client";
-
 import { useState, useCallback, useMemo } from "react";
-import { useRouter } from "next/router";
+import { useRouter } from "next/compat/router";
 import * as Popover from "@radix-ui/react-popover";
 import {
   RiFileCopyLine,
@@ -96,8 +94,14 @@ export function PageActions() {
   const [copied, setCopied] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
+  // Don't render in App Router context (router is null there)
+  // This component is designed for Pages Router docs pages only
+  if (!router) {
+    return null;
+  }
+
   // Get the current path, stripping any hash or query params
-  const currentPath = router.asPath.split(/[?#]/)[0];
+  const currentPath = router.asPath?.split(/[?#]/)[0] || "";
 
   // Build the markdown URL that LLMs can fetch
   const markdownUrl = useMemo(() => {
