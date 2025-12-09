@@ -1,4 +1,6 @@
-import { Callout, Note } from "src/shared/Docs/mdx";
+import { Callout, Note, CardGroup, Card } from "src/shared/Docs/mdx";
+import { RiBarChart2Fill } from "@remixicon/react";
+
 
 export const description = "Inngest supports OpenTelemetry for distributed tracing and observability. Use the extendedTracesMiddleware to automatically instrument your Inngest functions and send spans to your observability platform.";
 
@@ -35,6 +37,21 @@ const inngest = new Inngest({
   middleware: [extendedTraces],
 });
 ```
+
+## Advanced Usage
+
+
+<CardGroup cols={1}>
+
+<Card
+  href={"/docs/examples/open-telemetry"}
+  icon={<RiBarChart2Fill fill={"black"} className="h-6 w45 fill-carbon-700/10 stroke-carbon-700 transition-colors duration-300 group-hover:stroke-carbon-900 dark:fill-white/10 dark:stroke-carbon-400 dark:group-hover:fill-indigo-300/10 dark:group-hover:stroke-indigo-400" />}
+  title={'Setup an OpenTelemetry client with Inngest or create custom spans'}
+>
+  Follow this guide to learn how to add Inngest Extended Traces to an existing OpenTelemetry configuration or to create custom spans.
+</Card>
+
+</CardGroup>
 
 ### Serverless
 
@@ -130,6 +147,7 @@ const provider = new BasicTracerProvider({
 // Register the provider globally
 provider.register();
 ```
+
 
 ## Instrumentation
 

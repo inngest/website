@@ -805,8 +805,8 @@ const sectionHome: (NavGroup | NavLink)[] = [
           },
           {
             title: "Checkpointing",
-            href: '/docs/setup/checkpointing',
-            tag: "new"
+            href: "/docs/setup/checkpointing",
+            tag: "new",
           },
           {
             title: "Self hosting",
@@ -814,9 +814,9 @@ const sectionHome: (NavGroup | NavLink)[] = [
           },
           {
             title: "Improve Performance",
-            href: '/docs/improve-performance',
-            tag: 'new'
-          }
+            href: "/docs/improve-performance",
+            tag: "new",
+          },
           // {
           //   title: "Migrating across clouds",
           //   href: "/todo", // TODO later
@@ -970,6 +970,10 @@ const sectionExamples: NavGroup[] = [
       {
         title: "Stream updates from functions",
         href: `/docs/examples/realtime`,
+      },
+      {
+        title: "Setup OpenTelemetry with Inngest",
+        href: `/docs/examples/open-telemetry`,
       },
     ],
   },
