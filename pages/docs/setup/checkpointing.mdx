@@ -52,7 +52,7 @@ export const myFunction = inngest.createFunction(
   },
   { event: "app/my.event" },
   async ({ step }) => {
-    // This function uses checkpointing
+    // steps here will be checkpointed
   }
 );
 ```
