@@ -95,7 +95,7 @@ Next, start the [Inngest Dev Server](/docs/local-development#inngest-dev-server)
 
 <CodeGroup>
 ```shell {{ title: "npm" }}
-npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
+npx --ignore-scripts=false inngest-cli@latest dev -u http://localhost:3000/api/inngest
 ```
 ```shell {{ title: "yarn" }}
 yarn dlx inngest-cli@latest dev -u http://localhost:3000/api/inngest
@@ -104,7 +104,7 @@ yarn dlx inngest-cli@latest dev -u http://localhost:3000/api/inngest
 pnpm dlx inngest-cli@latest dev -u http://localhost:3000/api/inngest
 ```
 ```shell {{ title: "bun" }}
-npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
+npx --ignore-scripts=false inngest-cli@latest dev -u http://localhost:3000/api/inngest
 ```
 </CodeGroup>
 
@@ -118,7 +118,7 @@ npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
 <CodeGroup>
 
 ```bash {{ language: 'js' }}
-$ npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
+$ npx --ignore-scripts=false inngest-cli@latest dev -u http://localhost:3000/api/inngest
 
 12:33PM INF executor > service starting
 12:33PM INF runner > starting event stream backend=redis

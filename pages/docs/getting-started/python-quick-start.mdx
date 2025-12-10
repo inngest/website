@@ -99,7 +99,7 @@ Start the Dev Server:
 
 <CodeGroup>
 ```sh {{ title: "npx (npm)" }}
-npx inngest-cli@latest dev -u http://127.0.0.1:8000/api/inngest --no-discovery
+npx --ignore-scripts=false inngest-cli@latest dev -u http://127.0.0.1:8000/api/inngest --no-discovery
 ```
 ```sh {{ title: "Docker" }}
 docker run -p 8288:8288 inngest/inngest \

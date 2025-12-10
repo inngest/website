@@ -562,7 +562,7 @@ firebase emulators:start
 Please note that you'll need to start your Inngest Local Dev Server with the `-u` flag to match our Firebase Cloud Function's custom path  as follows:
 
 ```bash
-npx inngest-cli@latest dev -u http://127.0.0.1:5001/inngest-firebase-functions/us-central1/inngest
+npx --ignore-scripts=false inngest-cli@latest dev -u http://127.0.0.1:5001/inngest-firebase-functions/us-central1/inngest
 ```
 
 _The above command example features a project named `inngest-firebase-functions` deployed on the `us-central1` region_.
