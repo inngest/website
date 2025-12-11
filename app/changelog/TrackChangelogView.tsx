@@ -6,7 +6,6 @@ const COOKIE_NAME = "inngest_changelog_last_viewed";
 // Pass the date as a YYYY-MM-DD format string
 export default function TrackChangelogView({ date }: { date: string }) {
   const [value, setValue] = useCookie(COOKIE_NAME);
-  console.log("check values", value, date);
   useEffectOnce(() => {
     const sixMonthsFromNow = new Date(
       Date.now() + 6 * 30 * 24 * 60 * 60 * 1000
@@ -15,7 +14,6 @@ export default function TrackChangelogView({ date }: { date: string }) {
     const latest = new Date(value);
     const viewed = new Date(date);
     if (viewed > latest) {
-      console.log("set value!", value, date);
       setValue(viewed.toISOString(), {
         domain: process.env.NEXT_PUBLIC_HOSTNAME,
         path: "/",
