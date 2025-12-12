@@ -72,17 +72,22 @@ You can configure throttling on each function using the optional `throttle` para
 
 - `limit`: The total number of runs allowed to start within the given `period`.
 - `period`: The period within the limit will be applied.
-- `burst`: The number of runs allowed to start in the given window in a single burst. This defaults to 1, which ensures that requests are smoothed amongst the given `period`.
+- `burst`: The number of runs allowed to start in the given window in a single burst on top of `limit`.
 - `key`: An optional expression which returns a throttling key using event data. This allows you to apply unique throttle limits specific to a user.
 
 <Callout>
   GCRA breaks down the provided `period` into smaller windows based on the `limit`.
   Without bursts, GCRA will admit a single request for every window. Inngest may attempt to start multiple pending function runs in a short time window, so to guarantee maximum throughput, we start `limit + burst` function runs in each window, which allows all requests to start within the configured `period`.
+
+This is required as background jobs do not arrive at the same rate as the events triggering them.
+
+If your use case requires strict request smoothing, please [contact us][contact].
 </Callout>
 
 **Configuration information**
 
-- The rate limit smooths requests in the given period, allowing `limit/period` requests a second.
+- Using throttle ensures no more than `limit` runs start within the given `period`.
+- For each window of `period / limit`, `limit + burst` runs may start. Limit is added by default to ensure high throughput on a non-uniform arrival rate.
 - Period must be between `1s` and `7d`, or between 1 second and 7 days. The minimum granularity is one second.
 - Throttling is currently applied per function. Two functions with the same key have two separate limits.
 - Every request is evenly weighted and counts as a single unit in the rate limiter.
