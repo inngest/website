@@ -75,6 +75,11 @@ You can configure throttling on each function using the optional `throttle` para
 - `burst`: The number of runs allowed to start in the given window in a single burst. This defaults to 1, which ensures that requests are smoothed amongst the given `period`.
 - `key`: An optional expression which returns a throttling key using event data. This allows you to apply unique throttle limits specific to a user.
 
+<Callout>
+  GCRA breaks down the provided `period` into smaller windows based on the `limit`.
+  Without bursts, GCRA will admit a single request for every window. Inngest may attempt to start multiple pending function runs in a short time window, so to guarantee maximum throughput, we start `limit + burst` function runs in each window, which allows all requests to start within the configured `period`.
+</Callout>
+
 **Configuration information**
 
 - The rate limit smooths requests in the given period, allowing `limit/period` requests a second.
