@@ -82,8 +82,6 @@ You can configure throttling on each function using the optional `throttle` para
   Without bursts, GCRA will admit a single request for every window. Inngest may attempt to start multiple pending function runs in a short time window, so to guarantee maximum throughput, we start `limit + burst` function runs in each window, which allows all requests to start within the configured `period`.
 
 This is required as background jobs do not arrive at the same rate as the events triggering them.
-
-If your use case requires strict request smoothing, please [contact us][contact].
 </Callout>
 
 **Configuration information**
