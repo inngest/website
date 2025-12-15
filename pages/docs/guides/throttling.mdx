@@ -86,8 +86,7 @@ This is required as background jobs do not arrive at the same rate as the events
 
 **Configuration information**
 
-- Using throttle ensures no more than `limit` runs start within the given `period`.
-- For each window of `period / limit`, `limit + burst` runs may start. Limit is added by default to ensure high throughput on a non-uniform arrival rate.
+- Using throttle ensures that within a window of the given `period`, at most `limit + burst` runs may start.
 - Period must be between `1s` and `7d`, or between 1 second and 7 days. The minimum granularity is one second.
 - Throttling is currently applied per function. Two functions with the same key have two separate limits.
 - Every request is evenly weighted and counts as a single unit in the rate limiter.
