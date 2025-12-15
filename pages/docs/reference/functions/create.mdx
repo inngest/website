@@ -63,7 +63,7 @@ The `createFunction` method accepts a series of arguments to define your functio
         The period within which the `limit` will be applied.
       </Property>
       <Property name="burst" type="number">
-        The number of runs allowed to start in the given window in a single burst. This is added on top of the limit, which ensures high throughput within the period.
+        The number of additional runs allowed to start in the given window in a single burst. This is added on top of the limit, which ensures high throughput within the period.
       </Property>
       <Property name="key" type="string">
         A unique expression for which to apply the throttle limit to. The expression is evaluated for each triggering event and will be applied for each unique value. Read [our guide to writing expressions](/docs/guides/writing-expressions) for more info.
