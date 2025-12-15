@@ -1,4 +1,4 @@
-import { CodeGroup } from "src/shared/Docs/mdx";
+import { Callout, CodeGroup } from "src/shared/Docs/mdx";
 
 export const description = 'Limit the throughput of function execution over a period of time. Ideal for working around third-party API rate limits.';
 
@@ -43,7 +43,8 @@ inngestgo.CreateFunction(
 	},
 	inngestgo.EventTrigger("ai/summary.requested", nil),
 	func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
-		// This function will be throttled to 1 run per 5 seconds for a given event payload with matching user_id
+		// This function will be throttled to 1 run per 5 seconds for a given event payload with matching user_id,
+		// while the one-time burst allows 2 extra runs to start within 5 seconds, after which no more runs are accepted for 5 seconds.
 		return nil, nil
 	},
 )
@@ -62,6 +63,7 @@ inngestgo.CreateFunction(
 )
 async def synchronize_data(ctx: inngest.Context):
     # This function will be throttled to 1 run per 5 seconds for a given event payload with matching user_id
+    # while the one-time burst allows 2 extra runs to start within 5 seconds, after which no more runs are accepted for 5 seconds.
 ```
 
 </CodeGroup>
@@ -72,12 +74,19 @@ You can configure throttling on each function using the optional `throttle` para
 
 - `limit`: The total number of runs allowed to start within the given `period`.
 - `period`: The period within the limit will be applied.
-- `burst`: The number of runs allowed to start in the given window in a single burst. This defaults to 1, which ensures that requests are smoothed amongst the given `period`.
+- `burst`: The number of runs allowed to start in the given window in a single burst on top of `limit`.
 - `key`: An optional expression which returns a throttling key using event data. This allows you to apply unique throttle limits specific to a user.
+
+<Callout>
+  GCRA breaks down the provided `period` into smaller windows based on the `limit`.
+  Without bursts, GCRA will admit a single request for every window. Inngest may attempt to start multiple pending function runs in a short time window, so to guarantee maximum throughput, we start `limit + burst` function runs in each window, which allows all requests to start within the configured `period`.
+
+This is required as background jobs do not arrive at the same rate as the events triggering them.
+</Callout>
 
 **Configuration information**
 
-- The rate limit smooths requests in the given period, allowing `limit/period` requests a second.
+- Using throttle ensures that within a window of the given `period`, at most `limit + burst` runs may start.
 - Period must be between `1s` and `7d`, or between 1 second and 7 days. The minimum granularity is one second.
 - Throttling is currently applied per function. Two functions with the same key have two separate limits.
 - Every request is evenly weighted and counts as a single unit in the rate limiter.
