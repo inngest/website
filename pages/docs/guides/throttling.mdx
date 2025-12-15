@@ -44,7 +44,7 @@ inngestgo.CreateFunction(
 	inngestgo.EventTrigger("ai/summary.requested", nil),
 	func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
 		// This function will be throttled to 1 run per 5 seconds for a given event payload with matching user_id,
-    // while the one-time burst allows 2 extra runs to start within 5 seconds, after which no more runs are accepted for 5 seconds.
+		// while the one-time burst allows 2 extra runs to start within 5 seconds, after which no more runs are accepted for 5 seconds.
 		return nil, nil
 	},
 )
