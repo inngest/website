@@ -68,7 +68,7 @@ from src.inngest.client import inngest_client
     # config
     id="import-product-images",
     # trigger (event or cron)
-    trigger=inngest.Trigger(event="shop/product.imported")
+    trigger=inngest.TriggerEvent(event="shop/product.imported")
 )
 async def import_product_images(ctx: inngest.Context):
     # Here goes the business logic
