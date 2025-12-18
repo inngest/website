@@ -60,7 +60,7 @@ export default function FooterCallout({
           <div className="flex flex-col gap-5 items-center">
             {showCliCmd && (
               <code className="mt-8 py-2.5 px-5 rounded-[6px] bg-white/10 text-sm text-white backdrop-blur-md font-medium">
-                <span className="">$</span> npx inngest-cli dev
+                <span className="">$</span> npx --ignore-scripts=false inngest-cli dev
               </code>
             )}
             <Link

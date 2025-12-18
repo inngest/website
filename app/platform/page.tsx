@@ -81,7 +81,7 @@ export default function Page() {
             View the open source repo
           </Button>
           <p>or run it now</p>
-          <Command command="npx inngest-cli@latest dev" />
+          <Command command="npx --ignore-scripts=false inngest-cli@latest dev" />
         </div>
       </section>
 

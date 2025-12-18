@@ -6,14 +6,14 @@ import { ClipboardDocumentIcon } from "@heroicons/react/24/outline";
 import React from "react";
 
 // Simple bash snippet shown inside the terminal.
-const TERMINAL_SNIPPET = `\n$ npx inngest-cli dev\n\nInngest dev server running...`;
+const TERMINAL_SNIPPET = `\n$ npx --ignore-scripts=false inngest-cli dev\n\nInngest dev server running...`;
 
 export default function Terminal() {
   const [copied, setCopied] = useState(false);
 
   const copyToClipboard = async () => {
     try {
-      await navigator.clipboard.writeText("npx inngest-cli dev");
+      await navigator.clipboard.writeText("npx --ignore-scripts=false inngest-cli dev");
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {

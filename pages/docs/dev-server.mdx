@@ -13,9 +13,9 @@ You can start the dev server with a single command. The dev server will attempt 
 
 <CodeGroup>
 ```shell {{ title: "npx (npm)" }}
-npx inngest-cli@latest dev
+npx --ignore-scripts=false inngest-cli@latest dev
 # You can specify the URL of your development `serve` API endpoint
-npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
+npx --ignore-scripts=false inngest-cli@latest dev -u http://localhost:3000/api/inngest
 ```
 ```shell {{ title: "Docker" }}
 docker run -p 8288:8288 inngest/inngest \
@@ -31,7 +31,7 @@ There are two ways to connect apps to the Dev Server:
 
 1. **Automatically**: The Dev Server will attempt to "auto-discover" apps running on common ports and endpoints (See "[Auto-discovery](#auto-discovery)").
 2. **Manually**: You scan explicitly add the URL of the app to the Dev Server using one of the following options:
-    - Using the CLI `-u` param (ex. `npx inngest-cli@latest dev -u http://localhost:3000/api/inngest`)
+    - Using the CLI `-u` param (ex. `npx --ignore-scripts=false inngest-cli@latest dev -u http://localhost:3000/api/inngest`)
     - Adding the URL in the Dev Server Apps page. You can edit the URL or delete a manually added app at any point in time
     - Using the `inngest.json` (or similar) configuration file (See "[Configuration file](#configuration-file)")
 
@@ -178,7 +178,7 @@ $ curl -s http://localhost:3000/api/inngest | jq
 The dev server will automatically detect and connect to apps running on common ports and endpoints. You can disable auto-discovery by passing the `--no-discovery` flag to the `dev` command:
 
 ```sh
-npx inngest-cli@latest dev --no-discovery -u http://localhost:3000/api/inngest
+npx --ignore-scripts=false inngest-cli@latest dev --no-discovery -u http://localhost:3000/api/inngest
 ```
 
 <CodeGroup>

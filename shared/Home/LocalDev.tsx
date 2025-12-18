@@ -37,7 +37,7 @@ export default function LocalDev({ className }: { className?: string }) {
               <div className="rounded-r flex items-center justify-center pl-2 pr-2.5">
                 <CopyBtn
                   btnAction={handleCopyClick}
-                  copy="npx inngest-cli@latest dev"
+                  copy="npx --ignore-scripts=false inngest-cli@latest dev"
                 />
               </div>
             </div>

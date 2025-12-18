@@ -127,7 +127,16 @@ The dev server will automatically detect and connect to apps running on common p
 You can disable auto-discovery by passing the `--no-discovery` flag to the `dev` command:
 
 ```sh
-npx inngest-cli@latest dev --no-discovery
+npx --ignore-scripts=false inngest-cli@latest dev --no-discovery
 ```
 
 Learn more about this in the [dev server](/docs/dev-server#auto-discovery) docs.
+
+## Why doesn't the Dev Server do anything when I start it?
+
+If the Dev Server command (`npx inngest-cli dev`) doesn't do anything, it might be because you've disabled npm install scripts. Try clearing your npm cache and rerunning the Dev Server command with `--ignore-scripts=false`:
+
+```sh
+$ rm -rf ~/.npm/_npx/*
+$ npx --ignore-scripts=false inngest-cli dev
+```
