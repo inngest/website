@@ -462,7 +462,7 @@ from src.inngest.client import inngest_client
 
 @inngest_client.create_function(
     fn_id="send-delayed-email",
-    trigger=inngest.Trigger(event="app/user.signup")
+    trigger=inngest.TriggerEvent(event="app/user.signup")
 )
 async def send_delayed_email(ctx: inngest.Context):
     await ctx.step.sleep("wait-a-couple-of-days", datetime.timedelta(days=2))
@@ -480,7 +480,7 @@ from datetime import datetime
 
 @inngest_client.create_function(
     fn_id="send-scheduled-reminder",
-    trigger=inngest.Trigger(event="app/reminder.scheduled")
+    trigger=inngest.TriggerEvent(event="app/reminder.scheduled")
 )
 async def send_scheduled_reminder(ctx: inngest.Context):
     date = datetime.fromisoformat(ctx.event.data["remind_at"])
@@ -498,7 +498,7 @@ from src.inngest.client import inngest_client
 
 @inngest_client.create_function(
     fn_id="send-onboarding-nudge-email",
-    trigger=inngest.Trigger(event="app/account.created")
+    trigger=inngest.TriggerEvent(event="app/account.created")
 )
 async def send_onboarding_nudge_email(ctx: inngest.Context):
     onboarding_completed = await ctx.step.wait_for_event(
