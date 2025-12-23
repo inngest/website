@@ -52,13 +52,9 @@ inngest.createFunction({
 ```
 ```py {{ title: "Python" }}
 @inngest_client.create_function(
-    fn_id="sync-systems",
-    # A Function is triggered by events
+    id="sync-systems",
+    # trigger (event or cron)
     trigger=inngest.TriggerEvent(event="auto/sync.request"),
-    # Easily add Throttling with Flow Control
-    throttle=inngest.Throttle(
-        count=2, period=datetime.timedelta(minutes=1)
-    ),
 )
 def sync_systems(ctx: inngest.ContextSync) -> None:
     # step is retried if it throws an error

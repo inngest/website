@@ -1,6 +1,6 @@
 import { CardGroup, Card } from "src/shared/Docs/mdx";
 import { EnvelopeIcon, Cog6ToothIcon } from "@heroicons/react/24/outline";
-import { RiBracesFill, RiCalendarScheduleFill, RiErrorWarningFill, RiArrowDownDoubleFill, RiWifiFill } from "@remixicon/react";
+import { RiBracesFill, RiCalendarScheduleFill, RiErrorWarningFill, RiArrowDownDoubleFill, RiWifiFill, RiBarChart2Fill } from "@remixicon/react";
 
 export const hidePageSidebar = true;
 
@@ -64,6 +64,14 @@ Make durable HTTP requests within an Inngest function.
   title={'Realtime'}
 >
 Use Realtime to stream updates from one to multiple Inngest functions or to implement a Human in the Loop mechanism.
+</Card>
+
+<Card
+  href={"/docs/examples/open-telemetry"}
+  icon={<RiBarChart2Fill fill={"black"} className="h-6 w45 fill-carbon-700/10 stroke-carbon-700 transition-colors duration-300 group-hover:stroke-carbon-900 dark:fill-white/10 dark:stroke-carbon-400 dark:group-hover:fill-indigo-300/10 dark:group-hover:stroke-indigo-400" />}
+  title={'Setup OpenTelemetry with Inngest'}
+>
+  Forward your application's OpenTelemetry traces to Inngest Traces
 </Card>
 
 </CardGroup>

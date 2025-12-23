@@ -398,23 +398,25 @@ export function ImageTheme({
   // if there's no dark mode image provided, invert the light mode
   if (!dark) {
     return (
-      <Zoom wrapElement="span" zoomMargin={25}>
-        <Image
-          src={light}
-          className={`${className} block rounded dark:invert`}
-          alt={alt}
-          width={0}
-          height={0}
-          sizes="100vw"
-          style={{ width: "100%", height: "auto" }}
-          {...imageProps}
-        />
-      </Zoom>
+      <div className="max-w-[100%]">
+        <Zoom wrapElement="span" zoomMargin={25}>
+          <Image
+            src={light}
+            className={`${className} block rounded dark:invert`}
+            alt={alt}
+            width={0}
+            height={0}
+            sizes="100vw"
+            style={{ width: "100%", height: "auto" }}
+            {...imageProps}
+          />
+        </Zoom>
+      </div>
     );
   }
   return (
-    <>
-      <Zoom wrapElement="span" zoomMargin={25}>
+    <div className="max-w-[100%]">
+    <Zoom wrapElement="span" zoomMargin={25}>
         <Image
           src={light}
           className={`${className} block rounded dark:hidden`}
@@ -424,10 +426,10 @@ export function ImageTheme({
           height={0}
           sizes="100vw"
           style={{ width: "100%", height: "auto" }}
-          {...imageProps}
+          {...imageProps as ImageProps}
         />
-      </Zoom>
-      <Zoom wrapElement="span" zoomMargin={25}>
+        </Zoom>
+        <Zoom wrapElement="span" zoomMargin={25}>
         <Image
           src={dark}
           className={`${className} hidden rounded dark:block`}
@@ -437,10 +439,10 @@ export function ImageTheme({
           height={0}
           sizes="100vw"
           style={{ width: "100%", height: "auto" }}
-          {...imageProps}
+          {...imageProps as ImageProps}
         />
-      </Zoom>
-    </>
+    </Zoom>
+    </div>
   );
 }
 

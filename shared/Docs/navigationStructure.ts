@@ -946,6 +946,10 @@ const sectionExamples: NavGroup[] = [
         title: "Stream updates from functions",
         href: `/docs/examples/realtime`,
       },
+      {
+        title: "Setup OpenTelemetry with Inngest",
+        href: `/docs/examples/open-telemetry`,
+      },
     ],
   },
   {

@@ -5,6 +5,7 @@ import { generateMetadata as generateOgMetadata } from "src/utils/social";
 import { SectionProvider } from "shared/Docs/SectionProvider";
 import { formatDate } from "src/utils/date";
 import { loadPost } from "../helpers";
+import TrackChangelogView from "../TrackChangelogView";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -26,20 +27,20 @@ export default async function Page({ params }: Props) {
   const slug = (await params).slug;
   const { Post, metadata } = await loadPost(slug);
   return (
-    <div className="max-w-6xl mx-auto mt-16 mb-32 px-6 lg:px-12">
+    <div className="mx-auto mb-32 mt-16 max-w-6xl px-6 lg:px-12">
       <SectionProvider sections={[]}>
-        <div className="mt-20 md:my-20 grid grid-cols-1 md:grid-cols-4 gap-8">
-          <header className="md:col-start-2 md:col-span-3">
-            <p className="text-subtle text-sm mb-4">
+        <div className="mt-20 grid grid-cols-1 gap-8 md:my-20 md:grid-cols-4">
+          <header className="md:col-span-3 md:col-start-2">
+            <p className="mb-4 text-sm text-subtle">
               <Link href="/changelog" className="hover:underline">
                 Changelog
               </Link>
             </p>
-            <h1 className="text-4xl font-semibold mb-4">{metadata.title}</h1>
+            <h1 className="mb-4 text-4xl font-semibold">{metadata.title}</h1>
           </header>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-y-16">
-          <p className="mt-1 text-muted text-sm md:text-right">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-4 md:gap-y-16">
+          <p className="mt-1 text-sm text-muted md:text-right">
             {formatDate(metadata.date)}
           </p>
           <div className="md:col-span-3">
@@ -49,6 +50,7 @@ export default async function Page({ params }: Props) {
           </div>
         </div>
       </SectionProvider>
+      <TrackChangelogView date={metadata.date} />
     </div>
   );
 }

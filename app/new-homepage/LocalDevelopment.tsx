@@ -42,7 +42,7 @@ export default function LocalDevelopment() {
         className="my-8"
       />
       <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
-        <Command command="npx inngest-cli@latest dev" />
+        <Command command="npx --ignore-scripts=false inngest-cli@latest dev" />
         <Button
           href="/docs/local-development?ref=homepage-dev-tools"
           variant="secondaryV2"

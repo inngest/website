@@ -1,0 +1,145 @@
+import { CodeGroup, CardGroup, Card, VersionBadge, Callout } from "src/shared/Docs/mdx";
+
+
+export const description = "Enrich your Inngest Traces with your application's OpenTelemetry traces";
+
+# Set up OpenTelemetry with Inngest <VersionBadge version="TypeScript only" />
+
+Inngest's [Extended Traces](/docs/platform/monitor/traces#extended-traces) enables you to forward your application OpenTelemetry traces into
+Inngest's Traces for a unified observability and debugging experience, both in the DevServer and Platform.
+
+This guide covers how to **set up OpenTelemetry with Inngest Traces** and how to **create custom spans**.
+
+## Set up Inngest Extended Traces with an existing OpenTelemetry client
+
+If your application already uses an OpenTelemetry client, the Inngest `extendedTracesMiddleware()` should be configured properly to
+capture your application traces while not registering the Node.js instrumentations twice.
+
+Here's a Node.js application OpenTelemetry setup (_exporting traces via OTLP_) using Inngest Extended Traces:
+
+```ts tracing.ts
+import { NodeSDK } from "@opentelemetry/sdk-node";
+import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
+
+import { Inngest } from "inngest";
+import { InngestSpanProcessor, extendedTracesMiddleware } from "inngest/experimental";
+
+
+export const inngest = new Inngest({
+  id: "nodejs-open-telemetry-example",
+  name: "NodeJS Open Telemetry Example",
+  // set to "off" if your OTel client has some `instrumentations` configured
+  middleware: [extendedTracesMiddleware({ behaviour: "auto" })],
+});
+
+// Configure OTLP endpoint for Jaeger using the HTTP exporter
+// Jaeger typically accepts OTLP HTTP on http://localhost:4318/v1/traces
+// Override via OTEL_EXPORTER_OTLP_ENDPOINT or OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+const traceExporter = new OTLPTraceExporter({
+  url:
+    process.env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT ||
+    process.env.OTEL_EXPORTER_OTLP_ENDPOINT ||
+    "http://localhost:4318/v1/traces",
+});
+
+const sdk = new NodeSDK({
+  traceExporter: traceExporter,
+  spanProcessors: [new InngestSpanProcessor(inngest)],
+  // Set service name for Jaeger
+  serviceName: "nodejs-open-telemetry-example",
+});
+
+sdk.start();
+
+console.log("OpenTelemetry SDK started");
+console.log(
+  `Tracing endpoint: ${
+    process.env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT ||
+    process.env.OTEL_EXPORTER_OTLP_ENDPOINT ||
+    "http://localhost:4318/v1/traces"
+  }`
+);
+```
+
+This setup is the most robust as it won't force you to follow a strict import order to get your OTel and Inngest Tracing to work together.
+With this setup, your application OTel traces (e.g., Express API) will continue to be exported to your OTLP compatible ingestor (e.g., Jaeger) while
+the Inngest Extended Traces will be forwarded to the Inngest DevServer or Platform.
+
+<Callout>
+
+**Which Extended Traces `behaviour` mode should I use?**
+
+If your current OpenTelemetry setup includes some auto instrumentations (e.g., `@opentelemetry/auto-instrumentations-node`), set the `behaviour` mode to `"off"` to avoid duplicated traces.
+
+If you'd like to benefit from database queries and HTTP request traces in your Inngest Traces, set `behaviour` to `"auto"`.
+
+</Callout>
+
+
+## Set up Inngest Extended Traces WITHOUT an existing OpenTelemetry client
+
+Setting up Inngest Extended Traces without an existing OpenTelemetry client only requires adding the `extendedTracesMiddleware()`
+to your Inngest client as follows:
+
+ ```ts client.ts
+// Create your client the same as you would normally
+import { Inngest } from "inngest";
+import { extendedTracesMiddleware } from "inngest/experimental";
+
+export const inngest = new Inngest({
+  id: "my-app",
+  middleware: [extendedTracesMiddleware()]
+});
+```
+
+This configuration will enrich your Inngest Traces with database queries and HTTP request spans.
+
+
+## How to create custom spans with Inngest Extended Traces
+
+Once Inngest Extended Traces is properly set up in your application, your Inngest workflow will receive an additional `tracer` argument:
+
+```ts workflow.ts
+import { inngest } from './client'
+
+export const userOnboarding = inngest.createFunction(
+  { id: "user-onboarding" },
+  { event: "user.onboarding" },
+  async ({ event, step, tracer }) => {
+    //  ...
+  }
+);
+```
+
+The `tracer` object is an `@opentelemetry/api`'s `Tracer` instance enabling you to create custom traces as follows:
+
+```ts workflow.ts
+import { inngest } from './client'
+import { sendEmail } from './emails'
+
+export const userOnboarding = inngest.createFunction(
+  { id: "user-onboarding" },
+  { event: "user.onboarding" },
+  async ({ event, step, tracer }) => {
+    await step.run("create-user", async () => {
+        // ...
+    });
+
+    await step.run("send-welcome-email", async () => {
+        tracer.startActiveSpan("call-email-service", async (span) => {
+        span.setAttributes({ name, email });
+
+        await sendEmail({ name, email })
+
+        span.end();
+      });
+    });
+  }
+);
+```
+
+Using `tracer.startActiveSpan()`, we create a custom `call-email-service` span to track the performance of the external `sendEmail()` service.
+
+Our custom span is properly displayed within our Inngest workflow run Traces:
+
+![The user-onboarding run displays Inngest Traces featuring the call-email-service custom span](/assets/docs/examples/open-telemetry/custom-span.png)

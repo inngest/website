@@ -1,0 +1,119 @@
+import { Info, CodeGroup, GuideSelector, GuideSection } from "shared/Docs/mdx";
+
+export const description = "Solutions to reduce latency"
+
+# Improve Performance
+
+Inngest offers two complementary approaches to reduce latency in your functions: **Checkpointing** for faster step execution, and **Connect** for persistent, low-latency connections between your app and Inngest.
+
+---
+
+## Checkpointing
+
+Checkpointing is a performance optimization for Inngest functions that executes steps eagerly rather than waiting on internal orchestration.
+
+### Differences in Execution Models
+
+The [Inngest default execution model](/docs/learn/how-functions-are-executed) is a complete handoff to the Inngest Platform, where an HTTP request is performed to store the execution state upon each step completion, leading to inter-step latency.
+
+Checkpointing uses the SDK to orchestrate steps and run them on the client side, resulting in the immediate execution of subsequent synchronous steps (ex, `step.run()`) in a function. As steps execute, checkpointing requests are sent to Inngest to keep track of progress when an async step is met (ex, `step.sleep()`).
+
+With the standard execution model, Inngest orchestrates your function by making network round-trips between each step. This is reliable, but adds latency.
+
+Checkpointing flips this: the SDK orchestrates steps on the client-side (_on your server_) and executes them immediately. As steps completed, checkpoint messages are sent to Inngest to track progress. The result is dramatically lower latency — ideal for real-time AI workflows.
+
+### Failures and Retries
+
+What happens when something goes wrong? If a step fails and needs to retry, the execution engine falls back to standard orchestration to handle it properly. You get speed when things work, and safety when they don't.
+
+### Checkpointing Setup
+
+<GuideSelector
+  options={[
+    { key: "typescript", title: "TypeScript" },
+    { key: "go", title: "Go" },
+  ]}
+>
+
+<GuideSection show="typescript">
+
+To enable checkpointing:
+
+1. Install `inngest@3.46.0` or higher
+2. Set `checkpointing: true` on your Inngest client
+
+```ts
+import { Inngest } from "inngest";
+
+export const inngest = new Inngest({
+  id: "my-app",
+  checkpointing: true,
+});
+
+</GuideSection>
+
+<GuideSection show="go">
+
+To enable checkpointing:
+
+1. Install the checkpoint package:
+
+```shell
+go get github.com/inngest/inngestgo/pkg/checkpoint
+```
+
+2. Set `Checkpoint` on your function options:
+
+```go
+import (
+  "github.com/inngest/inngestgo"
+  "github.com/inngest/inngestgo/pkg/checkpoint"
+)
+
+_, err := inngestgo.CreateFunction(
+  client,
+  inngestgo.FunctionOpts{
+    ID:         "my-function",
+    Name:       "My Function",
+    Checkpoint: checkpoint.ConfigSafe,
+  },
+  // ... triggers and handler
+)
+```
+
+</GuideSection>
+
+</GuideSelector>
+
+---
+
+## Connect
+
+The `connect` API allows your app to create an outbound persistent connection to Inngest (_workers-style approach_). This is another way to reduce latency — by keeping a WebSocket connection open rather than making HTTP requests for each step.
+
+### Performance Benefits
+
+Compared to the standard [`serve`](/docs/learn/serving-inngest-functions) approach, `connect` offers:
+
+- **Lowest latency** — Persistent connections eliminate the overhead of establishing new HTTP connections for each step.
+- **Simpler long running steps** — Step execution is not bound by platform HTTP timeouts.
+- **Elastic horizontal scaling** — Easily add more capacity by running additional workers.
+- **Ideal for container runtimes** — Deploy on Kubernetes or ECS without the need of a load balancer for inbound traffic.
+
+### How It Works
+
+The `connect` API establishes a persistent WebSocket connection to Inngest. Each connection can handle executing multiple functions and steps concurrently. Each app can create multiple connections to Inngest enabling horizontal scaling.
+
+Key features include:
+
+- **Automatic re-connections** — The connection will automatically reconnect if it is closed.
+- **Graceful shutdown** — The connection gracefully shuts down when the app receives a termination signal (`SIGTERM`). New steps won't be accepted, but existing steps are allowed to complete.
+- **Worker-level maximum concurrency (Coming soon)** — Each worker can configure the maximum number of concurrent steps it can handle, allowing Inngest to distribute load across multiple workers.
+
+<Info>
+  **WebSocket connection and HTTP fallback** — While a WebSocket connection is open, the worker sends and receives all step results via WebSocket. When the connection closes, the worker falls back to the HTTP API to send any remaining step results.
+</Info>
+
+### Getting Started with Connect
+
+For full setup instructions, requirements, deployment guides, and lifecycle management, see the [Connect documentation](/docs/setup/connect).
