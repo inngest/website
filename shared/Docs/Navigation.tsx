@@ -23,6 +23,7 @@ import { remToPx } from "../../utils/remToPx";
 import {
   topLevelNav,
   menuTabs,
+  sidebarMenuTabs,
   type NavGroup,
   type NavLink,
   isNavGroup,
@@ -52,9 +53,14 @@ export function ActiveSectionProvider({ children }: { children: React.ReactNode 
   // Determine initial section based on current URL
   const getInitialSection = useCallback(() => {
     // Check if current path matches Reference section
-    const referenceTab = menuTabs.find(tab => tab.title === "Reference");
+    const referenceTab = sidebarMenuTabs.find(tab => tab.title === "Reference");
     if (referenceTab?.matcher && !!referenceTab.matcher(pathname)) {
       return "Reference";
+    }
+    // Check if current path matches Examples section
+    const examplesTab = topLevelNav.find(tab => tab.title === "Examples");
+    if (examplesTab?.matcher && !!examplesTab.matcher(pathname)) {
+      return "Examples";
     }
     return "Learn";
   }, [pathname]);
@@ -117,20 +123,16 @@ function TopLevelNavItem({ href, matcher, title, icon: Icon }) {
 }
 
 export function TabItem({ href, children, matcher, title }) {
-  const { activeSection, setActiveSection } = useActiveSection();
-  const isActive = activeSection === title;
-
-  const handleClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    setActiveSection(title);
-  };
+  const router = useRouter();
+  const pathname = router.pathname;
+  const isActive = isMatch(matcher, pathname) || href === pathname;
 
   return (
     <li>
-      <button
-        onClick={handleClick}
+      <Link
+        href={href}
         className={clsx(
-          "font-medium text-sm leading-5 transition whitespace-nowrap px-3 py-4 relative top-0.5 cursor-pointer",
+          "font-medium text-sm leading-5 transition whitespace-nowrap px-3 py-4 relative top-0.5 cursor-pointer block",
           isActive &&
             "text-black dark:text-carbon-100 border-b-2 dark:border-b-carbon-300 border-b-black hover:text-black",
           !isActive &&
@@ -138,7 +140,7 @@ export function TabItem({ href, children, matcher, title }) {
         )}
       >
         <span className="relative -top-0.5">{children}</span>
-      </button>
+      </Link>
     </li>
   );
 }
@@ -561,7 +563,7 @@ export function Navigation(props) {
   const router = useRouter();
   // Remove query params and hash from pathname
   const pathname = router.asPath.replace(/(\?|#).+$/, "");
-  const { activeSection } = useActiveSection();
+  const { activeSection, setActiveSection } = useActiveSection();
 
   // Find the section based on the active tab (Learn/Reference)
   const nestedSection =
@@ -598,6 +600,38 @@ export function Navigation(props) {
     <DefaultOpenSectionsContext.Provider value={defaultOpenGroupTitles}>
       <nav {...props}>
         <MobileSearch />
+
+        {activeSection !== "Examples" && (
+          <div className="mb-8 hidden lg:block">
+            <div className="flex p-1 bg-slate-100 dark:bg-slate-800/50 rounded-lg">
+              {sidebarMenuTabs.map((tab) => {
+                const isActive = activeSection === tab.title;
+                return (
+                  <button
+                    key={tab.title}
+                    onClick={() => setActiveSection(tab.title)}
+                    className={clsx(
+                      "flex-1 flex items-center justify-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-all",
+                      isActive
+                        ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm"
+                        : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                    )}
+                  >
+                    <tab.icon
+                      className={clsx(
+                        "h-4 w-4",
+                        isActive
+                          ? "text-breeze-600 dark:text-breeze-400"
+                          : "text-slate-400"
+                      )}
+                    />
+                    {tab.title}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         <ul role="list" className="flex lg:hidden flex-col">
           {menuTabs.map((tab, idx) => (

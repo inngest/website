@@ -46,6 +46,11 @@ const permanentRedirects = [
   ["/docs/functions/multi-step", "/docs/guides/multi-step-functions"],
   ["/docs/guides/enqueueing-future-jobs", "/docs/guides/delayed-functions"],
   ["/docs/steps", "/docs/learn/inngest-steps"],
+  ["/docs/features/inngest-functions", "/docs/learn/inngest-functions"],
+  [
+    "/docs/features/inngest-functions/steps-workflows",
+    "/docs/learn/inngest-functions",
+  ],
   ["/blog/banger", "/blog/banger-video-rendering-pipeline"],
   [
     "/docs/reference/serve#custom-frameworks",
@@ -79,9 +84,6 @@ const permanentRedirects = [
   ["/docs/agent-kit/:any*", "https://agentkit.inngest.com"],
 
   ["/docs/features/realtime/nextjs", "/docs/features/realtime/react-hooks"],
-
-  // New IA restructure redirects
-  ["/docs/deploy/improve-performance", "/docs/improve-performance"],
 ];
 
 async function redirects() {

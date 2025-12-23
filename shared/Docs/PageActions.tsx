@@ -103,6 +103,11 @@ export function PageActions() {
   // Get the current path, stripping any hash or query params
   const currentPath = router.asPath?.split(/[?#]/)[0] || "";
 
+  // Hide on the main docs index route
+  if (currentPath === "/docs" || currentPath === "/docs/") {
+    return null;
+  }
+
   // Build the markdown URL that LLMs can fetch
   const markdownUrl = useMemo(() => {
     if (typeof window === "undefined") return "";

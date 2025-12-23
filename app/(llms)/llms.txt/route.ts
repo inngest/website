@@ -13,6 +13,9 @@ export async function GET() {
   const referenceDocs = topLevelNav.find(
     (nav) => nav.title === "Reference"
   )?.sectionLinks || [];
+  const examplesDocs = topLevelNav.find(
+    (nav) => nav.title === "Examples"
+  )?.sectionLinks || [];
 
   const overview = `# Inngest
 
@@ -23,6 +26,10 @@ ${recursiveLinks(learnDocs)}
 ## Reference
 
 ${recursiveLinks(referenceDocs)}
+
+## Examples
+
+${recursiveLinks(examplesDocs)}
 
 `;
 

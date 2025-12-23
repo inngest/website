@@ -381,11 +381,6 @@ const sectionLearn: (NavGroup | NavLink)[] = [
         href: `/docs/learn/how-functions-are-executed`,
       },
       {
-        title: "Durable Endpoints",
-        href: `/docs/learn/rest-endpoints`,
-        tag: "new",
-      },
-      {
         title: "Durable Functions",
         links: [
           {
@@ -525,8 +520,9 @@ const sectionLearn: (NavGroup | NavLink)[] = [
         ],
       },
       {
-        title: "Inngest system architecture",
-        href: `/docs/learn/how-functions-are-executed`,
+        title: "Durable Endpoints",
+        href: `/docs/learn/rest-endpoints`,
+        tag: "new",
       },
     ],
   },
@@ -606,6 +602,14 @@ const sectionLearn: (NavGroup | NavLink)[] = [
           {
             title: "User-defined Workflows",
             href: `/docs/guides/user-defined-workflows`,
+          },
+          {
+            title: "Trigger workflows from Retool",
+            href: `/docs/guides/trigger-your-code-from-retool`,
+          },
+          {
+            title: "Durable Fetch",
+            href: "/docs/features/inngest-functions/steps-workflows/fetch",
           },
           {
             title: "Workflow Kit",
@@ -790,6 +794,10 @@ const sectionLearn: (NavGroup | NavLink)[] = [
             href: "/docs/platform/manage/apps",
           },
           {
+            title: "Setting up your app (serve)",
+            href: "/docs/learn/serving-inngest-functions",
+          },
+          {
             title: "Bulk replay",
             href: "/docs/platform/replay",
           },
@@ -892,30 +900,6 @@ const sectionLearn: (NavGroup | NavLink)[] = [
       {
         title: "Install the SDK",
         href: `/docs/sdk/overview`,
-      },
-      {
-        title: "Setting up your app (serve)",
-        href: `/docs/learn/serving-inngest-functions`,
-      },
-      {
-        title: "Features overview",
-        href: `/docs/features/inngest-functions`,
-      },
-      {
-        title: "Steps & Workflows overview",
-        href: `/docs/features/inngest-functions/steps-workflows`,
-      },
-      {
-        title: "Function steps",
-        href: "/docs/guides/multi-step-functions",
-      },
-      {
-        title: "Fetch",
-        href: "/docs/features/inngest-functions/steps-workflows/fetch",
-      },
-      {
-        title: "Trigger workflows from Retool",
-        href: `/docs/guides/trigger-your-code-from-retool`,
       },
     ],
   },
@@ -1025,18 +1009,38 @@ function recursiveLinkSearch(group: NavGroup, pathname) {
 // =============================================================================
 // MATCHERS
 // =============================================================================
-const matchers = {
+const matchers: Record<string, (pathname: string) => any> = {
+  docs: (pathname) => pathname === "/docs" || pathname === "/docs/",
   examples: (pathname) =>
     /^\/docs\/examples/.test(pathname) || linkSearch(sectionExamples, pathname),
   reference: (pathname) =>
     /^\/docs\/reference/.test(pathname) || linkSearch(sectionReference, pathname),
   learn: (pathname) => linkSearch(sectionLearn, pathname),
 };
+matchers.default = matchers.learn;
 
 // =============================================================================
 // MENU TABS (Top navigation)
 // =============================================================================
 export const menuTabs = [
+  {
+    title: "Documentation",
+    icon: PlayIcon,
+    href: "/docs",
+    matcher: matchers.default,
+  },
+  {
+    title: "Examples",
+    icon: LightBulbIcon,
+    href: "/docs/examples/",
+    matcher: matchers.examples,
+  },
+];
+
+// =============================================================================
+// SIDEBAR TABS (Sidebar navigation)
+// =============================================================================
+export const sidebarMenuTabs = [
   {
     title: "Learn",
     icon: BookOpenIcon,
@@ -1068,5 +1072,12 @@ export const topLevelNav = [
     href: "/docs/reference/typescript",
     matcher: matchers.reference,
     sectionLinks: sectionReference,
+  },
+  {
+    title: "Examples",
+    icon: LightBulbIcon,
+    href: "/docs/examples/",
+    sectionLinks: sectionExamples,
+    matcher: matchers.examples,
   },
 ];
