@@ -92,25 +92,6 @@ def fn(ctx: inngest.ContextSync) -> None:
   )
 ```
 
-At this time, Inngest does not have stable support for `asyncio.gather` or `asyncio.wait`. If you'd like to try out experimental support, use the `_experimental_execution` option when creating your function:
-
-```py
-@client.create_function(
-  fn_id="my-fn",
-  trigger=inngest.TriggerEvent(event="my-event"),
-  _experimental_execution=True,
-)
-def fn(ctx: inngest.ContextSync) -> None:
-  user_id = ctx.event.data["user_id"]
-
-  (updated_user, sent_email) = asyncio.gather(
-    asyncio.create_task(ctx.step.run("update-user", update_user, user_id)),
-    asyncio.create_task(ctx.step.run("send-email", send_email, user_id)),
-  )
-```
-
-When using `asyncio.wait`, `asyncio.FIRST_COMPLETED` is supported. However, `asyncio.FIRST_EXCEPTION` is not supported due to the way Inngest interrupts the execution of the function.
-
 ## Optimizing parallel step performance
 
 By default, parallel steps require 2 requests per step to your application. If you have many parallel steps (e.g., hundreds), this can lead to:
