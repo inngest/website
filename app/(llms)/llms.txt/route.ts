@@ -9,20 +9,27 @@ import {
 export const dynamic = "force-static";
 
 export async function GET() {
-  const mainDocs = topLevelNav.find((nav) => nav.title === "Home").sectionLinks;
-  const examples = topLevelNav.find(
+  const learnDocs = topLevelNav.find((nav) => nav.title === "Learn")?.sectionLinks || [];
+  const referenceDocs = topLevelNav.find(
+    (nav) => nav.title === "Reference"
+  )?.sectionLinks || [];
+  const examplesDocs = topLevelNav.find(
     (nav) => nav.title === "Examples"
-  ).sectionLinks;
+  )?.sectionLinks || [];
 
   const overview = `# Inngest
 
-## Documentation
+## Learn
 
-${recursiveLinks(mainDocs)}
+${recursiveLinks(learnDocs)}
+
+## Reference
+
+${recursiveLinks(referenceDocs)}
 
 ## Examples
 
-${recursiveLinks(examples)}
+${recursiveLinks(examplesDocs)}
 
 `;
 

@@ -56,32 +56,40 @@ function useVisibleSections(sectionStore) {
 
   useEffect(() => {
     function checkVisibleSections() {
-      let { innerHeight, scrollY } = window;
+      let { innerHeight, scrollY, document } = window;
       let newVisibleSections = [];
+      let topThreshold = 100; // px from top to determine "active" section
 
-      for (
-        let sectionIndex = 0;
-        sectionIndex < sections.length;
-        sectionIndex++
+      // Check if we are at the bottom of the page
+      if (
+        innerHeight + Math.round(scrollY) >=
+        document.body.offsetHeight - 10 // tolerance
       ) {
-        let { id, headingRef } = sections[sectionIndex];
-        let top = headingRef?.current?.getBoundingClientRect().top + scrollY;
-
-        let nextSection = sections[sectionIndex + 1];
-        let bottom =
-          (nextSection?.headingRef?.current?.getBoundingClientRect().top ??
-            Infinity) +
-          scrollY -
-          remToPx(nextSection?.offsetRem ?? 0) -
-          PAGE_HEADER_OFFSET_REM;
-
-        if (
-          (top > scrollY && top < scrollY + innerHeight) ||
-          (bottom > scrollY && bottom < scrollY + innerHeight) ||
-          (top <= scrollY && bottom >= scrollY + innerHeight)
-        ) {
-          newVisibleSections.push(id);
+        if (sections.length > 0) {
+          setVisibleSections([sections[sections.length - 1].id]);
+          return;
         }
+      }
+
+      // Find the last section that is above the threshold
+      let activeSection = sections[0]; // Default to first
+
+      for (let i = 0; i < sections.length; i++) {
+        let section = sections[i];
+        let rect = section.headingRef?.current?.getBoundingClientRect();
+        if (!rect) continue;
+
+        // If this section's top is above the threshold, it's the current candidate.
+        if (rect.top < topThreshold) {
+          activeSection = section;
+        } else {
+          // This section starts below the threshold, so the previous candidate is the active one
+          break;
+        }
+      }
+
+      if (activeSection) {
+        newVisibleSections.push(activeSection.id);
       }
 
       setVisibleSections(newVisibleSections);

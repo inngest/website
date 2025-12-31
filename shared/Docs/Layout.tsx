@@ -9,7 +9,7 @@ import { Footer } from "./Footer";
 import { Home } from "./Home";
 import { Header } from "./Header";
 import Logo from "../Icons/Logo";
-import { Navigation, PageSidebar } from "./Navigation";
+import { Navigation, PageSidebar, ActiveSectionProvider } from "./Navigation";
 import { Prose } from "./Prose";
 import { SectionProvider } from "./SectionProvider";
 import { useMobileNavigationStore } from "./MobileNavigation";
@@ -90,6 +90,7 @@ export function Layout({
 
           <script dangerouslySetInnerHTML={{ __html: modeScript }} />
         </Head>
+        <ActiveSectionProvider>
         <SectionProvider sections={sections}>
           <Header />
 
@@ -106,7 +107,7 @@ export function Layout({
               // @ts-ignore
               <motion.nav
                 layoutScroll
-                className="fixed overflow-y-auto inset-y-0 mt-14 pt-16 pb-12 right-0 z-40 hidden w-60 border-l border-subtle px-6 2xl:px-10 xl:block 2xl:w-96"
+                className="fixed overflow-y-auto inset-y-0 mt-14 pt-16 pb-12 right-0 z-40 hidden w-60 px-6 2xl:px-10 xl:block 2xl:w-96"
               >
                 <div className="pt-2">
                   <PageSidebar />
@@ -137,6 +138,7 @@ export function Layout({
             </div>
           </div>
         </SectionProvider>
+        </ActiveSectionProvider>
       </MDXProvider>
     </div>
   );
