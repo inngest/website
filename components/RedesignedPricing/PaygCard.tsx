@@ -158,19 +158,6 @@ export default function PaygCard() {
                 </div>
               </div>
             </div>
-            <CardFooter className="px-9 pb-6">
-              <p className="max-w-[641px] font-circular text-sm font-light leading-[1.4] tracking-[1.12px] text-[#A8A29E]">
-                *Free plan charged at $.000083 per execution until 1m executions
-                are reached. For Enterprise,{" "}
-                <a
-                  href="mailto:sales@inngest.com"
-                  className="cursor-pointer text-[#CBB26A] hover:underline"
-                >
-                  contact us
-                </a>{" "}
-                for more information
-              </p>
-            </CardFooter>
           </Card>
         </div>
       </div>
