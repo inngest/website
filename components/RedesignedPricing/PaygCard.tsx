@@ -1,8 +1,4 @@
-import {
-  Card,
-  CardContent,
-  CardFooter,
-} from "src/components/RedesignedLanding/FeatureNavigate/Card";
+import { Card } from "src/components/RedesignedLanding/FeatureNavigate/Card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./Tabs";
 import { Button } from "../RedesignedLanding/Button";
 import Link from "next/link";
@@ -36,7 +32,7 @@ export default function PaygCard() {
           <Card className="relative h-full w-full overflow-hidden rounded-none border-none bg-stone-800 shadow-2xl sm:flex-row">
             <div>
               {/* <div className="grid grid-cols-1 flex-row gap-x-16 px-9 pt-8 lg:grid-cols-[641px_641px]"> */}
-              <div className="grid grid-cols-1 flex-row gap-x-16 px-9 pt-8 lg:grid-cols-2">
+              <div className="grid grid-cols-1 flex-row gap-x-16 px-9 pb-8 pt-8 lg:grid-cols-2">
                 <div className="flex flex-col gap-y-8">
                   <div>
                     <h2 className="pb-2 font-whyte text-[48px] font-light leading-[1.2] tracking-[-2.4px] text-white">
@@ -64,113 +60,95 @@ export default function PaygCard() {
                     </h4>
                     <p className="font-circular text-base font-light leading-[1.4] text-[#E7E5E4]">
                       Charged for each event received. Your first 1-5m events
-                      every day are free, with automatic volume discounts as
-                      you scale
+                      every day are free, with automatic volume discounts as you
+                      scale
                     </p>
                   </div>
                 </div>
-                <div className="mt-[72px]">
-                  <div>
-                    <Tabs
-                      defaultValue="executions"
-                      className="mx-auto max-w-xs"
-                    >
-                      <TabsList className="rounded-full bg-stone-600">
-                        <TabsTrigger
-                          value="executions"
-                          className="data-[state=active]:text-brand-foreground data-[state=inactive]:text-brand-muted focus-visible:ring-ring focus-visible:ring-offset-brand-background rounded-full px-4 py-2 text-sm font-medium transition-colors duration-200 ease-in-out focus-visible:ring-2 focus-visible:ring-offset-2 data-[state=active]:bg-[#080808]"
-                        >
-                          Executions
-                        </TabsTrigger>
-                        <TabsTrigger
-                          value="events"
-                          className="data-[state=active]:text-brand-foreground data-[state=inactive]:text-brand-muted focus-visible:ring-ring focus-visible:ring-offset-brand-background rounded-full px-4 py-2 text-sm font-medium transition-colors duration-200 ease-in-out focus-visible:ring-2 focus-visible:ring-offset-2 data-[state=active]:bg-[#080808]"
-                        >
-                          Events
-                        </TabsTrigger>
-                      </TabsList>
-                      <TabsContent value="executions">
-                        <div className="space-y-1">
-                          {pricingData.executions.map((item, index) => (
-                            <div
-                              key={index}
-                              className="flex items-center justify-between border-b border-stone-600 py-4"
-                            >
-                              <span className="text-brand-muted text-sm">
-                                {item.range}
-                              </span>
-                              {item.price === "Contact us" ? (
-                                <Button
-                                  variant="link"
-                                  className="px-0 py-0 text-sm hover:text-inngestLux"
-                                  asChild
+                <div>
+                  <Tabs defaultValue="executions" className="mx-auto max-w-xs">
+                    <TabsList className="rounded-full bg-stone-600">
+                      <TabsTrigger
+                        value="executions"
+                        className="data-[state=active]:text-brand-foreground data-[state=inactive]:text-brand-muted focus-visible:ring-ring focus-visible:ring-offset-brand-background rounded-full px-4 py-2 text-sm font-medium transition-colors duration-200 ease-in-out focus-visible:ring-2 focus-visible:ring-offset-2 data-[state=active]:bg-[#080808]"
+                      >
+                        Executions
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="events"
+                        className="data-[state=active]:text-brand-foreground data-[state=inactive]:text-brand-muted focus-visible:ring-ring focus-visible:ring-offset-brand-background rounded-full px-4 py-2 text-sm font-medium transition-colors duration-200 ease-in-out focus-visible:ring-2 focus-visible:ring-offset-2 data-[state=active]:bg-[#080808]"
+                      >
+                        Events
+                      </TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="executions">
+                      <div className="space-y-1">
+                        {pricingData.executions.map((item, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center justify-between border-b border-stone-600 py-4"
+                          >
+                            <span className="text-brand-muted text-sm">
+                              {item.range}
+                            </span>
+                            {item.price === "Contact us" ? (
+                              <Button
+                                variant="link"
+                                className="px-0 py-0 text-sm hover:text-inngestLux"
+                                asChild
+                              >
+                                <Link
+                                  className="h-full"
+                                  href="/contact?ref=pricing-card-payg-executions"
                                 >
-                                  <Link
-                                    className="h-full"
-                                    href="/contact?ref=pricing-card-payg-executions"
-                                  >
-                                    Contact us
-                                  </Link>
-                                </Button>
-                              ) : (
-                                <span className="text-brand-foreground text-sm font-semibold">
-                                  {item.price}
-                                </span>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </TabsContent>
-                      <TabsContent value="events">
-                        <div className="space-y-1">
-                          {pricingData.events.map((item, index) => (
-                            <div
-                              key={index}
-                              className="flex items-center justify-between border-b border-stone-600 py-4"
-                            >
-                              <span className="text-brand-muted text-sm">
-                                {item.range}
+                                  Contact us
+                                </Link>
+                              </Button>
+                            ) : (
+                              <span className="text-brand-foreground text-sm font-semibold">
+                                {item.price}
                               </span>
-                              {item.price === "Contact us" ? (
-                                <Button
-                                  variant="link"
-                                  className="px-0 py-0 text-sm hover:text-inngestLux"
-                                  asChild
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </TabsContent>
+                    <TabsContent value="events">
+                      <div className="space-y-1">
+                        {pricingData.events.map((item, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center justify-between border-b border-stone-600 py-4"
+                          >
+                            <span className="text-brand-muted text-sm">
+                              {item.range}
+                            </span>
+                            {item.price === "Contact us" ? (
+                              <Button
+                                variant="link"
+                                className="px-0 py-0 text-sm hover:text-inngestLux"
+                                asChild
+                              >
+                                <Link
+                                  className="h-full"
+                                  href="/contact?ref=pricing-card-payg-events"
                                 >
-                                  <Link
-                                    className="h-full"
-                                    href="/contact?ref=pricing-card-payg-events"
-                                  >
-                                    Contact us
-                                  </Link>
-                                </Button>
-                              ) : (
-                                <span className="text-brand-foreground text-sm font-semibold">
-                                  {item.price}
-                                </span>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </TabsContent>
-                    </Tabs>
-                  </div>
+                                  Contact us
+                                </Link>
+                              </Button>
+                            ) : (
+                              <span className="text-brand-foreground text-sm font-semibold">
+                                {item.price}
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </TabsContent>
+                  </Tabs>
                 </div>
               </div>
             </div>
-            <CardFooter className="px-9 pb-6">
-              <p className="max-w-[641px] font-circular text-sm font-light leading-[1.4] tracking-[1.12px] text-[#A8A29E]">
-                *Free plan charged at $.000083 per execution until 1m executions
-                are reached. For Enterprise,{" "}
-                <a
-                  href="mailto:sales@inngest.com"
-                  className="cursor-pointer text-[#CBB26A] hover:underline"
-                >
-                  contact us
-                </a>{" "}
-                for more information
-              </p>
-            </CardFooter>
           </Card>
         </div>
       </div>
