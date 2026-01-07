@@ -67,7 +67,34 @@ As we’re starting to build our a roadmap, we’re going to be focused on a few
 
 Our roadmap will be in the open and [you can view it right on Github here](https://github.com/orgs/inngest/projects/1).
 
-What do you want to see next? [Let us know on Discord, we’d love to hear from you](/discord).
+## AI-assisted local development with MCP
+
+The Inngest dev server now supports MCP (Model Context Protocol), allowing you to connect Claude Code, Cursor, and other AI assistants directly to your local Inngest functions:
+```json
+{
+  "mcpServers": {
+    "inngest-dev": {
+      "command": "curl",
+      "args": [
+        "-X", "POST",
+        "http://127.0.0.1:8288/mcp",
+        "-H", "Content-Type: application/json",
+        "-d", "@-"
+      ]
+    }
+  }
+}
+```
+
+AI assistants can now:
+- Send test events and monitor executions
+- Debug failed runs with full trace access  
+- Test entire workflows end-to-end automatically
+- Search Inngest documentation offline
+
+[Learn more about the MCP integration](/docs/ai-dev-tools/mcp)
+
+What do you want to see next? [Let us know on Discord, we'd love to hear from you](/discord).
 
 ## Check out the repo
 

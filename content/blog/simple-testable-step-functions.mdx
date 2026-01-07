@@ -85,7 +85,7 @@ Here’s the step function flow and it’s configuration:
 }
 ```
 
-In this example we’re defining a function that’s triggered by an Auth0 event (really, it can be an API call, an integration, a webhook, a schedule, Kafka, etc.).  Then we’re defining each step, and the order of operations.
+In this example we're defining a function that's triggered by an Auth0 event (really, it can be an API call, an integration, a webhook, a schedule, Kafka, etc.). Webhooks can now handle JSON, form data, and file uploads, with programmatic management via API. Then we're defining each step, and the order of operations.
 
 Step functions here try to avoid complexity:  in this example they simply say the step they run after, and an optional expression which will be evaluated to conditionally run based off of the event data *and* the output of previous steps.
 

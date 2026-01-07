@@ -89,6 +89,33 @@ You should now see the event in the DevServer's output and your new function sho
 
 ![Inngest DevServer example output](/assets/blog/introducing-inngest-dev-server/inngest-dev-server-output-example.png)
 
+## AI-assisted local development with MCP
+
+The Inngest dev server now supports MCP (Model Context Protocol), allowing you to connect Claude Code, Cursor, and other AI assistants directly to your local Inngest functions:
+```json
+{
+  "mcpServers": {
+    "inngest-dev": {
+      "command": "curl",
+      "args": [
+        "-X", "POST",
+        "http://127.0.0.1:8288/mcp",
+        "-H", "Content-Type: application/json",
+        "-d", "@-"
+      ]
+    }
+  }
+}
+```
+
+AI assistants can now:
+- Send test events and monitor executions
+- Debug failed runs with full trace access  
+- Test entire workflows end-to-end automatically
+- Search Inngest documentation offline
+
+[Learn more about the MCP integration](/docs/ai-dev-tools/mcp)
+
 ## OK - Just show me the code
 
 You probably just want to see some real code don't you? We created a demo project with a Next.js backend and a function that sends an SMS via Twilio's API. Check it out here: [github.com/inngest/demo-nextjs-full-stack](https://github.com/inngest/demo-nextjs-full-stack).

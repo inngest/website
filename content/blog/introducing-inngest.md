@@ -36,7 +36,7 @@ Unifying and working with these events makes a lot possible.
 
 So events are great. They let you know what's happening. They provide audit trails when things happen. **But event-driven systems can be difficult to build**. And they're very difficult to audit and debug. Don't get us wrong: if you want to wrangle with Terraform, maybe set up Kafka (I have a soft spot for NATS), build your publishers, subscribers, service discovery, throttling, retries, backoff, and other stuff, it can be done. But it's not exactly "move fast", even if it is very much "break things". You also don't get webhook handling, integrating with external services, change management, or non-technical insight here for free either.
 
-Well, this is where we step in. **Inngest provides you with a serverless event-driven platform and DAG-based serverless functions out of the box.** Send us events - any and all of them from your own systems. Connect webhooks up to external systems. And then build out serverless functions that run in real-time whenever events are received. That's the short version.
+Well, this is where we step in. **Inngest provides you with a serverless event-driven platform and DAG-based serverless functions out of the box.** Send us events - any and all of them from your own systems. Connect webhooks up to external systems. Inngest's webhook support includes multiple content types and programmatic management via API. And then build out serverless functions that run in real-time whenever events are received. That's the short version.
 
 The long version is that you can:
 

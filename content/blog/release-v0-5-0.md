@@ -44,6 +44,33 @@ If you’re interested in self-hosting, you can [read the docs here](/docs/self-
 
 We’ve also made several changes to the open-source state interface. We now include a distributed waitgroup which tracks the number of outstanding steps in a function. This lets the `inngest run` command know when a function is complete — necessary for a smoother dev UX.
 
-We’ve also changed the way the dev server works under the hood. It now better matches self hosting environments by using the exact same services as in self-hosting.
+We've also changed the way the dev server works under the hood. It now better matches self hosting environments by using the exact same services as in self-hosting.
+
+## AI-assisted local development with MCP
+
+The Inngest dev server now supports MCP (Model Context Protocol), allowing you to connect Claude Code, Cursor, and other AI assistants directly to your local Inngest functions:
+```json
+{
+  "mcpServers": {
+    "inngest-dev": {
+      "command": "curl",
+      "args": [
+        "-X", "POST",
+        "http://127.0.0.1:8288/mcp",
+        "-H", "Content-Type: application/json",
+        "-d", "@-"
+      ]
+    }
+  }
+}
+```
+
+AI assistants can now:
+- Send test events and monitor executions
+- Debug failed runs with full trace access  
+- Test entire workflows end-to-end automatically
+- Search Inngest documentation offline
+
+[Learn more about the MCP integration](/docs/ai-dev-tools/mcp)
 
 Happy building!
