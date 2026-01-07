@@ -26,7 +26,7 @@ export default function OrchestrationSection() {
       title: "Infraless",
       description: (
         <>
-          Your orchestration engine shouldn't dictate how you write production code. Wrap functions in Steps to automate retries, recovery, and scale without added infrastructure.{" "}
+          Your orchestration engine shouldn't dictate how you write production code. Wrap functions in Steps to automate retries, recovery, and flow without added infrastructure.{" "}
           <code className="font-mono text-honey-300">step.run</code> and done.
         </>
       ),
