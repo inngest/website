@@ -89,9 +89,17 @@ You should now see the event in the DevServer's output and your new function sho
 
 ![Inngest DevServer example output](/assets/blog/introducing-inngest-dev-server/inngest-dev-server-output-example.png)
 
+## OK - Just show me the code
+
+You probably just want to see some real code don't you? We created a demo project with a Next.js backend and a function that sends an SMS via Twilio's API. Check it out here: [github.com/inngest/demo-nextjs-full-stack](https://github.com/inngest/demo-nextjs-full-stack).
+
+You can also view the DevServer's source code from right in our CLI repo: [github.com/inngest/inngest](https://github.com/inngest/inngest).
+
+**Have questions, feedback or ideas? [Join our Discord](/discord)!**
+
 ## AI-assisted local development with MCP
 
-The Inngest dev server now supports MCP (Model Context Protocol), allowing you to connect Claude Code, Cursor, and other AI assistants directly to your local Inngest functions:
+**Released October 2025:** The Inngest dev server now supports MCP (Model Context Protocol), allowing you to connect Claude Code, Cursor, and other AI assistants directly to your local Inngest functions:
 ```json
 {
   "mcpServers": {
@@ -114,18 +122,10 @@ AI assistants can now:
 - Test entire workflows end-to-end automatically
 - Search Inngest documentation offline
 
-[Learn more about the MCP integration](/docs/ai-dev-tools/mcp)
-
-## OK - Just show me the code
-
-You probably just want to see some real code don't you? We created a demo project with a Next.js backend and a function that sends an SMS via Twilio's API. Check it out here: [github.com/inngest/demo-nextjs-full-stack](https://github.com/inngest/demo-nextjs-full-stack).
-
-You can also view the DevServer's source code from right in our CLI repo: [github.com/inngest/inngest](https://github.com/inngest/inngest).
-
-**Have questions, feedback or ideas? [Join our Discord](/discord)!**
+[Learn more about the MCP integration](/docs/ai-dev-tools/mcp) | [View changelog](https://www.inngest.com/changelog/2025-10-27-dev-server-mcp)
 
 ## Over to you
 
 That's it - we think the Inngest DevServer is the one tool that you can use to build and test your asynchronous code from end-to-end with zero configuration and setup. This is just the beginning and we're excited to bring more features and more power to developers hands in the months ahead!
 
-We have plenty more in store and would love to hear from you to shape the future of Inngest and the DevServer - come say hi in our Discord:
+We have plenty more in store and would love to hear from you to shape the future of Inngest and the DevServer - [come say hi in our Discord](/discord):
