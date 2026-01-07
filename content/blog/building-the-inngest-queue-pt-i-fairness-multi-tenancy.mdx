@@ -29,7 +29,7 @@ Attempting to build a system like this with any off-the-shelf queuing system is 
 - **Read/write load**. Handling tens of thousands of jobs per second leads to hundreds of thousands of requests per second: enqueues, "locks" (we'll get to that), dequeues all lead to heavy load on the backing infrastructure that runs the queue.
 - **Infrastructure**. The queue needs to be reliable and fault-tolerant, which means we need distributed systems built in (which also impacts latency).
 - **Observability**. Most queues are opaque, with little or basic observability out of the box. It's hard to build in real-time observability for step functions beyond the backlog: eg. number of functions waiting for other events, or a histogram of wall time vs execution time.
-- **Customizability**. It's difficult and incredibly time intensive to extend basic queueing systems with advanced functionality. Customizations include: changing backoffs function-by-function, cancelling the backlog based off of job data, batching, debounce, smart indexing, and step function parallelism.
+- **Customizability**. It's difficult and incredibly time intensive to extend basic queueing systems with advanced functionality. Customizations include: changing backoffs function-by-function, cancelling the backlog based off of job data, batching, debounce, singleton execution, smart indexing, and step function parallelism.
 
 To solve all of these problems, we developed a brand new queue from the ground up for Inngest. It's a fair, low-latency, multi-tenant queue which operates with multiple shared-nothing workers that claim jobs in an (almost) contention-free way.
 

@@ -15,7 +15,7 @@ Today, we're excited to announce two new AI-native features:
 - [AgentKit](https://agentkit.inngest.com), the fastest way to develop, test, and ship complex AI workflows to production, in early access
 - A new set of core APIs in our platform: [step.ai](/docs/features/inngest-functions/steps-workflows/step-ai-orchestration), which brings the same world-class developer experience from our existing product to AI-native applications.
 
-Just as Inngest manages your background jobs, webhooks, and scheduled tasks with built-in retries and state management, [step.ai](/docs/features/inngest-functions/steps-workflows/step-ai-orchestration) now handles your AI model calls with the same production-ready infrastructure — with built in observability and support for agentic workflows out of the box.
+Just as Inngest manages your background jobs, webhooks (supporting JSON, form data, and file uploads), and scheduled tasks with built-in retries and state management, [step.ai](/docs/features/inngest-functions/steps-workflows/step-ai-orchestration) now handles your AI model calls with the same production-ready infrastructure — with built in observability and support for agentic workflows out of the box.
 
 ## AgentKit:  the fastest way to build production-ready AI workflows
 
@@ -50,6 +50,39 @@ export default inngest.createFunction(
 
 <a href="https://agentkit.inngest.com">You can read the docs here</a>, and [see the code on GitHub](https://github.com/inngest/agent-kit).  We cannot wait to see how you work with AgentKit.  We're iterating daily, and to speak with us or give feedback <a href="https://www.inngest.com/discord?ref=agentkit-blog"> join us in our #ai discord</a>
 
+## Stream AgentKit workflows to the frontend with useAgent
+
+Building on AgentKit's orchestration capabilities, we've released **useAgent**—a React hook that makes it trivial to stream real-time updates from your durable AI workflows directly to the browser.
+
+With a single hook and provider, you get:
+
+- **Parts-based streaming**: Responses stream as composable parts—text, tools, data visualizations, and reasoning steps—each updating independently in real-time
+- **Built-in durability**: Refresh mid-execution and resume exactly where you left off
+- **No infrastructure**: No WebSocket management, state stores, or connection handling required
+```tsx
+import { useAgent } from "@inngest/use-agent";
+
+export function MyAgentUI() {
+  const { messages, sendMessage, status } = useAgent();
+  
+  return (
+    <div>
+      {messages.map(({ id, role, parts }) => (
+        <div key={id}>
+          {parts.map(({ type, content }) => 
+            type === "text" ? <p>{content}</p> : null
+          )}
+        </div>
+      ))}
+      <button onClick={() => sendMessage(userInput)}>
+        Send
+      </button>
+    </div>
+  );
+}
+```
+
+[Read the full blog post](/blog/agentkit-useagent-realtime-hook) or explore the [useAgent documentation](https://agentkit.inngest.com/use-agent).
 
 ## New step APIs - now available for early access: `step.ai.wrap` and `step.ai.infer`
 
@@ -64,6 +97,11 @@ Both AI APIs offer a bunch of new features, specifically for rapidly iterating o
 - AI workflow tracing, including large sequences of inference calls or agentic workflows
 - The ability to edit inputs from the middle of a workflow and rerun
 - Metadata, metrics, and usage stats across AI model calls
+- **Query AI metrics with Insights**: Use SQL to analyze token usage, model performance, and agent success rates across your AI workflows
+
+For AI applications, Insights is particularly powerful—query token costs across models, identify which agents loop most frequently, and track success rates over time. All queryable with SQL directly in the dashboard.
+
+[Learn more about Insights](/blog/insights-query-events-and-runs)
 
 [To learn more, read our docs here](/docs/features/inngest-functions/steps-workflows/step-ai-orchestration).
 
