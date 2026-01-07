@@ -53,69 +53,6 @@ output.verified == false
 
 Searching returns results in **milliseconds**, even with hundreds of millions of daily runs.  For more information, check out our [documentation on run search](/docs/platform/monitor/inspecting-function-runs#searching-function-runs?ref=blog-announcing-function-runs-search), and if you have any feedback, [join us on our Discord](/discord) (where you can chat with our engineering team about how we build things like this).
 
-## Query your data with Insights
-
-Inngest now includes **Insights**—the ability to query your events and runs using SQL directly in the dashboard:
-
-\`\`\`sql
-SELECT 
-  event_name,
-  COUNT(*) as event_count
-FROM events
-WHERE created_at > NOW() - INTERVAL '7 days'
-GROUP BY event_name
-ORDER BY event_count DESC;
-\`\`\`
-
-**Insights enables:**
-- Custom queries for event analysis
-- Run performance tracking  
-- Data export for custom reporting
-- Schema explorer to discover available data
-
-Particularly powerful for AI workflows—track token usage, model calls, and agent performance directly from your workflow data.
-
-[Read the announcement](/blog/insights-query-events-and-runs)
-
-## Export metrics to Datadog
-
-For teams using Datadog, you can now export all Inngest metrics for centralized monitoring and alerting. Configure the integration in your Inngest dashboard under Settings > Integrations > Datadog.
-
-**Available metrics include:**
-- `inngest_function_run_scheduled_total`
-- `inngest_function_run_started_total`
-- `inngest_function_run_ended_total`
-- And more
-
-[Learn more](/docs/platform/monitor/datadog-integration)
-
-## AI-assisted local development with MCP
-
-The Inngest dev server now supports MCP (Model Context Protocol), allowing you to connect Claude Code, Cursor, and other AI assistants directly to your local Inngest functions:
-```json
-{
-  "mcpServers": {
-    "inngest-dev": {
-      "command": "curl",
-      "args": [
-        "-X", "POST",
-        "http://127.0.0.1:8288/mcp",
-        "-H", "Content-Type: application/json",
-        "-d", "@-"
-      ]
-    }
-  }
-}
-```
-
-AI assistants can now:
-- Send test events and monitor executions
-- Debug failed runs with full trace access  
-- Test entire workflows end-to-end automatically
-- Search Inngest documentation offline
-
-[Learn more about the MCP integration](/docs/ai-dev-tools/mcp)
-
 ## Tips: Make your Inngest Function runs searchable
 
 The Function runs search makes it easy to search across thousands of runs using event and run result properties. Here are some tips to make your runs easily searchable.
@@ -265,6 +202,71 @@ Generating the query is only the first part of the challenge. To enable required
 - Create an infinite scroll with pagination to view search results
 
 Handling these UX requirements took additional work. In orchestration, runs can take minutes, hours, days, or months to finish.  The input event data and the output data may be inserted at *very* different times, leading to windowing issues when showing all of the data.  Our search algorithm intelligently applies windowing and filtering to correctly filter function run data to ensure consistent pagination while also providing accurate counts of function runs.
+
+## Updates: What's changed since this blog was published
+
+### Query your data with Insights (September 2025)
+
+Inngest now includes **Insights**—the ability to query your events and runs using SQL directly in the dashboard:
+
+\`\`\`sql
+SELECT 
+  event_name,
+  COUNT(*) as event_count
+FROM events
+WHERE created_at > NOW() - INTERVAL '7 days'
+GROUP BY event_name
+ORDER BY event_count DESC;
+\`\`\`
+
+**Insights enables:**
+- Custom queries for event analysis
+- Run performance tracking  
+- Data export for custom reporting
+- Schema explorer to discover available data
+
+Particularly powerful for AI workflows—track token usage, model calls, and agent performance directly from your workflow data.
+
+[Read the announcement](/blog/insights-query-events-and-runs) | [View changelog](https://www.inngest.com/changelog/2025-09-23-insights)
+
+### Export metrics to Datadog (June 2025)
+
+For teams using Datadog, you can now export all Inngest metrics for centralized monitoring and alerting. Configure the integration in your Inngest dashboard under Settings > Integrations > Datadog.
+
+**Available metrics include:**
+- `inngest_function_run_scheduled_total`
+- `inngest_function_run_started_total`
+- `inngest_function_run_ended_total`
+- And more
+
+[Learn more](/docs/platform/monitor/datadog-integration) | [View changelog](https://www.inngest.com/changelog/2025-06-13-datadog-metrics-export)
+
+### AI-assisted local development with MCP (October 2025)
+
+The Inngest dev server now supports MCP (Model Context Protocol), allowing you to connect Claude Code, Cursor, and other AI assistants directly to your local Inngest functions:
+```json
+{
+  "mcpServers": {
+    "inngest-dev": {
+      "command": "curl",
+      "args": [
+        "-X", "POST",
+        "http://127.0.0.1:8288/mcp",
+        "-H", "Content-Type: application/json",
+        "-d", "@-"
+      ]
+    }
+  }
+}
+```
+
+AI assistants can now:
+- Send test events and monitor executions
+- Debug failed runs with full trace access  
+- Test entire workflows end-to-end automatically
+- Search Inngest documentation offline
+
+[Learn more about the MCP integration](/docs/ai-dev-tools/mcp) | [View changelog](https://www.inngest.com/changelog/2025-10-27-dev-server-mcp)
 
 ## Join our Beta program
 
