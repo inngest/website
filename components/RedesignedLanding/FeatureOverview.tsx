@@ -4,7 +4,7 @@ import {
   GlobeAltIcon,
   EyeIcon,
 } from "@heroicons/react/24/outline";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./FeatureNavigate/Card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "src/components/RedesignedLanding/FeatureNavigate/Card";
 import { useEffect } from "react";
 import { useAnimate, useInView } from "motion/react";
 
