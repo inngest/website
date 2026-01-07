@@ -79,3 +79,32 @@ We're also excited to announce our new **Environments** with specific support fo
 We've seen a number of companies move to Inngest and unlock their team to build faster with less overhead. Companies like [Ocoya have leveraged Inngest to deliver new features in record time](/customers/ocoya?ref=blog-april-2023-announcement) and have made their infrastructure far simpler and easier to maintain in the process.
 
 We think Inngest is the best platform for reliable business-critical background jobs, and we can't wait for you to try it out. Check out our quick start guide, create a free account to explore Inngest the Inngest platform or join our Discord community!
+
+## Updates: What's changed since this blog was published
+
+### AI-assisted local development with MCP (October 2025)
+
+The Inngest dev server now supports MCP (Model Context Protocol), allowing you to connect Claude Code, Cursor, and other AI assistants directly to your local Inngest functions:
+```json
+{
+  "mcpServers": {
+    "inngest-dev": {
+      "command": "curl",
+      "args": [
+        "-X", "POST",
+        "http://127.0.0.1:8288/mcp",
+        "-H", "Content-Type: application/json",
+        "-d", "@-"
+      ]
+    }
+  }
+}
+```
+
+AI assistants can now:
+- Send test events and monitor executions
+- Debug failed runs with full trace access  
+- Test entire workflows end-to-end automatically
+- Search Inngest documentation offline
+
+[Learn more about the MCP integration](/docs/ai-dev-tools/mcp) | [View changelog](https://www.inngest.com/changelog/2025-10-27-dev-server-mcp)
