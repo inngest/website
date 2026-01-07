@@ -118,7 +118,7 @@ function PillarCard({
       ref={scope as any}
       className="relative h-full opacity-0"
     >
-      <div className="relative flex h-full overflow-hidden border-2 border-stone-800 bg-stone-900/30 shadow-xl transition-all hover:bg-stone-800/50 hover:shadow-[0_20px_25px_-5px_rgba(0,0,0,0.15),0_10px_10px_-5px_rgba(0,0,0,0.1)]">
+      <div className="relative flex h-full overflow-hidden border-2 border-stone-800 bg-stone-900/30 shadow-xl">
         <div className="relative flex h-full w-full flex-col items-start text-left p-8 sm:p-10">
           <div className="mb-6 flex flex-col items-start gap-4">
             <Icon className={`h-8 w-8 ${colors.iconColor}`} />
@@ -151,7 +151,7 @@ function WorkflowsCard() {
   return (
     <div
       ref={scope as any}
-      className="relative overflow-hidden border-2 border-stone-800 bg-stone-900/30 p-3 opacity-0 shadow-xl transition-all sm:p-6 hover:bg-stone-800/50 hover:shadow-[0_20px_25px_-5px_rgba(0,0,0,0.15),0_10px_10px_-5px_rgba(0,0,0,0.1)]"
+      className="relative overflow-hidden border-2 border-stone-800 bg-stone-900/30 p-3 opacity-0 shadow-xl sm:p-6"
     >
       <div className="pointer-events-none absolute -left-3/4 -top-3/4 h-[150%] w-[150%] rounded-full bg-[#655279]" />
 
@@ -208,7 +208,7 @@ function AgentsCard() {
   return (
     <div
       ref={scope as any}
-      className="relative overflow-hidden border-2 border-stone-800 bg-stone-900/30 p-3 opacity-0 shadow-xl transition-all sm:p-6 hover:bg-stone-800/50 hover:shadow-[0_20px_25px_-5px_rgba(0,0,0,0.15),0_10px_10px_-5px_rgba(0,0,0,0.1)]"
+      className="relative overflow-hidden border-2 border-stone-800 bg-stone-900/30 p-3 opacity-0 shadow-xl sm:p-6"
     >
       <div className="pointer-events-none absolute -bottom-3/4 -right-3/4 h-[150%] w-[150%] rounded-full bg-inngestLux" />
 
