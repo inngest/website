@@ -56,18 +56,15 @@ export default function FeatureNavigate() {
         </div>
         <div className="bg-stone-900 py-20 md:py-40">
           <div className="px-10 sm:px-6 md:px-8">
-            <div className="relative z-30 mx-auto max-w-5xl bg-stone-900 pb-8 md:z-0">
+            <div className="relative z-30 mx-auto max-w-5xl bg-stone-900 md:z-0">
               <h1 className="mb-2 font-whyte text-4xl font-light">
-                Ship anywhere
+                Production ready from day 1
               </h1>
-              <p className="mb-6 max-w-xl font-circular text-lg font-light text-stone-200">
-                Run anywhere, on any code, from any trigger. Deploy to your favorite cloud provider in one click.
+              <p className="max-w-lg font-circular text-lg font-light text-stone-200">
+                Go from local prototype to production application with
+                fault-tolerance and full observability for servers or serverless
+                deployments.
               </p>
-              <Button className="bg-stone-900" variant="outline" asChild>
-                <Link href="/docs/platform/deployment?ref=homepage-deploy">
-                  Start Deploying <ArrowRightIcon />
-                </Link>
-              </Button>
             </div>
             <div className="mx-auto flex max-w-screen-2xl flex-col pb-12 pt-12 md:flex-row md:justify-end md:pb-32 md:pt-20">
               <div className="order-2 hidden sm:order-1 md:block">
@@ -76,6 +73,27 @@ export default function FeatureNavigate() {
               <div className="order-2 block sm:order-1 md:hidden">
                 <MobileDeploySVG />
               </div>
+
+              <Card className="order-1 mt-8 flex h-full max-w-xs flex-col justify-center rounded-none border-none bg-stone-900 sm:order-2 md:ml-8 md:mt-0">
+                <CardHeader className="pt-0">
+                  <CardTitle className="font-whyte text-3xl font-light">
+                    Ship anywhere
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="max-w-2xl font-circular text-base font-normal text-stone-300">
+                  <p className="text-balance font-sans text-base font-normal leading-[26.24px] tracking-[-0.304px] text-stone-300">
+                    Deploy Inngest workflows to your favorite cloud provider in
+                    one click
+                  </p>
+                </CardContent>
+                <CardFooter>
+                  <Button className="bg-stone-900" variant="outline" asChild>
+                    <Link href="/docs/platform/deployment?ref=homepage-deploy">
+                      Read Documentation <ArrowRightIcon />
+                    </Link>
+                  </Button>
+                </CardFooter>
+              </Card>
             </div>
 
             <div className="mx-auto flex max-w-5xl flex-col items-start pb-12 pt-12 md:pb-0 md:pt-32">
@@ -84,18 +102,18 @@ export default function FeatureNavigate() {
                 <Card className="flex h-full max-w-sm flex-col justify-center rounded-none border-none bg-stone-900 sm:order-1 md:z-0 md:self-end xl:self-start">
                   <CardHeader className="pl-6 xl:pl-0">
                     <CardTitle className="font-whyte text-3xl font-light">
-                      Automate retries, recovery, and flow
+                      Fault tolerance
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="max-w-2xl pl-6 font-circular text-base font-normal text-stone-300 xl:pl-0">
                     <p className="text-balance font-sans text-base font-normal leading-[26.24px] tracking-[-0.304px] text-stone-300">
-                      Inngest automatically retries on error, while ensuring efficient runs via throttling, batching, and prioritization. If something breaks, Inngest picks up where it left off.
+                      Automatically retry on error for reliable AI applications
                     </p>
                   </CardContent>
                   <CardFooter className="pl-6 xl:pl-0">
                     <Button className="bg-stone-900" variant="outline" asChild>
                       <Link href="/docs/guides/error-handling?ref=homepage-fault-tolerance">
-                        Learn about Error Handling <ArrowRightIcon />
+                        Read Documentation <ArrowRightIcon />
                       </Link>
                     </Button>
                   </CardFooter>
@@ -116,7 +134,7 @@ export default function FeatureNavigate() {
                 <Card className="mt-8 flex h-full max-w-sm flex-col justify-center rounded-none border-none bg-stone-900 sm:order-1">
                   <CardHeader className="pl-6 md:pl-0">
                     <CardTitle className="font-whyte text-3xl font-light">
-                      Get deep observability without building it yourself
+                      Full observability
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="max-w-2xl pl-6 font-circular text-base font-normal text-stone-300 md:pl-0">
@@ -128,7 +146,7 @@ export default function FeatureNavigate() {
                   <CardFooter className="pl-6 md:pl-0">
                     <Button className="bg-stone-900" variant="outline" asChild>
                       <Link href="/docs/platform/monitor/observability-metrics?ref=homepage-observability">
-                        Learn about Observability <ArrowRightIcon />
+                        Read Documentation <ArrowRightIcon />
                       </Link>
                     </Button>
                   </CardFooter>

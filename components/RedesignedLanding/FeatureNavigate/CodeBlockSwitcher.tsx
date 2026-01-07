@@ -236,7 +236,7 @@ export default function CodeBlockSwitcher() {
             <CardFooter>
               <Button variant="outline" asChild>
                 <Link href="/docs?ref=homepage-sdk">
-                  Get Started <ArrowRightIcon />
+                  Read Documentation <ArrowRightIcon />
                 </Link>
               </Button>
             </CardFooter>

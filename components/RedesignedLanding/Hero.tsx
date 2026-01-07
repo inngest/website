@@ -22,12 +22,17 @@ export default function Hero() {
             <div className="mx-auto max-w-[76%] md:ml-16 md:max-w-5xl lg:mx-auto">
               <div className="mb-16 mt-4 text-[2.5rem] leading-[2.75rem] sm:mt-0 md:text-6xl lg:text-7xl">
                 <h1 className="block font-whyte">
-                  Make <strong>any</strong> code durable by default
+                  Build unbreakable workflows.
                 </h1>
+                <h2 className="block max-w-[52rem] font-whyteInktrap">
+                  Scale to millions of users in a day.
+                </h2>
               </div>
               <div className="relative z-10 text-left font-circular text-[1.25rem] md:max-w-sm md:text-base lg:max-w-lg lg:text-xl">
                 <p className="mb-8 font-circular text-[1.25rem] font-normal leading-8 text-stone-200 md:font-light lg:text-2xl">
-                  Workflows, agents, endpoints, background jobs—however it's written, wherever it runs—Inngest makes it unbreakable.
+                  Inngest lets you auto-scale queues, monitor runs, and replay
+                  errors—without touching infrastructure. Ship fast, iterate
+                  faster.
                 </p>
                 <div className="flex flex-col gap-4 sm:flex-row">
                   <Button
@@ -55,7 +60,7 @@ export default function Hero() {
 
               <div className="mt-8 sm:mt-24">
                 <h2 className="font-circular text-base font-light text-stone-50">
-                  Trusted in production at
+                  Trusted by product teams at
                 </h2>
                 <div className="mt-10 grid grid-cols-2 items-center gap-8 sm:grid-cols-3 md:justify-between lg:mx-auto lg:grid-cols-6">
                   {[
