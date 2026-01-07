@@ -257,6 +257,22 @@ export default inngest.createFunction(
 
 *Explore the [complete project on GitHub](https://github.com/inngest/vercel-ai-o1-preview-crm-agent/tree/step-ai) and run it locally or deploy it on Vercel.*
 
+## Even faster AI workflows with Checkpointing
+
+For AI applications requiring real-time responsiveness—like interactive chat interfaces or live agent workflows—Inngest now offers **Checkpointing** to eliminate inter-step latency while maintaining durability.
+
+When building AI workflows with `step.ai.infer()` and `step.run()`, you can now enable checkpointing to achieve:
+- **Near-zero latency** between steps
+- **50% faster** overall workflow execution
+- **Full durability** maintained through background checkpoints
+
+This is particularly powerful for:
+- Multi-turn conversational AI where response speed matters
+- Agentic workflows with many sequential steps
+- Interactive AI experiences that stream results to users
+
+Checkpointing is available in developer preview. [Learn more](/docs/setup/checkpointing).
+
 ## Conclusion
 
 We're happy to continue to support developers building Serverless applications by enabling the creation of durable, retriable workflows with `step.run()` and the efficient offloading of LLM requests with `step.ai.infer()`.  

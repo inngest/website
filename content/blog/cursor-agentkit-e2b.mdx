@@ -357,6 +357,35 @@ I highly encourage you to [clone the repository](https://github.com/e2b-dev/e2b-
 
 <CTACallout text={'AgentKit: a TypeScript library to create and orchestrate AI Agents.'} cta={{ href: 'https://agentkit.inngest.com', text: 'Read the docs' }} />
 
+## Stream your agent to the frontend
+
+Once you've built your agent workflow with AgentKit, you can stream real-time updates to your users with the `useAgent` React hook:
+```tsx
+import { useAgent } from "@inngest/use-agent";
+
+export function AgentUI() {
+  const { messages, sendMessage, status } = useAgent();
+  
+  return (
+    <div>
+      {messages.map(({ id, role, parts }) => (
+        <div key={id}>
+          {parts.map(({ type, content }) => 
+            type === "text" ? <p>{content}</p> : null
+          )}
+        </div>
+      ))}
+      <button onClick={() => sendMessage(userInput)}>
+        Send
+      </button>
+    </div>
+  );
+}
+```
+
+No WebSocket management, no state stores, no connection handling—just durable, observable AI workflows streaming to your UI.
+
+[Read the useAgent announcement](/blog/agentkit-useagent-realtime-hook).
 
 Conclusion
 ----------

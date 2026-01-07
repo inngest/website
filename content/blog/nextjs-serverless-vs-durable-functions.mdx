@@ -310,7 +310,7 @@ In short, the Durable Execution Engine is responsible for keeping the state of D
 
 This architecture powers the durability of Durable Functions with retriable steps and waits from hours to months. Also, a nice collateral effect of Durable Functions resides in steps getting a max duration equivalent to a regular Serverless Functions run, enabling workflows that both span over months and run for more than 5 minutes!
 
-### Improving the reliability of our domain verification workflow with Flow Control
+## Improving the reliability of our domain verification workflow with Flow Control
 
 Our pragmatic CRON-based domain verification workflow had many flaws, all solved with built-in Durable Functions features with a cleaner code.
 
@@ -342,6 +342,43 @@ export default inngest.createFunction(
 ```
 
 Our workflow is now guaranteed to run a maximum of 2 times per second!
+
+## Inngest: Expanding Durable Functions beyond workflows
+
+Inngest extends Durable Functions beyond traditional background workflows, enabling you to add durability directly to API routes and achieve near-zero latency for real-time applications.
+
+### Beyond workflows: step.run() in REST APIs
+
+Durable Functions aren't just for background workflows anymore. With Inngest's latest releases, you can now add durability directly to your API routes:
+```javascript
+import { createFunction, step } from "inngest/express";
+
+app.post("/api/process", createFunction(async (req, res) => {
+  const summary = await step.run("summarize", async () => {
+    return await ai.summarize(req.body.text);
+  });
+  
+  await step.run("index", async () => {
+    await search.index(summary);
+  });
+  
+  res.json({ ok: true, summary });
+}));
+```
+
+Crash the server halfway through—Inngest resumes from the last completed step. No queue, no separate worker, just one code path with automatic durability and observability.
+
+### Near-zero latency with Checkpointing
+
+For workflows requiring real-time responsiveness, **Checkpointing** eliminates the latency tradeoff traditionally associated with durable execution:
+
+- Inter-step latency drops to milliseconds
+- 50% reduction in overall workflow duration
+- Full durability maintained through background checkpoints
+
+This makes Durable Functions viable for interactive, user-facing experiences in Next.js applications—not just background jobs.
+
+[Learn more about Checkpointing](/docs/setup/checkpointing)
 
 ## Conclusion
 

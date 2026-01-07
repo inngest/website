@@ -38,6 +38,25 @@ Internally, this change also frees up the Inngest client from being passed a typ
 
 Check out [Defining Event Payload Types](/docs/reference/client/create?ref=blog-sdk-2-0#defining-event-payload-types) to learn about specifying types in v2.
 
+### Update: Standard Schema support (September 2025)
+
+Since v2, Inngest's TypeScript SDK has evolved to support the Standard Schema interface, expanding beyond Zod to support multiple validation libraries:
+
+\`\`\`typescript
+import { z } from "zod";  // Now supports Zod 4!
+import * as v from "valibot";
+
+// Choose your preferred validator
+const schemas = new EventSchemas()
+  .fromZod(zodSchemas)      // Zod 4 supported
+  .fromValibot(valibotSchemas)  // New option
+  .fromArkType(arkSchemas);     // New option
+\`\`\`
+
+This gives you flexibility to use Zod 4, Valibot (smaller bundles), ArkType (TypeScript-first), joi, or any [Standard Schema](https://standardschema.dev/)-compatible library.
+
+Available in SDK v3.42.0+. [Learn more](/docs/reference/client/create#defining-event-payload-types)
+
 ## Middleware
 
 Following the schema change, we can now add middleware. Middleware allows you to hook into various lifecycles of an Inngest client to add custom functionality.

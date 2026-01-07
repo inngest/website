@@ -48,6 +48,69 @@ Our new monitoring features are designed to help you quickly identify anomalies 
 
 These enhancements don't aim to replace dedicated monitoring platforms like Datadog. Instead, they provide exactly what you need to manage your Inngest applications with confidence, offering the most important data for your Inngest-powered applications without unnecessary complexity.
 
+## Query your data with Insights
+
+Inngest now includes **Insights**—the ability to query your events and runs using SQL directly in the dashboard:
+
+\`\`\`sql
+SELECT 
+  event_name,
+  COUNT(*) as event_count
+FROM events
+WHERE created_at > NOW() - INTERVAL '7 days'
+GROUP BY event_name
+ORDER BY event_count DESC;
+\`\`\`
+
+**Insights enables:**
+- Custom queries for event analysis
+- Run performance tracking  
+- Data export for custom reporting
+- Schema explorer to discover available data
+
+Particularly powerful for AI workflows—track token usage, model calls, and agent performance directly from your workflow data.
+
+[Read the announcement](/blog/insights-query-events-and-runs)
+
+## Export metrics to Datadog
+
+For teams using Datadog, you can now export all Inngest metrics for centralized monitoring and alerting. Configure the integration in your Inngest dashboard under Settings > Integrations > Datadog.
+
+**Available metrics include:**
+- `inngest_function_run_scheduled_total`
+- `inngest_function_run_started_total`
+- `inngest_function_run_ended_total`
+- And more
+
+[Learn more](/docs/platform/monitor/datadog-integration)
+
+## AI-assisted local development with MCP
+
+The Inngest dev server now supports MCP (Model Context Protocol), allowing you to connect Claude Code, Cursor, and other AI assistants directly to your local Inngest functions:
+```json
+{
+  "mcpServers": {
+    "inngest-dev": {
+      "command": "curl",
+      "args": [
+        "-X", "POST",
+        "http://127.0.0.1:8288/mcp",
+        "-H", "Content-Type: application/json",
+        "-d", "@-"
+      ]
+    }
+  }
+}
+```
+
+AI assistants can now:
+- Send test events and monitor executions
+- Debug failed runs with full trace access  
+- Test entire workflows end-to-end automatically
+- Search Inngest documentation offline
+
+[Learn more about the MCP integration](/docs/ai-dev-tools/mcp)
+
 ### The future of Inngest observability
 
 By combining the new trace experience with a monitoring dashboard, we're equipping you with powerful tools to manage, monitor, and troubleshoot your durable functions with effortless control. The ability to see both detailed execution traces and a holistic view of system health means you can move seamlessly between resolving function-level issues and addressing broader system-wide concerns.

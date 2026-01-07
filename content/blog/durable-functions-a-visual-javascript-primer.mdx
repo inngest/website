@@ -212,6 +212,43 @@ This durable retry mechanism automatically handles transient errors, giving each
 
 ---
 
+## Making HTTP requests durable with step.fetch()
+
+Beyond `step.run()` and `step.waitForEvent()`, Inngest now provides `step.fetch()` for making durable HTTP requests to third-party APIs:
+```javascript
+const processFiles = inngest.createFunction(
+  { id: "process-files" },
+  { event: "files/process" },
+  async ({ step }) => {
+    // The request is offloaded to Inngest
+    const response = await step.fetch("fetch-files", 
+      "https://api.example.com/files", 
+      {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${process.env.API_KEY}`
+        }
+      }
+    );
+
+    // Your function resumes here with the response
+    const body = await response.json();
+    
+    await step.run("process-file", async () => {
+      // Process the files...
+    });
+  }
+);
+```
+
+Benefits of `step.fetch()`:
+- Requests execute on Inngest's infrastructure, not your serverless runtime
+- Automatic retries on network failures
+- No impact on your function's execution time limits
+- Full observability of all HTTP requests in the dashboard
+
+[Learn more about step.fetch()](/docs/features/inngest-functions/steps-workflows/step-fetch)
+
 ## Conclusion
 
 Durable Functions make it easy to manage complex, long-running processes in modern applications. With their built-in state management, error handling, and resumability, they let developers focus on the app's main functions instead of infrastructure.

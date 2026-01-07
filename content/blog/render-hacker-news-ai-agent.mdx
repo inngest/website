@@ -431,4 +431,34 @@ To go deeper on the tech stack, you can:
 
 - **Learn more about Render:** See the different [services types](https://render.com/docs/service-types) you can deploy on Render, and understand how to [combine multiple services](https://render.com/docs/multi-service-architecture) into a single app.
 - **Learn more about Inngest:** Explore [Inngest's TypeScript SDK](/docs?utm_source=render&utm_medium=article&utm_campaign=hn-hacker-news-agent) and [AgentKit](https://agentkit.inngest.com/overview) documentation.
+
+## Stream your agent to the frontend
+
+Once you've built your agent workflow with AgentKit, you can stream real-time updates to your users with the `useAgent` React hook:
+```tsx
+import { useAgent } from "@inngest/use-agent";
+
+export function AgentUI() {
+  const { messages, sendMessage, status } = useAgent();
+  
+  return (
+    <div>
+      {messages.map(({ id, role, parts }) => (
+        <div key={id}>
+          {parts.map(({ type, content }) => 
+            type === "text" ? <p>{content}</p> : null
+          )}
+        </div>
+      ))}
+      <button onClick={() => sendMessage(userInput)}>
+        Send
+      </button>
+    </div>
+  );
+}
+```
+
+No WebSocket management, no state stores, no connection handling—just durable, observable AI workflows streaming to your UI.
+
+[Read the useAgent announcement](/blog/agentkit-useagent-realtime-hook).
 - **Read about a production use case:** Read how Fey uses both [Render](https://render.com/customers/fey) and [Inngest](/customers/fey) to build their AI-powered personal finance app.
