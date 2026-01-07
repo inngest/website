@@ -43,7 +43,7 @@ export default function OrchestrationSection() {
       number: "3",
       title: "Observable",
       description:
-        "Focus on building logic, not instrumentation. Inngest offers all the tools needed for production systems. Features like Flow Control and Replay ensure runs are efficient, and easily debugged.",
+        "Focus on logic, not instrumentation. Data about your runs lives where runs happen. So you can query, cancel, or replay without grepping logs across systems.",
       icon: EyeIcon,
     },
   ];
