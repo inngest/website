@@ -39,7 +39,7 @@ This is **iterative execution.** It's marked by 4 key features:
 
 1. **Durable**
 
-    Every workflow must be stateful and resilient by default, so failures, restarts, or outages don't stop a run from eventually completing. This is the non-negotiable baseline for all modern workflows, but it hasn't gone far enough. Modern durable execution now requires *flow control* to allow engineers to meter runs with respect to upstream rate limits, limit how often their users can execute runs, and ensure exclusive execution when only the most recent run matters (via Singleton Functions).
+    Every workflow must be stateful and resilient by default, so failures, restarts, or outages don't stop a run from eventually completing. This is the non-negotiable baseline for all modern workflows, but it hasn't gone far enough. Modern durable execution now requires *flow control* to allow engineers to meter runs with respect to upstream rate limits, or limit how often their users can execute runs.
 
 2. **Observable**
 
