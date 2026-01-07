@@ -6,7 +6,9 @@ image: "/assets/blog/release-v0.5.0.jpg"
 tags: release-notes
 ---
 
-[Inngest v0.5.0 is here](https://www.github.com/inngest/inngest)! This release contains _exciting_ new functionality to improve your lives as a developer, as well as routine improvements. Some of the highlights which we’ll dive into:
+> **📢 Latest version:** This blog post covers Inngest v0.5.0 from July 2022. For information about the latest version of Inngest, including self-hosting support and recent features, see [**Announcing Inngest self-hosting (v1.0)**](/blog/inngest-1-0-announcing-self-hosting-support).
+
+[Inngest v0.5.0 is here](https://www.github.com/inngest/inngest)! This release contains _exciting_ new functionality to improve your lives as a developer, as well as routine improvements. Some of the highlights which we'll dive into:
 
 - **Historic replay,** which allows you to locally test your functions with _real production data_
 - **Self-hosting beta,** so that you can host Inngest in your own environment
