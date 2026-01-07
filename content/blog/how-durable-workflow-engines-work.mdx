@@ -238,31 +238,20 @@ that power them.  Workflow engines are modern replacements for queues, offering 
 above and beyond what raw infrastructure provides.  They're a force multiplier, a new type of
 tool that improves how we build products day to day.
 
-## How Inngest has evolved: New execution modes (Jan 2026)
+## How durable execution is evolving: Expanding beyond traditional workflows
 
-### Connect: Persistent connection mode
-For container deployments (Kubernetes, ECS, etc.), Inngest now supports **Connect**—outbound persistent connections that eliminate the need for load balancers and reduce latency:
-- Lower latency through persistent connections
-- Elastic horizontal scaling by adding more workers
-- Simpler long-running steps not bound by HTTP timeouts
+As durable execution matures, workflow engines are expanding beyond traditional background job processing to support more diverse execution patterns and deployment models.
 
-[Learn more about Connect](/docs/setup/connect)
+### Real-time and interactive applications
 
-### Singleton Functions: Exclusive execution
-Control workflow execution with **Singleton Functions** to ensure only one instance of a function runs at a time:
-- `skip` mode: Discard new events while a run is in progress
-- `cancel` mode: Cancel the existing run and start fresh with the latest data
+Historically, durable execution was synonymous with background processing—batch jobs, scheduled tasks, and asynchronous workflows that could take minutes or hours. But modern applications increasingly need durability for real-time, user-facing experiences. Workflow engines are adapting to support interactive AI workflows, live dashboards, and streaming applications where latency matters. This requires rethinking the traditional persistence model to minimize inter-step delays while maintaining fault tolerance.
 
-Perfect for scenarios where you want to process only the most recent data.
+### Advanced flow control primitives
 
-[Learn more about Singleton Functions](/docs/guides/singleton)
+Early workflow engines focused on basic retries and timeouts. Modern engines are adding sophisticated flow control primitives: rate limiting to respect upstream API constraints, debouncing to handle rapid event bursts, concurrency controls for resource management, and exclusive execution patterns for scenarios where only the most recent work matters. These primitives enable engineers to build production systems that gracefully handle scale and complexity without manual coordination.
 
-### step.fetch(): Durable HTTP requests
-Make HTTP requests durable by offloading them to the Inngest platform:
-- Automatic retries on failure
-- Requests execute outside your serverless timeout limits
-- Built-in observability for all external API calls
+### Integration with external services
 
-[Learn more about step.fetch()](/docs/features/inngest-functions/steps-workflows/step-fetch)
+Workflow engines are evolving to handle external service integration more gracefully. Rather than requiring developers to wrap every API call in custom retry logic, engines are providing durable primitives for HTTP requests, database operations, and third-party service calls. This shifts the burden of reliability from application code to the platform, making it easier to build resilient systems that depend on external services.
 
-These additions expand how workflow engines can be used in production systems.
+These patterns represent the natural evolution of durable execution as it moves from background job processing to powering the full spectrum of modern applications—from batch processing to real-time, interactive experiences.
