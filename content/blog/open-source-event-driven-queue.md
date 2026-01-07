@@ -67,7 +67,19 @@ As we’re starting to build our a roadmap, we’re going to be focused on a few
 
 Our roadmap will be in the open and [you can view it right on Github here](https://github.com/orgs/inngest/projects/1).
 
-## AI-assisted local development with MCP
+## Updates: What's changed since this blog was published
+
+### Postgres support for self-hosting (January 2025)
+
+Postgres support is now available for self-hosted Inngest, enabling you to use Postgres as your event storage backend instead of the default SQLite. This addresses the PostgreSQL driver mentioned in the roadmap above. Available in the Inngest CLI v1.4.0+ with the `--postgres-uri` flag:
+
+```bash
+inngest start --postgres-uri="postgresql://user:password@localhost:5432/inngest"
+```
+
+[View changelog](https://www.inngest.com/changelog/2025-01-20-postgres-self-hosting)
+
+### AI-assisted local development with MCP (October 2025)
 
 The Inngest dev server now supports MCP (Model Context Protocol), allowing you to connect Claude Code, Cursor, and other AI assistants directly to your local Inngest functions:
 ```json
@@ -92,7 +104,7 @@ AI assistants can now:
 - Test entire workflows end-to-end automatically
 - Search Inngest documentation offline
 
-[Learn more about the MCP integration](/docs/ai-dev-tools/mcp)
+[Learn more about the MCP integration](/docs/ai-dev-tools/mcp) | [View changelog](https://www.inngest.com/changelog/2025-10-27-dev-server-mcp)
 
 What do you want to see next? [Let us know on Discord, we'd love to hear from you](/discord).
 
