@@ -61,6 +61,33 @@ Running in production is only half the battle, so we built a first class develop
 
 ![The Inngest dev server in action](/assets/blog/inngest-announcement-april-2023/dev-server-demo.gif)
 
+## AI-assisted local development with MCP
+
+The Inngest dev server now supports MCP (Model Context Protocol), allowing you to connect Claude Code, Cursor, and other AI assistants directly to your local Inngest functions:
+```json
+{
+  "mcpServers": {
+    "inngest-dev": {
+      "command": "curl",
+      "args": [
+        "-X", "POST",
+        "http://127.0.0.1:8288/mcp",
+        "-H", "Content-Type: application/json",
+        "-d", "@-"
+      ]
+    }
+  }
+}
+```
+
+AI assistants can now:
+- Send test events and monitor executions
+- Debug failed runs with full trace access  
+- Test entire workflows end-to-end automatically
+- Search Inngest documentation offline
+
+[Learn more about the MCP integration](/docs/ai-dev-tools/mcp)
+
 ## New today
 
 Today, we're releasing **a newly re-designed experience** which gives you a beautiful and easy way to monitor your jobs in a single place. We've streamlined our web app and also added new ways to gain insight into your deployed functions.

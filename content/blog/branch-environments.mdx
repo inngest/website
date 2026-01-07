@@ -55,4 +55,31 @@ The modern stack of developer tools should align with developer workflows, not a
 
 [Check out our documentation](/docs/platform/environments?ref=blog-branch-environments) to learn how to set this up for any of our supported platforms, from Netlify to AWS Lambda to a custom Kubernetes setup. Everyone can benefit from the advantages of this workflow!
 
+## AI-assisted local development with MCP
+
+The Inngest dev server now supports MCP (Model Context Protocol), allowing you to connect Claude Code, Cursor, and other AI assistants directly to your local Inngest functions:
+```json
+{
+  "mcpServers": {
+    "inngest-dev": {
+      "command": "curl",
+      "args": [
+        "-X", "POST",
+        "http://127.0.0.1:8288/mcp",
+        "-H", "Content-Type: application/json",
+        "-d", "@-"
+      ]
+    }
+  }
+}
+```
+
+AI assistants can now:
+- Send test events and monitor executions
+- Debug failed runs with full trace access  
+- Test entire workflows end-to-end automatically
+- Search Inngest documentation offline
+
+[Learn more about the MCP integration](/docs/ai-dev-tools/mcp)
+
 Give it a try and drop us a [line on Discord](https://www.inngest.com/discord) if you have any questions or share some feedback or feature requests on [our public roadmap here](http://roadmap.inngest.com/).

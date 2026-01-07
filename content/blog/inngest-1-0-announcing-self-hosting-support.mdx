@@ -49,19 +49,55 @@ To achieve our goal of a simple system to deploy, the default configuration does
 * The `inngest start` command runs all system services in a single process with zero dependencies. Upcoming releases will enable you to select the service which you choose to run for high-availability (see roadmap section below).
 * The `inngest` binary is bundled with an in-memory Redis implementation which powers the queue and state store. Optionally, and recommended, you can run your own external Redis server with persistence and failover.
 * For persistence, the `inngest` binary is bundled with [SQLite](https://www.sqlite.org/). All system state is written to disk using SQLite and queue and state store data snapshots are periodically written to disk including prior to shutdown.
-  * Experimental support for Postgres is coming soon which enables you to swap out SQLite for persistence. If you're already building with Postgres, this will make it even easier for you.
+
+**Postgres support is now available** (as of January 2025) as an alternative to SQLite for production deployments. Use the `--postgres-uri` flag with the Inngest CLI (v1.4.0+) to connect to your Postgres database for enhanced scalability and production-grade persistence.
+```bash
+inngest start --postgres-uri="postgresql://user:password@localhost:5432/inngest"
+```
+
+This makes it easier for teams already using Postgres to adopt Inngest self-hosting with their existing database infrastructure.
 
 For this initial self-hosting release, we chose SQLite, as it's straightforward to bundle within the Inngest Go binary to easily provide cross-platform support. This creates a zero dependency starting point for anyone wanting to get Inngest up and running quickly.
+
+## AI-assisted local development with MCP
+
+The Inngest dev server now supports MCP (Model Context Protocol), allowing you to connect Claude Code, Cursor, and other AI assistants directly to your local Inngest functions:
+```json
+{
+  "mcpServers": {
+    "inngest-dev": {
+      "command": "curl",
+      "args": [
+        "-X", "POST",
+        "http://127.0.0.1:8288/mcp",
+        "-H", "Content-Type: application/json",
+        "-d", "@-"
+      ]
+    }
+  }
+}
+```
+
+AI assistants can now:
+- Send test events and monitor executions
+- Debug failed runs with full trace access  
+- Test entire workflows end-to-end automatically
+- Search Inngest documentation offline
+
+[Learn more about the MCP integration](/docs/ai-dev-tools/mcp)
 
 ## How to get started
 
 Check out our [self-hosting docs](https://www.inngest.com/docs/self-hosting) for more information and considerations when comparing to the Inngest platform. Head over to [our GitHub repo](https://github.com/inngest/inngest) to dig into the source code and additional resources.
 
+## Recently added
+
+* **Postgres database persistence support** (January 2025) - You can now use your own Postgres database for persistence instead of the default bundled SQLite implementation. See the [self-hosting docs](/docs/self-hosting) for configuration details.
+
 ## Roadmap
 
 As mentioned above, there are some upcoming features that will be added or improved upon to make self-hosting more flexible and extensive.
 
-* Postgres database persistence support \- Similar to external Redis support, you will be able to use your own Postgres database for persistence instead of the default bundled SQLite implementation.
 * Event key and signing key management \- [Event keys](https://www.inngest.com/docs/events/creating-an-event-key) and [signing keys](https://www.inngest.com/docs/platform/signing-keys) are used to authenticate client applications that use Inngest SDKs or send events via HTTP. Future releases will add management via the bundled dashboard UI and APIs.
 * Multi-node Inngest server support \- At initial release, the `inngest start` command runs all services in a single process. In a future release, the command will support starting one or more services (API, Executor, etc.) instead of all services in a single process.
 

@@ -81,7 +81,80 @@ It’s important to assume that you may receive any webhook more than once. A st
 
 You can build all of this out yourself as many software teams have done in the past. You can also choose to incrementally apply some of these tips as your system needs to scale and become more reliable for your customers. You may have even built out all of these parts again and again at your current job and your last job. Unfortunately, your customers don’t care how awesome your webhook handling setup is or how sweet your terraform is for configuring it all.
 
-We’ve built all of this into Inngest to give you everything you need out of the box. It’s easy to set up webhook handlers with inline payload transformations, a queue to handle incredible load, serverless functions that replace the need to run your own workers, automatic retries, throttling controls, full event payload archive and logs, and a CLI to easily test your code that handles the messages, including replaying production data locally. If any of this interests you, check [our docs](/docs?ref=blog-building-webhooks-that-scale) or [give Inngest a spin](/docs/getting-started/nextjs-quick-start?ref=blog-building-webhooks-that-scale).
+We've built all of this into Inngest to give you everything you need out of the box. It's easy to set up webhook handlers with inline payload transformations, a queue to handle incredible load, serverless functions that replace the need to run your own workers, automatic retries, throttling controls, full event payload archive and logs, and a CLI to easily test your code that handles the messages, including replaying production data locally. If any of this interests you, check [our docs](/docs?ref=blog-building-webhooks-that-scale) or [give Inngest a spin](/docs/getting-started/nextjs-quick-start?ref=blog-building-webhooks-that-scale).
+
+## Enhanced webhook support
+
+Released in October and November 2025, Inngest webhooks now include powerful new capabilities:
+
+### New Content Types Support
+
+Inngest webhooks now support additional content types beyond JSON:
+
+- **`application/x-www-form-urlencoded`** - Perfect for HTML form submissions
+- **`multipart/form-data`** - Handle file uploads and complex form data
+
+Your webhook transform functions receive both parsed data and the raw body:
+```javascript
+function transform(json, headers, queryParams, raw) {
+  // json - Parsed payload (works for JSON, form-urlencoded, and multipart)
+  // raw - Raw request body for custom processing
+  
+  return {
+    name: "form.submitted",
+    data: { 
+      formData: json,
+      contentType: headers['content-type'],
+      rawPayload: raw  // Available if you need it
+    }
+  };
+}
+```
+
+**Use cases:**
+- Process Shopify webhooks that use form-urlencoded
+- Handle Typeform submissions with file attachments
+- Accept HTML form submissions directly
+- Integrate with legacy systems that don't send JSON
+
+### Webhook Management API
+
+Manage webhooks programmatically through the Inngest REST API:
+```bash
+# Create a webhook
+POST /v1/webhooks
+{
+  "name": "Stripe webhook",
+  "url": "/webhooks/stripe",
+  "transform": "function transform(json, headers, queryParams, raw) { return { name: 'stripe/event', data: json }; }"
+}
+
+# Update transform function
+PATCH /v1/webhooks/:id
+{
+  "transform": "function transform(json, headers, queryParams, raw) { /* updated logic */ }"
+}
+
+# List all webhooks
+GET /v1/webhooks
+
+# Delete webhook
+DELETE /v1/webhooks/:id
+```
+
+**Benefits:**
+- **Version control** - Store webhook transforms in your repo
+- **Unit testing** - Test transform functions in CI/CD
+- **Programmatic creation** - Create webhooks for each customer dynamically
+- **Infrastructure as code** - Define webhooks alongside your app config
+
+**Perfect for:**
+- Multi-tenant apps that create webhooks per customer
+- Teams using GitOps workflows
+- Platforms that need webhook provisioning APIs
+- Testing webhook logic before deploying
+
+[View webhook API docs](https://api-docs.inngest.com/docs/inngest-api/b539bae406d1f-get-all-webhook-endpoints-in-given-environment) | [Content types changelog](https://www.inngest.com/changelog/2025-10-17-webhook-content-types) | [Management API changelog](https://www.inngest.com/changelog/2025-11-08-webhook-management-api)
 
 ## Takeaways
 

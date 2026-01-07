@@ -71,6 +71,45 @@ With incremental function execution and externally persisted state, handling fai
 
 Automatic retries enable durable functions to withstand race conditions, third-party API outages, system crashes, or infrastructure downtime. When code can be resilient to all of these issues, it truly becomes durably executed.
 
+### Checkpointing: Optimizing for latency-sensitive workloads
+
+Traditional durable execution implementations face a fundamental tradeoff: **durability comes at the cost of latency**. Each step requires synchronous communication with the execution engine to persist state before proceeding, introducing inter-step delays that can range from tens to hundreds of milliseconds.
+
+For many background workflows—data processing pipelines, batch jobs, scheduled tasks—this latency is acceptable. However, modern applications increasingly require durable execution for **user-facing, real-time workloads** where every millisecond matters:
+
+- Interactive AI chat applications
+- Real-time data processing pipelines
+- Live dashboards with complex calculations
+- User-triggered workflows that must feel instantaneous
+
+**Checkpointing** addresses this challenge by decoupling execution from persistence:
+
+**How checkpointing works:**
+1. **Steps execute immediately** without waiting for state to be persisted
+2. **State is checkpointed asynchronously** in the background at configurable intervals
+3. **On failure**, the workflow resumes from the last successful checkpoint
+4. **Inter-step latency** drops from hundreds of milliseconds to single-digit milliseconds
+
+**The tradeoff:**
+Checkpointing introduces a new consideration: the checkpoint interval determines how much work might need to be replayed after a failure. A 1-second checkpoint interval means at most 1 second of work is replayed on failure. This is an acceptable tradeoff for latency-sensitive applications where:
+- Individual steps are fast (milliseconds to seconds)
+- Steps are idempotent or can safely replay
+- User experience demands sub-100ms responsiveness
+
+**When to use checkpointing:**
+- ✅ Interactive user-facing workflows
+- ✅ Real-time AI applications (chat, agents, live generation)
+- ✅ Low-latency data processing
+- ✅ Workflows with many fast sequential steps
+
+**When traditional persistence is sufficient:**
+- ✅ Background batch processing
+- ✅ Workflows with naturally slow steps (minutes/hours)
+- ✅ High-reliability scenarios where zero replay is required
+- ✅ Steps with expensive side effects that cannot replay
+
+As durable execution extends beyond traditional background processing into real-time, interactive applications, checkpointing becomes a critical optimization technique. Any durable execution system targeting low-latency workloads must address the persistence-latency tradeoff.
+
 —
 
 By applying these principles, developers can build systems that are not only more reliable but also more efficient, reducing downtime and simplifying error recovery. In modern applications, where moving and streaming data are central to real-time processing and decision making, durable execution ensures that systems can handle high-throughput workloads without missing a beat. This reliability is critical for applications like AI workflows, where tasks often involve chaining complex computations, integrating with external APIs, or managing state across distributed environments.
@@ -94,6 +133,38 @@ When function is executed, Inngest:
 * **Manages state:** Stores intermediate results and ensures consistency.
 * **Retries failures:** Automatically retries failed functions with exponential backoff.
 * **Scales dynamically:** Adjusts resources to handle varying workloads.
+
+**Checkpointing for low-latency workflows**
+
+Inngest implements checkpointing as an opt-in capability for latency-sensitive workflows. When enabled, workflows achieve near-zero inter-step latency while maintaining durability:
+```typescript
+export default inngest.createFunction(
+  { 
+    id: "real-time-chat",
+    experimental: {
+      checkpoint: true  // Enable async checkpointing
+    }
+  },
+  { event: "chat/message.sent" },
+  async ({ event, step }) => {
+    // Steps execute with millisecond latency
+    const context = await step.run("fetch-context", async () => {
+      return await vectorDB.search(event.data.message);
+    });
+    
+    const response = await step.ai.infer("generate", {
+      model: openai({ model: "gpt-4" }),
+      body: { messages: [...] }
+    });
+    
+    await step.run("send-to-user", async () => {
+      await realtime.publish(response);
+    });
+  }
+);
+```
+
+Production results show 50% reduction in workflow duration and sub-10ms inter-step latency. [Learn more about checkpointing](/docs/setup/checkpointing).
 
 **A simple example** (reference: [Inngest documentation](/docs/features/inngest-functions?ref=blog-principles-of-durable-execution))
 

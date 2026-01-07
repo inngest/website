@@ -290,6 +290,23 @@ export const userWorkflow = inngest.createFunction(
 
 If the OpenAI and Hugging Face calls work, but the Anthropic call doesn't, this flow doesn't require you to re-run the first two API calls, thus incurring extra costs. [Durable execution](/uses/durable-workflows?ref=blog-manage-capacity-ai) means state and retries (as well as logging and observability so you know what went wrong) will be handled for you.
 
+### Singleton Functions for exclusive execution
+
+For cases where you need to ensure only one run executes at a time per user or resource, use Singleton Functions (released June 2025):
+
+```typescript
+inngest.createFunction({
+  id: "ai-generate-summary",
+  singleton: {
+    key: "event.data.user_id",
+    mode: "cancel"
+  }
+}, ...)
+```
+
+This ensures if a user triggers multiple AI generations rapidly, only the latest one executes—perfect for expensive AI operations.
+
+[Learn more](/docs/guides/singleton)
 
 ## Prioritize paid users using priority keys
 

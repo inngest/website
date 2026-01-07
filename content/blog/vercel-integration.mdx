@@ -33,8 +33,8 @@ Functions are triggered by events using [a simple `inngest.send()` call](/docs/e
 This decoupling makes it a great way to trigger background work. For example, you can send a `user.signup` event which could trigger separate background tasks to send a welcome email, start a Stripe trial, and add the user to Intercom. Some other benefits:
 
 - **Events are immutable facts** - They mark something that happened in history and can never be changed, aiding debuggability. Inngest stores a historic record of your events so you can debug faster than ever.
-- **Events can be fully typed and versioned** - [We generate TypeScript types for every event](/docs/typescript?ref=blog-vercel-integration) that you sent so you can be confident in the code that you're writing.
-- **Events are everywhere** - Webhooks are events and HTTP requests are events. You may not think you've built “event-driven,” but you probably already have!
+- **Events can be fully typed and versioned** - [We generate TypeScript types for every event](/docs/typescript?ref=blog-vercel-integration) that you sent so you can be confident in the code that you're writing. With Standard Schema support (added September 2025), you can now use Zod 4, Valibot, ArkType, joi, or any Standard Schema-compatible library to validate your event payloads at runtime while maintaining full TypeScript type safety.
+- **Events are everywhere** - Webhooks are events and HTTP requests are events. You may not think you've built "event-driven," but you probably already have! Inngest's webhook handling supports JSON, form-urlencoded, and multipart data, making it easy to integrate with any third-party service.
 
 These are just the highlights, but we're passionate about this approach and we think that it would be the defacto way of building if there wasn't such a high barrier to entry as there previously has been. We built Inngest to solve this problem and bring it to everyone.
 
@@ -52,6 +52,33 @@ That's it! Now every time you deploy to Vercel, Inngest will check your app for 
 ![Screenshot of Inngest dashboard viewing active functions](/assets/blog/vercel-integration/app-screenshot.jpg)
 
 Check out [the Inngest docs](/docs/deploy/vercel?ref=blog-vercel-integration) for more detail on how this works and [how to test your functions right along side your existing local development workflow](/docs/functions/testing-functions?ref=blog-vercel-integration).
+
+## AI-assisted local development with MCP
+
+The Inngest dev server now supports MCP (Model Context Protocol), allowing you to connect Claude Code, Cursor, and other AI assistants directly to your local Inngest functions:
+```json
+{
+  "mcpServers": {
+    "inngest-dev": {
+      "command": "curl",
+      "args": [
+        "-X", "POST",
+        "http://127.0.0.1:8288/mcp",
+        "-H", "Content-Type: application/json",
+        "-d", "@-"
+      ]
+    }
+  }
+}
+```
+
+AI assistants can now:
+- Send test events and monitor executions
+- Debug failed runs with full trace access  
+- Test entire workflows end-to-end automatically
+- Search Inngest documentation offline
+
+[Learn more about the MCP integration](/docs/ai-dev-tools/mcp)
 
 ## What's next
 
