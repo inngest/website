@@ -128,4 +128,4 @@ AI assistants can now:
 
 That's it - we think the Inngest DevServer is the one tool that you can use to build and test your asynchronous code from end-to-end with zero configuration and setup. This is just the beginning and we're excited to bring more features and more power to developers hands in the months ahead!
 
-We have plenty more in store and would love to hear from you to shape the future of Inngest and the DevServer - [come say hi in our Discord](/discord):
+We have plenty more in store and would love to hear from you to shape the future of Inngest and the DevServer - [come say hi in our Discord](/discord).
