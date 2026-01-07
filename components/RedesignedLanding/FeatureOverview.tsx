@@ -27,7 +27,7 @@ export default function OrchestrationSection() {
       description: (
         <>
           Your orchestration engine shouldn't dictate how you write production code. Wrap functions in Steps to automate retries, recovery, and scale without added infrastructure.{" "}
-          <code className="font-mono text-stone-300">Step.run</code> and done.
+          <code className="font-mono text-honey-300">step.run</code> and done.
         </>
       ),
       icon: ServerIcon,
@@ -49,16 +49,16 @@ export default function OrchestrationSection() {
   ];
 
   return (
-    <section className="relative flex items-center bg-stone-900 py-16 text-white md:py-40">
+    <section className="relative flex items-center bg-stone-900 py-8 text-white md:py-20">
       <div className="container mx-auto px-4">
         <div
           ref={headerScope as any}
-          className="mb-12 text-center opacity-0 md:mb-20"
+          className="mb-16 text-center opacity-0 md:mb-12"
         >
           <h1 className="mb-4 text-balance font-whyte text-4xl font-light text-stone-50 md:text-5xl">
-            Ship products. Not infrastructure.
+            Ship products. <br /> Not infrastructure.
           </h1>
-          <p className="mx-auto max-w-3xl text-balance text-lg font-light text-stone-200">
+          <p className="mx-auto max-w-xl text-balance text-lg font-light text-stone-200">
             You're here because whatever you're building needs to be reliable. We're here because we think you shouldn't have to wrangle workers, refactor code, or build instrumentation to make that true.
           </p>
         </div>
@@ -101,21 +101,12 @@ function PillarCard({
 
   const colorConfigs = [
     {
-      bgGradient: "bg-[#655279]",
-      iconBg: "bg-[#655279]/20",
-      iconBorder: "border-[#655279]/50",
       iconColor: "text-[#CD9FFE]",
     },
     {
-      bgGradient: "bg-matcha-500",
-      iconBg: "bg-matcha-500/20",
-      iconBorder: "border-matcha-500/50",
       iconColor: "text-matcha-300",
     },
     {
-      bgGradient: "bg-breeze-500",
-      iconBg: "bg-breeze-500/20",
-      iconBorder: "border-breeze-500/50",
       iconColor: "text-breeze-300",
     },
   ];
@@ -127,13 +118,10 @@ function PillarCard({
       ref={scope as any}
       className="relative h-full opacity-0"
     >
-      <div className="relative flex h-full overflow-hidden border-2 border-stone-800 bg-stone-900 shadow-xl transition-all hover:border-stone-700">
-        <div className={`pointer-events-none absolute -right-1/4 -top-1/4 h-[150%] w-[150%] rounded-full ${colors.bgGradient} opacity-20 blur-3xl`} />
-        <div className="relative flex h-full w-full flex-col items-center text-center p-8 sm:p-10">
-          <div className="mb-6 flex flex-col items-center gap-4">
-            <div className={`flex h-12 w-12 items-center justify-center rounded border-2 ${colors.iconBorder} ${colors.iconBg}`}>
-              <Icon className={`h-6 w-6 ${colors.iconColor}`} />
-            </div>
+      <div className="relative flex h-full overflow-hidden border-2 border-stone-800 bg-stone-900/30 shadow-xl transition-all hover:bg-stone-800/50 hover:shadow-[0_20px_25px_-5px_rgba(0,0,0,0.15),0_10px_10px_-5px_rgba(0,0,0,0.1)]">
+        <div className="relative flex h-full w-full flex-col items-start text-left p-8 sm:p-10">
+          <div className="mb-6 flex flex-col items-start gap-4">
+            <Icon className={`h-8 w-8 ${colors.iconColor}`} />
             <h3 className="font-whyte text-2xl font-light text-stone-50 sm:text-3xl">
               {pillar.title}
             </h3>
@@ -163,11 +151,11 @@ function WorkflowsCard() {
   return (
     <div
       ref={scope as any}
-      className="relative overflow-hidden border-2 border-stone-800 bg-stone-900 p-3 opacity-0 shadow-xl sm:p-6"
+      className="relative overflow-hidden border-2 border-stone-800 bg-stone-900/30 p-3 opacity-0 shadow-xl transition-all sm:p-6 hover:bg-stone-800/50 hover:shadow-[0_20px_25px_-5px_rgba(0,0,0,0.15),0_10px_10px_-5px_rgba(0,0,0,0.1)]"
     >
       <div className="pointer-events-none absolute -left-3/4 -top-3/4 h-[150%] w-[150%] rounded-full bg-[#655279]" />
 
-      <Card className="relative h-full w-full overflow-hidden rounded-none border-none bg-stone-800 shadow-2xl">
+      <Card className="relative h-full w-full overflow-hidden rounded-none border-none bg-transparent shadow-2xl">
         <CardHeader className="p-3 sm:p-4 lg:p-6">
           <CardTitle className="text-lg font-light text-stone-50 sm:text-xl lg:text-2xl xl:text-3xl">
             {/* <span className="font-whyteInktrap font-semibold">Workflows:</span>{" "} */}
@@ -193,7 +181,7 @@ function WorkflowsCard() {
             Learn more <ArrowRightIcon className="h-4 w-4" />
           </Button> */}
 
-          <div className="mx-auto mt-auto">
+          <div className="mt-auto">
             <DesktopWorkflow />
             <IpadWorkflow />
             <MobileWorkflow />
@@ -220,11 +208,11 @@ function AgentsCard() {
   return (
     <div
       ref={scope as any}
-      className="relative overflow-hidden border-2 border-stone-800 bg-stone-900 p-3 opacity-0 shadow-xl sm:p-6"
+      className="relative overflow-hidden border-2 border-stone-800 bg-stone-900/30 p-3 opacity-0 shadow-xl transition-all sm:p-6 hover:bg-stone-800/50 hover:shadow-[0_20px_25px_-5px_rgba(0,0,0,0.15),0_10px_10px_-5px_rgba(0,0,0,0.1)]"
     >
       <div className="pointer-events-none absolute -bottom-3/4 -right-3/4 h-[150%] w-[150%] rounded-full bg-inngestLux" />
 
-      <Card className="relative h-full w-full overflow-hidden rounded-none border-none bg-stone-800 shadow-2xl">
+      <Card className="relative h-full w-full overflow-hidden rounded-none border-none bg-transparent shadow-2xl">
         <div className="h-1.5"></div>
         <CardHeader className="p-3 sm:p-4 lg:p-6">
           <CardTitle className="text-lg font-light text-stone-50 sm:text-xl lg:text-2xl xl:text-3xl">
@@ -248,7 +236,7 @@ function AgentsCard() {
             Learn more <ArrowRightIcon className="h-4 w-4" />
           </Button> */}
         </CardContent>
-        <CardFooter className="mx-auto">
+        <CardFooter>
           <FeatureCardSVG />
         </CardFooter>
       </Card>

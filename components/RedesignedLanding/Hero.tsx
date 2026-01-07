@@ -22,7 +22,7 @@ export default function Hero() {
             <div className="mx-auto max-w-[76%] md:ml-16 md:max-w-5xl lg:mx-auto">
               <div className="mb-16 mt-4 text-[2.5rem] leading-[2.75rem] sm:mt-0 md:text-6xl lg:text-7xl">
                 <h1 className="block font-whyte">
-                  Make <strong>any</strong> code durable by default
+                  Make <strong>any</strong> code durable <br /> by default
                 </h1>
               </div>
               <div className="relative z-10 text-left font-circular text-[1.25rem] md:max-w-sm md:text-base lg:max-w-lg lg:text-xl">
