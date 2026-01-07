@@ -388,6 +388,10 @@ const sectionLearn: (NavGroup | NavLink)[] = [
             href: `/docs/learn/inngest-functions`,
           },
           {
+            title: "Serve Inngest Functions",
+            href: "/docs/learn/serving-inngest-functions",
+          },
+          {
             title: "Triggering functions",
             href: `/docs/features/events-triggers`,
           },
@@ -401,16 +405,8 @@ const sectionLearn: (NavGroup | NavLink)[] = [
         title: "Steps",
         links: [
           {
-            title: "step.run",
+            title: "Building with steps",
             href: `/docs/learn/inngest-steps`,
-          },
-          {
-            title: "Retries",
-            href: "/docs/features/inngest-functions/error-retries/retries",
-          },
-          {
-            title: "Error handling",
-            href: `/docs/guides/error-handling`,
           },
           {
             title: "Sleeping",
@@ -421,8 +417,33 @@ const sectionLearn: (NavGroup | NavLink)[] = [
             href: "/docs/features/inngest-functions/steps-workflows/wait-for-event",
           },
           {
-            title: "Calling LLMs/AI",
+            title: "AI steps (LLM calls)",
             href: "/docs/features/inngest-functions/steps-workflows/step-ai-orchestration",
+          },
+        ],
+      },
+      {
+        title: "Error handling",
+        links: [
+          {
+            title: "Overview",
+            href: `/docs/guides/error-handling`,
+          },
+          {
+            title: "Retries",
+            href: "/docs/features/inngest-functions/error-retries/retries",
+          },
+          {
+            title: "Rollbacks",
+            href: "/docs/features/inngest-functions/error-retries/rollbacks",
+          },
+          {
+            title: "Failure handlers",
+            href: "/docs/features/inngest-functions/error-retries/failure-handlers",
+          },
+          {
+            title: "Inngest errors",
+            href: "/docs/features/inngest-functions/error-retries/inngest-errors",
           },
         ],
       },
@@ -499,39 +520,40 @@ const sectionLearn: (NavGroup | NavLink)[] = [
         ],
       },
       {
-        title: "Apps",
-        href: `/docs/platform/manage/apps`,
-      },
-      {
-        title: "Environments",
-        href: `/docs/platform/environments`,
-      },
-      {
-        title: "Event and signing keys",
+        title: "Environments and Apps",
+        href: "/docs/apps",
         links: [
           {
-            title: "Event keys",
-            href: `/docs/events/creating-an-event-key`,
+            title: "Overview",
+            href: "/docs/apps",
           },
           {
-            title: "Signing keys",
-            href: `/docs/platform/signing-keys`,
+            title: "Environments",
+            href: `/docs/platform/environments`,
+          },
+          {
+            title: "Apps",
+            href: `/docs/platform/manage/apps`,
+          },
+          {
+            title: "Event and signing keys",
+            links: [
+              {
+                title: "Event keys",
+                href: `/docs/events/creating-an-event-key`,
+              },
+              {
+                title: "Signing keys",
+                href: `/docs/platform/signing-keys`,
+              },
+            ],
+          },
+          {
+            title: "Durable Endpoints",
+            href: `/docs/learn/rest-endpoints`,
+            tag: "new",
           },
         ],
-      },
-      {
-        title: "Durable Endpoints",
-        href: `/docs/learn/rest-endpoints`,
-        tag: "new",
-      },
-    ],
-  },
-  {
-    title: "Advanced concepts",
-    links: [
-      {
-        title: "Versioning",
-        href: `/docs/learn/versioning`,
       },
     ],
   },
@@ -539,6 +561,10 @@ const sectionLearn: (NavGroup | NavLink)[] = [
     title: "Guides",
     defaultOpen: true,
     links: [
+      {
+        title: "Versioning",
+        href: `/docs/learn/versioning`,
+      },
       {
         title: "Local development",
         links: [
@@ -559,6 +585,10 @@ const sectionLearn: (NavGroup | NavLink)[] = [
       {
         title: "Patterns",
         links: [
+          {
+            title: "Multi-step functions",
+            href: "/docs/guides/multi-step-functions",
+          },
           {
             title: "Parallel steps",
             href: "/docs/guides/step-parallelism",
@@ -743,37 +773,16 @@ const sectionLearn: (NavGroup | NavLink)[] = [
             href: `/docs/guides/writing-expressions`,
           },
           {
+            title: "Consuming webhook events",
+            href: `/docs/platform/webhooks`,
+          },
+          {
             title: "Handle Clerk webhooks",
             href: `/docs/guides/clerk-webhook-events`,
           },
           {
             title: "Handle Resend webhooks",
             href: `/docs/guides/resend-webhook-events`,
-          },
-        ],
-      },
-      {
-        title: "Errors & Retries",
-        links: [
-          {
-            title: "Overview",
-            href: `/docs/guides/error-handling`,
-          },
-          {
-            title: "Retries",
-            href: "/docs/features/inngest-functions/error-retries/retries",
-          },
-          {
-            title: "Rollbacks",
-            href: "/docs/features/inngest-functions/error-retries/rollbacks",
-          },
-          {
-            title: "Failure handlers",
-            href: "/docs/features/inngest-functions/error-retries/failure-handlers",
-          },
-          {
-            title: "Inngest errors",
-            href: "/docs/features/inngest-functions/error-retries/inngest-errors",
           },
         ],
       },
@@ -792,10 +801,6 @@ const sectionLearn: (NavGroup | NavLink)[] = [
           {
             title: "Apps",
             href: "/docs/platform/manage/apps",
-          },
-          {
-            title: "Setting up your app (serve)",
-            href: "/docs/learn/serving-inngest-functions",
           },
           {
             title: "Bulk replay",
@@ -837,10 +842,6 @@ const sectionLearn: (NavGroup | NavLink)[] = [
         title: "Integrations",
         links: [
           {
-            title: "Webhooks",
-            href: `/docs/platform/webhooks`,
-          },
-          {
             title: "Neon",
             href: `/docs/features/events-triggers/neon`,
           },
@@ -871,31 +872,27 @@ const sectionLearn: (NavGroup | NavLink)[] = [
     ],
   },
   {
-    title: "Security",
-    href: "/docs/learn/security",
-  },
-  {
-    title: "Glossary",
-    href: `/docs/learn/glossary`,
-  },
-  {
-    title: "Release phases",
-    href: `/docs/release-phases`,
-  },
-  {
-    title: "FAQ",
-    href: `/docs/faq`,
-  },
-  {
-    title: "Misc",
+    title: "Resources",
     links: [
+      {
+        title: "Security",
+        href: "/docs/learn/security",
+      },
+      {
+        title: "Glossary",
+        href: `/docs/learn/glossary`,
+      },
+      {
+        title: "Release phases",
+        href: `/docs/release-phases`,
+      },
+      {
+        title: "FAQ",
+        href: `/docs/faq`,
+      },
       {
         title: "Limitations",
         href: `/docs/usage-limits/inngest`,
-      },
-      {
-        title: "Environments & Apps",
-        href: `/docs/apps`,
       },
       {
         title: "Install the SDK",
