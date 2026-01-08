@@ -2,6 +2,7 @@
 heading: "Inngest: OS v0.5 released"
 subtitle: This release contains exciting new functionality, including replay and our self-hosting services
 date: 2022-07-26
+dateUpdated: 2026-01-07
 image: "/assets/blog/release-v0.5.0.jpg"
 tags: release-notes
 ---
