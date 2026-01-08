@@ -61,9 +61,9 @@ With our function composed of individually executed steps, each step that is suc
 
 Functions defined using native programming language primitives only have this state or “memory” for the life of the function. Instead of data being held at a memory address assigned by the runtime, a durable function stores this state outside of the runtime and outside of the machine executing that code.
 
-Combining state persistence and incremental execution enables work to run across different machines, processes, or serverless functions. This enables true parallelism of work even if a language doesn't support multiple threads or “sleep” that can last for hours or days without blocking. This is especially advantageous in serverless functions where compute is ephemeral.
+Combining state persistence and incremental execution enables work to run across different machines, processes, or serverless functions. This enables true parallelism of work even if a language doesn't support multiple threads or "sleep" that can last for hours or days without blocking. This is especially advantageous in serverless functions where compute is ephemeral.
 
-Whether it's serverless or a containerized application, state persistence is required to enable fault tolerance.
+Whether it's serverless or a containerized application, state persistence is required to enable fault tolerance. For latency-sensitive workloads, checkpointing can optimize state persistence by decoupling execution from synchronous state writes, reducing inter-step latency while maintaining durability.
 
 ### Fault tolerance
 
