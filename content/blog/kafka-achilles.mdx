@@ -223,7 +223,7 @@ With Flow Control , what once required a distributed system of Kafka, Redis, and
 
 Released in June 2025, Inngest now offers **Singleton Functions** to ensure exclusive execution—a powerful addition to rate limiting, throttling, and debouncing:
 
-\`\`\`typescript
+```typescript
 const latestDataSync = inngest.createFunction({
   id: "latest-data-sync",
   singleton: {
@@ -237,7 +237,7 @@ async ({ event }) => {
   const payload = await fetchLatestUserData(event.data.user_id);
   await applyRealTimeUpdates(payload);
 });
-\`\`\`
+```
 
 **Two modes for different use cases:**
 - **`skip` mode**: Discard new events while a run is in progress
