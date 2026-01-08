@@ -3,6 +3,7 @@ heading: The Principles of Durable Execution Explained
 subtitle: Learn what Durable Execution is, how it works, and why it's beneficial to your system.
 image: /assets/blog/principles-of-durable-execution/featured-image.png
 date: 2024-12-10
+dateUpdated: 2026-01-27
 author: Dan Farrelly
 primaryCTA: sales
 floatingCTA: true
@@ -121,38 +122,6 @@ Checkpointing introduces a new consideration: the checkpoint interval determines
 - ✅ Steps with expensive side effects that cannot replay
 
 As durable execution extends beyond traditional background processing into real-time, interactive applications, checkpointing becomes a critical optimization technique. Any durable execution system targeting low-latency workloads must address the persistence-latency tradeoff.
-
-### Checkpointing in practice: Inngest's implementation
-
-Inngest implements checkpointing as an opt-in capability for latency-sensitive workflows. When enabled, workflows achieve near-zero inter-step latency while maintaining durability:
-```typescript
-export default inngest.createFunction(
-  { 
-    id: "real-time-chat",
-    experimental: {
-      checkpoint: true  // Enable async checkpointing
-    }
-  },
-  { event: "chat/message.sent" },
-  async ({ event, step }) => {
-    // Steps execute with millisecond latency
-    const context = await step.run("fetch-context", async () => {
-      return await vectorDB.search(event.data.message);
-    });
-    
-    const response = await step.ai.infer("generate", {
-      model: openai({ model: "gpt-4" }),
-      body: { messages: [...] }
-    });
-    
-    await step.run("send-to-user", async () => {
-      await realtime.publish(response);
-    });
-  }
-);
-```
-
-Production results show 50% reduction in workflow duration and sub-10ms inter-step latency. [Learn more about checkpointing](/docs/setup/checkpointing).
 
 ## Inngest: A principled approach to Durable Execution
 
