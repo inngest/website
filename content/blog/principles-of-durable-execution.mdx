@@ -90,11 +90,6 @@ For many background workflows—data processing pipelines, batch jobs, scheduled
 3. **On failure**, the workflow resumes from the last successful checkpoint
 4. **Inter-step latency** drops from hundreds of milliseconds to single-digit milliseconds
 
-**The tradeoff:**
-Checkpointing introduces a new consideration: the checkpoint interval determines how much work might need to be replayed after a failure. A 1-second checkpoint interval means at most 1 second of work is replayed on failure. This is an acceptable tradeoff for latency-sensitive applications where:
-- Individual steps are fast (milliseconds to seconds)
-- Steps are idempotent or can safely replay
-- User experience demands sub-100ms responsiveness
 
 **When to use checkpointing:**
 - ✅ Interactive user-facing workflows
