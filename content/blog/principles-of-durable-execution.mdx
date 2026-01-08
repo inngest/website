@@ -71,6 +71,18 @@ With incremental function execution and externally persisted state, handling fai
 
 Automatic retries enable durable functions to withstand race conditions, third-party API outages, system crashes, or infrastructure downtime. When code can be resilient to all of these issues, it truly becomes durably executed.
 
+—
+
+By applying these principles, developers can build systems that are not only more reliable but also more efficient, reducing downtime and simplifying error recovery. In modern applications, where moving and streaming data are central to real-time processing and decision making, durable execution ensures that systems can handle high-throughput workloads without missing a beat. This reliability is critical for applications like AI workflows, where tasks often involve chaining complex computations, integrating with external APIs, or managing state across distributed environments.
+
+An example use case familiar to many developers is an e-commerce checkout function that handles inventory management, payment processing, and order confirmations (see below).
+
+![An flow diagram of an e-commerce durable function](/assets/blog/principles-of-durable-execution/e-commerce-function.png)
+
+As AI workflows and real-time data streams continue to shape software delivery practices, the demand for fault-tolerant, stateful execution will only grow. Durable execution provides a foundation for managing the intrinsic unpredictability of these systems, such as handling model retries, managing state transitions in dynamic environments, and ensuring consistency across multiple components. By adopting these principles, organizations can deliver software that meets the rigorous demands of today's data-driven and AI-powered world, enabling faster iteration cycles, seamless scalability, and enhanced end-user experiences. Durable execution is more than just a method–it's an essential approach to building the resilient and adaptable software systems of the future.
+
+## Durability and latency
+
 ### Checkpointing: Optimizing for latency-sensitive workloads
 
 Traditional durable execution implementations face a fundamental tradeoff: **durability comes at the cost of latency**. Each step requires synchronous communication with the execution engine to persist state before proceeding, introducing inter-step delays that can range from tens to hundreds of milliseconds.
@@ -90,6 +102,11 @@ For many background workflows—data processing pipelines, batch jobs, scheduled
 3. **On failure**, the workflow resumes from the last successful checkpoint
 4. **Inter-step latency** drops from hundreds of milliseconds to single-digit milliseconds
 
+**The tradeoff:**
+Checkpointing introduces a new consideration: the checkpoint interval determines how much work might need to be replayed after a failure. A 1-second checkpoint interval means at most 1 second of work is replayed on failure. This is an acceptable tradeoff for latency-sensitive applications where:
+- Individual steps are fast (milliseconds to seconds)
+- Steps are idempotent or can safely replay
+- User experience demands sub-100ms responsiveness
 
 **When to use checkpointing:**
 - ✅ Interactive user-facing workflows
@@ -105,31 +122,7 @@ For many background workflows—data processing pipelines, batch jobs, scheduled
 
 As durable execution extends beyond traditional background processing into real-time, interactive applications, checkpointing becomes a critical optimization technique. Any durable execution system targeting low-latency workloads must address the persistence-latency tradeoff.
 
-—
-
-By applying these principles, developers can build systems that are not only more reliable but also more efficient, reducing downtime and simplifying error recovery. In modern applications, where moving and streaming data are central to real-time processing and decision making, durable execution ensures that systems can handle high-throughput workloads without missing a beat. This reliability is critical for applications like AI workflows, where tasks often involve chaining complex computations, integrating with external APIs, or managing state across distributed environments.
-
-An example use case familiar to many developers is an e-commerce checkout function that handles inventory management, payment processing, and order confirmations (see below).
-
-![An flow diagram of an e-commerce durable function](/assets/blog/principles-of-durable-execution/e-commerce-function.png)
-
-As AI workflows and real-time data streams continue to shape software delivery practices, the demand for fault-tolerant, stateful execution will only grow. Durable execution provides a foundation for managing the intrinsic unpredictability of these systems, such as handling model retries, managing state transitions in dynamic environments, and ensuring consistency across multiple components. By adopting these principles, organizations can deliver software that meets the rigorous demands of today's data-driven and AI-powered world, enabling faster iteration cycles, seamless scalability, and enhanced end-user experiences. Durable execution is more than just a method–it's an essential approach to building the resilient and adaptable software systems of the future.
-
-## Inngest: A principled approach to Durable Execution
-
-Inngest is a powerful durable execution solution that simplifies complex workflow orchestration. By abstracting the underlying infrastructure and providing a developer-friendly SDK, Inngest empowers teams to build reliable and scalable workflows without worrying about managing state, retries, and error handling.
-
-**How Inngest works**
-
-When function is executed, Inngest:
-
-* **Schedules the function:** Assigns the function to a worker.
-* **Executes the function:** Runs the function and handles any exceptions.
-* **Manages state:** Stores intermediate results and ensures consistency.
-* **Retries failures:** Automatically retries failed functions with exponential backoff.
-* **Scales dynamically:** Adjusts resources to handle varying workloads.
-
-**Checkpointing for low-latency workflows**
+### Checkpointing in practice: Inngest's implementation
 
 Inngest implements checkpointing as an opt-in capability for latency-sensitive workflows. When enabled, workflows achieve near-zero inter-step latency while maintaining durability:
 ```typescript
@@ -160,6 +153,20 @@ export default inngest.createFunction(
 ```
 
 Production results show 50% reduction in workflow duration and sub-10ms inter-step latency. [Learn more about checkpointing](/docs/setup/checkpointing).
+
+## Inngest: A principled approach to Durable Execution
+
+Inngest is a powerful durable execution solution that simplifies complex workflow orchestration. By abstracting the underlying infrastructure and providing a developer-friendly SDK, Inngest empowers teams to build reliable and scalable workflows without worrying about managing state, retries, and error handling.
+
+**How Inngest works**
+
+When function is executed, Inngest:
+
+* **Schedules the function:** Assigns the function to a worker.
+* **Executes the function:** Runs the function and handles any exceptions.
+* **Manages state:** Stores intermediate results and ensures consistency.
+* **Retries failures:** Automatically retries failed functions with exponential backoff.
+* **Scales dynamically:** Adjusts resources to handle varying workloads.
 
 **A simple example** (reference: [Inngest documentation](/docs/features/inngest-functions?ref=blog-principles-of-durable-execution))
 
