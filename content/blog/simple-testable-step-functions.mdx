@@ -85,7 +85,7 @@ Here’s the step function flow and it’s configuration:
 }
 ```
 
-In this example we’re defining a function that’s triggered by an Auth0 event (really, it can be an API call, an integration, a webhook, a schedule, Kafka, etc.).  Then we’re defining each step, and the order of operations.
+In this example we're defining a function that's triggered by an Auth0 event (really, it can be an API call, an integration, a webhook, a schedule, Kafka, etc.). Then we're defining each step, and the order of operations.
 
 Step functions here try to avoid complexity:  in this example they simply say the step they run after, and an optional expression which will be evaluated to conditionally run based off of the event data *and* the output of previous steps.
 
@@ -126,12 +126,28 @@ The main killer feature is **event coordination:  the ability to pause your step
 
 You can declaratively specify the events that must occur between each step of a function with zero orchestration, coordination, or infrastructure.  This lets you build billion dollar functionality in minutes that you get with Braze or Segment — without other tools.
 
+## Updates: What's changed since this blog was published
+
+### Enhanced webhook support (2025)
+
+Webhooks now support multiple content types and programmatic management:
+- **New content types (October 2025)**: Support for `application/x-www-form-urlencoded` and `multipart/form-data` in addition to JSON. [View changelog](https://www.inngest.com/changelog/2025-08-27-new-webhook-content-types)
+- **Webhook Management API (February 2025)**: Create, update, and delete webhooks programmatically via REST API. [View changelog](https://www.inngest.com/changelog/2025-02-11-webhooks-api) | [Learn more](https://api-docs.inngest.com/docs/inngest-api/b539bae406d1f-get-all-webhook-endpoints-in-given-environment)
+
+### Promise.all functionality ✅ (Launched)
+
+You can now run steps in parallel using `Promise.all()`, allowing you to run steps only after many previous steps have finished. This enables true parallelism for serverless functions. [Learn more](/docs/guides/step-parallelism)
+
+### Enhanced debugging and observability ✅ (Launched)
+
+Inngest now provides comprehensive tracing capabilities:
+- **Built-in Traces**: Available in both the dashboard and DevServer, showing function execution timeline, step timing, logs, and retry attempts
+- **Extended Traces (November 2025)**: OpenTelemetry-powered traces capturing database queries, HTTP requests, and third-party library calls. [Read blog post](/blog/introducing-extended-traces) | [Learn more](/docs/platform/monitor/traces#extended-traces)
+
 ## Future plans
 
-This is the initial release of step functions, and we have lots of future plans:
+This is the initial release of step functions, and we continue to build:
 
-- A step-over debugger built into our local CLI, allowing you to inspect and manipulate function state as you develop
-- `Promise.all`-like functionality, allowing you to run steps only after many previous steps have finished
 - A library of open-source reusable steps, allowing you to build out functionality without writing a line of code
 
 You can try out step functions for free by grabbing our CLI and [signing up for an account](https://app.inngest.com/sign-up?ref=step-fns-post).
