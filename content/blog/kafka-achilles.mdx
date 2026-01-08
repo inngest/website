@@ -219,9 +219,23 @@ No need to write retry logic or track state, Inngest handles all of that automat
 
 With Flow Control , what once required a distributed system of Kafka, Redis, and coordination code becomes a simple, maintainable function that just works, and scales.
 
-## Singleton Functions: Exclusive execution control
+Now the team no longer has to worry about patching Redis logic, writing custom retry handlers, or managing Kafka infrastructure. They can finally focus on what actually matters: building a great product.
 
-Released in June 2025, Inngest now offers **Singleton Functions** to ensure exclusive execution—a powerful addition to rate limiting, throttling, and debouncing:
+The team is shipping faster. Bugs related to duplicate resume processing have disappeared. API usage has dropped thanks to built-in throttling. Product managers can now suggest changes or new features without it turning into a full sprint of Kafka reconfigurations. 
+
+Kafka is powerful, no doubt, but for most teams, especially those building product workflows, it's too much. You end up writing glue code, managing extra infrastructure, and solving problems that have already been solved a hundred times.
+
+Inngest's [Flow Control](/docs/guides/flow-control)  gives you those same capabilities, **without the overhead**. You get [retries](/docs/features/inngest-functions/error-retries/retries), [rate limiting](/docs/guides/debounce), [debouncing](), [throttling](/docs/guides/throttling), [prioritization](/docs/guides/priority), and more,  all built-in, all configurable, and all production-ready.
+
+So if you're spending more time managing queues than delivering features, maybe it's time to ask a better question:
+
+**What if your event-driven architecture didn't need to be this hard?**
+
+## What's new
+
+### Singleton Functions: Exclusive execution control (June 2025)
+
+Inngest now offers **Singleton Functions** to ensure exclusive execution—a powerful addition to rate limiting, throttling, and debouncing:
 
 ```typescript
 const latestDataSync = inngest.createFunction({
@@ -252,15 +266,3 @@ async ({ event }) => {
 Unlike rate limiting (which controls frequency) or debouncing (which delays execution), Singleton Functions ensure mutual exclusion—only one run per key executes at a time.
 
 [Learn more about Singleton Functions](/docs/guides/singleton) | [View changelog](https://www.inngest.com/changelog/2025-06-06-singleton-functions)
-
-Now the team no longer has to worry about patching Redis logic, writing custom retry handlers, or managing Kafka infrastructure. They can finally focus on what actually matters: building a great product.
-
-The team is shipping faster. Bugs related to duplicate resume processing have disappeared. API usage has dropped thanks to built-in throttling. Product managers can now suggest changes or new features without it turning into a full sprint of Kafka reconfigurations. 
-
-Kafka is powerful, no doubt, but for most teams, especially those building product workflows, it's too much. You end up writing glue code, managing extra infrastructure, and solving problems that have already been solved a hundred times.
-
-Inngest's [Flow Control](/docs/guides/flow-control)  gives you those same capabilities, **without the overhead**. You get [retries](/docs/features/inngest-functions/error-retries/retries), [rate limiting](/docs/guides/debounce), [debouncing](), [throttling](/docs/guides/throttling), [prioritization](/docs/guides/priority), and more,  all built-in, all configurable, and all production-ready.
-
-So if you're spending more time managing queues than delivering features, maybe it's time to ask a better question:
-
-**What if your event-driven architecture didn't need to be this hard?**
