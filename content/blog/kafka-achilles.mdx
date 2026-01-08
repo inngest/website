@@ -235,7 +235,7 @@ So if you're spending more time managing queues than delivering features, maybe 
 
 ### Singleton Functions: Exclusive execution control (June 2025)
 
-Inngest now offers **Singleton Functions** to ensure exclusive execution—a powerful addition to rate limiting, throttling, and debouncing:
+Building on Inngest's Flow Control capabilities, **Singleton Functions** provide another way to avoid the complexity of Kafka and Redis coordination. Where you might have used distributed locks or complex deduplication logic with Kafka, Singleton Functions ensure exclusive execution—a powerful addition to rate limiting, throttling, and debouncing:
 
 ```typescript
 const latestDataSync = inngest.createFunction({
