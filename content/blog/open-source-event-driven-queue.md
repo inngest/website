@@ -77,7 +77,7 @@ Postgres support is now available for self-hosted Inngest, enabling you to use P
 inngest start --postgres-uri="postgresql://user:password@localhost:5432/inngest"
 ```
 
-[View changelog](https://www.inngest.com/changelog/2025-01-20-postgres-self-hosting)
+[View changelog](/changelog/2025-01-20-postgres-self-hosting)
 
 ### AI-assisted local development with MCP (October 2025)
 
