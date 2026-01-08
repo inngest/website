@@ -167,3 +167,16 @@ DELETE /v1/webhooks/:id
 [View webhook API docs](https://api-docs.inngest.com/docs/inngest-api/b539bae406d1f-get-all-webhook-endpoints-in-given-environment) | [Content types changelog](https://www.inngest.com/changelog/2025-10-17-webhook-content-types) | [Management API changelog](https://www.inngest.com/changelog/2025-11-08-webhook-management-api)
 
 If any of this interests you, check [our docs](/docs?ref=blog-building-webhooks-that-scale) or [give Inngest a spin](/docs/getting-started/nextjs-quick-start?ref=blog-building-webhooks-that-scale).
+
+## Takeaways
+
+If you're running a reliable webhook at any decent scale or throughput, remember these key principles:
+
+- **Decouple your webhook handler** from your main backend to scale independently and prevent webhook spikes from affecting your user-facing API
+- **Respond immediately** and process data asynchronously in the background to avoid timeout issues
+- **Use a queue** to handle back pressure and control load on downstream resources like your database
+- **Build idempotent handlers** that can safely process the same webhook multiple times—outages happen, and you'll receive duplicate payloads
+- **Implement retry logic and dead letter queues** to recover from failures and handle payload changes gracefully
+- **Log request payloads** for debugging and replay capabilities (while being mindful of sensitive data)
+
+I hope this has given you a blueprint on how you can scale your own webhooks as your user base grows. If you don't want to roll it yourself, Inngest provides all of these capabilities out of the box. Come [chat with us on Discord](/discord)—we'd be happy to share free advice for scaling your webhooks with Inngest or building out your own setup.
