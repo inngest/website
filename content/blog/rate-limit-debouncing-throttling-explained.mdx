@@ -135,9 +135,11 @@ Please find below a takeaway cheatsheet that will help you evaluate the best way
 | 2FA or magic sign-in emails |  |  | ✅ |
 | Smoothing out bursts in volume | ✅ |  |  |
 
-## Singleton Functions: Exclusive execution control
+## What's new
 
-Released in June 2025, Inngest now offers **Singleton Functions** to ensure exclusive execution—a powerful addition to rate limiting, throttling, and debouncing:
+### Singleton Functions: Exclusive execution control (June 2025)
+
+Since this article was published, Inngest has added **Singleton Functions**—another flow control mechanism that ensures exclusive execution. While rate limiting, throttling, and debouncing control frequency and timing, Singleton Functions ensure mutual exclusion—only one run per key executes at a time:
 
 ```typescript
 const latestDataSync = inngest.createFunction({
