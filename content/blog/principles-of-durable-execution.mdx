@@ -86,42 +86,15 @@ As AI workflows and real-time data streams continue to shape software delivery p
 
 ### Checkpointing: Optimizing for latency-sensitive workloads
 
-Traditional durable execution implementations face a fundamental tradeoff: **durability comes at the cost of latency**. Each step requires synchronous communication with the execution engine to persist state before proceeding, introducing inter-step delays that can range from tens to hundreds of milliseconds.
+Traditional durable execution implementations face a fundamental tradeoff: **durability comes at the cost of latency**. Each step requires synchronous communication with the execution engine to persist state, introducing inter-step delays of tens to hundreds of milliseconds.
 
-For many background workflows—data processing pipelines, batch jobs, scheduled tasks—this latency is acceptable. However, modern applications increasingly require durable execution for **user-facing, real-time workloads** where every millisecond matters:
+For background workflows—batch jobs, scheduled tasks—this latency is acceptable. However, modern applications increasingly require durable execution for **user-facing, real-time workloads** where every millisecond matters: interactive AI chat applications, real-time data processing, and live dashboards.
 
-- Interactive AI chat applications
-- Real-time data processing pipelines
-- Live dashboards with complex calculations
-- User-triggered workflows that must feel instantaneous
+**Checkpointing** addresses this by decoupling execution from persistence. Steps execute immediately while state is checkpointed asynchronously in the background. On failure, workflows resume from the last checkpoint, reducing inter-step latency from hundreds of milliseconds to single-digit milliseconds.
 
-**Checkpointing** addresses this challenge by decoupling execution from persistence:
+**The tradeoff:** The checkpoint interval determines how much work might need to be replayed after a failure. This is acceptable for latency-sensitive applications with fast, idempotent steps, but traditional synchronous persistence remains better for background batch processing or workflows with expensive side effects that cannot safely replay.
 
-**How checkpointing works:**
-1. **Steps execute immediately** without waiting for state to be persisted
-2. **State is checkpointed asynchronously** in the background at configurable intervals
-3. **On failure**, the workflow resumes from the last successful checkpoint
-4. **Inter-step latency** drops from hundreds of milliseconds to single-digit milliseconds
-
-**The tradeoff:**
-Checkpointing introduces a new consideration: the checkpoint interval determines how much work might need to be replayed after a failure. A 1-second checkpoint interval means at most 1 second of work is replayed on failure. This is an acceptable tradeoff for latency-sensitive applications where:
-- Individual steps are fast (milliseconds to seconds)
-- Steps are idempotent or can safely replay
-- User experience demands sub-100ms responsiveness
-
-**When to use checkpointing:**
-- ✅ Interactive user-facing workflows
-- ✅ Real-time AI applications (chat, agents, live generation)
-- ✅ Low-latency data processing
-- ✅ Workflows with many fast sequential steps
-
-**When traditional persistence is sufficient:**
-- ✅ Background batch processing
-- ✅ Workflows with naturally slow steps (minutes/hours)
-- ✅ High-reliability scenarios where zero replay is required
-- ✅ Steps with expensive side effects that cannot replay
-
-As durable execution extends beyond traditional background processing into real-time, interactive applications, checkpointing becomes a critical optimization technique. Any durable execution system targeting low-latency workloads must address the persistence-latency tradeoff.
+As durable execution extends into real-time, interactive applications, checkpointing becomes a critical optimization technique for any system targeting low-latency workloads.
 
 ## Inngest: A principled approach to Durable Execution
 
