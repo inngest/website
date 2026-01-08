@@ -64,7 +64,15 @@ Functions defined using native programming language primitives only have this st
 
 Combining state persistence and incremental execution enables work to run across different machines, processes, or serverless functions. This enables true parallelism of work even if a language doesn't support multiple threads or "sleep" that can last for hours or days without blocking. This is especially advantageous in serverless functions where compute is ephemeral.
 
-Whether it's serverless or a containerized application, state persistence is required to enable fault tolerance. For latency-sensitive workloads, checkpointing can optimize state persistence by decoupling execution from synchronous state writes, reducing inter-step latency while maintaining durability.
+Whether it's serverless or a containerized application, state persistence is required to enable fault tolerance.
+
+#### Checkpointing: Optimizing state persistence for latency
+
+Traditional state persistence requires synchronous communication with the execution engine to persist state before proceeding, introducing inter-step delays of tens to hundreds of milliseconds. For background workflows—batch jobs, scheduled tasks—this latency is acceptable. However, modern applications increasingly require durable execution for **user-facing, real-time workloads** where every millisecond matters: interactive AI chat applications, real-time data processing, and live dashboards.
+
+**Checkpointing** addresses this by decoupling execution from persistence. Steps execute immediately while state is checkpointed asynchronously in the background. On failure, workflows resume from the last checkpoint, reducing inter-step latency from hundreds of milliseconds to single-digit milliseconds.
+
+The checkpoint interval determines how much work might need to be replayed after a failure. This is acceptable for latency-sensitive applications with fast, idempotent steps, but traditional synchronous persistence remains better for background batch processing or workflows with expensive side effects that cannot safely replay.
 
 ### Fault tolerance
 
@@ -81,20 +89,6 @@ An example use case familiar to many developers is an e-commerce checkout functi
 ![An flow diagram of an e-commerce durable function](/assets/blog/principles-of-durable-execution/e-commerce-function.png)
 
 As AI workflows and real-time data streams continue to shape software delivery practices, the demand for fault-tolerant, stateful execution will only grow. Durable execution provides a foundation for managing the intrinsic unpredictability of these systems, such as handling model retries, managing state transitions in dynamic environments, and ensuring consistency across multiple components. By adopting these principles, organizations can deliver software that meets the rigorous demands of today's data-driven and AI-powered world, enabling faster iteration cycles, seamless scalability, and enhanced end-user experiences. Durable execution is more than just a method–it's an essential approach to building the resilient and adaptable software systems of the future.
-
-## Durability and latency
-
-### Checkpointing: Optimizing for latency-sensitive workloads
-
-Traditional durable execution implementations face a fundamental tradeoff: **durability comes at the cost of latency**. Each step requires synchronous communication with the execution engine to persist state, introducing inter-step delays of tens to hundreds of milliseconds.
-
-For background workflows—batch jobs, scheduled tasks—this latency is acceptable. However, modern applications increasingly require durable execution for **user-facing, real-time workloads** where every millisecond matters: interactive AI chat applications, real-time data processing, and live dashboards.
-
-**Checkpointing** addresses this by decoupling execution from persistence. Steps execute immediately while state is checkpointed asynchronously in the background. On failure, workflows resume from the last checkpoint, reducing inter-step latency from hundreds of milliseconds to single-digit milliseconds.
-
-**The tradeoff:** The checkpoint interval determines how much work might need to be replayed after a failure. This is acceptable for latency-sensitive applications with fast, idempotent steps, but traditional synchronous persistence remains better for background batch processing or workflows with expensive side effects that cannot safely replay.
-
-As durable execution extends into real-time, interactive applications, checkpointing becomes a critical optimization technique for any system targeting low-latency workloads.
 
 ## Inngest: A principled approach to Durable Execution
 
