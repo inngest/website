@@ -104,7 +104,7 @@ AI assistants can now:
 - Test entire workflows end-to-end automatically
 - Search Inngest documentation offline
 
-[Learn more about the MCP integration](/docs/ai-dev-tools/mcp) | [View changelog](https://www.inngest.com/changelog/2025-10-27-dev-server-mcp)
+[Learn more about the MCP integration](/docs/ai-dev-tools/mcp) | [View changelog](/changelog/2025-10-27-dev-server-mcp)
 
 What do you want to see next? [Let us know on Discord, we'd love to hear from you](/discord).
 
