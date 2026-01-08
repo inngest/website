@@ -237,3 +237,21 @@ I hope this gives an overview to workflow engines, how they're used, and the bas
 that power them.  Workflow engines are modern replacements for queues, offering tooling and semantics
 above and beyond what raw infrastructure provides.  They're a force multiplier, a new type of
 tool that improves how we build products day to day.
+
+## How durable execution is evolving: Expanding beyond traditional workflows
+
+As durable execution matures, workflow engines are expanding beyond traditional background job processing to support more diverse execution patterns and deployment models.
+
+### Real-time and interactive applications
+
+Historically, durable execution was synonymous with background processing—batch jobs, scheduled tasks, and asynchronous workflows that could take minutes or hours. But modern applications increasingly need durability for real-time, user-facing experiences. Workflow engines are adapting to support interactive AI workflows, live dashboards, and streaming applications where latency matters. This requires rethinking the traditional persistence model to minimize inter-step delays while maintaining fault tolerance.
+
+### Advanced flow control primitives
+
+Early workflow engines focused on basic retries and timeouts. Modern engines are adding sophisticated flow control primitives: rate limiting to respect upstream API constraints, debouncing to handle rapid event bursts, concurrency controls for resource management, and exclusive execution patterns for scenarios where only the most recent work matters. These primitives enable engineers to build production systems that gracefully handle scale and complexity without manual coordination.
+
+### Integration with external services
+
+Workflow engines are evolving to handle external service integration more gracefully. Rather than requiring developers to wrap every API call in custom retry logic, engines are providing durable primitives for HTTP requests, database operations, and third-party service calls. This shifts the burden of reliability from application code to the platform, making it easier to build resilient systems that depend on external services.
+
+These patterns represent the natural evolution of durable execution as it moves from background job processing to powering the full spectrum of modern applications—from batch processing to real-time, interactive experiences.
