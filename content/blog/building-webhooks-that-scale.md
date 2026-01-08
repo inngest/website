@@ -4,6 +4,7 @@ heading: "Building Webhooks That Scale"
 subtitle: Lessons learned scaling webhooks to millions of requests a day
 image: "/assets/blog/building-webhooks-that-scale/hero-image.jpg"
 date: 2022-07-27
+dateUpdated: 2026-01-07
 author: Dan Farrelly
 ---
 

@@ -3,6 +3,7 @@ heading: "Introducing Inngest DevServer"
 subtitle: "The first tool purposely designed for event-driven asynchronous system local development"
 image: "/assets/blog/introducing-inngest-dev-server/featured-image.jpg"
 date: 2022-06-09
+dateUpdated: 2026-01-07
 ---
 
 At Inngest, we think that writing async app logic should be easier than it actually is.

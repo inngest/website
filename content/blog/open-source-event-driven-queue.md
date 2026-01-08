@@ -3,6 +3,7 @@ heading: "Open sourcing Inngest"
 subtitle: "The open source, serverless event-driven platform for developers."
 image: "/assets/blog/open-source-event-driven-queue.jpg"
 date: 2022-06-09
+dateUpdated: 2026-01-07
 ---
 
 In recent years, products have grown more and more complex — which requires more engineering work to be done. Background jobs are needed in almost every system, but the dev experience is, uh, _lackluster_, to say the least. You have two typical options: a job system, or build it yourself using a message broker. Either path you choose, there’s lots of config, many services, and a lot of maintenance required to even get off the ground.
