@@ -61,6 +61,7 @@ const options = {
     "https://mux.com/", // 429's during testing
     "https://docs.mux.com/",
     "https://npmtrends.com/",
+    "https://medium.com/",
   ],
 };
 
