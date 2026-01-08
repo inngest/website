@@ -59,6 +59,8 @@ const options = {
     "https://cloud.digitalocean.com/",
     "https://weaviate.io/", // reset connections
     "https://mux.com/", // 429's during testing
+    "https://docs.mux.com/",
+    "https://npmtrends.com/",
   ],
 };
 

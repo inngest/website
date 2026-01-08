@@ -86,6 +86,13 @@ This is the Inngest marketing website built with Next.js. It contains:
 - Use frontmatter for metadata (title, date, author, etc.)
 - Code snippets can reference files in `/snippets` using `!snippet:path=...`
 
+### Links
+
+- **Always use relative URLs for internal website links** - Use paths like `/docs/sdk/overview` instead of `https://www.inngest.com/docs/sdk/overview`
+- The project has an automated broken link checker (`scripts/brokenLinkChecker.ts`) that catches dead links automatically, but it works best with relative URLs
+- Only use absolute URLs for external links (links to other domains)
+- Use Ref Tags (ex. `?ref=blog-introducing-checkpointing`) query strings at the end of internal links so we can attribute the referrer for internal links for marketing attribution. Ref tags should describe the page that the link is going to be on like the blog post or landing page that the link is on.
+
 ## Common Tasks
 
 ### Adding a New Blog Post
@@ -94,6 +101,54 @@ This is the Inngest marketing website built with Next.js. It contains:
 2. Add frontmatter with title, date, author, etc.
 3. Write content in MDX format
 4. The blog listing page will automatically pick it up
+
+#### Blog Post Metadata Fields
+
+Blog posts use frontmatter (YAML) at the top of the file with the following fields:
+
+**Required Fields:**
+
+- `heading` (string) - The blog post title/headline
+- `image` (string) - Path to the featured image (e.g., `/assets/blog/example/featured-image.png`)
+- `date` (string) - Publication date in ISO8601 format (e.g., `2024-09-25`)
+- `category` (string) - Must be one of: `"product-updates"`, `"company-news"`, or `"engineering"`
+
+**Optional Fields:**
+
+- `subtitle` (string) - The blog post subtitle/description
+- `showSubtitle` (boolean) - Whether to display the subtitle (default: false)
+- `author` (string | string[]) - Author name(s). Can be a single string or array of strings for multiple authors
+- `imageCredits` (string) - Credits/attribution for the featured image
+- `dateUpdated` (string) - Last updated date in ISO8601 format (e.g., `2024-06-06`)
+- `tags` (string[]) - Array of tags for the post (can also be comma-separated string, will be converted to array)
+- `canonical_url` (string) - Canonical URL if the post is cross-posted from another site
+- `primaryCTA` (string) - Primary call-to-action button: `"sales"`, `"docs"`, or `"signUp"`
+- `floatingCTA` (boolean) - Whether to show a floating CTA button on the post
+- `focus` (boolean) - When `true`, the post will be highlighted as the featured post on the main blog feed
+- `hide` (boolean) - When `true`, the post will be accessible at its URL but hidden from all blog feeds and RSS
+- `featured` (boolean) - When `false`, the post will be hidden from the main feed but still available on category pages (default: true)
+- `teaser` (string[]) - Array of strings for content gates (preview content shown before gated content)
+
+**Recommendations**:
+
+- When updating or refreshing blog post content, add or update the `dateUpdated` to today's date for that given blog post.
+
+**Example:**
+
+```yaml
+---
+heading: "My Blog Post Title"
+subtitle: "An interesting subtitle about the post"
+showSubtitle: true
+image: /assets/blog/my-post/featured-image.png
+date: 2024-09-25
+author: John Doe
+category: product-updates
+tags: ["inngest", "workflows", "tutorial"]
+primaryCTA: "docs"
+floatingCTA: true
+---
+```
 
 ### Adding a New Page
 
