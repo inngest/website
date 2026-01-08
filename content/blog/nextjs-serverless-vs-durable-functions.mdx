@@ -344,11 +344,16 @@ export default inngest.createFunction(
 
 Our workflow is now guaranteed to run a maximum of 2 times per second!
 
-## Inngest: Expanding Durable Functions beyond workflows
+## Conclusion
 
-Inngest extends Durable Functions beyond traditional background workflows, enabling you to add durability directly to API routes and achieve near-zero latency for real-time applications.
 
-### Beyond workflows: step.run() in REST APIs
+Durable Functions are a powerful Next.js pattern. Adding workflows or long-running functions to your Next.js application no longer leads to timeout issues or plumbing with queueing solutions involving infrastructure work. This enables you to build fully featured SaaSs that integrate with other applications or APIs and provide advanced AI features or automation.
+
+## How Inngest has evolved: Expanding Durable Functions beyond workflows
+
+Since this article was published, Inngest has extended Durable Functions beyond traditional background workflows, enabling you to add durability directly to API routes and achieve near-zero latency for real-time applications.
+
+### Beyond workflows: step.run() in REST APIs (September 2025)
 
 Durable Functions aren't just for background workflows anymore. With Inngest's latest releases, you can now add durability directly to your API routes:
 ```javascript
@@ -369,7 +374,9 @@ app.post("/api/process", createFunction(async (req, res) => {
 
 Crash the server halfway through—Inngest resumes from the last completed step. No queue, no separate worker, just one code path with automatic durability and observability.
 
-### Near-zero latency with Checkpointing
+[Learn more about step.run() in REST APIs](/docs/learn/rest-endpoints) | [View changelog](https://www.inngest.com/changelog/2025-09-22-step-run-in-apis-golang)
+
+### Near-zero latency with Checkpointing (December 2025)
 
 For workflows requiring real-time responsiveness, **Checkpointing** eliminates the latency tradeoff traditionally associated with durable execution:
 
@@ -379,11 +386,6 @@ For workflows requiring real-time responsiveness, **Checkpointing** eliminates t
 
 This makes Durable Functions viable for interactive, user-facing experiences in Next.js applications—not just background jobs.
 
-[Learn more about Checkpointing](/docs/setup/checkpointing)
-
-## Conclusion
-
-
-Durable Functions are a powerful Next.js pattern. Adding workflows or long-running functions to your Next.js application no longer leads to timeout issues or plumbing with queueing solutions involving infrastructure work. This enables you to build fully featured SaaSs that integrate with other applications or APIs and provide advanced AI features or automation.
+[Learn more about Checkpointing](/docs/setup/checkpointing) | [View changelog](https://www.inngest.com/changelog/2025-12-10-checkpointing)
 
 So, what would you like to build?
