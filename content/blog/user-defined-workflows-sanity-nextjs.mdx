@@ -302,9 +302,10 @@ You can use yarn or pnpm also, the choice is yours!
 
 Then you can visit [http://localhost:3000](http://localhost:3000) to see the app and [http://localhost:8288/stream](http://localhost:8288/stream) to see your Inngest dev server. From there you can click the button and observe as the workflow executes.
 
-## AI-assisted local development with MCP
+## AI-assisted local development with MCP (October 2025)
 
-The Inngest dev server now supports MCP (Model Context Protocol), allowing you to connect Claude Code, Cursor, and other AI assistants directly to your local Inngest functions:
+Since this article was published, the Inngest dev server has added support for MCP (Model Context Protocol), making it even easier to test and debug your user-defined workflows. You can now connect Claude Code, Cursor, and other AI assistants directly to your local Inngest functions to help with development and testing:
+
 ```json
 {
   "mcpServers": {
@@ -327,7 +328,9 @@ AI assistants can now:
 - Test entire workflows end-to-end automatically
 - Search Inngest documentation offline
 
-[Learn more about the MCP integration](/docs/ai-dev-tools/mcp)
+This is particularly useful when building and testing user-defined workflows, as AI assistants can help you iterate on workflow logic and debug issues without leaving your editor.
+
+[Learn more about the MCP integration](/docs/ai-dev-tools/mcp) | [View changelog](https://www.inngest.com/changelog/2025-10-27-dev-server-mcp)
 
 Now, change the Sanity project id in the `.env` file, and run `sanity dev` so that you can access your own Sanity Studio and play around with creating and editing workflows.
 
