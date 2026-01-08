@@ -77,12 +77,6 @@ Outages happen. It may be your cloud provider’s fault, it may be yours. The se
 
 It’s important to assume that you may receive any webhook more than once. A starting point for idempotency is to ensure that each unique webhook payload is handled once — whether by storing IDs, checksums, or building out exactly once semantics. Your code will be better off for it and you’ll be able to recover from outages gracefully and avoid data issues.
 
-## Putting it all together
-
-You can build all of this out yourself as many software teams have done in the past. You can also choose to incrementally apply some of these tips as your system needs to scale and become more reliable for your customers. You may have even built out all of these parts again and again at your current job and your last job. Unfortunately, your customers don’t care how awesome your webhook handling setup is or how sweet your terraform is for configuring it all.
-
-We've built all of this into Inngest to give you everything you need out of the box. It's easy to set up webhook handlers with inline payload transformations, a queue to handle incredible load, serverless functions that replace the need to run your own workers, automatic retries, throttling controls, full event payload archive and logs, and a CLI to easily test your code that handles the messages, including replaying production data locally.
-
 ## Takeaways
 
 If you are running a reliable webhook at any decent scale or throughput, you need to decouple, add a queue, and have rock solid, idempotent retries. I hope that this has given you a blueprint on how you can scale your own webhooks as your user base grows.
@@ -91,9 +85,11 @@ If you don't want to roll it yourself - [check out Inngest](https://www.inngest.
 
 ## If you don't want to build this manually
 
+You can build all of this out yourself as many software teams have done in the past. You can also choose to incrementally apply some of these tips as your system needs to scale and become more reliable for your customers. You may have even built out all of these parts again and again at your current job and your last job. Unfortunately, your customers don't care how awesome your webhook handling setup is or how sweet your terraform is for configuring it all.
+
 If you'd rather focus on your product than building and maintaining webhook infrastructure, Inngest provides a complete webhook solution that handles all the complexity we've discussed.
 
-**Inngest** is a durable execution platform that makes it easy to build reliable, scalable workflows. For webhooks specifically, Inngest gives you:
+**Inngest** is a durable execution platform that makes it easy to build reliable, scalable workflows. We've built all of this into Inngest to give you everything you need out of the box. For webhooks specifically, Inngest provides:
 
 - **Inline payload transformations** - Transform webhook payloads directly in the dashboard
 - **Built-in queue** - Handles incredible load with automatic scaling
