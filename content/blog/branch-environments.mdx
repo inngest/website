@@ -55,11 +55,14 @@ The modern stack of developer tools should align with developer workflows, not a
 
 [Check out our documentation](/docs/platform/environments?ref=blog-branch-environments) to learn how to set this up for any of our supported platforms, from Netlify to AWS Lambda to a custom Kubernetes setup. Everyone can benefit from the advantages of this workflow!
 
+Give it a try and drop us a [line on Discord](https://www.inngest.com/discord) if you have any questions or share some feedback or feature requests on [our public roadmap here](http://roadmap.inngest.com/).
+
 ## Updates: What's changed since this blog was published
 
 ### AI-assisted local development with MCP (October 2025)
 
-The Inngest dev server now supports MCP (Model Context Protocol), allowing you to connect Claude Code, Cursor, and other AI assistants directly to your local Inngest functions:
+Since this article was published, we've enhanced the local development experience to complement Branch Environments. The Inngest dev server now supports MCP (Model Context Protocol), allowing you to connect Claude Code, Cursor, and other AI assistants directly to your local Inngest functions. This makes it even easier to test and iterate on your workflows locally before deploying to branch environments:
+
 ```json
 {
   "mcpServers": {
@@ -82,6 +85,6 @@ AI assistants can now:
 - Test entire workflows end-to-end automatically
 - Search Inngest documentation offline
 
-[Learn more about the MCP integration](/docs/ai-dev-tools/mcp) | [View changelog](https://www.inngest.com/changelog/2025-10-27-dev-server-mcp)
+This pairs perfectly with Branch Environments—test locally with AI assistance, then deploy to isolated branch environments for full-stack testing.
 
-Give it a try and drop us a [line on Discord](https://www.inngest.com/discord) if you have any questions or share some feedback or feature requests on [our public roadmap here](http://roadmap.inngest.com/).
+[Learn more about the MCP integration](/docs/ai-dev-tools/mcp) | [View changelog](https://www.inngest.com/changelog/2025-10-27-dev-server-mcp)
