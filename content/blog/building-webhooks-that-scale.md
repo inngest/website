@@ -99,70 +99,11 @@ Since this article was published, we've added powerful new webhook capabilities:
 
 **New Content Types Support**
 
-Inngest webhooks now support additional content types beyond JSON:
-
-- **`application/x-www-form-urlencoded`** - Perfect for HTML form submissions
-- **`multipart/form-data`** - Handle file uploads and complex form data
-
-Your webhook transform functions receive both parsed data and the raw body:
-```javascript
-function transform(json, headers, queryParams, raw) {
-  // json - Parsed payload (works for JSON, form-urlencoded, and multipart)
-  // raw - Raw request body for custom processing
-  
-  return {
-    name: "form.submitted",
-    data: { 
-      formData: json,
-      contentType: headers['content-type'],
-      rawPayload: raw  // Available if you need it
-    }
-  };
-}
-```
-
-**Use cases:**
-- Process Shopify webhooks that use form-urlencoded
-- Handle Typeform submissions with file attachments
-- Accept HTML form submissions directly
-- Integrate with legacy systems that don't send JSON
+Inngest webhooks now support additional content types beyond JSON: `application/x-www-form-urlencoded` (perfect for HTML form submissions) and `multipart/form-data` (for file uploads and complex form data). Your webhook transform functions receive both parsed data and the raw body, making it easy to process Shopify webhooks, Typeform submissions, HTML forms, and legacy systems that don't send JSON.
 
 **Webhook Management API**
 
-Manage webhooks programmatically through the Inngest REST API:
-```bash
-# Create a webhook
-POST /v1/webhooks
-{
-  "name": "Stripe webhook",
-  "url": "/webhooks/stripe",
-  "transform": "function transform(json, headers, queryParams, raw) { return { name: 'stripe/event', data: json }; }"
-}
-
-# Update transform function
-PATCH /v1/webhooks/:id
-{
-  "transform": "function transform(json, headers, queryParams, raw) { /* updated logic */ }"
-}
-
-# List all webhooks
-GET /v1/webhooks
-
-# Delete webhook
-DELETE /v1/webhooks/:id
-```
-
-**Benefits:**
-- **Version control** - Store webhook transforms in your repo
-- **Unit testing** - Test transform functions in CI/CD
-- **Programmatic creation** - Create webhooks for each customer dynamically
-- **Infrastructure as code** - Define webhooks alongside your app config
-
-**Perfect for:**
-- Multi-tenant apps that create webhooks per customer
-- Teams using GitOps workflows
-- Platforms that need webhook provisioning APIs
-- Testing webhook logic before deploying
+Manage webhooks programmatically through the Inngest REST API—create, update, list, and delete webhooks via REST endpoints. This enables version control (store transforms in your repo), unit testing in CI/CD, programmatic creation for multi-tenant apps, and infrastructure-as-code workflows. Perfect for teams using GitOps, platforms that need webhook provisioning APIs, and testing webhook logic before deploying.
 
 [View webhook API docs](https://api-docs.inngest.com/docs/inngest-api/b539bae406d1f-get-all-webhook-endpoints-in-given-environment) | [Content types changelog](https://www.inngest.com/changelog/2025-10-17-webhook-content-types) | [Management API changelog](https://www.inngest.com/changelog/2025-11-08-webhook-management-api)
 
