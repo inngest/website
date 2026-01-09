@@ -60,7 +60,7 @@ Enable checkpointing to achieve near-zero inter-step latency while maintaining d
 AI-assisted development workflows with Model Context Protocol. Connect Claude Code, Cursor, and other AI assistants to test and debug functions locally. [View changelog](https://www.inngest.com/changelog/2025-10-27-dev-server-mcp) | [Learn more](/docs/ai-dev-tools/mcp)
 
 **New webhook content types (August 2025)**  
-Support for `x-www-form-urlencoded` and `multipart/form-data` content types. [View changelog](https://www.inngest.com/changelog/2025-08-27-new-webhook-content-types) | [Learn more](/docs/guides/webhooks)
+Support for `x-www-form-urlencoded` and `multipart/form-data` content types. [View changelog](https://www.inngest.com/changelog/2025-08-27-new-webhook-content-types) | [Learn more](/docs/platform/webhooks)
 
 **Realtime support for Python (September 2025)**  
 Build interactive applications that push updates from durable workflows to the browser. [View changelog](https://www.inngest.com/changelog/2025-09-26-python-realtime-beta) | [Read blog](/blog/announcing-realtime)
@@ -69,16 +69,16 @@ Build interactive applications that push updates from durable workflows to the b
 TypeScript SDK now supports Standard Schema interface, allowing use of Zod 4, Valibot, ArkType, joi, and more. [View changelog](https://www.inngest.com/changelog/2025-09-26-zod-4-standard-schema-support) | [Learn more](/docs/reference/client/create#defining-event-payload-types)
 
 **AgentKit: useAgent hook (September 2025)**  
-Stream realtime updates from AgentKit agents to the browser with `useAgent` and `useChat` hooks. [View changelog](https://www.inngest.com/changelog/2025-09-24-agentkit-use-agent) | [Learn more](/docs/ai/agentkit)
+Stream realtime updates from AgentKit agents to the browser with `useAgent` and `useChat` hooks. [View changelog](https://www.inngest.com/changelog/2025-09-24-agentkit-use-agent) | [Learn more](https://agentkit.inngest.com)
 
 **Inngest Insights: Query events with SQL (September 2025)**  
 Query your events with SQL directly in the Inngest dashboard. [View changelog](https://www.inngest.com/changelog/2025-09-23-insights) | [Read blog](/blog/insights-query-events-and-runs)
 
 **step.run in REST APIs (September 2025)**  
-Make any API endpoint durable and observable with step.run. Available in Go SDK, TypeScript coming soon. [View changelog](https://www.inngest.com/changelog/2025-09-22-step-run-in-apis-golang) | [Read blog](/blog/step-run-in-rest-apis)
+Make any API endpoint durable and observable with step.run. Available in Go SDK, TypeScript coming soon. [View changelog](https://www.inngest.com/changelog/2025-09-22-step-run-in-apis-golang) | [Read blog](/blog/launch-week-day-1-unbreakable-apis)
 
 **Advanced Event Search (July 2025)**  
-Advanced event filters using CEL expressions. [View changelog](https://www.inngest.com/changelog/2025-07-23-event-search) | [Learn more](/docs/platform/monitor/events)
+Advanced event filters using CEL expressions. [View changelog](https://www.inngest.com/changelog/2025-07-23-event-search) | [Learn more](/docs/platform/monitor/inspecting-events)
 
 **Singleton Functions: Cancel Mode (June 2025)**  
 New `cancel` mode for Singleton Functions to cancel existing runs and start fresh. [View changelog](https://www.inngest.com/changelog/2025-06-23-singleton-functions-cancel-mode) | [Learn more](/docs/guides/singleton)
@@ -96,10 +96,10 @@ Exclusive execution control for Inngest functions. [View changelog](https://www.
 Stream updates from Inngest functions to users with secure, low-latency delivery. [View changelog](https://www.inngest.com/changelog/2025-05-19-realtime) | [Read blog](/blog/announcing-realtime)
 
 **Fetch APIs: step.fetch() (May 2025)**  
-Make durable HTTP requests within functions by offloading to the Inngest platform. [View changelog](https://www.inngest.com/changelog/2025-05-09-step-fetch) | [Read blog](/blog/step-fetch-durable-http-requests)
+Make durable HTTP requests within functions by offloading to the Inngest platform. [View changelog](https://www.inngest.com/changelog/2025-05-09-step-fetch) | [Read blog](/blog/announcing-step-fetch)
 
 **Prometheus metrics export (February 2025)**  
-Export Inngest metrics to Prometheus for existing monitoring systems. [View changelog](https://www.inngest.com/changelog/2025-02-11-prometheus-metrics-export) | [Learn more](/docs/platform/monitor/prometheus-integration)
+Export Inngest metrics to Prometheus for existing monitoring systems. [View changelog](https://www.inngest.com/changelog/2025-02-11-prometheus-metrics-export) | [Learn more](/docs/platform/monitor/prometheus-metrics-export-integration)
 
 **Webhook management API (February 2025)**  
 Programmatically create, update, and delete webhooks via REST API. [View changelog](https://www.inngest.com/changelog/2025-02-11-webhooks-api) | [Learn more](https://api-docs.inngest.com/docs/inngest-api/b539bae406d1f-get-all-webhook-endpoints-in-given-environment)
@@ -110,6 +110,6 @@ Use Postgres as event storage backend instead of SQLite. Available in CLI v1.4.0
 ### 2024 Updates
 
 **New inngest/function.cancelled event (November 2024)**  
-System event for handling cancelled runs gracefully. [View changelog](https://www.inngest.com/changelog/2024-11-25-function-cancelled-event) | [Learn more](/docs/reference/events/inngest-function-cancelled)
+System event for handling cancelled runs gracefully. [View changelog](https://www.inngest.com/changelog/2024-11-25-function-cancelled-event) | [Learn more](/docs/reference/system-events/inngest-function-cancelled)
 
 Happy building!

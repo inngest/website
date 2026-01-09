@@ -106,7 +106,7 @@ Inngest webhooks now support additional content types beyond JSON: `application/
 
 Manage webhooks programmatically through the Inngest REST API—create, update, list, and delete webhooks via REST endpoints. This enables version control (store transforms in your repo), unit testing in CI/CD, programmatic creation for multi-tenant apps, and infrastructure-as-code workflows. Perfect for teams using GitOps, platforms that need webhook provisioning APIs, and testing webhook logic before deploying.
 
-[View webhook API docs](https://api-docs.inngest.com/docs/inngest-api/b539bae406d1f-get-all-webhook-endpoints-in-given-environment) | [Content types changelog](https://www.inngest.com/changelog/2025-10-17-webhook-content-types) | [Management API changelog](https://www.inngest.com/changelog/2025-11-08-webhook-management-api)
+[View webhook API docs](https://api-docs.inngest.com/docs/inngest-api/b539bae406d1f-get-all-webhook-endpoints-in-given-environment) | [Content types changelog](/changelog/2025-08-27-new-webhook-content-types) | [Management API changelog](/changelog/2025-02-11-webhooks-api)
 
 If any of this interests you, check [our docs](/docs?ref=blog-building-webhooks-that-scale) or [give Inngest a spin](/docs/getting-started/nextjs-quick-start?ref=blog-building-webhooks-that-scale).
 
