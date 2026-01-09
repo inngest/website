@@ -642,6 +642,14 @@ const sectionLearn: (NavGroup | NavLink)[] = [
             href: "/docs/features/inngest-functions/steps-workflows/fetch",
           },
           {
+            title: "Instrumenting GraphQL",
+            href: `/docs/guides/instrumenting-graphql`
+          },
+          {
+            title: "Mergent migration guide",
+            href: `/docs/guides/mergent-migration`
+          },
+          {
             title: "Workflow Kit",
             links: [
               {
