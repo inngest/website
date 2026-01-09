@@ -795,14 +795,6 @@ const sectionLearn: (NavGroup | NavLink)[] = [
         title: "Manage",
         links: [
           {
-            title: "Environments",
-            href: "/docs/platform/environments",
-          },
-          {
-            title: "Apps",
-            href: "/docs/platform/manage/apps",
-          },
-          {
             title: "Bulk replay",
             href: "/docs/platform/replay",
           },
