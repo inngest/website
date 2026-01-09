@@ -78,7 +78,7 @@ export const Header = forwardRef<HTMLDivElement>(function Header(
         <nav className="ml-4 hidden lg:block">
           <ul role="list" className="flex items-center">
             {menuTabs.map((tab) => (
-              <TabItem key={tab.title} href={tab.href} matcher={tab.matcher}>
+              <TabItem key={tab.title} href={tab.href} matcher={tab.matcher} title={tab.title}>
                 {tab.title}
               </TabItem>
             ))}

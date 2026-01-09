@@ -1,4 +1,4 @@
-import { HomeIcon, PlayIcon, LightBulbIcon } from "@heroicons/react/24/outline";
+import { HomeIcon, PlayIcon, LightBulbIcon, BookOpenIcon, CodeBracketIcon } from "@heroicons/react/24/outline";
 import { parse } from "node:path";
 
 // A basic link in the nav
@@ -7,6 +7,7 @@ export type NavLink = {
   href: string;
   className?: string;
   tag?: string;
+  target?: string;
 };
 
 export type NavLinkGroup = {
@@ -21,6 +22,8 @@ export type NavGroup = {
   links: (NavGroup | NavLink | NavSection | NavLinkGroup)[];
   /* Whether group should be open when there is no active group */
   defaultOpen?: boolean;
+  tag?: string;
+  target?: string;
 };
 // A nav section with a nested navigation section
 export type NavSection = NavLink & {
@@ -34,6 +37,9 @@ export type NavSection = NavLink & {
   }[];
 };
 
+// =============================================================================
+// REFERENCE SECTION
+// =============================================================================
 const sectionReference: (NavGroup | NavLink)[] = [
   {
     title: "TypeScript SDK",
@@ -69,7 +75,6 @@ const sectionReference: (NavGroup | NavLink)[] = [
       {
         title: "Concurrency",
         href: `/docs/functions/concurrency`,
-        // href: `/docs/reference/functions/concurrency`,
       },
       {
         title: "Rate limit",
@@ -87,10 +92,6 @@ const sectionReference: (NavGroup | NavLink)[] = [
         title: "Function run priority",
         href: `/docs/reference/functions/run-priority`,
       },
-      // {
-      //   title: "Logging",
-      //   href: `/docs/reference/functions/logging`,
-      // },
       {
         title: "Extended Traces",
         href: "/docs/reference/typescript/extended-traces",
@@ -141,10 +142,6 @@ const sectionReference: (NavGroup | NavLink)[] = [
       {
         title: "Serve",
         links: [
-          // {
-          //   title: "Framework handlers",
-          //   href: `/docs/learn/serving-inngest-functions`,
-          // },
           {
             title: "Configuration",
             href: `/docs/reference/serve`,
@@ -347,36 +344,18 @@ const sectionReference: (NavGroup | NavLink)[] = [
     ],
   },
   {
-    title: "Workflow Kit",
-    links: [
-      {
-        title: "Introduction",
-        href: `/docs/reference/workflow-kit`,
-      },
-      {
-        title: "Creating Workflow Actions",
-        href: `/docs/reference/workflow-kit/actions`,
-      },
-      {
-        title: "Using the Workflow Engine",
-        href: `/docs/reference/workflow-kit/engine`,
-      },
-      {
-        title: "Workflow instance format",
-        href: `/docs/reference/workflow-kit/workflow-instance`,
-      },
-      {
-        title: "Components API (React)",
-        href: `/docs/reference/workflow-kit/components-api`,
-      },
-    ],
+    title: "Self-hosting",
+    href: `/docs/self-hosting`,
   },
 ];
 
-const sectionHome: (NavGroup | NavLink)[] = [
+// =============================================================================
+// LEARN SECTION
+// =============================================================================
+const sectionLearn: (NavGroup | NavLink)[] = [
   { title: "Home", href: "/docs" },
   {
-    title: "Quick start",
+    title: "Quick starts",
     defaultOpen: true,
     links: [
       {
@@ -394,292 +373,140 @@ const sectionHome: (NavGroup | NavLink)[] = [
     ],
   },
   {
-    title: "Inngest tour",
-    defaultOpen: true,
-    links: [
-      { title: "Install the SDK", href: `/docs/sdk/overview` },
-      {
-        title: "Your first Functions",
-        href: `/docs/learn/inngest-functions`,
-      },
-      {
-        title: "Leveraging Steps",
-        href: `/docs/learn/inngest-steps`,
-      },
-      {
-        title: "Setting up your app",
-        href: `/docs/learn/serving-inngest-functions`,
-      },
-    ],
-  },
-  {
-    title: "Features",
+    title: "Concepts",
     defaultOpen: true,
     links: [
       {
-        title: "Local Development",
+        title: "How Durable execution works",
+        href: `/docs/learn/how-functions-are-executed`,
+      },
+      {
+        title: "Durable Functions",
         links: [
           {
             title: "Overview",
-            href: `/docs/local-development`,
+            href: `/docs/learn/inngest-functions`,
           },
           {
-            title: "Guides",
+            title: "Serve Inngest Functions",
+            href: "/docs/learn/serving-inngest-functions",
           },
           {
-            title: "Inngest Dev Server",
-            href: `/docs/dev-server`,
+            title: "Triggering functions",
+            href: `/docs/features/events-triggers`,
           },
           {
-            title: "Development with Docker",
-            href: `/docs/guides/development-with-docker`,
+            title: "Idempotency",
+            href: `/docs/guides/handling-idempotency`,
           },
         ],
       },
       {
-        title: "Events & Triggers",
+        title: "Durable Endpoints",
+        href: `/docs/learn/rest-endpoints`,
+        tag: "new",
+      },
+      {
+        title: "Steps",
+        links: [
+          {
+            title: "Building with steps",
+            href: `/docs/learn/inngest-steps`,
+          },
+          {
+            title: "Sleeping",
+            href: "/docs/features/inngest-functions/steps-workflows/sleeps",
+          },
+          {
+            title: "Wait for event + signal",
+            href: "/docs/features/inngest-functions/steps-workflows/wait-for-event",
+          },
+          {
+            title: "AI steps (LLM calls)",
+            href: "/docs/features/inngest-functions/steps-workflows/step-ai-orchestration",
+          },
+        ],
+      },
+      {
+        title: "Error handling",
         links: [
           {
             title: "Overview",
-            href: `/docs/features/events-triggers`,
-          },
-          { title: "Essentials" },
-          { title: "Sending events", href: `/docs/events` },
-          {
-            title: "Event payload format",
-            href: `/docs/features/events-triggers/event-format`,
+            href: `/docs/guides/error-handling`,
           },
           {
-            title: "Crons",
-            href: `/docs/guides/scheduled-functions`,
+            title: "Retries",
+            href: "/docs/features/inngest-functions/error-retries/retries",
           },
           {
-            title: "Delayed functions",
-            href: `/docs/guides/delayed-functions`,
+            title: "Rollbacks",
+            href: "/docs/features/inngest-functions/error-retries/rollbacks",
           },
           {
-            title: "Direct invocation",
-            href: `/docs/guides/invoking-functions-directly`,
+            title: "Failure handlers",
+            href: "/docs/features/inngest-functions/error-retries/failure-handlers",
           },
           {
-            title: "Webhooks",
-            href: `/docs/platform/webhooks`,
+            title: "Inngest errors",
+            href: "/docs/features/inngest-functions/error-retries/inngest-errors",
           },
-          { title: "Patterns" },
+        ],
+      },
+      {
+        title: "Flow control",
+        links: [
           {
-            title: "Background jobs",
-            href: `/docs/guides/background-jobs`,
-          },
-          {
-            title: "Fan out",
-            href: `/docs/guides/fan-out-jobs`,
-          },
-          {
-            title: "Multiple triggers & wildcards",
-            href: `/docs/guides/multiple-triggers`,
+            title: "Overview",
+            href: `/docs/guides/flow-control`,
           },
           {
-            title: "Sending events from functions",
-            href: `/docs/guides/sending-events-from-functions`,
+            title: "Concurrency",
+            href: `/docs/guides/concurrency`,
           },
           {
-            title: "Batching events",
+            title: "Throttling",
+            href: `/docs/guides/throttling`,
+          },
+          {
+            title: "Batching",
             href: `/docs/guides/batching`,
           },
           {
-            title: "Writing expression",
-            href: `/docs/guides/writing-expressions`,
-          },
-          { title: "Integrations" },
-          {
-            title: "Neon",
-            href: `/docs/features/events-triggers/neon`,
-          },
-          { title: "Use cases" },
-          {
-            title: "Handle Clerk webhooks",
-            href: `/docs/guides/clerk-webhook-events`,
+            title: "Rate limit",
+            href: `/docs/guides/rate-limiting`,
           },
           {
-            title: "Handle Resend webhooks",
-            href: `/docs/guides/resend-webhook-events`,
+            title: "Singleton",
+            href: `/docs/guides/singleton`,
+          },
+          {
+            title: "Debounce",
+            href: `/docs/guides/debounce`,
+          },
+          {
+            title: "Priority",
+            href: `/docs/guides/priority`,
           },
         ],
       },
       {
-        title: "Inngest Functions",
-        defaultOpen: true,
+        title: "Cancellation",
         links: [
           {
             title: "Overview",
-            href: `/docs/features/inngest-functions`,
+            href: `/docs/features/inngest-functions/cancellation`,
           },
           {
-            title: "Steps & Workflows",
-            links: [
-              {
-                title: "Overview",
-                href: `/docs/features/inngest-functions/steps-workflows`,
-              },
-              {
-                title: "Function steps",
-                href: "/docs/guides/multi-step-functions",
-              },
-              {
-                title: "Sleeps",
-                href: "/docs/features/inngest-functions/steps-workflows/sleeps",
-              },
-              {
-                title: "Wait for events",
-                href: "/docs/features/inngest-functions/steps-workflows/wait-for-event",
-              },
-              {
-                title: "AI Inference",
-                href: "/docs/features/inngest-functions/steps-workflows/step-ai-orchestration",
-              },
-              {
-                title: "Fetch",
-                href: "/docs/features/inngest-functions/steps-workflows/fetch",
-              },
-              { title: "Guides" },
-              {
-                title: "How Functions are executed",
-                href: `/docs/learn/how-functions-are-executed`,
-              },
-              {
-                title: "User-defined Workflows",
-                href: `/docs/guides/user-defined-workflows`,
-              },
-              { title: "Patterns" },
-              {
-                title: "Parallel steps",
-                href: "/docs/guides/step-parallelism",
-              },
-              {
-                title: "Loops over steps",
-                href: "/docs/guides/working-with-loops",
-              },
-              { title: "Use cases" },
-              {
-                title: "Trigger workflows from Retool",
-                href: `/docs/guides/trigger-your-code-from-retool`,
-              },
-            ],
+            title: "Cancel on timeouts",
+            href: `/docs/features/inngest-functions/cancellation/cancel-on-timeouts`,
           },
           {
-            title: "Flow Control",
-            links: [
-              {
-                title: "Overview",
-                href: `/docs/guides/flow-control`,
-              },
-              {
-                title: "Singleton",
-                href: `/docs/guides/singleton`,
-              },
-              {
-                title: "Concurrency",
-                href: `/docs/guides/concurrency`,
-              },
-              {
-                title: "Throttling",
-                href: `/docs/guides/throttling`,
-              },
-              {
-                title: "Rate limiting",
-                href: `/docs/guides/rate-limiting`,
-              },
-              {
-                title: "Debouncing",
-                href: `/docs/guides/debounce`,
-              },
-              {
-                title: "Priority",
-                href: `/docs/guides/priority`,
-              },
-            ],
+            title: "Cancel on events",
+            href: `/docs/features/inngest-functions/cancellation/cancel-on-events`,
           },
           {
-            title: "Errors & Retries",
-            links: [
-              {
-                title: "Overview",
-                href: `/docs/guides/error-handling`,
-              },
-              {
-                title: "Retries",
-                href: "/docs/features/inngest-functions/error-retries/retries",
-              },
-              {
-                title: "Rollbacks",
-                href: "/docs/features/inngest-functions/error-retries/rollbacks",
-              },
-              {
-                title: "Failure handlers",
-                href: "/docs/features/inngest-functions/error-retries/failure-handlers",
-              },
-              {
-                title: "Inngest errors",
-                href: "/docs/features/inngest-functions/error-retries/inngest-errors",
-              },
-              {
-                title: "Guides",
-              },
-              {
-                title: "Handling idempotency",
-                href: "/docs/guides/handling-idempotency",
-              },
-            ],
-          },
-          {
-            title: "Cancellation",
-            links: [
-              {
-                title: "Overview",
-                href: `/docs/features/inngest-functions/cancellation`,
-              },
-              {
-                title: "Cancel on timeouts",
-                href: `/docs/features/inngest-functions/cancellation/cancel-on-timeouts`,
-              },
-              {
-                title: "Cancel on events",
-                href: `/docs/features/inngest-functions/cancellation/cancel-on-events`,
-              },
-              {
-                title: "Bulk cancellation",
-                href: `/docs/guides/cancel-running-functions`,
-              },
-            ],
-          },
-          {
-            title: "REST Endpoints",
-            href: "/docs/learn/rest-endpoints",
-            tag: "new",
-          },
-          {
-            title: "Versioning",
-            href: `/docs/learn/versioning`,
-            // links: [
-            //   {
-            //     title: "Overview",
-            //   },
-            // { title: "Guides" },
-            // {
-            //   title: "Migrating Events",
-            //   href: `/todo`, // TODO later
-            //   tag: "new",
-            // },
-            // {
-            //   title: "Migrating Functions",
-            //   href: `/todo`, // TODO later
-            //   tag: "new",
-            // },
-            // ],
-          },
-          {
-            title: "Logging",
-            href: "/docs/guides/logging",
+            title: "Bulk cancellation",
+            href: `/docs/guides/cancel-running-functions`,
           },
         ],
       },
@@ -698,74 +525,181 @@ const sectionHome: (NavGroup | NavLink)[] = [
         ],
       },
       {
-        title: "Middleware",
+        title: "Environments and Apps",
+        href: "/docs/apps",
         links: [
           {
             title: "Overview",
-            href: `/docs/features/middleware`,
+            href: "/docs/apps",
           },
           {
-            title: "Creating middleware",
-            href: `/docs/features/middleware/create`,
+            title: "Environments",
+            href: `/docs/platform/environments`,
           },
           {
-            title: "Patterns",
+            title: "Apps",
+            href: `/docs/platform/manage/apps`,
           },
           {
-            title: "Dependency Injection",
-            href: "/docs/features/middleware/dependency-injection",
+            title: "Event and signing keys",
+            links: [
+              {
+                title: "Event keys",
+                href: `/docs/events/creating-an-event-key`,
+              },
+              {
+                title: "Signing keys",
+                href: `/docs/platform/signing-keys`,
+              },
+            ],
           },
-          {
-            title: "Built-in middlewares",
-          },
-          {
-            title: "Encryption Middleware",
-            href: "/docs/features/middleware/encryption-middleware",
-          },
-          {
-            title: "Sentry Middleware",
-            href: "/docs/features/middleware/sentry-middleware",
-          },
-          // {
-          //   title: "Datadog Middleware",
-          //   // href: '/docs/features/middleware/datadog-middleware',
-          //   href: `/docs/examples/track-failures-in-datadog`,
-          // },
         ],
       },
     ],
   },
   {
-    title: "Platform",
+    title: "Guides",
+    defaultOpen: true,
     links: [
       {
-        title: "Deployment",
-        tag: "new",
-        defaultOpen: false,
+        title: "Versioning",
+        href: `/docs/learn/versioning`,
+      },
+      {
+        title: "Local development",
+        links: [
+          {
+            title: "Overview",
+            href: `/docs/local-development`,
+          },
+          {
+            title: "Inngest Dev Server",
+            href: `/docs/dev-server`,
+          },
+          {
+            title: "Development with Docker",
+            href: `/docs/guides/development-with-docker`,
+          },
+        ],
+      },
+      {
+        title: "Patterns",
+        links: [
+          {
+            title: "Multi-step functions",
+            href: "/docs/guides/multi-step-functions",
+          },
+          {
+            title: "Parallel steps",
+            href: "/docs/guides/step-parallelism",
+          },
+          {
+            title: "Human-in-the-loop",
+            href: "/docs/features/inngest-functions/steps-workflows/wait-for-event",
+          },
+          {
+            title: "Fan-out",
+            href: `/docs/guides/fan-out-jobs`,
+          },
+          {
+            title: "Working with loops",
+            href: "/docs/guides/working-with-loops",
+          },
+          {
+            title: "Delayed functions",
+            href: `/docs/guides/delayed-functions`,
+          },
+          {
+            title: "Cron functions",
+            href: `/docs/guides/scheduled-functions`,
+          },
+          {
+            title: "Background jobs",
+            href: `/docs/guides/background-jobs`,
+          },
+          {
+            title: "Multiple triggers & wildcards",
+            href: `/docs/guides/multiple-triggers`,
+          },
+          {
+            title: "Sending events from functions",
+            href: `/docs/guides/sending-events-from-functions`,
+          },
+          {
+            title: "Direct invocation",
+            href: `/docs/guides/invoking-functions-directly`,
+          },
+          {
+            title: "User-defined Workflows",
+            href: `/docs/guides/user-defined-workflows`,
+          },
+          {
+            title: "Trigger workflows from Retool",
+            href: `/docs/guides/trigger-your-code-from-retool`,
+          },
+          {
+            title: "Durable Fetch",
+            href: "/docs/features/inngest-functions/steps-workflows/fetch",
+          },
+          {
+            title: "Instrumenting GraphQL",
+            href: `/docs/guides/instrumenting-graphql`
+          },
+          {
+            title: "Mergent migration guide",
+            href: `/docs/guides/mergent-migration`
+          },
+          {
+            title: "Workflow Kit",
+            links: [
+              {
+                title: "Introduction",
+                href: `/docs/reference/workflow-kit`,
+              },
+              {
+                title: "Creating Workflow Actions",
+                href: `/docs/reference/workflow-kit/actions`,
+              },
+              {
+                title: "Using the Workflow Engine",
+                href: `/docs/reference/workflow-kit/engine`,
+              },
+              {
+                title: "Workflow instance format",
+                href: `/docs/reference/workflow-kit/workflow-instance`,
+              },
+              {
+                title: "Components API (React)",
+                href: `/docs/reference/workflow-kit/components-api`,
+              },
+            ],
+          },
+        ],
+      },
+      {
+        title: "Deploying",
+        defaultOpen: true,
         links: [
           {
             title: "Overview",
             href: `/docs/platform/deployment`,
           },
           {
-            title: "Environments & Apps",
-            href: `/docs/apps`,
-          },
-          {
-            title: "Syncing",
+            title: "Sync your app",
             href: `/docs/apps/cloud`,
           },
           {
-            title: "Event keys",
-            href: `/docs/events/creating-an-event-key`,
-          },
-          {
-            title: "Signing keys",
-            href: `/docs/platform/signing-keys`,
-          },
-          {
-            title: "Cloud Providers",
+            title: "Connect",
+            href: `/docs/setup/connect`,
             tag: "new",
+          },
+          {
+            title: "Checkpointing",
+            href: `/docs/setup/checkpointing`,
+            tag: "new"
+          },
+          {
+            title: "Cloud providers",
             links: [
               {
                 title: "Vercel",
@@ -792,65 +726,99 @@ const sectionHome: (NavGroup | NavLink)[] = [
                 title: "Cloud Provider Usage Limits",
                 href: `/docs/usage-limits/providers`,
               },
-              // Fly, Render, Railway, Google Functions, Firebase Functions, Cloudflare Workers
             ],
           },
-          {
-            title: "Guides",
-          },
-          {
-            title: "Connect",
-            href: `/docs/setup/connect`,
-            tag: "new",
-          },
-          {
-            title: "Checkpointing",
-            href: "/docs/setup/checkpointing",
-            tag: "new",
-          },
-          {
-            title: "Self hosting",
-            href: `/docs/self-hosting`,
-          },
-          {
-            title: "Improve Performance",
-            href: "/docs/improve-performance",
-            tag: "new",
-          },
-          // {
-          //   title: "Migrating across clouds",
-          //   href: "/todo", // TODO later
-          //   tag: "new",
-          // },
-          // {
-          //   title: "Self-hosting",
-          //   href: "/todo", // TODO later
-          //   tag: "new",
-          // },
         ],
       },
+      {
+        title: "Optimizing Performance",
+        href: `/docs/improve-performance`,
+      },
+      {
+        title: "Traces",
+        href: "/docs/platform/monitor/traces",
+      },
+      {
+        title: "Logging",
+        href: "/docs/guides/logging",
+      },
+      {
+        title: "Middleware",
+        links: [
+          {
+            title: "Overview",
+            href: `/docs/features/middleware`,
+          },
+          {
+            title: "Creating middleware",
+            href: `/docs/features/middleware/create`,
+          },
+          {
+            title: "Dependency Injection",
+            href: "/docs/features/middleware/dependency-injection",
+          },
+          {
+            title: "Encryption Middleware",
+            href: "/docs/features/middleware/encryption-middleware",
+          },
+          {
+            title: "Sentry Middleware",
+            href: "/docs/features/middleware/sentry-middleware",
+          },
+        ],
+      },
+      {
+        title: "Events & Triggers",
+        links: [
+          {
+            title: "Overview",
+            href: `/docs/features/events-triggers`,
+          },
+          {
+            title: "Sending events",
+            href: `/docs/events`,
+          },
+          {
+            title: "Event payload format",
+            href: `/docs/features/events-triggers/event-format`,
+          },
+          {
+            title: "Writing expressions",
+            href: `/docs/guides/writing-expressions`,
+          },
+          {
+            title: "Consuming webhook events",
+            href: `/docs/platform/webhooks`,
+          },
+          {
+            title: "Handle Clerk webhooks",
+            href: `/docs/guides/clerk-webhook-events`,
+          },
+          {
+            title: "Handle Resend webhooks",
+            href: `/docs/guides/resend-webhook-events`,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    title: "Platform",
+    links: [
       {
         title: "Manage",
         links: [
           {
-            title: "Environments",
-            href: "/docs/platform/environments",
-          },
-          {
-            title: "Apps",
-            href: "/docs/platform/manage/apps",
-          },
-          {
-            title: "Function Replay",
+            title: "Bulk replay",
             href: "/docs/platform/replay",
           },
           {
-            title: "Function Pausing",
-            href: "/docs/guides/pause-functions",
+            title: "Bulk cancel",
+            href: "/docs/platform/manage/bulk-cancellation",
           },
           {
-            title: "Bulk Cancellation",
-            href: "/docs/platform/manage/bulk-cancellation",
+            title: "Pausing",
+            href: "/docs/guides/pause-functions",
           },
         ],
       },
@@ -858,44 +826,40 @@ const sectionHome: (NavGroup | NavLink)[] = [
         title: "Monitor",
         links: [
           {
-            title: "Insights",
-            tag: "new",
-            href: "/docs/platform/monitor/insights",
-          },
-          {
-            title: "Observability & metrics",
-            href: "/docs/platform/monitor/observability-metrics",
-          },
-          {
-            title: "Inspecting function runs",
+            title: "Runs and traces",
             href: "/docs/platform/monitor/inspecting-function-runs",
           },
           {
-            title: "Inspecting events",
-            href: "/docs/platform/monitor/inspecting-events",
+            title: "Observability and metrics",
+            href: "/docs/platform/monitor/observability-metrics",
           },
           {
-            title: "Traces",
-            href: "/docs/platform/monitor/traces",
+            title: "Insights",
+            href: "/docs/platform/monitor/insights",
+            tag: "new",
           },
-          { title: "Integrations" },
+          {
+            title: "Events",
+            href: "/docs/platform/monitor/inspecting-events",
+          },
+        ],
+      },
+      {
+        title: "Integrations",
+        links: [
+          {
+            title: "Neon",
+            href: `/docs/features/events-triggers/neon`,
+          },
           {
             title: "Datadog",
             href: "/docs/platform/monitor/datadog-integration",
           },
           {
-            title: "Prometheus metrics",
+            title: "Prometheus",
             href: "/docs/platform/monitor/prometheus-metrics-export-integration",
           },
         ],
-      },
-      {
-        title: "Security",
-        href: "/docs/learn/security",
-      },
-      {
-        title: "Limitations",
-        href: `/docs/usage-limits/inngest`,
       },
     ],
   },
@@ -913,26 +877,40 @@ const sectionHome: (NavGroup | NavLink)[] = [
       },
     ],
   },
-  { title: "References", links: sectionReference },
   {
-    title: "",
+    title: "Resources",
     links: [
       {
-        title: "FAQ",
-        href: `/docs/faq`,
-      },
-      {
-        title: "Release Phases",
-        href: `/docs/release-phases`,
+        title: "Security",
+        href: "/docs/learn/security",
       },
       {
         title: "Glossary",
         href: `/docs/learn/glossary`,
       },
+      {
+        title: "Release phases",
+        href: `/docs/release-phases`,
+      },
+      {
+        title: "FAQ",
+        href: `/docs/faq`,
+      },
+      {
+        title: "Limitations",
+        href: `/docs/usage-limits/inngest`,
+      },
+      {
+        title: "Install the SDK",
+        href: `/docs/sdk/overview`,
+      },
     ],
   },
 ];
 
+// =============================================================================
+// EXAMPLES SECTION (kept for backwards compatibility)
+// =============================================================================
 const sectionExamples: NavGroup[] = [
   {
     title: "Examples",
@@ -989,6 +967,9 @@ const sectionExamples: NavGroup[] = [
   },
 ];
 
+// =============================================================================
+// TYPE GUARDS
+// =============================================================================
 export const isNavGroup = (
   item: NavGroup | NavLink | NavSection | NavLinkGroup
 ): item is NavGroup => {
@@ -1010,6 +991,9 @@ export const isNavLink = (
   return !!item.title && !!(item as NavLink).href;
 };
 
+// =============================================================================
+// LINK SEARCH HELPERS
+// =============================================================================
 function linkSearch(groups: (NavGroup | NavLink)[], pathname) {
   return groups.find((item) =>
     isNavGroup(item)
@@ -1029,14 +1013,22 @@ function recursiveLinkSearch(group: NavGroup, pathname) {
   });
 }
 
-const matchers = {
+// =============================================================================
+// MATCHERS
+// =============================================================================
+const matchers: Record<string, (pathname: string) => any> = {
+  docs: (pathname) => pathname === "/docs" || pathname === "/docs/",
   examples: (pathname) =>
     /^\/docs\/examples/.test(pathname) || linkSearch(sectionExamples, pathname),
-  // should match everything except above
-  // default: /^\/docs(?!\/guides|\/reference|\/examples)/,
-  default: (pathname) => linkSearch(sectionHome, pathname),
+  reference: (pathname) =>
+    /^\/docs\/reference/.test(pathname) || linkSearch(sectionReference, pathname),
+  learn: (pathname) => linkSearch(sectionLearn, pathname),
 };
+matchers.default = matchers.learn;
 
+// =============================================================================
+// MENU TABS (Top navigation)
+// =============================================================================
 export const menuTabs = [
   {
     title: "Documentation",
@@ -1047,30 +1039,52 @@ export const menuTabs = [
   {
     title: "Examples",
     icon: LightBulbIcon,
-    href: "/docs/examples",
+    href: "/docs/examples/",
     matcher: matchers.examples,
-  },
-  {
-    title: "AgentKit",
-    // icon: LightBulbIcon,
-    href: "https://agentkit.inngest.com/overview",
-    // matcher: matchers.examples,
   },
 ];
 
+// =============================================================================
+// SIDEBAR TABS (Sidebar navigation)
+// =============================================================================
+export const sidebarMenuTabs = [
+  {
+    title: "Learn",
+    icon: BookOpenIcon,
+    href: "/docs",
+    matcher: matchers.learn,
+  },
+  {
+    title: "Reference",
+    icon: CodeBracketIcon,
+    href: "/docs/reference/typescript",
+    matcher: matchers.reference,
+  },
+];
+
+// =============================================================================
+// TOP LEVEL NAV
+// =============================================================================
 export const topLevelNav = [
   {
-    title: "Home",
-    icon: HomeIcon,
+    title: "Learn",
+    icon: BookOpenIcon,
     href: `/docs`,
-    sectionLinks: sectionHome,
-    matcher: matchers.default,
+    sectionLinks: sectionLearn,
+    matcher: matchers.learn,
+  },
+  {
+    title: "Reference",
+    icon: CodeBracketIcon,
+    href: "/docs/reference/typescript",
+    matcher: matchers.reference,
+    sectionLinks: sectionReference,
   },
   {
     title: "Examples",
     icon: LightBulbIcon,
-    href: "/docs/examples",
-    matcher: matchers.examples,
+    href: "/docs/examples/",
     sectionLinks: sectionExamples,
+    matcher: matchers.examples,
   },
 ];

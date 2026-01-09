@@ -47,8 +47,17 @@ export {
 } from "./Code";
 export { DownloadLink } from "./DownloadLink";
 
+import { PageActions } from "./PageActions";
+
 export const h1: React.FC<any> = function (props) {
-  return <Heading level={1} {...props} anchor={false} />;
+  return (
+    <div className="group/h1 mb-8">
+      <Heading level={1} {...props} anchor={false} />
+      <div className="mt-4">
+        <PageActions />
+      </div>
+    </div>
+  );
 };
 export const h2: React.FC<any> = function (props) {
   return <Heading level={2} {...props} />;
