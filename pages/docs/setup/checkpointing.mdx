@@ -2,10 +2,6 @@ import { Info, Warning, CodeGroup, GuideSelector, GuideSection } from "shared/Do
 
 # Checkpointing
 
-<Info>
-  Checkpointing is currently in developer preview. Learn more about the [developer preview limitations](#developer-preview).
-</Info>
-
 Checkpointing is a performance optimization for Inngest functions that executes steps eagerly rather than waiting on internal orchestration. The result is dramatically lower latency — ideal for real-time AI workflows.
 
 ## Minimum Requirements
@@ -106,9 +102,13 @@ Checkpointing uses the SDK orchestrates steps on the client-side (_on your serve
 
 What happens when something goes wrong? If a step fails and needs to retry, the execution engine falls back to standard orchestration to handle it properly. You get speed when things work, and safety when they don't.
 
-## Developer Preview
+## Beta
 
-Checkpointing is currently in developer preview. This means the API is subject to change as we iterate based on feedback. Read the [release phases](/docs/release-phases) for more details.
+Checkpointing is currently in beta, here are some limitations to be aware of:
+
+- **Parallel step execution** — When a function branches into parallel steps, execution switches to standard orchestration for the remainder of the run. Checkpointing does not resume after parallel execution.
+- **Limited configuration options** — Customization of checkpointing buffer size and buffer timeout is not yet available.
+
 
 | Feature | Supported |
 |---------|-----------|
@@ -116,10 +116,5 @@ Checkpointing is currently in developer preview. This means the API is subject t
 | Self-hosted Inngest | ✅ |
 | Inngest Cloud | ✅ |
 
-### Limitations
 
-During the developer preview, there are some limitations to be aware of:
-
-- **Parallel step execution** — When a function branches into parallel steps, execution switches to standard orchestration for the remainder of the run. Checkpointing does not resume after parallel execution.
-- **Limited configuration options** — Customization of checkpointing buffer size and buffer timeout is not yet available.
-
+Read the [release phases](/docs/release-phases) for more details.

@@ -1,6 +1,6 @@
 export const featuredBlogPost = {
-  title: "Inngest is now available on the DigitalOcean Marketplace",
-  image: "/assets/blog/digital-ocean-marketplace/cover.png",
+  title: "Introducing Checkpointing: Near-zero latency for durable workflows",
+  image: "/assets/blog/introducing-checkpointing/cover.jpg",
   description: "",
-  href: "/blog/digitalocean-marketplace",
+  href: "/blog/introducing-checkpointing",
 };
