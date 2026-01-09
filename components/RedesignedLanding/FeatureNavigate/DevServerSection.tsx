@@ -41,7 +41,7 @@ export default function DevServerSection() {
         </CardFooter>
       </Card>
       <div className="devsvg-anchor relative z-30 order-1 flex flex-col items-center xl:order-2">
-        <h2 className="devserver-anchor z-30 text-center font-circular text-xs font-light md:text-sm">
+        <h2 className="devserver-anchor z-30 mb-1 text-center font-circular text-xs font-light md:text-sm">
           INSTANT DEVELOPMENT ENVIRONMENT
         </h2>
         <div ref={wrapperRef}>
