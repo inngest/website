@@ -1,0 +1,233 @@
+# Inngest Website - Cursor Configuration
+
+## Project Overview
+
+This is the Inngest marketing website built with Next.js. It contains:
+
+- Marketing pages (homepage, pricing, about, etc.)
+- Documentation (MDX-based)
+- Blog posts (MDX-based)
+- Changelog entries (MDX-based)
+- Customer case studies
+
+## Tech Stack
+
+- **Framework**: Next.js 15 (App Router + Pages Router hybrid)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS with custom design system
+- **Content**: MDX for blog posts, docs, and changelog
+- **Package Manager**: pnpm (required - do not use npm or yarn)
+- **Node Version**: 22.x (required)
+
+## Getting Started
+
+### First Time Setup
+
+1. Install dependencies: `pnpm install`
+2. Start development server: `pnpm dev`
+3. Open http://localhost:3001
+
+### Common Commands
+
+- `pnpm dev` - Start development server
+- `pnpm build` - Build for production
+- `pnpm start` - Run production build locally
+- `pnpm prettier` - Format code
+
+## File Structure
+
+### Key Directories
+
+- `/app` - Next.js App Router pages (newer pages)
+- `/pages` - Next.js Pages Router pages (legacy pages, docs, blog)
+- `/components` - Reusable React components
+- `/shared` - Shared components and utilities
+- `/content/blog` - Blog post MDX files
+- `/content/changelog` - Changelog entry MDX files
+- `/pages/docs` - Documentation MDX files
+- `/public` - Static assets (images, fonts, etc.)
+
+### Routing
+
+- App Router: Files in `/app` use the folder structure for routing (e.g., `/app/about/page.tsx` → `/about`)
+- Pages Router: Files in `/pages` use file-based routing (e.g., `/pages/blog.tsx` → `/blog`)
+
+## Code Style & Conventions
+
+### TypeScript/React
+
+- Use TypeScript for all new files
+- Use functional components with TypeScript
+- Prefer named exports over default exports for utilities
+- Use proper TypeScript types (avoid `any`)
+
+### Styling
+
+- Use Tailwind CSS utility classes
+- Use the custom design system colors (carbon, matcha, breeze, etc.) from `tailwind.config.js`
+- Prefer semantic color names like `text-basis`, `bg-surfaceBase`, `border-subtle`
+- Use responsive classes (e.g., `sm:`, `md:`, `lg:`)
+- Dark mode is enabled via `class` strategy
+
+### Component Patterns
+
+- Keep components focused and reusable
+- Re-use existing components over creating new ones
+- Extract shared components to `/components`
+- Extract shared logic and utils to `/shared`
+- Use proper TypeScript props interfaces
+- Follow existing component patterns in the codebase
+
+### MDX Content
+
+- Blog posts go in `/content/blog/*.mdx` or `*.md`
+- Changelog entries go in `/content/changelog/*.mdx`
+- Documentation goes in `/pages/docs/**/*.mdx`
+- Use frontmatter for metadata (title, date, author, etc.)
+- Code snippets can reference files in `/snippets` using `!snippet:path=...`
+
+### Links
+
+- **Always use relative URLs for internal website links** - Use paths like `/docs/sdk/overview` instead of `https://www.inngest.com/docs/sdk/overview`
+- The project has an automated broken link checker (`scripts/brokenLinkChecker.ts`) that catches dead links automatically, but it works best with relative URLs
+- Only use absolute URLs for external links (links to other domains)
+- Use Ref Tags (ex. `?ref=blog-introducing-checkpointing`) query strings at the end of internal links so we can attribute the referrer for internal links for marketing attribution. Ref tags should describe the page that the link is going to be on like the blog post or landing page that the link is on.
+
+## Common Tasks
+
+### Adding a New Blog Post
+
+1. Create a new `.mdx` or `.md` file in `/content/blog/`
+2. Add frontmatter with title, date, author, etc.
+3. Write content in MDX format
+4. The blog listing page will automatically pick it up
+
+#### Blog Post Metadata Fields
+
+Blog posts use frontmatter (YAML) at the top of the file with the following fields:
+
+**Required Fields:**
+
+- `heading` (string) - The blog post title/headline
+- `image` (string) - Path to the featured image (e.g., `/assets/blog/example/featured-image.png`)
+- `date` (string) - Publication date in ISO8601 format (e.g., `2024-09-25`)
+- `category` (string) - Must be one of: `"product-updates"`, `"company-news"`, or `"engineering"`
+
+**Optional Fields:**
+
+- `subtitle` (string) - The blog post subtitle/description
+- `showSubtitle` (boolean) - Whether to display the subtitle (default: false)
+- `author` (string | string[]) - Author name(s). Can be a single string or array of strings for multiple authors
+- `imageCredits` (string) - Credits/attribution for the featured image
+- `dateUpdated` (string) - Last updated date in ISO8601 format (e.g., `2024-06-06`)
+- `tags` (string[]) - Array of tags for the post (can also be comma-separated string, will be converted to array)
+- `canonical_url` (string) - Canonical URL if the post is cross-posted from another site
+- `primaryCTA` (string) - Primary call-to-action button: `"sales"`, `"docs"`, or `"signUp"`
+- `floatingCTA` (boolean) - Whether to show a floating CTA button on the post
+- `focus` (boolean) - When `true`, the post will be highlighted as the featured post on the main blog feed
+- `hide` (boolean) - When `true`, the post will be accessible at its URL but hidden from all blog feeds and RSS
+- `featured` (boolean) - When `false`, the post will be hidden from the main feed but still available on category pages (default: true)
+- `teaser` (string[]) - Array of strings for content gates (preview content shown before gated content)
+
+**Recommendations**:
+
+- When updating or refreshing blog post content, add or update the `dateUpdated` to today's date for that given blog post.
+
+**Example:**
+
+```yaml
+---
+heading: "My Blog Post Title"
+subtitle: "An interesting subtitle about the post"
+showSubtitle: true
+image: /assets/blog/my-post/featured-image.png
+date: 2024-09-25
+author: John Doe
+category: product-updates
+tags: ["inngest", "workflows", "tutorial"]
+primaryCTA: "docs"
+floatingCTA: true
+---
+```
+
+### Adding a New Page
+
+- **App Router**: Create `/app/your-page/page.tsx`
+- **Pages Router**: Create `/pages/your-page.tsx`
+- Use existing page components as templates
+
+### Adding a New Component
+
+1. Create component in `/components`
+2. Use TypeScript with proper prop types
+3. Style with Tailwind CSS
+4. Export and import where needed
+
+### Modifying Styles
+
+- Use Tailwind utility classes in components
+- Custom colors are defined in `tailwind.config.js`
+- Global styles are in `/app/globals.css` and `/styles/globals.css`
+
+### Working with MDX
+
+- MDX allows you to use React components in markdown
+- Import components at the top of MDX files
+- Use the existing MDX component patterns from `/shared/Docs/`
+
+## Important Notes
+
+### Package Manager
+
+- **Always use `pnpm`** - never use `npm` or `yarn`
+- The project enforces this with a preinstall script
+
+### Next.js
+
+- Always create new pages and routes in the App Router (`/app`). The Pages Router (`/pages`) should be deprecated for new work.
+
+### Environment Variables
+
+- Use `pnpm env:pull` to get environment variables from Vercel
+- Never commit `.env` files
+- Default development variables are in `.env.development`
+
+### Code Formatting
+
+- Run `pnpm prettier` before committing
+- The project uses Prettier with Tailwind plugin
+
+### Build & Deployment
+
+- The site is deployed on Vercel
+- Builds automatically on push to main
+- Use `pnpm build` to test production builds locally
+
+## When Asking for Help
+
+When requesting code changes or fixes, provide:
+
+1. What you're trying to accomplish
+2. Which file/page you're working on
+3. Any error messages you're seeing
+4. What you've already tried
+
+## Design System
+
+The project uses a custom design system with semantic color tokens:
+
+- **Text colors**: `text-basis`, `text-subtle`, `text-muted`, `text-onContrast`
+- **Background colors**: `bg-canvasBase`, `bg-surfaceBase`, `bg-surfaceSubtle`
+- **Border colors**: `border-subtle`, `border-muted`, `border-contrast`
+- **Status colors**: `status-running`, `status-completed`, `status-failed`
+
+Refer to `tailwind.config.js` for the full color palette.
+
+## Best Practices
+
+1. **Check existing patterns first** - Look for similar components/pages before creating new ones
+2. **Use semantic HTML** - Prefer proper HTML elements over divs when possible
+3. **Mobile-first** - Design for mobile, then enhance for larger screens
+4. **Accessibility** - Use proper ARIA labels, alt text for images, semantic HTML
+5. **Performance** - Use Next.js Image component for images, lazy load when appropriate
+6. **Type safety** - Use TypeScript types, avoid `any` when possible

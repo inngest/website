@@ -4,6 +4,7 @@ heading: "Building Webhooks That Scale"
 subtitle: Lessons learned scaling webhooks to millions of requests a day
 image: "/assets/blog/building-webhooks-that-scale/hero-image.jpg"
 date: 2022-07-27
+dateUpdated: 2026-01-07
 author: Dan Farrelly
 ---
 
@@ -77,14 +78,47 @@ Outages happen. It may be your cloud provider’s fault, it may be yours. The se
 
 It’s important to assume that you may receive any webhook more than once. A starting point for idempotency is to ensure that each unique webhook payload is handled once — whether by storing IDs, checksums, or building out exactly once semantics. Your code will be better off for it and you’ll be able to recover from outages gracefully and avoid data issues.
 
-## Putting it all together
+## If you don't want to build this manually
 
-You can build all of this out yourself as many software teams have done in the past. You can also choose to incrementally apply some of these tips as your system needs to scale and become more reliable for your customers. You may have even built out all of these parts again and again at your current job and your last job. Unfortunately, your customers don’t care how awesome your webhook handling setup is or how sweet your terraform is for configuring it all.
+You can build all of this out yourself as many software teams have done in the past. You can also choose to incrementally apply some of these tips as your system needs to scale and become more reliable for your customers. You may have even built out all of these parts again and again at your current job and your last job. Unfortunately, your customers don't care how awesome your webhook handling setup is or how sweet your terraform is for configuring it all.
 
-We’ve built all of this into Inngest to give you everything you need out of the box. It’s easy to set up webhook handlers with inline payload transformations, a queue to handle incredible load, serverless functions that replace the need to run your own workers, automatic retries, throttling controls, full event payload archive and logs, and a CLI to easily test your code that handles the messages, including replaying production data locally. If any of this interests you, check [our docs](/docs?ref=blog-building-webhooks-that-scale) or [give Inngest a spin](/docs/getting-started/nextjs-quick-start?ref=blog-building-webhooks-that-scale).
+If you'd rather focus on your product than building and maintaining webhook infrastructure, Inngest provides a complete webhook solution that handles all the complexity we've discussed.
+
+**Inngest** is a durable execution platform that makes it easy to build reliable, scalable workflows. We've built all of this into Inngest to give you everything you need out of the box. For webhooks specifically, Inngest provides:
+
+- **Inline payload transformations** - Transform webhook payloads directly in the dashboard
+- **Built-in queue** - Handles incredible load with automatic scaling
+- **Serverless functions** - No need to run your own workers
+- **Automatic retries** - Built-in fault tolerance with configurable retry logic
+- **Throttling controls** - Manage rate limits and back pressure
+- **Full event payload archive and logs** - Complete observability and replay capabilities
+- **CLI for local testing** - Test your webhook handlers locally, including replaying production data
+
+### Enhanced webhook support (October & November 2025)
+
+Since this article was published, we've added powerful new webhook capabilities:
+
+**New Content Types Support**
+
+Inngest webhooks now support additional content types beyond JSON: `application/x-www-form-urlencoded` (perfect for HTML form submissions) and `multipart/form-data` (for file uploads and complex form data). Your webhook transform functions receive both parsed data and the raw body, making it easy to process Shopify webhooks, Typeform submissions, HTML forms, and legacy systems that don't send JSON.
+
+**Webhook Management API**
+
+Manage webhooks programmatically through the Inngest REST API—create, update, list, and delete webhooks via REST endpoints. This enables version control (store transforms in your repo), unit testing in CI/CD, programmatic creation for multi-tenant apps, and infrastructure-as-code workflows. Perfect for teams using GitOps, platforms that need webhook provisioning APIs, and testing webhook logic before deploying.
+
+[View webhook API docs](https://api-docs.inngest.com/docs/inngest-api/b539bae406d1f-get-all-webhook-endpoints-in-given-environment) | [Content types changelog](https://www.inngest.com/changelog/2025-10-17-webhook-content-types) | [Management API changelog](https://www.inngest.com/changelog/2025-11-08-webhook-management-api)
+
+If any of this interests you, check [our docs](/docs?ref=blog-building-webhooks-that-scale) or [give Inngest a spin](/docs/getting-started/nextjs-quick-start?ref=blog-building-webhooks-that-scale).
 
 ## Takeaways
 
-If you are running a reliable webhook at any decent scale or throughput, you need to decouple, add a queue, and have rock solid, idempotent retries. I hope that this has given you a blueprint on how you can scale your own webhooks as your user base grows.
+If you're running a reliable webhook at any decent scale or throughput, remember these key principles:
 
-If you don’t want to roll it yourself - [check out Inngest](https://www.inngest.com/?ref=blog-building-webhooks-that-scale). Come [chat with us on Discord](/discord), we’d be happy to share free advice for scaling your webhooks with Inngest or building our your own setup.
+- **Decouple your webhook handler** from your main backend to scale independently and prevent webhook spikes from affecting your user-facing API
+- **Respond immediately** and process data asynchronously in the background to avoid timeout issues
+- **Use a queue** to handle back pressure and control load on downstream resources like your database
+- **Build idempotent handlers** that can safely process the same webhook multiple times—outages happen, and you'll receive duplicate payloads
+- **Implement retry logic and dead letter queues** to recover from failures and handle payload changes gracefully
+- **Log request payloads** for debugging and replay capabilities (while being mindful of sensitive data)
+
+I hope this has given you a blueprint on how you can scale your own webhooks as your user base grows. If you don't want to roll it yourself, Inngest provides all of these capabilities out of the box. Come [chat with us on Discord](/discord)—we'd be happy to share free advice for scaling your webhooks with Inngest or building out your own setup.

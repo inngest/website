@@ -3,6 +3,7 @@ heading: 5 Reasons Why Your Queue is Slowing You Down
 subtitle: Common pitfalls of traditional queues and how Inngest can help
 image: /assets/blog/why-your-queue-is-slowing-you-down/featured-image-v2.png
 date: 2024-10-28
+dateUpdated: 2026-01-07
 author: Tony Holdstock-Brown
 primaryCTA: sales
 floatingCTA: true
@@ -35,6 +36,8 @@ Traditional queues like Kafka, RabbitMQ, and Amazon SQS lack built-in traffic co
 It's like trying to manually control a busy intersection with a LED stick. As applications evolve and scale, flow control becomes essential - something traditional queues don't offer out of the box. You're left to figure out how to implement solutions within these queues like native throttling, rate limiting, and job prioritization yourself across your workflows which can easily lead to bottlenecks, performance issues, and a lot of extra work.
 
 Luckily, with Inngest's native [flow control](/docs/guides/flow-control?ref=blog-why-your-queue-is-slowing-you-down), you can say goodbye to the manual work associated with managing traffic flow. Inngest offers built-in throttling, debouncing, and dynamic prioritization, ensuring your system runs smoothly, efficiently, and fairly, even under heavy load.
+
+Inngest also offers Singleton Functions (released June 2025), which ensure exclusive execution when only the most recent run matters—like live dashboards or real-time sync operations. [Learn more](/docs/guides/singleton)
 
 ## Problem 3: Sharing the sandbox (and dealing with noisy neighbors)
 

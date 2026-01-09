@@ -3,6 +3,7 @@ heading: "Open sourcing Inngest"
 subtitle: "The open source, serverless event-driven platform for developers."
 image: "/assets/blog/open-source-event-driven-queue.jpg"
 date: 2022-06-09
+dateUpdated: 2026-01-07
 ---
 
 In recent years, products have grown more and more complex — which requires more engineering work to be done. Background jobs are needed in almost every system, but the dev experience is, uh, _lackluster_, to say the least. You have two typical options: a job system, or build it yourself using a message broker. Either path you choose, there’s lots of config, many services, and a lot of maintenance required to even get off the ground.
@@ -67,7 +68,46 @@ As we’re starting to build our a roadmap, we’re going to be focused on a few
 
 Our roadmap will be in the open and [you can view it right on Github here](https://github.com/orgs/inngest/projects/1).
 
-What do you want to see next? [Let us know on Discord, we’d love to hear from you](/discord).
+## Updates: What's changed since this blog was published
+
+### Postgres support for self-hosting (January 2025)
+
+Postgres support is now available for self-hosted Inngest, enabling you to use Postgres as your event storage backend instead of the default SQLite. This addresses the PostgreSQL driver mentioned in the roadmap above. Available in the Inngest CLI v1.4.0+ with the `--postgres-uri` flag:
+
+```bash
+inngest start --postgres-uri="postgresql://user:password@localhost:5432/inngest"
+```
+
+[View changelog](/changelog/2025-01-20-postgres-self-hosting)
+
+### AI-assisted local development with MCP (October 2025)
+
+The Inngest dev server now supports MCP (Model Context Protocol), allowing you to connect Claude Code, Cursor, and other AI assistants directly to your local Inngest functions:
+```json
+{
+  "mcpServers": {
+    "inngest-dev": {
+      "command": "curl",
+      "args": [
+        "-X", "POST",
+        "http://127.0.0.1:8288/mcp",
+        "-H", "Content-Type: application/json",
+        "-d", "@-"
+      ]
+    }
+  }
+}
+```
+
+AI assistants can now:
+- Send test events and monitor executions
+- Debug failed runs with full trace access  
+- Test entire workflows end-to-end automatically
+- Search Inngest documentation offline
+
+[Learn more about the MCP integration](/docs/ai-dev-tools/mcp) | [View changelog](/changelog/2025-10-27-dev-server-mcp)
+
+What do you want to see next? [Let us know on Discord, we'd love to hear from you](/discord).
 
 ## Check out the repo
 
