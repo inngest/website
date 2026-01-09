@@ -15,7 +15,7 @@ Running in production over the last month, we've observed a **50% increase in ex
 
 ![Checkpointing led to 50% quicker workflow execution](/assets/blog/introducing-checkpointing/checkpointing-benchmark.png)
 
-<strong>Don't just take our word for it, hear from our customers:</strong>
+{/* <strong>Don't just take our word for it, hear from our customers:</strong>
 
 <div className="mx-auto my-8 flex max-w-3xl flex-col gap-8 bg-[url(/assets/textures/wave.svg)] bg-[length:auto_80%] bg-center bg-no-repeat px-8 md:flex-row md:p-12">
 <div className="relative text-lg leading-7 pt-4">
@@ -41,6 +41,34 @@ Running in production over the last month, we've observed a **50% increase in ex
 <span className="text-sm">Fintech sales tax SaaS</span>
 </cite>
 </footer>
+</div> */}
+
+<strong>Don't just take our word for it, hear from our customers:</strong>
+
+<div className="mx-auto my-8 flex max-w-3xl flex-col gap-8 bg-[url(/assets/textures/wave.svg)] bg-[length:auto_80%] bg-center bg-no-repeat px-8 md:flex-row md:p-12">
+<div className="relative text-lg leading-7 pt-4">
+    <span className="absolute left-4 top-0 text-2xl leading-3 text-muted">
+        &ldquo;
+    </span>
+    Using Inngest's Checkpointing, we're seeing <strong>3x performance gains</strong> on each function invocation.
+    <span className="right-6 text-2xl leading-3 text-muted absolute">
+        &rdquo;
+    </span>
+</div>
+<footer className="flex min-w-[180px] flex-col gap-4">
+<img
+    src={'/assets/blog/introducing-checkpointing/zamp.png'}
+    alt={`Image of Zamp`}
+    height="72"
+    width="72"
+    className="h-12 w-12 rounded-full lg:h-20 lg:w-20"
+/>
+<cite className="not-italic leading-8 text-subtle">
+<span className="text-lg">Kyle G. at Zamp.com</span>
+<br />
+<span className="text-sm">Fintech sales tax SaaS</span>
+</cite>
+</footer>
 </div>
 
 
@@ -60,7 +88,7 @@ With Checkpointing, synchronous steps such as `step.run()` run immediately, then
 
 SDKs move from step to step for synchronous steps (ex, `step.run()`), falling back to Inngest's async executor for asynchronous steps (ex, `step.sleep()`) - or if your checkpointing request fails due to, for example, a transient networking error. This dual-stack setup ensures that your workflows can handle all steps effectively, without any safety penalty.
 
-This division reduces inter-step latency and improves performance by minimizing unnecessary roundtrips. 
+This division reduces inter-step latency and improves performance by minimizing unnecessary roundtrips.
 
 ![Checkpointing architecture](/assets/blog/introducing-checkpointing/checkpointing-architecture.png)
 
