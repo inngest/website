@@ -109,13 +109,10 @@ function TopLevelNavItem({ href, matcher, title, icon: Icon }) {
     <NavLink href={href} isTopLevel={true}>
       <span
         className={clsx(
-          "flex flex-row py-1 gap-4 items-center",
+          "flex flex-row py-1 items-center",
           isActive && "font-bold text-breeze-600 dark:text-breeze-300"
         )}
       >
-        {Icon && (
-          <Icon className="w-5 h-5 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200" />
-        )}
         {title}
       </span>
     </NavLink>
@@ -601,8 +598,21 @@ export function Navigation(props) {
       <nav {...props}>
         <MobileSearch />
 
+        <ul role="list" className="flex lg:hidden flex-col">
+          {menuTabs.map((tab, idx) => (
+            <li key={idx}>
+              <TopLevelNavItem
+                href={tab.href}
+                matcher={tab.matcher}
+                icon={tab.icon}
+                title={tab.title}
+              />
+            </li>
+          ))}
+        </ul>
+
         {activeSection !== "Examples" && (
-          <div className="mb-8 hidden lg:block">
+          <div className="mb-4 lg:mb-8 mt-4 lg:mt-0">
             <div className="flex p-1 bg-slate-100 dark:bg-slate-800/50 rounded-lg">
               {sidebarMenuTabs.map((tab) => {
                 const isActive = activeSection === tab.title;
@@ -633,19 +643,6 @@ export function Navigation(props) {
           </div>
         )}
 
-        <ul role="list" className="flex lg:hidden flex-col">
-          {menuTabs.map((tab, idx) => (
-            <li key={idx}>
-              <TopLevelNavItem
-                href={tab.href}
-                matcher={tab.matcher}
-                icon={tab.icon}
-                title={tab.title}
-              />
-            </li>
-          ))}
-        </ul>
-
         <ul
           role="list"
           className={!isNested ? "flex flex-col gap-2" : undefined}
@@ -660,7 +657,9 @@ export function Navigation(props) {
                 type="multiple"
                 defaultValue={defaultOpenGroupTitles}
               >
-                {nestedNavigation.sectionLinks.map((item, groupIndex) =>
+                {nestedNavigation.sectionLinks
+                  .filter((item) => item.title !== "Home")
+                  .map((item, groupIndex) =>
                   isNavGroup(item) ? (
                     <NavigationGroup
                       key={item.title}
