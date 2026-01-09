@@ -402,6 +402,11 @@ const sectionLearn: (NavGroup | NavLink)[] = [
         ],
       },
       {
+        title: "Durable Endpoints",
+        href: `/docs/learn/rest-endpoints`,
+        tag: "new",
+      },
+      {
         title: "Steps",
         links: [
           {
@@ -548,11 +553,6 @@ const sectionLearn: (NavGroup | NavLink)[] = [
               },
             ],
           },
-          {
-            title: "Durable Endpoints",
-            href: `/docs/learn/rest-endpoints`,
-            tag: "new",
-          },
         ],
       },
     ],
@@ -670,6 +670,7 @@ const sectionLearn: (NavGroup | NavLink)[] = [
       },
       {
         title: "Deploying",
+        defaultOpen: true,
         links: [
           {
             title: "Overview",
@@ -683,6 +684,11 @@ const sectionLearn: (NavGroup | NavLink)[] = [
             title: "Connect",
             href: `/docs/setup/connect`,
             tag: "new",
+          },
+          {
+            title: "Checkpointing",
+            href: `/docs/setup/checkpointing`,
+            tag: "new"
           },
           {
             title: "Cloud providers",
