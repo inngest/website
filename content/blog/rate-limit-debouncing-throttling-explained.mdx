@@ -4,6 +4,7 @@ image: /assets/blog/rate-limit-debouncing-throttling-explained/featured-image.pn
 showSubtitle: true
 subtitle: "Explore three different ways to control your Inngest Function's runs."
 date: 2024-09-10
+dateUpdated: 2026-01-07
 author: Charly Poly
 disableCTA: true
 ---
@@ -133,3 +134,39 @@ Please find below a takeaway cheatsheet that will help you evaluate the best way
 | Processing large amount of real-time events |  | ✅ |  |
 | 2FA or magic sign-in emails |  |  | ✅ |
 | Smoothing out bursts in volume | ✅ |  |  |
+
+## What's new
+
+### Singleton Functions: Exclusive execution control (June 2025)
+
+Since this article was published, Inngest has added **Singleton Functions**—another flow control mechanism that ensures exclusive execution. While rate limiting, throttling, and debouncing control frequency and timing, Singleton Functions ensure mutual exclusion—only one run per key executes at a time:
+
+```typescript
+const latestDataSync = inngest.createFunction({
+  id: "latest-data-sync",
+  singleton: {
+    key: "event.data.user_id",
+    mode: "cancel",  // or "skip"
+  }
+},
+{ event: "data-sync.start" },
+async ({ event }) => {
+  // Any existing run for this user will be cancelled
+  const payload = await fetchLatestUserData(event.data.user_id);
+  await applyRealTimeUpdates(payload);
+});
+```
+
+**Two modes for different use cases:**
+- **`skip` mode**: Discard new events while a run is in progress
+- **`cancel` mode**: Cancel existing runs and start fresh with the latest data
+
+**Perfect for scenarios where only the most recent execution matters:**
+- Live dashboards that need latest data
+- Real-time sync operations  
+- Deduplication of rapid user actions
+- Ensuring only one payment processes per order
+
+Unlike rate limiting (which controls frequency) or debouncing (which delays execution), Singleton Functions ensure mutual exclusion—only one run per key executes at a time.
+
+[Learn more about Singleton Functions](/docs/guides/singleton) | [View changelog](https://www.inngest.com/changelog/2025-06-06-singleton-functions)

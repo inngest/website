@@ -4,10 +4,13 @@ subtitle: Run critical code with guarantees and observability
 image: /assets/blog/build-more-reliable-workflows-with-events.jpg
 imageCredits: Photo by <a href="https://unsplash.com/@charlesdeluvio?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">charlesdeluvio</a> on <a href="https://unsplash.com/?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Unsplash</a>
 date: 2022-11-10
+dateUpdated: 2026-01-07
 author: Dan Farrelly
 ---
 
 Every application starts off with running some basic code in the background. Common use cases include sending email notifications, handling subscription payment webhooks, or periodically fetching data from third party APIs.
+
+Inngest's webhook support has evolved significantly—now supporting form-urlencoded and multipart data, plus a management API for programmatic webhook creation and version control. [Learn more](/docs/guides/webhooks)
 
 At some point, most applications will be required to run tasks in the background that are critical to the core functionality or business value of the product. This is when applications need to get serious and consider more robust solutions as failed tasks can represent lost revenue.
 
@@ -96,6 +99,44 @@ inngest.createFunction(
 * The results of each step, including failures and retries are logged can be inspected on the Inngest dashboard for **complete observability**.
 
 More info on these and other `tools` are [in our docs](/docs/guides/multi-step-functions?ref=blog-build-more-reliable-workflows-with-events#tools).
+
+## Advanced monitoring and querying
+
+### Query your data with Insights
+
+Inngest now includes **Insights**—the ability to query your events and runs using SQL directly in the dashboard:
+
+\`\`\`sql
+SELECT 
+  event_name,
+  COUNT(*) as event_count
+FROM events
+WHERE created_at > NOW() - INTERVAL '7 days'
+GROUP BY event_name
+ORDER BY event_count DESC;
+\`\`\`
+
+**Insights enables:**
+- Custom queries for event analysis
+- Run performance tracking  
+- Data export for custom reporting
+- Schema explorer to discover available data
+
+Particularly powerful for AI workflows—track token usage, model calls, and agent performance directly from your workflow data.
+
+[Read the announcement](/blog/insights-query-events-and-runs)
+
+### Export metrics to Datadog
+
+For teams using Datadog, you can now export all Inngest metrics for centralized monitoring and alerting. Configure the integration in your Inngest dashboard under Settings > Integrations > Datadog.
+
+**Available metrics include:**
+- `inngest_function_run_scheduled_total`
+- `inngest_function_run_started_total`
+- `inngest_function_run_ended_total`
+- And more
+
+[Learn more](/docs/platform/monitor/datadog-integration)
 
 ## Over to you
 

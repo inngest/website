@@ -3,6 +3,7 @@ heading: The Principles of Durable Execution Explained
 subtitle: Learn what Durable Execution is, how it works, and why it's beneficial to your system.
 image: /assets/blog/principles-of-durable-execution/featured-image.png
 date: 2024-12-10
+dateUpdated: 2026-01-07
 author: Dan Farrelly
 primaryCTA: sales
 floatingCTA: true
@@ -61,9 +62,17 @@ With our function composed of individually executed steps, each step that is suc
 
 Functions defined using native programming language primitives only have this state or “memory” for the life of the function. Instead of data being held at a memory address assigned by the runtime, a durable function stores this state outside of the runtime and outside of the machine executing that code.
 
-Combining state persistence and incremental execution enables work to run across different machines, processes, or serverless functions. This enables true parallelism of work even if a language doesn't support multiple threads or “sleep” that can last for hours or days without blocking. This is especially advantageous in serverless functions where compute is ephemeral.
+Combining state persistence and incremental execution enables work to run across different machines, processes, or serverless functions. This enables true parallelism of work even if a language doesn't support multiple threads or "sleep" that can last for hours or days without blocking. This is especially advantageous in serverless functions where compute is ephemeral.
 
 Whether it's serverless or a containerized application, state persistence is required to enable fault tolerance.
+
+#### Checkpointing: Optimizing state persistence for latency
+
+Traditional state persistence requires synchronous communication with the execution engine to persist state before proceeding, introducing inter-step delays of tens to hundreds of milliseconds. For background workflows—batch jobs, scheduled tasks—this latency is acceptable. However, modern applications increasingly require durable execution for **user-facing, real-time workloads** where every millisecond matters: interactive AI chat applications, real-time data processing, and live dashboards.
+
+**Checkpointing** addresses this by decoupling execution from persistence. Steps execute immediately while state is checkpointed asynchronously in the background. On failure, workflows resume from the last checkpoint, reducing inter-step latency from hundreds of milliseconds to single-digit milliseconds.
+
+The checkpoint interval determines how much work might need to be replayed after a failure. This is acceptable for latency-sensitive applications with fast, idempotent steps, but traditional synchronous persistence remains better for background batch processing or workflows with expensive side effects that cannot safely replay.
 
 ### Fault tolerance
 
@@ -89,11 +98,11 @@ Inngest is a powerful durable execution solution that simplifies complex workflo
 
 When function is executed, Inngest:
 
-* **Schedules the function:** Assigns the function to a worker.
-* **Executes the function:** Runs the function and handles any exceptions.
-* **Manages state:** Stores intermediate results and ensures consistency.
-* **Retries failures:** Automatically retries failed functions with exponential backoff.
-* **Scales dynamically:** Adjusts resources to handle varying workloads.
+* **Schedules the function:** Assigns the function to a worker. [Learn more about serving functions](/docs/learn/serving-inngest-functions)
+* **Executes the function:** Runs the function and handles any exceptions. [See how functions are executed](/docs/learn/how-functions-are-executed)
+* **Manages state:** Stores intermediate results and ensures consistency. For latency-sensitive workloads, checkpointing enables near-zero inter-step latency while maintaining durability. [Learn about checkpointing](/docs/setup/checkpointing)
+* **Retries failures:** Automatically retries failed functions with exponential backoff. [Read about error handling](/docs/guides/error-handling)
+* **Scales dynamically:** Adjusts resources to handle varying workloads. [Explore the platform](/docs/platform)
 
 **A simple example** (reference: [Inngest documentation](/docs/features/inngest-functions?ref=blog-principles-of-durable-execution))
 
