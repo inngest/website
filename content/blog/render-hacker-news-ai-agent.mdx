@@ -418,15 +418,46 @@ That wraps up our AI workflow. You can find the full workflow defined in [this c
 
 ![The Next.js app](/assets/blog/render-hacker-news-ai-agent/92a700c16ef4ac768931c515bbbd558f3a281159-1600x1056.webp)
 
+## Stream your agent to the frontend
+
+Once you've built your agent workflow with AgentKit, you can stream real-time updates to your users with the `useAgent` React hook:
+```tsx
+import { useAgent } from "@inngest/use-agent";
+
+export function AgentUI() {
+  const { messages, sendMessage, status } = useAgent();
+  
+  return (
+    <div>
+      {messages.map(({ id, role, parts }) => (
+        <div key={id}>
+          {parts.map(({ type, content }) => 
+            type === "text" ? <p>{content}</p> : null
+          )}
+        </div>
+      ))}
+      <button onClick={() => sendMessage(userInput)}>
+        Send
+      </button>
+    </div>
+  );
+}
+```
+
+No WebSocket management, no state stores, no connection handling—just durable, observable AI workflows streaming to your UI.
+
+[Read the useAgent announcement](/blog/agentkit-useagent-realtime-hook).
+
 ## Try it out
 
 Now that you know how the app works, you can try to deploy it!
 
 - **Get the code.** Visit [this GitHub repo](https://github.com/inngest/agentkit-render-tutorial) to get the code.
 - **Follow the README.** The README contains detailed instructions to help you deploy each component of this app on Render: the database, indexer cron job, and Next.js web service.
-- **Add your own features.** We invite you to extend the app. Here are two ideas that could make this app even more useful:
+- **Add your own features.** We invite you to extend the app. Here are some ideas that could make this app even more useful:
   1.  In the emails, add links to the original Hacker News articles.
   2.  Enable yourself to ask follow-up questions by replying to an email.
+  3.  Stream agent responses to a web UI using the `useAgent` hook instead of (or in addition to) email.
 
 To go deeper on the tech stack, you can:
 

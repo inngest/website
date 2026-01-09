@@ -230,3 +230,39 @@ Inngest's [Flow Control](/docs/guides/flow-control)  gives you those same capabi
 So if you're spending more time managing queues than delivering features, maybe it's time to ask a better question:
 
 **What if your event-driven architecture didn't need to be this hard?**
+
+## What's new
+
+### Singleton Functions: Exclusive execution control (June 2025)
+
+Building on Inngest's Flow Control capabilities, **Singleton Functions** provide another way to avoid the complexity of Kafka and Redis coordination. Where you might have used distributed locks or complex deduplication logic with Kafka, Singleton Functions ensure exclusive execution—a powerful addition to rate limiting, throttling, and debouncing:
+
+```typescript
+const latestDataSync = inngest.createFunction({
+  id: "latest-data-sync",
+  singleton: {
+    key: "event.data.user_id",
+    mode: "cancel",  // or "skip"
+  }
+},
+{ event: "data-sync.start" },
+async ({ event }) => {
+  // Any existing run for this user will be cancelled
+  const payload = await fetchLatestUserData(event.data.user_id);
+  await applyRealTimeUpdates(payload);
+});
+```
+
+**Two modes for different use cases:**
+- **`skip` mode**: Discard new events while a run is in progress
+- **`cancel` mode**: Cancel existing runs and start fresh with the latest data
+
+**Perfect for scenarios where only the most recent execution matters:**
+- Live dashboards that need latest data
+- Real-time sync operations  
+- Deduplication of rapid user actions
+- Ensuring only one payment processes per order
+
+Unlike rate limiting (which controls frequency) or debouncing (which delays execution), Singleton Functions ensure mutual exclusion—only one run per key executes at a time.
+
+[Learn more about Singleton Functions](/docs/guides/singleton) | [View changelog](https://www.inngest.com/changelog/2025-06-06-singleton-functions)

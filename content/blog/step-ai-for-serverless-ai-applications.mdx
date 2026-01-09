@@ -258,9 +258,25 @@ export default inngest.createFunction(
 
 *Explore the [complete project on GitHub](https://github.com/inngest/vercel-ai-o1-preview-crm-agent/tree/step-ai) and run it locally or deploy it on Vercel.*
 
+## Even faster AI workflows with Checkpointing (December 2025)
+
+Since this article was published, Inngest has released **Checkpointing**—a feature that addresses one of the key challenges when building AI applications on serverless: the latency tradeoff between durability and performance.
+
+For AI applications requiring real-time responsiveness—like interactive chat interfaces or live agent workflows—Checkpointing eliminates inter-step latency while maintaining durability. When building AI workflows with `step.ai.infer()` and `step.run()`, you can now enable checkpointing to achieve:
+- **Near-zero latency** between steps
+- **50% faster** overall workflow execution
+- **Full durability** maintained through background checkpoints
+
+This is particularly powerful for:
+- Multi-turn conversational AI where response speed matters
+- Agentic workflows with many sequential steps
+- Interactive AI experiences that stream results to users
+
+Checkpointing is available in developer preview. [Learn more](/docs/setup/checkpointing) | [View changelog](https://www.inngest.com/changelog/2025-12-10-checkpointing)
+
 ## Conclusion
 
 We're happy to continue to support developers building Serverless applications by enabling the creation of durable, retriable workflows with `step.run()` and the efficient offloading of LLM requests with `step.ai.infer()`.  
-Whether you're building a complex SEO generation tool like MegaSEO or AI features for your application, you can now create sophisticated AI workflows without getting bogged down by Serverless constraints thanks to automatic retries, granular step management, compute cost savings, and the ability to handle long-running AI operations without hitting platform time limits. 
+Whether you're building a complex SEO generation tool like MegaSEO or AI features for your application, you can now create sophisticated AI workflows without getting bogged down by Serverless constraints thanks to automatic retries, granular step management, compute cost savings, the ability to handle long-running AI operations without hitting platform time limits, and with Checkpointing, near-zero latency for real-time AI experiences. 
 
 As AI evolves, tools that simplify infrastructure complexity will become increasingly crucial for developers looking to build intelligent, reliable applications quickly and efficiently.  

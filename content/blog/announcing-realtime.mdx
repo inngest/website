@@ -230,6 +230,8 @@ export const agenticWorkflow = inngest.createFunction(
 );
 ```
 
+**Note:** This example uses Zod, but as of SDK v3.42.0 (September 2025), you can use any Standard Schema-compatible validator including Zod 4, Valibot, ArkType, or joi. The `.schema()` method accepts any Standard Schema validator, giving you flexibility in how you validate your realtime messages.
+
 In the above example, the `confirmationUUid` is passed from the published message to the reply event, allowing you to identify a unique user confirmation.
 
 
