@@ -1,13 +1,10 @@
 "use client";
-import { ArrowRightIcon } from "@heroicons/react/24/outline";
-import { Button } from "./Button";
 import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "src/components/RedesignedLanding/FeatureNavigate/Card";
+  ServerIcon,
+  GlobeAltIcon,
+  EyeIcon,
+} from "@heroicons/react/24/outline";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "src/components/RedesignedLanding/FeatureNavigate/Card";
 import { useEffect } from "react";
 import { useAnimate, useInView } from "motion/react";
 
@@ -22,31 +19,119 @@ export default function OrchestrationSection() {
       { duration: 0.6, ease: "easeOut" }
     );
   }, [headerAnimate, headerScope, headerInView]);
+
+  const pillars = [
+    {
+      number: "1",
+      title: "Infraless",
+      description: (
+        <>
+          Your orchestration engine shouldn't dictate how you write production code. Wrap functions in Steps to automate retries, recovery, and flow without added infrastructure.{" "}
+          <code className="font-mono text-honey-300">step.run</code> and done.
+        </>
+      ),
+      icon: ServerIcon,
+    },
+    {
+      number: "2",
+      title: "Agnostic",
+      description:
+        "Inngest was built for change. Run anywhere (edge, serverless, traditional), from any trigger (API calls, webhooks, schedules), on any code (agents, endpoints, cron).",
+      icon: GlobeAltIcon,
+    },
+    {
+      number: "3",
+      title: "Observable",
+      description:
+        "Focus on logic, not instrumentation. Data about your runs lives where runs happen. So you can query, cancel, or replay without grepping logs across systems.",
+      icon: EyeIcon,
+    },
+  ];
+
   return (
-    <section className="relative flex items-center bg-stone-900 py-16 text-white md:py-40">
+    <section className="relative flex items-center bg-stone-900 py-8 text-white md:py-20">
       <div className="container mx-auto px-4">
         <div
           ref={headerScope as any}
-          className="mb-12 text-center opacity-0 md:mb-20"
+          className="mb-16 text-center opacity-0 md:mb-12"
         >
-          <h1 className="mb-4 text-balance font-whyte text-4xl font-light text-stone-50 md:text-5xl ">
-            The orchestration engine for{" "}
-            <span className="font-whyteInktrap font-normal text-stone-50">
-              Workflows + Agents
-            </span>
+          <h1 className="mb-4 text-balance font-whyte text-4xl font-light text-stone-50 md:text-5xl">
+            Ship products. <br /> Not infrastructure.
           </h1>
-          <p className="mx-auto max-w-3xl text-balance text-lg font-light text-stone-200">
-            Use Inngest workflows to build reliable AI products. Layer AgentKit
-            to add memory, planning, and tool use.
+          <p className="mx-auto max-w-xl text-balance text-lg font-light text-stone-200">
+            You're here because whatever you're building needs to be reliable. We're here because we think you shouldn't have to wrangle workers, refactor code, or build instrumentation to make that true.
           </p>
         </div>
-
-        <div className="flex flex-col gap-6 lg:flex-row">
-          <WorkflowsCard />
-          <AgentsCard />
+        <div className="grid gap-8 md:grid-cols-3 lg:gap-12">
+          {pillars.map((pillar, index) => (
+            <PillarCard key={index} pillar={pillar} index={index} />
+          ))}
         </div>
       </div>
     </section>
+  );
+}
+
+function PillarCard({
+  pillar,
+  index,
+}: {
+  pillar: {
+    number: string;
+    title: string;
+    description: string | React.ReactNode;
+    link?: string;
+    linkHref?: string;
+    icon: React.ComponentType<{ className?: string }>;
+  };
+  index: number;
+}) {
+  const [scope, animate] = useAnimate();
+  const isInView = useInView(scope, { amount: 0.3, once: true });
+  const Icon = pillar.icon;
+
+  useEffect(() => {
+    if (!scope.current || !isInView) return;
+    animate(
+      scope.current,
+      { opacity: [0, 1], y: [30, 0] },
+      { duration: 0.6, delay: index * 0.1, ease: "easeOut" }
+    );
+  }, [animate, scope, isInView, index]);
+
+  const colorConfigs = [
+    {
+      iconColor: "text-[#CD9FFE]",
+    },
+    {
+      iconColor: "text-matcha-300",
+    },
+    {
+      iconColor: "text-breeze-300",
+    },
+  ];
+
+  const colors = colorConfigs[index % colorConfigs.length];
+
+  return (
+    <div
+      ref={scope as any}
+      className="relative h-full opacity-0"
+    >
+      <div className="relative flex h-full overflow-hidden border-2 border-stone-800 bg-stone-900/30 shadow-xl">
+        <div className="relative flex h-full w-full flex-col items-start text-left p-8 sm:p-10">
+          <div className="mb-6 flex flex-col items-start gap-4">
+            <Icon className={`h-8 w-8 ${colors.iconColor}`} />
+            <h3 className="font-whyte text-2xl font-light text-stone-50 sm:text-3xl">
+              {pillar.title}
+            </h3>
+          </div>
+          <p className="flex-1 font-circular text-base font-normal leading-relaxed text-stone-200 sm:text-lg">
+            {pillar.description}
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -66,11 +151,11 @@ function WorkflowsCard() {
   return (
     <div
       ref={scope as any}
-      className="relative overflow-hidden border-2 border-stone-800 bg-stone-900 p-3 opacity-0 shadow-xl sm:p-6"
+      className="relative overflow-hidden border-2 border-stone-800 bg-stone-900/30 p-3 opacity-0 shadow-xl sm:p-6"
     >
       <div className="pointer-events-none absolute -left-3/4 -top-3/4 h-[150%] w-[150%] rounded-full bg-[#655279]" />
 
-      <Card className="relative h-full w-full overflow-hidden rounded-none border-none bg-stone-800 shadow-2xl">
+      <Card className="relative h-full w-full overflow-hidden rounded-none border-none bg-transparent shadow-2xl">
         <CardHeader className="p-3 sm:p-4 lg:p-6">
           <CardTitle className="text-lg font-light text-stone-50 sm:text-xl lg:text-2xl xl:text-3xl">
             {/* <span className="font-whyteInktrap font-semibold">Workflows:</span>{" "} */}
@@ -96,7 +181,7 @@ function WorkflowsCard() {
             Learn more <ArrowRightIcon className="h-4 w-4" />
           </Button> */}
 
-          <div className="mx-auto mt-auto">
+          <div className="mt-auto">
             <DesktopWorkflow />
             <IpadWorkflow />
             <MobileWorkflow />
@@ -123,11 +208,11 @@ function AgentsCard() {
   return (
     <div
       ref={scope as any}
-      className="relative overflow-hidden border-2 border-stone-800 bg-stone-900 p-3 opacity-0 shadow-xl sm:p-6"
+      className="relative overflow-hidden border-2 border-stone-800 bg-stone-900/30 p-3 opacity-0 shadow-xl sm:p-6"
     >
       <div className="pointer-events-none absolute -bottom-3/4 -right-3/4 h-[150%] w-[150%] rounded-full bg-inngestLux" />
 
-      <Card className="relative h-full w-full overflow-hidden rounded-none border-none bg-stone-800 shadow-2xl">
+      <Card className="relative h-full w-full overflow-hidden rounded-none border-none bg-transparent shadow-2xl">
         <div className="h-1.5"></div>
         <CardHeader className="p-3 sm:p-4 lg:p-6">
           <CardTitle className="text-lg font-light text-stone-50 sm:text-xl lg:text-2xl xl:text-3xl">
@@ -151,7 +236,7 @@ function AgentsCard() {
             Learn more <ArrowRightIcon className="h-4 w-4" />
           </Button> */}
         </CardContent>
-        <CardFooter className="mx-auto">
+        <CardFooter>
           <FeatureCardSVG />
         </CardFooter>
       </Card>
