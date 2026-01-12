@@ -2,22 +2,29 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "src/components/utils/classNames";
+import { analytics } from "@/utils/segment";
 
 const CONTACT_KEY = process.env.NEXT_PUBLIC_INNGEST_KEY;
 
 const DEBUG = process.env.NEXT_PUBLIC_HOST.match(/localhost/) ? true : false;
 
+// Check Notion tracking plan for event names and schemas:
+export const SEGMENT_EVENT_NAMES = {
+  SALES_LEAD_FORM_SUBMITTED: "Sales Lead Form Submitted",
+  YC_LEAD_FORM_SUBMITTED: "YC Lead Form Submitted",
+};
+
 export default function ContactForm({
   eventName,
   eventVersion,
-  gtmEvent,
+  segmentEventName,
   button = "Send",
   redirectTo,
   className,
 }: {
   eventName: string;
   eventVersion: string;
-  gtmEvent: string;
+  segmentEventName: string;
   button?: string;
   redirectTo?: string;
   className?: string;
@@ -84,9 +91,18 @@ export default function ContactForm({
         },
         { key: CONTACT_KEY }
       );
+      // Segment
+      // NOTE - We don't yet identify as it isn't authenticated so we shouldn't over-write any existing user attributes
+      analytics.track(segmentEventName, {
+        email,
+        name,
+        message,
+        survey,
+        ref,
+      });
       // GTM
       window.dataLayer?.push({
-        event: gtmEvent,
+        event: segmentEventName,
         ref,
         survey,
       });

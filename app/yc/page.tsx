@@ -2,22 +2,22 @@ import { type Metadata } from "next";
 
 import Container from "src/shared/layout/Container";
 import Quote from "src/components/Quote";
-import ContactForm from "src/components/ContactForm";
+import ContactForm, { SEGMENT_EVENT_NAMES } from "src/components/ContactForm";
 import { generateMetadata } from "src/utils/social";
 
 export const metadata: Metadata = generateMetadata({
-  title: "Schedule a demo",
+  title: "Request the YC Deal",
   description:
-    "Schedule a demo with a solutions expert to learn more about Inngest.",
+    "Are you a Y Combinator company or alumni? Let us know here for access to the YC deal: The pro plan free for the first year.",
 });
 
 export default function Page() {
   return (
     <div className="font-sans text-basis">
       <Container>
-        <main className="m-auto max-w-5xl pt-4 sm:pt-16 pb-8">
-          <header className="pt-12 lg:pt-24 max-w-4xl m-auto text-center">
-            <h1 className="text-white font-bold text-2xl md:text-4xl xl:text-5xl mb-2 md:mb-6 tracking-tight lg:leading-loose">
+        <main className="m-auto max-w-5xl pb-8 pt-4 sm:pt-16">
+          <header className="m-auto max-w-4xl pt-12 text-center lg:pt-24">
+            <h1 className="mb-2 text-2xl font-bold tracking-tight text-white md:mb-6 md:text-4xl lg:leading-loose xl:text-5xl">
               Request the YC Deal
             </h1>
             <p className="text-balance">
@@ -26,12 +26,12 @@ export default function Page() {
             </p>
           </header>
 
-          <div className="my-12 grid lg:grid-cols-2 gap-24">
+          <div className="my-12 grid gap-24 lg:grid-cols-2">
             <div>
               <ContactForm
                 eventName="website/yc-deal.submitted"
                 eventVersion="2025-11-06.1"
-                gtmEvent="YC Lead Form Submitted"
+                segmentEventName={SEGMENT_EVENT_NAMES.YC_LEAD_FORM_SUBMITTED}
               />
             </div>
 
@@ -44,9 +44,9 @@ export default function Page() {
                   logo: "/assets/customers/resend.svg",
                 }}
                 variant="no-padding"
-                className="pb-8 rounded-none border-b border-subtle"
+                className="rounded-none border-b border-subtle pb-8"
               />
-              <div className="flex flex-row gap-4 items-center my-8 text-lg text-subtle">
+              <div className="my-8 flex flex-row items-center gap-4 text-lg text-subtle">
                 <img
                   src="/assets/compliance/soc2.webp"
                   alt="SOC 2"
@@ -54,7 +54,7 @@ export default function Page() {
                 />
                 <p>Inngest is SOC 2 Type II compliant.</p>
               </div>
-              <p className="mt-12 mb-6 text-lg font-semibold text-subtle">
+              <p className="mb-6 mt-12 text-lg font-semibold text-subtle">
                 Trusted by
               </p>
               <div className="flex flex-row flex-wrap gap-8">
