@@ -46,6 +46,14 @@ export default function ContactForm({
     setDisabled(true);
     setButtonCopy("Sending...");
 
+    // honey pot for bots - if the website field is not empty, we don't send the message
+    const website = e.target.website.value;
+    if (website) {
+      setButtonCopy("Message not sent");
+      setDisabled(false);
+      return;
+    }
+
     let ref = "";
     try {
       const u = new URLSearchParams(window.location.search);
@@ -138,6 +146,10 @@ export default function ContactForm({
           required
           className="w-full rounded-md border border-muted bg-canvasBase p-3 outline-none"
         />
+      </label>
+      {/* honey pot */}
+      <label htmlFor="website" style={{ display: "none" }}>
+        <input type="text" id="website" name="website" value="" />
       </label>
       {eventName === "website/yc-deal.submitted" && (
         <label className="flex w-full flex-col gap-2">
