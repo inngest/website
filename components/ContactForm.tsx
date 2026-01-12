@@ -28,6 +28,7 @@ export default function ContactForm({
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  const [honeyPot, setHoneyPot] = useState("");
   const [survey, setSurvey] = useState("");
   const [ycVerificationBadgeURL, setYCVerificationBadgeURL] = useState<
     string | undefined
@@ -47,8 +48,8 @@ export default function ContactForm({
     setButtonCopy("Sending...");
 
     // honey pot for bots - if the website field is not empty, we don't send the message
-    const website = e.target.website.value;
-    if (website) {
+    const field = e.target.website;
+    if (honeyPot?.length > 0 || field?.value?.length > 0) {
       setButtonCopy("Message not sent");
       setDisabled(false);
       return;
@@ -149,7 +150,12 @@ export default function ContactForm({
       </label>
       {/* honey pot */}
       <label htmlFor="website" style={{ display: "none" }}>
-        <input type="text" id="website" name="website" value="" />
+        <input
+          type="text"
+          id="website"
+          name="website"
+          onChange={(e) => setHoneyPot(e.target.value)}
+        />
       </label>
       {eventName === "website/yc-deal.submitted" && (
         <label className="flex w-full flex-col gap-2">
