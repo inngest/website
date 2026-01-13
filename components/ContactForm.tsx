@@ -62,6 +62,19 @@ export default function ContactForm({
       return;
     }
 
+    const spamScore = calculateSpamScore(name, message, survey, email);
+
+    if (DEBUG) {
+      console.log("Spam score:", spamScore);
+    }
+
+    // Reject if score is too high
+    if (spamScore >= 3) {
+      setButtonCopy("Message not sent");
+      setDisabled(false);
+      return;
+    }
+
     let ref = "";
     try {
       const u = new URLSearchParams(window.location.search);
@@ -263,4 +276,59 @@ export default function ContactForm({
       </div>
     </form>
   );
+}
+
+// Spam detection - calculate spam score based on multiple signals
+function isGibberish(str: string): boolean {
+  if (!str || str.length < 8) return false;
+  const letters = str.replace(/[^a-zA-Z]/g, "").toLowerCase();
+  if (letters.length < 6) return false;
+  const vowels = letters.replace(/[^aeiou]/g, "").length;
+  const vowelRatio = vowels / letters.length;
+  // Real text typically has 30-45% vowels; gibberish often has <20%
+  if (vowelRatio < 0.2) return true;
+  // Single long words with low-ish vowels are likely spam
+  const words = str.trim().split(/\s+/);
+  if (words.length === 1 && letters.length > 10 && vowelRatio < 0.3) {
+    return true;
+  }
+  return false;
+}
+
+function isPersonalEmail(emailAddress: string): boolean {
+  const personalDomains = [
+    "gmail.com",
+    "hotmail.com",
+    "outlook.com",
+    "yahoo.com",
+    "aol.com",
+    "icloud.com",
+    "live.com",
+    "msn.com",
+    "mail.com",
+    "proton.me",
+    "protonmail.com",
+  ];
+  const domain = emailAddress.split("@")[1]?.toLowerCase();
+  return personalDomains.includes(domain);
+}
+
+/**
+ * Spam detection - calculate spam score based on multiple signals, returns a number between 0 and 7
+ * 0 = not spam
+ * 3 = likely spam
+ * 7 = definitely spam
+ */
+function calculateSpamScore(
+  name: string,
+  message: string,
+  survey: string,
+  email: string
+): number {
+  let score = 0;
+  if (isGibberish(name)) score += 2;
+  if (isGibberish(message)) score += 2;
+  if (isGibberish(survey)) score += 2;
+  if (isPersonalEmail(email)) score += 1;
+  return score;
 }
