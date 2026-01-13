@@ -3,7 +3,7 @@ import dataclasses
 
 # !snippet:start
 import inngest
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, Request
 from fastapi.responses import RedirectResponse
 
 inngest_client = inngest.Inngest(app_id="my-app")
