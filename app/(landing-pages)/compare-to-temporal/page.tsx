@@ -10,7 +10,7 @@ import Button from "src/components/LandingPage/Button";
 import MasonryGrid from "src/components/LandingPage/MasonryGrid";
 import LanguagesAndPlatforms from "src/components/LandingPage/LanguagesAndPlatforms";
 import Resources from "src/components/LandingPage/Resources";
-import ContactForm from "src/components/ContactForm";
+import ContactForm, { SEGMENT_EVENT_NAMES } from "src/components/ContactForm";
 import CodeWindow from "src/shared/CodeWindow";
 import SocialProof from "src/app/new-homepage/SocialProof";
 import { cn } from "src/components/utils/classNames";
@@ -32,10 +32,10 @@ export default function Page() {
         layout="horizontal"
         children={
           <ContactForm
-            className="max-w-md w-full mx-auto"
+            className="mx-auto w-full max-w-md"
             eventName="contact.form.sent"
             eventVersion="2023-12-12.1"
-            gtmEvent="Sales Lead Form Submitted"
+            segmentEventName={SEGMENT_EVENT_NAMES.SALES_LEAD_FORM_SUBMITTED}
             button="Schedule a call"
             redirectTo="https://savvycal.com/inngest/demo?utm_medium=website&utm_source=temporal-landing-page"
           />
@@ -113,11 +113,11 @@ export default function Page() {
           //   "With Inngest, workflows are modeled in code as functions and steps, simplifying the process. Built-in scheduling, batching, throttling, and multi-tenancy eliminate the need for managing infrastructure, offering a modern, efficient solution for reliable, scalable workflows.",
           // ]}
         />
-        <table className="max-w-4xl mx-auto mb-12 text-left table-auto divide-y divide-subtle">
+        <table className="mx-auto mb-12 max-w-4xl table-auto divide-y divide-subtle text-left">
           <thead>
-            <tr className="grid grid-cols-3 md:grid-cols-8 text-lg">
+            <tr className="grid grid-cols-3 text-lg md:grid-cols-8">
               <th className="p-3 md:col-span-2">Features</th>
-              <th className="p-3 bg-canvasSubtle rounded-t-md md:col-span-3">
+              <th className="rounded-t-md bg-canvasSubtle p-3 md:col-span-3">
                 Inngest
               </th>
               <th className="p-3 md:col-span-3">Temporal</th>
@@ -162,7 +162,7 @@ export default function Page() {
                 <td className="p-3 md:col-span-2">{row.feature}</td>
                 <td
                   className={cn(
-                    "p-3 bg-canvasSubtle md:col-span-3",
+                    "bg-canvasSubtle p-3 md:col-span-3",
                     idx === arr.length - 1 && "rounded-b-md"
                   )}
                 >
@@ -181,7 +181,7 @@ export default function Page() {
       </section>
 
       {/* What devs are saying about Inngest */}
-      <section className="my-28 py-14 bg-codeEditor">
+      <section className="my-28 bg-codeEditor py-14">
         <Heading title="What developers are saying about Inngest" />
         <SocialProof
           className="my-24"
@@ -272,7 +272,7 @@ export default function Page() {
                     are fully transparent.
                   </p>
                   <CodeWindow
-                    className="bg-transparent rounded-sm"
+                    className="rounded-sm bg-transparent"
                     header="activities.ts"
                     snippet={`export async function getUser(userId: string) {
   const user = await db.getUser(userId);
@@ -289,7 +289,7 @@ export async function startTrial(userId: string) {
 }`}
                   />
                   <CodeWindow
-                    className="bg-transparent rounded-sm"
+                    className="rounded-sm bg-transparent"
                     header="workflow.ts"
                     snippet={`import { proxyActivities } from '@temporalio/workflow';
 import { ApplicationFailure } from '@temporalio/common';
@@ -328,7 +328,7 @@ export async function welcomeWorkflow(
 }`}
                   />
                   <CodeWindow
-                    className="bg-transparent rounded-sm"
+                    className="rounded-sm bg-transparent"
                     header="worker.ts"
                     snippet={`import { Worker } from '@temporalio/worker';
 import * as activities from './activities';
@@ -367,7 +367,7 @@ run().catch((err) => {
                     observability for seamless tracking.
                   </p>
                   <CodeWindow
-                    className="bg-transparent rounded-sm"
+                    className="rounded-sm bg-transparent"
                     header="workflows.ts"
                     snippet={`import { Inngest, NonRetriableError } from 'inngest';
 
@@ -401,7 +401,7 @@ export const welcomeWorkflow = inngest.createFunction(
 `}
                   />
                   <CodeWindow
-                    className="bg-transparent rounded-sm"
+                    className="rounded-sm bg-transparent"
                     header="server.ts"
                     snippet={`import { serve } from 'inngest/express';
 import { inngest, welcomeWorkflow } from './workflows';
