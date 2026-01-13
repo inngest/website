@@ -3,6 +3,8 @@ name = "py"
 version = "0.0.0"
 requires-python = ">=3.10"
 dependencies = [
+    "fastapi>=0.128.0",
+    "flask>=3.1.2",
     "inngest==0.5.0",
     "mypy==1.16.1",
     "ruff==0.12.2",

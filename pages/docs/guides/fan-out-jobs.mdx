@@ -144,65 +144,12 @@ First, set up a `/signup` route handler to send an event to Inngest when a user 
 
 <CodeGroup>
 
-```ts {{ title: "Flask route" }}
-from flask import Flask, request, redirect
-from src.inngest.client import inngest_client
-
-app = Flask(__name__)
-
-@app.route('/signup', methods=['POST'])
-async def signup():
-    // NOTE - this code is simplified for the example:
-    data = await request.get_json()
-    email = data['email']
-    password = data['password']
-    
-    user = await create_user(email=email, password=password)
-    await create_session(user.id)
-
-    // Send an event to Inngest
-    await inngest_client.send(
-        name="app/user.signup",
-        data={
-            "user": {
-                "id": user.id,
-                "email": user.email
-            }
-        }
-    )
-
-    return redirect('https://myapp.com/dashboard')
+```py {{ title: "Flask route" }}
+!snippet:path=snippets/py/v0_5/fan_out_jobs/flask_route.py
 ```
 
-```ts {{ title: "FastAPI route" }}
-from fastapi import FastAPI, Request, Response
-from fastapi.responses import RedirectResponse
-from src.inngest.client import inngest_client
-
-app = FastAPI()
-
-@app.post("/signup")
-async def signup(request: Request):
-    # NOTE - this code is simplified for the example:
-    data = await request.json()
-    email = data['email']
-    password = data['password']
-    
-    user = await create_user(email=email, password=password)
-    await create_session(user.id)
-
-    # Send an event to Inngest
-    await inngest_client.send(
-        name="app/user.signup",
-        data={
-            "user": {
-                "id": user.id,
-                "email": user.email
-            }
-        }
-    )
-
-    return RedirectResponse(url="https://myapp.com/dashboard")
+```py {{ title: "FastAPI route" }}
+!snippet:path=snippets/py/v0_5/fan_out_jobs/fast_api_route.py
 ```
 
 </CodeGroup>
@@ -212,33 +159,7 @@ Now, with this event, any function using `"app/user.signup"` as its event trigge
 Next, define two functions: `sendWelcomeEmail` and `startStripeTrial`. As you can see below, both functions use the same event trigger, but perform different work.
 
 ```py {{ filename: "inngest/functions.py" }}
-@inngest_client.create_function(
-    fn_id="send-welcome-email",
-    trigger=inngest.TriggerEvent(event="app/user.signup"),
-)
-async def send_welcome_email(ctx: inngest.Context) -> None:
-    await step.run("send-email", lambda: send_email(
-        email=ctx.event.data["user"]["email"],
-        template="welcome"
-    ))
-
-@inngest_client.create_function(
-    fn_id="start-stripe-trial", 
-    trigger=inngest.TriggerEvent(event="app/user.signup"),
-)
-async def start_stripe_trial(
-    ctx: inngest.Context,
-    step: inngest.Step,
-) -> None:
-    customer = await step.run("create-customer", lambda: stripe.Customer.create(
-        email=ctx.event.data["user"]["email"]
-    ))
-    
-    await step.run("create-subscription", lambda: stripe.Subscription.create(
-        customer=customer.id,
-        items=[{"price": "price_1MowQULkdIwHu7ixraBm864M"}],
-        trial_period_days=14
-    ))
+!snippet:path=snippets/py/v0_5/fan_out_jobs/functions.py
 ```
 
 You've now successfully implemented fan-out in our application. Each function will run independently and in parallel. If one function fails, the others will not be disrupted.
