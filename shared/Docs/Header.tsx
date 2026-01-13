@@ -17,7 +17,11 @@ import {
 import { useMobileNavigationStore } from "./MobileNavigation";
 import { ModeToggle } from "./ModeToggle";
 import { HeaderSearchIcon, Search } from "./Search";
+import { FlexSearch, FlexHeaderSearchIcon } from "./FlexSearch";
 import { menuTabs } from "./navigationStructure";
+
+// Set to true to use FlexSearch instead of Algolia
+const USE_FLEXSEARCH = true;
 import { TabItem } from "./Navigation";
 
 function Separator() {
@@ -94,7 +98,7 @@ export const Header = forwardRef<HTMLDivElement>(function Header(
           )}
         />
 
-        {!isInsideMobileNavigation && <Search />}
+        {!isInsideMobileNavigation && (USE_FLEXSEARCH ? <FlexSearch /> : <Search />)}
 
         <div className="flex items-center gap-4">
           <Separator />
@@ -144,7 +148,7 @@ export const Header = forwardRef<HTMLDivElement>(function Header(
           </div>
           <Separator />
           <div className="flex gap-2">
-            <HeaderSearchIcon />
+            {USE_FLEXSEARCH ? <FlexHeaderSearchIcon /> : <HeaderSearchIcon />}
             <ModeToggle />
           </div>
           <Separator />
