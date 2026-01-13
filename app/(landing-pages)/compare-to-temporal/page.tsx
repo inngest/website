@@ -10,7 +10,7 @@ import Button from "src/components/LandingPage/Button";
 import MasonryGrid from "src/components/LandingPage/MasonryGrid";
 import LanguagesAndPlatforms from "src/components/LandingPage/LanguagesAndPlatforms";
 import Resources from "src/components/LandingPage/Resources";
-import ContactForm from "src/components/ContactForm";
+import ContactForm, { SEGMENT_EVENT_NAMES } from "src/components/ContactForm";
 import CodeWindow from "src/shared/CodeWindow";
 import SocialProof from "src/app/new-homepage/SocialProof";
 import { cn } from "src/components/utils/classNames";
@@ -35,7 +35,7 @@ export default function Page() {
             className="max-w-md w-full mx-auto"
             eventName="contact.form.sent"
             eventVersion="2023-12-12.1"
-            gtmEvent="Sales Lead Form Submitted"
+            segmentEventName={SEGMENT_EVENT_NAMES.SALES_LEAD_FORM_SUBMITTED}
             button="Schedule a call"
             redirectTo="https://savvycal.com/inngest/demo?utm_medium=website&utm_source=temporal-landing-page"
           />
