@@ -35,6 +35,10 @@ import {
 import * as Accordion from "@radix-ui/react-accordion";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import { MobileSearch } from "./Search";
+import { FlexMobileSearch } from "./FlexSearch";
+
+// Set to true to use FlexSearch instead of Algolia
+const USE_FLEXSEARCH = true;
 
 type ActiveSectionContextType = {
   activeSection: string;
@@ -596,7 +600,7 @@ export function Navigation(props) {
   return (
     <DefaultOpenSectionsContext.Provider value={defaultOpenGroupTitles}>
       <nav {...props}>
-        <MobileSearch />
+        {USE_FLEXSEARCH ? <FlexMobileSearch /> : <MobileSearch />}
 
         <ul role="list" className="flex lg:hidden flex-col">
           {menuTabs.map((tab, idx) => (
