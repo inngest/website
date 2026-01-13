@@ -17,6 +17,7 @@ import { getOpenGraphImageURL } from "../../utils/social";
 import clsx from "clsx";
 
 import { Breadcrumb } from "./Breadcrumb";
+import { SearchProvider } from "./FlexSearch";
 
 const GITHUB_BRANCH = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_REF || "main";
 const GITHUB_PREFIX = `https://github.com/inngest/website/tree/${GITHUB_BRANCH}/`;
@@ -68,6 +69,7 @@ export function Layout({
     : undefined;
 
   return (
+    <SearchProvider>
     <div className="dark:bg-carbon-1000">
       <MDXProvider components={mdxComponents as any}>
         <Head>
@@ -141,6 +143,7 @@ export function Layout({
         </ActiveSectionProvider>
       </MDXProvider>
     </div>
+    </SearchProvider>
   );
 }
 
