@@ -1,9 +1,9 @@
 import {
-  forwardRef,
+  createContext,
   Fragment,
   useCallback,
+  useContext,
   useEffect,
-  useId,
   useRef,
   useState,
 } from "react";
@@ -15,7 +15,6 @@ import {
   TransitionChild,
 } from "@headlessui/react";
 import clsx from "clsx";
-import * as FlexSearchLib from "flexsearch";
 
 import { useIsInsideMobileNavigation } from "./MobileNavigation";
 import { useMobileNavigationStore } from "./MobileNavigation";
@@ -37,10 +36,10 @@ interface SearchResult {
   url: string;
   section: string;
   snippet: string;
+  score: number;
 }
 
-// Create FlexSearch index
-let searchIndex: FlexSearchLib.Index | null = null;
+// Global state for documents
 let documents: SearchDocument[] = [];
 let indexLoaded = false;
 
@@ -50,28 +49,58 @@ async function loadSearchIndex(): Promise<void> {
   try {
     const response = await fetch("/search-index.json");
     documents = await response.json();
-
-    searchIndex = new FlexSearchLib.Index({
-      tokenize: "forward",
-      resolution: 9,
-    });
-
-    // Add documents to the index
-    for (const doc of documents) {
-      const searchableText = [
-        doc.title,
-        doc.description,
-        doc.headings.join(" "),
-        doc.content,
-      ].join(" ");
-
-      searchIndex.add(doc.id, searchableText);
-    }
-
     indexLoaded = true;
   } catch (error) {
     console.error("Failed to load search index:", error);
   }
+}
+
+// Scoring weights for different match locations
+const SCORE_WEIGHTS = {
+  title: 100,
+  headings: 50,
+  description: 25,
+  content: 10,
+};
+
+function scoreDocument(doc: SearchDocument, query: string): number {
+  const lowerQuery = query.toLowerCase();
+  let score = 0;
+
+  // Title match (highest priority)
+  if (doc.title.toLowerCase().includes(lowerQuery)) {
+    score += SCORE_WEIGHTS.title;
+    // Bonus for exact match or starts with
+    if (doc.title.toLowerCase().startsWith(lowerQuery)) {
+      score += 50;
+    }
+    if (doc.title.toLowerCase() === lowerQuery) {
+      score += 100;
+    }
+  }
+
+  // Headings match
+  for (const heading of doc.headings) {
+    if (heading.toLowerCase().includes(lowerQuery)) {
+      score += SCORE_WEIGHTS.headings;
+      break; // Only count once
+    }
+  }
+
+  // Description match
+  if (doc.description.toLowerCase().includes(lowerQuery)) {
+    score += SCORE_WEIGHTS.description;
+  }
+
+  // Content match
+  if (doc.content.toLowerCase().includes(lowerQuery)) {
+    score += SCORE_WEIGHTS.content;
+    // Count occurrences (up to 5 bonus points)
+    const matches = doc.content.toLowerCase().split(lowerQuery).length - 1;
+    score += Math.min(matches, 5);
+  }
+
+  return score;
 }
 
 function createSnippet(content: string, query: string): string {
@@ -108,25 +137,25 @@ async function performSearch(query: string): Promise<SearchResult[]> {
 
   await loadSearchIndex();
 
-  if (!searchIndex) return [];
+  // Score all documents
+  const scoredDocs = documents
+    .map((doc) => ({
+      doc,
+      score: scoreDocument(doc, query),
+    }))
+    .filter(({ score }) => score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 10);
 
-  const results = searchIndex.search(query, { limit: 10 });
-
-  return results
-    .map((id) => {
-      const doc = documents.find((d) => d.id === id);
-      if (!doc) return null;
-
-      return {
-        id: doc.id,
-        title: doc.title,
-        description: doc.description,
-        url: doc.url,
-        section: doc.section,
-        snippet: createSnippet(doc.content, query),
-      };
-    })
-    .filter((r): r is SearchResult => r !== null);
+  return scoredDocs.map(({ doc, score }) => ({
+    id: doc.id,
+    title: doc.title,
+    description: doc.description,
+    url: doc.url,
+    section: doc.section,
+    snippet: createSnippet(doc.content, query),
+    score,
+  }));
 }
 
 function SearchIcon(props: React.ComponentPropsWithoutRef<"svg">) {
@@ -170,11 +199,9 @@ function LoadingIcon(props: React.ComponentPropsWithoutRef<"svg">) {
 function SearchInput({
   value,
   onChange,
-  onClose,
 }: {
   value: string;
   onChange: (value: string) => void;
-  onClose: () => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -204,7 +231,7 @@ function SearchInput({
   );
 }
 
-function SearchResult({
+function SearchResultItem({
   result,
   query,
   isSelected,
@@ -290,7 +317,7 @@ function SearchResults({
   return (
     <ul className="divide-y divide-slate-100 dark:divide-slate-800">
       {results.map((result, index) => (
-        <SearchResult
+        <SearchResultItem
           key={result.id}
           result={result}
           query={query}
@@ -342,11 +369,11 @@ function SearchDialog({
     [router, onClose]
   );
 
-  // Keyboard navigation
+  // Keyboard navigation for arrow keys and enter
   useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      if (!open) return;
+    if (!open) return;
 
+    function handleKeyDown(e: KeyboardEvent) {
       if (e.key === "ArrowDown") {
         e.preventDefault();
         setSelectedIndex((i) => Math.min(i + 1, results.length - 1));
@@ -398,11 +425,7 @@ function SearchDialog({
             leaveTo="opacity-0 scale-95"
           >
             <DialogPanel className="mx-auto max-w-xl transform divide-y divide-slate-100 overflow-hidden rounded-xl bg-white shadow-2xl ring-1 ring-slate-900/10 dark:divide-slate-800 dark:bg-slate-900 dark:ring-slate-800">
-              <SearchInput
-                value={query}
-                onChange={setQuery}
-                onClose={onClose}
-              />
+              <SearchInput value={query} onChange={setQuery} />
               <div className="max-h-[60vh] overflow-y-auto">
                 <SearchResults
                   results={results}
@@ -420,14 +443,27 @@ function SearchDialog({
   );
 }
 
-function useSearchProps() {
+// =============================================================================
+// GLOBAL SEARCH STATE - Single listener to prevent duplicates
+// =============================================================================
+
+interface SearchContextType {
+  open: boolean;
+  onOpen: () => void;
+  onClose: () => void;
+}
+
+const SearchContext = createContext<SearchContextType | null>(null);
+
+export function SearchProvider({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
 
+  // Single global CMD+K listener
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
-        setOpen(true);
+        setOpen((prev) => !prev);
       }
     }
 
@@ -435,23 +471,69 @@ function useSearchProps() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
-  return {
-    open,
-    onOpen: () => setOpen(true),
-    onClose: () => setOpen(false),
-  };
+  return (
+    <SearchContext.Provider
+      value={{
+        open,
+        onOpen: () => setOpen(true),
+        onClose: () => setOpen(false),
+      }}
+    >
+      {children}
+      <SearchDialog open={open} onClose={() => setOpen(false)} />
+    </SearchContext.Provider>
+  );
 }
 
+function useSearch() {
+  const context = useContext(SearchContext);
+  if (!context) {
+    // Fallback for when not wrapped in provider
+    const [open, setOpen] = useState(false);
+    return {
+      open,
+      onOpen: () => setOpen(true),
+      onClose: () => setOpen(false),
+      hasProvider: false,
+    };
+  }
+  return { ...context, hasProvider: true };
+}
+
+// =============================================================================
+// EXPORTED COMPONENTS
+// =============================================================================
+
 export function FlexSearch() {
-  const { open, onOpen, onClose } = useSearchProps();
+  const { onOpen, hasProvider } = useSearch();
+  const [localOpen, setLocalOpen] = useState(false);
   const isInsideMobileNavigation = useIsInsideMobileNavigation();
   const { close: closeMobileNav } = useMobileNavigationStore();
+
+  // Local CMD+K listener only if no provider
+  useEffect(() => {
+    if (hasProvider) return;
+
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setLocalOpen(true);
+      }
+    }
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [hasProvider]);
 
   const handleOpen = () => {
     if (isInsideMobileNavigation) {
       closeMobileNav();
     }
-    onOpen();
+    if (hasProvider) {
+      onOpen();
+    } else {
+      setLocalOpen(true);
+    }
   };
 
   return (
@@ -470,22 +552,29 @@ export function FlexSearch() {
           <kbd className="font-sans">K</kbd>
         </kbd>
       </button>
-      <SearchDialog open={open} onClose={onClose} />
+      {!hasProvider && (
+        <SearchDialog open={localOpen} onClose={() => setLocalOpen(false)} />
+      )}
     </>
   );
 }
 
 export function FlexMobileSearch() {
-  const { open, onOpen, onClose } = useSearchProps();
+  const { onOpen, hasProvider } = useSearch();
+  const [localOpen, setLocalOpen] = useState(false);
   const { close: closeMobileNav } = useMobileNavigationStore();
 
   const handleOpen = () => {
     closeMobileNav();
-    onOpen();
+    if (hasProvider) {
+      onOpen();
+    } else {
+      setLocalOpen(true);
+    }
   };
 
   return (
-    <>
+    <div className="block lg:hidden flex-auto mb-4">
       <button
         type="button"
         className="flex w-full items-center gap-2 rounded-lg bg-slate-100 px-4 py-2 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
@@ -494,13 +583,24 @@ export function FlexMobileSearch() {
         <SearchIcon className="h-5 w-5" />
         <span>Search...</span>
       </button>
-      <SearchDialog open={open} onClose={onClose} />
-    </>
+      {!hasProvider && (
+        <SearchDialog open={localOpen} onClose={() => setLocalOpen(false)} />
+      )}
+    </div>
   );
 }
 
 export function FlexHeaderSearchIcon() {
-  const { open, onOpen, onClose } = useSearchProps();
+  const { onOpen, hasProvider } = useSearch();
+  const [localOpen, setLocalOpen] = useState(false);
+
+  const handleOpen = () => {
+    if (hasProvider) {
+      onOpen();
+    } else {
+      setLocalOpen(true);
+    }
+  };
 
   return (
     <>
@@ -508,12 +608,13 @@ export function FlexHeaderSearchIcon() {
         type="button"
         className="flex h-6 w-6 items-center justify-center rounded-md transition hover:bg-slate-900/5 dark:hover:bg-white/5"
         aria-label="Search documentation"
-        onClick={onOpen}
+        onClick={handleOpen}
       >
         <SearchIcon className="h-5 w-5 stroke-slate-900 dark:stroke-white" />
       </button>
-      <SearchDialog open={open} onClose={onClose} />
+      {!hasProvider && (
+        <SearchDialog open={localOpen} onClose={() => setLocalOpen(false)} />
+      )}
     </>
   );
 }
-
