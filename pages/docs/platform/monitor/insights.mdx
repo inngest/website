@@ -13,6 +13,7 @@ Inngest Insights allows you to query and analyze your event data using SQL direc
 ## Overview
 
 Insights provides an in-app SQL editor and query interface where you can:
+- **Use AI to generate queries** - Describe what you want in plain English and let the Insights AI write the SQL for you
 - Query event data using familiar SQL syntax
 - Save and reuse common queries
 - Share them with your team
@@ -31,6 +32,31 @@ Access Insights through the Inngest dashboard by clicking on the "Insights" tab 
 We have several pre-built query templates to help you get started exploring your data.
 
 ![Getting Started Templates View](/assets/docs/platform/monitor/insights/insights_template_view.png)
+
+## Insights AI
+
+Insights AI helps you generate SQL queries using natural language. Instead of writing SQL manually, you can describe what you want to analyze and the assistant will create the query for you.
+
+### How it works
+
+Simply describe what you want to query in plain English, and Insights AI will:
+
+1. **Match events** - Analyze your prompt and identify the most relevant events from your account to use in the query
+2. **Write the query** - Generate a properly formatted SQL query based on your event schemas
+3. **Summarize results** - Provide a natural language summary of your query results
+
+### Example prompts
+
+- "Show me all failed functions in the last 24 hours"
+- "Count orders by user for the past week"
+- "What are the most common event types?"
+- "Find all events where the amount is greater than 100"
+
+The generated query is automatically inserted into the SQL editor and executed, so you can see results immediately and further refine the query if needed.
+
+<Info>
+  Insights AI is built using Inngest's own [Realtime API](/docs/features/realtime), [AgentKit](https://agentkit.inngest.com), and durable execution with checkpointing.
+</Info>
 
 ## SQL Editor
 
