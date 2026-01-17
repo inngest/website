@@ -1,6 +1,115 @@
-import type { NextApiRequest, NextApiResponse } from "next";
 import fs from "node:fs";
 import path from "node:path";
+
+/**
+ * Recursively finds all markdown files in the pages/docs directory
+ * and returns their paths relative to /docs as a flat array.
+ */
+function getAllDocPaths(): string[] {
+  const docsDir = path.join(process.cwd(), "pages", "docs");
+  const paths: string[] = [];
+
+  function walkDir(currentDir: string, relativePath: string = "") {
+    const entries = fs.readdirSync(currentDir, { withFileTypes: true });
+
+    for (const entry of entries) {
+      const fullPath = path.join(currentDir, entry.name);
+      const relativeFilePath = relativePath ? `${relativePath}/${entry.name}` : entry.name;
+
+      if (entry.isDirectory()) {
+        // Recursively walk subdirectories
+        walkDir(fullPath, relativeFilePath);
+      } else if (entry.isFile()) {
+        // Check if it's a markdown file
+        if (entry.name.endsWith(".mdx") || entry.name.endsWith(".md")) {
+          // Handle index files - use the directory path
+          if (entry.name === "index.mdx" || entry.name === "index.md") {
+            const docPath = relativePath || "";
+            paths.push(docPath);
+          } else {
+            // Remove the file extension and use the full relative path
+            const nameWithoutExt = entry.name.replace(/\.(mdx|md)$/, "");
+            const docPath = relativePath
+              ? `${relativePath}/${nameWithoutExt}`
+              : nameWithoutExt;
+            paths.push(docPath);
+          }
+        }
+      }
+    }
+  }
+
+  walkDir(docsDir);
+  return paths.sort();
+}
+
+export const generateStaticParams = async () => {
+  const docPaths = getAllDocPaths();
+  return docPaths.map((path) => ({
+    slug: path.split("/").filter(Boolean),
+  }));
+};
+
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ slug: string[] }> }
+) {
+  const { slug: slugArray = [] } = await params;
+  const docPath = slugArray.join("/");
+
+  if (!docPath || typeof docPath !== "string") {
+    return new Response("Missing 'path' query parameter", { status: 400 });
+  }
+
+  // Sanitize the path to prevent directory traversal
+  const sanitizedPath = docPath
+    .replace(/^\/docs\/?/, "") // Remove leading /docs/
+    .replace(/\.\./g, "") // Remove any ..
+    .replace(/^\/+/, ""); // Remove leading slashes
+
+  // Try to find the MDX file
+  const possiblePaths = [
+    path.join(process.cwd(), "pages", "docs", `${sanitizedPath}.mdx`),
+    path.join(process.cwd(), "pages", "docs", `${sanitizedPath}/index.mdx`),
+    path.join(process.cwd(), "pages", "docs", `${sanitizedPath}.md`),
+  ];
+
+  let filePath: string | null = null;
+  for (const p of possiblePaths) {
+    if (fs.existsSync(p)) {
+      filePath = p;
+      break;
+    }
+  }
+
+  if (!filePath) {
+    return new Response("Document not found", { status: 404, statusText: "Document not found" });
+  }
+
+  // Verify the resolved path is still within the docs directory (security check)
+  const resolvedPath = path.resolve(filePath);
+  const docsDir = path.resolve(process.cwd(), "pages", "docs");
+  if (!resolvedPath.startsWith(docsDir)) {
+    return new Response("Access denied", { status: 403, statusText: "Access denied" });
+  }
+
+  try {
+    const content = fs.readFileSync(filePath, "utf-8");
+
+    // TODO - we need to load the markdown snippets to inline them
+
+    const processedContent = stripMdxToText(content);
+
+    // Return as plain text for easy copying. Disable caching so this always runs
+    // dynamically and returns fresh content from the docs.
+    return new Response(processedContent, {
+      headers: { "Content-Type": "text/markdown;charset=UTF-8" },
+    });
+  } catch (error) {
+    return new Response("Failed to read document", { status: 500, statusText: "Failed to read document" });
+  }
+}
+
 
 /**
  * Strips MDX-specific syntax and returns clean markdown text suitable for LLMs.
@@ -90,61 +199,4 @@ function stripMdxToText(content: string): string {
   result = result.trim();
 
   return result;
-}
-
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== "GET") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
-
-  const { path: docPath, raw } = req.query;
-
-  if (!docPath || typeof docPath !== "string") {
-    return res.status(400).json({ error: "Missing 'path' query parameter" });
-  }
-
-  // Sanitize the path to prevent directory traversal
-  const sanitizedPath = docPath
-    .replace(/^\/docs\/?/, "") // Remove leading /docs/
-    .replace(/\.\./g, "") // Remove any ..
-    .replace(/^\/+/, ""); // Remove leading slashes
-
-  // Try to find the MDX file
-  const possiblePaths = [
-    path.join(process.cwd(), "pages", "docs", `${sanitizedPath}.mdx`),
-    path.join(process.cwd(), "pages", "docs", `${sanitizedPath}/index.mdx`),
-    path.join(process.cwd(), "pages", "docs", `${sanitizedPath}.md`),
-  ];
-
-  let filePath: string | null = null;
-  for (const p of possiblePaths) {
-    if (fs.existsSync(p)) {
-      filePath = p;
-      break;
-    }
-  }
-
-  if (!filePath) {
-    return res.status(404).json({ error: "Document not found", path: docPath });
-  }
-
-  // Verify the resolved path is still within the docs directory (security check)
-  const resolvedPath = path.resolve(filePath);
-  const docsDir = path.resolve(process.cwd(), "pages", "docs");
-  if (!resolvedPath.startsWith(docsDir)) {
-    return res.status(403).json({ error: "Access denied" });
-  }
-
-  try {
-    const content = fs.readFileSync(filePath, "utf-8");
-
-    // If raw=true, return unprocessed content; otherwise strip MDX
-    const processedContent = raw === "true" ? content : stripMdxToText(content);
-
-    // Return as plain text for easy copying
-    res.setHeader("Content-Type", "text/markdown;charset=UTF-8");
-    return res.status(200).send(processedContent);
-  } catch (error) {
-    return res.status(500).json({ error: "Failed to read document" });
-  }
 }

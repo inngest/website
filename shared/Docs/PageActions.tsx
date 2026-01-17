@@ -159,9 +159,12 @@ export function PageActions() {
   const getMarkdownContent = useCallback(async (): Promise<string | null> => {
     try {
       const response = await fetch(
-        `/api/docs/markdown?path=${encodeURIComponent(currentPath)}`
+        `/docs-markdown/${currentPath.replace(/^\/docs/, '')}`
       );
-      if (!response.ok) throw new Error("Failed to fetch markdown");
+      if (!response.ok) {
+        console.error(response);
+        return null;
+      }
       return await response.text();
     } catch (error) {
       console.error("Failed to fetch markdown:", error);
