@@ -1,4 +1,4 @@
-import type { NextApiRequest, NextApiResponse } from "next";
+import { NextRequest, NextResponse } from "next/server";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -92,15 +92,16 @@ function stripMdxToText(content: string): string {
   return result;
 }
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== "GET") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const docPath = searchParams.get("path");
+  const raw = searchParams.get("raw");
 
-  const { path: docPath, raw } = req.query;
-
-  if (!docPath || typeof docPath !== "string") {
-    return res.status(400).json({ error: "Missing 'path' query parameter" });
+  if (!docPath) {
+    return NextResponse.json(
+      { error: "Missing 'path' query parameter" },
+      { status: 400 }
+    );
   }
 
   // Sanitize the path to prevent directory traversal
@@ -125,14 +126,17 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 
   if (!filePath) {
-    return res.status(404).json({ error: "Document not found", path: docPath });
+    return NextResponse.json(
+      { error: "Document not found", path: docPath },
+      { status: 404 }
+    );
   }
 
   // Verify the resolved path is still within the docs directory (security check)
   const resolvedPath = path.resolve(filePath);
   const docsDir = path.resolve(process.cwd(), "pages", "docs");
   if (!resolvedPath.startsWith(docsDir)) {
-    return res.status(403).json({ error: "Access denied" });
+    return NextResponse.json({ error: "Access denied" }, { status: 403 });
   }
 
   try {
@@ -142,9 +146,17 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     const processedContent = raw === "true" ? content : stripMdxToText(content);
 
     // Return as plain text for easy copying
-    res.setHeader("Content-Type", "text/markdown;charset=UTF-8");
-    return res.status(200).send(processedContent);
+    return new Response(processedContent, {
+      status: 200,
+      headers: {
+        "Content-Type": "text/markdown;charset=UTF-8",
+      },
+    });
   } catch (error) {
-    return res.status(500).json({ error: "Failed to read document" });
+    return NextResponse.json(
+      { error: "Failed to read document" },
+      { status: 500 }
+    );
   }
 }
+
