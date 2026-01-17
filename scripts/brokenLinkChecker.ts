@@ -62,6 +62,8 @@ const options = {
     "https://docs.mux.com/",
     "https://npmtrends.com/",
     "https://medium.com/",
+    "https://unsplash.com/",
+    "https://react.email/", // 429s
   ],
 };
 
