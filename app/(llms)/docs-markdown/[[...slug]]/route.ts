@@ -54,7 +54,7 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ slug: string[] }> }
 ) {
-  const { slug: slugArray } = await params;
+  const { slug: slugArray = [] } = await params;
   const docPath = slugArray.join("/");
 
   if (!docPath || typeof docPath !== "string") {
