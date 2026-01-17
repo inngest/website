@@ -222,10 +222,10 @@ const nextConfig = {
       },
     ],
   },
-  outputFileTracingExcludes: {
-    "*": ["./.git/*", "./public/**/*", "./.pnpm-store/*"],
-    "!(/api)": ["./.next/*"],
-  },
+  // outputFileTracingExcludes: {
+  //   "*": ["./.git/*", "./public/**/*", "./.pnpm-store/*"],
+  //   "!(/api)": ["./.next/*"],
+  // },
   webpack: (config, { dev, isServer }) => {
     // Exclude old-style _prefix directories from being rendered (ex. mdx pages)
     config.module.rules.push({
