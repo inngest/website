@@ -2,6 +2,15 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import fs from "node:fs";
 import path from "node:path";
 
+// Force this API route to run as a Node.js serverless function (not edge, not static).
+// Required for fs.readFileSync and to prevent static/edge optimization.
+export const config = {
+  runtime: "nodejs",
+  api: {
+    responseLimit: false,
+  },
+};
+
 /**
  * Strips MDX-specific syntax and returns clean markdown text suitable for LLMs.
  * Removes imports, exports, JSX components, and frontmatter while preserving
@@ -92,6 +101,7 @@ function stripMdxToText(content: string): string {
   return result;
 }
 
+
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "GET") {
     return res.status(405).json({ error: "Method not allowed" });
@@ -141,8 +151,13 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     // If raw=true, return unprocessed content; otherwise strip MDX
     const processedContent = raw === "true" ? content : stripMdxToText(content);
 
-    // Return as plain text for easy copying
+    // Return as plain text for easy copying. Disable caching so this always runs
+    // dynamically and returns fresh content from the docs.
     res.setHeader("Content-Type", "text/markdown;charset=UTF-8");
+    res.setHeader(
+      "Cache-Control",
+      "private, no-cache, no-store, max-age=0, must-revalidate"
+    );
     return res.status(200).send(processedContent);
   } catch (error) {
     return res.status(500).json({ error: "Failed to read document" });
