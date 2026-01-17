@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import fs from "node:fs";
 import path from "node:path";
 
-export const dynamic = 'force-dynamic';
 
 /**
  * Strips MDX-specific syntax and returns clean markdown text suitable for LLMs.
@@ -147,11 +146,16 @@ export async function GET(request: NextRequest) {
     // If raw=true, return unprocessed content; otherwise strip MDX
     const processedContent = raw === "true" ? content : stripMdxToText(content);
 
-    // Return as plain text for easy copying
+    // Return as markdown with edge caching
+    // Cache for 1 hour on CDN, serve stale for 1 day while revalidating
+    // Vary on Accept header so markdown and HTML responses are cached separately
     return new Response(processedContent, {
       status: 200,
       headers: {
         "Content-Type": "text/markdown;charset=UTF-8",
+        "Cache-Control": "s-maxage=3600, stale-while-revalidate=86400",
+        "CDN-Cache-Control": "max-age=3600",
+        "Vary": "Accept",
       },
     });
   } catch (error) {

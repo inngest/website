@@ -206,9 +206,31 @@ function touchFilesWithString(str, { dir = "./pages", ext = "mdx" } = {}) {
   }
 }
 
+// Rewrites for serving markdown to AI agents based on Accept header
+async function rewrites() {
+  return {
+    beforeFiles: [
+      {
+        // When an AI agent requests /docs/* with Accept: text/markdown,
+        // serve the markdown version instead of HTML
+        source: "/docs/:path*",
+        destination: "/api/docs/markdown?path=/docs/:path*",
+        has: [
+          {
+            type: "header",
+            key: "accept",
+            value: "(.*)text/markdown(.*)",
+          },
+        ],
+      },
+    ],
+  };
+}
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   redirects,
+  rewrites,
   reactStrictMode: true,
   pageExtensions: ["js", "jsx", "ts", "tsx", "mdx"],
   experimental: {
