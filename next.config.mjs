@@ -228,11 +228,6 @@ const nextConfig = {
   },
   outputFileTracingIncludes: {
     "/api/*": ["./next/**/*"],
-    // Include docs MDX in the markdown API's serverless bundle so fs.readFileSync can find them
-    "/api/docs/markdown": [
-      "./pages/docs/**/*.mdx",
-      "./pages/docs/**/*.md",
-    ],
   },
   webpack: (config, { dev, isServer }) => {
     // Exclude old-style _prefix directories from being rendered (ex. mdx pages)
