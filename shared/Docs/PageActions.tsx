@@ -124,10 +124,10 @@ export function PageActions() {
   const llmLinks = useMemo(() => {
     return [
       {
-        id: "scira",
-        name: "Scira AI",
-        href: `https://scira.ai/?${new URLSearchParams({ q: llmQuery })}`,
-        icon: SciraIcon,
+        id: "claude",
+        name: "Claude",
+        href: `https://claude.ai/new?${new URLSearchParams({ q: llmQuery })}`,
+        icon: AnthropicIcon,
       },
       {
         id: "chatgpt",
@@ -136,10 +136,10 @@ export function PageActions() {
         icon: RiOpenaiFill,
       },
       {
-        id: "claude",
-        name: "Claude",
-        href: `https://claude.ai/new?${new URLSearchParams({ q: llmQuery })}`,
-        icon: AnthropicIcon,
+        id: "scira",
+        name: "Scira AI",
+        href: `https://scira.ai/?${new URLSearchParams({ q: llmQuery })}`,
+        icon: SciraIcon,
       },
       {
         id: "t3chat",
