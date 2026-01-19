@@ -97,7 +97,8 @@ export async function GET(
   try {
     const content = fs.readFileSync(filePath, "utf-8");
     const contentWithSnippets = inlineSnippets(content);
-    const processedContent = stripMdxToText(contentWithSnippets);
+    const contentWithMarkdownURLs = convertDocsURLsToMarkdownURLs(contentWithSnippets);
+    const processedContent = stripMdxToText(contentWithMarkdownURLs);
 
     // Return as plain text for easy copying. Disable caching so this always runs
     // dynamically and returns fresh content from the docs.
@@ -132,6 +133,12 @@ function inlineSnippets(content: string): string {
       console.error(`Failed to load snippet: ${trimmedPath}`, error);
       return `\`\`\`${language || ""}\n// Failed to load snippet: ${trimmedPath}\n\`\`\``;
     }
+  });
+}
+
+function convertDocsURLsToMarkdownURLs(content: string): string {
+  return content.replace(/(\/docs\/[^)]+)/g, (match, p1) => {
+    return p1.replace(`/docs`, `/docs-markdown`);
   });
 }
 
