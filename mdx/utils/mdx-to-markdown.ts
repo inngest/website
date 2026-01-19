@@ -185,7 +185,10 @@ function transformJsxElement(node: MdxJsxElement): RootContent[] | null {
     const show = getAttr(node, "show");
     const result: RootContent[] = [];
     if (show) {
-      const label = show === "ts" ? "TypeScript" : show === "py" ? "Python" : show === "go" ? "Go" : show;
+      const label = show === "ts" || show === "typescript" ? "TypeScript" :
+        show === "py" || show === "python" ? "Python" :
+        show === "go" || show === "golang" ? "Go" :
+        show;
       result.push(heading(4, [text(label)]));
     }
     result.push(...node.children);
