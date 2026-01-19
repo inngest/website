@@ -1,0 +1,14 @@
+{
+  "name": "inngest-ts-snippets-v3",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "inngest": "^3.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

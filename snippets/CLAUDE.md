@@ -50,3 +50,11 @@ Within each language directory, there may be multiple version directories. This 
 **Python:** `cd snippets/py && make lint && make type-check`
 - `ruff check` for linting
 - `mypy` for type checking
+
+**TypeScript:** `cd snippets/ts && make check`
+- Runs `tsc --noEmit` for type checking
+- Run `make install` first to install dependencies
+
+## CI
+
+CI runs validation for each language.

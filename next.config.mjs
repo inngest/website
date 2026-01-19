@@ -172,6 +172,10 @@ const withMDX = createMDX({
 try {
   fs.watch('./snippets', { recursive: true }, (eventType, filename) => {
     if (filename && eventType === 'change') {
+      // Skip non-snippet files (documentation, config, etc.)
+      if (filename.endsWith('.md')) {
+        return;
+      }
       filename = `./snippets/${filename}`;
       // const fullPath = path.join(process.cwd(), filename).replace(/\\/g, '/');
       const relativePath = path.relative('.', filename).replace(/\\/g, '/');

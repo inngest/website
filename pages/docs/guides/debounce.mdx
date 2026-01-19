@@ -14,23 +14,7 @@ Debounce delays function execution until a series of events are no longer receiv
 
 <CodeGroup>
 ```ts {{ title: "TypeScript" }}
-export default inngest.createFunction(
-  {
-    id: "handle-webhook",
-    debounce: {
-      key: "event.data.account_id",
-      period: "5m",
-      timeout: "10m",
-    },
-  },
-  { event: "intercom/company.updated" },
-  async ({ event, step }) => {
-    // This function will only be scheduled 5 minutes after events are no longer received with the same
-    // `event.data.account_id` field.
-    //
-    // `event` will be the last event in the series received.
-  }
-);
+!snippet:path=snippets/ts/v3/debounce/basic.ts
 ```
 ```go {{ title: "Go" }}
 !snippet:path=snippets/go/v0_11/debounce/basic.go
