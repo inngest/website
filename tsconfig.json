@@ -34,7 +34,13 @@
     ".next/types/**/*.ts",
     "**/*.mdx"
   ],
-  "exclude": ["node_modules"],
+  "exclude": [
+    "node_modules", 
+
+    // Exclude snippets to prevent Vercel CI from analyzing them. Snippets are
+    // analyzed by GitHub CI
+    "snippets",
+  ],
   "ts-node": {
     "compilerOptions": {
       "module": "commonjs",
