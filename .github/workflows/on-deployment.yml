@@ -78,3 +78,14 @@ jobs:
       - name: "Type check"
         run: "make type-check"
         working-directory: "./snippets/py"
+
+  ts:
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: "actions/checkout@v4"
+      - name: "Install"
+        run: "make install"
+        working-directory: "./snippets/ts"
+      - name: "Check"
+        run: "make check"
+        working-directory: "./snippets/ts"
