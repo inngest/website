@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { formatSnippetFileContent } from "@/mdx/utils/snippet.mjs";
 
 /**
  * Recursively finds all markdown files in the pages/docs directory
@@ -95,10 +96,8 @@ export async function GET(
 
   try {
     const content = fs.readFileSync(filePath, "utf-8");
-
-    // TODO - we need to load the markdown snippets to inline them
-
-    const processedContent = stripMdxToText(content);
+    const contentWithSnippets = inlineSnippets(content);
+    const processedContent = stripMdxToText(contentWithSnippets);
 
     // Return as plain text for easy copying. Disable caching so this always runs
     // dynamically and returns fresh content from the docs.
@@ -110,6 +109,31 @@ export async function GET(
   }
 }
 
+
+/**
+ * Replaces snippet references in fenced code blocks with their actual content.
+ * Looks for patterns like:
+ * ```py
+ * !snippet:path=snippets/py/path/to/file.py
+ * ```
+ */
+function inlineSnippets(content: string): string {
+  const snippetCodeBlockRegex = /```(\w+)?([^\n]*)\n!snippet:path=([^\n]+)\n```/g;
+
+  return content.replace(snippetCodeBlockRegex, (match, language, attrs, snippetPath) => {
+    const trimmedPath = snippetPath.trim();
+    const fullPath = path.join(process.cwd(), trimmedPath);
+
+    try {
+      const fileContent = fs.readFileSync(fullPath, "utf-8");
+      const formattedContent = formatSnippetFileContent(fileContent);
+      return `\`\`\`${language || ""}${attrs || ""}\n${formattedContent}\n\`\`\``;
+    } catch (error) {
+      console.error(`Failed to load snippet: ${trimmedPath}`, error);
+      return `\`\`\`${language || ""}\n// Failed to load snippet: ${trimmedPath}\n\`\`\``;
+    }
+  });
+}
 
 /**
  * Strips MDX-specific syntax and returns clean markdown text suitable for LLMs.

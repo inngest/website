@@ -10,7 +10,6 @@ export const dynamic = "auto";
 
 export async function GET(req: NextRequest) {
   const pageNumber = parseInt(req.nextUrl.searchParams.get("page") || "1");
-  console.log("Changlog?", pageNumber, req.nextUrl.searchParams.get("page"));
   const perPage = 10;
   const offset = (pageNumber - 1) * perPage;
 
