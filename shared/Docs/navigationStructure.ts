@@ -508,6 +508,10 @@ const sectionLearn: (NavGroup | NavLink)[] = [
             title: "Bulk cancellation",
             href: `/docs/guides/cancel-running-functions`,
           },
+          {
+            title: "Metadata",
+            href: "/docs/features/metadata"
+          }
         ],
       },
       {
