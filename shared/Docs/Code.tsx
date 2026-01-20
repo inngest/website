@@ -17,6 +17,7 @@ import create from "zustand";
 import { Tag } from "./Tag";
 import { useSearchParams } from "next/navigation";
 import { useLocalStorage } from "react-use";
+import { useLanguageStore, type SDKLanguage } from "./LanguageStore";
 
 const languageNames = {
   js: "JavaScript",
@@ -176,10 +177,8 @@ function CodeGroupHeader({
   return (
     <div
       className={`
-      flex min-h-[calc(theme(spacing.10)+1px)] flex-wrap items-center gap-x-4 rounded-t-md
-      rounded-t-md border-b
-      border-b-subtle bg-surfaceBase px-4
-      text-basis
+      flex min-h-[calc(theme(spacing.10)+1px)] flex-wrap items-center gap-x-4
+      rounded-t-md border-b border-b-subtle bg-surfaceBase px-4 text-basis
       `}
     >
       {heading && (
@@ -317,6 +316,7 @@ export function CodeGroup({
     getPanelTitle(child.props)
   );
   const [currentLanguage] = useLocalStorage("currentLanguage", null);
+  const { language: globalLanguage } = useLanguageStore();
   const mountRef = useRef(false);
   let tabGroupProps = useTabGroupProps(languages);
   let hasTabs = forceTabs || Children.count(children) > 1;
@@ -326,7 +326,7 @@ export function CodeGroup({
     ? { selectedIndex: tabGroupProps.selectedIndex }
     : {};
 
-  // ensure to select the current language if set in local storage
+  // Sync with global language store on mount
   useEffect(() => {
     if (mountRef.current) {
       return;
@@ -334,7 +334,16 @@ export function CodeGroup({
     mountRef.current = true;
     const childrenList: React.ReactElement<{ title: string }>[] =
       Children.toArray(children) as React.ReactElement<{ title: string }>[];
-    if (
+    
+    // Try to match global language first
+    const matchingKeys = SDK_TO_GUIDE_KEY[globalLanguage] || [];
+    const globalMatchIndex = childrenList.findIndex((child) =>
+      matchingKeys.some((key) => child.props?.title?.toLowerCase() === key)
+    );
+    
+    if (tabGroupProps && globalMatchIndex !== -1) {
+      tabGroupProps.onChange(globalMatchIndex);
+    } else if (
       tabGroupProps &&
       currentLanguage &&
       childrenList.find(
@@ -402,6 +411,21 @@ const GuideSelectorContext = createContext<{
   options: GuideOption[];
 }>(null);
 
+// Map GuideSelector keys to SDKLanguage
+const GUIDE_KEY_TO_SDK: Record<string, SDKLanguage> = {
+  typescript: "typescript",
+  ts: "typescript",
+  python: "python",
+  py: "python",
+  go: "go",
+};
+
+const SDK_TO_GUIDE_KEY: Record<SDKLanguage, string[]> = {
+  typescript: ["typescript", "ts"],
+  python: ["python", "py"],
+  go: ["go"],
+};
+
 export function GuideSelector({
   children,
   options = [],
@@ -415,14 +439,18 @@ export function GuideSelector({
     useLocalStorage("currentLanguage", null);
   const searchParams = useSearchParams();
   const qsCurrentLanguage = searchParams.get(searchParamKey);
+  
+  // Get the global language store
+  const { language: globalLanguage, setLanguage: setGlobalLanguage } = useLanguageStore();
 
   const [selected, setSelected] = useState<string>(options[0].key);
   const [defaultSelected, setDefaultSelected] = useState<string>(
     options[0].key
   );
 
-  // infer the default selected from the url or local storage
+  // Sync with global language store on mount and when it changes
   useEffect(() => {
+    // If URL has a guide param, prioritize that
     if (
       options.find((o) => o.key === qsCurrentLanguage) &&
       Boolean(qsCurrentLanguage) &&
@@ -430,21 +458,43 @@ export function GuideSelector({
     ) {
       setSelected(qsCurrentLanguage);
       setDefaultSelected(qsCurrentLanguage);
-    } else if (
-      !qsCurrentLanguage &&
-      // if no url param, fallback to local storage
-      localStorageCurrentLanguage &&
-      options.find((o) => o.key === localStorageCurrentLanguage)
-    ) {
-      setSelected(localStorageCurrentLanguage);
-      setDefaultSelected(localStorageCurrentLanguage);
+      // Also sync to global store
+      const sdkLang = GUIDE_KEY_TO_SDK[qsCurrentLanguage.toLowerCase()];
+      if (sdkLang) {
+        setGlobalLanguage(sdkLang);
+      }
+    } else {
+      // Try to match global language to available options
+      const matchingKeys = SDK_TO_GUIDE_KEY[globalLanguage] || [];
+      const matchingOption = options.find((o) => 
+        matchingKeys.includes(o.key.toLowerCase())
+      );
+      if (matchingOption && matchingOption.key !== selected) {
+        setSelected(matchingOption.key);
+        setDefaultSelected(matchingOption.key);
+      } else if (
+        !qsCurrentLanguage &&
+        // if no url param and no global match, fallback to local storage
+        localStorageCurrentLanguage &&
+        options.find((o) => o.key === localStorageCurrentLanguage)
+      ) {
+        setSelected(localStorageCurrentLanguage);
+        setDefaultSelected(localStorageCurrentLanguage);
+      }
     }
-  }, [qsCurrentLanguage]);
+  }, [qsCurrentLanguage, globalLanguage, options]);
 
   const onChange = (newSelectedIndex) => {
     const newSelectedKey = options[newSelectedIndex].key;
     setLocalStorageCurrentLanguage(newSelectedKey);
     setSelected(newSelectedKey);
+    
+    // Sync to global language store
+    const sdkLang = GUIDE_KEY_TO_SDK[newSelectedKey.toLowerCase()];
+    if (sdkLang) {
+      setGlobalLanguage(sdkLang);
+    }
+    
     const url = new URL(router.asPath, window.location.origin);
     url.searchParams.set(searchParamKey, newSelectedKey);
     // Replace the URL state and do use shallow to avoid refresh

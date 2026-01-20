@@ -33,8 +33,20 @@ import {
   isNavLink,
 } from "./navigationStructure";
 import * as Accordion from "@radix-ui/react-accordion";
-import { ChevronDownIcon } from "@heroicons/react/24/outline";
+import { ChevronDownIcon, CheckIcon } from "@heroicons/react/24/outline";
 import { MobileSearch } from "./Search";
+import * as Select from "@radix-ui/react-select";
+import {
+  useLanguageStore,
+  SDK_LANGUAGES,
+  SDK_TITLE_TO_LANGUAGE,
+  SDK_HOME_PAGES,
+  getLanguageFromPath,
+  type SDKLanguage,
+} from "./LanguageStore";
+import TypeScriptIcon from "src/shared/Icons/TypeScript";
+import PythonIcon from "src/shared/Icons/Python";
+import GoIcon from "src/shared/Icons/Go";
 
 type ActiveSectionContextType = {
   activeSection: string;
@@ -556,11 +568,109 @@ const defaultSection = getAllSections(topLevelNav).find(
   (section) => section.title === "Learn"
 );
 
+// SDK titles that should be filtered based on language selection
+const SDK_SECTION_TITLES = ["TypeScript SDK", "Python SDK", "Go SDK"];
+
+// Non-SDK reference sections that should always be shown
+const SHARED_REFERENCE_TITLES = ["REST API", "System events", "Self-hosting"];
+
+const SDK_ICONS: Record<SDKLanguage, React.ComponentType<{ className?: string }>> = {
+  typescript: TypeScriptIcon,
+  python: PythonIcon,
+  go: GoIcon,
+};
+
+function LanguageSwitcher() {
+  const router = useRouter();
+  const pathname = router.asPath.replace(/(\?|#).+$/, "");
+  const { language, setLanguage } = useLanguageStore();
+
+  const handleLanguageChange = (newLang: SDKLanguage) => {
+    const currentPathLang = getLanguageFromPath(pathname);
+    
+    // If we're on a page for a different SDK, redirect to the new SDK's home
+    if (currentPathLang && currentPathLang !== newLang) {
+      setLanguage(newLang);
+      router.push(SDK_HOME_PAGES[newLang]);
+    } else {
+      setLanguage(newLang);
+    }
+  };
+
+  const currentLang = SDK_LANGUAGES.find((l) => l.id === language);
+  const CurrentIcon = SDK_ICONS[language];
+
+  return (
+    <div className="mt-3">
+      <Select.Root value={language} onValueChange={(val) => handleLanguageChange(val as SDKLanguage)}>
+        <Select.Trigger
+          className={clsx(
+            "flex items-center justify-between w-full px-3 py-2",
+            "bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700",
+            "rounded-lg shadow-sm",
+            "text-sm font-medium text-slate-900 dark:text-slate-100",
+            "hover:border-slate-300 dark:hover:border-slate-600",
+            "focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500",
+            "transition-colors"
+          )}
+        >
+          <span className="flex items-center gap-2">
+            <CurrentIcon className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+            <Select.Value>{currentLang?.title}</Select.Value>
+          </span>
+          <Select.Icon>
+            <ChevronDownIcon className="w-4 h-4 text-slate-400" />
+          </Select.Icon>
+        </Select.Trigger>
+
+        <Select.Portal>
+          <Select.Content
+            className={clsx(
+              "overflow-hidden bg-white dark:bg-slate-800",
+              "border border-slate-200 dark:border-slate-700",
+              "rounded-lg shadow-lg",
+              "z-50 w-[var(--radix-select-trigger-width)]"
+            )}
+            position="popper"
+            sideOffset={4}
+          >
+            <Select.Viewport className="p-1">
+              {SDK_LANGUAGES.map((lang) => {
+                const Icon = SDK_ICONS[lang.id];
+                return (
+                  <Select.Item
+                    key={lang.id}
+                    value={lang.id}
+                    className={clsx(
+                      "flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer",
+                      "text-sm text-slate-700 dark:text-slate-200",
+                      "hover:bg-slate-100 dark:hover:bg-slate-700",
+                      "focus:outline-none focus:bg-slate-100 dark:focus:bg-slate-700",
+                      "data-[state=checked]:font-medium"
+                    )}
+                  >
+                    <Icon className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+                    <Select.ItemText>{lang.title}</Select.ItemText>
+                    <Select.ItemIndicator className="ml-auto">
+                      <CheckIcon className="w-4 h-4 text-indigo-500" />
+                    </Select.ItemIndicator>
+                  </Select.Item>
+                );
+              })}
+            </Select.Viewport>
+          </Select.Content>
+        </Select.Portal>
+      </Select.Root>
+    </div>
+  );
+}
+
 export function Navigation(props) {
   const router = useRouter();
   // Remove query params and hash from pathname
   const pathname = router.asPath.replace(/(\?|#).+$/, "");
   const { activeSection, setActiveSection } = useActiveSection();
+  const { language } = useLanguageStore();
 
   // Find the section based on the active tab (Learn/Reference)
   const nestedSection =
@@ -569,7 +679,31 @@ export function Navigation(props) {
     ) ?? defaultSection;
 
   const isNested = !!nestedSection;
-  const nestedNavigation = nestedSection;
+  
+  // Filter the navigation based on selected language when in Reference section
+  const nestedNavigation = useMemo(() => {
+    if (!nestedSection) return null;
+    if (activeSection !== "Reference") return nestedSection;
+    
+    // Filter sectionLinks to show only the selected SDK + shared sections
+    const selectedSdkTitle = SDK_LANGUAGES.find(l => l.id === language)?.title + " SDK";
+    const filteredLinks = nestedSection.sectionLinks.filter((item) => {
+      const title = item.title;
+      // Keep shared sections (REST API, System events, Self-hosting)
+      if (SHARED_REFERENCE_TITLES.includes(title)) return true;
+      // Keep the selected SDK section
+      if (title === selectedSdkTitle) return true;
+      // Filter out other SDK sections
+      if (SDK_SECTION_TITLES.includes(title)) return false;
+      // Keep any other sections
+      return true;
+    });
+    
+    return {
+      ...nestedSection,
+      sectionLinks: filteredLinks,
+    };
+  }, [nestedSection, activeSection, language]);
 
   const activeGroup = useMemo(
     () =>
@@ -640,6 +774,9 @@ export function Navigation(props) {
                 );
               })}
             </div>
+            
+            {/* Language Switcher - shown on both Learn and Reference */}
+            <LanguageSwitcher />
           </div>
         )}
 
