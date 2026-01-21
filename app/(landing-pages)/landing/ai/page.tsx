@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AIPage } from "src/app/ai/AIPage";
-import ContactForm, { SEGMENT_EVENT_NAMES } from "src/components/ContactForm";
+import ContactForm, { FORM_TYPE } from "src/components/ContactForm";
 import { generateMetadata } from "src/utils/social";
 import { H2 } from "src/components/LandingPage/Heading";
 
@@ -25,7 +25,7 @@ export default function Page() {
             className="mx-auto w-full max-w-md"
             eventName="contact.form.sent"
             eventVersion="2023-12-12.1"
-            segmentEventName={SEGMENT_EVENT_NAMES.SALES_LEAD_FORM_SUBMITTED}
+            formType={FORM_TYPE.SALES_LEAD_FORM}
             button="Schedule a call"
             redirectTo={`https://savvycal.com/inngest/demo?utm_medium=website&utm_source=${ref}`}
           />
@@ -45,7 +45,7 @@ export default function Page() {
                 className="mx-auto w-full max-w-md"
                 eventName="contact.form.sent"
                 eventVersion="2023-12-12.1"
-                segmentEventName={SEGMENT_EVENT_NAMES.SALES_LEAD_FORM_SUBMITTED}
+                formType={FORM_TYPE.SALES_LEAD_FORM}
                 button="Schedule a call"
                 redirectTo={`https://savvycal.com/inngest/demo?utm_medium=website&utm_source=${ref}`}
               />
