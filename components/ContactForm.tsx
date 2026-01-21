@@ -10,8 +10,8 @@ const DEBUG = process.env.NEXT_PUBLIC_HOST.match(/localhost/) ? true : false;
 
 // Check Notion tracking plan for event names and schemas:
 export const FORM_TYPE = {
-  SALES_LEAD_FORM: "sales_lead_form",
-  YC_LEAD_FORM: "yc_lead_form",
+  SALES_LEAD_FORM: "sales_lead",
+  YC_LEAD_FORM: "yc_lead",
 }
 const GTM_EVENT_NAMES = {
   [FORM_TYPE.SALES_LEAD_FORM]: "Sales Lead Form Submitted",
