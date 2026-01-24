@@ -9,6 +9,7 @@ import {
   RiOpenaiFill,
   RiChat1Line,
   RiBrainLine,
+  RiMarkdownLine,
 } from "@remixicon/react";
 import clsx from "clsx";
 
@@ -108,26 +109,22 @@ export function PageActions() {
     return null;
   }
 
-  // Build the markdown URL that LLMs can fetch
-  const markdownUrl = useMemo(() => {
-    if (typeof window === "undefined") return "";
-    const pageUrl = `https://www.inngest.com${currentPath}`;
-    return pageUrl
-  }, [currentPath]);
+  const markdownUrl = `/docs-markdown${currentPath.replace(/^\/docs/, '')}`;
+  const fullMarkdownUrl = `https://www.inngest.com${markdownUrl}`;
 
   // The query to send to LLMs - they will fetch and read the markdown URL
   const llmQuery = useMemo(() => {
-    return `Read ${markdownUrl}, I want to ask questions about it.`;
-  }, [markdownUrl]);
+    return `Read ${fullMarkdownUrl}, I want to ask questions about it.`;
+  }, [fullMarkdownUrl]);
 
   // Build LLM provider links with proper URL patterns
   const llmLinks = useMemo(() => {
     return [
       {
-        id: "scira",
-        name: "Scira AI",
-        href: `https://scira.ai/?${new URLSearchParams({ q: llmQuery })}`,
-        icon: SciraIcon,
+        id: "claude",
+        name: "Claude",
+        href: `https://claude.ai/new?${new URLSearchParams({ q: llmQuery })}`,
+        icon: AnthropicIcon,
       },
       {
         id: "chatgpt",
@@ -136,10 +133,10 @@ export function PageActions() {
         icon: RiOpenaiFill,
       },
       {
-        id: "claude",
-        name: "Claude",
-        href: `https://claude.ai/new?${new URLSearchParams({ q: llmQuery })}`,
-        icon: AnthropicIcon,
+        id: "scira",
+        name: "Scira AI",
+        href: `https://scira.ai/?${new URLSearchParams({ q: llmQuery })}`,
+        icon: SciraIcon,
       },
       {
         id: "t3chat",
@@ -152,16 +149,19 @@ export function PageActions() {
 
   // GitHub link to source file
   const githubUrl = useMemo(() => {
-    return `https://github.com/inngest/website/blob/main/pages${currentPath}.mdx`;
+    // Edit page URL is set in Docs/Layout.tsx as it also respects index.mdx files
+    return typeof window !== 'undefined' && window.editPageURL ||
+    `https://github.com/inngest/website/blob/main/pages${currentPath}.mdx`;
   }, [currentPath]);
 
   // Fetch the processed markdown content
   const getMarkdownContent = useCallback(async (): Promise<string | null> => {
     try {
-      const response = await fetch(
-        `/api/docs/markdown?path=${encodeURIComponent(currentPath)}`
-      );
-      if (!response.ok) throw new Error("Failed to fetch markdown");
+      const response = await fetch(markdownUrl);
+      if (!response.ok) {
+        console.error(response);
+        return null;
+      }
       return await response.text();
     } catch (error) {
       console.error("Failed to fetch markdown:", error);
@@ -214,10 +214,14 @@ export function PageActions() {
             align="end"
           >
             <div className="flex flex-col gap-0.5">
-              {/* GitHub - direct link */}
+              <ActionLink
+                icon={RiMarkdownLine}
+                label="Open Markdown URL"
+                href={markdownUrl}
+              />
               <ActionLink
                 icon={RiGithubFill}
-                label="Open in GitHub"
+                label="Open on GitHub"
                 href={githubUrl}
               />
 
@@ -247,7 +251,7 @@ function ActionLink({
 }: {
   icon: React.ElementType;
   label: string;
-  href: string;
+  href?: string;
 }) {
   return (
     <a
