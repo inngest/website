@@ -9,22 +9,26 @@ const CONTACT_KEY = process.env.NEXT_PUBLIC_INNGEST_KEY;
 const DEBUG = process.env.NEXT_PUBLIC_HOST.match(/localhost/) ? true : false;
 
 // Check Notion tracking plan for event names and schemas:
-export const SEGMENT_EVENT_NAMES = {
-  SALES_LEAD_FORM_SUBMITTED: "Sales Lead Form Submitted",
-  YC_LEAD_FORM_SUBMITTED: "YC Lead Form Submitted",
+export const FORM_TYPE = {
+  SALES_LEAD_FORM: "sales_lead",
+  YC_LEAD_FORM: "yc_lead",
+}
+const GTM_EVENT_NAMES = {
+  [FORM_TYPE.SALES_LEAD_FORM]: "Sales Lead Form Submitted",
+  [FORM_TYPE.YC_LEAD_FORM]: "YC Lead Form Submitted",
 };
 
 export default function ContactForm({
   eventName,
   eventVersion,
-  segmentEventName,
+  formType,
   button = "Send",
   redirectTo,
   className,
 }: {
   eventName: string;
   eventVersion: string;
-  segmentEventName: string;
+  formType: string;
   button?: string;
   redirectTo?: string;
   className?: string;
@@ -106,16 +110,19 @@ export default function ContactForm({
       );
       // Segment
       // NOTE - We don't yet identify as it isn't authenticated so we shouldn't over-write any existing user attributes
-      analytics.track(segmentEventName, {
+      analytics.track('Form Submitted', {
         email,
+        form_type: formType,
         name,
-        message,
-        survey,
+        how_did_you_hear_about_us: survey,
+        what_can_we_help_you_with: message,
+        form_source: 'website',
         ref,
       });
+      // This will happen async, so we don't want them to leave the website
       // GTM
       window.dataLayer?.push({
-        event: segmentEventName,
+        event: GTM_EVENT_NAMES[formType],
         ref,
         survey,
       });
@@ -134,7 +141,8 @@ export default function ContactForm({
           console.log(redirectURL.toString());
         }
 
-        router.push(redirectURL.toString());
+        // Open a new tab. We need tracking to flush/complete so we open a new tab
+        window.open(redirectURL.toString(), "_blank");
       } else {
         setButtonCopy("Your message has been sent!");
       }
