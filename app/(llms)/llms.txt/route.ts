@@ -41,8 +41,8 @@ ${recursiveLinks(examplesDocs)}
   });
 }
 
-function url(path: string): string {
-  return `${process.env.NEXT_PUBLIC_HOST}${path}`;
+function markdownUrl(path: string): string {
+  return `${process.env.NEXT_PUBLIC_HOST}/docs-markdown${path.replace(/^\/docs/, '')}`;
 }
 
 function recursiveLinks(
@@ -59,7 +59,7 @@ function recursiveLinks(
         )}`;
       }
       if ("href" in link) {
-        return `${indent}- [${link.title}](${url(link.href)})`;
+        return `${indent}- [${link.title}](${markdownUrl(link.href)})`;
       }
       return `${indent}- ${link.title}`;
     })

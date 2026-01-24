@@ -89,6 +89,9 @@ export function Layout({
           />
 
           <script dangerouslySetInnerHTML={{ __html: modeScript }} />
+          <script dangerouslySetInnerHTML={{ __html: `
+            window.editPageURL = "${editPageURL}";
+          `}} />
         </Head>
         <ActiveSectionProvider>
         <SectionProvider sections={sections}>

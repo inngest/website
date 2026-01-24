@@ -2,7 +2,7 @@ import { type Metadata } from "next";
 
 import Container from "src/shared/layout/Container";
 import Quote from "src/components/Quote";
-import ContactForm, { SEGMENT_EVENT_NAMES } from "src/components/ContactForm";
+import ContactForm, { FORM_TYPE } from "src/components/ContactForm";
 import { generateMetadata } from "src/utils/social";
 
 export const metadata: Metadata = generateMetadata({
@@ -31,7 +31,8 @@ export default function Page() {
               <ContactForm
                 eventName="website/yc-deal.submitted"
                 eventVersion="2025-11-06.1"
-                segmentEventName={SEGMENT_EVENT_NAMES.YC_LEAD_FORM_SUBMITTED}
+                formType={FORM_TYPE.YC_LEAD_FORM}
+                button="Request the YC Deal"
               />
             </div>
 
