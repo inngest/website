@@ -143,6 +143,10 @@ const sectionReference: (NavGroup | NavLink)[] = [
         title: "Serve",
         links: [
           {
+            title: "Framework handlers",
+            href: `/docs/learn/serving-inngest-functions`,
+          },
+          {
             title: "Configuration",
             href: `/docs/reference/serve`,
           },
@@ -365,6 +369,10 @@ const sectionLearn: (NavGroup | NavLink)[] = [
       {
         title: "Node.js",
         href: "/docs/getting-started/nodejs-quick-start",
+      },
+      {
+        title: "TanStack Start",
+        href: "/docs/getting-started/tanstack-start-quick-start",
       },
       {
         title: "Python",
