@@ -34,6 +34,9 @@ const permanentRedirects = [
     "/docs/reference/python/overview/quick-start",
     "/docs/getting-started/python-quick-start",
   ],
+  ["/docs/sdk/overview", "/docs"],
+  ["/docs/dev-server", "/docs/local-development"],
+  ["/docs/guides/development-with-docker", "/docs/local-development"],
 
   // Other pages
   ["/uses/zero-infra-llm-ai", "/ai"],
