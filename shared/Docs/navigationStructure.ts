@@ -368,11 +368,28 @@ const sectionLearn: (NavGroup | NavLink)[] = [
       },
       {
         title: "Node.js",
-        href: "/docs/getting-started/nodejs-quick-start",
-      },
-      {
-        title: "TanStack Start",
-        href: "/docs/getting-started/tanstack-start-quick-start",
+        links: [
+          {
+            title: "Express",
+            href: "/docs/getting-started/nodejs-quick-start",
+          },
+          {
+            title: "Astro",
+            href: "/docs/learn/serving-inngest-functions#framework-astro",
+          },
+          {
+            title: "H3",
+            href: "/docs/learn/serving-inngest-functions#framework-h3",
+          },
+          {
+            title: "NestJS",
+            href: "/docs/learn/serving-inngest-functions#framework-nest-js",
+          },
+          {
+            title: "TanStack Start",
+            href: "/docs/getting-started/tanstack-start-quick-start",
+          },
+        ],
       },
       {
         title: "Python",
