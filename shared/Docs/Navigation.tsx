@@ -571,8 +571,18 @@ const defaultSection = getAllSections(topLevelNav).find(
 // SDK titles that should be filtered based on language selection
 const SDK_SECTION_TITLES = ["TypeScript SDK", "Python SDK", "Go SDK"];
 
-// Non-SDK reference sections that should always be shown
+// Non-SDK reference sections that should always be shown (separated from SDK sections)
 const SHARED_REFERENCE_TITLES = ["REST API", "System events", "Self-hosting"];
+
+// Helper to check if a section should be hidden based on selected language
+function shouldHideSection(title: string, selectedLanguage: SDKLanguage): boolean {
+  const selectedSdkTitle = SDK_LANGUAGES.find(l => l.id === selectedLanguage)?.title + " SDK";
+  // Hide other SDK sections (not the selected one)
+  if (SDK_SECTION_TITLES.includes(title) && title !== selectedSdkTitle) {
+    return true;
+  }
+  return false;
+}
 
 const SDK_ICONS: Record<SDKLanguage, React.ComponentType<{ className?: string }>> = {
   typescript: TypeScriptIcon,
@@ -680,30 +690,12 @@ export function Navigation(props) {
 
   const isNested = !!nestedSection;
   
-  // Filter the navigation based on selected language when in Reference section
+  // Keep all sections in DOM for SEO, but mark which ones should be hidden
+  // This way crawlers can still see all the links
   const nestedNavigation = useMemo(() => {
     if (!nestedSection) return null;
-    if (activeSection !== "Reference") return nestedSection;
-    
-    // Filter sectionLinks to show only the selected SDK + shared sections
-    const selectedSdkTitle = SDK_LANGUAGES.find(l => l.id === language)?.title + " SDK";
-    const filteredLinks = nestedSection.sectionLinks.filter((item) => {
-      const title = item.title;
-      // Keep shared sections (REST API, System events, Self-hosting)
-      if (SHARED_REFERENCE_TITLES.includes(title)) return true;
-      // Keep the selected SDK section
-      if (title === selectedSdkTitle) return true;
-      // Filter out other SDK sections
-      if (SDK_SECTION_TITLES.includes(title)) return false;
-      // Keep any other sections
-      return true;
-    });
-    
-    return {
-      ...nestedSection,
-      sectionLinks: filteredLinks,
-    };
-  }, [nestedSection, activeSection, language]);
+    return nestedSection;
+  }, [nestedSection]);
 
   const activeGroup = useMemo(
     () =>
@@ -746,14 +738,20 @@ export function Navigation(props) {
         </ul>
 
         {activeSection !== "Examples" && (
-          <div className="mb-4 lg:mb-8 mt-4 lg:mt-0">
+          <div className="mb-4 lg:mb-8">
             <div className="flex p-1 bg-slate-100 dark:bg-slate-800/50 rounded-lg">
               {sidebarMenuTabs.map((tab) => {
                 const isActive = activeSection === tab.title;
                 return (
                   <button
                     key={tab.title}
-                    onClick={() => setActiveSection(tab.title)}
+                    onClick={() => {
+                      setActiveSection(tab.title);
+                      // Navigate to SDK home page when switching to Reference tab
+                      if (tab.title === "Reference" && !isActive) {
+                        router.push(SDK_HOME_PAGES[language]);
+                      }
+                    }}
                     className={clsx(
                       "flex-1 flex items-center justify-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-all",
                       isActive
@@ -794,25 +792,42 @@ export function Navigation(props) {
                 type="multiple"
                 defaultValue={defaultOpenGroupTitles}
               >
-                {nestedNavigation.sectionLinks.map((item, groupIndex) =>
-                  isNavGroup(item) ? (
-                    <NavigationGroup
-                      key={item.title}
-                      group={item}
-                      isActiveGroup={item.title === activeGroup?.title}
-                    />
-                  ) : (
-                    <NavLink
-                      isTopLevel={true}
-                      key={"grp-" + groupIndex}
-                      href={item.href}
-                      active={pathname === item.href}
+                {nestedNavigation.sectionLinks.map((item, groupIndex) => {
+                  // For Reference section, hide non-selected SDK sections with CSS (keeps links in DOM for SEO)
+                  const isHidden = activeSection === "Reference" && shouldHideSection(item.title, language);
+                  // Add visual separator before shared sections (REST API, etc.)
+                  const isSharedSection = SHARED_REFERENCE_TITLES.includes(item.title);
+                  const isFirstSharedSection = isSharedSection && 
+                    groupIndex > 0 && 
+                    !SHARED_REFERENCE_TITLES.includes(nestedNavigation.sectionLinks[groupIndex - 1]?.title);
+                  
+                  return (
+                    <div 
+                      key={item.title || `grp-${groupIndex}`}
+                      className={clsx(isHidden && "hidden")}
                     >
-                      {" "}
-                      {item.title}{" "}
-                    </NavLink>
-                  )
-                )}
+                      {/* Separator before shared sections in Reference */}
+                      {activeSection === "Reference" && isFirstSharedSection && (
+                        <div className="mt-6 mb-4 border-t border-slate-200 dark:border-slate-700" />
+                      )}
+                      {isNavGroup(item) ? (
+                        <NavigationGroup
+                          group={item}
+                          isActiveGroup={item.title === activeGroup?.title}
+                        />
+                      ) : (
+                        <NavLink
+                          isTopLevel={true}
+                          href={item.href}
+                          active={pathname === item.href}
+                        >
+                          {" "}
+                          {item.title}{" "}
+                        </NavLink>
+                      )}
+                    </div>
+                  );
+                })}
               </Accordion.Root>
             </>
           ) : null}

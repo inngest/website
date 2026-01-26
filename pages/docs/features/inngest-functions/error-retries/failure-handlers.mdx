@@ -1,4 +1,4 @@
-import { CardGroup, Card, CodeGroup, Callout, VersionBadge } from "src/shared/Docs/mdx";
+import { CardGroup, Card, Callout, VersionBadge, GuideSelector, GuideSection } from "src/shared/Docs/mdx";
 
 # Failure handlers
 
@@ -11,8 +11,11 @@ The first approach is function-specific, while the second covers all function fa
 
 The example below checks if a user's subscription is valid a total of six times. If you can't check the subscription after all retries, you'll unsubscribe the user:
 
-<CodeGroup>
-```ts {{ title: "TypeScript" }}
+<GuideSelector options={[{ key: "typescript", title: "TypeScript" }, { key: "python", title: "Python" }, { key: "go", title: "Go" }]}>
+
+<GuideSection show="typescript">
+
+```ts
 /* Option 1: give the inngest function an `onFailure` handler. */
 inngest.createFunction(
   {
@@ -34,7 +37,11 @@ inngest.createFunction(
 );
 ```
 
-```python {{ title: "Python" }}
+</GuideSection>
+
+<GuideSection show="python">
+
+```python
 # Option 1: give the inngest function an [`on_failure`] handler.
 async def update_subscription_failed(ctx: inngest.Context):
     # if the subscription check fails after all retries, unsubscribe the user
@@ -61,6 +68,11 @@ async def update_subscription(ctx: Context):
 async def global_failure_handler(ctx: Context):
     pass # handle all failures, e.g. to send to sentry
 ```
+
+</GuideSection>
+
+<GuideSection show="go">
+
 ```go
 // the Go SDK doesn't have native way to define failure handlers,
 // but you can define one by create a new function that uses
@@ -111,7 +123,10 @@ f := inngestgo.CreateFunction(
 // 3. Join them with a hyphen:
 // event.data.function_id == 'my-app-account-created'
 ```
-</CodeGroup>
+
+</GuideSection>
+
+</GuideSelector>
 
 <Callout>
   To handle cancelled function runs, checkout out [this example](/docs/examples/cleanup-after-function-cancellation) that uses the [`inngest/function.cancelled`](/docs/reference/system-events/inngest-function-cancelled) system event.

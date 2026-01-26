@@ -6,11 +6,12 @@ import React, {
   ReactNode,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
 import { useRouter } from "next/router";
-import { Tab } from "@headlessui/react";
+import { TabGroup, TabPanel, TabPanels, TabList, Tab } from "@headlessui/react";
 import clsx from "clsx";
 import create from "zustand";
 
@@ -214,13 +215,13 @@ function CodeGroupHeader({
 function CodeGroupPanels({ hasTabs, children, ...props }) {
   if (hasTabs) {
     return (
-      <Tab.Panels>
+      <TabPanels>
         {Children.map(children, (child) => (
-          <Tab.Panel>
+          <TabPanel>
             <CodePanel {...props}>{child}</CodePanel>
-          </Tab.Panel>
+          </TabPanel>
         ))}
-      </Tab.Panels>
+      </TabPanels>
     );
   }
 
@@ -312,71 +313,98 @@ export function CodeGroup({
   forceTabs,
   ...props
 }: CodeGroupProps) {
-  let languages = Children.map<string, any>(children, (child) =>
+  const languages = Children.map<string, any>(children, (child) =>
     getPanelTitle(child.props)
   );
   const [currentLanguage] = useLocalStorage("currentLanguage", null);
   const { language: globalLanguage } = useLanguageStore();
-  const mountRef = useRef(false);
-  let tabGroupProps = useTabGroupProps(languages);
-  let hasTabs = forceTabs || Children.count(children) > 1;
-  let Container: typeof Tab["Group"] | "div" = hasTabs ? Tab.Group : "div";
-  let containerProps = hasTabs ? tabGroupProps : {};
-  let headerProps = hasTabs
-    ? { selectedIndex: tabGroupProps.selectedIndex }
-    : {};
+  const { preferredLanguages, addPreferredLanguage } = usePreferredLanguageStore();
+  const { positionRef, preventLayoutShift } = usePreventLayoutShift();
+  
+  const hasTabs = forceTabs || Children.count(children) > 1;
+  const Container: typeof Tab["Group"] | "div" = hasTabs ? Tab.Group : "div";
 
-  // Sync with global language store on mount
-  useEffect(() => {
-    if (mountRef.current) {
-      return;
-    }
-    mountRef.current = true;
+  // Compute selected index based on global language first, then preferences
+  const selectedIndex = useMemo(() => {
     const childrenList: React.ReactElement<{ title: string }>[] =
       Children.toArray(children) as React.ReactElement<{ title: string }>[];
     
-    // Try to match global language first
+    // First priority: match global language
     const matchingKeys = SDK_TO_GUIDE_KEY[globalLanguage] || [];
     const globalMatchIndex = childrenList.findIndex((child) =>
       matchingKeys.some((key) => child.props?.title?.toLowerCase() === key)
     );
-    
-    if (tabGroupProps && globalMatchIndex !== -1) {
-      tabGroupProps.onChange(globalMatchIndex);
-    } else if (
-      tabGroupProps &&
-      currentLanguage &&
-      childrenList.find(
-        (child) => child.props?.title?.toLowerCase() === currentLanguage
-      )
-    ) {
-      tabGroupProps.onChange(
-        childrenList.findIndex(
-          (child) => child.props?.title?.toLowerCase() === currentLanguage
-        )
-      );
+    if (globalMatchIndex !== -1) {
+      return globalMatchIndex;
     }
-  }, []);
+    
+    // Second priority: localStorage currentLanguage
+    if (currentLanguage) {
+      const localStorageIndex = childrenList.findIndex(
+        (child) => child.props?.title?.toLowerCase() === currentLanguage
+      );
+      if (localStorageIndex !== -1) {
+        return localStorageIndex;
+      }
+    }
+    
+    // Third priority: preferred languages from code tab selection
+    const activeLanguage = [...languages].sort(
+      (a, z) => preferredLanguages.indexOf(z) - preferredLanguages.indexOf(a)
+    )[0];
+    const preferredIndex = languages.indexOf(activeLanguage);
+    return preferredIndex !== -1 ? preferredIndex : 0;
+  }, [globalLanguage, currentLanguage, children, languages, preferredLanguages]);
+
+  const handleChange = (newSelectedIndex: number) => {
+    preventLayoutShift(() =>
+      addPreferredLanguage(languages[newSelectedIndex])
+    );
+  };
+
+  const headerProps = hasTabs ? { selectedIndex } : {};
+
+  // Use separate rendering paths to avoid type issues
+  if (hasTabs) {
+    return (
+      <CodeGroupContext.Provider value={true}>
+        <TabGroup
+          as="div"
+          ref={positionRef as React.Ref<HTMLDivElement>}
+          selectedIndex={selectedIndex}
+          onChange={handleChange}
+          className="not-prose relative my-6 overflow-hidden rounded-md border border-subtle"
+        >
+          <CodeGroupHeader
+            title={title}
+            filename={filename}
+            hasTabs={hasTabs}
+            {...headerProps}
+          >
+            {children}
+          </CodeGroupHeader>
+          <CodeGroupPanels hasTabs={hasTabs} {...props}>
+            {children}
+          </CodeGroupPanels>
+        </TabGroup>
+      </CodeGroupContext.Provider>
+    );
+  }
 
   return (
     <CodeGroupContext.Provider value={true}>
-      <Container
-        {...containerProps}
-        // relative used for absolute positioning of CopyButton
-        className="not-prose relative my-6 overflow-hidden rounded-md border border-subtle"
-      >
+      <div className="not-prose relative my-6 overflow-hidden rounded-md border border-subtle">
         <CodeGroupHeader
           title={title}
           filename={filename}
-          hasTabs={hasTabs}
-          {...headerProps}
+          hasTabs={false}
         >
           {children}
         </CodeGroupHeader>
-        <CodeGroupPanels hasTabs={hasTabs} {...props}>
+        <CodeGroupPanels hasTabs={false} {...props}>
           {children}
         </CodeGroupPanels>
-      </Container>
+      </div>
     </CodeGroupContext.Provider>
   );
 }
@@ -444,11 +472,8 @@ export function GuideSelector({
   const { language: globalLanguage, setLanguage: setGlobalLanguage } = useLanguageStore();
 
   const [selected, setSelected] = useState<string>(options[0].key);
-  const [defaultSelected, setDefaultSelected] = useState<string>(
-    options[0].key
-  );
 
-  // Sync with global language store on mount and when it changes
+  // Sync with global language store when it changes
   useEffect(() => {
     // If URL has a guide param, prioritize that
     if (
@@ -457,74 +482,41 @@ export function GuideSelector({
       qsCurrentLanguage !== selected
     ) {
       setSelected(qsCurrentLanguage);
-      setDefaultSelected(qsCurrentLanguage);
       // Also sync to global store
       const sdkLang = GUIDE_KEY_TO_SDK[qsCurrentLanguage.toLowerCase()];
       if (sdkLang) {
         setGlobalLanguage(sdkLang);
       }
-    } else {
-      // Try to match global language to available options
-      const matchingKeys = SDK_TO_GUIDE_KEY[globalLanguage] || [];
-      const matchingOption = options.find((o) => 
-        matchingKeys.includes(o.key.toLowerCase())
-      );
-      if (matchingOption && matchingOption.key !== selected) {
-        setSelected(matchingOption.key);
-        setDefaultSelected(matchingOption.key);
-      } else if (
-        !qsCurrentLanguage &&
-        // if no url param and no global match, fallback to local storage
-        localStorageCurrentLanguage &&
-        options.find((o) => o.key === localStorageCurrentLanguage)
-      ) {
-        setSelected(localStorageCurrentLanguage);
-        setDefaultSelected(localStorageCurrentLanguage);
-      }
-    }
-  }, [qsCurrentLanguage, globalLanguage, options]);
-
-  const onChange = (newSelectedIndex) => {
-    const newSelectedKey = options[newSelectedIndex].key;
-    setLocalStorageCurrentLanguage(newSelectedKey);
-    setSelected(newSelectedKey);
-    
-    // Sync to global language store
-    const sdkLang = GUIDE_KEY_TO_SDK[newSelectedKey.toLowerCase()];
-    if (sdkLang) {
-      setGlobalLanguage(sdkLang);
+      return;
     }
     
-    const url = new URL(router.asPath, window.location.origin);
-    url.searchParams.set(searchParamKey, newSelectedKey);
-    // Replace the URL state and do use shallow to avoid refresh
-    router.replace(url.toString(), null, { shallow: true, scroll: false });
-  };
+    // Try to match global language to available options
+    const matchingKeys = SDK_TO_GUIDE_KEY[globalLanguage] || [];
+    const matchingOption = options.find((o) => 
+      matchingKeys.includes(o.key.toLowerCase())
+    );
+    if (matchingOption && matchingOption.key !== selected) {
+      setSelected(matchingOption.key);
+      // Update URL to reflect the change
+      const url = new URL(router.asPath, window.location.origin);
+      url.searchParams.set(searchParamKey, matchingOption.key);
+      router.replace(url.toString(), null, { shallow: true, scroll: false });
+    } else if (
+      !qsCurrentLanguage &&
+      !matchingOption &&
+      // if no url param and no global match, fallback to local storage
+      localStorageCurrentLanguage &&
+      options.find((o) => o.key === localStorageCurrentLanguage)
+    ) {
+      setSelected(localStorageCurrentLanguage);
+    }
+  }, [qsCurrentLanguage, globalLanguage, options, router, selected, localStorageCurrentLanguage, setGlobalLanguage, searchParamKey]);
 
+  // The Tab.List UI is intentionally hidden since there's now a global 
+  // language selector in the sidebar navigation. The GuideSelector still
+  // manages the selected state for GuideSection children.
   return (
     <GuideSelectorContext.Provider value={{ selected, options }}>
-      <Tab.Group
-        onChange={onChange}
-        // the below fixes an old bug where the default index was not set
-        defaultIndex={options.findIndex((o) => o.key === defaultSelected)}
-        selectedIndex={options.findIndex((o) => o.key === selected)}
-      >
-        <Tab.List className="-mb-px flex gap-4 text-sm font-medium">
-          {options.map((option, idx) => (
-            <Tab
-              key={`tab-${idx}`}
-              className={clsx(
-                "border-b py-3 transition focus:outline-none",
-                option.key === selected
-                  ? "border-breeze-500 text-breeze-700 dark:border-breeze-300 dark:text-breeze-300"
-                  : "border-transparent text-slate-600 hover:text-breeze-600 dark:text-slate-400 dark:hover:text-breeze-300"
-              )}
-            >
-              {option.title}
-            </Tab>
-          ))}
-        </Tab.List>
-      </Tab.Group>
       {children}
     </GuideSelectorContext.Provider>
   );

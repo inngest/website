@@ -1,4 +1,4 @@
-import { CardGroup, Card, CodeGroup, Callout } from "src/shared/Docs/mdx";
+import { CardGroup, Card, Callout, GuideSelector, GuideSection } from "src/shared/Docs/mdx";
 
 # Rollbacks
 
@@ -8,8 +8,11 @@ If a step failure isn't handled, the error will bubble up to the function itself
 
 Below is an attempt to use DALL-E to generate an image from a prompt, and to fall back to Midjourney if it fails. Remember that these calls are split over separate requests, making the code much more durable against timeouts, transient errors, and these dependencies on external APIs.
 
-<CodeGroup>
-```ts {{ title: "TypeScript" }}
+<GuideSelector options={[{ key: "typescript", title: "TypeScript" }, { key: "go", title: "Go" }]}>
+
+<GuideSection show="typescript">
+
+```ts
 inngest.createFunction(
   { id: "generate-result" },
   { event: "prompt.created" },
@@ -39,7 +42,12 @@ inngest.createFunction(
   },
 );
 ```
-```go {{ title: "Go" }}
+
+</GuideSection>
+
+<GuideSection show="go">
+
+```go
 inngestgo.CreateFunction(
 	client,
 	inngestgo.FunctionOpts{ID: "generate-result"},
@@ -79,35 +87,16 @@ inngestgo.CreateFunction(
 	},
 )
 ```
-{/* ```py {{ title: "Python" }}
-@inngest_client.create_function(
-    fn_id="generate-result",
-    trigger=inngest.TriggerEvent(event="prompt.created"),
-)
-def generate_result(ctx: inngest.ContextSync) -> None:
-    image_url = None
-    via = None
 
-    try:
-        image_url = ctx.step.run("generate-image-dall-e", open_api_call_to_generate_image)
-        via = "dall-e"
-    except Exception as err:
-        image_url = ctx.step.run("generate-image-midjourney", midjourney_call_to_generate_image)
-        via = "midjourney"
-
-    def _notify_user() -> None:
-        pusher.trigger(ctx.event.data["channelID"], "image-result", {"imageURL": image_url, "via": via})
-
-    ctx.step.run("notify-user", _notify_user)
-``` */}
-</CodeGroup>
+</GuideSection>
 
 ### Simple rollbacks
 
 With this pattern, it's possible to assign a small rollback for each step, making sure that every action is safe regardless of how many steps are being run.
 
-<CodeGroup>
-```ts {{ title: "TypeScript" }}
+<GuideSection show="typescript">
+
+```ts
 inngest.createFunction(
   { id: "add-data" },
   { event: "app/row.data.added" },
@@ -133,7 +122,12 @@ inngest.createFunction(
   },
 );
 ```
-```go {{ title: "Go" }}
+
+</GuideSection>
+
+<GuideSection show="go">
+
+```go
 inngestgo.CreateFunction(
 	client,
 	inngestgo.FunctionOpts{ID: "add-data"},
@@ -163,26 +157,7 @@ inngestgo.CreateFunction(
 	},
 )
 ```
-{/* ```py {{ title: "Python" }}
-@inngest_client.create_function(
-    fn_id="add-data",
-    trigger=inngest.TriggerEvent(event="app/row.data.added"),
-)
-def add_data(ctx: inngest.ContextSync) -> None:
-    # ignore the error - this step is fine if it fails
-    try:
-        ctx.step.run("Non-critical step", update_metric)
-    except Exception:
-        pass
 
-    # Add a rollback to a step
-    try:
-        ctx.step.run("Create row", create_row_and_add_detail, ctx.event.data["rowId"], ctx.event.data["entry"])
-    except Exception as err:
-        ctx.step.run("Rollback row creation", remove_row, ctx.event.data["rowId"])
+</GuideSection>
 
-def create_row_and_add_detail(row_id, entry):
-    create_row(row_id)
-    add_detail(entry)
-``` */}
-</CodeGroup>
+</GuideSelector>
