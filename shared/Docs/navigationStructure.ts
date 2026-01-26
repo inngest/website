@@ -580,10 +580,6 @@ const sectionLearn: (NavGroup | NavLink)[] = [
             href: "/docs/guides/step-parallelism",
           },
           {
-            title: "Human-in-the-loop",
-            href: "/docs/features/inngest-functions/steps-workflows/wait-for-event",
-          },
-          {
             title: "Fan-out",
             href: `/docs/guides/fan-out-jobs`,
           },
