@@ -657,9 +657,7 @@ export function Navigation(props) {
                 type="multiple"
                 defaultValue={defaultOpenGroupTitles}
               >
-                {nestedNavigation.sectionLinks
-                  .filter((item) => item.title !== "Home")
-                  .map((item, groupIndex) =>
+                {nestedNavigation.sectionLinks.map((item, groupIndex) =>
                   isNavGroup(item) ? (
                     <NavigationGroup
                       key={item.title}
