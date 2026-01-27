@@ -594,17 +594,29 @@ function LanguageSwitcher() {
   const router = useRouter();
   const pathname = router.asPath.replace(/(\?|#).+$/, "");
   const { language, setLanguage } = useLanguageStore();
+  const { activeSection } = useActiveSection();
 
   const handleLanguageChange = (newLang: SDKLanguage) => {
     const currentPathLang = getLanguageFromPath(pathname);
+    const isOnSDKPage = !!currentPathLang;
     
-    // If we're on a page for a different SDK, redirect to the new SDK's home
-    if (currentPathLang && currentPathLang !== newLang) {
-      setLanguage(newLang);
+    setLanguage(newLang);
+    
+    // Navigate based on active tab vs current page mismatch
+    if (activeSection === "Learn" && isOnSDKPage) {
+      // User clicked Learn tab but is still on a Reference (SDK) page
+      // Navigate to Learn home
+      router.push("/docs");
+    } else if (activeSection === "Reference" && !isOnSDKPage) {
+      // User clicked Reference tab but is still on a Learn page
+      // Navigate to the selected SDK's Reference home
       router.push(SDK_HOME_PAGES[newLang]);
-    } else {
-      setLanguage(newLang);
+    } else if (activeSection === "Reference" && isOnSDKPage && currentPathLang !== newLang) {
+      // User is on Reference and on an SDK page, but switching to different SDK
+      // Navigate to the new SDK's Reference home
+      router.push(SDK_HOME_PAGES[newLang]);
     }
+    // Otherwise: just update the language preference, no navigation needed
   };
 
   const currentLang = SDK_LANGUAGES.find((l) => l.id === language);
