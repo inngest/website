@@ -33,8 +33,20 @@ import {
   isNavLink,
 } from "./navigationStructure";
 import * as Accordion from "@radix-ui/react-accordion";
-import { ChevronDownIcon } from "@heroicons/react/24/outline";
+import { ChevronDownIcon, CheckIcon } from "@heroicons/react/24/outline";
 import { MobileSearch } from "./Search";
+import * as Select from "@radix-ui/react-select";
+import {
+  useLanguageStore,
+  SDK_LANGUAGES,
+  SDK_TITLE_TO_LANGUAGE,
+  SDK_HOME_PAGES,
+  getLanguageFromPath,
+  type SDKLanguage,
+} from "./LanguageStore";
+import TypeScriptIcon from "src/shared/Icons/TypeScript";
+import PythonIcon from "src/shared/Icons/Python";
+import GoIcon from "src/shared/Icons/Go";
 
 type ActiveSectionContextType = {
   activeSection: string;
@@ -556,11 +568,131 @@ const defaultSection = getAllSections(topLevelNav).find(
   (section) => section.title === "Learn"
 );
 
+// SDK titles that should be filtered based on language selection
+const SDK_SECTION_TITLES = ["TypeScript SDK", "Python SDK", "Go SDK"];
+
+// Non-SDK reference sections that should always be shown (separated from SDK sections)
+const SHARED_REFERENCE_TITLES = ["REST API", "System events", "Self-hosting"];
+
+// Helper to check if a section should be hidden based on selected language
+function shouldHideSection(title: string, selectedLanguage: SDKLanguage): boolean {
+  const selectedSdkTitle = SDK_LANGUAGES.find(l => l.id === selectedLanguage)?.title + " SDK";
+  // Hide other SDK sections (not the selected one)
+  if (SDK_SECTION_TITLES.includes(title) && title !== selectedSdkTitle) {
+    return true;
+  }
+  return false;
+}
+
+const SDK_ICONS: Record<SDKLanguage, React.ComponentType<{ className?: string }>> = {
+  typescript: TypeScriptIcon,
+  python: PythonIcon,
+  go: GoIcon,
+};
+
+function LanguageSwitcher() {
+  const router = useRouter();
+  const pathname = router.asPath.replace(/(\?|#).+$/, "");
+  const { language, setLanguage } = useLanguageStore();
+  const { activeSection } = useActiveSection();
+
+  const handleLanguageChange = (newLang: SDKLanguage) => {
+    const currentPathLang = getLanguageFromPath(pathname);
+    const isOnSDKPage = !!currentPathLang;
+    
+    setLanguage(newLang);
+    
+    // Navigate based on active tab vs current page mismatch
+    if (activeSection === "Learn" && isOnSDKPage) {
+      // User clicked Learn tab but is still on a Reference (SDK) page
+      // Navigate to Learn home
+      router.push("/docs");
+    } else if (activeSection === "Reference" && !isOnSDKPage) {
+      // User clicked Reference tab but is still on a Learn page
+      // Navigate to the selected SDK's Reference home
+      router.push(SDK_HOME_PAGES[newLang]);
+    } else if (activeSection === "Reference" && isOnSDKPage && currentPathLang !== newLang) {
+      // User is on Reference and on an SDK page, but switching to different SDK
+      // Navigate to the new SDK's Reference home
+      router.push(SDK_HOME_PAGES[newLang]);
+    }
+    // Otherwise: just update the language preference, no navigation needed
+  };
+
+  const currentLang = SDK_LANGUAGES.find((l) => l.id === language);
+  const CurrentIcon = SDK_ICONS[language];
+
+  return (
+    <div className="mt-3">
+      <Select.Root value={language} onValueChange={(val) => handleLanguageChange(val as SDKLanguage)}>
+        <Select.Trigger
+          className={clsx(
+            "flex items-center justify-between w-full px-3 py-2",
+            "bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700",
+            "rounded-lg shadow-sm",
+            "text-sm font-medium text-slate-900 dark:text-slate-100",
+            "hover:border-slate-300 dark:hover:border-slate-600",
+            "focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500",
+            "transition-colors"
+          )}
+        >
+          <span className="flex items-center gap-2">
+            <CurrentIcon className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+            <Select.Value>{currentLang?.title}</Select.Value>
+          </span>
+          <Select.Icon>
+            <ChevronDownIcon className="w-4 h-4 text-slate-400" />
+          </Select.Icon>
+        </Select.Trigger>
+
+        <Select.Portal>
+          <Select.Content
+            className={clsx(
+              "overflow-hidden bg-white dark:bg-slate-800",
+              "border border-slate-200 dark:border-slate-700",
+              "rounded-lg shadow-lg",
+              "z-50 w-[var(--radix-select-trigger-width)]"
+            )}
+            position="popper"
+            sideOffset={4}
+          >
+            <Select.Viewport className="p-1">
+              {SDK_LANGUAGES.map((lang) => {
+                const Icon = SDK_ICONS[lang.id];
+                return (
+                  <Select.Item
+                    key={lang.id}
+                    value={lang.id}
+                    className={clsx(
+                      "flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer",
+                      "text-sm text-slate-700 dark:text-slate-200",
+                      "hover:bg-slate-100 dark:hover:bg-slate-700",
+                      "focus:outline-none focus:bg-slate-100 dark:focus:bg-slate-700",
+                      "data-[state=checked]:font-medium"
+                    )}
+                  >
+                    <Icon className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+                    <Select.ItemText>{lang.title}</Select.ItemText>
+                    <Select.ItemIndicator className="ml-auto">
+                      <CheckIcon className="w-4 h-4 text-indigo-500" />
+                    </Select.ItemIndicator>
+                  </Select.Item>
+                );
+              })}
+            </Select.Viewport>
+          </Select.Content>
+        </Select.Portal>
+      </Select.Root>
+    </div>
+  );
+}
+
 export function Navigation(props) {
   const router = useRouter();
   // Remove query params and hash from pathname
   const pathname = router.asPath.replace(/(\?|#).+$/, "");
   const { activeSection, setActiveSection } = useActiveSection();
+  const { language } = useLanguageStore();
 
   // Find the section based on the active tab (Learn/Reference)
   const nestedSection =
@@ -569,7 +701,13 @@ export function Navigation(props) {
     ) ?? defaultSection;
 
   const isNested = !!nestedSection;
-  const nestedNavigation = nestedSection;
+  
+  // Keep all sections in DOM for SEO, but mark which ones should be hidden
+  // This way crawlers can still see all the links
+  const nestedNavigation = useMemo(() => {
+    if (!nestedSection) return null;
+    return nestedSection;
+  }, [nestedSection]);
 
   const activeGroup = useMemo(
     () =>
@@ -612,14 +750,20 @@ export function Navigation(props) {
         </ul>
 
         {activeSection !== "Examples" && (
-          <div className="mb-4 lg:mb-8 mt-4 lg:mt-0">
+          <div className="mb-4 lg:mb-8">
             <div className="flex p-1 bg-slate-100 dark:bg-slate-800/50 rounded-lg">
               {sidebarMenuTabs.map((tab) => {
                 const isActive = activeSection === tab.title;
                 return (
                   <button
                     key={tab.title}
-                    onClick={() => setActiveSection(tab.title)}
+                    onClick={() => {
+                      setActiveSection(tab.title);
+                      // Navigate to SDK home page when switching to Reference tab
+                      if (tab.title === "Reference" && !isActive) {
+                        router.push(SDK_HOME_PAGES[language]);
+                      }
+                    }}
                     className={clsx(
                       "flex-1 flex items-center justify-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-all",
                       isActive
@@ -640,6 +784,9 @@ export function Navigation(props) {
                 );
               })}
             </div>
+            
+            {/* Language Switcher - shown on both Learn and Reference */}
+            <LanguageSwitcher />
           </div>
         )}
 
@@ -657,25 +804,42 @@ export function Navigation(props) {
                 type="multiple"
                 defaultValue={defaultOpenGroupTitles}
               >
-                {nestedNavigation.sectionLinks.map((item, groupIndex) =>
-                  isNavGroup(item) ? (
-                    <NavigationGroup
-                      key={item.title}
-                      group={item}
-                      isActiveGroup={item.title === activeGroup?.title}
-                    />
-                  ) : (
-                    <NavLink
-                      isTopLevel={true}
-                      key={"grp-" + groupIndex}
-                      href={item.href}
-                      active={pathname === item.href}
+                {nestedNavigation.sectionLinks.map((item, groupIndex) => {
+                  // For Reference section, hide non-selected SDK sections with CSS (keeps links in DOM for SEO)
+                  const isHidden = activeSection === "Reference" && shouldHideSection(item.title, language);
+                  // Add visual separator before shared sections (REST API, etc.)
+                  const isSharedSection = SHARED_REFERENCE_TITLES.includes(item.title);
+                  const isFirstSharedSection = isSharedSection && 
+                    groupIndex > 0 && 
+                    !SHARED_REFERENCE_TITLES.includes(nestedNavigation.sectionLinks[groupIndex - 1]?.title);
+                  
+                  return (
+                    <div 
+                      key={item.title || `grp-${groupIndex}`}
+                      className={clsx(isHidden && "hidden")}
                     >
-                      {" "}
-                      {item.title}{" "}
-                    </NavLink>
-                  )
-                )}
+                      {/* Separator before shared sections in Reference */}
+                      {activeSection === "Reference" && isFirstSharedSection && (
+                        <div className="mt-6 mb-4 border-t border-slate-200 dark:border-slate-700" />
+                      )}
+                      {isNavGroup(item) ? (
+                        <NavigationGroup
+                          group={item}
+                          isActiveGroup={item.title === activeGroup?.title}
+                        />
+                      ) : (
+                        <NavLink
+                          isTopLevel={true}
+                          href={item.href}
+                          active={pathname === item.href}
+                        >
+                          {" "}
+                          {item.title}{" "}
+                        </NavLink>
+                      )}
+                    </div>
+                  );
+                })}
               </Accordion.Root>
             </>
           ) : null}

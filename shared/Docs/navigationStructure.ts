@@ -422,6 +422,10 @@ const sectionLearn: (NavGroup | NavLink)[] = [
             href: "/docs/features/inngest-functions/steps-workflows/wait-for-event",
           },
           {
+            title: "Invoke other functions",
+            href: `/docs/guides/invoking-functions-directly`,
+          },
+          {
             title: "AI steps (LLM calls)",
             href: "/docs/features/inngest-functions/steps-workflows/step-ai-orchestration",
           },
@@ -606,10 +610,6 @@ const sectionLearn: (NavGroup | NavLink)[] = [
           {
             title: "Sending events from functions",
             href: `/docs/guides/sending-events-from-functions`,
-          },
-          {
-            title: "Direct invocation",
-            href: `/docs/guides/invoking-functions-directly`,
           },
           {
             title: "User-defined Workflows",
