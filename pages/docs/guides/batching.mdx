@@ -149,7 +149,19 @@ Conditional Batching can be enabled by providing a boolean expression in `if`.  
 
 Batching does not work with all other flow control features.
 
-You _can_ combine batching with simple [concurrency](/docs/guides/concurrency) limits, but will not work correctly with the `key` configuration option.
+### Batching with concurrency limits
+
+You _can_ combine batching with simple [concurrency](/docs/guides/concurrency) limits. For example, setting `concurrency: { limit: 1 }` will process one batch at a time.
+
+However, **the concurrency `key` option is ignored when batching is enabled**. This means:
+
+- If you configure `concurrency: { limit: 1, key: "event.data.user_id" }` with batching, the `key` expression will have no effect
+- Batches will be processed one at a time globally (based on the `limit`), not per unique key value
+- The concurrency limit applies to all batches regardless of what key values the events contain
+
+If you need per-key concurrency with batched events, consider processing events individually with a keyed concurrency limit instead of using batching.
+
+### Incompatible flow control features
 
 You _cannot_ use batching with [idempotency](/docs/guides/handling-idempotency), [rate limiting](/docs/guides/rate-limiting), [cancellation events](/docs/guides/cancel-running-functions#cancel-with-events), or [priority](/docs/guides/priority).
 

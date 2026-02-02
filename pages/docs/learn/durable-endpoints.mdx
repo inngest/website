@@ -1,0 +1,426 @@
+import { ResourceGrid, Resource } from 'src/shared/Docs/Resources';
+import { Info, Callout, GuideSelector, GuideSection, CodeGroup, Steps, Step, CardGroup, Card, VersionBadge } from "src/shared/Docs/mdx";
+
+export const description = 'Learn how to create Durable Endpoints with Inngest - bringing step-based checkpointing directly to API handlers';
+
+# Durable Endpoints <VersionBadge version="Beta" />
+
+The power of steps, directly in API endpoints — with one line of setup.
+
+Durable Endpoints brings step-based checkpointing directly into API handlers. Each step persists as it completes, and failures resume from the last successful checkpoint — not from the beginning.
+
+<Info>
+  Durable Endpoints is available in beta. See the [limitations](#limitations) section for current constraints.
+</Info>
+
+## Why Durable Endpoints?
+
+Traditional API endpoints face a difficult trade-off: they can be **fast but fragile** (prone to failures from timeouts, rate limits, or flaky dependencies) or **reliable but complex** (requiring queues, state machines, and retry infrastructure).
+
+Durable Endpoints eliminate this trade-off by bringing workflow durability directly to your API handlers:
+
+- **AI workloads** that need durability *and* low latency for multiple LLM calls
+- **Payment processing** that must survive external API failures
+- **Webhook handlers** that orchestrate multiple third-party services
+- **Any critical endpoint** where failures are costly
+
+With Durable Endpoints, you get automatic retries, observability, and checkpoint-based recovery without building queue infrastructure or learning new orchestration patterns.
+
+## Quick Start
+
+<GuideSelector
+  options={[
+    { key: "typescript", title: "TypeScript" },
+    { key: "go", title: "Go" },
+  ]}>
+
+<GuideSection show="typescript">
+
+### Installation
+
+```bash
+npm install inngest
+```
+
+### Basic Setup
+
+```ts
+import { Inngest, step } from "inngest";
+import { endpointAdapter } from "inngest/edge";
+
+// Initialize Inngest with the endpoint adapter
+const inngest = new Inngest({ id: "my-app", endpointAdapter });
+
+// Create a durable endpoint
+export const handler = inngest.endpoint(async (req: Request): Promise<Response> => {
+  const url = new URL(req.url);
+  const userId = url.searchParams.get("userId");
+
+  // Step 1: Fetch user data (durable - survives failures)
+  const user = await step.run("fetch-user", async () => {
+    const response = await fetch(`https://api.example.com/users/${userId}`);
+    return response.json();
+  });
+
+  // Step 2: Process data (durable - won't re-run if step 1 succeeded)
+  const result = await step.run("process-data", async () => {
+    return await expensiveOperation(user);
+  });
+
+  return Response.json({ result });
+});
+```
+
+</GuideSection>
+
+<GuideSection show="go">
+
+### Installation
+
+```bash
+go get github.com/inngest/inngestgo
+```
+
+### Basic Setup
+
+```go
+import (
+	"context"
+	"net/http"
+
+	"github.com/inngest/inngestgo/step"
+	"github.com/inngest/inngestgo/stephttp"
+)
+
+func setupHTTP() {
+	// Set up the Inngest provider for HTTP handlers
+	provider := stephttp.Setup(stephttp.SetupOpts{
+		Domain: "api.example.com", // Your API domain
+	})
+
+	// Wrap individual handlers
+	http.HandleFunc("/users", provider.ServeHTTP(handleUsers))
+
+	// Or use middleware with chi, gin, etc.
+	r := chi.NewRouter()
+	r.Use(provider.Middleware)
+	r.Get("/users", handleUsers)
+}
+
+func handleUsers(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	stephttp.Configure(ctx, stephttp.FnOpts{
+		ID: "/users/{id}",
+	})
+
+	// Step 1: Authenticate (durable - survives failures)
+	auth, err := step.Run(ctx, "authenticate", func(ctx context.Context) (*AuthResult, error) {
+		return authenticateUser(ctx)
+	})
+	if err != nil {
+		http.Error(w, "Authentication failed", http.StatusUnauthorized)
+		return
+	}
+
+	// Step 2: Fetch data (durable - won't re-run if step 1 succeeded)
+	data, err := step.Run(ctx, "fetch-data", func(ctx context.Context) (*Data, error) {
+		return fetchUserData(ctx, auth.UserID)
+	})
+	if err != nil {
+		http.Error(w, "Failed to fetch data", http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode(data)
+}
+```
+
+</GuideSection>
+
+</GuideSelector>
+
+## Core Concepts
+
+### Step-Based Checkpointing
+
+Each `step.run()` call creates a checkpoint. When a step completes successfully, its result is persisted. If a later step fails, the endpoint resumes from the last successful checkpoint — completed steps are not re-executed.
+
+```ts
+// If step 3 fails, only step 3 retries
+// Steps 1 and 2 return their cached results instantly
+const user = await step.run("fetch-user", fetchUser);        // ✓ Cached
+const profile = await step.run("get-profile", getProfile);   // ✓ Cached
+const result = await step.run("process", process);           // ← Retries here
+```
+
+### Step Identification
+
+Steps are identified by their string ID, not their execution order. This means you can safely refactor your code — adding, removing, or reordering code won't break in-flight executions as long as step IDs remain consistent.
+
+```ts
+// Good: Descriptive, unique step IDs
+await step.run("fetch-user-profile", fetchProfile);
+await step.run("send-welcome-email", sendEmail);
+await step.run(`search-depth-${depth}-${hashQuery(query)}`, search);
+```
+
+### Memoization on Retry
+
+When a failure triggers a retry, the endpoint is re-invoked from the beginning. However, completed steps are memoized — instead of re-executing, they instantly return their stored results. This ensures:
+
+- **Idempotency**: Side effects in completed steps don't run twice
+- **Speed**: Retries are fast because only failed steps re-execute
+- **Correctness**: The endpoint behaves as if it ran straight through
+
+## Available Step Primitives
+
+| Primitive | Description |
+|-----------|-------------|
+| `step.run(id, fn)` | Execute and checkpoint a function |
+| `step.sleep(id, duration)` | Pause execution for a duration |
+| `step.waitForEvent(id, options)` | Wait for an external event (human-in-the-loop) |
+
+These are the same primitives available in [Durable Functions](/docs/learn/inngest-functions), bringing workflow capabilities directly to API endpoints.
+
+<GuideSelector
+  options={[
+    { key: "typescript", title: "TypeScript" },
+    { key: "go", title: "Go" },
+  ]}>
+
+<GuideSection show="typescript">
+
+```ts
+// Execute and checkpoint a function
+const result = await step.run("my-step", async () => {
+  return await someOperation();
+});
+
+// Pause execution (useful for rate limiting, delays)
+await step.sleep("wait-before-retry", "30s");
+
+// Wait for an external event (human approval, webhook, etc.)
+const approval = await step.waitForEvent("wait-for-approval", {
+  event: "approval/received",
+  timeout: "24h",
+});
+```
+
+</GuideSection>
+
+<GuideSection show="go">
+
+```go
+// Execute and checkpoint a function
+result, err := step.Run(ctx, "my-step", func(ctx context.Context) (*Result, error) {
+    return someOperation(ctx)
+})
+
+// Pause execution (useful for rate limiting, delays)
+step.Sleep(ctx, "wait-before-retry", 30*time.Second)
+
+// Wait for an external event (human approval, webhook, etc.)
+approval, err := step.WaitForEvent[ApprovalEvent](ctx, "wait-for-approval", step.WaitForEventOpts{
+    Event:   "approval/received",
+    Timeout: 24 * time.Hour,
+})
+```
+
+</GuideSection>
+
+</GuideSelector>
+
+## Use Cases
+
+### AI/LLM Applications
+
+Durable Endpoints are ideal for AI workloads that make multiple LLM calls. Each call is checkpointed, so a failure on call #15 doesn't require re-running calls #1-14.
+
+<GuideSelector
+  options={[
+    { key: "typescript", title: "TypeScript" },
+  ]}>
+
+<GuideSection show="typescript">
+
+```ts
+export const researchHandler = inngest.endpoint(async (req: Request) => {
+  const { topic } = await req.json();
+
+  // Generate search queries (durable)
+  const queries = await step.run("generate-queries", async () => {
+    return await generateSearchQueries(topic);
+  });
+
+  // Execute searches in parallel (each search is durable)
+  const searchResults = await Promise.all(
+    queries.map((query, i) =>
+      step.run(`search-${i}-${hashQuery(query)}`, async () => {
+        return await searchAPI(query);
+      })
+    )
+  );
+
+  // Extract learnings (durable)
+  const learnings = await step.run("extract-learnings", async () => {
+    return await extractLearnings(searchResults);
+  });
+
+  // Generate final report (durable)
+  const report = await step.run("generate-report", async () => {
+    return await generateReport(topic, learnings);
+  });
+
+  return Response.json({ report });
+});
+```
+
+</GuideSection>
+
+</GuideSelector>
+
+### Payment Processing
+
+Ensure payment workflows complete reliably, even when external APIs fail.
+
+<GuideSelector
+  options={[
+    { key: "typescript", title: "TypeScript" },
+  ]}>
+
+<GuideSection show="typescript">
+
+```ts
+export const checkoutHandler = inngest.endpoint(async (req: Request) => {
+  const { orderId, paymentMethod } = await req.json();
+
+  // Validate order (durable)
+  const order = await step.run("validate-order", async () => {
+    return await validateOrder(orderId);
+  });
+
+  // Process payment (durable - won't double-charge on retry)
+  const payment = await step.run("process-payment", async () => {
+    return await stripe.charges.create({
+      amount: order.total,
+      source: paymentMethod,
+      idempotencyKey: `order-${orderId}`,
+    });
+  });
+
+  // Update inventory (durable)
+  await step.run("update-inventory", async () => {
+    return await updateInventory(order.items);
+  });
+
+  // Send confirmation (durable)
+  await step.run("send-confirmation", async () => {
+    return await sendOrderConfirmation(order, payment);
+  });
+
+  return Response.json({ success: true, paymentId: payment.id });
+});
+```
+
+</GuideSection>
+
+</GuideSelector>
+
+## Step Naming Best Practices
+
+### Use Unique, Descriptive IDs
+
+Step IDs must be unique within an endpoint execution. Use descriptive names that include context for better observability.
+
+```ts
+// ✓ Good: Descriptive and unique
+await step.run("fetch-user-profile", fetchProfile);
+await step.run(`search-depth-${depth}-query-${hashQuery(query)}`, search);
+await step.run(`process-batch-${batchId}`, processBatch);
+
+// ✗ Bad: Generic names that might collide
+await step.run("step1", fetchProfile);
+await step.run("search", search);  // Will collide in a loop
+```
+
+### Include Context for Traceability
+
+When running steps in loops or with dynamic data, include identifying information in the step ID:
+
+```ts
+// Pattern for recursive/iterative operations
+const results = await Promise.all(
+  queries.map((query) => {
+    const stepHash = hashQuery(query);
+    return step.run(`search-d${depth}-${stepHash}`, async () => {
+      return await search(query);
+    });
+  })
+);
+```
+
+## Observability & Debugging
+
+Durable Endpoints provide automatic observability through the Inngest dashboard:
+
+- **Automatic tracing** of every run and step
+- **Inputs and outputs** captured for each step
+- **Duration and timing** for performance analysis
+- **Error details** with full stack traces
+- **Retry visibility** showing which steps retried and when
+- **Replay functionality** to re-run failed executions
+
+## Migration Guide
+
+### From Traditional Endpoints
+
+Converting an existing endpoint to a Durable Endpoint is straightforward — wrap your operations in `step.run()` calls:
+
+**Before:**
+```ts
+export async function handler(req: Request) {
+  const user = await fetchUser(req);           // If this fails, restart from scratch
+  const data = await processData(user);        // If this fails, re-fetch user
+  await sendNotification(user, data);          // If this fails, re-process everything
+  return Response.json({ success: true });
+}
+```
+
+**After:**
+```ts
+export const handler = inngest.endpoint(async (req: Request) => {
+  const user = await step.run("fetch-user", () => fetchUser(req));
+  const data = await step.run("process-data", () => processData(user));
+  await step.run("send-notification", () => sendNotification(user, data));
+  return Response.json({ success: true });
+});
+```
+
+The business logic remains identical — you've just added durability checkpoints.
+
+## SDK Support
+
+| SDK        | Support | Version |
+| ---------- | ------- | --------- |
+| TypeScript | ✅ Beta | >= 3.x (with `endpointAdapter`) |
+| Go         | ✅      | >= v0.14.0  |
+| Python     | In progress | -       |
+
+## Limitations
+
+Durable Endpoints is currently in beta. The following limitations apply:
+
+- **Flow Control is not supported** - [Flow control](/docs/guides/flow-control) features like concurrency limits and rate limiting are not available for Durable Endpoints
+- **POST body is not yet supported** - Prefer using query strings for passing data. POST body support is coming soon
+- **Authenticated endpoints are not yet supported** - Authentication support is coming soon
+- **Standard HTTP responses only** - Durable Endpoints should return a standard HTTP response, not an SSE stream
+
+See the [TypeScript SDK reference](/docs/reference/typescript/durable-endpoints) for detailed API documentation and configuration options.
+
+## Further Reference
+
+- [TypeScript SDK Reference](/docs/reference/typescript/durable-endpoints)
+- [Inngest Functions](/docs/learn/inngest-functions)
+- [Steps Overview](/docs/learn/inngest-steps)
+- [Introducing Checkpointing](https://www.inngest.com/blog/introducing-checkpointing)
