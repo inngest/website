@@ -395,16 +395,16 @@ function NavigationGroup({
       <li className={clsx("relative", className)}>
         <NavigationGroupStructure.Trigger className="w-full animate-accordion-trigger">
           <h2
-            className={clsx("flex justify-between m-0", {
-              "py-1": nestingLevel > 0,
-              "mt-8 mb-2": nestingLevel === 0,
+            className={clsx("flex justify-between m-0 rounded transition-colors", {
+              "py-1 hover:bg-canvasSubtle": nestingLevel > 0,
+              "mt-4 mb-1.5 mx-1 px-1 py-0.5 hover:bg-canvasSubtle": nestingLevel === 0,
             })}
           >
             <span
-              className={clsx("pl-2", {
-                "text-sm font-medium text-subtle hover:text-basis":
+              className={clsx({
+                "pl-2 text-sm font-medium text-subtle hover:text-basis":
                   nestingLevel > 0,
-                "text-sm font-semibold text-carbon-900 dark:text-carbon-50":
+                "text-xs font-medium uppercase tracking-wider text-muted":
                   nestingLevel == 0,
               })}
             >
@@ -478,8 +478,8 @@ function NavigationGroup({
                     >
                       <span
                         className={clsx(
-                          "flex justify-between items-center text-sm transition group py-1 pl-2",
-                          "text-xs font-semibold text-carbon-300 dark:text-carbon-600",
+                          "flex justify-between items-center transition group py-1 pl-2",
+                          "text-xs font-medium uppercase tracking-wider text-muted",
                           className
                         )}
                       >
