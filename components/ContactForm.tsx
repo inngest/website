@@ -143,9 +143,8 @@ export default function ContactForm({
 
         // Open a new tab. We need tracking to flush/complete so we open a new tab
         window.open(redirectURL.toString(), "_blank");
-      } else {
-        setButtonCopy("Your message has been sent!");
       }
+      setButtonCopy("Your message has been sent!");
     } catch (e) {
       console.warn("Message not sent", e);
       setButtonCopy("Message not sent");
