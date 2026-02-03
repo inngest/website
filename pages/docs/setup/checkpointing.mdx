@@ -53,6 +53,22 @@ export const myFunction = inngest.createFunction(
 );
 ```
 
+### Configuration
+
+Configure how checkpointing behaves with these options ([v3.50.0+](https://github.com/inngest/inngest-js/releases/tag/inngest%403.50.0)):
+
+* `maxRuntime` - default: `0` (unlimited): The maximum amount of time the function should continuously execute and checkpoint steps before returning the request response. Configure this to be slightly less than the maximum allowed request timeout for your platform or server. For example, if your platform allows `900s`, you might set `maxRuntime` to `800s`.
+* `bufferedSteps` - default: `1` (no buffering): The number of steps to buffer together before checkpointing. This can help reduce the number of requests made to Inngest when running many steps in sequence. Consider that buffered steps that are not checkpointed may be lost if your server is not gracefully terminated.
+* `maxInterval`: The maximum interval to wait before checkpointing, even if the `bufferedSteps` count has not been reached.
+
+```ts {{ title: "Example configuration" }}
+checkpointing: {
+  maxRuntime: '300s',
+  bufferedSteps: 2,
+  maxInterval: "10s",
+}
+```
+
 </GuideSection>
 
 <GuideSection show="go">
