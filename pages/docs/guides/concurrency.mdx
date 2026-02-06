@@ -4,10 +4,16 @@ import { Callout, Info, Tip, Warning, CodeGroup, Properties, Property } from "sr
 
 Limiting concurrency in systems is an important tool for correctly managing computing resources and scaling workloads. Inngest's concurrency control enables you to manage the number of _steps_ that concurrently execute.
 
+<Warning>
+**Important:** Concurrency limits the number of _steps_ executing at a single time, **not** the number of function runs. A function run that is sleeping, waiting for an event, or paused between steps does **not** count against your concurrency limit. Only steps that are actively executing code count toward the limit.
+
+This means you may have many more function runs in progress than your concurrency limit suggests, because most of those runs are likely paused or waiting between steps.
+</Warning>
+
 {/* TODO - Link to updated keys section */}
 Step concurrency can be optionally configured using "keys" which applies the limit to each unique value of the key (ex. user id). The concurrency option can also be applied to different "scopes" which allows a concurrency limit to be shared across _multiple_ functions.
 
-As compared to traditional queue and worker systems, Inngest manages the concurrency within the system you do not need to implement additional worker-level logic or state.
+As compared to traditional queue and worker systems, Inngest manages the concurrency within the system so you do not need to implement additional worker-level logic or state.
 
 ## When to use concurrency
 
@@ -176,18 +182,89 @@ inngest.createFunction(
 
 ## How concurrency works
 
-**Concurrency works by limiting the number of steps executing at a single time.** Within Inngest, execution is defined as "an SDK running code". **Calling **`step.sleep`**, **`step.sleepUntil`**, **`step.waitForEvent`**, or **`step.invoke`** does not count towards capacity limits**, as the SDK doesn't execute code while those steps wait. Because sleeping or waiting is common, concurrency _does not_ limit the number of functions in progress.  Instead, it limits the number of steps executing at any single time.
+**Concurrency works by limiting the number of steps executing at a single time.** Within Inngest, execution is defined as "an SDK running code". **Calling **`step.sleep`**, **`step.sleepUntil`**, **`step.waitForEvent`**, or **`step.invoke`** does not count towards capacity limits**, as the SDK doesn't execute code while those steps wait.
+
+### Understanding step execution vs. function runs
+
+Because sleeping or waiting is common, concurrency _does not_ limit the number of functions in progress. Instead, it limits the number of steps executing at any single time.
+
+Consider a function with a `concurrency` limit of `10`:
+
+- You could have **hundreds** of function runs in progress
+- But only **10 steps** can be actively executing code at once
+- When a function run calls `step.sleep("wait", "1h")`, it releases its execution slot
+- That slot becomes available for other steps to use
+
+{/* Visual representation of concurrency */}
+```
++------------------------------------------------------------------+
+|                     Concurrency Limit: 3                         |
++------------------------------------------------------------------+
+|                                                                  |
+|   Function Runs in Progress: 6                                   |
+|   +------+ +------+ +------+ +------+ +------+ +------+          |
+|   |Run 1 | |Run 2 | |Run 3 | |Run 4 | |Run 5 | |Run 6 |          |
+|   +--+---+ +--+---+ +--+---+ +--+---+ +--+---+ +--+---+          |
+|      |        |        |        |        |        |              |
+|      v        v        v        v        v        v              |
+|   +------+ +------+ +------+ +------+ +------+ +------+          |
+|   | [z]  | | [!]  | | [!]  | | [z]  | | [!]  | | [z]  |          |
+|   |sleep | | step | | step | |wait  | | step | |sleep |          |
+|   +------+ +------+ +------+ +------+ +------+ +------+          |
+|                                                                  |
+|   [!] = Executing (counts toward limit)     Currently: 3/3      |
+|   [z] = Sleeping/Waiting (does NOT count)                       |
+|                                                                  |
++------------------------------------------------------------------+
+```
+
+<Tip>
+  See an animated visualization of how concurrency works on [the Inngest homepage](/?ref=docs-concurrency-guide) — look for the "Flow control" section which shows concurrency in action.
+</Tip>
 
 <Info>
-  Steps that are asynchronous actions, `step.sleep`, `step.sleepUntil`, `step.waitForEvent`, and `step.invoke` do not contribute to the concurrency limit.
+  **What counts against concurrency:**
+  - `step.run()` - while the step's code is executing
+  - Any code executing in your function handler
+
+  **What does NOT count against concurrency:**
+  - `step.sleep()` / `step.sleepUntil()` - while sleeping
+  - `step.waitForEvent()` - while waiting for an event
+  - `step.invoke()` - while waiting for the invoked function to complete
+  - Time between steps - when Inngest is coordinating the next step
 </Info>
+
+This design allows you to have long-running workflows with many paused functions without consuming capacity. For example, a user onboarding sequence that runs over several days only consumes capacity during the brief moments when each step executes.
+
+### Queue ordering
 
 **Queues are ordered from oldest to newest jobs ([FIFO](https://en.wikipedia.org/wiki/FIFO))** across the same function.  Ordering amongst different functions is not guaranteed.  This means that within a specific function, Inngest prioritizes finishing older functions above starting newer functions - even if the older functions continue to schedule new steps to run.  Different functions, however, compete for capacity, with runs on the most backlogged function much more likely (but not guaranteed) to be scheduled first.
 
-Some additional information:
+### Additional information
 
 - The order of keys does not matter.  Concurrency is limited by any key that reaches its limits.
 - You can specify multiple keys for the same scope, as long as the resulting `key` evaluates to a different string.
+
+## Concurrency vs. Throttling
+
+Understanding when to use concurrency versus [throttling](/docs/guides/throttling) is important:
+
+| | Concurrency | Throttling |
+|---|---|---|
+| **What it limits** | Number of _steps_ executing simultaneously | Number of _function runs_ starting in a time period |
+| **Applies to** | Step execution | Function run starts |
+| **Use case** | Limit parallel workloads (DB connections, API calls) | Limit throughput over time (rate limits) |
+| **Example** | "Only 10 steps can run at once" | "Only 5 functions can start per minute" |
+
+**Use concurrency when:**
+- You want to limit how many operations happen in parallel
+- You need to prevent overwhelming a database or external service
+- You want to ensure fair resource distribution per tenant
+
+**Use throttling when:**
+- You need to stay within a third-party API's rate limit (e.g., 100 requests/minute)
+- You want to spread function execution evenly over time
+- You want to control how often new work begins, regardless of how many steps run
 
 ## Concurrency control across specific steps in a function
 
