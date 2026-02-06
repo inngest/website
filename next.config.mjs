@@ -87,6 +87,9 @@ const permanentRedirects = [
   ["/docs/agent-kit/:any*", "https://agentkit.inngest.com"],
 
   ["/docs/features/realtime/nextjs", "/docs/features/realtime/react-hooks"],
+
+  // Durable Endpoints rename
+  ["/docs/learn/rest-endpoints", "/docs/learn/durable-endpoints"],
 ];
 
 async function redirects() {
