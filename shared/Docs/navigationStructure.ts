@@ -912,6 +912,10 @@ const sectionExamples: NavGroup[] = [
         href: `/docs/examples/open-telemetry`,
       },
       {
+        title: "Durable Endpoints",
+        href: `/docs/examples/durable-endpoints`,
+      },
+      {
         title: "Trigger workflows from Retool",
         href: `/docs/guides/trigger-your-code-from-retool`,
       },
