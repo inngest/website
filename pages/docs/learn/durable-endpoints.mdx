@@ -64,6 +64,22 @@ await step.run("process", () => fetchUser(userId));
 await step.run("process", () => updateSubscription(user));
 ```
 
+### Dynamic Step IDs
+
+When running steps in loops or with dynamic data, include identifying information in the step ID:
+
+```typescript
+// Pattern for recursive/iterative operations
+const results = await Promise.all(
+  queries.map((query) => {
+    const stepHash = hashQuery(query);
+    return step.run(`search-d${depth}-${stepHash}`, async () => {
+      return await search(query);
+    });
+  })
+);
+```
+
 ## Using Steps
 
 Durable Endpoints support all the same step methods as Inngest functions. See the [Steps documentation](/docs/steps) for the full reference:
@@ -72,7 +88,30 @@ Durable Endpoints support all the same step methods as Inngest functions. See th
 - [`step.sleep()`](/docs/learn/inngest-steps#step-sleep) — Pause execution for a duration
 - [`step.waitForEvent()`](/docs/learn/inngest-steps#step-wait-for-event-step-wait-for-event) — Wait for an external event
 
+## SDK Support
+
+| SDK | Support | Version |
+|-----|---------|---------|
+| TypeScript | ✅ Beta | >= 3.x (with `endpointAdapter`) |
+| Go | ✅ | >= v0.14.0 |
+
+## Limitations
+
+Durable Endpoints is currently in beta. The following limitations apply:
+
+- **Flow control is not supported** — Features like concurrency limits and rate limiting are not available for Durable Endpoints
+- **POST body is not yet supported** — Prefer using query strings for passing data. POST body support is coming soon
+- **Authenticated endpoints are not yet supported** — Authentication support is coming soon
+- **Standard HTTP responses only** — Durable Endpoints should return a standard HTTP response, not an SSE stream
+
 ## Examples
 
 - [DeepResearch with Durable Endpoints](/examples/deep-research)
 - [Payment processing](/examples/payment-flow)
+
+## Further Reference
+
+- [TypeScript SDK Reference](/docs/sdk/typescript)
+- [Inngest Functions](/docs/functions)
+- [Steps Overview](/docs/steps)
+- [Introducing Checkpointing](https://www.inngest.com/blog/introducing-checkpointing)
