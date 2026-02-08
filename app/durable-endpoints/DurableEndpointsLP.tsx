@@ -3,7 +3,7 @@ import Header from "src/components/LandingPage/Header";
 import Feature from "src/components/LandingPage/Feature";
 import Tiles from "src/components/LandingPage/Tiles";
 import Comparison from "src/components/LandingPage/Comparison";
-import { H1, H2 } from "src/components/LandingPage/Heading";
+import { H1 } from "src/components/LandingPage/Heading";
 import { Button } from "components/RedesignedLanding/Button";
 import Resources from "src/components/LandingPage/Resources";
 import Link from "next/link";
@@ -13,7 +13,6 @@ const ref = "product-durable-endpoints";
 export function DurableEndpointsLP({
   heroCTAs,
   heroFeature,
-  showCTAs = true,
 }: {
   heroCTAs?: { href: string; text: string }[];
   heroFeature?: React.ReactNode;
@@ -27,8 +26,8 @@ export function DurableEndpointsLP({
         {/* Harden your API endpoints without queues */}
         <section className="my-28">
           <Header
-            title="Harden your API endpoints without queues."
-            description="From the first user to the 1000th, every interaction counts. Inngest Durable Endpoints makes your application reliable and scalable from day 1. No queues, background jobs or workflows to setup."
+            title="Scale without refactoring"
+            description="All of your users deserve the same level of reliability from your product. Durable Endpoints lets you provide that experience from Day 1, without extra infra."
           />
 
           {/* Placeholder for central illustration */}
@@ -74,8 +73,8 @@ export function DurableEndpointsLP({
         {/* Your API code, made durable */}
         <section className="my-28">
           <Header
-            title="Your API code, made durable."
-            description="Simply wrap your code into steps, no boilerplate code or infrastructure work required. Handle failures automatically. Scale gracefully. Observe everything."
+            title="Wrap your API in Steps, and ship it."
+            description="Durable Endpoints makes your APIs bulletproof without any architectural changes. Handle failures automatically. Scale gracefully. Replay events. Observe everything."
           />
 
           {/* Feature 1: Add Steps to API code */}
@@ -105,9 +104,9 @@ export function DurableEndpointsLP({
             }}
           />
 
-          {/* Feature 2: Your API endpoints stay the same */}
+          {/* Feature 2: Trace success path with zero latency */}
           <Feature
-            heading="2. Your API endpoints stay the same"
+            heading="2. Trace success path with zero latency"
             text="When everything works, your users get their results immediately with no added latency. It's exactly as fast as your original API. No waiting, no polling, no compromise."
             layout="right"
             content={{
@@ -212,28 +211,6 @@ export function DurableEndpointsLP({
             ]}
           />
         </section>
-
-        {/* Final CTA */}
-        {showCTAs && (
-          <section className="my-20 bg-[#1A1A1A] py-20">
-            <div className="mx-auto max-w-4xl px-6 text-center">
-              <p className="mb-4 text-sm uppercase tracking-wide text-muted">
-                In the middle of chaos
-              </p>
-              <H2 className="mb-8">Develop reliable AI products, every time</H2>
-              <div className="flex flex-row flex-wrap justify-center gap-4">
-                <Button variant="default" asChild>
-                  <Link href={`/contact?ref=${ref}`}>Let's Talk</Link>
-                </Button>
-                <Button variant="outline" asChild>
-                  <Link href={`/docs?ref=${ref}`}>
-                    I'd rather look at the docs first
-                  </Link>
-                </Button>
-              </div>
-            </div>
-          </section>
-        )}
       </div>
     </div>
   );
@@ -274,9 +251,9 @@ function Hero({
             API endpoints
           </H1>
           <p className="text-balance text-lg text-subtle sm:text-xl md:max-w-[540px]">
-            Make your application reliable without setting up queues or
-            workflows. Simply use Inngest durable's steps to get instant
-            durability and observability.
+            Add automatic retries, recovery, and observability to any
+            application just by wrapping your code in Steps. No queues or
+            workflows to manage.
           </p>
           <div className="flex flex-row flex-wrap justify-center gap-4 md:justify-start">
             {ctas.map((cta, idx) => (
