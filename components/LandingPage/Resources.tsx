@@ -3,6 +3,7 @@ import {
   RiBookmarkLine,
   RiBookOpenLine,
   RiMessageLine,
+  RiGithubLine,
   RiArrowRightLine,
 } from "@remixicon/react";
 
@@ -10,7 +11,7 @@ export default function Resources({
   items,
 }: {
   items: {
-    type: "blog" | "docs" | "contact";
+    type: "blog" | "docs" | "contact" | "example";
     title: string;
     description: string;
     url: string;
@@ -27,6 +28,8 @@ export default function Resources({
               <RiBookOpenLine className="h-6 w-6 text-muted" />
             ) : item.type === "contact" ? (
               <RiMessageLine className="h-6 w-6 text-muted" />
+            ) : item.type === "example" ? (
+              <RiGithubLine className="h-6 w-6 text-muted" />
             ) : (
               ""
             )}
@@ -42,6 +45,8 @@ export default function Resources({
                 ? "View documentation"
                 : item.type === "contact"
                 ? "Contact sales"
+                : item.type === "example"
+                ? "Try the example"
                 : "View resource"}
               <RiArrowRightLine className="h-4 w-4" />
             </Link>

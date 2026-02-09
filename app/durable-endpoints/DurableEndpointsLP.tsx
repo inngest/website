@@ -182,31 +182,31 @@ export function DurableEndpointsLP({
         {/* Start scaling today */}
         <section className="my-28 pt-14">
           <Header
-            title="Start scaling today"
+            title="Start building today"
             description="Build your first Durable Endpoint with these helpful resources"
           />
           <Resources
             items={[
               {
-                type: "docs",
-                title: "The Principles of Durable Execution Explained",
-                description:
-                  "Learn what Durable Execution is, how it works, and why it's beneficial to your system.",
-                url: `/docs/learn/how-functions-are-executed?ref=${ref}`,
-              },
-              {
-                type: "docs",
+                type: "blog",
                 title: "Introducing: Durable Endpoints",
                 description:
                   "Learn why we built Durable Endpoints, and find some code examples you can use.",
                 url: `/docs/features/durable-endpoints?ref=${ref}`,
               },
               {
-                type: "docs",
-                title: "Guide: Steps & Workflows",
+                type: "example",
+                title: "DeepResearch built with Durable Endpoints",
                 description:
-                  "Learn how Steps create reliable endpoints that run for hours, handle scale, and auto-recover.",
-                url: `/docs/features/inngest-functions/steps-workflows?ref=${ref}`,
+                  "See Durable Endpoints in action with our DeepResearch example. Checkout the repository and try it locally.",
+                url: `https://github.com/inngest/inngest-js/tree/main/examples/durable-endpoints-deep-research#readme`,
+              },
+              {
+                type: "docs",
+                title: "Durable Execution reference",
+                description:
+                  "Explore the Durable Endpoints TypeScript SDK reference with the complete list of options and use case examples.",
+                url: `/docs/reference/typescript/durable-endpoints?ref=${ref}`,
               },
             ]}
           />
