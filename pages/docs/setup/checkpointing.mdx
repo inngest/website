@@ -8,7 +8,7 @@ Checkpointing is a performance optimization for Inngest functions that executes 
 
 ### Language
 
-- **TypeScript**: SDK `3.46.0` or higher.
+- **TypeScript**: SDK `3.51.0` or higher.
 - **Go**: SDK version `v0.15.0`.
 
 ## Getting Started
@@ -24,7 +24,7 @@ Checkpointing is a performance optimization for Inngest functions that executes 
 
 To enable checkpointing:
 
-1. Install `inngest@3.46.0` or higher
+1. Install `inngest@3.51.0` or higher
 2. Set `checkpointing: true` on your Inngest client or on individual functions
 
 **For all functions:**
@@ -51,6 +51,22 @@ export const myFunction = inngest.createFunction(
     // steps here will be checkpointed
   }
 );
+```
+
+### Configuration
+
+Configure how checkpointing behaves with these options:
+
+* `maxRuntime` - default: `0` (unlimited): The maximum amount of time the function should continuously execute and checkpoint steps before returning the request response. Configure this to be slightly less than the maximum allowed request timeout for your platform or server. For example, if your platform allows `900s`, you might set `maxRuntime` to `800s`.
+* `bufferedSteps` - default: `1` (no buffering): The number of steps to buffer together before checkpointing. This can help reduce the number of requests made to Inngest when running many steps in sequence. Consider that buffered steps that are not checkpointed may be lost if your server is not gracefully terminated.
+* `maxInterval`: The maximum interval to wait before checkpointing, even if the `bufferedSteps` count has not been reached.
+
+```ts {{ title: "Example configuration" }}
+checkpointing: {
+  maxRuntime: '300s',
+  bufferedSteps: 2,
+  maxInterval: "10s",
+}
 ```
 
 </GuideSection>
@@ -104,10 +120,10 @@ What happens when something goes wrong? If a step fails and needs to retry, the 
 
 ## Beta
 
-Checkpointing is currently in beta, here are some limitations to be aware of:
+Checkpointing is currently in beta, here are some notes and limitations to be aware of:
 
 - **Parallel step execution** — When a function branches into parallel steps, execution switches to standard orchestration for the remainder of the run. Checkpointing does not resume after parallel execution.
-- **Limited configuration options** — Customization of checkpointing buffer size and buffer timeout is not yet available.
+- **Middleware fixes (TypeScript `>=3.51.0`)** - If using an older TypeScript beta for checkpointing (`<3.51.0`), please upgrade to at least `3.51.0` to ensure that all middleware transforms are running correctly.
 
 
 | Feature | Supported |
