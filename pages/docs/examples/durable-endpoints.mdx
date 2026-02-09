@@ -7,7 +7,7 @@ export const description = "Learn how to use Inngest Durable Endpoints to make a
 
 # Durable Endpoints
 
-Durable Endpoints let you add durability to regular HTTP handlers without separate function definitions or event triggers. You wrap your existing API route with `inngest.endpoint()` and use `step.run()` inline to get automatic retries and memoization for each step.
+[Durable Endpoints](/docs/learn/durable-endpoints) let you add durability to regular HTTP handlers without separate function definitions or event triggers. You wrap your existing API route with `inngest.endpoint()` and use `step.run()` inline to get automatic retries and memoization for each step.
 
 This is useful when you want your endpoint to orchestrate multiple operations (like booking a flight, processing a payment, and sending a confirmation) and guarantee that each step completes exactly once, even if the handler crashes or restarts partway through.
 
