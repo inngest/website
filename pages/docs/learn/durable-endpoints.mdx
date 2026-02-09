@@ -1,21 +1,20 @@
 import { ResourceGrid, Resource } from 'src/shared/Docs/Resources';
 import { Info, Callout, GuideSelector, GuideSection, CodeGroup, Steps, Step, CardGroup, Card, VersionBadge } from "src/shared/Docs/mdx";
+import { RiNextjsFill } from "@remixicon/react";
 
 export const description = 'Learn how to create Durable Endpoints with Inngest. Turn any API endpoint into a durable, observable workflow with step-based checkpointing.';
 
 # Durable Endpoints <VersionBadge version="Beta" />
 
-Durable Endpoints let you author your code in ways you're used to and get the benefits of durable execution with a minimal code change.
+Durable Endpoints let you build or transform your API into fault-tolerant endpoints simply by wrapping your critical logic into [durable steps](/docs/learn/inngest-steps).
 
-Durable Endpoints like a normal endpoints. The mental model stays the same: request, response. But each step checkpoints as it completes. If anything fails, execution resumes from where it left off, not from the beginning.
-
-This dissolves a whole class of concerns: tracing, observability, and retry logic from the point of failure are all handled for you.
+Durable Endpoints behave like normal endpoints. The mental model stays the same: request, response. But each step brings you tracing, observability, and retry logic from the point of failure.
 
 ## When to use Durable Endpoints
 
-**You want observability without the setup.** If you want visibility into your endpoints without configuring a bunch of external services, Durable Endpoints gives you that instantly.
-
 **You have endpoints that fail partway through.** Any endpoint with multiple steps where failure at step 3 means steps 1 and 2 were wasted work. Instead of writing try/catch logic everywhere or hoping for the best, simply wrap your code in steps and let failures resume from where they left off.
+
+**You want observability without the setup.** If you want visibility into your endpoints without configuring a bunch of external services, Durable Endpoints give you that instantly.
 
 **You're already using Inngest.** You can add durability to other endpoints without refactoring everything into a workflow or thinking heavily about event logic.
 
@@ -23,70 +22,183 @@ This dissolves a whole class of concerns: tracing, observability, and retry logi
 
 If you have a traditional endpoint:
 
-```typescript
-export async function handler(req: Request): Promise<Response> {
-  const data = await fetchData();
-  const processed = await processData(data);
-  await saveData(processed);
-  return Response.json({ success: true });
-}
+<CodeGroup>
+```typescript {{ title: "Next.js" }}
+import { NextRequest } from "next/server";
+
+export const POST = async (req: NextRequest) => {
+  const { userId, data } = await req.json();
+  
+  const user = await db.users.find(userId);
+  const enriched = { ...data, account: user.accountId };
+
+  const result = await processData(enriched);
+
+  await sendNotification(userId, result);
+
+  return Response.json({ success: true, result });
+};
 ```
+```typescript {{ title: "Bun" }}
+Bun.serve({
+  port: 3000,
+  routes: {
+    "/process": async (req) => {
+      const { userId, data } = await req.json();
 
-Wrap it with `inngest.endpoint`, and wrap any functions inside with `step.run`:
+      const user = await db.users.find(userId);
+      enriched = { ...data, account: user.accountId };
 
-```typescript
+      const result = await processData(enriched);
+
+      await sendNotification(userId, result);
+
+      return new Response(JSON.stringify({ success: true, result }));
+    },
+  },
+});
+```
+</CodeGroup>
+
+
+Create an Inngest client:
+
+<CodeGroup>
+```typescript {{ title: "Next.js" }}
 import { Inngest } from "inngest";
+import { endpointAdapter } from "inngest/next";
+
+const inngest = new Inngest({
+  id: "my-app",
+  endpointAdapter,
+});
+```
+```typescript {{ title: "Bun" }}
+import { Inngest } from "inngest";
+import { endpointAdapter } from "inngest/edge";
+
+const inngest = new Inngest({
+  id: "my-app",
+  endpointAdapter,
+});
+```
+</CodeGroup>
+
+Then, wrap your API endpoint with `inngest.endpoint` and move your endpoint's critical logic into `step.run` blocks:
+
+<CodeGroup>
+```typescript {{ title: "Next.js" }}
+import { step } from "inngest";
+import { inngest } from "@/inngest/client";
+import { NextRequest } from "next/server";
+
+export const POST = inngest.endpoint(async (req: NextRequest) => {
+  const { userId, data } = await req.json();
+
+  // Step 1: Validate and enrich the data
+  const enriched = await step.run("enrich-data", async () => {
+    const user = await db.users.find(userId);
+    return { ...data, account: user.accountId };
+  });
+
+  // Step 2: Process the enriched data
+  const result = await step.run("process", async () => {
+    return await processData(enriched);
+  });
+
+  // Step 3: Send notification
+  await step.run("notify", async () => {
+    await sendNotification(userId, result);
+  });
+
+  return Response.json({ success: true, result });
+});
+```
+```typescript {{ title: "Bun" }}
+import { Inngest, step } from "inngest";
 import { endpointAdapter } from "inngest/edge";
 
 const inngest = new Inngest({ id: "my-app", endpointAdapter });
 
-export const handler = inngest.endpoint(async (req: Request) => {
-  const data = await step.run("fetch-data", () => fetchData());
-  const processed = await step.run("process-data", () => processData(data));
-  await step.run("save-data", () => saveData(processed));
-  return Response.json({ success: true });
+Bun.serve({
+  port: 3000,
+  routes: {
+    "/process": inngest.endpoint(async (req) => {
+      const { userId, data } = await req.json();
+
+      // Step 1: Validate and enrich the data
+      const enriched = await step.run("enrich-data", async () => {
+        const user = await db.users.find(userId);
+        return { ...data, account: user.accountId };
+      });
+
+      // Step 2: Process the enriched data
+      const result = await step.run("process", async () => {
+        return await processData(enriched);
+      });
+
+      // Step 3: Send notification
+      await step.run("notify", async () => {
+        await sendNotification(userId, result);
+      });
+
+      return new Response(JSON.stringify({ success: true, result }));
+    }),
+  },
 });
 ```
+</CodeGroup>
 
-If `save-data` fails, the endpoint will retry from that step. `fetch-data` and `process-data` won't re-run.
+If `process` fails, the endpoint will retry from that step. `enrich-data` won't re-run.
 
-## Step IDs
+**Read the [Durable Endpoint TypeScript SDK Reference](/docs/reference/typescript/durable-endpoints) for more detailed usage information.**
 
-Each step needs a unique ID. This is how the system tracks what has completed and provides durability. If two steps have the same ID, the system can't distinguish between them.
+### Using Steps
+
+Durable Endpoints support all the same step methods as Inngest functions. See the [Steps documentation](/docs/learn/inngest-steps) for the full reference:
+
+- [`step.run()`](/docs/learn/inngest-steps#step-run): Reliably execute the provided block by retrying upon failure
+- [`step.sleep()`](/docs/learn/inngest-steps#step-sleep): Pause execution for a duration
+- [`step.waitForEvent()`](/docs/learn/inngest-steps#step-wait-for-event-step-wait-for-event): Wait for an external event
+
+## Requesting a Durable Endpoint
+
+Durable Endpoints behave like regular API endpoints on the success path. You can request them from your front-end (_or back-end_) using `fetch()` or your favorite query or http library:
+
+However, when a failure triggers retries, a Durable Endpoint returns a redirect to a dedicated endpoint on Inngest Cloud to poll the final result.
+
+Here is a snippet handling both the direct result and the redirected result after retries:
 
 ```typescript
-// Good: unique, descriptive IDs
-await step.run("fetch-user", () => fetchUser(userId));
-await step.run("update-subscription", () => updateSubscription(user));
+function handleError(error) {
+  // ...
+}
 
-// Bad: duplicate IDs will cause issues
-await step.run("process", () => fetchUser(userId));
-await step.run("process", () => updateSubscription(user));
-```
+async function handleResult(result) {
+  const result = await res.json()
+  // ...
+}
 
-### Dynamic Step IDs
-
-When running steps in loops or with dynamic data, include identifying information in the step ID:
-
-```typescript
-// Pattern for recursive/iterative operations
-const results = await Promise.all(
-  queries.map((query) => {
-    const stepHash = hashQuery(query);
-    return step.run(`search-d${depth}-${stepHash}`, async () => {
-      return await search(query);
-    });
+fetch(`/api/your-durable-endpoint`)
+  .then((res) => {
+    if (res.redirected) {
+      // follow the redirect
+      fetch(res.url)
+        .then(handleResult)
+        .catch(handleError);
+    } else {
+      handleResult(res)
+    }
   })
-);
+  .catch(handleError);
 ```
 
-## Using Steps
+<Callout>
+  As the Durable Endpoint redirects the request to a dedicated endpoint on Inngest's Cloud, `fetch()` cannot simply follow this redirect for you (_CORS policy_).
+  Instead, you need to get the redirect URL (`res.url`) and trigger a new `fetch()` request.
+</Callout>
 
-Durable Endpoints support all the same step methods as Inngest functions. See the [Steps documentation](/docs/steps) for the full reference:
 
-- [`step.run()`](/docs/learn/inngest-steps#step-run) — Execute and checkpoint a function
-- [`step.sleep()`](/docs/learn/inngest-steps#step-sleep) — Pause execution for a duration
-- [`step.waitForEvent()`](/docs/learn/inngest-steps#step-wait-for-event-step-wait-for-event) — Wait for an external event
 
 ## SDK Support
 
@@ -101,17 +213,36 @@ Durable Endpoints is currently in beta. The following limitations apply:
 
 - **Flow control is not supported** — Features like concurrency limits and rate limiting are not available for Durable Endpoints
 - **POST body is not yet supported** — Prefer using query strings for passing data. POST body support is coming soon
-- **Authenticated endpoints are not yet supported** — Authentication support is coming soon
 - **Standard HTTP responses only** — Durable Endpoints should return a standard HTTP response, not an SSE stream
 
 ## Examples
 
-- [DeepResearch with Durable Endpoints](/examples/deep-research)
-- [Payment processing](/examples/payment-flow)
+The [Durable Endpoints example page](/docs/examples/durable-endpoints) provides practical pattern examples such as parallel steps.
+
+The following demos are also available to check out and run locally with the Inngest Dev Server:
+
+<CardGroup cols={2}>
+
+  <Card
+    href="https://github.com/inngest/inngest-js/tree/main/examples/durable-endpoints-trip-booker"
+    title={"Explore the full Trip Booker example"}
+    icon={<RiNextjsFill className="text-basis h-8 w-8"/>}
+    iconPlacement="top"
+  >
+   Clone this example locally to run it and explore the full source code.
+  </Card>
+  <Card
+    href="https://github.com/inngest/inngest-js/tree/main/examples/durable-endpoints-deep-research"
+    title={"Explore the full DeepResearch demo"}
+    icon={<RiNextjsFill className="text-basis h-8 w-8"/>}
+    iconPlacement="top"
+  >
+   Explore a more advanced example with a DeepResearch interface entirely built with Durable Endpoints.
+  </Card>
+
+</CardGroup>
 
 ## Further Reference
 
-- [TypeScript SDK Reference](/docs/sdk/typescript)
-- [Inngest Functions](/docs/functions)
-- [Steps Overview](/docs/steps)
-- [Introducing Checkpointing](https://www.inngest.com/blog/introducing-checkpointing)
+- [Durable Endpoint - TypeScript SDK Reference](/docs/reference/typescript/durable-endpoints)
+- [Steps Overview](/docs/learn/inngest-steps)

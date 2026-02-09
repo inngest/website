@@ -1,4 +1,10 @@
-import { HomeIcon, PlayIcon, LightBulbIcon, BookOpenIcon, CodeBracketIcon } from "@heroicons/react/24/outline";
+import {
+  HomeIcon,
+  PlayIcon,
+  LightBulbIcon,
+  BookOpenIcon,
+  CodeBracketIcon,
+} from "@heroicons/react/24/outline";
 import { parse } from "node:path";
 
 // A basic link in the nav
@@ -107,7 +113,7 @@ const sectionReference: (NavGroup | NavLink)[] = [
       {
         title: "Durable Endpoints",
         href: "/docs/reference/typescript/durable-endpoints",
-        tag: "beta",
+        tag: "new",
       },
       {
         title: "Steps",
@@ -409,7 +415,7 @@ const sectionLearn: (NavGroup | NavLink)[] = [
       {
         title: "Durable Endpoints",
         href: `/docs/learn/durable-endpoints`,
-        tag: "beta",
+        tag: "new",
       },
       {
         title: "Steps",
@@ -622,7 +628,7 @@ const sectionLearn: (NavGroup | NavLink)[] = [
           },
           {
             title: "Mergent migration guide",
-            href: `/docs/guides/mergent-migration`
+            href: `/docs/guides/mergent-migration`,
           },
           {
             title: "Workflow Kit",
@@ -671,7 +677,7 @@ const sectionLearn: (NavGroup | NavLink)[] = [
           {
             title: "Checkpointing",
             href: `/docs/setup/checkpointing`,
-            tag: "new"
+            tag: "new",
           },
           {
             title: "Cloud providers",
@@ -1000,7 +1006,8 @@ const matchers: Record<string, (pathname: string) => any> = {
   examples: (pathname) =>
     /^\/docs\/examples/.test(pathname) || linkSearch(sectionExamples, pathname),
   reference: (pathname) =>
-    /^\/docs\/reference/.test(pathname) || linkSearch(sectionReference, pathname),
+    /^\/docs\/reference/.test(pathname) ||
+    linkSearch(sectionReference, pathname),
   learn: (pathname) => linkSearch(sectionLearn, pathname),
 };
 matchers.default = matchers.learn;

@@ -194,55 +194,45 @@ export const handler = inngest.endpoint(async (req: Request): Promise<Response> 
 
 ## Framework Integration
 
-Durable Endpoints return a standard handler compatible with most edge runtimes and frameworks.
+Durable Endpoints is only available for Bun and Next.js API endpoints.
 
-### Bun
-
-```ts
-const server = Bun.serve({
-  port: 3000,
-  routes: {
-    "/api/process": {
-      GET: handler,
-    },
-  },
-});
-```
-
-### Next.js (Edge Runtime)
-
-```ts
-// app/api/process/route.ts
-export const runtime = "edge";
-export { handler as GET };
-```
-
-### Cloudflare Workers
-
-```ts
-export default {
-  fetch: handler,
-};
-```
+[Reach out on Discord](/discord) to ask support for additional frameworks.
 
 ---
 
-## Limitations
+## Requesting a Durable Endpoint
 
-The following limitations apply during the beta period:
+Durable Endpoints behave like regular API endpoints upon a success path. You can request them from your front-end (_or back-end_) using `fetch()` or your favorite query or http library:
 
-| Feature | Status |
-|---------|--------|
-| Flow Control (concurrency, rate limits) | Not supported |
-| POST body | Not yet supported (use query strings) |
-| Authenticated endpoints | Not yet supported |
-| SSE streaming responses | Not supported |
+However, when failures trigger some retries, a Durable Endpoint is returning a redirect to a dedicated endpoint on the Inngest Cloud to poll the final result.
 
----
+Here is a snippet handling both the direct result and redirected result upon retries:
 
-## Related
+```typescript
+function handleError(error) {
+  // ...
+}
 
-- [Durable Endpoints Guide](/docs/learn/durable-endpoints) for a high-level guide with use cases
-- [step.run()](/docs/reference/functions/step-run) for running and checkpointing functions
-- [step.sleep()](/docs/reference/functions/step-sleep) for pausing execution
-- [step.waitForEvent()](/docs/reference/functions/step-wait-for-event) for waiting on external events
+async function handleResult(result) {
+  const result = await res.json()
+  // ...
+}
+
+fetch(`/api/your-durable-endpoint`)
+  .then((res) => {
+    if (res.redirected) {
+      // follow the redirect
+      fetch(res.url)
+        .then(handleResult)
+        .catch(handleError);
+    } else {
+      handleResult(res)
+    }
+  })
+  .catch(handleError);
+```
+
+<Callout>
+  As the Durable Endpoint redirects the request to a dedicated endpoint on Inngest's Cloud, `fetch()` cannot simply follow this redirect for you (_CORS policy_).
+  Instead, you need to get the redirect URL (`res.url`) and trigger a new `fetch()` request.
+</Callout>
