@@ -51,6 +51,25 @@ export const platformDropdown = [
     ),
   },
   {
+    name: "Durable Endpoints",
+    href: "/durable-endpoints?ref=nav",
+    description: "Build fault-tolerant API endpoints",
+    icon: (
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 20 20"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M12.1428 11.1665L8.26201 7.28575L9.44052 6.10724L15.3331 11.9998L9.44052 17.8923L8.26201 16.7138L12.1427 12.8331L4.49953 12.8332L4.49951 11.1666L12.1428 11.1665ZM16.9996 17.8331V6.16641H18.6663V17.8331H16.9996Z"
+          fill="#AD8513"
+        />
+      </svg>
+    ),
+  },
+  {
     name: "Platform",
     href: "/platform?ref=nav",
     description: "Learn about features, flow control, and more",
