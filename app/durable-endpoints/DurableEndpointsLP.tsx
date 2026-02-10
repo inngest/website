@@ -192,7 +192,7 @@ export function DurableEndpointsLP({
                 title: "Introducing: Durable Endpoints",
                 description:
                   "Learn why we built Durable Endpoints, and find some code examples you can use.",
-                url: `/docs/features/durable-endpoints?ref=${ref}`,
+                url: `/docs/learn/durable-endpoints?ref=${ref}`,
               },
               {
                 type: "example",
@@ -224,7 +224,7 @@ function Hero({
       variant: "default",
     },
     {
-      href: `/docs/features/durable-endpoints?ref=${ref}`,
+      href: `/docs/learn/durable-endpoints?ref=${ref}`,
       text: "Read the docs",
       variant: "outline",
     },
