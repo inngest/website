@@ -64,6 +64,7 @@ const options = {
     "https://medium.com/",
     "https://unsplash.com/",
     "https://react.email/", // 429s
+    "https://docs.deno.com/",
   ],
 };
 

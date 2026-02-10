@@ -1,0 +1,354 @@
+import { ResourceGrid, Resource } from "src/shared/Docs/Resources";
+import { CodeGroup, CardGroup, Card } from "src/shared/Docs/mdx";
+import { RiNextjsFill } from "@remixicon/react";
+import { CodeBracketIcon } from "@heroicons/react/24/outline";
+
+export const description = "Learn how to use Inngest Durable Endpoints to make any HTTP handler durable with automatic retries and step orchestration."
+
+# Durable Endpoints
+
+[Durable Endpoints](/docs/learn/durable-endpoints) let you add durability to regular HTTP handlers without separate function definitions or event triggers. You wrap your existing API route with `inngest.endpoint()` and use `step.run()` inline to get automatic retries and memoization for each step.
+
+This is useful when you want your endpoint to orchestrate multiple operations (like booking a flight, processing a payment, and sending a confirmation) and guarantee that each step completes exactly once, even if the handler crashes or restarts partway through.
+
+
+## How it differs from traditional Inngest
+
+With the traditional approach, you define separate functions triggered by events. Durable Endpoints flip this: you keep your HTTP handlers and make them durable inline.
+
+| Traditional Inngest              | Durable Endpoints           |
+| -------------------------------- | --------------------------- |
+| Define separate functions        | Inline in HTTP handlers     |
+| Trigger via events               | Direct HTTP calls           |
+| `inngest.createFunction()`       | `inngest.endpoint()`        |
+| `{ event, step }` from context   | Import `step` directly      |
+| Separate `/api/inngest` endpoint | No separate endpoint needed |
+
+## Setting up the client
+
+First, configure your Inngest client with the endpoint adapter for your framework:
+
+<CodeGroup>
+```typescript {{ title: "Next.js" }}
+import { Inngest } from "inngest";
+import { endpointAdapter } from "inngest/next";
+
+const inngest = new Inngest({
+  id: "my-app",
+  endpointAdapter,
+});
+```
+```typescript {{ title: "Bun" }}
+import { Inngest } from "inngest";
+import { endpointAdapter } from "inngest/edge";
+
+const inngest = new Inngest({
+  id: "my-app",
+  endpointAdapter,
+});
+```
+</CodeGroup>
+
+The `endpointAdapter` tells Inngest how to interact with your framework's request/response model. Import it from `"inngest/next"` for Next.js or `"inngest/edge"` for Bun. This is the only configuration needed, no separate `/api/inngest` serve endpoint required.
+
+## A simple durable endpoint
+
+With the client set up, you can turn any route handler into a durable endpoint. Each `step.run()` call is memoized: if the handler is re-executed (due to a retry or crash recovery), completed steps are skipped and their previous results are reused.
+
+<CodeGroup>
+```typescript {{ title: "Next.js" }}
+import { step } from "inngest";
+import { inngest } from "@/inngest/client";
+import { NextRequest } from "next/server";
+
+export const POST = inngest.endpoint(async (req: NextRequest) => {
+  const { userId, data } = await req.json();
+
+  // Step 1: Validate and enrich the data
+  const enriched = await step.run("enrich-data", async () => {
+    const user = await db.users.find(userId);
+    return { ...data, account: user.accountId };
+  });
+
+  // Step 2: Process the enriched data
+  const result = await step.run("process", async () => {
+    return await processData(enriched);
+  });
+
+  // Step 3: Send notification
+  await step.run("notify", async () => {
+    await sendNotification(userId, result);
+  });
+
+  return Response.json({ success: true, result });
+});
+```
+```typescript {{ title: "Bun" }}
+import { Inngest, step } from "inngest";
+import { endpointAdapter } from "inngest/edge";
+
+const inngest = new Inngest({ id: "my-app", endpointAdapter });
+
+Bun.serve({
+  port: 3000,
+  routes: {
+    "/process": inngest.endpoint(async (req) => {
+      const { userId, data } = await req.json();
+
+      // Step 1: Validate and enrich the data
+      const enriched = await step.run("enrich-data", async () => {
+        const user = await db.users.find(userId);
+        return { ...data, account: user.accountId };
+      });
+
+      // Step 2: Process the enriched data
+      const result = await step.run("process", async () => {
+        return await processData(enriched);
+      });
+
+      // Step 3: Send notification
+      await step.run("notify", async () => {
+        await sendNotification(userId, result);
+      });
+
+      return new Response(JSON.stringify({ success: true, result }));
+    }),
+  },
+});
+```
+</CodeGroup>
+
+If the handler crashes after "enrich-data" completes but before "process" finishes, Inngest re-invokes the handler. The first step returns its cached result instantly, and execution picks up at the second step. No duplicate work, no lost progress.
+
+## Multi-step orchestration with retries
+
+Real-world workflows often involve multiple external systems that can fail independently. Durable Endpoints handle this naturally since each step retries on its own without re-running previous steps.
+
+Let's take the following trip booking demo that searches for flights, reserves a seat, processes payment, and confirms the booking:
+
+<img
+  src="/assets/docs/examples/durable-endpoints/trip-planner-demo.png"
+  width="800" height={800/2762*1868} quality="95"
+  className="rounded-md"
+  alt="The Trip Planner demo illustrates how Durable Endpoints can be used to build complex multi-step API endpoints."
+/>
+
+
+The Durable Endpoint implementation will look as follows:
+
+
+<CodeGroup>
+```typescript {{ title: "Next.js" }}
+import { step } from "inngest";
+import { inngest } from "@/inngest/client";
+import { NextRequest } from "next/server";
+
+export const GET = inngest.endpoint(async (req: NextRequest) => {
+  const url = new URL(req.url);
+  const origin = url.searchParams.get("origin") || "NYC";
+  const destination = url.searchParams.get("destination") || "LAX";
+  const date = url.searchParams.get("date") || new Date().toISOString().split("T")[0];
+
+  // Step 1: Search for available flights
+  const availability = await step.run("search-availability", async () => {
+    const flights = await searchFlights(origin, destination, date);
+    return { flights };
+  });
+
+  // Step 2: Reserve the best flight
+  // If the seat lock times out, Inngest automatically retries this step
+  // without re-running the search
+  const reservation = await step.run("reserve-flight", async () => {
+    const best = availability.flights[0];
+    return await reserveSeat(best.flightNumber, "14A");
+  });
+
+  // Step 3: Process payment
+  const payment = await step.run("process-payment", async () => {
+    return await chargeCard(reservation.price, reservation.pnr);
+  });
+
+  // Step 4: Confirm the booking
+  const confirmation = await step.run("confirm-booking", async () => {
+    return await confirmReservation(reservation.reservationId);
+  });
+
+  return Response.json({
+    success: true,
+    trip: { origin, destination, date },
+    reservation,
+    payment,
+    confirmation,
+  });
+});
+```
+```typescript {{ title: "Bun" }}
+import { Inngest, step } from "inngest";
+import { endpointAdapter } from "inngest/edge";
+
+const inngest = new Inngest({ id: "trip-booker", endpointAdapter });
+
+Bun.serve({
+  port: 3000,
+  routes: {
+    "/api/booking": inngest.endpoint(async (req) => {
+      const url = new URL(req.url);
+      const origin = url.searchParams.get("origin") || "NYC";
+      const destination = url.searchParams.get("destination") || "LAX";
+      const date = url.searchParams.get("date") || new Date().toISOString().split("T")[0];
+
+      // Step 1: Search for available flights
+      const availability = await step.run("search-availability", async () => {
+        const flights = await searchFlights(origin, destination, date);
+        return { flights };
+      });
+
+      // Step 2: Reserve the best flight
+      // If the seat lock times out, Inngest automatically retries this step
+      // without re-running the search
+      const reservation = await step.run("reserve-flight", async () => {
+        const best = availability.flights[0];
+        return await reserveSeat(best.flightNumber, "14A");
+      });
+
+      // Step 3: Process payment
+      const payment = await step.run("process-payment", async () => {
+        return await chargeCard(reservation.price, reservation.pnr);
+      });
+
+      // Step 4: Confirm the booking
+      const confirmation = await step.run("confirm-booking", async () => {
+        return await confirmReservation(reservation.reservationId);
+      });
+
+      return new Response(JSON.stringify({
+        success: true,
+        trip: { origin, destination, date },
+        reservation,
+        payment,
+        confirmation,
+      }));
+    }),
+  },
+});
+```
+</CodeGroup>
+
+Each step in this workflow is independently durable:
+- If the seat reservation fails with a timeout, only that step retries. The flight search results are preserved.
+- If the payment step fails, the reservation is still held and the payment retries without re-reserving.
+- If the entire server crashes after payment succeeds, the handler resumes at the confirmation step.
+
+## Running steps in parallel
+
+When steps don't depend on each other, you can run them in parallel using `Promise.all()`. Each parallel step is still independently durable and retried.
+
+<CodeGroup>
+```typescript {{ title: "Next.js" }}
+import { step } from "inngest";
+import { inngest } from "@/inngest/client";
+import { NextRequest } from "next/server";
+
+export const POST = inngest.endpoint(async (req: NextRequest) => {
+  const { flightId, hotelId, carId } = await req.json();
+
+  // Book flight, hotel, and car rental in parallel
+  // Each step retries independently if it fails
+  const [flight, hotel, car] = await Promise.all([
+    step.run("book-flight", async () => {
+      return await bookFlight(flightId);
+    }),
+    step.run("book-hotel", async () => {
+      return await bookHotel(hotelId);
+    }),
+    step.run("book-car", async () => {
+      return await bookCarRental(carId);
+    }),
+  ]);
+
+  // Send a single confirmation after all bookings succeed
+  await step.run("send-confirmation", async () => {
+    await sendTripConfirmation({
+      flight,
+      hotel,
+      car,
+    });
+  });
+
+  return Response.json({
+    success: true,
+    bookings: { flight, hotel, car },
+  });
+});
+```
+```typescript {{ title: "Bun" }}
+import { Inngest, step } from "inngest";
+import { endpointAdapter } from "inngest/edge";
+
+const inngest = new Inngest({ id: "my-app", endpointAdapter });
+
+Bun.serve({
+  port: 3000,
+  routes: {
+    "/api/book-trip": inngest.endpoint(async (req) => {
+      const { flightId, hotelId, carId } = await req.json();
+
+      // Book flight, hotel, and car rental in parallel
+      // Each step retries independently if it fails
+      const [flight, hotel, car] = await Promise.all([
+        step.run("book-flight", async () => {
+          return await bookFlight(flightId);
+        }),
+        step.run("book-hotel", async () => {
+          return await bookHotel(hotelId);
+        }),
+        step.run("book-car", async () => {
+          return await bookCarRental(carId);
+        }),
+      ]);
+
+      // Send a single confirmation after all bookings succeed
+      await step.run("send-confirmation", async () => {
+        await sendTripConfirmation({
+          flight,
+          hotel,
+          car,
+        });
+      });
+
+      return new Response(JSON.stringify({
+        success: true,
+        bookings: { flight, hotel, car },
+      }));
+    }),
+  },
+});
+```
+</CodeGroup>
+
+If the hotel booking fails, it retries independently while the flight and car rental results are preserved. Once all three succeed, the confirmation step runs.
+
+## Try it out
+
+The Trip Booker example is a complete Next.js app that demonstrates all of these patterns with a real UI, progress tracking, and intentional failures to show retry behavior in action.
+
+<CardGroup cols={2}>
+
+  <Card
+    href="https://github.com/inngest/inngest-js/tree/main/examples/durable-endpoints-trip-booker#readme"
+    title={"Explore the full Trip Booker example"}
+    icon={<RiNextjsFill className="text-basis h-8 w-8"/>}
+    iconPlacement="top"
+  >
+   Clone this example locally to run it and explore the full source code.
+  </Card>
+  <Card
+    href="https://github.com/inngest/inngest-js/tree/main/examples/durable-endpoints-deepresearch#readme"
+    title={"Explore the full DeepResearch demo"}
+    icon={<RiNextjsFill className="text-basis h-8 w-8"/>}
+    iconPlacement="top"
+  >
+   Explore a more advanced example with a DeepResearch interface entirely built with Durable Endpoints.
+  </Card>
+
+</CardGroup>
