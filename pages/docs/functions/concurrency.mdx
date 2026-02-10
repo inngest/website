@@ -1,12 +1,12 @@
-import { CodeGroup, Callout, Properties, Property, Warning } from "src/shared/Docs/mdx";
+import { CodeGroup, Callout, Properties, Property } from "src/shared/Docs/mdx";
 
 # Managing concurrency
 
 Limit the number of concurrently running steps for your function with the [`concurrency`](/docs/reference/functions/create#configuration) configuration options. Setting an optional `key` parameter limits the concurrency for each unique value of the expression.
 
-<Warning>
+<Callout>
 **Important:** Concurrency limits _step_ execution, not the total number of function runs. Functions that are sleeping, waiting for events, or paused between steps do **not** count against your concurrency limit. This means you may have many more function runs in progress than your concurrency limit. [Learn more about how concurrency works →](/docs/guides/concurrency#how-concurrency-works)
-</Warning>
+</Callout>
 
 [Read our concurrency guide for more information on concurrency, including how it works and any limits](/docs/guides/concurrency).
 

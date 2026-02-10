@@ -1,14 +1,14 @@
-import { Callout, Info, Tip, Warning, CodeGroup, Properties, Property } from "src/shared/Docs/mdx";
+import { Callout, Info, Tip, CodeGroup, Properties, Property } from "src/shared/Docs/mdx";
 
 # Concurrency management
 
 Limiting concurrency in systems is an important tool for correctly managing computing resources and scaling workloads. Inngest's concurrency control enables you to manage the number of _steps_ that concurrently execute.
 
-<Warning>
+<Callout>
 **Important:** Concurrency limits the number of _steps_ executing at a single time, **not** the number of function runs. A function run that is sleeping, waiting for an event, or paused between steps does **not** count against your concurrency limit. Only steps that are actively executing code count toward the limit.
 
 This means you may have many more function runs in progress than your concurrency limit suggests, because most of those runs are likely paused or waiting between steps.
-</Warning>
+</Callout>
 
 {/* TODO - Link to updated keys section */}
 Step concurrency can be optionally configured using "keys" which applies the limit to each unique value of the key (ex. user id). The concurrency option can also be applied to different "scopes" which allows a concurrency limit to be shared across _multiple_ functions.
