@@ -1,4 +1,6 @@
 import { Callout, Info, Tip, CodeGroup, Properties, Property } from "src/shared/Docs/mdx";
+import Lottie from "lottie-react";
+import Concurrency from "components/RedesignedLanding/FlowAccoridion/Lottie/Concurrency.json";
 
 # Concurrency management
 
@@ -188,44 +190,20 @@ inngest.createFunction(
 
 Because sleeping or waiting is common, concurrency _does not_ limit the number of functions in progress. Instead, it limits the number of steps executing at any single time.
 
-Consider a function with a `concurrency` limit of `10`:
+The animation below shows how concurrency works in Inngest. You can see how different jobs queue up and flow through the system. When a limit is set, only that number of steps can execute at any given time. As steps complete, the next queued steps start executing.
+
+<Lottie animationData={Concurrency} loop={true} />
+
+The key insight is that your concurrency limit applies to _active execution_, not to the number of function runs in progress. Consider a function with a `concurrency` limit of `10`:
 
 - You could have **hundreds** of function runs in progress
 - But only **10 steps** can be actively executing code at once
 - When a function run calls `step.sleep("wait", "1h")`, it releases its execution slot
 - That slot becomes available for other steps to use
 
-{/* Visual representation of concurrency */}
-```
-+------------------------------------------------------------------+
-|                     Concurrency Limit: 3                         |
-+------------------------------------------------------------------+
-|                                                                  |
-|   Function Runs in Progress: 6                                   |
-|   +------+ +------+ +------+ +------+ +------+ +------+          |
-|   |Run 1 | |Run 2 | |Run 3 | |Run 4 | |Run 5 | |Run 6 |          |
-|   +--+---+ +--+---+ +--+---+ +--+---+ +--+---+ +--+---+          |
-|      |        |        |        |        |        |              |
-|      v        v        v        v        v        v              |
-|   +------+ +------+ +------+ +------+ +------+ +------+          |
-|   | [z]  | | [!]  | | [!]  | | [z]  | | [!]  | | [z]  |          |
-|   |sleep | | step | | step | |wait  | | step | |sleep |          |
-|   +------+ +------+ +------+ +------+ +------+ +------+          |
-|                                                                  |
-|   [!] = Executing (counts toward limit)     Currently: 3/3      |
-|   [z] = Sleeping/Waiting (does NOT count)                       |
-|                                                                  |
-+------------------------------------------------------------------+
-```
-
-<Tip>
-  See an animated visualization of how concurrency works on [the Inngest homepage](/?ref=docs-concurrency-guide) — look for the "Flow control" section which shows concurrency in action.
-</Tip>
-
 <Info>
   **What counts against concurrency:**
   - `step.run()` - while the step's code is executing
-  - Any code executing in your function handler
 
   **What does NOT count against concurrency:**
   - `step.sleep()` / `step.sleepUntil()` - while sleeping
@@ -233,8 +211,6 @@ Consider a function with a `concurrency` limit of `10`:
   - `step.invoke()` - while waiting for the invoked function to complete
   - Time between steps - when Inngest is coordinating the next step
 </Info>
-
-This design allows you to have long-running workflows with many paused functions without consuming capacity. For example, a user onboarding sequence that runs over several days only consumes capacity during the brief moments when each step executes.
 
 ### Queue ordering
 
@@ -244,27 +220,6 @@ This design allows you to have long-running workflows with many paused functions
 
 - The order of keys does not matter.  Concurrency is limited by any key that reaches its limits.
 - You can specify multiple keys for the same scope, as long as the resulting `key` evaluates to a different string.
-
-## Concurrency vs. Throttling
-
-Understanding when to use concurrency versus [throttling](/docs/guides/throttling) is important:
-
-| | Concurrency | Throttling |
-|---|---|---|
-| **What it limits** | Number of _steps_ executing simultaneously | Number of _function runs_ starting in a time period |
-| **Applies to** | Step execution | Function run starts |
-| **Use case** | Limit parallel workloads (DB connections, API calls) | Limit throughput over time (rate limits) |
-| **Example** | "Only 10 steps can run at once" | "Only 5 functions can start per minute" |
-
-**Use concurrency when:**
-- You want to limit how many operations happen in parallel
-- You need to prevent overwhelming a database or external service
-- You want to ensure fair resource distribution per tenant
-
-**Use throttling when:**
-- You need to stay within a third-party API's rate limit (e.g., 100 requests/minute)
-- You want to spread function execution evenly over time
-- You want to control how often new work begins, regardless of how many steps run
 
 ## Concurrency control across specific steps in a function
 
