@@ -1,14 +1,20 @@
 import { CardGroup, Card } from "src/shared/Docs/mdx";
 import { EnvelopeIcon, Cog6ToothIcon } from "@heroicons/react/24/outline";
-import { RiBracesFill, RiCalendarScheduleFill, RiErrorWarningFill, RiArrowDownDoubleFill, RiWifiFill, RiBarChart2Fill } from "@remixicon/react";
+import { RiBracesFill, RiCalendarScheduleFill, RiErrorWarningFill, RiArrowDownDoubleFill, RiWifiFill, RiBarChart2Fill, RiShieldCheckFill } from "@remixicon/react";
 
 export const hidePageSidebar = true;
 
 # Examples
 
-Explore the features built with Inngest:
-
 <CardGroup cols={2}>
+
+<Card
+  href={"/docs/examples/durable-endpoints"}
+  icon={<RiShieldCheckFill fill={"black"} className="h-6 w45 fill-carbon-700/10 stroke-carbon-700 transition-colors duration-300 group-hover:stroke-carbon-900 dark:fill-white/10 dark:stroke-carbon-400 dark:group-hover:fill-indigo-300/10 dark:group-hover:stroke-indigo-400" />}
+  title={'Durable Endpoints'}
+>
+Make any API endpoint durable with automatic retries.
+</Card>
 
 <Card
   href={"/docs/examples/ai-agents-and-rag"}
@@ -73,6 +79,7 @@ Use Realtime to stream updates from one to multiple Inngest functions or to impl
 >
   Forward your application's OpenTelemetry traces to Inngest Traces
 </Card>
+
 
 </CardGroup>
 

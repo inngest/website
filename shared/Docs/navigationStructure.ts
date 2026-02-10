@@ -1,4 +1,10 @@
-import { HomeIcon, PlayIcon, LightBulbIcon, BookOpenIcon, CodeBracketIcon } from "@heroicons/react/24/outline";
+import {
+  HomeIcon,
+  PlayIcon,
+  LightBulbIcon,
+  BookOpenIcon,
+  CodeBracketIcon,
+} from "@heroicons/react/24/outline";
 import { parse } from "node:path";
 
 // A basic link in the nav
@@ -103,6 +109,11 @@ const sectionReference: (NavGroup | NavLink)[] = [
       {
         title: "Testing",
         href: "/docs/reference/testing",
+      },
+      {
+        title: "Durable Endpoints",
+        href: "/docs/reference/typescript/durable-endpoints",
+        tag: "new",
       },
       {
         title: "Steps",
@@ -403,7 +414,7 @@ const sectionLearn: (NavGroup | NavLink)[] = [
       },
       {
         title: "Durable Endpoints",
-        href: `/docs/learn/rest-endpoints`,
+        href: `/docs/learn/durable-endpoints`,
         tag: "new",
       },
       {
@@ -617,7 +628,7 @@ const sectionLearn: (NavGroup | NavLink)[] = [
           },
           {
             title: "Mergent migration guide",
-            href: `/docs/guides/mergent-migration`
+            href: `/docs/guides/mergent-migration`,
           },
           {
             title: "Workflow Kit",
@@ -666,7 +677,7 @@ const sectionLearn: (NavGroup | NavLink)[] = [
           {
             title: "Checkpointing",
             href: `/docs/setup/checkpointing`,
-            tag: "new"
+            tag: "new",
           },
           {
             title: "Cloud providers",
@@ -912,6 +923,10 @@ const sectionExamples: NavGroup[] = [
         href: `/docs/examples/open-telemetry`,
       },
       {
+        title: "Durable Endpoints",
+        href: `/docs/examples/durable-endpoints`,
+      },
+      {
         title: "Trigger workflows from Retool",
         href: `/docs/guides/trigger-your-code-from-retool`,
       },
@@ -995,7 +1010,8 @@ const matchers: Record<string, (pathname: string) => any> = {
   examples: (pathname) =>
     /^\/docs\/examples/.test(pathname) || linkSearch(sectionExamples, pathname),
   reference: (pathname) =>
-    /^\/docs\/reference/.test(pathname) || linkSearch(sectionReference, pathname),
+    /^\/docs\/reference/.test(pathname) ||
+    linkSearch(sectionReference, pathname),
   learn: (pathname) => linkSearch(sectionLearn, pathname),
 };
 matchers.default = matchers.learn;
