@@ -199,7 +199,7 @@ export function DurableEndpointsLP({
                 title: "DeepResearch built with Durable Endpoints",
                 description:
                   "See Durable Endpoints in action with our DeepResearch example. Checkout the repository and try it locally.",
-                url: `https://github.com/inngest/inngest-js/tree/main/examples/durable-endpoints-deep-research#readme`,
+                url: `https://github.com/inngest/inngest-js/tree/main/examples/durable-endpoints-deepresearch#readme`,
               },
               {
                 type: "docs",
