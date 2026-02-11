@@ -43,8 +43,8 @@ export default function AnnouncementBanner() {
   // return null;
 
   return (
-    <Banner href="/blog/announcing-inngest-series-a">
-      We raised a $21M Series A to help companies ship and iterate faster.
+    <Banner href="/blog/introducing-durable-endpoints?ref=announcement-banner">
+      Unbreakable APIs are here: <strong>Discover Durable Endpoints</strong>
     </Banner>
   );
 }
