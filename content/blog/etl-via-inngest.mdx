@@ -1,0 +1,254 @@
+---
+heading: "Every app you've built is an ETL pipeline"
+subtitle: (you just didn't call it that)
+showSubtitle: true
+image: /assets/blog/inngest-as-etl.png
+date: 2026-02-12
+dateUpdated: 2026-02-12
+author: Linell Bonnette
+category: product-updates
+---
+
+
+ETL pipelines are everywhere. But they’re also kind of a pain when handled incorrectly. What starts as a simple background job quietly absorbs status tracking, retry logic, and idempotency until you're maintaining a bespoke orchestration system instead of building your product. Step-level durability breaks this cycle. Here’s how.
+
+## **Every web app is an ETL system**
+
+I've spent my career building startups that all have one thing in common: they’re ETL (Extract, Transform, Load) pipelines with a UI on top. Different domains, different customers, different use cases—all the same problem: *Pull data from somewhere, do something to it, put it somewhere else.*
+
+If you've ever built a web application that did the same—you've built an ETL system. You may have called it an "integration" or a "sync job," but once you see the pattern, you can't unsee it. That admin CSV upload feature? Extract the file contents, transform the rows into something clean, load them into the database. The Stripe webhook handler? Same thing—receive the payload, map it to your billing state, update the record. It's all ETL.
+
+And it doesn't matter how these systems are architected—they all beg the same questions: 
+
+- *What happens when the extract fails?*
+- *How do you know the transform produced the right output?*
+- *What if the load only partially succeeds?*
+- *Can you retry without duplicating data?*
+- *How do you even know the sync is running at all?*
+
+And the one that inevitably comes up at the worst possible moment: 
+
+- *Why is the data like **this**?*
+
+## **How LLM-powered features make ETL problems worse**
+
+With AI features showing up on every product roadmap, this pattern is about to get a lot more common. And honestly, you’d be surprised at how often AI-powered features are really just ETL wearing a mustache: If you extract a support ticket, ask an LLM to categorize it, and load that category back as structured data—that’s ETL. Even RAG is just multiple extract-transform-load cycles chained together. Each one carries all the same failure modes. With one critical difference: the transform is non-deterministic. The same input can produce many different outputs, invalid schemas, or outright failures depending on the model's mood that millisecond.
+
+And let’s not forget the cost: Retries that re-run the whole pipeline burn through budget, without giving you any insight into what happened during that specific call. Was it a timeout? A rate limit? Did the model return something that doesn't match your schema? You can't debug that by grepping logs, so you fix in the dark, and re-run it all from scratch.
+
+Multiply by thousands of records and all of a sudden you’re choking your worker pool, exhausting your resources, and urgently needing to scale up cloud services.
+
+## **The evolutionary trap: how three lines of code become an infrastructure project**
+
+Most ETL-in-disguise-projects follow *vaguely* the same trajectory. If you've built a few of these, I'm sure that it will feel familiar.
+
+You've got your model and an API call that returns data you'll use to update it. Let's go with an easy one: `supportThread.fetchAllReplies()` reaches out and returns all of the comments on a customer support thread, and you want to use the result to categorize the type of ticket. So you add a background job:
+
+```tsx
+async fetchThreadRepliesAndCategorize(supportThread) {
+  const allReplies = await supportThread.fetchAllReplies()
+  const category = await llmService.fetchCategoryForReplies(allReplies)
+  await supportThreadRepo.update(supportThread, { category });
+}
+```
+
+Three *clean* lines. It works so well that you get thousands of eagerly paying customers, and life is great!
+
+Until it’s not. One morning you wake up and realize that no threads have been categorized since yesterday. Was the job running? Did the provider go down? You've got no idea, because nothing tracks what happened. So you add a `categorization_status` column and wire up another background job that periodically retries failures.
+
+```tsx
+async fetchThreadRepliesAndCategorize(supportThread) {
+  try {
+    await supportThreadRepo.update(supportThread, {
+      categorization_status: "processing"
+    })
+
+    const allReplies = await supportThread.fetchAllReplies()
+    const category = await llmService.fetchCategoryForReplies(allReplies)
+
+    await supportThreadRepo.update(supportThread, {
+      category,
+      categorization_status: "complete",
+      categorized_at: new Date()
+    })
+  } catch (error) {
+    await supportThreadRepo.update(supportThread, {
+      categorization_status: "failed",
+      categorization_error: error.message
+    })
+  }
+}
+```
+
+Not *as* clean, sure, but it's okay. Our simple three-line function is now sandwiched by bookkeeping for the categorization status, our support thread model is bloated with status columns that don't actually relate to the support thread's domain, and you now have an entirely new background job for retries but… it works. *Right?*
+
+## **When retries create data duplication bugs**
+
+Let’s continue that scenario. A month goes by. You're on an island in the Bahamas when your Director of Customer Support tells you they can't access the admin backend. You dig in and discover that a "failing" job has been retrying for two weeks straight, appending duplicate tags to the same thread on every pass. There are now millions of duplicated records in the database, everything is catastrophically slow, and *your margarita's ice **completely** melts while you fix that bug.*
+
+So you come back from vacation and add idempotency checks, a deduplication pass, and a timeout.
+
+```tsx
+async fetchThreadRepliesAndCategorize(supportThread) {
+  // don't process if already in progress
+  if (supportThread.categorization_status === "processing") {
+    if (supportThread.updated_at > minutesAgo(30)) return
+    // ...unless it's been stuck for 30 minutes, then retry
+  }
+
+  try {
+    await supportThreadRepo.update(supportThread, {
+      categorization_status: "processing"
+    })
+
+    const allReplies = await supportThread.fetchAllReplies()
+    const category = await llmService.fetchCategoryForReplies(allReplies)
+
+    // validate before saving — learned this the hard way
+    if (!VALID_CATEGORIES.includes(category)) {
+      throw new Error(`LLM returned invalid category: ${category}`)
+    }
+
+    // clear any duplicate tags from previous failed runs
+    await supportThreadRepo.clearTags(supportThread)
+
+    await supportThreadRepo.update(supportThread, {
+      category,
+      categorization_status: "complete",
+      categorized_at: new Date(),
+      categorization_error: null
+    })
+  } catch (error) {
+    await supportThreadRepo.update(supportThread, {
+      categorization_status: "failed",
+      categorization_error: error.message,
+      categorization_attempts:
+        supportThread.categorization_attempts + 1
+    })
+
+    // stop retrying after 5 attempts
+    if (supportThread.categorization_attempts < 5) {
+      retryQueue.enqueue(supportThread, { delay: "5m" })
+    }
+  }
+}
+```
+
+Yea… remember when this was three lines?
+
+## Developers can’t be the only ones to debug your pipeline
+
+Here's the part that really stings: unless you build something to change that situation, *only a developer* has any insight into these problems. Your Director of Customer Support can't check whether categorization is healthy. Your ops team can't see which threads are stuck. You might have something like the Sidekiq dashboard that gives you *some* visibility into queue depths, but that tells you "a job failed," not "this specific support thread failed to categorize because the LLM returned an invalid category after three retries." You'll inevitably need to build an observability dashboard so non-technical users can understand how data flows through your system. And that dashboard is an entire project unto itself.
+
+This is the evolutionary trap. Each fix is reasonable in isolation. Status tracking? Of course. Retry logic? Obviously. Idempotency? Learned that one the hard way. But each fix adds accidental complexity, each fix pulls you further from your actual product, and at the end of the cycle you're maintaining a bespoke orchestration system that nobody fully understands. You wanted to categorize support tickets. Now you're in the infrastructure business.
+
+## **Building durable ETL pipelines with step-level retries**
+
+It's easy to assume that I joined Inngest entirely because being on the "execution team" sounded *really cool*, but the truth is that I joined because as soon as I saw the product I understood how valuable it would be for building things in the future. So yes, I *am* biased, but it *is* literally why I took the job. Here's that same support ticket code built with Inngest:
+
+```tsx
+inngest.createFunction(
+  {
+	   id: "categorize-support-thread",
+	   singleton: { // only run this function once per thread_id
+		   key: "event.data.thread_id",
+		   mode: "skip" // skip any other matching events
+	   }
+  },
+  { event: "support/thread.created" },
+  async ({ event, step }) => {
+
+    const replies = await step.run("fetch-replies", async () => {
+      return await fetchAllReplies(event.data.threadId)
+    })
+
+    const category = await step.run("classify-with-llm", async () => {
+      const result = await llmService.fetchCategoryForReplies(replies)
+      if (!VALID_CATEGORIES.includes(result)) {
+        throw new Error(`Invalid category: ${result}`)
+      }
+      return result
+    })
+
+    await step.run("save-classification", async () => {
+      await supportThreadRepo.update(event.data.threadId, { category })
+    })
+
+    if (category === "urgent") {
+      await step.run("notify-team", async () => {
+        await notifySlack(event.data.threadId, category)
+      })
+    }
+  }
+)
+```
+
+But look at what's *not here*.
+
+Your support thread model goes back to representing a support thread, because the state of the *pipeline* is tracked by Inngest, not by your domain model.
+
+No retry logic. If the LLM call fails, Inngest retries *that step*. It doesn't re-fetch the replies. It doesn't re-run the whole function from scratch. Each `step.run` is a [checkpoint](https://www.inngest.com/docs/setup/checkpointing): if it succeeded, its result is saved, and the function picks up from where it left off. That margarita-ruining bug where failed retries duplicated data? Can't happen, because the `save-classification` step already completed and won't run again.
+
+No hand-rolled idempotency. No stuck job detection. No retry counter. No deduplication pass to clean up after your own retry logic.
+
+And the observability question, "how do I know what's happening without building a dashboard?", is answered before you even ask it. Every function run is visible in Inngest's dashboard: which event triggered it, which steps completed, which step failed, what the input and output were at each step, and how long each step took. Your Director of Customer Support doesn't need a developer to investigate. The state of every pipeline run is right there.
+
+## **Event-driven architecture: how one event triggers multiple independent pipelines**
+
+There *is* one detail in the Inngest function above that's easy to gloss over but changes *everything* about how your system grows:
+
+```tsx
+{ event: "support/thread.created" }
+```
+
+That function doesn't know *what* creates support threads. It doesn't care. It just knows that when a thread is created, it should categorize it. The thing that creates threads doesn't know this function exists either. They're completely decoupled, connected only by an event.
+
+This matters because ETL systems don't stay simple. That categorization function is version one. Next month you also want to auto-generate a suggested response. The month after, you want to update a real-time analytics dashboard. Then you want to check whether the customer has an open billing dispute and escalate automatically.
+
+In the evolutionary trap version, each of those additions means modifying existing code. Your `fetchThreadRepliesAndCategorize` function, already bloated with status tracking and retry logic, now needs to either do more things itself or know about more downstream jobs to enqueue. Every new feature increases the coupling and the blast radius of changes.
+
+With Inngest, each of those is a new function that listens to the same event:
+
+```tsx
+// These are entirely separate functions.
+// They don't know about each other.
+// Deploying one cannot break another.
+
+inngest.createFunction(
+  { id: "categorize-support-thread" },
+  { event: "support/thread.created" },
+  // ...classify and store
+)
+
+inngest.createFunction(
+  { id: "generate-suggested-response" },
+  { event: "support/thread.created" },
+  // ...generate draft reply with LLM
+)
+
+inngest.createFunction(
+  { id: "update-support-analytics" },
+  { event: "support/thread.created" },
+  // ...update dashboard metrics
+)
+
+inngest.createFunction(
+  { id: "check-billing-escalation" },
+  { event: "support/thread.created" },
+  // ...check for open disputes, escalate if needed
+)
+```
+
+That's fan-out: One event, multiple independent reactions. Adding new behavior means adding a new function and deploying it. You don't touch existing code. You don't risk breaking categorization by adding analytics. Each function has its own retry logic, its own observability, its own failure isolation. If the analytics function breaks, categorization keeps working.
+
+This is the architecture that every bespoke ETL system eventually *wants* to be. The problem I kept hitting in my career wasn't that I didn't know event-driven was the right answer. It was that building the event infrastructure myself always turned into a massive undertaking that got compromised by deadlines and priorities. You end up with something half-event-driven and half-spaghetti, and the spaghetti always wins over time. Inngest gives you the clean version from day one without the infrastructure investment.
+
+## **What changes when your ETL infrastructure is someone else's problem**
+
+What changed for me in practice is that all of the complexity I only cared about because I *had to* is gone. When you're building your support ticket categorization system, you can focus on the domain of support tickets instead of all of the *other stuff*. An entire category of hard problems becomes entirely boring, in the best possible way.
+
+I think the biggest win with Inngest for ETL is *actually* more for product owners: the built-in observability and reporting that you get *for free* is something I've seen entire teams spend multiple quarters building themselves.
+
+I've spent over a decade building ETL systems the hard way. Lots of hand-rolled moving parts supported by complex infrastructure and more than a couple of watered-down margaritas. Inngest is the good version of what I've been trying to build for my entire career, and I hope I get to see you build some super cool stuff with it.
+
+Get started with Inngest → [inngest.com](https://inngest.com/)
