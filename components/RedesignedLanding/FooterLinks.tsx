@@ -1,5 +1,6 @@
 import Link from "next/link";
 import StatusWidget from "src/shared/StatusWidget";
+import CookiePreferencesButton from "@/components/consent/CookiePreferencesButton";
 
 export const navigation = {
   platform: [
@@ -172,10 +173,12 @@ export default function FooterLinks() {
             <div>|</div>
             <Link
               href="/security?ref=footer-links"
-              className="pl-1 hover:underline"
+              className="px-1 hover:underline"
             >
               Security
             </Link>
+            <div>|</div>
+            <CookiePreferencesButton />
           </div>
         </div>
       </div>

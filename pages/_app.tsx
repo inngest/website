@@ -9,8 +9,9 @@ import { trackPageView } from "../utils/tracking";
 import { getOpenGraphImageURL } from "../utils/social";
 import { useAnonymousID } from "../shared/trackingHooks";
 import "../styles/globals.css";
-import * as fullstory from "@fullstory/browser";
 import Analytics from "@/components/Analytics";
+import { ConsentProvider } from "@/components/consent/ConsentContext";
+import ConsentBanner from "@/components/consent/ConsentBanner";
 
 import {
   Layout as DocsLayout,
@@ -49,7 +50,7 @@ function MyApp({ Component, pageProps }: AppProps<DefaultProps>) {
     : DefaultLayout;
 
   useEffect(() => {
-    fullstory.init({ orgId: "o-1CVB8R-na1" });
+    // FullStory initialization is now handled by ConsentContext based on consent state
 
     const htmlEl = document.getElementsByTagName("html")[0];
     if (pageProps.htmlClassName) {
@@ -116,7 +117,7 @@ function MyApp({ Component, pageProps }: AppProps<DefaultProps>) {
     : getOpenGraphImageURL({ title: title });
 
   return (
-    <>
+    <ConsentProvider>
       <Head>
         {/* Set this for all pages */}
         <meta property="og:url" content={canonicalUrl} />
@@ -185,7 +186,8 @@ function MyApp({ Component, pageProps }: AppProps<DefaultProps>) {
       />
       <GoogleTagManager />
       <Analytics />
-    </>
+      <ConsentBanner />
+    </ConsentProvider>
   );
 }
 

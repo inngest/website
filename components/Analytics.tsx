@@ -9,7 +9,7 @@ export default function Analytics() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    analytics.page(null, {
+    (analytics as any).page(null, {
       ref: searchParams.get("ref"),
     });
   }, [pathname, searchParams]);

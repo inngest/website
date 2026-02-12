@@ -45,6 +45,7 @@
     "@radix-ui/react-toggle-group": "1.1.10",
     "@remixicon/react": "4.2.0",
     "@rive-app/react-canvas": "4.4.0",
+    "@segment/analytics-consent-tools": "2.0.3",
     "@segment/analytics-next": "1.81.1",
     "@sindresorhus/slugify": "2.1.1",
     "@types/mdx": "2.0.13",

@@ -73,6 +73,9 @@ importers:
       '@rive-app/react-canvas':
         specifier: 4.4.0
         version: 4.4.0(react@19.0.0)
+      '@segment/analytics-consent-tools':
+        specifier: 2.0.3
+        version: 2.0.3(@segment/analytics-next@1.81.1)
       '@segment/analytics-next':
         specifier: 1.81.1
         version: 1.81.1
@@ -1374,6 +1377,14 @@ packages:
 
   '@rushstack/eslint-patch@1.10.5':
     resolution: {integrity: sha512-kkKUDVlII2DQiKy7UstOR1ErJP8kUKAQ4oa+SQtM0K+lPdmmjj0YnnxBgtTVYH7mUKtbsxeFC9y0AmK7Yb78/A==}
+
+  '@segment/analytics-consent-tools@2.0.3':
+    resolution: {integrity: sha512-iz8j9tq2JEMU+bQxwm7on196LpgwZz+REMPTEsDd0IL31OGtVtp4estVQb7gE27jBNzfnfFll9l1u2zuf9aSaA==}
+    peerDependencies:
+      '@segment/analytics-next': '>=1.67.0'
+    peerDependenciesMeta:
+      '@segment/analytics-next':
+        optional: true
 
   '@segment/analytics-core@1.8.2':
     resolution: {integrity: sha512-5FDy6l8chpzUfJcNlIcyqYQq4+JTUynlVoCeCUuVz+l+6W0PXg+ljKp34R4yLVCcY5VVZohuW+HH0VLWdwYVAg==}
@@ -5390,9 +5401,6 @@ packages:
   tslib@2.4.0:
     resolution: {integrity: sha512-d6xOpEDfsi2CZVlPQzGeux8XMwLT9hssAsaPYExaQMuYskwb+x1x7J371tWlbBdWHroy99KnVB6qIkUbs5X3UQ==}
 
-  tslib@2.4.1:
-    resolution: {integrity: sha512-tGyy4dAjRIEwI7BzsB0lynWgOpfqjUdq91XXAlIWD2OwKBH7oCl/GZG/HT4BOHrTlPMOASlMQ7veyTqpmRcrNA==}
-
   tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
 
@@ -6198,7 +6206,7 @@ snapshots:
       '@motionone/types': 10.15.1
       '@motionone/utils': 10.15.1
       hey-listen: 1.0.8
-      tslib: 2.4.1
+      tslib: 2.8.1
 
   '@motionone/easing@10.15.1':
     dependencies:
@@ -6797,6 +6805,12 @@ snapshots:
   '@rtsao/scc@1.1.0': {}
 
   '@rushstack/eslint-patch@1.10.5': {}
+
+  '@segment/analytics-consent-tools@2.0.3(@segment/analytics-next@1.81.1)':
+    dependencies:
+      tslib: 2.8.1
+    optionalDependencies:
+      '@segment/analytics-next': 1.81.1
 
   '@segment/analytics-core@1.8.2':
     dependencies:
@@ -11734,8 +11748,6 @@ snapshots:
   tslib@1.14.1: {}
 
   tslib@2.4.0: {}
-
-  tslib@2.4.1: {}
 
   tslib@2.8.1: {}
 

@@ -10,6 +10,8 @@ import AnnouncementBanner from "src/components/AnnouncementBanner";
 import Header from "src/components/RedesignedLanding/Header/Header";
 import Footer from "src/components/RedesignedLanding/Footer";
 import Analytics from "@/components/Analytics";
+import { ConsentProvider } from "@/components/consent/ConsentContext";
+import ConsentBanner from "@/components/consent/ConsentBanner";
 
 export const metadata: Metadata = {
   title: {
@@ -57,18 +59,22 @@ export default function RootLayout({
         </Suspense>
       </head>
       <body className="dark font-sans">
-        <AnnouncementBanner />
-        <Header />
+        <ConsentProvider>
+          <AnnouncementBanner />
+          <Header />
 
-        <main className="text-basis">{children}</main>
+          <main className="text-basis">{children}</main>
 
-        <Footer />
+          <Footer />
 
-        <Suspense>
-          <PageViews />
-          <GoogleTagManger />
-          <Analytics />
-        </Suspense>
+          <Suspense>
+            <PageViews />
+            <GoogleTagManger />
+            <Analytics />
+          </Suspense>
+
+          <ConsentBanner />
+        </ConsentProvider>
       </body>
     </html>
   );
