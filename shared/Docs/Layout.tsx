@@ -97,11 +97,11 @@ export function Layout({
         <SectionProvider sections={sections}>
           <Header />
 
-          <div className="lg:ml-[248px]">
+          <div className="lg:ml-[280px]">
             {/* @ts-ignore */}
             <motion.header
               layoutScroll
-              className="fixed inset-y-0 mt-14 left-0 z-40 contents lg:w-[248px] overflow-y-auto border-r border-subtle pl-4 pr-3 py-4 pb-8 lg:block"
+              className="fixed inset-y-0 mt-14 left-0 z-40 contents lg:w-[280px] overflow-y-auto border-r border-subtle pl-4 pr-3 py-4 pb-8 lg:block"
             >
               <Navigation className="hidden lg:block" />
             </motion.header>
