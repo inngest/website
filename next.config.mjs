@@ -34,6 +34,9 @@ const permanentRedirects = [
     "/docs/reference/python/overview/quick-start",
     "/docs/getting-started/python-quick-start",
   ],
+  ["/docs/sdk/overview", "/docs"],
+  ["/docs/dev-server", "/docs/local-development"],
+  ["/docs/guides/development-with-docker", "/docs/local-development"],
 
   // Other pages
   ["/uses/zero-infra-llm-ai", "/ai"],
@@ -84,6 +87,9 @@ const permanentRedirects = [
   ["/docs/agent-kit/:any*", "https://agentkit.inngest.com"],
 
   ["/docs/features/realtime/nextjs", "/docs/features/realtime/react-hooks"],
+
+  // Durable Endpoints rename
+  ["/docs/learn/rest-endpoints", "/docs/learn/durable-endpoints"],
 ];
 
 async function redirects() {

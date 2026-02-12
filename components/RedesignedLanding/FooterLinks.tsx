@@ -8,6 +8,10 @@ export const navigation = {
       name: "Durable Workflows",
       href: "/uses/durable-workflows?ref=footer-links",
     },
+    {
+      name: "Durable Endpoints",
+      href: "/durable-endpoints?ref=footer-links",
+    },
     { name: "Platform", href: "/platform?ref=footer-links" },
     {
       name: "Queueing",

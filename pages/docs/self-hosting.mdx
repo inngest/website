@@ -66,7 +66,7 @@ docker run -p 8288:8288 -p 8289:8289 -e INNGEST_EVENT_KEY=abcd -e INNGEST_SIGNIN
 ```
 </CodeGroup>
 
-This will start the Inngest server on the default port `8288` and use the default configuration, including SQLite for persistence.
+This will start the Inngest server on the default port `8288` and use the default configuration, including SQLite for persistence. Additionally, the Connect gateway will be available on port `8289`.
 
 ### Configuration
 
@@ -82,7 +82,7 @@ By default, the server will:
 To securely configure your server, create your event and signing keys using whatever format you choose and start the Inngest server using them. You can also pass them via environment variable (see below):
 
 <Callout>
-The signing key must be a valid hexadecimal string with an even number of characters. You can generate a secure signing key using: 
+The signing key must be a valid hexadecimal string with an even number of characters. You can generate a secure signing key using:
 ```plaintext
 openssl rand -hex 32
 ```
@@ -206,8 +206,8 @@ services:
     image: inngest/inngest
     command: "inngest start"
     ports:
-      - "8288:8288"
-      - "8289:8289"
+      - "8288:8288" # APIs and Dashboard
+      - "8289:8289" # Connect WebSocket gateway
     environment:
       - INNGEST_EVENT_KEY=your_event_key_here # Must be hex string with even number of chars
       - INNGEST_SIGNING_KEY=your_signing_key_here # Must be hex string with even number of chars

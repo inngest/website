@@ -39,7 +39,7 @@ What happens when something goes wrong? If a step fails and needs to retry, the 
 
 To enable checkpointing:
 
-1. Install `inngest@3.46.0` or higher
+1. Install `inngest@3.51.0` or higher
 2. Set `checkpointing: true` on your Inngest client
 
 ```ts
@@ -49,6 +49,7 @@ export const inngest = new Inngest({
   id: "my-app",
   checkpointing: true,
 });
+```
 
 </GuideSection>
 
@@ -84,6 +85,8 @@ _, err := inngestgo.CreateFunction(
 </GuideSection>
 
 </GuideSelector>
+
+Read [the detailed checkpointing guide](/docs/setup/checkpointing) for more information.
 
 ---
 

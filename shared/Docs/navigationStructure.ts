@@ -111,6 +111,11 @@ const sectionReference: (NavGroup | NavLink)[] = [
         href: "/docs/reference/testing",
       },
       {
+        title: "Durable Endpoints",
+        href: "/docs/reference/typescript/durable-endpoints",
+        tag: "new",
+      },
+      {
         title: "Steps",
         links: [
           {
@@ -438,7 +443,7 @@ const sectionLearn: (NavGroup | NavLink)[] = [
       },
       {
         title: "Durable Endpoints",
-        href: `/docs/learn/rest-endpoints`,
+        href: `/docs/learn/durable-endpoints`,
         tag: "new",
       },
       {
@@ -457,8 +462,16 @@ const sectionLearn: (NavGroup | NavLink)[] = [
             href: "/docs/features/inngest-functions/steps-workflows/wait-for-event",
           },
           {
+            title: "Invoke other functions",
+            href: `/docs/guides/invoking-functions-directly`,
+          },
+          {
             title: "AI steps (LLM calls)",
             href: "/docs/features/inngest-functions/steps-workflows/step-ai-orchestration",
+          },
+          {
+            title: "Durable Fetch",
+            href: "/docs/features/inngest-functions/steps-workflows/fetch",
           },
         ],
       },
@@ -576,17 +589,12 @@ const sectionLearn: (NavGroup | NavLink)[] = [
             href: `/docs/platform/manage/apps`,
           },
           {
-            title: "Event and signing keys",
-            links: [
-              {
-                title: "Event keys",
-                href: `/docs/events/creating-an-event-key`,
-              },
-              {
-                title: "Signing keys",
-                href: `/docs/platform/signing-keys`,
-              },
-            ],
+            title: "Event keys",
+            href: `/docs/events/creating-an-event-key`,
+          },
+          {
+            title: "Signing keys",
+            href: `/docs/platform/signing-keys`,
           },
         ],
       },
@@ -602,20 +610,7 @@ const sectionLearn: (NavGroup | NavLink)[] = [
       },
       {
         title: "Local development",
-        links: [
-          {
-            title: "Overview",
-            href: `/docs/local-development`,
-          },
-          {
-            title: "Inngest Dev Server",
-            href: `/docs/dev-server`,
-          },
-          {
-            title: "Development with Docker",
-            href: `/docs/guides/development-with-docker`,
-          },
-        ],
+        href: `/docs/local-development`,
       },
       {
         title: "Patterns",
@@ -627,10 +622,6 @@ const sectionLearn: (NavGroup | NavLink)[] = [
           {
             title: "Parallel steps",
             href: "/docs/guides/step-parallelism",
-          },
-          {
-            title: "Human-in-the-loop",
-            href: "/docs/features/inngest-functions/steps-workflows/wait-for-event",
           },
           {
             title: "Fan-out",
@@ -661,24 +652,8 @@ const sectionLearn: (NavGroup | NavLink)[] = [
             href: `/docs/guides/sending-events-from-functions`,
           },
           {
-            title: "Direct invocation",
-            href: `/docs/guides/invoking-functions-directly`,
-          },
-          {
             title: "User-defined Workflows",
             href: `/docs/guides/user-defined-workflows`,
-          },
-          {
-            title: "Trigger workflows from Retool",
-            href: `/docs/guides/trigger-your-code-from-retool`,
-          },
-          {
-            title: "Durable Fetch",
-            href: "/docs/features/inngest-functions/steps-workflows/fetch",
-          },
-          {
-            title: "Instrumenting GraphQL",
-            href: `/docs/guides/instrumenting-graphql`,
           },
           {
             title: "Mergent migration guide",
@@ -770,10 +745,6 @@ const sectionLearn: (NavGroup | NavLink)[] = [
         href: `/docs/improve-performance`,
       },
       {
-        title: "Traces",
-        href: "/docs/platform/monitor/traces",
-      },
-      {
         title: "Logging",
         href: "/docs/guides/logging",
       },
@@ -825,14 +796,6 @@ const sectionLearn: (NavGroup | NavLink)[] = [
             title: "Consuming webhook events",
             href: `/docs/platform/webhooks`,
           },
-          {
-            title: "Handle Clerk webhooks",
-            href: `/docs/guides/clerk-webhook-events`,
-          },
-          {
-            title: "Handle Resend webhooks",
-            href: `/docs/guides/resend-webhook-events`,
-          },
         ],
       },
     ],
@@ -861,8 +824,12 @@ const sectionLearn: (NavGroup | NavLink)[] = [
         title: "Monitor",
         links: [
           {
-            title: "Runs and traces",
+            title: "Inspecting runs",
             href: "/docs/platform/monitor/inspecting-function-runs",
+          },
+          {
+            title: "Traces",
+            href: "/docs/platform/monitor/traces",
           },
           {
             title: "Observability and metrics",
@@ -935,10 +902,6 @@ const sectionLearn: (NavGroup | NavLink)[] = [
         title: "Limitations",
         href: `/docs/usage-limits/inngest`,
       },
-      {
-        title: "Install the SDK",
-        href: `/docs/sdk/overview`,
-      },
     ],
   },
 ];
@@ -987,6 +950,26 @@ const sectionExamples: NavGroup[] = [
       {
         title: "Setup OpenTelemetry with Inngest",
         href: `/docs/examples/open-telemetry`,
+      },
+      {
+        title: "Durable Endpoints",
+        href: `/docs/examples/durable-endpoints`,
+      },
+      {
+        title: "Trigger workflows from Retool",
+        href: `/docs/guides/trigger-your-code-from-retool`,
+      },
+      {
+        title: "Instrumenting GraphQL",
+        href: `/docs/guides/instrumenting-graphql`,
+      },
+      {
+        title: "Handle Clerk webhooks",
+        href: `/docs/guides/clerk-webhook-events`,
+      },
+      {
+        title: "Handle Resend webhooks",
+        href: `/docs/guides/resend-webhook-events`,
       },
     ],
   },

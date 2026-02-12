@@ -1,13 +1,21 @@
-import { Callout, Info, Tip, Warning, CodeGroup, Properties, Property } from "src/shared/Docs/mdx";
+import { Callout, Info, Tip, CodeGroup, Properties, Property } from "src/shared/Docs/mdx";
+import Lottie from "lottie-react";
+import Concurrency from "components/RedesignedLanding/FlowAccoridion/Lottie/Concurrency.json";
 
 # Concurrency management
 
 Limiting concurrency in systems is an important tool for correctly managing computing resources and scaling workloads. Inngest's concurrency control enables you to manage the number of _steps_ that concurrently execute.
 
+<Callout>
+**Important:** Concurrency limits the number of _steps_ executing at a single time, **not** the number of function runs. A function run that is sleeping, waiting for an event, or paused between steps does **not** count against your concurrency limit. Only steps that are actively executing code count toward the limit.
+
+This means you may have many more function runs in progress than your concurrency limit suggests, because most of those runs are likely paused or waiting between steps.
+</Callout>
+
 {/* TODO - Link to updated keys section */}
 Step concurrency can be optionally configured using "keys" which applies the limit to each unique value of the key (ex. user id). The concurrency option can also be applied to different "scopes" which allows a concurrency limit to be shared across _multiple_ functions.
 
-As compared to traditional queue and worker systems, Inngest manages the concurrency within the system you do not need to implement additional worker-level logic or state.
+As compared to traditional queue and worker systems, Inngest manages the concurrency within the system so you do not need to implement additional worker-level logic or state.
 
 ## When to use concurrency
 
@@ -176,15 +184,39 @@ inngest.createFunction(
 
 ## How concurrency works
 
-**Concurrency works by limiting the number of steps executing at a single time.** Within Inngest, execution is defined as "an SDK running code". **Calling **`step.sleep`**, **`step.sleepUntil`**, **`step.waitForEvent`**, or **`step.invoke`** does not count towards capacity limits**, as the SDK doesn't execute code while those steps wait. Because sleeping or waiting is common, concurrency _does not_ limit the number of functions in progress.  Instead, it limits the number of steps executing at any single time.
+**Concurrency works by limiting the number of steps executing at a single time.** Within Inngest, execution is defined as "an SDK running code". **Calling **`step.sleep`**, **`step.sleepUntil`**, **`step.waitForEvent`**, or **`step.invoke`** does not count towards capacity limits**, as the SDK doesn't execute code while those steps wait.
+
+### Understanding step execution vs. function runs
+
+Because sleeping or waiting is common, concurrency _does not_ limit the number of functions in progress. Instead, it limits the number of steps executing at any single time.
+
+The animation below shows how concurrency works in Inngest. You can see how different jobs queue up and flow through the system. When a limit is set, only that number of steps can execute at any given time. As steps complete, the next queued steps start executing.
+
+<Lottie animationData={Concurrency} loop={true} />
+
+The key insight is that your concurrency limit applies to _active execution_, not to the number of function runs in progress. Consider a function with a `concurrency` limit of `10`:
+
+- You could have **hundreds** of function runs in progress
+- But only **10 steps** can be actively executing code at once
+- When a function run calls `step.sleep("wait", "1h")`, it releases its execution slot
+- That slot becomes available for other steps to use
 
 <Info>
-  Steps that are asynchronous actions, `step.sleep`, `step.sleepUntil`, `step.waitForEvent`, and `step.invoke` do not contribute to the concurrency limit.
+  **What counts against concurrency:**
+  - `step.run()` - while the step's code is executing
+
+  **What does NOT count against concurrency:**
+  - `step.sleep()` / `step.sleepUntil()` - while sleeping
+  - `step.waitForEvent()` - while waiting for an event
+  - `step.invoke()` - while waiting for the invoked function to complete
+  - Time between steps - when Inngest is coordinating the next step
 </Info>
+
+### Queue ordering
 
 **Queues are ordered from oldest to newest jobs ([FIFO](https://en.wikipedia.org/wiki/FIFO))** across the same function.  Ordering amongst different functions is not guaranteed.  This means that within a specific function, Inngest prioritizes finishing older functions above starting newer functions - even if the older functions continue to schedule new steps to run.  Different functions, however, compete for capacity, with runs on the most backlogged function much more likely (but not guaranteed) to be scheduled first.
 
-Some additional information:
+### Additional information
 
 - The order of keys does not matter.  Concurrency is limited by any key that reaches its limits.
 - You can specify multiple keys for the same scope, as long as the resulting `key` evaluates to a different string.

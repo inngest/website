@@ -1,4 +1,4 @@
-import { CardGroup, Card, ImageTheme, CodeGroup } from "src/shared/Docs/mdx";
+import { CardGroup, Card, ImageTheme, GuideSelector, GuideSection } from "src/shared/Docs/mdx";
 import EventIcon from 'src/shared/Icons/Event';
 import {
   RiGitPullRequestFill,
@@ -28,8 +28,11 @@ An Inngest Function is composed of 3 main parts that provide robust tools for re
   </Card>
 </CardGroup>
 
-<CodeGroup>
-```ts {{ title: "TypeScript" }}
+<GuideSelector options={[{ key: "typescript", title: "TypeScript" }, { key: "python", title: "Python" }, { key: "go", title: "Go" }]}>
+
+<GuideSection show="typescript">
+
+```ts
 inngest.createFunction({
     id: "sync-systems",
     // Easily add Throttling with Flow Control
@@ -50,7 +53,12 @@ inngest.createFunction({
   }
 );
 ```
-```py {{ title: "Python" }}
+
+</GuideSection>
+
+<GuideSection show="python">
+
+```python
 @inngest_client.create_function(
     id="sync-systems",
     # trigger (event or cron)
@@ -63,10 +71,18 @@ def sync_systems(ctx: inngest.ContextSync) -> None:
     # Steps can reuse data from previous ones
     ctx.step.run("Save data", db.syncs.insert_one, data)
 ```
-```go {{ title: "Go" }}
+
+</GuideSection>
+
+<GuideSection show="go">
+
+```go
 !snippet:path=snippets/go/docs/functions/sync_systems_function.go
 ```
-</CodeGroup>
+
+</GuideSection>
+
+</GuideSelector>
 
 
 {/* 
