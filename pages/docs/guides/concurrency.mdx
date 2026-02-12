@@ -363,6 +363,70 @@ export const send = inngest.createFunction(
 
 </CodeGroup>
 
+## Troubleshooting concurrency issues
+
+When working with concurrency limits, you may encounter situations where function runs appear to "stall" or steps take longer than expected to execute. This section helps you identify and resolve common concurrency-related issues.
+
+### Symptoms of concurrency constraints
+
+Your functions may be affected by concurrency limits if you notice:
+
+- **Steps waiting to start**: Steps remain in a "Queued" state longer than expected
+- **Apparent "stalling"**: Function runs seem to hang between steps
+- **Growing backlogs**: New function runs accumulate faster than they complete
+- **Uneven processing**: Some functions process quickly while others wait
+
+### In local development
+
+The [Inngest Dev Server](/docs/local-development) uses **100 parallel queue workers** by default. If you're testing functions with high parallelism (such as fan-out patterns), you may exhaust this capacity.
+
+**Solutions:**
+
+1. **Increase queue workers**: Start the Dev Server with more workers:
+   ```shell
+   npx inngest-cli@latest dev --queue-workers 500
+   ```
+
+2. **Review your function design**: If your functions create many parallel steps, consider whether this matches your production requirements
+
+3. **Test with realistic concurrency**: If your production functions have concurrency limits, consider matching those in local development to catch issues early
+
+<Tip>
+  The Dev Server does not currently surface concurrency metrics. If you're unsure whether concurrency is causing delays, try significantly increasing `--queue-workers` to see if processing speeds up.
+</Tip>
+
+### In production
+
+The Inngest Platform provides visibility into concurrency through several features:
+
+1. **Metrics dashboard**: Monitor your account's concurrency usage and identify when you're approaching limits. See [Observability metrics](/docs/platform/monitor/observability-metrics) for more details.
+
+2. **Function run inspection**: View individual function runs to see step timing and identify queuing delays. See [Inspecting function runs](/docs/platform/monitor/inspecting-function-runs).
+
+3. **Account limits**: Your plan determines your maximum concurrency limit. Check your current limits on the [billing page](https://app.inngest.com/billing) or see [pricing](/pricing?ref=docs-concurrency-troubleshooting) for plan comparisons.
+
+**Solutions:**
+
+1. **Increase your plan's concurrency limit**: If you're consistently hitting limits, consider upgrading your plan
+
+2. **Optimize concurrency keys**: Use [concurrency keys](#concurrency-keys-multi-tenant-concurrency) to fairly distribute capacity across users or resources
+
+3. **Add throttling**: If you're hitting external API rate limits, [throttling](/docs/guides/throttling) may be more appropriate than concurrency limits
+
+4. **Use start timeouts**: Configure [start timeouts](/docs/features/inngest-functions/cancellation/cancel-on-timeouts) to cancel runs that have been waiting too long in the queue
+
+### Understanding queuing behavior
+
+When your concurrency limit is reached:
+
+1. **New steps are queued**: They wait for executing steps to complete
+2. **Queue order is FIFO**: Within a function, older steps are processed first
+3. **No steps are dropped**: All queued steps will eventually execute (unless cancelled or timed out)
+
+This means temporary backlogs are normal during traffic spikes. However, sustained backlogs may indicate you need to adjust your concurrency limits or function design.
+
 ## Tips
 
 * Configure [start timeouts](/docs/features/inngest-functions/cancellation/cancel-on-timeouts) to prevent large backlogs with concurrency
+* Use [metrics](/docs/platform/monitor/observability-metrics) to monitor concurrency usage in production
+* Test your functions locally with the `--queue-workers` flag set to match your production concurrency limits
