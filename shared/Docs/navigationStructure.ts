@@ -1,4 +1,10 @@
-import { HomeIcon, PlayIcon, LightBulbIcon, BookOpenIcon, CodeBracketIcon } from "@heroicons/react/24/outline";
+import {
+  HomeIcon,
+  PlayIcon,
+  LightBulbIcon,
+  BookOpenIcon,
+  CodeBracketIcon,
+} from "@heroicons/react/24/outline";
 import { parse } from "node:path";
 
 // A basic link in the nav
@@ -371,23 +377,27 @@ const sectionLearn: (NavGroup | NavLink)[] = [
         links: [
           {
             title: "Express",
-            href: "/docs/getting-started/nodejs-quick-start",
+            href: "/docs/getting-started/express-quick-start",
           },
           {
             title: "Astro",
-            href: "/docs/learn/serving-inngest-functions#framework-astro",
+            href: "/docs/getting-started/astro-quick-start",
           },
           {
             title: "H3",
-            href: "/docs/learn/serving-inngest-functions#framework-h3",
+            href: "/docs/getting-started/h3-quick-start",
           },
           {
             title: "NestJS",
-            href: "/docs/learn/serving-inngest-functions#framework-nest-js",
+            href: "/docs/getting-started/nestjs-quick-start",
           },
           {
             title: "TanStack Start",
             href: "/docs/getting-started/tanstack-start-quick-start",
+          },
+          {
+            title: "Other frameworks",
+            href: "/docs/getting-started/nodejs-quick-start",
           },
         ],
       },
@@ -668,11 +678,11 @@ const sectionLearn: (NavGroup | NavLink)[] = [
           },
           {
             title: "Instrumenting GraphQL",
-            href: `/docs/guides/instrumenting-graphql`
+            href: `/docs/guides/instrumenting-graphql`,
           },
           {
             title: "Mergent migration guide",
-            href: `/docs/guides/mergent-migration`
+            href: `/docs/guides/mergent-migration`,
           },
           {
             title: "Workflow Kit",
@@ -721,7 +731,7 @@ const sectionLearn: (NavGroup | NavLink)[] = [
           {
             title: "Checkpointing",
             href: `/docs/setup/checkpointing`,
-            tag: "new"
+            tag: "new",
           },
           {
             title: "Cloud providers",
@@ -1046,7 +1056,8 @@ const matchers: Record<string, (pathname: string) => any> = {
   examples: (pathname) =>
     /^\/docs\/examples/.test(pathname) || linkSearch(sectionExamples, pathname),
   reference: (pathname) =>
-    /^\/docs\/reference/.test(pathname) || linkSearch(sectionReference, pathname),
+    /^\/docs\/reference/.test(pathname) ||
+    linkSearch(sectionReference, pathname),
   learn: (pathname) => linkSearch(sectionLearn, pathname),
 };
 matchers.default = matchers.learn;
