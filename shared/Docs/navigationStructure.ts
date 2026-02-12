@@ -154,6 +154,10 @@ const sectionReference: (NavGroup | NavLink)[] = [
         title: "Serve",
         links: [
           {
+            title: "Framework handlers",
+            href: `/docs/learn/serving-inngest-functions`,
+          },
+          {
             title: "Configuration",
             href: `/docs/reference/serve`,
           },
@@ -375,7 +379,32 @@ const sectionLearn: (NavGroup | NavLink)[] = [
       },
       {
         title: "Node.js",
-        href: "/docs/getting-started/nodejs-quick-start",
+        links: [
+          {
+            title: "Express",
+            href: "/docs/getting-started/express-quick-start",
+          },
+          {
+            title: "Astro",
+            href: "/docs/getting-started/astro-quick-start",
+          },
+          {
+            title: "H3",
+            href: "/docs/getting-started/h3-quick-start",
+          },
+          {
+            title: "NestJS",
+            href: "/docs/getting-started/nestjs-quick-start",
+          },
+          {
+            title: "TanStack Start",
+            href: "/docs/getting-started/tanstack-start-quick-start",
+          },
+          {
+            title: "Other frameworks",
+            href: "/docs/getting-started/nodejs-quick-start",
+          },
+        ],
       },
       {
         title: "Python",

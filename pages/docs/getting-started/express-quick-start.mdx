@@ -1,8 +1,8 @@
-import { Callout, CodeGroup, Col, Row } from "src/shared/Docs/mdx";
+import { Callout, CodeGroup } from "src/shared/Docs/mdx";
 
 export const description = `Get started with Inngest in this ten-minute JavaScript tutorial`
 
-# Node.js Quick Start
+# Express Quick Start
 
 In this tutorial you will add Inngest to a Node.js app to easily run background tasks and build complex workflows.
 
@@ -19,15 +19,12 @@ Let's get started!
 
 Choose your preferred Node.js web framework to get started. This guide uses ESM (ECMAScript Modules), but it also works for Common.js with typical modifications.
 
+
 Inngest works with any Node, Bun or Deno backend framework,but this tutorial will focus on some of the most popular frameworks.
 
 ### Optional: Use a starter project
 
 If you don't have an existing project, you can clone the following starter project to run through the quick start tutorial:
-
-
-Once you've chosen a project, open it in a code editor.
-
 
 ## Starting your project
 
@@ -65,7 +62,7 @@ bun add inngest
 
 ## 2. Run the Inngest Dev Server
 
-Next, start the [Inngest Dev Server](/docs/local-development#inngest-dev-server), which is a fast, in-memory version of Inngest where you can quickly send and view events and function runs. This tutorial assumes that your Node.js server will be running on port `3000`; change this to match your port if you use another.
+Next, start the [Inngest Dev Server](/docs/local-development#inngest-dev-server), which is a fast, in-memory version of Inngest where you can quickly send and view events and function runs. This tutorial assumes that your Express server will be running on port `3000`; change this to match your port if you use another.
 
 <CodeGroup>
 ```shell {{ title: "npm" }}
@@ -141,41 +138,31 @@ export const inngest = new Inngest({ id: "my-app" });
 export const functions = [];
 ```
 
-## 4. Set up the Inngest HTTP endpoint
+## 4. Set up the Inngest http endpoint
 
-Inngest supports 20+ Node.js HTTP frameworks.
 
-You will find the instructions to set up your Inngest HTTP endpoint with your preferred framework using the following links:
+Using your existing Express.js server, we'll set up Inngest using the provided `serve` handler which will "serve" Inngest functions. Here we'll assume this file is your entrypoint at `inngest.ts` and all import paths will be relative to that:
 
-<div className="grid md:grid-cols-3">
+```ts {{ filename: "./index.ts" }}
+import express from "express";
+import { serve } from "inngest/express";
+import { inngest, functions } from "./src/inngest"
 
-<Col>
-* [AWS Lambda](/docs/learn/serving-inngest-functions#framework-aws-lambda)
-* [Bun](/docs/learn/serving-inngest-functions#bun-serve)
-* [Cloudflare Pages](/docs/learn/serving-inngest-functions#framework-cloudflare-pages-functions)
-* [Cloudflare Workers](/docs/learn/serving-inngest-functions#framework-cloudflare-workers)
-* [DigitalOcean Functions](/docs/learn/serving-inngest-functions#framework-digital-ocean-functions)
-* [ElysiaJS](/docs/learn/serving-inngest-functions#framework-elysia-js)
-</Col>
-<Col>
-* [Fastify](/docs/learn/serving-inngest-functions#framework-fastify)
-* [Fresh (Deno)](/docs/learn/serving-inngest-functions#framework-fresh-deno)
-* [Google Cloud Run Functions](/docs/learn/serving-inngest-functions#framework-google-cloud-run-functions)
-* [Firebase Cloud functions](/docs/learn/serving-inngest-functions#framework-firebase-cloud-functions)
-* [Hono](/docs/learn/serving-inngest-functions#framework-hono)
-* [Koa](/docs/learn/serving-inngest-functions#framework-koa)
-</Col>
-<Col>
-* [Nitro](/docs/learn/serving-inngest-functions#framework-nitro)
-* [Nuxt](/docs/learn/serving-inngest-functions#framework-nuxt)
-* [Redwood](/docs/learn/serving-inngest-functions#framework-redwood)
-* [Remix](/docs/learn/serving-inngest-functions#framework-remix)
-* [Supabase Edge Functions](/docs/learn/serving-inngest-functions#framework-supabase-edge-functions)
-* [SvelteKit](/docs/learn/serving-inngest-functions#framework-svelte-kit)
+const app = express();
+// Important: ensure you add JSON middleware to process incoming JSON POST payloads.
+app.use(express.json());
+// Set up the "/api/inngest" (recommended) routes with the serve handler
+app.use("/api/inngest", serve({ client: inngest, functions }));
 
-</Col>
+app.listen(3000, () => {
+  console.log('Server running on http://localhost:3000');
+});
+```
 
-</div>
+
+<Callout>
+👉 Note that you can import a [`serve`](/docs/reference/serve) handler for other frameworks and the rest of the code remains the same. These adapters enable you to change your web framework without changing any Inngest function code (ex. instead of `inngest/express` it could be `inngest/next` or `inngest/hono`);
+</Callout>
 
 ## 5. Write your first Inngest function
 
@@ -226,7 +213,7 @@ Now, it's time to run your function!
 
 You will trigger your function in two ways: first, by invoking it directly from the Inngest Dev Server UI, and then by sending events from code.
 
-With your Node.js server and Inngest Dev Server running, open the Inngest Dev Server UI and select the "Functions" tab [`http://localhost:8288/functions`](http://localhost:8288/functions). You should see your function. (Note: if you don't see any function, select the "Apps" tab to troubleshoot)
+With your Express server and Inngest Dev Server running, open the Inngest Dev Server UI and select the "Functions" tab [`http://localhost:8288/functions`](http://localhost:8288/functions). You should see your function. (Note: if you don't see any function, select the "Apps" tab to troubleshoot)
 
 <img
   src="/assets/docs/getting-started/quick-starts/dev-server-functions-hello-world-2024-11-16.png"
@@ -338,20 +325,36 @@ In a real-world app, you might send events from API routes that perform an actio
 
 </details>
 
-You will now send an event from within your server from a `/api/hello` `GET` endpoint. Create a new get API endpoint triggering an event using the following snippet:
+You will now send an event from within your server from a `/api/hello` `GET` endpoint. Create a new get handler on your server object:
 
 
-```ts
-await inngest.send({
-  name: "test/hello.world",
-  data: {
-    email: "testUser@example.com",
-  },
-})
+```ts {{ filename: "./index.ts" }}
+import express from "express";
+import { serve } from "inngest/express";
+import { inngest, functions } from "./src/inngest"
+
+const app = express();
+app.use(express.json());
+app.use("/api/inngest", serve({ client: inngest, functions }));
+
+// Create a new route
+app.get("/api/hello", async function (req, res, next) {
+  await inngest.send({
+    name: "test/hello.world",
+    data: {
+      email: "testUser@example.com",
+    },
+  }).catch(err => next(err));
+  res.json({ message: 'Event sent!' });
+});
+
+app.listen(3000, () => {
+  console.log('Server running on http://localhost:3000');
+});
 ```
 
 
-Every time this API route is requested, an event is sent to Inngest. To test it, open [`http://localhost:3000/api/hello`](http://localhost:3000/api/hello) (change your port if your Node.js app is running elsewhere). You should see the following output: `{"message":"Event sent!"}`
+Every time this API route is requested, an event is sent to Inngest. To test it, open [`http://localhost:3000/api/hello`](http://localhost:3000/api/hello) (change your port if your Express app is running elsewhere). You should see the following output: `{"message":"Event sent!"}`
 
 <img
   src="/assets/docs/getting-started/quick-starts/api-hello-response-browser.png"
@@ -371,7 +374,6 @@ If you go back to the Inngest Dev Server, you will see a new run is triggered by
 
 And - that's it! You now have learned how to create Inngest functions and you have sent events to trigger those functions. Congratulations 🥳
 
-
 ## Next Steps
 
 To continue your exploration, feel free to check out:
@@ -385,3 +387,4 @@ You can also read more:
 - About [Durable Execution](/docs/learn/how-functions-are-executed)
 - How to [use Inngest with other frameworks](/docs/learn/serving-inngest-functions).
 - How to [deploy your app to your platform](/docs/deploy).
+

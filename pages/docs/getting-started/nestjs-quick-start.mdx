@@ -1,10 +1,10 @@
-import { Callout, CodeGroup, Col, Row } from "src/shared/Docs/mdx";
+import { Callout, CodeGroup } from "src/shared/Docs/mdx";
 
-export const description = `Get started with Inngest in this ten-minute JavaScript tutorial`
+export const description = `Get started with Inngest and NestJS in this ten-minute tutorial`
 
-# Node.js Quick Start
+# NestJS Quick Start
 
-In this tutorial you will add Inngest to a Node.js app to easily run background tasks and build complex workflows.
+In this tutorial you will add Inngest to a [NestJS](https://nestjs.com/) app to easily run background tasks and build complex workflows.
 
 Inngest makes it easy to build, manage, and execute durable functions. Some use cases include scheduling drip marketing campaigns, building payment flows, or chaining LLM interactions.
 
@@ -15,32 +15,31 @@ By the end of this ten-minute tutorial you will:
 
 Let's get started!
 
-## Select your Node.js framework
+## Before you start: choose a project
 
-Choose your preferred Node.js web framework to get started. This guide uses ESM (ECMAScript Modules), but it also works for Common.js with typical modifications.
+In this tutorial you can use any existing NestJS project, or you can create a new one.
 
-Inngest works with any Node, Bun or Deno backend framework,but this tutorial will focus on some of the most popular frameworks.
+<details>
+  <summary><strong>Instructions for creating a new NestJS project</strong></summary>
 
-### Optional: Use a starter project
+  Use the Nest CLI to create a new project:
 
-If you don't have an existing project, you can clone the following starter project to run through the quick start tutorial:
+  ```shell
+  npx @nestjs/cli new my-nest-app
+  cd my-nest-app
+  ```
 
+</details>
 
 Once you've chosen a project, open it in a code editor.
 
+### Starting your project
 
-## Starting your project
+Start your NestJS app in development mode:
 
-Start your server using your typical script. We recommend using something like [`tsx`](https://www.npmjs.com/package/tsx) or [`nodemon`](https://www.npmjs.com/package/nodemon) for automatically restarting on file save:
-
-<CodeGroup>
-```shell {{ title: "tsx" }}
-npx tsx watch ./index.ts # replace with your own main entrypoint file
+```shell
+npm run start:dev
 ```
-```shell {{ title: "nodemon" }}
-nodemon ./index.js # replace with your own main entrypoint file
-```
-</CodeGroup>
 
 Now let's add Inngest to your project.
 
@@ -65,11 +64,11 @@ bun add inngest
 
 ## 2. Run the Inngest Dev Server
 
-Next, start the [Inngest Dev Server](/docs/local-development#inngest-dev-server), which is a fast, in-memory version of Inngest where you can quickly send and view events and function runs. This tutorial assumes that your Node.js server will be running on port `3000`; change this to match your port if you use another.
+Next, start the [Inngest Dev Server](/docs/local-development#inngest-dev-server), which is a fast, in-memory version of Inngest where you can quickly send and view events and function runs. This tutorial assumes that your NestJS server will be running on port `3000`; change this to match your port if you use another.
 
 <CodeGroup>
 ```shell {{ title: "npm" }}
-npx --ignore-scripts=false inngest-cli@latest dev -u http://localhost:3000/api/inngest
+npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
 ```
 ```shell {{ title: "yarn" }}
 yarn dlx inngest-cli@latest dev -u http://localhost:3000/api/inngest
@@ -78,13 +77,9 @@ yarn dlx inngest-cli@latest dev -u http://localhost:3000/api/inngest
 pnpm dlx inngest-cli@latest dev -u http://localhost:3000/api/inngest
 ```
 ```shell {{ title: "bun" }}
-bunx --ignore-scripts=false inngest-cli@latest dev -u http://localhost:3000/api/inngest
+bunx inngest-cli@latest dev -u http://localhost:3000/api/inngest
 ```
 </CodeGroup>
-
-<Callout>
-  👉 For bun we also use `npx`. The Inngest npm package relies on lifecycle scripts to install the CLI binary, which Bun doesn't allow by default
-</Callout>
 
 <details>
   <summary><strong>You should see a similar output to the following:</strong></summary>
@@ -92,7 +87,7 @@ bunx --ignore-scripts=false inngest-cli@latest dev -u http://localhost:3000/api/
 <CodeGroup>
 
 ```bash {{ language: 'js' }}
-$ npx --ignore-scripts=false inngest-cli@latest dev -u http://localhost:3000/api/inngest
+$ npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
 
 12:33PM INF executor > service starting
 12:33PM INF runner > starting event stream backend=redis
@@ -129,7 +124,7 @@ In your browser open [`http://localhost:8288`](http://localhost:8288) to see the
 
 Inngest invokes your functions securely via an [API endpoint](/docs/learn/serving-inngest-functions) at `/api/inngest`. To enable that, you will create an [Inngest client](/docs/reference/client/create) in your project, which you will use to send events and create functions.
 
-Create a file in the directory of your preference. We recommend creating an `inngest` directory for your client and all functions.
+Create a file in the directory of your preference. We recommend creating an `inngest` directory inside `src` for your client and all functions.
 
 ```ts {{ filename: "src/inngest/index.ts" }}
 import { Inngest } from "inngest";
@@ -143,43 +138,45 @@ export const functions = [];
 
 ## 4. Set up the Inngest HTTP endpoint
 
-Inngest supports 20+ Node.js HTTP frameworks.
+NestJS is built on top of Express, so you can use the `inngest/express` serve handler. Register it in your `main.ts` bootstrap function using `app.use()`:
 
-You will find the instructions to set up your Inngest HTTP endpoint with your preferred framework using the following links:
+```ts {{ filename: "src/main.ts" }}
+import { NestFactory } from "@nestjs/core";
+import { NestExpressApplication } from "@nestjs/platform-express";
+import { serve } from "inngest/express";
+import { AppModule } from "./app.module";
+import { inngest, functions } from "./inngest";
 
-<div className="grid md:grid-cols-3">
+async function bootstrap() {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    bodyParser: true,
+  });
 
-<Col>
-* [AWS Lambda](/docs/learn/serving-inngest-functions#framework-aws-lambda)
-* [Bun](/docs/learn/serving-inngest-functions#bun-serve)
-* [Cloudflare Pages](/docs/learn/serving-inngest-functions#framework-cloudflare-pages-functions)
-* [Cloudflare Workers](/docs/learn/serving-inngest-functions#framework-cloudflare-workers)
-* [DigitalOcean Functions](/docs/learn/serving-inngest-functions#framework-digital-ocean-functions)
-* [ElysiaJS](/docs/learn/serving-inngest-functions#framework-elysia-js)
-</Col>
-<Col>
-* [Fastify](/docs/learn/serving-inngest-functions#framework-fastify)
-* [Fresh (Deno)](/docs/learn/serving-inngest-functions#framework-fresh-deno)
-* [Google Cloud Run Functions](/docs/learn/serving-inngest-functions#framework-google-cloud-run-functions)
-* [Firebase Cloud functions](/docs/learn/serving-inngest-functions#framework-firebase-cloud-functions)
-* [Hono](/docs/learn/serving-inngest-functions#framework-hono)
-* [Koa](/docs/learn/serving-inngest-functions#framework-koa)
-</Col>
-<Col>
-* [Nitro](/docs/learn/serving-inngest-functions#framework-nitro)
-* [Nuxt](/docs/learn/serving-inngest-functions#framework-nuxt)
-* [Redwood](/docs/learn/serving-inngest-functions#framework-redwood)
-* [Remix](/docs/learn/serving-inngest-functions#framework-remix)
-* [Supabase Edge Functions](/docs/learn/serving-inngest-functions#framework-supabase-edge-functions)
-* [SvelteKit](/docs/learn/serving-inngest-functions#framework-svelte-kit)
+  // Ensure JSON body parsing supports larger payloads
+  app.useBodyParser("json", { limit: "10mb" });
 
-</Col>
+  // Set up the "/api/inngest" route with the serve handler
+  app.use(
+    "/api/inngest",
+    serve({
+      client: inngest,
+      functions,
+    })
+  );
 
-</div>
+  await app.listen(3000);
+  console.log("Server running on http://localhost:3000");
+}
+
+bootstrap();
+```
+
+<Callout>
+👉 NestJS uses the Express serve handler (`inngest/express`) under the hood. You can swap to any other framework adapter without changing your Inngest function code.
+</Callout>
 
 ## 5. Write your first Inngest function
 
-{/* TODO - Change this from hello world */}
 In this step, you will write your first durable function. This function will be triggered whenever a specific event occurs (in our case, it will be `test/hello.world`). Then, it will sleep for a second and return a "Hello, World!".
 
 To define the function, use the [`createFunction`](/docs/reference/functions/create) method on the Inngest client.
@@ -217,16 +214,16 @@ export const functions = [
 ```
 
 <Callout>
-  In the previous step, we configured the exported `functions` array to be passed to our Inngest http endpoint. Each new function must be added to this array in order for Inngest to read it's configuration and invoke it.
+  In the previous step, we configured the exported `functions` array to be passed to our Inngest HTTP endpoint. Each new function must be added to this array in order for Inngest to read its configuration and invoke it.
 </Callout>
 
 Now, it's time to run your function!
 
-## 5. Trigger your function from the Inngest Dev Server UI
+## 6. Trigger your function from the Inngest Dev Server UI
 
 You will trigger your function in two ways: first, by invoking it directly from the Inngest Dev Server UI, and then by sending events from code.
 
-With your Node.js server and Inngest Dev Server running, open the Inngest Dev Server UI and select the "Functions" tab [`http://localhost:8288/functions`](http://localhost:8288/functions). You should see your function. (Note: if you don't see any function, select the "Apps" tab to troubleshoot)
+With your NestJS server and Inngest Dev Server running, open the Inngest Dev Server UI and select the "Functions" tab [`http://localhost:8288/functions`](http://localhost:8288/functions). You should see your function. (Note: if you don't see any function, select the "Apps" tab to troubleshoot)
 
 <img
   src="/assets/docs/getting-started/quick-starts/dev-server-functions-hello-world-2024-11-16.png"
@@ -288,7 +285,6 @@ In this case, the payload triggered the `hello-world` function, which did sleep 
   alt="Inngest Dev Server web interface's runs tab with a single completed run expanded indicating that hello-world function ran, that it slept for 1s, and that the correct body was returned"
 />
 
-{/* TODO - Update this when we bring back edit + re-run */}
 To aid in debugging your functions, you can quickly "Rerun" or "Cancel" a function. Try clicking "Rerun" at the top of the "Run details" table:
 
 <img
@@ -309,7 +305,7 @@ After the function was replayed, you will see two runs in the UI:
 
 Now you will trigger an event from inside your app.
 
-## 6. Trigger from code
+## 7. Trigger from code
 
 Inngest is powered by events.
 
@@ -338,20 +334,28 @@ In a real-world app, you might send events from API routes that perform an actio
 
 </details>
 
-You will now send an event from within your server from a `/api/hello` `GET` endpoint. Create a new get API endpoint triggering an event using the following snippet:
+You will now send an event from within your NestJS app. Add a new `GET /api/hello` endpoint to your `AppController`:
 
+```ts {{ filename: "src/app.controller.ts" }}
+import { Controller, Get } from "@nestjs/common";
+import { inngest } from "./inngest";
 
-```ts
-await inngest.send({
-  name: "test/hello.world",
-  data: {
-    email: "testUser@example.com",
-  },
-})
+@Controller()
+export class AppController {
+  @Get("api/hello")
+  async hello() {
+    await inngest.send({
+      name: "test/hello.world",
+      data: {
+        email: "testUser@example.com",
+      },
+    });
+    return { message: "Event sent!" };
+  }
+}
 ```
 
-
-Every time this API route is requested, an event is sent to Inngest. To test it, open [`http://localhost:3000/api/hello`](http://localhost:3000/api/hello) (change your port if your Node.js app is running elsewhere). You should see the following output: `{"message":"Event sent!"}`
+Every time this API route is requested, an event is sent to Inngest. To test it, open [`http://localhost:3000/api/hello`](http://localhost:3000/api/hello) (change your port if your NestJS app is running elsewhere). You should see the following output: `{"message":"Event sent!"}`
 
 <img
   src="/assets/docs/getting-started/quick-starts/api-hello-response-browser.png"
@@ -370,7 +374,6 @@ If you go back to the Inngest Dev Server, you will see a new run is triggered by
 />
 
 And - that's it! You now have learned how to create Inngest functions and you have sent events to trigger those functions. Congratulations 🥳
-
 
 ## Next Steps
 
