@@ -1,0 +1,103 @@
+import { Callout, GuideSelector, GuideSection, CodeGroup } from "src/shared/Docs/mdx";
+
+{/* Sidebar doesn't work well when GuideSection have different headings...  */}
+export const hidePageSidebar = true;
+
+# Wait for a signal
+
+You can pause a Function's run until a given signal is received.  This is similar to [wait for event](//docs/features/inngest-functions/steps-workflows/wait-for-event), but only resumes a single
+run at a time - via an API call, instead of via an event. We only recommend this instead of [wait for event](/docs/features/inngest-functions/steps-workflows/wait-for-event) in very specific scenarios.
+Specifically, waitForSignal has slightly lower latency than waitForEvent as the resume API is transactional instead of eventually consistent via events.
+
+In most cases, you should use [wait for event](/docs/features/inngest-functions/steps-workflows/wait-for-event).
+
+This is a useful pattern to react to specific user actions (for example, implement "Human in the loop" in AI Agent workflows), or to wait until something happens in external systems.
+
+
+<GuideSelector
+  options={[
+    { key: "typescript", title: "TypeScript" },
+    { key: "go", title: "Go" },
+    { key: "python", title: "Python" }
+  ]}>
+
+
+
+<GuideSection show="typescript">
+
+  Use `step.waitForSignal()` to wait for a particular signal to be received before continuing. It returns a `Promise` that is resolved with the signal data or `null` if the event is not received within the timeout.
+
+
+```ts
+export default inngest.createFunction(
+  { id: "send-onboarding-nudge-email" },
+  { event: "app/account.created" },
+  async ({ event, step }) => {
+    const approval = await step.waitForSignal(
+      "wait-for-approval",
+      {
+        signal: "task/71651db4-9f27-466a-a6be-4759b9784b3c",
+        timeout: "3d",
+      }
+    );
+    if (!approval) {
+      // if no event is received within 3 days, onboardingCompleted will be null
+    } else {
+      // if the event is received, onboardingCompleted will be the event payload object
+    }
+  }
+);
+```
+
+You can resume functions via `step.sendSignal` in functions, or via the Inngest client:
+
+```ts
+
+inngest.sendSignal({
+  signal: "task/71651db4-9f27-466a-a6be-4759b9784b3c",
+  data: "whatever-you-want", // this will be injected into the waitForSignal response, and can be any JSON-serializable data.
+});
+
+```
+
+Check out the [`step.waitForSignal()` TypeScript reference.](/docs/reference/functions/step-wait-for-signal)
+
+</GuideSection>
+
+<GuideSection show="go">
+
+  Use `step.waitForSignal()` to wait for a particular signal to be received before continuing. It either returns the received event data or a `step.ErrSignalNotReceived` error.
+
+  ```go
+  func AccountCreated(ctx context.Context, input inngestgo.Input[AccountCreatedEvent]) (any, error) {
+    // Sleep for a second, minute, hour, week across server restarts.
+    opened, err = step.waitForSignal(ctx, "wait-for-open", opts.WaitForSignalOpts{
+        Signal: "task/71651db4-9f27-466a-a6be-4759b9784b3c",
+        Timeout: 24 * time.Hour,
+    })
+
+    if err == step.ErrSignalNotReceived {
+    }
+		return nil, nil
+	}
+
+    // ...
+
+    return nil, nil
+  }
+  ```
+
+  Check out the [`step.WaitForSignal()` Go reference.](https://pkg.go.dev/github.com/inngest/inngestgo@v0.15.0/step#WaitForSignal)
+
+</GuideSection>
+
+
+</GuideSelector>
+
+
+<Callout variant={'warning'}>
+You should prefer using "wait for event" in almost every case, and should only use "wait for signal" for individual
+latency sensitive function pause and resuming.
+</Callout>
+
+

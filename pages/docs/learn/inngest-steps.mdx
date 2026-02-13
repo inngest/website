@@ -318,7 +318,7 @@ async def send_scheduled_reminder(ctx: inngest.Context):
 
 ### step.waitForEvent() / step.wait_for_event()
 
-This method pauses the execution until a specific event is received.
+This method pauses a run's execution until a specific event is received.
 
 <GuideSection show="typescript">
 
@@ -405,6 +405,91 @@ async def send_onboarding_nudge_email(ctx: inngest.Context):
 ```
 
 </GuideSection>
+
+### step.waitForSignal() / step.wait_for_signal()
+
+This method pauses a run's execution until a specific signal is received via our SDK or API.  Signals must
+be unique across runs, and offer an API to resume specific runs given a unique signal vs events.
+
+<GuideSection show="typescript">
+
+```typescript
+export default inngest.createFunction(
+  { id: "send-onboarding-nudge-email" },
+  { event: "app/account.created" },
+  async ({ event, step }) => {
+    const onboardingCompleted = await step.waitForSignal(
+      "wait-for-specific-signal",
+      { signal: "task/0e7d16d1-8335-4b93-9122-76e7cc6d9eb6", timeout: "3d" }
+    );
+    // Do something with signal data
+  }
+);
+```
+
+</GuideSection>
+
+<GuideSection show="go">
+
+```go
+import (
+  "github.com/inngest/inngestgo"
+  "github.com/inngest/inngestgo/errors"
+  "github.com/inngest/inngestgo/step"
+)
+
+inngestgo.CreateFunction(
+	client,
+	inngestgo.FunctionOpts{
+		ID: "send-delayed-email",
+	},
+	inngestgo.EventTrigger("app/user.signup", nil),
+	// handler function
+	func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
+		// Sample from the event stream for new events.  The function will stop
+		// running and automatically resume when a matching event is found, or if
+		// the timeout is reached.
+		signal, err := step.WaitForSignal[string](
+			ctx,
+			"wait-for-signal",
+			step.WaitForSignalOpts{
+				Name:    "Wait for a signal to be POSTed",
+				Signal:   "task/0e7d16d1-8335-4b93-9122-76e7cc6d9eb6",
+				Timeout: time.Hour * 72,
+			},
+		)
+		if err == step.ErrSignalNotReceived {
+			// A signal wasn't received within 3 days.  Send a follow-up email.
+		}
+		return nil, nil
+	},
+)
+```
+
+</GuideSection>
+
+<GuideSection show="python">
+
+```python
+import inngest
+from src.inngest.client import inngest_client
+
+@inngest_client.create_function(
+    fn_id="send-onboarding-nudge-email",
+    trigger=inngest.TriggerEvent(event="app/account.created")
+)
+async def send_onboarding_nudge_email(ctx: inngest.Context):
+    onboarding_completed = await ctx.step.wait_for_signal(
+      "wait-for-onboarding-completion",
+      signal="task/0e7d16d1-8335-4b93-9122-76e7cc6d9eb6",
+      if_exp="event.data.user_id == async.data.user_id",
+      timeout=datetime.timedelta(days=1),
+    );
+    # Do other steps
+```
+
+</GuideSection>
+
 
 ### step.invoke()
 

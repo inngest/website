@@ -6,9 +6,15 @@ export const hidePageSidebar = true;
 
 # Wait for an Event
 
-One step method is available to pause a Function's run until a given event is sent.
+You can pause a Function's run until a given event is received.
 
-This is a useful pattern to react to specific user actions (for example, implement "Human in the loop" in AI Agent workflows).
+This is a useful pattern to react to specific user actions (for example, implement "Human in the loop" in AI Agent workflows), or to wait until something happens in external systems.
+
+This is the recommended and preferred way to pause and resume a function via events or signals because:
+
+* Events fan out to many functions:  you can resume many runs from a single event, without changing application code.
+* Events are cleaner:  events decouple code from the functions they resume
+* Events have audit trails:  we store events in your OLAP store, giving you audit trails and insights automatically.
 
 
 <GuideSelector
@@ -32,7 +38,12 @@ export default inngest.createFunction(
   async ({ event, step }) => {
     const onboardingCompleted = await step.waitForEvent(
       "wait-for-onboarding-completion",
-      { event: "app/onboarding.completed", timeout: "3d", match: "data.userId" }
+      {
+        event: "app/onboarding.completed",
+        timeout: "3d",
+        // "async" is the received "ai/post.topic.selected" event here:
+        if: `async.data.completionId == "${generatedTopics.completionId}"`,
+      }
     );
     if (!onboardingCompleted) {
       // if no event is received within 3 days, onboardingCompleted will be null
@@ -45,7 +56,6 @@ export default inngest.createFunction(
 
 
 Check out the [`step.waitForEvent()` TypeScript reference.](/docs/reference/functions/step-wait-for-event)
-
 
 To add a simple time based delay to your code, use [`step.sleep()`](/docs/reference/functions/step-sleep) instead.
 
@@ -75,7 +85,7 @@ export default inngest.createFunction(
       timeout: "3d",
       // The "data.userId" must match in both the "app/account.created" and
       // the "app/onboarding.completed" events
-      match: "data.userId",
+      if: `async.data.userId == "${event.data.userId}"`,
     });
 
     // If the user has not completed onboarding within 3 days, send them a nudge email
@@ -92,69 +102,6 @@ export default inngest.createFunction(
   }
 );
 ```
-
-### Advanced event matching with `if`
-
-For more complex functions, you may want to match the event payload against some other value. This could be a hard coded value like a billing plan name, a greater than filter for a number value or a value returned from a previous step.
-
-In this example, we have built an AI blog post generator which returns three ideas to the user to select. Then when the user selects an idea from that batch of ideas, we generate an entire blog post and save it.
-
-
-```ts
-export default inngest.createFunction(
-  { id: "generate-blog-post-with-ai" },
-  { event: "ai/post.generator.requested" },
-  async ({ event, step }) => {
-    // Generate a number of suggestions for topics with OpenAI
-    const generatedTopics = await step.run("generate-topic-ideas", async () => {
-      const completion = await openai.createCompletion({
-        model: "text-davinci-003",
-        prompt: helpers.topicIdeaPromptWrapper(event.data.prompt),
-        n: 3,
-      });
-      return {
-        completionId: completion.data.id,
-        topics: completion.data.choices,
-      };
-    });
-
-    // Send the topics to the user via Websockets so they can select one
-    // Also send the completion id so we can match that later
-    await step.run("send-user-topics", () => {
-      pusher.sendToUser(event.data.userId, "topics_generated", {
-        sessionId: event.data.sessionId,
-        completionId: generatedTopics.completionId,
-        topics: generatedTopics.topics,
-      });
-    });
-
-    // Wait up to 5 minutes for the user to select a topic
-    // Ensuring the topic is from this batch of suggestions generated
-    const topicSelected = await step.waitForEvent("wait-for-topic-selection", {
-      event: "ai/post.topic.selected",
-      timeout: "5m",
-      // "async" is the "ai/post.topic.selected" event here:
-      if: `async.data.completionId == "${generatedTopics.completionId}"`,
-    });
-
-    // If the user selected a topic within 5 minutes, "topicSelected" will
-    // be the event payload, otherwise it is null
-    if (topicSelected) {
-      // Now that we've confirmed the user selected their topic idea from
-      // this batch of suggestions, let's generate a blog post
-      await step.run("generate-blog-post-draft", async () => {
-        const completion = await openai.createCompletion({
-          model: "text-davinci-003",
-          prompt: helpers.blogPostPromptWrapper(topicSelected.data.prompt),
-        });
-        // Do something with the blog post draft like save it or something else...
-        await blog.saveDraft(completion.data.choices[0]);
-      });
-    }
-  }
-);
-```
-
 
 </GuideSection>
 
@@ -223,10 +170,6 @@ The "wait for event" method begins listening for new events from when the code i
 
 To avoid race condition, always double-check the flow of events going through your functions.
 
-<br/>
-
 _Note: The "wait for event" mechanism will soon provide a "lookback" feature, including events from a given past timeframe._
-
 </Callout>
-
 
