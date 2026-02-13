@@ -194,7 +194,7 @@ function NavLink({
       {!isAnchorLink && <span className="absolute inset-y-0 left-0 w-px" />}
       <span>{children}</span>
       {tag && (
-        <Tag color="breeze" className={"mr-2"}>
+        <Tag color="matcha" className={"mr-2"}>
           {tag}
         </Tag>
       )}
@@ -393,29 +393,31 @@ function NavigationGroup({
   return (
     <NavigationGroupStructure value={group.title} nestingLevel={nestingLevel}>
       <li className={clsx("relative", className)}>
-        <NavigationGroupStructure.Trigger className="w-full animate-accordion-trigger">
+        <NavigationGroupStructure.Trigger className="w-full animate-accordion-trigger rounded-md hover:bg-canvasSubtle transition-colors">
           <h2
-            className={clsx("flex justify-between m-0", {
+            className={clsx("flex justify-between items-center m-0", {
               "py-1": nestingLevel > 0,
-              "mt-8 mb-2": nestingLevel === 0,
+              "mt-6 mb-2": nestingLevel === 0,
             })}
           >
             <span
               className={clsx("pl-2", {
                 "text-sm font-medium text-subtle hover:text-basis":
                   nestingLevel > 0,
-                "text-sm font-semibold text-carbon-900 dark:text-carbon-50":
+                "text-xs uppercase font-bold tracking-wide text-carbon-300 dark:text-carbon-00":
                   nestingLevel == 0,
               })}
             >
               {group.title}
+            </span>
+            <span className="flex items-center gap-1">
               {tag && (
-                <Tag color="breeze" className={"ml-2"}>
+                <Tag color="matcha" className={"mr-2"}>
                   {tag}
                 </Tag>
               )}
+              {nestingLevel > 0 && <ChevronDownIcon className="h-4 w-4 mr-2 text-carbon-600 dark:text-carbon-500" />}
             </span>
-            {nestingLevel > 0 && <ChevronDownIcon className="mr-1 h-4 w-4" />}
           </h2>
         </NavigationGroupStructure.Trigger>
 
