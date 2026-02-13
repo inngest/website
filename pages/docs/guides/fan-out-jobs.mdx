@@ -9,21 +9,20 @@ The fan-out pattern enables you to send a single event and trigger multiple func
 * **Reliability**: Logic from each function runs independently, meaning an issue with one function will not affect the other(s).
 * **Performance**: As functions area run in parallel, all of the work will execute faster than running in sequence.
 
-
 <ImageTheme
   light={'/assets/docs/guides/fan-out-diagram.png'}
   alt={'A diagram showing how to fan-out to multiple functions'}
   className="rounded-md mx-auto block"
 />
 
-
 A use case for fan-out is, for example, when a user signs up for your product. In this scenario, you may want to:
+
 1. Send a welcome email
 2. Start a trial in Stripe
 3. Add the user to your CRM
 4. Add the user's email to your mailing list
 
-{/* TODO - Link to future distributed systems guide*/}
+{/*TODO - Link to future distributed systems guide*/}
 The fan-out pattern is also useful in distributed systems where a single event is consumed by functions running in different applications.
 
 ## How to fan-out to multiple functions
@@ -71,8 +70,10 @@ Next, define two functions: `sendWelcomeEmail` and `startStripeTrial`. As you ca
 
 ```ts {{ filename: "inngest/functions.ts" }}
 const sendWelcomeEmail = inngest.createFunction(
-  { id: 'send-welcome-email' },
-  { event: 'app/user.signup' },
+  {
+    id: 'send-welcome-email',
+    triggers: { event: 'app/user.signup' },
+  },
   async ({ event, step }) => {
     await step.run('send-email', async () => {
       await sendEmail({ email: event.data.user.email, template: 'welcome');
@@ -81,8 +82,10 @@ const sendWelcomeEmail = inngest.createFunction(
 )
 
 const startStripeTrial = inngest.createFunction(
-  { id: 'start-stripe-trial' },
-  { event: 'app/user.signup' },
+  {
+    id: 'start-stripe-trial',
+    triggers: { event: 'app/user.signup' },
+  },
   async ({ event }) => {
     const customer = await step.run('create-customer', async () => {
       return await stripe.customers.create({ email: event.data.user.email });

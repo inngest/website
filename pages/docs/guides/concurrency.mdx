@@ -12,7 +12,7 @@ Limiting concurrency in systems is an important tool for correctly managing comp
 This means you may have many more function runs in progress than your concurrency limit suggests, because most of those runs are likely paused or waiting between steps.
 </Callout>
 
-{/* TODO - Link to updated keys section */}
+{/_TODO - Link to updated keys section_/}
 Step concurrency can be optionally configured using "keys" which applies the limit to each unique value of the key (ex. user id). The concurrency option can also be applied to different "scopes" which allows a concurrency limit to be shared across _multiple_ functions.
 
 As compared to traditional queue and worker systems, Inngest manages the concurrency within the system so you do not need to implement additional worker-level logic or state.
@@ -34,10 +34,10 @@ If you need to limit a function to a certain rate of processing, for example wit
 
 One or more concurrency limits can be configured for each function.
 
-* [Basic concurrency](#basic-concurrency)
-* [Concurrency keys (Multi-tenant concurrency)](#concurrency-keys-multi-tenant-concurrency)
-* [Sharing limits across functions (scope)](#sharing-limits-across-functions-scope)
-* [Combining multiple concurrency limits](#combining-multiple-concurrency-limits)
+- [Basic concurrency](#basic-concurrency)
+- [Concurrency keys (Multi-tenant concurrency)](#concurrency-keys-multi-tenant-concurrency)
+- [Sharing limits across functions (scope)](#sharing-limits-across-functions-scope)
+- [Combining multiple concurrency limits](#combining-multiple-concurrency-limits)
 
 ### Basic concurrency
 
@@ -49,8 +49,8 @@ inngest.createFunction(
   {
     id: "generate-ai-summary",
     concurrency: 10,
+    triggers: { event: "ai/summary.requested" },
   },
-  { event: "ai/summary.requested" },
   async ({ event, step }) => {
     // Your function handler here
   }
@@ -73,6 +73,7 @@ Use a concurrency `key` expression to apply the `limit` to each unique value of 
 inngest.createFunction(
   {
     id: "generate-ai-summary",
+    triggers: { event: "ai/summary.requested" },
     concurrency: [
       {
         key: "event.data.account_id",
@@ -80,7 +81,6 @@ inngest.createFunction(
       },
     ],
   },
-  { event: "ai/summary.requested" },
   async ({ event, step }) => {
   }
 );
@@ -101,13 +101,14 @@ inngest.createFunction(
 
 Using the `scope` option, limits can be set across your entire Inngest account, shared across multiple functions. Here is an example of setting an `"account"` level limit for a _static_ `key` equal to `"openai"`. This will create a virtual queue using `"openai"` as the key. Any other functions using this same `"openai"` key will consume from this same limit.
 
-{/* TODO - Link to the detail section on how this works */}
+{/_TODO - Link to the detail section on how this works_/}
 
 <CodeGroup>
 ```ts
 inngest.createFunction(
   {
     id: "generate-ai-summary",
+    triggers: { event: "ai/summary.requested" },
     concurrency: [
       {
         scope: "account",
@@ -116,7 +117,6 @@ inngest.createFunction(
       },
     ],
   },
-  { event: "ai/summary.requested" },
   async ({ event, step }) => {
   }
 );
@@ -136,14 +136,13 @@ Each SDK's concurrency option supports up to two limits. This is the most benefi
 - If there are 10 steps executing under the 'openai' key's virtual queue, any future runs will be blocked and will wait for existing runs to finish before executing.
 - If there are 5 steps executing under the 'openai' key and a single `event.data.account_id` enqueues 2 runs, the second run is limited by the `event.data.account_id` virtual queue and will wait before executing.
 
-
-
 <CodeGroup>
 
 ```ts {{ title: "TypeScript" }}
 inngest.createFunction(
   {
     id: "unique-function-id",
+    triggers: { event: "ai/summary.requested" },
     concurrency: [
       {
          // Use an account-level concurrency limit for this function, using the
@@ -164,7 +163,6 @@ inngest.createFunction(
       },
     ],
   },
-  { event: "ai/summary.requested" },
   async ({ event, step }) => {
   }
 );
@@ -173,9 +171,11 @@ inngest.createFunction(
 ```go {{ title: "Go" }}
 !snippet:path=snippets/go/v0_11/concurrency/multiple.go
 ```
+
 ```py {{ title: "Python" }}
 !snippet:path=snippets/py/v0_5/concurrency/multiple.py
 ```
+
 </CodeGroup>
 
 <Info>
@@ -206,10 +206,11 @@ The key insight is that your concurrency limit applies to _active execution_, no
   - `step.run()` - while the step's code is executing
 
   **What does NOT count against concurrency:**
-  - `step.sleep()` / `step.sleepUntil()` - while sleeping
-  - `step.waitForEvent()` - while waiting for an event
-  - `step.invoke()` - while waiting for the invoked function to complete
-  - Time between steps - when Inngest is coordinating the next step
+
+- `step.sleep()` / `step.sleepUntil()` - while sleeping
+- `step.waitForEvent()` - while waiting for an event
+- `step.invoke()` - while waiting for the invoked function to complete
+- Time between steps - when Inngest is coordinating the next step
 </Info>
 
 ### Queue ordering
@@ -235,20 +236,19 @@ To control concurrency on individual steps, extract the step into a new function
 
 You may write two functions that define different levels for an 'account' scoped concurrency limit.  For example, function A may limit the "ai" capacity to 5, while function B limits the "ai" capacity to 50:
 
-
 <CodeGroup>
 
 ```ts {{ title: "TypeScript" }}
 inngest.createFunction(
   {
     id: "func-a",
+    triggers: { event: "ai/summary.requested" },
     concurrency: {
       scope: "account",
       key: `"openai"`,
       limit: 5,
     },
   },
-  { event: "ai/summary.requested" },
   async ({ event, step }) => {
   }
 );
@@ -272,11 +272,9 @@ inngest.createFunction(
 !snippet:path=snippets/go/v0_11/concurrency/global.go
 ```
 
-
 ```py {{ title: "Python" }}
 !snippet:path=snippets/py/v0_5/concurrency/global.py
 ```
-
 
 </CodeGroup>
 This works in Inngest and is *not* a conflict.  Instead, function A is limited any time there are 5 or more functions running in the 'openai' queue.  Function B, however, is limited when there are 50 or more items in the queue.  This means that function B has more capacity than function A, though both are limited and compete on the same virtual queue.
@@ -336,12 +334,12 @@ export const send = inngest.createFunction(
   {
     name: "Process customer csv import",
     id: "process-customer-csv-import",
+    triggers: { event: "csv/file.uploaded" },
     concurrency: {
       limit: 1,
       key: `event.data.customerId`, // You can use any piece of data from the event payload
     },
   },
-  { event: "csv/file.uploaded" },
   async ({ event, step }) => {
     await step.run("process-file", async () => {
       const file = await bucket.fetch(event.data.fileURI);
@@ -365,4 +363,4 @@ export const send = inngest.createFunction(
 
 ## Tips
 
-* Configure [start timeouts](/docs/features/inngest-functions/cancellation/cancel-on-timeouts) to prevent large backlogs with concurrency
+- Configure [start timeouts](/docs/features/inngest-functions/cancellation/cancel-on-timeouts) to prevent large backlogs with concurrency

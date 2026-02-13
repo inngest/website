@@ -7,7 +7,6 @@ In Inngest each step in your function is executed as a separate HTTP request.  T
 
 This page covers how to implement loops in your Inngest functions and avoid common pitfalls.
 
-
 ## Simple function example
 
 <GuideSelector
@@ -19,13 +18,14 @@ This page covers how to implement loops in your Inngest functions and avoid comm
 
 <GuideSection show="typescript">
 
-
 Let's start with a simple example to illustrate the concept:
 
 ```javascript
 inngest.createFunction(
-  { id: "simple-function" },
-  { event: "test/simple.function" },
+  {
+    id: "simple-function",
+    triggers: { event: "test/simple.function" },
+  },
   async ({ step }) => {
     console.log("hello");
 
@@ -38,11 +38,10 @@ inngest.createFunction(
 
 In the above example, you will see "hello" printed four times, once for the initial function entry and once for each step execution (`a`, `b`, and `c`).
 
-
 <CodeGroup forceTabs>
 ```bash {{ title: "✅ How Inngest executes the code" }}
 
-# This is how Inngest executes the code above:
+# This is how Inngest executes the code above
 
 <run start>
 "hello"
@@ -56,6 +55,7 @@ In the above example, you will see "hello" printed four times, once for the init
 "hello"
 "c"
 <run complete>
+
 ```
 ```bash {{ title: "❌ Common incorrect misconception" }}
 
@@ -71,6 +71,7 @@ In the above example, you will see "hello" printed four times, once for the init
 
 <run complete>
 ```
+
 </CodeGroup>
 
 Any non-deterministic logic (like database calls or API calls) must be placed inside a `step.run` call to ensure it is executed correctly within each step.
@@ -79,8 +80,10 @@ With this in mind, here is how the previous example can be fixed:
 
 ```ts
 inngest.createFunction(
-  { id: "simple-function" },
-  { event: "test/simple.function" },
+  {
+    id: "simple-function",
+    triggers: { event: "test/simple.function" },
+  },
   async ({ step }) => {
     await step.run("hello", () => { console.log("hello") });
 
@@ -112,48 +115,47 @@ import (
 )
 
 inngestgo.CreateFunction(
-	client,
-	inngestgo.FunctionOpts{ID: "simple-function"},
-	inngestgo.EventTrigger("test/simple.function", nil),
-	func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
-		fmt.Println("hello")
+ client,
+ inngestgo.FunctionOpts{ID: "simple-function"},
+ inngestgo.EventTrigger("test/simple.function", nil),
+ func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
+  fmt.Println("hello")
 
-		_, err := step.Run(ctx, "a", func(ctx context.Context) (any, error) {
-			fmt.Println("a")
-			return nil, nil
-		})
-		if err != nil {
-			return nil, err
-		}
+  _, err := step.Run(ctx, "a", func(ctx context.Context) (any, error) {
+   fmt.Println("a")
+   return nil, nil
+  })
+  if err != nil {
+   return nil, err
+  }
 
-		_, err = step.Run(ctx, "b", func(ctx context.Context) (any, error) {
-			fmt.Println("b")
-			return nil, nil
-		})
-		if err != nil {
-			return nil, err
-		}
+  _, err = step.Run(ctx, "b", func(ctx context.Context) (any, error) {
+   fmt.Println("b")
+   return nil, nil
+  })
+  if err != nil {
+   return nil, err
+  }
 
-		_, err = step.Run(ctx, "c", func(ctx context.Context) (any, error) {
-			fmt.Println("c")
-			return nil, nil
-		})
-		if err != nil {
-			return nil, err
-		}
+  _, err = step.Run(ctx, "c", func(ctx context.Context) (any, error) {
+   fmt.Println("c")
+   return nil, nil
+  })
+  if err != nil {
+   return nil, err
+  }
 
-		return nil, nil
-	},
+  return nil, nil
+ },
 )
 ```
 
 In the above example, you will see "hello" printed four times, once for the initial function entry and once for each step execution (`a`, `b`, and `c`).
 
-
 <CodeGroup forceTabs>
 ```bash {{ title: "✅ How Inngest executes the code" }}
 
-# This is how Inngest executes the code above:
+# This is how Inngest executes the code above
 
 <run start>
 "hello"
@@ -167,6 +169,7 @@ In the above example, you will see "hello" printed four times, once for the init
 "hello"
 "c"
 <run complete>
+
 ```
 ```bash {{ title: "❌ Common incorrect misconception" }}
 
@@ -182,6 +185,7 @@ In the above example, you will see "hello" printed four times, once for the init
 
 <run complete>
 ```
+
 </CodeGroup>
 
 Any non-deterministic logic (like database calls or API calls) must be placed inside a `step.run` call to ensure it is executed correctly within each step.
@@ -196,40 +200,40 @@ import (
 )
 
 inngestgo.CreateFunction(
-	client,
-	inngestgo.FunctionOpts{ID: "simple-function"},
-	inngestgo.EventTrigger("test/simple.function", nil),
-	func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
-		if _, err := step.Run(ctx, "hello", func(ctx context.Context) (any, error) {
-			fmt.Println("hello")
-			return nil, nil
-		}); err != nil {
-			return nil, err
-		}
+ client,
+ inngestgo.FunctionOpts{ID: "simple-function"},
+ inngestgo.EventTrigger("test/simple.function", nil),
+ func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
+  if _, err := step.Run(ctx, "hello", func(ctx context.Context) (any, error) {
+   fmt.Println("hello")
+   return nil, nil
+  }); err != nil {
+   return nil, err
+  }
 
-		if _, err := step.Run(ctx, "a", func(ctx context.Context) (any, error) {
-			fmt.Println("a")
-			return nil, nil
-		}); err != nil {
-			return nil, err
-		}
+  if _, err := step.Run(ctx, "a", func(ctx context.Context) (any, error) {
+   fmt.Println("a")
+   return nil, nil
+  }); err != nil {
+   return nil, err
+  }
 
-		if _, err := step.Run(ctx, "b", func(ctx context.Context) (any, error) {
-			fmt.Println("b")
-			return nil, nil
-		}); err != nil {
-			return nil, err
-		}
+  if _, err := step.Run(ctx, "b", func(ctx context.Context) (any, error) {
+   fmt.Println("b")
+   return nil, nil
+  }); err != nil {
+   return nil, err
+  }
 
-		if _, err := step.Run(ctx, "c", func(ctx context.Context) (any, error) {
-			fmt.Println("c")
-			return nil, nil
-		}); err != nil {
-			return nil, err
-		}
+  if _, err := step.Run(ctx, "c", func(ctx context.Context) (any, error) {
+   fmt.Println("c")
+   return nil, nil
+  }); err != nil {
+   return nil, err
+  }
 
-		return nil, nil
-	},
+  return nil, nil
+ },
 )
 
 // hello
@@ -268,11 +272,10 @@ async def simple_function(ctx: inngest.Context):
 
 In the above example, you will see "hello" printed four times, once for the initial function entry and once for each step execution (`a`, `b`, and `c`).
 
-
 <CodeGroup forceTabs>
 ```bash {{ title: "✅ How Inngest executes the code" }}
 
-# This is how Inngest executes the code above:
+# This is how Inngest executes the code above
 
 <run start>
 "hello"
@@ -286,6 +289,7 @@ In the above example, you will see "hello" printed four times, once for the init
 "hello"
 "c"
 <run complete>
+
 ```
 ```bash {{ title: "❌ Common incorrect misconception" }}
 
@@ -301,6 +305,7 @@ In the above example, you will see "hello" printed four times, once for the init
 
 <run complete>
 ```
+
 </CodeGroup>
 
 Any non-deterministic logic (like database calls or API calls) must be placed inside a `step.run` call to ensure it is executed correctly within each step.
@@ -348,8 +353,10 @@ Here's [an example](/blog/import-ecommerce-api-data-in-seconds) of an Inngest fu
 
 ```typescript
 export default inngest.createFunction(
-  { id: "shopify-product-import"},
-  { event: "shopify/import.requested" },
+  {
+    id: "shopify-product-import",
+    triggers: { event: "shopify/import.requested" },
+  },
   async ({ event, step }) => {
     const allProducts = []
     let cursor = null

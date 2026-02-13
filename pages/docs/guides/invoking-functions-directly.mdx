@@ -8,7 +8,6 @@ Inngest's `step.invoke()` function provides a powerful tool for calling function
 - Naturally separates your system into reusable functions that can spread across process boundaries
 - Allows use of synchronous interaction between functions in an otherwise-asynchronous event-driven architecture, making it much easier to manage functions that require immediate outcomes
 
-
 ## Invoking another function
 
 <GuideSelector
@@ -33,8 +32,10 @@ If you don't need to define granular configuration or if your function won't be 
 ```ts
 // Some function we'll call
 const computeSquare = inngest.createFunction(
-  { id: "compute-square" },
-  { event: "calculate/square" },
+  {
+    id: "compute-square",
+    triggers: { event: "calculate/square" },
+  },
   async ({ event }) => {
     return { result: event.data.number * event.data.number }; // Result typed as { result: number }
   }
@@ -42,8 +43,10 @@ const computeSquare = inngest.createFunction(
 
 // In this function, we'll call `computeSquare`
 const mainFunction = inngest.createFunction(
-  { id: "main-function" },
-  { event: "main/event" },
+  {
+    id: "main-function",
+    triggers: { event: "main/event" },
+  },
   async ({ step }) => {
     const square = await step.invoke("compute-square-value", {
       function: computeSquare,
@@ -131,55 +134,54 @@ If you don't need to define granular configuration or if your function won't be 
 
 ```go
 import (
-	"context"
-	"fmt"
+ "context"
+ "fmt"
 
-	"github.com/inngest/inngestgo"
-	"github.com/inngest/inngestgo/step"
+ "github.com/inngest/inngestgo"
+ "github.com/inngest/inngestgo/step"
 )
 
 // Some function we'll call
 inngestgo.CreateFunction(
-	client,
-	inngestgo.FunctionOpts{Name: "compute-square"},
-	inngestgo.EventTrigger("calculate/square", nil),
-	func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
-		number, ok := input.Event.Data["number"].(float64)
-		if !ok {
-			return nil, fmt.Errorf("invalid number")
-		}
+ client,
+ inngestgo.FunctionOpts{Name: "compute-square"},
+ inngestgo.EventTrigger("calculate/square", nil),
+ func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
+  number, ok := input.Event.Data["number"].(float64)
+  if !ok {
+   return nil, fmt.Errorf("invalid number")
+  }
 
-		return map[string]any{
-			"result": int(number * number),
-		}, nil
-	},
+  return map[string]any{
+   "result": int(number * number),
+  }, nil
+ },
 )
 
 // In this function, we'll call the compute-square function
 inngestgo.CreateFunction(
-	client,
-	inngestgo.FunctionOpts{Name: "main-function"},
-	inngestgo.EventTrigger("main/event", nil),
-	func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
-		square, err := step.Invoke(ctx, "compute-square-value", &inngestgo.InvokeOpts{
-			Function: "compute-square",
-			Data: map[string]any{
-				"number": 4,
-			},
-		})
-		if err != nil {
-			return nil, err
-		}
+ client,
+ inngestgo.FunctionOpts{Name: "main-function"},
+ inngestgo.EventTrigger("main/event", nil),
+ func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
+  square, err := step.Invoke(ctx, "compute-square-value", &inngestgo.InvokeOpts{
+   Function: "compute-square",
+   Data: map[string]any{
+    "number": 4,
+   },
+  })
+  if err != nil {
+   return nil, err
+  }
 
-		result := square.Data["result"].(int)
-		return fmt.Sprintf("Square of 4 is %d.", result), nil
-	},
+  result := square.Data["result"].(int)
+  return fmt.Sprintf("Square of 4 is %d.", result), nil
+ },
 )
 
 ```
 
 In the above example, our `mainFunction` calls `computeSquare` to retrieve the resulting value. `computeSquare` can now be called from here or any other process connected to Inngest.
-
 
 </GuideSection>
 <GuideSection show="python">
@@ -222,11 +224,9 @@ async def main_function(ctx: inngest.Context):
 
 In the above example, our `mainFunction` calls `compute_square` to retrieve the resulting value. `compute_square` can now be called from here or any other process connected to Inngest.
 
-
 </GuideSection>
 
 </GuideSelector>
-
 
 ## Creating a distributed system
 

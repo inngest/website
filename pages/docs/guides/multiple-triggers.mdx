@@ -1,3 +1,4 @@
+h
 import { CodeGroup, Info } from "src/shared/Docs/mdx";
 
 # Multiple triggers & wildcards
@@ -17,12 +18,14 @@ Functions support up to 10 unique triggers. This allows you to explicitly match 
 <CodeGroup>
 ```ts {{ title: "TypeScript" }}
 inngest.createFunction(
-  { id: "resync-user-data" },
-  [
+  {
+  id: "resync-user-data"
+  triggers: [
     { event: "user.created" },
     { event: "user.updated" },
     { cron: "0 5 * * *" }, // Every morning at 5am
   ],
+  },
   async ({ event, step }) => {
     // ...
   },
@@ -30,17 +33,17 @@ inngest.createFunction(
 ```
 ```go {{ title: "Go" }}
 inngestgo.CreateFunction(
-	client,
-	inngestgo.FunctionOpts{Name: "resync-user-data"},
-	inngestgo.MultipleTriggers{
-		inngestgo.EventTrigger("user.created", nil),
-		inngestgo.EventTrigger("user.updated", nil),
-		inngestgo.CronTrigger("0 5 * * *"),
-	},
-	func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
-		// ...
-		return nil, nil
-	},
+ client,
+ inngestgo.FunctionOpts{Name: "resync-user-data"},
+ inngestgo.MultipleTriggers{
+  inngestgo.EventTrigger("user.created", nil),
+  inngestgo.EventTrigger("user.updated", nil),
+  inngestgo.CronTrigger("0 5 * * *"),
+ },
+ func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
+  // ...
+  return nil, nil
+ },
 )
 ```
 ```py {{ title: "Python" }}
@@ -96,8 +99,10 @@ const inngest = new Inngest({
 });
 
 inngest.createFunction(
-  { id: "blog-updates-to-slack" },
-  { event: "app/blog.post.*" },
+  {
+    id: "blog-updates-to-slack",
+    triggers: { event: "app/blog.post.*" },
+  },
   async ({ event, step }) => {
     // ...
   },
@@ -124,15 +129,15 @@ async ({ event }) => {
 ```
 ```go {{ title: "Go" }}
 func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
-	switch input.Event.Name {
-	case "a":
-		// Handle event A
-	case "b":
-		// Handle event B
-	case "inngest/function.invoked":
-		// Handle function invoked event
-	}
-	return nil, nil
+ switch input.Event.Name {
+ case "a":
+  // Handle event A
+ case "b":
+  // Handle event B
+ case "inngest/function.invoked":
+  // Handle function invoked event
+ }
+ return nil, nil
 },
 ```
 </CodeGroup>
@@ -146,5 +151,5 @@ If your function defines multiple cron triggers, the schedules may sometimes ove
 
 Only one cron job will be run for each given second, so in this case above, one cron would run every half hour.
 
-{/* There's a place for wildcards here if we want to talk about them. They're
-pretty undocumented... */}
+{/*There's a place for wildcards here if we want to talk about them. They're
+pretty undocumented...*/}
