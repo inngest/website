@@ -1,6 +1,5 @@
 import { CodeGroup, CardGroup, Card, VersionBadge, Callout } from "src/shared/Docs/mdx";
 
-
 export const description = "Make durable HTTP requests within an Inngest function.";
 
 # Fetch: performing API requests or fetching data <VersionBadge version="TypeScript only" />
@@ -17,8 +16,10 @@ The `step.fetch()` API enables you to make durable HTTP requests while offloadin
 import { inngest } from "./client";
 
 export const retrieveTextFile = inngest.createFunction(
-  { id: "retrieveTextFile" },
-  { event: "textFile/retrieve" },
+  {
+    id: "retrieveTextFile",
+    triggers: { event: "textFile/retrieve" },
+  }
   async ({ step }) => {
     // The fetching of the text file is offloaded to the Inngest Platform
     const response = await step.fetch(
@@ -40,7 +41,7 @@ export const retrieveTextFile = inngest.createFunction(
 <CardGroup cols={1}>
 
   <Card
-    href={"https://github.com/inngest/inngest-js/tree/main/examples/node-step-fetch/"}
+    href={"<https://github.com/inngest/inngest-js/tree/main/examples/node-step-fetch/"}>
     title={"Clone this example on GitHub"}
     iconPlacement="top"
   >
@@ -49,15 +50,17 @@ export const retrieveTextFile = inngest.createFunction(
 
 </CardGroup>
 
-
 ## Parallelize HTTP requests with `step.fetch()`
 
 `step.fetch()` shares all the benefits of `step.run()`, including the ability to parallelize requests using `Promise.all()`:
 
 ```typescript
 const processFiles = inngest.createFunction(
-  { id: "process-files", concurrency: 10 },
-  { event: "files/process" },
+  {
+    id: "process-files",
+    concurrency: 10,
+    triggers: { event: "files/process" },
+  },
   async ({ step, event }) => {
     // All requests will be offloaded and processed in parallel while matching the concurrency limit
     const responses = await Promise.all(event.data.files.map(async (file) => {
@@ -72,6 +75,7 @@ const processFiles = inngest.createFunction(
   }
 )
 ```
+
 Note that `step.fetch()`, like all other `step` APIs, matches your function's configuration such as [concurrency](/docs/guides/concurrency) or [throttling](/docs/guides/throttling).
 
 ## Make 3rd party library HTTP requests durable with the `fetch()` utility
@@ -98,8 +102,10 @@ const anthropic = createAnthropic({
 });
 
 const weatherFunction = inngest.createFunction(
-  { id: "weather-function" },
-  { event: "weather/get" },
+  {
+    id: "weather-function"
+    triggers: { event: "weather/get" },
+  },
   async ({ step }) => {
     // This request is offloaded to the Inngest platform
     // and it also retries automatically if it fails!
@@ -110,6 +116,7 @@ const weatherFunction = inngest.createFunction(
     });
   }
 )
+
 ```
 ```typescript {{ title: "OpenAI SDK" }}
 import { fetch } from "inngest";
@@ -124,8 +131,10 @@ const completion = await client.chat.completions.create({
 });
 
 const weatherFunction = inngest.createFunction(
-  { id: "weather-function" },
-  { event: "weather/get" },
+  {
+    id: "weather-function"
+    triggers: { event: "weather/get" },
+  },
   async ({ step }) => {
     // The OpenAI request is automatically offloaded to the Inngest Platform
     const completion = await client.chat.completions.create({
@@ -135,4 +144,6 @@ const weatherFunction = inngest.createFunction(
   }
 )
 ```
+
 </CodeGroup>
+
