@@ -1,6 +1,6 @@
 import { Callout, GuideSelector, GuideSection, CodeGroup } from "src/shared/Docs/mdx";
 
-{/* Sidebar doesn't work well when GuideSection have different headings...  */}
+{/*Sidebar doesn't work well when GuideSection have different headings...*/}
 export const hidePageSidebar = true;
 
 # Wait for a signal
@@ -13,7 +13,6 @@ In most cases, you should use [wait for event](/docs/features/inngest-functions/
 
 This is a useful pattern to react to specific user actions (for example, implement "Human in the loop" in AI Agent workflows), or to wait until something happens in external systems.
 
-
 <GuideSelector
   options={[
     { key: "typescript", title: "TypeScript" },
@@ -21,17 +20,16 @@ This is a useful pattern to react to specific user actions (for example, impleme
     { key: "python", title: "Python" }
   ]}>
 
-
-
 <GuideSection show="typescript">
 
   Use `step.waitForSignal()` to wait for a particular signal to be received before continuing. It returns a `Promise` that is resolved with the signal data or `null` if the event is not received within the timeout.
 
-
 ```ts
 export default inngest.createFunction(
-  { id: "send-onboarding-nudge-email" },
-  { event: "app/account.created" },
+  {
+    id: "send-onboarding-nudge-email",
+    triggers: { event: "app/account.created" },
+  },
   async ({ event, step }) => {
     const approval = await step.waitForSignal(
       "wait-for-approval",
@@ -78,8 +76,8 @@ Check out the [`step.waitForSignal()` TypeScript reference.](/docs/reference/fun
 
     if err == step.ErrSignalNotReceived {
     }
-		return nil, nil
-	}
+    return nil, nil
+ }
 
     // ...
 
@@ -91,13 +89,9 @@ Check out the [`step.waitForSignal()` TypeScript reference.](/docs/reference/fun
 
 </GuideSection>
 
-
 </GuideSelector>
-
 
 <Callout variant={'warning'}>
 You should prefer using "wait for event" in almost every case, and should only use "wait for signal" for individual
 latency sensitive function pause and resuming.
 </Callout>
-
-

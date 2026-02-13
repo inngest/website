@@ -57,7 +57,6 @@ deno add jsr:@inngest/realtime
 ```
 </CodeGroup>
 
-
   <Info>
     This guide requires `@inngest/realtime` version `0.4.0` or higher.
   </Info>
@@ -68,8 +67,6 @@ deno add jsr:@inngest/realtime
     This guide requires `inngest` version `0.5.9` or higher.
   </Info>
 </GuideSection>
-
-
 
 ### Publishing
 
@@ -107,8 +104,10 @@ See the [Fast API example](https://github.com/inngest/inngest-py/tree/main/examp
 import { inngest } from "./client";
 
 inngest.createFunction(
-  { id: "create-recommendation" },
-  { event: "ai/recommendation.requested" },
+  {
+    id: "create-recommendation",
+    triggers: { event: "ai/recommendation.requested" },
+  },
   async ({ event, step, publish }) => {
 
     const response = await step.run('generate-response', () => {
@@ -155,8 +154,10 @@ const userChannel = channel((userId: string) => `user:${userId}`)
   );
 
 inngest.createFunction(
-  { id: "create-recommendation" },
-  { event: "ai/recommendation.requested" },
+  {
+    id: "create-recommendation",
+    triggers: { event: "ai/recommendation.requested" },
+  },
   async ({ event, step, publish }) => {
 
     await step.run('generate-response', () => {
@@ -175,6 +176,7 @@ inngest.createFunction(
   }
 );
 ```
+
 </CodeGroup>
 
 </GuideSection>
@@ -207,6 +209,7 @@ async def python_realtime_publish(ctx: inngest.Context) -> str:
 
     return "Finished!"
 ```
+
 </GuideSection>
 
 ### Subscribing
@@ -214,7 +217,6 @@ async def python_realtime_publish(ctx: inngest.Context) -> str:
 To subscribe to data on the client (browser), you'll need to create a subscription token and use the `subscribe()` function which also requires `channel` and `topic` to be specified.
 
 Your application uses the Inngest SDK to create a token, which is then used by the subscribe function to connect to the Inngest WebSocket server.
-
 
 <Steps>
   <Step title="Create a subscription token">
@@ -354,8 +356,7 @@ Your application uses the Inngest SDK to create a token, which is then used by t
 
 </GuideSelector>
 
-{/* TODO - More on channels and topics, perhaps in a new page? */}
-
+{/*TODO - More on channels and topics, perhaps in a new page?*/}
 
 {/*
 
@@ -363,9 +364,9 @@ Your application uses the Inngest SDK to create a token, which is then used by t
 
 Channels are environment-level containers that group one or more topics of data. You can create as many channels as you need. Some tips:
 
-- You can subscribe to a channel before any data is published
-- You can create a channel for a specific run ID, e.g., for a run's status: `run:${ctx.runId}`
-- You can create channels for each user, or for a given conversation
+* You can subscribe to a channel before any data is published
+* You can create a channel for a specific run ID, e.g., for a run's status: `run:${ctx.runId}`
+* You can create channels for each user, or for a given conversation
 
 ### Topics
 
@@ -373,8 +374,8 @@ Topics allow you to specify individual streams within a channel. For example, wi
 
 Benefits of separating data by topics include:
 
-- **Typing and data handling**: You can switch on the topic name to properly type and handle different streams of data within a channel.
-- **Security**: You must specify topics when creating subscription tokens, allowing you to protect or hide specific published data.
+* **Typing and data handling**: You can switch on the topic name to properly type and handle different streams of data within a channel.
+* **Security**: You must specify topics when creating subscription tokens, allowing you to protect or hide specific published data.
 
 ### Subscription Tokens
 
@@ -420,9 +421,9 @@ Realtime is supported in the following SDKs:
 
 ## Limitations
 
-- The number of currently active topics depends on your Inngest plan
-- Data sent is currently at-most-once and ephemeral
-- The max message size is currently 512KB
+* The number of currently active topics depends on your Inngest plan
+* Data sent is currently at-most-once and ephemeral
+* The max message size is currently 512KB
 
 ## Developer preview
 

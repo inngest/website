@@ -2,7 +2,6 @@ import { VersionBadge, Callout, ImageTheme, Info, CodeGroup } from "src/shared/D
 
 # Singleton Functions <VersionBadge version="TypeScript v3.39.0+" /> <VersionBadge version="Go SDK v0.12.0+" /> <VersionBadge version="Python v0.5+" />
 
-
 Singleton Functions enable you to ensure that only a single run of your function (_or a set of specific function runs, based on specific event properties_) is happening at a time.
 
 <p>
@@ -21,25 +20,19 @@ Singleton Functions enable you to ensure that only a single run of your function
 ## When to use Singleton Functions
 
 Singleton Functions are useful when you want to ensure that only a single instance of a function is running at a time, for example:
+
 - A third-party data synchronization workflow
 - A compute- or time-intensive function that should not be run multiple times at the same time (ex: AI processing)
 
-
-### Singleton compared to concurrency:
+### Singleton compared to concurrency
 
 While [Concurrency](/docs/guides/concurrency) set to `1` ensures that only a single step of a given function is running at a time, Singleton Functions ensure that only a single run of a given function is happening at a time.
 
-
-### Singleton compared to Rate Limiting:
+### Singleton compared to Rate Limiting
 
 [Rate Limiting](/docs/guides/rate-limiting) is similar to Singleton Functions, but it is designed to limit the number of runs started within a time period, whereas Singleton Functions are designed to ensure that only a single run of a function occurs over a given time window.
 
 Rate Limiting is useful for controlling the rate of execution of a function, while Singleton Functions are useful for ensuring that only a single run of a function occurs over a given time window.
-
-
-
-
-
 
 ## How it works
 
@@ -50,12 +43,12 @@ The following `data-sync` function demonstrates singleton behavior scoped to ind
 ```ts
 const dataSync = inngest.createFunction({
     id: "data-sync",
+    triggers: { event: "data-sync.start" },
     singleton: {
       key: "event.data.user_id",
       mode: "skip",
     }  
   },
-  { event: "data-sync.start" },
   async ({ event }) => {
     // ...
   },
@@ -68,7 +61,6 @@ Refer to the [reference documentation](/docs/reference/functions/singleton) for 
 
 When a `key` is added, the unique runs rule is applied for each unique value of the `key` expression. For example, if your `key` is set to `event.data.user_id`,
 each user would have their individual singleton rule applied to functions runs, ensuring that only a single run of the function is happening at a time for each user. Read [our guide to writing expressions](/docs/guides/writing-expressions) for more information.
-
 
 ### Two modes: Skip vs Cancel
 
@@ -91,15 +83,15 @@ Use `"skip"` mode when you want to prevent duplicate work and preserve the curre
 ```ts {{ title: "Skip mode" }}
 const dataSync = inngest.createFunction({
     id: "data-sync",
+    triggers: { event: "data-sync.start" },
     singleton: {
       key: "event.data.user_id",
       mode: "skip",
     }  
   },
-  { event: "data-sync.start" },
   async ({ event }) => {
     const userId = event.data.user_id;
-    
+
     // This long-running sync process will not be interrupted
     // If another sync is triggered for this user, it will be skipped
     const data = await syncUserDataFromExternalAPI(userId);
@@ -107,16 +99,17 @@ const dataSync = inngest.createFunction({
     await updateDatabase(processed);
   },
 );
+
 ```
 ```ts {{ title: "Cancel mode" }}
 const latestDataSync = inngest.createFunction({
     id: "latest-data-sync",
+    triggers: { event: "data-sync.start" },
     singleton: {
       key: "event.data.user_id",
       mode: "cancel",
     }  
   },
-  { event: "data-sync.start" },
   async ({ event }) => {
     const userId = event.data.user_id;
     
@@ -127,8 +120,8 @@ const latestDataSync = inngest.createFunction({
   },
 );
 ```
-</CodeGroup>
 
+</CodeGroup>
 
 ## Compatibility with other flow control features
 
@@ -137,11 +130,10 @@ Singleton Functions can be combined with other flow control features, with the f
 | Flow control | Compatibility | Considerations |
 | --- | --- | --- |
 | [Debounce](/docs/guides/debounce) | ✅ | Can be used together without issues. |
-| [Rate limiting](/docs/guides/rate-limiting) | ✅ | Similar functionality but rate limiting operates over a predefined time window rather than function execution duration. | 
+| [Rate limiting](/docs/guides/rate-limiting) | ✅ | Similar functionality but rate limiting operates over a predefined time window rather than function execution duration. |
 | [Throttling](/docs/guides/throttling) | ✅ | Similar functionality but throttling enqueues events over time rather than discarding/canceling them. |
 | [Concurrency](/docs/guides/concurrency) | ❌ | Singleton functions implicitly have a concurrency of 1. A concurrency setting can be set but should be used with caution. |
 | [Batching](/docs/guides/batching) | ❌ | Singleton isn't compatible with batching; function registration will fail if both are set. |
-
 
 ## FAQ
 

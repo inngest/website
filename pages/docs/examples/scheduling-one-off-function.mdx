@@ -19,8 +19,10 @@ Here is a basic function that sends a reminder to a user at a given email.
 
 ```typescript
 const sendReminder = inngest.createFunction(
-  { id: "send-reminder" },
-  { event: "notifications/reminder.scheduled" },
+  {
+    id: "send-reminder"
+    triggers: { event: "notifications/reminder.scheduled" },
+  },
   async ({ event, step }) => {
     const { user, message } = event.data;
 
@@ -77,6 +79,5 @@ Check the resources below to learn more about scheduling functions with Inngest.
 
 ## Related concepts
 
-- [Scheduled functions (cron jobs)](/docs/guides/scheduled-functions)
-- [`step.sleepUntil()`](/docs/reference/functions/step-sleep-until)
-
+* [Scheduled functions (cron jobs)](/docs/guides/scheduled-functions)
+* [`step.sleepUntil()`](/docs/reference/functions/step-sleep-until)

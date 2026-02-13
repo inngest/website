@@ -120,8 +120,10 @@ With Inngest set up in your codebase, you can write a function that is triggered
 import db from "./database";
 
 const invalidateUserEmail = inngest.createFunction(
-  { id: 'invalidate-user-email' },
-  { event: 'resend/email.bounced' },
+  {
+    id: 'invalidate-user-email',
+    triggers: { event: 'resend/email.bounced' },
+  },
   async ({ event }) => {
     const email = event.data.to[0];
     const user = await db.users.byEmail(email);
@@ -164,7 +166,7 @@ export async function sendEmail(
     throw error;
   }
 
-	return data;
+ return data;
 };
 
 ```
@@ -178,10 +180,12 @@ The below example assumes that your application receives a `app/signup.completed
 import { sendEmail } from "./resend";
 
 const sendWelcomeEmail = inngest.createFunction(
-  { id: 'send-welcome-email' },
-  { event: 'app/signup.completed' },
+  {
+    id: 'send-welcome-email',
+    triggers: { event: 'app/signup.completed' },
+  },
   async ({ event }) => {
-	  const { user } = event.data;
+   const { user } = event.data;
     await sendEmail(user.email, "Welcome to Acme", (
       <div>
         <h1>Welcome to ACME, {user.firstName}</h1>
@@ -201,11 +205,13 @@ The code below sends a welcome email, then uses `step.sleep` to wait for three d
 
 ```tsx
 const sendOnboardingEmails = inngest.createFunction(
-  { id: 'onboarding-emails' },
-  { event: 'app/signup.completed' },
+  {
+    id: 'onboarding-emails',
+    triggers: { event: 'app/signup.completed' },
+  },
   async ({ event, step }) => { // ← step is available in the handler's arguments
     const { user } = event.data
-	  const { email, first_name } = user
+   const { email, first_name } = user
 
     await step.run('welcome-email', async () => {
       await sendEmail(email, "Welcome to ACME", (
@@ -241,8 +247,10 @@ Let's say you want to create the following campaign:
 
 ```tsx
 const signupDripCampaign = inngest.createFunction(
-  { id: "signup-drip-campaign" },
-  { event: "app/signup.completed" },
+  {
+    id: "signup-drip-campaign",
+    triggers: { event: "app/signup.completed" },
+  },
   async ({ event, step }) => {
     const { user } = event.data;
     const { email, first_name } = user
@@ -261,7 +269,7 @@ const signupDripCampaign = inngest.createFunction(
     // Wait up to 3 days for the user open the email and click any link in it
     const clickEvent = await step.waitForEvent("wait-for-engagement", {
       event: "resend/email.clicked",
-			if: `async.data.email_id == ${emailId}`,
+   if: `async.data.email_id == ${emailId}`,
       timeout: "3 days",
     });
 
@@ -328,3 +336,4 @@ From here you can select the event, replay it to re-run any functions or edit an
 ## Conclusion
 
 Congratulations! You've now learned how to use Inngest to create functions that use Resend webhook events.
+

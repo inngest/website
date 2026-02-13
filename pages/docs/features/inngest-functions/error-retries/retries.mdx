@@ -12,8 +12,10 @@ For the function below, if the database write fails then it'll be retried up to 
 
 ```ts
 inngest.createFunction(
-  { id: "click-recorder" },
-  { event: "app/button.clicked" },
+  {
+    id: "click-recorder",
+    triggers: { event: "app/button.clicked" },
+  },
   async ({ event, attempt }) => {
     await db.clicks.insertOne(event.data); // this code now retries!
   },
@@ -26,13 +28,13 @@ inngest.createFunction(
 
 ```go
 inngestgo.CreateFunction(
-	client,
-	inngestgo.FunctionOpts{ID: "click-recorder"},
-	inngestgo.EventTrigger("app/button.clicked", nil),
-	func(ctx context.Context, input inngestgo.Input[ButtonClickedEvent]) (any, error) {
-		result, err := db.Clicks.InsertOne(input.Event.Data)
-		return result, err
-	},
+ client,
+ inngestgo.FunctionOpts{ID: "click-recorder"},
+ inngestgo.EventTrigger("app/button.clicked", nil),
+ func(ctx context.Context, input inngestgo.Input[ButtonClickedEvent]) (any, error) {
+  result, err := db.Clicks.InsertOne(input.Event.Data)
+  return result, err
+ },
 )
 ```
 
@@ -60,8 +62,8 @@ inngest.createFunction(
   {
     id: "click-recorder",
     retries: 10, // choose how many retries you'd like
+    triggers: { event: "app/button.clicked" },
   },
-  { event: "app/button.clicked" },
   async ({ event, step, attempt }) => { /* ... */ },
 );
 ```
@@ -72,16 +74,16 @@ inngest.createFunction(
 
 ```go
 inngestgo.CreateFunction(
-	client,
-	inngestgo.FunctionOpts{
-		ID:      "click-recorder",
-		Retries: 10, // choose how many retries you'd like
-	},
-	inngestgo.EventTrigger("app/button.clicked", nil),
-	func(ctx context.Context, input inngestgo.Input[ButtonClickedEvent]) (any, error) {
-		// ...
-		return nil, nil
-	},
+ client,
+ inngestgo.FunctionOpts{
+  ID:      "click-recorder",
+  Retries: 10, // choose how many retries you'd like
+ },
+ inngestgo.EventTrigger("app/button.clicked", nil),
+ func(ctx context.Context, input inngestgo.Input[ButtonClickedEvent]) (any, error) {
+  // ...
+  return nil, nil
+ },
 )
 ```
 
@@ -117,8 +119,10 @@ In the example below, both the "_get-data_" and "_save-data_" steps each get the
 
 ```ts
 inngest.createFunction(
-  { id: "sync-systems" },
-  { event: "auto/sync.request" },
+  {
+    id: "sync-systems"
+    triggers: { event: "auto/sync.request" },
+  },
   async ({ step }) => {
     // Can be retried up to 4 times
     const data = await step.run("get-data", async () => {
@@ -139,28 +143,28 @@ inngest.createFunction(
 
 ```go
 inngestgo.CreateFunction(
-	client,
-	inngestgo.FunctionOpts{ID: "sync-systems"},
-	inngestgo.EventTrigger("auto/sync.request", nil),
-	func(ctx context.Context, input inngestgo.Input[SyncRequestEvent]) (any, error) {
-		// can be retried up to 4 times
-		data, err := step.Run(ctx, "get-data", func(ctx context.Context) (any, error) {
-			return getDataFromExternalSource()
-		})
-		if err != nil {
-			return nil, err
-		}
+ client,
+ inngestgo.FunctionOpts{ID: "sync-systems"},
+ inngestgo.EventTrigger("auto/sync.request", nil),
+ func(ctx context.Context, input inngestgo.Input[SyncRequestEvent]) (any, error) {
+  // can be retried up to 4 times
+  data, err := step.Run(ctx, "get-data", func(ctx context.Context) (any, error) {
+   return getDataFromExternalSource()
+  })
+  if err != nil {
+   return nil, err
+  }
 
-		// can also be retried up to 4 times
-		_, err = step.Run(ctx, "save-data", func(ctx context.Context) (any, error) {
-			return db.Syncs.InsertOne(data.(DataType))
-		})
-		if err != nil {
-			return nil, err
-		}
+  // can also be retried up to 4 times
+  _, err = step.Run(ctx, "save-data", func(ctx context.Context) (any, error) {
+   return db.Syncs.InsertOne(data.(DataType))
+  })
+  if err != nil {
+   return nil, err
+  }
 
-		return nil, nil
-	},
+  return nil, nil
+ },
 )
 ```
 
@@ -201,8 +205,10 @@ This is useful for when you know an error is permanent and want to stop all exec
 import { NonRetriableError } from "inngest";
 
 inngest.createFunction(
-  { id: "user-weekly-digest" },
-  { event: "user/weekly.digest.requested" },
+  {
+    id: "user-weekly-digest"
+    triggers: { event: "user/weekly.digest.requested" },
+  },
   async ({ event, step }) => {
     const user = await step
       .run("get-user-email", () => {
@@ -229,29 +235,29 @@ inngest.createFunction(
 
 ```go
 inngestgo.CreateFunction(
-	client,
-	inngestgo.FunctionOpts{ID: "user-weekly-digest"},
-	inngestgo.EventTrigger("user/weekly.digest.requested", nil),
-	func(ctx context.Context, input inngestgo.Input[WeeklyDigestRequestedEvent]) (any, error) {
-		user, err := step.Run(ctx, "get-user-email", func(ctx context.Context) (any, error) {
-			return db.Users.FindOne(input.Event.Data.UserID)
-		})
-		if err != nil {
-			if stepErr, ok := err.(step.StepError); ok && stepErr.Name == "UserNotFoundError" {
-				return nil, inngestgo.NoRetryError(fmt.Errorf("User no longer exists; stopping"))
-			}
-			return nil, err
-		}
+ client,
+ inngestgo.FunctionOpts{ID: "user-weekly-digest"},
+ inngestgo.EventTrigger("user/weekly.digest.requested", nil),
+ func(ctx context.Context, input inngestgo.Input[WeeklyDigestRequestedEvent]) (any, error) {
+  user, err := step.Run(ctx, "get-user-email", func(ctx context.Context) (any, error) {
+   return db.Users.FindOne(input.Event.Data.UserID)
+  })
+  if err != nil {
+   if stepErr, ok := err.(step.StepError); ok && stepErr.Name == "UserNotFoundError" {
+    return nil, inngestgo.NoRetryError(fmt.Errorf("User no longer exists; stopping"))
+   }
+   return nil, err
+  }
 
-		_, err = step.Run(ctx, "send-digest", func(ctx context.Context) (any, error) {
-			return sendDigest(user.(UserType).Email)
-		})
-		if err != nil {
-			return nil, err
-		}
+  _, err = step.Run(ctx, "send-digest", func(ctx context.Context) (any, error) {
+   return sendDigest(user.(UserType).Email)
+  })
+  if err != nil {
+   return nil, err
+  }
 
-		return nil, nil
-	},
+  return nil, nil
+ },
 )
 ```
 
@@ -291,8 +297,10 @@ In this example, an external API provided `Retry-After` header with information 
 import { RetryAfterError } from 'inngest';
 
 inngest.createFunction(
-  { id: "send-welcome-notification" },
-  { event: "app/user.created" },
+  {
+    id: "send-welcome-notification"
+    triggers: { event: "app/user.created" },
+  },
   async ({ event, step }) => {
 
     const msg = await step.run('send-message', async () => {
@@ -318,24 +326,24 @@ inngest.createFunction(
 
 ```go
 inngestgo.CreateFunction(
-	client,
-	inngestgo.FunctionOpts{ID: "send-welcome-notification"},
-	inngestgo.EventTrigger("user.created", nil),
-	func(ctx context.Context, input inngestgo.Input[SignedUpEvent]) (any, error) {
-		success, retryAfter, err := twilio.Messages.Create(twilio.MessageOpts{
-			To:   input.Event.Data.User.PhoneNumber,
-			Body: "Welcome to our service!",
-		})
-		if err != nil {
-			return nil, err
-		}
+ client,
+ inngestgo.FunctionOpts{ID: "send-welcome-notification"},
+ inngestgo.EventTrigger("user.created", nil),
+ func(ctx context.Context, input inngestgo.Input[SignedUpEvent]) (any, error) {
+  success, retryAfter, err := twilio.Messages.Create(twilio.MessageOpts{
+   To:   input.Event.Data.User.PhoneNumber,
+   Body: "Welcome to our service!",
+  })
+  if err != nil {
+   return nil, err
+  }
 
-		if !success && retryAfter != nil {
-			return nil, inngestgo.RetryAtError(fmt.Errorf("Hit Twilio rate limit"), *retryAfter)
-		}
+  if !success && retryAfter != nil {
+   return nil, inngestgo.RetryAtError(fmt.Errorf("Hit Twilio rate limit"), *retryAfter)
+  }
 
-		return nil, nil
-	}
+  return nil, nil
+ }
 )
 ```
 
@@ -352,13 +360,13 @@ from src.inngest.client import inngest_client
     trigger=inngest.TriggerEvent(event="user.created"),
 )
 def send_welcome_notification(ctx: inngest.ContextSync) -> None:
-	success, retryAfter, err = twilio.Messages.Create(twilio.MessageOpts{
-		To:   ctx.event.data["user"]["phoneNumber"],
-		Body: "Welcome to our service!",
-	})
+ success, retryAfter, err = twilio.Messages.Create(twilio.MessageOpts{
+  To:   ctx.event.data["user"]["phoneNumber"],
+  Body: "Welcome to our service!",
+ })
 
-	if not success and retryAfter is not None:
-		raise inngest.RetryAfterError("Hit Twilio rate limit", retryAfter)
+ if not success and retryAfter is not None:
+  raise inngest.RetryAfterError("Hit Twilio rate limit", retryAfter)
 ```
 
 </GuideSection>

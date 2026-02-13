@@ -58,8 +58,10 @@ export const helloChannel = channel((uuid: string) => `hello-world.${uuid}`).add
 );
 
 export const someTask = inngest.createFunction(
-  { id: "hello-world" },
-  { event: "hello-world/hello" },
+  {
+    id: "hello-world",
+    triggers: { event: "hello-world/hello" },
+  }
   async ({ event, step, publish }) => {
     const { uuid } = event.data;
     await publish(helloChannel(uuid).logs("Hello, world!"));
@@ -69,11 +71,10 @@ export const someTask = inngest.createFunction(
 
 By creating a channel with a unique identifier, you can stream updates for a specific run to the end user.
 
-
 <CardGroup cols={2}>
 
   <Card
-    href="https://github.com/inngest/inngest-js/tree/main/examples/realtime/nodejs/realtime-single-run-subscription"
+    href="<https://github.com/inngest/inngest-js/tree/main/examples/realtime/nodejs/realtime-single-run-subscription>"
     title={"Explore the full source code"}
     icon={<RiNodejsFill className="text-basis h-8 w-8"/>}
     iconPlacement="top"
@@ -131,9 +132,7 @@ export const likePost = app.createFunction(
   {
     id: "post/like",
     retries: 0,
-  },
-  {
-    event: "app/post.like",
+    triggers: { event: "app/post.like" }
   },
   async ({
     event: {
@@ -168,12 +167,10 @@ export const likePost = app.createFunction(
 
 The `globalChannel` will be used to stream updates for all posts, and the `postChannel` will be used to stream updates for specific posts.
 
-
-
 <CardGroup cols={2}>
 
   <Card
-    href="https://github.com/inngest/inngest-js/tree/main/examples/realtime/nodejs/realtime-across-multiple-channels"
+    href="<https://github.com/inngest/inngest-js/tree/main/examples/realtime/nodejs/realtime-across-multiple-channels>"
     title={"Explore the full source code"}
     icon={<RiNodejsFill className="text-basis h-8 w-8"/>}
     iconPlacement="top"
@@ -207,8 +204,10 @@ export const agenticWorkflowChannel = channel("agentic-workflow").addTopic(
 );
 
 export const agenticWorkflow = inngest.createFunction(
-  { id: "agentic-workflow" },
-  { event: "agentic-workflow/start" },
+  {
+    id: "agentic-workflow",
+    triggers: { event: "agentic-workflow/start" },
+  },
   async ({ event, step, publish }) => {
     await step.run(/* ... */);
     const confirmationUUid = await step.run("get-confirmation-uuid", async () => crypto.randomUUID());
@@ -233,7 +232,7 @@ The `confirmationUUid` links the published message to the reply event, ensuring 
 <CardGroup cols={2}>
 
   <Card
-    href="https://github.com/inngest/inngest-js/tree/main/examples/realtime/nodejs/realtime-human-in-the-loop"
+    href="<https://github.com/inngest/inngest-js/tree/main/examples/realtime/nodejs/realtime-human-in-the-loop>"
     title={"Explore the full source code"}
     icon={<RiNodejsFill className="text-basis h-8 w-8"/>}
     iconPlacement="top"
@@ -242,7 +241,6 @@ The `confirmationUUid` links the published message to the reply event, ensuring 
   </Card>
 
 </CardGroup>
-
 
 ## Learn more
 
@@ -263,4 +261,3 @@ The `confirmationUUid` links the published message to the reply event, ensuring 
 }}/>
 
 </ResourceGrid>
-

@@ -17,7 +17,7 @@ As Inngest functions are triggered by events, there are two main ways to ensure 
 * [at the event level (_the producer_)](#at-the-event-level-the-producer) and/or
 * [at the function level (_the consumer_)](#at-the-function-level-the-consumer)
 
-{/*TODO - New graphic in similar design style ![Relay graphic](/assets/docs/platform/replay/featured-image.png) */}
+{/_TODO - New graphic in similar design style ![Relay graphic](/assets/docs/platform/replay/featured-image.png)_/}
 
 ## At the event level (the producer)
 
@@ -28,7 +28,6 @@ Each event that is received by Inngest will trigger any functions with that matc
 </Callout>
 
 To prevent an event from being handled twice, you can set a unique event `id` when [sending the event](/docs/reference/events/send#inngest-send-event-payload-event-payload-promise). This `id` acts as an idempotency key **over a 24 hour period** and Inngest will check to see if that event has already been received before triggering another function.
-
 
 <CodeGroup>
 
@@ -44,7 +43,6 @@ await inngest.send({
 })
 ```
 
-
 ```go {{ title: "Go" }}
 cart_id := "CGo5Q5ekAxilN92d27asEoDO"
 inngest.Send(context.Background(), inngestgo.Event{
@@ -53,7 +51,6 @@ inngest.Send(context.Background(), inngestgo.Event{
   Data: map[string]any{"email": "taylor@example.com", "cart_id": cart_id},
 })
 ```
-
 
 ```python {{ title: "Python" }}
 cart_id = 'CGo5Q5ekAxilN92d27asEoDO'
@@ -82,7 +79,7 @@ Some other key points to note:
 * Inngest will store the second event and it will be visible in your event history, but it will _not_ trigger any functions.
 * Events that fan-out to multiple functions will trigger each function as they normally would.
 
-{/* TODO - Link to revised fan-out guide above when complete */}
+{/_TODO - Link to revised fan-out guide above when complete_/}
 
 <Callout>
   **Tip** - If you are using Inngest's [webhook transforms](/docs/platform/webhooks#defining-a-transform-function), you can set the `id` in the transform to ensure that the event is idempotent.
@@ -136,8 +133,8 @@ export const sendEmail = inngest.createFunction(
     idempotency: 'event.data.cartId',
     // Evaluates to: "s6CIMNqIaxt503I1gVEICfwp"
     // for the given event payload
+    triggers: { event: 'cart/checkout.completed' },
   },
-  { trigger: 'cart/checkout.completed' },
   async  ({ event, step }) => { /* ... */ }
 })
 ```
@@ -162,13 +159,13 @@ For more information on writing CEL expressions, read [our guide](/docs/guides/w
 <Callout>
   💡 If you want to control when a function is executed over a period of time you might prefer:
 
-  * [`rateLimit`](/docs/reference/functions/rate-limit) - Limit the number of function executions per period of time
-  * [`debounce`](/docs/reference/functions/debounce) - Delay function execution for duplicate events over a period of time
+* [`rateLimit`](/docs/reference/functions/rate-limit) - Limit the number of function executions per period of time
+* [`debounce`](/docs/reference/functions/debounce) - Delay function execution for duplicate events over a period of time
 </Callout>
 
 ### Idempotency keys and fan-out
 
-{/* TODO - This should link to a future iteration of the fan-out guide which is 1 event, n functions */}
+{/_TODO - This should link to a future iteration of the fan-out guide which is 1 event, n functions_/}
 One reason why you might want to use `idempotency` at the function level is if you have an `event` that fans-out to multiple functions. Let's take the following fan-out example:
 
 | Function | Event trigger | How often |
@@ -185,8 +182,10 @@ In this case, you would want to set `idempotency` on the "Run generation" functi
 
 ```ts {{ title: "Track requests function" }}
 const trackRequests = inngest.createFunction(
-  { id: 'track-requests' },
-  { event: 'ai/generation.requested' },
+  {
+    id: 'track-requests',
+    triggers: { event: 'ai/generation.requested' },
+  },
   async ({ event, step }) => {
     // Track the request
   }
@@ -197,12 +196,12 @@ const trackRequests = inngest.createFunction(
 const runGeneration = inngest.createFunction(
   {
     id: 'run-generation',
+    triggers: { event: 'ai/generation.requested' },
     // Given the event payload sends a hash of the prompt,
     // this will only run once per unique prompt per user
     // every 24 hours:
     idempotency: `event.data.promptHash + "-" + event.data.userId`
   },
-  { event: 'ai/generation.requested' },
   async ({ event, step }) => {
     // Track the request
   }
@@ -210,7 +209,3 @@ const runGeneration = inngest.createFunction(
 ```
 
 </details>
-
-
-
-

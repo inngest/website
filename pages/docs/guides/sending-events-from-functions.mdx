@@ -74,8 +74,10 @@ Next, create a function that listens for the `"app/weekly-email-activity.send"` 
 
 ```ts
 export const sendReminder = inngest.createFunction(
-  { id: "weekly-activity-send-email" },
-  { event: "app/weekly-email-activity.send" },
+  {
+    id: "weekly-activity-send-email",
+    triggers: { event: "app/weekly-email-activity.send" },
+  },
   async ({ event, step }) => {
     const data = await step.run("load-user-data", async () => {
       return loadUserData(event.data.user.id);
@@ -220,4 +222,3 @@ A related pattern is invoking external functions directly instead of just trigge
 * Sending events can be done in bulk, whereas invoke can only invoke one function at a time.
 * Sending events can be combined with [fan-out](/docs/guides/fan-out-jobs) to trigger multiple functions from a single event
 * Unlike invocation, sending events will not receive the result of the invoked function
-

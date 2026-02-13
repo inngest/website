@@ -1,6 +1,5 @@
 import { CodeGroup, CardGroup, Card, VersionBadge, Callout } from "src/shared/Docs/mdx";
 
-
 export const description = "Enrich your Inngest Traces with your application's OpenTelemetry traces";
 
 # Set up OpenTelemetry with Inngest <VersionBadge version="TypeScript only" />
@@ -75,7 +74,6 @@ If you'd like to benefit from database queries and HTTP request traces in your I
 
 </Callout>
 
-
 ## Set up Inngest Extended Traces WITHOUT an existing OpenTelemetry client
 
 Setting up Inngest Extended Traces without an existing OpenTelemetry client only requires adding the `extendedTracesMiddleware()`
@@ -94,7 +92,6 @@ export const inngest = new Inngest({
 
 This configuration will enrich your Inngest Traces with database queries and HTTP request spans.
 
-
 ## How to create custom spans with Inngest Extended Traces
 
 Once Inngest Extended Traces is properly set up in your application, your Inngest workflow will receive an additional `tracer` argument:
@@ -103,8 +100,10 @@ Once Inngest Extended Traces is properly set up in your application, your Innges
 import { inngest } from './client'
 
 export const userOnboarding = inngest.createFunction(
-  { id: "user-onboarding" },
-  { event: "user.onboarding" },
+  {
+    id: "user-onboarding",
+    triggers: { event: "user.onboarding" },
+  }
   async ({ event, step, tracer }) => {
     //  ...
   }
@@ -118,8 +117,10 @@ import { inngest } from './client'
 import { sendEmail } from './emails'
 
 export const userOnboarding = inngest.createFunction(
-  { id: "user-onboarding" },
-  { event: "user.onboarding" },
+  {
+    id: "user-onboarding",
+    triggers: { event: "user.onboarding" },
+  }
   async ({ event, step, tracer }) => {
     await step.run("create-user", async () => {
         // ...
@@ -143,3 +144,4 @@ Using `tracer.startActiveSpan()`, we create a custom `call-email-service` span t
 Our custom span is properly displayed within our Inngest workflow run Traces:
 
 ![The user-onboarding run displays Inngest Traces featuring the call-email-service custom span](/assets/docs/examples/open-telemetry/custom-span.png)
+

@@ -8,7 +8,7 @@ import {
 
 # Middleware
 
-Middleware allows your code to run at various points in an Inngest client's lifecycle, such as during a function's execution or when sending an event. 
+Middleware allows your code to run at various points in an Inngest client's lifecycle, such as during a function's execution or when sending an event.
 
 This can be used for a wide range of uses:
 
@@ -26,8 +26,6 @@ This can be used for a wide range of uses:
     Quickly setup Sentry for your Inngest Functions.
   </Card>
 </CardGroup>
-
-
 
 ## Middleware SDKs support
 
@@ -59,16 +57,17 @@ const inngest = new Inngest({
 inngest.createFunction(
   {
     id: "example",
+    triggers: { event: "test" },
     middleware: [
       dbSetupMiddleware, // This is executed third
       datadogMiddleware, // This is executed fourth
     ],
   },
-  { event: "test" },
   async () => {
     // ...
   }
 );
+
 ```
 ```py {{ title: "Python" }}
 inngest_client = inngest.Inngest(
@@ -94,6 +93,7 @@ async def fn(ctx: inngest.Context):
     # ...
 
 ```
+
 </CodeGroup>
 
 Learn more about the Middleware hooks and their execution order in ["Creating a Middleware"](/docs/features/middleware/create).

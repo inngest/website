@@ -1,6 +1,5 @@
 import { Callout, GuideSelector, GuideSection, CodeGroup } from "src/shared/Docs/mdx";
 
-
 # Sleeps
 
 Two step methods, `step.sleep` and `step.sleepUntil`, are available to pause the execution of your function for a specific amount of time. Your function can sleep for seconds, minutes, or days, up to a maximum of one year.
@@ -13,7 +12,6 @@ Using sleep methods can avoid the need to run multiple cron jobs or use addition
 
 A Function paused by a sleeping Step doesn't affect your account capacity; i.e. it does not count against your plan's concurrency limit. A sleeping Function doesn't count against any [concurrency policy](/docs/guides/concurrency) you've set on the function, either.
 
-
 <GuideSelector
   options={[
     { key: "typescript", title: "TypeScript" },
@@ -21,26 +19,24 @@ A Function paused by a sleeping Step doesn't affect your account capacity; i.e. 
     { key: "python", title: "Python" }
   ]}>
 
-
 ## Pausing an execution for a given time
-
 
 <GuideSection show="typescript">
 
   Use `step.sleep()` to pause the execution of your function for a specific amount of time.
 
-
 ```ts
 export default inngest.createFunction(
-  { id: "send-delayed-email" },
-  { event: "app/user.signup" },
+  {
+    id: "send-delayed-email",
+    triggers: { event: "app/user.signup" },
+  },
   async ({ event, step }) => {
     await step.sleep("wait-a-couple-of-days", "2d");
     // Do something else
   }
 );
 ```
-
 
 Check out the [`step.sleep()` TypeScript reference.](/docs/reference/functions/step-sleep)
 
@@ -82,19 +78,18 @@ Check out the [`step.sleep()` Python reference.](/docs/reference/python/steps/sl
 
 </GuideSection>
 
-
 ## Pausing an execution until a given date
-
 
 <GuideSection show="typescript">
 
 Use `step.sleepUntil()` to pause the execution of your function until a specific date time.
 
-
 ```ts
 export default inngest.createFunction(
-  { id: "send-scheduled-reminder" },
-  { event: "app/reminder.scheduled" },
+  {
+    id: "send-scheduled-reminder",
+    triggers: { event: "app/reminder.scheduled" },
+  },
   async ({ event, step }) => {
     const date = new Date(event.data.remind_at);
     await step.sleepUntil("wait-for-scheduled-reminder", date);
@@ -102,7 +97,6 @@ export default inngest.createFunction(
   }
 );
 ```
-
 
 Check out the [`step.sleepUntil()` TypeScript reference.](/docs/reference/functions/step-sleep-until)
 
@@ -123,6 +117,7 @@ async def fn(ctx: inngest.Context) -> None:
         datetime.datetime.now() + datetime.timedelta(seconds=2),
     )
 ```
+
 Check out the [`step.sleep_until()` Python reference.](/docs/reference/python/steps/sleep-until)
 
 </GuideSection>
@@ -142,6 +137,6 @@ Check out the [`step.sleep_until()` Python reference.](/docs/reference/python/st
 
   In the meantime:
 
-  - Rest assured that your sleeping functions *are* still sleeping and will resume as scheduled, even if they're not visible in the Function Runs list.
-  - Given a function run's ID, you can inspect its status using Inngest Cloud's Quick Search feature (Ctrl-K or ⌘K) or the [REST API](https://api-docs.inngest.com/docs/inngest-api/).
+- Rest assured that your sleeping functions _are_ still sleeping and will resume as scheduled, even if they're not visible in the Function Runs list.
+- Given a function run's ID, you can inspect its status using Inngest Cloud's Quick Search feature (Ctrl-K or ⌘K) or the [REST API](https://api-docs.inngest.com/docs/inngest-api/).
 </Callout>

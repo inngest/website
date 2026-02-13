@@ -1,8 +1,7 @@
 import { Callout, GuideSelector, GuideSection, CodeGroup } from "src/shared/Docs/mdx";
 
-{/* Sidebar doesn't work well when GuideSection have different headings...  */}
+{/*Sidebar doesn't work well when GuideSection have different headings...*/}
 export const hidePageSidebar = true;
-
 
 # Wait for an Event
 
@@ -16,7 +15,6 @@ This is the recommended and preferred way to pause and resume a function via eve
 * Events are cleaner:  events decouple code from the functions they resume
 * Events have audit trails:  we store events in your OLAP store, giving you audit trails and insights automatically.
 
-
 <GuideSelector
   options={[
     { key: "typescript", title: "TypeScript" },
@@ -24,17 +22,16 @@ This is the recommended and preferred way to pause and resume a function via eve
     { key: "python", title: "Python" }
   ]}>
 
-
-
 <GuideSection show="typescript">
 
   Use `step.waitForEvent()` to wait for a particular event to be received before continuing. It returns a `Promise` that is resolved with the received event or `null` if the event is not received within the timeout.
 
-
 ```ts
 export default inngest.createFunction(
-  { id: "send-onboarding-nudge-email" },
-  { event: "app/account.created" },
+  {
+    id: "send-onboarding-nudge-email",
+    triggers: { event: "app/account.created" },
+  },
   async ({ event, step }) => {
     const onboardingCompleted = await step.waitForEvent(
       "wait-for-onboarding-completion",
@@ -54,11 +51,9 @@ export default inngest.createFunction(
 );
 ```
 
-
 Check out the [`step.waitForEvent()` TypeScript reference.](/docs/reference/functions/step-wait-for-event)
 
 To add a simple time based delay to your code, use [`step.sleep()`](/docs/reference/functions/step-sleep) instead.
-
 
 ## Examples
 
@@ -66,11 +61,12 @@ To add a simple time based delay to your code, use [`step.sleep()`](/docs/refere
 
 Below is an example of an Inngest function that creates an Intercom or Customer.io-like drip email campaign, customized based on
 
-
 ```ts
 export default inngest.createFunction(
-  { id: "onboarding-email-drip-campaign" },
-  { event: "app/account.created" },
+  {
+    id: "onboarding-email-drip-campaign",
+    triggers: { event: "app/account.created" },
+  },
   async ({ event, step }) => {
     // Send the user the welcome email immediately
     await step.run("send-welcome-email", async () => {
@@ -122,7 +118,6 @@ async def fn(ctx: inngest.Context) -> None:
     )
 ```
 
-
 Check out the [`step.wait_for_event()` Python reference.](/docs/reference/python/steps/wait-for-event)
 
 </GuideSection>
@@ -136,18 +131,18 @@ Check out the [`step.wait_for_event()` Python reference.](/docs/reference/python
     // Sleep for a second, minute, hour, week across server restarts.
     opened, err = step.waitForEvent(ctx, "wait-for-open", opts.WaitForEventOpts{
         Event: "email/mail.opened",
-        If:	inngestgo.StrPtr(fmt.Sprintf("async.data.id == %s", strconv.Quote("my-id"))),
+        If: inngestgo.StrPtr(fmt.Sprintf("async.data.id == %s", strconv.Quote("my-id"))),
         Timeout: 24 * time.Hour,
     })
 
     if err == step.ErrEventNotReceived {
-		// A function wasn't created within 3 days.  Send a follow-up email.
-		step.Run(ctx, "follow-up-email", func(ctx context.Context) (any, error) {
-			// ...
-			return true, nil
-		})
-		return nil, nil
-	}
+              // A function wasn't created within 3 days.  Send a follow-up email.
+              step.Run(ctx, "follow-up-email", func(ctx context.Context) (any, error) {
+        // ...
+                      return true, nil
+              })
+    return nil, nil
+ }
 
     // ...
 
@@ -159,9 +154,7 @@ Check out the [`step.wait_for_event()` Python reference.](/docs/reference/python
 
 </GuideSection>
 
-
 </GuideSelector>
-
 
 <Callout variant={'warning'}>
 **Preventing race conditions**
@@ -170,6 +163,5 @@ The "wait for event" method begins listening for new events from when the code i
 
 To avoid race condition, always double-check the flow of events going through your functions.
 
-_Note: The "wait for event" mechanism will soon provide a "lookback" feature, including events from a given past timeframe._
+*Note: The "wait for event" mechanism will soon provide a "lookback" feature, including events from a given past timeframe.*
 </Callout>
-

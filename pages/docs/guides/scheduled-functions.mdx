@@ -4,7 +4,6 @@ import { CodeGroup, Callout, GuideSection, GuideSelector } from "src/shared/Docs
 
 You can create scheduled jobs using cron schedules within Inngest natively.  Inngest's cron schedules also support timezones, allowing you to schedule work in whatever timezone you need work to run in.
 
-
 <GuideSelector
   options={[
     { key: "typescript", title: "TypeScript" },
@@ -16,15 +15,17 @@ You can create scheduled jobs using cron schedules within Inngest natively.  Inn
 
 You can create scheduled functions that run in any timezone using the SDK's [`createFunction()`](/docs/reference/functions/create):
 
-```ts 
+```ts
 import { Inngest } from "inngest";
 
 const inngest = new Inngest({ id: "signup-flow" });
 
 // This weekly digest function will run at 12:00pm on Friday in the Paris timezone
 export const prepareWeeklyDigest = inngest.createFunction(
-  { id: "prepare-weekly-digest" },
-  { cron: "TZ=Europe/Paris 0 12 * * 5" },
+  {
+    id: "prepare-weekly-digest",
+    triggers: { cron: "TZ=Europe/Paris 0 12 * * 5" },
+  },
   async ({ step }) => {
     // Load all the users from your database:
     const users = await step.run(
@@ -65,8 +66,10 @@ export const prepareWeeklyDigest = inngest.createFunction(
 
 // Since we are "fanning out" with events, these functions can all run in parallel
 export const sendWeeklyDigest = inngest.createFunction(
-  { id: "send-weekly-digest-email" },
-  { event: "app/send.weekly.digest" },
+  {
+    id: "send-weekly-digest-email",
+    triggers: { event: "app/send.weekly.digest" },
+  },
   async ({ event }) => {
     // 3️⃣ We can now grab the email and user id from the event payload
     const { email, user_id } = event.data;
@@ -89,84 +92,84 @@ You can create scheduled functions that run in any timezone using the SDK's [`Cr
 package main
 
 import (
-	"context"
+ "context"
 
-	"github.com/inngest/inngestgo"
-	"github.com/inngest/inngestgo/step"
+ "github.com/inngest/inngestgo"
+ "github.com/inngest/inngestgo/step"
 )
 
 func init() {
-	// This weekly digest function will run at 12:00pm on Friday in the Paris timezone
-	inngestgo.CreateFunction(
-		client,
-		inngestgo.FunctionOpts{Name: "prepare-weekly-digest"},
-		inngestgo.CronTrigger("TZ=Europe/Paris 0 12 * * 5"),
-		func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
-			// Load all the users from your database:
-			users, err := step.Run(ctx, "load-users", func(ctx context.Context) ([]*User, error) {
-				return loadUsers()
-			})
-			if err != nil {
-				return nil, err
-			}
+ // This weekly digest function will run at 12:00pm on Friday in the Paris timezone
+ inngestgo.CreateFunction(
+  client,
+  inngestgo.FunctionOpts{Name: "prepare-weekly-digest"},
+  inngestgo.CronTrigger("TZ=Europe/Paris 0 12 * * 5"),
+  func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
+   // Load all the users from your database:
+   users, err := step.Run(ctx, "load-users", func(ctx context.Context) ([]*User, error) {
+    return loadUsers()
+   })
+   if err != nil {
+    return nil, err
+   }
 
-			// 💡 Since we want to send a weekly digest to each one of these users
-			// it may take a long time to iterate through each user and send an email.
+   // 💡 Since we want to send a weekly digest to each one of these users
+   // it may take a long time to iterate through each user and send an email.
 
-			// Instead, we'll use this scheduled function to send an event to Inngest
-			// for each user then handle the actual sending of the email in a separate
-			// function triggered by that event.
+   // Instead, we'll use this scheduled function to send an event to Inngest
+   // for each user then handle the actual sending of the email in a separate
+   // function triggered by that event.
 
-			// ✨ This is known as a "fan-out" pattern ✨
+   // ✨ This is known as a "fan-out" pattern ✨
 
-			// 1️⃣ First, we'll create an event object for every user return in the query:
-			events := make([]inngestgo.Event, len(users))
-			for i, user := range users {
-				events[i] = inngestgo.Event{
-					Name: "app/send.weekly.digest",
-					Data: map[string]interface{}{
-						"user_id": user.ID,
-						"email":   user.Email,
-					},
-				}
-			}
+   // 1️⃣ First, we'll create an event object for every user return in the query:
+   events := make([]inngestgo.Event, len(users))
+   for i, user := range users {
+    events[i] = inngestgo.Event{
+     Name: "app/send.weekly.digest",
+     Data: map[string]interface{}{
+      "user_id": user.ID,
+      "email":   user.Email,
+     },
+    }
+   }
 
-			// 2️⃣ Now, we'll send all events in a single batch:
-			err = step.SendMany(ctx, "send-digest-events", events)
-			if err != nil {
-				return nil, err
-			}
+   // 2️⃣ Now, we'll send all events in a single batch:
+   err = step.SendMany(ctx, "send-digest-events", events)
+   if err != nil {
+    return nil, err
+   }
 
-			// This function can now quickly finish and the rest of the logic will
-			// be handled in the function below ⬇️
-			return nil, nil
-		},
-	)
+   // This function can now quickly finish and the rest of the logic will
+   // be handled in the function below ⬇️
+   return nil, nil
+  },
+ )
 
-	// This is a regular Inngest function that will send the actual email for
-	// every event that is received (see the above function's inngest.send())
+ // This is a regular Inngest function that will send the actual email for
+ // every event that is received (see the above function's inngest.send())
 
-	// Since we are "fanning out" with events, these functions can all run in parallel
-	inngestgo.CreateFunction(
-		client,
-		inngestgo.FunctionOpts{Name: "send-weekly-digest-email"},
-		inngestgo.EventTrigger("app/send.weekly.digest", nil),
-		func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
-			// 3️⃣ We can now grab the email and user id from the event payload
-			email := input.Event.Data["email"].(string)
-			userID := input.Event.Data["user_id"].(string)
+ // Since we are "fanning out" with events, these functions can all run in parallel
+ inngestgo.CreateFunction(
+  client,
+  inngestgo.FunctionOpts{Name: "send-weekly-digest-email"},
+  inngestgo.EventTrigger("app/send.weekly.digest", nil),
+  func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
+   // 3️⃣ We can now grab the email and user id from the event payload
+   email := input.Event.Data["email"].(string)
+   userID := input.Event.Data["user_id"].(string)
 
-			// 4️⃣ Finally, we send the email itself:
-			err := email.Send("weekly_digest", email, userID)
-			if err != nil {
-				return nil, err
-			}
+   // 4️⃣ Finally, we send the email itself:
+   err := email.Send("weekly_digest", email, userID)
+   if err != nil {
+    return nil, err
+   }
 
-			// 🎇 That's it! - We've used two functions to reliably perform a scheduled
-			// task for a large list of users!
-			return nil, nil
-		},
-	)
+   // 🎇 That's it! - We've used two functions to reliably perform a scheduled
+   // task for a large list of users!
+   return nil, nil
+  },
+ )
 }
 ```
 

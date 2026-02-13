@@ -100,11 +100,10 @@ export function SimpleSearch() {
 }
 ```
 
-
 <CardGroup cols={1}>
 
   <Card
-    href={"https://github.com/inngest/inngest-js/tree/main/examples/realtime-demos#readme"}
+    href={"<https://github.com/inngest/inngest-js/tree/main/examples/realtime-demos#readme"}>
     title={"See the complete example source code"}
     icon={<RiGithubFill className="text-basis h-8 w-8"/>}
     iconPlacement="top"
@@ -114,13 +113,14 @@ export function SimpleSearch() {
 
 </CardGroup>
 
-
 ## FAQ
 
 ### How do I consume the stream on the client?
+
 A stream return by a Vercel Function can be consumed by the client using the `fetch()` API.
 
 From the `fetch()` response, you can get a `Reader` object, which you can use to read the stream's content using:
+
 - a loop to read the stream's content chunk by chunk
 - a `TextDecoder` to decode the stream's content into a string
 - a `JSON.parse()` to parse the stream's content into a JSON object
@@ -168,9 +168,7 @@ import { inngest } from "../client";
 export const simpleSearchAgent = inngest.createFunction(
   {
     id: "simple-search-agent-workflow",
-  },
-  {
-    event: "app/simple-search-agent.run",
+    triggers: { event: "app/simple-search-agent.run"}
   },
   async ({ step, event, publish }) => {
     const { uuid } = event.data;
@@ -241,9 +239,9 @@ export function SimpleSearch() {
 }
 ```
 
-
 ### Is it compatible with Vercel's AI `useChat()`?
 
 An Inngest Function publishing messages matching the `useChat()` hook's signature will be compatible with it.
 
 See the [`Message`](https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-chat#messages) reference for the expected message format.
+

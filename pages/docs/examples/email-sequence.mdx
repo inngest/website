@@ -3,7 +3,6 @@ import { Example } from 'src/shared/Docs/Examples';
 
 import { BookOpenIcon, VideoCameraIcon, PencilSquareIcon } from "@heroicons/react/24/outline";
 
-
 export const description = "See how to implement an email sequence with Inngest"
 
 # Email Sequence
@@ -24,8 +23,10 @@ Below is an example of how such a campaign would look like:
 
 ```javascript
 const signupDripCampaign = inngest.createFunction(
-  { id: "signup-drip-campaign" },
-  { event: "app/signup.completed" },
+  {
+    id: "signup-drip-campaign",
+    triggers: { event: "app/signup.completed" },
+  }
   async ({ event, step }) => {
     const { user } = event.data;
     const { email, first_name } = user
@@ -93,11 +94,11 @@ Here are apps which use Inngest to power email campaigns.
   technology: "Next.js, Resend",
   description: "Transactional emails in Next.js using Resend and Inngest. Get started sending customer lifecycle emails. ",
   pattern: 1,
-  demo: "https://inngest-resend.vercel.app/",
-  github: "https://github.com/joelhooks/inngest-resend-example",
+  demo: "<https://inngest-resend.vercel.app/>",
+  github: "<https://github.com/joelhooks/inngest-resend-example>",
   image: "/assets/docs/examples/email-sequence/nextjs-resend-inngest-email.png",
   author: "Joel Hooks",
-  authorSocial: "https://twitter.com/jhooks"
+  authorSocial: "<https://twitter.com/jhooks>"
 }}/>
 
 ## More context
@@ -115,7 +116,7 @@ Check the resources below to learn more about building email sequences with Inng
 }}/>
 
 <Resource resource={{
-  href: "https://www.youtube.com/watch?v=44WEb7SCgAw",
+  href: "<https://www.youtube.com/watch?v=44WEb7SCgAw>",
   name: 'Talk: "Background jobs 101: building reliable apps with Inngest"',
   icon: VideoCameraIcon,
   description: "In this talk Sylwia Vargas explains why the DIY approaches to user onboarding email campaigns tend to be slow and unreliable, and how we can leverage background jobs to deliver a great UX.",
@@ -123,7 +124,7 @@ Check the resources below to learn more about building email sequences with Inng
 }}/>
 
 <Resource resource={{
-  href: "https://www.youtube.com/watch?v=EoFI_Bmzb4g",
+  href: "<https://www.youtube.com/watch?v=EoFI_Bmzb4g>",
   name: 'Talk: "Automate All of Your Customer Emails with AI in Next.js"',
   icon: VideoCameraIcon,
   description: "In this talk Joel Hooks dives into managing long-running processes like generative AI to enhance our processes and handle the human interaction required at each step of the workflow process.",
@@ -154,3 +155,4 @@ In case of failure, Inngest will retry until it succeeds or you will see the fai
 - [Fan-out jobs](/docs/guides/fan-out-jobs)
 - [Delayed functions](/docs/guides/delayed-functions#delaying-jobs)
 - [Scheduled functions](/docs/guides/scheduled-functions)
+
