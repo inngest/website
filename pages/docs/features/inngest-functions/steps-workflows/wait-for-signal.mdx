@@ -6,11 +6,8 @@ export const hidePageSidebar = true;
 # Wait for a signal
 
 You can pause a Function's run until a given signal is received.  This is similar to [wait for event](//docs/features/inngest-functions/steps-workflows/wait-for-event), but only resumes a single
-run at a time - via an API call, instead of via an event.
-
-We only recommend this instead of [wait for event](/docs/features/inngest-functions/steps-workflows/wait-for-event) in very specific scenarios:
-
-* Wait for signal is transactional and has lower latency
+run at a time - via an API call, instead of via an event. We only recommend this instead of [wait for event](/docs/features/inngest-functions/steps-workflows/wait-for-event) in very specific scenarios.
+Specifically, waitForSignal has slightly lower latency than waitForEvent as the resume API is transactional instead of eventually consistent via events.
 
 In most cases, you should use [wait for event](/docs/features/inngest-functions/steps-workflows/wait-for-event).
 
