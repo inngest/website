@@ -111,3 +111,9 @@ You can pass multiple paths by adding their path information to each Vercel proj
 ## Manually syncing apps
 
 While we strongly recommend our Vercel integration, you can still use Inngest by manually telling Inngest that you've deployed updated functions. You can sync your app [via the Inngest UI](/docs/apps/cloud#sync-a-new-app-in-inngest-cloud) or [via our API with a curl request](/docs/apps/cloud#curl-command).
+
+To handle [deployment protection](#bypassing-deployment-protection) in this manual sync option, vercel bypass protection secret key should be added to the app url as a query parameter. Your app url should look like this:
+
+```
+https://my-app-preview-url.vercel.app/api/inngest?x-vercel-protection-bypass=BYPASS_SECRET_KEY
+```
