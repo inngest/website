@@ -1,4 +1,4 @@
-import { Callout, Properties, Property, Row, Col, CodeGroup, VersionBadge } from "src/shared/Docs/mdx";
+import { Callout, CodeGroup, Col, Properties, Property, Row, VersionBadge } from "src/shared/Docs/mdx";
 
 export const description = 'TypeScript SDK reference for Durable Endpoints. Create HTTP handlers with step-based checkpointing.';
 
@@ -40,7 +40,9 @@ const inngest = new Inngest({
 ```
 
 <Callout>
-  The `endpointAdapter` is imported from `inngest/edge` and is required for Durable Endpoints to function. Without it, `inngest.endpoint()` will not be available.
+  The `endpointAdapter` is imported from `inngest/edge` (or any compatible
+  framework entrypoint) and is required for Durable Endpoints to function. Without it,
+  `inngest.endpoint()` will not be available.
 </Callout>
 
 ---
@@ -52,14 +54,14 @@ Creates a durable endpoint handler that can use step primitives for checkpointin
 <Row>
   <Col>
     <Properties>
-      <Property name="handler" type="(req: Request) => Promise<Response>" required>
-        An async function that receives a standard [Request](https://developer.mozilla.org/en-US/docs/Web/API/Request) object and must return a [Response](https://developer.mozilla.org/en-US/docs/Web/API/Response) object.
+      <Property name="handler" type="(...args: any[]) => any" required>
+        A handler function compatible with the framework you're using. This would be the usual function you use for a request handler before wrapping in `inngest.endpoint()`.
 
         Within this handler, you can use all step primitives (`step.run()`, `step.sleep()`, `step.waitForEvent()`) for durable execution.
       </Property>
     </Properties>
 
-    **Returns:** A handler function compatible with edge runtimes and most HTTP frameworks.
+    **Returns:** A request handler for your framework.
   </Col>
   <Col>
   ```ts
@@ -81,9 +83,11 @@ Creates a durable endpoint handler that can use step primitives for checkpointin
 
 ---
 
-## Available Step Primitives
+## Available Step Methods
 
-Within a Durable Endpoint handler, you have access to all step primitives:
+Within a Durable Endpoint handler, you have access to all step methods: see [Available Step Methods](/docs/learn/inngest-steps#available-step-methods).
+
+For example:
 
 ### `step.run(id, fn)`
 
@@ -150,7 +154,9 @@ export const handler = inngest.endpoint(async (req: Request): Promise<Response> 
 
 ## Returning Responses
 
-Durable Endpoints should return a standard HTTP `Response` object. SSE streams are not supported.
+However you return data in your framework is compatible with Durable Endpoints.
+
+For example, using a regular Web API request:
 
 ```ts
 // JSON response
@@ -202,37 +208,34 @@ Durable Endpoints is only available for Bun and Next.js API endpoints.
 
 ## Requesting a Durable Endpoint
 
-Durable Endpoints behave like regular API endpoints upon a success path. You can request them from your front-end (_or back-end_) using `fetch()` or your favorite query or http library:
+Durable Endpoints behave like regular API endpoints on the success path. You can request them from your front-end (_or back-end_) using `fetch()` or your favorite query or http library.
 
-However, when failures trigger some retries, a Durable Endpoint is returning a redirect to a dedicated endpoint on the Inngest Cloud to poll the final result.
+When a failure triggers retries or long-running steps like `step.waitForEvent()`
+are used, a Durable Endpoint redirects to a separate endpoint that waits for the
+call to finish.
 
-Here is a snippet handling both the direct result and redirected result upon retries:
+By default, this is an endpoint either in the Inngest Dev Server or Inngest
+Cloud, depending on which environment you're in, but `inngest.endpointProxy()`
+can be used to create your own URL to satisfy CORS constraints when the endpoint
+is used from browsers.
 
 ```typescript
-function handleError(error) {
-  // ...
-}
+// When setting the `endpointAdapter`, use `.withOptions()` to set more config
+const inngest = new Inngest({
+  id: "my-app",
+  endpointAdapter: endpointAdapter.withOptions({
+    asyncRedirectUrl: "/wait",
+  }),
+});
 
-async function handleResult(result) {
-  const result = await res.json()
-  // ...
-}
-
-fetch(`/api/your-durable-endpoint`)
-  .then((res) => {
-    if (res.redirected) {
-      // follow the redirect
-      fetch(res.url)
-        .then(handleResult)
-        .catch(handleError);
-    } else {
-      handleResult(res)
-    }
-  })
-  .catch(handleError);
+// Then create the route with `inngest.endpointProxy()`
+Bun.serve({
+  port: 3000,
+  routes: {
+    "/process": ...,
+    "/wait": inngest.endpointProxy(),
+  },
+});
 ```
 
-<Callout>
-  As the Durable Endpoint redirects the request to a dedicated endpoint on Inngest's Cloud, `fetch()` cannot simply follow this redirect for you (_CORS policy_).
-  Instead, you need to get the redirect URL (`res.url`) and trigger a new `fetch()` request.
-</Callout>
+Requests will now be redirected to `/wait`.

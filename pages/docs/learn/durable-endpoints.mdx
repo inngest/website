@@ -1,6 +1,6 @@
-import { ResourceGrid, Resource } from 'src/shared/Docs/Resources';
-import { Info, Callout, GuideSelector, GuideSection, CodeGroup, Steps, Step, CardGroup, Card, VersionBadge } from "src/shared/Docs/mdx";
 import { RiNextjsFill } from "@remixicon/react";
+import { Resource, ResourceGrid } from 'src/shared/Docs/Resources';
+import { Callout, Card, CardGroup, CodeGroup, GuideSection, GuideSelector, Info, Step, Steps, VersionBadge } from "src/shared/Docs/mdx";
 
 export const description = 'Learn how to create Durable Endpoints with Inngest. Turn any API endpoint into a durable, observable workflow with step-based checkpointing.';
 
@@ -28,7 +28,7 @@ import { NextRequest } from "next/server";
 
 export const POST = async (req: NextRequest) => {
   const { userId, data } = await req.json();
-  
+
   const user = await db.users.find(userId);
   const enriched = { ...data, account: user.accountId };
 
@@ -163,42 +163,37 @@ Durable Endpoints support all the same step methods as Inngest functions. See th
 
 ## Requesting a Durable Endpoint
 
-Durable Endpoints behave like regular API endpoints on the success path. You can request them from your front-end (_or back-end_) using `fetch()` or your favorite query or http library:
+Durable Endpoints behave like regular API endpoints on the success path. You can request them from your front-end (_or back-end_) using `fetch()` or your favorite query or http library.
 
-However, when a failure triggers retries, a Durable Endpoint returns a redirect to a dedicated endpoint on Inngest Cloud to poll the final result.
+When a failure triggers retries or long-running steps like `step.waitForEvent()`
+are used, a Durable Endpoint redirects to a separate endpoint that waits for the
+call to finish.
 
-Here is a snippet handling both the direct result and the redirected result after retries:
+By default, this is an endpoint either in the Inngest Dev Server or Inngest
+Cloud, depending on which environment you're in, but `inngest.endpointProxy()`
+can be used to create your own URL to satisfy CORS constraints when the endpoint
+is used from browsers.
 
 ```typescript
-function handleError(error) {
-  // ...
-}
+// When setting the `endpointAdapter`, use `.withOptions()` to set more config
+const inngest = new Inngest({
+  id: "my-app",
+  endpointAdapter: endpointAdapter.withOptions({
+    asyncRedirectUrl: "/wait",
+  }),
+});
 
-async function handleResult(result) {
-  const result = await res.json()
-  // ...
-}
-
-fetch(`/api/your-durable-endpoint`)
-  .then((res) => {
-    if (res.redirected) {
-      // follow the redirect
-      fetch(res.url)
-        .then(handleResult)
-        .catch(handleError);
-    } else {
-      handleResult(res)
-    }
-  })
-  .catch(handleError);
+// Then create the route with `inngest.endpointProxy()`
+Bun.serve({
+  port: 3000,
+  routes: {
+    "/process": ...,
+    "/wait": inngest.endpointProxy(),
+  },
+});
 ```
 
-<Callout>
-  As the Durable Endpoint redirects the request to a dedicated endpoint on Inngest's Cloud, `fetch()` cannot simply follow this redirect for you (_CORS policy_).
-  Instead, you need to get the redirect URL (`res.url`) and trigger a new `fetch()` request.
-</Callout>
-
-
+Requests will now be redirected to `/wait`.
 
 ## SDK Support
 
