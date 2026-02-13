@@ -9,6 +9,7 @@ In this tutorial you will add Inngest to a [NestJS](https://nestjs.com/) app to 
 Inngest makes it easy to build, manage, and execute durable functions. Some use cases include scheduling drip marketing campaigns, building payment flows, or chaining LLM interactions.
 
 By the end of this ten-minute tutorial you will:
+
 - Set up and run Inngest on your machine.
 - Write your first Inngest function.
 - Trigger your function from your app and through Inngest Dev Server.
@@ -185,8 +186,8 @@ To define the function, use the [`createFunction`](/docs/reference/functions/cre
   <summary><strong>Learn more: What is `createFunction` method?</strong></summary>
 
   The `createFunction` method takes three objects as arguments:
-    - **Configuration**: A unique `id` is required and it is the default name that will be displayed on the Inngest dashboard to refer to your function. You can also specify [additional options](/docs/reference/functions/create#configuration) such as `concurrency`, `rateLimit`, `retries`, or `batchEvents`, and others.
-    - **Trigger**: `event` is the name of the event that triggers your function. Alternatively, you can use `cron` to specify a schedule to trigger this function. Learn more about triggers [here](/docs/features/events-triggers).
+    - **Configuration**: A unique `id` is required and it is the default name that will be displayed on the Inngest dashboard to refer to your function. You can also specify [additional options](/docs/reference/functions/create#configuration) such as `triggers`, `concurrency`,`rateLimit`,`retries`, or`batchEvents`, and others.
+      - **Trigger**:`event` is the name of the event that triggers your function. Alternatively, you can use `cron` to specify a schedule to trigger this function. Learn more about triggers [here](/docs/features/events-triggers).
     - **Handler**: The function that is called when the `event` is received. The `event` payload is passed as an argument. Arguments include `step` to define durable steps within your handler and [additional arguments](/docs/reference/functions/create#handler) include logging helpers and other data.
 </details>
 
@@ -199,8 +200,10 @@ export const inngest = new Inngest({ id: "my-app" });
 
 // Your new function:
 const helloWorld = inngest.createFunction(
-  { id: "hello-world" },
-  { event: "test/hello.world" },
+  {
+    id: "hello-world",
+    triggers: { event: "test/hello.world" },
+  },
   async ({ event, step }) => {
     await step.sleep("wait-a-moment", "1s");
     return { message: `Hello ${event.data.email}!` };
@@ -313,10 +316,12 @@ Inngest is powered by events.
   <summary><strong>Learn more: events in Inngest.</strong></summary>
 
 It is worth mentioning here that an event-driven approach allows you to:
+
 - Trigger one _or_ multiple functions from one event, aka [fan-out](/docs/guides/fan-out-jobs).
 - Store received events for a historical record of what happened in your application.
 - Use stored events to [replay](/docs/platform/replay) functions when there are issues in production.
 - Interact with long-running functions by sending new events including [waiting for input](/docs/features/inngest-functions/steps-workflows/wait-for-event) and [cancelling](/docs/features/inngest-functions/cancellation/cancel-on-events).
+
 </details>
 
 To trigger Inngest functions to run in the background, you will need to send events from your application to Inngest. Once the event is received, it will automatically invoke all functions that are configured to be triggered by it.
@@ -327,6 +332,7 @@ To send an event from your code, you can use the `Inngest` client's `send()` met
   <summary><strong>Learn more: `send()` method.</strong></summary>
 
 Note that with the `send` method used below you now can:
+
 - Send one or more events within any API route.
 - Include any data you need in your function within the `data` object.
 
@@ -378,11 +384,13 @@ And - that's it! You now have learned how to create Inngest functions and you ha
 ## Next Steps
 
 To continue your exploration, feel free to check out:
+
 - [Examples](/docs/examples) of what other people built with Inngest.
 - [Case studies](/customers) showcasing a variety of use cases.
 - [Our blog](/blog) where we explain how Inngest works, publish guest blog posts, and share our learnings.
 
 You can also read more:
+
 - About [Inngest functions](/docs/functions).
 - About [Inngest steps](/docs/steps).
 - About [Durable Execution](/docs/learn/how-functions-are-executed)
