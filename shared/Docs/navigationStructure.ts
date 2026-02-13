@@ -458,8 +458,12 @@ const sectionLearn: (NavGroup | NavLink)[] = [
             href: "/docs/features/inngest-functions/steps-workflows/sleeps",
           },
           {
-            title: "Wait for event + signal",
+            title: "Wait for event",
             href: "/docs/features/inngest-functions/steps-workflows/wait-for-event",
+          },
+          {
+            title: "Wait for signal",
+            href: "/docs/features/inngest-functions/steps-workflows/wait-for-signal",
           },
           {
             title: "Invoke other functions",
