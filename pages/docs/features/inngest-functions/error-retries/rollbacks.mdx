@@ -14,8 +14,10 @@ Below is an attempt to use DALL-E to generate an image from a prompt, and to fal
 
 ```ts
 inngest.createFunction(
-  { id: "generate-result" },
-  { event: "prompt.created" },
+  {
+    id: "generate-result",
+    triggers: { event: "prompt.created" },
+  },
   async ({ event, step }) => {
     // try one AI model, if it fails, try another
     let imageURL: string | null = null;
@@ -49,42 +51,42 @@ inngest.createFunction(
 
 ```go
 inngestgo.CreateFunction(
-	client,
-	inngestgo.FunctionOpts{ID: "generate-result"},
-	inngestgo.EventTrigger("prompt.created", nil),
-	func(ctx context.Context, input inngestgo.Input[PromptCreatedEvent]) (any, error) {
-		var (
-			imageURL string
-			err      error
-		)
+ client,
+ inngestgo.FunctionOpts{ID: "generate-result"},
+ inngestgo.EventTrigger("prompt.created", nil),
+ func(ctx context.Context, input inngestgo.Input[PromptCreatedEvent]) (any, error) {
+  var (
+   imageURL string
+   err      error
+  )
 
-		via := "dall-e"
-		imageURL, err = step.Run(ctx, "generate-image-dall-e", func(ctx context.Context) (string, error) {
-			// Open API call to generate image with Dall-E...
-		})
-		if err != nil {
-			// Update how we ran the code.  This could also have been a return from the step.
-			via = "midjourney"
-			imageURL, err = step.Run(ctx, "generate-image-midjourney", func(ctx context.Context) (string, error) {
-				// MidJourney call to generate image...
-			})
-		}
-		if err != nil {
-			return nil, err
-		}
+  via := "dall-e"
+  imageURL, err = step.Run(ctx, "generate-image-dall-e", func(ctx context.Context) (string, error) {
+   // Open API call to generate image with Dall-E...
+  })
+  if err != nil {
+   // Update how we ran the code.  This could also have been a return from the step.
+   via = "midjourney"
+   imageURL, err = step.Run(ctx, "generate-image-midjourney", func(ctx context.Context) (string, error) {
+    // MidJourney call to generate image...
+   })
+  }
+  if err != nil {
+   return nil, err
+  }
 
-		_, err = step.Run(ctx, "notify-user", func(ctx context.Context) (any, error) {
-			return pusher.Trigger(input.Event.Data.ChannelID, "image-result", map[string]string{
-				"imageURL": imageURL.(string),
-				"via":      via,
-			})
-		})
-		if err != nil {
-			return nil, err
-		}
+  _, err = step.Run(ctx, "notify-user", func(ctx context.Context) (any, error) {
+   return pusher.Trigger(input.Event.Data.ChannelID, "image-result", map[string]string{
+    "imageURL": imageURL.(string),
+    "via":      via,
+   })
+  })
+  if err != nil {
+   return nil, err
+  }
 
-		return nil, nil
-	},
+  return nil, nil
+ },
 )
 ```
 
@@ -98,8 +100,10 @@ With this pattern, it's possible to assign a small rollback for each step, makin
 
 ```ts
 inngest.createFunction(
-  { id: "add-data" },
-  { event: "app/row.data.added" },
+  {
+    id: "add-data",
+    triggers: { event: "app/row.data.added" },
+  },
   async ({ event, step }) => {
     // ignore the error - this step is fine if it fails
     await step
@@ -129,32 +133,32 @@ inngest.createFunction(
 
 ```go
 inngestgo.CreateFunction(
-	client,
-	inngestgo.FunctionOpts{ID: "add-data"},
-	inngestgo.EventTrigger("app/row.data.added", nil),
-	func(ctx context.Context, input inngestgo.Input[RowDataAddedEvent]) (any, error) {
-		_, _ = step.Run(ctx, "non-critical-step", func(ctx context.Context) (any, error) {
-			return updateMetric()
-		})
+ client,
+ inngestgo.FunctionOpts{ID: "add-data"},
+ inngestgo.EventTrigger("app/row.data.added", nil),
+ func(ctx context.Context, input inngestgo.Input[RowDataAddedEvent]) (any, error) {
+  _, _ = step.Run(ctx, "non-critical-step", func(ctx context.Context) (any, error) {
+   return updateMetric()
+  })
 
-		_, err := step.Run(ctx, "create-row", func(ctx context.Context) (any, error) {
-			_, err := createRow(input.Event.Data.RowID)
-			if err != nil {
-				return nil, err
-			}
-			return addDetail(input.Event.Data.Entry)
-		})
-		if err != nil {
-			_, err = step.Run(ctx, "rollback-row-creation", func(ctx context.Context) (any, error) {
-				return removeRow(input.Event.Data.RowID)
-			})
-			if err != nil {
-				return nil, err
-			}
-		}
+  _, err := step.Run(ctx, "create-row", func(ctx context.Context) (any, error) {
+   _, err := createRow(input.Event.Data.RowID)
+   if err != nil {
+    return nil, err
+   }
+   return addDetail(input.Event.Data.Entry)
+  })
+  if err != nil {
+   _, err = step.Run(ctx, "rollback-row-creation", func(ctx context.Context) (any, error) {
+    return removeRow(input.Event.Data.RowID)
+   })
+   if err != nil {
+    return nil, err
+   }
+  }
 
-		return nil, nil
-	},
+  return nil, nil
+ },
 )
 ```
 

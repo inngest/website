@@ -37,8 +37,10 @@ The following is an example of adding a OpenAI client to all Inngest functions, 
 
          ```ts
         inngest.createFunction(
-          { name: "user-create" },
-          { event: "app/user.create" },
+          {
+            name: "user-create",
+            triggers: { event: "app/user.create" },
+          },
           async ({ openai }) => {
             const chatCompletion = await openai.chat.completions.create({
               messages: [{ role: "user", content: "Say this is a test" }],
@@ -116,8 +118,10 @@ The following is an example of adding a OpenAI client to all Inngest functions, 
 
          ```ts
         inngest.createFunction(
-          { name: "user-create" },
-          { event: "app/user.create" },
+          {
+            name: "user-create",
+            triggers: { event: "app/user.create" },
+          },
           async ({ openai }) => {
             const chatCompletion = await openai.chat.completions.create({
               messages: [{ role: "user", content: "Say this is a test" }],

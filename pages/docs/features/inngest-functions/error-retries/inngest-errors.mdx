@@ -2,7 +2,6 @@ import { Callout, CodeGroup, Properties, Property, Row, Col, VersionBadge, Guide
 
 export const hidePageSidebar = true;
 
-
 # Inngest Errors
 
 Inngest automatically handles errors and retries for you. You can use standard errors or use included Inngest errors to control how Inngest handles errors.
@@ -14,7 +13,6 @@ Inngest automatically handles errors and retries for you. You can use standard e
     { key: "python", title: "Python" },
   ]}>
 
-
 ## Standard errors
 
 <GuideSection show="typescript">
@@ -23,8 +21,10 @@ All `Error` objects are handled by Inngest and [retried automatically](/docs/fea
 
 ```typescript
 export default inngest.createFunction(
-  { id: "import-item-data" },
-  { event: "store/import.requested" },
+  {
+    id: "import-item-data"
+    triggers: { event: "store/import.requested" },
+  },
   async ({ event }) => {
 
     // throwing a standard error
@@ -43,6 +43,7 @@ export default inngest.createFunction(
   }
 );
 ```
+
 </GuideSection>
 
 <GuideSection show="python">
@@ -63,11 +64,12 @@ async def fn_async(ctx: inngest.Context) -> None:
     # a retry will be attempted
     await ctx.step.run("foo", foo)
 ```
+
 </GuideSection>
 
 <GuideSection show="go">
 
-All Errors returned by your Inngest Functions are handled by Inngest and [retried automatically](/docs/features/inngest-functions/error-retries/retries). 
+All Errors returned by your Inngest Functions are handled by Inngest and [retried automatically](/docs/features/inngest-functions/error-retries/retries).
 
 ```go
 import (
@@ -99,6 +101,7 @@ inngestgo.CreateFunction(
     },
 )
 ```
+
 </GuideSection>
 
 ## Prevent any additional retries
@@ -111,8 +114,10 @@ Use `NonRetriableError` to prevent Inngest from retrying the function _or_ step.
 import { NonRetriableError } from "inngest";
 
 export default inngest.createFunction(
-  { id: "mark-store-imported" },
-  { event: "store/import.completed" },
+  {
+    id: "mark-store-imported"
+    triggers: { event: "store/import.completed" },
+  },
   async ({ event }) => {
     try {
       const result = await database.updateStore(
@@ -164,7 +169,7 @@ async def fn_async(ctx: inngest.Context) -> None:
         raise inngest.NonRetriableError("non-retriable-step-error")
 
     ctx.step.run("step_1", step_1)
-``` 
+```
 
 </GuideSection>
 
@@ -216,8 +221,10 @@ If `RetryAfterError` is not used, Inngest will use [the default retry backoff po
 
 ```typescript
 inngest.createFunction(
-  { id: "send-welcome-sms" },
-  { event: "app/user.created" },
+  {
+    id: "send-welcome-sms"
+    triggers: { event: "app/user.created" },
+  },
   async ({ event, step }) => {
     const { success, retryAfter } = await twilio.messages.create({
       to: event.data.user.phoneNumber,
@@ -280,7 +287,7 @@ async def fn_async(ctx: inngest.Context) -> None:
       raise inngest.RetryAfterError("rate-limit-hit", 1000) # delay in milliseconds
 
   ctx.step.run("step_1", step_1)
-``` 
+```
 
 ### Parameters
 
@@ -355,8 +362,10 @@ After a step exhausts all of its retries, it will throw a `StepError` which can 
 <CodeGroup>
 ```ts {{ title: "try/catch" }}
 inngest.createFunction(
-  { id: "send-weather-forecast" },
-  { event: "weather/forecast.requested" },
+  {
+    id: "send-weather-forecast",
+    triggers: { event: "weather/forecast.requested" },
+  },
   async ({ event, step }) => {
     let data;
 
@@ -374,11 +383,14 @@ inngest.createFunction(
     // ...
   }
 );
+
 ```
 ```ts {{ title: "Chaining with .catch()" }}
 inngest.createFunction(
-  { id: "send-weather-forecast" },
-  { event: "weather/forecast.requested" },
+  {
+    id: "send-weather-forecast",
+    triggers: { event: "weather/forecast.requested" },
+  },
   async ({ event, step }) => {
 
     const data = await step
@@ -395,10 +407,13 @@ inngest.createFunction(
   }
 );
 ```
+
 ```ts {{ title: "Ignoring and logging the error" }}
 inngest.createFunction(
-  { id: "send-weather-forecast" },
-  { event: "weather/forecast.requested" },
+  {
+    id: "send-weather-forecast",
+    triggers: { event: "weather/forecast.requested" },
+  },
   async ({ event, step }) => {
 
     const data = await step
@@ -410,6 +425,7 @@ inngest.createFunction(
   }
 );
 ```
+
 </CodeGroup>
 
 <Callout>
@@ -438,7 +454,7 @@ async def fn_async(ctx: inngest.Context) -> None:
         ctx.step.run("foo", foo)
     except inngest.StepError:
         raise MyError("I am new")
-``` 
+```
 
 </GuideSection>
 
@@ -450,8 +466,10 @@ The current attempt number is passed in as input to the function handler. `attem
 
 ```ts
 inngest.createFunction(
-  { id: "generate-summary" },
-  { event: "blog/post.created" },
+  {
+    id: "generate-summary",
+    triggers: { event: "blog/post.created" },
+  },
   async ({ attempt }) => {
     // `attempt` is the zero-index attempt number
 
@@ -466,7 +484,6 @@ inngest.createFunction(
 );
 ```
 
-
 ## Stack traces
 
 When calling functions that return Promises, await the Promise to ensure that the stack trace is preserved. This applies to functions executing in different cycles of the event loop, for example, when calling a database or an external API. This is especially useful when debugging errors in production.
@@ -474,8 +491,10 @@ When calling functions that return Promises, await the Promise to ensure that th
 <CodeGroup>
   ```ts {{ title: "Returning Promise" }}
   inngest.createFunction(
-    { id: "update-recent-usage" },
-    { event: "app/update-recent-usage" },
+    {
+      id: "update-recent-usage",
+      triggers: { event: "app/update-recent-usage" },
+    },
     async ({ event, step }) => {
       // ...
       await step.run("update in db", () => doSomeWork(event.data));
@@ -485,8 +504,10 @@ When calling functions that return Promises, await the Promise to ensure that th
   ```
   ```ts {{ title: "Awaiting Promise" }}
   inngest.createFunction(
-    { id: "update-recent-usage" },
-    { event: "app/update-recent-usage" },
+    {
+      id: "update-recent-usage",
+      triggers: { event: "app/update-recent-usage" },
+    }
     async ({ event, step }) => {
       // ...
       await step.run("update in db", async () => {
@@ -503,3 +524,4 @@ Please note that immediately returning the Promise will not include a pointer to
 
 </GuideSection>
 </GuideSelector>
+
