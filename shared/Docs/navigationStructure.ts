@@ -144,6 +144,11 @@ const sectionReference: (NavGroup | NavLink)[] = [
             className: "font-mono",
           },
           {
+            title: "step.waitForSignal()",
+            href: `/docs/reference/functions/step-wait-for-signal`,
+            className: "font-mono",
+          },
+          {
             title: "step.sendEvent()",
             href: `/docs/reference/functions/step-send-event`,
             className: "font-mono",
