@@ -37,8 +37,7 @@ export const description = `Wait for a particular event to be received before co
     </Properties>
   </Col>
   <Col>
-  <CodeGroup>
-  ```ts {{ title: "v3" }}
+  ```ts
   // Wait 7 days for an approval and match invoice IDs
   const approval = await step.waitForEvent("wait-for-approval", {
     event: "app/invoice.approved",
@@ -54,21 +53,6 @@ export const description = `Wait for a particular event to be received before co
     if: "event.data.userId == async.data.userId && async.data.billing_plan == 'pro'",
   });
   ```
-  ```ts {{ title: "v2" }}
-  // Wait 7 days for an approval and match invoice IDs
-  const approval = await step.waitForEvent("app/invoice.approved", {
-    timeout: "7d",
-    match: "data.invoiceId",
-  });
-
-  // Wait 30 days for a user to start a subscription
-  // on the pro plan
-  const subscription = await step.waitForEvent("app/subscription.created", {
-    timeout: "30d",
-    if: "event.data.userId == async.data.userId && async.data.billing_plan == 'pro'",
-  });
-  ```
-  </CodeGroup>
   </Col>
 </Row>
 

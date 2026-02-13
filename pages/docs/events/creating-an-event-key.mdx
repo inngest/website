@@ -9,10 +9,10 @@ import { Callout } from "src/shared/Docs/mdx";
 
 ```jsx
 // Recommended: Set an INNGEST_EVENT_KEY environment variable for automatic configuration:
-const inngest = new Inngest({ name: "Your app name" });
+const inngest = new Inngest({ id: "your-app" });
 
 // Or you can pass the eventKey explicitly to the constructor:
-const inngest = new Inngest({ name: "Your app name", eventKey: "xyz..." });
+const inngest = new Inngest({ id: "your-app", eventKey: "xyz..." });
 
 // With the Event Key, you're now ready to send data:
 await inngest.send({ ... })

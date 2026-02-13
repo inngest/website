@@ -94,8 +94,8 @@ export const multiTenantConcurrency = inngest.createFunction(
         key: 'event.data.user_slug',
       },
     ],
+    triggers: { event: 'demo/job.created' },
   },
-  { event: 'demo/job.created' },
   async ({ event, step }) => {
     /* function logic omitted for example */
     return { status: 'success' };
@@ -124,8 +124,8 @@ export const combinedConcurrencyLimits = inngest.createFunction(
         limit: 100,
       },
     ],
+    triggers: { event: 'demo/job.created' },
   },
-  { event: 'demo/job.created' },
   async ({ event, step }) => {
     /* function logic omitted for example */
     return { status: 'success' };

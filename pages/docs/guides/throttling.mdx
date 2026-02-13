@@ -16,6 +16,7 @@ Throttling allows you to specify how many function runs can start within a time 
 inngest.createFunction(
   {
     id: "unique-function-id",
+    triggers: { event: "ai/summary.requested" },
     throttle: {
       limit: 1,
       period: "5s",
@@ -23,7 +24,6 @@ inngest.createFunction(
       key: "event.data.user_id",
     },
   }
-  { event: "ai/summary.requested" },
   async ({ event, step }) => {
   }
 );
@@ -31,22 +31,22 @@ inngest.createFunction(
 
 ```go {{ title: "Go" }}
 inngestgo.CreateFunction(
-	client,
-	inngestgo.FunctionOpts{
-		ID: "unique-function-id",
-		Throttle: &inngestgo.ConfigThrottle{
-			Limit:  1,
-			Period: 5 * time.Second,
-			Key:    inngestgo.StrPtr("event.data.user_id"),
-			Burst:  2,
-		},
-	},
-	inngestgo.EventTrigger("ai/summary.requested", nil),
-	func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
-		// This function will be throttled to 1 run per 5 seconds for a given event payload with matching user_id,
-		// while the one-time burst allows 2 extra runs to start within 5 seconds, after which no more runs are accepted for 5 seconds.
-		return nil, nil
-	},
+ client,
+ inngestgo.FunctionOpts{
+  ID: "unique-function-id",
+  Throttle: &inngestgo.ConfigThrottle{
+   Limit:  1,
+   Period: 5 * time.Second,
+   Key:    inngestgo.StrPtr("event.data.user_id"),
+   Burst:  2,
+  },
+ },
+ inngestgo.EventTrigger("ai/summary.requested", nil),
+ func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
+  // This function will be throttled to 1 run per 5 seconds for a given event payload with matching user_id,
+  // while the one-time burst allows 2 extra runs to start within 5 seconds, after which no more runs are accepted for 5 seconds.
+  return nil, nil
+ },
 )
 ```
 
@@ -72,10 +72,10 @@ You can configure throttling on each function using the optional `throttle` para
 
 ### Configuration reference
 
-- `limit`: The total number of runs allowed to start within the given `period`.
-- `period`: The period within the limit will be applied.
-- `burst`: The number of runs allowed to start in the given window in a single burst on top of `limit`.
-- `key`: An optional expression which returns a throttling key using event data. This allows you to apply unique throttle limits specific to a user.
+* `limit`: The total number of runs allowed to start within the given `period`.
+* `period`: The period within the limit will be applied.
+* `burst`: The number of runs allowed to start in the given window in a single burst on top of `limit`.
+* `key`: An optional expression which returns a throttling key using event data. This allows you to apply unique throttle limits specific to a user.
 
 <Callout>
   GCRA breaks down the provided `period` into smaller windows based on the `limit`.
@@ -86,37 +86,37 @@ This is required as background jobs do not arrive at the same rate as the events
 
 **Configuration information**
 
-- Using throttle ensures that within a window of the given `period`, at most `limit + burst` runs may start.
-- Period must be between `1s` and `7d`, or between 1 second and 7 days. The minimum granularity is one second.
-- Throttling is currently applied per function. Two functions with the same key have two separate limits.
-- Every request is evenly weighted and counts as a single unit in the rate limiter.
+* Using throttle ensures that within a window of the given `period`, at most `limit + burst` runs may start.
+* Period must be between `1s` and `7d`, or between 1 second and 7 days. The minimum granularity is one second.
+* Throttling is currently applied per function. Two functions with the same key have two separate limits.
+* Every request is evenly weighted and counts as a single unit in the rate limiter.
 
 ## How throttling works
 
-Throttling uses the [generic cell rate algorithm (GCRA)](https://en.wikipedia.org/wiki/Generic_cell_rate_algorithm) to limit function run *starts* directly in the queue. When you send an event or invoke a function that specifies throttling configuration, Inngest checks the function's throttle limit to see if there's capacity:
+Throttling uses the [generic cell rate algorithm (GCRA)](https://en.wikipedia.org/wiki/Generic_cell_rate_algorithm) to limit function run _starts_ directly in the queue. When you send an event or invoke a function that specifies throttling configuration, Inngest checks the function's throttle limit to see if there's capacity:
 
-- If there's capacity, the function run starts as usual.
-- If there is no capacity, the function run will begin when there's capacity in the future.
+* If there's capacity, the function run starts as usual.
+* If there is no capacity, the function run will begin when there's capacity in the future.
 
-Note that throttling only applies to function run starts.  It does not apply to steps within a function.  This allows you to regulate how often functions begin work, *without* worrying about how many steps are in a function, or if steps run in parallel.  To limit how many steps can execute at once, use [concurrency controls](/docs/guides/concurrency).
+Note that throttling only applies to function run starts.  It does not apply to steps within a function.  This allows you to regulate how often functions begin work, _without_ worrying about how many steps are in a function, or if steps run in parallel.  To limit how many steps can execute at once, use [concurrency controls](/docs/guides/concurrency).
 
 Throttling is [FIFO (first in first out)](https://en.wikipedia.org/wiki/FIFO_(computing_and_electronics)), so the first function run to be enqueued will be the first to start when there's capacity.
 
 ## Throttling vs Concurrency
 
-**Concurrency** limits the *number of executing steps across your function runs*.  This allows you to manage the total capacity of your functions.
+**Concurrency** limits the _number of executing steps across your function runs_.  This allows you to manage the total capacity of your functions.
 
-**Throttling** limits the number of *new function runs* being started.  It does not limit the number of executing steps.  For example, with a throttling limit of 1 per minute, only one run will start in a single minute.  However, that run may execute hundreds of steps, as throttling does not limit steps.
+**Throttling** limits the number of _new function runs_ being started.  It does not limit the number of executing steps.  For example, with a throttling limit of 1 per minute, only one run will start in a single minute.  However, that run may execute hundreds of steps, as throttling does not limit steps.
 
 ## Throttling vs Rate Limiting
 
 Rate limiting also specifies how many functions can start within a time period.  However, in Inngest rate limiting ignores function runs over the limit and does not enqueue them for future work. Throttling will enqueue runs over the limit for the future.
 
-Rate limiting is *lossy* and provides hard limits on function runs, while throttling delays function runs over the limit until there’s capacity, smoothing spikes.
+Rate limiting is _lossy_ and provides hard limits on function runs, while throttling delays function runs over the limit until there’s capacity, smoothing spikes.
 
 ## Tips
 
-* Configure [start timeouts](/docs/features/inngest-functions/cancellation/cancel-on-timeouts) to prevent large backlogs with throttling 
+* Configure [start timeouts](/docs/features/inngest-functions/cancellation/cancel-on-timeouts) to prevent large backlogs with throttling
 
 ## Further reference
 

@@ -20,8 +20,9 @@ import { Tabs } from "src/components/Tabs";
 const snippetAll = `
 export const processVideo = inngest.createFunction(
   { id: "process-video",
-    concurrency: { limit: 5, key: "event.data.userId" } },
-  { event: "video/uploaded" },
+    concurrency: { limit: 5, key: "event.data.userId" },
+    triggers: { event: "video/uploaded" },
+  },
   async ({ event, step }) => {
 
     // step.run is a code-level transaction:  it retries automatically
@@ -53,8 +54,11 @@ export const processVideo = inngest.createFunction(
 
 const snippetAI = `
 export const userWorkflow = inngest.createFunction(
-  { throttle: { limit: 30, period: "60s"  } /* ... */ },
-  { event: "agent/request.received" },
+  {
+    throttle: { limit: 30, period: "60s"  },
+    triggers: { event: "agent/request.received" },
+    /* ... */
+  },
   async ({ event, step }) => {
 
     // Use step.ai to proxy AI requests w/ automatic retries,
@@ -90,8 +94,11 @@ export const userWorkflow = inngest.createFunction(
 // { debounce: { period: "5m", key: "event.data.userId"  } /* ... */ },
 const snippetQueueing = `
 export const importJob = inngest.createFunction(
-  { priority: { run: "event.data.plan == 'paid' ? 120 : 0"  } /* ... */ },
-  { event: "integration/import.initiated" },
+  {
+    priority: { run: "event.data.plan == 'paid' ? 120 : 0"  },
+    triggers: { event: "integration/import.initiated" },
+    /* ... */
+  },
   async ({ event, step }) => {
 
     // step.run is a code-level transaction:  it retries automatically
@@ -121,7 +128,10 @@ await inngest.send({
 
 const snippetDurableWorkflow = `
 export const sendNotifications = inngest.createFunction(
-  { id: "send-notifications" }, {/*...*/},
+  {
+    id: "send-notifications",
+    triggers: {/*...*/},
+  },
   async ({ event, step }) => {
     const preferences = await step.run("load-prefs", async () => {
       const user = await db.users.find(event.data.userId)
@@ -148,8 +158,11 @@ export const sendNotifications = inngest.createFunction(
 
 const snippetData = `
 export const etl = inngest.createFunction(
-  { batch: { maxSize: 100, timeout: "30s" }, /* ... */ },
-  { event: "ecommerce/product.purchased" },
+  {
+    batch: { maxSize: 100, timeout: "30s" },
+    triggers: { event: "ecommerce/product.purchased" },
+    /* ... */
+  },
   async ({ events, step }) => {
 
     let enrichedData = [];
@@ -170,8 +183,10 @@ export const etl = inngest.createFunction(
 
 const snippetProduct = `
 export const workflowEngine = inngest.createFunction(
-  { id: "workflow-engine" },
-  { event: "api/workflow.invoked" },
+  {
+    id: "workflow-engine",
+    triggers: { event: "api/workflow.invoked" },
+  },
   async ({ event, step }) => {
 
     // Deterministically load a users workflow once in a code-level
@@ -198,7 +213,7 @@ export const workflowEngine = inngest.createFunction(
 
 const snippetAIAgent = `
 export const agent = inngest.createFunction(
-  fnOptions, fnListener,
+  fnOptions,
   async ({ event, step }) => {
     const plan = await step.run("create-plan", async () => {
       await llm.createCompletion({

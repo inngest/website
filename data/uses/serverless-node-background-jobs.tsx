@@ -43,8 +43,10 @@ export const data: UseCase = {
 // Instead of sending a welcome email or adding a user to your CRM
 // within your signup API endpoint, you can offload to the background:
 inngest.createFunction(
-  { id: "post-signup-flow" },
-  { event: "user.signup" },
+  {
+    id: "post-signup-flow",
+    triggers: { event: "user.signup" },
+  },
   async ({ event, step }) => {
     await step.run("send-welcome-email", async () => {
       await sendWelcomeEmail({ email: event.data.email });

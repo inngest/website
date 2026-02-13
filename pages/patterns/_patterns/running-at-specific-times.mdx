@@ -12,7 +12,7 @@ In order to run code at a specific time based off of event data, first make sure
 import { Inngest } from "inngest";
 
 // Create a new client
-const inngest = new Inngest("API");
+const inngest = new Inngest({ id: "my-app" });
 
 // Send an event with the time to schedule a blog post in the event data.
 await inngest.send({
@@ -30,8 +30,10 @@ Then, within your function, you can pause until the time in the event:
 import { inngest } from "./client";
 
 const delayed = inngest.createFunction(
-  { id: "schedule-post" },
-  { event: "blog/post.scheduled" },
+  {
+    id: "schedule-post",
+    triggers: { event: "blog/post.scheduled" },
+  },
   async ({ event, step }) => {
     const at = new Date(event.data.scheduleAt);
 

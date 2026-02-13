@@ -12,12 +12,12 @@ import { inngest } from "./client";
 export default inngest.createFunction(
   {
     id: "import-product-images",
+    triggers: { event: "shop/product.imported" },
     onFailure: async ({ error, event, step }) => {
       // This is the failure handler which can be used to
       // send an alert, notification, or whatever you need to do
     },
   },
-  { event: "shop/product.imported" },
   async ({ event, step, runId }) => {
     // This is the main function handler's code
   }
@@ -78,6 +78,7 @@ import { inngest } from "./client";
 export default inngest.createFunction(
   {
     id: "sync-shopify-products",
+    triggers: { event: "shop/product_sync.requested" },
     // Your handler should be an async function:
     onFailure: async ({ error, event }) => {
       const originalEvent = event.data.event;
@@ -102,7 +103,6 @@ export default inngest.createFunction(
       return result;
     },
   },
-  { event: "shop/product_sync.requested" },
   async ({ event, step, runId }) => {
     // This is the main function handler's code
     const products = await step.run("fetch-products", async () => {
@@ -131,9 +131,9 @@ Sentry.init({
 export default inngest.createFunction(
   {
     name: "Send failures to Sentry",
-    id: "send-failed-function-errors-to-sentry"
+    id: "send-failed-function-errors-to-sentry",
+    triggers: { event: "inngest/function.failed" },
   },
-  { event: "inngest/function.failed" },
   async ({ event, step }) => {
 
     // The error is serialized as JSON, so we must re-construct it for Sentry's error handling:

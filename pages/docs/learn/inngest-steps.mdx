@@ -32,8 +32,10 @@ The first argument of every Inngest step method is an `id`. Each step is treated
 
 ```typescript
 export default inngest.createFunction(
-  { id: "import-product-images" },
-  { event: "shop/product.imported" },
+  {
+    id: "import-product-images",
+    triggers: { event: "shop/product.imported" },
+  },
   async ({ event, step }) => {
     const uploadedImageURLs = await step.run(
       // step ID
@@ -57,26 +59,26 @@ import (
 )
 
 inngestgo.CreateFunction(
-	client,
-	// config
-	inngestgo.FunctionOpts{
-		ID: "import-product-images",
-	},
-	// trigger (event or cron)
-	inngestgo.EventTrigger("shop/product.imported", nil),
-	// handler function
-	func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
-		// Here goes the business logic
-		// By wrapping code in steps, it will be retried automatically on failure
-		s3Urls, err := step.Run("copy-images-to-s3", func() ([]string, error) {
-			return copyAllImagesToS3(input.Event.Data["imageURLs"].([]string))
-		})
-		if err != nil {
-			return nil, err
-		}
+ client,
+ // config
+ inngestgo.FunctionOpts{
+  ID: "import-product-images",
+ },
+ // trigger (event or cron)
+ inngestgo.EventTrigger("shop/product.imported", nil),
+ // handler function
+ func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
+  // Here goes the business logic
+  // By wrapping code in steps, it will be retried automatically on failure
+  s3Urls, err := step.Run("copy-images-to-s3", func() ([]string, error) {
+   return copyAllImagesToS3(input.Event.Data["imageURLs"].([]string))
+  })
+  if err != nil {
+   return nil, err
+  }
 
-		return nil, nil
-	},
+  return nil, nil
+ },
 )
 ```
 
@@ -127,8 +129,10 @@ Use it to run synchronous or asynchronous code as a retriable step in your funct
 
 ```typescript
 export default inngest.createFunction(
-  { id: "import-product-images" },
-  { event: "shop/product.imported" },
+  {
+    id: "import-product-images",
+    triggers: { event: "shop/product.imported" },
+  },
   async ({ event, step }) => {
     // Here goes the business logic
     // By wrapping code in steps, it will be retried automatically on failure
@@ -150,23 +154,23 @@ import (
 )
 
 inngestgo.CreateFunction(
-	client,
-	inngestgo.FunctionOpts{
-		ID: "import-product-images",
-	},
-	inngestgo.EventTrigger("shop/product.imported", nil),
-	func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
-		// Here goes the business logic
-		// By wrapping code in steps, it will be retried automatically on failure
-		s3Urls, err := step.Run("copy-images-to-s3", func() ([]string, error) {
-			return copyAllImagesToS3(input.Event.Data["imageURLs"].([]string))
-		})
-		if err != nil {
-			return nil, err
-		}
+ client,
+ inngestgo.FunctionOpts{
+  ID: "import-product-images",
+ },
+ inngestgo.EventTrigger("shop/product.imported", nil),
+ func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
+  // Here goes the business logic
+  // By wrapping code in steps, it will be retried automatically on failure
+  s3Urls, err := step.Run("copy-images-to-s3", func() ([]string, error) {
+   return copyAllImagesToS3(input.Event.Data["imageURLs"].([]string))
+  })
+  if err != nil {
+   return nil, err
+  }
 
-		return nil, nil
-	},
+  return nil, nil
+ },
 )
 ```
 
@@ -207,8 +211,10 @@ This method pauses execution for a specified duration. Even though it seems like
 
 ```typescript
 export default inngest.createFunction(
-  { id: "send-delayed-email" },
-  { event: "app/user.signup" },
+  {
+    id: "send-delayed-email",
+    triggers: { event: "app/user.signup" },
+  },
   async ({ event, step }) => {
     await step.sleep("wait-a-couple-of-days", "2d");
     // Do something else
@@ -227,16 +233,16 @@ import (
 )
 
 inngestgo.CreateFunction(
-	client,
-	inngestgo.FunctionOpts{
-		ID: "send-delayed-email",
-	},
-	inngestgo.EventTrigger("app/user.signup", nil),
-	// handler function
-	func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
-		step.Sleep("wait-a-couple-of-days", 2*time.Day)
-		return nil, nil
-	},
+ client,
+ inngestgo.FunctionOpts{
+  ID: "send-delayed-email",
+ },
+ inngestgo.EventTrigger("app/user.signup", nil),
+ // handler function
+ func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
+  step.Sleep("wait-a-couple-of-days", 2*time.Day)
+  return nil, nil
+ },
 )
 ```
 
@@ -267,8 +273,10 @@ This method pauses execution until a specific date time. Any date time string in
 
 ```typescript
 export default inngest.createFunction(
-  { id: "send-scheduled-reminder" },
-  { event: "app/reminder.scheduled" },
+  {
+    id: "send-scheduled-reminder",
+    triggers: { event: "app/reminder.scheduled" },
+  },
   async ({ event, step }) => {
     const date = new Date(event.data.remind_at);
     await step.sleepUntil("wait-for-the-date", date);
@@ -312,8 +320,10 @@ This method pauses a run's execution until a specific event is received.
 
 ```typescript
 export default inngest.createFunction(
-  { id: "send-onboarding-nudge-email" },
-  { event: "app/account.created" },
+  {
+    id: "send-onboarding-nudge-email",
+    triggers: { event: "app/account.created" },
+  },
   async ({ event, step }) => {
     const onboardingCompleted = await step.waitForEvent(
       "wait-for-onboarding-completion",
@@ -336,37 +346,37 @@ import (
 )
 
 inngestgo.CreateFunction(
-	client,
-	inngestgo.FunctionOpts{
-		ID: "send-delayed-email",
-	},
-	inngestgo.EventTrigger("app/user.signup", nil),
-	// handler function
-	func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
-		// Sample from the event stream for new events.  The function will stop
-		// running and automatically resume when a matching event is found, or if
-		// the timeout is reached.
-		fn, err := step.WaitForEvent[FunctionCreatedEvent](
-			ctx,
-			"wait-for-activity",
-			step.WaitForEventOpts{
-				Name:    "Wait for a function to be created",
-				Event:   "api/function.created",
-				Timeout: time.Hour * 72,
-				// Match events where the user_id is the same in the async sampled event.
-				If: inngestgo.StrPtr("event.data.user_id == async.data.user_id"),
-			},
-		)
-		if err == step.ErrEventNotReceived {
-			// A function wasn't created within 3 days.  Send a follow-up email.
-			_, _ = step.Run(ctx, "follow-up-email", func(ctx context.Context) (any, error) {
-				// ...
-				return true, nil
-			})
-			return nil, nil
-		}
-		return nil, nil
-	},
+ client,
+ inngestgo.FunctionOpts{
+  ID: "send-delayed-email",
+ },
+ inngestgo.EventTrigger("app/user.signup", nil),
+ // handler function
+ func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
+  // Sample from the event stream for new events.  The function will stop
+  // running and automatically resume when a matching event is found, or if
+  // the timeout is reached.
+  fn, err := step.WaitForEvent[FunctionCreatedEvent](
+   ctx,
+   "wait-for-activity",
+   step.WaitForEventOpts{
+    Name:    "Wait for a function to be created",
+    Event:   "api/function.created",
+    Timeout: time.Hour * 72,
+    // Match events where the user_id is the same in the async sampled event.
+    If: inngestgo.StrPtr("event.data.user_id == async.data.user_id"),
+   },
+  )
+  if err == step.ErrEventNotReceived {
+   // A function wasn't created within 3 days.  Send a follow-up email.
+   _, _ = step.Run(ctx, "follow-up-email", func(ctx context.Context) (any, error) {
+    // ...
+    return true, nil
+   })
+   return nil, nil
+  }
+  return nil, nil
+ },
 )
 ```
 
@@ -403,8 +413,10 @@ be unique across runs, and offer an API to resume specific runs given a unique s
 
 ```typescript
 export default inngest.createFunction(
-  { id: "send-onboarding-nudge-email" },
-  { event: "app/account.created" },
+  {
+    id: "send-onboarding-nudge-email",
+    triggers: { event: "app/account.created" },
+  },
   async ({ event, step }) => {
     const onboardingCompleted = await step.waitForSignal(
       "wait-for-specific-signal",
@@ -427,30 +439,30 @@ import (
 )
 
 inngestgo.CreateFunction(
-	client,
-	inngestgo.FunctionOpts{
-		ID: "send-delayed-email",
-	},
-	inngestgo.EventTrigger("app/user.signup", nil),
-	// handler function
-	func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
-		// Sample from the event stream for new events.  The function will stop
-		// running and automatically resume when a matching event is found, or if
-		// the timeout is reached.
-		signal, err := step.WaitForSignal[string](
-			ctx,
-			"wait-for-signal",
-			step.WaitForSignalOpts{
-				Name:    "Wait for a signal to be POSTed",
-				Signal:   "task/0e7d16d1-8335-4b93-9122-76e7cc6d9eb6",
-				Timeout: time.Hour * 72,
-			},
-		)
-		if err == step.ErrSignalNotReceived {
-			// A signal wasn't received within 3 days.  Send a follow-up email.
-		}
-		return nil, nil
-	},
+ client,
+ inngestgo.FunctionOpts{
+  ID: "send-delayed-email",
+ },
+ inngestgo.EventTrigger("app/user.signup", nil),
+ // handler function
+ func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
+  // Sample from the event stream for new events.  The function will stop
+  // running and automatically resume when a matching event is found, or if
+  // the timeout is reached.
+  signal, err := step.WaitForSignal[string](
+   ctx,
+   "wait-for-signal",
+   step.WaitForSignalOpts{
+    Name:    "Wait for a signal to be POSTed",
+    Signal:   "task/0e7d16d1-8335-4b93-9122-76e7cc6d9eb6",
+    Timeout: time.Hour * 72,
+   },
+  )
+  if err == step.ErrSignalNotReceived {
+   // A signal wasn't received within 3 days.  Send a follow-up email.
+  }
+  return nil, nil
+ },
 )
 ```
 
@@ -478,7 +490,6 @@ async def send_onboarding_nudge_email(ctx: inngest.Context):
 
 </LanguageSection>
 
-
 ### step.invoke()
 
 This method is used to asynchronously call another Inngest function ([written in any language SDK](/blog/cross-language-support-with-new-sdks)) and handle the result. Invoking other functions allows you to easily re-use functionality and compose them to create more complex workflows or map-reduce type jobs.
@@ -490,8 +501,10 @@ This method comes with its own configuration, which enables defining specific se
 ```typescript
 // A function we will call in another place in our app
 const computeSquare = inngest.createFunction(
-  { id: "compute-square" },
-  { event: "calculate/square" },
+  {
+    id: "compute-square",
+    triggers: { event: "calculate/square" },
+  },
   async ({ event }) => {
     return { result: event.data.number * event.data.number }; // Result typed as { result: number }
   }
@@ -499,8 +512,10 @@ const computeSquare = inngest.createFunction(
 
 // In this function, we'll call `computeSquare`
 const mainFunction = inngest.createFunction(
-  { id: "main-function" },
-  { event: "main/event" },
+  {
+    id: "main-function",
+    triggers: { event: "main/event" },
+  },
   async ({ step }) => {
     const square = await step.invoke("compute-square-value", {
       function: computeSquare,
@@ -524,36 +539,36 @@ import (
 )
 
 inngestgo.CreateFunction(
-	client,
-	inngestgo.FunctionOpts{
-		ID: "send-delayed-email",
-	},
-	inngestgo.EventTrigger("app/user.signup", nil),
-	// handler function
-	func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
-		// Invoke another function and wait for its result
-		result, err := step.Invoke[any](
-			ctx,
-			"invoke-email-function",
-			step.InvokeOpts{
-				FunctionID: "send-welcome-email",
-				// Pass data to the invoked function
-				Data: map[string]any{
-					"user_id": input.Event.Data["user_id"],
-					"email":   input.Event.Data["email"],
-				},
-				// Optional: Set a concurrency limit
-				Concurrency: step.ConcurrencyOpts{
-					Limit: 5,
-					Key:   "user-{{event.data.user_id}}",
-				},
-			},
-		)
-		if err != nil {
-			return nil, err
-		}
-		return result, nil
-	},
+ client,
+ inngestgo.FunctionOpts{
+  ID: "send-delayed-email",
+ },
+ inngestgo.EventTrigger("app/user.signup", nil),
+ // handler function
+ func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
+  // Invoke another function and wait for its result
+  result, err := step.Invoke[any](
+   ctx,
+   "invoke-email-function",
+   step.InvokeOpts{
+    FunctionID: "send-welcome-email",
+    // Pass data to the invoked function
+    Data: map[string]any{
+     "user_id": input.Event.Data["user_id"],
+     "email":   input.Event.Data["email"],
+    },
+    // Optional: Set a concurrency limit
+    Concurrency: step.ConcurrencyOpts{
+     Limit: 5,
+     Key:   "user-{{event.data.user_id}}",
+    },
+   },
+  )
+  if err != nil {
+   return nil, err
+  }
+  return result, nil
+ },
 )
 ```
 
@@ -596,8 +611,10 @@ This method sends events to Inngest to invoke functions with a matching event. U
 
 ```typescript
 export default inngest.createFunction(
-  { id: "user-onboarding" },
-  { event: "app/user.signup" },
+  {
+    id: "user-onboarding",
+    triggers: { event: "app/user.signup" },
+  },
   async ({ event, step }) => {
     // Do something
     await step.sendEvent("send-activation-event", {

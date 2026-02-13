@@ -32,8 +32,10 @@ After connecting your webhook, you'll start to receive events in your Inngest da
 import { inngest } from "./client";
 
 inngest.createFunction(
-  { id: "downgrade-customer" },
-  { event: "stripe/invoice.payment_failed" },
+  {
+    id: "downgrade-customer",
+    triggers: { event: "stripe/invoice.payment_failed" },
+  },
   async ({ event, step }) => {
     const invoice = event.data.data.object;
 

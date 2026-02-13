@@ -253,9 +253,9 @@ export default function Page() {
             //     priority: {
             //       // If the event is triggered during onboarding, run it ahead of functions scheduled 120 seconds ago
             //       run: 'event.data.isOnboarding ? 120 : 0'
-            //     }
+            //     },
+            //     triggers: { event: 'integrations/slack.sync' },
             //   },
-            //   { event: 'integrations/slack.sync' },
             //   async ({ event, step }) => {
             //     // your code
             //   }
@@ -271,9 +271,9 @@ export default function Page() {
     priority: {
       // If the event is triggered during onboarding, run it ahead of functions scheduled 120 seconds ago
       run: 'event.data.isOnboarding ? 120 : 0'
-    }
+    },
+    triggers: { event: 'integrations/slack.sync' },
   },
-  { event: 'integrations/slack.sync' },
   async ({ event, step }) => {
     // your code
   }
@@ -289,9 +289,9 @@ export default function Page() {
     batchEvents: {
       maxSize: 100,
       timeout: "60s"
-    }
+    },
+    triggers: { event: 'notifications/send.email' },
   },
-  { event: 'notifications/send.email' },
   async ({ events, step }) => {
     const emailBatch = events.map(event => ({
       from: 'Acme.dev <welcome@acme.dev>',
@@ -310,7 +310,10 @@ export default function Page() {
               description:
                 "Steps are executed once and cached. Errors are automatically retried and cached steps are skipped.",
               codeBlock: `export const importJob = inngest.createFunction(
-  { event: "integration/import.initiated" },
+  {
+    id: "import-job",
+    triggers: { event: "integration/import.initiated" },
+  },
   async ({ event, step }) => {
     // Any code within "step.run" is automatically retried on error
     // Successful steps are cached for retries of later steps

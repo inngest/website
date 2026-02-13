@@ -2,16 +2,16 @@ import { CodeGroup } from "src/shared/Docs/mdx";
 
 # Instrumenting GraphQL
 
-{/* Intro discussing what instrumenting GraphQL means */}
+{/*Intro discussing what instrumenting GraphQL means*/}
 
 When building with GraphQL, you can give your event-driven application a kick-start by instrumenting every query and mutation, sending events when one is successfully executed.
 
-{/* Describe that we can use a plugin for this, and how it's compatible */}
-{/* Mention Redwood */}
+{/*Describe that we can use a plugin for this, and how it's compatible */}
+{/* Mention Redwood*/}
 
 We can do this using an [Envelop](https://envelop.dev/) plugin, `useInngest`, for [GraphQL Yoga](https://the-guild.dev/graphql/yoga-server) and servers or frameworks powered by Yoga, such as [RedwoodJS](https://www.redwoodjs.com/).
 
-{/* Discuss the benefits of this */}
+{/*Discuss the benefits of this*/}
 
 By instrumenting with the `useInngest` plugin:
 
@@ -20,7 +20,7 @@ By instrumenting with the `useInngest` plugin:
 - Utilise fine-grained control over what events are sent such as operations (queries, mutations, or subscriptions), introspection events, when GraphQL errors occur, if result data should be included, type and schema coordinate denylists, and more.
 - Automatically capture context such as user data.
 
-{/* Show code adding this to a simple Yoga schema */}
+{/*Show code adding this to a simple Yoga schema*/}
 
 ## Getting Started
 
@@ -45,8 +45,8 @@ const inngest = new Inngest({ id: "my-app" });
 // Provide your schema
 const yoga = createYoga({
   schema: createSchema({
-    typeDefs: /* GraphQL */ `
-      type Query {
+    typeDefs: /*GraphQL*/ `
+type Query {
         greetings: String!
       }
     `,
@@ -62,12 +62,13 @@ const yoga = createYoga({
   plugins: [useInngest({ inngestClient: inngest })],
 });
 
-// Start the server and explore http://localhost:4000/graphql
+// Start the server and explore <http://localhost:4000/graphql>
 const server = createServer(yoga);
 
 server.listen(4000, () => {
-  console.info("Server is running on http://localhost:4000/graphql");
+  console.info("Server is running on <http://localhost:4000/graphql>");
 });
+
 ```
 </CodeGroup>
 
@@ -117,8 +118,10 @@ We can react to this event by creating a new Inngest function with the event as 
 
 ```ts
 inngest.createFunction(
-  { id: "send-cart-alert" },
-  { event: "graphql/create-cart-item.mutation" },
+  {
+    id: "send-cart-alert",
+    triggers: { event: "graphql/create-cart-item.mutation" },
+  },
   async ({ event }) => {
     await sendSlackMessage(
       "#marketing",
@@ -128,6 +131,6 @@ inngest.createFunction(
 );
 ```
 
-{/* To get more info, see the `envelop-plugin-inngest` repo */}
+{/*To get more info, see the `envelop-plugin-inngest` repo*/}
 
 For more info on how to customize the events sent check out the [envelop-plugin-inngest](https://github.com/inngest/envelop-plugin-inngest) repository, or see [Writing functions](https://www.inngest.com/docs/functions) to learn how to react to these events in different ways.

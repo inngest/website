@@ -31,8 +31,10 @@ A `logger` object is available within all Inngest functions as a handler argumen
 
 ```ts
 inngest.createFunction(
-  { id: "my-awesome-function" },
-  { event: "func/awesome" },
+  {
+    id: "my-awesome-function",
+    triggers: { event: "func/awesome" },
+  },
   async ({ event, step, logger }) => { // <== logger is available as an argument
     logger.info("starting function", { metadataKey: "metadataValue" });
 
@@ -62,7 +64,6 @@ export interface Logger {
 
 These are very typical interfaces and are also on the [RFC5424 guidelines](https://datatracker.ietf.org/doc/html/rfc5424#section-6.2.1), so most loggers you choose should work without issues.
 
-
 ## Using your preferred logger
 
 While `console.log` may be good enough for local development, other logging libraries provide more features that are suitable for production use.
@@ -87,6 +88,7 @@ export const inngest = new Inngest({
   logger: logger,
   // ...
 });
+
 ```
 ```ts {{ title: "Winston with Datadog transport" }}
 import { Inngest } from "inngest";
@@ -118,6 +120,7 @@ export const inngest = new Inngest({
   // ...
 });
 ```
+
 </CodeGroup>
 
 ## Enriched logs with function metadata
@@ -133,6 +136,7 @@ await step.run("summarize-content", async ({ step, logger }) => {
   logger.info("calling Claude", { max_tokens: 1000 });
 });
 ```
+
 ```json {{ title: "Example log output" }}
 {"eventName":"inngest/function.invoked","functionName":"Summarize content via GPT-4",
 "level":"info","max_tokens":1000,"message":"Querying vector database",

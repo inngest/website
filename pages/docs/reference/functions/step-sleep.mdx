@@ -20,8 +20,7 @@ import { Callout, CodeGroup, Col, Properties, Property, Row, VersionBadge } from
     </Properties>
   </Col>
   <Col>
-  <CodeGroup>
-  ```ts {{ title: "v3" }}
+  ```ts
   // Sleep for 30 minutes
   const thirtyMins = Temporal.Duration.from({ minutes: 30 });
   await step.sleep("wait-with-temporal", thirtyMins);
@@ -30,13 +29,6 @@ import { Callout, CodeGroup, Col, Properties, Property, Row, VersionBadge } from
   await step.sleep("wait-with-string-alt", "30 minutes");
   await step.sleep("wait-with-ms", 30 * 60 * 1000);
   ```
-  ```ts {{ title: "v2" }}
-  // Sleep for 30 minutes
-  await step.sleep("30m");
-  await step.sleep("30 minutes");
-  await step.sleep(30 * 60 * 1000);
-  ```
-  </CodeGroup>
   </Col>
 </Row>
 

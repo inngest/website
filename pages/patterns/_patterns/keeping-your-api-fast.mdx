@@ -35,7 +35,7 @@ app.post("/api/connectSource", async (req, res) => {
   const source = createSource(req.body);
 
   // Send an event for what just happened with pertinent data to be handled async
-  const inngest = new Inngest("API");
+  const inngest = new Inngest({ id: "my-app" });
   await inngest.send({
     name: "api/source.connected",
     data: { sourceId: source.id, userId: req.user.id },
@@ -54,8 +54,10 @@ Functions are defined by declaring which event(s) should trigger it. When matchi
 import { inngest } from "./client";
 
 inngest.createFunction(
-  { id: "backfill-user-data" },
-  { event: "api/source.connected" },
+  {
+    id: "backfill-user-data",
+    triggers: { event: "api/source.connected" },
+  },
   async ({ event }) => {
     const source = await getSource(event.data.sourceId);
     await backfillDataForSource(source);

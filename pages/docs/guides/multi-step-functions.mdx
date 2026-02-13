@@ -19,10 +19,6 @@ Creating functions that utilize multiple steps enable you to:
 
 This approach makes building reliable and distributed code simple. By wrapping asynchronous actions such as API calls in retriable blocks, we can ensure reliability when coordinating across many services.
 
-
-
-
-
 ## How to write a multi-step function
 
 <LanguageSelector>
@@ -37,12 +33,15 @@ import { Inngest } from "inngest";
 const inngest = new Inngest({ id: "my-app" });
 
 export default inngest.createFunction(
-  { id: "activation-email" },
-  { event: "app/user.created" },
+  {
+    id: "activation-email",
+    triggers: { event: "app/user.created" },
+  },
   async ({ event }) => {
     await sendEmail({ email: event.user.email, template: "welcome" });
   }
 );
+
 ```
 </CodeGroup>
 
@@ -58,8 +57,10 @@ First, let's convert this function into a multi-step function:
 
 ```ts
 export default inngest.createFunction(
-  { id: "activation-email" },
-  { event: "app/user.created" },
+  {
+    id: "activation-email",
+    triggers: { event: "app/user.created" },
+  },
   async ({ event, step }) => {
     await step.run("send-welcome-email", async () => {
       return await sendEmail({ email: event.user.email, template: "welcome" });
@@ -81,8 +82,10 @@ To do this, we can use the [`step.waitForEvent()`](/docs/reference/functions/ste
 <CodeGroup>
 ```ts
 export default inngest.createFunction(
-  { id: "activation-email" },
-  { event: "app/user.created" },
+  {
+    id: "activation-email",
+    triggers: { event: "app/user.created" },
+  },
   async ({ event, step }) => {
     await step.run("send-welcome-email", async () => {
       return await sendEmail({ email: event.user.email, template: "welcome" });
@@ -96,6 +99,7 @@ export default inngest.createFunction(
     });
   }
 );
+
 ```
 </CodeGroup>
 
@@ -108,8 +112,10 @@ Finally, we can use the `postCreated` variable to send the reminder email if the
 <CodeGroup>
 ```ts
 export default inngest.createFunction(
-  { id: "activation-email" },
-  { event: "app/user.created" },
+  {
+    id: "activation-email",
+    triggers: { event: "app/user.created" },
+  },
   async ({ event, step }) => {
     await step.run("send-welcome-email", async () => {
       return await sendEmail({ email: event.user.email, template: "welcome" });
@@ -134,6 +140,7 @@ export default inngest.createFunction(
   }
 );
 ```
+
 </CodeGroup>
 
 That's it! We've now written a multi-step function that will send a welcome email, and then send a reminder email if the user hasn't created a post within 24 hours.
@@ -157,6 +164,7 @@ However, there is a new requirement: if a user hasn't created a post on our plat
 ### 1. Convert to a step function
 
 First, let's convert this function into a multi-step function:
+
 - Add a `github.com/inngest/inngestgo/step` import
 - Wrap `sendEmail()` call in a [`step.Run()`](https://pkg.go.dev/github.com/inngest/inngestgo@v0.7.4/step#Run) method.
 
@@ -211,6 +219,7 @@ from src.inngest.client import inngest_client
 )
 async def fn(ctx: inngest.Context) -> None:
     await sendEmail({ email: ctx.event.user.email, template: "welcome" })
+
 ```
 </CodeGroup>
 
@@ -270,6 +279,7 @@ async def fn(ctx: inngest.Context) -> None:
         "match": "data.user.id",  # the field "data.user.id" must match
         "timeout": "24h",  # wait at most 24 hours
     })
+
 ```
 </CodeGroup>
 
@@ -308,6 +318,7 @@ async def fn(ctx: inngest.Context) -> None:
             "template": "reminder"
         }))
 ```
+
 </CodeGroup>
 
 That's it! We've now written a multi-step function that will send a welcome email, and then send a reminder email if the user hasn't created a post within 24 hours.
@@ -316,7 +327,6 @@ Most importantly, we had to write no config to do this. We can use all the power
 
 </LanguageSection>
 </LanguageSelector>
-
 
 ## Step Reference
 
@@ -462,7 +472,6 @@ Inngest will communicate with your function multiple times throughout a single r
 
 For this reason, placing business logic outside of a `step.Run()` call is a bad idea, as this will be run every time Inngest communicates with your function.
 
-
 ### Unexpected loop behavior
 
 When using loops within functions, it is recommended to treat each iteration as it's own step or steps.
@@ -542,6 +551,7 @@ Learn more about [working with loops in Inngest](/docs/guides/working-with-loops
 ## Further reading
 
 More information on multi-step functions:
+
 - Docs guide: [working with loops in Inngest](/docs/guides/working-with-loops).
 - Blog post: ["Building an Event Driven Video Processing Workflow with Next.js, tRPC, and Inngest
 "](/blog/nextjs-trpc-inngest)

@@ -12,8 +12,6 @@ Cancellation is a useful mechanism for preventing unnecessary actions based on p
 
 Inngest enables you to cancel running Functions via the API, Dashboard, or based on events:
 
-
-
 <CardGroup cols={2}>
   <Card title="Cancel on events" icon={<EventIcon className="text-basis h-4 w-4"/>} href={'/docs/features/inngest-functions/cancellation/cancel-on-events'}>
     Cancel scheduled or sleeping Functions based on incoming events.
@@ -47,8 +45,8 @@ const scheduleReminder = inngest.createFunction(
   {
     id: "schedule-reminder",
     cancelOn: [{ event: "tasks/deleted", if: "event.data.id == async.data.id" }],
+    triggers: { event: "tasks/reminder.created" },
   }
-  { event: "tasks/reminder.created" },
   async ({ event, step }) => {
     // Step 1
     await step.sleepUntil('sleep-until-remind-at-time', event.data.remindAt);
@@ -104,7 +102,6 @@ Let's now look at two different cancellations triggered from the Dashboard Bulk 
     3. Three days after, a cancellation is received
     4. The Function run is canceled (Step 2 is skipped)
 
-
   </Col>
   <Col>
 
@@ -126,3 +123,4 @@ All canceled Function runs can be replay by using the Platform's [Functions Repl
 Function runs that are cancelled may require additional work like database cleanup or purging of deletion of temporary resources. This can be done leveraging the [`inngest/function.cancelled`](/docs/reference/system-events/inngest-function-cancelled) system event.
 
 See [this complete example](/docs/examples/cleanup-after-function-cancellation) for how to use this event within your system to cleanup after a function run is cancelled.
+

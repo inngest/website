@@ -40,8 +40,8 @@ export const myFunction = inngest.createFunction(
   {
     id: "my-function",
     checkpointing: true,
+    triggers: { event: "app/my.event" },
   },
-  { event: "app/my.event" },
   async ({ step }) => {
     // steps here will be checkpointed
   }
@@ -52,9 +52,9 @@ export const myFunction = inngest.createFunction(
 
 Configure how checkpointing behaves with these options:
 
-* `maxRuntime` - default: `0` (unlimited): The maximum amount of time the function should continuously execute and checkpoint steps before returning the request response. Configure this to be slightly less than the maximum allowed request timeout for your platform or server. For example, if your platform allows `900s`, you might set `maxRuntime` to `800s`.
-* `bufferedSteps` - default: `1` (no buffering): The number of steps to buffer together before checkpointing. This can help reduce the number of requests made to Inngest when running many steps in sequence. Consider that buffered steps that are not checkpointed may be lost if your server is not gracefully terminated.
-* `maxInterval`: The maximum interval to wait before checkpointing, even if the `bufferedSteps` count has not been reached.
+- `maxRuntime` - default: `0` (unlimited): The maximum amount of time the function should continuously execute and checkpoint steps before returning the request response. Configure this to be slightly less than the maximum allowed request timeout for your platform or server. For example, if your platform allows `900s`, you might set `maxRuntime` to `800s`.
+- `bufferedSteps` - default: `1` (no buffering): The number of steps to buffer together before checkpointing. This can help reduce the number of requests made to Inngest when running many steps in sequence. Consider that buffered steps that are not checkpointed may be lost if your server is not gracefully terminated.
+- `maxInterval`: The maximum interval to wait before checkpointing, even if the `bufferedSteps` count has not been reached.
 
 ```ts {{ title: "Example configuration" }}
 checkpointing: {
@@ -76,7 +76,7 @@ To enable checkpointing:
 go get github.com/inngest/inngestgo/pkg/checkpoint
 ```
 
-2. Set `Checkpoint` on your function options:
+1. Set `Checkpoint` on your function options:
 
 ```go
 import (
@@ -120,12 +120,10 @@ Checkpointing is currently in beta, here are some notes and limitations to be aw
 - **Parallel step execution** — When a function branches into parallel steps, execution switches to standard orchestration for the remainder of the run. Checkpointing does not resume after parallel execution.
 - **Middleware fixes (TypeScript `>=3.51.0`)** - If using an older TypeScript beta for checkpointing (`<3.51.0`), please upgrade to at least `3.51.0` to ensure that all middleware transforms are running correctly.
 
-
 | Feature | Supported |
 |---------|-----------|
 | Local development | ✅ |
 | Self-hosted Inngest | ✅ |
 | Inngest Cloud | ✅ |
-
 
 Read the [release phases](/docs/release-phases) for more details.

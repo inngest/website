@@ -6,19 +6,16 @@ Ensure that only a single run of a function (_or a set of specific functions, ba
 
 See the [Singleton Functions guide](/docs/guides/singleton) for more information about how this feature works.
 
-
-
-
 ```ts
 export default inngest.createFunction(
   {
     id: "data-sync",
+    triggers: { event: "data-sync.start" },
     singleton: {
       key: "event.data.user_id",
       mode: "skip",
     },
   },
-  { event: "data-sync.start" },
   async ({ event }) => {
     // This function will be skipped if another run of the same function is already running for the same user
   }
@@ -67,12 +64,12 @@ In this example, the active run of our `data-sync` function will be cancelled if
 export default inngest.createFunction(
   {
     id: "data-sync",
+    triggers: { event: "data-sync.start" },
     singleton: {
       key: "event.data.user_id",
       mode: "cancel",
     },
   },
-  { event: "data-sync.start" },
   async ({ event, step }) => {
     const company = await step.run(
       "fetch-latest-data-from-source",
@@ -91,3 +88,4 @@ export default inngest.createFunction(
 While similar to [Debounce](/docs/guides/debounce), Singleton Functions are designed to ensure that only a single run of a function is happening at a time, whereas Debounce ensures that only a single event is processed within a given time window.
 
 Refer to the [Singleton Functions guide](/docs/guides/singleton) for more information about how this feature works. */}
+

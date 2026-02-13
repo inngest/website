@@ -73,8 +73,8 @@ export function DurableWorkflowsPage({
               codeBlock: `export const processVideo = inngest.createFunction(
   {
     name: "Process video upload", id: "process-video",
+    triggers: { event: "video.uploaded" },
   },
-  { event: "video.uploaded" },
   async ({ event, step }) => {
     // Steps that are prone to failure are automatically retried
     // Successful steps are cached and never re-run if a following step fails
@@ -103,9 +103,9 @@ export function DurableWorkflowsPage({
                 "Trigger workflows with events and pause functions for hours or days.",
               codeBlock: `export const handlePayments = inngest.createFunction(
   {
-    name: "Handle payments", id: "handle-payments"
+    name: "Handle payments", id: "handle-payments",
+    triggers: { event: "api/invoice.created" },
   },
-  { event: "api/invoice.created" },
   async ({ event, step }) => {
     // Wait until the next billing date
     await step.sleepUntil("wait-for-billing-date", event.data.invoiceDate);
@@ -136,8 +136,10 @@ export function DurableWorkflowsPage({
               description:
                 "Pause your workflow and resume with events for simple, decoupled systems.",
               codeBlock: `export const onboardingNudge = inngest.createFunction(
-  { id: "send-onboarding-nudge-email" },
-  { event: "app/account.created" },
+  {
+    id: "send-onboarding-nudge-email",
+    triggers: { event: "app/account.created" },
+  },
   async ({ event, step }) => {
     // The function will pause and only resume when the matching
     // event is received. Events enable highly decoupled, declarative workflows

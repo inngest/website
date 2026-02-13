@@ -18,8 +18,10 @@ Here is a basic function that processes a CSV file and returns the number of ite
 
 ```typescript
 const processCSV = inngest.createFunction(
-  { id: "process-csv-upload" },
-  { event: "imports/csv.uploaded" },
+  {
+    id: "process-csv-upload",
+    triggers: { event: "imports/csv.uploaded" },
+  }
   async ({ event, step }) => {
     // CSV processing logic omitted for the sake of the example
     return {
@@ -139,7 +141,7 @@ Check the resources below to learn more about working with the Inngest REST API.
 <ResourceGrid cols={2}>
 
 <Resource resource={{
-  href: "https://api-docs.inngest.com/docs/inngest-api/yoyeen3mu7wj0-list-event-function-runs",
+  href: "<https://api-docs.inngest.com/docs/inngest-api/yoyeen3mu7wj0-list-event-function-runs>",
   name: "Reference: REST API: List event function runs",
   icon: RiBracesFill,
   description: "Return all runs triggered by an event.",
@@ -150,5 +152,4 @@ Check the resources below to learn more about working with the Inngest REST API.
 
 ## Related concepts
 
-- [Fan-out jobs](/docs/guides/fan-out-jobs)
-
+* [Fan-out jobs](/docs/guides/fan-out-jobs)

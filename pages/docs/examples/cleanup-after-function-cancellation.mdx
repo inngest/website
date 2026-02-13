@@ -22,8 +22,8 @@ export const importAllContacts = inngest.createFunction(
   {
     id: "import-all-contacts",
     cancelOn: [{ event: "contacts/import.cancelled", if: "async.data.importId == event.data.importId" }]
+    triggers: { event: "contacts/import.requested" },
   },
-  { event: "contacts/import.requested" },
   async ({ event, step  }) => {
     // This is a long running function
   }
@@ -34,11 +34,11 @@ export const cleanupCancelledImport = inngest.createFunction(
   {
     name: "Cleanup cancelled import",
     id: "cleanup-cancelled-import"
-  },
-  {
-    event: "inngest/function.cancelled",
-    // The function ID is a hyphenated slug of the App ID w/ the functions" id
-    if: "event.data.function_id == 'newsletter-app-import-all-contacts'"
+    triggers: {
+      event: "inngest/function.cancelled",
+      // The function ID is a hyphenated slug of the App ID w/ the functions" id
+      if: "event.data.function_id == 'newsletter-app-import-all-contacts'"
+    },
   },
   async ({ event, step, logger }) => {
     // This code will execute after your function is cancelled
@@ -112,3 +112,4 @@ Check the resources below to learn more about building email sequences with Inng
 }}/>
 
 </ResourceGrid>
+

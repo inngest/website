@@ -19,14 +19,16 @@ You can run steps in parallel via `Promise.all()`:
 A common use case is to split work into chunks:
 
 <CodeGroup>
-```ts 
+```ts
 import { Inngest } from "inngest";
 
 const inngest = new Inngest({ id: "signup-flow" });
 
 export const fn = inngest.createFunction(
-  { id: "post-payment-flow" },
-  { event: "stripe/charge.created" },
+  {
+    id: "post-payment-flow",
+    triggers: { event: "stripe/charge.created" },
+  },
   async ({ event, step }) => {
     // These steps are not `awaited` and run in parallel when Promise.all
     // is invoked.
@@ -49,6 +51,7 @@ export const fn = inngest.createFunction(
     return { emailID, updates };
   }
 );
+
 ```
 </CodeGroup>
 
@@ -75,7 +78,8 @@ async def fn(ctx: inngest.Context) -> None:
   )
 ```
 
-#### sync - with `inngest.StepSync` and `group.parallel()` 
+#### sync - with `inngest.StepSync` and `group.parallel()`
+
 ```py
 @client.create_function(
   fn_id="my-fn",
@@ -92,18 +96,19 @@ def fn(ctx: inngest.ContextSync) -> None:
   )
 ```
 
-## Optimizing parallel step performance
+## Optimized parallelism
 
-By default, parallel steps require 2 requests per step to your application. If you have many parallel steps (e.g., hundreds), this can lead to:
-- High number of HTTP requests to your application
-- Increased ingress bandwidth
-- Higher CPU usage from request parsing
+By default, the SDK uses optimized parallelism (`optimizeParallelism: true`), which reduces parallel steps from 2 requests per step down to just 1. This significantly improves performance for functions with many parallel operations by reducing:
 
-The `optimizeParallelism` feature reduces this to just 1 request per parallel step, significantly improving performance for functions with many parallel operations.
+- HTTP requests to your application
+- Ingress bandwidth
+- CPU usage from request parsing
 
-### TypeScript: Opt-in via function configuration
+To revert to the pre-v4 behavior, set `optimizeParallelism: false` on your client or function configuration.
 
-In TypeScript, you can enable optimized parallelism by adding `optimizeParallelism: true` to your function configuration:
+### Using `Promise.race` with `group.parallel()`
+
+Because optimized parallelism waits for all parallel promises to settle before resolving, `Promise.race()` no longer resolves early by default. To restore race semantics, use the `group.parallel()` helper available on the function context:
 
 ```ts
 import { Inngest } from "inngest";
@@ -111,36 +116,54 @@ import { Inngest } from "inngest";
 const inngest = new Inngest({ id: "my-app" });
 
 export const fn = inngest.createFunction(
-  { 
-    id: "process-batch",
-    optimizeParallelism: true  // Enable optimized parallelism
+  {
+    id: "race-example",
+    triggers: { event: "app/race" },
   },
-  { event: "batch/process" },
-  async ({ event, step }) => {
-    // These parallel steps will now use only 1 request each instead of 2
-    const results = await Promise.all(
-      event.data.items.map((item, i) =>
-        step.run(`process-${i}`, () => processItem(item))
-      )
-    );
-    
-    return results;
+  async ({ step, group }) => {
+    // Without group.parallel(), Promise.race waits for ALL steps to finish
+    // before returning the first result (due to optimized parallelism).
+
+    // Wrap in group.parallel() to restore standard race behavior:
+    const winner = await group.parallel(async () => {
+      return Promise.race([
+        step.run("fast", () => "fast"),
+        step.run("slow", async () => {
+          await new Promise((r) => setTimeout(r, 5000));
+          return "slow";
+        }),
+      ]);
+    });
+
+    // winner === "fast"
+    return winner;
   }
 );
 ```
 
-**Important considerations:**
+`group.parallel()` accepts an async callback and ensures that all steps created within it use race-compatible execution. You can also pass an explicit options object:
 
-- **`Promise.race` behavior**: When using optimized parallelism, `Promise.race` will wait for all parallel steps to complete before returning the first result. This differs from the standard JavaScript behavior where it returns immediately when the first promise resolves. A future `group.race()` API may address this.
+```ts
+const winner = await group.parallel({ mode: "race" }, async () => {
+  return Promise.race([
+    step.run("a", () => "a"),
+    step.run("b", () => "b"),
+  ]);
+});
+```
 
-- **Sequential steps in parallel groups**: Steps that run sequentially within different parallel branches may not execute in the order you expect. For example:
+### Sequential steps in parallel groups
+
+With optimized parallelism, steps that run sequentially within different parallel branches may not execute in the order you expect. For example:
 
 ```ts
 const stepOrder: string[] = [];
 
 export const fn = inngest.createFunction(
-  { id: "fn-1", optimizeParallelism: true },
-  { event: "event-1" },
+  {
+    id: "fn-1",
+    triggers: { event: "event-1" },
+  },
   async ({ step }) => {
     await Promise.all([
       (async () => {
@@ -163,8 +186,8 @@ export const fn = inngest.createFunction(
       })(),
     ]);
 
-    // With optimizeParallelism: ['fast.1', 'slow.1', 'fast.2', 'slow.2']
-    // Without optimizeParallelism: ['fast.1', 'fast.2', 'slow.1', 'slow.2']
+    // With optimized parallelism (default): ['fast.1', 'slow.1', 'fast.2', 'slow.2']
+    // With optimizeParallelism: false:       ['fast.1', 'fast.2', 'slow.1', 'slow.2']
   }
 );
 ```
@@ -208,14 +231,16 @@ async def fn(ctx: inngest.Context) -> None:
 A common use case is to chunk work. For example, when using OpenAI's APIs you might need to chunk a user's input and run the API on many chunks, then aggregate all data:
 
 <CodeGroup>
-```ts 
+```ts
 import { Inngest } from "inngest";
 
 const inngest = new Inngest({ id: "signup-flow" });
 
 export const fn = inngest.createFunction(
-  { id: "summarize-text" },
-  { event: "app/text.summarize" },
+  {
+    id: "summarize-text",
+    triggers: { event: "app/text.summarize" },
+  },
   async ({ event, step }) => {
     const chunks = splitTextIntoChunks(event.data.text);
 
@@ -228,6 +253,7 @@ export const fn = inngest.createFunction(
     await step.run("summarize-summaries", () => summarizeSummaries(summaries));
   }
 );
+
 ```
 </CodeGroup>
 

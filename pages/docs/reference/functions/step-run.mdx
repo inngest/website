@@ -8,8 +8,10 @@ Use `step.run()` to run synchronous or asynchronous code as a retriable step in 
 
 ```ts
 export default inngest.createFunction(
-  { id: "import-product-images" },
-  { event: "shop/product.imported" },
+  {
+    id: "import-product-images",
+    triggers: { event: "shop/product.imported" },
+  },
   async ({ event, step }) => {
     const uploadedImageURLs = await step.run("copy-images-to-s3", async () => {
       return copyAllImagesToS3(event.data.imageURLs);
@@ -55,6 +57,7 @@ export default inngest.createFunction(
   await step.run("insert-data", async () => {
     db.insert(data);
   });
+
   ```
   </Col>
 </Row>

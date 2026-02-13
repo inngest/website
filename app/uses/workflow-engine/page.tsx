@@ -181,11 +181,13 @@ const workflowEngine = new Engine({
 });
 
 export default inngest.createFunction(
-  { id: "blog-post-workflow" },
-  // Triggers
-  // - When a blog post is set to "review"
-  // - When a blog post is published
-  [{ event: "blog-post.updated" }, { event: "blog-post.published" }],
+  {
+    id: "blog-post-workflow",
+    // Triggers
+    // - When a blog post is set to "review"
+    // - When a blog post is published
+    triggers: [{ event: "blog-post.updated" }, { event: "blog-post.published" }],
+  },
   async ({ event, step }) => {
     // When 'run' is called, the loader function is called with access to the event
     await workflowEngine.run({ event, step });

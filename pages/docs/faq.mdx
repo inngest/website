@@ -37,8 +37,10 @@ The "finalization" step in a run's trace represents the execution of the code be
 
 ```ts {{ x: "10"}}
 const myFunction = inngest.createFunction(
-  { id: "handle-import" }
-  { event: "integration.connected" }
+  {
+    id: "handle-import",
+    triggers: { event: "integration.connected" },
+  },
   async ({ event, step }) => {
     const res = await step.run("import-data", async () => {
       // ...

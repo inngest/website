@@ -126,6 +126,7 @@ import { Inngest } from "inngest";
 
 // NOTE - It is not recommended to hard-code your Event Key in your code.
 const inngest = new Inngest({ id: "your-app-id", eventKey: "xyz..." });
+
 ```
 </LanguageSection>
 
@@ -149,7 +150,6 @@ Event keys are _not_ required in local development with the [Inngest Dev Server]
 The event payload is a JSON object that must contain a `name` and `data` property.
 
 Explore all events properties in the [Event payload format guide](/docs/features/events-triggers/event-format).
-
 
 ## Sending multiple events at once
 
@@ -186,8 +186,10 @@ You can also send events from within your functions using `step.sendEvent()` to,
 
 ```ts
 export default inngest.createFunction(
-  { id: "user-onboarding" },
-  { event: "app/user.signup" },
+  {
+    id: "user-onboarding",
+    triggers: { event: "app/user.signup" }
+  },
   async ({ event, step }) => {
     // Do something
     await step.sendEvent("send-activation-event", {
@@ -304,7 +306,7 @@ Each event sent to Inngest is assigned a unique Event ID. These `ids` are return
 
 You can send events from any system or programming language with our API and an Inngest Event Key. The API accepts a single event payload or an array of event payloads.
 
-{/* NOTE - We'll leave other SDKs here for now, but in time, instead we'll make this entire guide have Python and Go examples for each section above */}
+{/*NOTE - We'll leave other SDKs here for now, but in time, instead we'll make this entire guide have Python and Go examples for each section above*/}
 
 To send an event to a specific [branch environment](/docs/platform/environments#branch-environments), set the `x-inngest-env` header to the name of your branch environment, for example: `x-inngest-env: feature/my-branch`.
 
@@ -352,7 +354,6 @@ $response = json_decode($json_response, true);
 
 </CodeGroup>
 
-
 <Note>
   When using the [dev server](/docs/dev-server), use `http://localhost:8288/e/<fake-key>` as the endpoint. If [self-hosting](/docs/self-hosting), replace with the url for your self-hosted instance.
 </Note>
@@ -388,7 +389,6 @@ await inngest.send({
 ```
 </LanguageSection>
 
-
 <LanguageSection show="python">
 
 ```python
@@ -400,14 +400,14 @@ await inngest_client.send(
   )
 )
 ```
-</LanguageSection> 
+</LanguageSection>
 
 <LanguageSection show="go">
 
 ```go {{ title: "Go" }}
 !snippet:path=snippets/go/docs/events/event_idempotency.go
 ```
-</LanguageSection> 
+</LanguageSection>
 
 Learn more about this in the [handling idempotency guide](/docs/guides/handling-idempotency).
 
@@ -431,4 +431,3 @@ For example, for two events like `storefront/item.imported` and `storefront/item
 * [TypeScript SDK Reference: Send events](/docs/reference/events/send)
 * [Python SDK Reference: Send events](/docs/reference/python/client/send)
 * [Go SDK Reference: Send events](https://pkg.go.dev/github.com/inngest/inngestgo#Client)
-

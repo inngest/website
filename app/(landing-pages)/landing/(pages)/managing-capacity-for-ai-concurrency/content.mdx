@@ -37,8 +37,9 @@ inngest.createFunction(
      key: "event.data.user_id",
      limit: 2,
    }
+,
+   triggers: { event: "ai/summary.requested" },
  },
- { event: "ai/summary.requested" },
  async ({ event, step }) => {
    /* call OpenAI */
  }
@@ -59,8 +60,9 @@ inngest.createFunction(
      key: "event.data.user_id",
      limit: 2,
    },
+,
+   triggers: { event: "ai/summary.requested" },
  },
- { event: "ai/summary.requested" },
  async ({ event, step }) => {
    /* call OpenAI */
  }

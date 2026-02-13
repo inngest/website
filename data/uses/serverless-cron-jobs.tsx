@@ -31,8 +31,10 @@ export const data: UseCase = {
 
 // Define a function to run on a cron-schedule:
 inngest.createFunction(
-  { id: "send-weekly-digest-email" },
-  { cron: "TZ=America/New_York 0 9 * * MON " },
+  {
+    id: "send-weekly-digest-email",
+    triggers: { cron: "TZ=America/New_York 0 9 * * MON " },
+  },
   async () => {
     // This function will run every Monday at 9am New York time
   }
@@ -46,8 +48,10 @@ inngest.createFunction(
 
 // Define a function which sleeps until a given timestamp:
 inngest.createFunction(
-  { id: "post-slack-reminder" },
-  { event: "slack.reminder.scheduled" },
+  {
+    id: "post-slack-reminder",
+    triggers: { event: "slack.reminder.scheduled" },
+  },
   async ({ event, step }) => {
     await step.sleepUntil(
       "wait-for-reminder-time",

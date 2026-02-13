@@ -256,8 +256,10 @@ const network = new Network({
 import { openai } from "@ai-sdk/openai"
 
 export default inngest.createFunction(
-  { id: "summarize-contents" },
-  { event: "app/ticket.created" },
+  {
+    id: "summarize-contents",
+    triggers: { event: "app/ticket.created" },
+  },
   async ({ event, step }) => {
 
     // This calls generateText with the given arguments, adding AI observability,
@@ -279,8 +281,10 @@ export default inngest.createFunction(
                 description:
                   "Offload inference requests securely to any inference API using step.ai.infer, powered by Inngest's infrastructure. This reduces serverless compute costs while providing enhanced observability into every inference request and response.",
                 codeBlock: `export default inngest.createFunction(
-  { id: "summarize-contents" },
-  { event: "app/ticket.created" },
+  {
+    id: "summarize-contents",
+    triggers: { event: "app/ticket.created" },
+  },
   async ({ event, step }) => {
 
     // This calls your model's chat endpoint, adding AI observability,

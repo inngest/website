@@ -12,24 +12,30 @@ Inngest allows you to create as many functions as you need which subscribe to th
 import { inngest } from "@/inngest";
 
 const funcA = inngest.createFunction(
-  { id: "a" },
-  { event: "app/user.created" },
+  {
+    id: "a",
+    triggers: { event: "app/user.created" },
+  },
   ({ event }) => {
     /* Your logic runs on signup here */
   }
 );
 
 const funcB = inngest.createFunction(
-  { id: "b" },
-  { event: "app/user.created" },
+  {
+    id: "b",
+    triggers: { event: "app/user.created" },
+  },
   ({ event }) => {
     /* And this function runs in parallel on signup */
   }
 );
 
 const funcC = inngest.createFunction(
-  { id: "c" },
-  { event: "app/user.created" },
+  {
+    id: "c",
+    triggers: { event: "app/user.created" },
+  },
   ({ event }) => {
     /* This function _also_ runs at the same time */
   }

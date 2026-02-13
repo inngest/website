@@ -9,7 +9,8 @@ We'll look at all available environment variables here, what to set them to, and
 - [INNGEST_ENV](#inngest-env)
 - [INNGEST_EVENT_KEY](#inngest-event-key)
 - [INNGEST_LOG_LEVEL](#inngest-log-level)
-- [INNGEST_SERVE_HOST](#inngest-serve-host)
+- [INNGEST_SERVE_ORIGIN](#inngest-serve-origin)
+- [INNGEST_SERVE_HOST](#inngest-serve-host) _(deprecated in TS SDK v4)_
 - [INNGEST_SERVE_PATH](#inngest-serve-path)
 - [INNGEST_SIGNING_KEY](#inngest-signing-key)
 - [INNGEST_STREAMING](#inngest-streaming)
@@ -40,7 +41,7 @@ await inngest.setEnvVars(c.env).send({ name: "test/event" });
 
 Use this to tell an SDK the host to use to communicate with Inngest.
 
-If set, it should be the host including the protocol and port, e.g. `http://localhost:8288` or `https://my.tunnel.com`. Can be overwritten by manually specifying `baseUrl` in `new Inngest()` or `serve()`.
+If set, it should be the host including the protocol and port, e.g. `http://localhost:8288` or `https://my.tunnel.com`. Can be overwritten by manually specifying `baseUrl` in `new Inngest()`.
 
 In most cases we recommend keeping this unset. A common case, though, is wanting
 to force a production build of your app to use the Inngest Dev Server instead of
@@ -94,11 +95,25 @@ Defaults to `info`.
 
 ---
 
-## INNGEST_SERVE_HOST
+## INNGEST_SERVE_ORIGIN
+
+_This environment variable is replacing the `INNGEST_SERVE_HOST` in the `v4` version of the TypeScript SDK._
 
 The host used to access this application from Inngest Cloud.
 
-If set, it should be the host including the protocol and port, e.g. `http://localhost:8288` or `https://my.tunnel.com`. Can be overwritten by manually specifying `serveHost` in `serve()`.
+If set, it should be the host including the protocol and port, e.g. `http://localhost:8288` or `https://my.tunnel.com`. Can be overwritten by manually specifying `serveOrigin` in `serve()`.
+
+By default, an SDK will try to infer this using request details such as the `Host` header, but sometimes this isn't possible (e.g. when running in a more controlled environment such as AWS Lambda or when dealing with proxies/redirects).
+
+---
+
+## INNGEST_SERVE_HOST
+
+_Note that this environment variable still works in all SDKs, but in v4+ of the TypeScript SDK it has been deprecated in favor of `INNGEST_SERVE_ORIGIN`._
+
+The host used to access this application from Inngest Cloud.
+
+If set, it should be the host including the protocol and port, e.g. `http://localhost:8288` or `https://my.tunnel.com`. Can be overwritten by manually specifying `serveOrigin` in `serve()`.
 
 By default, an SDK will try to infer this using request details such as the `Host` header, but sometimes this isn't possible (e.g. when running in a more controlled environment such as AWS Lambda or when dealing with proxies/redirects).
 
@@ -118,7 +133,7 @@ By default, an SDK will try to infer this using request details, but sometimes t
 
 The key used to sign requests to and from Inngest to ensure secure communication. See [Serve - Signing Key](/docs/learn/serving-inngest-functions#signing-key?ref=environment-variables) for more information.
 
-Can be overwritten by manually specifying `signingKey` in `serve()`.
+Can be overwritten by manually specifying `signingKey` on the Inngest client.
 
 ---
 
@@ -134,6 +149,6 @@ Available in version `3.18.0` and above.
 
 Sets an SDK's streaming support, potentially circumventing restrictive request timeouts and other limitations. See [Streaming](/docs/streaming?ref=environment-variables) for more information.
 
-Can be one of `allow`, `force`, or `false`.
+Can be one of `true` or `false`.
 
 By default, this is `false`, disabling streaming. It can also be overwritten by setting `streaming` in `serve()` with the same values.

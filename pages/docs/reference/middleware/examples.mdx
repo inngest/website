@@ -53,8 +53,10 @@ export const cloudflareMiddleware = new InngestMiddleware({
 import { inngest } from "./client";
 
 export default inngest.createFunction(
-  { id: "hello-world" },
-  { event: "demo/event.sent" },
+  {
+    id: "hello-world",
+    triggers: { event: "demo/event.sent" },
+  },
   async ({ ai }) => {
     // `ai` is typed and can be used directly or within a step
     const response = await ai.run("@cf/meta/llama-2-7b-chat-int8", {
@@ -87,8 +89,10 @@ const inngest = new Inngest({
 });
 
 inngest.createFunction(
-  { id: "user-data-dump" },
-  { event: "app/data.requested" },
+  {
+    id: "user-data-dump",
+    triggers: { event: "app/data.requested" },
+  },
   async ({ event, action: { getUser } }) => {
     // The first parameter is the step's options or ID
     const user = await getUser("get-user-details", event.data.userId);
@@ -170,7 +174,6 @@ type FilterActions<Fns extends Record<string, any>> = {
 };
 ```
 
-
 ## Logging
 
 The following shows you how you can create a logger middleware and customize it to your needs.
@@ -249,8 +252,10 @@ While this example uses Prisma, it serves as a good example of using the [onFunc
 
 ```ts
 inngest.createFunction(
-  { name: "Example" },
-  { event: "app/user.loggedin" },
+  {
+    name: "Example",
+    triggers: { event: "app/user.loggedin" },
+  },
   async ({ prisma }) => {
     await prisma.auditTrail.create(/* ... */);
   }
@@ -292,3 +297,4 @@ Check out [Common actions for every function](/docs/reference/middleware/example
     Access environment variables within Inngest functions.
   </Card>
 </CardGroup>
+

@@ -376,8 +376,11 @@ export const inngest = new Inngest({
 });
 
 export const welcomeWorkflow = inngest.createFunction(
-  { id: 'welcome-workflow', retries: 4 },
-  { event: 'user.signup'},
+  {
+    id: 'welcome-workflow',
+    retries: 4,
+    triggers: { event: 'user.signup'},
+  },
   async ({ event, step }) => {
     const user = await step.run('get-user', async () => {
       const user = await db.getUser(userId);

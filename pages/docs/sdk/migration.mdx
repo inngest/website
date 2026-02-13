@@ -2,6 +2,10 @@ import { Callout, Row, Col, CodeGroup, VersionBadge } from "src/shared/Docs/mdx"
 
 export const description = "How to migrate your code to the latest version of the Inngest TS SDK."
 
+# Upgrading from Inngest SDK v3 to v4
+
+The official migration guide can be found in [this Github issue](https://github.com/inngest/inngest-js/issues/1304). All breaking changes are listed there, along with any discussions or suggestions to help ease the burden of migration.
+
 # Upgrading from Inngest SDK v2 to v3
 
 This guide walks through migrating your code from v2 to v3 of the Inngest TS SDK.
@@ -222,7 +226,6 @@ When instantiating a client using `new Inngest()` or creating a function via `in
 </Row>
 
 Previously, only `name` was required, but this implied that the value was safe to change. Internally, we used this name to produce an ID which was used during deployments and executions.
-
 
 ## All steps require IDs
 
@@ -908,6 +911,7 @@ const singleStepFn = inngest.createFunction(
   { event: "example/single.step" },
   async ({ event, step }) => "..."
 );
+
 ```
 </details>
 
@@ -921,6 +925,7 @@ const scheduledFn = createScheduledFunction( // or inngest.createScheduledFuncti
   async ({ event }) => "..."
 );
 ```
+
 ```ts
 // ✅ Valid in v1
 const inngest = new Inngest({ name: "My App" });
@@ -931,6 +936,7 @@ const scheduledFn = inngest.createFunction(
   async ({ event, step }) => "..."
 );
 ```
+
 </details>
 
 <details>
@@ -952,6 +958,7 @@ const stepFn = inngest.createFunction(
   { event: "example/step.function" },
   async ({ event, step }) => "..."
 );
+
 ```
 </details>
 
@@ -994,6 +1001,7 @@ export default createStepFunction(
 );
 
 ```
+
 ```ts
 // ✅ v1 step function
 import { inngest } from "./client";

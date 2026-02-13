@@ -18,8 +18,10 @@ export default function SendEvents() {
       fnVersion: 27,
       fnID: "01GGG522ZATDGVQBCND4ZEAS6Z",
       code: stripIndent(`inngest.createFunction(
-        { name: "post-signup" },
-        { event: "app/user.signup" },
+        {
+          name: "post-signup",
+          triggers: { event: "app/user.signup" },
+        },
         async ({ event }) => {
           await sendEmail({
             email: event.user.email,
@@ -42,8 +44,10 @@ export default function SendEvents() {
       import { inngest } from "./client";
 
       export default inngest.createFunction(
-        { id: "handle-failed-payments" },
-        { event: "stripe/charge.failed" },
+        {
+          id: "handle-failed-payments",
+          triggers: { event: "stripe/charge.failed" },
+        },
         async ({ event, step }) => {
           // step.run creates a reliable step which retries automatically,
           // storing the returned data in function state.

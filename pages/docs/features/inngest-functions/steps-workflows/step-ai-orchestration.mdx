@@ -37,8 +37,10 @@ Here's an example which calls OpenAI:
 <CodeGroup>
 ```ts {{ title: "TypeScript" }}
 export default inngest.createFunction(
-  { id: "summarize-contents" },
-  { event: "app/ticket.created" },
+  {
+    id: "summarize-contents",
+    triggers: { event: "app/ticket.created" },
+  },
   async ({ event, step }) => {
 
     // This calls your model's chat endpoint, adding AI observability,
@@ -58,17 +60,18 @@ export default inngest.createFunction(
     return response.choices;
   }
 );
+
 ```
 ```py {{ title: "Python" }}
 !snippet:path=snippets/py/v0_5/step-ai-orchestration.py
 ```
-</CodeGroup>
 
+</CodeGroup>
 
 <CardGroup cols={1}>
 
   <Card
-    href={"https://github.com/inngest/inngest-js/tree/main/examples//step-ai/anthropic-claude-pdf-processing/#readme"}
+    href={"<https://github.com/inngest/inngest-js/tree/main/examples//step-ai/anthropic-claude-pdf-processing/#readme"}>
     title={"PDF processing with Claude Sonnet and step.ai.infer()"}
     icon={<Github className="text-basis h-8 w-8"/>}
     iconPlacement="top"
@@ -88,8 +91,10 @@ import { generateText } from "ai"
 import { openai } from "@ai-sdk/openai"
 
 export default inngest.createFunction(
-  { id: "summarize-contents" },
-  { event: "app/ticket.created" },
+  {
+    id: "summarize-contents",
+    triggers: { event: "app/ticket.created" },
+  },
   async ({ event, step }) => {
 
     // This calls `generateText` with the given arguments, adding AI observability,
@@ -101,14 +106,17 @@ export default inngest.createFunction(
 
   }
 );
+
 ```
 ```ts {{ title: "Anthropic SDK" }}
 import Anthropic from '@anthropic-ai/sdk';
 const anthropic = new Anthropic();
 
 export default inngest.createFunction(
-  { id: "summarize-contents" },
-  { event: "app/ticket.created" },
+  {
+    id: "summarize-contents",
+    triggers: { event: "app/ticket.created" },
+  },
   async ({ event, step }) => {
 
     // This calls `generateText` with the given arguments, adding AI observability,
@@ -122,6 +130,7 @@ export default inngest.createFunction(
   }
 );
 ```
+
 </CodeGroup>
 
 In this case, instead of calling the SDK directly, you specify the SDK function you want to call and the function's arguments separately within `step.ai.wrap()`.
@@ -149,8 +158,10 @@ import Anthropic from "@anthropic-ai/sdk";
 const anthropic = new Anthropic();
 
 export const anthropicWrapGenerateText = inngest.createFunction(
-  { id: "anthropic-wrap-generateText" },
-  { event: "anthropic/wrap.generate.text" },
+  {
+    id: "anthropic-wrap-generateText",
+    triggers: { event: "anthropic/wrap.generate.text" },
+  },
   async ({ event, step }) => {
     //
     // Will fail because anthropic client requires instance context
@@ -179,14 +190,17 @@ export const anthropicWrapGenerateText = inngest.createFunction(
     );
   },
 );
+
 ```
 ```ts {{ title: "Wrap OpenAI SDK" }}
 import OpenAI from "openai";
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
 export const openAIWrapCompletionCreate = inngest.createFunction(
-  { id: "opeai-wrap-completion-create" },
-  { event: "openai/wrap.completion.create" },
+  {
+    id: "opeai-wrap-completion-create",
+    triggers: { event: "openai/wrap.completion.create" },
+  },
   async ({ event, step }) => {
     //
     // Will fail because anthropic client requires instance context
@@ -229,6 +243,7 @@ export const openAIWrapCompletionCreate = inngest.createFunction(
   },
 );
 ```
+
 </CodeGroup>
 
 - When using `step.ai.wrap`, you can edit prompts and rerun steps in the dev server.
@@ -240,8 +255,10 @@ import { generateText as vercelGenerateText } from "ai";
 import { openai as vercelOpenAI } from "@ai-sdk/openai";
 
 export const vercelWrapGenerateText = inngest.createFunction(
-  { id: "vercel-wrap-generate-text" },
-  { event: "vercel/wrap.generate.text" },
+  {
+    id: "vercel-wrap-generate-text",
+    triggers: { event: "vercel/wrap.generate.text" },
+  },
   async ({ event, step }) => {
     //
     // Will work but you will not be able to edit the prompt and rerun the step in the dev server.
@@ -271,6 +288,7 @@ export const vercelWrapGenerateText = inngest.createFunction(
     await step.ai.wrap("using-vercel-ai", gen, args);
   },
 );
+
 ```
 </CodeGroup>
 
@@ -287,8 +305,10 @@ import { generateObject as vercelGenerateObject } from "ai";
 import { openai as vercelOpenAI } from "@ai-sdk/openai";
 
 export const vercelWrapSchema = inngest.createFunction(
-  { id: "vercel-wrap-generate-object" },
-  { event: "vercel/wrap.generate.object" },
+  {
+    id: "vercel-wrap-generate-object",
+    triggers: { event: "vercel/wrap.generate.object" },
+  },
   async ({ event, step }) => {
     //
     // Calling generateObject directly is fine
@@ -328,9 +348,8 @@ export const vercelWrapSchema = inngest.createFunction(
   },
 );
 ```
+
 </CodeGroup>
-
-
 
 ## AgentKit: AI and agent orchestration <VersionBadge version="TypeScript only" />
 
@@ -343,8 +362,10 @@ Here's an example of a single model call:
 
 import { Agent, agenticOpenai as openai, createAgent } from "@inngest/agent-kit";
 export default inngest.createFunction(
-  { id: "summarize-contents" },
-  { event: "app/ticket.created" },
+  {
+    id: "summarize-contents",
+    triggers: { event: "app/ticket.created" },
+  },
   async ({ event, step }) => {
 
     // Create a new agent with a system prompt (you can add optional tools, too)

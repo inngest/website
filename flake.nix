@@ -15,7 +15,7 @@
         };
         corepack = pkgs.stdenv.mkDerivation {
           name = "corepack";
-          buildInputs = [ pkgs.nodejs-18_x ];
+          buildInputs = [ pkgs.nodejs_20 ];
           phases = [ "installPhase" ];
           installPhase = ''
             mkdir -p $out/bin

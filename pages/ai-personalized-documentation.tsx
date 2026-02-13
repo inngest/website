@@ -422,8 +422,10 @@ const EXAMPLE_PROMPTS = [
       description: `Here we create a function called "_Summarize text_" that takes a long string of text, splits the text into chunks, uses openAI to summarize the chunks in parallel, then summarizes all summaries. We use step tooling to run as many actions in parallel as possible and provide retries and durability to each.`,
       references: ["https://www.inngest.com/docs/guides/multi-step-functions"],
       code: `inngest.createFunction(
-  { id: "summarize-text" },
-  { event: "app/text.summarize" },
+  {
+    id: "summarize-text",
+    triggers: { event: "app/text.summarize" },
+  },
   async ({ event, step }) => {
     const chunks = splitTextIntoChunks(event.data.text);
 
@@ -448,8 +450,10 @@ const EXAMPLE_PROMPTS = [
       description: `Here we create a function that runs every Friday at 9AM and queries our database for all users. It then sends an event for each user, where another function listens to that event and sends an email. We use step tooling to run as many actions in parallel as possible and provide retries and durability to each.`,
       references: ["https://www.inngest.com/docs/guides/multi-step-functions"],
       code: `inngest.createFunction(
-  { id: "send-weekly-email" },
-  { cron: "0 9 * * 5" },
+  {
+    id: "send-weekly-email",
+    triggers: { cron: "0 9 * * 5" },
+  },
   async ({ step }) => {
     const users = await step.run("get-users", () => getUsers());
 
@@ -468,8 +472,10 @@ const EXAMPLE_PROMPTS = [
 );
 
 inngest.createFunction(
-  { id: "send-user-email" },
-  { event: "app/user.email.send" },
+  {
+    id: "send-user-email",
+    triggers: { event: "app/user.email.send" },
+  },
   async ({ event }) => {
     const user = await getUser(event.data.userId);
     return sendEmail(user.email);
@@ -487,8 +493,10 @@ inngest.createFunction(
       description: `Here we create a function called "_Order processing_" triggered by an \`app/order.created\` event. It charges the customer for the product in the order, failing if the charge did not succeed. We then wait for the order to be picked up. If it wasn't picked up within an hour, refund and notify the user. If the order was picked up, send a push notification to the user that it's been collected. We wait again for the order to be delivered this time. If it hasn't been delivered within an hour, refund and notify the user the same as before. If it does get delivered, send a push notification that the order has been delivered, wait 30 minutes, then another push notification asking them to rate their meal. We use step tooling to run as many actions in parallel as possible and provide retries and durability to each.`,
       references: ["https://www.inngest.com/docs/guides/multi-step-functions"],
       code: `inngest.createFunction(
-  { id: "order-processing" },
-  { event: "app/order.created" },
+  {
+    id: "order-processing",
+    triggers: { event: "app/order.created" },
+  },
   async ({ event, step }) => {
     await step.run("charge-customer", () =>
       chargeCustomer(event.data.customerId, event.data.productId)

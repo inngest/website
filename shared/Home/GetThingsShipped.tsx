@@ -35,8 +35,10 @@ export default function GetThingsShipped() {
           import { inngest } from "./client";
 
           export default inngest.createFunction(
-            { id: "send-confirmation-sms" },
-            { event: "app/request.confirmed" },
+            {
+              id: "send-confirmation-sms",
+              triggers: { event: "app/request.confirmed" },
+            },
             async ({ event }) => {
               const result = await sendSMS({
                 to: event.user.phone,
@@ -73,8 +75,10 @@ export default function GetThingsShipped() {
           import { inngest } from "./client";
 
           export default inngest.createFunction(
-            { id: "send-weekly-digest" },
-            { cron: "0 9 * * MON" },
+            {
+              id: "send-weekly-digest",
+              triggers: { cron: "0 9 * * MON" },
+            },
             sendWeeklyDigestEmails
           );`),
       },
@@ -102,8 +106,10 @@ export default function GetThingsShipped() {
           import { inngest } from "./client";
 
           export default inngest.createFunction(
-            { id: "handle-failed-payments" },
-            { name: "stripe/charge.failed" },
+            {
+              id: "handle-failed-payments",
+              triggers: { event: "stripe/charge.failed" },
+            },
             async ({ event, step }) => {
               const account = await step.run("get-account", () =>
                 findAccountByCustomerId(event.user.stripe_customer_id)
@@ -139,8 +145,10 @@ export default function GetThingsShipped() {
           import { inngest } from "./client";
 
           export default inngest.createFunction(
-            { id: "run-user-data-backfill" },
-            { event: "retool/backfill.requested" },
+            {
+              id: "run-user-data-backfill",
+              triggers: { event: "retool/backfill.requested" },
+            },
             async ({ event }) => {
               const result = await runBackfillForUser(event.data.user_id);
 
@@ -173,8 +181,10 @@ export default function GetThingsShipped() {
           import { inngest } from "./client";
 
           export default inngest.createFunction(
-            { id: "user-onboarding-campaign" },
-            { event: "app/user.signup" },
+            {
+              id: "user-onboarding-campaign",
+              triggers: { event: "app/user.signup" },
+            },
             async ({ event, step }) => {
               await step.run("send-welcome-email", () =>
                 sendEmail({
@@ -220,26 +230,22 @@ export default function GetThingsShipped() {
           import { inngest } from "@/inngest";
 
           export const handleApptRequested = inngest.createFunction(
-            { id: "..." },
-            { event: "appointment.requested" },
+            { id: "...", triggers: { event: "appointment.requested" } },
             async () => { /* ... */ }
           );
 
           export const handleApptScheduled = inngest.createFunction(
-            { id: "..." },
-            { event: "appointment.scheduled" },
+            { id: "...", triggers: { event: "appointment.scheduled" } },
             async () => { /* ... */ }
           );
 
           export const handleApptConfirmed = inngest.createFunction(
-            { id: "..." },
-            { event: "appointment.confirmed" },
+            { id: "...", triggers: { event: "appointment.confirmed" } },
             async () => { /* ... */}
           );
 
           export const handleApptCancelled = inngest.createFunction(
-            { id: "..." },
-            { event: "appointment.cancelled" },
+            { id: "...", triggers: { event: "appointment.cancelled" } },
             async () => { /* ... */ }
           );`),
       },

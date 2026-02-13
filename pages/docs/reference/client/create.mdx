@@ -5,19 +5,13 @@ import { Callout, Properties, Property, Row, Col, CodeGroup, VersionBadge } from
 The `Inngest` client object is used to configure your application, enabling you to create functions and send events.
 
 <CodeGroup>
-```ts {{ title: "v3" }}
+```ts
 import { Inngest } from "inngest";
 
 const inngest = new Inngest({
   id: "my-application",
 });
-```
-```ts {{ title: "v2" }}
-import { Inngest } from "inngest";
 
-const inngest = new Inngest({
-  name: "My application",
-});
 ```
 </CodeGroup>
 
@@ -45,6 +39,15 @@ const inngest = new Inngest({
 
     If you need to specify this, make sure that you preserve the function's [binding](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_objects/Function/bind), either by using `.bind` or by wrapping it in an anonymous function.
   </Property>
+  <Property name="logLevel" type={`"fatal" | "error" | "warn" | "info" | "debug"`}>
+    The minimum log level to output. Defaults to `"info"`. See also [`INNGEST_LOG_LEVEL`](/docs/sdk/environment-variables#inngest-log-level).
+  </Property>
+  <Property name="signingKey" type="string">
+    The signing key used to authenticate with Inngest Cloud. We recommend setting this via the [`INNGEST_SIGNING_KEY`](/docs/sdk/environment-variables#inngest-signing-key) environment variable instead.
+  </Property>
+  <Property name="signingKeyFallback" type="string">
+    A fallback signing key, useful during key rotation. We recommend setting this via the [`INNGEST_SIGNING_KEY_FALLBACK`](/docs/sdk/environment-variables#inngest-signing-key-fallback) environment variable instead.
+  </Property>
   <Property name="isDev" type="boolean" version="v3.15.0+">
     Set to `true` to force Dev mode, setting default local URLs and turning off
     signature verification, or force Cloud mode with `false`. Alternatively, set [`INNGEST_DEV`](/docs/sdk/environment-variables#inngest-dev).
@@ -55,9 +58,6 @@ const inngest = new Inngest({
   <Property name="middleware" type="array" version="v2.0.0+">
     A stack of [middleware](/docs/reference/middleware/overview) to add to the client.
   </Property>
-  <Property name="schemas" type="EventSchemas" version="v2.0.0+">
-    Event payload types. See [Defining Event Payload Types](#defining-event-payload-types).
-  </Property>
 </Properties>
 
 <Callout>
@@ -66,117 +66,55 @@ We recommend setting the [`INNGEST_EVENT_KEY`](/docs/sdk/environment-variables#i
 
 ## Defining Event Payload Types
 
-You can leverage TypeScript, Zod, Valibot, or any schema library that
-implements the [Standard Schema interface](https://standardschema.dev/) to define
-your event payload types.
+You can use `eventType()` to define event payload types using TypeScript, Zod, Valibot, or any schema library that implements the [Standard Schema interface](https://standardschema.dev/).
 
-When you pass types to the Inngest client,
-events are fully typed when using them with `inngest.send()` and
-`inngest.createFunction()`. This can more easily alert you to issues with your
-code during compile time.
-
-<Callout>
-Click the toggles on the top left of the code block to see the different methods available!
-</Callout>
+Event types defined with `eventType()` are fully typed when used with `inngest.send()` and `inngest.createFunction()`. This can more easily alert you to issues with your code during compile time.
 
 <CodeGroup forceTabs={true}>
 ```ts {{ title: "Standard Schema" }}
-import { EventSchemas, Inngest } from "inngest";
+import { eventType, Inngest } from "inngest";
 import { z } from "zod";
 
-export const inngest = new Inngest({
-  schemas: new EventSchemas().fromSchema({
-    "app/account.created": z.object({
-      userId: z.string(),
-    }),
-    "app/subscription.started": z.object({
-      userId: z.string(),
-      planId: z.string(),
-    }),
+const accountCreated = eventType({
+  name: "app/account.created",
+  schema: z.object({
+    userId: z.string(),
   }),
 });
-```
-```ts {{ title: "Union" }}
-import { EventSchemas, Inngest } from "inngest";
 
-type AppAccountCreated = {
-  name: "app/account.created";
+const subscriptionStarted = eventType({
+  name: "app/subscription.started",
+  schema: z.object({
+    userId: z.string(),
+    planId: z.string(),
+  }),
+});
+
+export const inngest = new Inngest({ id: "my-app" });
+```
+
+```ts {{ title: "Plain TypeScript" }}
+import { eventType, Inngest } from "inngest";
+
+const accountCreated = eventType<{
   data: {
     userId: string;
   };
-};
+}>({ name: "app/account.created" });
 
-type AppSubscriptionStarted = {
-  name: "app/subscription.started";
+const subscriptionStarted = eventType<{
   data: {
     userId: string;
     planId: string;
   };
-};
+}>({ name: "app/subscription.started" });
 
-type Events = AppAccountCreated | AppSubscriptionStarted;
-
-export const inngest = new Inngest({
-  schemas: new EventSchemas().fromUnion<Events>(),
-});
+export const inngest = new Inngest({ id: "my-app" });
 ```
-```ts {{ title: "Record"}}
-import { EventSchemas, Inngest } from "inngest";
 
-type Events = {
-  "app/account.created": {
-    data: {
-      userId: string;
-    };
-  };
-  "app/subscription.started": {
-    data: {
-      userId: string;
-      planId: string;
-    };
-  };
-};
-
-export const inngest = new Inngest({
-  schemas: new EventSchemas().fromRecord<Events>(),
-});
-```
-```ts {{ title: "Stacking" }}
-import { EventSchemas, Inngest } from "inngest";
-import { z } from "zod";
-
-type Events = {
-  "app/user.created": {
-    data: { id: string };
-  };
-};
-
-const zodEventSchemas = {
-  "app/account.created": z.object({
-    userId: z.string(),
-  }),
-};
-
-type AppPostCreated = {
-  name: "app/post.created";
-  data: { id: string };
-};
-
-type AppPostDeleted = {
-  name: "app/post.deleted";
-  data: { id: string };
-};
-
-export const inngest = new Inngest({
-  schemas: new EventSchemas()
-    .fromRecord<Events>()
-    .fromUnion<AppPostCreated | AppPostDeleted>()
-    .fromSchema(zodEventSchemas),
-});
-```
 </CodeGroup>
 
-### Reusing event types <VersionBadge version="v2.0.0+" />
+### Reusing event types
 
 You can use the `GetEvents<>` generic to access the final event types from an Inngest client.
 
@@ -185,13 +123,15 @@ It's recommended to use this instead of directly reusing your event types, as In
 </Callout>
 
 ```ts
-import { EventSchemas, Inngest, type GetEvents } from "inngest";
+import { eventType, Inngest, type GetEvents } from "inngest";
+import { z } from "zod";
 
-export const inngest = new Inngest({
-  schemas: new EventSchemas().fromRecord<{
-    "app/user.created": { data: { userId: string } };
-  }>(),
+const userCreated = eventType({
+  name: "app/user.created",
+  schema: z.object({ userId: z.string() }),
 });
+
+export const inngest = new Inngest({ id: "my-app" });
 
 type Events = GetEvents<typeof inngest>;
 type AppUserCreated = Events["app/user.created"];
@@ -215,9 +155,7 @@ You can force either Dev or Cloud Mode by setting
 [`INNGEST_DEV`](/docs/sdk/environment-variables#inngest-dev) or the
 [`isDev`](#configuration) option.
 
-If neither is set, the SDK will attempt to infer which mode it should be in
-based on environment variables such as `NODE_ENV`. Most of the time, this inference is all you need and explicitly setting a mode
-isn't required.
+If no mode is explicitly set, the SDK will default to **cloud mode** to ensure that Inngest applications are more secure by default. You can use `INNGEST_DEV` or `isDev=true` to let the SDK know that you are intentionally using development mode.
 
 ## Best Practices
 
@@ -226,16 +164,13 @@ isn't required.
 Instantiating the `Inngest` client in a single file and sharing it across your codebase is ideal as you only need a single place to configure your client and define types which can be leveraged anywhere you send events or create functions.
 
 <CodeGroup filename="./inngest/client.ts">
-```ts  {{ title: "v3" }}
+```ts
 import { Inngest } from "inngest";
 
 export const inngest = new Inngest({ id: "my-app" });
-```
-```ts  {{ title: "v2" }}
-import { Inngest } from "inngest";
 
-export const inngest = new Inngest({ name: "My App" });
 ```
+
 </CodeGroup>
 
 ```ts  {{ filename: './inngest/myFunction.ts' }}
@@ -253,7 +188,7 @@ In this case, we'd recommend creating a separate client for each environment, en
 This need is common in places where function execution should declare more involved middleware, while sending events from the edge often requires much less.
 
 <CodeGroup filename="./inngest/client.ts">
-```ts  {{ title: "v3" }}
+```ts
 // inngest/client.ts
 import { Inngest } from "inngest";
 import { nodeMiddleware } from "some-node-middleware";
@@ -269,24 +204,9 @@ import { Inngest } from "inngest";
 export const inngest = new Inngest({
   id: "my-app-edge",
 });
+
 ```
-```ts  {{ title: "v2" }}
-// inngest/client.ts
-import { Inngest } from "inngest";
-import { nodeMiddleware } from "some-node-middleware";
 
-export const inngest = new Inngest({
-  name: "My App",
-  middleware: [nodeMiddleware],
-});
-
-// inngest/edgeClient.ts
-import { Inngest } from "inngest";
-
-export const inngest = new Inngest({
-  id: "My App (Edge)",
-});
-```
 </CodeGroup>
 
 Also see [Referencing functions](/docs/functions/references), which can help you invoke functions across these environments without pulling in any dependencies.

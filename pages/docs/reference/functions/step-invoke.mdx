@@ -9,8 +9,10 @@ Use `step.invoke()` to asynchronously call another function and handle the resul
 ```ts
 // Some function we'll call
 const computeSquare = inngest.createFunction(
-  { id: "compute-square" },
-  { event: "calculate/square" },
+  {
+    id: "compute-square",
+    triggers: { event: "calculate/square" },
+  },
   async ({ event }) => {
     return { result: event.data.number * event.data.number }; // Result typed as { result: number }
   }
@@ -18,8 +20,10 @@ const computeSquare = inngest.createFunction(
 
 // In this function, we'll call `computeSquare`
 const mainFunction = inngest.createFunction(
-  { id: "main-function" },
-  { event: "main/event" },
+  {
+    id: "main-function",
+    triggers: { event: "main/event" },
+  },
   async ({ step }) => {
     const square = await step.invoke("compute-square-value", {
       function: computeSquare,
@@ -161,7 +165,7 @@ If you don't need to define granular configuration or if your function won't be 
 
 ## Internal behaviour
 
-When a function object is passed as an argument, internally, the SDK retrieves the function's ID automatically. Alternatively, if a function ID `string` is passed, the Inngest SDK will assert the ID is correct at runtime. See [Error handling](#error-handling) for more information about this point.
+When a function object is passed as an argument, internally, the SDK retrieves the function's ID automatically. For cross-app invocation, use [`referenceFunction()`](/docs/functions/references) to create a typed reference. See [Error handling](#error-handling) for more information.
 
 When Inngest receives the request to invoke a function, it'll do so and wait for an `inngest/function.finished` event, which it will use to fulfil the data (or error) for the step.
 
@@ -170,7 +174,8 @@ When Inngest receives the request to invoke a function, it'll do so and wait for
 Similar to `step.run()`, all data returned from `step.invoke()` is serialized as JSON. This is done to enable the SDK to return a valid serialized response to the Inngest service.
 
 ## Timeout
-If not explicity configured, the default timeout for `step.invoke` is 1 year. 
+
+If not explicity configured, the default timeout for `step.invoke` is 1 year.
 
 ## Retries
 

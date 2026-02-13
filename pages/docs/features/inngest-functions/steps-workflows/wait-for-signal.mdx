@@ -16,17 +16,16 @@ This is a useful pattern to react to specific user actions (for example, impleme
 
 <LanguageSelector>
 
-
-
 <LanguageSection show="typescript">
 
   Use `step.waitForSignal()` to wait for a particular signal to be received before continuing. It returns a `Promise` that is resolved with the signal data or `null` if the event is not received within the timeout.
 
-
 ```ts
 export default inngest.createFunction(
-  { id: "send-onboarding-nudge-email" },
-  { event: "app/account.created" },
+  {
+    id: "send-onboarding-nudge-email",
+    triggers: { event: "app/account.created" },
+  },
   async ({ event, step }) => {
     const approval = await step.waitForSignal(
       "wait-for-approval",
@@ -73,8 +72,8 @@ Check out the [`step.waitForSignal()` TypeScript reference.](/docs/reference/fun
 
     if err == step.ErrSignalNotReceived {
     }
-		return nil, nil
-	}
+    return nil, nil
+ }
 
     // ...
 
@@ -89,10 +88,7 @@ Check out the [`step.waitForSignal()` TypeScript reference.](/docs/reference/fun
 
 </LanguageSelector>
 
-
 <Callout variant={'warning'}>
 You should prefer using "wait for event" in almost every case, and should only use "wait for signal" for individual
 latency sensitive function pause and resuming.
 </Callout>
-
-

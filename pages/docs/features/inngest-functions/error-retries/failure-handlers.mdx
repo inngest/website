@@ -6,7 +6,6 @@ If your function exhausts all of its retries, it will be marked as "Failed." You
 
 The first approach is function-specific, while the second covers all function failures in a given Inngest environment.
 
-
 # Examples
 
 The example below checks if a user's subscription is valid a total of six times. If you can't check the subscription after all retries, you'll unsubscribe the user:
@@ -21,18 +20,20 @@ inngest.createFunction(
   {
     id: "update-subscription",
     retries: 5,
+    triggers: { event: "user/subscription.check" },
     onFailure: async ({ event, error }) => {
       // if the subscription check fails after all retries, unsubscribe the user
       await unsubscribeUser(event.data.userId);
     },
   },
-  { event: "user/subscription.check" },
   async ({ event }) => { /* ... */ },
 );
 /* Option 2: Listens for the [`inngest/function.failed`](/docs/reference/functions/handling-failures#the-inngest-function-failed-event) system event to catch all failures in the inngest environment*/
 inngest.createFunction(
-  { id: "handle-any-fn-failure" },
-  { event: "inngest/function.failed" },
+  {
+    id: "handle-any-fn-failure" },
+    triggers: { event: "inngest/function.failed" },
+  }
   async ({ event }) => { /* ... */ },
 );
 ```
@@ -78,24 +79,24 @@ async def global_failure_handler(ctx: Context):
 // but you can define one by create a new function that uses
 // the "inngest/function.failed" event and an expression:
 myFailureHandler := inngestgo.CreateFunction(
-	client,
-	inngestgo.FunctionOpts{
-			ID:   "account-created-on-failure",
-			Name: "Account creation flow: On Failure",
-	},
-	inngestgo.EventTrigger(
-		"inngest/function.failed",
-		// The full function_id is a concatenated slug of your app id and the
-		// failing function's "ID"
-		inngestgo.StrPtr("event.data.function_id == 'my-app-account-created'")
-	),
-	func(
-		ctx context.Context,
-		input inngestgo.Input[inngestgo.GenericEvent[functionFailedEventData, any]],
-	) (any, error) {
-		// Handle your failure here
-		return nil, nil
-	}
+ client,
+ inngestgo.FunctionOpts{
+   ID:   "account-created-on-failure",
+   Name: "Account creation flow: On Failure",
+ },
+ inngestgo.EventTrigger(
+  "inngest/function.failed",
+  // The full function_id is a concatenated slug of your app id and the
+  // failing function's "ID"
+  inngestgo.StrPtr("event.data.function_id == 'my-app-account-created'")
+ ),
+ func(
+  ctx context.Context,
+  input inngestgo.Input[inngestgo.GenericEvent[functionFailedEventData, any]],
+ ) (any, error) {
+  // Handle your failure here
+  return nil, nil
+ }
 )
 
 type functionFailedEventData struct {
@@ -112,13 +113,13 @@ type functionFailedEventData struct {
 h := inngestgo.NewHandler("my-app", inngestgo.HandlerOpts{})
 // 2. Get the FunctionOpts's ID parameter:
 f := inngestgo.CreateFunction(
-	client,
-	inngestgo.FunctionOpts{
-			ID:   "account-created",
-			Name: "Account creation flow",
-	},
-	inngestgo.EventTrigger("api/account.created", nil),
-	AccountCreated,
+ client,
+ inngestgo.FunctionOpts{
+   ID:   "account-created",
+   Name: "Account creation flow",
+ },
+ inngestgo.EventTrigger("api/account.created", nil),
+ AccountCreated,
 )
 // 3. Join them with a hyphen:
 // event.data.function_id == 'my-app-account-created'
@@ -131,6 +132,3 @@ f := inngestgo.CreateFunction(
 <Callout>
   To handle cancelled function runs, checkout out [this example](/docs/examples/cleanup-after-function-cancellation) that uses the [`inngest/function.cancelled`](/docs/reference/system-events/inngest-function-cancelled) system event.
 </Callout>
-
-
-

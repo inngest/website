@@ -31,15 +31,20 @@ When you send events to Inngest via HTTP, they are received by a broker which pr
 
 ```typescript
 const createSummary = inngest.createFunction(
-  { id: "create-conversation-summary", concurrency: { limit: 10 } },
-  { event: "thread/message.sent" }
+  {
+    id: "create-conversation-summary",
+    concurrency: { limit: 10 },
+    triggers: { event: "thread/message.sent" },
+  },
   async (event) => {
     // business logic to create a summary via LLM
   }
 );
 const createSummary = inngest.createFunction(
-  { id: "send-notifications" },
-  { event: "thread/message.sent" }
+  {
+    id: "send-notifications",
+    triggers: { event: "thread/message.sent" },
+  },
   async (event) => {
     // business logic to send email notifications to users
   }

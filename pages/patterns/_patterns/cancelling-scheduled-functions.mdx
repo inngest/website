@@ -16,8 +16,8 @@ const func = inngest.createFunction(
       // The data.postID field in both events must match.
       { event: "blog/post.cancelled", match: "data.postID" },
     ],
+    triggers: { event: "blog/post.scheduled" },
   },
-  { event: "blog/post.scheduled" },
   ({ event, step }) => {
     // Sleep until the scheduleAt time in the event.
     await step.sleepUntil("wait-for-scheduleAt", event.data.scheduleAt);

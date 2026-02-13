@@ -29,7 +29,6 @@ Give your webhook a name and save it. Next we'll explore how to turn the request
 
 ![Inngest dashboard showing a newly created webhook](/assets/docs/platform/dashboard-webhook-screenshot.png)
 
-
 ## Defining a transform function
 
 Most webhooks send event data as JSON within the POST request body. These raw events must be transformed slightly to be compatible with [the Inngest event payload format](/docs/features/events-triggers/event-format). Mainly, we must have `name` and `data` set in the Inngest event.
@@ -138,6 +137,7 @@ function transform(evt, headers = {}, queryParams = {}) {
   };
 }
 ```
+
 </details>
 
 <details>
@@ -154,11 +154,11 @@ function transform(evt, headers = {}, queryParams = {}) {
   };
 }
 ```
+
 </details>
 
 <details>
   <summary>**Linear** - Creating useful event names</summary>
-
 
 ```js
 function transform(evt, headers = {}, queryParams = {}) {
@@ -169,6 +169,7 @@ function transform(evt, headers = {}, queryParams = {}) {
   };
 }
 ```
+
 </details>
 
 <details>
@@ -184,6 +185,7 @@ function transform(evt, headers = {}, queryParams = {}) {
    };
 };
 ```
+
 </details>
 
 <details>
@@ -197,6 +199,7 @@ function transform(evt, headers = {}, queryParams = {}) {
    };
 };
 ```
+
 </details>
 
 ### Testing transforms
@@ -246,8 +249,11 @@ Now that you have events flowing into Inngest, you can write functions that that
 
 ```ts {{ title: "Example: Send a welcome email when the clerk/user.created event is received"}}
 inngest.createFunction(
-  { name: "Send welcome email", id: "send-welcome-email" },
-  { event: "clerk/user.created" },
+  {
+    name: "Send welcome email",
+    id: "send-welcome-email",
+    triggers: { event: "clerk/user.created" },
+  },
   async ({ event, step }) => {
     const emailAddress = event.data.email_addresses[0].email_address;
     await step.run('send-email', async () => {
@@ -288,8 +294,10 @@ Then you can use that data to verify the signature in your Inngest functions:
 
 ```ts
 inngest.createFunction(
-  { id: "stripe/charge.updated" },
-  { event: "stripe/charge.updated" },
+  {
+    id: "stripe/charge.updated",
+    triggers: { event: "stripe/charge.updated" },
+  },
   async ({ attempt, event, step }) => {
     if (!verifySig(event.data.raw, event.data.sig, stripeSecret)) {
       throw new NonRetriableError("failed signature verification");
@@ -340,6 +348,7 @@ curl https://inn.gs/e/REDACTED \
 ```
 
 And your webhook transform looks like this:
+
 ```js
 function transform(json, headers, queryParams, raw) {
   return {
@@ -350,6 +359,7 @@ function transform(json, headers, queryParams, raw) {
 ```
 
 Then the resulting event data will be:
+
 ```json
 {
   "json": {
@@ -364,7 +374,7 @@ Then the resulting event data will be:
   <span className="text-yellow-300">⚠️</span> **Note that the JSON object's values are always arrays of strings.**
 </Callout>
 
-
 ## Building webhook integrations
 
 Inngest has a feature called **webhook intents** that allows you to build webhook integrations with any application. [Read more about building webhook integrations here](/docs/platform/webhooks/build-an-integration).
+

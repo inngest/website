@@ -98,8 +98,10 @@ Within your functions, you can now access the environment variables via the `env
 
 ```ts
 const myFn = inngest.createFunction(
-  { id: 'my-fn' },
-  { event: 'demo/event.sent' },
+  {
+    id: 'my-fn',
+    triggers: { event: 'demo/event.sent' },
+  }
   // The "env" argument returned in transformInput is passed through:
   async ({ event, step, env }) => {
 
@@ -108,3 +110,4 @@ const myFn = inngest.createFunction(
   }
 );
 ```
+

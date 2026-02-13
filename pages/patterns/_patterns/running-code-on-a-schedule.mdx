@@ -12,8 +12,10 @@ Inngest allows you to specify a schedule in [cron expression format](https://cro
 import { inngest } from "./client";
 
 inngest.createFunction(
-  { id: "send-weekly-digest" },
-  { cron: "0 9 * * MON" },
+  {
+    id: "send-weekly-digest",
+    triggers: { cron: "0 9 * * MON" },
+  },
   async ({ step }) => {
     const accounts = await step.run("load-accounts", async () => {
       return await getAllAccounts();

@@ -15,17 +15,21 @@ Limit the number of concurrently running steps for your function with the [`conc
 export default inngest.createFunction(
   {
     id: "sync-contacts",
+    triggers: { event: "contacts/sync.requested" },
     concurrency: {
       limit: 10,
     },
+  },
+  async ({ event, step }) => {
+    // ...
   }
-  // ...
 );
 ```
 ```ts {{ title: "Multiple keys" }}
 inngest.createFunction(
   {
     id: "unique-function-id",
+    triggers: { event: "ai/summary.requested" },
     concurrency: [
       {
          // Use an account-level concurrency limit for this function, using the
@@ -48,7 +52,6 @@ inngest.createFunction(
       },
     ],
   }
-  { event: "ai/summary.requested" },
   async ({ event, step }) => {
   }
 );
@@ -62,7 +65,6 @@ Setting `concurrency` limits are very useful for:
 * Preventing one of your user's accounts from consuming too many resources (see `key`)
 
 Alternatively, if you want to limit the number of times that your function runs in a given period, [the `rateLimit` option](/docs/reference/functions/rate-limit) may be better for your use case.
-
 
 ## Configuration
 

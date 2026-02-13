@@ -40,8 +40,8 @@ export default inngest.createFunction(
       timeout: "24h",
       match: "data.cart_id",
     },
+    triggers: { event: "cart/product.added" },
   },
-  { event: "cart/product.added" },
   ({ event, step }) => {
     // This function runs as soon as a product is added to the cart.
     // We immediately pause and wait up to 24 hours for the `cart/purchased`

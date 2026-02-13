@@ -20,8 +20,7 @@ Steps are fundamental building blocks of Inngest, turning your Inngest Functions
   </Card>
 </CardGroup>
 
-
-Once you are familiar with Steps, start adding new capabilities to your Inngest Functions: 
+Once you are familiar with Steps, start adding new capabilities to your Inngest Functions:
 
 <CardGroup cols={2}>
   <Card title="Add sleeps" icon={<RiCalendarLine className="text-basis h-4 w-4" />} href={'/docs/features/inngest-functions/steps-workflows/sleeps'}>
@@ -38,7 +37,6 @@ Once you are familiar with Steps, start adding new capabilities to your Inngest 
   </Card>
 </CardGroup>
 
-
 ## How steps work
 
 You might wonder: how do Steps work? Why doesn't an Inngest Function get timed out when running on a Serverless environment?
@@ -48,8 +46,10 @@ You can think of steps as an API for expressing checkpoints in your workflow, su
 <CodeGroup>
 ```ts {{ title: "TypeScript" }}
 inngest.createFunction(
-  { id: "sync-systems" },
-  { event: "auto/sync.request" },
+  {
+    id: "sync-systems",
+    triggers: { event: "auto/sync.request" },
+  },
   async ({ step }) => {
     // By wrapping code in step.run, the code will be retried if it throws an error and when successfuly.
     // It's result is saved to prevent unnecessary re-execution
@@ -63,6 +63,7 @@ inngest.createFunction(
     });
   },
 );
+
 ```
 ```py {{ title: "Python" }}
 @inngest_client.create_function(
@@ -77,16 +78,17 @@ def sync_systems(ctx: inngest.ContextSync) -> None:
     # Can also be retried up to 4 times
     ctx.step.run("Save data", db.syncs.insert_one, data)
 ```
+
 ```go {{ title: "Go" }}
 !snippet:path=snippets/go/docs/functions/sync_systems_function.go
 ```
+
 </CodeGroup>
 
 Each step execution relies on a communication with Inngest's [Durable Execution Engine](/docs/learn/how-functions-are-executed) which is responsible to:
 
 - Invoking Functions with the correct steps state (current step + previous steps data)
 - Gather each step result and schedule the next step to perform
-
 
 <ImageTheme
   dark={'/assets/docs/features/inngest-functions/steps-workflows/Durable-Execution-Engine-steps-dark.jpg'}
@@ -107,10 +109,9 @@ Explore the following guide for a step-by-step overview of a complete workflow r
 
 ## SDK References
 
-
 <CardGroup cols={3}>
 
-  <Card 
+  <Card
     href={"/docs/reference/functions/step-run"}
     title={"TypeScript SDK"}
     icon={<TypeScriptIcon className="text-basis" />}
@@ -118,7 +119,7 @@ Explore the following guide for a step-by-step overview of a complete workflow r
   Steps API reference
   </Card>
 
-  <Card 
+  <Card
     href={"/docs/reference/python/steps/invoke"}
     title={"Python SDK"}
     icon={<PythonIcon className="text-basis" />}
@@ -126,9 +127,8 @@ Explore the following guide for a step-by-step overview of a complete workflow r
     Steps API reference
   </Card>
 
-
-  <Card 
-    href={"https://pkg.go.dev/github.com/inngest/inngestgo@v0.9.0/step"}
+  <Card
+    href={"<https://pkg.go.dev/github.com/inngest/inngestgo@v0.9.0/step"}>
     title={"Go SDK"}
     icon={<GoIcon className="text-basis" />}
   >

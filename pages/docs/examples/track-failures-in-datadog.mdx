@@ -2,7 +2,6 @@ import { ResourceGrid, Resource } from 'src/shared/Docs/Resources';
 
 import { RiBracesFill, RiErrorWarningFill } from "@remixicon/react";
 
-
 export const description = "Create a function that handles all function failures in an Inngest environment and forwards them to Datadog.";
 
 # Track all function failures in Datadog
@@ -26,8 +25,8 @@ export default inngest.createFunction(
   {
     name: "Send failures to Datadog",
     id: "send-failed-function-events-to-datadog"
+    triggers: { event: "inngest/function.failed" },
   },
-  { event: "inngest/function.failed" },
   async ({ event, step }) => {
     // This is a normal Inngest function, so we can use steps as we normally do:
     await step.run("send-event-to-datadog", async () => {
@@ -107,3 +106,4 @@ Check the resources below to learn more about building email sequences with Inng
 }}/>
 
 </ResourceGrid>
+

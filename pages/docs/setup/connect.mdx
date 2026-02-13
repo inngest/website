@@ -16,6 +16,7 @@ The `connect` API allows your app to create an outbound persistent connection to
 ## Minimum requirements
 
 ### Language
+
 - **TypeScript**: SDK `3.34.1` or higher.
 - **Go**: SDK `0.11.2` or higher.
 - **Python**: SDK `0.5.0` or higher.
@@ -30,8 +31,6 @@ The `connect` API allows your app to create an outbound persistent connection to
 You must use a long running server (Render, Fly.io, Kubernetes, etc.). Serverless runtimes (AWS Lambda, Vercel, etc.) are not supported.
 
 If using TypeScript, your runtime must support built-in WebSocket support (Node `22.4.0` or higher, Deno `1.4` or higher, Bun `1.1` or higher).
-
-
 
 ## Getting started
 
@@ -49,8 +48,10 @@ const inngest = new Inngest({
 });
 
 const handleSignupFunction = inngest.createFunction(
-  { id: "handle-signup" },
-  { event: "user.created" },
+  {
+    id: "handle-signup",
+    triggers: { event: "user.created" },
+  },
   async ({ event, step }) => {
     console.log("Function called", event);
   },
@@ -63,60 +64,62 @@ const handleSignupFunction = inngest.createFunction(
 
   console.log("Worker: connected", connection);
 })();
+
 ```
 ```go
 type UserCreatedEvent struct {
-	Name string
-	Data struct {
-		UserID string `json:"user_id"`
-	}
+ Name string
+ Data struct {
+  UserID string `json:"user_id"`
+ }
 }
 
 func main() {
-	ctx := context.Background()
+ ctx := context.Background()
 
-	client, err := inngestgo.NewClient(inngestgo.ClientOpts{
-		AppID:      "my-app",
-		Logger:     logger.StdlibLogger(ctx),
-		AppVersion: nil, // Optional, defaults to the git commit SHA
-	})
-	if err != nil {
-		panic(err)
-	}
+ client, err := inngestgo.NewClient(inngestgo.ClientOpts{
+  AppID:      "my-app",
+  Logger:     logger.StdlibLogger(ctx),
+  AppVersion: nil, // Optional, defaults to the git commit SHA
+ })
+ if err != nil {
+  panic(err)
+ }
 
-	_, err = inngestgo.CreateFunction(
-		client,
-		inngestgo.FunctionOpts{ID: "handle-signup", Name: "Handle signup"},
-		inngestgo.EventTrigger("user.created", nil),
-		func(ctx context.Context, input inngestgo.Input[UserCreatedEvent]) (any, error) {
-			fmt.Println("Function called")
-			return map[string]any{"success": true}, nil
-		},
-	)
-	if err != nil {
-		panic(err)
-	}
+ _, err = inngestgo.CreateFunction(
+  client,
+  inngestgo.FunctionOpts{ID: "handle-signup", Name: "Handle signup"},
+  inngestgo.EventTrigger("user.created", nil),
+  func(ctx context.Context, input inngestgo.Input[UserCreatedEvent]) (any, error) {
+   fmt.Println("Function called")
+   return map[string]any{"success": true}, nil
+  },
+ )
+ if err != nil {
+  panic(err)
+ }
 
-	fmt.Println("Worker: connecting")
+ fmt.Println("Worker: connecting")
 
-	conn, err := inngestgo.Connect(ctx, inngestgo.ConnectOpts{
-		InstanceID: inngestgo.Ptr("example-worker"),
-		Apps:       []inngestgo.Client{client},
-	})
-	if err != nil {
-		fmt.Printf("ERROR: %#v\n", err)
-		os.Exit(1)
-	}
+ conn, err := inngestgo.Connect(ctx, inngestgo.ConnectOpts{
+  InstanceID: inngestgo.Ptr("example-worker"),
+  Apps:       []inngestgo.Client{client},
+ })
+ if err != nil {
+  fmt.Printf("ERROR: %#v\n", err)
+  os.Exit(1)
+ }
 
   defer func(conn connect.WorkerConnection) {
-		<-ctx.Done()
-		err := conn.Close()
-		if err != nil {
-			fmt.Printf("could not close connection: %s\n", err)
-		}
-	}(conn)
+  <-ctx.Done()
+  err := conn.Close()
+  if err != nil {
+   fmt.Printf("could not close connection: %s\n", err)
+  }
+ }(conn)
 }
 ```
+
 ```python
 import asyncio
 import inngest
@@ -139,6 +142,7 @@ asyncio.run(
     ).start()
 )
 ```
+
 </CodeGroup>
 
 ## How does it work?
@@ -427,6 +431,7 @@ import { inngest, functions } from "./src/inngest";
   // Stop the HTTP server
   httpServer.close();
 })();
+
 ```
 ```ts  {{ title: "Bun (JavaScript)" }}
 import { connect, ConnectionState } from "inngest/connect";
@@ -464,6 +469,7 @@ console.log("Worker: Shut down");
 // Stop the HTTP server
 await server.stop();
 ```
+
 </CodeGroup>
 
 ### Kubernetes readiness probe
@@ -482,9 +488,10 @@ readinessProbe:
 
 ## Worker concurrency
 
-{/* TODO: Mention minimum supported version for this feature */}
+{/*TODO: Mention minimum supported version for this feature*/}
 
 Worker concurrency is supported in the following versions of the SDK:
+
 - **TypeScript**: SDK `3.45.1` or higher.
 - **Go**: SDK `0.14.3` or higher.
 - **Python**: SDK `0.5.12` or higher.
@@ -504,11 +511,13 @@ Inngest considers the `maxWorkerConcurrency` from the latest connection request.
 This means that if you update the `maxWorkerConcurrency` after a worker is connected and create a new connection, the worker's `maxWorkerConcurrency` will be updated to the new limit.
 
 **Benefits:**
+
 - Prevents worker resource exhaustion (CPU, memory, connections)
 - Enables predictable resource allocation per worker
 - Helps with horizontal scaling over both homogeneous and heterogenous workers
 
 {/* TODO: Uncomment when we have intelligent load balancing
+
 - Allows Inngest to intelligently distribute load across your worker fleet
 - Helps with horizontal scaling by ensuring even distribution
 */}
@@ -577,6 +586,7 @@ await connect({
   instanceId: "worker-1-conn-2",
   maxWorkerConcurrency: 20,
 })
+
 ```
 ```go
 // Connection 1 with different concurrency limit
@@ -593,6 +603,7 @@ conn2, err := inngestgo.Connect(ctx, inngestgo.ConnectOpts{
   Apps:                 []inngestgo.Client{client},
 })
 ```
+
 ```python
 # Connection 1 with different concurrency limit
 asyncio.run(
@@ -612,6 +623,7 @@ asyncio.run(
     ).start()
 )
 ```
+
 </CodeGroup>
 
 ## Self hosted Inngest
@@ -639,7 +651,7 @@ const connection = await connect({
 })
 ```
 
-{/* TODO: multiple apps in a single worker */}
+{/*TODO: multiple apps in a single worker*/}
 
 ## Migrating from serve
 
@@ -655,9 +667,9 @@ The `connect` API is currently in developer preview. This means that the API is 
 
 During the developer preview, the `connect` API is available to all Inngest accounts with the following plan-limits:
 
-* Free plan: 3 concurrent worker connections
-* All paid plans: 20 concurrent worker connections
-* Max apps per connection: 10
+- Free plan: 3 concurrent worker connections
+- All paid plans: 20 concurrent worker connections
+- Max apps per connection: 10
 
 Final plan limitations will be announced prior to general availability. Please [contact us](https://app.inngest.com/support) if you need to increase these limits.
 
@@ -667,4 +679,4 @@ Read the [release phases](/docs/release-phases) for more details.
 
 During the developer preview, there are some limitations to using `connect` to be aware of. Please [contact us](https://app.inngest.com/support) if you'd like clarity on any of the following:
 
-* **Reconnection policy is not configurable** - The SDK will attempt to reconnect to Inngest an infinite number of times. We will expose a configurable reconnection policy in the future.
+- **Reconnection policy is not configurable** - The SDK will attempt to reconnect to Inngest an infinite number of times. We will expose a configurable reconnection policy in the future.

@@ -7,8 +7,10 @@ import Heading from "./Heading";
 
 const codeSnippet = `
 inngest.createFunction(
-  { id: "handle-payments" },
-  { event: "api/invoice.created" },
+  {
+    id: "handle-payments",
+    triggers: { event: "api/invoice.created" },
+  },
   async ({ event, step }) => {
     // Wait until the next billing date
     await step.sleepUntil("wait-for-billing-date", event.data.invoiceDate);

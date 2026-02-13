@@ -14,8 +14,8 @@ export default inngest.createFunction(
       key: "event.data.account_id",
       period: "5m",
     },
+    triggers: { event: "intercom/company.updated" },
   },
-  { event: "intercom/company.updated" },
   async ({ event, step }) => {
     // This function will only be scheduled 5m after events have stopped being received with the same
     // `event.data.account_id` field.

@@ -14,8 +14,10 @@ Inngest enables you to compose workflows using a set of [pre-built tools](/docs/
 import { inngest } from "./client";
 
 inngest.createFunction(
-  { id: "process-contacts-csv-upload" },
-  { event: "api/contact_list.uploaded" },
+  {
+    id: "process-contacts-csv-upload",
+    triggers: { event: "api/contact_list.uploaded" },
+  },
   async ({ event, step }) => {
     const { isValid, errors } = await step.run(
       "validate-upload-contents",

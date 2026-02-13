@@ -10,6 +10,7 @@ See the [Priority guide](/docs/guides/priority) for more information about how t
 export default inngest.createFunction(
   {
     id: "ai-generate-summary",
+    triggers: { event: "ai/summary.requested" },
     priority: {
       // For enterprise accounts, a given function run will be prioritized
       // ahead of functions that were enqueued up to 120 seconds ago.
@@ -17,7 +18,6 @@ export default inngest.createFunction(
       run: "event.data.account_type == 'enterprise' ? 120 : 0",
     },
   },
-  { event: "ai/summary.requested" },
   async ({ event, step }) => {
     // This function will be prioritized based on the account type
   }
@@ -38,7 +38,7 @@ export default inngest.createFunction(
         Expressions are defined using the Common Expression Language (CEL) with the original event accessible using dot-notation. Read [our guide to writing expressions](/docs/guides/writing-expressions) for more info. Examples:
 
         * Return the priority within an event directly: `event.data.priority` (where
-	  `event.data.priority` is an int within your account's range)
+   `event.data.priority` is an int within your account's range)
         * Prioritize by a string field: `event.data.plan == 'enterprise' ? 180 : 0`
       </Property>
     </Properties>

@@ -23,8 +23,10 @@ const inngest = new Inngest({ id: "scheduling-backend" });
 
 // A scheduled function uses the current time to find notifications to send
 const slackCron = inngest.createFunction(
-  { id: "slack-notification-cron" },
-  { cron: "0 9,12 * * MON,FRI" },
+  {
+    id: "slack-notification-cron",
+    triggers: { cron: "0 9,12 * * MON,FRI" },
+  },
   async () => {
     const notifications = await getNotificationsToRun();
 
@@ -43,8 +45,10 @@ const slackCron = inngest.createFunction(
 // A function runs for every app/notification.dispatched event to
 // post the notification to Slack
 const postSlackNotification = inngest.createFunction(
-  { id: "send-slack-notification" },
-  { event: "app/notification.dispatched" },
+  {
+    id: "send-slack-notification",
+    triggers: { event: "app/notification.dispatched" },
+  },
   async ({ event }) => {
     const reportData = getAccountReportData(event.data.notification.accountId);
 

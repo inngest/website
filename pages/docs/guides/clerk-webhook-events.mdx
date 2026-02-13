@@ -46,8 +46,10 @@ Suppose you need to write a function which will insert a new user into the datab
 
 ```ts {{ filename: "src/inngest/sync-user.ts" }}
 const syncUser = inngest.createFunction(
-  { id: 'sync-user-from-clerk' },
-  { event: 'clerk/user.created' },
+  {
+    id: 'sync-user-from-clerk',
+    triggers: { event: 'clerk/user.created' },
+  },
   async ({ event }) => {
     // The event payload's data will be the Clerk User json object
     const { user } = event.data;
@@ -76,11 +78,12 @@ You can make use of the fact that with Inngest, each function has [automatic ret
 
 The code below creates another function using the same `clerk/user.created` event and adds the logic to send the welcome email:
 
-
 ```ts {{ filename: "src/inngest/send-welcome-email.ts" }}
 const sendWelcomeEmail = inngest.createFunction(
-  { id: 'send-welcome-email' },
-  { event: 'clerk/user.created' },
+  {
+    id: 'send-welcome-email',
+    triggers: { event: 'clerk/user.created' },
+  },
   async ({ event }) => {
     const { user } = event.data;
     const { first_name } = user;
@@ -102,8 +105,10 @@ The code below sends a welcome email, then uses `step.sleep()` to wait for three
 
 ```ts {{ filename: "src/inngest/send-welcome-email.ts" }}
 const sendWelcomeEmail = inngest.createFunction(
-  { id: 'send-welcome-email' },
-  { event: 'clerk/user.created' },
+  {
+    id: 'send-welcome-email',
+    triggers: { event: 'clerk/user.created' },
+  },
   async ({ event, step }) => {
     const { user } = event.data;
     const { first_name } = user;

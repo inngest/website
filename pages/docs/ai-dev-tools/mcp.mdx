@@ -206,8 +206,10 @@ Get an overview of all available documentation with category breakdown.
 ```typescript
 // Your function
 export const handleSignup = inngest.createFunction(
-  { id: "handle-signup" },
-  { event: "app/user.signup" },
+  {
+    id: "handle-signup",
+    triggers: { event: "app/user.signup" },
+  },
   async ({ event, step }) => {
     const user = await step.run("create-user", async () => {
       return createUser(event.data.email);

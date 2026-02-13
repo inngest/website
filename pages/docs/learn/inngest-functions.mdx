@@ -37,9 +37,9 @@ inngest.createFunction({
     id: "sync-systems",
     // Easily add Throttling with Flow Control
     throttle: { limit: 3, period: "1min"},
+    // A Function is triggered by events
+    triggers: { event: "auto/sync.request" },
   },
-  // A Function is triggered by events
-  { event: "auto/sync.request" },
   async ({ step }) => {
     // step is retried if it throws an error
     const data = await step.run("get-data", async () => {
@@ -84,8 +84,7 @@ def sync_systems(ctx: inngest.ContextSync) -> None:
 
 </LanguageSelector>
 
-
-{/* 
+{/*
 Increase your Inngest Functions durability by leveraging:
 
 - **[Retries features](/docs/guides/error-handling)** - Configure a custom retry policy, handle rollbacks and idempotency.
@@ -112,7 +111,6 @@ Start using Inngest Functions by using the pattern that fits your use case:
   </Card>
 </CardGroup>
 
-
 ## Learn more about Functions and Steps
 
 Functions and Steps are powered by Inngest's Durable Execution Engine. Learn about its inner working by reading the following guides:
@@ -126,13 +124,11 @@ Functions and Steps are powered by Inngest's Durable Execution Engine. Learn abo
   </Card>
 </CardGroup>
 
-
 ## SDK References
-
 
 <CardGroup cols={3}>
 
-  <Card 
+  <Card
     href={"/docs/reference/typescript"}
     title={"TypeScript SDK"}
     icon={<TypeScriptIcon className="text-basis"/>}
@@ -140,7 +136,7 @@ Functions and Steps are powered by Inngest's Durable Execution Engine. Learn abo
   API reference
   </Card>
 
-  <Card 
+  <Card
     href={"/docs/reference/python"}
     title={"Python SDK"}
     icon={<PythonIcon className="text-basis"/>}
@@ -148,9 +144,8 @@ Functions and Steps are powered by Inngest's Durable Execution Engine. Learn abo
     API reference
   </Card>
 
-
-  <Card 
-    href={"https://pkg.go.dev/github.com/inngest/inngestgo@v0.9.0/step"}
+  <Card
+    href={"<https://pkg.go.dev/github.com/inngest/inngestgo@v0.9.0/step"}>
     title={"Go SDK"}
     icon={<GoIcon className="text-basis"/>}
   >

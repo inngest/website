@@ -159,7 +159,8 @@ async function redirects() {
     },
     {
       source: "/sign-up",
-      destination: process.env.NEXT_PUBLIC_SIGNUP_URL,
+      destination:
+        process.env.NEXT_PUBLIC_SIGNUP_URL || "https://app.inngest.com/sign-up",
       permanent: true,
     },
   ];

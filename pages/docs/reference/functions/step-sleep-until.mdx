@@ -24,8 +24,7 @@ export const description = `Sleep until a specific date time with step.sleepUnti
     </Properties>
   </Col>
   <Col>
-  <CodeGroup>
-  ```ts {{ title: "v3" }}
+  ```ts
   // Sleep until the new year
   await step.sleepUntil("happy-new-year", "2024-01-01");
 
@@ -45,18 +44,6 @@ export const description = `Sleep until a specific date time with step.sleepUnti
   const endOfDay = now.round({ smallestUnit: "day", roundingMode: "ceil" });
   await step.sleepUntil("done-for-today", endOfDay);
   ```
-  ```ts {{ title: "v2" }}
-  // Sleep until the new year
-  await step.sleepUntil("2024-01-01");
-
-  // Sleep until September ends
-  await step.sleepUntil("2023-09-30T11:59:59");
-
-  // Sleep until the end of the this week
-  const date = dayjs().endOf('week').toDate();
-  await step.sleepUntil(date)
-  ```
-  </CodeGroup>
   </Col>
 </Row>
 

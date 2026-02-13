@@ -9,7 +9,7 @@ import { ArrowDownIcon } from "@heroicons/react/24/outline";
 
 const snippetDurableWorkflow = `
 export const processVideo = inngest.createFunction(
-  fnOptions, fnListener,
+  fnOptions,
   async ({ event, step }) => {
     const transcript = await step.run('transcribe-video',
       async () => deepgram.transcribe(event.data.videoUrl)
@@ -33,7 +33,7 @@ export const processVideo = inngest.createFunction(
 
 const snippetAI = `
 export const userWorkflow = inngest.createFunction(
-  fnOptions, fnListener,
+  fnOptions,
   async ({ event, step }) => {
     const similar = await step.run("query-vectordb",
       async () => {
@@ -60,7 +60,7 @@ export const userWorkflow = inngest.createFunction(
 
 const snippetAIAgent = `
 export const agent = inngest.createFunction(
-  fnOptions, fnListener,
+  fnOptions,
   async ({ event, step }) => {
     const plan = await step.run("create-plan", async () => {
       await llm.createCompletion({
@@ -92,10 +92,8 @@ export const welcomeEmail = inngest.createFunction(
     id: "send-welcome-email",
     concurrency: {
       limit: 10,
-    }
-  },
-  {
-    event: "clerk/user.created"
+    },
+    triggers: { event: "clerk/user.created" },
   },
   async ({ event, step }) => {
     await step.run('send-email', async () => {
@@ -112,7 +110,7 @@ export const welcomeEmail = inngest.createFunction(
 
 const snippetWorkflowEngine = `
 export const engine = inngest.createFunction(
-  fnOptions, fnListener,
+  fnOptions,
   async ({ event, step }) => {
     const workflow = await step.run('load-workflow',
       async () =>

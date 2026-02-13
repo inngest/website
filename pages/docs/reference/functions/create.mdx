@@ -8,8 +8,10 @@ Define your functions using the `createFunction` method on the [Inngest client](
 import { inngest } from "./client";
 
 export default inngest.createFunction(
-  { id: "import-product-images" },
-  { event: "shop/product.imported" },
+  {
+    id: "import-product-images",
+    triggers: { event: "shop/product.imported" },
+  },
   async ({ event, step, runId }) => {
     // Your function code
   }
@@ -18,7 +20,7 @@ export default inngest.createFunction(
 
 ---
 
-## `inngest.createFunction(configuration, trigger, handler): InngestFunction`
+## `inngest.createFunction(configuration, handler): InngestFunction`
 
 The `createFunction` method accepts a series of arguments to define your function.
 
@@ -30,6 +32,9 @@ The `createFunction` method accepts a series of arguments to define your functio
   </Property>
   <Property name="name" type="string">
     A name for your function. If defined, this will be shown in the UI as a friendly display name instead of the ID.
+  </Property>
+  <Property name="triggers" type="Trigger | Trigger[]">
+    One or more event triggers, which you can read more about [here](#triggers).
   </Property>
 
   <Property name="concurrency" type="number | object | [object, object]">
@@ -212,11 +217,9 @@ The `createFunction` method accepts a series of arguments to define your functio
 
 {/*TODO - Document fns arg*/}
 
-### Trigger
+#### Triggers
 
-One of the following function triggers is **Required**.
-
-You can also specify an array of up to 10 of the following triggers to invoke
+You can specify an array of up to 10 of the following triggers to invoke
 your function with multiple events or crons. See the [Multiple Triggers](/docs/guides/multiple-triggers) guide.
 
 <Callout>

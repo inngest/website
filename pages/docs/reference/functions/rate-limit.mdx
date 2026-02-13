@@ -10,13 +10,13 @@ See the [Rate Limiting guide](/docs/guides/rate-limiting) for more information a
 export default inngest.createFunction(
   {
     id: "synchronize-data",
+    triggers: { event: "intercom/company.updated" },
     rateLimit: {
       key: "event.data.company_id",
       limit: 1,
       period: "4h",
     },
   },
-  { event: "intercom/company.updated" },
   async ({ event, step }) => {
     // This function will be rate limited
     // It will only run 1 once per 4 hours for a given event payload with matching company_id
@@ -69,13 +69,13 @@ In this example, we use events from the Intercom webhook. The webhook can be ove
 export default inngest.createFunction(
   {
     id: "synchronize-data",
+    triggers: { event: "intercom/company.updated" },
     rateLimit: {
       key: "event.data.company_id",
       limit: 1,
       period: "4h",
     },
   },
-  { event: "intercom/company.updated" },
   async ({ event, step }) => {
     const company = await step.run(
       "fetch-latest-company-data-from-intercom",
@@ -117,6 +117,7 @@ When there is an issue in your system, you may want to send your user an email n
 export default inngest.createFunction(
   {
     id: "send-check-failed-notification",
+    triggers: { event: "service/check.failed" },
     rateLimit: {
       // Don't send duplicate emails to the same user for the same service over 1 hour
       key: `event.data.user_id + "-" + event.data.service_id`,
@@ -124,7 +125,6 @@ export default inngest.createFunction(
       period: "1h",
     },
   },
-  { event: "service/check.failed" },
   async ({ event, step }) => {
     await step.run("send-alert-email", async () => {
       return await resend.emails.send({

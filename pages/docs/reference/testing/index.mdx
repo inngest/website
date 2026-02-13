@@ -266,8 +266,10 @@ Steps that pause the function, `step.sleep`, `step.sleepUntil`, and `step.waitFo
 ```ts {{ title: 'step.sleep' }}
 // Given the following function that sleeps
 const myFunction = inngest.createFunction(
-  { id: "my-function" },
-  { event: "user.created" },
+  {
+    id: "my-function",
+    triggers: { event: "user.created" },
+  },
   async ({ event, step }) => {
     await step.sleep("one-day-delay", "1d");
     return { message: "success" };
@@ -286,8 +288,10 @@ t.execute({
 ```ts {{ title: "step.waitForEvent" }}
 // Given the following function that sleeps
 const myFunction = inngest.createFunction(
-  { id: "my-function" },
-  { event: "time_off.requested" },
+  {
+    id: "my-function"
+    triggers: { event: "time_off.requested" },
+  },
   async ({ event, step }) => {
     const evt = await step.waitForEvent("wait-for-approval", {
       event: "manager.approved",
@@ -379,4 +383,3 @@ const t = new InngestTestEngine({
   },
 });
 ```
-

@@ -10,7 +10,7 @@ Often though, there are actions that your support or customer success team needs
 
 Let's say you have an integration built in your application and you backend code imports a bunch of data from that third party. The third party API or your backend may have went down for a few hours and you may have missing data for certain user. When someone reaches out to support, you may need to re-run that import script to backfill the missing data.
 
-{/* TBD diagram? */}
+{/*TBD diagram?*/}
 
 We're going to walk through how you can do this so your team can trigger important scripts right from your Retool app. This guide assumes you have a basic experience building forms with Retool (*If you don't, check out [this great guide](https://docs.retool.com/docs/create-forms-using-form-component)*).
 
@@ -51,7 +51,7 @@ At the end, your resource query will look like this. Let's save it then click �
 
 In the Inngest Cloud dashboard's “Events” tab, you should see a brand new `retool/backfill.requested` event. Click on the event and you should be able to select the payload that we just sent.
 
-{/* TODO - Update screenshots!! */}
+{/*TODO - Update screenshots!!*/}
 ![Inngest Cloud dashboard view event payload](/assets/guides/trigger-your-code-from-retool/inngest-view-event-payload.gif)
 
 Now that we've verified the data is sent over to Inngest, you can attach the resource query as an event handler to the submit button. Select the “Default” interaction type and click “+ Add” to select our resource query `sendBackfillRequested`. For fun, you can add an `isFetching` to show loading.
@@ -70,7 +70,6 @@ mkdir -p inngest
 
 Now we'll create a file in this directory for our function - `runBackfillForUser.js`. This will be our Inngest function which will import our existing backfill code, use the `user_id` from the event payload to run that code, and return a http status code in our response to tell Inngest [if it should be retried or not](/docs/functions/retries?ref=retool-guide).
 
-
 <CodeGroup>
 
 ```ts {{ title: "runBackfillForUser.ts" }}
@@ -78,8 +77,10 @@ import { runBackfillForUser } from "../lib/backfill-scripts";
 import { inngest } from "./client";
 
 export default inngest.createFunction(
-  { id: "run-backfill-for-user" }, // The name displayed in the Inngest dashboard
-  { event: "retool/backfill.requested" }, // The event triggger
+  {
+    id: "run-backfill-for-user" // The name displayed in the Inngest dashboard
+    triggers: { event: "retool/backfill.requested" }, // The event trigger
+  },
   async ({ event }) => {
     const result = await runBackfillForUser(event.data.user_id);
 
