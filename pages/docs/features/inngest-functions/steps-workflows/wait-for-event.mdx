@@ -10,7 +10,7 @@ You can pause a Function's run until a given event is received.
 
 This is a useful pattern to react to specific user actions (for example, implement "Human in the loop" in AI Agent workflows), or to wait until something happens in external systems.
 
-We recommend this over "wait for signal" for most cases because:
+This is the recommended and preferred way to pause and resume a function via events or signals because:
 
 * Events fan out to many functions:  you can resume many runs from a single event, without changing application code.
 * Events are cleaner:  events decouple code from the functions they resume
