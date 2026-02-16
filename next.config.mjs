@@ -234,7 +234,7 @@ const nextConfig = {
   },
   outputFileTracingExcludes: {
     "*": ["./.git/*", "./public/**/*", "./.pnpm-store/*"],
-    "!(/api)": ["./.next/*"],
+    "!(/api/**)": ["./.next/*"],
   },
   outputFileTracingIncludes: {
     "/api/changelog": ["./content/changelog/**/*"],
