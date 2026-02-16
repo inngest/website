@@ -237,7 +237,7 @@ const nextConfig = {
     "!(/api)": ["./.next/*"],
   },
   outputFileTracingIncludes: {
-    "/api/*": ["./next/**/*"],
+    "/api/changelog": ["./content/changelog/**/*"],
   },
   webpack: (config, { dev, isServer }) => {
     // Exclude old-style _prefix directories from being rendered (ex. mdx pages)
