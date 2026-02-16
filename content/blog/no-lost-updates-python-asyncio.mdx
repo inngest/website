@@ -11,6 +11,10 @@ Python's `asyncio` gives you `Event`, `Condition`, and `Queue` for coordinating 
 
 We wrote `ValueWatcher` to fill that gap. It's generic, fully type-safe, and about 100 lines of code. It replaced a lot of fragile callback wiring in our WebSocket connection manager.
 
+<Callout>
+  Want to jump straight into source code? [Here it is.](https://github.com/inngest/inngest-py/blob/390089077b457505359632e7ebcc1767032916f9/pkg/inngest/inngest/connect/_internal/value_watcher.py)
+</Callout>
+
 The property we care about most: no lost updates. In the example below, two consumers wait for different values, and both values are set synchronously without yielding to the event loop. Both consumers complete.
 
 ```python
