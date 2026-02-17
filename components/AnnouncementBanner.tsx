@@ -43,8 +43,9 @@ export default function AnnouncementBanner() {
   // return null;
 
   return (
-    <Banner href="/blog/introducing-durable-endpoints?ref=announcement-banner">
-      Unbreakable APIs are here: <strong>Discover Durable Endpoints</strong>
+    <Banner href="https://luma.com/5bi1om1r">
+      <strong>Join us this Friday, Feb 20</strong> for a Durable Endpoints live
+      coding session.
     </Banner>
   );
 }
