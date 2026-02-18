@@ -1,4 +1,4 @@
-import { Callout, GuideSelector, GuideSection } from "src/shared/Docs/mdx";
+import { Callout, LanguageSelector, LanguageSection } from "src/shared/Docs/mdx";
 
 # Invoking functions directly
 
@@ -11,15 +11,9 @@ Inngest's `step.invoke()` function provides a powerful tool for calling function
 
 ## Invoking another function
 
-<GuideSelector
-  options={[
-    { key: "typescript", title: "TypeScript" },
-    { key: "go", title: "Go" },
-    { key: "python", title: "Python" },
-  ]}
->
+<LanguageSelector>
 
-<GuideSection show="typescript">
+<LanguageSection show="typescript">
 
 <Callout>
 ### When should I invoke?
@@ -116,9 +110,9 @@ const mainFunction = inngest.createFunction(
 
 For more information on referencing functions, see [TypeScript -> Referencing Functions](/docs/functions/references).
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="go">
+<LanguageSection show="go">
 
 <Callout>
 ### When should I invoke?
@@ -181,8 +175,8 @@ inngestgo.CreateFunction(
 In the above example, our `mainFunction` calls `computeSquare` to retrieve the resulting value. `computeSquare` can now be called from here or any other process connected to Inngest.
 
 
-</GuideSection>
-<GuideSection show="python">
+</LanguageSection>
+<LanguageSection show="python">
 
 <Callout>
 ### When should I invoke?
@@ -223,9 +217,9 @@ async def main_function(ctx: inngest.Context):
 In the above example, our `mainFunction` calls `compute_square` to retrieve the resulting value. `compute_square` can now be called from here or any other process connected to Inngest.
 
 
-</GuideSection>
+</LanguageSection>
 
-</GuideSelector>
+</LanguageSelector>
 
 
 ## Creating a distributed system

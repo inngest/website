@@ -1,4 +1,4 @@
-import { Callout, CodeGroup, Properties, Property, Row, Col, VersionBadge, GuideSelector, GuideSection, Card, CardGroup } from "src/shared/Docs/mdx";
+import { Callout, CodeGroup, Properties, Property, Row, Col, VersionBadge, LanguageSelector, LanguageSection, Card, CardGroup } from "src/shared/Docs/mdx";
 
 # Using Middleware for Dependency Injection
 
@@ -7,13 +7,8 @@ libraries.
 
 The following is an example of adding a OpenAI client to all Inngest functions, allowing them immediate access without needing to create the client themselves.
 
-<GuideSelector
-  options={[
-    { key: "typescript-middleware", title: "TypeScript (v 3.34.0+)"},
-    { key: "typescript", title: "TypeScript (v 2.0.0+)" },
-    { key: "python", title: "Python (v 0.3.0+)" }
-  ]}>
-    <GuideSection show="typescript-middleware">
+<LanguageSelector>
+    <LanguageSection show="typescript-middleware">
         We can use the `dependencyInjectionMiddleware` to add arguments to a
         function's input.
 
@@ -80,9 +75,9 @@ The following is an example of adding a OpenAI client to all Inngest functions, 
         Middleware runs in the order specified when registering it (see [Middleware - Lifecycle - Registering and order](/docs/reference/middleware/lifecycle#registering-and-order)), which affects typing too.
 
         When inferring a mutated input or output, the SDK will apply changes from each middleware in sequence, just as it will at runtime. This means that for two middlewares that add a `foo` value to input arguments, the last one to run will be what it seen both in types and at runtime.
-    </GuideSection>
+    </LanguageSection>
 
-    <GuideSection show="typescript">
+    <LanguageSection show="typescript">
         Our custom `openaiMiddleware` relies on the [`transformInput` hook](/docs/reference/middleware/lifecycle#on-function-run-lifecycle) to mutate the Function's context:
 
         ```ts
@@ -183,9 +178,9 @@ The following is an example of adding a OpenAI client to all Inngest functions, 
         Middleware runs in the order specified when registering it (see [Middleware - Lifecycle - Registering and order](/docs/reference/middleware/lifecycle#registering-and-order)), which affects typing too.
 
         When inferring a mutated input or output, the SDK will apply changes from each middleware in sequence, just as it will at runtime. This means that for two middlewares that add a `foo` value to input arguments, the last one to run will be what it seen both in types and at runtime.
-    </GuideSection>
+    </LanguageSection>
 
-    <GuideSection show="python">
+    <LanguageSection show="python">
         Our `OpenAIMiddleware` uses the [`transform_input` hook](/docs/reference/python/middleware/lifecycle#transform-input) to inject context:
 
         ```py
@@ -236,6 +231,14 @@ The following is an example of adding a OpenAI client to all Inngest functions, 
                     model="gpt-3.5-turbo",
                 )
         ```
-    </GuideSection>
+    </LanguageSection>
 
-</GuideSelector>
+    <LanguageSection show="go">
+
+      <Callout>
+        Support for Middleware in the Go SDK in planned.
+      </Callout>
+
+    </LanguageSection>
+
+</LanguageSelector>

@@ -1,6 +1,6 @@
-import { Callout, GuideSelector, GuideSection, CodeGroup } from "src/shared/Docs/mdx";
+import { Callout, LanguageSelector, LanguageSection, CodeGroup } from "src/shared/Docs/mdx";
 
-{/* Sidebar doesn't work well when GuideSection have different headings...  */}
+{/* Sidebar doesn't work well when LanguageSection have different headings...  */}
 export const hidePageSidebar = true;
 
 
@@ -17,16 +17,11 @@ This is the recommended and preferred way to pause and resume a function via eve
 * Events have audit trails:  we store events in your OLAP store, giving you audit trails and insights automatically.
 
 
-<GuideSelector
-  options={[
-    { key: "typescript", title: "TypeScript" },
-    { key: "go", title: "Go" },
-    { key: "python", title: "Python" }
-  ]}>
+<LanguageSelector>
 
 
 
-<GuideSection show="typescript">
+<LanguageSection show="typescript">
 
   Use `step.waitForEvent()` to wait for a particular event to be received before continuing. It returns a `Promise` that is resolved with the received event or `null` if the event is not received within the timeout.
 
@@ -103,9 +98,9 @@ export default inngest.createFunction(
 );
 ```
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="python">
+<LanguageSection show="python">
 
   Use `step.wait_for_event()` to wait for a particular event to be received before continuing.
 
@@ -125,9 +120,9 @@ async def fn(ctx: inngest.Context) -> None:
 
 Check out the [`step.wait_for_event()` Python reference.](/docs/reference/python/steps/wait-for-event)
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="go">
+<LanguageSection show="go">
 
   Use `step.waitForEvent()` to wait for a particular event to be received before continuing. It either returns the received event data or a `step.ErrEventNotReceived` error.
 
@@ -157,10 +152,10 @@ Check out the [`step.wait_for_event()` Python reference.](/docs/reference/python
 
   Check out the [`step.WaitForEvent()` Go reference.](https://pkg.go.dev/github.com/inngest/inngestgo@v0.9.0/step#WaitForEvent)
 
-</GuideSection>
+</LanguageSection>
 
 
-</GuideSelector>
+</LanguageSelector>
 
 
 <Callout variant={'warning'}>
