@@ -10,22 +10,17 @@ Inngest makes it easy to build, manage, and execute reliable workflows. Some use
 
 By the end of this ten-minute tutorial you will:
 - Set up and run Inngest on your machine.
-- Write your first Inngest function.
-- Trigger your function from your app and through Inngest Dev Server.
+- Write your first Inngest steps.
+- Trigger your steps from your app and through Inngest Dev Server.
 
 Let's get started!
 
-### Choose Next.js version
-
-Choose your preferred Next.js version for this tutorial:
-
-<GuideSelector
-options={[
-  { key: "nextappdir", title: "Next.js - App Router" },
-  { key: "nextpages", title: "Next.js - Pages Router" }
-]}>
 
 ## Before you start: choose a project
+
+<Callout>
+This guide is tailored for Next.js application using the App Router (_Next.js v15+_).
+</Callout>
 
 In this tutorial you can use any existing Next.js project, or you can create a new one.
 
@@ -34,17 +29,10 @@ In this tutorial you can use any existing Next.js project, or you can create a n
 
   Run the following command in your terminal to create a new Next.js project:
 
-  <GuideSection show="nextpages">
-  ```shell
-  npx create-next-app@latest --ts --eslint --tailwind --no-src-dir --no-app --import-alias='@/*' inngest-guide
-  ```
-  </GuideSection>
 
-  <GuideSection show="nextappdir">
   ```shell
   npx create-next-app@latest --ts --eslint --tailwind --src-dir --app --import-alias='@/*' inngest-guide
   ```
-  </GuideSection>
 </details>
 
 Once you've chosen a project, open it in a code editor.
@@ -139,31 +127,125 @@ In your browser open [`http://localhost:8288`](http://localhost:8288) to see the
   alt="Inngest Dev Server's 'Runs' tab with no data"
 />
 
-## 3. Create an Inngest client
+## 3. Write your first steps: Durable Endpoints vs Durable Function
+
+Inngest offers 2 ways to use steps:
+
+- **Directly from your Next.js API Routes as a Durable Endpoints**: the best fit to solve timeouts, create onboarding workflows or simple AI workflows.
+- **By creating an Inngest function, triggered by events**:  better suited for advanced use cases such as data processing, product integrations or complex workflow orchestration.
+
+<GuideSelector
+options={[
+  { key: "durable-endpoints", title: "Use Durable Endpoints" },
+  { key: "durable-functions", title: "Use Durable Functions" }
+]}>
+
+<GuideSection show="durable-endpoints">
+
+Durable Endpoints let you add retry logic, observability, and step-based checkpointing to your existing Next.js API routes. You wrap your route handler with `inngest.endpoint` and move critical logic into `step.run` blocks. That's it.
+
+First, create an [Inngest client](/docs/reference/client/create) with the `endpointAdapter` for Next.js. Make a new directory next to your `app` directory (for example, `src/inngest`):
+
+```ts {{ filename: "src/inngest/client.ts" }}
+import { Inngest } from "inngest";
+import { endpointAdapter } from "inngest/next";
+
+export const inngest = new Inngest({
+  id: "my-app",
+  endpointAdapter,
+});
+```
+
+<Callout>
+The `endpointAdapter` configures the Inngest client to work with your Next.js App Router routes. It handles the communication between your endpoint and the Inngest Dev Server (or Inngest Cloud in production).
+</Callout>
+
+## 4. Create your first Durable Endpoint
+
+In this step, you will create a simple API route that uses durable steps. Each `step.run` block is individually retried on failure and its result is checkpointed. If step 2 fails, step 1 won't re-run.
+
+Create a new route handler at `src/app/api/hello/route.ts`:
+
+```ts {{ filename: "src/app/api/hello/route.ts" }}
+import { step } from "inngest";
+import { inngest } from "../../../inngest/client";
+import { NextRequest } from "next/server";
+
+export const GET = inngest.endpoint(async (req: NextRequest) => {
+  const email = req.nextUrl.searchParams.get("email");
+
+  // Step 1: Validate the input
+  const validated = await step.run("validate-input", async () => {
+    if (!email || !email.includes("@")) {
+      throw new Error("Invalid email address");
+    }
+    return { email: email.toLowerCase().trim() };
+  });
+
+  // Step 2: Simulate some processing
+  const result = await step.run("process", async () => {
+    // In a real app, this could be a database write, an API call, etc.
+    return { message: `Hello ${validated.email}!`, processedAt: new Date().toISOString() };
+  });
+
+  return Response.json({ success: true, ...result });
+});
+```
+
+<details>
+  <summary><strong>Learn more: how is this different from a regular route?</strong></summary>
+
+  - `inngest.endpoint()` wraps your route handler and enables step-based execution.
+  - Each `step.run()` block is checkpointed. If the function fails at step 2, step 1's result is cached and won't re-execute on retry.
+  - You get automatic retries, tracing, and observability in the Inngest Dev Server, without changing how you call the endpoint.
+  - The endpoint still returns a normal HTTP response to the caller on success.
+</details>
+
+## 5. Test your Durable Endpoint
+
+With your Next.js app and Inngest Dev Server running, you can test the endpoint just like any regular API route. Open your terminal and run:
+
+```shell
+curl "http://localhost:3000/api/hello?email=test@example.com"
+```
+
+You should see the following response:
+
+```json
+{"success": true, "message": "Hello test@example.com!", "processedAt": "2025-01-01T00:00:00.000Z"}
+```
+
+Now open the Inngest Dev Server UI at [`http://localhost:8288`](http://localhost:8288) and select the "Runs" tab. You will see a new run logged for your durable endpoint:
+
+<img
+  src="/assets/docs/getting-started/quick-starts/dev-server-runs-new-run-2024-11-16.png"
+  width="800" height={800/2762*1868} quality="95"
+  className="rounded-md"
+  alt="Inngest Dev Server web interface's runs tab with a single completed run displayed"
+/>
+
+Click on the run to see the full trace. Each step is visible with its input, output, and timing:
+
+<img
+  src="/assets/docs/getting-started/quick-starts/dev-server-runs-run-expanded-2024-11-16.png"
+  width="800" height={800/2762*1868} quality="95"
+  className="rounded-md"
+  alt="Inngest Dev Server web interface's runs tab with a single completed run expanded"
+/>
+
+And - that's it! You now have a durable endpoint that automatically retries on failure and gives you full observability. Congratulations 🥳
+
+<Callout>
+Want to learn more about Durable Endpoints? Check out the [Durable Endpoints guide](/docs/learn/durable-endpoints) for advanced patterns like parallel steps, sleep, and waiting for events.
+</Callout>
+
+</GuideSection>
+
+<GuideSection show="durable-functions">
 
 Inngest invokes your functions securely via an [API endpoint](/docs/learn/serving-inngest-functions) at `/api/inngest`. To enable that, you will create an [Inngest client](/docs/reference/client/create) in your Next.js project, which you will use to send events and create functions.
 
-<GuideSection show="nextpages">
-  Create a new file at `./pages/api/inngest.ts` with the following code:
 
-  ```ts {{ filename: "pages/api/inngest.ts" }}
-  import { Inngest } from "inngest";
-  import { serve } from "inngest/next";
-
-  // Create a client to send and receive events
-  export const inngest = new Inngest({ id: "my-app" });
-
-  // Create an API that serves zero functions
-  export default serve({
-    client: inngest,
-    functions: [
-      /* your functions will be passed here later! */
-    ],
-  });
-  ```
-</GuideSection>
-
-<GuideSection show="nextappdir">
   Make a new directory next to your `app` directory (for example, `src/inngest`) where you'll define your Inngest functions and the client.
 
   In the `/src/inngest` directory create an Inngest client:
@@ -190,7 +272,6 @@ Next, you will set up a route handler for the `/api/inngest` route. To do so, cr
   });
   ```
 
-</GuideSection>
 
 ## 4. Write your first Inngest function
 
@@ -209,25 +290,8 @@ To define the function, use the [`createFunction`](/docs/reference/functions/cre
     - **Handler**: The function that is called when the `event` is received. The `event` payload is passed as an argument. Arguments include `step` to define durable steps within your handler and [additional arguments](/docs/reference/functions/create#handler) include logging helpers and other data.
 </details>
 
-<GuideSection show="nextpages">
 
-Add the following code to the `./pages/api/inngest.ts` file:
 
-  ```ts
-  // Step 2 code...
-  export const helloWorld = inngest.createFunction(
-    { id: "hello-world" },
-    { event: "test/hello.world" },
-    async ({ event, step }) => {
-      await step.sleep("wait-a-moment", "1s");
-      return { message: `Hello ${event.data.email}!` };
-    },
-  );
-  ```
-
-</GuideSection>
-
-<GuideSection show="nextappdir">
 
   Inside your `src/inngest` directory create a new file called `functions.ts` where you will define Inngest functions. Add the following code:
 
@@ -244,26 +308,9 @@ Add the following code to the `./pages/api/inngest.ts` file:
   );
   ```
 
-</GuideSection>
 
 ### Add the function to `serve()`
 
-<GuideSection show="nextpages">
-
-  Next, add your Inngest function to the `serve()` handler.
-
-  ```ts
-  export default serve({
-    client: inngest,
-    functions: [
-      helloWorld, // <-- This is where you'll always add your new functions
-    ],
-  });
-  ```
-
-</GuideSection>
-
-<GuideSection show="nextappdir">
 
   Next, import your Inngest function in the routes handler (`src/app/api/inngest/route.ts`) and add it to the `serve` handler so Inngest can invoke it via HTTP:
 
@@ -279,8 +326,6 @@ Add the following code to the `./pages/api/inngest.ts` file:
     ],
   });
   ```
-
-</GuideSection>
 
 <Callout>
 👉 Note that you can import [`serve()`](/docs/reference/serve) for other frameworks and the rest of the code, in fact, remains the same — only the import statement changes (instead of `inngest/next`, it would be `inngest/astro`, `inngest/remix`, and so on).
@@ -404,34 +449,8 @@ In a real-world app, you might send events from API routes that perform an actio
 
 </details>
 
-You will now send an event from within your Next.js app: from the “hello” Next.js API function. To do so, create a new API handler in the <GuideSection show="nextpages">`./pages/api/hello.ts`</GuideSection><GuideSection show="nextappdir">`src/app/api/hello/route.ts`</GuideSection> file:
+You will now send an event from within your Next.js app: from the “hello” Next.js API function. To do so, create a new API handler in the `src/app/api/hello/route.ts`file:
 
-<GuideSection show="nextpages">
-  ```ts {{ filename: "pages/api/hello.ts" }}
-  import { NextApiRequest, NextApiResponse } from "next";
-  import { inngest } from "./inngest";
-
-  // Opt out of caching; every request should send a new event
-  export const dynamic = "force-dynamic";
-
-  // Create a simple async Next.js API route handler
-  export default async function handler(
-    req: NextApiRequest,
-    res: NextApiResponse,
-  ) {
-    // Send your event payload to Inngest
-    await inngest.send({
-      name: "test/hello.world",
-      data: {
-        email: "testUser@example.com",
-      },
-    });
-
-    res.status(200).json({ message: "Event sent!" });
-  }
-  ```
-</GuideSection>
-<GuideSection show="nextappdir">
   ```ts {{ filename: "src/app/api/hello/route.ts" }}
   import { NextResponse } from "next/server";
   import { inngest } from "../../../inngest/client"; // Import our client
@@ -452,7 +471,6 @@ You will now send an event from within your Next.js app: from the “hello” Ne
     return NextResponse.json({ message: "Event sent!" });
   }
   ```
-</GuideSection>
 
 <Callout>
 👉 Note that we use [`"force-dynamic"`](https://nextjs.org/docs/app/building-your-application/caching) to ensure we always send a new event on every request. In most situations, you'll probably want to send an event during a `POST` request so that you don't need this config option.
@@ -478,6 +496,10 @@ If you go back to the Inngest Dev Server, you will see a new run is triggered by
 
 And - that's it! You now have learned how to create Inngest functions and you have sent events to trigger those functions. Congratulations 🥳
 
+</GuideSection>
+
+</GuideSelector>
+
 ## Next Steps
 
 To continue your exploration, feel free to check out:
@@ -491,5 +513,3 @@ You can also read more:
 - About [Durable Execution](/docs/learn/how-functions-are-executed)
 - How to [use Inngest with other frameworks](/docs/learn/serving-inngest-functions).
 - How to [deploy your app to your platform](/docs/deploy).
-
-</GuideSelector>
