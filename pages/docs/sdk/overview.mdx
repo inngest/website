@@ -1,4 +1,4 @@
-import { CodeGroup, GuideSelector, GuideSection } from "shared/Docs/mdx";
+import { CodeGroup, LanguageSelector, LanguageSection } from "shared/Docs/mdx";
 
 # Installing the SDK
 
@@ -13,15 +13,9 @@ The Inngest SDK allows you to write reliable, durable functions in your existing
 
 ## Getting started
 
-<GuideSelector
-  options={[
-    { key: "typescript", title: "TypeScript" },
-    { key: "go", title: "Go" },
-    { key: "python", title: "Python" },
-  ]}
->
+<LanguageSelector>
 
-<GuideSection show="typescript">
+<LanguageSection show="typescript">
 
 ### Installation
 
@@ -55,9 +49,9 @@ export const inngest = new Inngest({
 ```
 
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="go">
+<LanguageSection show="go">
 
 
 To get started, install the SDK via `go get`:
@@ -68,9 +62,9 @@ go get github.com/inngest/inngestgo
 
 
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="python">
+<LanguageSection show="python">
 
 ### Installation
 
@@ -101,9 +95,9 @@ inngest_client = inngest.Inngest(
 
 
 
-</GuideSection>
+</LanguageSection>
 
-</GuideSelector>
+</LanguageSelector>
 
 
 Your project is now ready to start writing Inngest functions:

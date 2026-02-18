@@ -2,7 +2,7 @@ import {
   RiNextjsFill,
   RiNodejsFill,
 } from "@remixicon/react";
-import { Info, CodeGroup, Steps, Step, CardGroup, Card, VersionBadge, GuideSelector, GuideSection } from "src/shared/Docs/mdx";
+import { Info, CodeGroup, Steps, Step, CardGroup, Card, VersionBadge, LanguageSelector, LanguageSection } from "src/shared/Docs/mdx";
 
 export const description = 'Learn how to use realtime to stream data from Inngest functions to your users.';
 
@@ -30,14 +30,9 @@ Publishing data is done using the `publish()` function and has three components:
 
 In this guide, we'll cover how to use realtime, publishing from an Inngest function and subscribing from the client (browser). Start by installing the `@inngest/realtime` package:
 
-<GuideSelector
-  options={[
-    { key: "typescript", title: "TypeScript" },
-    { key: "python", title: "Python" },
-  ]}
->
+<LanguageSelector>
 
-<GuideSection show="typescript">
+<LanguageSection show="typescript">
 
 <CodeGroup>
 ```shell {{ title: "npm" }}
@@ -61,19 +56,19 @@ deno add jsr:@inngest/realtime
   <Info>
     This guide requires `@inngest/realtime` version `0.4.0` or higher.
   </Info>
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="python">
+<LanguageSection show="python">
   <Info>
     This guide requires `inngest` version `0.5.9` or higher.
   </Info>
-</GuideSection>
+</LanguageSection>
 
 
 
 ### Publishing
 
-<GuideSection show="typescript">
+<LanguageSection show="typescript">
 
 To publish data from your Inngest functions, you'll need to add the `realtimeMiddleware()` to your Inngest client. This will automatically add the `publish()` function to your Inngest functions.
 
@@ -90,17 +85,17 @@ export const inngest = new Inngest({
 
 Now, in your Inngest functions, the `publish()` function will be available as a parameter to your handler function. When publishing data, you'll need to specify the `channel` and `topic` you want to publish to and any data you want to publish.
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="python">
+<LanguageSection show="python">
 
 To publish data from your Inngest functions, you'll need to import the experimental.realtime module. This is where you'll find the publish and publish_sync functions.
 
 See the [Fast API example](https://github.com/inngest/inngest-py/tree/main/examples/fast_api_realtime) for more information.
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="typescript">
+<LanguageSection show="typescript">
 
 <CodeGroup>
 ```tsx {{ title: "Basic (untyped)" }}
@@ -177,9 +172,9 @@ inngest.createFunction(
 ```
 </CodeGroup>
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="python">
+<LanguageSection show="python">
 
 ```py {{ title: "Python" }}
 import inngest
@@ -207,7 +202,7 @@ async def python_realtime_publish(ctx: inngest.Context) -> str:
 
     return "Finished!"
 ```
-</GuideSection>
+</LanguageSection>
 
 ### Subscribing
 
@@ -352,7 +347,7 @@ Your application uses the Inngest SDK to create a token, which is then used by t
   </Step>
 </Steps>
 
-</GuideSelector>
+</LanguageSelector>
 
 {/* TODO - More on channels and topics, perhaps in a new page? */}
 

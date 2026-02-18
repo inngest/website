@@ -1,4 +1,4 @@
-import { CardGroup, Card, ImageTheme, GuideSelector, GuideSection } from "src/shared/Docs/mdx";
+import { CardGroup, Card, ImageTheme, LanguageSelector, LanguageSection } from "src/shared/Docs/mdx";
 import EventIcon from 'src/shared/Icons/Event';
 import {
   RiGitPullRequestFill,
@@ -28,9 +28,9 @@ An Inngest Function is composed of 3 main parts that provide robust tools for re
   </Card>
 </CardGroup>
 
-<GuideSelector options={[{ key: "typescript", title: "TypeScript" }, { key: "python", title: "Python" }, { key: "go", title: "Go" }]}>
+<LanguageSelector>
 
-<GuideSection show="typescript">
+<LanguageSection show="typescript">
 
 ```ts
 inngest.createFunction({
@@ -54,9 +54,9 @@ inngest.createFunction({
 );
 ```
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="python">
+<LanguageSection show="python">
 
 ```python
 @inngest_client.create_function(
@@ -72,17 +72,17 @@ def sync_systems(ctx: inngest.ContextSync) -> None:
     ctx.step.run("Save data", db.syncs.insert_one, data)
 ```
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="go">
+<LanguageSection show="go">
 
 ```go
 !snippet:path=snippets/go/docs/functions/sync_systems_function.go
 ```
 
-</GuideSection>
+</LanguageSection>
 
-</GuideSelector>
+</LanguageSelector>
 
 
 {/* 
