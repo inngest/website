@@ -1,9 +1,10 @@
 import clsx from "clsx";
+import { StarIcon } from "@heroicons/react/24/outline";
 
 const variantStyle = (variant: string): string => {
   switch (variant) {
     case "medium":
-      return "rounded-lg px-1.5 py-1 ring-1 ring-inset";
+      return "px-1.5 py-0.5 ring-1 ring-inset";
 
     default:
       return null;
@@ -22,7 +23,10 @@ const colorStyle = (
       } dark:text-${color}-${background === "default" ? "300" : "400"}`;
 
     case "medium":
-      return `ring-${color}-300 dark:ring-${color}-400/30 bg-${color}-400/10 text-${color}-500 dark:text-${color}-400`;
+      if (color === "matcha") {
+        return "rounded-full bg-matcha-500 dark:bg-matcha-600 text-white ring-0";
+      }
+      return `rounded-lg ring-${color}-300 dark:ring-${color}-400/30 bg-${color}-400/10 text-${color}-500 dark:text-${color}-400`;
 
     default:
       return null;
@@ -49,15 +53,19 @@ export function Tag({
   className?: string;
   background?: "default" | "page";
 }) {
+  const isNewTag = children.toLowerCase() === "new";
+
   return (
     <span
       className={clsx(
-        "font-mono text-xs font-semibold leading-2",
+        "text-xs leading-2",
+        isNewTag && "inline-flex items-center gap-0.5",
         variantStyle(variant),
         colorStyle(color, variant, background),
         className
       )}
     >
+      {isNewTag && <StarIcon className="h-3 w-3 shrink-0" aria-hidden />}
       {children}
     </span>
   );
