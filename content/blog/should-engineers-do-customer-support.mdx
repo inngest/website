@@ -1,0 +1,170 @@
+---
+heading: "Should Engineers Do Customer Support? How We Built Our Support Rotation System"
+image: /assets/blog/should-engineers-do-customer-support/Ana-blog post (final)-2.png
+subtitle: "When you're building developer tools, the line between building the product, using it and supporting it doesn't exist. The question isn't whether engineers should do support. It's how to make it work for you."
+date: 2026-02-18
+author: Ana Almeida
+---
+
+# Should Engineers Do Customer Support? How We Built Our Support Rotation System
+
+At one point, every engineer had Slack and Discord open waiting for support pings.
+
+When you're building developer tools, the line between building the product, using it and supporting it doesn't exist. Support conversations are product feedback. Questions reveal friction. Bugs expose assumptions.
+
+The question isn't whether engineers should do support.
+
+The question is how to structure it so it improves the product without slowing down the team.
+
+Last quarter, we moved from ad-hoc support to a structured two-tier system.
+
+## The Problem
+
+When the team was small, support and building were the same thing. We wrote the code, and we answered questions about it. Those conversations fed directly back into what we built next.
+
+As we grew, that model broke.
+
+Support volume increased. What used to be occasional interruptions became a constant stream. Every engineer spent part of every day reacting to incoming tickets.
+
+The issue wasn't just frequency. It was context switching. A complex bug might land with someone deep in feature work. They'd stop, reload an entirely different mental model, investigate, respond, maybe deploy a fix—and then try to return to their original task.
+
+At the same time, some customers now had SLAs. Slow responses weren't just inconvenient — they had business consequences.
+
+The result: slower roadmap progress, slower support responses, frustrated engineers, unclear ownership.
+
+No one fully owned support. Everyone partially owned it.
+
+## What We Tried First
+
+We tried daily rotations.
+
+The idea was simple: rotate every engineer through support. Stay close to users. Spread knowledge evenly.
+
+In practice, it failed.
+
+Daily rotations meant no one ever fully exited support mode. You'd kick off an investigation and start asking follow-up questions, but by the time you'd gathered all the necessary information, it was already time to hand it off to the next engineer.
+
+Everyone was technically "off" support most days—but cognitively, no one ever was.
+
+We also underestimated expertise mismatch.
+
+An app sync failure requires different context than rate limiting behavior in the execution engine. Routing every ticket to the next person in line meant engineers constantly solving problems outside their domain.
+
+The distribution was even. The cognitive load was not.
+
+## The Two-Tier System
+
+The solution was separation of concerns.
+
+One person owns initial triage.
+
+Two engineers own deep investigation and resolution.
+
+### Tier 1: Support Engineering
+
+The support engineer exists to protect engineering focus while preserving fast response times.
+
+They:
+
+- Answer straightforward product questions directly
+- Help with common workflows
+- Triage unclear reports
+- Assess urgency and impact
+- Route issues to the correct domain expert
+- Own the customer relationship through resolution
+
+Their job isn't to solve every problem. It's to assemble context.
+
+When a ticket reaches Tier 2, it includes:
+
+- Clear problem description
+- Customer context
+- Impact assessment
+- Relevant past tickets
+- Initial diagnosis
+
+That preparation changes everything.
+
+---
+
+### Tier 2: Weekly Engineering Rotation
+
+Two engineers rotate weekly:
+
+- One from the execution team (features, API)
+- One from the systems team (infrastructure, reliability)
+
+They exist to solve root problems, not just respond to tickets.
+
+They:
+
+- Investigate and fix bugs
+- Handle complex or high-impact issues
+- Deploy fixes
+- Provide deep technical explanations
+- Document what they learn
+
+Engineers on rotation have reduced feature commitments. Support week is treated as real work, not background noise.
+
+At the end of each week, they provide a recap:
+
+- Patterns across tickets
+- Documentation gaps
+- Repeated points of confusion
+- Product improvements or fixes worth prioritizing
+
+The goal isn't just resolution. It's feedback into the roadmap.
+
+Engineers not on rotation are not on support. They can focus fully on feature work.
+
+## What Changed
+
+Response and resolution times improved. Teams handle more tickets with comparable or faster turnaround.
+
+More importantly, ownership became clear.
+
+There's no ambiguity about whether you should be responding to a question or focusing on your feature work.
+
+Engineers report less burnout from context switching. When you're on rotation, you expect interruptions. When you're not, you get uninterrupted focus.
+
+Feature planning now accounts for reduced velocity during rotation weeks. That trade-off is explicit instead of accidental.
+
+Support is still demanding. But it's bounded.
+
+## What We're Still Learning
+
+This works at our current scale. At what point does a two-person weekly rotation become insufficient? Should we differentiate between reactive support and proactive education? How do we ensure engineers on rotation learn from patterns instead of just resolving individual tickets? Are we addressing the root cause or just tackling symptoms?
+
+These questions matter because this system will need to evolve as we grow.
+
+## When This Model Works
+
+This approach works well when:
+
+- You're building developer tools where user questions directly inform product decisions
+- Your engineering team is small enough that everyone should understand how users experience the product
+- You can structure feature planning around rotation schedules
+- You have or can hire someone to own the support engineering role
+
+It breaks down when:
+
+- Support volume requires multiple full-time support engineers
+- Questions are primarily about integration rather than product behavior
+- Domain specialization makes cross-training impractical
+- Context switching costs are prohibitive for your development cycle
+
+![Support model comparison table](/assets/blog/should-engineers-do-customer-support/structure-comparison.png)
+
+## The Underlying Principle
+
+Unstructured support slows everything: engineers get interrupted, tickets pile up, and product development grinds down.
+
+Support isn't the problem—lack of ownership is. When engineers respond randomly, every ticket becomes a context switch. When support is structured, every ticket becomes insight.
+
+For developer tools, support is part of building the product. The goal isn't to remove engineers from support—it's to design their involvement. Our system does just that: engineers on rotation solve problems deeply, while others get uninterrupted focus on their feature work. Users get faster, more knowledgeable responses, and patterns from support feed directly into product improvements.
+
+It's not perfect, and it will evolve. But compared with the ad-hoc support we had before, it's a measurable improvement—for engineers, for customers, and for the product.
+
+---
+
+*If you're evaluating Inngest or considering [working here](https://jobs.ashbyhq.com/inngest), this is part of what our engineers do. If that sounds exciting to you, we should talk.*

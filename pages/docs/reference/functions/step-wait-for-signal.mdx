@@ -1,0 +1,61 @@
+import { Callout, Properties, Property, Row, Col, CodeGroup, VersionBadge } from "src/shared/Docs/mdx";
+
+export const description = `Wait for a particular signal to be received before continuing with step.waitForSignal()`;
+
+# Wait for signal
+
+Wait for a particular signal to be received before continuing with step.waitForSignal().  You must resume signals by
+calling `step.sendSignal` or `client.sendSignal` (as a step or on the Inngest client), passing the same signal string
+and any data you want to inject into the function run.
+
+## `step.waitForSignal(id, options): Promise<null | EventPayload>`
+
+<Row>
+  <Col>
+    <Properties>
+      <Property name="id" type="string" required>
+        The ID of the step. This will be what appears in your function's logs and is used to memoize step state across function versions.
+      </Property>
+      <Property name="options" type="object" required>
+        Options for configuring how to wait for the event.
+        <Properties nested={true}>
+          <Property name="signal" type="string" required>
+            A unique identifier for the signal, used to resume this function run.
+          </Property>
+          <Property name="timeout" type="string" required>
+            The amount of time to wait to receive the signal. A time string compatible with the [ms](https://npm.im/ms) package, e.g. `"30m"`, `"3 hours"`, or `"2.5d"`.
+
+            If the signal is not received before this timeout, the run will resume with an undefined return value.
+          </Property>
+          <Property name="onConflict" type="'fail' | 'replace'">
+            How to handle duplicate signals.  By default, step.waitForSignal requires a unique signal and duplicate signals will fail the function.
+
+            Set to 'replace' to replace any other run's signal.  Note that previous runs will NOT resume from this signal if replaced, and instead will time out.  
+
+            To resume many runs from a single signal, use `step.waitForEvent`.
+          </Property>
+        </Properties>
+      </Property>
+    </Properties>
+  </Col>
+  <Col>
+  <CodeGroup>
+  ```ts {{ title: "v3" }}
+  // Wait 15m for an approval
+  const approval = await step.Signal("wait-for-approval", {
+    signal: "task/71651db4-9f27-466a-a6be-4759b9784b3c",
+    timeout: "7d",
+  });
+  ```
+  </CodeGroup>
+  </Col>
+</Row>
+
+<Callout>
+  `step.waitForSignal()` must be called using `await` or some other Promise handler to ensure your function pauses correctly.
+</Callout>
+
+<Callout>
+  `step.waitForSignal()` must be resumed by `inngest.sendSignal`, `step.sendSignal`, or a call to the signal API to be resumed with
+  a matching signal string.
+</Callout>

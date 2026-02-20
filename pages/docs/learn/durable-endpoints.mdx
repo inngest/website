@@ -1,6 +1,6 @@
+import { ResourceGrid, Resource } from 'src/shared/Docs/Resources';
+import { Info, Callout, CodeGroup, Steps, Step, CardGroup, Card, VersionBadge, LanguageSelector, LanguageSection } from "src/shared/Docs/mdx";
 import { RiNextjsFill } from "@remixicon/react";
-import { Resource, ResourceGrid } from 'src/shared/Docs/Resources';
-import { Callout, Card, CardGroup, CodeGroup, GuideSection, GuideSelector, Info, Step, Steps, VersionBadge } from "src/shared/Docs/mdx";
 
 export const description = 'Learn how to create Durable Endpoints with Inngest. Turn any API endpoint into a durable, observable workflow with step-based checkpointing.';
 
@@ -10,6 +10,11 @@ Durable Endpoints let you build or transform your API into fault-tolerant endpoi
 
 Durable Endpoints behave like normal endpoints. The mental model stays the same: request, response. But each step brings you tracing, observability, and retry logic from the point of failure.
 
+
+<Callout>
+  Durable Endpoints are available in the TypeScript and Go SDKs.
+</Callout>
+
 ## When to use Durable Endpoints
 
 **You have endpoints that fail partway through.** Any endpoint with multiple steps where failure at step 3 means steps 1 and 2 were wasted work. Instead of writing try/catch logic everywhere or hoping for the best, simply wrap your code in steps and let failures resume from where they left off.
@@ -18,8 +23,13 @@ Durable Endpoints behave like normal endpoints. The mental model stays the same:
 
 **You're already using Inngest.** You can add durability to other endpoints without refactoring everything into a workflow or thinking heavily about event logic.
 
+<LanguageSelector>
+
 ## Quick Start
 
+
+
+<LanguageSection show="typescript">
 If you have a traditional endpoint:
 
 <CodeGroup>
@@ -28,7 +38,7 @@ import { NextRequest } from "next/server";
 
 export const POST = async (req: NextRequest) => {
   const { userId, data } = await req.json();
-
+  
   const user = await db.users.find(userId);
   const enriched = { ...data, account: user.accountId };
 
@@ -161,39 +171,117 @@ Durable Endpoints support all the same step methods as Inngest functions. See th
 - [`step.sleep()`](/docs/learn/inngest-steps#step-sleep): Pause execution for a duration
 - [`step.waitForEvent()`](/docs/learn/inngest-steps#step-wait-for-event-step-wait-for-event): Wait for an external event
 
-## Requesting a Durable Endpoint
+</LanguageSection>
 
-Durable Endpoints behave like regular API endpoints on the success path. You can request them from your front-end (_or back-end_) using `fetch()` or your favorite query or http library.
+<LanguageSection show="go">
 
-When a failure triggers retries or long-running steps like `step.waitForEvent()`
-are used, a Durable Endpoint redirects to a separate endpoint that waits for the
-call to finish.
 
-By default, this is an endpoint either in the Inngest Dev Server or Inngest
-Cloud, depending on which environment you're in, but `inngest.endpointProxy()`
-can be used to create your own URL to satisfy CORS constraints when the endpoint
-is used from browsers.
+In order to start using steps within your API endpoints, you must first set up middleware to intercept HTTP requests.
 
-```typescript
-// When setting the `endpointAdapter`, use `.withOptions()` to set more config
-const inngest = new Inngest({
-  id: "my-app",
-  endpointAdapter: endpointAdapter.withOptions({
-    asyncRedirectUrl: "/wait",
-  }),
-});
+```go
+import (
+	"context"
 
-// Then create the route with `inngest.endpointProxy()`
-Bun.serve({
-  port: 3000,
-  routes: {
-    "/process": ...,
-    "/wait": inngest.endpointProxy(),
-  },
-});
+	"github.com/inngest/inngestgo/step"
+	"github.com/inngest/inngestgo/stephttp"
+)
+
+func setuphttp() {
+	// provider adds inngest support to http handlers
+	provider := stephttp.Setup(stephttp.SetupOpts{
+		Domain: "api.example.com", // add your api domain here.
+	})
+
+  // provider allows you to wrap individual http handlers via `provider.servehttp`,
+  // and provides stdlib-compatible middleware via `provider.middleware`
+  http.HandleFunc("/users", provider.ServeHTTP(handleUsers))
+
+  // or, via middleware with, for example, chi:
+  r := chi.NewRouter()
+  r.Use(provider.Middleware)
+  r.Get("/users", handleUsers)
+}
 ```
 
-Requests will now be redirected to `/wait`.
+Once you've added the middleware, you can configure functions and execute steps within REST endpoints directly:
+
+```go
+import (
+	"context"
+
+	"github.com/inngest/inngestgo/step"
+	"github.com/inngest/inngestgo/stephttp"
+)
+
+func handleUsers(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	stephttp.Configure(ctx, stephttp.FnOpts{
+		// Configure the function ID, removing IDs from the URL:
+		ID: "/users/{id}"
+	})
+
+	// Step 1: Authenticate (with full observability)
+	auth, err := step.Run(ctx, "authenticate", func(ctx context.Context) (*AuthResult, error) {
+		// You can chain steps as usual...
+		return nil, nil
+	})
+	if err != nil {
+		http.Error(w, "Authentication failed", http.StatusUnauthorized)
+		return
+	}
+	// ...
+}
+```
+
+</LanguageSection>
+
+<LanguageSection show="python">
+
+<Callout>
+  Durable Endpoints are not yet available in the Python SDK.
+</Callout>
+
+</LanguageSection>
+
+## Requesting a Durable Endpoint
+
+Durable Endpoints behave like regular API endpoints on the success path. You can request them from your front-end (_or back-end_) using `fetch()` or your favorite query or http library:
+
+However, when a failure triggers retries, a Durable Endpoint returns a redirect to a dedicated endpoint on Inngest Cloud to poll the final result.
+
+Here is a snippet handling both the direct result and the redirected result after retries:
+
+```typescript
+function handleError(error) {
+  // ...
+}
+
+async function handleResult(result) {
+  const result = await res.json()
+  // ...
+}
+
+fetch(`/api/your-durable-endpoint`)
+  .then((res) => {
+    if (res.redirected) {
+      // follow the redirect
+      fetch(res.url)
+        .then(handleResult)
+        .catch(handleError);
+    } else {
+      handleResult(res)
+    }
+  })
+  .catch(handleError);
+```
+
+<Callout>
+  As the Durable Endpoint redirects the request to a dedicated endpoint on Inngest's Cloud, `fetch()` cannot simply follow this redirect for you (_CORS policy_).
+  Instead, you need to get the redirect URL (`res.url`) and trigger a new `fetch()` request.
+</Callout>
+
+
 
 ## SDK Support
 
@@ -241,3 +329,5 @@ The following demos are also available to check out and run locally with the Inn
 
 - [Durable Endpoint - TypeScript SDK Reference](/docs/reference/typescript/durable-endpoints)
 - [Steps Overview](/docs/learn/inngest-steps)
+
+</LanguageSelector>

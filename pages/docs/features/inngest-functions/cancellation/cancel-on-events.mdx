@@ -1,4 +1,4 @@
-import { CodeGroup, Row, Col, GuideSelector, GuideSection } from "src/shared/Docs/mdx";
+import { CodeGroup, Row, Col, LanguageSelector, LanguageSection } from "src/shared/Docs/mdx";
 export const description = 'Learn how to cancel long running functions with events.'
 
 # Cancel on Events
@@ -8,14 +8,9 @@ As you have learned that you can trigger functions to run using events, you can 
 
 For our example, we'll take a reminder app where a user can schedule to be reminded of something in the future at whatever time they want. The user can also delete the reminder if they change their mind and don't want to receive the reminder anymore.
 
-<GuideSelector
-  options={[
-    { key: "typescript", title: "TypeScript" },
-    { key: "go", title: "Go" },
-    { key: "python", title: "Python" },
-  ]}>
+<LanguageSelector>
 
-<GuideSection show="typescript">
+<LanguageSection show="typescript">
 
 Delaying code to run for days or weeks is easy with `step.sleepUntil`, but we need a way to be able to stop the function if the user deletes the reminder while our function is "sleeping."
 
@@ -94,9 +89,9 @@ Here is an example of these two events which will be matched on the `data.remind
 
 Learn more in the full [reference](/docs/reference/typescript/functions/cancel-on).
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="python">
+<LanguageSection show="python">
 
 
 Delaying code to run for days or weeks is easy with `step.sleep_until`, but we need a way to be able to stop the function if the user deletes the reminder while our function is "sleeping."
@@ -171,9 +166,9 @@ Here is an example of these two events which will be matched on the `data.remind
 </Row>
 
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="go">
+<LanguageSection show="go">
 
 
 Delaying code to run for days or weeks is easy with `step.Sleep()`, but we need a way to be able to stop the function if the user deletes the reminder while our function is "sleeping."
@@ -226,6 +221,6 @@ Here is an example of these two events which will be matched on the `data.remind
 </Row>
 
 
-</GuideSection>
+</LanguageSection>
 
-</GuideSelector>
+</LanguageSelector>

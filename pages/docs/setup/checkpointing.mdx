@@ -1,4 +1,4 @@
-import { Info, Warning, CodeGroup, GuideSelector, GuideSection } from "shared/Docs/mdx";
+import { Info, Warning, CodeGroup, LanguageSelector, LanguageSection } from "shared/Docs/mdx";
 
 # Checkpointing
 
@@ -13,14 +13,9 @@ Checkpointing is a performance optimization for Inngest functions that executes 
 
 ## Getting Started
 
-<GuideSelector
-  options={[
-    { key: "typescript", title: "TypeScript" },
-    { key: "go", title: "Go" },
-  ]}
->
+<LanguageSelector>
 
-<GuideSection show="typescript">
+<LanguageSection show="typescript">
 
 To enable checkpointing:
 
@@ -69,9 +64,9 @@ checkpointing: {
 }
 ```
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="go">
+<LanguageSection show="go">
 
 To enable checkpointing:
 
@@ -100,9 +95,9 @@ _, err := inngestgo.CreateFunction(
 )
 ```
 
-</GuideSection>
+</LanguageSection>
 
-</GuideSelector>
+</LanguageSelector>
 
 ## How Does It Work?
 

@@ -1,4 +1,4 @@
-import { Callout, GuideSelector, GuideSection } from "src/shared/Docs/mdx";
+import { Callout, LanguageSelector, LanguageSection } from "src/shared/Docs/mdx";
 
 export const description = 'How to send events from within functions to trigger other functions to run in parallel'
 
@@ -16,14 +16,9 @@ If your function needs to handle the result of another function, or wait until t
 
 ## How to send events from functions
 
-<GuideSelector
-  options={[
-    { key: "typescript", title: "TypeScript" },
-    { key: "go", title: "Go" },
-    { key: "python", title: "Python" },
-  ]}>
+<LanguageSelector>
 
-<GuideSection show="typescript">
+<LanguageSection show="typescript">
 
 To send events from within functions, you will use [`step.sendEvent()`](/docs/reference/functions/step-send-event). This method takes a single event, or an array of events. The example below uses an array of events.
 
@@ -98,8 +93,8 @@ Each of these functions will run in parallel and individually retry on error, re
 
 By using [`step.sendEvent()`](/docs/reference/functions/step-send-event) Inngest's SDK can automatically add context and tracing which ties events to the current function run. If you use [`inngest.send()`](/docs/reference/events/send), the context around the function run is not present.
 
-</GuideSection>
-<GuideSection show="go">
+</LanguageSection>
+<LanguageSection show="go">
 
 To send events from within functions, you  will use [`step.Send()`](https://pkg.go.dev/github.com/inngest/inngestgo/step#Send) or [`step.SendMany()`](https://pkg.go.dev/github.com/inngest/inngestgo/step#SendMany)
 
@@ -123,8 +118,8 @@ Each of these functions will run in parallel and individually retry on error, re
   💡 **Tip**: When triggering lots of functions to run in parallel, you will likely want to configure `concurrency` limits to prevent overloading your system. See our [concurrency guide](/docs/guides/concurrency) for more information.
 </Callout>
 
-</GuideSection>
-<GuideSection show="python">
+</LanguageSection>
+<LanguageSection show="python">
 
 To send events from within functions, you will use [`step.send_event()`](/docs/reference/python/steps/send-event). This method takes a single event, or an array of events. The example below uses an array of events.
 
@@ -198,9 +193,9 @@ Each of these functions will run in parallel and individually retry on error, re
 
 By using [`step.send_event()`](/docs/reference/python/steps/send-event) Inngest's SDK can automatically add context and tracing which ties events to the current function run. If you use [`inngest.send()`](/docs/reference/python/client/send), the context around the function run is not present.
 
-</GuideSection>
+</LanguageSection>
 
-</GuideSelector>
+</LanguageSelector>
 
 ## Parallel functions vs. parallel steps
 

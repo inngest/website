@@ -1,0 +1,15 @@
+export const title = "Durable Endpoints: Durability beyond workflows";
+export const date = "2026-02-10";
+
+Durable Endpoints bring Inngest's durability directly into your API handlers. Wrap your endpoint code with `inngest.endpoint()` and use `step.run()`, each step automatically gets retries, recovery, and observability, without leaving your endpoint code.
+
+Durable Endpoints are low-latency and unbreakable API endpoints, with:
+
+- **Zero wasted keystrokes:** Wrap code in `step.run()`, and you're done. No queues to configure, no workers to deploy.
+- **Automatic recovery:** Steps checkpoint as they complete. Failures retry from the last successful step, not from scratch.
+- **Built-in observability:** See exactly what's running, what failed, and why.
+- **Low latency by design:** Powered by Checkpointing for fast execution.
+
+Durable Endpoints is available now in public beta for Next.js and Bun.
+
+[Read the blog post](/blog/introducing-durable-endpoints?ref=changelog-durable-endpoints) · [Get started with the documentation](/docs/learn/durable-endpoints?ref=changelog-durable-endpoints)
