@@ -18,7 +18,7 @@ import create from "zustand";
 import { Tag } from "./Tag";
 import { useSearchParams } from "next/navigation";
 import { useLocalStorage } from "react-use";
-import { useLanguageStore, type SDKLanguage } from "./LanguageStore";
+import { useLanguageStore, SDK_LANGUAGES, type SDKLanguage } from "./LanguageStore";
 
 const languageNames = {
   js: "JavaScript",
@@ -439,9 +439,10 @@ const GuideSelectorContext = createContext<{
   options: GuideOption[];
 }>(null);
 
-// Map GuideSelector keys to SDKLanguage
+// Map language keys to SDKLanguage
 const GUIDE_KEY_TO_SDK: Record<string, SDKLanguage> = {
   typescript: "typescript",
+  "typescript-middleware": "typescript",
   ts: "typescript",
   python: "python",
   py: "python",
@@ -449,7 +450,7 @@ const GUIDE_KEY_TO_SDK: Record<string, SDKLanguage> = {
 };
 
 const SDK_TO_GUIDE_KEY: Record<SDKLanguage, string[]> = {
-  typescript: ["typescript", "ts"],
+  typescript: ["typescript", "ts", "typescript-middleware"],
   python: ["python", "py"],
   go: ["go"],
 };
@@ -467,56 +468,66 @@ export function GuideSelector({
     useLocalStorage("currentLanguage", null);
   const searchParams = useSearchParams();
   const qsCurrentLanguage = searchParams.get(searchParamKey);
-  
-  // Get the global language store
-  const { language: globalLanguage, setLanguage: setGlobalLanguage } = useLanguageStore();
 
   const [selected, setSelected] = useState<string>(options[0].key);
+  const [defaultSelected, setDefaultSelected] = useState<string>(
+    options[0].key
+  );
 
-  // Sync with global language store when it changes
+  // infer the default selected from the url or local storage
   useEffect(() => {
-    // If URL has a guide param, prioritize that
     if (
       options.find((o) => o.key === qsCurrentLanguage) &&
       Boolean(qsCurrentLanguage) &&
       qsCurrentLanguage !== selected
     ) {
       setSelected(qsCurrentLanguage);
-      // Also sync to global store
-      const sdkLang = GUIDE_KEY_TO_SDK[qsCurrentLanguage.toLowerCase()];
-      if (sdkLang) {
-        setGlobalLanguage(sdkLang);
-      }
-      return;
-    }
-    
-    // Try to match global language to available options
-    const matchingKeys = SDK_TO_GUIDE_KEY[globalLanguage] || [];
-    const matchingOption = options.find((o) => 
-      matchingKeys.includes(o.key.toLowerCase())
-    );
-    if (matchingOption && matchingOption.key !== selected) {
-      setSelected(matchingOption.key);
-      // Update URL to reflect the change
-      const url = new URL(router.asPath, window.location.origin);
-      url.searchParams.set(searchParamKey, matchingOption.key);
-      router.replace(url.toString(), null, { shallow: true, scroll: false });
+      setDefaultSelected(qsCurrentLanguage);
     } else if (
       !qsCurrentLanguage &&
-      !matchingOption &&
-      // if no url param and no global match, fallback to local storage
+      // if no url param, fallback to local storage
       localStorageCurrentLanguage &&
       options.find((o) => o.key === localStorageCurrentLanguage)
     ) {
       setSelected(localStorageCurrentLanguage);
+      setDefaultSelected(localStorageCurrentLanguage);
     }
-  }, [qsCurrentLanguage, globalLanguage, options, router, selected, localStorageCurrentLanguage, setGlobalLanguage, searchParamKey]);
+  }, [qsCurrentLanguage]);
 
-  // The Tab.List UI is intentionally hidden since there's now a global 
-  // language selector in the sidebar navigation. The GuideSelector still
-  // manages the selected state for GuideSection children.
+  const onChange = (newSelectedIndex) => {
+    const newSelectedKey = options[newSelectedIndex].key;
+    setLocalStorageCurrentLanguage(newSelectedKey);
+    setSelected(newSelectedKey);
+    const url = new URL(router.asPath, window.location.origin);
+    url.searchParams.set(searchParamKey, newSelectedKey);
+    // Replace the URL state and do use shallow to avoid refresh
+    router.replace(url.toString(), null, { shallow: true, scroll: false });
+  };
+
   return (
     <GuideSelectorContext.Provider value={{ selected, options }}>
+      <TabGroup
+        onChange={onChange}
+        // the below fixes an old bug where the default index was not set
+        defaultIndex={options.findIndex((o) => o.key === defaultSelected)}
+        selectedIndex={options.findIndex((o) => o.key === selected)}
+      >
+        <TabList className="-mb-px flex gap-4 text-sm font-medium">
+          {options.map((option, idx) => (
+            <Tab
+              key={`tab-${idx}`}
+              className={clsx(
+                "border-b py-3 transition focus:outline-none",
+                option.key === selected
+                  ? "border-breeze-500 text-breeze-700 dark:border-breeze-300 dark:text-breeze-300"
+                  : "border-transparent text-slate-600 hover:text-breeze-600 dark:text-slate-400 dark:hover:text-breeze-300"
+              )}
+            >
+              {option.title}
+            </Tab>
+          ))}
+        </TabList>
+      </TabGroup>
       {children}
     </GuideSelectorContext.Provider>
   );
@@ -538,6 +549,114 @@ export function GuideSection({
 
 export function GuideTitle() {
   const context = useContext(GuideSelectorContext);
+  const selectedOption = context.options.find(
+    (o) => o.key === context.selected
+  );
+  return <>{selectedOption?.title}</>;
+}
+
+// --- LanguageSelector (SDK language-aware, no inline Tab UI) ---
+
+const LanguageSelectorContext = createContext<{
+  selected: string;
+  options: GuideOption[];
+}>(null);
+
+export function LanguageSelector({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const router = useRouter();
+  const searchParamKey = "guide";
+  const [localStorageCurrentLanguage] =
+    useLocalStorage("currentLanguage", null);
+  const searchParams = useSearchParams();
+  const qsCurrentLanguage = searchParams.get(searchParamKey);
+
+  // Get the global language store
+  const { language: globalLanguage, setLanguage: setGlobalLanguage } = useLanguageStore();
+
+  // Derive available options from LanguageSection children's `show` props
+  const options = useMemo(() => {
+    const keys: string[] = [];
+    Children.forEach(children, (child) => {
+      if (React.isValidElement<{ show?: string }>(child) && child.props.show) {
+        keys.push(child.props.show);
+      }
+    });
+    return keys.map((key) => {
+      const sdkLang = SDK_LANGUAGES.find((l) => l.id === key);
+      return { key, title: sdkLang?.title ?? key };
+    });
+  }, [children]);
+
+  const [selected, setSelected] = useState<string>(options[0]?.key ?? SDK_LANGUAGES[0].id);
+
+  // Sync with global language store when it changes
+  useEffect(() => {
+    if (options.length === 0) return;
+
+    // If URL has a guide param, prioritize that
+    if (
+      options.find((o) => o.key === qsCurrentLanguage) &&
+      Boolean(qsCurrentLanguage) &&
+      qsCurrentLanguage !== selected
+    ) {
+      setSelected(qsCurrentLanguage);
+      // Also sync to global store
+      const sdkLang = GUIDE_KEY_TO_SDK[qsCurrentLanguage.toLowerCase()];
+      if (sdkLang) {
+        setGlobalLanguage(sdkLang);
+      }
+      return;
+    }
+
+    // Try to match global language to available options
+    const matchingKeys = SDK_TO_GUIDE_KEY[globalLanguage] || [];
+    const matchingOption = options.find((o) =>
+      matchingKeys.includes(o.key.toLowerCase())
+    );
+    if (matchingOption && matchingOption.key !== selected) {
+      setSelected(matchingOption.key);
+      // Update URL to reflect the change
+      const url = new URL(router.asPath, window.location.origin);
+      url.searchParams.set(searchParamKey, matchingOption.key);
+      router.replace(url.toString(), null, { shallow: true, scroll: false });
+    } else if (
+      !qsCurrentLanguage &&
+      !matchingOption &&
+      // if no url param and no global match, fallback to local storage
+      localStorageCurrentLanguage &&
+      options.find((o) => o.key === localStorageCurrentLanguage)
+    ) {
+      setSelected(localStorageCurrentLanguage);
+    }
+  }, [qsCurrentLanguage, globalLanguage, options, router, selected, localStorageCurrentLanguage, setGlobalLanguage, searchParamKey]);
+
+  return (
+    <LanguageSelectorContext.Provider value={{ selected, options }}>
+      {children}
+    </LanguageSelectorContext.Provider>
+  );
+}
+
+export function LanguageSection({
+  children,
+  show,
+}: {
+  children: React.ReactNode;
+  show: string;
+}) {
+  let context = useContext(LanguageSelectorContext);
+  if (show === context.selected) {
+    return <>{children}</>;
+  }
+  return null;
+}
+
+export function LanguageTitle() {
+  const context = useContext(LanguageSelectorContext);
   const selectedOption = context.options.find(
     (o) => o.key === context.selected
   );

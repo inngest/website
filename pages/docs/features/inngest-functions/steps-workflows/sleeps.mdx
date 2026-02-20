@@ -1,4 +1,4 @@
-import { Callout, GuideSelector, GuideSection, CodeGroup } from "src/shared/Docs/mdx";
+import { Callout, LanguageSelector, LanguageSection, CodeGroup } from "src/shared/Docs/mdx";
 
 
 # Sleeps
@@ -14,18 +14,13 @@ Using sleep methods can avoid the need to run multiple cron jobs or use addition
 A Function paused by a sleeping Step doesn't affect your account capacity; i.e. it does not count against your plan's concurrency limit. A sleeping Function doesn't count against any [concurrency policy](/docs/guides/concurrency) you've set on the function, either.
 
 
-<GuideSelector
-  options={[
-    { key: "typescript", title: "TypeScript" },
-    { key: "go", title: "Go" },
-    { key: "python", title: "Python" }
-  ]}>
+<LanguageSelector>
 
 
 ## Pausing an execution for a given time
 
 
-<GuideSection show="typescript">
+<LanguageSection show="typescript">
 
   Use `step.sleep()` to pause the execution of your function for a specific amount of time.
 
@@ -44,9 +39,9 @@ export default inngest.createFunction(
 
 Check out the [`step.sleep()` TypeScript reference.](/docs/reference/functions/step-sleep)
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="python">
+<LanguageSection show="python">
 
   Use `step.sleep()` to pause the execution of your function for a specific amount of time.
 
@@ -61,9 +56,9 @@ Check out the [`step.sleep()` TypeScript reference.](/docs/reference/functions/s
 
 Check out the [`step.sleep()` Python reference.](/docs/reference/python/steps/sleep)
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="go">
+<LanguageSection show="go">
 
   Use `step.Sleep()` to pause the execution of your function for a specific amount of time.
 
@@ -80,13 +75,13 @@ Check out the [`step.sleep()` Python reference.](/docs/reference/python/steps/sl
 
   Check out the [`step.Sleep()` Go reference.](https://pkg.go.dev/github.com/inngest/inngestgo@v0.9.0/step#Sleep)
 
-</GuideSection>
+</LanguageSection>
 
 
 ## Pausing an execution until a given date
 
 
-<GuideSection show="typescript">
+<LanguageSection show="typescript">
 
 Use `step.sleepUntil()` to pause the execution of your function until a specific date time.
 
@@ -106,9 +101,9 @@ export default inngest.createFunction(
 
 Check out the [`step.sleepUntil()` TypeScript reference.](/docs/reference/functions/step-sleep-until)
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="python">
+<LanguageSection show="python">
 
   Use `step.sleep_until()` to pause the execution of your function until a specific date time.
 
@@ -125,15 +120,15 @@ async def fn(ctx: inngest.Context) -> None:
 ```
 Check out the [`step.sleep_until()` Python reference.](/docs/reference/python/steps/sleep-until)
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="go">
+<LanguageSection show="go">
 
   _Sleep until a given date is not yet available in the Go SDK._
 
-</GuideSection>
+</LanguageSection>
 
-</GuideSelector>
+</LanguageSelector>
 
 <Callout variant={'info'}>
   **Sleeps and trace/log history**

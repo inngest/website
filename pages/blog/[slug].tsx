@@ -414,6 +414,7 @@ export async function getStaticProps({ params }) {
   ];
   const post = await serialize(content, {
     scope: { json: JSON.stringify(data) },
+    blockJS: false,
     mdxOptions: {
       rehypePlugins: [
         rehypeCodeTitles,

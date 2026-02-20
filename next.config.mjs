@@ -233,11 +233,7 @@ const nextConfig = {
     ],
   },
   outputFileTracingExcludes: {
-    "*": ["./.git/*", "./public/**/*", "./.pnpm-store/*"],
-    "!(/api)": ["./.next/*"],
-  },
-  outputFileTracingIncludes: {
-    "/api/*": ["./next/**/*"],
+    "*": ["./.git/*", "./public/**/*", "./.pnpm-store/*", "./.next/*"],
   },
   webpack: (config, { dev, isServer }) => {
     // Exclude old-style _prefix directories from being rendered (ex. mdx pages)

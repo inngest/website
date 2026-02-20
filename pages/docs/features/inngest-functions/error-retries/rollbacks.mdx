@@ -1,4 +1,4 @@
-import { CardGroup, Card, Callout, GuideSelector, GuideSection } from "src/shared/Docs/mdx";
+import { CardGroup, Card, Callout, LanguageSelector, LanguageSection } from "src/shared/Docs/mdx";
 
 # Rollbacks
 
@@ -8,9 +8,9 @@ If a step failure isn't handled, the error will bubble up to the function itself
 
 Below is an attempt to use DALL-E to generate an image from a prompt, and to fall back to Midjourney if it fails. Remember that these calls are split over separate requests, making the code much more durable against timeouts, transient errors, and these dependencies on external APIs.
 
-<GuideSelector options={[{ key: "typescript", title: "TypeScript" }, { key: "go", title: "Go" }]}>
+<LanguageSelector>
 
-<GuideSection show="typescript">
+<LanguageSection show="typescript">
 
 ```ts
 inngest.createFunction(
@@ -43,9 +43,9 @@ inngest.createFunction(
 );
 ```
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="go">
+<LanguageSection show="go">
 
 ```go
 inngestgo.CreateFunction(
@@ -88,13 +88,13 @@ inngestgo.CreateFunction(
 )
 ```
 
-</GuideSection>
+</LanguageSection>
 
 ### Simple rollbacks
 
 With this pattern, it's possible to assign a small rollback for each step, making sure that every action is safe regardless of how many steps are being run.
 
-<GuideSection show="typescript">
+<LanguageSection show="typescript">
 
 ```ts
 inngest.createFunction(
@@ -123,9 +123,9 @@ inngest.createFunction(
 );
 ```
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="go">
+<LanguageSection show="go">
 
 ```go
 inngestgo.CreateFunction(
@@ -158,6 +158,6 @@ inngestgo.CreateFunction(
 )
 ```
 
-</GuideSection>
+</LanguageSection>
 
-</GuideSelector>
+</LanguageSelector>
