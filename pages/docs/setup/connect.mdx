@@ -498,7 +498,7 @@ When you set `maxWorkerConcurrency`, Inngest will distribute load across multipl
 Workers with available capacity will receive more work, while workers at their limit will not receive additional steps until capacity becomes available.
 
 <Info>
-  When a worker reaches its `maxWorkerConcurrency` limit, you may see an **"All workers are at capacity"** error in the Inngest dashboard. This is a retryable error and no action is required — Inngest will automatically retry and route work to a worker with available capacity or wait for a worker to become available.
+  When a worker reaches its `maxWorkerConcurrency` limit, you may see an **"All workers are at capacity"** error in the Inngest dashboard. This is expected behavior — the worker rejects the step and Inngest automatically re-enqueues it, retrying until a worker has available capacity. These capacity errors do **not** count towards your function's [retries](/docs/functions/retries) configuration.
 </Info>
 
 Inngest uses the `instanceId` to track the `maxWorkerConcurrency` for each worker.
