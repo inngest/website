@@ -2,16 +2,20 @@ import { Info, Warning, CodeGroup, Steps, Step } from "shared/Docs/mdx";
 
 # Connect
 
-<Info>
-  These docs are part of a developer preview for Inngest's `connect` API. Learn more about the [developer preview here](#developer-preview).
-</Info>
-
 The `connect` API allows your app to create an outbound persistent connection to Inngest. Each app can establish multiple connections to Inngest, which enable you to scale horizontally across multiple workers. The key benefits of using `connect` compared to [`serve`](/docs/learn/serving-inngest-functions) are:
 
 - **Lowest latency** - Persistent connections enable the lowest latency between your app and Inngest.
 - **Elastic horizontal scaling** - Easily add more capacity by running additional workers.
 - **Ideal for container runtimes** -  Deploy on Kubernetes or ECS without the need of a load balancer for inbound traffic
 - **Simpler long running steps** - Step execution is not bound by platform http timeouts.
+
+The number of concurrent worker connections available depends on your plan. For new plans, the limits are:
+
+* Free plan: 3 concurrent worker connections
+* All paid plans: 20 concurrent worker connections
+* Max apps per connection: 10
+
+You can find your plan's connection limits on your [billing page](https://app.inngest.com/billing).
 
 ## Minimum requirements
 
@@ -157,10 +161,6 @@ No signing or event keys are required in local development mode.
 
 ## Deploying to production
 
-<Warning>
-  The `connect` API is currently in developer preview and is not yet recommended for critical production workloads. We recommend deploying to a staging environment first prior to deploying to production.
-</Warning>
-
 <Steps>
   <Step title="Set signing and event keys">
     To enable your application to securely connect to Inngest, you must set the `INNGEST_SIGNING_KEY` and `INNGEST_EVENT_KEY` environment variables.
@@ -298,7 +298,7 @@ As a connect worker is a long-running process, it's important to understand the 
 
     The worker will automatically flush any in-flight steps via the HTTP API when the WebSocket connection is lost.
 
-    By default, the worker will attempt to reconnect to Inngest an infinite number of times. See the [developer preview limitations](#limitations) for more details.
+    By default, the worker will attempt to reconnect to Inngest an infinite number of times.
   </Step>
   <Step>
     `CLOSING` - The worker is beginning the shutdown process.
@@ -497,6 +497,10 @@ By default, there is no limit on concurrent step execution. The worker will acce
 When you set `maxWorkerConcurrency`, Inngest will distribute load across multiple workers based on their available capacity.
 Workers with available capacity will receive more work, while workers at their limit will not receive additional steps until capacity becomes available.
 
+<Info>
+  When a worker reaches its `maxWorkerConcurrency` limit, you may see an **"All workers are at capacity"** error in the Inngest dashboard. This is a retryable error and no action is required — Inngest will automatically retry and route work to a worker with available capacity or wait for a worker to become available.
+</Info>
+
 Inngest uses the `instanceId` to track the `maxWorkerConcurrency` for each worker.
 This means that if you have multiple workers with the same `instanceId`, they will share the same `maxWorkerConcurrency` limit.
 
@@ -647,24 +651,4 @@ const connection = await connect({
   We are working on enabling more fine-grained function and app migrations from existing `serve` apps to `connect`.
 </Info>
 
-During the Inngest developer preview, we recommend setting up a new app for trying out `connect`. We will support gradually migrating your existing `serve` apps in a future release.
-
-## Developer preview
-
-The `connect` API is currently in developer preview. This means that the API is not yet recommended for critical production workloads and is subject to breaking changes.
-
-During the developer preview, the `connect` API is available to all Inngest accounts with the following plan-limits:
-
-* Free plan: 3 concurrent worker connections
-* All paid plans: 20 concurrent worker connections
-* Max apps per connection: 10
-
-Final plan limitations will be announced prior to general availability. Please [contact us](https://app.inngest.com/support) if you need to increase these limits.
-
-Read the [release phases](/docs/release-phases) for more details.
-
-### Limitations
-
-During the developer preview, there are some limitations to using `connect` to be aware of. Please [contact us](https://app.inngest.com/support) if you'd like clarity on any of the following:
-
-* **Reconnection policy is not configurable** - The SDK will attempt to reconnect to Inngest an infinite number of times. We will expose a configurable reconnection policy in the future.
+We recommend setting up a new app for trying out `connect` before migrating your existing `serve` apps. {/* We will support gradually migrating your existing `serve` apps in a future release. */}
