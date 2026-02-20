@@ -204,7 +204,19 @@ const sectionReference: (NavGroup | NavLink)[] = [
             title: "ESLint plugin",
             href: `/docs/sdk/eslint`,
           },
-          { title: "Upgrading to v3", href: `/docs/sdk/migration` },
+        ],
+      },
+      {
+        title: "Migrations",
+        links: [
+          {
+            title: "v3 to v4",
+            href: `/docs/reference/typescript/migrations/v3-to-v4`,
+          },
+          {
+            title: "v2 to v3",
+            href: `/docs/reference/typescript/migrations/v2-to-v3`,
+          },
         ],
       },
     ],

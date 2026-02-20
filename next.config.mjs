@@ -88,6 +88,8 @@ const permanentRedirects = [
 
   ["/docs/features/realtime/nextjs", "/docs/features/realtime/react-hooks"],
 
+  ["/docs/sdk/migration", "/docs/reference/typescript/migrations/v3-to-v4"],
+
   // Durable Endpoints rename
   ["/docs/learn/rest-endpoints", "/docs/learn/durable-endpoints"],
 ];
