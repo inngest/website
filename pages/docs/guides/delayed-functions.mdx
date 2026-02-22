@@ -165,6 +165,26 @@ For more information on `step.sleep_until()` [read the reference](/docs/referenc
 
 </LanguageSelector>
 
+## Delaying the start of a function
+
+You can also delay when a function starts by setting the `ts` field in the [event payload](/docs/events#event-payload-format) to a future Unix timestamp. Unlike `step.sleep()` or `step.sleepUntil()` which add delays _within_ a function, the `ts` field delays the _start_ of the function run itself.
+
+For example, to schedule a function to run 5 minutes from now:
+
+```typescript
+await inngest.send({
+  name: "notifications/reminder.scheduled",
+  data: {
+    user: { email: "johnny.utah@fbi.gov" },
+    message: "Don't forget to catch the wave at 3pm",
+  },
+  // Include the timestamp for 5 minutes in the future:
+  ts: Date.now() + 5 * 60 * 1000,
+});
+```
+
+For a complete walkthrough, see the [Scheduling a one-off function](/docs/examples/scheduling-one-off-function) example.
+
 ## How it works
 
 {/* TODO - Revisit this section after we write a How Inngest Works explainer */}
