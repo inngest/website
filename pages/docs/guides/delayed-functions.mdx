@@ -2,7 +2,13 @@ import { LanguageSelector, LanguageSection } from "src/shared/Docs/mdx";
 
 # Delayed Functions
 
-You can easily enqueue jobs in the future with Inngest. Inngest offers two ways to run jobs in the future: delaying jobs for a specific amount of time (up to a year, and for free plan up to seven days), or running code at a specific date and time. There are some benefits to enqueuing jobs using Inngest:
+You can easily enqueue jobs in the future with Inngest. There are three ways to run jobs in the future:
+
+- [**Delaying jobs**](#delaying-jobs) — Pause mid-function for a duration using `step.sleep()`
+- [**Running at specific times**](#running-at-specific-times) — Pause mid-function until a date/time using `step.sleepUntil()`
+- [**Delaying the start of a function**](#delaying-the-start-of-a-function) — Delay when a function is first invoked by setting the event's `ts` field
+
+Delays can be up to a year (up to seven days on the free plan). There are some benefits to enqueuing jobs using Inngest:
 
 - It works across any provider or platform
 - Delaying jobs is durable, and works across server restarts, serverless functions, and redeploys
@@ -189,7 +195,12 @@ For a complete walkthrough, see the [Scheduling a one-off function](/docs/exampl
 
 {/* TODO - Revisit this section after we write a How Inngest Works explainer */}
 
-In both methods, **the function controls when it runs**.  You control the flow of your code by calling `sleep` or `sleepUntil` within your function directly,
-instead of using the queue to manage your code's timing.  This keeps your logic together and makes your code easier to modify.
+### `step.sleep()` and `step.sleepUntil()`
 
-Inngest *stops the function from running* for whatever time is specified.  When you call `step.sleep` or `step.sleepUntil` the function automatically stops running any future work. The function then tells the Inngest executor that it should be re-invoked at a future time.  We re-call the function at the next step, skipping any previous work.  This is how we bypass serverless function time limits and work across server restarts or redeploys.
+With `step.sleep()` and `step.sleepUntil()`, **the function controls when it runs**. You control the flow of your code by calling `sleep` or `sleepUntil` within your function directly, instead of using the queue to manage your code's timing. This keeps your logic together and makes your code easier to modify.
+
+Inngest *stops the function from running* for whatever time is specified. When you call `step.sleep` or `step.sleepUntil` the function automatically stops running any future work. The function then tells the Inngest executor that it should be re-invoked at a future time. We re-call the function at the next step, skipping any previous work. This is how we bypass serverless function time limits and work across server restarts or redeploys.
+
+### Event `ts` field
+
+When you set the `ts` field on an event to a future Unix timestamp, Inngest delays invoking the function until that time. The function itself runs normally — the delay happens before it starts, not within it. This is useful when the delay is known at the time the event is sent and you don't need any logic to run before the wait.
