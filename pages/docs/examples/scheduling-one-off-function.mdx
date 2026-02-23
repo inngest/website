@@ -37,7 +37,7 @@ const sendReminder = inngest.createFunction(
 
 ### Triggering the function with a timestamp
 
-To trigger this function, you will send an event `"notifications/reminder.scheduled"` using `inngest.send()` with the necessary data. The `ts` field in the [event payload](/docs/events#event-payload-format) should be set to the Unix timestamp of the time you want the function to run. For example, to schedule a reminder for 5 minutes in the future:
+To trigger this function, you will send an event `"notifications/reminder.scheduled"` using `inngest.send()` with the necessary data. The `ts` field in the [event payload](/docs/events#event-payload-format) should be set to the time you want the function to run, in milliseconds since the Unix epoch. For example, to schedule a reminder for 5 minutes in the future:
 
 ```typescript
 await inngest.send({

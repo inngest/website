@@ -173,7 +173,7 @@ For more information on `step.sleep_until()` [read the reference](/docs/referenc
 
 ## Schedule a function for later
 
-You can also delay when a function starts by setting the `ts` field in the [event payload](/docs/events#event-payload-format) to a future Unix timestamp. Unlike `step.sleep()` or `step.sleepUntil()` which add delays _within_ a function, the `ts` field delays the _start_ of the function run itself.
+You can also delay when a function starts by setting the `ts` field in the [event payload](/docs/events#event-payload-format) to a future timestamp (milliseconds since the Unix epoch). Unlike `step.sleep()` or `step.sleepUntil()` which add delays _within_ a function, the `ts` field delays the _start_ of the function run itself.
 
 For example, to schedule a function to run 5 minutes from now:
 
