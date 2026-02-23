@@ -12,6 +12,7 @@ export const SDK_LANGUAGES: { id: SDKLanguage; title: string; shortTitle: string
 // Map SDK titles in navigation to language IDs
 export const SDK_TITLE_TO_LANGUAGE: Record<string, SDKLanguage> = {
   "TypeScript SDK": "typescript",
+  "TypeScript SDK v4": "typescript",
   "Python SDK": "python",
   "Go SDK": "go",
 };

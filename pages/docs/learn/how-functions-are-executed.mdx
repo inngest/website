@@ -72,6 +72,17 @@ const fn = inngest.createFunction(
 );
 ```
 
+<Callout variant="info">
+  **Using inngest@v4?** Event triggers are now specified in the configuration object. The example above would be written as:
+  ```ts
+  const fn = inngest.createFunction(
+    { id: "import-contacts", triggers: [{ event: "contacts/csv.uploaded" }] },
+    async ({ event, step }) => { /* ... */ },
+  );
+  ```
+  See the [v3 → v4 migration guide](/docs/reference/typescript/v4/migrations/v3-to-v4#event-trigger-is-now-in-options) for details.
+</Callout>
+
 ### Initial execution
 
 1. When the function is first called, the _function handler_ is called with only the `event` payload data sent.

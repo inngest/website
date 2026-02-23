@@ -56,15 +56,15 @@ const sectionReference: (NavGroup | NavLink)[] = [
       },
       {
         title: "Create the client",
-        href: `/docs/reference/client/create`,
+        href: `/docs/reference/typescript/v3/client/create`,
       },
       {
         title: "Create a function",
-        href: `/docs/reference/functions/create`,
+        href: `/docs/reference/typescript/v3/functions/create`,
       },
       {
         title: "Send events",
-        href: `/docs/reference/events/send`,
+        href: `/docs/reference/typescript/v3/events/send`,
       },
       {
         title: "Errors",
@@ -72,11 +72,11 @@ const sectionReference: (NavGroup | NavLink)[] = [
       },
       {
         title: "Handling failures",
-        href: `/docs/reference/functions/handling-failures`,
+        href: `/docs/reference/typescript/v3/functions/handling-failures`,
       },
       {
         title: "Cancel on",
-        href: `/docs/reference/typescript/functions/cancel-on`,
+        href: `/docs/reference/typescript/v3/functions/cancel-on`,
       },
       {
         title: "Concurrency",
@@ -84,23 +84,23 @@ const sectionReference: (NavGroup | NavLink)[] = [
       },
       {
         title: "Rate limit",
-        href: `/docs/reference/functions/rate-limit`,
+        href: `/docs/reference/typescript/v3/functions/rate-limit`,
       },
       {
         title: "Singleton",
-        href: `/docs/reference/functions/singleton`,
+        href: `/docs/reference/typescript/v3/functions/singleton`,
       },
       {
         title: "Debounce",
-        href: `/docs/reference/functions/debounce`,
+        href: `/docs/reference/typescript/v3/functions/debounce`,
       },
       {
         title: "Function run priority",
-        href: `/docs/reference/functions/run-priority`,
+        href: `/docs/reference/typescript/v3/functions/run-priority`,
       },
       {
         title: "Extended Traces",
-        href: "/docs/reference/typescript/extended-traces",
+        href: `/docs/reference/typescript/v3/extended-traces`,
       },
       {
         title: "Referencing functions",
@@ -108,11 +108,11 @@ const sectionReference: (NavGroup | NavLink)[] = [
       },
       {
         title: "Testing",
-        href: "/docs/reference/testing",
+        href: `/docs/reference/typescript/v3/testing`,
       },
       {
         title: "Durable Endpoints",
-        href: "/docs/reference/typescript/durable-endpoints",
+        href: `/docs/reference/typescript/v3/durable-endpoints`,
         tag: "new",
       },
       {
@@ -120,37 +120,37 @@ const sectionReference: (NavGroup | NavLink)[] = [
         links: [
           {
             title: "step.run()",
-            href: `/docs/reference/functions/step-run`,
+            href: `/docs/reference/typescript/v3/functions/step-run`,
             className: "font-mono",
           },
           {
             title: "step.sleep()",
-            href: `/docs/reference/functions/step-sleep`,
+            href: `/docs/reference/typescript/v3/functions/step-sleep`,
             className: "font-mono",
           },
           {
             title: "step.sleepUntil()",
-            href: `/docs/reference/functions/step-sleep-until`,
+            href: `/docs/reference/typescript/v3/functions/step-sleep-until`,
             className: "font-mono",
           },
           {
             title: "step.invoke()",
-            href: `/docs/reference/functions/step-invoke`,
+            href: `/docs/reference/typescript/v3/functions/step-invoke`,
             className: "font-mono",
           },
           {
             title: "step.waitForEvent()",
-            href: `/docs/reference/functions/step-wait-for-event`,
+            href: `/docs/reference/typescript/v3/functions/step-wait-for-event`,
             className: "font-mono",
           },
           {
             title: "step.waitForSignal()",
-            href: `/docs/reference/functions/step-wait-for-signal`,
+            href: `/docs/reference/typescript/v3/functions/step-wait-for-signal`,
             className: "font-mono",
           },
           {
             title: "step.sendEvent()",
-            href: `/docs/reference/functions/step-send-event`,
+            href: `/docs/reference/typescript/v3/functions/step-send-event`,
             className: "font-mono",
           },
         ],
@@ -164,7 +164,7 @@ const sectionReference: (NavGroup | NavLink)[] = [
           },
           {
             title: "Configuration",
-            href: `/docs/reference/serve`,
+            href: `/docs/reference/typescript/v3/serve`,
           },
           {
             title: "Streaming",
@@ -177,11 +177,11 @@ const sectionReference: (NavGroup | NavLink)[] = [
         links: [
           {
             title: "Lifecycle",
-            href: `/docs/reference/middleware/lifecycle`,
+            href: `/docs/reference/typescript/v3/middleware/lifecycle`,
           },
           {
             title: "Examples",
-            href: `/docs/reference/middleware/examples`,
+            href: `/docs/reference/typescript/v3/middleware/examples`,
           },
           {
             title: "TypeScript",
@@ -204,7 +204,178 @@ const sectionReference: (NavGroup | NavLink)[] = [
             title: "ESLint plugin",
             href: `/docs/sdk/eslint`,
           },
-          { title: "Upgrading to v3", href: `/docs/sdk/migration` },
+          { title: "Upgrading to v3", href: `/docs/reference/typescript/v3/migrations/v2-to-v3` },
+        ],
+      },
+    ],
+  },
+  {
+    title: "TypeScript SDK v4",
+    tag: "beta",
+    links: [
+      {
+        title: "Introduction",
+        href: `/docs/reference/typescript`,
+      },
+      {
+        title: "Create the client",
+        href: `/docs/reference/typescript/v4/client/create`,
+      },
+      {
+        title: "Create a function",
+        href: `/docs/reference/typescript/v4/functions/create`,
+      },
+      {
+        title: "Send events",
+        href: `/docs/reference/typescript/v4/events/send`,
+      },
+      {
+        title: "Errors",
+        href: `/docs/reference/typescript/functions/errors`,
+      },
+      {
+        title: "Handling failures",
+        href: `/docs/reference/typescript/v4/functions/handling-failures`,
+      },
+      {
+        title: "Cancel on",
+        href: `/docs/reference/typescript/v4/functions/cancel-on`,
+      },
+      {
+        title: "Concurrency",
+        href: `/docs/functions/concurrency`,
+      },
+      {
+        title: "Rate limit",
+        href: `/docs/reference/typescript/v4/functions/rate-limit`,
+      },
+      {
+        title: "Singleton",
+        href: `/docs/reference/typescript/v4/functions/singleton`,
+      },
+      {
+        title: "Debounce",
+        href: `/docs/reference/typescript/v4/functions/debounce`,
+      },
+      {
+        title: "Function run priority",
+        href: `/docs/reference/typescript/v4/functions/run-priority`,
+      },
+      {
+        title: "Extended Traces",
+        href: `/docs/reference/typescript/v4/extended-traces`,
+      },
+      {
+        title: "Referencing functions",
+        href: `/docs/functions/references`,
+      },
+      {
+        title: "Testing",
+        href: `/docs/reference/typescript/v4/testing`,
+      },
+      {
+        title: "Durable Endpoints",
+        href: `/docs/reference/typescript/v4/durable-endpoints`,
+        tag: "new",
+      },
+      {
+        title: "Steps",
+        links: [
+          {
+            title: "step.run()",
+            href: `/docs/reference/typescript/v4/functions/step-run`,
+            className: "font-mono",
+          },
+          {
+            title: "step.sleep()",
+            href: `/docs/reference/typescript/v4/functions/step-sleep`,
+            className: "font-mono",
+          },
+          {
+            title: "step.sleepUntil()",
+            href: `/docs/reference/typescript/v4/functions/step-sleep-until`,
+            className: "font-mono",
+          },
+          {
+            title: "step.invoke()",
+            href: `/docs/reference/typescript/v4/functions/step-invoke`,
+            className: "font-mono",
+          },
+          {
+            title: "step.waitForEvent()",
+            href: `/docs/reference/typescript/v4/functions/step-wait-for-event`,
+            className: "font-mono",
+          },
+          {
+            title: "step.waitForSignal()",
+            href: `/docs/reference/typescript/v4/functions/step-wait-for-signal`,
+            className: "font-mono",
+          },
+          {
+            title: "step.sendEvent()",
+            href: `/docs/reference/typescript/v4/functions/step-send-event`,
+            className: "font-mono",
+          },
+        ],
+      },
+      {
+        title: "Serve",
+        links: [
+          {
+            title: "Framework handlers",
+            href: `/docs/learn/serving-inngest-functions`,
+          },
+          {
+            title: "Configuration",
+            href: `/docs/reference/typescript/v4/serve`,
+          },
+          {
+            title: "Streaming",
+            href: `/docs/streaming`,
+          },
+        ],
+      },
+      {
+        title: "Middleware",
+        links: [
+          {
+            title: "Lifecycle",
+            href: `/docs/reference/typescript/v4/middleware/lifecycle`,
+          },
+          {
+            title: "Examples",
+            href: `/docs/reference/typescript/v4/middleware/examples`,
+          },
+          {
+            title: "TypeScript",
+            href: `/docs/reference/middleware/typescript`,
+          },
+        ],
+      },
+      {
+        title: "Migrations",
+        links: [
+          {
+            title: "v3 to v4",
+            href: `/docs/reference/typescript/v4/migrations/v3-to-v4`,
+          },
+        ],
+      },
+      {
+        title: "Using the SDK",
+        links: [
+          {
+            title: "Environment variables",
+            href: `/docs/sdk/environment-variables`,
+          },
+          {
+            title: "Using TypeScript",
+            href: `/docs/typescript`,
+          },
+          {
+            title: "ESLint plugin",
+            href: `/docs/sdk/eslint`,
+          },
         ],
       },
     ],
