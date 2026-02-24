@@ -43,6 +43,7 @@ import {
   SDK_HOME_PAGES,
   getLanguageFromPath,
   getTsVersionFromPath,
+  TS_STABLE,
   TS_VERSIONS,
   type SDKLanguage,
   type TSVersion,
@@ -717,10 +718,17 @@ function VersionSwitcher({
 
   const handleVersionChange = (newVersion: TSVersion) => {
     setTsVersion(newVersion);
-    // If on a versioned TS page for a different version, navigate to TS reference home
+
+    // If on a versioned TS page for a different version, navigate to version
+    // intro
     const pathVersion = getTsVersionFromPath(pathname);
     if (pathVersion && pathVersion !== newVersion) {
-      router.push("/docs/reference/typescript");
+      if (newVersion === TS_STABLE) {
+        // Stable version gets versionless path
+        router.push("/docs/reference/typescript");
+      } else {
+        router.push(`/docs/reference/typescript/${newVersion}`);
+      }
     }
   };
 
@@ -798,13 +806,18 @@ export function Navigation(props) {
   const { activeSection, setActiveSection } = useActiveSection();
   const { language, tsVersion, setTsVersion } = useLanguageStore();
 
-  // Sync tsVersion from URL when navigating to a versioned TS page
+  // URL-derived version takes precedence over store during render so the nav is
+  // correct on first paint (before the effect syncs the store).
+  const pathTsVersion = getTsVersionFromPath(pathname);
+  const effectiveTsVersion = pathTsVersion || tsVersion;
+
+  // Sync tsVersion from URL. Reruns on navigation and after Zustand persist
+  // rehydration so the URL always wins.
   useEffect(() => {
-    const pathVersion = getTsVersionFromPath(pathname);
-    if (pathVersion && pathVersion !== tsVersion) {
-      setTsVersion(pathVersion);
+    if (pathTsVersion && pathTsVersion !== tsVersion) {
+      setTsVersion(pathTsVersion);
     }
-  }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [pathname, pathTsVersion, tsVersion, setTsVersion]);
 
   // Find the section based on the active tab (Learn/Reference)
   const nestedSection =
@@ -919,7 +932,7 @@ export function Navigation(props) {
               >
                 {nestedNavigation.sectionLinks.map((item, groupIndex) => {
                   // For Reference section, hide non-selected SDK sections with CSS (keeps links in DOM for SEO)
-                  const isHidden = activeSection === "Reference" && shouldHideSection(item.title, language, tsVersion);
+                  const isHidden = activeSection === "Reference" && shouldHideSection(item.title, language, effectiveTsVersion);
                   // Add visual separator before shared sections (REST API, etc.)
                   const isSharedSection = SHARED_REFERENCE_TITLES.includes(item.title);
                   const isFirstSharedSection = isSharedSection && 

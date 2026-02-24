@@ -6,6 +6,16 @@ import {
   CodeBracketIcon,
 } from "@heroicons/react/24/outline";
 import { parse } from "node:path";
+import { TS_STABLE, type TSVersion } from "./LanguageStore";
+
+// Build a TypeScript SDK reference path. Stable version gets versionless
+// paths; non-stable gets a version prefix.
+function tsRef(version: TSVersion, path: string): string {
+  if (version === TS_STABLE) {
+    return `/docs/reference/typescript/${path}`;
+  }
+  return `/docs/reference/typescript/${version}/${path}`;
+}
 
 // A basic link in the nav
 export type NavLink = {
@@ -52,19 +62,19 @@ const sectionReference: (NavGroup | NavLink)[] = [
     links: [
       {
         title: "Introduction",
-        href: `/docs/reference/typescript`,
+        href: tsRef("v3", ""),
       },
       {
         title: "Create the client",
-        href: `/docs/reference/typescript/v3/client/create`,
+        href: tsRef("v3", "client/create"),
       },
       {
         title: "Create a function",
-        href: `/docs/reference/typescript/v3/functions/create`,
+        href: tsRef("v3", "functions/create"),
       },
       {
         title: "Send events",
-        href: `/docs/reference/typescript/v3/events/send`,
+        href: tsRef("v3", "events/send"),
       },
       {
         title: "Errors",
@@ -72,11 +82,11 @@ const sectionReference: (NavGroup | NavLink)[] = [
       },
       {
         title: "Handling failures",
-        href: `/docs/reference/typescript/v3/functions/handling-failures`,
+        href: tsRef("v3", "functions/handling-failures"),
       },
       {
         title: "Cancel on",
-        href: `/docs/reference/typescript/v3/functions/cancel-on`,
+        href: tsRef("v3", "functions/cancel-on"),
       },
       {
         title: "Concurrency",
@@ -84,23 +94,23 @@ const sectionReference: (NavGroup | NavLink)[] = [
       },
       {
         title: "Rate limit",
-        href: `/docs/reference/typescript/v3/functions/rate-limit`,
+        href: tsRef("v3", "functions/rate-limit"),
       },
       {
         title: "Singleton",
-        href: `/docs/reference/typescript/v3/functions/singleton`,
+        href: tsRef("v3", "functions/singleton"),
       },
       {
         title: "Debounce",
-        href: `/docs/reference/typescript/v3/functions/debounce`,
+        href: tsRef("v3", "functions/debounce"),
       },
       {
         title: "Function run priority",
-        href: `/docs/reference/typescript/v3/functions/run-priority`,
+        href: tsRef("v3", "functions/run-priority"),
       },
       {
         title: "Extended Traces",
-        href: `/docs/reference/typescript/v3/extended-traces`,
+        href: tsRef("v3", "extended-traces"),
       },
       {
         title: "Referencing functions",
@@ -108,11 +118,11 @@ const sectionReference: (NavGroup | NavLink)[] = [
       },
       {
         title: "Testing",
-        href: `/docs/reference/typescript/v3/testing`,
+        href: tsRef("v3", "testing"),
       },
       {
         title: "Durable Endpoints",
-        href: `/docs/reference/typescript/v3/durable-endpoints`,
+        href: tsRef("v3", "durable-endpoints"),
         tag: "new",
       },
       {
@@ -120,37 +130,37 @@ const sectionReference: (NavGroup | NavLink)[] = [
         links: [
           {
             title: "step.run()",
-            href: `/docs/reference/typescript/v3/functions/step-run`,
+            href: tsRef("v3", "functions/step-run"),
             className: "font-mono",
           },
           {
             title: "step.sleep()",
-            href: `/docs/reference/typescript/v3/functions/step-sleep`,
+            href: tsRef("v3", "functions/step-sleep"),
             className: "font-mono",
           },
           {
             title: "step.sleepUntil()",
-            href: `/docs/reference/typescript/v3/functions/step-sleep-until`,
+            href: tsRef("v3", "functions/step-sleep-until"),
             className: "font-mono",
           },
           {
             title: "step.invoke()",
-            href: `/docs/reference/typescript/v3/functions/step-invoke`,
+            href: tsRef("v3", "functions/step-invoke"),
             className: "font-mono",
           },
           {
             title: "step.waitForEvent()",
-            href: `/docs/reference/typescript/v3/functions/step-wait-for-event`,
+            href: tsRef("v3", "functions/step-wait-for-event"),
             className: "font-mono",
           },
           {
             title: "step.waitForSignal()",
-            href: `/docs/reference/typescript/v3/functions/step-wait-for-signal`,
+            href: tsRef("v3", "functions/step-wait-for-signal"),
             className: "font-mono",
           },
           {
             title: "step.sendEvent()",
-            href: `/docs/reference/typescript/v3/functions/step-send-event`,
+            href: tsRef("v3", "functions/step-send-event"),
             className: "font-mono",
           },
         ],
@@ -164,7 +174,7 @@ const sectionReference: (NavGroup | NavLink)[] = [
           },
           {
             title: "Configuration",
-            href: `/docs/reference/typescript/v3/serve`,
+            href: tsRef("v3", "serve"),
           },
           {
             title: "Streaming",
@@ -177,11 +187,11 @@ const sectionReference: (NavGroup | NavLink)[] = [
         links: [
           {
             title: "Lifecycle",
-            href: `/docs/reference/typescript/v3/middleware/lifecycle`,
+            href: tsRef("v3", "middleware/lifecycle"),
           },
           {
             title: "Examples",
-            href: `/docs/reference/typescript/v3/middleware/examples`,
+            href: tsRef("v3", "middleware/examples"),
           },
           {
             title: "TypeScript",
@@ -204,7 +214,7 @@ const sectionReference: (NavGroup | NavLink)[] = [
             title: "ESLint plugin",
             href: `/docs/sdk/eslint`,
           },
-          { title: "Upgrading to v3", href: `/docs/reference/typescript/v3/migrations/v2-to-v3` },
+          { title: "Upgrading to v3", href: tsRef("v3", "migrations/v2-to-v3") },
         ],
       },
     ],
@@ -215,19 +225,19 @@ const sectionReference: (NavGroup | NavLink)[] = [
     links: [
       {
         title: "Introduction",
-        href: `/docs/reference/typescript`,
+        href: tsRef("v4", ""),
       },
       {
         title: "Create the client",
-        href: `/docs/reference/typescript/v4/client/create`,
+        href: tsRef("v4", "client/create"),
       },
       {
         title: "Create a function",
-        href: `/docs/reference/typescript/v4/functions/create`,
+        href: tsRef("v4", "functions/create"),
       },
       {
         title: "Send events",
-        href: `/docs/reference/typescript/v4/events/send`,
+        href: tsRef("v4", "events/send"),
       },
       {
         title: "Errors",
@@ -235,47 +245,47 @@ const sectionReference: (NavGroup | NavLink)[] = [
       },
       {
         title: "Handling failures",
-        href: `/docs/reference/typescript/v4/functions/handling-failures`,
+        href: tsRef("v4", "functions/handling-failures"),
       },
       {
         title: "Cancel on",
-        href: `/docs/reference/typescript/v4/functions/cancel-on`,
+        href: tsRef("v4", "functions/cancel-on"),
       },
       {
         title: "Concurrency",
-        href: `/docs/functions/concurrency`,
+        href: tsRef("v4", "functions/concurrency"),
       },
       {
         title: "Rate limit",
-        href: `/docs/reference/typescript/v4/functions/rate-limit`,
+        href: tsRef("v4", "functions/rate-limit"),
       },
       {
         title: "Singleton",
-        href: `/docs/reference/typescript/v4/functions/singleton`,
+        href: tsRef("v4", "functions/singleton"),
       },
       {
         title: "Debounce",
-        href: `/docs/reference/typescript/v4/functions/debounce`,
+        href: tsRef("v4", "functions/debounce"),
       },
       {
         title: "Function run priority",
-        href: `/docs/reference/typescript/v4/functions/run-priority`,
+        href: tsRef("v4", "functions/run-priority"),
       },
       {
         title: "Extended Traces",
-        href: `/docs/reference/typescript/v4/extended-traces`,
+        href: tsRef("v4", "extended-traces"),
       },
       {
         title: "Referencing functions",
-        href: `/docs/functions/references`,
+        href: tsRef("v4", "functions/references"),
       },
       {
         title: "Testing",
-        href: `/docs/reference/typescript/v4/testing`,
+        href: tsRef("v4", "testing"),
       },
       {
         title: "Durable Endpoints",
-        href: `/docs/reference/typescript/v4/durable-endpoints`,
+        href: tsRef("v4", "durable-endpoints"),
         tag: "new",
       },
       {
@@ -283,37 +293,37 @@ const sectionReference: (NavGroup | NavLink)[] = [
         links: [
           {
             title: "step.run()",
-            href: `/docs/reference/typescript/v4/functions/step-run`,
+            href: tsRef("v4", "functions/step-run"),
             className: "font-mono",
           },
           {
             title: "step.sleep()",
-            href: `/docs/reference/typescript/v4/functions/step-sleep`,
+            href: tsRef("v4", "functions/step-sleep"),
             className: "font-mono",
           },
           {
             title: "step.sleepUntil()",
-            href: `/docs/reference/typescript/v4/functions/step-sleep-until`,
+            href: tsRef("v4", "functions/step-sleep-until"),
             className: "font-mono",
           },
           {
             title: "step.invoke()",
-            href: `/docs/reference/typescript/v4/functions/step-invoke`,
+            href: tsRef("v4", "functions/step-invoke"),
             className: "font-mono",
           },
           {
             title: "step.waitForEvent()",
-            href: `/docs/reference/typescript/v4/functions/step-wait-for-event`,
+            href: tsRef("v4", "functions/step-wait-for-event"),
             className: "font-mono",
           },
           {
             title: "step.waitForSignal()",
-            href: `/docs/reference/typescript/v4/functions/step-wait-for-signal`,
+            href: tsRef("v4", "functions/step-wait-for-signal"),
             className: "font-mono",
           },
           {
             title: "step.sendEvent()",
-            href: `/docs/reference/typescript/v4/functions/step-send-event`,
+            href: tsRef("v4", "functions/step-send-event"),
             className: "font-mono",
           },
         ],
@@ -327,11 +337,11 @@ const sectionReference: (NavGroup | NavLink)[] = [
           },
           {
             title: "Configuration",
-            href: `/docs/reference/typescript/v4/serve`,
+            href: tsRef("v4", "serve"),
           },
           {
             title: "Streaming",
-            href: `/docs/streaming`,
+            href: tsRef("v4", "serve/streaming"),
           },
         ],
       },
@@ -340,15 +350,19 @@ const sectionReference: (NavGroup | NavLink)[] = [
         links: [
           {
             title: "Lifecycle",
-            href: `/docs/reference/typescript/v4/middleware/lifecycle`,
+            href: tsRef("v4", "middleware/lifecycle"),
           },
           {
-            title: "Examples",
-            href: `/docs/reference/typescript/v4/middleware/examples`,
+            title: "Use cases",
+            href: tsRef("v4", "middleware/examples"),
           },
           {
-            title: "TypeScript",
-            href: `/docs/reference/middleware/typescript`,
+            title: "Encryption",
+            href: tsRef("v4", "middleware/encryption"),
+          },
+          {
+            title: "Sentry",
+            href: tsRef("v4", "middleware/sentry"),
           },
         ],
       },
@@ -357,7 +371,7 @@ const sectionReference: (NavGroup | NavLink)[] = [
         links: [
           {
             title: "v3 to v4",
-            href: `/docs/reference/typescript/v4/migrations/v3-to-v4`,
+            href: tsRef("v4", "migrations/v3-to-v4"),
           },
         ],
       },

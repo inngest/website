@@ -149,30 +149,26 @@ async function redirects() {
     },
     // TypeScript SDK versioned docs - landing page redirect
     { source: "/docs/reference/typescript/v4", destination: "/docs/reference/typescript/v4/client/create", permanent: false },
-    // TypeScript SDK versioned docs - temporary redirects to v3 (will point to v4 at GA)
-    { source: "/docs/reference/client/create", destination: "/docs/reference/typescript/v3/client/create", permanent: false },
-    { source: "/docs/reference/events/send", destination: "/docs/reference/typescript/v3/events/send", permanent: false },
-    { source: "/docs/reference/functions/create", destination: "/docs/reference/typescript/v3/functions/create", permanent: false },
-    { source: "/docs/reference/functions/debounce", destination: "/docs/reference/typescript/v3/functions/debounce", permanent: false },
-    { source: "/docs/reference/functions/handling-failures", destination: "/docs/reference/typescript/v3/functions/handling-failures", permanent: false },
-    { source: "/docs/reference/functions/rate-limit", destination: "/docs/reference/typescript/v3/functions/rate-limit", permanent: false },
-    { source: "/docs/reference/functions/run-priority", destination: "/docs/reference/typescript/v3/functions/run-priority", permanent: false },
-    { source: "/docs/reference/functions/singleton", destination: "/docs/reference/typescript/v3/functions/singleton", permanent: false },
-    { source: "/docs/reference/functions/step-invoke", destination: "/docs/reference/typescript/v3/functions/step-invoke", permanent: false },
-    { source: "/docs/reference/functions/step-run", destination: "/docs/reference/typescript/v3/functions/step-run", permanent: false },
-    { source: "/docs/reference/functions/step-send-event", destination: "/docs/reference/typescript/v3/functions/step-send-event", permanent: false },
-    { source: "/docs/reference/functions/step-sleep-until", destination: "/docs/reference/typescript/v3/functions/step-sleep-until", permanent: false },
-    { source: "/docs/reference/functions/step-sleep", destination: "/docs/reference/typescript/v3/functions/step-sleep", permanent: false },
-    { source: "/docs/reference/functions/step-wait-for-event", destination: "/docs/reference/typescript/v3/functions/step-wait-for-event", permanent: false },
-    { source: "/docs/reference/functions/step-wait-for-signal", destination: "/docs/reference/typescript/v3/functions/step-wait-for-signal", permanent: false },
-    { source: "/docs/reference/serve", destination: "/docs/reference/typescript/v3/serve", permanent: false },
-    { source: "/docs/reference/testing", destination: "/docs/reference/typescript/v3/testing", permanent: false },
-    { source: "/docs/reference/middleware/lifecycle", destination: "/docs/reference/typescript/v3/middleware/lifecycle", permanent: false },
-    { source: "/docs/reference/middleware/examples", destination: "/docs/reference/typescript/v3/middleware/examples", permanent: false },
-    { source: "/docs/reference/typescript/functions/cancel-on", destination: "/docs/reference/typescript/v3/functions/cancel-on", permanent: false },
-    { source: "/docs/reference/typescript/durable-endpoints", destination: "/docs/reference/typescript/v3/durable-endpoints", permanent: false },
-    { source: "/docs/reference/typescript/extended-traces", destination: "/docs/reference/typescript/v3/extended-traces", permanent: false },
-    { source: "/docs/reference/typescript/migrations/v2-to-v3", destination: "/docs/reference/typescript/v3/migrations/v2-to-v3", permanent: false },
+    // Legacy short paths - redirect to versionless TypeScript docs
+    { source: "/docs/reference/client/create", destination: "/docs/reference/typescript/client/create", permanent: false },
+    { source: "/docs/reference/events/send", destination: "/docs/reference/typescript/events/send", permanent: false },
+    { source: "/docs/reference/functions/create", destination: "/docs/reference/typescript/functions/create", permanent: false },
+    { source: "/docs/reference/functions/debounce", destination: "/docs/reference/typescript/functions/debounce", permanent: false },
+    { source: "/docs/reference/functions/handling-failures", destination: "/docs/reference/typescript/functions/handling-failures", permanent: false },
+    { source: "/docs/reference/functions/rate-limit", destination: "/docs/reference/typescript/functions/rate-limit", permanent: false },
+    { source: "/docs/reference/functions/run-priority", destination: "/docs/reference/typescript/functions/run-priority", permanent: false },
+    { source: "/docs/reference/functions/singleton", destination: "/docs/reference/typescript/functions/singleton", permanent: false },
+    { source: "/docs/reference/functions/step-invoke", destination: "/docs/reference/typescript/functions/step-invoke", permanent: false },
+    { source: "/docs/reference/functions/step-run", destination: "/docs/reference/typescript/functions/step-run", permanent: false },
+    { source: "/docs/reference/functions/step-send-event", destination: "/docs/reference/typescript/functions/step-send-event", permanent: false },
+    { source: "/docs/reference/functions/step-sleep-until", destination: "/docs/reference/typescript/functions/step-sleep-until", permanent: false },
+    { source: "/docs/reference/functions/step-sleep", destination: "/docs/reference/typescript/functions/step-sleep", permanent: false },
+    { source: "/docs/reference/functions/step-wait-for-event", destination: "/docs/reference/typescript/functions/step-wait-for-event", permanent: false },
+    { source: "/docs/reference/functions/step-wait-for-signal", destination: "/docs/reference/typescript/functions/step-wait-for-signal", permanent: false },
+    { source: "/docs/reference/serve", destination: "/docs/reference/typescript/serve", permanent: false },
+    { source: "/docs/reference/testing", destination: "/docs/reference/typescript/testing", permanent: false },
+    { source: "/docs/reference/middleware/lifecycle", destination: "/docs/reference/typescript/middleware/lifecycle", permanent: false },
+    { source: "/docs/reference/middleware/examples", destination: "/docs/reference/typescript/middleware/examples", permanent: false },
     { source: "/docs/reference/typescript/migrations/v3-to-v4", destination: "/docs/reference/typescript/v4/migrations/v3-to-v4", permanent: false },
     { source: "/docs/sdk/migration", destination: "/docs/reference/typescript/v3/migrations/v2-to-v3", permanent: false },
     ...permanentRedirects.map(([source, destination]) => ({
@@ -245,8 +241,31 @@ function touchFilesWithString(str, { dir = "./pages", ext = "mdx" } = {}) {
 }
 
 /** @type {import('next').NextConfig} */
+// Single source of truth for the stable TypeScript SDK version.
+// Exposed to client code via NEXT_PUBLIC_TS_STABLE (see LanguageStore.ts).
+const TS_STABLE_VERSION = "v3";
+
+async function rewrites() {
+  return [
+    // Versionless intro page
+    {
+      source: "/docs/reference/typescript",
+      destination: `/docs/reference/typescript/${TS_STABLE_VERSION}`,
+    },
+    // Versionless subpaths (excludes /v3/ and /v4/ prefixed paths)
+    {
+      source: "/docs/reference/typescript/:path((?!v3|v4).+)",
+      destination: `/docs/reference/typescript/${TS_STABLE_VERSION}/:path`,
+    },
+  ];
+}
+
 const nextConfig = {
+  env: {
+    NEXT_PUBLIC_TS_STABLE: TS_STABLE_VERSION,
+  },
   redirects,
+  rewrites,
   reactStrictMode: true,
   pageExtensions: ["js", "jsx", "ts", "tsx", "mdx"],
   experimental: {

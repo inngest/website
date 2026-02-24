@@ -1,43 +1,30 @@
-import { Callout, CodeGroup, Properties, Property, Row, Col, VersionBadge } from "src/shared/Docs/mdx";
+import { Info, CodeGroup } from "src/shared/Docs/mdx";
 
 import GithubIcon from "shared/Icons/Github"
 
-# TypeScript SDK
+# TypeScript SDK v4
 
-## Version Reference
-
-<Row>
-  <Col>
-    **[v3 Reference (current)](/docs/reference/typescript/v3/functions/create)** - Stable release documentation
-  </Col>
-  <Col>
-    **[v4 Reference (beta)](/docs/reference/typescript/v4/functions/create)** - Next major version with simplified APIs. See the [migration guide](/docs/reference/typescript/v4/migrations/v3-to-v4).
-  </Col>
-</Row>
+<Info>
+  You're viewing **v4 beta** docs. See the [migration guide](/docs/reference/typescript/v4/migrations/v3-to-v4) for upgrading from v3.
+</Info>
 
 ## Installing
 
 <CodeGroup>
 ```shell {{ title: "npm" }}
-npm install inngest
+npm install inngest@beta
 ```
 ```shell {{ title: "pnpm" }}
-pnpm add inngest
+pnpm add inngest@beta
 ```
 ```shell {{ title: "yarn" }}
-yarn add inngest
+yarn add inngest@beta
 ```
 </CodeGroup>
 
 ## Source code
 
 Our TypeScript SDK and its related packages are open source and available on Github: [<GithubIcon className="ml-2 inline-flex"/> inngest/inngest-js](https://github.com/inngest/inngest-js).
-
-## Supported Versions
-
-All versions `>=v0.5.0` (released [October 5th 2022](https://github.com/inngest/inngest-js/releases/tag/v0.5.0)) are supported.
-
-If you'd like to upgrade, see the [v2 to v3 migration guide](/docs/reference/typescript/v3/migrations/v2-to-v3) or the [v3 to v4 migration guide](/docs/reference/typescript/v4/migrations/v3-to-v4).
 
 ## Official libraries
 
@@ -72,4 +59,3 @@ Want to be added to the list? [Contact us!](https://app.inngest.com/support)
 
 - [nest-inngest](https://github.com/thawankeane/nest-inngest) - strongly typed Inngest module for NestJS projects
 - [nuxt-inngest](https://www.npmjs.com/package/nuxt-inngest) - Inngest integration for Nuxt
-

@@ -2,7 +2,20 @@ import create from "zustand";
 import { persist } from "zustand/middleware";
 
 export type SDKLanguage = "typescript" | "python" | "go";
-export type TSVersion = "v3" | "v4";
+
+const tsVersions = ["v3", "v4"] as const;
+export type TSVersion = (typeof tsVersions)[number];
+function isTSVersion(version: string): version is TSVersion {
+  return tsVersions.includes(version as TSVersion);
+}
+
+// Source of truth is TS_STABLE_VERSION in next.config.mjs, exposed here
+// via NEXT_PUBLIC_TS_STABLE so both build rewrites and client code agree.
+const tsStableEnvVar = process.env.NEXT_PUBLIC_TS_STABLE ?? "v3";
+if (!isTSVersion(tsStableEnvVar)) {
+  throw new Error(`Invalid NEXT_PUBLIC_TS_STABLE env var: ${tsStableEnvVar}`);
+}
+export const TS_STABLE = tsStableEnvVar;
 
 export const SDK_LANGUAGES: { id: SDKLanguage; title: string; shortTitle: string }[] = [
   { id: "typescript", title: "TypeScript", shortTitle: "TS" },
@@ -42,7 +55,7 @@ export const useLanguageStore = create<LanguageState>()(
     (set) => ({
       language: "typescript",
       setLanguage: (language) => set({ language }),
-      tsVersion: "v3",
+      tsVersion: TS_STABLE,
       setTsVersion: (tsVersion) => set({ tsVersion }),
     }),
     {
@@ -74,8 +87,10 @@ export function isReferencePath(path: string): boolean {
  * Detect TypeScript SDK version from a URL path
  */
 export function getTsVersionFromPath(path: string): TSVersion | null {
-  if (path.includes("/typescript/v3/")) { return "v3"; }
-  if (path.includes("/typescript/v4/")) { return "v4"; }
+  if (path.includes("/typescript/v4/") || path.endsWith("/typescript/v4")) { return "v4"; }
+  if (path.includes("/typescript/v3/") || path.endsWith("/typescript/v3")) { return "v3"; }
+
+  // Versionless TypeScript reference paths map to stable
+  if (path === "/docs/reference/typescript" || path.startsWith("/docs/reference/typescript/")) { return TS_STABLE; }
   return null;
 }
-
