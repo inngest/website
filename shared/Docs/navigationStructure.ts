@@ -48,7 +48,7 @@ export type NavSection = NavLink & {
 // =============================================================================
 const sectionReference: (NavGroup | NavLink)[] = [
   {
-    title: "TypeScript SDK",
+    title: "TypeScript SDK v3",
     links: [
       {
         title: "Introduction",

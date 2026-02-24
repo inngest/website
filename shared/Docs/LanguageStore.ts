@@ -2,6 +2,7 @@ import create from "zustand";
 import { persist } from "zustand/middleware";
 
 export type SDKLanguage = "typescript" | "python" | "go";
+export type TSVersion = "v3" | "v4";
 
 export const SDK_LANGUAGES: { id: SDKLanguage; title: string; shortTitle: string }[] = [
   { id: "typescript", title: "TypeScript", shortTitle: "TS" },
@@ -9,9 +10,14 @@ export const SDK_LANGUAGES: { id: SDKLanguage; title: string; shortTitle: string
   { id: "go", title: "Go", shortTitle: "Go" },
 ];
 
+export const TS_VERSIONS: { id: TSVersion; title: string }[] = [
+  { id: "v3", title: "Version 3" },
+  { id: "v4", title: "Version 4 (beta)" },
+];
+
 // Map SDK titles in navigation to language IDs
 export const SDK_TITLE_TO_LANGUAGE: Record<string, SDKLanguage> = {
-  "TypeScript SDK": "typescript",
+  "TypeScript SDK v3": "typescript",
   "TypeScript SDK v4": "typescript",
   "Python SDK": "python",
   "Go SDK": "go",
@@ -27,6 +33,8 @@ export const SDK_HOME_PAGES: Record<SDKLanguage, string> = {
 interface LanguageState {
   language: SDKLanguage;
   setLanguage: (lang: SDKLanguage) => void;
+  tsVersion: TSVersion;
+  setTsVersion: (version: TSVersion) => void;
 }
 
 export const useLanguageStore = create<LanguageState>()(
@@ -34,6 +42,8 @@ export const useLanguageStore = create<LanguageState>()(
     (set) => ({
       language: "typescript",
       setLanguage: (language) => set({ language }),
+      tsVersion: "v3",
+      setTsVersion: (tsVersion) => set({ tsVersion }),
     }),
     {
       name: "inngest-docs-language",
@@ -58,5 +68,14 @@ export function getLanguageFromPath(path: string): SDKLanguage | null {
  */
 export function isReferencePath(path: string): boolean {
   return path.startsWith("/docs/reference");
+}
+
+/**
+ * Detect TypeScript SDK version from a URL path
+ */
+export function getTsVersionFromPath(path: string): TSVersion | null {
+  if (path.includes("/typescript/v3/")) { return "v3"; }
+  if (path.includes("/typescript/v4/")) { return "v4"; }
+  return null;
 }
 

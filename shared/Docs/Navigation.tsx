@@ -42,7 +42,10 @@ import {
   SDK_TITLE_TO_LANGUAGE,
   SDK_HOME_PAGES,
   getLanguageFromPath,
+  getTsVersionFromPath,
+  TS_VERSIONS,
   type SDKLanguage,
+  type TSVersion,
 } from "./LanguageStore";
 import TypeScriptIcon from "src/shared/Icons/TypeScript";
 import PythonIcon from "src/shared/Icons/Python";
@@ -568,16 +571,26 @@ const defaultSection = getAllSections(topLevelNav).find(
   (section) => section.title === "Learn"
 );
 
-// SDK titles that should be filtered based on language selection
-const SDK_SECTION_TITLES = ["TypeScript SDK", "Python SDK", "Go SDK"];
+// SDK titles that should be filtered based on language and version selection
+const SDK_SECTION_TITLES = ["TypeScript SDK v3", "TypeScript SDK v4", "Python SDK", "Go SDK"];
 
 // Non-SDK reference sections that should always be shown (separated from SDK sections)
 const SHARED_REFERENCE_TITLES = ["REST API", "System events", "Self-hosting"];
 
-// Helper to check if a section should be hidden based on selected language
-function shouldHideSection(title: string, selectedLanguage: SDKLanguage): boolean {
-  const selectedSdkTitle = SDK_LANGUAGES.find(l => l.id === selectedLanguage)?.title + " SDK";
-  // Hide other SDK sections (not the selected one)
+// Helper to check if a section should be hidden based on selected language and TS version
+function shouldHideSection(title: string, selectedLanguage: SDKLanguage, tsVersion: TSVersion): boolean {
+  let selectedSdkTitle = SDK_LANGUAGES.find(l => l.id === selectedLanguage)?.title;
+  if (!selectedSdkTitle) {
+    // Unreachable (unless there's a bug)
+    console.error(`Selected language ${selectedLanguage} not found in SDK_LANGUAGES`);
+    return false;
+  }
+  selectedSdkTitle += " SDK";
+
+  // For TypeScript, match the selected version's section title
+  if (selectedLanguage === "typescript") {
+    selectedSdkTitle = `TypeScript SDK ${tsVersion}`;
+  }
   if (SDK_SECTION_TITLES.includes(title) && title !== selectedSdkTitle) {
     return true;
   }
@@ -687,12 +700,111 @@ function LanguageSwitcher() {
   );
 }
 
+function VersionSwitcher({
+  language,
+  activeSection,
+}: {
+  language: SDKLanguage;
+  activeSection: string;
+}) {
+  // Delay rendering persisted value until after hydration to avoid SSR mismatch
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+
+  const router = useRouter();
+  const pathname = router.asPath.replace(/(\?|#).+$/, "");
+  const { tsVersion, setTsVersion } = useLanguageStore();
+
+  const handleVersionChange = (newVersion: TSVersion) => {
+    setTsVersion(newVersion);
+    // If on a versioned TS page for a different version, navigate to TS reference home
+    const pathVersion = getTsVersionFromPath(pathname);
+    if (pathVersion && pathVersion !== newVersion) {
+      router.push("/docs/reference/typescript");
+    }
+  };
+
+  // Only visible for TypeScript in the Reference tab
+  if (!mounted || language !== "typescript" || activeSection !== "Reference") {
+    return null;
+  }
+
+  const currentVersion = TS_VERSIONS.find((v) => v.id === tsVersion);
+
+  return (
+    <div className="mt-2">
+      <Select.Root value={tsVersion} onValueChange={(val) => handleVersionChange(val as TSVersion)}>
+        <Select.Trigger
+          className={clsx(
+            "flex items-center justify-between w-full px-3 py-2",
+            "bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700",
+            "rounded-lg shadow-sm",
+            "text-sm font-medium text-slate-900 dark:text-slate-100",
+            "hover:border-slate-300 dark:hover:border-slate-600",
+            "focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500",
+            "transition-colors"
+          )}
+        >
+          <span className="flex items-center gap-2">
+            <Select.Value>{currentVersion?.title}</Select.Value>
+          </span>
+          <Select.Icon>
+            <ChevronDownIcon className="w-4 h-4 text-slate-400" />
+          </Select.Icon>
+        </Select.Trigger>
+
+        <Select.Portal>
+          <Select.Content
+            className={clsx(
+              "overflow-hidden bg-white dark:bg-slate-800",
+              "border border-slate-200 dark:border-slate-700",
+              "rounded-lg shadow-lg",
+              "z-50 w-[var(--radix-select-trigger-width)]"
+            )}
+            position="popper"
+            sideOffset={4}
+          >
+            <Select.Viewport className="p-1">
+              {TS_VERSIONS.map((version) => (
+                <Select.Item
+                  key={version.id}
+                  value={version.id}
+                  className={clsx(
+                    "flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer",
+                    "text-sm text-slate-700 dark:text-slate-200",
+                    "hover:bg-slate-100 dark:hover:bg-slate-700",
+                    "focus:outline-none focus:bg-slate-100 dark:focus:bg-slate-700",
+                    "data-[state=checked]:font-medium"
+                  )}
+                >
+                  <Select.ItemText>{version.title}</Select.ItemText>
+                  <Select.ItemIndicator className="ml-auto">
+                    <CheckIcon className="w-4 h-4 text-indigo-500" />
+                  </Select.ItemIndicator>
+                </Select.Item>
+              ))}
+            </Select.Viewport>
+          </Select.Content>
+        </Select.Portal>
+      </Select.Root>
+    </div>
+  );
+}
+
 export function Navigation(props) {
   const router = useRouter();
   // Remove query params and hash from pathname
   const pathname = router.asPath.replace(/(\?|#).+$/, "");
   const { activeSection, setActiveSection } = useActiveSection();
-  const { language } = useLanguageStore();
+  const { language, tsVersion, setTsVersion } = useLanguageStore();
+
+  // Sync tsVersion from URL when navigating to a versioned TS page
+  useEffect(() => {
+    const pathVersion = getTsVersionFromPath(pathname);
+    if (pathVersion && pathVersion !== tsVersion) {
+      setTsVersion(pathVersion);
+    }
+  }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Find the section based on the active tab (Learn/Reference)
   const nestedSection =
@@ -787,6 +899,7 @@ export function Navigation(props) {
             
             {/* Language Switcher - shown on both Learn and Reference */}
             <LanguageSwitcher />
+            <VersionSwitcher language={language} activeSection={activeSection} />
           </div>
         )}
 
@@ -806,7 +919,7 @@ export function Navigation(props) {
               >
                 {nestedNavigation.sectionLinks.map((item, groupIndex) => {
                   // For Reference section, hide non-selected SDK sections with CSS (keeps links in DOM for SEO)
-                  const isHidden = activeSection === "Reference" && shouldHideSection(item.title, language);
+                  const isHidden = activeSection === "Reference" && shouldHideSection(item.title, language, tsVersion);
                   // Add visual separator before shared sections (REST API, etc.)
                   const isSharedSection = SHARED_REFERENCE_TITLES.includes(item.title);
                   const isFirstSharedSection = isSharedSection && 
