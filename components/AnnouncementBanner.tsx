@@ -40,12 +40,12 @@ const Banner: React.FC<Props> = ({ href, children, className }) => (
 
 export default function AnnouncementBanner() {
   // // Return null if we want to disable the banner
-  // return null;
+  return null;
 
-  return (
-    <Banner href="https://luma.com/5bi1om1r">
-      <strong>Join us this Friday, Feb 20</strong> for a Durable Endpoints live
-      coding session.
-    </Banner>
-  );
+  // return (
+  //   <Banner href="https://luma.com/5bi1om1r">
+  //     <strong>Join us this Friday, Feb 20</strong> for a Durable Endpoints live
+  //     coding session.
+  //   </Banner>
+  // );
 }
