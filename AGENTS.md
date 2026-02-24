@@ -65,6 +65,13 @@ pnpm env:pull  # Get environment variables from Vercel
 - Check `/components` and `/shared` for existing components before creating new ones
 - Extract shared components to `/components`, shared logic to `/shared`
 - Follow existing component patterns in the codebase
+- Common shared components: `Button` (`shared/Button`), `Container` (`shared/layout/Container`), `CodeWindow` (`shared/CodeWindow`), `SectionProvider` (`shared/Docs/SectionProvider`)
+
+### Images
+
+- Use the Next.js `Image` component (`import Image from "next/image"`)
+- Store images in `/public/assets/`
+- Reference as `/assets/your-image.png` (omit `/public` prefix)
 
 ### Links
 
@@ -114,6 +121,17 @@ See `snippets/CLAUDE.md` for full snippet documentation including validation com
 - `focus` (boolean) - Feature as highlighted post on main blog feed
 - `hide` (boolean) - Accessible at URL but hidden from feeds and RSS
 - `featured` (boolean) - When false, hidden from main feed but available on category pages
+
+### Changelog Entry Format
+
+Changelog entries use JS exports (not YAML frontmatter):
+
+```mdx
+export const title = "Your Feature Name";
+export const date = "2025-01-15";
+
+Description of the change in MDX format.
+```
 
 ## Environment & Deployment
 
