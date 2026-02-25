@@ -46,7 +46,7 @@ const inngest = new Inngest({
   <Property name="signingKeyFallback" type="string">
     A fallback signing key, useful during key rotation. We recommend setting this via the [`INNGEST_SIGNING_KEY_FALLBACK`](/docs/sdk/environment-variables#inngest-signing-key-fallback) environment variable instead.
   </Property>
-  <Property name="isDev" type="boolean" version="v3.15.0+">
+  <Property name="isDev" type="boolean">
     Set to `true` to force Dev mode, setting default local URLs and turning off
     signature verification, or force Cloud mode with `false`. Alternatively, set [`INNGEST_DEV`](/docs/sdk/environment-variables#inngest-dev).
   </Property>
@@ -65,7 +65,7 @@ const inngest = new Inngest({
   <Property name="internalLogger" type="Logger">
     A separate logger for SDK internal messages (registration, request handling, middleware errors). If not provided, falls back to `logger`. Use this to route SDK internals separately from your function logs. See the [logging reference](/docs/reference/typescript/v4/logging#internal-logger) for details.
   </Property>
-  <Property name="middleware" type="array" version="v2.0.0+">
+  <Property name="middleware" type="array">
     A stack of [middleware](/docs/features/middleware) to add to the client.
   </Property>
 </Properties>

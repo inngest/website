@@ -22,7 +22,7 @@ Every Inngest serve handler provides a `streaming` option, for example:
 serve({
   client: inngest,
   functions: [...fns],
-  streaming: "allow",
+  streaming: true,
 });
 ```
 </CodeGroup>
@@ -30,12 +30,8 @@ serve({
 This can be one of the following values:
 
 - `false` - Streaming will never be used. This is the default.
-- `"allow"` - Streaming will be used if we can confidently detect support for it by verifying that the platform, environment, and serve handler support streaming.
+- `true` - Streaming will be used. If the serve handler does not support streaming, an error will be thrown.
 
 <Callout>
-
-⚠️ We also allow `"force"`, where streaming will be used if the serve handler supports it, but completely overrides the SDK's attempts to verify if the platform supports streaming.
-
-This is not recommended, but is an escape hatch if you know that streaming is supported and you're in a restricted environment that has little or no access to the environment.
-
+  In v3, streaming accepted `"allow"` and `"force"` string values. In v4, these were simplified to `true | false`. See the [migration guide](/docs/reference/typescript/v4/migrations/v3-to-v4#simplify-streaming-option) for details.
 </Callout>

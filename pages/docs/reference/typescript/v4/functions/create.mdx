@@ -292,7 +292,7 @@ The event payload `object` that triggered the given function run. The event payl
 }
 ```
 
-#### `events` <VersionBadge version="v2.2.0+" />
+#### `events`
 
 `events` is an array of `event` payload objects that's accessible when the `batchEvents` is set on the function configuration.
 If batching is not configured, the array contains a single event payload matching the `event` argument.
@@ -312,7 +312,7 @@ The `step` object has methods that enable you to define
 
 The unique ID for the given function run. This can be useful for logging and looking up specific function runs in the Inngest dashboard.
 
-#### `logger` <VersionBadge version="v2.0.0+" />
+#### `logger`
 
 The `logger` object exposes the following interfaces.
 
@@ -327,6 +327,6 @@ export interface Logger {
 
 It is a proxy object that is either backed by `console` or the logger you provided ([reference](/docs/guides/logging)).
 
-#### `attempt` <VersionBadge version="v2.5.0+" />
+#### `attempt`
 
 The current zero-indexed attempt number for this function execution. The first attempt will be 0, the second 1, and so on. The attempt number is incremented every time the function throws an error and is retried.

@@ -244,7 +244,7 @@ Example use cases: auth, top-level metrics, or error boundaries.
 
 Wraps function execution. `next()` resolves when the function completes.
 
-Example use cases: `AsyncLocalStorage`, error transformation, timing, or [inserting steps](/docs/reference/middleware/examples#inserting-steps).
+Example use cases: `AsyncLocalStorage`, error transformation, timing, or [inserting steps](/docs/reference/typescript/v4/middleware/examples#inserting-steps).
 
 <Callout>
 `next()` only resolves when the function fully completes or errors. When a new step is discovered, `next()` never resolves for that request. It intentionally hangs until garbage collection deletes it.
@@ -268,7 +268,7 @@ Example use cases: `AsyncLocalStorage`, error transformation, timing, or [insert
 
 Wraps every step, including memoized steps and all step kinds (`step.run`, `step.sleep`, `step.invoke`, etc.).
 
-Example use cases: deserialize memoized data, [insert steps](/docs/reference/middleware/examples#inserting-steps).
+Example use cases: deserialize memoized data, [insert steps](/docs/reference/typescript/v4/middleware/examples#inserting-steps).
 
 <Callout>
 If the step is not memoized, `next()` never resolves for that request. The method intentionally hangs until garbage collection deletes it.
@@ -295,7 +295,7 @@ If the step is not memoized, `next()` never resolves for that request. The metho
 
 Wraps step handler execution. Only called for `step.run` and `step.sendEvent`.
 
-Example use cases: serialize step output, [error handling](/docs/reference/middleware/examples#error-handling), or timing.
+Example use cases: serialize step output, [error handling](/docs/reference/typescript/v4/middleware/examples#error-handling), or timing.
 
 <Properties>
   <Property required name="ctx">
