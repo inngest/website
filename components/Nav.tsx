@@ -177,7 +177,7 @@ export default function Nav() {
             <div className="flex flex-shrink-0 items-center gap-6 py-8 pl-8 md:justify-end md:py-0 md:pl-10">
               <OpenSourceButton className="hidden min-[816px]:block" />
               <a
-                href={`${process.env.NEXT_PUBLIC_SIGNIN_URL}?ref=nav`}
+                href={`${process.env.NEXT_PUBLIC_APP_HOST}?ref=nav`}
                 className={`hover:primary-intense flex-shrink-0 text-sm font-medium text-basis/90 transition-all duration-150
                   md:hidden min-[880px]:inline`}
               >
