@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 380" font-family="'Inter', 'Segoe UI', system-ui, sans-serif">
+  <rect width="700" height="380" fill="#111" rx="6"/>
+
+  <text x="40" y="36" fill="#eee" font-size="14" font-weight="600">Synchronous persistence vs. checkpointing</text>
+
+  <!-- === TOP: Traditional === -->
+  <text x="40" y="68" fill="#666" font-size="10" font-weight="600" letter-spacing="0.8">TRADITIONAL</text>
+  <text x="130" y="68" fill="#555" font-size="10">— blocks on every persist</text>
+
+  <!-- Steps + blocking gaps -->
+  <rect x="40" y="82" width="90" height="28" rx="3" fill="#222"/>
+  <text x="85" y="101" text-anchor="middle" fill="#ccc" font-size="10">Step A</text>
+
+  <rect x="130" y="82" width="50" height="28" rx="3" fill="none" stroke="#a33" stroke-width="1" stroke-dasharray="3,2"/>
+  <text x="155" y="98" text-anchor="middle" fill="#c55" font-size="8">persist</text>
+  <text x="155" y="108" text-anchor="middle" fill="#944" font-size="7">~100ms</text>
+
+  <rect x="180" y="82" width="90" height="28" rx="3" fill="#222"/>
+  <text x="225" y="101" text-anchor="middle" fill="#ccc" font-size="10">Step B</text>
+
+  <rect x="270" y="82" width="50" height="28" rx="3" fill="none" stroke="#a33" stroke-width="1" stroke-dasharray="3,2"/>
+  <text x="295" y="98" text-anchor="middle" fill="#c55" font-size="8">persist</text>
+  <text x="295" y="108" text-anchor="middle" fill="#944" font-size="7">~100ms</text>
+
+  <rect x="320" y="82" width="90" height="28" rx="3" fill="#222"/>
+  <text x="365" y="101" text-anchor="middle" fill="#ccc" font-size="10">Step C</text>
+
+  <rect x="410" y="82" width="50" height="28" rx="3" fill="none" stroke="#a33" stroke-width="1" stroke-dasharray="3,2"/>
+  <text x="435" y="98" text-anchor="middle" fill="#c55" font-size="8">persist</text>
+  <text x="435" y="108" text-anchor="middle" fill="#944" font-size="7">~100ms</text>
+
+  <rect x="460" y="82" width="90" height="28" rx="3" fill="#222"/>
+  <text x="505" y="101" text-anchor="middle" fill="#ccc" font-size="10">Step D</text>
+
+  <!-- Total bracket -->
+  <line x1="40" y1="120" x2="550" y2="120" stroke="#a33" stroke-width="1"/>
+  <text x="295" y="136" text-anchor="middle" fill="#c55" font-size="10">Step work + ~300ms orchestration overhead</text>
+
+  <!-- Divider -->
+  <line x1="40" y1="162" x2="660" y2="162" stroke="#222" stroke-width="1"/>
+
+  <!-- === BOTTOM: Checkpointing === -->
+  <text x="40" y="192" fill="#666" font-size="10" font-weight="600" letter-spacing="0.8">CHECKPOINTING</text>
+  <text x="148" y="192" fill="#555" font-size="10">— async persistence, immediate execution</text>
+
+  <!-- Steps packed tight -->
+  <rect x="40" y="206" width="90" height="28" rx="3" fill="#222"/>
+  <text x="85" y="225" text-anchor="middle" fill="#ccc" font-size="10">Step A</text>
+
+  <rect x="132" y="206" width="90" height="28" rx="3" fill="#222"/>
+  <text x="177" y="225" text-anchor="middle" fill="#ccc" font-size="10">Step B</text>
+
+  <rect x="224" y="206" width="90" height="28" rx="3" fill="#222"/>
+  <text x="269" y="225" text-anchor="middle" fill="#ccc" font-size="10">Step C</text>
+
+  <rect x="316" y="206" width="90" height="28" rx="3" fill="#222"/>
+  <text x="361" y="225" text-anchor="middle" fill="#ccc" font-size="10">Step D</text>
+
+  <!-- Tiny green ticks between steps -->
+  <line x1="131" y1="212" x2="131" y2="228" stroke="#4a4" stroke-width="1.5"/>
+  <line x1="223" y1="212" x2="223" y2="228" stroke="#4a4" stroke-width="1.5"/>
+  <line x1="315" y1="212" x2="315" y2="228" stroke="#4a4" stroke-width="1.5"/>
+
+  <!-- Async checkpoint labels below -->
+  <text x="85" y="252" text-anchor="middle" fill="#4a4" font-size="8">checkpoint ↓</text>
+  <text x="177" y="252" text-anchor="middle" fill="#4a4" font-size="8">checkpoint ↓</text>
+  <text x="269" y="252" text-anchor="middle" fill="#4a4" font-size="8">checkpoint ↓</text>
+  <text x="361" y="252" text-anchor="middle" fill="#4a4" font-size="8">checkpoint ↓</text>
+  <text x="460" y="252" fill="#555" font-size="9" font-style="italic">async, non-blocking</text>
+
+  <!-- Total bracket -->
+  <line x1="40" y1="268" x2="406" y2="268" stroke="#4a4" stroke-width="1"/>
+  <text x="223" y="284" text-anchor="middle" fill="#6c6" font-size="10">Step work + ~8ms orchestration overhead</text>
+
+  <!-- Failure callout -->
+  <rect x="40" y="310" width="620" height="50" rx="4" fill="#1a1a1a" stroke="#282828" stroke-width="1"/>
+  <text x="56" y="332" fill="#ca8" font-size="10" font-weight="600">On failure:</text>
+  <text x="130" y="332" fill="#888" font-size="10">Engine retries from last successful checkpoint. Speed when things work, safety when they don't.</text>
+  <text x="56" y="350" fill="#888" font-size="10">Steps are idempotent — a failed checkpoint simply means replaying from the last good state.</text>
+</svg>
