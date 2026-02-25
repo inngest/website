@@ -129,7 +129,7 @@ This model also enables real backpressure. Because the engine maintains persiste
 
 ```tsx
 import { Inngest } from "inngest";
-import { serve } from "inngest/connect";
+import { connect } from "inngest/connect";
 
 const inngest = new Inngest({
   id: "my-app",
@@ -137,9 +137,8 @@ const inngest = new Inngest({
 });
 
 // Establish persistent outbound connection
-serve({
-  client: inngest,
-  functions: [processAgentLoop, handleWebhook],
+await connect({
+  apps: [{ client: inngest, functions: [processAgentLoop, handleWebhook] }],
 });
 ```
 
@@ -172,13 +171,15 @@ Create a step boundary where you'd want retry isolation. External API calls, dat
 ```tsx
 // ❌ Every line is its own step. Why.
 const user = await step.run("get-user", () => db.getUser(id));
-const name = await step.run("get-name", () => user.name);
-const email = await step.run("get-email", () => user.email);
+const billingPlan = await step.run("get-plan", () => db.getBillingPlan(user.billingPlanId));
+const invoices = await step.run("get-invoices", () => db.getInvoices(user.id);
 
 // ✅ One step for one failure domain
 const userData = await step.run("load-user-data", async () => {
   const user = await db.getUser(id);
-  return { name: user.name, email: user.email };
+  const billingPlan = await db.getBillingPlan(user.billingPlanId);
+  const invoices = await db.getInvoices(user.id);
+  return { user, billingPlan, invoices };
 });
 ```
 
@@ -192,29 +193,7 @@ The penalty for extra steps in Inngest depends on your configuration. With check
 
 You can't tell which of the above optimizations matters most for your system without measuring. Here are the signals that actually matter.
 
-**Inter-step latency** is the time between one step completing and the next beginning. This is pure orchestration overhead. Track it with middleware:
-
-```tsx
-const latencyMiddleware = new InngestMiddleware({
-  name: "latency-tracker",
-  init: () => ({
-    onFunctionRun: ({ fn }) => {
-      let lastStepEnd: number | null = null;
-      return {
-        transformOutput: ({ step }) => {
-          const now = Date.now();
-          if (lastStepEnd) {
-            metrics.histogram("inngest.inter_step_latency_ms", now - lastStepEnd, {
-              function: fn.id, step: step?.id,
-            });
-          }
-          lastStepEnd = Date.now();
-        },
-      };
-    },
-  }),
-});
-```
+**Inter-step latency** is the time between one step completing and the next beginning. This is pure orchestration overhead. 
 
 What you should expect:
 
@@ -257,8 +236,10 @@ const inngest = new Inngest({
 });
 
 // 2. Switch to Connect
-import { serve } from "inngest/connect";
-serve({ client: inngest, functions: [...] });
+import { connect } from "inngest/connect";
+await connect({
+  apps: [{ client: inngest, functions: [...] }]
+})
 ```
 
 These two changes alone typically deliver a 50%+ reduction in end-to-end workflow duration with no changes to your business logic.
@@ -275,9 +256,9 @@ These are the factors that separate a platform you can use for AI agents from on
 
 ## Other Resources
 
-- [Performance documentation](https://www.inngest.com/docs/improve-performance) for setup guides on checkpointing and Connect
-- [The Principles of Durable Execution](https://www.inngest.com/blog/principles-of-durable-execution) for how durable execution works under the hood
-- [How we built a fair multi-tenant queue](https://www.inngest.com/blog/building-the-inngest-queue-pt-i-fairness-multi-tenancy) for the queue architecture deep dive
+- [Performance documentation](/docs/improve-performance) for setup guides on checkpointing and Connect
+- [The Principles of Durable Execution](/blog/principles-of-durable-execution) for how durable execution works under the hood
+- [How we built a fair multi-tenant queue](/blog/building-the-inngest-queue-pt-i-fairness-multi-tenancy) for the queue architecture deep dive
 - [Durable Executions, Defined](https://journal.resonatehq.io/p/durable-executions-defined) by Dominik Tornow for a rigorous definition of what durable execution actually means
 - [Building a Durable Execution Engine with SQLite](https://www.morling.dev/blog/building-durable-execution-engine-with-sqlite/) by Gunnar Morling for a from-scratch look at the underlying mechanics
 - [Durable Objects: Easy, Fast, Correct — Choose Three](https://blog.cloudflare.com/durable-objects-easy-fast-correct-choose-three/) by Cloudflare for how write coalescing makes storage writes effectively instantaneous
