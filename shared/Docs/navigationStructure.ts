@@ -236,6 +236,10 @@ const sectionReference: (NavGroup | NavLink)[] = [
         href: tsRef("v4", "functions/create"),
       },
       {
+        title: "Trigger helpers",
+        href: tsRef("v4", "functions/triggers"),
+      },
+      {
         title: "Send events",
         href: tsRef("v4", "events/send"),
       },

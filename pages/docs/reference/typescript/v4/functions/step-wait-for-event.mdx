@@ -18,8 +18,8 @@ Use `step.waitForEvent()` to pause your function's execution until a matching ev
       <Property name="options" type="object" required>
         Options for configuring how to wait for the event.
         <Properties nested={true}>
-          <Property name="event" type="string" required>
-            The name of a given event to wait for.
+          <Property name="event" type="string | EventType" required>
+            The name of a given event to wait for, or an [`eventType()`](/docs/reference/typescript/v4/functions/triggers#eventtype) result for typed return values.
           </Property>
           <Property name="timeout" type="string" required>
             The amount of time to wait to receive the event. A time string compatible with the [ms](https://npm.im/ms) package, e.g. `"30m"`, `"3 hours"`, or `"2.5d"`
@@ -54,6 +54,17 @@ Use `step.waitForEvent()` to pause your function's execution until a matching ev
     timeout: "30d",
     if: "event.data.userId == async.data.userId && async.data.billing_plan == 'pro'",
   });
+
+  // Use eventType() for typed return values
+  const approvalType = eventType("app/approval.received", {
+    schema: z.object({ approved: z.boolean() }),
+  });
+
+  const approval = await step.waitForEvent("wait-for-approval", {
+    event: approvalType,
+    timeout: "7d",
+  });
+  // approval?.data is typed as { approved: boolean }
   ```
   </Col>
 </Row>

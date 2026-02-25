@@ -35,7 +35,7 @@ The `createFunction` method accepts a series of arguments to define your functio
     A name for your function. If defined, this will be shown in the UI as a friendly display name instead of the ID.
   </Property>
   <Property name="triggers" type="Trigger | Trigger[]">
-    One or more event triggers, which you can read more about [here](#triggers).
+    One or more triggers. [Trigger helpers](/docs/reference/typescript/v4/functions/triggers) like `eventType()` and `cron()` are recommended, but you can also use normal objects.
   </Property>
 
   <Property name="concurrency" type="number | object | [object, object]">
@@ -219,7 +219,28 @@ The `createFunction` method accepts a series of arguments to define your functio
 
 #### Triggers
 
-You can specify an array of up to 10 of the following triggers to invoke
+You can use [trigger helper functions](/docs/reference/typescript/v4/functions/triggers) to define typed triggers with optional runtime validation:
+
+```ts
+import { eventType, cron } from "inngest";
+import { z } from "zod";
+
+const orderPlaced = eventType("shop/order.placed", {
+  schema: z.object({ orderId: z.string(), total: z.number() }),
+});
+
+inngest.createFunction(
+  {
+    id: "process-order",
+    triggers: [orderPlaced, cron("0 * * * *")],
+  },
+  async ({ event, step }) => {
+    // event.data is fully typed
+  }
+);
+```
+
+Alternatively, you can specify an array of up to 10 of the following triggers to invoke
 your function with multiple events or crons. See the [Multiple Triggers](/docs/guides/multiple-triggers) guide.
 
 <Callout>

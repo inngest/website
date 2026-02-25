@@ -25,6 +25,10 @@ await inngest.send({
 
 To send events from within the context of a function, use [`step.sendEvent()`](/docs/reference/typescript/v4/functions/step-send-event).
 
+<Callout>
+  Use [`eventType().create()`](/docs/reference/typescript/v4/functions/triggers#with-inngestsend-and-stepsendevent) to build fully typed event payloads for `inngest.send()`.
+</Callout>
+
 ---
 
 

@@ -26,6 +26,10 @@ export default inngest.createFunction(
 
 To send events from outside of the context of a function, use [`inngest.send()`](/docs/reference/typescript/v4/events/send).
 
+<Callout>
+  Use [`eventType().create()`](/docs/reference/typescript/v4/functions/triggers#with-inngestsend-and-stepsendevent) to build fully typed event payloads for `step.sendEvent()`.
+</Callout>
+
 ---
 
 ## `step.sendEvent(id, eventPayload | eventPayload[]): Promise<{ ids: string[] }>`

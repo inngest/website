@@ -75,7 +75,7 @@ We recommend setting the [`INNGEST_EVENT_KEY`](/docs/sdk/environment-variables#i
 
 You can use `eventType()` to define event payload types using TypeScript, Zod, Valibot, or any schema library that implements the [Standard Schema interface](https://standardschema.dev/).
 
-Event types defined with `eventType()` are fully typed when used with `inngest.send()` and `inngest.createFunction()`. This can more easily alert you to issues with your code during compile time.
+Event types defined with `eventType()` are fully typed when used with `inngest.send()` and `inngest.createFunction()`. This can more easily alert you to issues with your code during compile time. See the [trigger helpers reference](/docs/reference/typescript/v4/functions/triggers) for full documentation on `eventType()` and related functions.
 
 <CodeGroup forceTabs={true}>
 ```ts {{ title: "Standard Schema" }}

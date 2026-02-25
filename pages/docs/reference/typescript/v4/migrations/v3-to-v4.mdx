@@ -7,6 +7,7 @@ This guide helps you migrate your Inngest TypeScript SDK from v3 to v4.
 ## New features
 
 - Middleware is more powerful and intuitive [docs](/docs/reference/typescript/v4/middleware/lifecycle)
+- Trigger helpers [docs](/docs/reference/typescript/v4/functions/triggers)
 
 ## Breaking changes
 
@@ -90,7 +91,7 @@ A triggerless function is as simple as not providing a trigger.
 
 ### Event schemas replaced with event types
 
-The centralized schemas option on the Inngest client (`EventSchemas` class) has been removed. Instead, use the `eventType()` function to define event types that are shared between sending events, waiting for events, and event triggers.
+The centralized schemas option on the Inngest client (`EventSchemas` class) has been removed. Instead, use the `eventType()` function to define event types that are shared between sending events, waiting for events, and event triggers. See the [trigger helpers reference](/docs/reference/typescript/v4/functions/triggers) for full documentation on `eventType()`, `cron()`, `invoke()`, and `staticSchema()`.
 
 ```ts
 // Old (v3) - centralized type-only schemas on the client
