@@ -361,7 +361,7 @@ const sectionReference: (NavGroup | NavLink)[] = [
             href: tsRef("v4", "middleware/lifecycle"),
           },
           {
-            title: "Use cases",
+            title: "Examples",
             href: tsRef("v4", "middleware/examples"),
           },
           {
