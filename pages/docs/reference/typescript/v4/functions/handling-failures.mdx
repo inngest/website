@@ -3,9 +3,6 @@ import { ResourceGrid, Resource } from 'src/shared/Docs/Resources';
 import { RiErrorWarningFill } from "@remixicon/react";
 
 # Handling Failures
-<Info>
-  You're viewing **v4 beta** docs. Guide and tutorial pages still show v3 syntax. See the [migration guide](/docs/reference/typescript/v4/migrations/v3-to-v4) for all changes.
-</Info>
 
 
 Define any failure handlers for your function with the [`onFailure`](/docs/reference/typescript/v4/functions/create#configuration) option. This function will be automatically called when your function fails after its maximum number of retries. Alternatively, you can use the [`"inngest/function.failed"`](/docs/reference/system-events/inngest-function-failed) system event to handle failures across all functions.

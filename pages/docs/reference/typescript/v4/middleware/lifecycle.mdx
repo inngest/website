@@ -396,6 +396,81 @@ Example use cases: serialize event data, add metadata.
   </Property>
 </Properties>
 
+## Output type transforms
+
+Output type transforms are `declare` properties that control how TypeScript types function and step return values. They have no runtime behavior — they only affect the type system.
+
+By default, the SDK assumes all return values are serialized to JSON, so types like `Date` become `string`. If your middleware changes serialization behavior at runtime (e.g. via [`wrapStepHandler`](#wrapstephandler)), declare a corresponding type transform so TypeScript reflects the actual runtime types.
+
+<Callout>
+Type transforms only affect types. You are responsible for ensuring the declared transform matches your runtime transformation.
+</Callout>
+
+Both transforms use the `Middleware.StaticTransform` pattern to imitate higher-kinded types. For example, a normal generic type that preserves `Date` instead of Jsonifying it:
+
+```ts
+// A normal generic type
+type PreserveDate<In> = In extends Date ? Date : Jsonify<In>;
+```
+
+As a `StaticTransform`, this becomes an interface where `this["In"]` replaces the generic parameter and `Out` is the result:
+
+```ts
+import { Middleware } from "inngest";
+
+// The same logic as a StaticTransform
+interface PreserveDate extends Middleware.StaticTransform {
+  Out: this["In"] extends Date ? Date : Jsonify<this["In"]>;
+}
+```
+
+<Properties>
+  <Property required name="In">
+    The original return type. Set automatically by the SDK — do not set this yourself.
+  </Property>
+  <Property required name="Out">
+    The transformed type. Define this to compute the output type based on `In`.
+  </Property>
+</Properties>
+
+When multiple middleware declare transforms, they are chained in registration order: the `Out` of one becomes the `In` of the next.
+
+---
+
+### `functionOutputTransform`
+
+Declares how function return types are transformed. By default, return types are Jsonified (e.g. `Date` becomes `string`).
+
+```ts
+import { Middleware } from "inngest";
+
+interface PreserveDate extends Middleware.StaticTransform {
+  Out: this["In"] extends Date ? Date : Jsonify<this["In"]>;
+}
+
+class MyMiddleware extends Middleware.BaseMiddleware {
+  declare functionOutputTransform: PreserveDate;
+}
+```
+
+---
+
+### `stepOutputTransform`
+
+Declares how step output types are transformed. By default, output types are Jsonified (e.g. `Date` becomes `string`).
+
+```ts
+import { Middleware } from "inngest";
+
+interface PreserveDate extends Middleware.StaticTransform {
+  Out: this["In"] extends Date ? Date : Jsonify<this["In"]>;
+}
+
+class MyMiddleware extends Middleware.BaseMiddleware {
+  declare stepOutputTransform: PreserveDate;
+}
+```
+
 ---
 
 ## Static hooks

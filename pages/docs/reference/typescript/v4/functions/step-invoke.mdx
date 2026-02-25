@@ -3,9 +3,6 @@ import { Info, Callout, Properties, Property, Row, Col, CodeGroup, VersionBadge 
 export const description = `Calling Inngest functions directly from other functions with step.invoke()`
 
 # Invoke <VersionBadge version="v3.7.0+" />
-<Info>
-  You're viewing **v4 beta** docs. Guide and tutorial pages still show v3 syntax. See the [migration guide](/docs/reference/typescript/v4/migrations/v3-to-v4) for all changes.
-</Info>
 
 
 Use `step.invoke()` to asynchronously call another function and handle the result. Invoking other functions allows you to easily re-use functionality and compose them to create more complex workflows or map-reduce type jobs. `step.invoke()` returns a `Promise` that resolves with the return value of the invoked function.
