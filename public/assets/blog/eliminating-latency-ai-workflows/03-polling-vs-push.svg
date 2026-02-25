@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 360" font-family="'Inter', 'Segoe UI', system-ui, sans-serif">
+  <rect width="700" height="360" fill="#111" rx="6"/>
+
+  <text x="40" y="36" fill="#eee" font-size="14" font-weight="600">Worker dispatch: HTTP serve vs. Connect</text>
+
+  <!-- === LEFT: HTTP === -->
+  <text x="40" y="66" fill="#666" font-size="10" font-weight="600" letter-spacing="0.8">HTTP SERVE</text>
+
+  <!-- Boxes -->
+  <rect x="40" y="80" width="110" height="36" rx="3" fill="#1a1a1a" stroke="#282828" stroke-width="1"/>
+  <text x="95" y="103" text-anchor="middle" fill="#ccc" font-size="10">Engine</text>
+
+  <rect x="190" y="80" width="110" height="36" rx="3" fill="#1a1a1a" stroke="#282828" stroke-width="1"/>
+  <text x="245" y="103" text-anchor="middle" fill="#ccc" font-size="10">Your worker</text>
+
+  <!-- Arrows -->
+  <line x1="150" y1="91" x2="188" y2="91" stroke="#c55" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="169" y="87" text-anchor="middle" fill="#944" font-size="7">HTTP POST</text>
+
+  <line x1="188" y1="107" x2="150" y2="107" stroke="#888" stroke-width="1" marker-end="url(#arr2)"/>
+  <text x="169" y="115" text-anchor="middle" fill="#555" font-size="7">response</text>
+
+  <!-- Timeline -->
+  <rect x="40" y="130" width="70" height="22" rx="3" fill="#222"/>
+  <text x="75" y="145" text-anchor="middle" fill="#aaa" font-size="9">Step A</text>
+
+  <rect x="110" y="130" width="40" height="22" rx="2" fill="none" stroke="#a33" stroke-width="1" stroke-dasharray="2,2"/>
+  <text x="130" y="144" text-anchor="middle" fill="#944" font-size="7">wait</text>
+
+  <rect x="150" y="130" width="70" height="22" rx="3" fill="#222"/>
+  <text x="185" y="145" text-anchor="middle" fill="#aaa" font-size="9">Step B</text>
+
+  <rect x="220" y="130" width="40" height="22" rx="2" fill="none" stroke="#a33" stroke-width="1" stroke-dasharray="2,2"/>
+  <text x="240" y="144" text-anchor="middle" fill="#944" font-size="7">wait</text>
+
+  <rect x="260" y="130" width="70" height="22" rx="3" fill="#222"/>
+  <text x="295" y="145" text-anchor="middle" fill="#aaa" font-size="9">Step C</text>
+
+  <!-- Issues -->
+  <text x="40" y="176" fill="#888" font-size="10">New TCP/TLS handshake per step</text>
+  <text x="40" y="192" fill="#888" font-size="10">HTTP/2 GOAWAY with reverse proxies</text>
+  <text x="40" y="208" fill="#888" font-size="10">Inbound routing required (load balancer)</text>
+  <text x="40" y="228" fill="#c55" font-size="10" font-weight="500">Inter-step overhead: ~50–200ms</text>
+
+  <!-- Divider -->
+  <line x1="350" y1="56" x2="350" y2="340" stroke="#222" stroke-width="1"/>
+
+  <!-- === RIGHT: Connect === -->
+  <text x="380" y="66" fill="#666" font-size="10" font-weight="600" letter-spacing="0.8">CONNECT</text>
+
+  <!-- Boxes -->
+  <rect x="380" y="80" width="110" height="36" rx="3" fill="#1a1a1a" stroke="#282828" stroke-width="1"/>
+  <text x="435" y="103" text-anchor="middle" fill="#ccc" font-size="10">Engine</text>
+
+  <rect x="530" y="80" width="110" height="36" rx="3" fill="#1a1a1a" stroke="#282828" stroke-width="1"/>
+  <text x="585" y="103" text-anchor="middle" fill="#ccc" font-size="10">Your worker</text>
+
+  <!-- Persistent connection -->
+  <line x1="490" y1="98" x2="528" y2="98" stroke="#4a4" stroke-width="2"/>
+  <text x="509" y="91" text-anchor="middle" fill="#6c6" font-size="7">persistent</text>
+
+  <!-- Timeline -->
+  <rect x="380" y="130" width="70" height="22" rx="3" fill="#222"/>
+  <text x="415" y="145" text-anchor="middle" fill="#aaa" font-size="9">Step A</text>
+
+  <line x1="451" y1="136" x2="451" y2="146" stroke="#4a4" stroke-width="1.5"/>
+
+  <rect x="454" y="130" width="70" height="22" rx="3" fill="#222"/>
+  <text x="489" y="145" text-anchor="middle" fill="#aaa" font-size="9">Step B</text>
+
+  <line x1="525" y1="136" x2="525" y2="146" stroke="#4a4" stroke-width="1.5"/>
+
+  <rect x="528" y="130" width="70" height="22" rx="3" fill="#222"/>
+  <text x="563" y="145" text-anchor="middle" fill="#aaa" font-size="9">Step C</text>
+
+  <!-- Benefits -->
+  <text x="380" y="176" fill="#888" font-size="10">No per-step connection overhead</text>
+  <text x="380" y="192" fill="#888" font-size="10">Push-based — work arrives instantly</text>
+  <text x="380" y="208" fill="#888" font-size="10">Outbound only — no LB needed</text>
+  <text x="380" y="228" fill="#6c6" font-size="10" font-weight="500">Inter-step overhead: ~5–20ms</text>
+
+  <!-- Bottom comparison -->
+  <rect x="40" y="256" width="290" height="40" rx="3" fill="#1a1a1a" stroke="#282828" stroke-width="1"/>
+  <text x="185" y="281" text-anchor="middle" fill="#c55" font-size="16" font-weight="700">~150ms</text>
+  <text x="185" y="295" text-anchor="middle" fill="#666" font-size="9">avg inter-step</text>
+
+  <rect x="370" y="256" width="290" height="40" rx="3" fill="#1a1a1a" stroke="#282828" stroke-width="1"/>
+  <text x="515" y="281" text-anchor="middle" fill="#6c6" font-size="16" font-weight="700">~10ms</text>
+  <text x="515" y="295" text-anchor="middle" fill="#666" font-size="9">avg inter-step</text>
+
+  <!-- Markers -->
+  <defs>
+    <marker id="arr" viewBox="0 0 6 6" refX="5" refY="3" markerWidth="5" markerHeight="5" orient="auto">
+      <path d="M0,0 L6,3 L0,6z" fill="#c55"/>
+    </marker>
+    <marker id="arr2" viewBox="0 0 6 6" refX="5" refY="3" markerWidth="5" markerHeight="5" orient="auto">
+      <path d="M0,0 L6,3 L0,6z" fill="#888"/>
+    </marker>
+  </defs>
+</svg>
