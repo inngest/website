@@ -114,7 +114,7 @@ export default function Header() {
           <OpenSourceButton className="h-9 rounded-none border" />
           <div className="hidden space-x-4 md:flex">
             <Button variant="outline" className="hidden xl:flex" asChild>
-              <Link href={`${process.env.NEXT_PUBLIC_SIGNIN_URL}?ref=nav`}>
+              <Link href={`${process.env.NEXT_PUBLIC_APP_HOST}?ref=nav`}>
                 Sign In
               </Link>
             </Button>
@@ -338,7 +338,7 @@ export default function Header() {
                 <div className="flex space-x-4">
                   <Button variant="outline" asChild>
                     <Link
-                      href={`${process.env.NEXT_PUBLIC_SIGNIN_URL}?ref=nav`}
+                      href={`${process.env.NEXT_PUBLIC_APP_HOST}?ref=nav`}
                     >
                       Sign In
                     </Link>
