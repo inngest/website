@@ -1,0 +1,66 @@
+---
+heading: "The Constraint API: Scaling flow control beyond millions of RPS"
+image: /assets/blog/constraint-api/featured-image.png
+showSubtitle: true
+subtitle: "How we extracted constraint enforcement into a dedicated service to unlock lower latency, greater scalability, and flow control for Durable Endpoints."
+date: 2026-02-23
+author: Bruno Scheufler
+category: engineering
+---
+
+**Inngest's [flow control](/docs/guides/flow-control) features (for example [concurrency](/docs/guides/concurrency), [throttling](/docs/guides/throttling), and [rate limiting](/docs/guides/rate-limiting)) are some of the most powerful tools we offer. They let developers tailor function scheduling and execution to their business needs without building multi-tenant rate limiting infrastructure themselves. Today, I'm excited to share how we rebuilt the system behind these features from the ground up: the Constraint API.**
+
+## Why we built this
+
+We [sharded our Redis infrastructure](/blog/sharding-at-inngest) in 2024, allowing us to horizontally scale. But as Inngest grew and we introduced [Durable Endpoints](/blog/introducing-durable-endpoints), it became clear that our constraint enforcement architecture needed a fundamental rethink.
+
+Previously, flow control was enforced in two separate places: 1) rate limits were checked in a service when scheduling runs, and 2) concurrency and throttle constraints were enforced deep inside the queue during item processing. This worked, but it had real consequences:
+
+- **Constraint logic was tightly coupled to the queue.** Every improvement to the queue required carefully threading through constraint enforcement, making changes risky and slow.
+- **Durable Endpoints couldn't use flow control.** Because constraints were embedded in the queue, there was no way to enforce them for synchronous API requests without hitting the queue first.
+- **Scaling the queue meant scaling constraint enforcement with it.** We couldn't independently scale either system to match their different load profiles.
+
+We needed a single, dedicated service that could answer one question for any part of the system: _given this configuration, is there capacity to do work?_
+
+## How the Constraint API works
+
+The Constraint API exposes a simple interface built around **capacity leases**. When any part of the system needs to perform work governed by flow control, it requests a temporary lease on constraint capacity.
+
+The core operations are:
+
+- **Acquire**: Atomically check all relevant constraints and reserve capacity. Returns a time-limited lease if capacity is available, or indicates which constraints are blocking.
+- **Extend**: Renew an active lease when work takes longer than initially estimated.
+- **Release**: Return capacity when work completes, making it available for other consumers.
+
+Leases are the key design choice. They expire automatically, which means that if a worker crashes or a network partition occurs, reserved capacity is reclaimed without manual intervention.
+
+Every operation is **idempotent** and **atomic**. We use Lua scripts on Redis to ensure that checking constraints and reserving capacity happen in a single step, preventing race conditions between concurrent workers contending for the same capacity. Idempotency keys ensure that retried requests after transient failures produce the same result, avoiding double-spending capacity.
+
+A dedicated **scavenger** process continuously monitors for expired leases and reclaims capacity, ensuring the system self-heals even under adverse conditions.
+
+### Separation of concerns
+
+By moving constraint enforcement out of the queue, the queue becomes significantly simpler. It only needs to handle what it's good at: data representation, storage, and common queue operations like peek, enqueue, dequeue, and requeue.  This decoupling is critical for our next generation of infrastructure.
+
+## What this means for you
+
+The Constraint API is not a user-facing change — your function configurations, SDK code, and billing all remain exactly the same. What changes is everything underneath:
+
+- **Lower latency.** Constraint checks are now optimized for sub-10ms end-to-end performance. Because the Constraint API can tell the system exactly _when_ capacity will be available, we avoid unnecessary work. Instead of repeatedly peeking at partitions and discovering there's no capacity, the system now defers intelligently, reducing load across the board.
+- **Greater scale.** The Constraint API can be sharded independently of the queue, allowing us to scale constraint enforcement based on actual demand. We can distribute constraint state across multiple backing stores without affecting queue operations.
+- **Flow control for Durable Endpoints.** With constraints extracted into a standalone service, [Durable Endpoints](/docs/learn/durable-endpoints) can now enforce rate limits, throttling, and concurrency — the same flow control you already use for background functions.
+- **Better visibility.** Because every capacity decision flows through a single API, we can expose far more detailed information about constraint state. You'll be able to see exactly which constraints are limiting your functions and when capacity is available.
+
+## Looking ahead: FoundationDB and the next-generation queue
+
+One of the most important benefits of extracting constraint enforcement is what it enables next.  Our queue has served us well on Redis, but Redis is single-threaded and memory-bound, which limits how far we can scale. We're actively working on migrating our queue to [FoundationDB](https://www.foundationdb.org/).
+
+FoundationDB gives us ACID transactions across a distributed cluster, automatic sharding, and the ability to scale storage and throughput near-independently. It's the same technology backing [Apple's CloudKit](https://www.foundationdb.org/files/record-layer-paper.pdf) and [Snowflake's metadata layer](https://www.snowflake.com/en/blog/how-foundationdb-powers-snowflake-metadata-forward/). By decoupling constraint enforcement from the queue first, the queue migration becomes a much more contained effort — we only need to move data representation and queue operations, without reimplementing constraint logic alongside it.
+
+This combination of the Constraint API and a FoundationDB-backed queue will allow Inngest to scale to orders of magnitude more throughput while maintaining the strict consistency guarantees our customers depend on.
+
+## Wrapping up
+
+The Constraint API is the culmination of work that started when we first [sharded Redis](/blog/sharding-at-inngest) and continued through the [state coordinator](https://www.inngest.com/blog/sharding-at-inngest), and most recently [Durable Endpoints](/blog/introducing-durable-endpoints). Each of these projects made the next one possible by establishing clear service boundaries and reducing the blast radius of changes.
+
+If you have questions about how the rollout will impact your account, please [reach out to us](https://support.inngest.com/). We're here to help.

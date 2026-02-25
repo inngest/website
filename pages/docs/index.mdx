@@ -9,6 +9,9 @@ import {
   RiGuideFill,
 } from "@remixicon/react";
 import InngestIcon from 'src/shared/Icons/InngestIcon';
+import SkillsMDIcon from 'src/shared/Icons/SkillsMD';
+import MCPIcon from 'src/shared/Icons/MCP';
+import LLMsTXTIcon from 'src/shared/Icons/LLMsTxt';
 
 export const hidePageSidebar = true;
 
@@ -22,43 +25,75 @@ Write functions in TypeScript, Python or Go to power background and scheduled jo
 ## Get started
 
 
-<CardGroup cols={2}>
+<CardGroup cols={4}>
 
   <Card
     href={"/docs/getting-started/nextjs-quick-start?ref=docs-home"}
     title={"Next.js"}
-    icon={<RiNextjsFill className="text-basis h-8 w-8"/>}
+    icon={<RiNextjsFill className="text-basis h-10 w-10"/>}
     iconPlacement="top"
   >
-  Add queueing, events, crons, and step functions to your Next app on any cloud provider.
+  {/* Add queueing, events, crons, and step functions to your Next app on any cloud provider. */}
   </Card>
 
   <Card
     href={"/docs/getting-started/nodejs-quick-start?ref=docs-home"}
     title={"Node.js"}
-    icon={<RiNodejsFill className="text-basis h-8 w-8"/>}
+    icon={<RiNodejsFill className="text-basis h-10 w-10"/>}
     iconPlacement="top"
   >
-  Write durable step functions in any Node.js app and run on servers or serverless.
+  {/* Write durable step functions in any Node.js app and run on servers or serverless. */}
   </Card>
 
   <Card
     href={"/docs/getting-started/python-quick-start?ref=docs-home"}
     title={"Python"}
-    icon={<PythonIcon className="text-basis h-8 w-8"/>}
+    icon={<PythonIcon className="text-basis h-10 w-10"/>}
     iconPlacement="top"
   >
-    Develop reliable step functions in Python without managing queueing systems or DAG based workflows.
+    {/* Develop reliable step functions in Python without managing queueing systems or DAG based workflows. */}
   </Card>
 
 
   <Card
     href={"https://pkg.go.dev/github.com/inngest/inngestgo"}
     title={"Go"}
-    icon={<GoIcon className="text-basis h-8 w-8"/>}
+    icon={<GoIcon className="text-basis h-10 w-10"/>}
     iconPlacement="top"
   >
-    Write fast, durable step functions in your Go application using the standard library.
+    {/* Write fast, durable step functions in your Go application using the standard library. */}
+  </Card>
+
+</CardGroup>
+
+## Coding agent resources
+
+<CardGroup cols={3}>
+  <Card
+    href={"/docs/ai-dev-tools/agent-skills"}
+    title={"Agent Skills"}
+    icon={<SkillsMDIcon square={false} className="text-basis h-16 w-32"/>}
+    iconPlacement="top"
+  >
+    Pre-built skills that teach coding agents how to write, test, and debug Inngest functions.
+  </Card>
+
+  <Card
+    href={"/docs/ai-dev-tools/mcp"}
+    title={"Dev Server MCP"}
+    icon={<MCPIcon className="text-basis h-16 w-16"/>}
+    iconPlacement="top"
+  >
+    Connect coding agents directly to your running dev server to list functions, send events, and monitor runs.
+  </Card>
+
+  <Card
+    href={"#llm-docs"}
+    title={"LLM Docs"}
+    icon={<LLMsTXTIcon square={false} className="text-basis h-16 w-32"/>}
+    iconPlacement="top"
+  >
+    Full Inngest documentation in markdown format for LLM context windows. Also available as a table of contents.
   </Card>
 
 </CardGroup>
