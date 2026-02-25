@@ -51,16 +51,19 @@ const inngest = new Inngest({
     signature verification, or force Cloud mode with `false`. Alternatively, set [`INNGEST_DEV`](/docs/sdk/environment-variables#inngest-dev).
   </Property>
   <Property name="logger" type="Logger">
-    A logger object that provides `.info()`, `.warn()`, `.error()`, and `.debug()` methods. Log level is controlled by the logger instance itself. The SDK ships a built-in `ConsoleLogger` that accepts a minimum log level. Defaults to `new ConsoleLogger("debug")` if not provided. See [logging guide](/docs/guides/logging) for more details.
+    A logger object that provides `.info()`, `.warn()`, `.error()`, and `.debug()` methods. The SDK uses Pino-style object-first logging. For string-first loggers like Winston, use `wrapStringFirstLogger`. Defaults to `new ConsoleLogger({ level: "info" })` if not provided. See the [logging reference](/docs/reference/typescript/v4/logging) for details.
 
     ```ts
     import { ConsoleLogger, Inngest } from "inngest";
 
     export const inngest = new Inngest({
       id: "my-app",
-      logger: new ConsoleLogger("info"),
+      logger: new ConsoleLogger({ level: "debug" }),
     });
     ```
+  </Property>
+  <Property name="internalLogger" type="Logger">
+    A separate logger for SDK internal messages (registration, request handling, middleware errors). If not provided, falls back to `logger`. Use this to route SDK internals separately from your function logs. See the [logging reference](/docs/reference/typescript/v4/logging#internal-logger) for details.
   </Property>
   <Property name="middleware" type="array" version="v2.0.0+">
     A stack of [middleware](/docs/features/middleware) to add to the client.

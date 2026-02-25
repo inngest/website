@@ -24,8 +24,8 @@ export const SDK_LANGUAGES: { id: SDKLanguage; title: string; shortTitle: string
 ];
 
 export const TS_VERSIONS: { id: TSVersion; title: string }[] = [
+  { id: "v4", title: "Version 4 (Beta)" },
   { id: "v3", title: "Version 3" },
-  { id: "v4", title: "Version 4 (beta)" },
 ];
 
 // Map SDK titles in navigation to language IDs

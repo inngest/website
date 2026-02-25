@@ -276,6 +276,10 @@ const sectionReference: (NavGroup | NavLink)[] = [
         href: tsRef("v4", "functions/run-priority"),
       },
       {
+        title: "Logging",
+        href: tsRef("v4", "logging"),
+      },
+      {
         title: "Extended Traces",
         href: tsRef("v4", "extended-traces"),
       },
