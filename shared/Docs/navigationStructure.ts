@@ -365,6 +365,10 @@ const sectionReference: (NavGroup | NavLink)[] = [
             href: tsRef("v4", "middleware/examples"),
           },
           {
+            title: "Custom serialization",
+            href: tsRef("v4", "middleware/serialization"),
+          },
+          {
             title: "Encryption",
             href: tsRef("v4", "middleware/encryption"),
           },

@@ -130,41 +130,9 @@ class ErrorHandlingMiddleware extends Middleware.BaseMiddleware {
 
 ## Custom serialization
 
-Use `wrapStepHandler` to serialize step output (e.g. `Date` → ISO string) before it's persisted, and `wrapStep` to deserialize when the value is returned from memoization.
+Inngest serializes and deserializes data as JSON. This means that non-JSON types like `Date`, `Map`, or `Set` are lost. However, you can preserve them using serializer middleware.
 
-```ts
-import { Middleware } from "inngest";
-
-class DateSerializationMiddleware extends Middleware.BaseMiddleware {
-  // Serialize: runs when step handler completes
-  async wrapStepHandler({ next }: Middleware.WrapStepHandlerArgs) {
-    const result = await next();
-
-    if (result instanceof Date) {
-      return result.toISOString();
-    }
-
-    return result;
-  }
-
-  // Deserialize: runs for all steps including memoized
-  async wrapStep({ next, stepInfo }: Middleware.WrapStepArgs) {
-    const result = await next();
-
-    if (typeof result === "string" && !isNaN(Date.parse(result))) {
-      return new Date(result);
-    }
-
-    return result;
-  }
-}
-```
-
-<Callout>
-`wrapStepHandler` only runs when the step handler actually executes (fresh execution). `wrapStep` runs for every step including memoized, making it the right place for deserialization.
-
-This is a simplified example. Robust serialization middleware needs to handle more cases. An in-depth guide is coming soon.
-</Callout>
+Serializer middleware creates JSON-valid representations of non-JSON types, allowing for seamless preservation across step boundaries, event sends, and function invocations. See the [Custom serialization](/docs/reference/typescript/v4/middleware/serialization) guide for a full walkthrough.
 
 ## Inserting steps
 
