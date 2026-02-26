@@ -1,0 +1,96 @@
+---
+heading: "We Built a Production-Ready Deep Research Agent Live. Here's How It Works."
+subtitle: "Last Friday, we ran a live session on durable endpoints and built a fully functional deep research agent from scratch in about 30 minutes. Two API endpoints, no job queue, no worker infrastructure, no state management code."
+image: /assets/blog/We Built a Production-Ready Deep Research Agent Live. Here's How It Works./featured-image.png
+date: 2026-02-26
+author: Lauren Craigie
+category: product-updates
+primaryCTA: docs
+floatingCTA: true
+---
+
+Last Friday, we ran a live session on [durable endpoints](https://www.inngest.com/durable-endpoints?ref=webinar-recap-durable-endpoints)—a feature we've been working on since August, and built a fully functional deep research agent from scratch in about 30 minutes. Two API endpoints, no job queue, no worker infrastructure, no state management code. The whole thing ran for four minutes per request without any of that.
+
+If you missed it, the recording is on our [YouTube channel](https://youtu.be/FUan8gEpRGI), and the code is [fully open source](https://github.com/inngest/durable-endpoints-webinar). But if you want the cliff notes, read on.
+
+## The Problem We Were Trying to Solve
+
+Durable execution has existed for background workflows for a while. Inngest, Temporal, Azure Durable Functions: you get retries, checkpointing, state management, observability. The assumption baked into all of them is that the work happens asynchronously, decoupled from the user who triggered it.
+
+That covers a lot of ground. But there's a whole category of things you build that don't fit that model: API endpoints your users hit directly, in real time, waiting for a response. Those have been on their own for years. When one fails, you handle it however you handle it—a try/catch here, a manual retry there—and hope the third-party API cooperates.
+
+AI endpoints make this worse because the failure modes multiply. A single user request might involve a planning call, a fan-out to a dozen searches, per-source summarization, and a synthesis step. Each one can fail independently. Five steps at 99% reliability each gives you 95% end-to-end. Ten steps and you're at 90%. A real research agent can involve dozens of operations. The math is not on your side.
+
+The standard answer is "put it in a queue." But that's not really solving the problem—you've just moved it. Now you need workers, state persistence, a way to poll for results, and something to broadcast status back to the frontend. You've built half a workflow engine to avoid building a workflow engine.
+
+Durable endpoints take the other approach: give you everything durable workflows provide, inside a regular HTTP handler. Not a background job. Your actual endpoint, the one users call with fetch.
+
+## How It Works
+
+The API is minimal. You wrap your handler with `inngest.endpoint`, and inside it you use `step.run` to wrap any operation you want to be durable:
+
+```tsx
+app.get("/api/research", inngest.endpoint(async ({ req, step }) => {
+  const queries = await step.run("generate-queries", async () => {
+    return await anthropic.messages.create({ /* ... */ });
+  });
+
+  const results = await step.run("search", async () => {
+    return await exa.search(queries);
+  });
+
+  return Response.json(results);
+}));
+```
+
+On the happy path, there's no overhead. Steps checkpoint in the background asynchronously. The user gets a response at normal speed.
+
+When something fails—Anthropic returns a 529, Exa rate-limits you, whatever—Inngest retries the specific step that failed. The user gets redirected to a run-specific URL that blocks and waits for completion. Inngest re-enters the function, injects the state from all the steps that already succeeded, finishes execution, and sends the result back. From the user's perspective: a slightly longer response time. No error, no lost work, no re-running steps you already paid for.
+
+That last part matters more than it sounds. LLM calls aren't cheap. If your endpoint fails on step 7 and you retry the whole function, you're paying for steps 1-6 again. With checkpointing, those results are cached. You pay for each call exactly once regardless of how many retries it takes.
+
+## What We Built: Deep Research in Two Endpoints
+
+The live demo used Inngest durable endpoints, Exa for web search, and Anthropic to tie it together. Here's the structure.
+
+**Endpoint 1: Clarify**
+
+Takes a research topic and returns clarifying questions — architecture focus, date range, implementation vs. theory. Under the hood it's an Anthropic call wrapped in `step.run`. The wrapper adds retries if the model is at capacity, and surfaces the input/output in the Inngest dev server so you can see exactly what the model did.
+
+Remove the `step.run` and the endpoint still works. You just lose the observability and the retry behavior. For a single AI call that's an acceptable tradeoff. Once you're chaining calls, it isn't.
+
+**Endpoint 2: Research**
+
+This is where it gets interesting. The endpoint:
+
+1. Takes the original topic plus the clarification answers
+2. Runs an Anthropic call to generate a batch of search queries
+3. Fans those queries out to Exa in parallel using `Promise.all` with `step.run` on each search
+4. Extracts learnings from each source with another Anthropic call per source
+5. Recurses through follow-up queries based on what it found
+
+The whole thing runs for about four minutes in a single API endpoint, with no queue, no worker, no hand-written state persistence.
+
+If any individual step fails during those four minutes, Inngest retries it. The 40+ other completed steps don't re-run — their results are already in state. The Inngest dev server shows every step with timing, input, and output. Full observability into an AI workflow, without adding any instrumentation beyond `step.run`.
+
+## Durable Endpoints vs. Durable Functions
+
+These are different tools. Durable functions (the classic Inngest model) are event-driven and asynchronous: something happens, an event fires, functions run in the background. You don't hold a connection open. Users find out about results through polling or real-time subscriptions.
+
+Durable endpoints are synchronous from the user's perspective. They call an API, they wait, they get a response. No events to wire up, no real-time layer to build, no new programming model. It's a fetch call on the client and a regular handler on the server.
+
+They're also composable. The endpoint can fire an event to kick off a background workflow when it needs to. We use both internally: durable endpoints for API calls, durable functions for long-running background jobs. The endpoint invokes the background workflow; the background workflow handles the async heavy lifting.
+
+## What's on the Roadmap
+
+Two things coming soon:
+
+**Streaming support.** Right now you can stream in the happy path, but getting SSE to work seamlessly after an async redirect — so the user just sees a normal stream of tokens regardless of what happened behind the scenes — is in progress and landing shortly.
+
+**Full flow control compatibility.** Concurrency limits per function, per-tenant rate limiting, throttling for downstream APIs with quotas. Everything that exists for background workflows, available in durable endpoints.
+
+The code from the session is on GitHub, including the full deep research implementation. The Inngest dev server runs locally with no account required, so you can try it without committing to anything.
+
+[See the deep research example on GitHub →](https://github.com/inngest/durable-endpoints-webinar)
+
+[Get started with Inngest →](https://inngest.com/)
