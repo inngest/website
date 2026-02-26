@@ -1,10 +1,10 @@
-import { Info } from "src/shared/Docs/mdx";
+import { Info, Warning } from "src/shared/Docs/mdx";
 
-export const description = 'Query and analyze event data with SQL in the Inngest platform.';
+export const description = 'Query and analyze event and run data with SQL in the Inngest platform.';
 
 # Insights
 
-Inngest Insights allows you to query and analyze your event data using SQL directly within the Inngest platform. Every event sent to Inngest contains valuable information, and Insights gives you the power to extract meaningful patterns and analytics from that data.
+Inngest Insights allows you to query and analyze your event and function run data using SQL directly within the Inngest platform. Every event sent to Inngest and every function run contains valuable information, and Insights gives you the power to extract meaningful patterns and analytics from that data.
 
 <Info>
   Insights support is currently in Public Beta. Some details including SQL syntax and feature availability are still subject to change during this period. Read more about the [Public Beta release phase here](/docs/release-phases#public-beta) and the [roadmap here](#roadmap).
@@ -14,14 +14,12 @@ Inngest Insights allows you to query and analyze your event data using SQL direc
 
 Insights provides an in-app SQL editor and query interface where you can:
 - **Use AI to generate queries** - Describe what you want in plain English and let the Insights AI write the SQL for you
-- Query event data using familiar SQL syntax
+- Query event and function run data using familiar SQL syntax
 - Save and reuse common queries
 - Share them with your team
 - Browse your event schemas directly in the editor
-- Analyze patterns in your event triggers
+- Analyze patterns in your event triggers and function executions
 - Extract business intelligence from your workflows
-
-Currently, you can **only query events**. Support for querying function runs will be added in future releases.
 
 ## Getting Started
 
@@ -62,29 +60,62 @@ The generated query is automatically inserted into the SQL editor and executed, 
 
 The Insights interface includes a full-featured SQL editor where you can:
 
-- Write and execute SQL queries against your event data
+- Write and execute SQL queries against your event and run data
 - Save frequently used queries for later access
 - View query results in an organized table format
 - Access query history and templates from the sidebar
-- Autocomplete for writing sql and choosing events 
+- Use autocomplete for SQL keywords, table names, column names, and event types
+- Format your SQL queries automatically for better readability
 
 
 
 ![Sql Editor View](/assets/docs/platform/monitor/insights/insights_sql_editor.png)
 
-### Available Columns
+## Data Sources
 
-When querying events, you have access to the following columns:
+Insights supports querying two data sources: **events** and **runs**.
+
+### Events Table
 
 | Column | Type | Description |
 |--------|------|-------------|
 | `id` | String | Unique identifier for the event |
 | `name` | String | The name/type of the event |
-| **`data`** | **JSON** | **The event payload data - users can send any JSON structure here** |
-| `ts` | Unix timestamp (ms) | Unix timestamp in milliseconds when the event occurred - [reference](https://www.unixtimestamp.com/) |
+| **`data`** | **JSON** | **Your event payload data** |
 | `v` | String | Event format version |
+| `ts` | Unix timestamp (ms) | Unix timestamp in milliseconds when the event occurred - [reference](https://www.unixtimestamp.com/) |
+| `ts_dt` | DateTime | The same time as `ts` as a DateTime
+| `received_at` | Unix timestamp (ms) | Unix timestamp in milliseconds when the event was received by Inngest |
+| `received_at_dt` | DateTime | The same time as `received_at` as a DateTime
 
 For more details on the event format, see the [Inngest Event Format documentation](/docs/features/events-triggers/event-format).
+
+### Runs Table
+
+The `runs` table contains data about your function executions. This allows you to analyze function performance, debug failures, and track execution patterns.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | String | Unique identifier for the run (ULID) |
+| `triggering_event_name` | String | The name of the event trigger|
+| `status` | String | Run status: `Queued`, `Running`, `Failed`, `Cancelled`, `Completed` |
+| `queued_at` | DateTime | When the run was queued |
+| `started_at` | DateTime | When the run started executing (NULL if it hasn't started yet) |
+| `ended_at` | DateTime | When the run ended (NULL if still running) |
+| `app_id` | String | The app ID as defined in your app |
+| `function_id` | String | The "fully qualified" function ID. This is the app ID concatenated to the function ID as defined in your app with a `-` (e.g., `my-app-my-function`) |
+| `inputs` | Array(JSON) | Array of input events (for batch functions or functions triggered by multiple events) |
+| `input` | JSON | Shorthand for `inputs[1]` - if you know a single event triggered the run as opposed to a batch. **ClickHouse arrays are 1-indexed, not 0-indexed.** |
+| `output` | JSON | The output/return value from the function (NULL if not completed or no output) |
+| `error` | JSON | Error details if the run failed (NULL if successful) |
+
+<Info>
+  The `function_id` and `app_id` columns closely match your SDK calls in your app. For example, if you define a function with `inngest.createFunction({ id: "process-order", ... })` in an app with ID `my-app`, the "fully qualified" `function_id` will be `my-app-process-order`. This also matches the slugs in URLs used on https://app.inngest.com/env/production/functions.
+</Info>
+
+<Warning>
+  Due to a temporary limitation with `function_id` and `app_id`, you will not be able to query on partial strings (e.g., using `LIKE`) and sorting may be out of order.
+</Warning>
 
 ### Data Retention
 
@@ -124,10 +155,6 @@ String manipulation and search capabilities.
 - [String search functions](https://clickhouse.com/docs/sql-reference/functions/string-search-functions)
 - [String manipulation functions](https://clickhouse.com/docs/sql-reference/functions/string-functions)
 
-#### JSON Functions
-Essential for working with `events.data` payloads.
-[View ClickHouse JSON functions documentation](https://clickhouse.com/docs/sql-reference/functions/json-functions)
-
 #### Date/Time Functions
 For analyzing event timing and patterns.
 [View ClickHouse date/time functions documentation](https://clickhouse.com/docs/sql-reference/functions/date-time-functions)
@@ -158,21 +185,52 @@ The following aggregate functions are supported:
 | `median()` | [Finds median value](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/median) |
 
 
+## Working with JSON Data
 
-### SQL Syntax Limitations
+Both `events.data` and runs columns like `input`, `output`, and `error` often contain JSON data.
 
-Some SQL features are not yet supported but are planned for future releases:
+### JSON Dot Notation (Recommended)
 
-- **CTEs (Common Table Expressions)** using `WITH`
-- **`IS` operator**
-- **`NOT` operator**
+Insights provides syntactic sugar for accessing JSON fields using dot notation. This will attempt to infer the type, but for maximum control you can rely on [ClickHouse native JSON functions](https://clickhouse.com/docs/sql-reference/functions/json-functions).
 
+```sql
+SELECT data.function_id, COUNT(*) as count
+FROM events
+WHERE name = 'inngest/function.failed'
+GROUP BY data.function_id
+ORDER BY count DESC;
+```
 
-## Working with Event Data
+```sql
+SELECT input.user_id, input.order.amount
+FROM runs
+WHERE function_id = 'my-app-process-order'
+  AND input.order.amount > 100;
+```
 
-### Event-Specific Schema
+### ClickHouse JSON Functions
 
-Within **`events.data`**, users can send any JSON they want, so the structure and available fields will be specific to their payloads. You can use ClickHouse's JSON functions to extract and query specific fields within your event data.
+For more complex JSON operations and control over types, you can use ClickHouse's native JSON functions:
+
+```sql
+SELECT JSONExtractString(data, 'function_id'), COUNT(*) as count
+FROM events
+WHERE name = 'inngest/function.failed'
+GROUP BY JSONExtractString(data, 'function_id')
+ORDER BY count DESC;
+```
+
+### Array Indexing
+
+For array data, you can use bracket notation to access specific elements:
+
+```sql
+-- Access the first input event (same as using `input`)
+SELECT inputs[1].user_id
+FROM runs
+WHERE function_id = 'my-app-process-order';
+```
+
 
 ### Example Queries
 
@@ -181,18 +239,27 @@ Within **`events.data`**, users can send any JSON they want, so the structure an
 SELECT count(*)
 FROM events
 WHERE name = 'inngest/function.failed'
-AND simpleJSONExtractString(data, 'function_id') = 'generate-report'
-AND ts > toUnixTimestamp(addHours(now(), -1)) * 1000;
+  AND data.function_id = 'generate-report'
+  AND ts > toUnixTimestamp(addHours(now(), -1)) * 1000;
 ```
 
 #### Extracting JSON Data and Aggregating
 ```sql
-SELECT simpleJSONExtractString(data, 'user_id') as user_id, count(*) 
+SELECT data.user_id as user_id, count(*)
 FROM events
 WHERE name = 'order.created'
 GROUP BY user_id
 ORDER BY count(*) DESC
 LIMIT 10;
+```
+
+#### Count runs by status in the last 24 hours
+```sql
+SELECT status, COUNT(*) as count
+FROM runs
+WHERE queued_at > now() - INTERVAL 1 DAY
+GROUP BY status
+ORDER BY count DESC;
 ```
 
 ## Saved Queries
@@ -211,15 +278,12 @@ Shared queries will be added to a `Shared queries` navigation dropdown within th
 ## Roadmap
 
 ### Coming Soon
-- Query support for function runs
-- `received_at` column for tracking event receipt time
 - Pagination for large result sets
 - Async data exports for results larger than 1000 rows
 
 ### Future Enhancements
 - Support for CTEs (Common Table Expressions)
-- `IS` and `NOT` operators
-- Advanced visualization capabilities
+- Advanced visualization capabilities and dashboards
 
 ## Need Help?
 
