@@ -90,6 +90,31 @@ const permanentRedirects = [
 
   // Durable Endpoints rename
   ["/docs/learn/rest-endpoints", "/docs/learn/durable-endpoints"],
+
+  // TypeScript SDK versioned docs - landing page redirect
+  ["/docs/reference/typescript/v4", "/docs/reference/typescript/v4/client/create"],
+  // Legacy short paths - redirect to versionless TypeScript docs
+  ["/docs/reference/client/create", "/docs/reference/typescript/client/create"],
+  ["/docs/reference/events/send", "/docs/reference/typescript/events/send"],
+  ["/docs/reference/functions/create", "/docs/reference/typescript/functions/create"],
+  ["/docs/reference/functions/debounce", "/docs/reference/typescript/functions/debounce"],
+  ["/docs/reference/functions/handling-failures", "/docs/reference/typescript/functions/handling-failures"],
+  ["/docs/reference/functions/rate-limit", "/docs/reference/typescript/functions/rate-limit"],
+  ["/docs/reference/functions/run-priority", "/docs/reference/typescript/functions/run-priority"],
+  ["/docs/reference/functions/singleton", "/docs/reference/typescript/functions/singleton"],
+  ["/docs/reference/functions/step-invoke", "/docs/reference/typescript/functions/step-invoke"],
+  ["/docs/reference/functions/step-run", "/docs/reference/typescript/functions/step-run"],
+  ["/docs/reference/functions/step-send-event", "/docs/reference/typescript/functions/step-send-event"],
+  ["/docs/reference/functions/step-sleep-until", "/docs/reference/typescript/functions/step-sleep-until"],
+  ["/docs/reference/functions/step-sleep", "/docs/reference/typescript/functions/step-sleep"],
+  ["/docs/reference/functions/step-wait-for-event", "/docs/reference/typescript/functions/step-wait-for-event"],
+  ["/docs/reference/functions/step-wait-for-signal", "/docs/reference/typescript/functions/step-wait-for-signal"],
+  ["/docs/reference/serve", "/docs/reference/typescript/serve"],
+  ["/docs/reference/testing", "/docs/reference/typescript/testing"],
+  ["/docs/reference/middleware/lifecycle", "/docs/reference/typescript/middleware/lifecycle"],
+  ["/docs/reference/middleware/examples", "/docs/reference/typescript/middleware/examples"],
+  ["/docs/reference/typescript/migrations/v3-to-v4", "/docs/reference/typescript/v4/migrations/v3-to-v4"],
+  ["/docs/sdk/migration", "/docs/reference/typescript/v3/migrations/v2-to-v3"],
 ];
 
 async function redirects() {
