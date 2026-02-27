@@ -6,7 +6,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "inngest": "4.0.0-alpha.3"
+    "inngest": "4.0.0-alpha.6"
   },
   "devDependencies": {
     "typescript": "^5.0.0"
