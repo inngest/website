@@ -888,7 +888,17 @@ export function Navigation(props) {
                       setActiveSection(tab.title);
                       // Navigate to SDK home page when switching to Reference tab
                       if (tab.title === "Reference" && !isActive) {
-                        router.push(SDK_HOME_PAGES[language]);
+                        let href = SDK_HOME_PAGES[language];
+
+                        // Preserve non-stable TS version in the URL. This was
+                        // added because the VersionSwitcher would lose the
+                        // selected version when the user switched between the
+                        // "Learn" and "Reference" tabs.
+                        if (language === "typescript" && tsVersion !== TS_STABLE) {
+                          href = `/docs/reference/typescript/${tsVersion}`;
+                        }
+
+                        router.push(href);
                       }
                     }}
                     className={clsx(
