@@ -43,6 +43,7 @@ import {
   SDK_HOME_PAGES,
   getLanguageFromPath,
   getTsVersionFromPath,
+  normalizeTsReferencePath,
   TS_STABLE,
   TS_VERSIONS,
   type SDKLanguage,
@@ -388,6 +389,10 @@ function NavigationGroup({
   let isInsideMobileNavigation = useIsInsideMobileNavigation();
   let [router] = useInitialValue([useRouter()], isInsideMobileNavigation);
 
+  // Normalize the pathname so the versioned path from Next.js rewrites
+  // (e.g. /typescript/v3/intro) matches versionless nav hrefs (/typescript/intro).
+  const currentPath = normalizeTsReferencePath(router.pathname);
+
   // hack: animation flickers on initial render so let's enable it after mount
   let [animateAccordion, setAnimateAccordion] = useState(false);
   useEffect(() => {
@@ -444,7 +449,7 @@ function NavigationGroup({
                       key={idx}
                       type="multiple"
                       defaultValue={
-                        hasNavGroupPath(link, router.pathname)
+                        hasNavGroupPath(link, currentPath)
                           ? [...defaultOpenGroupTitles, link.title]
                           : defaultOpenGroupTitles
                       }
@@ -466,7 +471,7 @@ function NavigationGroup({
                     >
                       <NavLink
                         href={link.href}
-                        active={link.href === router.pathname}
+                        active={link.href === currentPath}
                         className={link.className}
                         tag={link.tag}
                       >
@@ -803,8 +808,11 @@ function VersionSwitcher({
 
 export function Navigation(props) {
   const router = useRouter();
-  // Remove query params and hash from pathname
-  const pathname = router.asPath.replace(/(\?|#).+$/, "");
+
+  // Normalize the pathname so the versioned path from Next.js rewrites
+  // matches versionless nav hrefs.
+  const pathname = normalizeTsReferencePath(router.pathname);
+
   const { activeSection, setActiveSection } = useActiveSection();
   const { language, tsVersion, setTsVersion } = useLanguageStore();
 
@@ -839,9 +847,9 @@ export function Navigation(props) {
   const activeGroup = useMemo(
     () =>
       nestedNavigation?.sectionLinks.find(
-        (group) => isNavGroup(group) && hasNavGroupPath(group, router.pathname)
+        (group) => isNavGroup(group) && hasNavGroupPath(group, pathname)
       ),
-    [router.pathname, nestedNavigation]
+    [pathname, nestedNavigation]
   );
 
   const defaultOpenGroupTitles = useMemo(
@@ -853,9 +861,9 @@ export function Navigation(props) {
             ? nestedNavigation?.sectionLinks
             : []),
         ],
-        router.pathname
+        pathname
       ),
-    [activeGroup, nestedNavigation, router.pathname]
+    [activeGroup, nestedNavigation, pathname]
   );
 
   return (
@@ -937,7 +945,7 @@ export function Navigation(props) {
               <Accordion.Root
                 key={
                   // re-mount on page navigation
-                  router.pathname
+                  pathname
                 }
                 type="multiple"
                 defaultValue={defaultOpenGroupTitles}

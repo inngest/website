@@ -62,7 +62,7 @@ const sectionReference: (NavGroup | NavLink)[] = [
     links: [
       {
         title: "Introduction",
-        href: tsRef("v3", ""),
+        href: tsRef("v3", "intro"),
       },
       {
         title: "Create the client",
@@ -225,7 +225,7 @@ const sectionReference: (NavGroup | NavLink)[] = [
     links: [
       {
         title: "Introduction",
-        href: tsRef("v4", ""),
+        href: tsRef("v4", "intro"),
       },
       {
         title: "Create the client",

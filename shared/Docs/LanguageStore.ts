@@ -84,6 +84,16 @@ export function isReferencePath(path: string): boolean {
 }
 
 /**
+ * Strip the stable TS version prefix from a `router.pathname` so it matches the
+ * versionless hrefs used in the nav. Rewrites cause `router.pathname` to
+ * contain the versioned path (e.g. /typescript/v3/intro) while nav links use
+ * versionless paths (e.g. /typescript/intro).
+ */
+export function normalizeTsReferencePath(path: string): string {
+  return path.replace(`/typescript/${TS_STABLE}/`, "/typescript/");
+}
+
+/**
  * Detect TypeScript SDK version from a URL path
  */
 export function getTsVersionFromPath(path: string): TSVersion | null {

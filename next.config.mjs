@@ -147,8 +147,12 @@ async function redirects() {
       destination: "/docs/guides/multi-step-functions",
       permanent: true,
     },
-    // TypeScript SDK versioned docs - landing page redirect
-    { source: "/docs/reference/typescript/v4", destination: "/docs/reference/typescript/v4/client/create", permanent: false },
+
+    // Reference intros
+    { source: "/docs/reference/typescript", destination: "/docs/reference/typescript/intro", permanent: false },
+    { source: "/docs/reference/typescript/v4", destination: "/docs/reference/typescript/v4/intro", permanent: false },
+    { source: "/docs/reference/typescript/v3", destination: "/docs/reference/typescript/v3/intro", permanent: false },
+
     // Legacy short paths - redirect to versionless TypeScript docs
     { source: "/docs/reference/client/create", destination: "/docs/reference/typescript/client/create", permanent: false },
     { source: "/docs/reference/events/send", destination: "/docs/reference/typescript/events/send", permanent: false },
@@ -247,11 +251,6 @@ const TS_STABLE_VERSION = "v3";
 
 async function rewrites() {
   return [
-    // Versionless intro page
-    {
-      source: "/docs/reference/typescript",
-      destination: `/docs/reference/typescript/${TS_STABLE_VERSION}`,
-    },
     // Versionless subpaths (excludes /v3/ and /v4/ prefixed paths)
     {
       source: "/docs/reference/typescript/:path((?!v3|v4).+)",
