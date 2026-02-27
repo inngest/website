@@ -267,6 +267,34 @@ inngest.createFunction(
 );
 ```
 
+### Connect: `rewriteGatewayEndpoint` replaced with `gatewayUrl`
+
+The `rewriteGatewayEndpoint` callback option has been removed from `connect()`. Use the `gatewayUrl` string option or the `INNGEST_CONNECT_GATEWAY_URL` environment variable instead.
+
+```typescript
+// Old (v3)
+const connection = await connect({
+  apps: [...],
+  rewriteGatewayEndpoint: (url) => {
+    const clusterUrl = new URL(url);
+    clusterUrl.host = 'my-cluster-host:8289';
+    return clusterUrl.toString();
+  },
+});
+
+// New (v4)
+const connection = await connect({
+  apps: [...],
+  gatewayUrl: "wss://my-cluster-host:8289/v0/connect",
+});
+```
+
+### Connect: `isolateExecution` enabled by default
+
+When using `connect()`, worker thread isolation is now enabled by default. In v3, `isolateExecution` defaulted to `false` and had to be explicitly opted into.
+
+To opt out, set `isolateExecution: false` in your `connect()` options or set the `INNGEST_CONNECT_ISOLATE_EXECUTION` environment variable to `false`.
+
 ### Edge environment improvements
 
 Fetch and configuration are now resolved lazily at first use rather than eagerly at client construction. This means you no longer need to manually bind `globalThis.fetch` before creating an Inngest client in edge environments (Cloudflare Workers, Vercel Edge, Deno, etc.).
