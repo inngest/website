@@ -224,11 +224,11 @@ serve({ client, functions, streaming: true });
 
 If the `serve` function does not support streaming then it throws an error. Previously, it silently ignored the option.
 
-### Change `optimizeParallelism` default to `true`
+### Optimized parallelism enabled by default
 
-`optimizeParallelism` is now `true` by default, reducing traffic and latency for parallel steps. This changes `Promise.all()`, `Promise.allSettled()`, etc. to wait for all promises to settle before resolving.
+"Optimized parallelism" significantly reduces the number of requests necessary to run parallel steps (steps in `Promise.all`, `Promise.allSettled`, etc.). This decrease in requests can dramatically improve CPU usage, memory usage, and function run duration.
 
-If you were using `Promise.race()` and relying on early resolution, use the new `group.parallel()` helper available on the function context:
+The primary downside is the change in `Promise.race` behavior. `Promise.race` will wait for *all* promises to settle before resolving. The correct "winner" is returned, but the `Promise.race` will *not* immediately resolve on the first winner. If you were relying on the early resolution behavior, use the new `group.parallel()` helper. This will disable optimized parallelism for groups of steps:
 
 ```typescript
 // Old behavior (no longer works as expected with optimized parallelism)
@@ -246,7 +246,7 @@ const winner = await group.parallel(async () => {
 });
 ```
 
-To revert to v3 behavior, set `optimizeParallelism: false` on your client or function.
+If you'd like to disable optimized parallelism altogether at either the client or function level, set `optimizeParallelism: false`.
 
 ### Checkpointing enabled by default
 
