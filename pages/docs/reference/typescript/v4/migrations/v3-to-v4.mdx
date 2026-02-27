@@ -6,9 +6,10 @@ This guide helps you migrate your Inngest TypeScript SDK from v3 to v4.
 
 ## New features
 
-- Middleware is more powerful and intuitive ([docs](/docs/reference/typescript/v4/middleware/lifecycle))
-- Trigger helpers ([docs](/docs/reference/typescript/v4/functions/triggers))
-- Separate internal and user-facing logs with the `internalLogger` option ([docs](/docs/reference/typescript/v4/logging#internal-logger))
+- Middleware is more powerful and intuitive ([more info](/docs/reference/typescript/v4/middleware/lifecycle))
+- Trigger helpers ([more info](/docs/reference/typescript/v4/functions/triggers))
+- Separate internal and user-facing logs with the `internalLogger` option ([more info](/docs/reference/typescript/v4/logging#internal-logger))
+- Use a worker thread in Connect ([more info](/docs/reference/typescript/v4/migrations/v3-to-v4#connect-worker-thread))
 
 ## Breaking changes
 
@@ -289,11 +290,11 @@ const connection = await connect({
 });
 ```
 
-### Connect: `isolateExecution` enabled by default
+### Connect worker thread
 
-When using `connect()`, worker thread isolation is now enabled by default. In v3, `isolateExecution` defaulted to `false` and had to be explicitly opted into.
+Connect internals (e.g. the WebSocket connection) are now in a worker thread. This solves an issue where event loop starvation (e.g. CPU heavy work) blocked heartbeats, tricking the Inngest server into thinking the worker died.
 
-To opt out, set `isolateExecution: false` in your `connect()` options or set the `INNGEST_CONNECT_ISOLATE_EXECUTION` environment variable to `false`.
+This change _shouldn't_ break any user facing behavior, but it's good to be aware of. If you do notice an issue with Connect, you can move the WebSocket connection back to the main thread by setting `isolateExecution: false` in your `connect()` options or by setting the `INNGEST_CONNECT_ISOLATE_EXECUTION` environment variable to `false`.
 
 ### Edge environment improvements
 
