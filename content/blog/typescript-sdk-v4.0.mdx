@@ -1,0 +1,237 @@
+---
+heading: "TypeScript SDK v4: Rewritten Middleware, Composable Triggers, Faster Steps"
+image: /assets/blog/typescript-sdk-v4/featured-image.png
+showSubtitle: true
+subtitle: More type safety, less boilerplate, fewer round-trips.
+date: 2026-03-03
+author:
+  - Linell Bonnette
+  - Aaron Harper
+category: product-updates
+hide: true
+---
+
+The Inngest TypeScript SDK v4 ships a rewritten middleware system, composable type-safe triggers, structured logging, and significantly faster parallel step execution.
+
+Here's what changed:
+
+- [Rewritten middleware system](#a-rewritten-middleware-system)
+- [Type-safe trigger helpers](#type-safe-trigger-helpers)
+- [Structured logging](#structured-logging)
+- [Faster parallel steps by default](#faster-parallel-steps-by-default)
+- [Checkpointing enabled by default](#checkpointing-enabled-by-default)
+- [A cleaner, more consistent API](#a-cleaner-more-consistent-api)
+
+## A rewritten middleware system
+
+The v3 middleware API has been replaced with a class-based system that hooks into every phase of function execution — from the initial HTTP request through individual steps and event sending. This is a clean break: v3 middleware is not forward-compatible and will need to be rewritten.
+
+The new API uses classes with explicit lifecycle hooks:
+
+```ts
+import { Inngest, Middleware } from "inngest";
+
+class TimingMiddleware extends Middleware.BaseMiddleware {
+  async wrapFunctionHandler({ next }: Middleware.WrapFunctionHandlerArgs) {
+    const start = Date.now();
+    const result = await next();
+    console.log(`Function took ${Date.now() - start}ms`);
+    return result;
+  }
+}
+
+const inngest = new Inngest({
+  id: "my-app",
+  middleware: [TimingMiddleware],
+});
+```
+
+Middleware instances are created fresh per request, so you can safely use instance state without worrying about leaks between invocations. There are three categories of hooks:
+
+- **Observable hooks** (`on*`) for logging and metrics without affecting execution
+- **Wrapping hooks** (`wrap*`) for before/after logic using an onion model
+- **Transform hooks** (`transform*`) for modifying inputs and outputs
+
+Any hooks you don't define have zero overhead — the SDK skips them entirely. The [middleware lifecycle reference](/docs/reference/typescript/v4/middleware/lifecycle) covers the full API.
+
+## Type-safe trigger helpers
+
+This is the biggest architectural change in v4. In v3, event types were defined in a centralized `EventSchemas` class on the Inngest client:
+
+```ts
+// v3 — centralized, type-only schemas
+const inngest = new Inngest({
+  id: "my-app",
+  schemas: new EventSchemas().fromRecord<{
+    "user/created": { data: { userId: string; email: string } };
+  }>(),
+});
+inngest.createFunction(
+  { id: "on-user-created" },
+  { event: "user/created" },
+  async ({ event }) => {
+    // event.data typed from centralized schema
+  }
+);
+```
+
+This worked for small apps but became painful at scale. Types lived far from the functions that used them, sharing schemas across packages meant threading generics everywhere, and there was no runtime validation — the types were purely compile-time.
+
+v4 removes `EventSchemas` entirely and replaces it with `eventType()`, a helper that defines event types alongside your functions and works everywhere they're needed. Pass a [Standard Schema](https://github.com/standard-schema/standard-schema)-compatible library like Zod and you get runtime validation too:
+
+```ts
+// v4 — decentralized, with optional runtime validation
+import { eventType } from "inngest";
+import { z } from "zod";
+
+const userCreated = eventType("user/created", {
+  schema: z.object({ userId: z.string(), email: z.string() }),
+});
+```
+
+A single definition works everywhere: as a function trigger, with `step.waitForEvent()`, and with `inngest.send()`. No duplicate type declarations, no centralized registry, and — if you use a schema library — runtime type checking for free!
+
+```ts
+inngest.createFunction(
+  { id: "on-user-created", triggers: [userCreated] },
+  async ({ event, step }) => {
+    // event.data is typed and validated as { userId: string; email: string }
+    await doSomething(event.data.userId);
+
+    // The same helper works for sending events
+    await inngest.send(userCreated.create({ userId: "2", email: "b@c.com" }));
+  }
+);
+```
+
+If you don't want runtime validation, `staticSchema<T>()` gives you the same compile-time type safety without adding a schema library:
+
+```ts
+type UserCreatedPayload = { userId: string; email: string };
+
+const userCreated = eventType("user/created", {
+  schema: staticSchema<UserCreatedPayload>(),
+});
+```
+
+There are also `cron()` and `invoke()` helpers — see the [trigger helpers reference](/docs/reference/typescript/v4/functions/triggers) for the full set.
+
+## Structured logging
+
+v4 introduces structured logging using a Pino-style, object-first format:
+
+```ts
+inngest.createFunction(
+  { id: "process-order", triggers: [orderPlaced] },
+  async ({ event, logger }) => {
+    logger.info({ orderId: event.data.orderId }, "Processing order");
+  }
+);
+```
+
+You can bring your own logger — Pino, Winston, or any object with `.info()`, `.warn()`, `.error()`, and `.debug()` methods. For loggers that take the message string first, v4 includes a `wrapStringFirstLogger()` adapter. The old top-level `logLevel` option has been removed — log level is now set directly on the logger object.
+
+The `internalLogger` option separates SDK internal logs from your application logs — useful for routing them to different destinations or silencing SDK noise without losing your own output:
+
+```ts
+const inngest = new Inngest({
+  id: "my-app",
+  logger: myAppLogger,
+  internalLogger: new ConsoleLogger({ level: "warn" }),
+});
+```
+
+Full details in the [logging reference](/docs/reference/typescript/v4/logging).
+
+## Faster parallel steps by default
+
+`optimizeParallelism` is now enabled by default. For typical parallel workloads using `Promise.all()` or `Promise.allSettled()`, this means significantly fewer network round-trips — you'll see the improvement automatically without changing any code.
+
+To revert to v3 behavior, set `optimizeParallelism: false` on your client or function.
+
+If you use `Promise.race()` and rely on early resolution, the new `group.parallel()` helper gives you explicit control over execution boundaries:
+
+```ts
+inngest.createFunction(
+  { id: "race-example", triggers: [someEvent] },
+  async ({ step, group }) => {
+    const winner = await group.parallel(async () => {
+      return Promise.race([
+        step.run("fast-path", () => fetchFromCache()),
+        step.run("slow-path", () => fetchFromSource()),
+      ]);
+    });
+  }
+);
+```
+
+## Checkpointing enabled by default
+
+[Checkpointing](/docs/setup/checkpointing) is now enabled by default for all functions. With checkpointing, steps execute eagerly within a single request and checkpoint their progress back to Inngest as they complete — dramatically reducing inter-step latency. This is especially impactful for real-time AI workflows with many sequential steps.
+
+No configuration is needed. To opt out, set `checkpointing: false` on your client or individual functions.
+
+## A cleaner, more consistent API
+
+v4 cleans up several API inconsistencies.
+
+**Lazy initialization for edge environments.** Fetch and configuration are now resolved at first use rather than at client construction, so you no longer need to manually bind `globalThis.fetch` in Cloudflare Workers, Vercel Edge, or Deno.
+
+**The default mode is now cloud.** This ensures production behavior by default and aligns with every other Inngest SDK. For local development, set `isDev: true` or the `INNGEST_DEV=1` environment variable. This is likely the first thing you'll need to update when upgrading:
+
+```ts
+const inngest = new Inngest({
+  id: "my-app",
+  isDev: true,
+});
+```
+
+**Triggers moved into function options.** No more separate second argument — triggers live in the same options object as the function ID:
+
+```ts
+inngest.createFunction(
+  { id: "my-fn", triggers: { event: "app/user.created" } },
+  async ({ event }) => { /* ... */ }
+);
+```
+
+**Serve options moved to the client.** Options like `signingKey`, `signingKeyFallback`, `baseUrl`, and `fetch` now live on the client where they belong, keeping `serve()` focused purely on routing:
+
+```ts
+const inngest = new Inngest({
+  id: "my-app",
+  signingKey: "my-signing-key",
+  baseUrl: "https://my-inngest-instance.example.com",
+});
+app.use("/api/inngest", serve({ client: inngest, functions }));
+```
+
+**`serveHost` renamed to `serveOrigin`.** The old name was a misnomer — it accepted a full origin (scheme + host + port), not just a host. The `INNGEST_SERVE_HOST` env var still works but logs a deprecation warning; migrate to `INNGEST_SERVE_ORIGIN`.
+
+**Streaming is simplified.** The `streaming` option is now `true | false`. `"force"` maps to `true`, `"allow"` is removed (use `true` instead), and `false` is unchanged. If your serve handler doesn't support streaming, `true` will now throw an error rather than silently falling back.
+
+**`step.invoke()` requires explicit references.** Raw string function IDs are no longer accepted — use `referenceFunction()` or pass an imported function instance directly. This catches ID construction mistakes at compile time instead of runtime:
+
+```ts
+import { referenceFunction } from "inngest";
+
+await step.invoke("my-step", {
+  function: referenceFunction({ appId: "my-app", functionId: "other-fn" }),
+  data: { foo: "bar" },
+});
+
+// Or pass an imported function directly:
+// function: myOtherFunction,
+```
+
+## Upgrading
+
+v4 is a major release with breaking changes. For most applications — particularly those without custom middleware — the changes are mechanical. The [v3 to v4 migration guide](/docs/reference/typescript/v4/migrations/v3-to-v4) walks through each one with step-by-step instructions and code examples.
+
+When you're ready:
+
+```sh
+npm install inngest@4
+```
+
+We hope you love it, and we can't wait to see what you build!

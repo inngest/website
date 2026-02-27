@@ -1,0 +1,201 @@
+import { CodeGroup, Properties, Property, Callout, Tip } from "src/shared/Docs/mdx";
+
+# Logging
+
+The Inngest SDK uses **Pino-style object-first** logging, where structured data is passed before the message string:
+
+```ts
+logger.info({ userId: "abc123" }, "Processing user event");
+```
+
+A `logger` is available on the function context as `ctx.logger`. It provides `.info()`, `.warn()`, `.error()`, and `.debug()` methods.
+
+```ts
+export default inngest.createFunction(
+  {
+    id: "process-upload",
+    triggers: { event: "app/file.uploaded" },
+  },
+  async ({ event, step, logger }) => {
+    logger.info({ fileId: event.data.fileId }, "Starting upload processing");
+
+    const result = await step.run("process", () => {
+      logger.debug({ fileId: event.data.fileId }, "Processing file");
+      return processFile(event.data.fileId);
+    });
+
+    logger.info({ fileId: event.data.fileId, result }, "Upload processed");
+    return result;
+  }
+);
+```
+
+## Logger interface
+
+Any object that implements these four methods can be used as a logger:
+
+```ts
+interface Logger {
+  info(...args: any[]): void;
+  warn(...args: any[]): void;
+  error(...args: any[]): void;
+  debug(...args: any[]): void;
+}
+```
+
+## Setting a logger
+
+Pass a logger to the `logger` option on the [Inngest client](/docs/reference/typescript/v4/client/create). This logger will be available on `ctx.logger` in all functions.
+
+<CodeGroup>
+```ts {{ title: "Pino" }}
+import pino from "pino";
+import { Inngest } from "inngest";
+
+const logger = pino({ level: "debug" });
+
+export const inngest = new Inngest({
+  id: "my-app",
+  logger: logger,
+});
+```
+```ts {{ title: "Winston" }}
+import winston from "winston";
+import { Inngest, wrapStringFirstLogger } from "inngest";
+
+const logger = winston.createLogger({
+  level: "info",
+  format: winston.format.json(),
+  transports: [new winston.transports.Console()],
+});
+
+// Winston uses string-first logging, so wrap it for compatibility
+export const inngest = new Inngest({
+  id: "my-app",
+  logger: wrapStringFirstLogger(logger),
+});
+```
+</CodeGroup>
+
+### Object-first vs string-first loggers
+
+The SDK expects **object-first** loggers (like [Pino](https://github.com/pinojs/pino)), where structured data comes before the message:
+
+```ts
+// Object-first (Pino style) - works out of the box
+logger.info({ userId: "abc" }, "User created");
+```
+
+Some loggers like [Winston](https://github.com/winstonjs/winston) use **string-first** conventions, where the message comes first:
+
+```ts
+// String-first (Winston style) - needs wrapping
+logger.info("User created", { userId: "abc" });
+```
+
+For string-first loggers, use `wrapStringFirstLogger` to adapt them:
+
+```ts
+import { wrapStringFirstLogger } from "inngest";
+import winston from "winston";
+
+const winstonLogger = winston.createLogger({
+  level: "info",
+  format: winston.format.json(),
+  transports: [new winston.transports.Console()],
+});
+
+const logger = wrapStringFirstLogger(winstonLogger);
+```
+
+## Default logger
+
+If no `logger` is set, the SDK uses a built-in `ConsoleLogger` that defaults to `"info"` level. You can customize the level:
+
+```ts
+import { ConsoleLogger, Inngest } from "inngest";
+
+export const inngest = new Inngest({
+  id: "my-app",
+  logger: new ConsoleLogger({ level: "debug" }),
+});
+```
+
+`ConsoleLogger` is intended for local development. For production, use a structured logger like Pino.
+
+## Internal logger
+
+The SDK produces two categories of logs:
+
+- **Function logs** - your logs via `ctx.logger` inside Inngest functions
+- **SDK internal logs** - registration, request handling, middleware errors, etc.
+
+By default, both use the same `logger`. Set `internalLogger` to route SDK internal logs separately:
+
+```ts
+import pino from "pino";
+import { Inngest } from "inngest";
+
+const logger = pino();
+
+export const inngest = new Inngest({
+  id: "my-app",
+  logger: logger,
+  internalLogger: logger.child({ component: "inngest-sdk" }),
+});
+```
+
+This is useful for filtering or routing SDK internals to a different destination without affecting your function logs.
+
+<CodeGroup>
+```ts {{ title: "Separate destinations" }}
+import pino from "pino";
+import { Inngest } from "inngest";
+
+const appLogger = pino({ level: "info" });
+const sdkLogger = pino({ level: "warn" });
+
+export const inngest = new Inngest({
+  id: "my-app",
+  logger: appLogger,
+  internalLogger: sdkLogger,
+});
+```
+```ts {{ title: "Suppress SDK logs" }}
+import pino from "pino";
+import { ConsoleLogger, Inngest } from "inngest";
+
+const appLogger = pino({ level: "info" });
+
+export const inngest = new Inngest({
+  id: "my-app",
+  logger: appLogger,
+  // Silence all SDK internal logs
+  internalLogger: new ConsoleLogger({ level: "silent" }),
+});
+```
+```ts {{ title: "Winston with internal logger" }}
+import winston from "winston";
+import { Inngest, wrapStringFirstLogger } from "inngest";
+
+const appLogger = winston.createLogger({
+  level: "info",
+  format: winston.format.json(),
+  transports: [new winston.transports.Console()],
+});
+
+const sdkLogger = winston.createLogger({
+  level: "error",
+  format: winston.format.json(),
+  transports: [new winston.transports.Console()],
+});
+
+export const inngest = new Inngest({
+  id: "my-app",
+  logger: wrapStringFirstLogger(appLogger),
+  internalLogger: wrapStringFirstLogger(sdkLogger),
+});
+```
+</CodeGroup>
+
+If `internalLogger` is not set, it falls back to `logger`.

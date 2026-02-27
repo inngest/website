@@ -1,0 +1,439 @@
+import { Info, Callout, Properties, Property, Row, Col, CodeGroup, VersionBadge } from "src/shared/Docs/mdx";
+
+export const description = `Reference for trigger helper functions: eventType(), cron(), invoke(), and staticSchema().`
+
+# Trigger helpers
+
+Trigger helpers are functions that provide type-safe ways to define triggers and schemas for Inngest functions. They replace raw string-based triggers with typed, validated alternatives.
+
+```ts
+import { eventType, cron, invoke, staticSchema } from "inngest";
+```
+
+---
+
+## `eventType`
+
+Define a typed event with optional runtime validation. Use the returned object as a [trigger](/docs/reference/typescript/v4/functions/create#triggers), with [`step.waitForEvent()`](/docs/reference/typescript/v4/functions/step-wait-for-event), and with [`inngest.send()`](/docs/reference/typescript/v4/events/send) or [`step.sendEvent()`](/docs/reference/typescript/v4/functions/step-send-event).
+
+```ts
+import { eventType } from "inngest";
+import { z } from "zod";
+
+const accountCreated = eventType("app/account.created", {
+  schema: z.object({
+    userId: z.string(),
+    email: z.string(),
+  }),
+});
+```
+
+### Parameters
+
+<Properties>
+  <Property name="name" type="string" required>
+    The event name. We recommend lowercase dot notation with a `prefix/` namespace, e.g. `"app/account.created"`.
+  </Property>
+  <Property name="options" type="object">
+    <Properties nested={true}>
+      <Property name="schema" type="StandardSchemaV1 | StaticSchema">
+        A schema for the event's `data` payload. Accepts any [Standard Schema](https://standardschema.dev/) compatible library (Zod, Valibot, ArkType, etc.) or a [`staticSchema()`](#staticschema) for type-only validation.
+
+        When you provide a runtime schema, the SDK validates event payloads at runtime.
+      </Property>
+      <Property name="version" type="string">
+        An optional version identifier for the event payload, e.g. `"2024-01-15.1"`. This sets the `v` field on sent events.
+      </Property>
+    </Properties>
+  </Property>
+</Properties>
+
+### Return value
+
+`eventType()` returns an `EventType` object. The only use case for directly interacting with this object is calling its `create` method when sending events.
+
+### As a trigger
+
+Pass an `eventType()` result directly in the `triggers` array of `createFunction`:
+
+<Row>
+  <Col>
+    ```ts
+    const orderPlaced = eventType("shop/order.placed", {
+      schema: z.object({
+        orderId: z.string(),
+        total: z.number(),
+      }),
+    });
+
+    inngest.createFunction(
+      {
+        id: "process-order",
+        triggers: [orderPlaced],
+      },
+      async ({ event }) => {
+        // event.data is typed as { orderId: string; total: number }
+        console.log(event.data.orderId);
+      }
+    );
+    ```
+  </Col>
+  <Col>
+    You can also combine with `if` filtering by wrapping in an object:
+
+    ```ts
+    inngest.createFunction(
+      {
+        id: "process-large-orders",
+        triggers: [{
+          ...orderPlaced,
+          if: "event.data.total > 100",
+        }],
+      },
+      async ({ event }) => {
+        // Only runs for orders over 100
+      }
+    );
+    ```
+  </Col>
+</Row>
+
+### With `step.waitForEvent()`
+
+Pass an `eventType()` result as the `event` option to get typed return values:
+
+```ts
+const approvalReceived = eventType("app/approval.received", {
+  schema: z.object({
+    approved: z.boolean(),
+    approvedBy: z.string(),
+  }),
+});
+
+inngest.createFunction(
+  {
+    id: "approval-workflow",
+    triggers: [orderPlaced],
+  },
+  async ({ event, step }) => {
+    const approval = await step.waitForEvent("wait-for-approval", {
+      event: approvalReceived,
+      timeout: "7d",
+      match: "data.orderId",
+    });
+
+    if (approval) {
+      // approval.data is typed as { approved: boolean; approvedBy: string }
+    }
+  }
+);
+```
+
+### With `inngest.send()` and `step.sendEvent()`
+
+Use the `.create()` method to build fully typed event payloads:
+
+```ts
+// With inngest.send()
+await inngest.send(
+  orderPlaced.create({
+    orderId: "order_123",
+    total: 99.99,
+  })
+);
+
+// With step.sendEvent()
+await step.sendEvent("notify-order",
+  orderPlaced.create({
+    orderId: "order_456",
+    total: 149.99,
+  })
+);
+```
+
+### Multiple event types
+
+When a function has multiple event triggers, use `event.name` to narrow the type:
+
+```ts
+const userCreated = eventType("app/user.created", {
+  schema: z.object({ userId: z.string() }),
+});
+
+const userUpdated = eventType("app/user.updated", {
+  schema: z.object({ userId: z.string(), changes: z.record(z.unknown()) }),
+});
+
+inngest.createFunction(
+  {
+    id: "sync-user",
+    triggers: [userCreated, userUpdated],
+  },
+  async ({ event }) => {
+    if (event.name === "app/user.created") {
+      // event.data typed as { userId: string }
+    }
+
+    if (event.name === "app/user.updated") {
+      // event.data typed as { userId: string; changes: Record<string, unknown> }
+    }
+  }
+);
+```
+
+### Wildcards
+
+You can use wildcard patterns with `eventType()` to match multiple event names:
+
+```ts
+const anyUserEvent = eventType("user/*");
+
+inngest.createFunction(
+  {
+    id: "audit-user-events",
+    triggers: [anyUserEvent],
+  },
+  async ({ event }) => {
+    // Triggers on "user/created", "user/updated", etc.
+  }
+);
+```
+
+<Callout>
+  Wildcard event types cannot define a schema, since the matched events may have different payload shapes.
+</Callout>
+
+---
+
+## `cron`
+
+Create a typed cron trigger for scheduled functions.
+
+```ts
+import { cron } from "inngest";
+
+inngest.createFunction(
+  {
+    id: "daily-cleanup",
+    triggers: [cron("0 0 * * *")],
+  },
+  async ({ step }) => {
+    // Runs every day at midnight UTC
+  }
+);
+```
+
+### Parameters
+
+<Properties>
+  <Property name="cronExpression" type="string" required>
+    A [unix-cron](https://crontab.guru/) compatible schedule string. Supports an optional timezone prefix, e.g. `"TZ=Europe/Paris 0 12 * * 5"`.
+  </Property>
+</Properties>
+
+### Examples
+
+<CodeGroup>
+```ts {{ title: "Basic" }}
+inngest.createFunction(
+  {
+    id: "hourly-sync",
+    triggers: [cron("0 * * * *")],
+  },
+  async ({ step }) => {
+    // Runs every hour
+  }
+);
+```
+
+```ts {{ title: "With timezone" }}
+inngest.createFunction(
+  {
+    id: "daily-report",
+    triggers: [cron("TZ=America/New_York 0 9 * * 1-5")],
+  },
+  async ({ step }) => {
+    // Runs at 9am ET on weekdays
+  }
+);
+```
+
+```ts {{ title: "Combined with eventType" }}
+const manualSync = eventType("app/sync.requested");
+
+inngest.createFunction(
+  {
+    id: "data-sync",
+    triggers: [
+      cron("0 */6 * * *"),
+      manualSync,
+    ],
+  },
+  async ({ event, step }) => {
+    // Runs every 6 hours OR when manually triggered
+  }
+);
+```
+</CodeGroup>
+
+---
+
+## `invoke`
+
+Define a typed schema for [`step.invoke()`](/docs/reference/typescript/v4/functions/step-invoke) input data. All functions can be invoked regardless of whether you use `invoke()`. This helper only defines the schema so callers get type checking on the data they pass.
+
+```ts
+import { invoke } from "inngest";
+import { z } from "zod";
+
+const computeSquare = inngest.createFunction(
+  {
+    id: "compute-square",
+    triggers: [
+      { event: "calculate/square" },
+      invoke({
+        schema: z.object({ number: z.number() }),
+      }),
+    ],
+  },
+  async ({ event }) => {
+    return { result: event.data.number * event.data.number };
+  }
+);
+```
+
+### Parameters
+
+<Properties>
+  <Property name="options" type="object" required>
+    <Properties nested={true}>
+      <Property name="schema" type="StandardSchemaV1 | StaticSchema" required>
+        A schema defining the expected `data` shape when callers invoke this function via `step.invoke()`. Accepts any [Standard Schema](https://standardschema.dev/) compatible library or a [`staticSchema()`](#staticschema).
+      </Property>
+    </Properties>
+  </Property>
+</Properties>
+
+### Example
+
+Define the invoke schema on the target function, then call it with typed data:
+
+<Row>
+  <Col>
+    ```ts {{ title: "Target function" }}
+    import { invoke } from "inngest";
+    import { z } from "zod";
+
+    export const processImage = inngest.createFunction(
+      {
+        id: "process-image",
+        triggers: [
+          { event: "image/uploaded" },
+          invoke({
+            schema: z.object({
+              imageUrl: z.string().url(),
+              width: z.number(),
+            }),
+          }),
+        ],
+      },
+      async ({ event }) => {
+        // event.data.imageUrl and event.data.width are typed
+        return { processed: true };
+      }
+    );
+    ```
+  </Col>
+  <Col>
+    ```ts {{ title: "Calling function" }}
+    const result = await step.invoke("resize-image", {
+      function: processImage,
+      data: {
+        imageUrl: "https://example.com/photo.jpg",
+        width: 800,
+        // ^ The invoke schema types and validates this
+      },
+    });
+    ```
+  </Col>
+</Row>
+
+---
+
+## `staticSchema`
+
+A type-only schema utility for when you want TypeScript type checking without runtime validation. Use this as an alternative to a Standard Schema library like Zod.
+
+```ts
+import { eventType, staticSchema } from "inngest";
+
+type OrderData = {
+  orderId: string;
+  total: number;
+};
+
+const orderPlaced = eventType("shop/order.placed", {
+  schema: staticSchema<OrderData>(),
+});
+```
+
+<Callout>
+  Use `staticSchema()` when you don't need runtime validation. If you want payloads validated at runtime, use a Standard Schema library like [Zod](https://zod.dev/), [Valibot](https://valibot.dev/), or [ArkType](https://arktype.io/) instead.
+</Callout>
+
+### Type parameters
+
+<Properties>
+  <Property name="T" type="type" required>
+    The TypeScript type representing the event's `data` shape. The compiler uses this type for compile-time type checking only — it does not perform runtime validation.
+  </Property>
+</Properties>
+
+### Examples
+
+<CodeGroup>
+```ts {{ title: "With eventType" }}
+import { eventType, staticSchema } from "inngest";
+
+type UserPayload = {
+  userId: string;
+  email: string;
+};
+
+const userCreated = eventType("app/user.created", {
+  schema: staticSchema<UserPayload>(),
+});
+
+inngest.createFunction(
+  {
+    id: "on-user-created",
+    triggers: [userCreated],
+  },
+  async ({ event }) => {
+    // event.data typed as { userId: string; email: string }
+  }
+);
+```
+
+```ts {{ title: "With invoke" }}
+import { invoke, staticSchema } from "inngest";
+
+type ResizeInput = {
+  imageUrl: string;
+  width: number;
+};
+
+const resizeImage = inngest.createFunction(
+  {
+    id: "resize-image",
+    triggers: [
+      invoke({ schema: staticSchema<ResizeInput>() }),
+    ],
+  },
+  async ({ event }) => {
+    // event.data typed as { imageUrl: string; width: number }
+    return { resized: true };
+  }
+);
+```
+</CodeGroup>

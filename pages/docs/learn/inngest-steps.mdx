@@ -46,6 +46,17 @@ export default inngest.createFunction(
 );
 ```
 
+<Callout variant="info">
+  **Using inngest@v4?** The TypeScript examples on this page use v3 syntax with three arguments to `createFunction`. In v4, event triggers are specified in the configuration object:
+  ```ts
+  inngest.createFunction(
+    { id: "my-function", triggers: [{ event: "my/event" }] },
+    async ({ event, step }) => { /* ... */ },
+  );
+  ```
+  See the [v3 → v4 migration guide](/docs/reference/typescript/v4/migrations/v3-to-v4#event-trigger-is-now-in-options) for details.
+</Callout>
+
 </LanguageSection>
 
 <LanguageSection show="go">
