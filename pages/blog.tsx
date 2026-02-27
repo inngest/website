@@ -24,12 +24,19 @@ export default function BlogIndex(props) {
     ? content
     : content
         .filter((post) => !post.hide)
-        .sort((a, z) => z.date.localeCompare(a.date));
+        .filter((post) => post.date) // Filter out posts without dates
+        .sort((a, z) => {
+          if (!a.date || !z.date) return 0;
+          return z.date.localeCompare(a.date);
+        });
 
   const focus = visiblePosts.find((c) => c.focus) ?? visiblePosts[0];
   const rest = visiblePosts
     .filter((c) => !focus || c.slug !== focus.slug)
-    .sort((a, z) => z.date.localeCompare(a.date));
+    .sort((a, z) => {
+      if (!a.date || !z.date) return 0;
+      return z.date.localeCompare(a.date);
+    });
 
   const description = `Updates from the Inngest team about our product, engineering, and community.`;
 
