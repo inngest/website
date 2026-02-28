@@ -9,10 +9,11 @@ jobs:
       url: ${{ steps.deployment.outputs.url }}
     steps:
       - id: deployment
-        uses: patrickedqvist/wait-for-vercel-preview@v1.2.0
+        uses: patrickedqvist/wait-for-vercel-preview@v1.3.3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          max_timeout: 480
+          max_timeout: 600
+          check_interval: 20
 
       - name: Display deployment URL
         run: "echo Preview URL: ${{steps.deployment.outputs.url}}"
@@ -56,7 +57,7 @@ jobs:
       - name: Setup
         uses: actions/setup-go@v3
         with:
-          go-version: "1.24"
+          go-version: "1.25"
       - name: "Check"
         run: "make check"
         working-directory: "./snippets/go"

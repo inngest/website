@@ -1,4 +1,4 @@
-import { ImageTheme, GuideSelector, GuideSection, CodeGroup } from "src/shared/Docs/mdx";
+import { ImageTheme, LanguageSelector, LanguageSection, CodeGroup } from "src/shared/Docs/mdx";
 
 export const description = 'How to use the fan-out pattern with Inngest to trigger multiple functions from a single event.'
 
@@ -28,14 +28,9 @@ The fan-out pattern is also useful in distributed systems where a single event i
 
 ## How to fan-out to multiple functions
 
-<GuideSelector
-  options={[
-    { key: "typescript", title: "TypeScript" },
-    { key: "go", title: "Go" },
-    { key: "python", title: "Python" },
-  ]}>
+<LanguageSelector>
 
-<GuideSection show="typescript">
+<LanguageSection show="typescript">
 
 Since Inngest is powered by events, implementing fan-out is as straightforward as defining multiple functions that use the same event trigger. Let's take the above example of user signup and implement it in Inngest.
 
@@ -107,8 +102,8 @@ Other benefits of fan-out include:
 * **New features or refactors**: As each function is independent, you can add new functions or refactor existing ones without having to edit unrelated code.
 * **Trigger functions in different codebases**: If you have multiple codebases, even using different programming languages (for example [Python](/docs/reference/python) or [Go](https://pkg.go.dev/github.com/inngest/inngestgo)), you can trigger functions in both codebases from a single event.
 
-</GuideSection>
-<GuideSection show="go">
+</LanguageSection>
+<LanguageSection show="go">
 
 Since Inngest is powered by events, implementing fan-out is as straightforward as defining multiple functions that use the same event trigger. Let's take the above example of user signup and implement it in Inngest.
 
@@ -135,8 +130,8 @@ Other benefits of fan-out include:
 * **New features or refactors**: As each function is independent, you can add new functions or refactor existing ones without having to edit unrelated code.
 * **Trigger functions in different codebases**: If you have multiple codebases, even using different programming languages (for example [TypeScript](/docs/reference/typescript) or [Python](/docs/reference/python)), you can trigger functions in both codebases from a single event.
 
-</GuideSection>
-<GuideSection show="python">
+</LanguageSection>
+<LanguageSection show="python">
 
 Since Inngest is powered by events, implementing fan-out is as straightforward as defining multiple functions that use the same event trigger. Let's take the above example of user signup and implement it in Inngest.
 
@@ -171,9 +166,9 @@ Other benefits of fan-out include:
 * **New features or refactors**: As each function is independent, you can add new functions or refactor existing ones without having to edit unrelated code.
 * **Trigger functions in different codebases**: If you have multiple codebases, even using different programming languages (for example [TypeScript](/docs/reference/typescript) or [Go](https://pkg.go.dev/github.com/inngest/inngestgo)), you can trigger functions in both codebases from a single event.
 
-</GuideSection>
+</LanguageSection>
 
-</GuideSelector>
+</LanguageSelector>
 
 ## Further reading
 

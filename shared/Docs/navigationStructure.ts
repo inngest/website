@@ -6,6 +6,16 @@ import {
   CodeBracketIcon,
 } from "@heroicons/react/24/outline";
 import { parse } from "node:path";
+import { TS_STABLE, type TSVersion } from "./LanguageStore";
+
+// Build a TypeScript SDK reference path. Stable version gets versionless
+// paths; non-stable gets a version prefix.
+function tsRef(version: TSVersion, path: string): string {
+  if (version === TS_STABLE) {
+    return `/docs/reference/typescript/${path}`;
+  }
+  return `/docs/reference/typescript/${version}/${path}`;
+}
 
 // A basic link in the nav
 export type NavLink = {
@@ -48,23 +58,23 @@ export type NavSection = NavLink & {
 // =============================================================================
 const sectionReference: (NavGroup | NavLink)[] = [
   {
-    title: "TypeScript SDK",
+    title: "TypeScript SDK v3",
     links: [
       {
         title: "Introduction",
-        href: `/docs/reference/typescript`,
+        href: tsRef("v3", "intro"),
       },
       {
         title: "Create the client",
-        href: `/docs/reference/client/create`,
+        href: tsRef("v3", "client/create"),
       },
       {
         title: "Create a function",
-        href: `/docs/reference/functions/create`,
+        href: tsRef("v3", "functions/create"),
       },
       {
         title: "Send events",
-        href: `/docs/reference/events/send`,
+        href: tsRef("v3", "events/send"),
       },
       {
         title: "Errors",
@@ -72,11 +82,11 @@ const sectionReference: (NavGroup | NavLink)[] = [
       },
       {
         title: "Handling failures",
-        href: `/docs/reference/functions/handling-failures`,
+        href: tsRef("v3", "functions/handling-failures"),
       },
       {
         title: "Cancel on",
-        href: `/docs/reference/typescript/functions/cancel-on`,
+        href: tsRef("v3", "functions/cancel-on"),
       },
       {
         title: "Concurrency",
@@ -84,23 +94,23 @@ const sectionReference: (NavGroup | NavLink)[] = [
       },
       {
         title: "Rate limit",
-        href: `/docs/reference/functions/rate-limit`,
+        href: tsRef("v3", "functions/rate-limit"),
       },
       {
         title: "Singleton",
-        href: `/docs/reference/functions/singleton`,
+        href: tsRef("v3", "functions/singleton"),
       },
       {
         title: "Debounce",
-        href: `/docs/reference/functions/debounce`,
+        href: tsRef("v3", "functions/debounce"),
       },
       {
         title: "Function run priority",
-        href: `/docs/reference/functions/run-priority`,
+        href: tsRef("v3", "functions/run-priority"),
       },
       {
         title: "Extended Traces",
-        href: "/docs/reference/typescript/extended-traces",
+        href: tsRef("v3", "extended-traces"),
       },
       {
         title: "Referencing functions",
@@ -108,11 +118,11 @@ const sectionReference: (NavGroup | NavLink)[] = [
       },
       {
         title: "Testing",
-        href: "/docs/reference/testing",
+        href: tsRef("v3", "testing"),
       },
       {
         title: "Durable Endpoints",
-        href: "/docs/reference/typescript/durable-endpoints",
+        href: tsRef("v3", "durable-endpoints"),
         tag: "new",
       },
       {
@@ -120,37 +130,37 @@ const sectionReference: (NavGroup | NavLink)[] = [
         links: [
           {
             title: "step.run()",
-            href: `/docs/reference/functions/step-run`,
+            href: tsRef("v3", "functions/step-run"),
             className: "font-mono",
           },
           {
             title: "step.sleep()",
-            href: `/docs/reference/functions/step-sleep`,
+            href: tsRef("v3", "functions/step-sleep"),
             className: "font-mono",
           },
           {
             title: "step.sleepUntil()",
-            href: `/docs/reference/functions/step-sleep-until`,
+            href: tsRef("v3", "functions/step-sleep-until"),
             className: "font-mono",
           },
           {
             title: "step.invoke()",
-            href: `/docs/reference/functions/step-invoke`,
+            href: tsRef("v3", "functions/step-invoke"),
             className: "font-mono",
           },
           {
             title: "step.waitForEvent()",
-            href: `/docs/reference/functions/step-wait-for-event`,
+            href: tsRef("v3", "functions/step-wait-for-event"),
             className: "font-mono",
           },
           {
             title: "step.waitForSignal()",
-            href: `/docs/reference/functions/step-wait-for-signal`,
+            href: tsRef("v3", "functions/step-wait-for-signal"),
             className: "font-mono",
           },
           {
             title: "step.sendEvent()",
-            href: `/docs/reference/functions/step-send-event`,
+            href: tsRef("v3", "functions/step-send-event"),
             className: "font-mono",
           },
         ],
@@ -164,7 +174,7 @@ const sectionReference: (NavGroup | NavLink)[] = [
           },
           {
             title: "Configuration",
-            href: `/docs/reference/serve`,
+            href: tsRef("v3", "serve"),
           },
           {
             title: "Streaming",
@@ -177,11 +187,11 @@ const sectionReference: (NavGroup | NavLink)[] = [
         links: [
           {
             title: "Lifecycle",
-            href: `/docs/reference/middleware/lifecycle`,
+            href: tsRef("v3", "middleware/lifecycle"),
           },
           {
             title: "Examples",
-            href: `/docs/reference/middleware/examples`,
+            href: tsRef("v3", "middleware/examples"),
           },
           {
             title: "TypeScript",
@@ -204,7 +214,194 @@ const sectionReference: (NavGroup | NavLink)[] = [
             title: "ESLint plugin",
             href: `/docs/sdk/eslint`,
           },
-          { title: "Upgrading to v3", href: `/docs/sdk/migration` },
+          { title: "Upgrading to v3", href: tsRef("v3", "migrations/v2-to-v3") },
+        ],
+      },
+    ],
+  },
+  {
+    title: "TypeScript SDK v4",
+    tag: "beta",
+    links: [
+      {
+        title: "Introduction",
+        href: tsRef("v4", "intro"),
+      },
+      {
+        title: "Create the client",
+        href: tsRef("v4", "client/create"),
+      },
+      {
+        title: "Create a function",
+        href: tsRef("v4", "functions/create"),
+      },
+      {
+        title: "Trigger helpers",
+        href: tsRef("v4", "functions/triggers"),
+      },
+      {
+        title: "Send events",
+        href: tsRef("v4", "events/send"),
+      },
+      {
+        title: "Errors",
+        href: `/docs/reference/typescript/functions/errors`,
+      },
+      {
+        title: "Handling failures",
+        href: tsRef("v4", "functions/handling-failures"),
+      },
+      {
+        title: "Cancel on",
+        href: tsRef("v4", "functions/cancel-on"),
+      },
+      {
+        title: "Concurrency",
+        href: tsRef("v4", "functions/concurrency"),
+      },
+      {
+        title: "Rate limit",
+        href: tsRef("v4", "functions/rate-limit"),
+      },
+      {
+        title: "Singleton",
+        href: tsRef("v4", "functions/singleton"),
+      },
+      {
+        title: "Debounce",
+        href: tsRef("v4", "functions/debounce"),
+      },
+      {
+        title: "Function run priority",
+        href: tsRef("v4", "functions/run-priority"),
+      },
+      {
+        title: "Logging",
+        href: tsRef("v4", "logging"),
+      },
+      {
+        title: "Extended Traces",
+        href: tsRef("v4", "extended-traces"),
+      },
+      {
+        title: "Referencing functions",
+        href: tsRef("v4", "functions/references"),
+      },
+      {
+        title: "Testing",
+        href: tsRef("v4", "testing"),
+      },
+      {
+        title: "Durable Endpoints",
+        href: tsRef("v4", "durable-endpoints"),
+        tag: "new",
+      },
+      {
+        title: "Steps",
+        links: [
+          {
+            title: "step.run()",
+            href: tsRef("v4", "functions/step-run"),
+            className: "font-mono",
+          },
+          {
+            title: "step.sleep()",
+            href: tsRef("v4", "functions/step-sleep"),
+            className: "font-mono",
+          },
+          {
+            title: "step.sleepUntil()",
+            href: tsRef("v4", "functions/step-sleep-until"),
+            className: "font-mono",
+          },
+          {
+            title: "step.invoke()",
+            href: tsRef("v4", "functions/step-invoke"),
+            className: "font-mono",
+          },
+          {
+            title: "step.waitForEvent()",
+            href: tsRef("v4", "functions/step-wait-for-event"),
+            className: "font-mono",
+          },
+          {
+            title: "step.waitForSignal()",
+            href: tsRef("v4", "functions/step-wait-for-signal"),
+            className: "font-mono",
+          },
+          {
+            title: "step.sendEvent()",
+            href: tsRef("v4", "functions/step-send-event"),
+            className: "font-mono",
+          },
+        ],
+      },
+      {
+        title: "Serve",
+        links: [
+          {
+            title: "Framework handlers",
+            href: `/docs/learn/serving-inngest-functions`,
+          },
+          {
+            title: "Configuration",
+            href: tsRef("v4", "serve"),
+          },
+          {
+            title: "Streaming",
+            href: tsRef("v4", "serve/streaming"),
+          },
+        ],
+      },
+      {
+        title: "Middleware",
+        links: [
+          {
+            title: "Lifecycle",
+            href: tsRef("v4", "middleware/lifecycle"),
+          },
+          {
+            title: "Examples",
+            href: tsRef("v4", "middleware/examples"),
+          },
+          {
+            title: "Custom serialization",
+            href: tsRef("v4", "middleware/serialization"),
+          },
+          {
+            title: "Encryption",
+            href: tsRef("v4", "middleware/encryption"),
+          },
+          {
+            title: "Sentry",
+            href: tsRef("v4", "middleware/sentry"),
+          },
+        ],
+      },
+      {
+        title: "Migrations",
+        links: [
+          {
+            title: "v3 to v4",
+            href: tsRef("v4", "migrations/v3-to-v4"),
+          },
+        ],
+      },
+      {
+        title: "Using the SDK",
+        links: [
+          {
+            title: "Environment variables",
+            href: `/docs/sdk/environment-variables`,
+          },
+          {
+            title: "Using TypeScript",
+            href: `/docs/typescript`,
+          },
+          {
+            title: "ESLint plugin",
+            href: `/docs/sdk/eslint`,
+          },
         ],
       },
     ],

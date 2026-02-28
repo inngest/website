@@ -1,4 +1,4 @@
-import { Callout, CodeGroup, Properties, Property, Row, Col, VersionBadge, GuideSelector, GuideSection, Card, CardGroup } from "src/shared/Docs/mdx";
+import { Callout, CodeGroup, Properties, Property, Row, Col, VersionBadge, LanguageSelector, LanguageSection, Card, CardGroup } from "src/shared/Docs/mdx";
 
 import {
   RiEyeOffLine,
@@ -12,14 +12,17 @@ import {
 
 Creating middleware means defining the lifecycles and subsequent hooks in those lifecycles to run code in. Lifecycles are actions such as a function run or sending events, and individual hooks within those are where we run code, usually with a _before_ and _after_ step.
 
-<GuideSelector
-  options={[
-    { key: "typescript", title: "TypeScript (v2.0.0+)" },
-    { key: "python", title: "Python (v0.3.0+)" }
-  ]}>
+<LanguageSelector>
 
+    <LanguageSection show="go">
 
-<GuideSection show="typescript">
+      <Callout>
+        Support for Middleware in the Go SDK in planned.
+      </Callout>
+
+    </LanguageSection>
+
+<LanguageSection show="typescript">
     A Middleware is created using the `InngestMiddleware` class.
 
     **`new InngestMiddleware(options): InngestMiddleware`**
@@ -41,9 +44,9 @@ Creating middleware means defining the lifecycles and subsequent hooks in those 
     });
     ```
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="python">
+<LanguageSection show="python">
 
     A Middleware is created using the `inngest.Middleware` class.
 
@@ -72,11 +75,11 @@ Creating middleware means defining the lifecycles and subsequent hooks in those 
     )
     ```
 
-</GuideSection>
+</LanguageSection>
 
 ## Initialization
 
-<GuideSection show="typescript">
+<LanguageSection show="typescript">
 As you can see above, we start with the `init` function, which is called when the client is initialized.
 
 ```ts
@@ -91,9 +94,9 @@ new InngestMiddleware({
   },
 });
 ```
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="python">
+<LanguageSection show="python">
     As you can see above, we start with the `__init__` method, which is called when the client is initialized.
 
     ```py
@@ -109,12 +112,12 @@ new InngestMiddleware({
                 # Use this to set up anything your middleware needs
                 #  ...
     ```
-</GuideSection>
+</LanguageSection>
 
 
-Function registration, lifecycles, and hooks can all be with synchronous or `async` functions. This makes it easy for our initialization handler to do some async work, like setting up a database connection.
+<LanguageSection show="typescript">
+    Function registration, lifecycles, and hooks can all be with synchronous or `async` functions. This makes it easy for our initialization handler to do some async work, like setting up a database connection.
 
-<GuideSection show="typescript">
     ```ts
     new InngestMiddleware({
     name: "Example Middleware",
@@ -125,10 +128,12 @@ Function registration, lifecycles, and hooks can all be with synchronous or `asy
     },
     });
     ```
-</GuideSection>
+</LanguageSection>
 
 
-<GuideSection show="python">
+<LanguageSection show="python">
+    Function registration, lifecycles, and hooks can all be with synchronous or `async` functions. This makes it easy for our initialization handler to do some async work, like setting up a database connection.
+
     ```py
     import inngest
 
@@ -140,7 +145,7 @@ Function registration, lifecycles, and hooks can all be with synchronous or `asy
             ) -> None:
                 #  ...connect to database
     ```
-</GuideSection>
+</LanguageSection>
 
 All lifecycle and hook functions can be synchronous or `async` functions - the SDK will always wait until a middleware's function has resolved before continuing to the next one.
 
@@ -150,7 +155,7 @@ As it's possible for an application to use multiple Inngest clients, it's recomm
 
 ## Specifying lifecycles and hooks
 
-<GuideSection show="typescript">
+<LanguageSection show="typescript">
     Notice we're returning an empty object `{}`. From here, we can instead return the lifecycles we want to use for this client. See the [Middleware - Lifecycle - Hook reference](/docs/reference/middleware/lifecycle#hook-reference) for a full list of available hooks.
 
     ```ts
@@ -209,9 +214,9 @@ As it's possible for an application to use multiple Inngest clients, it's recomm
     - [Lifecycle](/docs/reference/middleware/lifecycle) - middleware ordering and see all available hooks
     - [TypeScript](/docs/reference/middleware/typescript) - how to affect input and output types and values
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="python">
+<LanguageSection show="python">
     You might have notice that our custom middleware defines custom method such as `before_send_events` and `after_send_events`. Those methods, called hooks, enable your middleware
     to hook itself to specific steps of the Function and Steps execution lifecycle.
 
@@ -238,13 +243,13 @@ As it's possible for an application to use multiple Inngest clients, it's recomm
 
     You can find the [full list of available hooks in the Python SDK reference](/docs/reference/python/middleware/lifecycle).
 
-</GuideSection>
+</LanguageSection>
 
 ## Adding configuration
 
 It's common for middleware to require additional customization or options from developers. For this, we recommend creating a function that takes in some options and returns the middleware.
 
-<GuideSection show="typescript">
+<LanguageSection show="typescript">
     ```ts {{ title: "inngest/middleware/myMiddleware.ts" }}
     import { InngestMiddleware } from "inngest";
 
@@ -284,9 +289,9 @@ It's common for middleware to require additional customization or options from d
     Make sure to let TypeScript infer the output of the function instead of strictly typing it; this helps Inngest understand changes to input and output of arguments. See [Middleware - TypeScript](/docs/reference/middleware/typescript) for more information.
     </Callout>
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="python">
+<LanguageSection show="python">
     Adding configuration to a custom middleware can be achieved by adding a `factory()` class method, leveraging the [Factory pattern](https://en.wikipedia.org/wiki/Factory_method_pattern).
 
     For example, let's add a `secret_key` configuration option to our `MyMiddleware` middleware:
@@ -336,7 +341,7 @@ It's common for middleware to require additional customization or options from d
         middleware=[MyMiddleware.factory(_secret_key)],
     )
     ```
-</GuideSection>
+</LanguageSection>
 
 
 ## Next steps
@@ -362,5 +367,5 @@ Check out our pre-built middleware and examples:
 </CardGroup>
 
 
-</GuideSelector>
+</LanguageSelector>
 

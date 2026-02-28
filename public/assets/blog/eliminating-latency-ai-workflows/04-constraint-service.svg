@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 340" font-family="'Inter', 'Segoe UI', system-ui, sans-serif">
+  <rect width="700" height="340" fill="#111" rx="6"/>
+
+  <text x="40" y="36" fill="#eee" font-size="14" font-weight="600">Constraint checking: inline churn vs. separated service</text>
+
+  <!-- === LEFT === -->
+  <text x="40" y="64" fill="#666" font-size="10" font-weight="600" letter-spacing="0.8">CONSTRAINTS IN QUEUE</text>
+
+  <rect x="40" y="78" width="280" height="196" rx="4" fill="#1a1a1a" stroke="#282828" stroke-width="1"/>
+  <text x="56" y="98" fill="#888" font-size="9">Queue — concurrency limit: 2</text>
+
+  <!-- Wasted peeks -->
+  <text x="56" y="120" fill="#944" font-size="9">peek → check → ✗ blocked</text>
+  <text x="56" y="138" fill="#944" font-size="9">peek → check → ✗ blocked</text>
+  <text x="56" y="156" fill="#944" font-size="9">peek → check → ✗ blocked</text>
+  <text x="56" y="174" fill="#944" font-size="9">peek → check → ✗ blocked</text>
+  <text x="56" y="192" fill="#944" font-size="9">peek → check → ✗ blocked</text>
+  <text x="56" y="210" fill="#6c6" font-size="9">peek → check → ✓ lease</text>
+  <text x="56" y="228" fill="#6c6" font-size="9">peek → check → ✓ lease</text>
+
+  <!-- Waste callout -->
+  <text x="56" y="258" fill="#c55" font-size="11" font-weight="600">5 of 7 peeks wasted</text>
+  <text x="56" y="272" fill="#666" font-size="9">Scales poorly with constraint pressure</text>
+
+  <!-- Divider -->
+  <line x1="350" y1="54" x2="350" y2="310" stroke="#222" stroke-width="1"/>
+
+  <!-- === RIGHT === -->
+  <text x="380" y="64" fill="#666" font-size="10" font-weight="600" letter-spacing="0.8">SEPARATED CONSTRAINT SERVICE</text>
+
+  <!-- Constraint service -->
+  <rect x="380" y="78" width="280" height="40" rx="4" fill="#1a1a1a" stroke="#282828" stroke-width="1"/>
+  <text x="396" y="96" fill="#ccc" font-size="10">Constraint service</text>
+  <text x="396" y="110" fill="#555" font-size="9">"Function X: 2 slots available"  ·  SLO ≤ 5ms p99</text>
+
+  <!-- Arrow -->
+  <line x1="520" y1="118" x2="520" y2="134" stroke="#444" stroke-width="1"/>
+  <text x="540" y="130" fill="#555" font-size="8">1 request</text>
+
+  <!-- Batch lease -->
+  <rect x="380" y="138" width="280" height="28" rx="3" fill="#222"/>
+  <text x="520" y="157" text-anchor="middle" fill="#ccc" font-size="10">Queue: batch-lease exactly 2 items</text>
+
+  <!-- Arrow -->
+  <line x1="520" y1="166" x2="520" y2="182" stroke="#444" stroke-width="1"/>
+
+  <!-- Workers -->
+  <rect x="410" y="186" width="80" height="26" rx="3" fill="#222"/>
+  <text x="450" y="204" text-anchor="middle" fill="#aaa" font-size="9">Worker 1</text>
+
+  <rect x="510" y="186" width="80" height="26" rx="3" fill="#222"/>
+  <text x="550" y="204" text-anchor="middle" fill="#aaa" font-size="9">Worker 2</text>
+
+  <!-- Result -->
+  <text x="396" y="240" fill="#6c6" font-size="11" font-weight="600">0 wasted peeks</text>
+  <text x="396" y="256" fill="#666" font-size="9">O(1) vs O(n) relative to constrained items</text>
+  <text x="396" y="272" fill="#666" font-size="9">Dispatch latency under load: 5–20ms</text>
+</svg>

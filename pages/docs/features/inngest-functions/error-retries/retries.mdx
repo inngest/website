@@ -1,4 +1,4 @@
-import { CardGroup, Card, Callout, GuideSelector, GuideSection } from "src/shared/Docs/mdx";
+import { CardGroup, Card, Callout, LanguageSelector, LanguageSection } from "src/shared/Docs/mdx";
 
 # Retries
 
@@ -6,9 +6,9 @@ By default, in _addition_ to the **initial attempt**, Inngest will retry a funct
 
 For the function below, if the database write fails then it'll be retried up to 4 times until it succeeds:
 
-<GuideSelector options={[{ key: "typescript", title: "TypeScript" }, { key: "python", title: "Python" }, { key: "go", title: "Go" }]}>
+<LanguageSelector>
 
-<GuideSection show="typescript">
+<LanguageSection show="typescript">
 
 ```ts
 inngest.createFunction(
@@ -20,9 +20,9 @@ inngest.createFunction(
 );
 ```
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="go">
+<LanguageSection show="go">
 
 ```go
 inngestgo.CreateFunction(
@@ -36,9 +36,9 @@ inngestgo.CreateFunction(
 )
 ```
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="python">
+<LanguageSection show="python">
 
 ```python
 @inngest_client.create_function(
@@ -49,11 +49,11 @@ def record_click(ctx: inngest.Context) -> None:
     db.clicks.insert_one(ctx.event.data)
 ```
 
-</GuideSection>
+</LanguageSection>
 
 You can configure the number of `retries` by specifying it in your function configuration. Setting the value to `0` will disable retries.
 
-<GuideSection show="typescript">
+<LanguageSection show="typescript">
 
 ```ts
 inngest.createFunction(
@@ -66,9 +66,9 @@ inngest.createFunction(
 );
 ```
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="go">
+<LanguageSection show="go">
 
 ```go
 inngestgo.CreateFunction(
@@ -85,9 +85,9 @@ inngestgo.CreateFunction(
 )
 ```
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="python">
+<LanguageSection show="python">
 
 ```python
 @inngest_client.create_function(
@@ -99,7 +99,7 @@ def click_recorder(ctx: inngest.Context) -> None:
     # ...
 ```
 
-</GuideSection>
+</LanguageSection>
 
 You can customize the behavior of your function based on the number of retries using the `attempt` argument. `attempt` is passed in the function handler's context and is zero-indexed, meaning the first attempt is `0`, the second is `1`, and so on. The `attempt` is incremented every time the function throws an error and is retried, and is reset when steps complete. This allows you to handle attempt numbers differently in each step.
 
@@ -113,7 +113,7 @@ A function can be broken down into multiple steps, where each step is individual
 
 In the example below, both the "_get-data_" and "_save-data_" steps each get their own set of 4 retries (5 total attempts including the initial attempt). If the "_save-data_" step fails all 5 attempts, it doesn't affect the retry count of the "_get-data_" step - they are completely independent.
 
-<GuideSection show="typescript">
+<LanguageSection show="typescript">
 
 ```ts
 inngest.createFunction(
@@ -133,9 +133,9 @@ inngest.createFunction(
 );
 ```
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="go">
+<LanguageSection show="go">
 
 ```go
 inngestgo.CreateFunction(
@@ -164,9 +164,9 @@ inngestgo.CreateFunction(
 )
 ```
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="python">
+<LanguageSection show="python">
 
 ```python
 @inngest_client.create_function(
@@ -181,7 +181,7 @@ def sync_systems(ctx: inngest.ContextSync) -> None:
     ctx.step.run("Save data", db.syncs.insert_one, data)
 ```
 
-</GuideSection>
+</LanguageSection>
 
 <Callout>
 **Important:** Each step gets its own independent retry counter. You can configure the number of [`retries`](/docs/reference/functions/create#inngest-create-function-configuration-trigger-handler-inngest-function) for each function. This excludes the initial attempt. A retry count of `4` means that **each individual step** will be attempted up to 5 times (1 initial attempt + 4 retries).
@@ -195,7 +195,7 @@ You can throw a [non-retriable error](/docs/reference/typescript/functions/error
 
 This is useful for when you know an error is permanent and want to stop all execution. In this example, the user doesn't exist, so there's no need to continue to email them.
 
-<GuideSection show="typescript">
+<LanguageSection show="typescript">
 
 ```ts
 import { NonRetriableError } from "inngest";
@@ -223,9 +223,9 @@ inngest.createFunction(
 );
 ```
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="go">
+<LanguageSection show="go">
 
 ```go
 inngestgo.CreateFunction(
@@ -255,9 +255,9 @@ inngestgo.CreateFunction(
 )
 ```
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="python">
+<LanguageSection show="python">
 
 ```python
 from inngest.errors import NonRetriableError
@@ -277,7 +277,7 @@ def user_weekly_digest(ctx: inngest.ContextSync) -> None:
     ctx.step.run("send-digest", send_digest, user["email"])
 ```
 
-</GuideSection>
+</LanguageSection>
 
 ## Customizing retry times
 
@@ -285,7 +285,7 @@ Retries are executed with exponential back-off with some jitter, but it's also p
 
 In this example, an external API provided `Retry-After` header with information on when requests can be made again, so you can tell Inngest to retry your function then.
 
-<GuideSection show="typescript">
+<LanguageSection show="typescript">
 
 ```ts
 import { RetryAfterError } from 'inngest';
@@ -312,9 +312,9 @@ inngest.createFunction(
 );
 ```
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="go">
+<LanguageSection show="go">
 
 ```go
 inngestgo.CreateFunction(
@@ -339,9 +339,9 @@ inngestgo.CreateFunction(
 )
 ```
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="python">
+<LanguageSection show="python">
 
 ```python
 import inngest
@@ -361,6 +361,6 @@ def send_welcome_notification(ctx: inngest.ContextSync) -> None:
 		raise inngest.RetryAfterError("Hit Twilio rate limit", retryAfter)
 ```
 
-</GuideSection>
+</LanguageSection>
 
-</GuideSelector>
+</LanguageSelector>

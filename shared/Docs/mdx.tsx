@@ -44,6 +44,9 @@ export {
   GuideSelector,
   GuideSection,
   GuideTitle,
+  LanguageSelector,
+  LanguageSection,
+  LanguageTitle,
 } from "./Code";
 export { DownloadLink } from "./DownloadLink";
 

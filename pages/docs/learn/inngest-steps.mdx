@@ -2,7 +2,7 @@ import { Callout } from "shared/Docs/mdx";
 import IconConcurrency from 'src/shared/Icons/FlowControl/Concurrency';
 
 export const description = 'Learn about Inngest steps and their methods.';
-import { GuideSelector, GuideSection } from "shared/Docs/mdx";
+import { LanguageSelector, LanguageSection } from "shared/Docs/mdx";
 
 # Inngest Steps
 
@@ -26,15 +26,9 @@ If you'd like to learn more about how Inngest steps are executed, check the ["Ho
 
 The first argument of every Inngest step method is an `id`. Each step is treated as a discrete task which can be individually retried, debugged, or recovered. Inngest uses the ID to memoize step state across function versions.
 
-<GuideSelector
-  options={[
-    { key: "typescript", title: "TypeScript" },
-    { key: "go", title: "Go" },
-    { key: "python", title: "Python" },
-  ]}
->
+<LanguageSelector>
 
-<GuideSection show="typescript">
+<LanguageSection show="typescript">
 
 ```typescript
 export default inngest.createFunction(
@@ -52,9 +46,20 @@ export default inngest.createFunction(
 );
 ```
 
-</GuideSection>
+<Callout variant="info">
+  **Using inngest@v4?** The TypeScript examples on this page use v3 syntax with three arguments to `createFunction`. In v4, event triggers are specified in the configuration object:
+  ```ts
+  inngest.createFunction(
+    { id: "my-function", triggers: [{ event: "my/event" }] },
+    async ({ event, step }) => { /* ... */ },
+  );
+  ```
+  See the [v3 → v4 migration guide](/docs/reference/typescript/v4/migrations/v3-to-v4#event-trigger-is-now-in-options) for details.
+</Callout>
 
-<GuideSection show="go">
+</LanguageSection>
+
+<LanguageSection show="go">
 
 ```go
 import (
@@ -86,9 +91,9 @@ inngestgo.CreateFunction(
 )
 ```
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="python">
+<LanguageSection show="python">
 
 ```python
 import inngest
@@ -107,9 +112,9 @@ async def import_product_images(ctx: inngest.Context):
     )
 ```
 
-</GuideSection>
+</LanguageSection>
 
-</GuideSelector>
+</LanguageSelector>
 
 The ID is also used to identify the function in the Inngest system.
 
@@ -121,13 +126,7 @@ Please note that each step is executed as **a separate HTTP request**. To ensure
 
 ## Available Step Methods
 
-<GuideSelector
-  options={[
-    { key: "typescript", title: "TypeScript" },
-    { key: "go", title: "Go" },
-    { key: "python", title: "Python" },
-  ]}
->
+<LanguageSelector>
 
 ### step.run()
 
@@ -135,7 +134,7 @@ This method executes a defined piece of code. Code within `step.run()` is automa
 
 Use it to run synchronous or asynchronous code as a retriable step in your function.
 
-<GuideSection show="typescript">
+<LanguageSection show="typescript">
 
 ```typescript
 export default inngest.createFunction(
@@ -151,9 +150,9 @@ export default inngest.createFunction(
 );
 ```
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="go">
+<LanguageSection show="go">
 
 ```go
 import (
@@ -182,9 +181,9 @@ inngestgo.CreateFunction(
 )
 ```
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="python">
+<LanguageSection show="python">
 
 ```python
 import inngest
@@ -205,7 +204,7 @@ async def import_product_images(ctx: inngest.Context):
     )
 ```
 
-</GuideSection>
+</LanguageSection>
 
 <Callout>
 `step.run()` acts as a code-level transaction. The entire step must succeed to complete.
@@ -215,7 +214,7 @@ async def import_product_images(ctx: inngest.Context):
 
 This method pauses execution for a specified duration. Even though it seems like a `setInterval`, your function does not run for that time (you don't use any compute). Inngest handles the scheduling for you. Use it to add delays or to wait for a specific amount of time before proceeding. At maximum, functions can sleep for a year (seven days for the [free tier plans](/pricing)).
 
-<GuideSection show="typescript">
+<LanguageSection show="typescript">
 
 ```typescript
 export default inngest.createFunction(
@@ -228,9 +227,9 @@ export default inngest.createFunction(
 );
 ```
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="go">
+<LanguageSection show="go">
 
 ```go
 import (
@@ -252,9 +251,9 @@ inngestgo.CreateFunction(
 )
 ```
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="python">
+<LanguageSection show="python">
 
 ```python
 import inngest
@@ -269,13 +268,13 @@ async def send_delayed_email(ctx: inngest.Context):
     # Do something else
 ```
 
-</GuideSection>
+</LanguageSection>
 
 ### step.sleepUntil() / step.sleep_until()
 
 This method pauses execution until a specific date time. Any date time string in the format accepted by the Date object, for example `YYYY-MM-DD` or `YYYY-MM-DDHH:mm:ss`. At maximum, functions can sleep for a year (seven days for the [free tier plans](/pricing)).
 
-<GuideSection show="typescript">
+<LanguageSection show="typescript">
 
 ```typescript
 export default inngest.createFunction(
@@ -289,15 +288,15 @@ export default inngest.createFunction(
 );
 ```
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="go">
+<LanguageSection show="go">
 
 Go SDK does not have a `sleepUntil` method. Use `step.Sleep()` with a calculated duration instead.
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="python">
+<LanguageSection show="python">
 
 ```python
 import inngest
@@ -314,13 +313,13 @@ async def send_scheduled_reminder(ctx: inngest.Context):
     # Do something else
 ```
 
-</GuideSection>
+</LanguageSection>
 
 ### step.waitForEvent() / step.wait_for_event()
 
 This method pauses a run's execution until a specific event is received.
 
-<GuideSection show="typescript">
+<LanguageSection show="typescript">
 
 ```typescript
 export default inngest.createFunction(
@@ -336,9 +335,9 @@ export default inngest.createFunction(
 );
 ```
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="go">
+<LanguageSection show="go">
 
 ```go
 import (
@@ -382,9 +381,9 @@ inngestgo.CreateFunction(
 )
 ```
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="python">
+<LanguageSection show="python">
 
 ```python
 import inngest
@@ -404,14 +403,14 @@ async def send_onboarding_nudge_email(ctx: inngest.Context):
     # Do something else
 ```
 
-</GuideSection>
+</LanguageSection>
 
 ### step.waitForSignal() / step.wait_for_signal()
 
 This method pauses a run's execution until a specific signal is received via our SDK or API.  Signals must
 be unique across runs, and offer an API to resume specific runs given a unique signal vs events.
 
-<GuideSection show="typescript">
+<LanguageSection show="typescript">
 
 ```typescript
 export default inngest.createFunction(
@@ -427,9 +426,9 @@ export default inngest.createFunction(
 );
 ```
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="go">
+<LanguageSection show="go">
 
 ```go
 import (
@@ -466,9 +465,9 @@ inngestgo.CreateFunction(
 )
 ```
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="python">
+<LanguageSection show="python">
 
 ```python
 import inngest
@@ -488,7 +487,7 @@ async def send_onboarding_nudge_email(ctx: inngest.Context):
     # Do other steps
 ```
 
-</GuideSection>
+</LanguageSection>
 
 
 ### step.invoke()
@@ -497,7 +496,7 @@ This method is used to asynchronously call another Inngest function ([written in
 
 This method comes with its own configuration, which enables defining specific settings like concurrency limits.
 
-<GuideSection show="typescript">
+<LanguageSection show="typescript">
 
 ```typescript
 // A function we will call in another place in our app
@@ -524,9 +523,9 @@ const mainFunction = inngest.createFunction(
 );
 ```
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="go">
+<LanguageSection show="go">
 
 ```go
 import (
@@ -569,9 +568,9 @@ inngestgo.CreateFunction(
 )
 ```
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="python">
+<LanguageSection show="python">
 
 ```python
 import inngest
@@ -598,13 +597,13 @@ async def fn_2(ctx: inngest.Context) -> None:
     print(output)
 ```
 
-</GuideSection>
+</LanguageSection>
 
 ### step.sendEvent() / step.send_event()
 
 This method sends events to Inngest to invoke functions with a matching event. Use `sendEvent()` when you want to trigger other functions, but you do not need to return the result. It is useful for example in [fan-out functions](/docs/guides/fan-out-jobs).
 
-<GuideSection show="typescript">
+<LanguageSection show="typescript">
 
 ```typescript
 export default inngest.createFunction(
@@ -621,15 +620,15 @@ export default inngest.createFunction(
 );
 ```
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="go">
+<LanguageSection show="go">
 
 Go SDK does not have a dedicated `step.sendEvent()` method. Use the Inngest client's `Send()` method within a `step.Run()` instead.
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="python">
+<LanguageSection show="python">
 
 ```python
 import inngest
@@ -643,9 +642,9 @@ async def fn(ctx: inngest.Context) -> list[str]:
     return await ctx.step.send_event("send", inngest.Event(name="foo"))
 ```
 
-</GuideSection>
+</LanguageSection>
 
-</GuideSelector>
+</LanguageSelector>
 
 ## Further reading
 

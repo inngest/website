@@ -54,6 +54,7 @@ const options = {
     "https://www.npmjs.com/",
     "https://npmjs.com/",
     "https://npm.im/",
+    "https://jsr.io/",
     "https://www.assurancelab.cpa/",
     "https://www.deeplearning.ai/",
     "https://cloud.digitalocean.com/",

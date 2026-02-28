@@ -76,6 +76,19 @@ export default inngest.createFunction(
 );
 ```
 
+<Callout variant="info">
+  **Using inngest@v4?** Event triggers are now specified in the configuration object:
+  ```ts
+  inngest.createFunction(
+    { id: "send-welcome-email", triggers: [{ event: "user/new.signup" }] },
+    async ({ event }) => {
+      return await email.send("welcome", event.data.email);
+    },
+  );
+  ```
+  See the [v3 → v4 migration guide](/docs/reference/typescript/v4/migrations/v3-to-v4#event-trigger-is-now-in-options) for details.
+</Callout>
+
 ### Sending events
 
 TypeScript will also enforce your custom events being the right shape - see [Event Format](/docs/reference/events/send) for more details.
@@ -226,6 +239,17 @@ export default inngest.createFunction(
 );
 ```
 </CodeGroup>
+
+<Callout variant="info">
+  **Using inngest@v4?** The v3 examples above use three arguments to `createFunction`. In v4, event triggers are specified in the configuration object:
+  ```ts
+  inngest.createFunction(
+    { id: "onboarding-drip-campaign", triggers: [{ event: "user/new.signup" }] },
+    async ({ event, step }) => { /* ... */ },
+  );
+  ```
+  See the [v3 → v4 migration guide](/docs/reference/typescript/v4/migrations/v3-to-v4#event-trigger-is-now-in-options) for details.
+</Callout>
 
 ## Helpers
 

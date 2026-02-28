@@ -1,18 +1,13 @@
-import { CodeGroup, Callout, GuideSection, GuideSelector } from "src/shared/Docs/mdx";
+import { CodeGroup, Callout, LanguageSection, LanguageSelector } from "src/shared/Docs/mdx";
 
 # Crons (Scheduled Functions)
 
 You can create scheduled jobs using cron schedules within Inngest natively.  Inngest's cron schedules also support timezones, allowing you to schedule work in whatever timezone you need work to run in.
 
 
-<GuideSelector
-  options={[
-    { key: "typescript", title: "TypeScript" },
-    { key: "go", title: "Go" },
-    { key: "python", title: "Python" },
-  ]}>
+<LanguageSelector>
 
-<GuideSection show="typescript">
+<LanguageSection show="typescript">
 
 You can create scheduled functions that run in any timezone using the SDK's [`createFunction()`](/docs/reference/functions/create):
 
@@ -80,8 +75,8 @@ export const sendWeeklyDigest = inngest.createFunction(
 );
 ```
 
-</GuideSection>
-<GuideSection show="go">
+</LanguageSection>
+<LanguageSection show="go">
 
 You can create scheduled functions that run in any timezone using the SDK's [`CreateFunction()`](https://pkg.go.dev/github.com/inngest/inngestgo#CreateFunction):
 
@@ -170,8 +165,8 @@ func init() {
 }
 ```
 
-</GuideSection>
-<GuideSection show="python">
+</LanguageSection>
+<LanguageSection show="python">
 
 You can create scheduled functions that run in any timezone using the SDK's [`create_function()`](/docs/reference/python/functions/create):
 
@@ -240,8 +235,8 @@ async def send_weekly_digest(ctx: inngest.Context) -> None:
     # task for a large list of users!
 ```
 
-</GuideSection>
-</GuideSelector>
+</LanguageSection>
+</LanguageSelector>
 
 <Callout>
 👉 Note: You'll need to [serve these functions in your Inngest API](/docs/learn/serving-inngest-functions) for the functions to be available to Inngest.
