@@ -74,19 +74,23 @@ All consumers are notified immediately.
 
 ## How it works
 
-Each call to `wait_for` (or its variants) creates a dedicated `asyncio.Queue`. When the value is set, the setter iterates over all queues and pushes the `(old, new)` tuple into each one. The waiting coroutine pulls from its queue and checks the condition.
+Each call to `wait_for` (or its variants) creates a dedicated `asyncio.Queue`. When the value is set, the setter snapshots the queue list under a lock, then iterates over all queues and pushes the `(old, new)` tuple into each one via `call_soon_threadsafe`. The waiting coroutine pulls from its queue and checks the condition.
 
 ```python
 @value.setter
 def value(self, new_value: T) -> None:
-    if new_value == self._value:
-        return
+    with self._lock:
+        if new_value == self._value:
+            return
 
-    old_value = self._value
-    self._value = new_value
+        old_value = self._value
+        self._value = new_value
+        queues = list(self._watch_queues)
 
-    for queue in self._watch_queues:
-        queue.put_nowait((old_value, new_value))
+    for loop, queue in queues:
+        loop.call_soon_threadsafe(
+            queue.put_nowait, (old_value, new_value)
+        )
 ```
 
 Per-consumer queues are the key design choice. A single `asyncio.Event` would lose intermediate transitions — if the value goes from `0` to `1` to `2` before a consumer runs, it only sees `2`. With queues, every transition is buffered and delivered in order. This matters when you have one consumer waiting for `1` and another waiting for `2`.
@@ -94,24 +98,25 @@ Per-consumer queues are the key design choice. A single `asyncio.Event` would lo
 The queue cleanup uses a context manager:
 
 ```python
-async def wait_for(
+async def _wait_for_condition(
     self,
-    value: T,
+    condition: typing.Callable[[T], bool],
     *,
     immediate: bool = True,
     timeout: float | None = None,
 ) -> T:
-    if immediate and self._value == value:
-        return self._value
+    if immediate and condition(self.value):
+        return self.value
 
     async def _wait() -> T:
-        with self._watch() as watch:
+        with self._watch() as queue:
             # Re-check after queue registration.
-            if immediate and self._value == value:
-                return self._value
+            if immediate and condition(self.value):
+                return self.value
 
-            async for _, new in watch:
-                if new == value:
+            while True:
+                _, new = await queue.get()
+                if condition(new):
                     return new
 
     return await asyncio.wait_for(_wait(), timeout=timeout)
@@ -121,7 +126,7 @@ async def wait_for(
   The `immediate` parameter controls whether `wait_for` returns instantly if the value already matches. This defaults to `True`, which is usually what you want. Setting it to `False` forces the caller to wait for the _next_ transition to that value, even if it's the current value. This is useful when you need to observe an actual change, not just the current state.
 </Callout>
 
-`_watch()` returns a context manager that registers a queue on enter and removes it on exit. The context manager yields an async generator that pulls from the queue. When the `wait_for` coroutine returns (or the task is cancelled), the `with` block exits and the queue is cleaned up.
+`_watch()` returns a context manager that registers a queue on enter and removes it on exit. The context manager returns the queue directly — no async generator wrapper. When the `wait_for` coroutine returns (or the task is cancelled), the `with` block exits and the queue is cleaned up.
 
 ## A typing trick
 
