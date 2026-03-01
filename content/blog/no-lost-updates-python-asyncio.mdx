@@ -1,15 +1,15 @@
 ---
-heading: "Building a reactive primitive for Python asyncio from first principles"
-subtitle: "Polling, Events, Conditions. Each solution gets closer but still breaks. Here's how we arrived at a 100-line primitive with no lost updates."
+heading: "What Python's asyncio primitives get wrong about shared state"
+subtitle: "We tried Event, Condition, and Queue. Each one gets closer but still breaks under real concurrency. Here's the observable pattern that finally works."
 showSubtitle: true
 date: 2026-03-06
 author: Aaron Harper
 ---
 
 
-While building the [connect](https://www.inngest.com/docs/reference/python/overview/connect?ref=blog-no-lost-updates-python-asyncio) layer in Inngest's Python SDK, we needed to coordinate multiple async tasks around WebSocket connection state. Python's stdlib gives you tools for this (`Event`, `Condition`, `Queue`), but they all have gaps that only show up under real concurrency pressure.
+Coordinating concurrent tasks around shared state is one of the most common problems in Python's `asyncio`. The package gives you `asyncio.Event`, `asyncio.Condition`, and `asyncio.Queue`, but each has a gap that only shows up under real concurrency pressure. We hit this while building [Inngest's Python SDK](https://www.inngest.com/docs/reference/python/overview/connect?ref=blog-no-lost-updates-python-asyncio), where multiple async handlers coordinate around WebSocket connection state.
 
-This post walks through those gaps. We'll start with the simplest possible approach, show exactly how it breaks, and iterate until we land on something that actually works.
+This post works through each primitive, shows exactly where it breaks, and iterates toward a solution that handles every case we threw at it.
 
 ## The scenario
 
@@ -195,25 +195,73 @@ class ValueWatcher:
 
 The queue buffers and delivers every intermediate transition in order, even if the value changes multiple times before a consumer runs.
 
-This version works in a single-threaded asyncio context, but the real implementation needs two more things: thread safety (since setters might fire from a different thread) and atomicity between registering the queue and checking the current value. The production version handles both:
+## Making it production-ready
+
+We still need a handful of features to make it production-ready. Our final implementation needs the following:
+
+- **Thread safety**: A `threading.Lock` protects the value and queue list. Each queue is paired with its event loop, and the setter uses `loop.call_soon_threadsafe` instead of `put_nowait` directly.
+- **Atomic registration**: `wait_for` checks the current value and registers the queue inside the same lock acquisition, closing the race where a transition could slip between registration and the initial check.
+- **Full generic typing**: `Generic[T]` end-to-end, so predicates, queues, and return values are all type-checked.
+- **Predicate-based matching**: `wait_for`, `wait_for_not`, and `wait_for_not_none` all route through a shared `_wait_for_condition(predicate)` core.
+- **Timeouts**: Every wait method accepts an optional `timeout`, backed by `asyncio.wait_for`.
+- **Callback API**: `on_change` and `on_value` for synchronous consumers alongside the async wait API.
+- **Resilient notifications**: The setter catches `RuntimeError` (closed loop) and suppresses callback exceptions so one failure doesn't block other consumers.
+
+
+The full implementation is about 300 lines, most of which is docstrings and convenience methods built on the same core. Feel free to copy it into your codebase!
+
+<details>
+<summary>**Full `ValueWatcher` source**</summary>
 
 ```py
-class ValueWatcher:
-    def __init__(self, initial_value):
-        self._value = initial_value
-        self._lock = threading.Lock()
+from __future__ import annotations
 
-        # Each entry is (event_loop, queue) so we know which loop to schedule on
+import asyncio
+import threading
+import typing
+
+T = typing.TypeVar("T")
+
+# Used by `wait_for_not_none` to narrow `ValueWatcher[X | None]` to `X`.
+S = typing.TypeVar("S")
+
+
+class ValueWatcher(typing.Generic[T]):
+    """
+    Thread-safe observable value with async watchers.
+
+    Watchers can await value changes via methods like `wait_for` and
+    `wait_for_change`. Alternatively, they can add callbacks via `on_change` and
+    `on_value`.
+
+    Any thread can set `.value`, and the watcher will react accordingly.
+    """
+
+    def __init__(
+        self,
+        initial_value: T,
+        *,
+        on_change: typing.Callable[[T, T], None] | None = None,
+    ) -> None:
+        self._lock = threading.Lock()
+        self._on_changes: list[typing.Callable[[T, T], None]] = []
+        if on_change:
+            self._on_changes.append(on_change)
+
         self._watch_queues: list[
-            tuple[asyncio.AbstractEventLoop, asyncio.Queue]
+            tuple[asyncio.AbstractEventLoop, asyncio.Queue[tuple[T, T]]]
         ] = []
 
+        self._background_tasks: set[asyncio.Task[T]] = set()
+        self._value = initial_value
+
     @property
-    def value(self):
-        return self._value
+    def value(self) -> T:
+        with self._lock:
+            return self._value
 
     @value.setter
-    def value(self, new_value):
+    def value(self, new_value: T) -> None:
         with self._lock:
             if new_value == self._value:
                 return
@@ -221,62 +269,158 @@ class ValueWatcher:
             old_value = self._value
             self._value = new_value
             queues = list(self._watch_queues)
+            callbacks = list(self._on_changes)
 
         for loop, queue in queues:
-            loop.call_soon_threadsafe(
-                queue.put_nowait, (old_value, new_value)
-            )
+            try:
+                loop.call_soon_threadsafe(
+                    queue.put_nowait, (old_value, new_value)
+                )
+            except RuntimeError:
+                pass
 
-    async def wait_for(self, target):
-        loop = asyncio.get_running_loop()
-        queue = asyncio.Queue()
+        for on_change in callbacks:
+            try:
+                on_change(old_value, new_value)
+            except Exception:
+                pass
+
+    def on_change(self, callback: typing.Callable[[T, T], None]) -> None:
         with self._lock:
-            if self._value == target:
-                return
+            self._on_changes.append(callback)
+
+    def on_value(self, value: T, callback: typing.Callable[[], None]) -> None:
+        task = asyncio.create_task(self.wait_for(value))
+        self._background_tasks.add(task)
+
+        def _done(t: asyncio.Task[T]) -> None:
+            self._background_tasks.discard(t)
+            if not t.cancelled() and t.exception() is None:
+                callback()
+
+        task.add_done_callback(_done)
+
+    async def wait_for(
+        self,
+        value: T,
+        *,
+        immediate: bool = True,
+        timeout: float | None = None,
+    ) -> T:
+        return await self._wait_for_condition(
+            lambda v: v == value,
+            immediate=immediate,
+            timeout=timeout,
+        )
+
+    async def wait_for_not(
+        self,
+        value: T,
+        *,
+        immediate: bool = True,
+        timeout: float | None = None,
+    ) -> T:
+        return await self._wait_for_condition(
+            lambda v: v != value,
+            immediate=immediate,
+            timeout=timeout,
+        )
+
+    async def wait_for_not_none(
+        self: ValueWatcher[S | None],
+        *,
+        immediate: bool = True,
+        timeout: float | None = None,
+    ) -> S:
+        result = await self._wait_for_condition(
+            lambda v: v is not None,
+            immediate=immediate,
+            timeout=timeout,
+        )
+        if result is None:
+            raise AssertionError("unreachable")
+        return result
+
+    async def _wait_for_condition(
+        self,
+        condition: typing.Callable[[T], bool],
+        *,
+        immediate: bool = True,
+        timeout: float | None = None,
+    ) -> T:
+        if immediate:
+            current = self.value
+            if condition(current):
+                return current
+
+        async def _wait() -> T:
+            with self._watch() as queue:
+                if immediate:
+                    current = self.value
+                    if condition(current):
+                        return current
+
+                while True:
+                    _, new = await queue.get()
+                    if condition(new):
+                        return new
+
+        return await asyncio.wait_for(_wait(), timeout=timeout)
+
+    async def wait_for_change(
+        self,
+        *,
+        timeout: float | None = None,
+    ) -> T:
+        async def _wait() -> T:
+            with self._watch() as queue:
+                _, new = await queue.get()
+                return new
+
+        return await asyncio.wait_for(_wait(), timeout=timeout)
+
+    def _watch(self) -> _WatchContextManager[T]:
+        loop = asyncio.get_running_loop()
+        queue = asyncio.Queue[tuple[T, T]]()
+        with self._lock:
             self._watch_queues.append((loop, queue))
 
-        try:
-            while True:
-                old, new = await queue.get()
-                if new == target:
-                    return
-        finally:
-            with self._lock:
-                self._watch_queues.remove((loop, queue))
+        return _WatchContextManager(
+            on_exit=lambda: self._remove_queue(queue),
+            queue=queue,
+        )
+
+    def _remove_queue(self, queue: asyncio.Queue[tuple[T, T]]) -> None:
+        with self._lock:
+            self._watch_queues = [
+                entry for entry in self._watch_queues if entry[1] is not queue
+            ]
+
+
+class _WatchContextManager(typing.Generic[T]):
+    def __init__(
+        self,
+        on_exit: typing.Callable[[], None],
+        queue: asyncio.Queue[tuple[T, T]],
+    ) -> None:
+        self._on_exit = on_exit
+        self._queue = queue
+
+    def __enter__(self) -> asyncio.Queue[tuple[T, T]]:
+        return self._queue
+
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: object,
+    ) -> None:
+        self._on_exit()
 ```
 
-Three changes from the simplified version:
-1. A `threading.Lock` protects the value and queue list, making the setter safe to call from any thread.
-2. Each queue is paired with the event loop it belongs to.
-3. `loop.call_soon_threadsafe` schedules each put on that loop instead of calling `put_nowait` directly.
+</details>
 
-Notice that `wait_for` now checks the current value and registers the queue inside the same lock acquisition. This eliminates the race where a transition could slip between registration and the initial check.
-
-## The API
-
-We wrapped this pattern in `ValueWatcher`, a `Generic[T]` class with full type safety. The same scenario from above becomes:
-
-```py
-from value_watcher import ValueWatcher
-
-state = ValueWatcher("disconnected")
-
-async def drain_requests():
-    await state.wait_for("closing")
-    print("draining pending requests")
-```
-
-Setting the value is just assignment:
-
-```py
-state.value = "connected"
-state.value = "closing"
-state.value = "closed"
-```
-
-`drain_requests` catches `closing` even though the state has already moved to `closed` by the time it runs.
-
-`ValueWatcher` also supports negation and None-narrowing:
+`wait_for_not` and `wait_for_not_none` are particularly useful in practice:
 
 ```py
 # Wait until the state is anything other than "disconnected"
@@ -286,10 +430,6 @@ await state.wait_for_not("disconnected")
 ws_watcher = ValueWatcher[Connection | None](None)
 ws: Connection = await ws_watcher.wait_for_not_none()
 ```
-
-<Callout>
-  The full source is about 100 lines. [Read it on GitHub.](https://github.com/inngest/inngest-py/blob/0ff9ce4fc23a9ff413ab693fe4665a3265d79a0c/pkg/inngest/inngest/connect/_internal/value_watcher.py)
-</Callout>
 
 ## One caveat
 
