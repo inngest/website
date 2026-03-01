@@ -1,168 +1,302 @@
 ---
-heading: "No lost updates: a 100-line reactive primitive for Python asyncio"
-subtitle: "Python's asyncio gives you Event, Condition, and Queue — none of them do what we actually needed."
+heading: "Building a reactive primitive for Python asyncio from first principles"
+subtitle: "Polling, Events, Conditions. Each solution gets closer but still breaks. Here's how we arrived at a 100-line primitive with no lost updates."
 showSubtitle: true
-date: 2026-02-16
+date: 2026-03-06
 author: Aaron Harper
 ---
 
 
-Python's `asyncio` gives you `Event`, `Condition`, and `Queue` for coordinating between tasks. None of them do what we actually needed: let multiple consumers wait for a value to reach a specific state.
+While building the [connect](https://www.inngest.com/docs/reference/python/overview/connect?ref=blog-no-lost-updates-python-asyncio) layer in Inngest's Python SDK, we needed to coordinate multiple async tasks around WebSocket connection state. Python's stdlib gives you tools for this (`Event`, `Condition`, `Queue`), but they all have gaps that only show up under real concurrency pressure.
 
-We wrote `ValueWatcher` to fill that gap. It's generic, fully type-safe, and about 100 lines of code. It replaced a lot of fragile callback wiring in our WebSocket connection manager.
+This post walks through those gaps. We'll start with the simplest possible approach, show exactly how it breaks, and iterate until we land on something that actually works.
 
-<Callout>
-  Want to jump straight into source code? [Here it is.](https://github.com/inngest/inngest-py/blob/0ff9ce4fc23a9ff413ab693fe4665a3265d79a0c/pkg/inngest/inngest/connect/_internal/value_watcher.py)
-</Callout>
+## The scenario
 
-The property we care about most: no lost updates. In the example below, two consumers wait for different values, and both values are set synchronously without yielding to the event loop. Both consumers complete.
+Imagine an async Python app managing a connection that moves through states:
 
-```python
-watcher = ValueWatcher(0)
-
-# One consumer waits for 1, another waits for 2.
-wait = await start_tasks(
-    watcher.wait_for(1),
-    watcher.wait_for(2),
-)
-
-# Set both values without yielding.
-watcher.value = 1
-watcher.value = 2
-
-# Both consumers complete.
-await wait()
+```
+disconnected → connecting → connected → closing → closed
 ```
 
-This is the property that makes `ValueWatcher` trustworthy in a system where state changes can happen faster than consumers can process them.
+One of your concurrent handlers needs to drain pending requests when the connection starts shutting down. It has to wait for the `closing` state:
 
-## The problem
+```py
+state = "disconnected"
 
-Our Connect protocol manages a WebSocket connection with a lot of concurrent async handlers: heartbeats, execution dispatch, reconnection logic, handshakes, etc. These handlers need to react to shared state changes. For example:
-
-- Wait for the WebSocket connection to be established before sending messages
-- Wait for the handshake to complete before dispatching work
-- Wait for all pending requests to drain before closing
-
-The naive approach is `asyncio.Event`, but events are boolean. If you need to wait for a value to become `3` or stop being `None`, you need multiple events and careful coordination between them. That coordination is where bugs live.
-
-## The solution
-
-`ValueWatcher` wraps a value and lets consumers block until it meets some condition:
-
-```python
-state = ValueWatcher(ConnectionState.CONNECTING)
-
-# In the reconnect handler:
-await state.wait_for(ConnectionState.CONNECTED)
-
-# In the close handler:
-await state.wait_for_not(ConnectionState.CONNECTING)
-
-# In a handler that needs the WebSocket:
-ws_watcher = ValueWatcher[websockets.ClientConnection | None](None)
-ws = await ws_watcher.wait_for_not_none()
+async def drain_requests():
+    # Need to wait until state == "closing"
+    ...
+    print("draining pending requests")
 ```
 
-Setting the value is just assignment:
+Simple enough. Let's see how each stdlib tool handles it.
 
-```python
-state.value = ConnectionState.CONNECTED
+## Attempt 1: Polling
+
+The most obvious approach: check the value in a loop.
+
+```py
+async def drain_requests():
+    while state != "closing":
+        await asyncio.sleep(0.1)
+    print("draining pending requests")
 ```
 
-All consumers are notified immediately.
+This works. But the tradeoffs are bad:
 
-## How it works
+- **Latency vs. efficiency**: A short sleep interval wastes CPU cycles. A long one adds latency. There's no good value.
+- **Duplication**: Every consumer reimplements the same polling loop with the same tradeoff.
+- **No event-driven wake**: The consumer runs whether or not anything changed.
 
-Each call to `wait_for` (or its variants) creates a dedicated `asyncio.Queue`. When the value is set, the setter snapshots the queue list under a lock, then iterates over all queues and pushes the `(old, new)` tuple into each one via `call_soon_threadsafe`. The waiting coroutine pulls from its queue and checks the condition.
+We can do better. What we actually want is to *sleep until the state changes*, not sleep for an arbitrary duration and check.
 
-```python
-@value.setter
-def value(self, new_value: T) -> None:
-    with self._lock:
+## Attempt 2: asyncio.Event
+
+`asyncio.Event` is the stdlib's answer to "wake me up when something happens":
+
+```py
+closing_event = asyncio.Event()
+
+async def drain_requests():
+    await closing_event.wait()
+    print("draining pending requests")
+```
+
+No polling, no wasted cycles. The handler blocks until the event fires. But `Event` is boolean: it's either set or unset. Our connection has five states, and `drain_requests` only cares about one of them. What happens when another handler needs to wait for `connected`? You need a second event. A third handler waiting for "not disconnected"? A third event with inverted logic. The setter has to know about all of them:
+
+```py
+closing_event = asyncio.Event()
+connected_event = asyncio.Event()
+
+async def set_state(new_state):
+    global state
+    state = new_state
+    if new_state == "closing":
+        closing_event.set()
+    if new_state == "connected":
+        connected_event.set()
+```
+
+Every new condition requires another `Event` object. The coordination between events is where bugs live. Forget a `set()` or `clear()` call and a consumer blocks forever.
+
+## Attempt 3: asyncio.Condition
+
+`asyncio.Condition` lets consumers wait on arbitrary predicates:
+
+```py
+state = "disconnected"
+condition = asyncio.Condition()
+
+async def drain_requests():
+    async with condition:
+        await condition.wait_for(lambda: state == "closing")
+    print("draining pending requests")
+```
+
+One coordination point, arbitrary predicates, no proliferation of `Event` objects. This is much better.
+
+But it has a critical bug.
+
+### The lost update
+
+When the setter changes state, it calls `notify_all()`, which schedules wakeups for every waiting consumer. But in a single-threaded event loop, no consumer actually runs until the current coroutine yields. If the value changes again before that happens, consumers wake up and re-evaluate their predicate against the *current* value, not the value that triggered the notification. The predicate fails and the consumer goes back to sleep, potentially forever.
+
+```py
+# Two transitions in quick succession:
+await set_state("closing")  # notify_all() schedules wakeups
+await set_state("closed")   # state changes again before consumers run
+
+# drain_requests finally wakes, sees "closed", not "closing".
+# Pending requests get silently dropped.
+```
+
+Here's a runnable reproduction:
+
+```py
+import asyncio
+
+state = "disconnected"
+condition = asyncio.Condition()
+
+async def set_state(new_state):
+    global state
+    async with condition:
+        state = new_state
+        condition.notify_all()
+
+async def drain_requests():
+    async with condition:
+        await condition.wait_for(lambda: state == "closing")
+    print("draining pending requests")
+
+async def main():
+    task = asyncio.create_task(drain_requests())
+    await asyncio.sleep(0)  # Let drain_requests start waiting
+
+    await set_state("closing")  # Briefly "closing"...
+    await set_state("closed")   # ...then immediately "closed"
+
+    await asyncio.wait_for(task, timeout=1.0)
+    # TimeoutError: drain_requests never sees "closing"
+
+asyncio.run(main())
+```
+
+The value *was* `"closing"`, but by the time `drain_requests` wakes and checks, it's already `"closed"`. The intermediate state is gone.
+
+This isn't a contrived edge case. In our SDK's connection manager, a close signal can arrive and the connection can shut down in the same event loop tick. `drain_requests` never runs, and any in-flight work just disappears.
+
+## The fix: per-consumer queues
+
+Instead of waking consumers and asking "is the current state what you want?", buffer every transition into a per-consumer queue. Each consumer drains its own queue and checks each transition individually. The consumer never misses a state.
+
+Each consumer registers its own `asyncio.Queue`. When the value changes, the setter pushes `(old, new)` into every registered queue. Here's a simplified version that illustrates the core idea:
+
+```py
+class ValueWatcher:
+    def __init__(self, initial_value):
+        self._value = initial_value
+        self._watch_queues: list[asyncio.Queue] = []
+
+    @property
+    def value(self):
+        return self._value
+
+    @value.setter
+    def value(self, new_value):
         if new_value == self._value:
             return
 
         old_value = self._value
         self._value = new_value
-        queues = list(self._watch_queues)
 
-    for loop, queue in queues:
-        loop.call_soon_threadsafe(
-            queue.put_nowait, (old_value, new_value)
-        )
-```
+        # Notify all consumers
+        for queue in self._watch_queues:
+            queue.put_nowait((old_value, new_value))
 
-Per-consumer queues are the key design choice. A single `asyncio.Event` would lose intermediate transitions — if the value goes from `0` to `1` to `2` before a consumer runs, it only sees `2`. With queues, every transition is buffered and delivered in order. This matters when you have one consumer waiting for `1` and another waiting for `2`.
+    async def wait_for(self, target):
+        queue = asyncio.Queue()
+        self._watch_queues.append(queue)
 
-The queue cleanup uses a context manager:
-
-```python
-async def _wait_for_condition(
-    self,
-    condition: typing.Callable[[T], bool],
-    *,
-    immediate: bool = True,
-    timeout: float | None = None,
-) -> T:
-    if immediate and condition(self.value):
-        return self.value
-
-    async def _wait() -> T:
-        with self._watch() as queue:
-            # Re-check after queue registration.
-            if immediate and condition(self.value):
-                return self.value
+        try:
+            if self._value == target:
+                return
 
             while True:
-                _, new = await queue.get()
-                if condition(new):
-                    return new
+                old, new = await queue.get()
+                if new == target:
+                    return
+        finally:
+            self._watch_queues.remove(queue)
+```
 
-    return await asyncio.wait_for(_wait(), timeout=timeout)
+`wait_for` registers a queue, checks the current value, then drains transitions until it finds a match. The `try/finally` ensures the queue gets deregistered even if the caller cancels.
+
+The queue buffers and delivers every intermediate transition in order, even if the value changes multiple times before a consumer runs.
+
+This version works in a single-threaded asyncio context, but the real implementation needs two more things: thread safety (since setters might fire from a different thread) and atomicity between registering the queue and checking the current value. The production version handles both:
+
+```py
+class ValueWatcher:
+    def __init__(self, initial_value):
+        self._value = initial_value
+        self._lock = threading.Lock()
+
+        # Each entry is (event_loop, queue) so we know which loop to schedule on
+        self._watch_queues: list[
+            tuple[asyncio.AbstractEventLoop, asyncio.Queue]
+        ] = []
+
+    @property
+    def value(self):
+        return self._value
+
+    @value.setter
+    def value(self, new_value):
+        with self._lock:
+            if new_value == self._value:
+                return
+
+            old_value = self._value
+            self._value = new_value
+            queues = list(self._watch_queues)
+
+        for loop, queue in queues:
+            loop.call_soon_threadsafe(
+                queue.put_nowait, (old_value, new_value)
+            )
+
+    async def wait_for(self, target):
+        loop = asyncio.get_running_loop()
+        queue = asyncio.Queue()
+        with self._lock:
+            if self._value == target:
+                return
+            self._watch_queues.append((loop, queue))
+
+        try:
+            while True:
+                old, new = await queue.get()
+                if new == target:
+                    return
+        finally:
+            with self._lock:
+                self._watch_queues.remove((loop, queue))
+```
+
+Three changes from the simplified version:
+1. A `threading.Lock` protects the value and queue list, making the setter safe to call from any thread.
+2. Each queue is paired with the event loop it belongs to.
+3. `loop.call_soon_threadsafe` schedules each put on that loop instead of calling `put_nowait` directly.
+
+Notice that `wait_for` now checks the current value and registers the queue inside the same lock acquisition. This eliminates the race where a transition could slip between registration and the initial check.
+
+## The API
+
+We wrapped this pattern in `ValueWatcher`, a `Generic[T]` class with full type safety. The same scenario from above becomes:
+
+```py
+from value_watcher import ValueWatcher
+
+state = ValueWatcher("disconnected")
+
+async def drain_requests():
+    await state.wait_for("closing")
+    print("draining pending requests")
+```
+
+Setting the value is just assignment:
+
+```py
+state.value = "connected"
+state.value = "closing"
+state.value = "closed"
+```
+
+`drain_requests` catches `closing` even though the state has already moved to `closed` by the time it runs.
+
+`ValueWatcher` also supports negation and None-narrowing:
+
+```py
+# Wait until the state is anything other than "disconnected"
+await state.wait_for_not("disconnected")
+
+# For Optional values: waits until non-None and narrows the type
+ws_watcher = ValueWatcher[Connection | None](None)
+ws: Connection = await ws_watcher.wait_for_not_none()
 ```
 
 <Callout>
-  The `immediate` parameter controls whether `wait_for` returns instantly if the value already matches. This defaults to `True`, which is usually what you want. Setting it to `False` forces the caller to wait for the _next_ transition to that value, even if it's the current value. This is useful when you need to observe an actual change, not just the current state.
+  The full source is about 100 lines. [Read it on GitHub.](https://github.com/inngest/inngest-py/blob/0ff9ce4fc23a9ff413ab693fe4665a3265d79a0c/pkg/inngest/inngest/connect/_internal/value_watcher.py)
 </Callout>
 
-`_watch()` returns a context manager that registers a queue on enter and removes it on exit. The context manager returns the queue directly — no async generator wrapper. When the `wait_for` coroutine returns (or the task is cancelled), the `with` block exits and the queue is cleaned up.
+## One caveat
 
-## A typing trick
+The setter deduplicates by equality: if the new value `==` the current value, no notification fires. This works well for enums, strings, and ints, but mutating a mutable object in place and reassigning the same reference won't trigger consumers (because `obj == obj` is trivially `True`). Stick to immutable values and this isn't a concern.
 
-`wait_for_not_none` narrows the return type by constraining `self`:
+## Wrapping up
 
-```python
-async def wait_for_not_none(
-    self: ValueWatcher[S | None],
-    *,
-    immediate: bool = True,
-) -> S:
-```
+The core insight is simple: `asyncio.Condition` asks consumers "is the *current* state what you want?" when it should ask "did the state *ever become* what you want?" Per-consumer queues make that possible by buffering every transition instead of just notifying about the latest one.
 
-This means `ValueWatcher[str | None].wait_for_not_none()` returns `str`, not `str | None`. The method is only callable on watchers whose type parameter is an optional. This is checked at type-check time — no runtime cost.
-
-## Why not X?
-
-### `asyncio.Event`
-
-`asyncio.Event` is a boolean flag that can be set and cleared. We need to support arbitrary types, not just booleans.
-
-### `asyncio.Condition`
-
-`asyncio.Condition` can be used to wait for a value to meet a condition, but it has limitations.
-
-Beyond the clunky API (manual lock management, re-checking after spurious wakeups), `Condition` has a fundamental problem with intermediate transitions. `Condition.wait_for(predicate)` re-evaluates the predicate against the _current_ value when the consumer wakes. If the value transitions from `0` to `1` to `2` before a consumer waiting for `1` runs, the predicate `value == 1` fails (it's `2` now) and the consumer blocks forever. `ValueWatcher` solves this with per-consumer queues that buffer every transition — no intermediate state is lost.
-
-### Callbacks
-
-Callbacks push complexity to the consumer. Instead of linear control flow logic, you have to manage callbacks and their state. `ValueWatcher` keeps the control flow linear and predictable.
-
-### Third-party reactive libraries
-
-Too heavy for what we need. We don't want a dependency for a 100-line utility.
-
-## Limitations
-
-The setter deduplicates by equality: if the new value `==` the current value, no notification fires. This is convenient for enums and primitives, but it uses `==`, not `is`. If you store a mutable object, mutate it in place, and reassign the same reference, the check passes and consumers won't be notified. Stick to immutable values (enums, strings, ints, frozen dataclasses) and this isn't a concern.
-
+We use `ValueWatcher` throughout [Inngest's Python SDK](https://github.com/inngest/inngest-py) to coordinate WebSocket connection state, worker lifecycle, and graceful shutdown. If you're managing shared mutable state in asyncio, give it a try.
