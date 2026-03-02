@@ -9,9 +9,15 @@ category: "engineering"
 
 Node.js runs on a single thread. That's usually fine. The event loop handles I/O concurrency without you thinking about locks, races, or deadlocks. But "single-threaded" has a cost that only shows up under pressure: if your JavaScript monopolizes the CPU, nothing else runs. No timers fire. No network callbacks execute. No I/O completes.
 
-We ran into this with [Inngest Connect](/docs/sdk/connect?ref=blog-node-worker-threads), a persistent WebSocket connection between your app and the Inngest server. Connect is an alternative to our HTTP-based model (our `serve` function) that reduces TCP handshake overhead and avoids long-lived HTTP requests during long-running steps. Workers send heartbeats over the WebSocket so the server knows they're alive. When users started reporting "no available worker" errors despite their workers running, the cause traced back to the single-thread problem: CPU-heavy function execution was monopolizing the main thread, starving the event loop, and blocking heartbeats from going out. The server assumed the workers were dead and stopped routing work to them.
+We ran into this with [Inngest Connect](/docs/sdk/connect?ref=blog-node-worker-threads), a persistent WebSocket connection between your app and the Inngest server. Connect is an alternative to our HTTP-based model (our `serve` function) that reduces TCP handshake overhead and avoids long-lived HTTP requests during long-running steps. Workers send heartbeats over the WebSocket so the server knows they're alive.
 
-The fix was worker threads. But getting there taught us a few things about how worker threads actually work in Node.js, and how they compare to threading models in other languages.
+🚨 **The problem:** Users reported "no available worker" errors despite their workers running.
+
+🔍 **The cause:** CPU-heavy user code was monopolizing the main thread, starving the event loop, and blocking heartbeats. The server assumed the workers were dead and stopped routing work to them.
+
+🛠️ **The fix:** Move Connect internals into a worker thread.
+
+But getting there taught us a few things about how worker threads actually work in Node.js, and how they compare to threading models in other languages.
 
 <Callout>
   Connect's worker thread isolation is a new feature in [v4 of the Inngest TypeScript SDK](/blog/typescript-sdk-v4.0?ref=blog-node-worker-threads). Upgrade to get it automatically.
