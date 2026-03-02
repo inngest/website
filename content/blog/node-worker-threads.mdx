@@ -1,0 +1,223 @@
+---
+heading: "Node.js worker threads are not like other languages"
+subtitle: "Worker threads solve real problems, but they come with constraints that Go, Rust, and Python developers would never expect. Here's what we learned moving Inngest Connect's internals off the main thread."
+showSubtitle: true
+date: 2026-03-02
+author: Aaron Harper
+category: "engineering"
+---
+
+Node.js runs on a single thread. That's usually fine. The event loop handles I/O concurrency without you thinking about locks, races, or deadlocks. But "single-threaded" has a cost that only shows up under pressure: if your JavaScript monopolizes the CPU, nothing else runs. No timers fire. No network callbacks execute. No I/O completes.
+
+We ran into this with [Inngest Connect](/docs/sdk/connect?ref=blog-node-worker-threads), a persistent WebSocket connection between your app and the Inngest server. Connect is an alternative to our HTTP-based model (our `serve` function) that reduces TCP handshake overhead and avoids long-lived HTTP requests during long-running steps. Workers send heartbeats over the WebSocket so the server knows they're alive. When users started reporting "no available worker" errors despite their workers running, the cause traced back to the single-thread problem: CPU-heavy function execution was monopolizing the main thread, starving the event loop, and blocking heartbeats from going out. The server assumed the workers were dead and stopped routing work to them.
+
+The fix was worker threads. But getting there taught us a few things about how worker threads actually work in Node.js, and how they compare to threading models in other languages.
+
+<Callout>
+  Connect's worker thread isolation is a new feature in [v4 of the Inngest TypeScript SDK](/blog/typescript-sdk-v4.0?ref=blog-node-worker-threads). Upgrade to get it automatically.
+
+  This post focuses on Node.js, but Bun and Deno also support worker threads.
+</Callout>
+
+## Event loop starvation
+
+Node's event loop processes callbacks in phases: timers, I/O polling, `setImmediate`, close callbacks. Between each phase, it checks for microtasks (resolved promises, `queueMicrotask`). The critical property: the loop can only advance when the current JavaScript execution yields.
+
+A synchronous function that runs for 30 seconds blocks everything for 30 seconds. That includes `setTimeout` callbacks, incoming network data, and any other scheduled work. The timers don't "fire late." They don't fire at all until the thread is free.
+
+Consider a heartbeat scheduled with `setInterval` every 10 seconds. The callback is queued, ready to fire. Then a CPU-heavy function starts and runs for 30 seconds straight. The heartbeat callback sits in the timer queue the entire time. Multiple heartbeat intervals pass without a single one going out. By the time the function returns, the server has already timed out and marked the worker as dead.
+
+The standard advice is "don't block the event loop." But sometimes you're running user code and you don't control what it does. You need the critical path (heartbeats, connection management) isolated from user workloads. That's where worker threads come in.
+
+## What worker threads give you
+
+The `worker_threads` module lets you spin up additional JavaScript execution contexts within the same process. Each worker gets its own V8 isolate, its own heap, and its own event loop. Critically, one worker's CPU-bound code does not block another worker's event loop.
+
+Let's look at the basic API. You'll notice that the two threads communicate by sending messages to each other. We'll dig into why that's the only option (and what it means in practice) in the next section.
+
+```js main.js
+import { Worker } from "node:worker_threads";
+
+// Spawns a new thread running worker.js
+const worker = new Worker("./worker.js", {
+  workerData: { greeting: "hello" }, // Initial data, cloned into the worker
+});
+
+// Receive messages from the worker
+worker.on("message", (msg) => {
+  console.log("from worker:", msg);
+});
+
+// Send a message to the worker
+worker.postMessage({ type: "ping" });
+```
+
+<br />
+
+```js worker.js
+import { parentPort, workerData } from "node:worker_threads";
+
+// workerData is the cloned initial payload
+console.log(workerData.greeting); // "hello"
+
+// parentPort is the channel back to the main thread
+parentPort.on("message", (msg) => {
+  if (msg.type === "ping") {
+    parentPort.postMessage({ type: "pong" });
+  }
+});
+```
+
+Two independent event loops, each able to run JavaScript without blocking the other.
+
+## The constraints
+
+Worker threads solve the isolation problem, but they come with constraints that feel jarring if you've used concurrency primitives in other languages.
+
+### You can't pass logic to a worker
+
+In Go, you spawn a goroutine with a function:
+
+```go
+go func() {
+  fmt.Println("hello from goroutine")
+}()
+```
+
+In Rust, you spawn a thread with a closure:
+
+```rust
+std::thread::spawn(|| {
+  println!("hello from thread");
+});
+```
+
+In Python, you pass a function to a new thread:
+
+```python
+threading.Thread(target=lambda: print("hello from thread")).start()
+```
+
+In each of these languages, you hand arbitrary logic directly to the concurrency primitive. The function (or closure, or lambda) carries its logic and captured state together.
+
+Node.js worker threads don't work this way. You can't pass a function to `new Worker()`. The structured clone algorithm, which serializes data between threads, can't serialize functions. Instead, you point the worker at a **file**:
+
+```js
+const worker = new Worker("./my-worker.js");
+
+// There is no equivalent of this:
+// const worker = new Worker(() => { doStuff() });
+```
+
+<Callout>
+  Think of the structured clone algorithm as `JSON.stringify`/`JSON.parse` with broader type support (`Map`, `Set`, `Date`, `ArrayBuffer`, circular references). The key similarity: neither can serialize functions.
+</Callout>
+
+This means every worker thread is an independent program. It has its own entry point, its own imports, its own initialization. You design the communication protocol up front and exchange serialized messages. It's closer to writing a microservice than spawning a concurrent task.
+
+### Communication is message passing
+
+In Go, goroutines share the same address space. In Python, threads share the same heap. In both languages, passing data between concurrent tasks is cheap because it stays in memory.
+
+Node.js workers are isolated by default. They communicate via `postMessage` and event listeners. Data is serialized using the structured clone algorithm, meaning most JavaScript values (objects, arrays, typed arrays, `Map`, `Set`) are deep-copied between threads. Every message is serialized on one side and deserialized on the other. For small messages this is negligible, but large payloads (big JSON blobs, deeply nested objects) pay a real cost in both CPU time and memory, since the data exists in both heaps simultaneously.
+
+
+### Bundlers can't see your worker file
+
+This one is subtle and annoying. Bundlers (webpack, esbuild, Rollup) perform static analysis to discover imports and produce optimized bundles. When they encounter a standard `import` or `require`, they follow the dependency graph automatically. But `new Worker("./worker.js")` isn't an import. It's a string argument to a constructor.
+
+Modern bundlers recognize a specific pattern:
+
+```js
+new Worker(new URL("./worker.js", import.meta.url));
+```
+
+If you use this exact syntactic form with a string literal, webpack 5+ will detect it, resolve the file, and emit it as a separate bundle. But any indirection breaks the detection. None of the following examples are detected by webpack:
+
+```js
+const path = "./worker.js";
+new Worker(new URL(path, import.meta.url));
+
+new Worker(new URL(`./workers/${name}.js`, import.meta.url));
+
+const url = new URL("./worker.js", import.meta.url);
+new Worker(url);
+```
+
+TypeScript adds another layer. The file extension you reference in the `new URL()` call depends on your toolchain: webpack resolves `.ts` through its loader pipeline, plain `tsc` expects `.js` (because the URL resolves at runtime against compiled output), and esbuild doesn't auto-detect workers at all. Each requires a different approach.
+
+If you're building a library that uses worker threads internally, this gets worse. Your library's worker file needs to survive your consumer's bundler, which you don't control. The file must be explicitly included in the build output as a separate entry point, typically through a build script or bundler plugin.
+
+For our TypeScript SDK, we added the worker file as an explicit entry point in our tsdown config so it gets compiled and included in the package output. We also had to make the file extension dynamic (`.js` or `.ts`) based on the file type of the caller, since consumers using `ts-node` or `tsx` run against `.ts` files directly while compiled environments expect `.js`.
+
+### They aren't lightweight
+
+Each worker thread is a full V8 isolate with its own heap and event loop. That means ~30-50 MB of memory overhead per worker and a startup cost measured in hundreds of milliseconds. Go goroutines start at a few KB, and a Go program can comfortably run thousands of them. OS-level threads in Rust, C, or Python are an order of magnitude cheaper than a V8 isolate. You won't be running a pool of hundreds of Node.js workers the way you might with goroutines or threads.
+
+This makes worker threads best suited for long-lived workers that justify the overhead, not short-lived tasks you spin up and tear down frequently.
+
+## How we used worker threads for Inngest Connect
+
+Back to the original problem. Connect maintains a persistent WebSocket to the Inngest server. The server pushes function invocations over this connection, and the SDK executes them. Heartbeats flow back to confirm the worker is alive. Any user running CPU-heavy functions with Connect could hit the starvation problem, since a single long computation would block heartbeats and cause the server to drop the connection.
+
+The architecture before worker threads looked like this:
+
+<div className="not-prose my-8 flex justify-center">
+  <div className="w-56 rounded-lg border border-slate-700 bg-slate-800/50">
+    <div className="border-b border-slate-700 px-4 py-2 text-center text-sm font-semibold text-white">Main Thread</div>
+    <div className="space-y-1 px-4 py-3 text-sm text-slate-300">
+      <div>User code execution</div>
+      <div>Connect internals</div>
+      <div className="pl-1 text-slate-400">‣ WebSocket conn</div>
+      <div className="pl-1 text-slate-400">‣ Heartbeats</div>
+      <div className="pl-1 text-slate-400">‣ Reconnection</div>
+      <div className="pl-1 text-slate-400">‣ Auth handshakes</div>
+    </div>
+  </div>
+</div>
+
+Everything shared one event loop. When a user's function did something CPU-intensive (heavy computation, data transformation, image processing) the heartbeat timer couldn't fire. The server timed out and stopped routing.
+
+After worker threads:
+
+<div className="not-prose my-8 flex items-start justify-center gap-6">
+  <div className="w-56 rounded-lg border border-slate-700 bg-slate-800/50">
+    <div className="border-b border-slate-700 px-4 py-2 text-center text-sm font-semibold text-white">Main Thread</div>
+    <div className="px-4 py-3 text-sm text-slate-300">
+      <div>User code execution</div>
+    </div>
+  </div>
+
+  <div className="flex flex-col items-center gap-1 text-xs text-slate-400">
+    <span>messages</span>
+    <span>&#8592;&#8594;</span>
+  </div>
+
+  <div className="w-56 rounded-lg border border-slate-700 bg-slate-800/50">
+    <div className="border-b border-slate-700 px-4 py-2 text-center text-sm font-semibold text-white">Worker Thread</div>
+    <div className="space-y-1 px-4 py-3 text-sm text-slate-300">
+      <div>Connect internals</div>
+      <div className="pl-1 text-slate-400">‣ WebSocket conn</div>
+      <div className="pl-1 text-slate-400">‣ Heartbeats</div>
+      <div className="pl-1 text-slate-400">‣ Etc.</div>
+    </div>
+  </div>
+</div>
+
+The Connect internals (WebSocket, heartbeats, etc.) live in a worker thread. User code execution stays on the main thread. The two communicate via message passing: the worker thread sends function invocations to the main thread, and the main thread sends results back.
+
+Now a CPU-heavy function can saturate the main thread's event loop for as long as it wants. The worker thread's event loop keeps ticking. Heartbeats go out on time. The server knows the worker is alive.
+
+The tradeoffs were real. Every constraint described above applied:
+
+- We couldn't move "just the heartbeat logic" into a worker. We had to move all the connection management, because the worker thread is a separate file with its own entry point and its own initialization.
+- All communication between the SDK's public API (main thread) and the connection internals (worker thread) had to be designed as a message protocol.
+- The worker thread file had to be explicitly compiled and included in the SDK's published package, because bundlers couldn't discover it through static analysis.
+
+But the result was worth it. The "no available worker" errors stopped.
+
+## Wrapping up
+
+Worker threads are a genuine tool for isolating work in Node.js, but the programming model is fundamentally different from goroutines, Rust threads, or Python's `threading` module. You're not spawning a concurrent task with a closure. You're launching a separate program and communicating over a serialized message channel. That's more work up front, but it gives you hard isolation, which is exactly what you need when the main thread can't be trusted to yield.
+
+If you're hitting event loop starvation in your own Node.js apps, worker threads are worth considering. If you're building with Inngest, [Connect](/docs/sdk/connect?ref=blog-node-worker-threads) handles all of this for you. And if you're new to Inngest, [start here](/docs?ref=blog-node-worker-threads) to see how it works.
