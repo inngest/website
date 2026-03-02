@@ -99,7 +99,7 @@ A few things to note:
 
 ## You don't need to build your own tools
 
-Utah doesn't hand-roll file I/O and shell execution. It pulls in [`pi-coding-agent`](https://github.com/nicobailon/pi-coding-agent) — battle-tested tool implementations from the OpenClaw/Pi ecosystem:
+Utah doesn't hand-roll file I/O and shell execution. It pulls in [`pi-coding-agent`](https://github.com/badlogic/pi-mono) — battle-tested tool implementations from the OpenClaw/Pi ecosystem:
 
 - `read`, `write`, `edit` — file operations with image support, binary detection, smart truncation (the edit tool is a standout for context windows)
 - `bash` — shell execution with configurable timeout and output truncation
@@ -229,7 +229,7 @@ We also added budget warnings — system messages injected when the agent is run
 
 **Multi-provider LLM support**
 
-Utah doesn't call the Anthropic SDK directly. It uses [`pi-ai`](https://github.com/nicobailon/pi-ai), a provider-agnostic LLM abstraction that supports Anthropic, OpenAI, and Google. Switching providers is a config change:
+Utah doesn't call the Anthropic SDK directly. It uses [`pi-ai`](https://github.com/badlogic/pi-mono), a provider-agnostic LLM abstraction that supports Anthropic, OpenAI, and Google. Switching providers is a config change:
 
 ```tsx
 llm: {
