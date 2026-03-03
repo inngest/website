@@ -1,0 +1,70 @@
+---
+heading: "Introducing: Enhanced Traces"
+subtitle: "We're bringing richer execution data to the front end, making it easier to debug your jobs and workflows with enhanced Traces."
+image: /assets/blog/introducing-enhanced-traces/featured-image.png
+date: 2026-03-03
+author: Lauren Craigie
+category: product-updates
+---
+
+Over the past few months, we've shipped a series of backend updates—[Extended Traces](https://www.inngest.com/blog/introducing-extended-traces), the [Constraint API](https://www.inngest.com/blog/announcing-the-constraint-api), [Durable Endpoints](https://www.inngest.com/durable-endpoints), Step Metadata—that each capture richer execution data than we had before. 
+
+We're now bringing this data to the front end, to make it even easier to debug your jobs and workflows. Our enhanced Traces view will help you quickly discern the source of slowdowns, and opportunities for optimization.
+
+Let's take a closer look at what's changed.
+
+## What are Traces?
+
+Before we get into changes, let's do a quick recap for the newbies. [Traces](https://www.inngest.com/docs/platform/monitor/traces) give you a step-by-step record of every function run: what executed, in what order, how long each step took, and whether it succeeded or failed. 
+
+Before Inngest, debugging async workflows meant stitching together logs across queues, workers, and external services—a process that was slow and error-prone. Because Inngest orchestrates your entire function execution in one place, Traces can capture the full picture in a single view, from the triggering event through every step to the final result.
+
+## What's New in Traces?
+
+Let's now take a look at what's changed in the last few months:
+
+### Timing breakdowns: queue delay, your code, and everything in between
+
+Each span now shows a segmented breakdown of where time actually went: queue delay, Inngest processing, your code, and flow control waits. These come from a new `inngest.timing` metadata kind derived from `QueueItem` timing data and span timestamps.
+
+If a step took 8 seconds and 6.5 were queue delay, the problem isn't your code. If 5 seconds were flow control, you're hitting a concurrency limit. You no longer have to infer this from suspicious gaps.
+
+<AutoplayVideo src={"/assets/blog/introducing-enhanced-traces/slow-function.mov"} />
+
+### Extended traces: your OTel spans, in context
+
+OTel spans from your own instrumentation now render inside the trace view, nested under the Inngest step that emitted them. Your database queries and external API calls sit in the same timeline as the step execution that triggered them.
+
+```tsx
+await step.run("validate-inventory", async () => {
+  const tracer = trace.getTracer("order-service");
+  return tracer.startActiveSpan("db.query.inventory", async (span) => {
+    const result = await db.query("SELECT quantity FROM inventory WHERE sku = $1", [sku]);
+    span.setAttribute("db.rows_returned", result.rows.length);
+    span.end();
+    return result.rows[0];
+  });
+});
+```
+
+The `db.query.inventory` span shows up as a child of `validate-inventory`. Slow step? You'll see whether the time is in Inngest's execution layer or inside your database call.
+
+<AutoplayVideo src={"/assets/blog/introducing-enhanced-traces/extended-traces-walkthrough-loop.mp4"} />
+
+### AI step metadata: tokens, latency, and full error context
+
+LLM steps now surface model, token counts, and latency on the span. Useful for catching prompt bloat mid-workflow—when context windows fill up across steps, you'll see it in climbing token counts before it shows up in your billing dashboard.
+
+Errors get full context too. Rate limits, content rejections, malformed responses—on the span, not scattered across logs somewhere else.
+
+<AutoplayVideo src={"/assets/blog/introducing-enhanced-traces/ai-use-case.mov"} />
+
+### What this looks like end to end
+
+Take a three-step agent workflow that's slow and occasionally failing. Before this update, you'd see spans with durations and not much else. Now each step tells a different story: one step's time is dominated by queue delay, another is mostly waiting on a concurrency limit, and the failed step has the full upstream error on the span rather than a generic failure message.
+
+These new experiences are being rolled out to users in waves, beginning February 24. Please [contact support](mailto:support@inngest.com) if you have any questions!
+
+### What's next
+
+This is the first wave of improvements to the trace view, with more on the way. We're rolling these out to users beginning February 24—keep an eye out, and reach out to support if you have any questions.
