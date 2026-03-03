@@ -90,7 +90,7 @@ export const PLANS: Plan[] = [
     },
     primaryCTA: false,
     description:
-      "Get started with modern durable execution for free, no credit card required",
+      "Get started with modern durable execution for free, no credit card required.",
     cta: {
       href: `${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=pricing-card-free`,
       text: "Get started for free",
