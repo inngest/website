@@ -141,10 +141,23 @@ export default function PlanCard({
           <div className="flex items-center gap-2">
             <RiMistLine className="text-inngestLux" />
             <div className="font-circular text-lg font-light leading-[1.4] text-stone-50">
-              <span className="font-circular text-lg font-bold leading-[25.2px] text-stone-50">
-                {selectedPlan.highlights.runs.split(" ")[0]}
-              </span>{" "}
-              {selectedPlan.highlights.runs.split(" ").slice(1).join(" ")}
+              {selectedPlan.highlights.runs.includes("|") ? (
+                <>
+                  <span className="font-circular text-lg font-bold leading-[25.2px] text-stone-50">
+                    {selectedPlan.highlights.runs.split("|")[0]}
+                  </span>
+                  <span className="font-circular text-sm font-light leading-[1.4] text-stone-400 ml-1">
+                    {selectedPlan.highlights.runs.split("|")[1]}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="font-circular text-lg font-bold leading-[25.2px] text-stone-50">
+                    {selectedPlan.highlights.runs.split(" ")[0]}
+                  </span>{" "}
+                  {selectedPlan.highlights.runs.split(" ").slice(1).join(" ")}
+                </>
+              )}
             </div>
           </div>
           <hr className="my-4 w-11 border-muted" />
