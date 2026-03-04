@@ -8,7 +8,7 @@ image: /assets/blog/no-lost-updates-python-asyncio/cover.png
 ---
 
 
-Coordinating concurrent tasks around shared state is one of the most common problems in Python's `asyncio`. The standard library gives you `asyncio.Event` and `asyncio.Condition`, but each has a gap that only shows up under real concurrency pressure. We hit this while building [Inngest's Python SDK](https://www.inngest.com/docs/reference/python/overview/connect?ref=blog-no-lost-updates-python-asyncio), where multiple async handlers coordinate around WebSocket connection state.
+Coordinating concurrent tasks around shared state is one of the most common problems in Python's `asyncio`. The standard library gives you `asyncio.Event` and `asyncio.Condition`, but each has a gap that only shows up under real concurrency pressure. We hit this while building [Inngest's Python SDK](https://github.com/inngest/inngest-py), where multiple async handlers coordinate around WebSocket connection state.
 
 This post works through each primitive, shows exactly where it breaks, and iterates toward a solution that handles every case we threw at it.
 
