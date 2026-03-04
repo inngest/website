@@ -1,0 +1,237 @@
+import { Info, Callout, Properties, Property, Row, Col, CodeGroup } from "src/shared/Docs/mdx";
+
+export const description = "Define typed realtime channels and topics with realtime.channel() for streaming updates from Inngest functions."
+
+# Channels & topics
+
+Channels are the top-level scope for realtime messages. Each channel has one or more **topics**: typed message streams with schemas that provide end-to-end type safety from publishing to subscribing.
+
+```ts
+import { realtime } from "inngest";
+import { z } from "zod";
+
+const alerts = realtime.channel({
+  name: "system:alerts",
+  topics: {
+    alert: { schema: z.object({ message: z.string(), severity: z.enum(["info", "warn", "error"]) }) },
+  },
+});
+```
+
+---
+
+## `realtime.channel(options)`
+
+Creates a channel definition. The returned value is either a channel instance (static name) or a factory function (parameterized name).
+
+<Row>
+  <Col>
+    <Properties>
+      <Property name="name" type="string | function" required>
+        The channel name. Use a static string for a fixed channel, or a function that returns a string for parameterized channels. The function receives a single object argument with your parameters.
+      </Property>
+      <Property name="topics" type="Record<string, { schema }>" required>
+        An object mapping topic names to their configuration. Each topic must have a `schema` property: any [Standard Schema](https://github.com/standard-schema/standard-schema) (Zod, Valibot, ArkType) or `staticSchema<T>()` for type-only schemas.
+      </Property>
+    </Properties>
+  </Col>
+  <Col>
+  ```ts
+  import { realtime, staticSchema } from "inngest";
+  import { z } from "zod";
+
+  // Static channel
+  const alerts = realtime.channel({
+    name: "system:alerts",
+    topics: {
+      alert: { schema: z.object({ message: z.string() }) },
+    },
+  });
+
+  // Parameterized channel
+  const chat = realtime.channel({
+    name: ({ threadId }: { threadId: string }) => `chat:${threadId}`,
+    topics: {
+      message: { schema: z.object({ text: z.string() }) },
+      typing: { schema: staticSchema<{ userId: string }>() },
+    },
+  });
+  ```
+  </Col>
+</Row>
+
+## Static channels
+
+When `name` is a string, `realtime.channel()` returns a channel instance directly. You can use it without calling it as a function.
+
+```ts
+const alerts = realtime.channel({
+  name: "system:alerts",
+  topics: {
+    alert: { schema: z.object({ message: z.string() }) },
+  },
+});
+
+// Use directly, no instantiation needed
+alerts.name;         // "system:alerts"
+alerts.alert;        // TopicRef for the "alert" topic
+alerts.alert.channel // "system:alerts"
+alerts.alert.topic   // "alert"
+```
+
+## Parameterized channels
+
+When `name` is a function, `realtime.channel()` returns a factory. Call it with your parameters to get a channel instance.
+
+```ts
+const chat = realtime.channel({
+  name: ({ threadId }: { threadId: string }) => `chat:${threadId}`,
+  topics: {
+    message: { schema: z.object({ text: z.string(), sender: z.string() }) },
+    status: { schema: z.object({ typing: z.boolean() }) },
+  },
+});
+
+// Instantiate with parameters
+const ch = chat({ threadId: "abc123" });
+
+ch.name;            // "chat:abc123"
+ch.message;         // TopicRef for "message" on "chat:abc123"
+ch.message.channel; // "chat:abc123"
+ch.message.topic;   // "message"
+```
+
+Parameterized channels isolate subscribers to a specific instance. A subscriber to `chat:abc123` won't receive messages published to `chat:def456`.
+
+## Topic schemas
+
+Every topic requires a `schema` property. The schema serves two purposes:
+
+1. **Type inference**: TypeScript infers the data type for publishing and subscribing
+2. **Runtime validation**: data is validated against the schema when publishing and (optionally) when subscribing
+
+### Standard Schema libraries
+
+Any library implementing the [Standard Schema](https://github.com/standard-schema/standard-schema) spec works: Zod, Valibot, ArkType, and others.
+
+<CodeGroup forceTabs={true}>
+```ts {{ title: "Zod" }}
+import { z } from "zod";
+
+const ch = realtime.channel({
+  name: "pipeline",
+  topics: {
+    status: { schema: z.object({ message: z.string() }) },
+  },
+});
+```
+
+```ts {{ title: "Valibot" }}
+import * as v from "valibot";
+
+const ch = realtime.channel({
+  name: "pipeline",
+  topics: {
+    status: { schema: v.object({ message: v.string() }) },
+  },
+});
+```
+
+```ts {{ title: "ArkType" }}
+import { type } from "arktype";
+
+const ch = realtime.channel({
+  name: "pipeline",
+  topics: {
+    status: { schema: type({ message: "string" }) },
+  },
+});
+```
+</CodeGroup>
+
+### `staticSchema<T>()`
+
+For type-only schemas with zero runtime validation cost. Useful when you trust the data source and only want compile-time type checking.
+
+```ts
+import { realtime, staticSchema } from "inngest";
+
+const ch = realtime.channel({
+  name: "metrics",
+  topics: {
+    usage: { schema: staticSchema<{ tokens: number; latencyMs: number }>() },
+  },
+});
+```
+
+You can mix `staticSchema` and runtime schemas on the same channel:
+
+```ts
+const ch = realtime.channel({
+  name: "pipeline",
+  topics: {
+    // Runtime validation with Zod
+    status: { schema: z.object({ message: z.string() }) },
+    // Type-only, no validation cost
+    usage: { schema: staticSchema<{ tokens: number }>() },
+  },
+});
+```
+
+## Topic accessors
+
+Each topic defined on a channel becomes a property on the channel instance. These accessors return a `TopicRef`, a lightweight reference carrying the channel name, topic name, and schema config.
+
+```ts
+const ch = chat({ threadId: "abc123" });
+
+// Each accessor is a TopicRef
+ch.message.channel; // "chat:abc123"
+ch.message.topic;   // "message"
+ch.message.config;  // { schema: ... }
+
+// Pass topic refs to publish and subscribe
+await publish(ch.message, { text: "Hello!", sender: "alice" });
+```
+
+Topic refs are the primary way to reference a specific topic on a specific channel instance. They're used by [`publish`](/docs/reference/typescript/v4/realtime/publishing), [`step.realtime.publish`](/docs/reference/typescript/v4/realtime/publishing#steprealtimepublish), and [`getSubscriptionToken`](/docs/reference/typescript/v4/realtime/subscribing).
+
+## Type inference
+
+Channel definitions expose type utilities for extracting topic data types and parameter types.
+
+```ts
+const pipeline = realtime.channel({
+  name: ({ runId }: { runId: string }) => `pipeline:${runId}`,
+  topics: {
+    status: { schema: z.object({ message: z.string() }) },
+    tokens: { schema: staticSchema<{ token: string }>() },
+  },
+});
+
+// Infer topic data types
+type StatusData = typeof pipeline.$infer.status;  // { message: string }
+type TokenData = typeof pipeline.$infer.tokens;   // { token: string }
+
+// Infer channel parameters (parameterized channels only)
+type Params = typeof pipeline.$params;             // { runId: string }
+```
+
+## Portability
+
+Channel definitions are plain objects with no server-side dependencies. Define them in a shared file and import them on both server and client:
+
+```ts {{ title: "src/inngest/channels.ts" }}
+import { realtime, staticSchema } from "inngest";
+import { z } from "zod";
+
+export const pipelineChannel = realtime.channel({
+  name: ({ runId }: { runId: string }) => `pipeline:${runId}`,
+  topics: {
+    status: { schema: z.object({ message: z.string() }) },
+    tokens: { schema: staticSchema<{ token: string }>() },
+  },
+});
+```
+
+Import from your function code, your API routes (for token minting), and your React components. The same definition provides type safety everywhere.
