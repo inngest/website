@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import create from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -63,6 +64,36 @@ export const useLanguageStore = create<LanguageState>()(
     }
   )
 );
+
+/**
+ * Consolidated hydration-safe wrapper around the language store. During SSR and
+ * the first client render, values are derived from the URL so the markup
+ * matches what the server produced. After hydration, the persisted store
+ * becomes the source of truth and the store is synced to the URL once.
+ */
+export function useHydratedLanguageState(pathname: string) {
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => { setHydrated(true); }, []);
+
+  const { language, setLanguage, tsVersion, setTsVersion } = useLanguageStore();
+  const pathLanguage = getLanguageFromPath(pathname);
+  const pathTsVersion = getTsVersionFromPath(pathname);
+
+  // Sync store to URL on mount and on navigation so the URL always wins
+  useEffect(() => {
+    if (pathLanguage) { setLanguage(pathLanguage); }
+    if (pathTsVersion) { setTsVersion(pathTsVersion); }
+  }, [pathLanguage, pathTsVersion, setLanguage, setTsVersion]);
+
+  let effectiveLanguage: SDKLanguage = pathLanguage || "typescript";
+  let effectiveTsVersion: TSVersion = pathTsVersion || TS_STABLE;
+  if (hydrated) {
+    effectiveLanguage = language;
+    effectiveTsVersion = tsVersion;
+  }
+
+  return { effectiveLanguage, effectiveTsVersion, hydrated, setLanguage, setTsVersion };
+}
 
 /**
  * Check if a given URL path belongs to a specific SDK
