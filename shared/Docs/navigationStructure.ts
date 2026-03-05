@@ -1036,6 +1036,7 @@ const sectionLearn: (NavGroup | NavLink)[] = [
           {
             title: "Traces",
             href: "/docs/platform/monitor/traces",
+            tag: "new",
           },
           {
             title: "Observability and metrics",
