@@ -54,12 +54,12 @@ Each bar in the timeline shows the span name and an icon on the left, its durati
     <tr>
       <td><strong>Run</strong></td>
       <td>The top-level function execution</td>
-      <td><div style={{ display: "flex", alignItems: "center", gap: 8 }}><span style={{ flexShrink: 0, width: 60, height: 16, borderRadius: 2, backgroundColor: "#22c55e" }} /><span>Status-colored solid bar</span></div></td>
+      <td><div style={{ display: "flex", alignItems: "center", gap: 8 }}><span style={{ flexShrink: 0, width: 60, height: 16, borderRadius: 2, backgroundColor: "#34784c" }} /><span>Status-colored solid bar</span></div></td>
     </tr>
     <tr>
       <td><strong>step.run</strong></td>
       <td>A <code>step.run()</code> execution</td>
-      <td><div style={{ display: "flex", alignItems: "center", gap: 8 }}><span style={{ flexShrink: 0, width: 60, height: 16, borderRadius: 2, backgroundColor: "#22c55e" }} /><span>Status-colored solid bar</span></div></td>
+      <td><div style={{ display: "flex", alignItems: "center", gap: 8 }}><span style={{ flexShrink: 0, width: 60, height: 16, borderRadius: 2, backgroundColor: "#34784c" }} /><span>Status-colored solid bar</span></div></td>
     </tr>
     <tr>
       <td><strong>step.sleep</strong></td>
@@ -84,7 +84,7 @@ Each bar in the timeline shows the span name and an icon on the left, its durati
     <tr>
       <td><strong>Your server</strong></td>
       <td>Server-side execution time</td>
-      <td><div style={{ display: "flex", alignItems: "center", gap: 8 }}><span style={{ flexShrink: 0, width: 60, height: 16, borderRadius: 2, backgroundColor: "#22c55e", backgroundImage: "repeating-linear-gradient(-45deg, transparent, transparent 6px, rgba(255,255,255,0.15) 6px, rgba(255,255,255,0.15) 8px)" }} /><span>Tall bar with diagonal stripe pattern</span></div></td>
+      <td><div style={{ display: "flex", alignItems: "center", gap: 8 }}><span style={{ flexShrink: 0, width: 60, height: 16, borderRadius: 2, backgroundColor: "#34784c", backgroundImage: "repeating-linear-gradient(-45deg, transparent, transparent 6px, rgba(255,255,255,0.15) 6px, rgba(255,255,255,0.15) 8px)" }} /><span>Tall bar with diagonal stripe pattern</span></div></td>
     </tr>
     <tr>
       <td><strong>Connecting</strong></td>
@@ -94,7 +94,7 @@ Each bar in the timeline shows the span name and an icon on the left, its durati
     <tr>
       <td><strong>Finalization</strong></td>
       <td>Post-execution cleanup and state persistence</td>
-      <td><div style={{ display: "flex", alignItems: "center", gap: 8 }}><span style={{ flexShrink: 0, width: 60, height: 8, borderRadius: 2, backgroundColor: "#22c55e" }} /><span>Short status-colored bar</span></div></td>
+      <td><div style={{ display: "flex", alignItems: "center", gap: 8 }}><span style={{ flexShrink: 0, width: 60, height: 8, borderRadius: 2, backgroundColor: "#34784c" }} /><span>Short status-colored bar</span></div></td>
     </tr>
     <tr>
       <td colSpan={3}><strong>Extended traces:</strong> sub-bars from custom OpenTelemetry spans (see <a href="#extended-traces">Extended Traces</a>)</td>
@@ -108,7 +108,7 @@ Each bar in the timeline shows the span name and an icon on the left, its durati
 </table>
 
 **Status colors** apply to the run bar and step execution bars:
-- <span style={{ color: "#22c55e", fontWeight: "bold" }}>Green</span>: Completed successfully
+- <span style={{ color: "#34784c", fontWeight: "bold" }}>Green</span>: Completed successfully
 - <span style={{ color: "#ef4444", fontWeight: "bold" }}>Red</span>: Failed
 - <span style={{ color: "#94a3b8", fontWeight: "bold" }}>Gray</span>: Cancelled
 
