@@ -114,6 +114,38 @@ function transform(evt, headers = {}, queryParams = {}) {
   👉 We also recommend prefixing each event name with the name of the provider service, e.g. `clerk/user.created`, `stripe/charge.failed`.
 </Callout>
 
+### Handling errors in transforms
+
+If your transform results in an error, Inngest will return a `400` response to your webhook provider to indicate that the payload was not accepted.
+
+With complex transforms, we recommend adding a `try`/`catch` statement and handling the failed event. You can return a different event and use that to debug issues, or potentially write your own catch-all function to handle/log failing event payloads.
+
+Please note, that if you to catch the error and handle it, it will return a `200` response to your webhook provider. Most webhook providers will not retry this, so you will have to handle the failed event manually.
+
+```
+function transform(evt, headers = {}, queryParams = {}) {
+  try {
+    return {
+      name: `slack/${evt.type}`,
+      data: {
+        // Example: this would throw an error if "item" was not defined
+        ts: evt.event.item.ts,
+      },
+    }
+  } catch (err) {
+    return {
+      name: 'slack/transform.failed',
+      data: {
+        error: String(err),
+        payload: evt
+      }
+    }
+  }
+}
+```
+
+If your transform throws and error, Inngest will return
+
 ### Example transforms
 
 <Callout variant="info">
