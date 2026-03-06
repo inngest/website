@@ -1,5 +1,5 @@
 ---
-heading: "Node.js worker threads are not like other languages"
+heading: "Node.js worker threads are problematic, but they work great for us"
 subtitle: "Worker threads solve real problems, but they come with constraints that Go, Rust, and Python developers would never expect. Here's what we learned moving Inngest Connect's internals off the main thread."
 showSubtitle: true
 date: 2026-03-02
@@ -11,11 +11,9 @@ Node.js runs on a single thread. That's usually fine. The event loop handles I/O
 
 We ran into this with [Inngest Connect](/docs/sdk/connect?ref=blog-node-worker-threads), a persistent WebSocket connection between your app and the Inngest server. Connect is an alternative to our HTTP-based model (our `serve` function) that reduces TCP handshake overhead and avoids long-lived HTTP requests during long-running steps. Workers send heartbeats over the WebSocket so the server knows they're alive.
 
-🚨 **The problem:** Users reported "no available worker" errors despite their workers running.
-
-🔍 **The cause:** CPU-heavy user code was monopolizing the main thread, starving the event loop, and blocking heartbeats. The server assumed the workers were dead and stopped routing work to them.
-
-🛠️ **The fix:** Move Connect internals into a worker thread.
+- **The problem:** Users reported "no available worker" errors despite their workers running.
+- **The cause:** CPU-heavy user code was monopolizing the main thread, starving the event loop, and blocking heartbeats. The server assumed the workers were dead and stopped routing work to them.
+- **The fix:** Move Connect internals into a worker thread.
 
 But getting there taught us a few things about how worker threads actually work in Node.js, and how they compare to threading models in other languages.
 
@@ -31,7 +29,7 @@ Node's event loop processes callbacks in phases: timers, I/O polling, `setImmedi
 
 A synchronous function that runs for 30 seconds blocks everything for 30 seconds. That includes `setTimeout` callbacks, incoming network data, and any other scheduled work. The timers don't "fire late." They don't fire at all until the thread is free.
 
-Consider a heartbeat scheduled with `setInterval` every 10 seconds. The callback is queued, ready to fire. Then a CPU-heavy function starts and runs for 30 seconds straight. The heartbeat callback sits in the timer queue the entire time. Multiple heartbeat intervals pass without a single one going out. By the time the function returns, the server has already timed out and marked the worker as dead.
+Consider a heartbeat scheduled with `setInterval` every 10 seconds. The callback is queued, ready to fire. Then a CPU-heavy function starts and runs for 30 seconds straight. The heartbeat callback sits in the timer queue the entire time, and multiple intervals pass without a single one going out. By the time the function returns, the server has already timed out and marked the worker as dead.
 
 The standard advice is "don't block the event loop." But sometimes you're running user code and you don't control what it does. You need the critical path (heartbeats, connection management) isolated from user workloads. That's where worker threads come in.
 
@@ -106,6 +104,8 @@ threading.Thread(target=lambda: print("hello from thread")).start()
 
 In each of these languages, you hand arbitrary logic directly to the concurrency primitive. The function (or closure, or lambda) carries its logic and captured state together.
 
+A caveat on Python: the GIL (Global Interpreter Lock) prevents threads from executing Python bytecode in parallel, so threads won't speed up CPU-bound work. They're still useful for protecting I/O from being blocked by other threads, which is similar to our heartbeat problem. Python 3.13 introduced an experimental free-threaded mode that removes the GIL, so this limitation is on its way out.
+
 Node.js worker threads don't work this way. You can't pass a function to `new Worker()`. The structured clone algorithm, which serializes data between threads, can't serialize functions. Instead, you point the worker at a **file**:
 
 ```js
@@ -119,14 +119,15 @@ const worker = new Worker("./my-worker.js");
   Think of the structured clone algorithm as `JSON.stringify`/`JSON.parse` with broader type support (`Map`, `Set`, `Date`, `ArrayBuffer`, circular references). The key similarity: neither can serialize functions.
 </Callout>
 
-This means every worker thread is an independent program. It has its own entry point, its own imports, its own initialization. You design the communication protocol up front and exchange serialized messages. It's closer to writing a microservice than spawning a concurrent task.
+This means every worker thread is an independent program with its own entry point, imports, and initialization. You design the communication protocol up front and exchange serialized messages, which makes the experience closer to writing a microservice than spawning a concurrent task.
 
 ### Communication is message passing
 
-In Go, goroutines share the same address space. In Python, threads share the same heap. In both languages, passing data between concurrent tasks is cheap because it stays in memory.
+In Go, goroutines share the same address space, and in Python, threads share the same heap. In both languages, passing data between concurrent tasks is cheap because it stays in memory.
 
 Node.js workers are isolated by default. They communicate via `postMessage` and event listeners. Data is serialized using the structured clone algorithm, meaning most JavaScript values (objects, arrays, typed arrays, `Map`, `Set`) are deep-copied between threads. Every message is serialized on one side and deserialized on the other. For small messages this is negligible, but large payloads (big JSON blobs, deeply nested objects) pay a real cost in both CPU time and memory, since the data exists in both heaps simultaneously.
 
+If you need shared state instead of message passing, `SharedArrayBuffer` lets threads share raw memory, and `Atomics` provides thread-safe operations on it. This avoids serialization entirely, but you're limited to typed arrays of numbers. It's well suited for shared counters, flags, or coordination primitives, but not for passing structured messages like the ones Connect exchanges between threads.
 
 ### Bundlers can't see your worker file
 
@@ -158,11 +159,13 @@ For our TypeScript SDK, we added the worker file as an explicit entry point in o
 
 ### They aren't lightweight
 
-Each worker thread is a full V8 isolate with its own heap and event loop. That means ~30-50 MB of memory overhead per worker and a startup cost measured in hundreds of milliseconds. Go goroutines start at a few KB, and a Go program can comfortably run thousands of them. OS-level threads in Rust, C, or Python are an order of magnitude cheaper than a V8 isolate. You won't be running a pool of hundreds of Node.js workers the way you might with goroutines or threads.
+Each worker thread is a full V8 isolate with its own heap and event loop. That means roughly 10 MB of memory overhead per worker and a startup cost in the tens of milliseconds. Goroutines start at a few KB, and a Go program can comfortably run thousands of them. OS-level threads in Rust, C, or Python are an order of magnitude cheaper than a V8 isolate. You won't be running a pool of hundreds of Node.js workers the way you might with goroutines or threads.
 
 This makes worker threads best suited for long-lived workers that justify the overhead, not short-lived tasks you spin up and tear down frequently.
 
 ## How we used worker threads for Inngest Connect
+
+### The architecture shift
 
 Back to the original problem. Connect maintains a persistent WebSocket to the Inngest server. The server pushes function invocations over this connection, and the SDK executes them. Heartbeats flow back to confirm the worker is alive. Any user running CPU-heavy functions with Connect could hit the starvation problem, since a single long computation would block heartbeats and cause the server to drop the connection.
 
@@ -182,7 +185,7 @@ The architecture before worker threads looked like this:
   </div>
 </div>
 
-Everything shared one event loop. When a user's function did something CPU-intensive (heavy computation, data transformation, image processing) the heartbeat timer couldn't fire. The server timed out and stopped routing.
+Everything shared one event loop, so when a user's function did something CPU-intensive (heavy computation, data transformation, image processing) the heartbeat timer couldn't fire and the server timed out.
 
 After worker threads:
 
@@ -210,11 +213,29 @@ After worker threads:
   </div>
 </div>
 
-The Connect internals (WebSocket, heartbeats, etc.) live in a worker thread. User code execution stays on the main thread. The two communicate via message passing: the worker thread sends function invocations to the main thread, and the main thread sends results back.
+The Connect internals (WebSocket, heartbeats, etc.) live in a worker thread, while user code execution stays on the main thread. The two communicate via message passing.
 
-Now a CPU-heavy function can saturate the main thread's event loop for as long as it wants. The worker thread's event loop keeps ticking. Heartbeats go out on time. The server knows the worker is alive.
+Now a CPU-heavy function can saturate the main thread's event loop for as long as it wants. The worker thread's event loop keeps ticking independently, so heartbeats go out on time and the server knows the worker is alive.
 
-The tradeoffs were real. Every constraint described above applied:
+### Message passing in practice
+
+The main traffic is forwarded WebSocket frames: invocations flow from the worker thread to the main thread for execution, and results flow back.
+
+Logging unexpectedly became a message passing problem, too. The Inngest SDK lets users pass a custom logger (Winston, Pino, any compatible logger). That logger lives on the main thread, and since it's an object with methods, the structured clone algorithm can't serialize it. The worker thread can't call `logger.info()` directly.
+
+So log messages became part of the protocol. The worker thread posts structured log entries (level, message, context) to the main thread, which feeds them into the user's logger. From the user's perspective, logs from the worker thread look like logs from anywhere else in the SDK. From our perspective, it's another message type in the protocol.
+
+This pattern generalizes: anything that relies on user-provided objects (loggers, callbacks, configuration with function values) has to stay on the main thread. The worker thread can only request that the main thread use them on its behalf.
+
+### Respawning with backoff
+
+We also had to handle the worker thread dying. A bug in the connection logic, an unhandled exception, or a V8 out-of-memory error could crash the worker. If the main thread doesn't notice and respawn it, the user's app silently loses its connection to Inngest. So the main thread watches for the worker's `exit` event and spins up a replacement.
+
+But naive respawning is dangerous. If the worker hits a pathological error (a bad server response it can't parse, a misconfiguration that crashes on startup) it could die immediately after spawning, over and over. Without a backoff, the main thread would enter a tight respawn loop, burning CPU and flooding logs. We added exponential backoff to the respawn logic: the first restart is immediate, the second waits a short interval, and each subsequent restart doubles the delay up to a cap. A successful startup resets the backoff. This keeps the system self-healing under transient failures without spiraling under persistent ones.
+
+### The tradeoffs
+
+Every constraint described above applied:
 
 - We couldn't move "just the heartbeat logic" into a worker. We had to move all the connection management, because the worker thread is a separate file with its own entry point and its own initialization.
 - All communication between the SDK's public API (main thread) and the connection internals (worker thread) had to be designed as a message protocol.
