@@ -27,7 +27,7 @@ But getting there taught us a few things about how worker threads actually work 
 
 Node's event loop processes callbacks in phases: timers, I/O polling, `setImmediate`, close callbacks. Between each phase, it checks for microtasks (resolved promises, `queueMicrotask`). The critical property: the loop can only advance when the current JavaScript execution yields.
 
-A synchronous function that runs for 30 seconds blocks everything for 30 seconds. That includes `setTimeout` callbacks, incoming network data, and any other scheduled work. The timers don't "fire late." They don't fire at all until the thread is free.
+A synchronous function that runs for 30 seconds blocks everything for 30 seconds. That includes `setTimeout` callbacks, incoming network data, and any other scheduled work. The timers don't fire at all until the thread is free.
 
 Consider a heartbeat scheduled with `setInterval` every 10 seconds. The callback is queued, ready to fire. Then a CPU-heavy function starts and runs for 30 seconds straight. The heartbeat callback sits in the timer queue the entire time, and multiple intervals pass without a single one going out. By the time the function returns, the server has already timed out and marked the worker as dead.
 
@@ -37,7 +37,7 @@ The standard advice is "don't block the event loop." But sometimes you're runnin
 
 The `worker_threads` module lets you spin up additional JavaScript execution contexts within the same process. Each worker gets its own V8 isolate, its own heap, and its own event loop. Critically, one worker's CPU-bound code does not block another worker's event loop.
 
-Let's look at the basic API. You'll notice that the two threads communicate by sending messages to each other. We'll dig into why that's the only option (and what it means in practice) in the next section.
+Let's look at the basic API. You'll notice that the two threads communicate by sending messages to each other.
 
 ```js main.js
 import { Worker } from "node:worker_threads";
