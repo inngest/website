@@ -9,7 +9,7 @@ category: "engineering"
 
 Node.js runs on a single thread. That's usually fine. The event loop handles I/O concurrency without you thinking about locks, races, or deadlocks. But "single-threaded" has a cost that only shows up under pressure: if your JavaScript monopolizes the CPU, nothing else runs. No timers fire. No network callbacks execute. No I/O completes.
 
-We ran into this with [Inngest Connect](/docs/sdk/connect?ref=blog-node-worker-threads), a persistent WebSocket connection between your app and the Inngest server. Connect is an alternative to our HTTP-based model (our `serve` function) that reduces TCP handshake overhead and avoids long-lived HTTP requests during long-running steps. Workers send heartbeats over the WebSocket so the server knows they're alive.
+We ran into this with [Inngest Connect](/docs/setup/connect?ref=blog-node-worker-threads), a persistent WebSocket connection between your app and the Inngest server. Connect is an alternative to our HTTP-based model (our `serve` function) that reduces TCP handshake overhead and avoids long-lived HTTP requests during long-running steps. Workers send heartbeats over the WebSocket so the server knows they're alive.
 
 - **The problem:** Users reported "no available worker" errors despite their workers running.
 - **The cause:** CPU-heavy user code was monopolizing the main thread, starving the event loop, and blocking heartbeats. The server assumed the workers were dead and stopped routing work to them.
@@ -247,4 +247,4 @@ But the result was worth it. The "no available worker" errors stopped.
 
 Worker threads are a genuine tool for isolating work in Node.js, but the programming model is fundamentally different from goroutines, Rust threads, or Python's `threading` module. You're not spawning a concurrent task with a closure. You're launching a separate program and communicating over a serialized message channel. That's more work up front, but it gives you hard isolation, which is exactly what you need when the main thread can't be trusted to yield.
 
-If you're hitting event loop starvation in your own Node.js apps, worker threads are worth considering. If you're building with Inngest, [Connect](/docs/sdk/connect?ref=blog-node-worker-threads) handles all of this for you. And if you're new to Inngest, [start here](/docs?ref=blog-node-worker-threads) to see how it works.
+If you're hitting event loop starvation in your own Node.js apps, worker threads are worth considering. If you're building with Inngest, [Connect](/docs/setup/connect?ref=blog-node-worker-threads) handles all of this for you. And if you're new to Inngest, [start here](/docs?ref=blog-node-worker-threads) to see how it works.
