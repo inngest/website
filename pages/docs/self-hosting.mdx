@@ -145,6 +145,8 @@ GLOBAL OPTIONS:
 <summary>**Environment variables**</summary>
 
   Any CLI option can be set via environment variable by converting the flag to uppercase, replacing hyphens with underscores, and prefixing it with `INNGEST_`. For example, `--port 8288` can be set with the `INNGEST_PORT` environment variable.
+
+  To set the log level, use `LOG_LEVEL=WARN` or whatever level you choose. This environment variable does not use the Inngest prefix. The environment variable will always take precedence over the CLI `--log-level` flag.
 </details>
 
 <details>
@@ -171,6 +173,8 @@ GLOBAL OPTIONS:
     }
     ```
   </CodeGroup>
+
+  Note, configuring the log level can only be currently done via flag or environment variable.
 </details>
 
 ### Configuring Inngest SDKs to use self-hosted server
