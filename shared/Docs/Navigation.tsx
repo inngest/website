@@ -611,41 +611,41 @@ const SDK_ICONS: Record<SDKLanguage, React.ComponentType<{ className?: string }>
   go: GoIcon,
 };
 
-function LanguageSwitcher() {
+function LanguageSwitcher({
+  displayLanguage,
+  setLanguage,
+  hydrated,
+}: {
+  displayLanguage: SDKLanguage;
+  setLanguage: (lang: SDKLanguage) => void;
+  hydrated: boolean;
+}) {
   const router = useRouter();
   const pathname = router.asPath.replace(/(\?|#).+$/, "");
-  const { language, setLanguage } = useLanguageStore();
   const { activeSection } = useActiveSection();
 
   const handleLanguageChange = (newLang: SDKLanguage) => {
     const currentPathLang = getLanguageFromPath(pathname);
     const isOnSDKPage = !!currentPathLang;
-    
+
     setLanguage(newLang);
-    
+
     // Navigate based on active tab vs current page mismatch
     if (activeSection === "Learn" && isOnSDKPage) {
-      // User clicked Learn tab but is still on a Reference (SDK) page
-      // Navigate to Learn home
       router.push("/docs");
     } else if (activeSection === "Reference" && !isOnSDKPage) {
-      // User clicked Reference tab but is still on a Learn page
-      // Navigate to the selected SDK's Reference home
       router.push(SDK_HOME_PAGES[newLang]);
     } else if (activeSection === "Reference" && isOnSDKPage && currentPathLang !== newLang) {
-      // User is on Reference and on an SDK page, but switching to different SDK
-      // Navigate to the new SDK's Reference home
       router.push(SDK_HOME_PAGES[newLang]);
     }
-    // Otherwise: just update the language preference, no navigation needed
   };
 
-  const currentLang = SDK_LANGUAGES.find((l) => l.id === language);
-  const CurrentIcon = SDK_ICONS[language];
+  const currentLang = SDK_LANGUAGES.find((l) => l.id === displayLanguage);
+  const CurrentIcon = SDK_ICONS[displayLanguage];
 
   return (
-    <div className="mt-3">
-      <Select.Root value={language} onValueChange={(val) => handleLanguageChange(val as SDKLanguage)}>
+    <div className={clsx("mt-3 opacity-0 transition-opacity duration-150", hydrated && "opacity-100")}>
+      <Select.Root value={displayLanguage} onValueChange={(val) => handleLanguageChange(val as SDKLanguage)}>
         <Select.Trigger
           className={clsx(
             "flex items-center justify-between w-full px-3 py-2",
@@ -711,27 +711,26 @@ function LanguageSwitcher() {
 function VersionSwitcher({
   language,
   activeSection,
+  displayVersion,
+  setTsVersion,
+  hydrated,
 }: {
   language: SDKLanguage;
   activeSection: string;
+  displayVersion: TSVersion;
+  setTsVersion: (version: TSVersion) => void;
+  hydrated: boolean;
 }) {
-  // Delay rendering persisted value until after hydration to avoid SSR mismatch
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
-
   const router = useRouter();
   const pathname = router.asPath.replace(/(\?|#).+$/, "");
-  const { tsVersion, setTsVersion } = useLanguageStore();
 
   const handleVersionChange = (newVersion: TSVersion) => {
     setTsVersion(newVersion);
 
-    // If on a versioned TS page for a different version, navigate to version
-    // intro
+    // If on a versioned TS page for a different version, navigate to version intro
     const pathVersion = getTsVersionFromPath(pathname);
     if (pathVersion && pathVersion !== newVersion) {
       if (newVersion === TS_STABLE) {
-        // Stable version gets versionless path
         router.push("/docs/reference/typescript");
       } else {
         router.push(`/docs/reference/typescript/${newVersion}`);
@@ -740,15 +739,15 @@ function VersionSwitcher({
   };
 
   // Only visible for TypeScript in the Reference tab
-  if (!mounted || language !== "typescript" || activeSection !== "Reference") {
+  if (language !== "typescript" || activeSection !== "Reference") {
     return null;
   }
 
-  const currentVersion = TS_VERSIONS.find((v) => v.id === tsVersion);
+  const currentVersion = TS_VERSIONS.find((v) => v.id === displayVersion);
 
   return (
-    <div className="mt-2">
-      <Select.Root value={tsVersion} onValueChange={(val) => handleVersionChange(val as TSVersion)}>
+    <div className={clsx("mt-2 opacity-0 transition-opacity duration-150", hydrated && "opacity-100")}>
+      <Select.Root value={displayVersion} onValueChange={(val) => handleVersionChange(val as TSVersion)}>
         <Select.Trigger
           className={clsx(
             "flex items-center justify-between w-full px-3 py-2",
@@ -814,20 +813,14 @@ export function Navigation(props) {
   const pathname = normalizeTsReferencePath(router.pathname);
 
   const { activeSection, setActiveSection } = useActiveSection();
-  const { language, tsVersion, setTsVersion } = useLanguageStore();
-
-  // URL-derived version takes precedence over store during render so the nav is
-  // correct on first paint (before the effect syncs the store).
-  const pathTsVersion = getTsVersionFromPath(pathname);
-  const effectiveTsVersion = pathTsVersion || tsVersion;
-
-  // Sync tsVersion from URL. Reruns on navigation and after Zustand persist
-  // rehydration so the URL always wins.
-  useEffect(() => {
-    if (pathTsVersion && pathTsVersion !== tsVersion) {
-      setTsVersion(pathTsVersion);
-    }
-  }, [pathname, pathTsVersion, tsVersion, setTsVersion]);
+  const {
+    effectiveLanguage,
+    effectiveTsVersion,
+    hydrated,
+    setLanguage,
+    setTsVersion,
+  } = useHydratedLanguageState(pathname);
+  const { language, tsVersion } = useLanguageStore();
 
   // Find the section based on the active tab (Learn/Reference)
   const nestedSection =
@@ -931,8 +924,18 @@ export function Navigation(props) {
             </div>
             
             {/* Language Switcher - shown on both Learn and Reference */}
-            <LanguageSwitcher />
-            <VersionSwitcher language={language} activeSection={activeSection} />
+            <LanguageSwitcher
+              displayLanguage={effectiveLanguage}
+              setLanguage={setLanguage}
+              hydrated={hydrated}
+            />
+            <VersionSwitcher
+              language={effectiveLanguage}
+              activeSection={activeSection}
+              displayVersion={effectiveTsVersion}
+              setTsVersion={setTsVersion}
+              hydrated={hydrated}
+            />
           </div>
         )}
 
@@ -952,7 +955,7 @@ export function Navigation(props) {
               >
                 {nestedNavigation.sectionLinks.map((item, groupIndex) => {
                   // For Reference section, hide non-selected SDK sections with CSS (keeps links in DOM for SEO)
-                  const isHidden = activeSection === "Reference" && shouldHideSection(item.title, language, effectiveTsVersion);
+                  const isHidden = activeSection === "Reference" && shouldHideSection(item.title, effectiveLanguage, effectiveTsVersion);
                   // Add visual separator before shared sections (REST API, etc.)
                   const isSharedSection = SHARED_REFERENCE_TITLES.includes(item.title);
                   const isFirstSharedSection = isSharedSection && 
@@ -1012,4 +1015,47 @@ export function Navigation(props) {
       </nav>
     </DefaultOpenSectionsContext.Provider>
   );
+}
+
+
+/**
+ * Consolidated hydration-safe wrapper around the language store. During SSR and
+ * the first client render, values are derived from the URL so the markup
+ * matches what the server produced. After hydration, the persisted store
+ * becomes the source of truth and the store is synced to the URL once.
+ */
+export function useHydratedLanguageState(pathname: string) {
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => {
+    setHydrated(true);
+  }, []);
+
+  const { language, setLanguage, tsVersion, setTsVersion } = useLanguageStore();
+  const pathLanguage = getLanguageFromPath(pathname);
+  const pathTsVersion = getTsVersionFromPath(pathname);
+
+  // Sync store to URL on mount and on navigation so the URL always wins
+  useEffect(() => {
+    if (pathLanguage) {
+      setLanguage(pathLanguage);
+    }
+    if (pathTsVersion) {
+      setTsVersion(pathTsVersion);
+    }
+  }, [pathLanguage, pathTsVersion, setLanguage, setTsVersion]);
+
+  let effectiveLanguage: SDKLanguage = pathLanguage || "typescript";
+  let effectiveTsVersion: TSVersion = pathTsVersion || TS_STABLE;
+  if (hydrated) {
+    effectiveLanguage = language;
+    effectiveTsVersion = tsVersion;
+  }
+
+  return {
+    effectiveLanguage,
+    effectiveTsVersion,
+    hydrated,
+    setLanguage,
+    setTsVersion,
+  };
 }
