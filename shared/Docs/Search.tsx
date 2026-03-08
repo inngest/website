@@ -25,6 +25,12 @@ import clsx from "clsx";
 
 import PythonIcon from "src/shared/Icons/Python";
 import TypeScriptIcon from "src/shared/Icons/TypeScript";
+import {
+  useLanguageStore,
+  SDK_ALL,
+  type SDKLanguage,
+  type TSVersion,
+} from "./LanguageStore";
 
 const searchClient = algoliasearch(
   process.env.NEXT_PUBLIC_DOCSEARCH_APP_ID,
@@ -43,7 +49,21 @@ type AutocompleteState = {
   collections?: any[];
 };
 
-function useAutocomplete() {
+function buildSearchFilters(
+  language: SDKLanguage,
+  tsVersion: TSVersion
+): string {
+  let filter = `(sdkLanguage:${language} OR sdkLanguage:${SDK_ALL})`;
+  if (language === "typescript") {
+    filter += ` AND (sdkVersion:${tsVersion} OR sdkVersion:${SDK_ALL})`;
+  }
+  return filter;
+}
+
+function useAutocomplete(
+  languageRef: MutableRefObject<SDKLanguage>,
+  tsVersionRef: MutableRefObject<TSVersion>
+) {
   let id = useId();
   let router = useRouter();
   let [autocompleteState, setAutocompleteState] = useState<AutocompleteState>(
@@ -90,6 +110,10 @@ function useAutocomplete() {
                     indexName: process.env.NEXT_PUBLIC_DOCSEARCH_INDEX_NAME,
                     params: {
                       hitsPerPage: 6,
+                      filters: buildSearchFilters(
+                        languageRef.current,
+                        tsVersionRef.current
+                      ),
                       highlightPreTag:
                         '<mark class="underline bg-transparent text-breeze-600 dark:text-breeze-300">',
                       highlightPostTag: "</mark>",
@@ -391,7 +415,17 @@ function SearchDialog({
   let formRef = useRef(null);
   let panelRef = useRef(null);
   let inputRef = useRef<HTMLInputElement>(null);
-  let { autocomplete, autocompleteState } = useAutocomplete();
+
+  const { language, tsVersion } = useLanguageStore();
+  const languageRef = useRef(language);
+  const tsVersionRef = useRef(tsVersion);
+  languageRef.current = language;
+  tsVersionRef.current = tsVersion;
+
+  let { autocomplete, autocompleteState } = useAutocomplete(
+    languageRef,
+    tsVersionRef
+  );
 
   useEffect(() => {
     if (!open) {
