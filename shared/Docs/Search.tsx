@@ -25,6 +25,11 @@ import clsx from "clsx";
 
 import PythonIcon from "src/shared/Icons/Python";
 import TypeScriptIcon from "src/shared/Icons/TypeScript";
+import {
+  useLanguageStore,
+  getLanguageFromPath,
+  getTsVersionFromPath,
+} from "./LanguageStore";
 
 const searchClient = algoliasearch(
   process.env.NEXT_PUBLIC_DOCSEARCH_APP_ID,
@@ -160,7 +165,7 @@ function SearchIcon(props) {
       <path
         d="M13.5131 12.1165L16.4041 15.0068L15.449 15.9619L12.5586 13.0709C11.4832 13.933 10.1455 14.402 8.76714 14.4C5.41374 14.4 2.69214 11.6784 2.69214 8.325C2.69214 4.9716 5.41374 2.25 8.76714 2.25C12.1205 2.25 14.8421 4.9716 14.8421 8.325C14.8441 9.70335 14.3752 11.041 13.5131 12.1165ZM12.159 11.6156C13.0157 10.7347 13.4941 9.55379 13.4921 8.325C13.4921 5.7141 11.3774 3.6 8.76714 3.6C6.15624 3.6 4.04214 5.7141 4.04214 8.325C4.04214 10.9352 6.15624 13.05 8.76714 13.05C9.99593 13.0519 11.1768 12.5735 12.0578 11.7169L12.159 11.6156Z"
         strokeWidth={0}
-        className="fill-carbon-700 dark:fill-carbon-400 stroke-carbon-700 dark:stroke-carbon-400"
+        className="fill-carbon-700 stroke-carbon-700 dark:fill-carbon-400 dark:stroke-carbon-400"
       />
     </svg>
   );
@@ -238,7 +243,7 @@ function SearchResult({ result, resultIndex, autocomplete, collection }) {
   return (
     <li
       className={clsx(
-        "group block relative cursor-default px-4 py-3 aria-selected:bg-breeze-0 dark:aria-selected:bg-carbon-800",
+        "group relative block cursor-default px-4 py-3 aria-selected:bg-breeze-0 dark:aria-selected:bg-carbon-800",
         resultIndex > 0 && "border-t border-carbon-100 dark:border-carbon-800"
       )}
       aria-labelledby={`${id}-hierarchy ${id}-title`}
@@ -250,12 +255,12 @@ function SearchResult({ result, resultIndex, autocomplete, collection }) {
       <div
         id={`${id}-title`}
         aria-hidden="true"
-        className="text-sm font-medium text-carbon-900 group-aria-selected:text-breeze-600 dark:group-aria-selected:text-breeze-300 dark:text-white"
+        className="text-sm font-medium text-carbon-900 group-aria-selected:text-breeze-600 dark:text-white dark:group-aria-selected:text-breeze-300"
         dangerouslySetInnerHTML={{ __html: titleHtml }}
       />
       {SdkLanguageIcon && (
-        <span className="absolute px-1.5 top-3 right-2">
-          <SdkLanguageIcon className="w-5 h-5 text-carbon-400" size={6} />
+        <span className="absolute right-2 top-3 px-1.5">
+          <SdkLanguageIcon className="h-5 w-5 text-carbon-400" size={6} />
         </span>
       )}
 
@@ -438,8 +443,10 @@ function SearchDialog({
     setOpen(open);
   }
 
+  const { language, tsVersion } = useLanguageStore();
+
   // Remove duplicate result items at the top
-  const filteredResultItems = autocompleteState.collections?.[0]?.items.reduce(
+  const dedupedItems = autocompleteState.collections?.[0]?.items.reduce(
     (results, item) => {
       // Find any existing results that for the same URL and Level heirarchy
       const existing = results.find(
@@ -453,6 +460,37 @@ function SearchDialog({
     },
     []
   );
+
+  // Filter results based on selected language and version
+  const filteredResultItems = dedupedItems?.filter((item) => {
+    let pathname: string;
+    try {
+      pathname = new URL(item.url).pathname;
+    } catch {
+      return true;
+    }
+    const resultLang = getLanguageFromPath(pathname);
+
+    // Non-reference results (learn pages, etc.) pass through
+    if (!resultLang) {
+      return true;
+    }
+
+    // Exclude results from other SDKs
+    if (resultLang !== language) {
+      return false;
+    }
+
+    // For TypeScript, also filter by version
+    if (resultLang === "typescript") {
+      const resultVersion = getTsVersionFromPath(pathname);
+      if (resultVersion && resultVersion !== tsVersion) {
+        return false;
+      }
+    }
+
+    return true;
+  });
 
   return (
     <Transition
@@ -476,7 +514,7 @@ function SearchDialog({
           <div className="fixed inset-0 bg-carbon-400/40 backdrop-blur-sm dark:bg-black/40" />
         </TransitionChild>
 
-        <div className="fixed inset-0 overflow-y-auto px-4 py-4 sm:py-20 sm:px-6 md:py-32 lg:px-8 lg:py-[15vh]">
+        <div className="fixed inset-0 overflow-y-auto px-4 py-4 sm:px-6 sm:py-20 md:py-32 lg:px-8 lg:py-[15vh]">
           <TransitionChild
             as={Fragment}
             enter="ease-out duration-300"
@@ -569,13 +607,13 @@ function SearchButton({ shortcutKey = null, ...buttonProps }) {
   return (
     <button
       type="button"
-      className="flex h-8 w-full items-center gap-2 rounded bg-white pl-2 pr-3 text-sm text-carbon-300 ring-1 ring-carbon-200 transition hover:ring-carbon-300 dark:bg-white/5 dark:text-carbon-600 dark:ring-inset hover:dark:ring-carbon-600 dark:ring-carbon-700 dark:hover:carbon-300 focus:outline-none"
+      className="dark:hover:carbon-300 flex h-8 w-full items-center gap-2 rounded bg-white pl-2 pr-3 text-sm text-carbon-300 ring-1 ring-carbon-200 transition hover:ring-carbon-300 focus:outline-none dark:bg-white/5 dark:text-carbon-600 dark:ring-inset dark:ring-carbon-700 hover:dark:ring-carbon-600"
       {...buttonProps}
     >
       <SearchIcon className="h-5 w-5" />
       Search...
       {shortcutKey ? (
-        <kbd className="ml-auto text-xs font-sans text-carbon-600 dark:text-carbon-100 ring-1 ring-carbon-200 transition dark:bg-white/5 dark:ring-inset dark:ring-carbon-700">
+        <kbd className="ml-auto font-sans text-xs text-carbon-600 ring-1 ring-carbon-200 transition dark:bg-white/5 dark:text-carbon-100 dark:ring-inset dark:ring-carbon-700">
           {shortcutKey}
         </kbd>
       ) : null}
@@ -610,7 +648,7 @@ export function Search() {
 export function MobileSearch() {
   let { buttonProps, dialogProps } = useSearchProps();
   return (
-    <div className="block lg:hidden flex-auto mb-4">
+    <div className="mb-4 block flex-auto lg:hidden">
       <SearchButton {...buttonProps} />
       <SearchDialog
         className="block"
