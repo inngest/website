@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Head from "next/head";
-import { Router } from "next/router";
+import { Router, useRouter } from "next/router";
 import { MDXProvider } from "@mdx-js/react";
 import { motion } from "framer-motion";
 
@@ -13,6 +13,7 @@ import { Navigation, PageSidebar, ActiveSectionProvider } from "./Navigation";
 import { Prose } from "./Prose";
 import { SectionProvider } from "./SectionProvider";
 import { useMobileNavigationStore } from "./MobileNavigation";
+import { getLanguageFromPath, getSdkVersionFromPath, SDK_ALL } from "./LanguageStore";
 import { getOpenGraphImageURL } from "../../utils/social";
 import clsx from "clsx";
 
@@ -54,6 +55,10 @@ export function Layout({
   sourceFilePath,
   hidePageSidebar,
 }: Props) {
+  const router = useRouter();
+  const sdkLanguage = getLanguageFromPath(router.asPath) || SDK_ALL;
+  const sdkVersion = getSdkVersionFromPath(router.asPath) || SDK_ALL;
+
   const siteTitle = `Inngest Documentation`;
   const preferredTitle: string = metaTitle || title || siteTitle;
   const pageTitle =
@@ -81,6 +86,9 @@ export function Layout({
           <meta name="twitter:site" content="@inngest" />
           <meta name="twitter:title" content={pageTitle} />
           <meta name="twitter:image" content={metaImage} />
+
+          <meta name="docsearch:sdkLanguage" content={sdkLanguage} />
+          <meta name="docsearch:sdkVersion" content={sdkVersion} />
 
           <link rel="preconnect" href="https://fonts-cdn.inngest.com/" />
           <link

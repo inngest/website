@@ -135,6 +135,10 @@ export const date = "2025-01-15";
 Description of the change in MDX format.
 ```
 
+## Docs Search
+
+See `shared/Docs/SEARCH.md` for docs search (Algolia) architecture.
+
 ## Environment & Deployment
 
 - Deployed on Vercel, auto-builds on push to main

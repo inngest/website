@@ -39,10 +39,9 @@ import * as Select from "@radix-ui/react-select";
 import {
   useLanguageStore,
   SDK_LANGUAGES,
-  SDK_TITLE_TO_LANGUAGE,
   SDK_HOME_PAGES,
   getLanguageFromPath,
-  getTsVersionFromPath,
+  getSdkVersionFromPath,
   normalizeTsReferencePath,
   TS_STABLE,
   TS_VERSIONS,
@@ -728,7 +727,7 @@ function VersionSwitcher({
     setTsVersion(newVersion);
 
     // If on a versioned TS page for a different version, navigate to version intro
-    const pathVersion = getTsVersionFromPath(pathname);
+    const pathVersion = getSdkVersionFromPath(pathname);
     if (pathVersion && pathVersion !== newVersion) {
       if (newVersion === TS_STABLE) {
         router.push("/docs/reference/typescript");
@@ -1032,7 +1031,7 @@ export function useHydratedLanguageState(pathname: string) {
 
   const { language, setLanguage, tsVersion, setTsVersion } = useLanguageStore();
   const pathLanguage = getLanguageFromPath(pathname);
-  const pathTsVersion = getTsVersionFromPath(pathname);
+  const pathTsVersion = getSdkVersionFromPath(pathname);
 
   // Sync store to URL on mount and on navigation so the URL always wins
   useEffect(() => {
