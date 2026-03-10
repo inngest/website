@@ -1,4 +1,4 @@
-import { Info, Warning, CodeGroup, LanguageSelector, LanguageSection } from "shared/Docs/mdx";
+import { Info, Tip, Warning, CodeGroup, LanguageSelector, LanguageSection } from "shared/Docs/mdx";
 
 # Checkpointing
 
@@ -47,6 +47,23 @@ export const myFunction = inngest.createFunction(
   }
 );
 ```
+
+### Max runtime for serverless environments
+
+If your app is deployed to serverless platforms, like [Vercel](/docs/deploy/vercel), you should configure the `maxRuntime` option to slightly below your function's maximum duration. See [configuration](#configuration) for more information.
+
+```ts
+const inngest = new Inngest({
+  id: 'my-app',
+  checkpointing: {
+    maxRuntime: '50s', // 50s might be a good option if your max duration is 60s
+  }
+})
+```
+
+<Tip>
+  Tip: Many platforms, like Vercel, allow you to configure the maximum duration per function, e.g. on your `/api/inngest` endpoint. Learn more about configuring on Vercel [here](https://vercel.com/docs/functions/configuring-functions/duration).
+</Tip>
 
 ### Configuration
 
