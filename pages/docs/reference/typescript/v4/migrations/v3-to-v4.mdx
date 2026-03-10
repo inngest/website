@@ -1,4 +1,4 @@
-import { Info, Tip } from "src/shared/Docs/mdx";
+import { Info, Tip, Warning } from "src/shared/Docs/mdx";
 
 # TypeScript SDK Migration Guide: v3 to v4
 
@@ -286,9 +286,22 @@ const inngest = new Inngest({
 })
 ```
 
-<Tip>
-  Tip: Many platforms, like Vercel, allow you to configure the maximum duration per function, e.g. on your `/api/inngest` endpoint. Learn more about configuring on Vercel [here](https://vercel.com/docs/functions/configuring-functions/duration).
-</Tip>
+<Warning>
+  Many platforms, like Vercel, allow you to configure the maximum duration per function, e.g. on your `/api/inngest` endpoint. We recommend setting the `maxRuntime` to 60-80% of your maximum duration.
+
+  For Vercel applications, you should explicitly set your `maxDuration` ([docs](https://vercel.com/docs/functions/configuring-functions/duration)) on the `/api/inngest`. For example:
+  ```ts app/api/inngest/route.ts
+  import { serve } from 'inngest/next';
+  import { inngest, functions } from '../../inngest';
+
+  // This endpoint can run for a maximum of 300 seconds
+  export const maxDuration = 300;
+
+  export default serve({ client: inngest, functions });
+  ```
+
+  Learn more about configuring Vercel [here]().
+</Warning>
 
 To disable checkpointing, set `checkpointing: false` on your client or on individual functions:
 
