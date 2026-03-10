@@ -354,6 +354,33 @@ const sectionReference: (NavGroup | NavLink)[] = [
         ],
       },
       {
+        title: "Realtime",
+        tag: "new",
+        links: [
+          {
+            title: "Overview",
+            href: tsRef("v4", "realtime"),
+          },
+          {
+            title: "Channels & topics",
+            href: tsRef("v4", "realtime/channels"),
+          },
+          {
+            title: "Publishing",
+            href: tsRef("v4", "realtime/publishing"),
+          },
+          {
+            title: "useRealtime",
+            href: tsRef("v4", "realtime/use-realtime"),
+            className: "font-mono",
+          },
+          {
+            title: "Subscribing",
+            href: tsRef("v4", "realtime/subscribing"),
+          },
+        ],
+      },
+      {
         title: "Middleware",
         links: [
           {
