@@ -1,4 +1,4 @@
-import { Info } from "src/shared/Docs/mdx";
+import { Info, Tip } from "src/shared/Docs/mdx";
 
 # TypeScript SDK Migration Guide: v3 to v4
 
@@ -10,6 +10,24 @@ This guide helps you migrate your Inngest TypeScript SDK from v3 to v4.
 - Trigger helpers ([more info](/docs/reference/typescript/v4/functions/triggers))
 - Separate internal and user-facing logs with the `internalLogger` option ([more info](/docs/reference/typescript/v4/logging#internal-logger))
 - Use a worker thread in Connect ([more info](/docs/reference/typescript/v4/migrations/v3-to-v4#connect-worker-thread))
+
+## Upgrade prompt
+
+You can use your coding agent of choice to upgrade to v4. Here's a suggested prompt:
+
+```plaintext
+Upgrade Inngest TypeScript SDK from v3 to v4
+
+Read the migration guide at https://www.inngest.com/docs/reference/typescript/v4/migrations/v3-to-v4 and apply every breaking change to this codebase. Pay special attention to:
+
+- Triggers moving into the options object (1st arg of createFunction)
+- EventSchemas being replaced with eventType() and staticSchema()
+- Serve options (signingKey, baseUrl, etc.) moving to the client constructor
+- step.invoke() no longer accepting string function IDs
+- Set `maxRuntime` option for `checkpointing` if running on serverless.
+
+Install the latest v4 package and verify TypeScript compilation passes afterward.
+```
 
 ## Breaking changes
 
@@ -147,6 +165,10 @@ const user = await step.waitForEvent("wait", {
 await inngest.send(userCreated.create({ userId: "1", email: "a@b.com" }));
 ```
 
+<Tip>
+  Please note: `staticSchema` expects a `type`, not an `interface`. You may need to convert existing interfaces to types.
+</Tip>
+
 ### Rename `serveHost` to `serveOrigin`
 
 Rename the `serveHost` option to `serveOrigin` to better reflect its purpose. Using "host" was actually a misnomer because the scheme and port can be specified, while a "host" is only the domain or IP.
@@ -252,6 +274,21 @@ If you'd like to disable optimized parallelism altogether at either the client o
 ### Checkpointing enabled by default
 
 [Checkpointing](/docs/setup/checkpointing) is now enabled by default for all functions. This means multiple steps can execute within a single request, resulting in dramatically lower latency and bandwidth usage.
+
+If your functions run on serverless platforms, like Vercel, you should configure the `maxRuntime` option to slightly below your function's maximum duration:
+
+```
+const inngest = new Inngest({
+  id: 'my-app',
+  checkpointing: {
+    maxRuntime: '50s', // 50s might be a good option if your max duration was 60s
+  }
+})
+```
+
+<Tip>
+  Tip: Many platforms, like Vercel, allow you to configure the maximum duration per function, e.g. on your `/api/inngest` endpoint. Learn more about configuring on Vercel [here](https://vercel.com/docs/functions/configuring-functions/duration).
+</Tip>
 
 To disable checkpointing, set `checkpointing: false` on your client or on individual functions:
 
