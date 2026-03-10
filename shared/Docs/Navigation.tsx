@@ -62,19 +62,25 @@ const ActiveSectionContext = createContext<ActiveSectionContextType>({
   setActiveSection: () => {},
 });
 
-export function ActiveSectionProvider({ children }: { children: React.ReactNode }) {
+export function ActiveSectionProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const router = useRouter();
   const pathname = router.pathname;
 
   // Determine initial section based on current URL
   const getInitialSection = useCallback(() => {
     // Check if current path matches Reference section
-    const referenceTab = sidebarMenuTabs.find(tab => tab.title === "Reference");
+    const referenceTab = sidebarMenuTabs.find(
+      (tab) => tab.title === "Reference"
+    );
     if (referenceTab?.matcher && !!referenceTab.matcher(pathname)) {
       return "Reference";
     }
     // Check if current path matches Examples section
-    const examplesTab = topLevelNav.find(tab => tab.title === "Examples");
+    const examplesTab = topLevelNav.find((tab) => tab.title === "Examples");
     if (examplesTab?.matcher && !!examplesTab.matcher(pathname)) {
       return "Examples";
     }
@@ -125,7 +131,7 @@ function TopLevelNavItem({ href, matcher, title, icon: Icon }) {
     <NavLink href={href} isTopLevel={true}>
       <span
         className={clsx(
-          "flex flex-row py-1 items-center",
+          "flex flex-row items-center py-1",
           isActive && "font-bold text-breeze-600 dark:text-breeze-300"
         )}
       >
@@ -145,11 +151,11 @@ export function TabItem({ href, children, matcher, title }) {
       <Link
         href={href}
         className={clsx(
-          "font-medium text-sm leading-5 transition whitespace-nowrap px-3 py-4 relative top-0.5 cursor-pointer block",
+          "relative top-0.5 block cursor-pointer whitespace-nowrap px-3 py-4 text-sm font-medium leading-5 transition",
           isActive &&
-            "text-black dark:text-carbon-100 border-b-2 dark:border-b-carbon-300 border-b-black hover:text-black",
+            "border-b-2 border-b-black text-black hover:text-black dark:border-b-carbon-300 dark:text-carbon-100",
           !isActive &&
-            "text-carbon-600 dark:text-carbon-400 hover:text-carbon-900 dark:hover:text-white"
+            "text-carbon-600 hover:text-carbon-900 dark:text-carbon-400 dark:hover:text-white"
         )}
       >
         <span className="relative -top-0.5">{children}</span>
@@ -188,10 +194,10 @@ function NavLink({
       aria-current={active ? "page" : undefined}
       target={linkTarget}
       className={clsx(
-        "flex rounded justify-between items-center gap-2 py-1 pl-2 text-sm transition group", // group for nested hovers
+        "group flex items-center justify-between gap-2 rounded py-1 pl-2 text-sm transition", // group for nested hovers
         active
-          ? "font-medium rounded bg-secondary-3xSubtle text-info hover:bg-secondary-2xSubtle"
-          : "font-medium hover:bg-canvasSubtle text-subtle hover:text-basis",
+          ? "rounded bg-secondary-3xSubtle font-medium text-info hover:bg-secondary-2xSubtle"
+          : "font-medium text-subtle hover:bg-canvasSubtle hover:text-basis",
         className
       )}
     >
@@ -243,7 +249,7 @@ function VisibleSectionHighlight({ listItems }) {
       animate={{ opacity: 1, transition: { delay: 0.2 } }}
       exit={{ opacity: 0 }}
       // @ts-ignore
-      className="absolute left-0 top-0 w-[2px] bg-breeze-600 dark:bg-breeze-300 will-change-transform"
+      className="absolute left-0 top-0 w-[2px] bg-breeze-600 will-change-transform dark:bg-breeze-300"
       style={{ height, top }}
     />
   );
@@ -275,7 +281,7 @@ export function PageSidebar() {
 
   return (
     <div>
-      <h4 className="text-base font-medium pb-2">On this page</h4>
+      <h4 className="pb-2 text-base font-medium">On this page</h4>
       <div className="relative">
         <AnimatePresence initial={!isInsideMobileNavigation}>
           {pageSectionListItems && (
@@ -401,18 +407,23 @@ function NavigationGroup({
   return (
     <NavigationGroupStructure value={group.title} nestingLevel={nestingLevel}>
       <li className={clsx("relative", className)}>
-        <NavigationGroupStructure.Trigger className="w-full animate-accordion-trigger rounded-md hover:bg-canvasSubtle transition-colors">
+        <NavigationGroupStructure.Trigger className="animate-accordion-trigger w-full rounded-md transition-colors hover:bg-canvasSubtle">
           <h2
-            className={clsx("flex justify-between items-center m-0", {
-              "py-1": nestingLevel > 0,
-              "mt-6 mb-2": nestingLevel === 0,
-            })}
+            className={clsx(
+              // Tell Algolia crawler to skip indexing this as part of the page
+              "skip-algolia-crawler",
+              "m-0 flex items-center justify-between",
+              {
+                "py-1": nestingLevel > 0,
+                "mb-2 mt-6": nestingLevel === 0,
+              }
+            )}
           >
             <span
               className={clsx("pl-2", {
                 "text-sm font-medium text-subtle hover:text-basis":
                   nestingLevel > 0,
-                "text-xs uppercase font-bold tracking-wide text-carbon-300 dark:text-carbon-00":
+                "dark:text-carbon-00 text-xs font-bold uppercase tracking-wide text-carbon-300":
                   nestingLevel == 0,
               })}
             >
@@ -424,7 +435,9 @@ function NavigationGroup({
                   {tag}
                 </Tag>
               )}
-              {nestingLevel > 0 && <ChevronDownIcon className="h-4 w-4 mr-2 text-carbon-600 dark:text-carbon-500" />}
+              {nestingLevel > 0 && (
+                <ChevronDownIcon className="mr-2 h-4 w-4 text-carbon-600 dark:text-carbon-500" />
+              )}
             </span>
           </h2>
         </NavigationGroupStructure.Trigger>
@@ -437,7 +450,7 @@ function NavigationGroup({
             <motion.ul
               role="list"
               className={clsx({
-                "ml-2.5 pl-2 border-l border-carbon-100 dark:border-[#3D3D3D]":
+                "ml-2.5 border-l border-carbon-100 pl-2 dark:border-[#3D3D3D]":
                   nestingLevel > 0,
               })}
             >
@@ -488,7 +501,7 @@ function NavigationGroup({
                     >
                       <span
                         className={clsx(
-                          "flex justify-between items-center text-sm transition group py-1 pl-2",
+                          "group flex items-center justify-between py-1 pl-2 text-sm transition",
                           "text-xs font-semibold text-carbon-300 dark:text-carbon-600",
                           className
                         )}
@@ -579,17 +592,30 @@ const defaultSection = getAllSections(topLevelNav).find(
 );
 
 // SDK titles that should be filtered based on language and version selection
-const SDK_SECTION_TITLES = ["TypeScript SDK v3", "TypeScript SDK v4", "Python SDK", "Go SDK"];
+const SDK_SECTION_TITLES = [
+  "TypeScript SDK v3",
+  "TypeScript SDK v4",
+  "Python SDK",
+  "Go SDK",
+];
 
 // Non-SDK reference sections that should always be shown (separated from SDK sections)
 const SHARED_REFERENCE_TITLES = ["REST API", "System events", "Self-hosting"];
 
 // Helper to check if a section should be hidden based on selected language and TS version
-function shouldHideSection(title: string, selectedLanguage: SDKLanguage, tsVersion: TSVersion): boolean {
-  let selectedSdkTitle = SDK_LANGUAGES.find(l => l.id === selectedLanguage)?.title;
+function shouldHideSection(
+  title: string,
+  selectedLanguage: SDKLanguage,
+  tsVersion: TSVersion
+): boolean {
+  let selectedSdkTitle = SDK_LANGUAGES.find(
+    (l) => l.id === selectedLanguage
+  )?.title;
   if (!selectedSdkTitle) {
     // Unreachable (unless there's a bug)
-    console.error(`Selected language ${selectedLanguage} not found in SDK_LANGUAGES`);
+    console.error(
+      `Selected language ${selectedLanguage} not found in SDK_LANGUAGES`
+    );
     return false;
   }
   selectedSdkTitle += " SDK";
@@ -604,7 +630,10 @@ function shouldHideSection(title: string, selectedLanguage: SDKLanguage, tsVersi
   return false;
 }
 
-const SDK_ICONS: Record<SDKLanguage, React.ComponentType<{ className?: string }>> = {
+const SDK_ICONS: Record<
+  SDKLanguage,
+  React.ComponentType<{ className?: string }>
+> = {
   typescript: TypeScriptIcon,
   python: PythonIcon,
   go: GoIcon,
@@ -634,7 +663,11 @@ function LanguageSwitcher({
       router.push("/docs");
     } else if (activeSection === "Reference" && !isOnSDKPage) {
       router.push(SDK_HOME_PAGES[newLang]);
-    } else if (activeSection === "Reference" && isOnSDKPage && currentPathLang !== newLang) {
+    } else if (
+      activeSection === "Reference" &&
+      isOnSDKPage &&
+      currentPathLang !== newLang
+    ) {
       router.push(SDK_HOME_PAGES[newLang]);
     }
   };
@@ -643,25 +676,33 @@ function LanguageSwitcher({
   const CurrentIcon = SDK_ICONS[displayLanguage];
 
   return (
-    <div className={clsx("mt-3 opacity-0 transition-opacity duration-150", hydrated && "opacity-100")}>
-      <Select.Root value={displayLanguage} onValueChange={(val) => handleLanguageChange(val as SDKLanguage)}>
+    <div
+      className={clsx(
+        "mt-3 opacity-0 transition-opacity duration-150",
+        hydrated && "opacity-100"
+      )}
+    >
+      <Select.Root
+        value={displayLanguage}
+        onValueChange={(val) => handleLanguageChange(val as SDKLanguage)}
+      >
         <Select.Trigger
           className={clsx(
-            "flex items-center justify-between w-full px-3 py-2",
-            "bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700",
+            "flex w-full items-center justify-between px-3 py-2",
+            "border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800",
             "rounded-lg shadow-sm",
             "text-sm font-medium text-slate-900 dark:text-slate-100",
             "hover:border-slate-300 dark:hover:border-slate-600",
-            "focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500",
+            "focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20",
             "transition-colors"
           )}
         >
           <span className="flex items-center gap-2">
-            <CurrentIcon className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+            <CurrentIcon className="h-5 w-5 text-slate-600 dark:text-slate-300" />
             <Select.Value>{currentLang?.title}</Select.Value>
           </span>
           <Select.Icon>
-            <ChevronDownIcon className="w-4 h-4 text-slate-400" />
+            <ChevronDownIcon className="h-4 w-4 text-slate-400" />
           </Select.Icon>
         </Select.Trigger>
 
@@ -684,17 +725,17 @@ function LanguageSwitcher({
                     key={lang.id}
                     value={lang.id}
                     className={clsx(
-                      "flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer",
+                      "flex cursor-pointer items-center gap-2 rounded-md px-3 py-2",
                       "text-sm text-slate-700 dark:text-slate-200",
                       "hover:bg-slate-100 dark:hover:bg-slate-700",
-                      "focus:outline-none focus:bg-slate-100 dark:focus:bg-slate-700",
+                      "focus:bg-slate-100 focus:outline-none dark:focus:bg-slate-700",
                       "data-[state=checked]:font-medium"
                     )}
                   >
-                    <Icon className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+                    <Icon className="h-5 w-5 text-slate-600 dark:text-slate-300" />
                     <Select.ItemText>{lang.title}</Select.ItemText>
                     <Select.ItemIndicator className="ml-auto">
-                      <CheckIcon className="w-4 h-4 text-indigo-500" />
+                      <CheckIcon className="h-4 w-4 text-indigo-500" />
                     </Select.ItemIndicator>
                   </Select.Item>
                 );
@@ -745,16 +786,24 @@ function VersionSwitcher({
   const currentVersion = TS_VERSIONS.find((v) => v.id === displayVersion);
 
   return (
-    <div className={clsx("mt-2 opacity-0 transition-opacity duration-150", hydrated && "opacity-100")}>
-      <Select.Root value={displayVersion} onValueChange={(val) => handleVersionChange(val as TSVersion)}>
+    <div
+      className={clsx(
+        "mt-2 opacity-0 transition-opacity duration-150",
+        hydrated && "opacity-100"
+      )}
+    >
+      <Select.Root
+        value={displayVersion}
+        onValueChange={(val) => handleVersionChange(val as TSVersion)}
+      >
         <Select.Trigger
           className={clsx(
-            "flex items-center justify-between w-full px-3 py-2",
-            "bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700",
+            "flex w-full items-center justify-between px-3 py-2",
+            "border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800",
             "rounded-lg shadow-sm",
             "text-sm font-medium text-slate-900 dark:text-slate-100",
             "hover:border-slate-300 dark:hover:border-slate-600",
-            "focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500",
+            "focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20",
             "transition-colors"
           )}
         >
@@ -762,7 +811,7 @@ function VersionSwitcher({
             <Select.Value>{currentVersion?.title}</Select.Value>
           </span>
           <Select.Icon>
-            <ChevronDownIcon className="w-4 h-4 text-slate-400" />
+            <ChevronDownIcon className="h-4 w-4 text-slate-400" />
           </Select.Icon>
         </Select.Trigger>
 
@@ -783,16 +832,16 @@ function VersionSwitcher({
                   key={version.id}
                   value={version.id}
                   className={clsx(
-                    "flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer",
+                    "flex cursor-pointer items-center gap-2 rounded-md px-3 py-2",
                     "text-sm text-slate-700 dark:text-slate-200",
                     "hover:bg-slate-100 dark:hover:bg-slate-700",
-                    "focus:outline-none focus:bg-slate-100 dark:focus:bg-slate-700",
+                    "focus:bg-slate-100 focus:outline-none dark:focus:bg-slate-700",
                     "data-[state=checked]:font-medium"
                   )}
                 >
                   <Select.ItemText>{version.title}</Select.ItemText>
                   <Select.ItemIndicator className="ml-auto">
-                    <CheckIcon className="w-4 h-4 text-indigo-500" />
+                    <CheckIcon className="h-4 w-4 text-indigo-500" />
                   </Select.ItemIndicator>
                 </Select.Item>
               ))}
@@ -828,7 +877,7 @@ export function Navigation(props) {
     ) ?? defaultSection;
 
   const isNested = !!nestedSection;
-  
+
   // Keep all sections in DOM for SEO, but mark which ones should be hidden
   // This way crawlers can still see all the links
   const nestedNavigation = useMemo(() => {
@@ -863,7 +912,7 @@ export function Navigation(props) {
       <nav {...props}>
         <MobileSearch />
 
-        <ul role="list" className="flex lg:hidden flex-col">
+        <ul role="list" className="flex flex-col lg:hidden">
           {menuTabs.map((tab, idx) => (
             <li key={idx}>
               <TopLevelNavItem
@@ -878,7 +927,7 @@ export function Navigation(props) {
 
         {activeSection !== "Examples" && (
           <div className="mb-4 lg:mb-8">
-            <div className="flex p-1 bg-slate-100 dark:bg-slate-800/50 rounded-lg">
+            <div className="flex rounded-lg bg-slate-100 p-1 dark:bg-slate-800/50">
               {sidebarMenuTabs.map((tab) => {
                 const isActive = activeSection === tab.title;
                 return (
@@ -894,7 +943,10 @@ export function Navigation(props) {
                         // added because the VersionSwitcher would lose the
                         // selected version when the user switched between the
                         // "Learn" and "Reference" tabs.
-                        if (language === "typescript" && tsVersion !== TS_STABLE) {
+                        if (
+                          language === "typescript" &&
+                          tsVersion !== TS_STABLE
+                        ) {
                           href = `/docs/reference/typescript/${tsVersion}`;
                         }
 
@@ -902,9 +954,9 @@ export function Navigation(props) {
                       }
                     }}
                     className={clsx(
-                      "flex-1 flex items-center justify-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-all",
+                      "flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-all",
                       isActive
-                        ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm"
+                        ? "bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-100"
                         : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
                     )}
                   >
@@ -921,7 +973,7 @@ export function Navigation(props) {
                 );
               })}
             </div>
-            
+
             {/* Language Switcher - shown on both Learn and Reference */}
             <LanguageSwitcher
               displayLanguage={effectiveLanguage}
@@ -954,22 +1006,34 @@ export function Navigation(props) {
               >
                 {nestedNavigation.sectionLinks.map((item, groupIndex) => {
                   // For Reference section, hide non-selected SDK sections with CSS (keeps links in DOM for SEO)
-                  const isHidden = activeSection === "Reference" && shouldHideSection(item.title, effectiveLanguage, effectiveTsVersion);
+                  const isHidden =
+                    activeSection === "Reference" &&
+                    shouldHideSection(
+                      item.title,
+                      effectiveLanguage,
+                      effectiveTsVersion
+                    );
                   // Add visual separator before shared sections (REST API, etc.)
-                  const isSharedSection = SHARED_REFERENCE_TITLES.includes(item.title);
-                  const isFirstSharedSection = isSharedSection && 
-                    groupIndex > 0 && 
-                    !SHARED_REFERENCE_TITLES.includes(nestedNavigation.sectionLinks[groupIndex - 1]?.title);
-                  
+                  const isSharedSection = SHARED_REFERENCE_TITLES.includes(
+                    item.title
+                  );
+                  const isFirstSharedSection =
+                    isSharedSection &&
+                    groupIndex > 0 &&
+                    !SHARED_REFERENCE_TITLES.includes(
+                      nestedNavigation.sectionLinks[groupIndex - 1]?.title
+                    );
+
                   return (
-                    <div 
+                    <div
                       key={item.title || `grp-${groupIndex}`}
                       className={clsx(isHidden && "hidden")}
                     >
                       {/* Separator before shared sections in Reference */}
-                      {activeSection === "Reference" && isFirstSharedSection && (
-                        <div className="mt-6 mb-4 border-t border-slate-200 dark:border-slate-700" />
-                      )}
+                      {activeSection === "Reference" &&
+                        isFirstSharedSection && (
+                          <div className="mb-4 mt-6 border-t border-slate-200 dark:border-slate-700" />
+                        )}
                       {isNavGroup(item) ? (
                         <NavigationGroup
                           group={item}
@@ -992,7 +1056,7 @@ export function Navigation(props) {
             </>
           ) : null}
 
-          <li className="sticky bottom-0 z-10 mt-6 sm:hidden gap-2 flex bg-canvasBase dark:bg-carbon-900 shadow-xl shadow-white dark:shadow-black">
+          <li className="sticky bottom-0 z-10 mt-6 flex gap-2 bg-canvasBase shadow-xl shadow-white dark:bg-carbon-900 dark:shadow-black sm:hidden">
             <Button
               href="/contact?ref=docs-mobile-nav"
               variant="primaryOutline"
@@ -1015,7 +1079,6 @@ export function Navigation(props) {
     </DefaultOpenSectionsContext.Provider>
   );
 }
-
 
 /**
  * Consolidated hydration-safe wrapper around the language store. During SSR and
