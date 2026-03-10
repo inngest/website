@@ -277,11 +277,11 @@ If you'd like to disable optimized parallelism altogether at either the client o
 
 If your functions run on serverless platforms, like Vercel, you should configure the `maxRuntime` option to slightly below your function's maximum duration:
 
-```
+```ts
 const inngest = new Inngest({
   id: 'my-app',
   checkpointing: {
-    maxRuntime: '50s', // 50s might be a good option if your max duration was 60s
+    maxRuntime: '50s', // 50s might be a good option if your max duration is 60s
   }
 })
 ```
