@@ -8,7 +8,7 @@ category: engineering
 showSubtitle: true
 ---
 
-Inngest's [ephemeral state store](/docs/self-hosting?ref=blog-redis-stateful-caching) manages state for all currently active function runs. We operate a sharded Redis cluster to handle this, and the system is constantly hammered by reads and writes. For a while, our answer to growing pressure on the state store was simple: add more shards. But, there was a catch.
+Inngest's [ephemeral state store](/blog/sharding-at-inngest) manages state for all currently active function runs. We operate a sharded Redis cluster to handle this, and the system is constantly hammered by reads and writes. For a while, our answer to growing pressure on the state store was simple: add more shards. But, there was a catch.
 
 Each new shard came with real operational overhead: provisioning one takes hours, slot rebalancing has to complete before it meaningfully helps with load, and every shard is a large memory- and disk-heavy instance with a non-trivial cost.
 
@@ -26,7 +26,7 @@ Our Redis cluster was both read- and write-heavy. Scaling writes with more shard
 
 What we really needed was to change the access pattern. Not because Redis reads are slow (they are extremely fast), but because reducing the total number of operations would both lower pressure on the cluster and give us more flexibility in the storage backend we might use in the future.
 
-**Key Insight:** Although run state as a whole is mutable, many of the highest-read pieces of that state are immutable once written. In particular, triggering events and step inputs/outputs do not change, which made aggressive caching possible without complex invalidation.
+**Key Insight:** Although run state as a whole is mutable, many of the highest-read pieces of that state are immutable once written. In particular, triggering events and step inputs/outputs do not change, which made aggressive caching possible without complex kache invalidation.
 
 *[ fig. 2 ] — Redis read operations: before vs. after proxy rollout*
 
@@ -34,7 +34,7 @@ What we really needed was to change the access pattern. Not because Redis reads 
 
 ## **Proxy design: consistent routing and headless load balancing**
 
-The proxy is a standard Kubernetes Deployment sitting between all services that interact with the [state store](/product/how-inngest-works?ref=blog-redis-stateful-caching) and Redis. Every read and write goes through it.
+The proxy is a standard Kubernetes Deployment sitting between all services that interact with the state store and Redis. Every read and write goes through it.
 
 The routing logic is critical. A given run's state needs to consistently land on the same proxy node, because that's where its cache lives. We achieved this with consistent hashing based on run ID at the gRPC layer, using a headless Kubernetes service to expose pod IPs directly to clients.
 
@@ -46,11 +46,11 @@ Headless services in Kubernetes bypass the cluster's default virtual IP load bal
 
 ## **Cache design: exploiting immutability boundaries**
 
-The main question for the cache layer was simple: what can we cache safely? Once we mapped the data's [mutability boundaries](/blog/how-durable-workflow-engines-work?ref=blog-redis-stateful-caching), the answer was fairly straightforward.
+The main question for the cache layer was simple: what can we cache safely? Once we mapped the data's mutability boundaries, the answer was fairly straightforward.
 
-Events that trigger a function run are written once and never change. Step inputs and outputs are written once per step and never change. These can be cached freely and never need invalidation. They live on the proxy node's local cache until the node is recycled.
+Events that trigger a function run are written once and never change. Step inputs and outputs are written once per step and never change as well. These can be cached freely and never need invalidation. They live on the proxy node's local cache until the node is recycled.
 
-The execution stack and run metadata are mutable. They change with each step execution. We route reads for these directly to Redis. We considered caching the stack with validation against metadata, but the stack is capped at 1000 entries and fetching it directly from Redis proved cheap enough in practice. The added complexity wasn't really worth it.
+The execution stack and run metadata are mutable. They change with each step execution. We route reads for these directly to Redis. We considered caching the stack with validation against metadata, but the stack is capped at 1000 entries (the maximum number of steps a run can have) and fetching it directly from Redis proved cheap enough in practice. The added complexity wasn't really worth it.
 
 *[ fig. 4 ] — Cache routing: immutable vs. mutable state*
 
@@ -58,7 +58,7 @@ The execution stack and run metadata are mutable. They change with each step exe
 
 ### **Why PebbleDB won over Badger**
 
-We benchmarked both options and they were close. Performance-wise, either would have worked. The difference showed up in allocations per operation. PebbleDB made significantly fewer allocations, which meant less pressure on Go's garbage collector and a more predictable memory footprint under load.
+For the caching layer, we shortlisted and [benchmarked](https://github.com/inngest/state-store-cache-benchmark) both [PebbleDB](https://github.com/cockroachdb/pebble) and [Badger](https://github.com/dgraph-io/badger), and their raw performance was comparable. Either would have worked from a throughput perspective. The difference showed up in allocations per operation: PebbleDB performed significantly fewer allocations, which reduces pressure on Go’s garbage collector and results in a more predictable memory footprint under load.
 
 Configuration flexibility also helped. We disabled the WAL entirely since we don't need recovery after pod restarts or rollouts. Increasing memtable sizes and raising the `MemTableStopWritesThreshold` before write stalls improved write throughput as well.
 
@@ -72,7 +72,7 @@ We didn't switch everything over at once. The rollout happened in phases so we c
 
 ![Fig. 5 - Staged rollout: shadow mode to full cutover](/assets/blog/redis-stateful-caching/inngest-fig5-rollout%20(1).svg)
 
-Shadow mode was worth the extra setup. It let us validate the proxy's behavior against real production traffic without affecting live requests. Once that looked solid, we enabled the proxy behind per-account feature flags.
+Shadow mode was worth the extra setup. In this mode, the proxy reads from the cache and compares the result against the source of truth for consistency checks, but discards the cached value instead of serving it to the caller. This lets us validate cache correctness using real production traffic without affecting live requests. Once the behavior looked solid, we enabled the proxy behind per-account feature flags.
 
 That gave us a safe rollback mechanism. When we hit one issue significant enough to warrant reverting, we were able to disable the proxy for the affected account immediately rather than rolling back the entire deployment.
 
