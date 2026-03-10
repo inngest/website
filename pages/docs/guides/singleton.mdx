@@ -14,7 +14,7 @@ Singleton Functions enable you to ensure that only a single run of your function
   />
 </p>
 
-<Callout variant="info">
+<Callout variant="info" skipSearchCrawler>
   Singleton Functions are available in the TypeScript SDK starting from version 3.39.0.
 </Callout>
 
@@ -53,7 +53,7 @@ const dataSync = inngest.createFunction({
     singleton: {
       key: "event.data.user_id",
       mode: "skip",
-    }  
+    }
   },
   { event: "data-sync.start" },
   async ({ event }) => {
@@ -79,7 +79,7 @@ The `mode` property configures the behavior of the Singleton Function:
 - `"skip"` - Skips the new run if another run is already executing.
 - `"cancel"` - Cancels the existing run and starts the new one.
 
-<Callout variant="info">
+<Callout variant="info" skipSearchCrawler>
   **Cancel mode behavior**: Triggering multiple function runs with the same key in very rapid succession may result in some runs being skipped rather than cancelled, similar to a debounce effect. This prevents excessive cancellation overhead when events are triggered in quick bursts.
 </Callout>
 
@@ -94,12 +94,12 @@ const dataSync = inngest.createFunction({
     singleton: {
       key: "event.data.user_id",
       mode: "skip",
-    }  
+    }
   },
   { event: "data-sync.start" },
   async ({ event }) => {
     const userId = event.data.user_id;
-    
+
     // This long-running sync process will not be interrupted
     // If another sync is triggered for this user, it will be skipped
     const data = await syncUserDataFromExternalAPI(userId);
@@ -114,12 +114,12 @@ const latestDataSync = inngest.createFunction({
     singleton: {
       key: "event.data.user_id",
       mode: "cancel",
-    }  
+    }
   },
   { event: "data-sync.start" },
   async ({ event }) => {
     const userId = event.data.user_id;
-    
+
     // If a newer sync is triggered, this run will be cancelled
     // ensuring only the most recent data is processed
     const payload = await fetchLatestUserData(userId);
@@ -137,7 +137,7 @@ Singleton Functions can be combined with other flow control features, with the f
 | Flow control | Compatibility | Considerations |
 | --- | --- | --- |
 | [Debounce](/docs/guides/debounce) | ✅ | Can be used together without issues. |
-| [Rate limiting](/docs/guides/rate-limiting) | ✅ | Similar functionality but rate limiting operates over a predefined time window rather than function execution duration. | 
+| [Rate limiting](/docs/guides/rate-limiting) | ✅ | Similar functionality but rate limiting operates over a predefined time window rather than function execution duration. |
 | [Throttling](/docs/guides/throttling) | ✅ | Similar functionality but throttling enqueues events over time rather than discarding/canceling them. |
 | [Concurrency](/docs/guides/concurrency) | ❌ | Singleton functions implicitly have a concurrency of 1. A concurrency setting can be set but should be used with caution. |
 | [Batching](/docs/guides/batching) | ❌ | Singleton isn't compatible with batching; function registration will fail if both are set. |

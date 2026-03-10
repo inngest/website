@@ -76,7 +76,7 @@ export default inngest.createFunction(
 );
 ```
 
-<Callout variant="info">
+<Callout variant="info" skipSearchCrawler>
   **Using inngest@v4?** Event triggers are now specified in the configuration object:
   ```ts
   inngest.createFunction(
@@ -240,7 +240,7 @@ export default inngest.createFunction(
 ```
 </CodeGroup>
 
-<Callout variant="info">
+<Callout variant="info" skipSearchCrawler>
   **Using inngest@v4?** The v3 examples above use three arguments to `createFunction`. In v4, event triggers are specified in the configuration object:
   ```ts
   inngest.createFunction(

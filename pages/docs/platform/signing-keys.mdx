@@ -44,7 +44,7 @@ You can still rotate your signing key if you use an older SDK version, but you w
 
 To begin the rotation process, navigate to the [Signing Key tab](https://app.inngest.com/env/production/manage/signing-key) in the Inngest dashboard. Click the "Create new signing key" button and then follow the instructions in the **Rotate key** section.
 
-<Callout variant="info">
+<Callout variant="info" skipSearchCrawler>
 🤔 **Why do I need a "fallback" signing key?**
 
 As requests are signed with the current signing key, your code must have both the current and the new signing key available to verify requests during the rotation. To ensure there is zero downtime, the SDKs will retry authentication failures with the fallback key.

@@ -91,7 +91,7 @@ serve({
 
 You can also create a custom serve handler for any framework or platform not listed here - [read more here](#custom-frameworks).
 
-<Callout variant="info">
+<Callout variant="info" skipSearchCrawler>
   Want us to add support for another framework? Open an issue on [GitHub](https://github.com/inngest/website) or tell us about it on our [Discord](/discord).
 </Callout>
 
@@ -1025,12 +1025,12 @@ export const PUT = inngestServe.PUT;
 
 See the [SvelteKit example](https://github.com/inngest/inngest-js/tree/main/examples/framework-sveltekit) for more information.
 
-### Framework: Tanstack Start 
+### Framework: Tanstack Start
 
 Add the following to `./src/routes/api/inngest.ts`:
 
 <CodeGroup>
-```ts 
+```ts
 import { createFileRoute } from "@tanstack/react-router";
 import { serve } from "inngest/edge";
 import { inngest, functions } from "../../inngest";

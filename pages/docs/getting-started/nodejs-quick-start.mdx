@@ -42,7 +42,7 @@ nodemon ./index.js # replace with your own main entrypoint file
 ```
 </CodeGroup>
 
-<Callout variant="info">
+<Callout variant="info" skipSearchCrawler>
   **Using inngest@v4?** The default mode changed to `cloud`. For local development, prefix your dev command with `INNGEST_DEV=1`:
   ```shell
   INNGEST_DEV=1 npm run dev
@@ -226,7 +226,7 @@ export const functions = [
 ];
 ```
 
-<Callout variant="info">
+<Callout variant="info" skipSearchCrawler>
   **Using inngest@v4?** Event triggers are now specified in the configuration object:
   ```ts
   inngest.createFunction(
