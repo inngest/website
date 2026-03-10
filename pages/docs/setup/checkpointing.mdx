@@ -1,0 +1,131 @@
+import { Info, Warning, CodeGroup, LanguageSelector, LanguageSection } from "shared/Docs/mdx";
+
+# Checkpointing
+
+Checkpointing is a performance optimization for Inngest functions that executes steps eagerly rather than waiting on internal orchestration. The result is dramatically lower latency — ideal for real-time AI workflows.
+
+## Minimum Requirements
+
+### Language
+
+- **TypeScript**: SDK `3.51.0` or higher.
+- **Go**: SDK version `v0.15.0`.
+
+## Getting Started
+
+<LanguageSelector>
+
+<LanguageSection show="typescript">
+
+To enable checkpointing:
+
+1. Install `inngest@3.51.0` or higher
+2. Set `checkpointing: true` on your Inngest client or on individual functions
+
+**For all functions:**
+
+```ts
+import { Inngest } from "inngest";
+
+export const inngest = new Inngest({
+  id: "my-app",
+  checkpointing: true,
+});
+```
+
+**Per-function:**
+
+```ts
+export const myFunction = inngest.createFunction(
+  {
+    id: "my-function",
+    checkpointing: true,
+  },
+  { event: "app/my.event" },
+  async ({ step }) => {
+    // steps here will be checkpointed
+  }
+);
+```
+
+### Configuration
+
+Configure how checkpointing behaves with these options:
+
+* `maxRuntime` - default: `0` (unlimited): The maximum amount of time the function should continuously execute and checkpoint steps before returning the request response. Configure this to be slightly less than the maximum allowed request timeout for your platform or server. For example, if your platform allows `900s`, you might set `maxRuntime` to `800s`.
+* `bufferedSteps` - default: `1` (no buffering): The number of steps to buffer together before checkpointing. This can help reduce the number of requests made to Inngest when running many steps in sequence. Consider that buffered steps that are not checkpointed may be lost if your server is not gracefully terminated.
+* `maxInterval`: The maximum interval to wait before checkpointing, even if the `bufferedSteps` count has not been reached.
+
+```ts {{ title: "Example configuration" }}
+checkpointing: {
+  maxRuntime: '300s',
+  bufferedSteps: 2,
+  maxInterval: "10s",
+}
+```
+
+</LanguageSection>
+
+<LanguageSection show="go">
+
+To enable checkpointing:
+
+1. Install the checkpoint package:
+
+```shell
+go get github.com/inngest/inngestgo/pkg/checkpoint
+```
+
+2. Set `Checkpoint` on your function options:
+
+```go
+import (
+  "github.com/inngest/inngestgo"
+  "github.com/inngest/inngestgo/pkg/checkpoint"
+)
+
+_, err := inngestgo.CreateFunction(
+  client,
+  inngestgo.FunctionOpts{
+    ID:         "my-function",
+    Name:       "My Function",
+    Checkpoint: checkpoint.ConfigSafe,
+  },
+  // ... triggers and handler
+)
+```
+
+</LanguageSection>
+
+</LanguageSelector>
+
+## How Does It Work?
+
+The [Inngest default execution model](/docs/learn/how-functions-are-executed) is a complete handoff to the Inngest Platform, where an HTTP request is performed to store the execution state upon each step completion, leading to inter-step latency.
+
+![With and Without Checkpointing](/assets/docs/checkpointing/checkpointing_with_without.png)
+
+Checkpointing uses the SDK orchestrates steps on the client-side (_on your server_) and executes them immediately. As steps complete, checkpoint messages are sent to Inngest to track progress. The result is dramatically lower latency — ideal for real-time AI workflows.
+
+![Inngest Workflow Execution](/assets/docs/checkpointing/checkpointing_inngest_workflow.jpg)
+
+### Failures and Retries
+
+What happens when something goes wrong? If a step fails and needs to retry, the execution engine falls back to standard orchestration to handle it properly. You get speed when things work, and safety when they don't.
+
+## Beta
+
+Checkpointing is currently in beta, here are some notes and limitations to be aware of:
+
+- **Parallel step execution** — When a function branches into parallel steps, execution switches to standard orchestration for the remainder of the run. Checkpointing does not resume after parallel execution.
+- **Middleware fixes (TypeScript `>=3.51.0`)** - If using an older TypeScript beta for checkpointing (`<3.51.0`), please upgrade to at least `3.51.0` to ensure that all middleware transforms are running correctly.
+
+
+| Feature | Supported |
+|---------|-----------|
+| Local development | ✅ |
+| Self-hosted Inngest | ✅ |
+| Inngest Cloud | ✅ |
+
+
+Read the [release phases](/docs/release-phases) for more details.

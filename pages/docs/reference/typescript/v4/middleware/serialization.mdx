@@ -1,0 +1,332 @@
+import { Callout, CodeGroup } from "src/shared/Docs/mdx";
+
+# Custom serialization
+
+Inngest sends step output, function output, and event data as JSON. This means non-JSON types like `Date`, `Map`, `Set`, or custom classes are lost during serialization. Custom serializer middleware lets you preserve these types by converting them to a JSON-safe format on the way out and restoring them on the way in.
+
+## How it works
+
+A serializer middleware hooks into multiple points in the lifecycle:
+
+- **`wrapStepHandler`** and **`wrapFunctionHandler`** - Serialize output before it's sent to Inngest
+- **`wrapStep`** - Deserialize memoized step data when it's returned to your function
+- **`transformFunctionInput`** - Deserialize event data before your function handler runs
+- **`transformSendEvent`** - Serialize event data before it's sent to Inngest
+- **`transformStepInput`** - Serialize invoke step input before it's sent to the server
+
+This ensures that your custom types are preserved across step boundaries, event sends, and function invocations.
+
+## Building a serializer
+
+In this example, we'll build a serializer that preserves `Date` objects.
+
+The recommended approach is to build an abstract base class that handles the recursive traversal and lifecycle hooks, then create concrete implementations for each type you want to serialize. `BaseSerializerMiddleware` will eventually be a first-class part of the SDK, but for now it's a pattern you can copy into your own codebase.
+
+### Base class
+
+This base class recursively walks all data flowing through the middleware, calling your `serialize` and `deserialize` methods on matching values. You can copy-paste it into your codebase, since it works with any custom serializer.
+
+<details>
+<summary>**`BaseSerializerMiddleware` full source**</summary>
+
+```ts
+import { Middleware } from "inngest";
+
+abstract class BaseSerializerMiddleware<
+  TSerialized,
+> extends Middleware.BaseMiddleware {
+  // Implement these four methods in your subclass
+  protected abstract serialize(value: unknown): TSerialized;
+  protected abstract deserialize(value: TSerialized): unknown;
+  protected abstract needsSerialize(value: unknown): boolean;
+  protected abstract isSerialized(value: unknown): value is TSerialized;
+
+  // Set to false to only serialize top-level values
+  protected readonly recursive: boolean = true;
+
+  // Serialize a value (optionally recursive)
+  private _serialize(value: unknown): unknown {
+    if (this.needsSerialize(value)) {
+      return this.serialize(value);
+    }
+
+    if (!this.recursive) {
+      return value;
+    }
+
+    if (isRecord(value)) {
+      return Object.fromEntries(
+        Object.entries(value).map(([key, v]) => [key, this._serialize(v)]),
+      );
+    }
+
+    if (Array.isArray(value)) {
+      return value.map((v) => this._serialize(v));
+    }
+
+    return value;
+  }
+
+  // Deserialize a value (optionally recursive)
+  private _deserialize(value: unknown): unknown {
+    if (this.isSerialized(value)) {
+      return this.deserialize(value);
+    }
+
+    if (!this.recursive) {
+      return value;
+    }
+
+    if (isRecord(value)) {
+      return Object.fromEntries(
+        Object.entries(value).map(([key, v]) => [key, this._deserialize(v)]),
+      );
+    }
+
+    if (Array.isArray(value)) {
+      return value.map((v) => this._deserialize(v));
+    }
+
+    return value;
+  }
+
+  // Deserialize event data before Inngest function handler runs
+  transformFunctionInput(
+    arg: Middleware.TransformFunctionInputArgs,
+  ): Middleware.TransformFunctionInputArgs {
+    return {
+      ...arg,
+      ctx: {
+        ...arg.ctx,
+        event: {
+          ...arg.ctx.event,
+          data: this._deserialize(arg.ctx.event.data),
+        },
+        events: arg.ctx.events.map((event) => ({
+          ...event,
+          data: this._deserialize(event.data),
+        })),
+      },
+    };
+  }
+
+  // Serialize function output before sending it to Inngest
+  async wrapFunctionHandler({
+    next,
+  }: Middleware.WrapFunctionHandlerArgs) {
+    const output = await next();
+    return this._serialize(output);
+  }
+
+  // Serialize `step.invoke` input before sending it to Inngest
+  transformStepInput(
+    arg: Middleware.TransformStepInputArgs,
+  ): Middleware.TransformStepInputArgs {
+    if (arg.stepInfo.stepType === "invoke") {
+      arg.input = arg.input.map((i) => this._serialize(i));
+    }
+    return arg;
+  }
+
+  // Serialize step output before sending it to Inngest
+  async wrapStepHandler({ next }: Middleware.WrapStepHandlerArgs) {
+    const output = await next();
+    return this._serialize(output);
+  }
+
+  // Deserialize step input before returning it into the Inngest function
+  // handler
+  async wrapStep({ next }: Middleware.WrapStepArgs) {
+    return this._deserialize(await next());
+  }
+
+  // Serialize event data before sending it to Inngest
+  transformSendEvent(arg: Middleware.TransformSendEventArgs) {
+    return {
+      ...arg,
+      events: arg.events.map((event) => {
+        let data = undefined;
+        if (event.data) {
+          data = this._serialize(event.data) as Record<string, unknown>;
+        }
+        return { ...event, data };
+      }),
+    };
+  }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+```
+
+</details>
+
+### Date serializer
+
+Here's a concrete implementation that preserves `Date` objects. It converts dates to a tagged JSON format on serialization and restores them on deserialization:
+
+```ts
+import { Middleware } from "inngest";
+import type { Jsonify } from "inngest/types";
+
+// How dates are represented in JSON
+const MARKER = "__date__";
+type Serialized = { [MARKER]: true; value: string };
+
+class DateSerializerMiddleware extends BaseSerializerMiddleware<Serialized> {
+  readonly id = "date-serializer";
+
+  // Tell TypeScript that Date objects are preserved in step/function output
+  declare stepOutputTransform: PreserveDate;
+  declare functionOutputTransform: PreserveDate;
+
+  protected needsSerialize(value: unknown): boolean {
+    return value instanceof Date;
+  }
+
+  protected serialize(value: unknown): Serialized {
+    return { [MARKER]: true, value: (value as Date).toISOString() };
+  }
+
+  protected isSerialized(value: unknown): value is Serialized {
+    return isRecord(value) && MARKER in value;
+  }
+
+  protected deserialize(value: Serialized): Date {
+    return new Date(value.value);
+  }
+}
+
+// Recursively preserves Date, JSON-serializes everything else
+type _PreserveDate<T> = T extends Date
+  // Keep Date as Date
+  ? Date
+  : T extends Array<infer U>
+    // Recurse into arrays
+    ? Array<_PreserveDate<U>>
+    : T extends Record<string, unknown>
+      // Recurse into object values
+      ? { [K in keyof T]: _PreserveDate<T[K]> }
+      // Jsonify all other types
+      : Jsonify<T>;
+
+// Higher-kinded type for the middleware
+interface PreserveDate extends Middleware.StaticTransform {
+  Out: _PreserveDate<this["In"]>;
+}
+```
+
+In the above example, `_PreserveDate` looks like a normal type but `PreserveData` may look strange. The `PreserveDate` interface is a higher-kinded type that middleware uses to transform function and step return types.
+
+## Using the middleware
+
+Register the middleware at the client level to apply it to all functions, or at the function level for specific functions:
+
+<CodeGroup>
+
+```ts {{ title: "Client level" }}
+import { Inngest } from "inngest";
+
+const inngest = new Inngest({
+  id: "my-app",
+  middleware: [DateSerializerMiddleware],
+});
+
+// All functions created with this client will serialize/deserialize Dates
+inngest.createFunction(
+  { id: "my-fn", triggers: { event: "app/task.created" } },
+  async ({ step }) => {
+    const result = await step.run("get-date", () => {
+      return { createdAt: new Date(), count: 42 };
+    });
+
+    // result.createdAt is a Date, not a string
+    console.log(result.createdAt.getFullYear());
+  }
+);
+```
+
+```ts {{ title: "Function level" }}
+import { Inngest } from "inngest";
+
+const inngest = new Inngest({ id: "my-app" });
+
+// Only this function uses the serializer
+inngest.createFunction(
+  {
+    id: "my-fn",
+    middleware: [DateSerializerMiddleware],
+    triggers: { event: "app/task.created" },
+  },
+  async ({ step }) => {
+    const result = await step.run("get-date", () => {
+      return { createdAt: new Date(), count: 42 };
+    });
+
+    console.log(result.createdAt.getFullYear());
+  }
+);
+```
+
+</CodeGroup>
+
+## Serializing other types
+
+You can follow the same pattern for any non-JSON type. Create a new subclass of `BaseSerializerMiddleware` for each type. For example, here's a serializer that preserves `Set` objects:
+
+```ts
+import { Middleware } from "inngest";
+import type { Jsonify } from "inngest/types";
+
+const SET_MARKER = "__set__";
+type SerializedSet = { [SET_MARKER]: true; values: unknown[] };
+
+class SetSerializerMiddleware extends BaseSerializerMiddleware<SerializedSet> {
+  readonly id = "set-serializer";
+  declare stepOutputTransform: PreserveSet;
+  declare functionOutputTransform: PreserveSet;
+
+  protected needsSerialize(value: unknown): boolean {
+    return value instanceof Set;
+  }
+
+  protected serialize(value: unknown): SerializedSet {
+    return { [SET_MARKER]: true, values: [...(value as Set<unknown>)] };
+  }
+
+  protected isSerialized(value: unknown): value is SerializedSet {
+    return isRecord(value) && SET_MARKER in value;
+  }
+
+  protected deserialize(value: SerializedSet): Set<unknown> {
+    return new Set(value.values);
+  }
+}
+
+type _PreserveSet<T> =
+  T extends Set<unknown>
+    ? T
+    : T extends Array<infer U>
+      ? Array<_PreserveSet<U>>
+      : T extends Record<string, unknown>
+        ? { [K in keyof T]: _PreserveSet<T[K]> }
+        : Jsonify<T>;
+
+interface PreserveSet extends Middleware.StaticTransform {
+  Out: _PreserveSet<this["In"]>;
+}
+```
+
+Use multiple serializer middleware together by registering them both:
+
+```ts
+const inngest = new Inngest({
+  id: "my-app",
+  middleware: [DateSerializerMiddleware, SetSerializerMiddleware],
+});
+```
+
+<Callout>
+Each serializer uses a unique marker key to tag its serialized format, so multiple serializers won't conflict with each other.
+</Callout>

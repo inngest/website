@@ -1,4 +1,4 @@
-import { ImageTheme, GuideSelector, GuideSection, CodeGroup } from "src/shared/Docs/mdx";
+import { ImageTheme, LanguageSelector, LanguageSection, CodeGroup } from "src/shared/Docs/mdx";
 
 export const description = 'How to use the fan-out pattern with Inngest to trigger multiple functions from a single event.'
 
@@ -13,7 +13,7 @@ The fan-out pattern enables you to send a single event and trigger multiple func
 <ImageTheme
   light={'/assets/docs/guides/fan-out-diagram.png'}
   alt={'A diagram showing how to fan-out to multiple functions'}
-  className="rounded-md"
+  className="rounded-md mx-auto block"
 />
 
 
@@ -28,14 +28,9 @@ The fan-out pattern is also useful in distributed systems where a single event i
 
 ## How to fan-out to multiple functions
 
-<GuideSelector
-  options={[
-    { key: "typescript", title: "TypeScript" },
-    { key: "go", title: "Go" },
-    { key: "python", title: "Python" },
-  ]}>
+<LanguageSelector>
 
-<GuideSection show="typescript">
+<LanguageSection show="typescript">
 
 Since Inngest is powered by events, implementing fan-out is as straightforward as defining multiple functions that use the same event trigger. Let's take the above example of user signup and implement it in Inngest.
 
@@ -45,7 +40,7 @@ First, set up a `/signup` route handler to send an event to Inngest when a user 
 import { inngest } from '../inngest/client';
 
 export async function POST(request: Request) {
-  // NOTE - this code is simplified for the of the example:
+  // NOTE - this code is simplified for the example:
   const { email, password } = await request.json();
   const user = await createUser({ email, password });
   await createSession(user.id);
@@ -107,8 +102,8 @@ Other benefits of fan-out include:
 * **New features or refactors**: As each function is independent, you can add new functions or refactor existing ones without having to edit unrelated code.
 * **Trigger functions in different codebases**: If you have multiple codebases, even using different programming languages (for example [Python](/docs/reference/python) or [Go](https://pkg.go.dev/github.com/inngest/inngestgo)), you can trigger functions in both codebases from a single event.
 
-</GuideSection>
-<GuideSection show="go">
+</LanguageSection>
+<LanguageSection show="go">
 
 Since Inngest is powered by events, implementing fan-out is as straightforward as defining multiple functions that use the same event trigger. Let's take the above example of user signup and implement it in Inngest.
 
@@ -135,8 +130,8 @@ Other benefits of fan-out include:
 * **New features or refactors**: As each function is independent, you can add new functions or refactor existing ones without having to edit unrelated code.
 * **Trigger functions in different codebases**: If you have multiple codebases, even using different programming languages (for example [TypeScript](/docs/reference/typescript) or [Python](/docs/reference/python)), you can trigger functions in both codebases from a single event.
 
-</GuideSection>
-<GuideSection show="python">
+</LanguageSection>
+<LanguageSection show="python">
 
 Since Inngest is powered by events, implementing fan-out is as straightforward as defining multiple functions that use the same event trigger. Let's take the above example of user signup and implement it in Inngest.
 
@@ -144,65 +139,12 @@ First, set up a `/signup` route handler to send an event to Inngest when a user 
 
 <CodeGroup>
 
-```ts {{ title: "Flask route" }}
-from flask import Flask, request, redirect
-from src.inngest.client import inngest_client
-
-app = Flask(__name__)
-
-@app.route('/signup', methods=['POST'])
-async def signup():
-    // NOTE - this code is simplified for the example:
-    data = await request.get_json()
-    email = data['email']
-    password = data['password']
-    
-    user = await create_user(email=email, password=password)
-    await create_session(user.id)
-
-    // Send an event to Inngest
-    await inngest_client.send(
-        name="app/user.signup",
-        data={
-            "user": {
-                "id": user.id,
-                "email": user.email
-            }
-        }
-    )
-
-    return redirect('https://myapp.com/dashboard')
+```py {{ title: "Flask route" }}
+!snippet:path=snippets/py/v0_5/fan_out_jobs/flask_route.py
 ```
 
-```ts {{ title: "FastAPI route" }}
-from fastapi import FastAPI, Request, Response
-from fastapi.responses import RedirectResponse
-from src.inngest.client import inngest_client
-
-app = FastAPI()
-
-@app.post("/signup")
-async def signup(request: Request):
-    # NOTE - this code is simplified for the example:
-    data = await request.json()
-    email = data['email']
-    password = data['password']
-    
-    user = await create_user(email=email, password=password)
-    await create_session(user.id)
-
-    # Send an event to Inngest
-    await inngest_client.send(
-        name="app/user.signup",
-        data={
-            "user": {
-                "id": user.id,
-                "email": user.email
-            }
-        }
-    )
-
-    return RedirectResponse(url="https://myapp.com/dashboard")
+```py {{ title: "FastAPI route" }}
+!snippet:path=snippets/py/v0_5/fan_out_jobs/fast_api_route.py
 ```
 
 </CodeGroup>
@@ -212,33 +154,7 @@ Now, with this event, any function using `"app/user.signup"` as its event trigge
 Next, define two functions: `sendWelcomeEmail` and `startStripeTrial`. As you can see below, both functions use the same event trigger, but perform different work.
 
 ```py {{ filename: "inngest/functions.py" }}
-@inngest_client.create_function(
-    fn_id="send-welcome-email",
-    trigger=inngest.TriggerEvent(event="app/user.signup"),
-)
-async def send_welcome_email(ctx: inngest.Context) -> None:
-    await step.run("send-email", lambda: send_email(
-        email=ctx.event.data["user"]["email"],
-        template="welcome"
-    ))
-
-@inngest_client.create_function(
-    fn_id="start-stripe-trial", 
-    trigger=inngest.TriggerEvent(event="app/user.signup"),
-)
-async def start_stripe_trial(
-    ctx: inngest.Context,
-    step: inngest.Step,
-) -> None:
-    customer = await step.run("create-customer", lambda: stripe.Customer.create(
-        email=ctx.event.data["user"]["email"]
-    ))
-    
-    await step.run("create-subscription", lambda: stripe.Subscription.create(
-        customer=customer.id,
-        items=[{"price": "price_1MowQULkdIwHu7ixraBm864M"}],
-        trial_period_days=14
-    ))
+!snippet:path=snippets/py/v0_5/fan_out_jobs/functions.py
 ```
 
 You've now successfully implemented fan-out in our application. Each function will run independently and in parallel. If one function fails, the others will not be disrupted.
@@ -250,9 +166,9 @@ Other benefits of fan-out include:
 * **New features or refactors**: As each function is independent, you can add new functions or refactor existing ones without having to edit unrelated code.
 * **Trigger functions in different codebases**: If you have multiple codebases, even using different programming languages (for example [TypeScript](/docs/reference/typescript) or [Go](https://pkg.go.dev/github.com/inngest/inngestgo)), you can trigger functions in both codebases from a single event.
 
-</GuideSection>
+</LanguageSection>
 
-</GuideSelector>
+</LanguageSelector>
 
 ## Further reading
 

@@ -59,7 +59,7 @@ export function Code({ codeblock }: { codeblock: CodeBlock }) {
               " flex overflow-x-auto pt-3 font-mono text-sm leading-[1.625]"
             }
           >
-            <code className="flex-1 px-6 py-1">
+            <code className="flex-1 px-6 py-4">
               {tokens.map((line, lineIndex) => (
                 <Fragment key={lineIndex}>
                   {line

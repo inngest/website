@@ -10,6 +10,7 @@ import { getOpenGraphImageURL } from "../utils/social";
 import { useAnonymousID } from "../shared/trackingHooks";
 import "../styles/globals.css";
 import * as fullstory from "@fullstory/browser";
+import Analytics from "@/components/Analytics";
 
 import {
   Layout as DocsLayout,
@@ -183,6 +184,7 @@ function MyApp({ Component, pageProps }: AppProps<DefaultProps>) {
         }}
       />
       <GoogleTagManager />
+      <Analytics />
     </>
   );
 }

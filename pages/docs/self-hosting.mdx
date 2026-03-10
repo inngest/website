@@ -1,4 +1,4 @@
-import { Callout, Warning, CodeGroup, DownloadLink } from "src/shared/Docs/mdx";
+import { Callout, Info, Warning, CodeGroup, DownloadLink } from "src/shared/Docs/mdx";
 import Github from "src/shared/Icons/Github.tsx";
 
 export const description = 'Learn how to self-host Inngest. Includes configuration options and instructions for using external services.'
@@ -10,6 +10,11 @@ Self-hosting support for Inngest is supported as of the 1.0 release.
 * [Why self-host Inngest?](#why-self-host-inngest)
 * [Inngest system architecture](#inngest-system-architecture)
 * [How to self-host Inngest](#how-to-self-host-inngest)
+
+<Info>
+Inngest's support team does not guarantee direct support for self-hosted instances. If you need help, please [file an issue](https://github.com/inngest/inngest).
+<br /> If you require dedicated support or service guarantees for self-hosting, please [contact us](/contact?ref=docs-self-hosting) to explore enterprise options.
+</Info>
 
 ## Why self-host Inngest?
 
@@ -66,7 +71,7 @@ docker run -p 8288:8288 -p 8289:8289 -e INNGEST_EVENT_KEY=abcd -e INNGEST_SIGNIN
 ```
 </CodeGroup>
 
-This will start the Inngest server on the default port `8288` and use the default configuration, including SQLite for persistence.
+This will start the Inngest server on the default port `8288` and use the default configuration, including SQLite for persistence. Additionally, the Connect gateway will be available on port `8289`.
 
 ### Configuration
 
@@ -82,7 +87,7 @@ By default, the server will:
 To securely configure your server, create your event and signing keys using whatever format you choose and start the Inngest server using them. You can also pass them via environment variable (see below):
 
 <Callout>
-The signing key must be a valid hexadecimal string with an even number of characters. You can generate a secure signing key using: 
+The signing key must be a valid hexadecimal string with an even number of characters. You can generate a secure signing key using:
 ```plaintext
 openssl rand -hex 32
 ```
@@ -140,6 +145,8 @@ GLOBAL OPTIONS:
 <summary>**Environment variables**</summary>
 
   Any CLI option can be set via environment variable by converting the flag to uppercase, replacing hyphens with underscores, and prefixing it with `INNGEST_`. For example, `--port 8288` can be set with the `INNGEST_PORT` environment variable.
+
+  To set the log level, use `LOG_LEVEL=WARN` or whatever level you choose. This environment variable does not use the Inngest prefix. The environment variable will always take precedence over the CLI `--log-level` flag.
 </details>
 
 <details>
@@ -166,6 +173,8 @@ GLOBAL OPTIONS:
     }
     ```
   </CodeGroup>
+
+  Note, configuring the log level can only be currently done via flag or environment variable.
 </details>
 
 ### Configuring Inngest SDKs to use self-hosted server
@@ -206,8 +215,8 @@ services:
     image: inngest/inngest
     command: "inngest start"
     ports:
-      - "8288:8288"
-      - "8289:8289"
+      - "8288:8288" # APIs and Dashboard
+      - "8289:8289" # Connect WebSocket gateway
     environment:
       - INNGEST_EVENT_KEY=your_event_key_here # Must be hex string with even number of chars
       - INNGEST_SIGNING_KEY=your_signing_key_here # Must be hex string with even number of chars
@@ -276,6 +285,7 @@ networks:
 Inngest provides a Helm chart for production-ready Kubernetes deployments. Key features include:
 
 **Quick Setup & Production Ready**
+- Installable from OCI Registry ([see docs](https://github.com/inngest/inngest-helm?tab=readme-ov-file#installation))
 - Supports Kubernetes 1.20+ and Helm 3.0+ with simple installation
 - Bundled PostgreSQL and Redis for easy setup, with support for external databases
 - Consistent resource naming across all environments regardless of Helm release name

@@ -14,61 +14,13 @@ Debounce delays function execution until a series of events are no longer receiv
 
 <CodeGroup>
 ```ts {{ title: "TypeScript" }}
-export default inngest.createFunction(
-  {
-    id: "handle-webhook",
-    debounce: {
-      key: "event.data.account_id",
-      period: "5m",
-      timeout: "10m",
-    },
-  },
-  { event: "intercom/company.updated" },
-  async ({ event, step }) => {
-    // This function will only be scheduled 5 minutes after events are no longer received with the same
-    // `event.data.account_id` field.
-    //
-    // `event` will be the last event in the series received.
-  }
-);
+!snippet:path=snippets/ts/v3/debounce/basic.ts
 ```
 ```go {{ title: "Go" }}
-inngestgo.CreateFunction(
-	client,
-	inngestgo.FunctionOpts{
-		ID: "handle-webhook",
-		Debounce: &inngestgo.ConfigDebounce{
-			Key:     "event.data.account_id",
-			Period:  "5m",
-			Timeout: "10m",
-		},
-	},
-	inngestgo.EventTrigger("intercom/company.updated", nil),
-	func(ctx context.Context, input inngestgo.Input[map[string]any]) (any, error) {
-		// This function will only be scheduled 5 minutes after events are no longer received with the same
-		// `event.data.account_id` field.
-		//
-		// `event` will be the last event in the series received.
-		return nil, nil
-	},
-)
+!snippet:path=snippets/go/v0_11/debounce/basic.go
 ```
 ```py {{ title: "Python" }}
-@inngest.create_function(
-    fn_id="handle-webhook",
-    debounce=inngest.Debounce(
-        key="event.data.account_id",
-        period=datetime.timedelta(minutes=5),
-        timeout=datetime.timedelta(minutes=10)
-    ),
-    trigger=inngest.Trigger(event="intercom/company.updated")
-)
-async def handle_webhook(ctx: inngest.Context):
-    // This function will only be scheduled 5 minutes after events are no longer received with the same
-    // `event.data.account_id` field.
-    //
-    // `event` will be the last event in the series received.
-    pass
+!snippet:path=snippets/py/v0_5/debounce/basic.py
 ```
 </CodeGroup>
 

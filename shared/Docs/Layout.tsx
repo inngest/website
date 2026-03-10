@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Head from "next/head";
-import { Router } from "next/router";
+import { Router, useRouter } from "next/router";
 import { MDXProvider } from "@mdx-js/react";
 import { motion } from "framer-motion";
 
@@ -9,10 +9,11 @@ import { Footer } from "./Footer";
 import { Home } from "./Home";
 import { Header } from "./Header";
 import Logo from "../Icons/Logo";
-import { Navigation, PageSidebar } from "./Navigation";
+import { Navigation, PageSidebar, ActiveSectionProvider } from "./Navigation";
 import { Prose } from "./Prose";
 import { SectionProvider } from "./SectionProvider";
 import { useMobileNavigationStore } from "./MobileNavigation";
+import { getLanguageFromPath, getSdkVersionFromPath, SDK_ALL } from "./LanguageStore";
 import { getOpenGraphImageURL } from "../../utils/social";
 import clsx from "clsx";
 
@@ -54,6 +55,10 @@ export function Layout({
   sourceFilePath,
   hidePageSidebar,
 }: Props) {
+  const router = useRouter();
+  const sdkLanguage = getLanguageFromPath(router.asPath) || SDK_ALL;
+  const sdkVersion = getSdkVersionFromPath(router.asPath) || SDK_ALL;
+
   const siteTitle = `Inngest Documentation`;
   const preferredTitle: string = metaTitle || title || siteTitle;
   const pageTitle =
@@ -82,6 +87,9 @@ export function Layout({
           <meta name="twitter:title" content={pageTitle} />
           <meta name="twitter:image" content={metaImage} />
 
+          <meta name="docsearch:sdkLanguage" content={sdkLanguage} />
+          <meta name="docsearch:sdkVersion" content={sdkVersion} />
+
           <link rel="preconnect" href="https://fonts-cdn.inngest.com/" />
           <link
             rel="stylesheet"
@@ -89,15 +97,19 @@ export function Layout({
           />
 
           <script dangerouslySetInnerHTML={{ __html: modeScript }} />
+          <script dangerouslySetInnerHTML={{ __html: `
+            window.editPageURL = "${editPageURL}";
+          `}} />
         </Head>
+        <ActiveSectionProvider>
         <SectionProvider sections={sections}>
           <Header />
 
-          <div className="lg:ml-[248px]">
+          <div className="lg:ml-[248px] xl:ml-[280px]">
             {/* @ts-ignore */}
             <motion.header
               layoutScroll
-              className="fixed inset-y-0 mt-14 left-0 z-40 contents lg:w-[248px] overflow-y-auto border-r border-subtle pl-4 pr-3 py-4 pb-8 lg:block"
+              className="fixed inset-y-0 mt-14 left-0 z-40 contents lg:w-[248px]  xl:w-[280px] overflow-y-auto border-r border-subtle pl-4 pr-3 py-4 pb-8 lg:block"
             >
               <Navigation className="hidden lg:block" />
             </motion.header>
@@ -106,7 +118,7 @@ export function Layout({
               // @ts-ignore
               <motion.nav
                 layoutScroll
-                className="fixed overflow-y-auto inset-y-0 mt-14 pt-16 pb-12 right-0 z-40 hidden w-60 border-l border-subtle px-6 2xl:px-10 xl:block 2xl:w-96"
+                className="fixed overflow-y-auto inset-y-0 mt-14 pt-16 pb-12 right-0 z-40 hidden w-60 px-6 2xl:px-10 xl:block 2xl:w-96"
               >
                 <div className="pt-2">
                   <PageSidebar />
@@ -137,6 +149,7 @@ export function Layout({
             </div>
           </div>
         </SectionProvider>
+        </ActiveSectionProvider>
       </MDXProvider>
     </div>
   );

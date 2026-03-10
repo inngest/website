@@ -14,7 +14,7 @@ export default function CaseStudy({
   image: string;
 }) {
   return (
-    <div className="max-w-6xl w-[90%] px-4 sm:w-auto mx-auto my-12 grid md:grid-cols-2 gap-16">
+    <div className="mx-auto my-12 grid w-[90%] max-w-6xl gap-16 px-4 sm:w-auto md:grid-cols-2">
       <div className="flex flex-col items-center justify-center">
         <Image
           className="mx-auto w-full max-w-4xl rounded-md"
@@ -26,22 +26,22 @@ export default function CaseStudy({
       </div>
       <div className="flex flex-col gap-8">
         <div>
-          <p className="text-muted text-sm">Customer story</p>
-          <H2>{title}</H2>
+          <p className="mb-2 text-sm text-muted">Customer story</p>
+          <H2 className="text-2xl sm:text-4xl">{title}</H2>
         </div>
         {!!description && Array.isArray(description) ? (
           <div className="flex flex-col gap-4">
             {description.map((para, idx) => (
               <p
                 key={idx}
-                className="text-sm md:text-base max-w-4xl text-subtle"
+                className="max-w-4xl text-sm text-subtle md:text-base"
               >
                 {para}
               </p>
             ))}
           </div>
         ) : (
-          <p className="text-sm md:text-base max-w-4xl text-subtle">
+          <p className="max-w-4xl text-sm text-subtle md:text-base">
             {description}
           </p>
         )}

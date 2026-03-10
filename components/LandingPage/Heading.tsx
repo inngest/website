@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import { cn } from "src/components/utils/classNames";
 export const commonClassNames = `font-semibold leading-tight sm:leading-tight`;
 export const gradientClassNames = `text-stone-50`;
 
@@ -22,10 +23,18 @@ export function H1({
   );
 }
 
-export function H2({ children }: { children: React.ReactNode }) {
+export function H2({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
     <h2
-      className={`text-3xl sm:text-5xl ${commonClassNames} ${gradientClassNames}`}
+      className={cn(
+        `text-3xl sm:text-5xl ${commonClassNames} ${gradientClassNames} ${className}`
+      )}
     >
       {children}
     </h2>

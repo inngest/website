@@ -1,4 +1,4 @@
-import { CodeGroup, Callout, GuideSection, GuideSelector } from "shared/Docs/mdx";
+import { CodeGroup, Callout, LanguageSection, LanguageSelector } from "shared/Docs/mdx";
 export const description = 'Implement loops in your Inngest functions and avoid common pitfalls.';
 
 # Working with Loops in Inngest
@@ -10,14 +10,9 @@ This page covers how to implement loops in your Inngest functions and avoid comm
 
 ## Simple function example
 
-<GuideSelector
-  options={[
-    { key: "typescript", title: "TypeScript" },
-    { key: "go", title: "Go" },
-    { key: "python", title: "Python" },
-  ]}>
+<LanguageSelector>
 
-<GuideSection show="typescript">
+<LanguageSection show="typescript">
 
 
 Let's start with a simple example to illustrate the concept:
@@ -98,9 +93,9 @@ inngest.createFunction(
 
 Now, "hello" is printed only once, as expected.
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="go">
+<LanguageSection show="go">
 
 Let's start with a simple example to illustrate the concept:
 
@@ -240,9 +235,9 @@ inngestgo.CreateFunction(
 
 Now, "hello" is printed only once, as expected.
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="python">
+<LanguageSection show="python">
 Let's start with a simple example to illustrate the concept:
 
 ```python
@@ -330,20 +325,15 @@ async def simple_function(ctx: inngest.Context):
 
 Now, "hello" is printed only once, as expected.
 
-</GuideSection>
+</LanguageSection>
 
-</GuideSelector>
+</LanguageSelector>
 
 ## Loop example
 
-<GuideSelector
-  options={[
-    { key: "typescript", title: "TypeScript" },
-    { key: "go", title: "Go" },
-    { key: "python", title: "Python" },
-  ]}>
+<LanguageSelector>
 
-<GuideSection show="typescript">
+<LanguageSection show="typescript">
 Here's [an example](/blog/import-ecommerce-api-data-in-seconds) of an Inngest function that imports all products from a Shopify store into a local system. This function iterates over all pages combining all products into a single array.
 
 ```typescript
@@ -387,52 +377,12 @@ Note that in the example above `getShopifySession` is deterministic across multi
 
 Read more about this use case in the [blog post](/blog/import-ecommerce-api-data-in-seconds).
 
-</GuideSection>
-<GuideSection show="go">
+</LanguageSection>
+<LanguageSection show="go">
 Here's an example of an Inngest function that imports all products from a Shopify store into a local system. This function iterates over all pages combining all products into a single array.
 
 ```go
-inngest.CreateFunction(
-	"shopify-product-import",
-	inngest.EventTrigger("shopify/import.requested"),
-	func(ctx context.Context, event inngest.Event) error {
-		var allProducts []Product
-		var cursor *string
-		hasMore := true
-
-		// Use the event's "data" to pass key info like IDs
-		// Note: in this example is deterministic across multiple requests
-		// If the returned results must stay in the same order, wrap the db call in step.run()
-		session, err := database.GetShopifySession(event.Data["storeId"].(string))
-		if err != nil {
-			return err
-		}
-
-		for hasMore {
-			if page, err := step.Run(fmt.Sprintf("fetch-products-%v", cursor), func() error {
-				return shopify.Product.All(&shopify.ProductListOptions{
-					Session: session,
-					SinceID: cursor,
-				})
-			}); err != nil {
-				return err
-			}
-
-			// Combine all of the data into a single list
-			allProducts = append(allProducts, page.Products...)
-
-			if len(page.Products) == 50 {
-				id := page.Products[49].ID
-				cursor = &id
-			} else {
-				hasMore = false
-			}
-		}
-
-		// Now we have the entire list of products within allProducts!
-		return nil
-	},
-)
+!snippet:path=snippets/go/v0_11/examples/working-with-loops.go
 ```
 
 In the example above, each iteration of the loop is managed using `step.Run()`, ensuring that **all non-deterministic logic (like fetching products from Shopify) is encapsulated within a step**. This approach guarantees that if the request fails, it will be retried automatically, in the correct order. This structure aligns with Inngest's execution model, where each step is a separate HTTP request, ensuring robust and consistent loop behavior.
@@ -441,8 +391,8 @@ Note that in the example above `getShopifySession` is deterministic across multi
 
 Read more about this use case in the [blog post](/blog/import-ecommerce-api-data-in-seconds).
 
-</GuideSection>
-<GuideSection show="python">
+</LanguageSection>
+<LanguageSection show="python">
 Here's an example of an Inngest function that imports all products from a Shopify store into a local system. This function iterates over all pages combining all products into a single array.
 
 ```python
@@ -481,9 +431,9 @@ Note that in the example above `get_shopify_session` is deterministic across mul
 
 Read more about this use case in the [blog post](/blog/import-ecommerce-api-data-in-seconds).
 
-</GuideSection>
+</LanguageSection>
 
-</GuideSelector>
+</LanguageSelector>
 
 ## Best practices: implementing loops in Inngest
 

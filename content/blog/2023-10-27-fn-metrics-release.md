@@ -3,6 +3,7 @@ heading: "New in observability: Function Metrics"
 subtitle: "Better observability into function runs"
 image: /assets/blog/fn-metrics/feature-image.png
 date: 2023-10-30
+dateUpdated: 2026-01-07
 author: Darwin Wu
 ---
 

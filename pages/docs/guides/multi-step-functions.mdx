@@ -1,4 +1,4 @@
-import { CodeGroup, Callout, GuideSelector, GuideSection } from "src/shared/Docs/mdx";
+import { CodeGroup, Callout, LanguageSelector, LanguageSection } from "src/shared/Docs/mdx";
 
 export const description = `Build reliable workflows with event coordination and conditional execution using Inngest's multi-step functions.`
 export const hidePageSidebar = true;
@@ -25,14 +25,9 @@ This approach makes building reliable and distributed code simple. By wrapping a
 
 ## How to write a multi-step function
 
-<GuideSelector
-  options={[
-    { key: "typescript", title: "TypeScript" },
-    { key: "go", title: "Go" },
-    { key: "python", title: "Python" },
-  ]}>
+<LanguageSelector>
 
-<GuideSection show="typescript">
+<LanguageSection show="typescript">
 Consider this simple [Inngest function](/docs/learn/inngest-functions) which sends a welcome email when a user signs up:
 
 <CodeGroup>
@@ -145,8 +140,8 @@ That's it! We've now written a multi-step function that will send a welcome emai
 
 Most importantly, we had to write no config to do this. We can use all the power of JavaScript to write our functions and all the power of Inngest's tools to coordinate between events and steps.
 
-</GuideSection>
-<GuideSection show="go">
+</LanguageSection>
+<LanguageSection show="go">
 Consider this simple [Inngest function](/docs/learn/inngest-functions) which sends a welcome email when a user signs up:
 
 <CodeGroup>
@@ -201,8 +196,8 @@ That's it! We've now written a multi-step function that will send a welcome emai
 
 Most importantly, we had to write no config to do this. We can use all the power of JavaScript to write our functions and all the power of Inngest's tools to coordinate between events and steps.
 
-</GuideSection>
-<GuideSection show="python">
+</LanguageSection>
+<LanguageSection show="python">
 Consider this simple [Inngest function](/docs/learn/inngest-functions) which sends a welcome email when a user signs up:
 
 <CodeGroup>
@@ -319,20 +314,15 @@ That's it! We've now written a multi-step function that will send a welcome emai
 
 Most importantly, we had to write no config to do this. We can use all the power of JavaScript to write our functions and all the power of Inngest's tools to coordinate between events and steps.
 
-</GuideSection>
-</GuideSelector>
+</LanguageSection>
+</LanguageSelector>
 
 
 ## Step Reference
 
-<GuideSelector
-  options={[
-    { key: "typescript", title: "TypeScript" },
-    { key: "go", title: "Go" },
-    { key: "python", title: "Python" },
-  ]}>
+<LanguageSelector>
 
-<GuideSection show="typescript">
+<LanguageSection show="typescript">
 
 You can read more about [Inngest steps](/docs/learn/inngest-steps) or jump directly to a step reference guide:
 
@@ -449,9 +439,9 @@ If code within a loop is not encapsulated within a step, it will re-run multiple
 
 Learn more about [working with loops in Inngest](/docs/guides/working-with-loops).
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="go">
+<LanguageSection show="go">
 You can read more about [Inngest steps](/docs/learn/inngest-steps) or jump directly to a step reference guide:
 
 - [`step.Run()`](https://pkg.go.dev/github.com/inngest/inngestgo@v0.7.4/step#Run): Run synchronous or asynchronous code as a retriable step in your function.
@@ -484,9 +474,9 @@ If code within a loop is not encapsulated within a step, it will re-run multiple
 Learn more about [working with loops in Inngest](/docs/guides/working-with-loops).
 
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="python">
+<LanguageSection show="python">
 You can read more about [Inngest steps](/docs/learn/inngest-steps) or jump directly to a step reference guide:
 
 - [`step.run()`](/docs/reference/python/steps/run): Run synchronous or asynchronous code as a retriable step in your function.
@@ -545,9 +535,9 @@ If code within a loop is not encapsulated within a step, it will re-run multiple
 Learn more about [working with loops in Inngest](/docs/guides/working-with-loops).
 
 
-</GuideSection>
+</LanguageSection>
 
-</GuideSelector>
+</LanguageSelector>
 
 ## Further reading
 

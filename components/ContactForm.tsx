@@ -2,22 +2,33 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "src/components/utils/classNames";
+import { analytics } from "@/utils/segment";
 
 const CONTACT_KEY = process.env.NEXT_PUBLIC_INNGEST_KEY;
 
 const DEBUG = process.env.NEXT_PUBLIC_HOST.match(/localhost/) ? true : false;
 
+// Check Notion tracking plan for event names and schemas:
+export const FORM_TYPE = {
+  SALES_LEAD_FORM: "sales_lead",
+  YC_LEAD_FORM: "yc_lead",
+}
+const GTM_EVENT_NAMES = {
+  [FORM_TYPE.SALES_LEAD_FORM]: "Sales Lead Form Submitted",
+  [FORM_TYPE.YC_LEAD_FORM]: "YC Lead Form Submitted",
+};
+
 export default function ContactForm({
   eventName,
   eventVersion,
-  gtmEvent,
+  formType,
   button = "Send",
   redirectTo,
   className,
 }: {
   eventName: string;
   eventVersion: string;
-  gtmEvent: string;
+  formType: string;
   button?: string;
   redirectTo?: string;
   className?: string;
@@ -28,14 +39,45 @@ export default function ContactForm({
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  const [honeyPot, setHoneyPot] = useState("");
   const [survey, setSurvey] = useState("");
+  const [ycVerificationBadgeURL, setYCVerificationBadgeURL] = useState<
+    string | undefined
+  >();
   const [disabled, setDisabled] = useState<boolean>(false);
   const [buttonCopy, setButtonCopy] = useState(button);
+
+  const doesMentionSoc2 =
+    message.match(/soc 2/i) ||
+    message.match(/soc2/i) ||
+    message.match(/security/i) ||
+    message.match(/compliance/i);
 
   const onSubmit = async (e) => {
     e.preventDefault();
     setDisabled(true);
     setButtonCopy("Sending...");
+
+    // honey pot for bots - if the website field is not empty, we don't send the message
+    const field = e.target.website;
+    if (honeyPot?.length > 0 || field?.value?.length > 0) {
+      setButtonCopy("Message not sent");
+      setDisabled(false);
+      return;
+    }
+
+    const spamScore = calculateSpamScore(name, message, survey, email);
+
+    if (DEBUG) {
+      console.log("Spam score:", spamScore);
+    }
+
+    // Reject if score is too high
+    if (spamScore >= 3) {
+      setButtonCopy("Message not sent");
+      setDisabled(false);
+      return;
+    }
 
     let ref = "";
     try {
@@ -60,15 +102,27 @@ export default function ContactForm({
       await window.Inngest.event(
         {
           name: eventName,
-          data: { email, name, message, survey, ref },
+          data: { email, name, message, survey, ref, ycVerificationBadgeURL },
           user: { email, name },
           v: eventVersion,
         },
         { key: CONTACT_KEY }
       );
+      // Segment
+      // NOTE - We don't yet identify as it isn't authenticated so we shouldn't over-write any existing user attributes
+      analytics.track('Form Submitted', {
+        email,
+        form_type: formType,
+        name,
+        how_did_you_hear_about_us: survey,
+        what_can_we_help_you_with: message,
+        form_source: 'website',
+        ref,
+      });
+      // This will happen async, so we don't want them to leave the website
       // GTM
       window.dataLayer?.push({
-        event: gtmEvent,
+        event: GTM_EVENT_NAMES[formType],
         ref,
         survey,
       });
@@ -87,10 +141,10 @@ export default function ContactForm({
           console.log(redirectURL.toString());
         }
 
-        router.push(redirectURL.toString());
-      } else {
-        setButtonCopy("Your message has been sent!");
+        // Open a new tab. We need tracking to flush/complete so we open a new tab
+        window.open(redirectURL.toString(), "_blank");
       }
+      setButtonCopy("Your message has been sent!");
     } catch (e) {
       console.warn("Message not sent", e);
       setButtonCopy("Message not sent");
@@ -102,11 +156,11 @@ export default function ContactForm({
     <form
       onSubmit={onSubmit}
       className={cn(
-        "p-4 sm:p-6 bg-surfaceSubtle flex flex-col items-start gap-4 rounded-lg border border-subtle",
+        "flex flex-col items-start gap-4 rounded-lg border border-subtle bg-surfaceSubtle p-4 sm:p-6",
         className
       )}
     >
-      <label className="w-full flex flex-col gap-2">
+      <label className="flex w-full flex-col gap-2">
         <span>
           Your name <span className="text-warning">*</span>
         </span>
@@ -115,10 +169,10 @@ export default function ContactForm({
           name="name"
           onChange={(e) => setName(e.target.value)}
           required
-          className="w-full p-3 bg-canvasBase border border-muted outline-none rounded-md"
+          className="w-full rounded-md border border-muted bg-canvasBase p-3 outline-none"
         />
       </label>
-      <label className="w-full flex flex-col gap-2">
+      <label className="flex w-full flex-col gap-2">
         <span>
           Company email <span className="text-warning">*</span>
         </span>
@@ -127,10 +181,40 @@ export default function ContactForm({
           name="email"
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="w-full p-3 bg-canvasBase border border-muted outline-none rounded-md"
+          className="w-full rounded-md border border-muted bg-canvasBase p-3 outline-none"
         />
       </label>
-      <label className="w-full flex flex-col gap-2">
+      {/* honey pot */}
+      <label htmlFor="website" style={{ display: "none" }}>
+        <input
+          type="text"
+          id="website"
+          name="website"
+          onChange={(e) => setHoneyPot(e.target.value)}
+        />
+      </label>
+      {eventName === "website/yc-deal.submitted" && (
+        <label className="flex w-full flex-col gap-2">
+          <span>
+            YC Verification Badge URL <span className="text-warning">*</span>{" "}
+            <a
+              className="ml-1 text-xs text-blue-300 underline"
+              target="_blank"
+              href="https://bookface.ycombinator.com/verify"
+            >
+              Get your YC verification badge
+            </a>
+          </span>
+          <input
+            type="text"
+            name="yc_verification_badge_url"
+            required
+            onChange={(e) => setYCVerificationBadgeURL(e.target.value)}
+            className="w-full rounded-md border border-muted bg-canvasBase p-3 outline-none"
+          />
+        </label>
+      )}
+      <label className="flex w-full flex-col gap-2">
         <span>
           How did you hear about us? <span className="text-warning">*</span>
         </span>
@@ -139,17 +223,34 @@ export default function ContactForm({
           name="survey"
           required
           onChange={(e) => setSurvey(e.target.value)}
-          className="w-full p-3 bg-canvasBase border border-muted outline-none rounded-md"
+          className="w-full rounded-md border border-muted bg-canvasBase p-3 outline-none"
         />
       </label>
-      <label className="w-full flex flex-col gap-2">
+      <label className="flex w-full flex-col gap-2">
         <span>What can we help you with?</span>
         <textarea
           name="message"
           onChange={(e) => setMessage(e.target.value)}
-          className="w-full min-h-[6rem] p-3 bg-canvasBase border border-muted outline-none rounded-md"
+          className="min-h-[6rem] w-full rounded-md border border-muted bg-canvasBase p-3 outline-none"
         />
       </label>
+
+      {doesMentionSoc2 && (
+        <div className="w-full rounded-lg border border-subtle p-2 px-4 py-2">
+          <p>
+            Need a SOC2 report?{" "}
+            <a
+              href="https://trust.inngest.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-link hover:underline"
+            >
+              Request one here
+            </a>
+            .
+          </p>
+        </div>
+      )}
 
       {/* <label className="w-full flex flex-col gap-2">
         What's the size of your engineering team?
@@ -169,11 +270,11 @@ export default function ContactForm({
           <option value="100+">100+</option>
         </select>
       </label> */}
-      <div className="mt-4 w-full flex flex-row justify-items-end">
+      <div className="mt-4 flex w-full flex-row justify-items-end">
         <button
           type="submit"
           disabled={disabled}
-          className={`button group inline-flex items-center justify-center gap-0.5 rounded-lg text-base font-medium tracking-tight transition-all px-10 py-2.5 bg-cta hover:bg-ctaHover text-carbon-1000 font-medium ${
+          className={`group button inline-flex items-center justify-center gap-0.5 rounded-lg bg-cta px-10 py-2.5 text-base font-medium font-medium tracking-tight text-carbon-1000 transition-all hover:bg-ctaHover ${
             disabled ? "opacity-50" : ""
           }`}
         >
@@ -182,4 +283,59 @@ export default function ContactForm({
       </div>
     </form>
   );
+}
+
+// Spam detection - calculate spam score based on multiple signals
+function isGibberish(str: string): boolean {
+  if (!str || str.length < 8) return false;
+  const letters = str.replace(/[^a-zA-Z]/g, "").toLowerCase();
+  if (letters.length < 6) return false;
+  const vowels = letters.replace(/[^aeiou]/g, "").length;
+  const vowelRatio = vowels / letters.length;
+  // Real text typically has 30-45% vowels; gibberish often has <20%
+  if (vowelRatio < 0.2) return true;
+  // Single long words with low-ish vowels are likely spam
+  const words = str.trim().split(/\s+/);
+  if (words.length === 1 && letters.length > 10 && vowelRatio < 0.3) {
+    return true;
+  }
+  return false;
+}
+
+function isPersonalEmail(emailAddress: string): boolean {
+  const personalDomains = [
+    "gmail.com",
+    "hotmail.com",
+    "outlook.com",
+    "yahoo.com",
+    "aol.com",
+    "icloud.com",
+    "live.com",
+    "msn.com",
+    "mail.com",
+    "proton.me",
+    "protonmail.com",
+  ];
+  const domain = emailAddress.split("@")[1]?.toLowerCase();
+  return personalDomains.includes(domain);
+}
+
+/**
+ * Spam detection - calculate spam score based on multiple signals, returns a number between 0 and 7
+ * 0 = not spam
+ * 3 = likely spam
+ * 7 = definitely spam
+ */
+function calculateSpamScore(
+  name: string,
+  message: string,
+  survey: string,
+  email: string
+): number {
+  let score = 0;
+  if (isGibberish(name)) score += 2;
+  if (isGibberish(message)) score += 2;
+  if (isGibberish(survey)) score += 2;
+  if (isPersonalEmail(email)) score += 1;
+  return score;
 }

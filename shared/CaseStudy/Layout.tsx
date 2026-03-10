@@ -2,10 +2,9 @@ import Head from "next/head";
 import Link from "next/link";
 import Image from "next/image";
 
-import Header from "src/shared/Header";
+import Header from "src/components/RedesignedLanding/Header/Header";
 import Container from "src/shared/layout/Container";
-import Footer from "src/shared/Footer";
-import FooterCallout from "src/shared/Footer/FooterCallout";
+import Footer from "src/components/RedesignedLanding/Footer";
 import { Button } from "../Button";
 import { SectionProvider } from "shared/Docs/SectionProvider";
 import AnnouncementBanner from "src/components/AnnouncementBanner";
@@ -30,7 +29,7 @@ export type Props = {
     avatar: string;
   };
   companyDescription: string;
-  companyURL: string;
+  companyURL?: string;
   companyEmployees?: string;
   companyIndustry?: string;
   companyUseCase?: string;
@@ -137,11 +136,17 @@ export function Layout({
               className="mb-4 inline-flex max-h-[40px] min-w-[160px]"
             />
             <p>{companyDescription}</p>
-            <p>
-              <a href={companyURL} target="_blank" className="hover:underline">
-                {companyURL.replace(/https\:\/\//, "")}
-              </a>
-            </p>
+            {companyURL && (
+              <p>
+                <a
+                  href={companyURL}
+                  target="_blank"
+                  className="hover:underline"
+                >
+                  {companyURL.replace(/https\:\/\//, "")}
+                </a>
+              </p>
+            )}
             {companyEmployees && (
               <p>
                 <span className="font-medium">Employees:</span>{" "}
@@ -187,16 +192,7 @@ export function Layout({
         </div>
       </Container>
 
-      <FooterCallout
-        title="Talk to a product expert"
-        description="Chat with sales engineering to learn how Inngest can help your team ship more reliable products, faster"
-        ctaHref="/contact?ref=customers"
-        ctaText="Contact sales engineering"
-        ctaRef={"customers"}
-        showCliCmd={false}
-      />
-
-      <Footer disableCta={true} />
+      <Footer />
     </div>
   );
 }

@@ -2,6 +2,7 @@
 heading: "Programmable event platforms"
 subtitle: Programmable event platforms allow you to build serverless event-driven systems in minutes.  Here's an introduction to them.
 date: 2022-01-10
+dateUpdated: 2026-01-07
 image: "/assets/blog/programmable-event-platforms/featured-image.jpg"
 ---
 
@@ -17,7 +18,7 @@ We’re thrilled to preview our new serverless programmable event platform, maki
 
 How does Inngest work? We provide of the queues, subscribers, workers, backoffs, retry logic, schema management, event replays, and audit trails out of the box. We let you see which events trigger which worfklows, when workflows were live, and which users trigger which workflows. We also let you write and deploy your serverless functions in any language, which we'll run for you.
 
-It’s not just lambda: we allow you to run a complex [DAG](https://en.wikipedia.org/wiki/Directed_acyclic_graph) of serverless functions, every time events are received. Events can be anything — internal API calls, subscriptions to your current infrastructure, custom webhooks, OAuth service integrations, or (if you're into it) web3 events.
+It's not just lambda: we allow you to run a complex [DAG](https://en.wikipedia.org/wiki/Directed_acyclic_graph) of serverless functions, every time events are received. Events can be anything — internal API calls, subscriptions to your current infrastructure, custom webhooks, OAuth service integrations, or (if you're into it) web3 events.
 
 Your DAG is defined via a strictly-typed config (_not_ YAML), so we can validate and verify your config statically (and locally). It handles coordination between independent events (wait for this for some time) and can run custom code in any language as part of your workflow. Here’s a summary of the functionality we’ve built for our preview:
 

@@ -82,7 +82,7 @@ const weeklyDigest = inngest.createFunction(
 
 One feature of Inngest is that it supports running your code on other platforms like Vercel and Netlify - no extra deployment process needed. Inngest takes care of calling your funciton on the schedule that you specify. To do this, Inngest calls your Next.js app via HTTP.
 
-The Inngest SDK also provides a `serve` handler that enables Inngest to securely call your functions as required. You give your app a name and pass all of the functions that you created. In our Next.js app, we'll create a new file as `/pages/api/inngest.js` and set the `INNGEST_SIGNING_KEY` environment variable ([grab one here](https://app.inngest.com/secrets)):
+The Inngest SDK also provides a `serve` handler that enables Inngest to securely call your functions as required. You give your app a name and pass all of the functions that you created. In our Next.js app, we'll create a new file as `/pages/api/inngest.js` and set the `INNGEST_SIGNING_KEY` environment variable ([grab one here](https://app.inngest.com/env/production/manage/signing-key)):
 
 ```js twoslash title="/pages/api/inngest.js"
 import { serve } from "inngest/next"
@@ -194,7 +194,7 @@ const welcomeEmail = inngest.createFunction(
 )
 
 // This is the same as above, you can pass as many functions are you want in the array:
-// Grab your key here: https://app.inngest.com/secrets
+// Grab your key here: https://app.inngest.com/env/production/manage/signing-key
 export default serve("My App", [ welcomeEmail ]);
 ```
 {/* TODO - Replace w/ below when new inngest-js is out:

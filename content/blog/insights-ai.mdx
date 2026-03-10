@@ -1,0 +1,57 @@
+---
+heading: "Meet Insights AI, Your Inngest Production Assistant"
+image: /assets/blog/insights-ai/cover.jpg
+subtitle: Ask Insights any question about your production events and workflow runs.
+date: 2026-01-13
+author: Keoni Murray
+---
+
+Since launching [Insights](/blog/insights-query-events-and-runs), we've continued to make it more powerful, first with [Shared Queries and Schema Explorer](/blog/insights-schema-explorer-shared-queries), and now with an AI assistant that writes queries for you.
+
+Today, we're shipping Insights AI. Describe what you need in plain English, and it handles the SQL.
+
+## **Ask in plain English**
+
+Instead of writing SQL, describe what you want in natural language. Insights AI identifies relevant events, writes a query that adheres to Insights' syntax, and runs it automatically.
+
+"Show me all failed events from the last 24 hours."
+
+"How many users signed up this week?"
+
+"What's the average duration of my payment processing function?"
+
+Type it in. Get your answer. No syntax errors, no docs lookup, no guessing which fields exist.
+
+<AutoplayVideo src={"/assets/blog/insights-ai/insights-assistant-demo-edited.mp4"} />
+
+## **Why it matters**
+
+Insights has specific query constraints, no `COUNT(DISTINCT)`, no sub-selects, no joins.
+
+ Insights AI knows all of this, so you don't have to.
+
+This opens up Insights to your whole team. Product managers can pull their own metrics. Support can investigate issues without pinging engineering. And for team members who do know SQL, you'll move faster, describe what you want instead of remembering syntax.
+
+The assistant remembers your conversation, so you can refine queries iteratively. Results not quite right? Tell it what to change.
+
+### Complex queries and bulk inspection
+
+Insights AI is especially useful for queries that would take time to write manually,  aggregations, groupings, and time-based analysis.
+
+It also goes beyond querying. You can inspect events in bulk, browse payload structures, and investigate issues without crafting SELECT statements by hand. Soon, you'll be able to do the same with runs.
+
+![Insights AI can answer complex aggregation question, like inspecting the data of multiple events.](/assets/blog/insights-ai/screenshot.png)
+
+## Built with Inngest
+
+Insights AI is built on Inngest's own stack, [Realtime](/docs/features/realtime) for streaming responses, [Checkpointing](/docs/setup/checkpointing) for conversation state, and [AgentKit](https://agentkit.inngest.com/overview) with useAgent to orchestrate the multi-agent workflow.
+
+If you're building AI features that need reliable orchestration and real-time feedback, this is the same infrastructure you can use.
+
+## **Get started**
+
+Insights AI is available now in the Inngest dashboard. Head to Insights and start asking questions.
+
+Have feedback? Drop into [Discord](https://discord.com/invite/mPfcyDEdpx) and let us know what you'd like to see next.
+
+[Read the docs here](/docs/platform/monitor/insights)

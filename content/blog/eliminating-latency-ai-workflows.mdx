@@ -1,0 +1,264 @@
+---
+heading: "Eliminating latency in AI workflows: How to avoid the durability tradeoff"
+subtitle: "Every durable execution system adds some latency between steps. It's the tax we pay for reliability. Here's how to eliminate it."
+image: /assets/blog/eliminating-latency-ai-workflows/featured-image.png
+date: 2026-02-25
+author: Lauren Craigie
+category: engineering
+primaryCTA: docs
+floatingCTA: true
+---
+
+
+Every durable execution system adds *some* latency between steps. It's the tax we pay for reliability. Persist the state, enqueue the next step, check constraints, dispatch. For a while, no one really cared about the slow down incurred. What's an extra 200ms between steps if your workflow already takes minutes in a run?
+
+Things have changed.
+
+AI agents that loop through 15 tool calls, interactive workflows that stream results, real-time data pipelines that feed live dashboards… these workloads need to be reliable, AND fast. When each step transition adds 100-500ms of orchestration overhead, a 10-step agent workflow could easily accumulate 1-5 seconds of waste.
+
+Fortunately, there are plenty of things you can do to help. Some of these optimizations have turned into full Inngest-native features (noted in line below), but even if you're still hand-rolling workflows, or using something like Temporal, you'll still learn what to look for, and how to fix it.
+
+## The short version
+
+Four things contribute to inter-step latency, and four things fix them. The post below goes deep on each, but if you want the map:
+
+- **Synchronous state persistence** is the single biggest contributor. Move it off the critical path.
+- **Per-step HTTP and polling-based dispatch** add overhead on every transition. Persistent connections eliminate both.
+- **Constraint checking inline with the queue** creates O(n) churn under load. Separate it.
+- **Over-decomposed steps** multiply the cost of all of the above. Step at failure domain boundaries, not at every function call.
+
+Each section covers the general pattern, what it looks like on other platforms, and how Inngest handles it specifically. *If you're an Inngest user, [this doc](https://www.inngest.com/docs/improve-performance) might be especially helpful.*
+
+## What causes latency between workflow steps?
+
+Before we dig in, let's talk about what causes latency to begin with. When Step A finishes and Step B begins, there's a surprising amount of work happening in between.
+
+Here's the full sequence:
+
+![01-anatomy-inter-step-latency.svg](/assets/blog/eliminating-latency-ai-workflows/01-anatomy-inter-step-latency.svg)
+
+**1. Serialize the step result (~1-5ms).** The output gets encoded for storage. Fast, and not much you can do about it. Not where your time is going.
+
+**2. Persist state to the durable store (~5-50ms).** The workflow blocks until the state store acknowledges the write. This synchronous round-trip is the single largest contributor to inter-step latency. Decouple persistence from execution by checkpointing asynchronously.
+
+**3. Enqueue the next step (~1-10ms).** A job gets written to the queue for the next step. Modest overhead on its own, but it adds up across many transitions. Batch enqueue operations where possible.
+
+**4. Check constraints (~5-100ms+).** The queue peeks at items, checks concurrency limits, throttles, and rate limits, then skips anything that can't run. Under load with 500 steps queued against a concurrency limit of 10, the queue churns through hundreds of items to find the few that are eligible. Separate constraint management from the queue so dispatch doesn't scale with queue depth.
+
+**5. Worker picks up the next step (~10-200ms).** Polling-based systems wait for the next poll cycle. Push-based systems dispatch immediately over a persistent connection. Switch from polling to push-based dispatch to eliminate idle wait time entirely.
+
+## How does synchronous state persistence add overhead?
+
+Let's zoom in on #2, because it's the root cause of most inter-step latency.
+The traditional model is simple: persist the step result, wait for acknowledgment, then proceed. This is the fundamental durability contract. If the process crashes, we recover from the last persisted checkpoint.
+
+![02-checkpointing-comparison.svg](/assets/blog/eliminating-latency-ai-workflows/02-checkpointing-comparison.svg)
+
+The problem is that "wait for acknowledgment" is doing a lot of heavy lifting. Every step transition pays a synchronous round-trip to the state store. In a managed service, that's an API call. In a self-hosted setup, that's a database write. Either way, it's the single largest chunk of inter-step latency, and it happens on every single transition.
+
+The fix is to decouple persistence from execution.
+
+Instead of blocking on each write, let the SDK orchestrate steps locally and execute them immediately, one after another. Send checkpoint messages to the orchestration engine asynchronously in the background. Steps are idempotent, so if a checkpoint fails or the process crashes, the engine retries from the last successful checkpoint.
+
+You get speed on the happy path and safety on the failure path.
+
+This is the same insight behind write-ahead logging in databases. The log is the source of truth, but you don't block reads on every fsync. The difference is that here, the "log" is the checkpoint stream and the "reads" are step executions. Jay Kreps' [The Log: What Every Software Engineer Should Know](https://engineering.linkedin.com/distributed-systems/log-what-every-software-engineer-should-know-about-real-time-datas-unifying) is the canonical reference on why this pattern works at scale.
+
+If you're building on Temporal, the closest equivalent is local activities. Local activities execute in-process on the workflow worker, avoiding the round-trip to the Temporal server. They do support retries and timeouts, but they're constrained by the workflow task timeout (default 10s), can't heartbeat, and if they run long or retry aggressively, they can delay signal delivery and query processing. You're fitting your activities into a box that works for short, fast operations.
+
+**How Inngest handles this:**
+
+[Checkpointing](https://www.inngest.com/docs/setup/checkpointing) in Inngest doesn't force that tradeoff. Every step still gets independent retries, timeouts, and full observability regardless of duration. Enable it and the SDK orchestrates steps on your server, executing them immediately while sending checkpoint messages to Inngest in the background. If something fails, the engine falls back to standard orchestration for retries.
+You get local-activity speed on the happy path and full durable-execution safety on the failure path, without splitting your steps into two categories.
+
+```tsx
+import { Inngest } from "inngest";
+
+const inngest = new Inngest({
+  id: "my-app",
+  checkpointing: true,
+});
+
+export default inngest.createFunction(
+  { id: "process-agent-loop" },
+  { event: "agent/task.received" },
+  async ({ event, step }) => {
+    // With checkpointing, each step executes immediately after the previous one.
+    // No round-trip to Inngest between steps.
+    const context = await step.run("gather-context", async () => {
+      return await fetchRelevantDocuments(event.data.query);
+    });
+
+    const plan = await step.run("create-plan", async () => {
+      return await llm.createPlan(context, event.data.query);
+    });
+
+    const results = await step.run("execute-plan", async () => {
+      return await executeToolCalls(plan.steps);
+    });
+
+    return await step.run("synthesize", async () => {
+      return await llm.synthesize(results, event.data.query);
+    });
+  }
+);
+```
+
+Without checkpointing, this 4-step workflow accumulates ~200-800ms of orchestration overhead. With it, the transitions are effectively free. We've been dogfooding this internally and seeing near-zero inter-step latency with between 50-90% reduction in overall workflow duration. (FYI: We made checkpointing the default in V4 of our SDK, out soon!)
+
+## Polling vs. persistent connections: which dispatch model is faster?
+
+Most orchestration engines use an HTTP-based serve model. The engine calls your workers via HTTP for each step: TCP handshake, TLS negotiation, HTTP request/response framing, every single time. It works. It also means every step transition pays the cost of establishing a new connection, and it creates a whole class of problems with HTTP/2 reverse proxies, load balancer configuration, and inbound traffic routing in container environments.
+
+The alternative is persistent connections. Your worker establishes an outbound connection (WebSocket, gRPC stream) to the orchestration engine and keeps it open. Work is pushed directly over that connection. No per-step connection overhead. No polling intervals. No inbound traffic routing.
+
+![03-polling-vs-push.svg](/assets/blog/eliminating-latency-ai-workflows/03-polling-vs-push.svg)
+
+This matters for two reasons. First, you eliminate the per-step HTTP overhead entirely. Second, and more importantly, you shift from a polling dispatch model to a push dispatch model.
+
+With polling, workers periodically ask "is there work for me?" That introduces a polling interval (typically 50-200ms) where work sits idle in the queue. Under light load, this is the dominant source of latency. Under heavy load, polls succeed quickly but you pay the overhead of constant empty polls from idle workers.
+
+With push, the engine knows which workers are online and their available capacity. New work is dispatched the moment it's ready to an available worker. If you're coming from Temporal you might know this as `schedule_to_start_latency.` **Whatever you call it, it's one of the most important metrics to track regardless of platform.** Under polling, it's bounded by your poll interval. Under push, it's bounded by network latency. That's a meaningful difference.
+
+If you're on Temporal, you can try to tune your `MaxConcurrentActivityTaskPollers` and `MaxConcurrentWorkflowTaskPollers` settings, and [consider sticky execution](https://manuel.bernhardt.io/2021/04/25/tour-of-temporal-performance) (workflow caching) to reduce the number of history replays. These are the closest levers you have to reducing dispatch overhead without architectural changes.
+
+**How Inngest handles this:**
+
+Inngest Connect flips the model, to eliminate all of that overhead. Your worker establishes an outbound persistent connection and work is pushed over it. No per-step HTTP overhead, no polling, and outbound connections work naturally with firewalls, NATs, and Kubernetes without any load balancer config.
+This model also enables real backpressure. Because the engine maintains persistent connections to all workers, it can actively avoid pushing work to saturated ones. Combined with per-worker concurrency configuration, you get capacity-aware dispatch without any polling overhead.
+
+```tsx
+import { Inngest } from "inngest";
+import { connect } from "inngest/connect";
+
+const inngest = new Inngest({
+  id: "my-app",
+  checkpointing: true, // combine with checkpointing for best results
+});
+
+// Establish persistent outbound connection
+await connect({
+  apps: [{ client: inngest, functions: [processAgentLoop, handleWebhook] }],
+});
+```
+
+## Why do concurrency limits cause latency spikes under load?
+
+This is more of an architectural examination, but understanding it helps explain why latency spikes under load even when your system looks healthy.
+
+![04-constraint-service.svg](/assets/blog/eliminating-latency-ai-workflows/04-constraint-service.svg)
+
+When constraints (concurrency limits, throttling, rate limiting) are checked inline with the queue, every dequeue operation has to peek at an item, check constraints, and potentially skip it. Under light load, this is fine. Under real production load with constraint pressure, the queue churns through items it can't run, wasting enormous effort.
+
+The fix is to separate constraint management into its own service. Instead of the queue checking constraints per-item, the constraint service says "Function X has 3 slots available," and the queue batch-leases exactly 3 items. One request to the constraint service versus potentially hundreds of peek-and-check cycles.
+
+**If you're building your own queue, this is the single most impactful architectural change you can make for latency under load.** Constraints and queue storage are fundamentally different concerns. Coupling them creates O(n) overhead in the worst case, where n is the number of constrained items. Separating them makes dispatch O(1) relative to queue depth.
+
+In Temporal's architecture, the matching service handles a version of this through "[synchronous matching](https://www.bitovi.com/blog/intro-to-temporal-architecture-and-essential-metrics)," where an idle worker waiting for a task gets it immediately without the task ever being persisted. This is great when it hits, but under load the sync match rate drops and tasks fall back to the standard persistence path.
+
+**How Inngest handles this:**
+
+We recently separated constraints from the queue so that Inngest can do smarter things, like grab a list of the function + keys available for customers. We then make one request to batch lock as many items as possible, and peek + lease exactly how many were locked from that constraint, all in one request, vs many.
+
+The internal SLOs for this service are ≤5ms p99. This is a big shift for us, and it's taken a ton of work. The result is fewer jobs churning in the queue and more predictable latency under constraint pressure.
+
+## How to right-size your workflow step boundaries
+
+Every step boundary is a potential latency point. This is true on any platform. The question is: where should you draw the line?
+
+Create a step boundary where you'd want retry isolation. External API calls, database writes, LLM calls. These are operations that can fail independently and that you'd want to retry without re-executing everything that came before. Don't wrap every line of code in its own step:
+
+```tsx
+// ❌ Every line is its own step. Why.
+const user = await step.run("get-user", () => db.getUser(id));
+const billingPlan = await step.run("get-plan", () => db.getBillingPlan(user.billingPlanId));
+const invoices = await step.run("get-invoices", () => db.getInvoices(user.id);
+
+// ✅ One step for one failure domain
+const userData = await step.run("load-user-data", async () => {
+  const user = await db.getUser(id);
+  const billingPlan = await db.getBillingPlan(user.billingPlanId);
+  const invoices = await db.getInvoices(user.id);
+  return { user, billingPlan, invoices };
+});
+```
+
+The same principle applies in Temporal (don't create separate activities for every trivial operation) and Step Functions (don't create a state for every line of logic). It's tempting to over-decompose for observability, but the latency cost adds up fast.
+
+**How Inngest handles this:**
+
+The penalty for extra steps in Inngest depends on your configuration. With checkpointing enabled, extra steps are nearly free (each transition adds ~2ms). Without checkpointing, each unnecessary step boundary adds 50-200ms. So checkpointing is forgiving here, but the principle still holds: step at failure domain boundaries, not at every function call.
+
+## How to measure workflow orchestration overhead
+
+You can't tell which of the above optimizations matters most for your system without measuring. Here are the signals that actually matter.
+
+**Inter-step latency** is the time between one step completing and the next beginning. This is pure orchestration overhead.
+
+What you should expect:
+
+| Configuration | Expected p95 inter-step latency |
+| --- | --- |
+| Checkpointing + Connect | < 5ms |
+| Checkpointing only | < 10ms |
+| Connect only | 20-100ms |
+| Standard HTTP serve | 50-250ms |
+
+**Schedule-to-start latency** measures how long work sits in the queue before a worker picks it up. If this is consistently high, you need more workers or your concurrency configuration is too tight. Temporal exposes this as `workflow_task_schedule_to_start_latency` which you can pipe into your monitoring stack. Inngest surfaces it directly in the dashboard alongside your function runs, and exports it via Datadog and Prometheus for alerting.
+
+**End-to-end workflow duration** is what your users actually feel. Track it alongside inter-step latency to separate orchestration overhead from step execution time. If end-to-end is slow but inter-step is fast, your steps themselves are slow. If inter-step is high, the orchestration layer is the bottleneck.
+
+**Event loop lag** (Node.js) is a silent killer. A blocked event loop stalls heartbeats, checkpoint messages, and step execution all at once. Alert if it exceeds 50ms consistently.
+
+## What does this look like end to end?
+
+Here's a concrete example. A document processing pipeline with 5 sequential steps: OCR extraction, entity extraction via LLM, enrichment from external APIs, classification, and storage.
+
+![05-before-after-comparison.svg](/assets/blog/eliminating-latency-ai-workflows/05-before-after-comparison.svg)
+
+Step execution time is fixed at ~3,800ms total. That's the actual work. What changes is the orchestration overhead.
+
+**Standard HTTP serve, no checkpointing:** Each of the 5 step transitions adds ~120-150ms. Total overhead: ~600ms. The workflow takes ~4,400ms. Roughly 14% of the total time is pure waste.
+
+**Connect + Checkpointing:** Each transition takes ~2ms. Total overhead: ~8ms. The workflow takes ~3,808ms. Orchestration overhead drops from 14% to 0.2% of total time.
+
+Same business logic. Same reliability guarantees. Same code. ~75x less orchestration overhead in this example.
+
+## Getting started
+
+If you're building latency-sensitive workflows on Inngest, enable two things:
+
+```tsx
+// 1. Turn on checkpointing
+const inngest = new Inngest({
+  id: "my-app",
+  checkpointing: true,
+});
+
+// 2. Switch to Connect
+import { connect } from "inngest/connect";
+await connect({
+  apps: [{ client: inngest, functions: [...] }]
+})
+```
+
+These two changes alone typically deliver a 50%+ reduction in end-to-end workflow duration with no changes to your business logic.
+
+If you're evaluating durable execution platforms for real-time workloads, the questions to ask are:
+
+- What's the inter-step latency under load?
+- How does the engine handle constraint checking at scale?
+- Does it support push-based worker dispatch?
+
+These are the factors that separate a platform you can use for AI agents from one that only works for batch jobs.The whole industry accepted 100-500ms inter-step latency because it was a background processing problem. It's a user-facing problem now. Time to stop accepting it.
+
+---
+
+## Other Resources
+
+- [Performance documentation](/docs/improve-performance) for setup guides on checkpointing and Connect
+- [The Principles of Durable Execution](/blog/principles-of-durable-execution) for how durable execution works under the hood
+- [How we built a fair multi-tenant queue](/blog/building-the-inngest-queue-pt-i-fairness-multi-tenancy) for the queue architecture deep dive
+- [Durable Executions, Defined](https://journal.resonatehq.io/p/durable-executions-defined) by Dominik Tornow for a rigorous definition of what durable execution actually means
+- [Building a Durable Execution Engine with SQLite](https://www.morling.dev/blog/building-durable-execution-engine-with-sqlite/) by Gunnar Morling for a from-scratch look at the underlying mechanics
+- [Durable Objects: Easy, Fast, Correct — Choose Three](https://blog.cloudflare.com/durable-objects-easy-fast-correct-choose-three/) by Cloudflare for how write coalescing makes storage writes effectively instantaneous

@@ -77,7 +77,7 @@ import myFn from "../inngest/myfn"
 app.use("/api/inngest", serve("My App", [ myFn ]))
 ```
 
-That's all the code that you need - Inngest will use [a signing key](https://app.inngest.com/secrets) to securely communicate with your server and we're ready to ship. After you have deployed your code, you need to tell Inngest where your code and, now, functions are running. It's a simple ping via the Inngest Cloud dashboard (docs + demo) or with a curl request:
+That's all the code that you need - Inngest will use [a signing key](https://app.inngest.com/env/production/manage/signing-key) to securely communicate with your server and we're ready to ship. After you have deployed your code, you need to tell Inngest where your code and, now, functions are running. It's a simple ping via the Inngest Cloud dashboard (docs + demo) or with a curl request:
 
 ```shell
 curl -X PUT https://yourappsdomain.com/api/inngest

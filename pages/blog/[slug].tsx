@@ -50,7 +50,7 @@ const components: MDXComponents = {
   Callout,
   WorkflowKitProductOfTheDay: ProductHunt,
   Col,
-  Row
+  Row,
 };
 
 type Props = {
@@ -73,7 +73,7 @@ type Scope = {
   canonical_url?: string;
   showSubtitle?: boolean;
 
-  author?: string;
+  author?: string | string[];
   image?: string;
   imageCredits?: string;
   tags?: string[];
@@ -120,6 +120,18 @@ export default function BlogLayout(props) {
   const slug = props.slug;
   const primaryCTA = scope.primaryCTA;
 
+  const structuredDataAuthors = (
+    Array.isArray(scope.author) ? scope.author : [scope.author]
+  ).map((author) => {
+    return {
+      "@type": "Person",
+      name: author,
+      url: authorURLs.hasOwnProperty(author)
+        ? authorURLs[author]
+        : process.env.NEXT_PUBLIC_HOST,
+    };
+  });
+
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
@@ -128,16 +140,16 @@ export default function BlogLayout(props) {
     image: [`${process.env.NEXT_PUBLIC_HOST}${scope.image}`],
     datePublished: scope.date,
     dateModified: scope.dateUpdated ? scope.dateUpdated : scope.date,
-    author: [
-      {
-        "@type": scope.author ? "Person" : "Organization",
-        name: scope.author || "Inngest",
-        url:
-          scope.author && authorURLs.hasOwnProperty(scope.author)
-            ? authorURLs[scope.author]
-            : process.env.NEXT_PUBLIC_HOST,
-      },
-    ],
+    author:
+      structuredDataAuthors.length > 0
+        ? structuredDataAuthors
+        : [
+            {
+              "@type": "Organization",
+              name: "Inngest",
+              url: process.env.NEXT_PUBLIC_HOST,
+            },
+          ],
   };
   const title = `${scope.heading} - Inngest Blog`;
   let dateUpdated: string | null = null;
@@ -148,6 +160,12 @@ export default function BlogLayout(props) {
   } catch (err) {
     console.log(`Could not parse updated date: ${scope.dateUpdated}`);
   }
+
+  const authors = scope.author
+    ? Array.isArray(scope.author)
+      ? scope.author
+      : [scope.author]
+    : [];
 
   return (
     <>
@@ -225,24 +243,25 @@ export default function BlogLayout(props) {
                     </p>
                   )}
                   <p className="mt-2 flex items-center gap-2 text-sm text-subtle">
-                    {!!scope.author ? (
-                      authorURLs[scope.author] ? (
-                        <>
-                          <a
-                            href={authorURLs[scope.author]}
-                            target="_blank"
-                            className="text-subtle hover:underline"
-                          >
-                            {scope.author}
-                          </a>
-                          &middot;{" "}
-                        </>
-                      ) : (
-                        <>{scope.author} &middot; </>
-                      )
-                    ) : (
-                      ""
-                    )}
+                    {authors.map((author, idx, arr) => (
+                      <>
+                        <span>
+                          {authorURLs[author] ? (
+                            <a
+                              href={authorURLs[author]}
+                              target="_blank"
+                              className="text-subtle hover:underline"
+                            >
+                              {author}
+                            </a>
+                          ) : (
+                            <>{author}</>
+                          )}
+                          {idx < arr.length - 1 && ", "}
+                        </span>
+                      </>
+                    ))}
+                    {authors.length > 0 && <>&middot; </>}
                     <span className="flex items-center gap-1">
                       <RiCalendarLine className="mr-px h-3 w-3" />{" "}
                       {scope.humanDate}{" "}
@@ -340,9 +359,19 @@ function CTAs({
 // called for each URL with the slug in params.
 export async function getStaticPaths() {
   const fs = require("fs");
-  const paths = fs.readdirSync("./content/blog/").map((fname) => {
-    return `/blog/${fname.replace(/.mdx?/, "")}`;
-  });
+  const matter = require("gray-matter");
+  const paths = fs
+    .readdirSync("./content/blog/")
+    .filter((fname) => {
+      // Skip files that have redirect frontmatter
+      let filePath = `./content/blog/${fname}`;
+      const source = fs.readFileSync(filePath);
+      const { data } = matter(source);
+      return !data.redirect;
+    })
+    .map((fname) => {
+      return `/blog/${fname.replace(/.mdx?/, "")}`;
+    });
   return { paths, fallback: false };
 }
 
@@ -365,7 +394,13 @@ export async function getStaticProps({ params }) {
   data.path = `/blog/${params.slug}`;
   data.reading = readingTime(content);
   // Format the reading date.
-  data.humanDate = data.date.toLocaleDateString();
+  if (data.date) {
+    if (typeof data.date === "string") {
+      data.humanDate = new Date(data.date).toLocaleDateString();
+    } else {
+      data.humanDate = data.date.toLocaleDateString();
+    }
+  }
 
   data.tags =
     data.tags && typeof data.tags === "string"
@@ -385,6 +420,7 @@ export async function getStaticProps({ params }) {
   ];
   const post = await serialize(content, {
     scope: { json: JSON.stringify(data) },
+    blockJS: false,
     mdxOptions: {
       rehypePlugins: [
         rehypeCodeTitles,

@@ -6,14 +6,16 @@ import { ClipboardDocumentIcon } from "@heroicons/react/24/outline";
 import React from "react";
 
 // Simple bash snippet shown inside the terminal.
-const TERMINAL_SNIPPET = `\n$ npx inngest-cli dev\n\nInngest dev server running...`;
+const TERMINAL_SNIPPET = `\n$ npx --ignore-scripts=false inngest-cli dev\n\nInngest dev server running...`;
 
 export default function Terminal() {
   const [copied, setCopied] = useState(false);
 
   const copyToClipboard = async () => {
     try {
-      await navigator.clipboard.writeText("npx inngest-cli dev");
+      await navigator.clipboard.writeText(
+        "npx --ignore-scripts=false inngest-cli dev"
+      );
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
@@ -23,10 +25,10 @@ export default function Terminal() {
 
   return (
     <div className="terminal flex flex-col md:my-20">
-      <h2 className="md:font-sm mx-auto font-circular text-xs font-light">
+      <h2 className="md:font-sm mx-auto mb-1 font-circular text-xs font-light">
         ONE-COMMAND SETUP
       </h2>
-      <div className="terminal-anchor relative z-30 mx-auto w-full max-w-xs overflow-hidden  border-2 border-stone-700 bg-stone-900 text-sm shadow-lg">
+      <div className="terminal-anchor relative z-30 mx-auto w-full max-w-[406px] overflow-hidden border-2 border-stone-700 bg-stone-900 text-sm shadow-lg">
         {/* Header with traffic lights and copy button */}
         <div className="flex h-9 items-center justify-between border-b-2 border-stone-700 px-4">
           {/* Faux traffic lights */}

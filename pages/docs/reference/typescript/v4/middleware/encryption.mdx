@@ -1,0 +1,111 @@
+import { Properties, Property } from "src/shared/Docs/mdx";
+
+# Encryption middleware
+
+The encryption middleware provides end-to-end encryption for events, step output, and function output. **Only encrypted data is sent to Inngest servers**: encryption and decryption happen within your infrastructure.
+
+## Installation
+
+Install the [`@inngest/middleware-encryption` package](https://www.npmjs.com/package/@inngest/middleware-encryption) ([GitHub](https://github.com/inngest/inngest-js/tree/main/packages/middleware-encryption#readme)) and configure it as follows:
+
+```ts
+import { encryptionMiddleware } from "@inngest/middleware-encryption";
+
+const inngest = new Inngest({
+  id: "my-app",
+  middleware: [
+    encryptionMiddleware({
+      // your encryption key string should not be hard coded
+      key: process.env.MY_ENCRYPTION_KEY,
+    }),
+  ],
+});
+```
+
+By default, the following will be encrypted:
+- All step data
+- All function output
+- Event data placed inside `data.encrypted`
+
+## `encryptionMiddleware(options)`
+
+Returns a `Middleware.Class` that can be passed to the `middleware` array on a client or function.
+
+### Options
+
+<Properties>
+  <Property name="key" type="string" required>
+    The encryption key used to encrypt and decrypt data. This should be a secret value stored in an environment variable.
+  </Property>
+  <Property name="decryptOnly" type="boolean">
+    When `true`, disables encryption but continues to decrypt existing data. Useful when migrating away from encryption.
+  </Property>
+  <Property name="eventEncryptionField" type="string">
+    The field within `event.data` to encrypt. Defaults to `"encrypted"`.
+  </Property>
+  <Property name="fallbackDecryptionKeys" type="string[]">
+    Additional keys to try when decrypting. Useful during key rotation.
+  </Property>
+  <Property name="encryptionService" type="EncryptionService">
+    A custom encryption service instance. If not provided, the default LibSodium-based service is used.
+  </Property>
+  <Property name="legacyV0Service" type="object">
+    Options for backward compatibility with v0 AES encryption format.
+  </Property>
+</Properties>
+
+## Changing the encrypted `event.data` field
+
+Only select pieces of event data are encrypted. By default, only the `data.encrypted` field.
+
+This can be customized using the `eventEncryptionField` option:
+
+```ts
+encryptionMiddleware({
+  key: process.env.MY_ENCRYPTION_KEY,
+  eventEncryptionField: "sensitive",
+});
+```
+
+## Decrypt only mode
+
+To disable encryption but continue decrypting, set `decryptOnly: true`. This is useful when you want to migrate away from encryption but still need to process older events.
+
+```ts
+encryptionMiddleware({
+  key: process.env.MY_ENCRYPTION_KEY,
+  decryptOnly: true,
+});
+```
+
+## Key rotation
+
+To attempt decryption with multiple keys, set the `fallbackDecryptionKeys` option. This is useful when rotating keys, since older events may have been encrypted with a different key:
+
+```ts
+// 1. Start with the current key
+encryptionMiddleware({
+  key: process.env.MY_ENCRYPTION_KEY,
+});
+
+// 2. Deploy all services with the new key as a decryption fallback
+encryptionMiddleware({
+  key: process.env.MY_ENCRYPTION_KEY,
+  fallbackDecryptionKeys: ["new"],
+});
+
+// 3. Deploy all services using the new key for encryption
+encryptionMiddleware({
+  key: process.env.MY_ENCRYPTION_KEY_V2,
+  fallbackDecryptionKeys: ["current"],
+});
+
+// 4. Once all data using the old key has passed, phase it out
+encryptionMiddleware({
+  key: process.env.MY_ENCRYPTION_KEY_V2,
+});
+```
+
+## Cross-language support
+
+This middleware is compatible with our encryption middleware in the Python SDK. Encrypted events can be sent from Python and decrypted in TypeScript, and vice versa.

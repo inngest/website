@@ -1,3 +1,8 @@
+export type ChangelogEntry = {
+  title: string;
+  date: string;
+};
+
 export async function loadPost(slug: string) {
   const { default: Post, getStaticProps } = await import(
     `content/changelog/${slug}.mdx`
@@ -13,4 +18,10 @@ export async function loadPost(slug: string) {
     Post,
     metadata,
   };
+}
+
+export function getChangelogURL(slug: string, relative = true) {
+  return relative
+    ? `/changelog/${slug}`
+    : `${process.env.NEXT_PUBLIC_HOST}/changelog/${slug}`;
 }

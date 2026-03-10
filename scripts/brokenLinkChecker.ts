@@ -51,6 +51,21 @@ const options = {
     "https://fresh.deno.dev/",
     "https://deno.com/",
     "https://news.ycombinator.com/",
+    "https://www.npmjs.com/",
+    "https://npmjs.com/",
+    "https://npm.im/",
+    "https://jsr.io/",
+    "https://www.assurancelab.cpa/",
+    "https://www.deeplearning.ai/",
+    "https://cloud.digitalocean.com/",
+    "https://weaviate.io/", // reset connections
+    "https://mux.com/", // 429's during testing
+    "https://docs.mux.com/",
+    "https://npmtrends.com/",
+    "https://medium.com/",
+    "https://unsplash.com/",
+    "https://react.email/", // 429s
+    "https://docs.deno.com/",
   ],
 };
 

@@ -114,7 +114,7 @@ export default function Header() {
           <OpenSourceButton className="h-9 rounded-none border" />
           <div className="hidden space-x-4 md:flex">
             <Button variant="outline" className="hidden xl:flex" asChild>
-              <Link href={`${process.env.NEXT_PUBLIC_SIGNIN_URL}?ref=nav`}>
+              <Link href={`${process.env.NEXT_PUBLIC_APP_HOST}?ref=nav`}>
                 Sign In
               </Link>
             </Button>
@@ -147,8 +147,8 @@ export default function Header() {
         onClose={setMobileMenuOpen}
         className="lg:hidden"
       >
-        <div className="fixed inset-0 z-10" />
-        <DialogPanel className="fixed inset-y-0 right-0 z-10 w-full overflow-y-auto bg-stone-950 px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
+        <div className="fixed inset-0 z-[60]" />
+        <DialogPanel className="fixed inset-y-0 right-0 z-[60] w-full overflow-y-auto bg-stone-950 px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
           <div className="flex h-[36px] items-center justify-between">
             <Link
               href="/"
@@ -338,7 +338,7 @@ export default function Header() {
                 <div className="flex space-x-4">
                   <Button variant="outline" asChild>
                     <Link
-                      href={`${process.env.NEXT_PUBLIC_SIGNIN_URL}?ref=nav`}
+                      href={`${process.env.NEXT_PUBLIC_APP_HOST}?ref=nav`}
                     >
                       Sign In
                     </Link>

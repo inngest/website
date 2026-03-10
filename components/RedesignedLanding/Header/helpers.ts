@@ -1,7 +1,7 @@
 export const featuredBlogPost = {
-  title: "Iteration is the new product moat",
-  image: "/assets/blog/announcing-inngest-series-a/cover.jpg",
+  title: "Introducing Durable Endpoints: Durability beyond workflows",
+  image: "/assets/blog/introducing-durable-endpoints/cover.png",
   description:
-    "We raised a $21M Series A to help companies ship and iterate faster.",
-  href: "/blog/announcing-inngest-series-a",
+    "Build unbreakable API endpoints, with low latency, minimal API, and no infrastructure work.",
+  href: "/blog/introducing-durable-endpoints",
 };

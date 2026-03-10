@@ -1,4 +1,4 @@
-import { Callout, Card, CardGroup, CodeGroup, Col, GuideSection, GuideSelector, Info, Row, Tip, VersionBadge } from "shared/Docs/mdx";
+import { Callout, Card, CardGroup, CodeGroup, Col, LanguageSection, LanguageSelector, Info, Row, Tip, VersionBadge } from "shared/Docs/mdx";
 
 export const description = `Serve the Inngest API as an HTTP endpoint in your application.`
 export const hidePageSidebar = true;
@@ -36,15 +36,9 @@ Inngest functions are portable, so you can migrate between `serve()` and `connec
 
 ## Serving Inngest functions
 
-<GuideSelector
-  options={[
-    { key: "typescript", title: "TypeScript" },
-    { key: "go", title: "Go" },
-    { key: "python", title: "Python" },
-  ]}
->
+<LanguageSelector>
 
-<GuideSection show="typescript">
+<LanguageSection show="typescript">
 
 Inngest provides a `serve()` handler which adds an API endpoint to your router. You expose your functions to Inngest through this HTTP endpoint. To make automated deploys much easier, **the endpoint needs to be defined at `/api/inngest`** (though you can [change the API path](/docs/reference/serve#serve-client-functions-options)).
 
@@ -87,6 +81,7 @@ serve({
 * [Nuxt](#framework-nuxt)
 * [Redwood](#framework-redwood)
 * [Remix](#framework-remix)
+* [Supabase Edge Functions](#framework-supabase-edge-functions)
 * [SvelteKit](#framework-svelte-kit)
 * [Tanstack Start](#framework-tanstack-start)
 
@@ -157,9 +152,7 @@ Bun.serve({
   port: 3000,
   routes: {
     // ...other routes...
-    "/api/inngest": (request: Request) => {
-      return serve({ client: inngest, functions })(request);
-    },
+    "/api/inngest": serve({ client: inngest, functions }),
   },
 });
 ```
@@ -286,6 +279,9 @@ const main = serve(inngest, [fnA], {
 module.exports.main = main;
 ```
 </CodeGroup>
+
+Inngest functions can also be deployed to [DigitalOcean's App Platform or Droplets](/docs/deploy/digital-ocean).
+
 
 ### Framework: ElysiaJS
 
@@ -560,7 +556,7 @@ firebase emulators:start
 Please note that you'll need to start your Inngest Local Dev Server with the `-u` flag to match our Firebase Cloud Function's custom path  as follows:
 
 ```bash
-npx inngest-cli@latest dev -u http://127.0.0.1:5001/inngest-firebase-functions/us-central1/inngest
+npx --ignore-scripts=false inngest-cli@latest dev -u http://127.0.0.1:5001/inngest-firebase-functions/us-central1/inngest
 ```
 
 _The above command example features a project named `inngest-firebase-functions` deployed on the `us-central1` region_.
@@ -972,6 +968,45 @@ const handler = serve(inngest, [...fns], {
 
 For more information, check out the [Streaming](/docs/streaming) page.
 
+
+### Framework: Supabase Edge Functions
+
+Supabase Edge Functions can use our `inngest/edge` package.
+
+<CodeGroup>
+```ts
+import { serve } from "https://esm.sh/inngest/edge";
+import { inngest } from "./src/inngest/client";
+import fnA from "./src/inngest/fnA"; // Your own function
+
+Deno.serve(serve({
+  client: inngest,
+  functions: [fnA],
+  servePath: "/functions/v1/your-function-name",
+}));
+```
+</CodeGroup>
+
+Ensure that `servePath` matches your Supabase Edge Function name. Alternatively, you can set this with the `INNGEST_SERVE_PATH` environment variable. This is necessary because Supabase Edge Functions rewrite the request path.
+
+### Framework: Firebase Cloud Functions
+
+Based on the Google Cloud Function architecture, the Firebase Cloud Functions provide a different API to serve functions using `onRequest`:
+
+```typescript
+import { onRequest } from "firebase-functions/v2/https";
+
+import { serve } from "inngest/express";
+import { inngest as inngestClient } from "./inngest/client";
+
+export const inngest = onRequest(
+  serve({
+    client: inngestClient,
+    functions: [/* ...functions... */],
+  })
+);
+```
+
 ### Framework: SvelteKit <VersionBadge version="v3.5.0+" />
 
 Add the following to `./src/routes/api/inngest/+server.ts`:
@@ -996,18 +1031,21 @@ Add the following to `./src/routes/api/inngest.ts`:
 
 <CodeGroup>
 ```ts 
-import { createServerFileRoute } from '@tanstack/react-start/server'
-
+import { createFileRoute } from "@tanstack/react-router";
 import { serve } from "inngest/edge";
 import { inngest, functions } from "../../inngest";
 
 const handler = serve({ client: inngest, functions });
-    
-export const ServerRoute = createServerFileRoute('/api/inngest').methods({
-  GET: async ({ request }) => handler(request),
-  POST: async ({ request }) => handler(request),
-  PUT: async ({ request }) => handler(request)
-})
+
+export const Route = createFileRoute("/api/inngest")({
+  server: {
+    handlers: {
+      GET: async ({ request }) => handler(request),
+      POST: async ({ request }) => handler(request),
+      PUT: async ({ request }) => handler(request),
+    },
+  },
+});
 
 ```
 </CodeGroup>
@@ -1055,9 +1093,9 @@ const fn = inngest.createFunction(
 export default serve({ client: inngest, functions: [fn] });
 ```
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="go">
+<LanguageSection show="go">
 
 
 Inngest enables you to create a HTTP handler for your functions. This handler will be used to serve your functions over HTTP (compatible with `net/http`).
@@ -1099,9 +1137,9 @@ func main() {
 }
 ```
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="python">
+<LanguageSection show="python">
 
 You expose your functions to Inngest through this HTTP endpoint.
 Inngest provides integrations with Flask and FastAPI.
@@ -1163,9 +1201,9 @@ inngest.fast_api.serve(
 
 </CodeGroup>
 
-</GuideSection>
+</LanguageSection>
 
-</GuideSelector>
+</LanguageSelector>
 
 ### Signing key
 

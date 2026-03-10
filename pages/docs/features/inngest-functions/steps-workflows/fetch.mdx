@@ -134,18 +134,95 @@ inngest.createFunction(
 ```
 </CodeGroup>
 
+### Using with AI SDK: Disable AI SDK retries
+
+<Callout variant="warning">
+  **Important:** When using Inngest's `fetch` with the AI SDK, disable the AI SDK's built-in retry mechanism and let Inngest handle retries instead.
+</Callout>
+
+The AI SDK has built-in retry logic that can interfere with Inngest's retry handling, especially when working with long-running models or serverless platforms with timeout limits (e.g., Vercel's 15-minute max timeout).
+
+**Why this matters:**
+- When AI SDK retries are enabled alongside Inngest's retry mechanism, the combined retry duration can exceed your platform's timeout limits
+- For long-running models (like OpenAI's o3), this is especially problematic
+- When a timeout occurs, the error messages can be confusing: Vercel cancels the request, but it appears in Inngest as an "Internal server error" (from Inngest, not Vercel), making debugging difficult
+
+**Recommended configuration:**
+
+<CodeGroup>
+```ts {{ title: "generateText() with maxRetries: 0" }}
+import { generateText } from 'ai';
+import { createOpenAI } from '@ai-sdk/openai';
+import { fetch as inngestFetch } from 'inngest';
+
+const openai = createOpenAI({
+  fetch: inngestFetch,
+});
+
+inngest.createFunction(
+  { id: "generate-with-o3" },
+  { event: "content/generate" },
+  async ({ event }) => {
+    // Disable AI SDK retries - let Inngest handle them instead
+    const response = await generateText({
+      model: openai('o3'),
+      prompt: event.data.prompt,
+      maxRetries: 0, // Critical: Set to 0 to let Inngest handle retries
+    });
+    
+    return response;
+  },
+);
+```
+
+```ts {{ title: "streamText() with maxRetries: 0" }}
+import { streamText } from 'ai';
+import { createAnthropic } from '@ai-sdk/anthropic';
+import { fetch as inngestFetch } from 'inngest';
+
+const anthropic = createAnthropic({
+  fetch: inngestFetch,
+});
+
+inngest.createFunction(
+  { id: "stream-completion" },
+  { event: "completion/stream" },
+  async ({ event, step }) => {
+    // Disable AI SDK retries for streaming operations
+    const result = await streamText({
+      model: anthropic('claude-3-5-sonnet-20240620'),
+      prompt: event.data.prompt,
+      maxRetries: 0, // Let Inngest handle retries
+    });
+    
+    return result;
+  },
+);
+```
+</CodeGroup>
+
+By setting `maxRetries: 0` in your AI SDK calls, you:
+- Avoid timeout issues on serverless platforms
+- Get clearer error messages when failures occur
+- Leverage Inngest's retry mechanism, which is designed for long-running operations
+- Benefit from Inngest's observability to see exactly what happened during each retry attempt
+
 However, the same `fetch` is also exported as `step.fetch`, allowing you to create your APIs isolated within the function instead:
 
 <CodeGroup>
 ```ts {{ title: "TypeScript" }}
+import { createAnthropic } from '@ai-sdk/anthropic';
+import { fetch as inngestFetch } from 'inngest';
+import { generateText } from 'ai';
+
+const anthropic = createAnthropic({
+  fetch: inngestFetch,
+});
+
 inngest.createFunction(
   { id: "generate-summary" },
   { event: "post.created" },
   async ({ step }) => {
-    const anthropic = createAnthropic({
-      fetch: step.fetch,
-    });
-
     const response = await generateText({
       model: anthropic('claude-3-5-sonnet-20240620'),
       prompt: `Summarize the following post: ${event.data.content}`,

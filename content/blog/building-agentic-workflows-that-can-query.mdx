@@ -4,6 +4,7 @@ image: /assets/blog/building-agentic-workflows-that-can-query/header.jpg
 showSubtitle: false
 subtitle: "Leveraging Inngest AgentKit to build an AI assistant that turns natural language into structured database queries"
 date: 2025-08-14
+dateUpdated: 2026-01-07
 author: Jakob Evangelista
 disableCTA: true
 ---
@@ -297,6 +298,36 @@ And because AgentKit allows agents to be composed like functions, this logic was
 - Agentic applications benefit from clear boundaries between intent parsing, data access, and summarization.
 - Prompting structured tool calls gives LLMs more control and accuracy over structured datasets.
 - Inngest AgentKit simplifies the process of defining, executing, and orchestrating agents with built-in real-time and production-grade primitives.
+
+## Stream your agent to the frontend
+
+Once you've built your agent workflow with AgentKit, you can stream real-time updates to your users with the `useAgent` React hook:
+```tsx
+import { useAgent } from "@inngest/use-agent";
+
+export function AgentUI() {
+  const { messages, sendMessage, status } = useAgent();
+  
+  return (
+    <div>
+      {messages.map(({ id, role, parts }) => (
+        <div key={id}>
+          {parts.map(({ type, content }) => 
+            type === "text" ? <p>{content}</p> : null
+          )}
+        </div>
+      ))}
+      <button onClick={() => sendMessage(userInput)}>
+        Send
+      </button>
+    </div>
+  );
+}
+```
+
+No WebSocket management, no state stores, no connection handling—just durable, observable AI workflows streaming to your UI.
+
+[Read the useAgent announcement](/blog/agentkit-useagent-realtime-hook).
 
 ## Try It Yourself
 
