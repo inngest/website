@@ -408,16 +408,11 @@ function NavigationGroup({
     <NavigationGroupStructure value={group.title} nestingLevel={nestingLevel}>
       <li className={clsx("relative", className)}>
         <NavigationGroupStructure.Trigger className="animate-accordion-trigger w-full rounded-md transition-colors hover:bg-canvasSubtle">
-          <h2
-            className={clsx(
-              // Tell Algolia crawler to skip indexing this as part of the page
-              "skip-algolia-crawler",
-              "m-0 flex items-center justify-between",
-              {
-                "py-1": nestingLevel > 0,
-                "mb-2 mt-6": nestingLevel === 0,
-              }
-            )}
+          <div
+            className={clsx("m-0 flex items-center justify-between", {
+              "py-1": nestingLevel > 0,
+              "mb-2 mt-6": nestingLevel === 0,
+            })}
           >
             <span
               className={clsx("pl-2", {
@@ -439,7 +434,7 @@ function NavigationGroup({
                 <ChevronDownIcon className="mr-2 h-4 w-4 text-carbon-600 dark:text-carbon-500" />
               )}
             </span>
-          </h2>
+          </div>
         </NavigationGroupStructure.Trigger>
 
         <NavigationGroupStructure.Content
