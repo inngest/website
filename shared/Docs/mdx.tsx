@@ -136,10 +136,12 @@ export function Note({ children }) {
 export function Callout({
   variant = "default",
   Icon = null,
+  skipSearchCrawler = false,
   children,
 }: {
   variant: "default" | "info" | "warning" | "tip";
   Icon?: typeof React.Component<any, any> | RemixiconComponentType;
+  skipSearchCrawler?: boolean;
   children: React.ReactNode;
 }) {
   return (
@@ -154,7 +156,8 @@ export function Callout({
           "bg-warning text-warning dark:bg-warning/50 dark:text-warning",
         variant === "tip" &&
           "bg-success text-success dark:bg-success/50 dark:text-success",
-        Icon && "flex gap-2.5"
+        Icon && "flex gap-2.5",
+        skipSearchCrawler === true && "algolia-skip-crawler"
       )}
     >
       {Icon ? (
@@ -419,7 +422,7 @@ export function ImageTheme({
   }
   return (
     <div className="max-w-[100%]">
-    <Zoom wrapElement="span" zoomMargin={25}>
+      <Zoom wrapElement="span" zoomMargin={25}>
         <Image
           src={light}
           className={`${className} block rounded dark:hidden`}
@@ -429,10 +432,10 @@ export function ImageTheme({
           height={0}
           sizes="100vw"
           style={{ width: "100%", height: "auto" }}
-          {...imageProps as ImageProps}
+          {...(imageProps as ImageProps)}
         />
-        </Zoom>
-        <Zoom wrapElement="span" zoomMargin={25}>
+      </Zoom>
+      <Zoom wrapElement="span" zoomMargin={25}>
         <Image
           src={dark}
           className={`${className} hidden rounded dark:block`}
@@ -442,9 +445,9 @@ export function ImageTheme({
           height={0}
           sizes="100vw"
           style={{ width: "100%", height: "auto" }}
-          {...imageProps as ImageProps}
+          {...(imageProps as ImageProps)}
         />
-    </Zoom>
+      </Zoom>
     </div>
   );
 }
