@@ -181,25 +181,37 @@ export function Callout({
   );
 }
 
-export function Info({ children }) {
+export function Info({ children, skipSearchCrawler }) {
   return (
-    <Callout variant="info" Icon={RiInformationLine}>
+    <Callout
+      variant="info"
+      Icon={RiInformationLine}
+      skipSearchCrawler={skipSearchCrawler}
+    >
       {children}
     </Callout>
   );
 }
 
-export function Tip({ children }) {
+export function Tip({ children, skipSearchCrawler }) {
   return (
-    <Callout variant="tip" Icon={RiLightbulbLine}>
+    <Callout
+      variant="tip"
+      Icon={RiLightbulbLine}
+      skipSearchCrawler={skipSearchCrawler}
+    >
       {children}
     </Callout>
   );
 }
 
-export function Warning({ children }) {
+export function Warning({ children, skipSearchCrawler }) {
   return (
-    <Callout variant="warning" Icon={RiAlertLine}>
+    <Callout
+      variant="warning"
+      Icon={RiAlertLine}
+      skipSearchCrawler={skipSearchCrawler}
+    >
       {children}
     </Callout>
   );
