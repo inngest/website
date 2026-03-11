@@ -26,7 +26,7 @@ Our Redis cluster was both read- and write-heavy. Scaling writes with more shard
 
 What we really needed was to change the access pattern. Not because Redis reads are slow (they are extremely fast), but because reducing the total number of operations would both lower pressure on the cluster and give us more flexibility in the storage backend we might use in the future.
 
-**Key Insight:** Although run state as a whole is mutable, many of the highest-read pieces of that state are immutable once written. In particular, triggering events and step inputs/outputs do not change, which made aggressive caching possible without complex kache invalidation.
+**Key Insight:** Although run state as a whole is mutable, many of the highest-read pieces of that state are immutable once written. In particular, triggering events and step inputs/outputs do not change, which made aggressive caching possible without complex cache invalidation.
 
 *[ fig. 2 ] — Redis read operations: before vs. after proxy rollout*
 
