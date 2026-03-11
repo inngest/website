@@ -1,4 +1,4 @@
-import { Callout, CodeGroup, Properties, Property, Row, Col, VersionBadge, GuideSelector, GuideSection, Card, CardGroup } from "src/shared/Docs/mdx";
+import { Callout, CodeGroup, Properties, Property, Row, Col, VersionBadge, LanguageSelector, LanguageSection, Card, CardGroup } from "src/shared/Docs/mdx";
 
 # Sentry Middleware
 
@@ -11,14 +11,10 @@ Using the Sentry middleware is useful to:
 
 ## Installation
 
-<GuideSelector
-  options={[
-    { key: "typescript", title: "TypeScript (v3.0.0+)" },
-    { key: "python", title: "Python (v0.3.0+)" }
-  ]}>
+<LanguageSelector>
 
 
-  <GuideSection show="python">
+  <LanguageSection show="python">
 
     The `SentryMiddleware` is shipped as part of the `inngest` package:
 
@@ -41,9 +37,9 @@ Using the Sentry middleware is useful to:
     ```
 
 
-  </GuideSection>
+  </LanguageSection>
 
-  <GuideSection show="typescript">
+  <LanguageSection show="typescript">
 
     Install the [`@inngest/middleware-sentry` package](https://www.npmjs.com/package/@inngest/middleware-sentry) and configure it as follows:
 
@@ -65,7 +61,7 @@ Using the Sentry middleware is useful to:
     Requires inngest@>=3.0.0 and @sentry/*@>=8.0.0`.
   </Callout>
 
-  </GuideSection>
+  </LanguageSection>
 
 
-</GuideSelector>
+</LanguageSelector>

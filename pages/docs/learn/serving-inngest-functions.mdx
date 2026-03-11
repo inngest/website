@@ -1,4 +1,4 @@
-import { Callout, Card, CardGroup, CodeGroup, Col, GuideSection, GuideSelector, Info, Row, Tip, VersionBadge } from "shared/Docs/mdx";
+import { Callout, Card, CardGroup, CodeGroup, Col, LanguageSection, LanguageSelector, Info, Row, Tip, VersionBadge } from "shared/Docs/mdx";
 
 export const description = `Serve the Inngest API as an HTTP endpoint in your application.`
 export const hidePageSidebar = true;
@@ -36,15 +36,9 @@ Inngest functions are portable, so you can migrate between `serve()` and `connec
 
 ## Serving Inngest functions
 
-<GuideSelector
-  options={[
-    { key: "typescript", title: "TypeScript" },
-    { key: "go", title: "Go" },
-    { key: "python", title: "Python" },
-  ]}
->
+<LanguageSelector>
 
-<GuideSection show="typescript">
+<LanguageSection show="typescript">
 
 Inngest provides a `serve()` handler which adds an API endpoint to your router. You expose your functions to Inngest through this HTTP endpoint. To make automated deploys much easier, **the endpoint needs to be defined at `/api/inngest`** (though you can [change the API path](/docs/reference/serve#serve-client-functions-options)).
 
@@ -97,7 +91,7 @@ serve({
 
 You can also create a custom serve handler for any framework or platform not listed here - [read more here](#custom-frameworks).
 
-<Callout variant="info">
+<Callout variant="info" skipSearchCrawler>
   Want us to add support for another framework? Open an issue on [GitHub](https://github.com/inngest/website) or tell us about it on our [Discord](/discord).
 </Callout>
 
@@ -1031,24 +1025,27 @@ export const PUT = inngestServe.PUT;
 
 See the [SvelteKit example](https://github.com/inngest/inngest-js/tree/main/examples/framework-sveltekit) for more information.
 
-### Framework: Tanstack Start 
+### Framework: Tanstack Start
 
 Add the following to `./src/routes/api/inngest.ts`:
 
 <CodeGroup>
-```ts 
-import { createServerFileRoute } from '@tanstack/react-start/server'
-
+```ts
+import { createFileRoute } from "@tanstack/react-router";
 import { serve } from "inngest/edge";
 import { inngest, functions } from "../../inngest";
 
 const handler = serve({ client: inngest, functions });
-    
-export const ServerRoute = createServerFileRoute('/api/inngest').methods({
-  GET: async ({ request }) => handler(request),
-  POST: async ({ request }) => handler(request),
-  PUT: async ({ request }) => handler(request)
-})
+
+export const Route = createFileRoute("/api/inngest")({
+  server: {
+    handlers: {
+      GET: async ({ request }) => handler(request),
+      POST: async ({ request }) => handler(request),
+      PUT: async ({ request }) => handler(request),
+    },
+  },
+});
 
 ```
 </CodeGroup>
@@ -1096,9 +1093,9 @@ const fn = inngest.createFunction(
 export default serve({ client: inngest, functions: [fn] });
 ```
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="go">
+<LanguageSection show="go">
 
 
 Inngest enables you to create a HTTP handler for your functions. This handler will be used to serve your functions over HTTP (compatible with `net/http`).
@@ -1140,9 +1137,9 @@ func main() {
 }
 ```
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="python">
+<LanguageSection show="python">
 
 You expose your functions to Inngest through this HTTP endpoint.
 Inngest provides integrations with Flask and FastAPI.
@@ -1204,9 +1201,9 @@ inngest.fast_api.serve(
 
 </CodeGroup>
 
-</GuideSection>
+</LanguageSection>
 
-</GuideSelector>
+</LanguageSelector>
 
 ### Signing key
 

@@ -1,7 +1,6 @@
 import { Callout, CodeGroup, VersionBadge } from "src/shared/Docs/mdx";
 
-export const description =
-  `Learn the Inngest SDK's type safe features with TypeScript`
+export const description = `Learn the Inngest SDK's type safe features with TypeScript`
 
 # TypeScript
 
@@ -76,6 +75,19 @@ export default inngest.createFunction(
   }
 );
 ```
+
+<Callout variant="info" skipSearchCrawler>
+  **Using inngest@v4?** Event triggers are now specified in the configuration object:
+  ```ts
+  inngest.createFunction(
+    { id: "send-welcome-email", triggers: [{ event: "user/new.signup" }] },
+    async ({ event }) => {
+      return await email.send("welcome", event.data.email);
+    },
+  );
+  ```
+  See the [v3 → v4 migration guide](/docs/reference/typescript/v4/migrations/v3-to-v4#event-trigger-is-now-in-options) for details.
+</Callout>
 
 ### Sending events
 
@@ -227,6 +239,17 @@ export default inngest.createFunction(
 );
 ```
 </CodeGroup>
+
+<Callout variant="info" skipSearchCrawler>
+  **Using inngest@v4?** The v3 examples above use three arguments to `createFunction`. In v4, event triggers are specified in the configuration object:
+  ```ts
+  inngest.createFunction(
+    { id: "onboarding-drip-campaign", triggers: [{ event: "user/new.signup" }] },
+    async ({ event, step }) => { /* ... */ },
+  );
+  ```
+  See the [v3 → v4 migration guide](/docs/reference/typescript/v4/migrations/v3-to-v4#event-trigger-is-now-in-options) for details.
+</Callout>
 
 ## Helpers
 

@@ -1,0 +1,102 @@
+---
+heading: "Introducing Durable Endpoints: Durability beyond workflows"
+image: /assets/blog/introducing-durable-endpoints/cover.png
+showSubtitle: false
+subtitle: "It is time for a new approach. Durable Endpoints makes API endpoints unbreakable, with low latency, minimal API, and no infrastructure work."
+date: 2026-02-10
+author: Charly Poly
+disableCTA: false
+---
+
+
+Durable execution is a crucial layer of fault tolerance that shields applications from external issues, such as API or internal infrastructure failures. It's a key part of keeping everything running smoothly.
+
+Still, durability has always meant background work: critical workflows running async, safely away from user-facing code. **But that creates a tradeoff**: AI products ship fast with fragile streaming endpoints, while reliable payment processing or integrations take weeks to harden with queues and workers.
+
+It is time for a new approach. [**Durable Endpoints**](https://www.inngest.com/docs/learn/durable-endpoints?ref=durable-endpoints-article) makes API endpoints unbreakable, with low latency, minimal API, and no infrastructure work.
+
+## What are Durable Endpoints?
+
+Durable Endpoints let you use Inngest's `step` API directly in your API handlers. Each step automatically gets retries, recovery, and observability, without leaving your endpoint code:
+
+```tsx
+import { Inngest } from "inngest";
+import { endpointAdapter } from "inngest/next";
+
+const inngest = new Inngest({ id: "deep-research", endpointAdapter });
+
+export const GET = inngest.endpoint(async (req: NextRequest) => {
+   const { topic, clarifications, researchId } = parseParams(req);
+
+   const queries = await step.run("generate-queries", async () => {
+   // Returns queries with reasoning: { query, reasoning, angle }
+      return await generateSearchQueries(topic, clarifications);
+   });
+
+   // deepResearch() leverages `step.run` for recursive searches
+   await deepResearch(researchId, topic, queries, depth, accumulated);
+
+   const report = await step.run("generate-report", async () => {
+      return await generateReport(topic, accumulated);
+   });
+
+   return Response.json({ report, sources: accumulated.sources });
+})
+```
+
+That's it. Your endpoint is now durable. If `generate-queries` succeeds but `generate-report` fails, Inngest picks up exactly where it left off, no re-running expensive LLM calls.
+
+## **Durability is moving into APIs**
+
+AI changed the game. Your users are staring at a chat interface, waiting for a response. They need both durability *and* low latency in a single request. The old model of "fast but fragile" vs "slow but reliable" doesn't cut it anymore.
+
+We're seeing a need for a shift: **durability is moving from background workflows into API endpoints**. 
+
+Durable Endpoints are low-latency and unbreakable API endpoints, with:
+
+- **Zero wasted keystrokes:** Wrap code in [`step.run()`](https://www.inngest.com/docs/learn/inngest-steps?ref=durable-endpoints-article), and you're done. No queues to configure, no workers to deploy.
+- **Automatic recovery:** Steps checkpoint as they complete. Failures retry from the last successful step, not from scratch.
+- **Built-in observability:** See exactly what's running, what failed, and why. No instrumentation required.
+- **Low latency by design:** Powered by [Checkpointing](https://www.inngest.com/blog/introducing-checkpointing?ref=durable-endpoints-article) for fast execution. Add [real-time streaming](https://www.inngest.com/docs/features/realtime?ref=durable-endpoints-article) when you need it.
+- **Works with your existing code:** No architectural overhaul. Add durability incrementally where it matters.
+
+## **See it in action: A Durable DeepResearch in a few hours**
+
+DeepResearch-style AI interfaces are notoriously complex: a single research query might trigger 40+ search requests and 20+ LLM calls to aggregate, evaluate, and summarize hundreds of sources.
+Traditionally, you'd split this into two systems: a streaming Serverless frontend for responsiveness, plus a background job system for reliability.
+
+With Durable Endpoints, it's one cohesive implementation:
+
+
+<AutoplayVideo src={"/assets/blog/introducing-durable-endpoints/durable-endpoints-demo-deepresearch.mp4"} />
+
+The demo above shows a full DeepResearch implementation with recursive queries up to 3 nested levels and advanced reasoning, built in hours, not weeks.
+
+[**Try the DeepResearch demo locally**](https://github.com/inngest/inngest-js/tree/main/examples/durable-endpoints-deepresearch#readme)
+
+## Beyond AI: Payment processing and product integrations
+
+While AI use cases drove this feature, durability belongs anywhere failure is expensive:
+
+- **Payment processing:** Stripe calls that must complete, even if your server hiccups mid-transaction
+- **Webhook handlers:** Process incoming data reliably without building dead-letter queues
+- **Third-party integrations:** API calls to flaky external services that need graceful retry logic
+- **E-commerce transactions:** Order flows that can't afford to drop steps
+
+## Get started with Durable Endpoints
+
+Durable Endpoints is available now in public beta. Getting started takes minutes:
+
+1. [Install or update the Inngest SDK](https://www.inngest.com/docs/getting-started/nextjs-quick-start?ref=durable-endpoints-article)
+2. Wrap your endpoint handler with `inngest.endpoint()` from `inngest/edge` for Bun or `inngest/next` for Next.js
+3. Use `step.run()` for operations that need durability
+
+[**Read the Durable Endpoints documentation**](https://www.inngest.com/docs/learn/durable-endpoints?ref=durable-endpoints-article)
+
+<hr/>
+
+{/* **Join the [Durable Endpoints Webinar (45')](https://www.notion.so/Durable-Endpoints-Webinar-45-2d5b64753bbd809da2b0c80b6201660f?pvs=21)  webinar on <…>** */}
+
+- [**Tweet about Durable Endpoints**](https://twitter.com/intent/tweet?url=http%3A%2F%2Finngest.com%2Fblog%2Fintroducing-durable-endpoints)
+- [**Share on LinkedIn**](https://www.linkedin.com/sharing/share-offsite/?url=http%3A%2F%2Finngest.com%2Fblog%2Fintroducing-durable-endpoints)
+- [**Discuss on Discord**](https://www.inngest.com/discord)

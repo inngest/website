@@ -1,0 +1,219 @@
+---
+heading: "How to Fix Next.js AI Route Failures (Without Restarting from Zero)"
+subtitle: "Add step-level durability to your Next.js AI routes so failures don't restart from zero—each step is independently retryable and memoized."
+image: /assets/blog/2026-03-09-how-to-fix-nextjs-ai-route-failures/featured-image.png
+date: 2026-03-09
+author: Lauren Craigie
+category: engineering
+showSubtitle: false
+---
+
+If your Next.js AI route keeps timing out, you've probably already found the standard playbook: bump `maxDuration`, enable Fluid Compute, maybe [restructure the pipeline](/blog/how-to-solve-nextjs-timeouts). Those fixes are real—they buy you more runway on the execution limit.
+
+But more runway isn't the same as reliability. And the failure mode that actually hurts most has nothing to do with how long your function runs.
+
+## Why Next.js route handlers fail in multi-step AI pipelines
+
+Your route handler has no memory. It executes, succeeds or fails, and forgets. That's fine for simple API calls. For a multi-step AI pipeline—where you're calling models, enriching data, writing to databases—it means every failure restarts from zero.
+
+That's expensive in ways that compound:
+
+A slow model response pushes you past the execution limit. You retry. You pay for the model call again. A downstream API fails after a successful LLM call. You retry. You pay again. A database write fails after two successful API calls. Both calls re-run. Your user gets delayed. Your bill goes up.
+
+At low volumes, this is annoying. At production scale—especially as you move from simple completions toward [multi-step agent pipelines that plan, search, enrich, and synthesize](/blog/agentic-workflow-example)—it becomes a real cost center and a real reliability problem. Five steps at 99% reliability each gives you 95% overall. Ten steps gets you to 90%. Real agents don't have five steps.
+
+The common response is to bump limits and add retries at the function level. Which is like putting a bigger gas tank on a car with a leak. Same problem, just longer.
+
+## The real fix: step-level durability
+
+Route handlers treat your entire pipeline as a single unit of work. There's no concept of "step 2 succeeded, pick up from step 3." When anything fails, the whole thing starts over.
+
+What you actually need is a handler where each step is independently durable. If step 3 fails, steps 1 and 2 stay done—their results are memoized, returned from cache on retry, not re-executed. You pay for each LLM call exactly once. On the happy path, your user gets a direct synchronous response and none of this machinery is visible. On the failure path, only the failed step re-runs.
+
+This is the core guarantee that makes [agent orchestration viable in production](/blog/ai-orchestration-with-agentkit-step-ai). Without it, you're building on sand: the more capable and multi-step your agent becomes, the more exposed you are to cascading failures and duplicated inference costs.
+
+## How to add step-level durability to a Next.js route handler
+
+Inngest Durable Endpoints add step-level durability to your existing route handlers without changing their structure. One-time setup: add `endpointAdapter` to your Inngest client.
+
+```typescript
+import { Inngest } from "inngest";
+import { endpointAdapter } from "inngest/next";
+
+export const inngest = new Inngest({
+  id: "my-app",
+  endpointAdapter,
+});
+```
+
+Then the route. Wrap your handler with `inngest.endpoint()` and each external call with `step.run()`:
+
+```typescript
+import { step } from "inngest";
+import { inngest } from "@/lib/inngest/client";
+import { NextRequest } from "next/server";
+
+export const POST = inngest.endpoint(async (req: NextRequest) => {
+  const { documentId, text } = await req.json();
+
+  // Fails → retried. Succeeds → memoized.
+  const summary = await step.run("summarize-document", async () => {
+    const result = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [{ role: "user", content: `Summarize: ${text}` }],
+    });
+    return result.choices[0].message.content;
+  });
+
+  // If this fails, summarize-document does not re-run
+  const metadata = await step.run("enrich-metadata", async () => {
+    return await enrichmentApi.analyze(summary);
+  });
+
+  await step.run("save-results", async () => {
+    await db.documents.update({
+      where: { id: documentId },
+      data: { summary, metadata },
+    });
+  });
+
+  return Response.json({ success: true, summary });
+});
+```
+
+Three changes from a standard route handler: `inngest.endpoint()` wraps the handler, `step.run()` wraps each unit of work, and `step` is imported directly from `"inngest"`. That's the whole migration.
+
+## How Inngest retries failed steps without re-running the whole pipeline
+
+On the happy path, the client sees a direct synchronous response. No overhead, nothing different.
+
+```text
+Client → POST /api/analyze
+            → [summarize-document ✓]
+            → [enrich-metadata ✓]
+            → [save-results ✓]
+            ← 200 OK
+```
+
+When a step fails, Inngest retries from that step. Everything before it is returned from cache.
+
+```text
+enrich-metadata fails:
+
+Client → POST /api/analyze
+            → [summarize-document ✓]
+            → [enrich-metadata ✗]
+                    ↓
+            Inngest retries enrich-metadata
+            summarize-document: from cache (not re-run, not re-billed)
+                    ↓
+            → [enrich-metadata ✓] → [save-results ✓]
+            ← 302 redirect to result URL
+Client → GET [result URL] ← 200 OK
+```
+
+Because the retry response crosses a domain boundary, `fetch()` won't follow the redirect automatically. A small wrapper handles both paths:
+
+```typescript
+export async function durableFetch(url: string, options?: RequestInit) {
+  const res = await fetch(url, {
+    ...options,
+    redirect: "manual",
+  });
+
+  if (res.status === 302 || res.redirected) {
+    const redirectUrl = res.headers.get("location") || res.url;
+    return await fetch(redirectUrl);
+  }
+
+  return res;
+}
+```
+
+```typescript
+const res = await durableFetch("/api/analyze", {
+  method: "POST",
+  body: JSON.stringify({ documentId, text }),
+});
+const { summary } = await res.json();
+```
+
+## Running parallel LLM calls with independent retry handling
+
+When steps don't depend on each other, `Promise.all()` works exactly as you'd expect. Each step is still independently durable.
+
+```typescript
+export const POST = inngest.endpoint(async (req: NextRequest) => {
+  const { documentId, text } = await req.json();
+
+  const [summary, keyTerms] = await Promise.all([
+    step.run("summarize-document", async () => {
+      const result = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [{ role: "user", content: `Summarize: ${text}` }],
+      });
+      return result.choices[0].message.content;
+    }),
+    step.run("extract-key-terms", async () => {
+      const result = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [{ role: "user", content: `Extract key terms as a JSON array: ${text}` }],
+      });
+      return JSON.parse(result.choices[0].message.content);
+    }),
+  ]);
+
+  await step.run("save-results", async () => {
+    await db.documents.update({
+      where: { id: documentId },
+      data: { summary, keyTerms },
+    });
+  });
+
+  return Response.json({ success: true, summary });
+});
+```
+
+## Debugging failed AI pipeline steps
+
+Every step shows up in the Inngest dashboard automatically: name, inputs, outputs, duration, retry count. A 30-second model call that failed on the second retry is visible, traceable, and replayable without touching a log aggregator.
+
+For single-step routes, grep works fine. For agent pipelines where the question is "which of the seven steps failed, and what state was the pipeline in when it did?"—a step-level trace is a different category of tool. [Inngest Insights](/blog/insights-query-events-and-runs) takes this further, letting you query run history across your entire pipeline with SQL—token usage, failure rates, model performance—without standing up separate analytics infrastructure.
+
+## Durable Endpoints vs. Durable Functions: which to use for AI agents
+
+Durable Endpoints are built for work the user is actively waiting on. If you've returned a 200 before the work started—webhooks, batch processing, scheduled jobs—Inngest's [Durable Functions](/blog/nextjs-serverless-vs-durable-functions) are the right tool. The distinction matters as agents get more capable: real-time interactive agents (user waiting, wants a response) sit on Endpoints; background agents (document processing, async enrichment, research pipelines) sit on Functions.
+
+| Situation | Approach |
+| --- | --- |
+| User is waiting on a result | Durable Endpoint |
+| Work happens in the background | Durable Function |
+| You need concurrency or rate limiting | Durable Function |
+| Response needs to stream | Durable Function |
+
+As agent architectures mature—more steps, more tool calls, more real cost per failure—the underlying execution model matters more, not less. If you're thinking about what that looks like end-to-end, [this is a good place to start](/blog/introducing-durable-endpoints). Step-level durability is the primitive that makes multi-step agents viable at production scale, and Durable Endpoints bring that primitive to the request-response pattern your frontend already expects.
+
+## Current limitations
+
+Worth knowing before you ship:
+
+- **POST body** isn't yet supported—pass data as query strings for now
+- **Flow control** (concurrency limits, rate limiting) isn't available for Endpoints yet
+- **Streaming** isn't supported—standard HTTP only
+
+## Getting started
+
+If you have a route that's already failing mid-pipeline, the migration is four steps:
+
+1. Install Inngest and add `endpointAdapter` to your client
+2. Swap `export async function POST` for `export const POST = inngest.endpoint(async ...)`
+3. Wrap each external call in `step.run()`
+4. Add `durableFetch` on the client side
+
+No new infrastructure. No event schemas. No background job files.
+
+→ [Durable Endpoints documentation](/docs/learn/durable-endpoints)
+
+→ [Full examples including parallel steps](/docs/examples/durable-endpoints)
+
+→ [Get started free](https://app.inngest.com/sign-up)

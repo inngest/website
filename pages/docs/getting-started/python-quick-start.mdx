@@ -1,7 +1,6 @@
 import { CodeGroup, Callout } from "src/shared/Docs/mdx";
 
-export const description =
-  `Get started with Inngest in this ten-minute Python tutorial`
+export const description = `Get started with Inngest in this ten-minute Python tutorial`
 
 {/* This is a duplicate of /docs/reference/python/overview/quick-start.mdx, which will soon be deleted*/}
 
@@ -9,7 +8,7 @@ export const description =
 
 This guide will teach you how to add Inngest to a FastAPI app and run an Inngest function.
 
-<Callout variant="info">
+<Callout variant="info" skipSearchCrawler>
   💡 If you prefer to explore code instead, here are example apps in the frameworks currently supported by Inngest:  [FastAPI](https://github.com/inngest/inngest-py/tree/main/examples/fast_api), [Django](https://github.com/inngest/inngest-py/tree/main/examples/django),  [Flask](https://github.com/inngest/inngest-py/tree/main/examples/flask), [DigitalOcean Functions](https://github.com/inngest/inngest-py/tree/main/examples/digital_ocean), and [Tornado](https://github.com/inngest/inngest-py/tree/main/examples/tornado).
 
   Is your favorite framework missing here? Please open an issue on [GitHub](https://github.com/inngest/inngest-py)!
@@ -83,7 +82,7 @@ Start your app:
 (INNGEST_DEV=1 uvicorn main:app --reload)
 ```
 
-<Callout variant="info">
+<Callout variant="info" skipSearchCrawler>
   💡 The `INNGEST_DEV` environment variable tells the Inngest SDK to run in "dev mode". By default, the SDK will start in [production mode](/docs/reference/python/overview/prod-mode). We made production mode opt-out for security reasons.
 
   Always set `INNGEST_DEV` when you want to sync with the Dev Server. Never set `INNGEST_DEV` when you want to sync with Inngest Cloud.
@@ -113,7 +112,7 @@ After a few seconds, your app and function should now appear in the Dev Server U
 
 <img src="/assets/docs/python/quick-start-functions.png" />
 
-<Callout variant="info">
+<Callout variant="info" skipSearchCrawler>
   💡 You can sync multiple apps and multiple functions within each app.
 </Callout>
 

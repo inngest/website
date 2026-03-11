@@ -1,11 +1,11 @@
 import {
-  Callout, 
+  Callout,
   Card,
   CardGroup,
   CodeGroup,
   Col,
-  GuideSection,
-  GuideSelector,
+  LanguageSection,
+  LanguageSelector,
   Info,
   Properties,
   Property,
@@ -20,15 +20,19 @@ Encryption middleware provides end-to-end encryption for events, step output, an
 
 
 
-<GuideSelector
-  options={[
-    { key: "typescript", title: "TypeScript (v2.0.0+)" },
-    { key: "python", title: "Python (v0.3.0+)" }
-  ]}>
+<LanguageSelector>
 
-## Installation
+  <LanguageSection show="go">
 
-  <GuideSection show="python">
+    <Callout>
+      Support for Middleware in the Go SDK in planned.
+    </Callout>
+
+  </LanguageSection>
+
+  <LanguageSection show="python">
+
+    ## Installation
 
     The `EncryptionMiddleware` is available as part of the `inngest_encryption` package:
 
@@ -47,9 +51,11 @@ Encryption middleware provides end-to-end encryption for events, step output, an
     - `step.run` return values.
     - Function return values.
 
-  </GuideSection>
+  </LanguageSection>
 
-  <GuideSection show="typescript">
+  <LanguageSection show="typescript">
+
+    ## Installation
 
     Install the [`@inngest/middleware-encryption` package](https://www.npmjs.com/package/@inngest/middleware-encryption) ([GitHub](https://github.com/inngest/inngest-js/tree/main/packages/middleware-encryption#readme)) and configure it as follows:
 
@@ -74,39 +80,54 @@ Encryption middleware provides end-to-end encryption for events, step output, an
     - All function output
     - Event data placed inside `data.encrypted`
 
-  </GuideSection>
+  <Info>
+    If using encryption middleware in combination with [checkpointing](/docs/setup/checkpointing), upgrade to `3.51.0` or later.
+  </Info>
+
+  </LanguageSection>
 
 
-  ## Changing the encrypted `event.data` field
+  
 
-  <GuideSection show="python">
+  <LanguageSection show="python">
+    ## Changing the encrypted `event.data` field
+
     By default, `event.data.encrypted` is encrypted. All other fields are sent in plaintext. To encrypt a different field, set the `event_encryption_field` parameter.
-  </GuideSection>
+  </LanguageSection>
 
-  <GuideSection show="typescript">
+  <LanguageSection show="typescript">
+    ## Changing the encrypted `event.data` field
+
     Only select pieces of event data are encrypted. By default, only the data.encrypted field.
 
     This can be customized using the `eventEncryptionField: string` setting.
-  </GuideSection>
-
-  ## Decrypt only mode
+  </LanguageSection>
 
 
-  <GuideSection show="python">
+
+  <LanguageSection show="python">
+    ## Decrypt only mode
+
     To disable encryption but continue decrypting, set `decrypt_only=True`. This is useful when you want to migrate away from encryption but still need to process older events.
-  </GuideSection>
+  </LanguageSection>
 
-  <GuideSection show="typescript">
-   To disable encryption but continue decrypting, set `decryptOnly: true`. This is useful when you want to migrate away from encryption but still need to process older events.
-  </GuideSection>
+  <LanguageSection show="typescript">
+    ## Decrypt only mode
 
-  ## Fallback decryption keys
+    To disable encryption but continue decrypting, set `decryptOnly: true`. This is useful when you want to migrate away from encryption but still need to process older events.
+  </LanguageSection>
 
-  <GuideSection show="python">
+  
+
+  <LanguageSection show="python">
+    ## Fallback decryption keys
+
     To attempt decryption with multiple keys, set the `fallback_decryption_keys` parameter. This is useful when rotating keys, since older events may have been encrypted with a different key.
-  </GuideSection>
+  </LanguageSection>
 
-  <GuideSection show="typescript">
+  <LanguageSection show="typescript">
+    ## Fallback decryption keys
+
     To attempt decryption with multiple keys, set the `fallbackDecryptionKeys` parameter. This is useful when rotating keys, since older events may have been encrypted with a different key:
 
     ```ts
@@ -132,13 +153,11 @@ Encryption middleware provides end-to-end encryption for events, step output, an
       key: process.env.MY_ENCRYPTION_KEY_V2,
     });
     ```
-  </GuideSection>
+  </LanguageSection>
 
   ## Cross-language support
 
   This middleware is compatible with our encryption middleware in our TypeScript SDK. Encrypted events can be sent from Python and decrypted in TypeScript, and vice versa.
 
 
-
-
-</GuideSelector>
+</LanguageSelector>

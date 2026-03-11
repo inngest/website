@@ -1,4 +1,4 @@
-import { Callout, GuideSelector, GuideSection, ButtonDeploy } from "src/shared/Docs/mdx";
+import { Callout, GuideSelector, GuideSection, ButtonDeploy, Tip } from "src/shared/Docs/mdx";
 
 # Vercel
 
@@ -25,6 +25,9 @@ import { serve } from "inngest/next";
 import { client } from "../../inngest/client";
 import { firstFunction, anotherFunction } from "../../inngest/functions";
 
+// This endpoint can run for a maximum of 300 seconds
+export const maxDuration = 300;
+
 export default serve({
   client: client,
   functions: [
@@ -41,6 +44,9 @@ import { serve } from "inngest/next";
 import { client } from "../../inngest/client";
 import { firstFunction, anotherFunction } from "../../inngest/functions";
 
+// This endpoint can run for a maximum of 300 seconds
+export const maxDuration = 300;
+
 export const { GET, POST, PUT } = serve({
   client: client,
   functions: [
@@ -52,6 +58,12 @@ export const { GET, POST, PUT } = serve({
 </GuideSection>
 
 </GuideSelector>
+
+<Tip>
+  We strongly recommend that you configure the `maxDuration` for your Inngest endpoint to ensure that your steps can successfully execute without timeouts. When using with [`checkpointing`](/docs/setup/checkpointing) (the default in our v4 SDK), you should set checkpointing's `maxRuntime` option to 20-40% below your `maxDuration` setting on Vercel. [See the Vercel docs for more information](https://vercel.com/docs/functions/configuring-functions/duration).
+
+  Note, when `streaming` is enabled, your function can execute well beyond the `maxDuration`. Learn more about [the streaming option here](/docs/reference/typescript/v4/serve/streaming).
+</Tip>
 
 ## Deploying to Vercel
 
@@ -88,25 +100,51 @@ To enable this, you will need to leverage Vercel's "[Protection Bypass for Autom
 4. For each project that you would like to enable this for, add the secret in the "Deployment protection key" input. Inngest will now use this parameter to communicate with your application to bypass the deployment protection.
 
 <img
-  src="/assets/docs/deploy/deployment-protection-key.png"
-  className="rounded-md"
+  src="/assets/docs/deploy/vercel-deployment-protection.png"
+  className="rounded-md max-w-lg"
   alt="A Vercel protection bypass secret added in the Inngest dashboard"
 />
 
 5. Trigger a re-deploy of your preview environment(s) (this resyncs your app to Inngest)
 
+## Overriding the default hostname
+
+By default, Inngest uses your Vercel project's "[deployment urls](https://vercel.com/docs/deployments/generated-urls)" to sync with Inngest. When you deploy, Vercel's webhook sends these URLs to Inngest which are unique for each version of your code that you deploy. These unique URLs are used both for production deploys and branch environments. The URLs used in production are _not_ preview environments. One of these URLs might look like this:
+
+```
+https://myapp-pxz35n5o2-acmeinc.vercel.app
+```
+
+If you desire Inngest to use your custom domain in production, you can set the `INNGEST_SERVE_HOST` in your Vercel project's environment variables for production. When you push to production and Inngest syncs your app, it will instead use this URL. Please note: if your application is not reachable on this URL, your app sync will fail.
+
+```
+INNGEST_SERVE_HOST=https://acme.com
+```
 
 ## Multiple apps in one single Vercel project
 
 You can pass multiple paths by adding their path information to each Vercel project in the Vercel Integration’s settings page.
 
 <img
-  src="/assets/docs/deploy/add-path-info.png"
-  className="rounded-md"
+  src="/assets/docs/deploy/vercel-add-path.png"
+  className="rounded-md max-w-lg"
   alt="Add new path information button in the Inngest dashboard"
 />
 
 <Callout>You can also add paths to separate functions within the same app for bundle size issues or for running certain functions on the edge runtime for streaming.</Callout>
+
+## Setting up a staging environment
+
+If you prefer to set up a dedicated staging environment instead of using [branch environments](/docs/platform/environments), you can do that leveraging Inngest's custom environments and Vercel's custom environments. Here are the steps to set that up correctly:
+
+1. Create a Vercel custom environment ([docs](https://vercel.com/docs/deployments/environments#custom-environments))
+2. Create an Inngest custom environment ([docs](/docs/platform/environments#custom-environments))
+3. Create an Inngest Event Key in your new custom environment with a memorable name like "Vercel - My app" ([docs](/docs/events/creating-an-event-key)). Copy this for later.
+    <img src="/assets/docs/deploy/inngest-dash-staging-keys.png" className="max-w-sm my-1"/>
+4. Copy your Inngest [Signing Key](/docs/platform/signing-keys)
+5. In the Vercel project dashboard, add two new environment variables, `INNGEST_EVENT_KEY` and `INNGEST_SIGNING_KEY` using your two copied values, selecting only to use them for your new custom environment, e.g. "staging."
+    <img src="/assets/docs/deploy/vercel-custom-env-vars.png" className="max-w-md my-1"/>
+6. If using the Vercel integration, the next time you deploy, the app should be synced to your custom environment in Inngest. If you don't use the Vercel integration, you will have to manually sync your app after you deploy (see section below).
 
 ## Manually syncing apps
 

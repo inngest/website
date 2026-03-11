@@ -1,0 +1,93 @@
+import { ResourceGrid, Resource } from "shared/Docs/Resources";
+import { Callout, CodeGroup } from "shared/Docs/mdx";
+
+import { BookOpenIcon, CodeBracketIcon, WrenchScrewdriverIcon } from "@heroicons/react/24/outline";
+
+export const description = "Pre-built agent skills that teach AI coding agents like Claude Code and Cursor how to write, test, and debug Inngest functions."
+
+# Agent Skills
+
+Inngest Skills provides pre-built [agent skills](https://agentskills.io) for AI coding agents like Claude Code, Cursor, and Windsurf. They give your coding agent comprehensive, up-to-date guidance on building reliable applications with Inngest — from initial setup to advanced flow control.
+
+<Callout>
+  Inngest Skills is open source at [github.com/inngest/inngest-skills](https://github.com/inngest/inngest-skills).
+</Callout>
+
+## Why use agent skills?
+
+Instead of relying on an AI model's training data (which may be outdated or incomplete), agent skills provide:
+
+- **Current API knowledge** — Accurate function signatures, configuration options, and best practices
+- **Step-by-step guidance** — Structured instructions for common Inngest patterns
+- **Workflow templates** — Proven patterns for background jobs, scheduled tasks, and event-driven workflows
+
+## Installation
+
+<CodeGroup>
+
+```bash {{ title: "Skills.sh" }}
+npx skills add inngest/inngest-skills
+```
+
+
+```bash {{ title: "Claude Code" }}
+/plugin marketplace add inngest/inngest-skills
+/plugin install inngest-skills@inngest-agent-skills
+```
+
+```text {{ title: "Cursor" }}
+# Add to your .cursorrules file:
+Load the Inngest skills from https://github.com/inngest/inngest-skills for building with Inngest's durable execution platform.
+```
+
+</CodeGroup>
+
+For other agents, reference the [repository](https://github.com/inngest/inngest-skills) directly or clone it to your agent's skills directory. Each skill is self-contained with full documentation in its `SKILL.md` file.
+
+## Available skills
+
+| Skill | Description | What it covers |
+| --- | --- | --- |
+| **inngest-setup** | Set up Inngest in a TypeScript project | SDK installation, client config, environment variables, dev server |
+| **inngest-events** | Design and send Inngest events | Event schema, naming conventions, idempotency, fan-out patterns, system events |
+| **inngest-durable-functions** | Create and configure durable functions | Triggers, step execution, memoization, cancellation, error handling, retries |
+| **inngest-steps** | Use step methods to build durable workflows | `step.run`, `step.sleep`, `step.waitForEvent`, loops, parallel execution |
+| **inngest-flow-control** | Configure flow control for functions | Concurrency limits, throttling, rate limiting, debounce, priority, batching |
+| **inngest-middleware** | Create middleware for cross-cutting concerns | Middleware lifecycle, dependency injection, built-in middleware |
+
+## Language support
+
+These skills are currently focused on **TypeScript**. Core concepts like events, steps, and flow control apply across all Inngest SDKs, but code examples and setup instructions are TypeScript-specific.
+
+For Python or Go, refer to the [Inngest documentation](/docs) and [llms.txt](https://www.inngest.com/llms.txt) for language-specific guidance.
+
+## Combine with Dev Server MCP
+
+For the best AI development experience, use agent skills alongside the [Inngest Dev Server MCP integration](/docs/ai-dev-tools/mcp). Together they provide:
+
+- **Skills** give your agent knowledge of *how* to write correct Inngest code
+- **MCP** gives your agent the ability to *interact* with your running dev server — list functions, send events, and monitor runs
+
+This enables a complete write, test, and debug loop powered by your coding agent.
+
+## Resources
+
+<ResourceGrid cols={2}>
+
+<Resource resource={{
+  href: "https://github.com/inngest/inngest-skills",
+  name: "inngest-skills on GitHub",
+  icon: CodeBracketIcon,
+  description: "Source code, installation instructions, and contribution guide.",
+  pattern: 1,
+}}/>
+
+<Resource resource={{
+  href: "/docs/ai-dev-tools/mcp",
+  name: "Dev Server MCP Integration",
+  icon: WrenchScrewdriverIcon,
+  description: "Connect AI assistants to your running Inngest dev server.",
+  pattern: 1,
+}}/>
+
+</ResourceGrid>

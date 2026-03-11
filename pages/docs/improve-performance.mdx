@@ -1,4 +1,4 @@
-import { Info, CodeGroup, GuideSelector, GuideSection } from "shared/Docs/mdx";
+import { Info, CodeGroup, LanguageSelector, LanguageSection } from "shared/Docs/mdx";
 
 export const description = "Solutions to reduce latency"
 
@@ -28,18 +28,13 @@ What happens when something goes wrong? If a step fails and needs to retry, the 
 
 ### Checkpointing Setup
 
-<GuideSelector
-  options={[
-    { key: "typescript", title: "TypeScript" },
-    { key: "go", title: "Go" },
-  ]}
->
+<LanguageSelector>
 
-<GuideSection show="typescript">
+<LanguageSection show="typescript">
 
 To enable checkpointing:
 
-1. Install `inngest@3.46.0` or higher
+1. Install `inngest@3.51.0` or higher
 2. Set `checkpointing: true` on your Inngest client
 
 ```ts
@@ -49,10 +44,11 @@ export const inngest = new Inngest({
   id: "my-app",
   checkpointing: true,
 });
+```
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="go">
+<LanguageSection show="go">
 
 To enable checkpointing:
 
@@ -81,9 +77,11 @@ _, err := inngestgo.CreateFunction(
 )
 ```
 
-</GuideSection>
+</LanguageSection>
 
-</GuideSelector>
+</LanguageSelector>
+
+Read [the detailed checkpointing guide](/docs/setup/checkpointing) for more information.
 
 ---
 

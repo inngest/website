@@ -1,7 +1,6 @@
-import { Callout, CodeGroup, GuideSection, GuideSelector, GuideTitle } from "src/shared/Docs/mdx";
+import { Callout, CodeGroup, Col, Row } from "src/shared/Docs/mdx";
 
-export const description =
-  `Get started with Inngest in this ten-minute JavaScript tutorial`
+export const description = `Get started with Inngest in this ten-minute JavaScript tutorial`
 
 # Node.js Quick Start
 
@@ -20,40 +19,15 @@ Let's get started!
 
 Choose your preferred Node.js web framework to get started. This guide uses ESM (ECMAScript Modules), but it also works for Common.js with typical modifications.
 
-<GuideSelector
-  options={[
-    { key: "express", title: "Express.js" },
-    { key: "fastify", title: "Fastify" }
-  ]}>
-
 Inngest works with any Node, Bun or Deno backend framework,but this tutorial will focus on some of the most popular frameworks.
 
 ### Optional: Use a starter project
 
 If you don't have an existing project, you can clone the following starter project to run through the quick start tutorial:
 
-{/* TODO - I'd like to make these easily cloneable from
-<details>
-  <summary><strong>Instructions for creating a new Next.js project </strong></summary>
-
-  Run the following command in your terminal to create a new Next.js project:
-
-  <GuideSection show="nextpages">
-  ```shell
-  npx create-next-app@latest --ts --eslint --tailwind --no-src-dir --no-app --import-alias='@/*' inngest-guide
-  ```
-  </GuideSection>
-
-  <GuideSection show="nextappdir">
-  ```shell
-  npx create-next-app@latest --ts --eslint --tailwind --src-dir --app --import-alias='@/*' inngest-guide
-  ```
-  </GuideSection>
-</details>
 
 Once you've chosen a project, open it in a code editor.
 
-*/}
 
 ## Starting your project
 
@@ -67,6 +41,14 @@ npx tsx watch ./index.ts # replace with your own main entrypoint file
 nodemon ./index.js # replace with your own main entrypoint file
 ```
 </CodeGroup>
+
+<Callout variant="info" skipSearchCrawler>
+  **Using inngest@v4?** The default mode changed to `cloud`. For local development, prefix your dev command with `INNGEST_DEV=1`:
+  ```shell
+  INNGEST_DEV=1 npm run dev
+  ```
+  See the [v3 → v4 migration guide](/docs/reference/typescript/v4/migrations/v3-to-v4#default-mode-changed-to-cloud) for details.
+</Callout>
 
 Now let's add Inngest to your project.
 
@@ -91,7 +73,7 @@ bun add inngest
 
 ## 2. Run the Inngest Dev Server
 
-Next, start the [Inngest Dev Server](/docs/local-development#inngest-dev-server), which is a fast, in-memory version of Inngest where you can quickly send and view events and function runs. This tutorial assumes that your <GuideTitle/> server will be running on port `3000`; change this to match your port if you use another.
+Next, start the [Inngest Dev Server](/docs/local-development#inngest-dev-server), which is a fast, in-memory version of Inngest where you can quickly send and view events and function runs. This tutorial assumes that your Node.js server will be running on port `3000`; change this to match your port if you use another.
 
 <CodeGroup>
 ```shell {{ title: "npm" }}
@@ -167,60 +149,41 @@ export const inngest = new Inngest({ id: "my-app" });
 export const functions = [];
 ```
 
-## 4. Set up the Inngest http endpoint
+## 4. Set up the Inngest HTTP endpoint
 
-<GuideSection show="express">
-Using your existing Express.js server, we'll set up Inngest using the provided `serve` handler which will "serve" Inngest functions. Here we'll assume this file is your entrypoint at `inngest.ts` and all import paths will be relative to that:
+Inngest supports 20+ Node.js HTTP frameworks.
 
-```ts {{ filename: "./index.ts" }}
-import express from "express";
-import { serve } from "inngest/express";
-import { inngest, functions } from "./src/inngest"
+You will find the instructions to set up your Inngest HTTP endpoint with your preferred framework using the following links:
 
-const app = express();
-// Important: ensure you add JSON middleware to process incoming JSON POST payloads.
-app.use(express.json());
-// Set up the "/api/inngest" (recommended) routes with the serve handler
-app.use("/api/inngest", serve({ client: inngest, functions }));
+<div className="grid md:grid-cols-3">
 
-app.listen(3000, () => {
-  console.log('Server running on http://localhost:3000');
-});
-```
-</GuideSection>
+<Col>
+* [AWS Lambda](/docs/learn/serving-inngest-functions#framework-aws-lambda)
+* [Bun](/docs/learn/serving-inngest-functions#bun-serve)
+* [Cloudflare Pages](/docs/learn/serving-inngest-functions#framework-cloudflare-pages-functions)
+* [Cloudflare Workers](/docs/learn/serving-inngest-functions#framework-cloudflare-workers)
+* [DigitalOcean Functions](/docs/learn/serving-inngest-functions#framework-digital-ocean-functions)
+* [ElysiaJS](/docs/learn/serving-inngest-functions#framework-elysia-js)
+</Col>
+<Col>
+* [Fastify](/docs/learn/serving-inngest-functions#framework-fastify)
+* [Fresh (Deno)](/docs/learn/serving-inngest-functions#framework-fresh-deno)
+* [Google Cloud Run Functions](/docs/learn/serving-inngest-functions#framework-google-cloud-run-functions)
+* [Firebase Cloud functions](/docs/learn/serving-inngest-functions#framework-firebase-cloud-functions)
+* [Hono](/docs/learn/serving-inngest-functions#framework-hono)
+* [Koa](/docs/learn/serving-inngest-functions#framework-koa)
+</Col>
+<Col>
+* [Nitro](/docs/learn/serving-inngest-functions#framework-nitro)
+* [Nuxt](/docs/learn/serving-inngest-functions#framework-nuxt)
+* [Redwood](/docs/learn/serving-inngest-functions#framework-redwood)
+* [Remix](/docs/learn/serving-inngest-functions#framework-remix)
+* [Supabase Edge Functions](/docs/learn/serving-inngest-functions#framework-supabase-edge-functions)
+* [SvelteKit](/docs/learn/serving-inngest-functions#framework-svelte-kit)
 
-<GuideSection show="fastify">
-Using your existing Fastify server, we'll set up Inngest using the provided Fastify plugin which will "serve" Inngest functions. Here we'll assume this file is your entrypoint at `inngest.ts` and all import paths will be relative to that:
+</Col>
 
-```ts {{ filename: "./index.ts" }}
-import Fastify from "fastify";
-import { fastifyPlugin } from "inngest/fastify";
-import { inngest, functions } from "./src/inngest"
-
-const fastify = Fastify({
-  logger: true,
-});
-
-// This automatically adds the "/api/inngest" routes to your server
-fastify.register(fastifyPlugin, {
-  client: inngest,
-  functions,
-  options: {},
-});
-
-// Start up the fastify server
-fastify.listen({ port: 3000 }, function (err, address) {
-  if (err) {
-    fastify.log.error(err);
-    process.exit(1);
-  }
-});
-```
-</GuideSection>
-
-<Callout>
-👉 Note that you can import a [`serve`](/docs/reference/serve) handler for other frameworks and the rest of the code remains the same. These adapters enable you to change your web framework without changing any Inngest function code (ex. instead of <GuideSection show="express">`inngest/express`</GuideSection><GuideSection show="fastify">`inngest/fastify`</GuideSection> it could be `inngest/next` or `inngest/hono`);
-</Callout>
+</div>
 
 ## 5. Write your first Inngest function
 
@@ -236,6 +199,8 @@ To define the function, use the [`createFunction`](/docs/reference/functions/cre
     - **Configuration**: A unique `id` is required and it is the default name that will be displayed on the Inngest dashboard to refer to your function. You can also specify [additional options](/docs/reference/functions/create#configuration) such as `concurrency`, `rateLimit`, `retries`, or `batchEvents`, and others.
     - **Trigger**: `event` is the name of the event that triggers your function. Alternatively, you can use `cron` to specify a schedule to trigger this function. Learn more about triggers [here](/docs/features/events-triggers).
     - **Handler**: The function that is called when the `event` is received. The `event` payload is passed as an argument. Arguments include `step` to define durable steps within your handler and [additional arguments](/docs/reference/functions/create#handler) include logging helpers and other data.
+
+  In **v4**, `createFunction` takes **two** arguments: a configuration object (which now includes `triggers`) and the handler function. See the [v3 → v4 migration guide](/docs/reference/typescript/v4/migrations/v3-to-v4#event-trigger-is-now-in-options).
 </details>
 
 Define a function in the same file where we defined our Inngest client:
@@ -261,6 +226,20 @@ export const functions = [
 ];
 ```
 
+<Callout variant="info" skipSearchCrawler>
+  **Using inngest@v4?** Event triggers are now specified in the configuration object:
+  ```ts
+  inngest.createFunction(
+    { id: "hello-world", triggers: [{ event: "test/hello.world" }] },
+    async ({ event, step }) => {
+      await step.sleep("wait-a-moment", "1s");
+      return { message: `Hello ${event.data.email}!` };
+    },
+  );
+  ```
+  See the [v3 → v4 migration guide](/docs/reference/typescript/v4/migrations/v3-to-v4#event-trigger-is-now-in-options) for details.
+</Callout>
+
 <Callout>
   In the previous step, we configured the exported `functions` array to be passed to our Inngest http endpoint. Each new function must be added to this array in order for Inngest to read it's configuration and invoke it.
 </Callout>
@@ -271,7 +250,7 @@ Now, it's time to run your function!
 
 You will trigger your function in two ways: first, by invoking it directly from the Inngest Dev Server UI, and then by sending events from code.
 
-With your <GuideTitle/> server and Inngest Dev Server running, open the Inngest Dev Server UI and select the "Functions" tab [`http://localhost:8288/functions`](http://localhost:8288/functions). You should see your function. (Note: if you don't see any function, select the "Apps" tab to troubleshoot)
+With your Node.js server and Inngest Dev Server running, open the Inngest Dev Server UI and select the "Functions" tab [`http://localhost:8288/functions`](http://localhost:8288/functions). You should see your function. (Note: if you don't see any function, select the "Apps" tab to troubleshoot)
 
 <img
   src="/assets/docs/getting-started/quick-starts/dev-server-functions-hello-world-2024-11-16.png"
@@ -383,66 +362,20 @@ In a real-world app, you might send events from API routes that perform an actio
 
 </details>
 
-You will now send an event from within your server from a `/api/hello` `GET` endpoint. Create a new get handler on your server object:
+You will now send an event from within your server from a `/api/hello` `GET` endpoint. Create a new get API endpoint triggering an event using the following snippet:
 
-<GuideSection show="express">
-```ts {{ filename: "./index.ts" }}
-import express from "express";
-import { serve } from "inngest/express";
-import { inngest, functions } from "./src/inngest"
 
-const app = express();
-app.use(express.json());
-app.use("/api/inngest", serve({ client: inngest, functions }));
-
-// Create a new route
-app.get("/api/hello", async function (req, res, next) {
-  await inngest.send({
-    name: "test/hello.world",
-    data: {
-      email: "testUser@example.com",
-    },
-  }).catch(err => next(err));
-  res.json({ message: 'Event sent!' });
-});
-
-app.listen(3000, () => {
-  console.log('Server running on http://localhost:3000');
-});
-```
-</GuideSection>
-<GuideSection show="fastify">
-```ts {{ filename: "./index.ts" }}
-import Fastify from "fastify";
-import { fastifyPlugin } from "inngest/fastify";
-import { inngest, functions } from "./src/inngest"
-
-const fastify = Fastify({
-  logger: true,
-});
-fastify.register(fastifyPlugin, { client: inngest, functions, options: {} });
-
-// Create a new route:
-fastify.get("/api/hello", async function (request, reply) {
-  await inngest.send({
-    name: "test/hello.world",
-    data: {
-      email: "testUser@example.com",
-    },
-  });
-  return { message: "Event sent!" };
+```ts
+await inngest.send({
+  name: "test/hello.world",
+  data: {
+    email: "testUser@example.com",
+  },
 })
-
-fastify.listen({ port: 3000 }, function (err, address) {
-  if (err) {
-    fastify.log.error(err);
-    process.exit(1);
-  }
-});
 ```
-</GuideSection>
 
-Every time this API route is requested, an event is sent to Inngest. To test it, open [`http://localhost:3000/api/hello`](http://localhost:3000/api/hello) (change your port if your <GuideTitle/> app is running elsewhere). You should see the following output: `{"message":"Event sent!"}`
+
+Every time this API route is requested, an event is sent to Inngest. To test it, open [`http://localhost:3000/api/hello`](http://localhost:3000/api/hello) (change your port if your Node.js app is running elsewhere). You should see the following output: `{"message":"Event sent!"}`
 
 <img
   src="/assets/docs/getting-started/quick-starts/api-hello-response-browser.png"
@@ -462,6 +395,7 @@ If you go back to the Inngest Dev Server, you will see a new run is triggered by
 
 And - that's it! You now have learned how to create Inngest functions and you have sent events to trigger those functions. Congratulations 🥳
 
+
 ## Next Steps
 
 To continue your exploration, feel free to check out:
@@ -475,5 +409,3 @@ You can also read more:
 - About [Durable Execution](/docs/learn/how-functions-are-executed)
 - How to [use Inngest with other frameworks](/docs/learn/serving-inngest-functions).
 - How to [deploy your app to your platform](/docs/deploy).
-
-</GuideSelector>

@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 380" font-family="'Inter', 'Segoe UI', system-ui, sans-serif">
+  <rect width="700" height="380" fill="#111" rx="6"/>
+
+  <text x="40" y="36" fill="#eee" font-size="14" font-weight="600">Before and after: document processing pipeline</text>
+  <text x="40" y="52" fill="#666" font-size="10">5 sequential steps — same business logic, different orchestration overhead</text>
+
+  <!-- === BEFORE === -->
+  <text x="40" y="82" fill="#666" font-size="10" font-weight="600" letter-spacing="0.8">BEFORE</text>
+  <text x="96" y="82" fill="#555" font-size="10">— HTTP serve, no checkpointing</text>
+
+  <!-- Steps with gaps -->
+  <rect x="40" y="94" width="80" height="26" rx="3" fill="#222"/>
+  <text x="80" y="112" text-anchor="middle" fill="#aaa" font-size="8">extract</text>
+
+  <rect x="120" y="94" width="22" height="26" rx="2" fill="none" stroke="#a33" stroke-width="1" stroke-dasharray="2,2"/>
+
+  <rect x="142" y="94" width="110" height="26" rx="3" fill="#222"/>
+  <text x="197" y="112" text-anchor="middle" fill="#aaa" font-size="8">entities (LLM)</text>
+
+  <rect x="252" y="94" width="22" height="26" rx="2" fill="none" stroke="#a33" stroke-width="1" stroke-dasharray="2,2"/>
+
+  <rect x="274" y="94" width="64" height="26" rx="3" fill="#222"/>
+  <text x="306" y="112" text-anchor="middle" fill="#aaa" font-size="8">enrich</text>
+
+  <rect x="338" y="94" width="22" height="26" rx="2" fill="none" stroke="#a33" stroke-width="1" stroke-dasharray="2,2"/>
+
+  <rect x="360" y="94" width="96" height="26" rx="3" fill="#222"/>
+  <text x="408" y="112" text-anchor="middle" fill="#aaa" font-size="8">classify (LLM)</text>
+
+  <rect x="456" y="94" width="22" height="26" rx="2" fill="none" stroke="#a33" stroke-width="1" stroke-dasharray="2,2"/>
+
+  <rect x="478" y="94" width="40" height="26" rx="3" fill="#222"/>
+  <text x="498" y="112" text-anchor="middle" fill="#aaa" font-size="8">store</text>
+
+  <!-- Total -->
+  <line x1="40" y1="130" x2="518" y2="130" stroke="#a33" stroke-width="1"/>
+  <text x="40" y="148" fill="#c55" font-size="10">3,800ms step work + ~600ms overhead = ~4,400ms</text>
+  <text x="40" y="164" fill="#666" font-size="9">14% of total time is orchestration waste</text>
+
+  <!-- Divider -->
+  <line x1="40" y1="186" x2="660" y2="186" stroke="#222" stroke-width="1"/>
+
+  <!-- === AFTER === -->
+  <text x="40" y="210" fill="#666" font-size="10" font-weight="600" letter-spacing="0.8">AFTER</text>
+  <text x="84" y="210" fill="#555" font-size="10">— Connect + checkpointing</text>
+
+  <!-- Steps packed tight -->
+  <rect x="40" y="222" width="80" height="26" rx="3" fill="#222"/>
+  <text x="80" y="240" text-anchor="middle" fill="#aaa" font-size="8">extract</text>
+
+  <line x1="121" y1="228" x2="121" y2="242" stroke="#4a4" stroke-width="1.5"/>
+
+  <rect x="123" y="222" width="110" height="26" rx="3" fill="#222"/>
+  <text x="178" y="240" text-anchor="middle" fill="#aaa" font-size="8">entities (LLM)</text>
+
+  <line x1="234" y1="228" x2="234" y2="242" stroke="#4a4" stroke-width="1.5"/>
+
+  <rect x="236" y="222" width="64" height="26" rx="3" fill="#222"/>
+  <text x="268" y="240" text-anchor="middle" fill="#aaa" font-size="8">enrich</text>
+
+  <line x1="301" y1="228" x2="301" y2="242" stroke="#4a4" stroke-width="1.5"/>
+
+  <rect x="303" y="222" width="96" height="26" rx="3" fill="#222"/>
+  <text x="351" y="240" text-anchor="middle" fill="#aaa" font-size="8">classify (LLM)</text>
+
+  <line x1="400" y1="228" x2="400" y2="242" stroke="#4a4" stroke-width="1.5"/>
+
+  <rect x="402" y="222" width="40" height="26" rx="3" fill="#222"/>
+  <text x="422" y="240" text-anchor="middle" fill="#aaa" font-size="8">store</text>
+
+  <!-- Total -->
+  <line x1="40" y1="258" x2="442" y2="258" stroke="#4a4" stroke-width="1"/>
+  <text x="40" y="276" fill="#6c6" font-size="10">3,800ms step work + ~8ms overhead = ~3,808ms</text>
+  <text x="40" y="292" fill="#666" font-size="9">0.2% of total time is orchestration</text>
+
+  <!-- Bottom summary -->
+  <rect x="40" y="316" width="280" height="44" rx="4" fill="#1a1a1a" stroke="#282828" stroke-width="1"/>
+  <text x="180" y="340" text-anchor="middle" fill="#c55" font-size="18" font-weight="700">~600ms</text>
+  <text x="180" y="354" text-anchor="middle" fill="#666" font-size="9">orchestration overhead</text>
+
+  <text x="350" y="344" text-anchor="middle" fill="#555" font-size="14">→</text>
+
+  <rect x="380" y="316" width="280" height="44" rx="4" fill="#1a1a1a" stroke="#282828" stroke-width="1"/>
+  <text x="520" y="340" text-anchor="middle" fill="#6c6" font-size="18" font-weight="700">~8ms</text>
+  <text x="520" y="354" text-anchor="middle" fill="#666" font-size="9">orchestration overhead</text>
+</svg>

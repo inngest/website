@@ -1,4 +1,4 @@
-import { Callout, CodeGroup, Properties, Property, Row, Col, VersionBadge, GuideSelector, GuideSection } from "src/shared/Docs/mdx";
+import { Callout, CodeGroup, Properties, Property, Row, Col, VersionBadge, LanguageSelector, LanguageSection } from "src/shared/Docs/mdx";
 
 export const hidePageSidebar = true;
 
@@ -7,17 +7,12 @@ export const hidePageSidebar = true;
 
 Inngest automatically handles errors and retries for you. You can use standard errors or use included Inngest errors to control how Inngest handles errors.
 
-<GuideSelector
-  options={[
-    { key: "typescript", title: "TypeScript" },
-    { key: "go", title: "Go" },
-    { key: "python", title: "Python" },
-  ]}>
+<LanguageSelector>
 
 
 ## Standard errors
 
-<GuideSection show="typescript">
+<LanguageSection show="typescript">
 
 All `Error` objects are handled by Inngest and [retried automatically](/docs/features/inngest-functions/error-retries/retries). This includes all standard errors like `TypeError` and custom errors that extend the `Error` class. You can throw errors in the function handler or within a step.
 
@@ -43,9 +38,9 @@ export default inngest.createFunction(
   }
 );
 ```
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="python">
+<LanguageSection show="python">
 
 All thrown Errors are handled by Inngest and [retried automatically](/docs/features/inngest-functions/error-retries/retries). This includes all standard errors like `ValueError` and custom errors that extend the `Exception` class. You can throw errors in the function handler or within a step.
 
@@ -63,9 +58,9 @@ async def fn_async(ctx: inngest.Context) -> None:
     # a retry will be attempted
     await ctx.step.run("foo", foo)
 ```
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="go">
+<LanguageSection show="go">
 
 All Errors returned by your Inngest Functions are handled by Inngest and [retried automatically](/docs/features/inngest-functions/error-retries/retries). 
 
@@ -99,11 +94,11 @@ inngestgo.CreateFunction(
     },
 )
 ```
-</GuideSection>
+</LanguageSection>
 
 ## Prevent any additional retries
 
-<GuideSection show="typescript">
+<LanguageSection show="typescript">
 
 Use `NonRetriableError` to prevent Inngest from retrying the function _or_ step. This is useful when the type of error is not expected to be resolved by a retry, for example, when the error is caused by an invalid input or when the error is expected to occur again if retried.
 
@@ -147,9 +142,9 @@ new NonRetriableError(message: string, options?: { cause?: Error }): NonRetriabl
   </Property>
 </Properties>
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="python">
+<LanguageSection show="python">
 
 Use `NonRetriableError` to prevent Inngest from retrying the function _or_ step. This is useful when the type of error is not expected to be resolved by a retry, for example, when the error is caused by an invalid input or when the error is expected to occur again if retried.
 
@@ -166,9 +161,9 @@ async def fn_async(ctx: inngest.Context) -> None:
     ctx.step.run("step_1", step_1)
 ``` 
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="go">
+<LanguageSection show="go">
 
 Use `inngestgo.NoRetryError` to prevent Inngest from retrying the function. This is useful when the type of error is not expected to be resolved by a retry, for example, when the error is caused by an invalid input or when the error is expected to occur again if retried.
 
@@ -204,11 +199,11 @@ inngestgo.CreateFunction(
 )
 ```
 
-</GuideSection>
+</LanguageSection>
 
 ## Retry after a specific period of time
 
-<GuideSection show="typescript">
+<LanguageSection show="typescript">
 
 Use `RetryAfterError` to control when Inngest should retry the function or step. This is useful when you want to delay the next retry attempt for a specific period of time, for example, to more gracefully handle a race condition or backing off after hitting an API rate limit.
 
@@ -261,9 +256,9 @@ new RetryAfterError(
   </Property>
 </Properties>
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="python">
+<LanguageSection show="python">
 
 Use `RetryAfterError` to control when Inngest should retry the function or step. This is useful when you want to delay the next retry attempt for a specific period of time, for example, to more gracefully handle a race condition or backing off after hitting an API rate limit.
 
@@ -304,9 +299,9 @@ RetryAfterError(
   </Property>
 </Properties>
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="go">
+<LanguageSection show="go">
 
 Use `RetryAtError` to control when Inngest should retry the function or step. This is useful when you want to delay the next retry attempt for a specific period of time, for example, to more gracefully handle a race condition or backing off after hitting an API rate limit.
 
@@ -344,9 +339,9 @@ inngestgo.CreateFunction(
 )
 ```
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="typescript">
+<LanguageSection show="typescript">
 
 ## Step errors <VersionBadge version="v3.12.0+" />
 
@@ -416,9 +411,9 @@ inngest.createFunction(
   Support for handling step errors is available in the Inngest TypeScript SDK starting from version **3.12.0**. Prior to this version, wrapping a step in try/catch will not work correctly.
 </Callout>
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="python">
+<LanguageSection show="python">
 
 ## Step errors
 
@@ -440,9 +435,9 @@ async def fn_async(ctx: inngest.Context) -> None:
         raise MyError("I am new")
 ``` 
 
-</GuideSection>
+</LanguageSection>
 
-<GuideSection show="typescript">
+<LanguageSection show="typescript">
 
 ## Attempt counter
 
@@ -501,5 +496,5 @@ When calling functions that return Promises, await the Promise to ensure that th
 
 Please note that immediately returning the Promise will not include a pointer to the calling function in the stack trace. Awaiting the Promise will ensure that the stack trace includes the calling function.
 
-</GuideSection>
-</GuideSelector>
+</LanguageSection>
+</LanguageSelector>

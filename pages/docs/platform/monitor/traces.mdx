@@ -1,123 +1,277 @@
 import { Callout, Note, Tip, Button, VersionBadge } from "src/shared/Docs/mdx";
 
-export const description = "Inngest provides multiple levels of tracing to monitor your functions, from built-in execution traces to AI-specific instrumentation and comprehensive OpenTelemetry-powered distributed tracing.";
+export const description = "Inngest traces give you a detailed, interactive timeline of every function run, from queue delays and step execution to HTTP connection phases and OpenTelemetry spans.";
 
 # Traces
 
-The Inngest DevServer and Cloud offer three levels of tracing to give you visibility into your function executions, each designed for different observability needs:
+Every Inngest function run is automatically traced with no configuration required. Traces are available in both the [DevServer](/docs/dev-server) and the Inngest Cloud dashboard, giving you a complete picture of what happened during a function execution, including step timing, queue delays, HTTP connection phases, retry attempts, and input/output data.
 
-1. **Built-in Traces** - A quick access to your function and steps timing, retries and logs
-2. **AI Traces** - Metadata for [AI Inference steps](/docs/features/inngest-functions/steps-workflows/step-ai-orchestration), including: tokens count, model input and output
-3. **Extended Traces** - OpenTelemetry tracing capturing HTTP requests and third party library traces
+## Trace View
 
-## Built-in Traces <VersionBadge version="TypeScript" /> <VersionBadge version="Python" /> <VersionBadge version="Go" />
+### Layout
 
-Every Inngest function automatically includes built-in tracing without any configuration. These traces track the core execution of your functions:
+The trace view is a two-panel layout with a resizable divider:
 
-- **Function execution timeline** - Start and end times for your function runs
-- **Step execution** - Individual step timing and status
-- **Event data** - The event that triggered the function
-- **Logs** - Logger output and errors
-- **Retry attempts** - Failed runs and retry history
+- **Left panel:** Run info header and an interactive timeline of execution bars
+- **Right panel:** Contextual details for the selected step or the run itself
 
-### Viewing Built-in Traces
+Drag the divider between panels to adjust the split to your preference.
 
-Built-in traces are available in the Inngest dashboard and [DevServer](/docs/dev-server) for every function run:
+![Trace view showing the two-panel layout with timeline bars on the left and step details on the right](/assets/docs/platform/monitor/traces/trace-overview.webp)
 
-![Function runs list showing recent executions in the Inngest Dashboard](/assets/docs/platform/monitor/inspecting-function-runs/function-runs.png)
+### Run Info
 
-_Traces in the Inngest Dashboard_
+The header at the top of the left panel displays key information about the function run:
 
-Click on any function run to see detailed execution information:
+- **Function name** with navigation breadcrumbs (App > Function > Run)
+- **Run ID**
+- **App** and **Function** links
+- **Duration:** total time from queued to ended
+- **Queued at**, **Started at**, and **Ended at** timestamps
+- **AI indicator:** shown when the function uses `step.ai` methods
 
-![Function run details showing traces and logs](/assets/docs/platform/monitor/inspecting-function-runs/function-run-logs-timeline-1.png)
+Actions in the header include **Rerun**, **Cancel** (for in-progress runs), and **Invoke** to re-invoke the function.
 
-The timeline view shows your function's execution path with steps and logs:
+## Timeline
 
-![Function run timeline with integrated trace and log information](/assets/docs/platform/monitor/inspecting-function-runs/function-run-logs-timeline-2.png)
+The timeline is a waterfall visualization where each bar represents a span in the function execution. Bars are positioned proportionally to their start time and duration relative to the total run. A thin horizontal center line connects the timeline, and time markers at the top show the relative position (0%, 25%, 50%, 75%, 100%).
+
+### Timeline Bars
+
+Each bar in the timeline shows the span name and an icon on the left, its duration on the right, and a colored bar representing its position and length in time.
+
+**Bar types:**
+
+<table>
+  <thead>
+    <tr>
+      <th>Bar</th>
+      <th>Description</th>
+      <th>Visual Style</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Run</strong></td>
+      <td>The top-level function execution</td>
+      <td><div style={{ display: "flex", alignItems: "center", gap: 8 }}><span style={{ flexShrink: 0, width: 60, height: 16, borderRadius: 2, backgroundColor: "#34784c" }} /><span>Status-colored solid bar</span></div></td>
+    </tr>
+    <tr>
+      <td><strong>step.run</strong></td>
+      <td>A <code>step.run()</code> execution</td>
+      <td><div style={{ display: "flex", alignItems: "center", gap: 8 }}><span style={{ flexShrink: 0, width: 60, height: 16, borderRadius: 2, backgroundColor: "#34784c" }} /><span>Status-colored solid bar</span></div></td>
+    </tr>
+    <tr>
+      <td><strong>step.sleep</strong></td>
+      <td>A <code>step.sleep()</code> pause</td>
+      <td><div style={{ display: "flex", alignItems: "center", gap: 8 }}><span style={{ flexShrink: 0, width: 60, height: 16, borderRadius: 2, backgroundColor: "#94a3b8" }} /><span>Gray solid bar</span></div></td>
+    </tr>
+    <tr>
+      <td><strong>step.waitForEvent</strong></td>
+      <td>A <code>step.waitForEvent()</code> wait</td>
+      <td><div style={{ display: "flex", alignItems: "center", gap: 8 }}><span style={{ flexShrink: 0, width: 60, height: 16, borderRadius: 2, backgroundColor: "#94a3b8" }} /><span>Gray solid bar</span></div></td>
+    </tr>
+    <tr>
+      <td><strong>step.invoke</strong></td>
+      <td>A <code>step.invoke()</code> call to another function</td>
+      <td><div style={{ display: "flex", alignItems: "center", gap: 8 }}><span style={{ flexShrink: 0, width: 60, height: 16, borderRadius: 2, backgroundColor: "#94a3b8" }} /><span>Gray solid bar</span></div></td>
+    </tr>
+    <tr>
+      <td><strong>Inngest</strong></td>
+      <td>Queue/scheduling delay</td>
+      <td><div style={{ display: "flex", alignItems: "center", gap: 8 }}><span style={{ flexShrink: 0, width: 60, height: 8, borderRadius: 2, backgroundColor: "#cbd5e1" }} /><span>Short gray bar</span></div></td>
+    </tr>
+    <tr>
+      <td><strong>Your server</strong></td>
+      <td>Server-side execution time</td>
+      <td><div style={{ display: "flex", alignItems: "center", gap: 8 }}><span style={{ flexShrink: 0, width: 60, height: 16, borderRadius: 2, backgroundColor: "#34784c", backgroundImage: "repeating-linear-gradient(-45deg, transparent, transparent 6px, rgba(255,255,255,0.15) 6px, rgba(255,255,255,0.15) 8px)" }} /><span>Tall bar with diagonal stripe pattern</span></div></td>
+    </tr>
+    <tr>
+      <td><strong>Connecting</strong></td>
+      <td>Connection phase</td>
+      <td><div style={{ display: "flex", alignItems: "center", gap: 8 }}><span style={{ flexShrink: 0, width: 60, height: 8, borderRadius: 2, border: "2px dotted #94a3b8" }} /><span>Dotted outline</span></div></td>
+    </tr>
+    <tr>
+      <td><strong>Finalization</strong></td>
+      <td>Post-execution cleanup and state persistence</td>
+      <td><div style={{ display: "flex", alignItems: "center", gap: 8 }}><span style={{ flexShrink: 0, width: 60, height: 8, borderRadius: 2, backgroundColor: "#34784c" }} /><span>Short status-colored bar</span></div></td>
+    </tr>
+    <tr>
+      <td colSpan={3}><strong>Extended traces:</strong> sub-bars from custom OpenTelemetry spans (see <a href="#extended-traces">Extended Traces</a>)</td>
+    </tr>
+    <tr>
+      <td><strong>Userland span</strong></td>
+      <td>Custom OpenTelemetry span from your code, nested under "Your server"</td>
+      <td><div style={{ display: "flex", alignItems: "center", gap: 8 }}><span style={{ flexShrink: 0, width: 60, height: 16, borderRadius: 2, backgroundColor: "#244295" }} /><span>Blue solid bar</span></div></td>
+    </tr>
+  </tbody>
+</table>
+
+**Status colors** apply to the run bar and step execution bars:
+- <span style={{ color: "#34784c", fontWeight: "bold" }}>Green</span>: Completed successfully
+- <span style={{ color: "#ef4444", fontWeight: "bold" }}>Red</span>: Failed
+- <span style={{ color: "#94a3b8", fontWeight: "bold" }}>Gray</span>: Cancelled
+
+When a step has both queue delay and execution time, its bar displays as a **compound bar**: a short gray segment (queue delay) immediately followed by a status-colored segment (execution time). This lets you see at a glance how much time was spent waiting vs. executing.
+
+![Timeline bars showing different bar types and styles](/assets/docs/platform/monitor/traces/bar-styles.webp)
+
+Hovering over any bar shows a tooltip with:
+- **Duration:** how long the span took
+- **Delay:** queue delay before execution started (when applicable)
+- **Start** and **End:** precise timestamps down to milliseconds
+
+### Timing Breakdown
+
+Click the expand arrow on any step bar to reveal how time was spent:
+
+1. **Inngest:** Time in Inngest's queue before your server received the request. Displayed as a short gray bar with a gear icon.
+2. **Your server** _(or your organization name)_: Time your server spent executing the step. Displayed as a tall bar with a diagonal stripe pattern and a building icon.
+
+![Timing breakdown showing Inngest queue delay and server execution](/assets/docs/platform/monitor/traces/timing-breakdown.webp)
+
+This breakdown helps you quickly identify whether latency is caused by queue congestion (Inngest bar) or your application code (server bar).
 
 
-Built-in traces are perfect for:
-- **Day-to-day monitoring** - Tracking function executions and debugging basic issues
-- **Step-level visibility** - Understanding which steps succeed or fail
-- **Quick debugging** - Viewing logs and execution order
+### Timeline Zoom
 
-## AI Traces <VersionBadge version="TypeScript" /> <VersionBadge version="Python v0.5+" />
+For long-running functions with short individual steps, use the **time brush** in the timeline header to zoom into a specific time range:
 
-[AI Inference steps](/docs/features/inngest-functions/steps-workflows/step-ai-orchestration) (_`step.ai.*` methods_) enables you to offload LLM requests to the Inngest Platform and capture AI metadata including prompts, responses, token usage, and model parameters.
+- **Drag the handles** on either end to narrow the visible window
+- **Drag the selected region** to pan across the timeline
+- **Click outside the selection** to expand it
+- **Click the reset button** to return to the full view (0%–100%)
 
-### What's Included
+Time markers update dynamically as you zoom, and all bars rescale to fill the visible window.
 
-Each AI Trace display detailed metadata, including:
-- Model name and version
-- Tokens used (input, output)
-- A side-by-side view of the input prompt and output response
+![Timeline zoom with the time brush focused on a specific range](/assets/docs/platform/monitor/traces/timeline-zoom.gif)
 
+## Details Panel
 
-### What You'll See
+The right panel shows contextual information about whichever item is selected in the timeline. Click a step bar to see step details, or click the root bar to see run-level details.
 
-<video
-  autoPlay
-  muted
-  loop
-  playsInline
-  className="w-full rounded"
-  src="https://cdn.inngest.com/agent-kit/agentkit-with-inngest-dev-server.mp4"
-></video>
+### Step Details
 
-### Get started
+Selecting a step bar opens the step details panel with:
 
-AI Traces are automatically enabled when using `step.ai.infer()` from the TypeScript or Python SDK.
+**Header:**
+- Step name with a collapsible section toggle
+- **Attempt badge:** shows "Attempt N" when the step has been retried (highlighted in the step's status color)
+- **Rerun from step** button: re-execute the function starting from this step
 
-<div className="flex items-end justify-start">
-<Button
-  href={"/docs/features/inngest-functions/steps-workflows/step-ai-orchestration"}
-  size="sm"
-  variant="primaryOutline"
->Get started with AI Inference steps</Button>
-</div>
+**Timing:**
+- **Queued at**, **Started at**, **Ended at:** precise timestamps
+- **Delay:** how long the step waited in the queue
+- **Duration:** total execution time
+- **Step type:** displayed as a code badge (e.g., `step.run`, `step.invoke`)
 
+**Step-type-specific fields:**
+
+| Step Type | Fields Shown |
+|-----------|-------------|
+| `step.invoke` | Function ID, triggering event ID, triggered run ID, timeout, timed out status, return event ID |
+| `step.sleep` | Sleep until datetime |
+| `step.waitForEvent` | Event name, match expression, timeout, timed out status, matched event ID |
+| `step.waitForSignal` | Signal name, timeout, timed out status |
+
+**Tabs** (shown below the timing section):
+- **Input:** The step's input data as formatted JSON
+- **Output:** The step's return value as formatted JSON
+- **Error details:** Error message and body (shown when the step failed, auto-selected as default tab)
+- **Headers:** Response headers returned by your SDK endpoint
+- **Metadata:** Structured key-value tables for span metadata (custom metadata, AI metadata, warnings)
+
+![Step details panel showing timing info, step-specific fields, and I/O tabs](/assets/docs/platform/monitor/traces/step-detail.webp)
+
+For a `step.invoke`, the details panel also shows the invoked function, triggering event ID, triggered run ID, timeout, and return event ID:
+
+![Step details panel for a step.invoke showing invoke-specific fields](/assets/docs/platform/monitor/traces/step-detail-invoke.webp)
+
+### Run Details
+
+Selecting the root bar (or when no step is selected) shows the run details panel:
+
+**Trigger information** (varies by trigger type):
+
+| Trigger Type | Fields Shown |
+|--------------|-------------|
+| **Event** | Event name, event ID, received at timestamp |
+| **Cron** | Cron expression, cron ID, triggered at timestamp |
+| **Batch** | Event name, batch ID, received at timestamp |
+
+**Actions:**
+- **Invoke** button: re-invoke the function with a custom payload
+
+**Tabs:**
+- **Input:** The triggering event payload as formatted JSON (includes a "Send to Dev Server" action in DevServer mode)
+- **Output:** The function's return value
+- **Error details:** Error message and body (when the run failed)
+- **Metadata:** Run-level span metadata
+
+![Run details panel showing trigger information and event payload](/assets/docs/platform/monitor/traces/run-detail.webp)
+
+### Retry Attempts
+
+When a step fails and is retried, the step details panel shows an **attempt badge** next to the step name (e.g., "Attempt 2"). The badge is colored to match the step's status: red for a failed attempt, green for a successful retry.
+
+Each retry attempt is a separate span in the timeline, so you can compare timing and output across attempts to understand what changed between retries.
 
 ## Extended Traces <VersionBadge version="TypeScript 3.44.5+" />
 
-Extended Traces bring OpenTelemetry-powered distributed tracing to your Inngest functions, providing the most comprehensive visibility into every aspect of your function execution—from individual steps and external API calls to database queries and third-party services.
+Extended Traces bring [OpenTelemetry](https://opentelemetry.io/)-powered distributed tracing to your Inngest functions, capturing visibility beyond Inngest's built-in steps, including external API calls, database queries, and third-party service interactions.
 
 ### What's Included
 
-When you enable Extended Traces, Inngest automatically instruments your functions to capture detailed trace data about:
+When you enable Extended Traces, Inngest automatically instruments your functions to capture:
 
-- **External service calls** - Track API requests, database queries, and third-party integrations
-- **Performance bottlenecks** - Identify slow operations and optimize your functions
-- **Distributed context** - Full distributed tracing across your entire stack
+- **External service calls:** HTTP requests, database queries, and third-party API interactions
+- **Performance bottlenecks:** Identify slow operations across your entire execution path
+- **Distributed context:** Full trace propagation across your stack
 
-Extended Traces integrate seamlessly with your existing observability stack through [OpenTelemetry](https://opentelemetry.io/), the industry standard for distributed tracing.
+### How They Appear
 
-### What You'll See
+Extended trace spans appear as child bars in the timeline, nested under your server's execution. These spans are visually distinct and labeled with the operation they represent.
 
+Clicking an extended trace span shows the **Attributes** tab in the details panel with:
+- **Span name** and **kind** (client, server, internal, etc.)
+- **Service name**
+- **OpenTelemetry attributes:** all span attributes displayed as key-value pairs (internal Inngest attributes are filtered out)
 
-Every function run includes comprehensive trace spans showing the complete execution timeline.
-Each span includes specific metadata from the operation (_`method`, `url` for HTTP requests, `driver`, `query` for SQL requests_):
+![Extended traces showing userland spans nested in the timeline with the attributes panel open](/assets/docs/platform/monitor/traces/extended-traces.webp)
 
-<video
-  autoPlay
-  muted
-  loop
-  playsInline
-  className="w-full rounded"
-  src="/assets/docs/platform/monitor/extended-traces/extended-traces-walkthrough-loop.mp4"
-></video>
+{/*
+  ▾ ✓ process-order          3.2s   ████████████████████████████████████
+    ⚙ INNGEST                15ms   ██
+    ▾ 🏢 ACME CO SERVER    3.185s      ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+        fetch-inventory     800ms         ████████████
+        ──── Extended traces (OpenTelemetry) ────
+        HTTP GET /api/stock  45ms         ██  ← userland span
+        pg.query SELECT     120ms            ████  ← userland span
+
+Right panel (when userland span is selected):
+┌──────────────────────────────────────────────┐
+│  Attributes                                  │
+├──────────────────────────────────────────────┤
+│  Span Name     HTTP GET                      │
+│  Span Kind     client                        │
+│  Service Name  inventory-service             │
+│                                              │
+│  Key                    Value                │
+│  ─────────────────────────────────           │
+│  http.method            GET                  │
+│  http.url               https://api/stock    │
+│  http.status_code       200                  │
+│  http.response_size     1234                 │
+└──────────────────────────────────────────────┘
+*/}
 
 <Note>
   Extended Traces automatically capture spans from popular libraries including HTTP clients, database drivers, and more. See the full list of [automatic instrumentation](/docs/reference/typescript/extended-traces#instrumentation).
 </Note>
 
+### Get Started
 
-
-### Get started
-
-Extended Traces are currently available in the TypeScript as an opt-in beta.
-Get started in just a few minutes by configuring the Extended Traces middleware.
-
+Extended Traces are available in TypeScript as an opt-in feature. Get started in a few minutes by configuring the Extended Traces middleware.
 
 <div className="flex items-end justify-start">
 <Button

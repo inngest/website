@@ -356,3 +356,8 @@ body {
     display: inherit;
   }
 }
+
+/* Docs wrap plaintext sections, e.g. for prompts */
+.language-plaintext {
+  white-space: pre-wrap;
+}

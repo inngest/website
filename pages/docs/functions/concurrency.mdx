@@ -4,6 +4,10 @@ import { CodeGroup, Callout, Properties, Property } from "src/shared/Docs/mdx";
 
 Limit the number of concurrently running steps for your function with the [`concurrency`](/docs/reference/functions/create#configuration) configuration options. Setting an optional `key` parameter limits the concurrency for each unique value of the expression.
 
+<Callout>
+**Important:** Concurrency limits _step_ execution, not the total number of function runs. Functions that are sleeping, waiting for events, or paused between steps do **not** count against your concurrency limit. This means you may have many more function runs in progress than your concurrency limit. [Learn more about how concurrency works →](/docs/guides/concurrency#how-concurrency-works)
+</Callout>
+
 [Read our concurrency guide for more information on concurrency, including how it works and any limits](/docs/guides/concurrency).
 
 <CodeGroup>
@@ -93,7 +97,9 @@ Alternatively, if you want to limit the number of times that your function runs 
 </Properties>
 
 <Callout>
-The current concurrency option controls the number of concurrent _steps_ that can be running at any one time.
+**Step-level concurrency:** The concurrency option controls the number of concurrent _steps_ that can be running at any one time, not the number of function runs.
 
-Because a single function run can contain multiple steps, it's possible that more functions than the concurrency limit are triggered, but only the set number of steps will ever be running.
+Because function runs frequently pause (for sleeps, waiting for events, or between steps), it's common to have many more function runs in progress than your concurrency limit. However, only the configured number of steps will ever be _actively executing_ at once.
+
+For example, with `concurrency: 10`, you might have 500 function runs in progress, but only 10 steps are executing code at any given moment.
 </Callout>

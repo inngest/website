@@ -394,7 +394,13 @@ export async function getStaticProps({ params }) {
   data.path = `/blog/${params.slug}`;
   data.reading = readingTime(content);
   // Format the reading date.
-  data.humanDate = data.date.toLocaleDateString();
+  if (data.date) {
+    if (typeof data.date === "string") {
+      data.humanDate = new Date(data.date).toLocaleDateString();
+    } else {
+      data.humanDate = data.date.toLocaleDateString();
+    }
+  }
 
   data.tags =
     data.tags && typeof data.tags === "string"
@@ -414,6 +420,7 @@ export async function getStaticProps({ params }) {
   ];
   const post = await serialize(content, {
     scope: { json: JSON.stringify(data) },
+    blockJS: false,
     mdxOptions: {
       rehypePlugins: [
         rehypeCodeTitles,
