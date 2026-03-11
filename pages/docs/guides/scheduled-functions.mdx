@@ -243,3 +243,9 @@ async def send_weekly_digest(ctx: inngest.Context) -> None:
 </Callout>
 
 On the free plan, if your function fails 20 times consecutively it will automatically be paused.
+
+<Callout>
+⚠️ **Daylight Saving Time (DST) disclaimer:** Schedules near DST transition times can behave unexpectedly in local timezones. Depending on the timezone and the exact schedule, a cron may run zero, one, or two times in a day when clocks change.
+
+Inngest's cron behavior follows the underlying cron library and does not apply special DST correction. To reduce risk, avoid transition-hour schedules (such as `2:00 AM` in many US regions, or `12:00 AM` in some other regions), and prefer `TZ=UTC` when you need consistent execution timing.
+</Callout>
