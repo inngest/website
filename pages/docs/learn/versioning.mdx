@@ -202,6 +202,39 @@ This approach ensures:
   This creates a new function in your Inngest dashboard. Once all v1 runs complete, you can remove the original function.
 </Callout>
 
+### Using event versions
+
+You can also use the event's `v` [version field](/docs/features/events-triggers/event-format#event-payload-format) in combination with the `if` pattern above if you choose to control the
+
+```typescript
+await inngest.send({
+  name: "file/uploaded",
+  data: {/* ... */},
+  v: "2026-03-11" // Use the version to route to the right function
+})
+```
+
+```typescript
+// v1
+export const processUploadV1 = inngest.createFunction(
+  { id: "process-upload" },
+  {
+    event: "file/uploaded",
+    if: `event.v != "2026-03-11"`, // or you already are using versions, set that explicitly
+  },
+  //...
+});
+// v2
+export const processUploadV2 = inngest.createFunction(
+  { id: "process-upload-v2" },
+  {
+    event: "file/uploaded",
+    if: `event.v == "2026-03-11"`,
+  },
+  //...
+});
+```
+
 ## Best practices
 
 ### Step ID naming
