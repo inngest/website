@@ -31,35 +31,51 @@ export async function loadMarkdownFilesMetadata<T>(
   const baseDir = path.join(process.cwd(), dir);
 
   // Iterate all files in the directory, then parse the markdown.
-  const mdxFilenames = fs.readdirSync(baseDir);
-  const filesMetadata = mdxFilenames.map((filename) => {
-    const source = fs.readFileSync(path.join(baseDir, filename));
+  const mdxFilenames = fs
+    .readdirSync(baseDir)
+    .filter(
+      (f) =>
+        f.endsWith(".md") || f.endsWith(".mdx")
+    );
+  const filesMetadata: (T & MDXFileMetadata)[] = [];
+  for (const filename of mdxFilenames) {
+    try {
+      const filePath = path.join(baseDir, filename);
+      const source = fs.readFileSync(filePath, "utf8");
 
-    const { data, content } = matter(source);
-    data.reading = readingTime(content);
-    data.slug = filename.replace(/.mdx?/, "");
-    if (data.date) {
-      if (typeof data.date === "string") {
-        data.humanDate = new Date(data.date).toLocaleDateString();
-      } else {
-        data.humanDate = data.date.toLocaleDateString();
+      const { data, content } = matter(source);
+      data.reading = readingTime(content);
+      data.slug = filename.replace(/.mdx?$/, "");
+      if (data.date) {
+        if (typeof data.date === "string") {
+          data.humanDate = new Date(data.date).toLocaleDateString();
+        } else {
+          data.humanDate = data.date.toLocaleDateString
+            ? data.date.toLocaleDateString()
+            : String(data.date);
+        }
       }
+      if (data.tags) {
+        data.tags =
+          typeof data.tags === "string"
+            ? data.tags.split(",").map((t: string) => t.trim())
+            : data.tags;
+      }
+      // Require a slug so we can link to the file, but allow entries
+      // without a date (e.g. changelog files where dates come from exports
+      // instead of frontmatter).
+      if (!data.slug) continue;
+      filesMetadata.push(data as T & MDXFileMetadata);
+    } catch (err) {
+      // Skip files that fail to parse so one bad file doesn't break the list
+      console.warn(`[loadMarkdownFilesMetadata] Skipped ${filename}:`, err instanceof Error ? err.message : err);
     }
-    if (data.tags) {
-      data.tags =
-        typeof data.tags === "string"
-          ? data.tags.split(",").map((t) => t.trim())
-          : data.tags;
-    }
-
-    // Disregard the content as this is used for loading a list of files, e.g.
-    // in a blog or careers page and just the frontmatter is used.
-    // We need to stringify it since it wil be serialized at build-time.
-    return data;
-  });
+  }
 
   const sortedMetadata = filesMetadata.sort((a, b) => {
-    return a.date > b.date ? -1 : 1;
+    const aStr = a.date != null ? String(a.date) : "";
+    const bStr = b.date != null ? String(b.date) : "";
+    return bStr.localeCompare(aStr);
   });
   return sortedMetadata;
 }

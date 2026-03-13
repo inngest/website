@@ -1,0 +1,126 @@
+---
+heading: "Typescript For Apps Vs Typescript For SDKs"
+subtitle: "I thought I was good at TypeScript. Refactoring the Inngest SDK proved I was okay at best—and that changed how I think about types forever."
+image: /assets/blog/typescript-types-as-api/featured-image.jpg
+date: 2026-03-13
+author: Inngest
+category: engineering
+showSubtitle: true
+---
+
+I discovered how *fun* TypeScript is to write many moons ago, working on a relatively large React project. Having worked on the same project *prior* to the TS refactor, I had a great perspective into just how much better the codebase was afterwards and I took that lesson to heart. Project after project I would turn to TypeScript and I felt like the code I was writing was cleaner, clearer, and *stronger* than the code I would've been writing in JavaScript.
+
+I thought I was *good* at TypeScript.
+
+During the process of refactoring the Inngest TypeScript SDK through a major version update, I realized I was *okay at best* at TypeScript.
+
+Oops.
+
+## **Types as guardrails vs. types as API**
+
+The crux of the issue is that in *my* apps, I was describing *my* data. That `User` type that I painstakingly crafted to accurately model my user domain? *Mine*. I was really just using types as guardrails for *my* code. A fair amount of my work in the Inngest SDK feels the same way, don't get me wrong! That's kind of the *point* of having types, right? The internal types I'm using to keep the codebase sane are *not* the same as the types that end up being a public API for our users.
+
+Working through changes to fundamental types that allow users to directly interact with the SDK did *not* feel that way though, because *those* types are entirely different. Suddenly my "guardrails" are actually *the product*. People use Inngest in large part because we work *really hard* to offer a great developer experience and ensuring that our types are clean and intuitive for *every user* is... not always easy.
+
+The asymmetry matters more than you think. In an app, a bad type is *your* problem. You find it, you fix it, you move on. In an SDK, a bad type is everyone's problem—and you can't just fix it, because changing a public type is potentially a breaking change for every user who's already built against it. You don't get to quietly refactor your way out.
+
+## **You're not just a developer anymore. You're a compiler UX designer.**
+
+This shifts how you have to think from day one. When it's your app, you can make your types accurate and call it done. When it's a library, accuracy is the floor, not the ceiling. You also have to think about legibility, flexibility, and what happens when someone uses your type in a way you never anticipated—because they will.
+
+Of course, some parts of SDK work are just writing good code: every public type needs documentation that shows up correctly in your editor. But the presence of a red squiggly line in your editor can't be the only thing you care about—you have to care about making sure that someone using the SDK for the first time is able to understand *why* that red squiggle is there to begin with.
+
+That means a fair amount of cosmetic surgery—intermediate types, utility types, and writing code specifically so  the types *feel* right for users. Consider what happens when a user defines an event type with a Zod schema that includes a `.transform()` - something that looks perfectly reasonable:
+
+```tsx
+const myEvent = eventType("user/created", {
+  schema: z.object({ name: z.string().transform(s => s.toUpperCase()) })
+});
+```
+
+The SDK doesn't support transforms (input and output types have to match), but without any cosmetic work, the error reads like the compiler is having a bad day:
+
+```bash
+Type 'ZodEffects<ZodObject<{ name: ZodString }>, { name: string }, { name: string }>'
+is not assignable to type 'StandardSchemaV1<{ name: string }, { name: string }>'.
+Types of property '~standard' are incompatible.
+```
+
+That error is technically correct and completely useless. A first-time user has no idea what `~standard` is or what they did wrong. In the SDK, we define a small utility type whose only job is to surface a human-readable message:
+
+```tsx
+type StaticTypeError<TMessage extends string> = TMessage;
+
+type AssertNoTransform<TSchema extends StandardSchemaV1 | undefined> =
+  TSchema extends StandardSchemaV1<infer TInput, infer TOutput>
+    ? TInput extends TOutput
+      ? TSchema
+      : StaticTypeError<"Transforms not supported: schema input/output types must match">
+    : TSchema;
+```
+
+Now the same mistake produces:
+
+```bash
+Type 'ZodEffects<...>' is not assignable to type
+  "Transforms not supported: schema input/output types must match".
+```
+
+Same type safety. Completely different experience. `StaticTypeError<T>` is literally just `T` — an identity type alias. It does nothing at runtime and nothing at the type level. It exists entirely so someone reading the code and someone reading the error message both understand the intent.
+
+That's a different discipline than app development. It's  an exercise in empathy: step into someone else's development experience and helping them feel confident they're using the tool correctly.
+
+Your type system *is* the API design.
+
+## **What "just finessing" actually looks like**
+
+A simple example is changing the function signature of `createFunction` so that the triggers live inside the configuration object rather than as a separate argument. . In v3, specifying a function without triggers meant passing an empty object as the second argument—we didn't love that DX. Moving triggers into the config makes  sense, but making them optional was tricky. Internally, it's not optional; they just become an empty array.
+
+The user should be able to pass a single trigger, an array of triggers, or nothing at all:
+
+```tsx
+// All of these should just work:
+inngest.createFunction({ id: "my-fn" }, handler)
+inngest.createFunction({ id: "my-fn", triggers: { event: "user/created" } }, handler)
+inngest.createFunction({ id: "my-fn", triggers: [{ event: "user/created" }, { cron: "0 * * * *" }] }, handler)
+```
+
+But the internals always want a `Trigger[]`. So you end up writing types whose only job is to bridge that gap—quietly finessing what the user wrote into what the engine needs:
+
+```tsx
+// The user-facing field: single, array, or omitted entirely
+triggers?: SingleOrArray<Trigger> | undefined
+
+// The internal resolution: always an array
+type ResolveTriggers<T> = T extends undefined ? [] : AsArray<NonNullable<T>>
+```
+
+None of this is *hard*, but it's work that exists purely so the person using the SDK never has to think about it. They just write what feels natural and everything works. The complexity lives entirely behind the curtain.
+
+### **Hyrum's Law and Types**
+
+You've probably heard of [Hyrum's law](https://www.hyrumslaw.com/): *with a sufficient number of users, all observable behaviors of your system will be depended upon by somebody.* It applies to types with equal force. People will write utility functions that reference your internal types, infer types from your return values, and build whole modules on top of shapes you exported as implementation details. None of that is wrong — it's just how developers work.
+
+The consequence is that your type system accumulates obligations. Something you thought was internal turns out to be the thing three different teams imported directly. The blast radius of changing it is everyone who's ever installed your package. Which means the types you ship in v1 are, in a very real sense, a contract.
+
+That's what I mean when I say your type system *is* your API design. The type surface is what developers read, reason about, and build against. Getting it wrong is expensive in a way that getting your implementation wrong usually isn't.
+
+### **What to think about before you ship a type**
+
+If you're building something others will depend on — a library, an SDK, an internal package your org treats as stable — here's the shift worth making before you publish anything:
+
+**Treat every exported type as a public commitment.** If it's exported, someone will depend on it. If you might need to change it, either don't export it, or document clearly that it's unstable.
+
+**Write the error message, not just the type.** When you define a generic, think about what happens when someone passes the wrong thing. Is the error going to make sense to someone who didn't write this code?
+
+**Test your types the way you test your code.** Libraries like [tsd](https://github.com/tsdjs/tsd) let you write assertions about what should and shouldn't compile. If you're shipping types to users, you should have a test suite that covers the cases they'll actually hit.
+
+**Watch for representation leakage.** Anywhere your internal model shows through the public type surface is a place where you've asked users to understand your implementation. That's usually a sign something needs an adapter type between the two.
+
+## **A whole dialect I didn't know existed**
+
+I've been writing TypeScript for *years* and working on this project made me feel like a total noob more than once.It was really fun and quite the learning experience. It feels like I'd found a whole dialect of the language I didn't know existed—one you only  encounter when your types have their very own users.
+
+If you've only ever written TypeScript for your own apps, find an excuse to build something others will depend on. Not because the techniques are wildly exotic, but because the *constraints* are different in a way that forces you to think differently. You stop asking "does this compile?" and start asking "does this make sense to someone who doesn't know what I know?"
+
+That's a good question to be asking regardless of what you're building.
