@@ -61,7 +61,10 @@ export async function loadMarkdownFilesMetadata<T>(
             ? data.tags.split(",").map((t: string) => t.trim())
             : data.tags;
       }
-      if (!data.slug || !data.date) continue;
+      // Require a slug so we can link to the file, but allow entries
+      // without a date (e.g. changelog files where dates come from exports
+      // instead of frontmatter).
+      if (!data.slug) continue;
       filesMetadata.push(data as T & MDXFileMetadata);
     } catch (err) {
       // Skip files that fail to parse so one bad file doesn't break the list
