@@ -25,8 +25,7 @@ import { Inngest } from "inngest";
 const inngest = new Inngest({ id: "signup-flow" });
 
 export const fn = inngest.createFunction(
-  { id: "post-payment-flow" },
-  { event: "stripe/charge.created" },
+  { id: "post-payment-flow", triggers: { event: "stripe/charge.created" } },
   async ({ event, step }) => {
     // These steps are not `awaited` and run in parallel when Promise.all
     // is invoked.
@@ -111,11 +110,11 @@ import { Inngest } from "inngest";
 const inngest = new Inngest({ id: "my-app" });
 
 export const fn = inngest.createFunction(
-  { 
+  {
     id: "process-batch",
-    optimizeParallelism: true  // Enable optimized parallelism
+    optimizeParallelism: true,  // Enable optimized parallelism
+    triggers: { event: "batch/process" },
   },
-  { event: "batch/process" },
   async ({ event, step }) => {
     // These parallel steps will now use only 1 request each instead of 2
     const results = await Promise.all(
@@ -139,8 +138,7 @@ export const fn = inngest.createFunction(
 const stepOrder: string[] = [];
 
 export const fn = inngest.createFunction(
-  { id: "fn-1", optimizeParallelism: true },
-  { event: "event-1" },
+  { id: "fn-1", optimizeParallelism: true, triggers: { event: "event-1" } },
   async ({ step }) => {
     await Promise.all([
       (async () => {
@@ -214,8 +212,7 @@ import { Inngest } from "inngest";
 const inngest = new Inngest({ id: "signup-flow" });
 
 export const fn = inngest.createFunction(
-  { id: "summarize-text" },
-  { event: "app/text.summarize" },
+  { id: "summarize-text", triggers: { event: "app/text.summarize" } },
   async ({ event, step }) => {
     const chunks = splitTextIntoChunks(event.data.text);
 

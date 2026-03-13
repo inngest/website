@@ -18,8 +18,7 @@ All `Error` objects are handled by Inngest and [retried automatically](/docs/fea
 
 ```typescript
 export default inngest.createFunction(
-  { id: "import-item-data" },
-  { event: "store/import.requested" },
+  { id: "import-item-data", triggers: { event: "store/import.requested" } },
   async ({ event }) => {
 
     // throwing a standard error
@@ -106,8 +105,7 @@ Use `NonRetriableError` to prevent Inngest from retrying the function _or_ step.
 import { NonRetriableError } from "inngest";
 
 export default inngest.createFunction(
-  { id: "mark-store-imported" },
-  { event: "store/import.completed" },
+  { id: "mark-store-imported", triggers: { event: "store/import.completed" } },
   async ({ event }) => {
     try {
       const result = await database.updateStore(
@@ -211,8 +209,7 @@ If `RetryAfterError` is not used, Inngest will use [the default retry backoff po
 
 ```typescript
 inngest.createFunction(
-  { id: "send-welcome-sms" },
-  { event: "app/user.created" },
+  { id: "send-welcome-sms", triggers: { event: "app/user.created" } },
   async ({ event, step }) => {
     const { success, retryAfter } = await twilio.messages.create({
       to: event.data.user.phoneNumber,
@@ -350,8 +347,7 @@ After a step exhausts all of its retries, it will throw a `StepError` which can 
 <CodeGroup>
 ```ts {{ title: "try/catch" }}
 inngest.createFunction(
-  { id: "send-weather-forecast" },
-  { event: "weather/forecast.requested" },
+  { id: "send-weather-forecast", triggers: { event: "weather/forecast.requested" } },
   async ({ event, step }) => {
     let data;
 
@@ -372,8 +368,7 @@ inngest.createFunction(
 ```
 ```ts {{ title: "Chaining with .catch()" }}
 inngest.createFunction(
-  { id: "send-weather-forecast" },
-  { event: "weather/forecast.requested" },
+  { id: "send-weather-forecast", triggers: { event: "weather/forecast.requested" } },
   async ({ event, step }) => {
 
     const data = await step
@@ -392,8 +387,7 @@ inngest.createFunction(
 ```
 ```ts {{ title: "Ignoring and logging the error" }}
 inngest.createFunction(
-  { id: "send-weather-forecast" },
-  { event: "weather/forecast.requested" },
+  { id: "send-weather-forecast", triggers: { event: "weather/forecast.requested" } },
   async ({ event, step }) => {
 
     const data = await step
@@ -445,8 +439,7 @@ The current attempt number is passed in as input to the function handler. `attem
 
 ```ts
 inngest.createFunction(
-  { id: "generate-summary" },
-  { event: "blog/post.created" },
+  { id: "generate-summary", triggers: { event: "blog/post.created" } },
   async ({ attempt }) => {
     // `attempt` is the zero-index attempt number
 
@@ -469,8 +462,7 @@ When calling functions that return Promises, await the Promise to ensure that th
 <CodeGroup>
   ```ts {{ title: "Returning Promise" }}
   inngest.createFunction(
-    { id: "update-recent-usage" },
-    { event: "app/update-recent-usage" },
+    { id: "update-recent-usage", triggers: { event: "app/update-recent-usage" } },
     async ({ event, step }) => {
       // ...
       await step.run("update in db", () => doSomeWork(event.data));
@@ -480,8 +472,7 @@ When calling functions that return Promises, await the Promise to ensure that th
   ```
   ```ts {{ title: "Awaiting Promise" }}
   inngest.createFunction(
-    { id: "update-recent-usage" },
-    { event: "app/update-recent-usage" },
+    { id: "update-recent-usage", triggers: { event: "app/update-recent-usage" } },
     async ({ event, step }) => {
       // ...
       await step.run("update in db", async () => {

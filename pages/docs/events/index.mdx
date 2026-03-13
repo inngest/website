@@ -186,8 +186,7 @@ You can also send events from within your functions using `step.sendEvent()` to,
 
 ```ts
 export default inngest.createFunction(
-  { id: "user-onboarding" },
-  { event: "app/user.signup" },
+  { id: "user-onboarding", triggers: { event: "app/user.signup" } },
   async ({ event, step }) => {
     // Do something
     await step.sendEvent("send-activation-event", {

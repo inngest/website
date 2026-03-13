@@ -168,9 +168,7 @@ import { inngest } from "../client";
 export const simpleSearchAgent = inngest.createFunction(
   {
     id: "simple-search-agent-workflow",
-  },
-  {
-    event: "app/simple-search-agent.run",
+    triggers: { event: "app/simple-search-agent.run" },
   },
   async ({ step, event, publish }) => {
     const { uuid } = event.data;

@@ -19,8 +19,7 @@ Here is a basic function that sends a reminder to a user at a given email.
 
 ```typescript
 const sendReminder = inngest.createFunction(
-  { id: "send-reminder" },
-  { event: "notifications/reminder.scheduled" },
+  { id: "send-reminder", triggers: { event: "notifications/reminder.scheduled" } },
   async ({ event, step }) => {
     const { user, message } = event.data;
 

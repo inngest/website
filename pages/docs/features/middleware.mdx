@@ -59,12 +59,12 @@ const inngest = new Inngest({
 inngest.createFunction(
   {
     id: "example",
+    triggers: { event: "test" },
     middleware: [
       dbSetupMiddleware, // This is executed third
       datadogMiddleware, // This is executed fourth
     ],
   },
-  { event: "test" },
   async () => {
     // ...
   }

@@ -40,8 +40,8 @@ export const myFunction = inngest.createFunction(
   {
     id: "my-function",
     checkpointing: true,
+    triggers: { event: "app/my.event" },
   },
-  { event: "app/my.event" },
   async ({ step }) => {
     // steps here will be checkpointed
   }

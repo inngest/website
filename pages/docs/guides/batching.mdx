@@ -22,10 +22,10 @@ inngest.createFunction(
       maxSize: 100,
       timeout: "5s",
       key: "event.data.user_id", // Optional: batch events by user ID
-      if: "event.data.account_type == \"free\"", // Optional: Only batch events from free accounts 
+      if: "event.data.account_type == \"free\"", // Optional: Only batch events from free accounts
     },
+    triggers: { event: "log/api.call" },
   },
-  { event: "log/api.call" },
   async ({ events, step }) => {
     // NOTE: Use the `events` argument, which is an array of event payloads
     const attrs = events.map((evt) => {

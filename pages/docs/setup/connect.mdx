@@ -53,8 +53,7 @@ const inngest = new Inngest({
 });
 
 const handleSignupFunction = inngest.createFunction(
-  { id: "handle-signup" },
-  { event: "user.created" },
+  { id: "handle-signup", triggers: [{ event: "user.created" }] },
   async ({ event, step }) => {
     console.log("Function called", event);
   },
@@ -626,20 +625,12 @@ asyncio.run(
 
 If you are [self-hosting](/docs/self-hosting?ref=docs-connect) Inngest, you need to ensure that the Inngest WebSocket gateway is accessible within your network. The Inngest WebSocket gateway is available at port `8289`.
 
-Depending on your network configuration, you may need to dynamically re-write the gateway URL that the SDK uses to connect.
+Depending on your network configuration, you may need to set the gateway URL that the SDK uses to connect.
 
 ```ts
 const connection = await connect({
   apps: [...],
-  rewriteGatewayEndpoint: (url) => { // ex. "wss://gw2.connect.inngest.com/v0/connect"
-    // If not running in dev mode, return
-    if (!process.env.INNGEST_DEV) {
-      const clusterUrl = new URL(url);
-      clusterUrl.host = 'my-cluster-host:8289';
-      return clusterUrl.toString();
-    }
-    return url;
-  },
+  gatewayUrl: "ws://my-cluster-host:8289/v0/connect",
 })
 ```
 
