@@ -4,11 +4,13 @@ import { Info, Tip, Warning, CodeGroup, LanguageSelector, LanguageSection } from
 
 Checkpointing is a performance optimization for Inngest functions that executes steps eagerly rather than waiting on internal orchestration. The result is dramatically lower latency — ideal for real-time AI workflows.
 
+In v4 of the TypeScript SDK, checkpointing is **enabled by default**. You only need to configure it if you want to customize options like `maxRuntime` or disable it.
+
 ## Minimum Requirements
 
 ### Language
 
-- **TypeScript**: SDK `3.51.0` or higher.
+- **TypeScript**: SDK `3.51.0` or higher (enabled by default in v4).
 - **Go**: SDK version `v0.15.0`.
 
 ## Getting Started
@@ -17,40 +19,11 @@ Checkpointing is a performance optimization for Inngest functions that executes 
 
 <LanguageSection show="typescript">
 
-To enable checkpointing:
-
-1. Install `inngest@3.51.0` or higher
-2. Set `checkpointing: true` on your Inngest client or on individual functions
-
-**For all functions:**
-
-```ts
-import { Inngest } from "inngest";
-
-export const inngest = new Inngest({
-  id: "my-app",
-  checkpointing: true,
-});
-```
-
-**Per-function:**
-
-```ts
-export const myFunction = inngest.createFunction(
-  {
-    id: "my-function",
-    checkpointing: true,
-    triggers: { event: "app/my.event" },
-  },
-  async ({ step }) => {
-    // steps here will be checkpointed
-  }
-);
-```
+In v4, checkpointing is enabled by default. No configuration is required for long-running or always-on servers.
 
 ### Max runtime for serverless environments
 
-If your app is deployed to serverless platforms, like [Vercel](/docs/deploy/vercel), you should configure the `maxRuntime` option to slightly below your function's maximum duration. See [configuration](#configuration) for more information.
+If your app is deployed to serverless platforms like [Vercel](/docs/deploy/vercel), you should configure the `maxRuntime` option to slightly below your function's maximum duration. See [configuration](#configuration) for more information.
 
 ```ts
 const inngest = new Inngest({
@@ -64,6 +37,33 @@ const inngest = new Inngest({
 <Tip>
   Tip: Many platforms, like Vercel, allow you to configure the maximum duration per function, e.g. on your `/api/inngest` endpoint. Learn more about configuring on Vercel [here](https://vercel.com/docs/functions/configuring-functions/duration).
 </Tip>
+
+### Disabling checkpointing
+
+To disable checkpointing for all functions, set `checkpointing: false` on the client:
+
+```ts
+import { Inngest } from "inngest";
+
+export const inngest = new Inngest({
+  id: "my-app",
+  checkpointing: false,
+});
+```
+
+You can also disable it per-function:
+
+```ts
+export const myFunction = inngest.createFunction(
+  {
+    id: "my-function",
+    checkpointing: false,
+  },
+  async ({ step }) => {
+    // steps here will use standard orchestration
+  }
+);
+```
 
 ### Configuration
 
@@ -130,19 +130,12 @@ Checkpointing uses the SDK orchestrates steps on the client-side (_on your serve
 
 What happens when something goes wrong? If a step fails and needs to retry, the execution engine falls back to standard orchestration to handle it properly. You get speed when things work, and safety when they don't.
 
-## Beta
-
-Checkpointing is currently in beta, here are some notes and limitations to be aware of:
+## Notes and limitations
 
 - **Parallel step execution** — When a function branches into parallel steps, execution switches to standard orchestration for the remainder of the run. Checkpointing does not resume after parallel execution.
-- **Middleware fixes (TypeScript `>=3.51.0`)** - If using an older TypeScript beta for checkpointing (`<3.51.0`), please upgrade to at least `3.51.0` to ensure that all middleware transforms are running correctly.
-
 
 | Feature | Supported |
 |---------|-----------|
 | Local development | ✅ |
 | Self-hosted Inngest | ✅ |
 | Inngest Cloud | ✅ |
-
-
-Read the [release phases](/docs/release-phases) for more details.

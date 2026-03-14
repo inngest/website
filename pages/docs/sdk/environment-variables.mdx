@@ -40,7 +40,7 @@ await inngest.setEnvVars(c.env).send({ name: "test/event" });
 
 Use this to tell an SDK the host to use to communicate with Inngest.
 
-If set, it should be the host including the protocol and port, e.g. `http://localhost:8288` or `https://my.tunnel.com`. Can be overwritten by manually specifying `baseUrl` in `new Inngest()` or `serve()`.
+If set, it should be the host including the protocol and port, e.g. `http://localhost:8288` or `https://my.tunnel.com`. Can be overwritten by manually specifying `baseUrl` in `new Inngest()`.
 
 In most cases we recommend keeping this unset. A common case, though, is wanting
 to force a production build of your app to use the Inngest Dev Server instead of
@@ -53,18 +53,13 @@ appropriate to also set `INNGEST_BASE_URL=http://host.docker.internal:8288`. Lea
 
 ## INNGEST_DEV
 
-Use this to force an SDK to be in Dev Mode with `INNGEST_DEV=1`, or Cloud mode
-with `INNGEST_DEV=0`. A URL for the dev server can be set at the same time with `INNGEST_DEV=http://localhost:8288`.
+Use this to force an SDK to be in Dev Mode with `INNGEST_DEV=1`, or Cloud mode with `INNGEST_DEV=0`. A URL for the dev server can be set at the same time with `INNGEST_DEV=http://localhost:8288`.
 
 Can be overwritten by manually specifying `isDev` in `new Inngest()`.
 
-Explicitly setting either mode will change the URLs used to communicate with
-Inngest, as well as turning **off** signature verification in Dev mode, or **on** in
-Cloud mode.
+Explicitly setting either mode will change the URLs used to communicate with Inngest, as well as turning **off** signature verification in Dev mode, or **on** in Cloud mode.
 
-If neither the environment variable nor config option are specified, the SDK will
-attempt to infer which mode it should be in based on environment variables such
-as `NODE_ENV`.
+If neither the environment variable nor config option are specified, the SDK defaults to **cloud mode**. For local development, explicitly set `INNGEST_DEV=1` or `isDev: true` in your client configuration.
 
 ---
 
@@ -83,14 +78,6 @@ This is detected and set automatically for some platforms, but others will need 
 The key to use to send events to Inngest. See [Creating an Event Key](/docs/events/creating-an-event-key?ref=environment-variables) for more information.
 
 Can be overwritten by manually specifying `eventKey` in `new Inngest()`.
-
----
-
-## INNGEST_LOG_LEVEL
-
-The log level to use for the SDK. Can be one of `fatal`, `error`, `warn`, `info`, `debug`, or `silent`.
-
-Defaults to `info`.
 
 ---
 
@@ -118,7 +105,7 @@ By default, an SDK will try to infer this using request details, but sometimes t
 
 The key used to sign requests to and from Inngest to ensure secure communication. See [Serve - Signing Key](/docs/learn/serving-inngest-functions#signing-key?ref=environment-variables) for more information.
 
-Can be overwritten by manually specifying `signingKey` in `serve()`.
+Can be overwritten by manually specifying `signingKey` in `new Inngest()`.
 
 ---
 
