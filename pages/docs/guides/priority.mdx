@@ -23,8 +23,8 @@ export default inngest.createFunction(
       // For all other accounts, the function will run with no priority.
       run: "event.data.account_type == 'enterprise' ? 120 : 0",
     },
+    triggers: { event: "ai/summary.requested" },
   },
-  { event: "ai/summary.requested" },
   async ({ event, step }) => {
     // This function will be prioritized based on the account type
   }

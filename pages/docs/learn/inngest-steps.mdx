@@ -32,8 +32,7 @@ The first argument of every Inngest step method is an `id`. Each step is treated
 
 ```typescript
 export default inngest.createFunction(
-  { id: "import-product-images" },
-  { event: "shop/product.imported" },
+  { id: "import-product-images", triggers: { event: "shop/product.imported" } },
   async ({ event, step }) => {
     const uploadedImageURLs = await step.run(
       // step ID
@@ -45,17 +44,6 @@ export default inngest.createFunction(
   }
 );
 ```
-
-<Callout variant="info" skipSearchCrawler>
-  **Using inngest@v4?** The TypeScript examples on this page use v3 syntax with three arguments to `createFunction`. In v4, event triggers are specified in the configuration object:
-  ```ts
-  inngest.createFunction(
-    { id: "my-function", triggers: [{ event: "my/event" }] },
-    async ({ event, step }) => { /* ... */ },
-  );
-  ```
-  See the [v3 → v4 migration guide](/docs/reference/typescript/v4/migrations/v3-to-v4#event-trigger-is-now-in-options) for details.
-</Callout>
 
 </LanguageSection>
 
@@ -138,8 +126,7 @@ Use it to run synchronous or asynchronous code as a retriable step in your funct
 
 ```typescript
 export default inngest.createFunction(
-  { id: "import-product-images" },
-  { event: "shop/product.imported" },
+  { id: "import-product-images", triggers: { event: "shop/product.imported" } },
   async ({ event, step }) => {
     // Here goes the business logic
     // By wrapping code in steps, it will be retried automatically on failure
@@ -218,8 +205,7 @@ This method pauses execution for a specified duration. Even though it seems like
 
 ```typescript
 export default inngest.createFunction(
-  { id: "send-delayed-email" },
-  { event: "app/user.signup" },
+  { id: "send-delayed-email", triggers: { event: "app/user.signup" } },
   async ({ event, step }) => {
     await step.sleep("wait-a-couple-of-days", "2d");
     // Do something else
@@ -278,8 +264,7 @@ This method pauses execution until a specific date time. Any date time string in
 
 ```typescript
 export default inngest.createFunction(
-  { id: "send-scheduled-reminder" },
-  { event: "app/reminder.scheduled" },
+  { id: "send-scheduled-reminder", triggers: { event: "app/reminder.scheduled" } },
   async ({ event, step }) => {
     const date = new Date(event.data.remind_at);
     await step.sleepUntil("wait-for-the-date", date);
@@ -323,8 +308,7 @@ This method pauses a run's execution until a specific event is received.
 
 ```typescript
 export default inngest.createFunction(
-  { id: "send-onboarding-nudge-email" },
-  { event: "app/account.created" },
+  { id: "send-onboarding-nudge-email", triggers: { event: "app/account.created" } },
   async ({ event, step }) => {
     const onboardingCompleted = await step.waitForEvent(
       "wait-for-onboarding-completion",
@@ -414,8 +398,7 @@ be unique across runs, and offer an API to resume specific runs given a unique s
 
 ```typescript
 export default inngest.createFunction(
-  { id: "send-onboarding-nudge-email" },
-  { event: "app/account.created" },
+  { id: "send-onboarding-nudge-email", triggers: { event: "app/account.created" } },
   async ({ event, step }) => {
     const onboardingCompleted = await step.waitForSignal(
       "wait-for-specific-signal",
@@ -501,8 +484,7 @@ This method comes with its own configuration, which enables defining specific se
 ```typescript
 // A function we will call in another place in our app
 const computeSquare = inngest.createFunction(
-  { id: "compute-square" },
-  { event: "calculate/square" },
+  { id: "compute-square", triggers: { event: "calculate/square" } },
   async ({ event }) => {
     return { result: event.data.number * event.data.number }; // Result typed as { result: number }
   }
@@ -510,8 +492,7 @@ const computeSquare = inngest.createFunction(
 
 // In this function, we'll call `computeSquare`
 const mainFunction = inngest.createFunction(
-  { id: "main-function" },
-  { event: "main/event" },
+  { id: "main-function", triggers: { event: "main/event" } },
   async ({ step }) => {
     const square = await step.invoke("compute-square-value", {
       function: computeSquare,
@@ -607,8 +588,7 @@ This method sends events to Inngest to invoke functions with a matching event. U
 
 ```typescript
 export default inngest.createFunction(
-  { id: "user-onboarding" },
-  { event: "app/user.signup" },
+  { id: "user-onboarding", triggers: { event: "app/user.signup" } },
   async ({ event, step }) => {
     // Do something
     await step.sendEvent("send-activation-event", {

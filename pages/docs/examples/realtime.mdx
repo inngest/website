@@ -58,8 +58,7 @@ export const helloChannel = channel((uuid: string) => `hello-world.${uuid}`).add
 );
 
 export const someTask = inngest.createFunction(
-  { id: "hello-world" },
-  { event: "hello-world/hello" },
+  { id: "hello-world", triggers: [{ event: "hello-world/hello" }] },
   async ({ event, step, publish }) => {
     const { uuid } = event.data;
     await publish(helloChannel(uuid).logs("Hello, world!"));
@@ -124,16 +123,14 @@ import {
   subscribe,
   topic,
 } from "@inngest/realtime";
-import { EventSchemas, Inngest } from "inngest";
+import { Inngest } from "inngest";
 import { globalChannel, postChannel } from "../channels";
 
 export const likePost = app.createFunction(
   {
     id: "post/like",
     retries: 0,
-  },
-  {
-    event: "app/post.like",
+    triggers: [{ event: "app/post.like" }],
   },
   async ({
     event: {
@@ -207,8 +204,7 @@ export const agenticWorkflowChannel = channel("agentic-workflow").addTopic(
 );
 
 export const agenticWorkflow = inngest.createFunction(
-  { id: "agentic-workflow" },
-  { event: "agentic-workflow/start" },
+  { id: "agentic-workflow", triggers: [{ event: "agentic-workflow/start" }] },
   async ({ event, step, publish }) => {
     await step.run(/* ... */);
     const confirmationUUid = await step.run("get-confirmation-uuid", async () => crypto.randomUUID());

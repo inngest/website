@@ -117,8 +117,7 @@ We can react to this event by creating a new Inngest function with the event as 
 
 ```ts
 inngest.createFunction(
-  { id: "send-cart-alert" },
-  { event: "graphql/create-cart-item.mutation" },
+  { id: "send-cart-alert", triggers: { event: "graphql/create-cart-item.mutation" } },
   async ({ event }) => {
     await sendSlackMessage(
       "#marketing",

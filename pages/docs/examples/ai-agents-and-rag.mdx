@@ -21,8 +21,7 @@ The function uses [Inngest steps](/docs/learn/inngest-steps) to guarantee automa
 
 ```typescript {{ title: "./inngest/functions.ts" }}
 export const summarizeContent = inngest.createFunction(
-  { name: 'Summarize content via GPT-4', id: 'summarize-content' },
-  { event: 'ai/summarize.content' },
+  { name: 'Summarize content via GPT-4', id: 'summarize-content', triggers: { event: 'ai/summarize.content' } },
   async ({ event, step, attempt }) => {
     const results = await step.run('query-vectordb', async () => {
       return {

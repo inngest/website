@@ -20,19 +20,18 @@ The example below checks if a user's subscription is valid a total of six times.
 inngest.createFunction(
   {
     id: "update-subscription",
+    triggers: { event: "user/subscription.check" },
     retries: 5,
     onFailure: async ({ event, error }) => {
       // if the subscription check fails after all retries, unsubscribe the user
       await unsubscribeUser(event.data.userId);
     },
   },
-  { event: "user/subscription.check" },
   async ({ event }) => { /* ... */ },
 );
 /* Option 2: Listens for the [`inngest/function.failed`](/docs/reference/functions/handling-failures#the-inngest-function-failed-event) system event to catch all failures in the inngest environment*/
 inngest.createFunction(
-  { id: "handle-any-fn-failure" },
-  { event: "inngest/function.failed" },
+  { id: "handle-any-fn-failure", triggers: { event: "inngest/function.failed" } },
   async ({ event }) => { /* ... */ },
 );
 ```

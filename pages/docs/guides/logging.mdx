@@ -31,8 +31,7 @@ A `logger` object is available within all Inngest functions as a handler argumen
 
 ```ts
 inngest.createFunction(
-  { id: "my-awesome-function" },
-  { event: "func/awesome" },
+  { id: "my-awesome-function", triggers: { event: "func/awesome" } },
   async ({ event, step, logger }) => { // <== logger is available as an argument
     logger.info("starting function", { metadataKey: "metadataValue" });
 

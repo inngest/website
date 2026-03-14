@@ -47,8 +47,8 @@ inngest.createFunction(
          limit: 1,
       },
     ],
-  }
-  { event: "ai/summary.requested" },
+    triggers: { event: "ai/summary.requested" },
+  },
   async ({ event, step }) => {
   }
 );

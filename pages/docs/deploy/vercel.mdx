@@ -115,10 +115,10 @@ By default, Inngest uses your Vercel project's "[deployment urls](https://vercel
 https://myapp-pxz35n5o2-acmeinc.vercel.app
 ```
 
-If you desire Inngest to use your custom domain in production, you can set the `INNGEST_SERVE_HOST` in your Vercel project's environment variables for production. When you push to production and Inngest syncs your app, it will instead use this URL. Please note: if your application is not reachable on this URL, your app sync will fail.
+If you desire Inngest to use your custom domain in production, you can set the `INNGEST_SERVE_ORIGIN` in your Vercel project's environment variables for production. When you push to production and Inngest syncs your app, it will instead use this URL. Please note: if your application is not reachable on this URL, your app sync will fail.
 
 ```
-INNGEST_SERVE_HOST=https://acme.com
+INNGEST_SERVE_ORIGIN=https://acme.com
 ```
 
 ## Multiple apps in one single Vercel project

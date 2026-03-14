@@ -33,8 +33,7 @@ const inngest = new Inngest({ id: "signup-flow" });
 type Events = GetEvents<typeof inngest>;
 
 export const loadCron = inngest.createFunction(
-  { id: "weekly-activity-load-users" },
-  { cron: "0 12 * * 5" },
+  { id: "weekly-activity-load-users", triggers: { cron: "0 12 * * 5" } },
   async ({ event, step }) => {
     // Fetch all users
     const users = await step.run("fetch-users", async () => {
@@ -69,8 +68,7 @@ Next, create a function that listens for the `"app/weekly-email-activity.send"` 
 
 ```ts
 export const sendReminder = inngest.createFunction(
-  { id: "weekly-activity-send-email" },
-  { event: "app/weekly-email-activity.send" },
+  { id: "weekly-activity-send-email", triggers: { event: "app/weekly-email-activity.send" } },
   async ({ event, step }) => {
     const data = await step.run("load-user-data", async () => {
       return loadUserData(event.data.user.id);

@@ -26,7 +26,7 @@ Additionally, you'll set the `INNGEST_SIGNING_KEY_FALLBACK` environment variable
 
 Signing keys should be omitted when using the Inngest [Dev Server](/docs/local-development). To simplify local development and testing, the Dev Server doesn't require a signing key.
 
-Each language SDK attempts to detect if your application is running in production or development mode. If you're running in development mode, the SDK will automatically disable signature verification. To force development mode, set `INNGEST_DEV=1` in your environment. This is useful when running in an automated testing environment.
+The TypeScript SDK defaults to cloud mode, which requires a signing key. To disable signature verification for local development, set `INNGEST_DEV=1` in your environment or pass `isDev: true` to the client. This is also useful when running in an automated testing environment.
 
 ## Rotation
 

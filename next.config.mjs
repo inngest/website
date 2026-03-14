@@ -272,7 +272,7 @@ function touchFilesWithString(str, { dir = "./pages", ext = "mdx" } = {}) {
 /** @type {import('next').NextConfig} */
 // Single source of truth for the stable TypeScript SDK version.
 // Exposed to client code via NEXT_PUBLIC_TS_STABLE (see LanguageStore.ts).
-const TS_STABLE_VERSION = "v3";
+const TS_STABLE_VERSION = "v4";
 
 async function rewrites() {
   return [

@@ -31,9 +31,9 @@ This can be used for a wide range of uses:
 
 ## Middleware SDKs support
 
-Middleware are available in the [TypeScript SDK](/docs/reference/middleware/typescript) <VersionBadge version={'v2.0.0+'} /> and [Python SDK](/docs/reference/python/middleware/lifecycle) <VersionBadge version={'v0.3.0+'} />.
+Middleware is available in the [TypeScript SDK](/docs/reference/typescript/v4/middleware/lifecycle) and [Python SDK](/docs/reference/python/middleware/lifecycle).
 
-Support in the Go SDK in planned.
+Support in the Go SDK is planned.
 
 ## Middleware lifecycle
 
@@ -59,12 +59,12 @@ const inngest = new Inngest({
 inngest.createFunction(
   {
     id: "example",
+    triggers: { event: "test" },
     middleware: [
       dbSetupMiddleware, // This is executed third
       datadogMiddleware, // This is executed fourth
     ],
   },
-  { event: "test" },
   async () => {
     // ...
   }

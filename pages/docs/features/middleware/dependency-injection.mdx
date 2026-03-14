@@ -32,8 +32,7 @@ The following is an example of adding a OpenAI client to all Inngest functions, 
 
          ```ts
         inngest.createFunction(
-          { name: "user-create" },
-          { event: "app/user.create" },
+          { name: "user-create", triggers: { event: "app/user.create" } },
           async ({ openai }) => {
             const chatCompletion = await openai.chat.completions.create({
               messages: [{ role: "user", content: "Say this is a test" }],
@@ -50,7 +49,7 @@ The following is an example of adding a OpenAI client to all Inngest functions, 
         💡 Types are inferred from middleware outputs, so your Inngest functions will see an appropriately-typed `openai` property in their input.
         </Callout>
 
-        Explore other examples in the [TypeScript SDK Middleware examples page](/docs/reference/middleware/examples).
+        Explore other examples in the [TypeScript SDK Middleware examples page](/docs/reference/typescript/v4/middleware/examples).
 
         ### Advanced mutation
 
@@ -72,47 +71,39 @@ The following is an example of adding a OpenAI client to all Inngest functions, 
 
         ## Ordering middleware and types
 
-        Middleware runs in the order specified when registering it (see [Middleware - Lifecycle - Registering and order](/docs/reference/middleware/lifecycle#registering-and-order)), which affects typing too.
+        Middleware runs in the order specified when registering it (see [Middleware lifecycle](/docs/reference/typescript/v4/middleware/lifecycle)), which affects typing too.
 
         When inferring a mutated input or output, the SDK will apply changes from each middleware in sequence, just as it will at runtime. This means that for two middlewares that add a `foo` value to input arguments, the last one to run will be what it seen both in types and at runtime.
     </LanguageSection>
 
     <LanguageSection show="typescript">
-        Our custom `openaiMiddleware` relies on the [`transformInput` hook](/docs/reference/middleware/lifecycle#on-function-run-lifecycle) to mutate the Function's context:
+        Our custom `OpenAIMiddleware` relies on the [`transformFunctionInput` hook](/docs/reference/typescript/v4/middleware/lifecycle#transformfunctioninput) to mutate the function's context:
 
         ```ts
-        import { InngestMiddleware } from "inngest";
+        import { Middleware } from "inngest";
         import OpenAI from "openai";
 
-        const openaiMiddleware = new InngestMiddleware({
-          name: "OpenAI Middleware",
-          init() {
-            const openai = new OpenAI();
+        const openai = new OpenAI();
 
+        class OpenAIMiddleware extends Middleware.BaseMiddleware {
+          transformFunctionInput(args: Middleware.TransformFunctionInputArgs) {
             return {
-              onFunctionRun(ctx) {
-                return {
-                  transformInput(ctx) {
-                    return {
-                      // Anything passed via `ctx` will be merged with the function's arguments
-                      ctx: {
-                        openai,
-                      },
-                    };
-                  },
-                };
+              ...args,
+              ctx: {
+                ...args.ctx,
+                // Anything passed via `ctx` will be merged with the function's arguments
+                openai,
               },
             };
-          },
-        });
+          }
+        }
         ```
 
         Our Inngest Functions can now access the OpenAI client through the context:
 
          ```ts
         inngest.createFunction(
-          { name: "user-create" },
-          { event: "app/user.create" },
+          { name: "user-create", triggers: { event: "app/user.create" } },
           async ({ openai }) => {
             const chatCompletion = await openai.chat.completions.create({
               messages: [{ role: "user", content: "Say this is a test" }],
@@ -129,19 +120,21 @@ The following is an example of adding a OpenAI client to all Inngest functions, 
         💡 Types are inferred from middleware outputs, so your Inngest functions will see an appropriately-typed `openai` property in their input.
         </Callout>
 
-        Explore other examples in the [TypeScript SDK Middleware examples page](/docs/reference/middleware/examples).
+        Explore other examples in the [TypeScript SDK Middleware examples page](/docs/reference/typescript/v4/middleware/examples).
 
         ### Advanced mutation
 
-        When middleware runs and `transformInput()` returns a new `ctx`, the types and data within that returned `ctx` are merged on top of the default provided by the library. This means that you can use a few tricks to overwrite data and types safely and more accurately.
+        When `transformFunctionInput()` returns a new `ctx`, the types and data within that returned `ctx` are merged on top of the default provided by the library. This means that you can use a few tricks to overwrite data and types safely and more accurately.
 
         For example, here we use a `const` assertion to infer the literal value of our `foo` example above.
 
         ```ts
         // In middleware
-        transformInput() {
+        transformFunctionInput(args: Middleware.TransformFunctionInputArgs) {
           return {
+            ...args,
             ctx: {
+              ...args.ctx,
               foo: "bar",
             } as const,
           };
@@ -158,24 +151,26 @@ The following is an example of adding a OpenAI client to all Inngest functions, 
         To get around this, you can provide the data but omit the type by using an `as` type assertion. For example, here we use a type assertion to add `foo` and alter the event data without affecting the type.
 
         ```ts
-        async transformInput({ ctx }) {
-          const event = await decrypt(ctx.event);
+        transformFunctionInput(args: Middleware.TransformFunctionInputArgs) {
+          const event = await decrypt(args.ctx.event);
 
           const newCtx = {
+            ...args.ctx,
             foo: "bar",
             event,
           };
 
           return {
+            ...args,
             // Don't affect the `event` type
             ctx: newCtx as Omit<typeof newCtx, "event">,
           };
-        },
+        }
         ```
 
         ## Ordering middleware and types
 
-        Middleware runs in the order specified when registering it (see [Middleware - Lifecycle - Registering and order](/docs/reference/middleware/lifecycle#registering-and-order)), which affects typing too.
+        Middleware runs in the order specified when registering it (see [Middleware lifecycle](/docs/reference/typescript/v4/middleware/lifecycle)), which affects typing too.
 
         When inferring a mutated input or output, the SDK will apply changes from each middleware in sequence, just as it will at runtime. This means that for two middlewares that add a `foo` value to input arguments, the last one to run will be what it seen both in types and at runtime.
     </LanguageSection>

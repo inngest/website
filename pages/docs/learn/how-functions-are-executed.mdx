@@ -50,8 +50,7 @@ Let's look at an example of a function and walk through how it is executed:
 
 ```typescript
 const fn = inngest.createFunction(
-  { id: "import-contacts" },
-  { event: "contacts/csv.uploaded" },
+  { id: "import-contacts", triggers: { event: "contacts/csv.uploaded" } },
   // The function handler:
   async ({ event, step }) => {
     const rows = await step.run("parse-csv", async () => {
