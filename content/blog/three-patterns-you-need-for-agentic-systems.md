@@ -2,7 +2,7 @@
 heading: "Three sub-agent patterns you need for your agentic system"
 subtitle: "Every agentic system that actually ships ends up needing three delegation patterns: one that blocks, one that fires and forgets, and one that runs later."
 image: /assets/blog/three-patterns-you-need-for-agentic-systems/blog-banner.png
-date: 2026-11-03
+date: 2026-03-11
 author: Dan Farrelly
 ---
 
@@ -233,7 +233,7 @@ Depth-1 delegation. Sub-agents get the same workspace tools but can't spawn sub-
 
 Since the agent leverages our agent loop using Inngest steps, it's durable and if a step fails, it retries from where it left off rather than from the beginning of the loop. As these sub-agents are just tools, the result is just appended to the messages just like any tool call is.
 
-[Check out the code here](https://github.com/inngest/utah/blob/main/src/agent-loop.ts
+[Check out the code here](https://github.com/inngest/utah/blob/main/src/agent-loop.ts)
 
 ### Channel-agnostic routing
 
