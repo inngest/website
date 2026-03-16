@@ -1,22 +1,22 @@
-import { Info, Callout, Properties, Property, Row, Col, CodeGroup } from "src/shared/Docs/mdx";
+import { Info, Properties, Property, Row, Col } from "src/shared/Docs/mdx";
 
 export const description = "Publish typed messages to realtime channels from Inngest functions or server-side code."
 
 # Publishing
 
-There are three ways to publish realtime messages, each suited to different scenarios.
+There are three ways to publish realtime messages in the v4 SDK.
 
-| Method | Durable | Retries re-fire | Step ID | Best for |
-|--------|---------|-----------------|---------|----------|
-| `publish()` | No | Yes | - | High-frequency streaming (tokens, progress) |
-| `step.realtime.publish()` | Yes | No (memoized) | Required | State transitions, final results |
-| `inngest.realtime.publish()` | No | - | - | Publishing outside a function |
+| Method | Durable | Usable outside functions | Step ID | Best for |
+|--------|---------|------------------------|---------|----------|
+| `publish()` | No | No | - | High-frequency progress inside a function handler |
+| `inngest.publish()` | No | Yes | - | Publishing from routes, webhooks, or server-side code |
+| `step.realtime.publish()` | Yes | No | Required | State transitions, final results, deduped publishes |
 
 ---
 
 ## `publish(topicRef, data)`
 
-Available in the function handler arguments. Publishes immediately with no memoization - if the function retries, the publish fires again. Best for high-frequency, streaming-style updates where duplicates are acceptable.
+Available in the function handler arguments. Publishes immediately with no memoization, so retries re-fire the publish. Best for high-frequency, streaming-style updates where duplicates are acceptable.
 
 <Row>
   <Col>
@@ -33,7 +33,7 @@ Available in the function handler arguments. Publishes immediately with no memoi
   ```ts
   inngest.createFunction(
     { id: "stream-tokens", triggers: [{ event: "app/generate" }] },
-    async ({ event, step, publish }) => {
+    async ({ event, publish, step }) => {
       const ch = pipelineChannel({ runId: event.data.runId });
 
       await step.run("generate", async () => {
@@ -61,8 +61,44 @@ Available in the function handler arguments. Publishes immediately with no memoi
 </Row>
 
 <Info>
-  `publish()` runs inside `step.run()` blocks as well as at the top level of your function handler. When used inside a step, the publish still fires on every retry of that step.
+  `publish()` works at the top level of your function handler and inside `step.run()` blocks. It is still non-durable, so it fires again on retry.
 </Info>
+
+## `inngest.publish(topicRef, data)`
+
+Publishes from your `Inngest` client. Use this anywhere you already have the client available, such as API routes, webhooks, or other server-side code. Inside a function run, `inngest.publish()` also attaches the current run ID automatically.
+
+<Row>
+  <Col>
+    <Properties>
+      <Property name="topicRef" type="TopicRef<TData>" required>
+        A topic accessor from a channel instance.
+      </Property>
+      <Property name="data" type="TData" required>
+        The message payload. Must match the topic's schema.
+      </Property>
+    </Properties>
+
+    Returns `Promise<void>`.
+  </Col>
+  <Col>
+  ```ts
+  import { inngest } from "./client";
+  import { alertsChannel } from "./channels";
+
+  export async function POST(req: Request) {
+    const body = await req.json();
+
+    await inngest.publish(alertsChannel.alert, {
+      message: body.message,
+      severity: body.severity,
+    });
+
+    return new Response("OK");
+  }
+  ```
+  </Col>
+</Row>
 
 ## `step.realtime.publish(id, topicRef, data)`
 
@@ -88,7 +124,7 @@ A durable step that memoizes the publish. If the function retries past this step
   ```ts
   inngest.createFunction(
     { id: "process-upload", triggers: [{ event: "app/upload" }] },
-    async ({ event, step, publish }) => {
+    async ({ event, publish, step }) => {
       const ch = uploadsChannel({ uploadId: event.data.uploadId });
 
       await publish(ch.status, { message: "Processing..." });
@@ -108,43 +144,6 @@ A durable step that memoizes the publish. If the function retries past this step
   </Col>
 </Row>
 
-## `inngest.realtime.publish(topicRef, data)`
-
-Publishes from server-side code outside of a function. Useful for triggering realtime updates from API routes or webhooks.
-
-<Row>
-  <Col>
-    <Properties>
-      <Property name="topicRef" type="TopicRef<TData>" required>
-        A topic accessor from a channel instance.
-      </Property>
-      <Property name="data" type="TData" required>
-        The message payload. Must match the topic's schema.
-      </Property>
-    </Properties>
-
-    Returns `Promise<void>`.
-  </Col>
-  <Col>
-  ```ts
-  import { inngest } from "./client";
-  import { alertsChannel } from "./channels";
-
-  // In an API route, webhook handler, etc.
-  export async function POST(req: Request) {
-    const body = await req.json();
-
-    await inngest.realtime.publish(alertsChannel.alert, {
-      message: body.message,
-      severity: body.severity,
-    });
-
-    return new Response("OK");
-  }
-  ```
-  </Col>
-</Row>
-
 ## Choosing a publish method
 
 Use **`publish()`** when:
@@ -152,14 +151,15 @@ Use **`publish()`** when:
 - The data is ephemeral and duplicates on retry are fine
 - You want minimum latency (no step overhead)
 
+Use **`inngest.publish()`** when:
+- Publishing from outside a function (API routes, webhooks, cron jobs)
+- Reusing the client directly instead of the handler-scoped `publish()`
+- Sending non-durable updates where retries are acceptable
+
 Use **`step.realtime.publish()`** when:
 - Publishing a final result or state transition
 - You need exactly-once delivery semantics (memoized)
 - The publish should appear in the function's execution graph
-
-Use **`inngest.realtime.publish()`** when:
-- Publishing from outside a function (API routes, webhooks, cron jobs)
-- Sending updates that aren't tied to a specific function run
 
 ## Type safety
 

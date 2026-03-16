@@ -1,4 +1,4 @@
-import { Info, Callout, Properties, Property, Row, Col, CodeGroup } from "src/shared/Docs/mdx";
+import { Properties, Property, CodeGroup } from "src/shared/Docs/mdx";
 
 export const description = "Subscribe to realtime updates from Inngest functions in React with the useRealtime hook."
 
@@ -12,17 +12,23 @@ import { pipelineChannel } from "../inngest/channels";
 
 function Pipeline({ runId }: { runId: string }) {
   const ch = pipelineChannel({ runId });
+  const topics = ["status", "tokens"] as const;
 
-  const { status, latest, history, runStatus, result } = useRealtime({
+  const { connectionStatus, runStatus, messages, result } = useRealtime({
     channel: ch,
-    topics: ["status", "tokens"],
-    token: () => fetch("/api/realtime-token").then((r) => r.text()),
+    topics,
+    token: () =>
+      fetch(`/api/realtime-token?runId=${runId}`).then((r) => r.text()),
   });
 
   return (
     <div>
-      <p>Connection: {status} | Run: {runStatus}</p>
-      {latest.status && <p>{latest.status.data.message}</p>}
+      <p>Connection: {connectionStatus} | Run: {runStatus}</p>
+      {messages.byTopic.status && (
+        <p>{messages.byTopic.status.data.message}</p>
+      )}
+      <p>Messages received: {messages.all.length}</p>
+      {result && <pre>{JSON.stringify(result, null, 2)}</pre>}
     </div>
   );
 }
@@ -34,13 +40,16 @@ function Pipeline({ runId }: { runId: string }) {
 
 <Properties>
   <Property name="channel" type="ChannelInstance | string">
-    The channel to subscribe to. Can be a channel instance from `realtime.channel()` or a plain string. When using a channel instance, topic data is automatically typed.
+    The channel to subscribe to. Can be a channel instance from `realtime.channel()` or a plain string. When you use a channel instance, topic data is typed automatically.
   </Property>
   <Property name="topics" type="string[]">
-    The topics to subscribe to within the channel. Only messages for these topics will be delivered.
+    The topics to subscribe to within the channel. Required when your `token` factory returns only a token key string.
   </Property>
-  <Property name="token" type="string | Token | () => Promise<string | Token>">
-    Authentication token for the subscription. Can be a pre-minted token string, a `Token` object from `getSubscriptionToken`, or an async factory function that fetches a token. The factory pattern is recommended as it's called on mount and on reconnect.
+  <Property name="token" type="Token | () => Promise<string | Token>">
+    Authentication for the subscription. Pass a pre-minted token object, or an async factory that returns either a token key string or a full token object. The async factory pattern is recommended because it runs on mount and on reconnect.
+  </Property>
+  <Property name="key" type="string">
+    Optional subscription identity key. Change it to force the hook to reset its retained state and reconnect even if `channel` and `topics` are unchanged.
   </Property>
   <Property name="enabled" type="boolean">
     Whether the subscription is active. Set to `false` to pause without unmounting. Defaults to `true`.
@@ -49,7 +58,7 @@ function Pipeline({ runId }: { runId: string }) {
     Enable subscriber-side schema validation on incoming messages. Defaults to `true`.
   </Property>
   <Property name="historyLimit" type="number | null">
-    Maximum number of messages to retain in `history` and `data`. Set to `null` for unbounded history. Defaults to `100`.
+    Maximum number of messages to retain in `messages.all`. Set to `null` for unbounded history. Defaults to `100`.
   </Property>
   <Property name="bufferInterval" type="number">
     Milliseconds to buffer incoming messages before triggering a re-render. Useful for high-frequency streams to reduce render pressure. Defaults to `0` (immediate).
@@ -74,17 +83,29 @@ function Pipeline({ runId }: { runId: string }) {
 ## Return value
 
 <Properties>
-  <Property name="status" type={`"idle" | "connecting" | "open" | "closed" | "error"`}>
+  <Property name="connectionStatus" type={`"idle" | "connecting" | "open" | "paused" | "closed" | "error"`}>
     The WebSocket connection status.
   </Property>
   <Property name="runStatus" type={`"unknown" | "running" | "completed" | "failed" | "cancelled"`}>
     The lifecycle status of the Inngest function run. Updated from run-level messages on the channel.
   </Property>
-  <Property name="latest" type="Record<string, Message | undefined>">
-    A map of the most recent message for each topic. Access typed data via `latest.topicName?.data`. Only includes topics specified in `options.topics`.
+  <Property name="isPaused" type="boolean">
+    Convenience boolean for `connectionStatus === "paused"`.
   </Property>
-  <Property name="history" type="Message[]">
-    All received messages in chronological order, bounded by `historyLimit`.
+  <Property name="pauseReason" type={`"hidden" | "disabled" | null`}>
+    Why the hook is paused. `hidden` means the document is hidden and `pauseOnHidden` is enabled. `disabled` means `enabled` is `false`.
+  </Property>
+  <Property name="messages.byTopic" type="Record<string, Message | undefined>">
+    The latest message per subscribed topic. Access typed data with `messages.byTopic.topicName?.data`.
+  </Property>
+  <Property name="messages.all" type="Message[]">
+    All retained messages in chronological order, bounded by `historyLimit`.
+  </Property>
+  <Property name="messages.last" type="Message | null">
+    The most recently flushed message across all subscribed topics.
+  </Property>
+  <Property name="messages.delta" type="Message[]">
+    The newest batch of flushed messages. When buffering is disabled, this is a single-message array for the latest message.
   </Property>
   <Property name="error" type="Error | null">
     The most recent connection error, or `null` if connected successfully.
@@ -93,28 +114,20 @@ function Pipeline({ runId }: { runId: string }) {
     The function's return value, extracted from the terminal run message when the function completes.
   </Property>
   <Property name="reset" type="() => void">
-    Clears all accumulated state (`history`, `latest`, `error`, `result`) and resets to initial values.
-  </Property>
-  <Property name="data" type="Message[]">
-    Alias for `history`. All received messages bounded by `historyLimit`.
-  </Property>
-  <Property name="latestData" type="Message | null">
-    The single most recent message across all topics.
-  </Property>
-  <Property name="freshData" type="Message[]">
-    Messages received since the last render cycle. Useful for animations or processing only new items.
+    Clears the retained messages, result, and error state and resets the hook back to its initial state.
   </Property>
 </Properties>
 
 ## Connection status
 
-The `status` field tracks the WebSocket connection lifecycle:
+The `connectionStatus` field tracks the WebSocket connection lifecycle:
 
 | Status | Description |
 |--------|-------------|
 | `idle` | Hook is mounted but hasn't started connecting (e.g., `enabled: false`) |
 | `connecting` | Establishing the WebSocket connection |
 | `open` | Connected and receiving messages |
+| `paused` | The hook is intentionally paused because `enabled` is `false` or the tab is hidden |
 | `closed` | Connection closed (manually or by `autoCloseOnTerminal`) |
 | `error` | Connection failed. Check `error` for details |
 
@@ -150,6 +163,9 @@ export async function getToken(runId: string) {
     channel: ch,
     topics: ["status", "tokens"],
   });
+  if (!token.key) {
+    throw new Error("No realtime token returned");
+  }
   return token.key;
 }
 
@@ -160,13 +176,18 @@ import { pipelineChannel } from "../inngest/channels";
 import { getToken } from "./actions";
 
 function Pipeline({ runId }: { runId: string }) {
-  const { status, latest } = useRealtime({
+  const topics = ["status", "tokens"] as const;
+  const { connectionStatus, messages } = useRealtime({
     channel: pipelineChannel({ runId }),
-    topics: ["status", "tokens"],
+    topics,
     token: () => getToken(runId),
   });
 
-  return <p>{latest.status?.data.message}</p>;
+  return (
+    <p>
+      {connectionStatus}: {messages.byTopic.status?.data.message}
+    </p>
+  );
 }
 ```
 
@@ -186,6 +207,10 @@ export async function GET(req: Request) {
     topics: ["status", "tokens"],
   });
 
+  if (!token.key) {
+    throw new Error("No realtime token returned");
+  }
+
   return new Response(token.key);
 }
 
@@ -195,63 +220,92 @@ import { useRealtime } from "inngest/react";
 import { pipelineChannel } from "../inngest/channels";
 
 function Pipeline({ runId }: { runId: string }) {
-  const { status, latest } = useRealtime({
+  const topics = ["status", "tokens"] as const;
+  const { messages } = useRealtime({
     channel: pipelineChannel({ runId }),
-    topics: ["status", "tokens"],
+    topics,
     token: () =>
       fetch(`/api/realtime-token?runId=${runId}`).then((r) => r.text()),
   });
 
-  return <p>{latest.status?.data.message}</p>;
+  return <p>{messages.byTopic.status?.data.message}</p>;
 }
 ```
 </CodeGroup>
 
 ## Typed topic access
 
-When you pass a channel instance (not a plain string), `latest` is typed per-topic:
+When you pass a channel instance instead of a plain string, `messages.byTopic`, `messages.all`, `messages.last`, and `messages.delta` all stay typed to the subscribed topics:
 
 ```tsx
 const ch = pipelineChannel({ runId });
+const topics = ["status", "tokens"] as const;
 
-const { latest } = useRealtime({
+const { messages } = useRealtime({
   channel: ch,
-  topics: ["status", "tokens"],
+  topics,
   token: () => getToken(runId),
 });
 
-// Typed access: TypeScript knows the shape of each topic's data
-latest.status?.data.message;  // string
-latest.tokens?.data.token;    // string
+messages.byTopic.status?.data.message; // string
+messages.byTopic.tokens?.data.token; // string
+
+for (const message of messages.delta) {
+  if (message.kind === "run") continue;
+
+  if (message.topic === "status") {
+    message.data.message; // string
+  }
+}
 ```
 
 ## History management
 
-By default, `history` retains the last 100 messages. Adjust with `historyLimit`:
+By default, `messages.all` retains the last 100 messages. Adjust with `historyLimit`:
 
 ```tsx
 // Keep last 500 messages
-useRealtime({ ..., historyLimit: 500 });
+useRealtime({
+  channel: ch,
+  topics: ["status"],
+  token: () => getToken(runId),
+  historyLimit: 500,
+});
 
 // Keep all messages (unbounded, use with caution)
-useRealtime({ ..., historyLimit: null });
+useRealtime({
+  channel: ch,
+  topics: ["status"],
+  token: () => getToken(runId),
+  historyLimit: null,
+});
 
 // Keep only 10 messages
-useRealtime({ ..., historyLimit: 10 });
+useRealtime({
+  channel: ch,
+  topics: ["status"],
+  token: () => getToken(runId),
+  historyLimit: 10,
+});
 ```
 
 ## Buffering
 
-For high-frequency streams (like token-by-token AI output), use `bufferInterval` to batch re-renders:
+For high-frequency streams like token-by-token AI output, use `bufferInterval` to batch re-renders:
 
 ```tsx
-const { history } = useRealtime({
+const { messages } = useRealtime({
   channel: ch,
   topics: ["tokens"],
   token: () => getToken(runId),
   bufferInterval: 100, // Batch messages, re-render at most every 100ms
 });
+
+messages.delta; // up to 100ms of new messages per flush
+messages.all; // retained history after each flush
 ```
+
+`messages.byTopic` still tracks the latest message for each topic, while `messages.all`, `messages.last`, and `messages.delta` are flushed on the buffer interval.
 
 ## Conditional subscription
 
@@ -260,10 +314,18 @@ Use `enabled` to start or stop the subscription without unmounting the component
 ```tsx
 const [runId, setRunId] = useState<string | null>(null);
 
-const { status, latest } = useRealtime({
-  channel: pipelineChannel({ runId: runId ?? "" }),
+const channel = runId ? pipelineChannel({ runId }) : undefined;
+
+const { connectionStatus, isPaused, pauseReason } = useRealtime({
+  channel,
   topics: ["status"],
-  token: () => getToken(runId!),
-  enabled: runId !== null, // Only connect when we have a runId
+  token: runId ? () => getToken(runId) : undefined,
+  enabled: !!runId,
 });
+
+connectionStatus; // "idle" until a run exists, then "connecting" | "open" | ...
+isPaused; // true when disabled or hidden
+pauseReason; // "disabled" | "hidden" | null
 ```
+
+If your token factory returns only a string key, make sure `channel` and `topics` are present. If it returns a full token object, the hook can derive them from the token instead.

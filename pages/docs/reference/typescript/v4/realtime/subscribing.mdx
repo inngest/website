@@ -1,10 +1,13 @@
-import { Info, Callout, Properties, Property, Row, Col, CodeGroup } from "src/shared/Docs/mdx";
+import { Info, Properties, Property, Row, Col, CodeGroup } from "src/shared/Docs/mdx";
 
 export const description = "Mint subscription tokens and consume realtime streams server-side with getSubscriptionToken and subscribe."
 
 # Subscribing
 
-Server-side subscription covers two operations: **minting tokens** (for client-side use) and **consuming streams** (for server-side processing). Tokens are short-lived JWTs scoped to a specific channel and set of topics.
+Server-side subscription covers two operations: **minting tokens** for client use and **consuming streams** on the server. The v4 SDK exposes both standalone helpers and client aliases:
+
+- `getSubscriptionToken(app, ...)` or `inngest.realtime.token(...)`
+- `subscribe({ app, ... })` or `inngest.realtime.subscribe(...)`
 
 ---
 
@@ -50,6 +53,10 @@ Mints a scoped subscription token on the server. The token authorizes a client t
 
 <Info>
   Always mint tokens on the server. Never expose your Inngest signing key to the client. The token is scoped to the specified channel and topics, so a client cannot use it to access other channels.
+</Info>
+
+<Info>
+  If you already have an `Inngest` client instance in scope, `inngest.realtime.token({ channel, topics })` is equivalent to `getSubscriptionToken(inngest, { channel, topics })`.
 </Info>
 
 ### Framework examples
@@ -116,11 +123,11 @@ export const getRealtimeToken = createServerFn({ method: "GET" })
 
 ## `subscribe(options)`
 
-Creates a server-side subscription to a realtime channel. Returns a `ReadableStream` by default, or accepts callbacks for event-driven consumption.
+Creates a server-side subscription to a realtime channel. Without `onMessage`, it returns a `ReadableStream`-based subscription object. With `onMessage`, it returns a callback subscription handle.
 
 ### Stream subscription
 
-Without `onMessage`, `subscribe` returns an async-iterable `ReadableStream`.
+Without `onMessage`, `subscribe` returns a stream subscription.
 
 <Row>
   <Col>
@@ -169,16 +176,20 @@ Without `onMessage`, `subscribe` returns an async-iterable `ReadableStream`.
   </Col>
 </Row>
 
+<Info>
+  The same API is available as `inngest.realtime.subscribe({ channel, topics })`, which omits the `app` option because the client is already known.
+</Info>
+
 ### Stream methods
 
 The returned stream has additional helper methods:
 
 <Properties>
   <Property name="getJsonStream()" type="ReadableStream<Message>">
-    Returns a new `ReadableStream` that emits parsed JSON messages. Use this when you want to pipe messages to another consumer.
+    Returns a new `ReadableStream` that emits parsed JSON messages. Each call creates a fresh reader view of future messages only.
   </Property>
   <Property name="getEncodedStream()" type="ReadableStream<Uint8Array>">
-    Returns a new `ReadableStream` with SSE-formatted `Uint8Array` chunks (`data: {...}\n\n`). Useful for streaming responses to clients via Server-Sent Events.
+    Returns a new `ReadableStream` with SSE-formatted `Uint8Array` chunks (`data: {...}\n\n`). Useful for piping the subscription through a streaming HTTP response.
   </Property>
   <Property name="close(reason?)" type="(reason?: string) => void">
     Closes the underlying WebSocket connection.
@@ -261,7 +272,7 @@ Each message received from a subscription includes:
     The message payload, typed according to the topic's schema.
   </Property>
   <Property name="kind" type={`"data" | "run" | "datastream-start" | "datastream-end" | "chunk"`}>
-    The message kind. Most messages are `"data"`. Run lifecycle updates are `"run"`.
+    The message kind. Most topic publishes are `"data"`. Run lifecycle updates arrive as `"run"`.
   </Property>
   <Property name="runId" type="string | undefined">
     The Inngest function run ID, if the message was published from within a function.
@@ -273,6 +284,8 @@ Each message received from a subscription includes:
     When the message was created.
   </Property>
 </Properties>
+
+Run messages are platform lifecycle events. Their `data` is intentionally broad, while topic messages remain typed from your channel schema.
 
 ## Server-side stream example
 

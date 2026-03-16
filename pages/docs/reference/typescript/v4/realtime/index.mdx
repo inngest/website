@@ -1,4 +1,4 @@
-import { Info, CodeGroup, Row, Col } from "src/shared/Docs/mdx";
+import { Info } from "src/shared/Docs/mdx";
 
 export const description = "Stream real-time updates from Inngest functions to your UI using channels, topics, and typed subscriptions, all built into the v4 SDK."
 
@@ -14,8 +14,8 @@ The v4 SDK includes a built-in realtime system for streaming updates from your I
 
 - **Channels** define a named scope for messages. They can be static or parameterized with runtime values like a `runId`.
 - **Topics** are typed message streams within a channel, each with a schema.
-- **Publishing** sends data to a topic from inside a function (with `publish` or `step.realtime.publish`) or from server-side code (`inngest.realtime.publish`).
-- **Subscribing** consumes messages via a React hook (`useRealtime`) or server-side stream/callback (`subscribe`).
+- **Publishing** sends data to a topic with `publish()` in a function handler, `inngest.publish()` from server-side code, or `step.realtime.publish()` for durable publishes.
+- **Subscribing** consumes messages via `useRealtime`, `subscribe()`, or the client aliases `inngest.realtime.subscribe()` and `inngest.realtime.token()`.
 
 ## Imports
 
@@ -23,8 +23,9 @@ The v4 SDK includes a built-in realtime system for streaming updates from your I
 |------|------------|
 | `realtime`, `staticSchema` | `"inngest"` |
 | `useRealtime`, `getSubscriptionToken` | `"inngest/react"` |
-| `subscribe` | `"inngest/realtime"` |
+| `subscribe`, `getSubscriptionToken` | `"inngest/realtime"` |
 | `publish`, `step.realtime.publish` | Function handler context (no import needed) |
+| `inngest.publish`, `inngest.realtime.subscribe`, `inngest.realtime.token` | Your `Inngest` client instance |
 
 ## Quick start
 
@@ -55,14 +56,16 @@ import { pipelineChannel } from "./channels";
 
 export const generate = inngest.createFunction(
   { id: "generate", triggers: [{ event: "app/generate" }] },
-  async ({ event, step, publish }) => {
+  async ({ event, publish, step }) => {
     const ch = pipelineChannel({ runId: event.data.runId });
 
-    // Fire-and-forget status update
+    // Non-durable publish from the function handler
     await publish(ch.status, { message: "Starting..." });
 
-    const result = await step.run("do-work", async () => {
-      return doWork();
+    await step.run("stream-output", async () => {
+      for (const token of ["Hello", " ", "world"]) {
+        await publish(ch.tokens, { token });
+      }
     });
 
     // Durable publish: memoized, won't re-fire on retry
@@ -70,8 +73,6 @@ export const generate = inngest.createFunction(
       message: "Done!",
       step: "complete",
     });
-
-    return result;
   },
 );
 ```
@@ -80,26 +81,28 @@ export const generate = inngest.createFunction(
 
 ```tsx {{ title: "src/app/page.tsx" }}
 "use client";
-import { useRealtime, getSubscriptionToken } from "inngest/react";
+import { useRealtime } from "inngest/react";
 import { pipelineChannel } from "../inngest/channels";
 
 export default function PipelinePage({ runId }: { runId: string }) {
   const ch = pipelineChannel({ runId });
+  const topics = ["status", "tokens"] as const;
 
-  const { status, latest, history, runStatus } = useRealtime({
+  const { connectionStatus, runStatus, messages } = useRealtime({
     channel: ch,
-    topics: ["status", "tokens"],
+    topics,
     token: () =>
-      getSubscriptionToken(inngest, { channel: ch, topics: ["status", "tokens"] })
-        .then((t) => t.key!),
+      fetch(`/api/realtime-token?runId=${runId}`).then((res) => res.text()),
   });
 
   return (
     <div>
-      <p>Connection: {status} | Run: {runStatus}</p>
-      {latest.status && <p>Status: {latest.status.data.message}</p>}
+      <p>Connection: {connectionStatus} | Run: {runStatus}</p>
+      {messages.byTopic.status && (
+        <p>Status: {messages.byTopic.status.data.message}</p>
+      )}
       <ul>
-        {history.map((msg, i) => (
+        {messages.all.map((msg, i) => (
           <li key={i}>[{msg.topic}] {JSON.stringify(msg.data)}</li>
         ))}
       </ul>
@@ -111,6 +114,6 @@ export default function PipelinePage({ runId }: { runId: string }) {
 ## Next steps
 
 - [Channels & topics](/docs/reference/typescript/v4/realtime/channels): defining channels, parameterized names, schemas, and type inference
-- [Publishing](/docs/reference/typescript/v4/realtime/publishing): the three publish modes and when to use each
+- [Publishing](/docs/reference/typescript/v4/realtime/publishing): `publish()`, `inngest.publish()`, and `step.realtime.publish()`
 - [`useRealtime`](/docs/reference/typescript/v4/realtime/use-realtime): full React hook API reference
-- [Subscribing](/docs/reference/typescript/v4/realtime/subscribing): server-side tokens, streams, and callback subscriptions
+- [Subscribing](/docs/reference/typescript/v4/realtime/subscribing): `getSubscriptionToken()`, `subscribe()`, and client aliases
