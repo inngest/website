@@ -147,7 +147,7 @@ export function Callout({
   return (
     <div
       className={clsx(
-        "my-6 rounded-lg p-6",
+        "my-6 rounded-lg p-6 [&_a]:decoration-current",
         !Icon && "[&>:first-child]:mt-0 [&>:last-child]:mb-0",
         // Setting the dark variants for text are necessary to override other selectors
         (variant === "default" || variant === "info") &&

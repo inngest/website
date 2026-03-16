@@ -19,8 +19,7 @@ Let's start with a simple example to illustrate the concept:
 
 ```javascript
 inngest.createFunction(
-  { id: "simple-function" },
-  { event: "test/simple.function" },
+  { id: "simple-function", triggers: { event: "test/simple.function" } },
   async ({ step }) => {
     console.log("hello");
 
@@ -74,8 +73,7 @@ With this in mind, here is how the previous example can be fixed:
 
 ```ts
 inngest.createFunction(
-  { id: "simple-function" },
-  { event: "test/simple.function" },
+  { id: "simple-function", triggers: { event: "test/simple.function" } },
   async ({ step }) => {
     await step.run("hello", () => { console.log("hello") });
 
@@ -338,8 +336,7 @@ Here's [an example](/blog/import-ecommerce-api-data-in-seconds) of an Inngest fu
 
 ```typescript
 export default inngest.createFunction(
-  { id: "shopify-product-import"},
-  { event: "shopify/import.requested" },
+  { id: "shopify-product-import", triggers: { event: "shopify/import.requested" } },
   async ({ event, step }) => {
     const allProducts = []
     let cursor = null

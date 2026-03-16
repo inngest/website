@@ -120,8 +120,7 @@ With Inngest set up in your codebase, you can write a function that is triggered
 import db from "./database";
 
 const invalidateUserEmail = inngest.createFunction(
-  { id: 'invalidate-user-email' },
-  { event: 'resend/email.bounced' },
+  { id: 'invalidate-user-email', triggers: { event: 'resend/email.bounced' } },
   async ({ event }) => {
     const email = event.data.to[0];
     const user = await db.users.byEmail(email);
@@ -178,8 +177,7 @@ The below example assumes that your application receives a `app/signup.completed
 import { sendEmail } from "./resend";
 
 const sendWelcomeEmail = inngest.createFunction(
-  { id: 'send-welcome-email' },
-  { event: 'app/signup.completed' },
+  { id: 'send-welcome-email', triggers: { event: 'app/signup.completed' } },
   async ({ event }) => {
 	  const { user } = event.data;
     await sendEmail(user.email, "Welcome to Acme", (
@@ -201,8 +199,7 @@ The code below sends a welcome email, then uses `step.sleep` to wait for three d
 
 ```tsx
 const sendOnboardingEmails = inngest.createFunction(
-  { id: 'onboarding-emails' },
-  { event: 'app/signup.completed' },
+  { id: 'onboarding-emails', triggers: { event: 'app/signup.completed' } },
   async ({ event, step }) => { // ← step is available in the handler's arguments
     const { user } = event.data
 	  const { email, first_name } = user
@@ -241,8 +238,7 @@ Let's say you want to create the following campaign:
 
 ```tsx
 const signupDripCampaign = inngest.createFunction(
-  { id: "signup-drip-campaign" },
-  { event: "app/signup.completed" },
+  { id: "signup-drip-campaign", triggers: { event: "app/signup.completed" } },
   async ({ event, step }) => {
     const { user } = event.data;
     const { email, first_name } = user

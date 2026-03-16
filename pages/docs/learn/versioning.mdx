@@ -43,8 +43,7 @@ Adding new steps to a function is generally safe. New steps will execute when di
 <CodeGroup>
 ```ts {{ title: "Before" }}
 inngest.createFunction(
-  { id: "user-signup" },
-  { event: "user/created" },
+  { id: "user-signup", triggers: { event: "user/created" } },
   async ({ event, step }) => {
     await step.run("send-welcome-email", async () => {
       return sendWelcomeEmail(event.data.email);
@@ -65,8 +64,7 @@ inngest.createFunction(
 <CodeGroup>
 ```ts {{ title: "After: Added analytics tracking" }}
 inngest.createFunction(
-  { id: "user-signup" },
-  { event: "user/created" },
+  { id: "user-signup", triggers: { event: "user/created" } },
   async ({ event, step }) => {
     await step.run("send-welcome-email", async () => {
       return sendWelcomeEmail(event.data.email);
@@ -149,10 +147,12 @@ This pattern uses two functions that subscribe to the same event, with [`if` exp
 const CUTOVER_TS = 1704067200000; // Jan 1, 2024 00:00:00 UTC
 
 export const processUploadV1 = inngest.createFunction(
-  { id: "process-upload" },
   {
-    event: "file/uploaded",
-    if: `event.ts < ${CUTOVER_TS}`,
+    id: "process-upload",
+    triggers: {
+      event: "file/uploaded",
+      if: `event.ts < ${CUTOVER_TS}`,
+    },
   },
   async ({ event, step }) => {
     // Original logic - continues for in-progress runs
@@ -170,10 +170,12 @@ export const processUploadV1 = inngest.createFunction(
 const CUTOVER_TS = 1704067200000;
 
 export const processUploadV2 = inngest.createFunction(
-  { id: "process-upload-v2" },
   {
-    event: "file/uploaded",
-    if: `event.ts >= ${CUTOVER_TS}`,
+    id: "process-upload-v2",
+    triggers: {
+      event: "file/uploaded",
+      if: `event.ts >= ${CUTOVER_TS}`,
+    },
   },
   async ({ event, step }) => {
     // Completely rewritten workflow
@@ -217,19 +219,23 @@ await inngest.send({
 ```typescript
 // v1
 export const processUploadV1 = inngest.createFunction(
-  { id: "process-upload" },
   {
-    event: "file/uploaded",
-    if: `event.v != "2026-03-11"`, // or you already are using versions, set that explicitly
+    id: "process-upload",
+    triggers: {
+      event: "file/uploaded",
+      if: `event.v != "2026-03-11"`, // or you already are using versions, set that explicitly
+    },
   },
   //...
 });
 // v2
 export const processUploadV2 = inngest.createFunction(
-  { id: "process-upload-v2" },
   {
-    event: "file/uploaded",
-    if: `event.v == "2026-03-11"`,
+    id: "process-upload-v2",
+    triggers: {
+      event: "file/uploaded",
+      if: `event.v == "2026-03-11"`,
+    },
   },
   //...
 });

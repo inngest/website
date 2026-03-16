@@ -48,8 +48,7 @@ You can think of steps as an API for expressing checkpoints in your workflow, su
 <CodeGroup>
 ```ts {{ title: "TypeScript" }}
 inngest.createFunction(
-  { id: "sync-systems" },
-  { event: "auto/sync.request" },
+  { id: "sync-systems", triggers: { event: "auto/sync.request" } },
   async ({ step }) => {
     // By wrapping code in step.run, the code will be retried if it throws an error and when successfuly.
     // It's result is saved to prevent unnecessary re-execution

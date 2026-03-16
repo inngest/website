@@ -14,8 +14,7 @@ Below is an attempt to use DALL-E to generate an image from a prompt, and to fal
 
 ```ts
 inngest.createFunction(
-  { id: "generate-result" },
-  { event: "prompt.created" },
+  { id: "generate-result", triggers: { event: "prompt.created" } },
   async ({ event, step }) => {
     // try one AI model, if it fails, try another
     let imageURL: string | null = null;
@@ -98,8 +97,7 @@ With this pattern, it's possible to assign a small rollback for each step, makin
 
 ```ts
 inngest.createFunction(
-  { id: "add-data" },
-  { event: "app/row.data.added" },
+  { id: "add-data", triggers: { event: "app/row.data.added" } },
   async ({ event, step }) => {
     // ignore the error - this step is fine if it fails
     await step

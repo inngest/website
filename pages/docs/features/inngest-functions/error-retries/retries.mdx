@@ -12,8 +12,7 @@ For the function below, if the database write fails then it'll be retried up to 
 
 ```ts
 inngest.createFunction(
-  { id: "click-recorder" },
-  { event: "app/button.clicked" },
+  { id: "click-recorder", triggers: { event: "app/button.clicked" } },
   async ({ event, attempt }) => {
     await db.clicks.insertOne(event.data); // this code now retries!
   },
@@ -59,9 +58,9 @@ You can configure the number of `retries` by specifying it in your function conf
 inngest.createFunction(
   {
     id: "click-recorder",
+    triggers: { event: "app/button.clicked" },
     retries: 10, // choose how many retries you'd like
   },
-  { event: "app/button.clicked" },
   async ({ event, step, attempt }) => { /* ... */ },
 );
 ```
@@ -117,8 +116,7 @@ In the example below, both the "_get-data_" and "_save-data_" steps each get the
 
 ```ts
 inngest.createFunction(
-  { id: "sync-systems" },
-  { event: "auto/sync.request" },
+  { id: "sync-systems", triggers: { event: "auto/sync.request" } },
   async ({ step }) => {
     // Can be retried up to 4 times
     const data = await step.run("get-data", async () => {
@@ -201,8 +199,7 @@ This is useful for when you know an error is permanent and want to stop all exec
 import { NonRetriableError } from "inngest";
 
 inngest.createFunction(
-  { id: "user-weekly-digest" },
-  { event: "user/weekly.digest.requested" },
+  { id: "user-weekly-digest", triggers: { event: "user/weekly.digest.requested" } },
   async ({ event, step }) => {
     const user = await step
       .run("get-user-email", () => {
@@ -291,8 +288,7 @@ In this example, an external API provided `Retry-After` header with information 
 import { RetryAfterError } from 'inngest';
 
 inngest.createFunction(
-  { id: "send-welcome-notification" },
-  { event: "app/user.created" },
+  { id: "send-welcome-notification", triggers: { event: "app/user.created" } },
   async ({ event, step }) => {
 
     const msg = await step.run('send-message', async () => {

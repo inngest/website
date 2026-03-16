@@ -27,8 +27,7 @@ A Function paused by a sleeping Step doesn't affect your account capacity; i.e. 
 
 ```ts
 export default inngest.createFunction(
-  { id: "send-delayed-email" },
-  { event: "app/user.signup" },
+  { id: "send-delayed-email", triggers: { event: "app/user.signup" } },
   async ({ event, step }) => {
     await step.sleep("wait-a-couple-of-days", "2d");
     // Do something else
@@ -88,8 +87,7 @@ Use `step.sleepUntil()` to pause the execution of your function until a specific
 
 ```ts
 export default inngest.createFunction(
-  { id: "send-scheduled-reminder" },
-  { event: "app/reminder.scheduled" },
+  { id: "send-scheduled-reminder", triggers: { event: "app/reminder.scheduled" } },
   async ({ event, step }) => {
     const date = new Date(event.data.remind_at);
     await step.sleepUntil("wait-for-scheduled-reminder", date);
