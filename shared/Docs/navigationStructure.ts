@@ -183,6 +183,20 @@ const sectionReference: (NavGroup | NavLink)[] = [
         ],
       },
       {
+        title: "Realtime",
+        tag: "deprecated",
+        links: [
+          {
+            title: "Overview",
+            href: tsRef("v3", "realtime"),
+          },
+          {
+            title: "React hooks / Next.js",
+            href: tsRef("v3", "realtime/react-hooks"),
+          },
+        ],
+      },
+      {
         title: "Middleware",
         links: [
           {

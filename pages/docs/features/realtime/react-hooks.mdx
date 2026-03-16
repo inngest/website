@@ -1,98 +1,146 @@
-import { Warning, CardGroup, Card, VersionBadge } from "src/shared/Docs/mdx";
+import { Info, Warning, CardGroup, Card, VersionBadge } from "src/shared/Docs/mdx";
 import {
   RiNextjsFill,
   RiNodejsFill,
 } from "@remixicon/react";
 
-export const description = 'Learn how to use the realtime React hooks to subscribe to channels.'
+export const description = "Learn how to use the v4 useRealtime hook in Next.js and React.";
 
-# React hooks / Next.js <VersionBadge version="TypeScript SDK v3.32.0+" />
+# React hooks / Next.js <VersionBadge version="TypeScript SDK v4" />
 
-Realtime provides a [`useInngestSubscription()`](#use-inngest-subscription-api-reference) React hook, offering a fully typed experience for subscribing to channels.
+<Info>
+  In v4, React subscriptions use `useRealtime` from `inngest/react` together
+  with `getSubscriptionToken()` or `inngest.realtime.token()` on the server.
+</Info>
 
-`useInngestSubscription()` securely subscribes to channels using a subscription token fetched from the server.
+<Warning>
+  Need the old `useInngestSubscription()` docs? See the archived
+  v3 page at
+  [/docs/reference/typescript/v3/realtime/react-hooks](/docs/reference/typescript/v3/realtime/react-hooks).
+</Warning>
 
-In Next.js, this is implemented as a server action that returns a token, which is then used by the client to subscribe:
+`useRealtime` manages token refresh, reconnection, buffering, pause behavior,
+and typed message access per topic. The typical Next.js flow is:
 
+1. Define a shared channel with `realtime.channel()`.
+2. Mint a scoped token in a server action or route handler.
+3. Pass the channel, topics, and token factory into `useRealtime()`.
 
+## Next.js example
 
-```tsx {{filename: "src/actions.ts"}}
+```tsx {{ filename: "app/actions.ts" }}
 "use server";
-// securely fetch an Inngest Realtime subscription token from the server as a server action
-export async function fetchSubscriptionToken(): Promise<Realtime.Token<typeof helloChannel, ["logs"]>> {
-  const token = await getSubscriptionToken(getInngestApp(), {
-    channel: helloChannel(),
+
+import { getSubscriptionToken } from "inngest/react";
+import { inngest } from "@/inngest/client";
+import { helloChannel } from "@/inngest/channels";
+
+export async function fetchRealtimeSubscriptionToken(runId: string) {
+  const token = await getSubscriptionToken(inngest, {
+    channel: helloChannel({ runId }),
     topics: ["logs"],
   });
 
-  return token;
+  if (!token.key) {
+    throw new Error("No realtime token returned");
+  }
+
+  return token.key;
 }
 ```
 
-
-```tsx {{filename: "src/App.tsx"}}
+```tsx {{ filename: "app/page.tsx" }}
 "use client";
 
-import { useInngestSubscription } from "@inngest/realtime/hooks";
-import { getSubscriptionToken, Realtime } from "@inngest/realtime";
-import { getInngestApp } from "@/inngest";
-import { helloChannel } from "@/inngest/functions/helloWorld";
-// import the server action to securely fetch the Realtime subscription token
+import { useRealtime } from "inngest/react";
+import { helloChannel } from "@/inngest/channels";
 import { fetchRealtimeSubscriptionToken } from "./actions";
 
-export default function Home() {
-  // subscribe to the hello-world channel via the subscription token
-  // `data` is fully typed based on the selected channel and topics!
-  const { data, error } = useInngestSubscription({
-    refreshToken: fetchRealtimeSubscriptionToken,
+export default function Home({ runId }: { runId: string }) {
+  const topics = ["logs"] as const;
+  const channel = helloChannel({ runId });
+
+  const {
+    connectionStatus,
+    runStatus,
+    messages,
+    error,
+    reset,
+  } = useRealtime({
+    channel,
+    topics,
+    token: () => fetchRealtimeSubscriptionToken(runId),
+    bufferInterval: 100,
   });
 
   return (
     <div>
-      <h1>Realtime</h1>
-      {data.map((message, i) => (
-        <div key={i}>{message.data}</div>
-      ))}
+      <p>Connection: {connectionStatus}</p>
+      <p>Run: {runStatus}</p>
+      <p>Latest log: {messages.byTopic.logs?.data}</p>
+      <p>Buffered messages: {messages.delta.length}</p>
+      {error && <p>{error.message}</p>}
+      <button onClick={() => reset()}>Reset</button>
     </div>
-  )
+  );
 }
 ```
 
-## `useInngestSubscription()` API Reference
+## What `useRealtime` gives you
 
+- `connectionStatus` for websocket lifecycle state
+- `runStatus` for function lifecycle state
+- `messages.byTopic` for the latest typed message per topic
+- `messages.all` for retained message history
+- `messages.last` and `messages.delta` for incremental UI updates
+- `error` and `reset()` for operational handling
 
-### Parameters
+## Common options
 
-- `enabled?: boolean` - Whether or not the hook will subscribe.
-- `bufferInterval?: number` - If set and above `0`, the outputs will only update every `n` milliseconds. This helps with very busy streams that could overwhelm a UI.
-- `token?: Realtime.Subscribe.Token` - The token to be used for subscribing (see [Subscribe from the client](/docs/features/realtime#subscribe-from-the-client)).
-- `refreshToken?: () => Promise<Realtime.Subscribe.Token>` - A function that will be called if no `token` is available, or if the hook has been re-`enabled` and the previous `token` has expired.
+- `enabled` to delay the connection until you have a `runId`
+- `bufferInterval` to batch UI updates for fast streams
+- `historyLimit` to cap retained messages
+- `pauseOnHidden` to pause when the tab is hidden
+- `autoCloseOnTerminal` to disconnect when the run finishes
 
-<Warning>
-  A `token` or `refreshToken` parameter is required.
-</Warning>
+## Typed topic access
 
-### Return value
+When you pass a channel instance and a literal `topics` array, TypeScript narrows
+message payloads per topic:
 
-- `data: Array<Realtime.Message>` - All messages received on the subscription in chronological order.
-- `latestData: Realtime.Message` - A shortcut to the last message received on the subscription. Useful for streams where each message is the latest state of an entity.
-- `freshData: Array<Realtime.Message>` - If `bufferInterval` is active, this will be the last batch of messages released from the buffer. If `bufferInterval` is inactive, this is always the latest message.
-- `error: Error | null` - If truthy, this indicates an error with the subscription.
-- `state: InngestSubscriptionState` - The current state of the subscription, one of `"closed"`, `"error"`, `"refresh_token"`, `"connecting"`, `"active"`, or `"closing"`.
-- `clear: () => void` - A function to clear all accumulated message data from the internal state. This includes `data`, `freshData`, and `latestData` arrays. Does not affect the connection or error state.
+```tsx
+const topics = ["status", "artifact"] as const;
 
+const { messages } = useRealtime({
+  channel,
+  topics,
+  token: () => fetchRealtimeSubscriptionToken(runId),
+});
 
-## Examples
+messages.byTopic.status?.data.message;
+messages.byTopic.artifact?.data.title;
+
+for (const message of messages.delta) {
+  if (message.kind === "run") continue;
+
+  if (message.topic === "status") {
+    message.data.message;
+  }
+}
+```
+
+## Learn more
 
 <CardGroup cols={2}>
 
   <Card
-    href="https://github.com/inngest/inngest-js/tree/main/examples/realtime/next-realtime-hooks"
-    title={"useInngestSubscription() Next.js demo"}
+    href="/docs/reference/typescript/v4/realtime/use-realtime"
+    title={"useRealtime API reference"}
     icon={<RiNextjsFill className="text-basis h-8 w-8"/>}
     iconPlacement="top"
   >
-   Clone this demo to see an interactive example of the `useInngestSubscription()` hook in action.
+   See the full hook API including connection states, buffering, and reset
+   semantics.
   </Card>
 
   <Card
@@ -101,7 +149,18 @@ export default function Home() {
     icon={<RiNodejsFill className="text-basis h-8 w-8"/>}
     iconPlacement="top"
   >
-   Use Realtime to stream updates from one or multiple Inngest functions, or to implement a Human-in-the-Loop mechanism.
+   See complete examples including `next-realtime-hooks` and the TanStack Start
+   realtime demo.
+  </Card>
+
+  <Card
+    href="/docs/reference/typescript/v3/realtime/react-hooks"
+    title={"Archived v3 hook docs"}
+    icon={<RiNodejsFill className="text-basis h-8 w-8"/>}
+    iconPlacement="top"
+  >
+   Reference the deprecated `useInngestSubscription()` docs if you still
+   maintain a v3 app.
   </Card>
 
 </CardGroup>
