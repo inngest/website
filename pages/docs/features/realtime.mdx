@@ -23,7 +23,7 @@ export const description = "Learn the v4 realtime concepts and workflow for stre
 
 <Warning>
   Looking for the older `@inngest/realtime` package docs? See the archived
-  v3 docs at [/docs/reference/typescript/v3/realtime](/docs/reference/typescript/v3/realtime).
+  v3 docs [here](/docs/reference/typescript/v3/realtime).
 </Warning>
 
 Realtime lets you stream function progress, push live updates into the browser,
@@ -39,6 +39,11 @@ The v4 model revolves around five primitives:
 - `publish()` emits non-durable messages from inside your function handler.
 - `step.realtime.publish()` emits durable, memoized messages that should not re-fire on retry.
 - `token` authorizes a client subscription to a specific channel and a specific set of topics.
+
+In practice, prefer `step.realtime.publish()` whenever possible. Use
+non-durable `publish()` or `inngest.publish()` only when you intentionally want
+low-overhead, retryable updates like token streams or you are publishing from
+outside a function.
 
 ## Quick start
 
@@ -75,16 +80,22 @@ export const generatePost = inngest.createFunction(
   async ({ event, publish, step }) => {
     const ch = contentPipeline({ runId: event.data.runId });
 
+    //
+    // Non-durable on purpose. Fine for transient progress updates.
     await publish(ch.status, {
       message: "Researching topic...",
       step: "research",
     });
 
+    //
+    // Non-durable on purpose. Token streams may replay on retry.
     await publish(ch.tokens, {
       token: "Hello",
       step: "research",
     });
 
+    //
+    // Prefer the durable publish for important state that should not replay.
     await step.realtime.publish("status-complete", ch.status, {
       message: "Done",
       step: "complete",
@@ -145,8 +156,8 @@ export default function Home({ runId }: { runId: string }) {
 
 ## When to use each publish mode
 
-- Use `publish()` for high-frequency updates like tokens, logs, or progress ticks.
-- Use `step.realtime.publish()` for important state transitions and final results.
+- Prefer `step.realtime.publish()` for important state transitions and final results.
+- Use `publish()` for high-frequency updates like tokens, logs, or progress ticks where replay on retry is acceptable.
 - Use `inngest.publish()` from routes, webhooks, or other server-side code outside a function run.
 
 ## Learn more

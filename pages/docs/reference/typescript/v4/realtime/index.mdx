@@ -17,6 +17,10 @@ The v4 SDK includes a built-in realtime system for streaming updates from your I
 - **Publishing** sends data to a topic with `publish()` in a function handler, `inngest.publish()` from server-side code, or `step.realtime.publish()` for durable publishes.
 - **Subscribing** consumes messages via `useRealtime`, `subscribe()`, or the client aliases `inngest.realtime.subscribe()` and `inngest.realtime.token()`.
 
+As a rule of thumb, prefer `step.realtime.publish()` for publishes inside
+functions. It is memoized and durable, unlike `publish()` and
+`inngest.publish()`, which will fire again if the function retries.
+
 ## Imports
 
 | What | Import from |
@@ -59,16 +63,20 @@ export const generate = inngest.createFunction(
   async ({ event, publish, step }) => {
     const ch = pipelineChannel({ runId: event.data.runId });
 
-    // Non-durable publish from the function handler
+    //
+    // Non-durable on purpose. Use this only when replay on retry is OK.
     await publish(ch.status, { message: "Starting..." });
 
     await step.run("stream-output", async () => {
       for (const token of ["Hello", " ", "world"]) {
+        //
+        // Non-durable on purpose. Token streams may replay on retry.
         await publish(ch.tokens, { token });
       }
     });
 
-    // Durable publish: memoized, won't re-fire on retry
+    //
+    // Prefer the durable publish for important state changes.
     await step.realtime.publish("final-status", ch.status, {
       message: "Done!",
       step: "complete",

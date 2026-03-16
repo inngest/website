@@ -6,6 +6,14 @@ export const description = "Publish typed messages to realtime channels from Inn
 
 There are three ways to publish realtime messages in the v4 SDK.
 
+<Info>
+  Prefer `step.realtime.publish()` whenever you can. It is durable and
+  memoized, so it will not run again if the function retries. Reach for
+  `publish()` or `inngest.publish()` only when you specifically need
+  non-durable behavior, such as high-frequency token streaming or publishing
+  from code outside a function.
+</Info>
+
 | Method | Durable | Usable outside functions | Step ID | Best for |
 |--------|---------|------------------------|---------|----------|
 | `publish()` | No | No | - | High-frequency progress inside a function handler |
@@ -48,7 +56,10 @@ Available in the function handler arguments. Publishes immediately with no memoi
           const token = chunk.choices[0]?.delta?.content ?? "";
           if (token) {
             full += token;
-            // Stream each token to subscribers
+
+            //
+            // Non-durable on purpose. This can run again on retry, which is
+            // usually acceptable for token streams.
             await publish(ch.tokens, { token });
           }
         }
@@ -61,7 +72,8 @@ Available in the function handler arguments. Publishes immediately with no memoi
 </Row>
 
 <Info>
-  `publish()` works at the top level of your function handler and inside `step.run()` blocks. It is still non-durable, so it fires again on retry.
+  `publish()` works at the top level of your function handler and inside
+  `step.run()` blocks. It is still non-durable, so it fires again on retry.
 </Info>
 
 ## `inngest.publish(topicRef, data)`
@@ -89,6 +101,9 @@ Publishes from your `Inngest` client. Use this anywhere you already have the cli
   export async function POST(req: Request) {
     const body = await req.json();
 
+    //
+    // Non-durable by design. Prefer step.realtime.publish() when this work
+    // lives inside a function and duplicates on retry would be a problem.
     await inngest.publish(alertsChannel.alert, {
       message: body.message,
       severity: body.severity,
@@ -127,13 +142,17 @@ A durable step that memoizes the publish. If the function retries past this step
     async ({ event, publish, step }) => {
       const ch = uploadsChannel({ uploadId: event.data.uploadId });
 
+      //
+      // This status update is ephemeral, so non-durable publish is fine.
       await publish(ch.status, { message: "Processing..." });
 
       const result = await step.run("process", async () => {
         return processUpload(event.data);
       });
 
-      // Durable - won't re-publish on retry
+      //
+      // Prefer the durable publish for important state that should not
+      // duplicate if the function retries.
       await step.realtime.publish("publish-result", ch.result, {
         success: true,
         url: result.url,
@@ -145,6 +164,9 @@ A durable step that memoizes the publish. If the function retries past this step
 </Row>
 
 ## Choosing a publish method
+
+Prefer **`step.realtime.publish()`** by default when the publish happens inside a
+function and duplicates would be incorrect or noisy.
 
 Use **`publish()`** when:
 - Streaming tokens, progress percentages, or log lines
