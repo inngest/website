@@ -116,18 +116,45 @@ const authorURLs = {
 };
 
 export default function BlogLayout(props) {
-  const scope: Scope = JSON.parse(props.post.scope.json);
+  if (!props?.post?.scope?.json) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-stone-950 p-8 text-red-400">
+        <p>Blog post failed to load (missing props). Check the terminal for errors.</p>
+      </div>
+    );
+  }
+  let scope: Scope & { _buildError?: string };
+  try {
+    scope = JSON.parse(props.post.scope.json);
+  } catch (e) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-stone-950 p-8 text-red-400">
+        <p>Blog post failed to load (invalid scope). Check the terminal for errors.</p>
+      </div>
+    );
+  }
+  if (scope._buildError) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-stone-950 p-8">
+        <div className="max-w-2xl rounded-lg border border-red-500/50 bg-stone-900 p-6 text-red-300">
+          <h1 className="mb-2 text-lg font-semibold text-red-400">Blog post failed to build</h1>
+          <pre className="whitespace-pre-wrap break-all text-sm">{scope._buildError}</pre>
+        </div>
+      </div>
+    );
+  }
   const slug = props.slug;
   const primaryCTA = scope.primaryCTA;
 
   const structuredDataAuthors = (
-    Array.isArray(scope.author) ? scope.author : [scope.author]
+    Array.isArray(scope.author) ? scope.author : scope.author ? [scope.author] : []
   ).map((author) => {
+    const name = typeof author === "string" ? author : String(author);
     return {
       "@type": "Person",
-      name: author,
-      url: authorURLs.hasOwnProperty(author)
-        ? authorURLs[author]
+      name,
+      url: Object.prototype.hasOwnProperty.call(authorURLs, name)
+        ? authorURLs[name]
         : process.env.NEXT_PUBLIC_HOST,
     };
   });
@@ -267,7 +294,7 @@ export default function BlogLayout(props) {
                       {scope.humanDate}{" "}
                       {!!dateUpdated && <> (Updated: {dateUpdated})</>}
                     </span>{" "}
-                    &middot; <span>{scope.reading.text}</span>
+                    &middot; <span>{scope.reading?.text ?? "0 min read"}</span>
                     <Tags tags={scope.tags} />
                   </p>
                 </header>
@@ -362,17 +389,23 @@ export async function getStaticPaths() {
   const matter = require("gray-matter");
   const paths = fs
     .readdirSync("./content/blog/")
+    .filter(
+      (fname) =>
+        (fname.endsWith(".md") || fname.endsWith(".mdx")) &&
+        !fname.startsWith(".")
+    )
     .filter((fname) => {
       // Skip files that have redirect frontmatter
       let filePath = `./content/blog/${fname}`;
-      const source = fs.readFileSync(filePath);
+      const source = fs.readFileSync(filePath, "utf8");
       const { data } = matter(source);
       return !data.redirect;
     })
     .map((fname) => {
-      return `/blog/${fname.replace(/.mdx?/, "")}`;
+      const slug = fname.replace(/.mdx?$/, "");
+      return { params: { slug } };
     });
-  return { paths, fallback: false };
+  return { paths, fallback: "blocking" };
 }
 
 // This function also gets called at build time to generate specific content.
@@ -383,66 +416,92 @@ export async function getStaticProps({ params }) {
   const readingTime = require("reading-time");
   const matter = require("gray-matter");
 
-  let filePath = `./content/blog/${params.slug}.md`;
-  if (!fs.existsSync(filePath) && fs.existsSync(filePath + "x")) {
-    filePath += "x";
-  }
-
-  const source = fs.readFileSync(filePath);
-  const { content, data } = matter(source);
-
-  data.path = `/blog/${params.slug}`;
-  data.reading = readingTime(content);
-  // Format the reading date.
-  if (data.date) {
-    if (typeof data.date === "string") {
-      data.humanDate = new Date(data.date).toLocaleDateString();
-    } else {
-      data.humanDate = data.date.toLocaleDateString();
+  try {
+    let filePath = `./content/blog/${params.slug}.md`;
+    if (!fs.existsSync(filePath) && fs.existsSync(filePath + "x")) {
+      filePath += "x";
     }
-  }
+    if (!fs.existsSync(filePath)) {
+      return { notFound: true };
+    }
 
-  data.tags =
-    data.tags && typeof data.tags === "string"
-      ? data.tags.split(",").map((tag) => tag.trim())
-      : data.tags;
+    const source = fs.readFileSync(filePath);
+    const { content, data } = matter(source);
 
-  // type Post = {
-  //   compiledSource: string,
-  //   scope: string,
-  // }
-  const nodeTypes = [
-    "mdxFlowExpression",
-    "mdxJsxFlowElement",
-    "mdxJsxTextElement",
-    "mdxTextExpression",
-    "mdxjsEsm",
-  ];
-  const post = await serialize(content, {
-    scope: { json: JSON.stringify(data) },
-    blockJS: false,
-    mdxOptions: {
-      rehypePlugins: [
-        rehypeCodeTitles,
-        rehypeParseCodeBlocks,
-        rehypeRemoveTwoSlashMarkup,
-        rehypeShiki,
-        [rehypeRaw, { passThrough: nodeTypes }],
-        rehypeSlug,
-      ],
-      remarkPlugins: [[remarkCodeHike, chConfig], remarkGfm],
-      recmaPlugins: [[recmaCodeHike, chConfig]],
-    },
-  });
-  return {
-    props: {
-      slug: params.slug,
-      post,
-      meta: {
-        disabled: true,
-        canonical_url: data.canonical_url ? data.canonical_url : null,
+    data.path = `/blog/${params.slug}`;
+    data.reading = readingTime(content);
+    // Format the reading date.
+    if (data.date) {
+      if (typeof data.date === "string") {
+        data.humanDate = new Date(data.date).toLocaleDateString();
+      } else {
+        data.humanDate = data.date.toLocaleDateString();
+      }
+    }
+
+    data.tags =
+      data.tags && typeof data.tags === "string"
+        ? data.tags.split(",").map((tag) => tag.trim())
+        : data.tags;
+
+    // type Post = {
+    //   compiledSource: string,
+    //   scope: string,
+    // }
+    const nodeTypes = [
+      "mdxFlowExpression",
+      "mdxJsxFlowElement",
+      "mdxJsxTextElement",
+      "mdxTextExpression",
+      "mdxjsEsm",
+    ];
+    const post = await serialize(content, {
+      scope: { json: JSON.stringify(data) },
+      blockJS: false,
+      mdxOptions: {
+        rehypePlugins: [
+          rehypeCodeTitles,
+          rehypeParseCodeBlocks,
+          rehypeRemoveTwoSlashMarkup,
+          rehypeShiki,
+          [rehypeRaw, { passThrough: nodeTypes }],
+          rehypeSlug,
+        ],
+        remarkPlugins: [[remarkCodeHike, chConfig], remarkGfm],
+        recmaPlugins: [[recmaCodeHike, chConfig]],
       },
-      designVersion: "2",
-    },
-  };
+    });
+    return {
+      props: {
+        slug: params.slug,
+        post,
+        meta: {
+          disabled: true,
+          canonical_url: data.canonical_url ? data.canonical_url : null,
+        },
+        designVersion: "2",
+      },
+    };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    return {
+      props: {
+        slug: params.slug,
+        post: {
+          scope: {
+            json: JSON.stringify({
+              heading: "Build error",
+              path: `/blog/${params.slug}`,
+              date: "",
+              humanDate: "",
+              reading: { text: "0 min read", minutes: 0, time: 0, words: 0 },
+              _buildError: message,
+            }),
+          },
+        },
+        meta: { disabled: true, canonical_url: null },
+        designVersion: "2",
+      },
+    };
+  }
 }
