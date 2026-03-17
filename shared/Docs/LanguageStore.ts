@@ -28,7 +28,7 @@ export const SDK_LANGUAGES: { id: SDKLanguage; title: string; shortTitle: string
 ];
 
 export const TS_VERSIONS: { id: TSVersion; title: string }[] = [
-  { id: "v4", title: "Version 4 (Beta)" },
+  { id: "v4", title: "Version 4" },
   { id: "v3", title: "Version 3" },
 ];
 

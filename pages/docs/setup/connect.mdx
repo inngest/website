@@ -2,6 +2,10 @@ import { Info, Warning, CodeGroup, Steps, Step } from "shared/Docs/mdx";
 
 # Connect
 
+<Info>
+  Connect is currently in Public Beta. Read more about the [Public Beta release phase here](/docs/release-phases#public-beta).
+</Info>
+
 The `connect` API allows your app to create an outbound persistent connection to Inngest. Each app can establish multiple connections to Inngest, which enable you to scale horizontally across multiple workers. The key benefits of using `connect` compared to [`serve`](/docs/learn/serving-inngest-functions) are:
 
 - **Lowest latency** - Persistent connections enable the lowest latency between your app and Inngest.
