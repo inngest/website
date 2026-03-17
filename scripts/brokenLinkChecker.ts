@@ -66,6 +66,7 @@ const options = {
     "https://unsplash.com/",
     "https://react.email/", // 429s
     "https://docs.deno.com/",
+    "https://banger.show", // 520s
   ],
 };
 
