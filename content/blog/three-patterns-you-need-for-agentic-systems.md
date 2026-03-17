@@ -22,7 +22,7 @@ When orchestrating sub-agents, there are three key patterns to get in place. Her
 
 A sub-agent is a separate LLM execution context spawned by a parent agent to handle a scoped task. The parent describes the task, provides tools, and gets back a result. The sub-agent should run in its own context window so it doesn't pollute the parent's.
 
-As I covered in [an earlier post](/blog/your-agent-needs-a-harness-not-a-framework), the primary purpose is **context compression**. The Cursor team also described this in their recent Latent Space interview. Sub-agents exist so the parent never has to absorb the full trajectory of a delegated task. The sub-agent might read 8 files and make 15 tool calls. The parent sees a 750-token summary.
+As I covered in [an earlier post](/blog/your-agent-needs-a-harness-not-a-framework), the primary purpose is **context compression**. The Cursor team also described this in their recent [Latent Space interview](https://www.latent.space/p/cursor-third-era). Sub-agents exist so the parent never has to absorb the full trajectory of a delegated task. The sub-agent might read 8 files and make 15 tool calls. The parent sees a 750-token summary.
 
 During my own testing with the utah project, sub-agents resulted in 90%+ reduction in tokens added to the parent agent's context.
 
