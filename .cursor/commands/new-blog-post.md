@@ -17,4 +17,6 @@ For all media do the following:
 
 If assets are copied from a directory, remove those files after they are successfully copied.
 
+- DO NOT modify files outside of the `/content/blog` or `/public/assets/blog` directories unless explicitly asked.
+
 Create a new branch in the format `blog/<slugified-title>` and stage only the new files.
