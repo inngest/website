@@ -293,7 +293,7 @@ In this example, we have two services: `app` and `inngest`. The `app` service is
 * The `command: 'inngest dev -u http://app:3000/api/inngest'` command tells the Dev Server where to find your app within the Docker network. In this example, the `app` service is running on port `3000`.
 * The `ports` configuration exposes the Dev Server on port `8288` so you can view this on your host machine in the browser. It also exposes `8289` which is used for [`connect()`](/docs/setup/connect).
 
-\* - The `INNGEST_DEV` environment variable was added to the TypeScript SDK in version 3.14. Prior to this version, you can set `NODE_ENV=development` to force the SDK to connect to the Dev Server.
+\* - The TypeScript SDK defaults to cloud mode. Setting `INNGEST_DEV=1` explicitly enables dev mode, which connects to the Dev Server and disables signature verification.
 
 ## Development flow
 

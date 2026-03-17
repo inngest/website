@@ -53,9 +53,9 @@ const dataSync = inngest.createFunction({
     singleton: {
       key: "event.data.user_id",
       mode: "skip",
-    }
+    },
+    triggers: { event: "data-sync.start" },
   },
-  { event: "data-sync.start" },
   async ({ event }) => {
     // ...
   },
@@ -94,9 +94,9 @@ const dataSync = inngest.createFunction({
     singleton: {
       key: "event.data.user_id",
       mode: "skip",
-    }
+    },
+    triggers: { event: "data-sync.start" },
   },
-  { event: "data-sync.start" },
   async ({ event }) => {
     const userId = event.data.user_id;
 
@@ -114,9 +114,9 @@ const latestDataSync = inngest.createFunction({
     singleton: {
       key: "event.data.user_id",
       mode: "cancel",
-    }
+    },
+    triggers: { event: "data-sync.start" },
   },
-  { event: "data-sync.start" },
   async ({ event }) => {
     const userId = event.data.user_id;
 

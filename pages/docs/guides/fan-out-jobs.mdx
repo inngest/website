@@ -66,8 +66,7 @@ Next, define two functions: `sendWelcomeEmail` and `startStripeTrial`. As you ca
 
 ```ts {{ filename: "inngest/functions.ts" }}
 const sendWelcomeEmail = inngest.createFunction(
-  { id: 'send-welcome-email' },
-  { event: 'app/user.signup' },
+  { id: 'send-welcome-email', triggers: { event: 'app/user.signup' } },
   async ({ event, step }) => {
     await step.run('send-email', async () => {
       await sendEmail({ email: event.data.user.email, template: 'welcome');
@@ -76,8 +75,7 @@ const sendWelcomeEmail = inngest.createFunction(
 )
 
 const startStripeTrial = inngest.createFunction(
-  { id: 'start-stripe-trial' },
-  { event: 'app/user.signup' },
+  { id: 'start-stripe-trial', triggers: { event: 'app/user.signup' } },
   async ({ event }) => {
     const customer = await step.run('create-customer', async () => {
       return await stripe.customers.create({ email: event.data.user.email });

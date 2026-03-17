@@ -28,8 +28,8 @@ const scheduleReminder = inngest.createFunction(
       // Ensure the cancellation event (async) and the triggering event (event)'s reminderId are the same:
       if: "async.data.reminderId == event.data.reminderId",
     }],
-  }
-  { event: "tasks/reminder.created" },
+    triggers: { event: "tasks/reminder.created" }
+  },
   async ({ event, step }) => {
     await step.sleepUntil('sleep-until-remind-at-time', event.data.remindAt);
     await step.run('send-reminder-push', async ({}) => {

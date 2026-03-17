@@ -25,9 +25,9 @@ const apiInstance = new v1.EventsApi(configuration);
 export default inngest.createFunction(
   {
     name: "Send failures to Datadog",
-    id: "send-failed-function-events-to-datadog"
+    id: "send-failed-function-events-to-datadog",
+    triggers: { event: "inngest/function.failed" },
   },
-  { event: "inngest/function.failed" },
   async ({ event, step }) => {
     // This is a normal Inngest function, so we can use steps as we normally do:
     await step.run("send-event-to-datadog", async () => {

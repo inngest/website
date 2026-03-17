@@ -22,10 +22,10 @@ inngest.createFunction(
       burst: 2,
       key: "event.data.user_id",
     },
-  }
-  { event: "ai/summary.requested" },
+    triggers: { event: "ai/summary.requested" },
+  },
   async ({ event, step }) => {
-  }
+  },
 );
 ```
 

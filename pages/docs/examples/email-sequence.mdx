@@ -24,8 +24,7 @@ Below is an example of how such a campaign would look like:
 
 ```javascript
 const signupDripCampaign = inngest.createFunction(
-  { id: "signup-drip-campaign" },
-  { event: "app/signup.completed" },
+  { id: "signup-drip-campaign", triggers: { event: "app/signup.completed" } },
   async ({ event, step }) => {
     const { user } = event.data;
     const { email, first_name } = user
