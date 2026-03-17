@@ -224,7 +224,7 @@ const sectionReference: (NavGroup | NavLink)[] = [
   },
   {
     title: "TypeScript SDK v4",
-    tag: "beta",
+    tag: "new",
     links: [
       {
         title: "Introduction",
@@ -906,7 +906,7 @@ const sectionLearn: (NavGroup | NavLink)[] = [
           {
             title: "Connect",
             href: `/docs/setup/connect`,
-            tag: "new",
+            tag: "beta",
           },
           {
             title: "Checkpointing",
