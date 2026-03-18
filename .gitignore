@@ -37,3 +37,8 @@
 .env*.local
 
 cdn
+
+tsconfig.tsbuildinfo
+
+# AI
+.playwright-mcp/

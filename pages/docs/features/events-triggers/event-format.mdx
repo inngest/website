@@ -1,4 +1,4 @@
-import { CodeGroup, Callout } from "src/shared/Docs/mdx";
+import { CodeGroup, Callout, Info } from "src/shared/Docs/mdx";
 
 ## Event payload format
 
@@ -14,8 +14,6 @@ The event payload is a JSON object that must contain a `name` and `data` propert
 * `id` is a unique identifier for the event used to prevent duplicate events. Learn more about [deduplication](/docs/events#deduplication).
 * `ts` is the timestamp of the event in milliseconds since the Unix epoch. If not provided, the timestamp will be set to the time the event was received by Inngest.
 * `v` is the event payload version. This is useful to track changes in the event payload shape over time. For example, `"2024-01-14.1"`
-* `user` is object for ease of grouping user-identifying data or attributes associated with the event. This data is encrypted at rest.
-  * **NOTE** - We now recommend that developers use [encryption middleware](/docs/features/middleware/encryption-middleware) to store personally identifiable information (PII) within the `data` object. Encryption middleware also has added benefits as it supports full or partial encryption of data returned from steps as well as complete control over the encryption key.
 
 <CodeGroup>
 ```json {{ title: "Basic JSON event example" }}
@@ -29,9 +27,6 @@ The event payload is a JSON object that must contain a `name` and `data` propert
       "accountId": "acct_1J5g2n2eZvKYlo2C0Z1Z2Z3Z",
       "accountName": "Acme.ai"
     }
-  },
-  "user": {
-    "email": "taylor@example.com"
   }
 }
 ```
@@ -40,7 +35,6 @@ The event payload is a JSON object that must contain a `name` and `data` propert
 type EventPayload = {
   name: string;
   data: Record<string, any>;
-  user?: Record<string, any>;
   id?: string;
   ts?: number;
   v?: string;
@@ -83,6 +77,10 @@ class InvoicePaidEvent(BaseEvent):
     name: typing.ClassVar[str] = "billing/invoice.paid"
 ```
 </CodeGroup>
+
+<Info>
+  While the `user` property is still supported for including user-specific context with the event, it's recommended to instead use the `data` field with [encryption middleware](/docs/features/middleware/encryption-middleware) if you have the need to pass personally identifiable information (PII). Encryption middleware also has added benefits as it supports full or partial encryption of data returned from steps as well as complete control over the encryption key.
+</Info>
 
 ### Tips for event naming
 

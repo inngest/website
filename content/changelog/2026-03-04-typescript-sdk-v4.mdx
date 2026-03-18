@@ -1,0 +1,18 @@
+export const title = "TypeScript SDK v4";
+export const date = "2026-03-04";
+
+The TypeScript SDK v4 is now available in beta! Major improvements include:
+
+- **Rewritten middleware** — Hooks are more intuitive, less overloaded, and enable new use cases.
+- **Better schemas** — Runtime event data validation with [Standard Schema](https://standardschema.dev/?ref=inngest) support (not just Zod!).
+- **Faster by default** — Parallel step optimization and checkpointing are both enabled by default, leading to fewer requests and lower latency.
+- **Improved logging** — Structured logging (Pino-style) and cleaner separation of internal vs. app logs.
+- **Cleaner API** — Triggers in the options object, lazy init for edge runtimes, and more compile-time safety
+
+This is a major version with breaking changes, but for most apps the migration is trivial.
+
+Install the beta with `npm install inngest@beta`.
+
+More info:
+- [Announcement blog post](/blog/typescript-sdk-v4.0?ref=changelog-typescript-sdk-v4)
+- [Migration guide](/docs/reference/typescript/v4/migrations/v3-to-v4?ref=changelog-typescript-sdk-v4)

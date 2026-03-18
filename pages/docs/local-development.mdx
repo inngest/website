@@ -28,7 +28,7 @@ npx --ignore-scripts=false inngest-cli@latest dev
 npx --ignore-scripts=false inngest-cli@latest dev -u http://localhost:3000/api/inngest
 ```
 ```shell {{ title: "Docker" }}
-docker run -p 8288:8288 inngest/inngest \
+docker run -p 8288:8288 -p 8289:8289 inngest/inngest \
   inngest dev -u http://host.docker.internal:3000/api/inngest
 ```
 </CodeGroup>
@@ -248,13 +248,13 @@ Docker can be useful for running the Inngest Dev Server in a standalone containe
 
 To run the Inngest container, you'll need to:
 
-1. Expose the Dev Server port (default is `8288`).
+1. Expose the Dev Server ports (`8288`, `8289`).
 2. Use the `inngest dev` command with the `-u` flag to specify the URL where Inngest can find your app.
 
 In this example command, our app is running on the host machine on port `3000`. We use the `host.docker.internal` hostname to connect to the host machine from within the Docker container. For ease of reading, the command is broken up into multiple lines.
 
 ```bash
-docker run -p 8288:8288 \
+docker run -p 8288:8288 -p 8289:8289 \
   inngest/inngest \
   inngest dev -u http://host.docker.internal:3000/api/inngest
 ```
@@ -279,10 +279,11 @@ services:
     ports:
       - '3000:3000'
   inngest:
-    image: inngest/inngest:v0.27.0
+    image: inngest/inngest:v1.17.2 # Update to the latest version
     command: 'inngest dev -u http://app:3000/api/inngest'
     ports:
       - '8288:8288'
+      - '8289:8289' # Used for connect()
 ```
 
 In this example, we have two services: `app` and `inngest`. The `app` service is your application, and the `inngest` service is the Inngest Dev Server. There are a few key configurations to note:
@@ -290,9 +291,9 @@ In this example, we have two services: `app` and `inngest`. The `app` service is
 * The `INNGEST_DEV=1` environment variable tells the Inngest SDK it should connect to the Dev Server*.
 * The `INNGEST_BASE_URL=http://inngest:8288` environment variable tells the Inngest SDK where the Dev Server is running. In our example, the `inngest` service is running on port `8288` (the default Dev Server port).
 * The `command: 'inngest dev -u http://app:3000/api/inngest'` command tells the Dev Server where to find your app within the Docker network. In this example, the `app` service is running on port `3000`.
-* The `ports` configuration exposes the Dev Server on port `8288` so you can view this on your host machine in the browser.
+* The `ports` configuration exposes the Dev Server on port `8288` so you can view this on your host machine in the browser. It also exposes `8289` which is used for [`connect()`](/docs/setup/connect).
 
-\* - The `INNGEST_DEV` environment variable was added to the TypeScript SDK in version 3.14. Prior to this version, you can set `NODE_ENV=development` to force the SDK to connect to the Dev Server.
+\* - The TypeScript SDK defaults to cloud mode. Setting `INNGEST_DEV=1` explicitly enables dev mode, which connects to the Dev Server and disables signature verification.
 
 ## Development flow
 

@@ -90,7 +90,7 @@ export const PLANS: Plan[] = [
     },
     primaryCTA: false,
     description:
-      "Get started with modern durable execution for free, no credit card required",
+      "Get started with modern durable execution for free, no credit card required.",
     cta: {
       href: `${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=pricing-card-free`,
       text: "Get started for free",
@@ -175,7 +175,7 @@ export const PLANS: Plan[] = [
       additionalWorkersRate: 1,
     },
     description:
-      "Production-ready systems with extended features for scaling companies",
+      "The metrics and concurrency you need for early stage production products.",
     primaryCTA: true,
     recommended: true,
     cta: {
@@ -183,7 +183,7 @@ export const PLANS: Plan[] = [
       text: "Get started for free",
     },
     highlights: {
-      runs: "1,000,000+ executions",
+      runs: "1M included|up to 20M add-on",
       concurrency: "100+ concurrent steps",
       realtime: "1000+ realtime connections",
       users: "15+ users",
@@ -218,7 +218,7 @@ export const PLANS: Plan[] = [
       additionalWorkersRate: null,
     },
     description:
-      "Get started with modern durable execution for free, with the future to grow",
+      "Ensure reliability at scale, with advanced recovery and dedicated support.",
     cta: {
       href: "/contact?ref=pricing-card-enterprise",
       text: "Request a demo",

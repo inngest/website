@@ -102,8 +102,7 @@ See the [Fast API example](https://github.com/inngest/inngest-py/tree/main/examp
 import { inngest } from "./client";
 
 inngest.createFunction(
-  { id: "create-recommendation" },
-  { event: "ai/recommendation.requested" },
+  { id: "create-recommendation", triggers: { event: "ai/recommendation.requested" } },
   async ({ event, step, publish }) => {
 
     const response = await step.run('generate-response', () => {
@@ -150,8 +149,7 @@ const userChannel = channel((userId: string) => `user:${userId}`)
   );
 
 inngest.createFunction(
-  { id: "create-recommendation" },
-  { event: "ai/recommendation.requested" },
+  { id: "create-recommendation", triggers: { event: "ai/recommendation.requested" } },
   async ({ event, step, publish }) => {
 
     await step.run('generate-response', () => {

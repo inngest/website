@@ -26,16 +26,18 @@ export default function BlogIndex(props) {
         .filter((post) => !post.hide)
         .filter((post) => post.date) // Filter out posts without dates
         .sort((a, z) => {
-          if (!a.date || !z.date) return 0;
-          return z.date.localeCompare(a.date);
+          const aDate = a.date != null ? String(a.date) : "";
+          const zDate = z.date != null ? String(z.date) : "";
+          return zDate.localeCompare(aDate);
         });
 
   const focus = visiblePosts.find((c) => c.focus) ?? visiblePosts[0];
   const rest = visiblePosts
     .filter((c) => !focus || c.slug !== focus.slug)
     .sort((a, z) => {
-      if (!a.date || !z.date) return 0;
-      return z.date.localeCompare(a.date);
+      const aDate = a.date != null ? String(a.date) : "";
+      const zDate = z.date != null ? String(z.date) : "";
+      return zDate.localeCompare(aDate);
     });
 
   const description = `Updates from the Inngest team about our product, engineering, and community.`;

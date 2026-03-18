@@ -96,8 +96,7 @@ Wrap (*or extract to a new file if colocated to your Task handler*) your existin
 import { inngest } from "@/inngest/client";
 
 export const helloWorld = inngest.createFunction(
-  { id: "send-email" },
-  { event: "tasks/sendEmail" },
+  { id: "send-email", triggers: { event: "tasks/sendEmail" } },
   async ({ event, step }) => {
     await step.run("Send daily email", async () => {
       await sendEmail(event.data.email);
@@ -212,8 +211,7 @@ Inngest enables you to configure your CRON interval directly from the code:
 
 ```tsx
 export const dailyReminder = inngest.createFunction(
-  { id: "daily-reminder" },
-  { cron: "0 0 * * *" }, // Run daily at midnight UTC
+  { id: "daily-reminder", triggers: { cron: "0 0 * * *" } }, // Run daily at midnight UTC
   async ({ event, step }) => {
     await step.run("Send daily email", async () => {
       await sendEmail(event.data.email);

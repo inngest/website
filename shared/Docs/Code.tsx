@@ -18,7 +18,11 @@ import create from "zustand";
 import { Tag } from "./Tag";
 import { useSearchParams } from "next/navigation";
 import { useLocalStorage } from "react-use";
-import { useLanguageStore, SDK_LANGUAGES, type SDKLanguage } from "./LanguageStore";
+import {
+  useLanguageStore,
+  SDK_LANGUAGES,
+  type SDKLanguage,
+} from "./LanguageStore";
 
 const languageNames = {
   js: "JavaScript",
@@ -183,14 +187,14 @@ function CodeGroupHeader({
       `}
     >
       {heading && (
-        <h3
+        <div
           className={clsx(
             "mr-auto text-xs font-semibold text-basis",
             !!filename && "font-mono"
           )}
         >
           {filename ? <code>{heading}</code> : heading}
-        </h3>
+        </div>
       )}
       {hasTabs && (
         <Tab.List className="-mb-px flex gap-4 text-xs font-medium">
@@ -318,9 +322,10 @@ export function CodeGroup({
   );
   const [currentLanguage] = useLocalStorage("currentLanguage", null);
   const { language: globalLanguage } = useLanguageStore();
-  const { preferredLanguages, addPreferredLanguage } = usePreferredLanguageStore();
+  const { preferredLanguages, addPreferredLanguage } =
+    usePreferredLanguageStore();
   const { positionRef, preventLayoutShift } = usePreventLayoutShift();
-  
+
   const hasTabs = forceTabs || Children.count(children) > 1;
   const Container: typeof Tab["Group"] | "div" = hasTabs ? Tab.Group : "div";
 
@@ -328,7 +333,7 @@ export function CodeGroup({
   const selectedIndex = useMemo(() => {
     const childrenList: React.ReactElement<{ title: string }>[] =
       Children.toArray(children) as React.ReactElement<{ title: string }>[];
-    
+
     // First priority: match global language
     const matchingKeys = SDK_TO_GUIDE_KEY[globalLanguage] || [];
     const globalMatchIndex = childrenList.findIndex((child) =>
@@ -337,7 +342,7 @@ export function CodeGroup({
     if (globalMatchIndex !== -1) {
       return globalMatchIndex;
     }
-    
+
     // Second priority: localStorage currentLanguage
     if (currentLanguage) {
       const localStorageIndex = childrenList.findIndex(
@@ -347,19 +352,23 @@ export function CodeGroup({
         return localStorageIndex;
       }
     }
-    
+
     // Third priority: preferred languages from code tab selection
     const activeLanguage = [...languages].sort(
       (a, z) => preferredLanguages.indexOf(z) - preferredLanguages.indexOf(a)
     )[0];
     const preferredIndex = languages.indexOf(activeLanguage);
     return preferredIndex !== -1 ? preferredIndex : 0;
-  }, [globalLanguage, currentLanguage, children, languages, preferredLanguages]);
+  }, [
+    globalLanguage,
+    currentLanguage,
+    children,
+    languages,
+    preferredLanguages,
+  ]);
 
   const handleChange = (newSelectedIndex: number) => {
-    preventLayoutShift(() =>
-      addPreferredLanguage(languages[newSelectedIndex])
-    );
+    preventLayoutShift(() => addPreferredLanguage(languages[newSelectedIndex]));
   };
 
   const headerProps = hasTabs ? { selectedIndex } : {};
@@ -394,11 +403,7 @@ export function CodeGroup({
   return (
     <CodeGroupContext.Provider value={true}>
       <div className="not-prose relative my-6 overflow-hidden rounded-md border border-subtle">
-        <CodeGroupHeader
-          title={title}
-          filename={filename}
-          hasTabs={false}
-        >
+        <CodeGroupHeader title={title} filename={filename} hasTabs={false}>
           {children}
         </CodeGroupHeader>
         <CodeGroupPanels hasTabs={false} {...props}>
@@ -562,20 +567,19 @@ const LanguageSelectorContext = createContext<{
   options: GuideOption[];
 }>(null);
 
-export function LanguageSelector({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function LanguageSelector({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const searchParamKey = "guide";
-  const [localStorageCurrentLanguage] =
-    useLocalStorage("currentLanguage", null);
+  const [localStorageCurrentLanguage] = useLocalStorage(
+    "currentLanguage",
+    null
+  );
   const searchParams = useSearchParams();
   const qsCurrentLanguage = searchParams.get(searchParamKey);
 
   // Get the global language store
-  const { language: globalLanguage, setLanguage: setGlobalLanguage } = useLanguageStore();
+  const { language: globalLanguage, setLanguage: setGlobalLanguage } =
+    useLanguageStore();
 
   // Derive available options from LanguageSection children's `show` props
   const options = useMemo(() => {
@@ -591,7 +595,9 @@ export function LanguageSelector({
     });
   }, [children]);
 
-  const [selected, setSelected] = useState<string>(options[0]?.key ?? SDK_LANGUAGES[0].id);
+  const [selected, setSelected] = useState<string>(
+    options[0]?.key ?? SDK_LANGUAGES[0].id
+  );
 
   // Sync with global language store when it changes
   useEffect(() => {
@@ -632,7 +638,16 @@ export function LanguageSelector({
     ) {
       setSelected(localStorageCurrentLanguage);
     }
-  }, [qsCurrentLanguage, globalLanguage, options, router, selected, localStorageCurrentLanguage, setGlobalLanguage, searchParamKey]);
+  }, [
+    qsCurrentLanguage,
+    globalLanguage,
+    options,
+    router,
+    selected,
+    localStorageCurrentLanguage,
+    setGlobalLanguage,
+    searchParamKey,
+  ]);
 
   return (
     <LanguageSelectorContext.Provider value={{ selected, options }}>

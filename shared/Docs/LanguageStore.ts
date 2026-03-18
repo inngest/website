@@ -17,6 +17,10 @@ if (!isTSVersion(tsStableEnvVar)) {
 }
 export const TS_STABLE = tsStableEnvVar;
 
+// Sentinel value for pages that are not specific to any SDK language or version.
+// Used in both meta tags (for Algolia indexing) and search filters (for querying).
+export const SDK_ALL = "all";
+
 export const SDK_LANGUAGES: { id: SDKLanguage; title: string; shortTitle: string }[] = [
   { id: "typescript", title: "TypeScript", shortTitle: "TS" },
   { id: "python", title: "Python", shortTitle: "Py" },
@@ -24,7 +28,7 @@ export const SDK_LANGUAGES: { id: SDKLanguage; title: string; shortTitle: string
 ];
 
 export const TS_VERSIONS: { id: TSVersion; title: string }[] = [
-  { id: "v4", title: "Version 4 (Beta)" },
+  { id: "v4", title: "Version 4" },
   { id: "v3", title: "Version 3" },
 ];
 
@@ -64,6 +68,7 @@ export const useLanguageStore = create<LanguageState>()(
   )
 );
 
+
 /**
  * Check if a given URL path belongs to a specific SDK
  */
@@ -94,9 +99,9 @@ export function normalizeTsReferencePath(path: string): string {
 }
 
 /**
- * Detect TypeScript SDK version from a URL path
+ * Detect SDK version from a URL path
  */
-export function getTsVersionFromPath(path: string): TSVersion | null {
+export function getSdkVersionFromPath(path: string): TSVersion | null {
   if (path.includes("/typescript/v4/") || path.endsWith("/typescript/v4")) { return "v4"; }
   if (path.includes("/typescript/v3/") || path.endsWith("/typescript/v3")) { return "v3"; }
 

@@ -39,14 +39,6 @@ nodemon ./index.js # replace with your own main entrypoint file
 ```
 </CodeGroup>
 
-<Callout variant="info">
-  **Using inngest@v4?** The default mode changed to `cloud`. For local development, prefix your dev command with `INNGEST_DEV=1`:
-  ```shell
-  INNGEST_DEV=1 npm run dev
-  ```
-  See the [v3 → v4 migration guide](/docs/reference/typescript/v4/migrations/v3-to-v4#default-mode-changed-to-cloud) for details.
-</Callout>
-
 Now let's add Inngest to your project.
 
 ## 1. Install the Inngest SDK
@@ -182,12 +174,9 @@ To define the function, use the [`createFunction`](/docs/reference/functions/cre
 <details>
   <summary><strong>Learn more: What is `createFunction` method?</strong></summary>
 
-  The `createFunction` method takes three objects as arguments:
-    - **Configuration**: A unique `id` is required and it is the default name that will be displayed on the Inngest dashboard to refer to your function. You can also specify [additional options](/docs/reference/functions/create#configuration) such as `concurrency`, `rateLimit`, `retries`, or `batchEvents`, and others.
-    - **Trigger**: `event` is the name of the event that triggers your function. Alternatively, you can use `cron` to specify a schedule to trigger this function. Learn more about triggers [here](/docs/features/events-triggers).
-    - **Handler**: The function that is called when the `event` is received. The `event` payload is passed as an argument. Arguments include `step` to define durable steps within your handler and [additional arguments](/docs/reference/functions/create#handler) include logging helpers and other data.
-
-  In **v4**, `createFunction` takes **two** arguments: a configuration object (which now includes `triggers`) and the handler function. See the [v3 → v4 migration guide](/docs/reference/typescript/v4/migrations/v3-to-v4#event-trigger-is-now-in-options).
+  The `createFunction` method takes two arguments:
+    - **Configuration**: A unique `id` is required and it is the default name that will be displayed on the Inngest dashboard to refer to your function. You also specify `triggers` to define what starts the function (an `event` name or a `cron` schedule). You can also specify [additional options](/docs/reference/functions/create#configuration) such as `concurrency`, `rateLimit`, `retries`, or `batchEvents`, and others. Learn more about triggers [here](/docs/features/events-triggers).
+    - **Handler**: The function that is called when the trigger fires. The `event` payload is passed as an argument. Arguments include `step` to define durable steps within your handler and [additional arguments](/docs/reference/functions/create#handler) include logging helpers and other data.
 </details>
 
 Define a function in the same file where we defined our Inngest client:
@@ -199,8 +188,7 @@ export const inngest = new Inngest({ id: "my-app" });
 
 // Your new function:
 const helloWorld = inngest.createFunction(
-  { id: "hello-world" },
-  { event: "test/hello.world" },
+  { id: "hello-world", triggers: [{ event: "test/hello.world" }] },
   async ({ event, step }) => {
     await step.sleep("wait-a-moment", "1s");
     return { message: `Hello ${event.data.email}!` };
@@ -212,20 +200,6 @@ export const functions = [
   helloWorld
 ];
 ```
-
-<Callout variant="info">
-  **Using inngest@v4?** Event triggers are now specified in the configuration object:
-  ```ts
-  inngest.createFunction(
-    { id: "hello-world", triggers: [{ event: "test/hello.world" }] },
-    async ({ event, step }) => {
-      await step.sleep("wait-a-moment", "1s");
-      return { message: `Hello ${event.data.email}!` };
-    },
-  );
-  ```
-  See the [v3 → v4 migration guide](/docs/reference/typescript/v4/migrations/v3-to-v4#event-trigger-is-now-in-options) for details.
-</Callout>
 
 <Callout>
   In the previous step, we configured the exported `functions` array to be passed to our Inngest http endpoint. Each new function must be added to this array in order for Inngest to read it's configuration and invoke it.

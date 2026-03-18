@@ -24,17 +24,17 @@ pnpm env:pull  # Get environment variables from Vercel
 
 ## File Structure
 
-| Directory | Purpose |
-| --- | --- |
-| `/app` | Next.js App Router pages (newer pages) |
-| `/pages` | Next.js Pages Router pages (legacy - docs, blog) |
-| `/components` | Reusable React components |
-| `/shared` | Shared components and utilities |
-| `/content/blog` | Blog post MDX files |
-| `/content/changelog` | Changelog entry MDX files |
-| `/pages/docs` | Documentation MDX files |
-| `/public` | Static assets (images, fonts, etc.) |
-| `/snippets` | Code examples for docs (see `snippets/CLAUDE.md`) |
+| Directory            | Purpose                                           |
+| -------------------- | ------------------------------------------------- |
+| `/app`               | Next.js App Router pages (newer pages)            |
+| `/pages`             | Next.js Pages Router pages (legacy - docs, blog)  |
+| `/components`        | Reusable React components                         |
+| `/shared`            | Shared components and utilities                   |
+| `/content/blog`      | Blog post MDX files                               |
+| `/content/changelog` | Changelog entry MDX files                         |
+| `/pages/docs`        | Documentation MDX files                           |
+| `/public`            | Static assets (images, fonts, etc.)               |
+| `/snippets`          | Code examples for docs (see `snippets/CLAUDE.md`) |
 
 ### Routing
 
@@ -103,24 +103,26 @@ See `snippets/CLAUDE.md` for full snippet documentation including validation com
 ### Blog Post Frontmatter
 
 **Required fields:**
+
 - `heading` (string) - Title/headline
+- `subtitle` (string) - Description
 - `image` (string) - Featured image path (e.g., `/assets/blog/example/featured-image.png`)
 - `date` (string) - Publication date in ISO8601 format (e.g., `2024-09-25`)
 - `category` (string) - One of: `"product-updates"`, `"company-news"`, or `"engineering"`
+- `author` (string | string[]) - Author name(s)
 
 **Optional fields:**
-- `subtitle` (string) - Description
+
 - `showSubtitle` (boolean) - Display subtitle (default: false)
-- `author` (string | string[]) - Author name(s)
 - `imageCredits` (string) - Image attribution
 - `dateUpdated` (string) - Last updated date (ISO8601). Add/update this when refreshing content.
-- `tags` (string[]) - Post tags
+- `tags` (string[], optional) - DO NOT USE TAGS.
 - `canonical_url` (string) - Canonical URL for cross-posted content
-- `primaryCTA` (string) - `"sales"`, `"docs"`, or `"signUp"`
-- `floatingCTA` (boolean) - Show floating CTA button
-- `focus` (boolean) - Feature as highlighted post on main blog feed
-- `hide` (boolean) - Accessible at URL but hidden from feeds and RSS
-- `featured` (boolean) - When false, hidden from main feed but available on category pages
+- `primaryCTA` (string) - `"sales"`, `"docs"`, or `"signUp"`. Only use for sales-oriented posts.
+- `floatingCTA` (boolean) - Show floating CTA button for sales-oriented posts.
+- `focus` (boolean) - Feature as highlighted post on main blog feed. Only use if a post must be highlighted for a longer time.
+- `hide` (boolean) - Accessible at URL but hidden from feeds and RSS. Only use for pre-release blog posts.
+- `featured` (boolean, optional) - When false, hidden from main feed but available on category pages.
 
 ### Changelog Entry Format
 
@@ -132,6 +134,10 @@ export const date = "2025-01-15";
 
 Description of the change in MDX format.
 ```
+
+## Docs Search
+
+See `shared/Docs/SEARCH.md` for docs search (Algolia) architecture.
 
 ## Environment & Deployment
 

@@ -3,7 +3,7 @@ import { Info, Callout, Properties, Property, Row, Col, CodeGroup, VersionBadge 
 export const description = `Wait for a particular signal to be received before continuing with step.waitForSignal()`;
 
 # Wait for signal
-<Info>
+<Info skipSearchCrawler>
   **TypeScript SDK v4 is now in beta.** See the [v4 docs](/docs/reference/typescript/v4) and [migration guide](/docs/reference/typescript/v4/migrations/v3-to-v4).
 </Info>
 
@@ -34,7 +34,7 @@ and any data you want to inject into the function run.
           <Property name="onConflict" type="'fail' | 'replace'">
             How to handle duplicate signals.  By default, step.waitForSignal requires a unique signal and duplicate signals will fail the function.
 
-            Set to 'replace' to replace any other run's signal.  Note that previous runs will NOT resume from this signal if replaced, and instead will time out.  
+            Set to 'replace' to replace any other run's signal.  Note that previous runs will NOT resume from this signal if replaced, and instead will time out.
 
             To resume many runs from a single signal, use `step.waitForEvent`.
           </Property>
