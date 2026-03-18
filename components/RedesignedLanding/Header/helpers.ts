@@ -1,7 +1,7 @@
 export const featuredBlogPost = {
-  title: "Introducing Durable Endpoints: Durability beyond workflows",
-  image: "/assets/blog/introducing-durable-endpoints/cover.png",
+  title: "How to Build a Durable AI Agent with Inngest",
+  image: "/assets/blog/ai-agents-inngest-durable-steps/featured-image.jpg",
   description:
-    "Build unbreakable API endpoints, with low latency, minimal API, and no infrastructure work.",
-  href: "/blog/introducing-durable-endpoints",
+    "Use Inngest's step primitives to build resilient, observable AI agents without a heavyweight framework.",
+  href: "/blog/ai-agents-inngest-durable-steps",
 };
