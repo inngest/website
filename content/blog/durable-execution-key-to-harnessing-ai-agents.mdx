@@ -11,7 +11,7 @@ category: engineering
 
 - Durable execution, a programming model that guarantees code completion despite failures, has crossed into the early majority in 2025 with new offerings from AWS, Cloudflare, and Vercel, driven primarily by AI Agent infrastructure needs.
 - AI Agents introduce multiple points of failure (orchestration, probabilistic LLM behavior, tool calling, human-in-the-loop) that traditional retry logic cannot handle; durable execution provides automatic state persistence, automatic retries, and workflow resumption that make agents production-ready.
-- Human-in-the-loop (HITL) patterns, essential for AI Agent safety and oversight, map directly to durable execution's suspend/resume primitives, enabling workflows that can pause for hours or days awaiting approval without losing state.
+- [Human-in-the-loop (HITL) patterns](/docs/ai-patterns/human-in-the-loop?ref=blog-durable-execution-key-to-harnessing-ai-agents), essential for AI Agent safety and oversight, map directly to durable execution's suspend/resume primitives, enabling workflows that can pause for hours or days awaiting approval without losing state.
 - Tool calling reliability depends on durable execution's ability to checkpoint between calls, implement backoff strategies, and maintain execution context across transient failures from external APIs.
 - The next evolution of durable execution focuses on low-latency patterns that support interactive, user-facing AI agents, moving beyond background "ambient agents" to real-time conversational experiences.
 
@@ -165,7 +165,7 @@ Tool calling is where AI agents interact with the real world. They query databas
 
 External APIs fail in varied ways: rate limits, timeouts, network errors, authentication expiration, and server errors. A production agent needs to handle all of these gracefully without losing progress.
 
-Durable execution provides automatic retries with configurable backoff strategies. Each tool call becomes a durable step that will retry on failure until it succeeds or exhausts its retry budget:
+Durable execution provides automatic retries with configurable backoff strategies. Each tool call becomes a [durable step](/docs/ai-patterns/agent-tool-loops?ref=blog-durable-execution-key-to-harnessing-ai-agents) that will retry on failure until it succeeds or exhausts its retry budget:
 
 ```tsx
 async function dataEnrichmentWorkflow({ event, step }) {
@@ -198,7 +198,7 @@ async function dataEnrichmentWorkflow({ event, step }) {
 
 If the enrichment API rate-limits on the 15th contact, the workflow pauses, waits according to the backoff schedule, and retries. The first 14 enrichments don't re-run because their results are already persisted.
 
-This pattern is especially powerful for agents that make many tool calls. A coding agent might read files, run tests, query documentation, and execute commands dozens of times per task. Each operation needs independent retry handling, and the overall workflow needs to survive any individual failure.
+This pattern is especially powerful for agents that make many tool calls. A coding agent might [read files, run tests, query documentation, and execute commands dozens of times per task](/blog/ai-agents-inngest-durable-steps?ref=blog-durable-execution-key-to-harnessing-ai-agents). Each operation needs independent retry handling, and the overall workflow needs to survive any individual failure.
 
 Durable execution also simplifies idempotency. Because step results are cached, you can safely retry the entire workflow without worrying about duplicate side effects. The durable execution engine ensures each step executes exactly once, even if the workflow function itself runs multiple times.
 
