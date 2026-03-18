@@ -899,8 +899,8 @@ const sectionLearn: (NavGroup | NavLink)[] = [
             href: `/docs/ai-patterns/agent-tool-loops`,
           },
           {
-            title: "Human-in-the-middle",
-            href: `/docs/ai-patterns/human-in-the-middle`,
+            title: "Human-in-the-loop",
+            href: `/docs/ai-patterns/human-in-the-loop`,
           },
           {
             title: "Sub-agents",
