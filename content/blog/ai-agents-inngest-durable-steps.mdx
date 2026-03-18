@@ -280,7 +280,7 @@ That's it. Every step's arguments and return values show up in the Inngest dashb
 
 ## Sub-Agents: Delegating Work
 
-A single agent loop gets you surprisingly far. But some tasks are better run in isolation: long-running research, background file processing, scheduled reminders. That's where sub-agents come in.
+A single agent loop gets you surprisingly far. But some tasks are better run in isolation: long-running research, background file processing, scheduled reminders. That's where [sub-agents](/docs/ai-patterns/sub-agent-delegation?ref=blog-ai-agents-inngest-durable-steps) come in.
 
 With Inngest, a sub-agent is just another Inngest function with its own agent loop. The parent agent uses `step.invoke` to call the child agent.
 

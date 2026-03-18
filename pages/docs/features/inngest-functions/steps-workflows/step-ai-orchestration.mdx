@@ -9,7 +9,7 @@ You can build complex AI workflows and call model providers as steps using two-s
 - `step.ai.infer()` offloads the inference request to Inngest's infrastructure, pausing your function execution until the request finishes.  This can be a significant cost saver if you deploy to serverless functions
 - [AgentKit](https://agentkit.inngest.com) allows you to easily create single model calls or agentic workflows.
 
-For building a full ReAct-style agent loop where each LLM call and tool execution is a retriable step, see the [agent tool loop pattern](/docs/ai-patterns/agent-tool-loops).
+For building a full ReAct-style agent loop where each LLM call and tool execution is a retriable step, see the [agent tool loop pattern](/docs/ai-patterns/agent-tool-loops). To expand your system with [sub-agent delegation](/docs/ai-patterns/sub-agent-delegation), use `step.invoke()` and `step.sendEvent()`.
 
 ### Benefits
 
