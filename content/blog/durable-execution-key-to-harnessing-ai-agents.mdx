@@ -11,7 +11,7 @@ category: engineering
 
 - Durable execution, a programming model that guarantees code completion despite failures, has crossed into the early majority in 2025 with new offerings from AWS, Cloudflare, and Vercel, driven primarily by AI Agent infrastructure needs.
 - AI Agents introduce multiple points of failure (orchestration, probabilistic LLM behavior, tool calling, human-in-the-loop) that traditional retry logic cannot handle; durable execution provides automatic state persistence, automatic retries, and workflow resumption that make agents production-ready.
-- Human-in-the-loop (HITL) patterns, essential for AI Agent safety and oversight, map directly to durable execution's suspend/resume primitives, enabling workflows that can pause for hours or days awaiting approval without losing state.
+- [Human-in-the-loop (HITL) patterns](/docs/ai-patterns/human-in-the-loop?ref=blog-durable-execution-key-to-harnessing-ai-agents), essential for AI Agent safety and oversight, map directly to durable execution's suspend/resume primitives, enabling workflows that can pause for hours or days awaiting approval without losing state.
 - Tool calling reliability depends on durable execution's ability to checkpoint between calls, implement backoff strategies, and maintain execution context across transient failures from external APIs.
 - The next evolution of durable execution focuses on low-latency patterns that support interactive, user-facing AI agents, moving beyond background "ambient agents" to real-time conversational experiences.
 
