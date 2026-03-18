@@ -317,13 +317,12 @@ const durableExecutionFeatures = [
   {
     title: "Pause for additional data",
     description:
-      "Create human-in-the-middle flows that wait for additional input.",
+      "Create human-in-the-loop flows that wait for additional input.",
     href: "/docs/reference/functions/step-wait-for-event",
   },
   {
     title: "Automatically retry on errors",
-    description:
-      "Create human-in-the-middle flows that wait for additional input.",
+    description: "Handle errors like LLM timeouts gracefully.",
     href: "/docs/reference/typescript/functions/errors",
   },
   {
