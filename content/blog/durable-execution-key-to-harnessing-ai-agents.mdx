@@ -198,7 +198,7 @@ async function dataEnrichmentWorkflow({ event, step }) {
 
 If the enrichment API rate-limits on the 15th contact, the workflow pauses, waits according to the backoff schedule, and retries. The first 14 enrichments don't re-run because their results are already persisted.
 
-This pattern is especially powerful for agents that make many tool calls. A coding agent might read files, run tests, query documentation, and execute commands dozens of times per task. Each operation needs independent retry handling, and the overall workflow needs to survive any individual failure.
+This pattern is especially powerful for agents that make many tool calls. A coding agent might [read files, run tests, query documentation, and execute commands dozens of times per task](/blog/ai-agents-inngest-durable-steps?ref=blog-durable-execution-key-to-harnessing-ai-agents). Each operation needs independent retry handling, and the overall workflow needs to survive any individual failure.
 
 Durable execution also simplifies idempotency. Because step results are cached, you can safely retry the entire workflow without worrying about duplicate side effects. The durable execution engine ensures each step executes exactly once, even if the workflow function itself runs multiple times.
 

@@ -10,7 +10,7 @@ showSubtitle: true
 
 Most AI agent tutorials stop at the happy path — call the LLM, run a tool, loop. But the moment you ship an agent to production, you hit the real problems: tool calls fail, LLM providers rate-limit you, long-running tasks time out, and you can't see what the hell happened when something goes wrong.
 
-This post walks through building an AI agent on Inngest that handles all of that. We'll cover the agent loop, durable tool execution, observability, and sub-agent delegation with real code.
+This post walks through building an AI agent on Inngest that handles all of that. We'll cover the agent loop, durable tool execution, observability, and sub-agent delegation with real code. (For a higher-level look at [durable context management and debugging](/blog/building-durable-agents?ref=blog-ai-agents-inngest-durable-steps), see our companion guide.)
 
 You'll need Inngest, an LLM provider (Anthropic, OpenAI, whatever), and TypeScript. The patterns work regardless of which SDK you use.
 
@@ -348,5 +348,5 @@ All of these same patterns work for support bots, coding agents, research agents
 | Observability | `extendedTracesMiddleware` | Full step-level traces |
 | Reply events | `step.run()` | Handle the result |
 
-Check out the [Inngest docs](/docs?ref=blog-ai-agents-inngest-durable-steps) for more on steps, invoke, and event-driven functions.
+Check out the [Inngest docs](/docs?ref=blog-ai-agents-inngest-durable-steps) for more on steps, invoke, and event-driven functions. To add approval gates to your agent, see the [human-in-the-loop pattern](/docs/ai-patterns/human-in-the-loop?ref=blog-ai-agents-inngest-durable-steps).
 

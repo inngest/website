@@ -123,7 +123,7 @@ When an AI agent is calling terminals, grepping through code, and pulling contex
 
 ### **Durable Execution for Context Gathering**
 
-Each context-gathering operation becomes a durable step in Inngest. When cubic's agent calls a terminal command, reads a file, or performs a git operation, that work is wrapped in step.run() with automatic retries and failure handling.
+Each context-gathering operation becomes a [durable step](/blog/ai-agents-inngest-durable-steps?ref=blog-five-lessons-for-context-engineering) in Inngest. When cubic's agent calls a terminal command, reads a file, or performs a git operation, that work is wrapped in step.run() with automatic retries and failure handling.
 
 If a worker crashes mid-review, Inngest picks up exactly where it left off without re-executing completed work. If a terminal command times out, Inngest retries it automatically. The agent code stays focused on just the business/context engineering logic, while Inngest handles all the reliability and orchestration underneath.
 
