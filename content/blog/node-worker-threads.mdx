@@ -2,9 +2,10 @@
 heading: "Node.js worker threads are problematic, but they work great for us"
 subtitle: "Worker threads solve real problems, but they come with constraints that Go, Rust, and Python developers would never expect. Here's what we learned moving Inngest Connect's internals off the main thread."
 showSubtitle: true
-date: 2026-03-02
+date: 2026-03-18
 author: Aaron Harper
 category: "engineering"
+image: /assets/blog/node-worker-threads/cover.png
 ---
 
 Node.js runs on a single thread. That's usually fine. The event loop handles I/O concurrency without you thinking about locks, races, or deadlocks. But "single-threaded" has a cost that only shows up under pressure: if your JavaScript monopolizes the CPU, nothing else runs. No timers fire. No network callbacks execute. No I/O completes.
