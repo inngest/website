@@ -97,6 +97,8 @@ A few things to note:
 
 **Text response means done.** When the LLM responds with text and no tool calls, the turn is over. No explicit "done" signal needed.
 
+For a step-by-step walkthrough of this pattern, see the [agent tool loop guide](/docs/ai-patterns/agent-tool-loops?ref=blog-your-agent-needs-a-harness-not-a-framework).
+
 ## You don't need to build your own tools
 
 Utah doesn't hand-roll file I/O and shell execution. It pulls in [`pi-coding-agent`](https://github.com/badlogic/pi-mono) — battle-tested tool implementations from the OpenClaw/Pi ecosystem:

@@ -86,7 +86,7 @@ That's the entire pattern. Everything below breaks down each piece and how to tu
 
 ## Make LLM calls durable
 
-Wrap every LLM call in `step.run()` to make it retriable and checkpointed:
+Wrap every LLM call in [`step.run()`](/docs/reference/typescript/v4/functions/step-run) to make it retriable and checkpointed:
 
 ```ts
 // ✅ Durable — retries on failure, result is checkpointed
@@ -189,3 +189,4 @@ function pruneMessages(messages, maxMessages) {
 
 - [Delegate subtasks to child agents](/docs/ai-patterns/sub-agents) with `step.invoke()`
 - [Pause the loop for user approval](/docs/ai-patterns/human-in-the-loop) with `step.waitForEvent()`
+- [How to build a durable AI agent with Inngest](/blog/ai-agents-inngest-durable-steps) — a deep dive covering context loading, session management, and observability
