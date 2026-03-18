@@ -1,0 +1,327 @@
+export const description = "Expand your agentic system by delegating tasks to sub-agents. Sub-agents allow tasks to have their own context windows, tools, and token budgets."
+
+# Delegate Tasks to Sub-Agents
+
+Delegation gives sub-agents their own context window, tools, and token budget. A sub-agent can be modeled as a separate Inngest function that runs its own [agent loop](/docs/ai-patterns/agent-tool-loops) — the parent either waits for a result or fires and forgets.
+
+## Define a sub-agent function
+
+A sub-agent is a regular Inngest function. It receives a task, runs an agent loop, and returns a result:
+
+```typescript
+import { inngest } from "./client";
+import { createAgentLoop } from "./agent-loop";
+
+export const subAgent = inngest.createFunction(
+  { id: "sub-agent", triggers: [{ event: "agent/sub-agent.spawn" }] },
+  async ({ event, step, logger }) => {
+    const { task, sessionId } = event.data;
+
+    const systemPrompt = `You are a focused sub-agent. Complete the following task and return a clear, concise result.\n\nTask: ${task}`;
+
+    const result = await runAgentLoop({
+      step,
+      systemPrompt,
+      sessionId,
+      tools: SUB_AGENT_TOOLS, // No delegation tools — see "Prevent recursion"
+      maxIterations: 20,
+    });
+
+    return {
+      response: result.response,
+      iterations: result.iterations,
+    };
+  }
+);
+```
+
+The sub-agent uses a **restricted tool set** without delegation tools to prevent infinite recursion ([details below](#prevent-recursion)).
+
+## Define the delegation tool
+
+Give the parent agent's LLM a tool that makes delegation a natural choice:
+
+```typescript
+const delegateTaskTool = {
+  type: "function",
+  function: {
+    name: "delegate_task",
+    description:
+      "Delegate a task to a sub-agent that will work on it independently and return a result. " +
+      "Use this for tasks that require deep research, many tool calls, or focused work " +
+      "that would clutter the current conversation.",
+    parameters: {
+      type: "object",
+      properties: {
+        task: {
+          type: "string",
+          description:
+            "A clear, self-contained description of the task. Include all necessary context — " +
+            "the sub-agent does not have access to this conversation's history.",
+        },
+      },
+      required: ["task"],
+    },
+  },
+};
+```
+
+## Delegate synchronously with `step.invoke()`
+
+To delegate and wait for a result, use [`step.invoke()`](/docs/guides/invoking-functions-directly) — the parent blocks until the sub-agent returns:
+
+```typescript
+import { subAgent } from "./sub-agent";
+
+export const parentAgent = inngest.createFunction(
+  { id: "parent-agent", triggers: [{ event: "agent/task.received" }] },
+  async ({ event, step }) => {
+    let messages = [{ role: "system", content: SYSTEM_PROMPT }];
+    let done = false;
+    let i = 0;
+
+    while (!done && i < 30) {
+      const response = await step.run(`think`, async () => {
+        return await callLLM(messages, TOOLS);
+      });
+
+      for (const toolCall of response.toolCalls) {
+        let toolResult: string;
+
+        if (toolCall.name === "delegate_task") {
+          // Synchronous delegation — parent waits for the result
+          const subResult = await step.invoke(`sub-agent`, {
+            function: subAgent,
+            data: {
+              task: toolCall.arguments.task,
+              sessionId: `sub-${event.data.sessionId}-${Date.now()}`,
+            },
+          });
+
+          toolResult = subResult?.response ?? "(no response from sub-agent)";
+        } else {
+          toolResult = await step.run(`tool-${toolCall.name}`, async () => {
+            return await executeTool(toolCall.name, toolCall.arguments);
+          });
+        }
+
+        messages.push(
+          { role: "assistant", content: null, tool_calls: [toolCall] },
+          { role: "tool", tool_call_id: toolCall.id, content: toolResult }
+        );
+      }
+
+      if (response.toolCalls.length === 0) {
+        done = true;
+      }
+      i++;
+    }
+
+    return { response: messages[messages.length - 1].content };
+  }
+);
+```
+
+Because `step.invoke()` is a durable step, the parent pauses execution and resumes exactly where it left off when the sub-agent completes. The parent's LLM sees only the sub-agent's summary, not its full internal conversation.
+
+## Delegate asynchronously with `step.sendEvent()`
+
+To delegate without waiting, use [`step.sendEvent()`](/docs/guides/sending-events-from-functions) — the parent fires an event and continues:
+
+```typescript
+if (toolCall.name === "delegate_background_task") {
+  await step.sendEvent("spawn-background-task", {
+    name: "agent/sub-agent.spawn",
+    data: {
+      task: toolCall.arguments.task,
+      sessionId: `sub-${event.data.sessionId}-${Date.now()}`,
+      isAsync: true,
+      replyTo: {
+        type: "webhook",
+        url: event.data.callbackUrl,
+      },
+    },
+  });
+
+  toolResult = "Task delegated. The sub-agent is working on it in the background.";
+}
+```
+
+To deliver results when the sub-agent finishes, handle async mode in the sub-agent:
+
+```typescript
+export const subAgent = inngest.createFunction(
+  { id: "sub-agent", triggers: [{ event: "agent/sub-agent.spawn" }] },
+  async ({ event, step, logger }) => {
+    const { task, sessionId, isAsync, replyTo } = event.data;
+
+    const result = await runAgentLoop({
+      step,
+      systemPrompt: `Complete this task:\n\n${task}`,
+      sessionId,
+      tools: SUB_AGENT_TOOLS,
+      maxIterations: 30,
+    });
+
+    if (isAsync && replyTo) {
+      await step.run("deliver-result", async () => {
+        if (replyTo.type === "webhook") {
+          await fetch(replyTo.url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ response: result.response }),
+          });
+        }
+      });
+    }
+
+    return result;
+  }
+);
+```
+
+Alternatively, the sub-agent can emit a result event and a separate function handles delivery — this decouples the sub-agent from routing logic:
+
+```typescript
+// Sub-agent emits result as an event
+if (isAsync) {
+  await step.sendEvent("result-ready", {
+    name: "agent/sub-agent.completed",
+    data: {
+      sessionId,
+      parentSessionId: event.data.parentSessionId,
+      response: result.response,
+    },
+  });
+}
+```
+
+```typescript
+// Separate function handles result delivery
+export const deliverSubAgentResult = inngest.createFunction(
+  { id: "deliver-sub-agent-result" },
+  { event: "agent/sub-agent.completed" },
+  async ({ event, step }) => {
+    const { response, parentSessionId } = event.data;
+
+    await step.run("deliver", async () => {
+      await notifyUser(parentSessionId, response);
+    });
+  }
+);
+```
+
+### Choose sync vs. async
+
+| | Sync (`step.invoke()`) | Async (`step.sendEvent()`) |
+|---|---|---|
+| **Parent blocks?** | Yes — waits for result | No — continues immediately |
+| **Result flows to** | Parent agent's tool output | Separate delivery (webhook, event, notification) |
+| **Best for** | Tasks where the parent needs the answer to continue (research, lookups, analysis) | Long-running tasks where the user can be notified later (reports, batch processing) |
+| **Timeout** | Subject to function execution time limits | Sub-agent runs on its own timeline |
+| **Retry behavior** | If sub-agent fails, parent's step retries | Sub-agent retries independently |
+
+## Prevent recursion
+
+If a sub-agent has delegation tools, it could spawn sub-agents indefinitely. Prevent this by restricting the tool set:
+
+```typescript
+// Tools available to the parent agent
+const PARENT_TOOLS = [
+  searchTool,
+  readFileTool,
+  writeFileTool,
+  delegateTaskTool,        // Can delegate
+  delegateBackgroundTool,  // Can delegate async
+];
+
+// Tools available to sub-agents — no delegation
+const SUB_AGENT_TOOLS = [
+  searchTool,
+  readFileTool,
+  writeFileTool,
+  // No delegate tools — sub-agents cannot spawn further sub-agents
+];
+```
+
+Combine tool restriction with a hard iteration cap for two layers of protection:
+
+```typescript
+export const subAgent = inngest.createFunction(
+  { id: "sub-agent", retries: 1 },
+  { event: "agent/sub-agent.spawn" },
+  async ({ event, step }) => {
+    const result = await runAgentLoop({
+      step,
+      systemPrompt: `Complete this task:\n\n${event.data.task}`,
+      sessionId: event.data.sessionId,
+      tools: SUB_AGENT_TOOLS, // Restricted — always
+      maxIterations: 20,      // Hard cap on iterations
+    });
+
+    return result;
+  }
+);
+```
+
+## Handle sub-agent failures
+
+`step.invoke()` retries the sub-agent based on its `retries` config. If all retries are exhausted, the error propagates to the parent. To let the parent LLM adapt, catch the error:
+
+```typescript
+let toolResult: string;
+try {
+  const subResult = await step.invoke(`sub-agent`, {
+    function: subAgent,
+    data: { task: toolCall.arguments.task, sessionId: subSessionId },
+  });
+  toolResult = subResult?.response ?? "(no response)";
+} catch (error) {
+  toolResult = `Sub-agent failed: ${error.message}. You may need to handle this task directly.`;
+}
+```
+
+## Schedule a sub-agent
+
+To run a sub-agent at a future time, include a [timestamp](/docs/guides/delayed-functions#schedule-a-function-for-later) (`ts`) when sending the event:
+
+```typescript
+await step.sendEvent("schedule-daily-report", {
+  name: "agent/sub-agent.spawn",
+  data: {
+    task: "Generate the daily analytics summary report.",
+    sessionId: `scheduled-${Date.now()}`,
+    isAsync: true,
+    replyTo: { type: "webhook", url: REPORT_WEBHOOK_URL },
+  },
+  ts: tomorrow9am.getTime(),
+});
+```
+
+For recurring work, use a [cron-triggered function](/docs/guides/scheduled-functions) instead.
+
+## Write self-contained task descriptions
+
+In this set up, you can choose how context is shared between parent and sub-agents. With the above approach, the sub-agent gets it's main context from the "task" given to the sub-agent. In this approach, you'll want to include everything it needs in the task itself:
+
+```typescript
+// ❌ Bad — relies on context the sub-agent doesn't have
+{ task: "Summarize what we discussed above" }
+
+// ✅ Good — self-contained with all necessary context
+{ task: "Summarize the key findings from the Q4 2025 revenue report. Focus on: 1) YoY growth rate, 2) top performing segments, 3) areas of concern." }
+```
+
+## Generic vs. specialized sub-agents
+
+Generic sub-agents are a great way to get started and work for many use cases. If your system requires more specialized sets of tools or different models for sub-agents, you might consider creating specialized sub-agents.
+
+To create a system with specialized sub-agents, follow the patterns above, but create multiple tools, with each that invoke their own agent or a "loader" sub-agent that can handle multiple agent types conditionally. As a recommendation, LLMs often do better with separate tools for separate sub-agents rather than a single tool with different parameters for selection.
+
+The task description and available tools are enough to specialize behavior.
+
+## Next steps
+
+- [Build an Agent Tool Loop](/docs/ai-patterns/agent-tool-loops) — Build the agent loop that powers both parent and sub-agents.
+- [Pause for Human Approval](/docs/ai-patterns/human-in-the-loop) — Add approval gates before or after delegation with `step.waitForEvent()`.
+{/*- [Run Sub-Agents in Parallel](/docs/ai-patterns/parallelization) — Spawn multiple sub-agents simultaneously and aggregate results. - [Manage Context Across Agents](/docs/ai-patterns/context-management) — Strategies for managing token budgets across agent hierarchies.*/}
