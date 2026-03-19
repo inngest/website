@@ -21,7 +21,18 @@ Each step has a timeout depending on the hosting provider of your choice ([see m
 
 ### Concurrency <Tag>Upgradable</Tag>
 
-Check your concurrency limits on the [billing page](https://app.inngest.com/billing). See the [pricing page](https://www.inngest.com/pricing) for more info about the concurrency limits in all plans.
+Concurrency limits the number of steps that can execute simultaneously. Check your current limits on the [billing page](https://app.inngest.com/billing). See the [pricing page](/pricing?ref=docs-usage-limits-concurrency) for more info about the concurrency limits in all plans.
+
+<Callout>
+**Important:** Concurrency limits _step_ execution, not the total number of function runs. Functions that are sleeping, waiting for events, or paused between steps do **not** count against your concurrency limit.
+</Callout>
+
+When you reach your concurrency limit, additional steps are queued and will execute as capacity becomes available. If your functions appear to "stall" or steps take longer than expected, you may be hitting your concurrency limit.
+
+**To diagnose and resolve concurrency issues:**
+- **In production:** Monitor your usage in the [metrics dashboard](https://app.inngest.com) and consider upgrading your plan
+- **In local development:** Increase queue workers with `--queue-workers` flag (default: 100)
+- See the [concurrency troubleshooting guide](/docs/guides/concurrency#troubleshooting-concurrency-issues) for detailed guidance
 
 ### Payload Size
 

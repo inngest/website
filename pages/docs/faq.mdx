@@ -2,6 +2,7 @@ export const description = "Frequently asked questions about Inngest";
 
 # Frequently Asked Questions (FAQs)
 
+- [Why are my functions "stalling" or taking a long time to start?](#why-are-my-functions-stalling-or-taking-a-long-time-to-start)
 - [How do I run crons only in production?](#how-do-i-run-crons-only-in-production)
 - [How do I stop functions from running?](#how-do-i-stop-functions-from-running)
 - [What is the "Finalization" step in my trace?](#what-is-the-finalization-step-in-my-trace)
@@ -16,6 +17,31 @@ export const description = "Frequently asked questions about Inngest";
   error?](#why-am-i-getting-a-non-deterministic-function-error)
 - [Why am I getting an `Illegal invocation` error?](#why-am-i-getting-an-illegal-invocation-error)
 - [Why is the dev server polling endpoints that don't exist?](#why-is-the-dev-server-polling-endpoints-that-don-t-exist)
+
+## Why are my functions "stalling" or taking a long time to start?
+
+If your functions appear to "stall" or steps take longer than expected to begin executing, you may be hitting concurrency limits. This is a common issue when testing functions with high parallelism or fan-out patterns.
+
+### In local development
+
+The [Inngest Dev Server](/docs/local-development) defaults to **100 parallel queue workers**. When you exceed this capacity, additional steps must wait in a queue.
+
+**Solution:** Increase the queue workers when starting the Dev Server:
+
+```shell
+npx inngest-cli@latest dev --queue-workers 500
+```
+
+### In production
+
+Your [account plan](/pricing?ref=faq-stalling) determines your maximum concurrency limit. If you're consistently hitting this limit, steps will queue and wait for capacity.
+
+**Solutions:**
+1. Check your concurrency usage in the [metrics dashboard](https://app.inngest.com)
+2. Consider [upgrading your plan](/pricing?ref=faq-stalling) for higher limits
+3. Review your [concurrency configuration](/docs/guides/concurrency) to optimize how capacity is distributed
+
+For more detailed troubleshooting, see the [concurrency troubleshooting guide](/docs/guides/concurrency#troubleshooting-concurrency-issues).
 
 ## How do I run crons only in production?
 
