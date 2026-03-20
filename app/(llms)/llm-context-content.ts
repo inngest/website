@@ -43,13 +43,12 @@ client = inngest.Inngest(app_id="my-app")
 
 ## Writing Functions
 
-Functions are the core building block. Each function is triggered by an event or a cron schedule.
+Functions are the core building block. Each function is triggered by an event or a cron schedule. The trigger is defined in the \`triggers\` property of the function configuration object.
 
 ### Event-triggered function (TypeScript)
 \`\`\`typescript
 const processUpload = inngest.createFunction(
-  { id: "process-upload" },
-  { event: "app/file.uploaded" },
+  { id: "process-upload", triggers: [{ event: "app/file.uploaded" }] },
   async ({ event, step }) => {
     const result = await step.run("process", async () => {
       return await processFile(event.data.fileUrl);
@@ -67,8 +66,7 @@ const processUpload = inngest.createFunction(
 ### Cron function (TypeScript)
 \`\`\`typescript
 const dailyCleanup = inngest.createFunction(
-  { id: "daily-cleanup" },
-  { cron: "0 0 * * *" },
+  { id: "daily-cleanup", triggers: [{ cron: "0 0 * * *" }] },
   async ({ step }) => {
     await step.run("cleanup", async () => {
       return await cleanupOldRecords();
@@ -112,6 +110,21 @@ async def daily_cleanup(ctx: inngest.Context, step: inngest.Step):
 ## Serving Functions
 
 Use the \`serve()\` handler to expose your functions via an HTTP endpoint. Inngest calls this endpoint to discover and invoke your functions.
+
+### Bun (zero extra dependencies)
+\`\`\`typescript
+import { serve } from "inngest/bun";
+import { inngest } from "./inngest/client";
+import { processUpload, dailyCleanup } from "./inngest/functions";
+
+Bun.serve({
+  port: 3000,
+  fetch: serve({
+    client: inngest,
+    functions: [processUpload, dailyCleanup],
+  }),
+});
+\`\`\`
 
 ### Next.js (App Router)
 \`\`\`typescript
@@ -190,19 +203,17 @@ curl -X POST https://inn.gs/e/<INNGEST_EVENT_KEY> \\
   -d '{"name": "app/file.uploaded", "data": {"fileUrl": "https://example.com/file.pdf"}}'
 \`\`\`
 
-## Deployment
+## Syncing Your App
 
-After deploying your application, Inngest needs to discover your functions by calling your serve endpoint.
+After deploying your application, Inngest needs to discover your functions by syncing with your serve endpoint.
 
 1. Deploy your app with the serve endpoint accessible at a public URL
-2. Inngest automatically syncs when your app starts, or you can trigger a sync from the dashboard
-3. You can also sync manually via the REST API:
+2. Sync your app by sending a PUT request to your serve endpoint:
 \`\`\`bash
-curl -X PUT "https://api.inngest.com/v1/syncs" \\
-  -H "Authorization: Bearer <INNGEST_SIGNING_KEY>" \\
-  -H "Content-Type: application/json" \\
-  -d '{"url": "https://your-app.com/api/inngest"}'
+curl -X PUT https://your-app.com/api/inngest --fail-with-body
 \`\`\`
+This triggers the SDK to register its function definitions with the Inngest API. The SDK handles all authentication automatically using your \`INNGEST_SIGNING_KEY\`.
+3. Inngest also automatically syncs when your app starts, or you can trigger a sync from the dashboard
 
 ## REST API v2
 
