@@ -648,7 +648,16 @@ const sectionLearn: (NavGroup | NavLink)[] = [
       },
       {
         title: "Durable Endpoints",
-        href: `/docs/learn/durable-endpoints`,
+        links: [
+          {
+            title: "Overview",
+            href: `/docs/learn/durable-endpoints`
+          },
+          {
+            title: "Streaming SSE",
+            href: "/docs/learn/durable-endpoints-streaming"
+          }
+        ],
         tag: "new",
       },
       {
