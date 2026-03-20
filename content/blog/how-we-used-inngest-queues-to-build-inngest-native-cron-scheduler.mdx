@@ -1,17 +1,11 @@
 ---
 heading: "How we used Inngest Queues to build Inngest's native Cron Scheduler"
-subtitle: "At Inngest, we run [scheduled functions](https://www.inngest.com/uses/serverless-cron-jobs?ref=nav) on behalf of thousands of users. This is the story of how we used our own queueing infrastructure to rearchitect cron scheduling from a fragile polling loop into a durable, self-healing, horizontally scalable distributed scheduler."
+subtitle: "At Inngest, we run scheduled functions on behalf of thousands of users. This is the story of how we used our own queueing infrastructure to rearchitect cron scheduling from a fragile polling loop into a durable, self-healing, horizontally scalable distributed scheduler."
 image: "/assets/blog/cron-scheduler-queues/featured-image.jpg"
 date: 2026-03-20
 category: "engineering"
 author: ["Tony Holdstock-Brown"]
 showSubtitle: true
----
-
-*At Inngest, we run [scheduled functions](/uses/serverless-cron-jobs?ref=nav) on behalf of thousands of users. For a long time, we managed this with an architecture that worked well enough, until it didn't.*
-
-*This is the story of how we used our own queueing infrastructure to rearchitect cron scheduling from a fragile polling loop into a durable, self-healing, horizontally scalable distributed scheduler.*
-
 ---
 
 ## Why polling a database for scheduled functions breaks at scale
