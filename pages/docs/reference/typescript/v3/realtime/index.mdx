@@ -1,0 +1,159 @@
+import {
+  RiNextjsFill,
+  RiNodejsFill,
+} from "@remixicon/react";
+import {
+  Warning,
+  Info,
+  CodeGroup,
+  CardGroup,
+  Card,
+  VersionBadge,
+} from "src/shared/Docs/mdx";
+
+export const description = "Archived v3 realtime concepts documentation for the deprecated @inngest/realtime package.";
+
+# Realtime <VersionBadge version="TypeScript SDK v3" />
+
+<Warning>
+  This page documents the deprecated v3 realtime API built on `@inngest/realtime`.
+  For new work, use the built-in v4 realtime APIs instead:
+  [v4 realtime overview](/docs/features/realtime),
+  [v4 React hooks](/docs/features/realtime/react-hooks), or the
+  [v4 reference docs](/docs/reference/typescript/v4/realtime).
+</Warning>
+
+In v3, realtime support lived in the separate `@inngest/realtime` package and was added to your app with middleware and helper utilities. Channels and topics were defined with builders, tokens were minted on the server, and client subscriptions used either `subscribe()` or `useInngestSubscription()`.
+
+## Quick start
+
+Install the realtime package:
+
+<CodeGroup>
+```shell {{ title: "npm" }}
+npm install @inngest/realtime
+```
+```shell {{ title: "pnpm" }}
+pnpm add @inngest/realtime
+```
+```shell {{ title: "yarn" }}
+yarn add @inngest/realtime
+```
+</CodeGroup>
+
+<Info>
+  These docs are preserved for existing v3 apps. In v4, realtime is built into
+  `inngest` and does not require a separate package.
+</Info>
+
+## Publishing in v3
+
+In v3, you enabled realtime by adding `realtimeMiddleware()` to your client, which injected a `publish()` helper into your function handler.
+
+```ts
+import { Inngest } from "inngest";
+import { realtimeMiddleware } from "@inngest/realtime/middleware";
+
+export const inngest = new Inngest({
+  id: "my-app",
+  middleware: [realtimeMiddleware()],
+});
+```
+
+You could publish either with raw `channel` and `topic` strings or with typed channel builders:
+
+```ts
+import { channel, topic } from "@inngest/realtime";
+import { z } from "zod";
+
+export const userChannel = channel((userId: string) => `user:${userId}`)
+  .addTopic(
+    topic("ai").schema(
+      z.object({
+        response: z.string(),
+        success: z.boolean(),
+      })
+    )
+  );
+
+inngest.createFunction(
+  { id: "create-recommendation", triggers: { event: "ai/recommendation.requested" } },
+  async ({ event, publish }) => {
+    await publish(
+      userChannel(event.data.userId).ai({
+        response: "Hello from v3 realtime",
+        success: true,
+      })
+    );
+  }
+);
+```
+
+## Subscribing in v3
+
+The client first needed a short-lived subscription token minted on the server:
+
+```ts
+"use server";
+
+import { getSubscriptionToken } from "@inngest/realtime";
+import { inngest } from "@/inngest/client";
+
+export async function fetchRealtimeSubscriptionToken(userId: string) {
+  return getSubscriptionToken(inngest, {
+    channel: `user:${userId}`,
+    topics: ["ai"],
+  });
+}
+```
+
+Then the browser subscribed with `useInngestSubscription()` or `subscribe()`:
+
+```tsx
+"use client";
+
+import { useInngestSubscription } from "@inngest/realtime/hooks";
+import { fetchRealtimeSubscriptionToken } from "./actions";
+
+export default function Home() {
+  const { data, error } = useInngestSubscription({
+    refreshToken: () => fetchRealtimeSubscriptionToken("user_123"),
+  });
+
+  if (error) {
+    return <p>{error.message}</p>;
+  }
+
+  return (
+    <div>
+      {data.map((message, i) => (
+        <div key={i}>{JSON.stringify(message.data)}</div>
+      ))}
+    </div>
+  );
+}
+```
+
+## Related docs
+
+<CardGroup cols={2}>
+  <Card
+    href="/docs/reference/typescript/v3/realtime/react-hooks"
+    title={"v3 React hooks / Next.js"}
+    icon={<RiNextjsFill className="text-basis h-8 w-8" />}
+    iconPlacement="top"
+  >
+    Archived docs for `useInngestSubscription()` and token refresh patterns in
+    Next.js.
+  </Card>
+
+  <Card
+    href="/docs/reference/typescript/v4/realtime"
+    title={"Upgrade to v4 realtime"}
+    icon={<RiNodejsFill className="text-basis h-8 w-8" />}
+    iconPlacement="top"
+  >
+    See the new built-in v4 realtime model with `realtime.channel()`,
+    `useRealtime`, and `step.realtime.publish()`.
+  </Card>
+</CardGroup>

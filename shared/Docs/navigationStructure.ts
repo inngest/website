@@ -183,6 +183,20 @@ const sectionReference: (NavGroup | NavLink)[] = [
         ],
       },
       {
+        title: "Realtime",
+        tag: "deprecated",
+        links: [
+          {
+            title: "Overview",
+            href: tsRef("v3", "realtime"),
+          },
+          {
+            title: "React hooks / Next.js",
+            href: tsRef("v3", "realtime/react-hooks"),
+          },
+        ],
+      },
+      {
         title: "Middleware",
         links: [
           {
@@ -353,6 +367,33 @@ const sectionReference: (NavGroup | NavLink)[] = [
           {
             title: "Streaming",
             href: tsRef("v4", "serve/streaming"),
+          },
+        ],
+      },
+      {
+        title: "Realtime",
+        tag: "new",
+        links: [
+          {
+            title: "Overview",
+            href: tsRef("v4", "realtime"),
+          },
+          {
+            title: "Channels & topics",
+            href: tsRef("v4", "realtime/channels"),
+          },
+          {
+            title: "Publishing",
+            href: tsRef("v4", "realtime/publishing"),
+          },
+          {
+            title: "useRealtime",
+            href: tsRef("v4", "realtime/use-realtime"),
+            className: "font-mono",
+          },
+          {
+            title: "Subscribing",
+            href: tsRef("v4", "realtime/subscribing"),
           },
         ],
       },
