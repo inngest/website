@@ -340,6 +340,17 @@ const sectionReference: (NavGroup | NavLink)[] = [
         ],
       },
       {
+        title: "Experiments",
+        links: [
+          {
+            title: "group.experiment()",
+            href: tsRef("v4", "functions/group-experiment"),
+            className: "font-mono",
+            tag: "new",
+          },
+        ],
+      },
+      {
         title: "Serve",
         links: [
           {
