@@ -63,7 +63,7 @@ We didn't do a formal A/B test, but the difference was visible in ad-hoc testing
 
 This was the speed fix.
 
-Normally, Inngest does a full request/response cycle back to the platform after each step to store state. That's fine for most workflows, but for agents making 8-12 sequential LLM calls, the latency between steps adds up fast. Checkpointing cuts that out entirely. The SDK orchestrates steps locally on your server and executes them immediately, sending progress back to Inngest without waiting around between steps.
+Normally, Inngest does a full request/response cycle back to the platform after each step to store state. That's fine for most workflows, but for agents making 8-12 sequential LLM calls, the latency between steps adds up fast. Checkpointing cuts that out entirely. The SDK orchestrates steps locally on your server and executes them immediately, sending progress back to Inngest without waiting around between steps. ([Learn more about checkpointing](/docs/setup/checkpointing).)
 
 Before checkpointing: 15-30 seconds per query
 After checkpointing: 3-6 seconds per query
