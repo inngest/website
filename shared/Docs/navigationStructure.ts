@@ -644,6 +644,10 @@ const sectionLearn: (NavGroup | NavLink)[] = [
             title: "Idempotency",
             href: `/docs/guides/handling-idempotency`,
           },
+          {
+            title: "Logging",
+            href: "/docs/guides/logging",
+          },
         ],
       },
       {
