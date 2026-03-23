@@ -1,5 +1,9 @@
-import { GoogleSpreadsheet } from "google-spreadsheet";
-import { JWT } from "google-auth-library";
+import { Inngest } from "inngest";
+
+const inngest = new Inngest({
+  id: "website",
+  eventKey: process.env.NEXT_PUBLIC_INNGEST_KEY,
+});
 
 export default async (req, res) => {
   if (req.method !== "POST") {
@@ -30,33 +34,16 @@ export default async (req, res) => {
   }
 
   try {
-    await addRating(page, rating);
+    await inngest.send({
+      name: "website/docs.feedback.received",
+      data: {
+        page,
+        rating,
+      },
+    });
 
     return res.status(201).json({ error: "" });
   } catch (error) {
     return res.status(500).json({ error: error.message || error.toString() });
   }
 };
-
-async function addRating(page: string, rating: string) {
-  const sheet = await loadSheet("ratings");
-  await sheet.addRow({ page, rating, time: new Date().toISOString() });
-}
-
-async function loadSheet(sheet: string) {
-  const GOOGLE_SHEETS_ID = process.env.GOOGLE_SHEETS_FEEDBACK_SHEET_ID;
-  const GOOGLE_SERVICE_ACCOUNT = new JWT({
-    email: process.env.GOOGLE_SHEETS_SERVICE_ACCOUNT_EMAIL,
-    key: process.env.GOOGLE_SHEETS_PRIVATE_KEY,
-    scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-  });
-
-  if (!GOOGLE_SHEETS_ID) {
-    throw new Error("Missing environment variable");
-  }
-
-  const doc = new GoogleSpreadsheet(GOOGLE_SHEETS_ID, GOOGLE_SERVICE_ACCOUNT);
-  await doc.loadInfo();
-
-  return doc.sheetsByTitle[sheet];
-}
