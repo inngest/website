@@ -141,7 +141,7 @@ importers:
         version: 11.7.0
       inngest:
         specifier: 4.0.4
-        version: 4.0.4(@opentelemetry/core@2.6.0(@opentelemetry/api@1.9.0))(@vercel/node@3.0.7)(next@15.3.6(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(typescript@5.7.3)(zod@3.19.1)
+        version: 4.0.4(@opentelemetry/core@2.6.0(@opentelemetry/api@1.9.0))(@vercel/node@3.0.7)(next@15.3.6(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(typescript@5.7.3)(zod@4.3.6)
       lottie-react:
         specifier: 2.4.1
         version: 2.4.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -256,9 +256,6 @@ importers:
       uuid:
         specifier: 8.3.2
         version: 8.3.2
-      zod:
-        specifier: 3.19.1
-        version: 3.19.1
       zustand:
         specifier: 4.2.0
         version: 4.2.0(react@19.0.0)
@@ -6512,8 +6509,8 @@ packages:
   yoga-wasm-web@0.3.3:
     resolution: {integrity: sha512-N+d4UJSJbt/R3wqY7Coqs5pcV0aUj2j9IaQ3rNj9bVCLld8tTGKRa2USARjnvZJWVx1NDmQev8EknoczaOQDOA==}
 
-  zod@3.19.1:
-    resolution: {integrity: sha512-LYjZsEDhCdYET9ikFu6dVPGp2YH9DegXjdJToSzD9rO6fy4qiRYFoyEYwps88OseJlPyl2NOe2iJuhEhL7IpEA==}
+  zod@4.3.6:
+    resolution: {integrity: sha512-rftlrkhHZOcjDwkGlnUtZZkvaPHCsDATp4pGpuOOMDaTdDDXF91wuVDJoWoPsKX/3YPQ5fHuF3STjcYyKr+Qhg==}
 
   zustand@4.2.0:
     resolution: {integrity: sha512-eNwaDoD2FYVnMgtNxiMUhTJO780wonZUzJrPQTLYI0erSIMZF8cniWFW22kGQUECd8rdHRJ/ZJL2XO54c9Ttuw==}
@@ -10936,7 +10933,7 @@ snapshots:
     dependencies:
       css-in-js-utils: 3.1.0
 
-  inngest@4.0.4(@opentelemetry/core@2.6.0(@opentelemetry/api@1.9.0))(@vercel/node@3.0.7)(next@15.3.6(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(typescript@5.7.3)(zod@3.19.1):
+  inngest@4.0.4(@opentelemetry/core@2.6.0(@opentelemetry/api@1.9.0))(@vercel/node@3.0.7)(next@15.3.6(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(typescript@5.7.3)(zod@4.3.6):
     dependencies:
       '@bufbuild/protobuf': 2.11.0
       '@inngest/ai': 0.1.7
@@ -10961,7 +10958,7 @@ snapshots:
       serialize-error-cjs: 0.1.4
       temporal-polyfill: 0.2.5
       ulid: 2.4.0
-      zod: 3.19.1
+      zod: 4.3.6
     optionalDependencies:
       '@vercel/node': 3.0.7
       next: 15.3.6(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -13928,7 +13925,7 @@ snapshots:
 
   yoga-wasm-web@0.3.3: {}
 
-  zod@3.19.1: {}
+  zod@4.3.6: {}
 
   zustand@4.2.0(react@19.0.0):
     dependencies:
