@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { Inngest } from "inngest";
 
+export const runtime = "nodejs";
+
 const inngest = new Inngest({
   id: "website",
   eventKey: process.env.NEXT_PUBLIC_INNGEST_KEY,
