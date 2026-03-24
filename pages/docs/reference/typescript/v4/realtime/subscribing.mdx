@@ -1,19 +1,19 @@
 import { Info, Properties, Property, Row, Col, CodeGroup } from "src/shared/Docs/mdx";
 
-export const description = "Mint subscription tokens and consume realtime streams server-side with getSubscriptionToken and subscribe."
+export const description = "Mint subscription tokens and consume realtime streams server-side with getClientSubscriptionToken and subscribe."
 
 # Subscribing
 
 Server-side subscription covers two operations: **minting tokens** for client use and **consuming streams** on the server. The v4 SDK exposes both standalone helpers and client aliases:
 
-- `getSubscriptionToken(app, ...)` or `inngest.realtime.token(...)`
-- `subscribe({ app, ... })` or `inngest.realtime.subscribe(...)`
+- `getClientSubscriptionToken(app, ...)` for minting client-safe tokens
+- `subscribe({ app, ... })` or `inngest.realtime.subscribe(...)` for server-side streams
 
 ---
 
-## `getSubscriptionToken(app, options)`
+## `getClientSubscriptionToken(app, options)`
 
-Mints a scoped subscription token on the server. The token authorizes a client to subscribe to specific topics on a specific channel.
+Mints a scoped subscription token on the server and returns a serializable object safe to pass to the client. The returned object includes the token key and the resolved API base URL, so `useRealtime` automatically connects to the right environment (cloud or dev server) without any client-side env var configuration.
 
 <Row>
   <Col>
@@ -29,24 +29,23 @@ Mints a scoped subscription token on the server. The token authorizes a client t
       </Property>
     </Properties>
 
-    Returns `Promise<Token>` with `key` (the JWT string), `channel`, and `topics`.
+    Returns `Promise<ClientSubscriptionToken>` with `key` (the JWT string) and `apiBaseUrl` (the resolved server URL).
   </Col>
   <Col>
   ```ts
-  import { getSubscriptionToken } from "inngest/react";
+  import { getClientSubscriptionToken } from "inngest/react";
   import { inngest } from "./client";
   import { pipelineChannel } from "./channels";
 
   const ch = pipelineChannel({ runId: "abc123" });
 
-  const token = await getSubscriptionToken(inngest, {
+  const token = await getClientSubscriptionToken(inngest, {
     channel: ch,
     topics: ["status", "tokens"],
   });
 
-  // token.key     - JWT string for the client
-  // token.channel  - the channel instance/name
-  // token.topics   - ["status", "tokens"]
+  // token.key         - JWT string for the client
+  // token.apiBaseUrl   - resolved API URL (e.g. cloud or localhost)
   ```
   </Col>
 </Row>
@@ -56,7 +55,7 @@ Mints a scoped subscription token on the server. The token authorizes a client t
 </Info>
 
 <Info>
-  If you already have an `Inngest` client instance in scope, `inngest.realtime.token({ channel, topics })` is equivalent to `getSubscriptionToken(inngest, { channel, topics })`.
+  The server resolves `INNGEST_DEV` and passes the correct API URL through the token. Your client code does not need `NEXT_PUBLIC_INNGEST_DEV`, `VITE_INNGEST_DEV`, or any other browser-side env var.
 </Info>
 
 ### Framework examples
@@ -65,23 +64,21 @@ Mints a scoped subscription token on the server. The token authorizes a client t
 ```ts {{ title: "Next.js Server Action" }}
 // app/actions.ts
 "use server";
-import { getSubscriptionToken } from "inngest/react";
+import { getClientSubscriptionToken } from "inngest/react";
 import { inngest } from "../inngest/client";
 import { pipelineChannel } from "../inngest/channels";
 
 export async function getRealtimeToken(runId: string) {
-  const ch = pipelineChannel({ runId });
-  const token = await getSubscriptionToken(inngest, {
-    channel: ch,
+  return getClientSubscriptionToken(inngest, {
+    channel: pipelineChannel({ runId }),
     topics: ["status", "tokens"],
   });
-  return token.key;
 }
 ```
 
 ```ts {{ title: "Express" }}
 import express from "express";
-import { getSubscriptionToken } from "inngest/realtime";
+import { getClientSubscriptionToken } from "inngest/react";
 import { inngest } from "./client";
 import { pipelineChannel } from "./channels";
 
@@ -89,32 +86,27 @@ const app = express();
 
 app.get("/api/realtime-token", async (req, res) => {
   const { runId } = req.query;
-  const ch = pipelineChannel({ runId: runId as string });
-
-  const token = await getSubscriptionToken(inngest, {
-    channel: ch,
+  const token = await getClientSubscriptionToken(inngest, {
+    channel: pipelineChannel({ runId: runId as string }),
     topics: ["status", "tokens"],
   });
-
-  res.json(token.key);
+  res.json(token);
 });
 ```
 
 ```ts {{ title: "TanStack Start" }}
 import { createServerFn } from "@tanstack/start";
-import { getSubscriptionToken } from "inngest/react";
+import { getClientSubscriptionToken } from "inngest/react";
 import { inngest } from "./inngest/client";
 import { pipelineChannel } from "./inngest/channels";
 
 export const getRealtimeToken = createServerFn({ method: "GET" })
   .validator((runId: string) => runId)
   .handler(async ({ data: runId }) => {
-    const ch = pipelineChannel({ runId });
-    const token = await getSubscriptionToken(inngest, {
-      channel: ch,
+    return getClientSubscriptionToken(inngest, {
+      channel: pipelineChannel({ runId }),
       topics: ["status", "tokens"],
     });
-    return token.key;
   });
 ```
 </CodeGroup>

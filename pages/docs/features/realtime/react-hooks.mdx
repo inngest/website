@@ -10,7 +10,7 @@ export const description = "Learn how to use the v4 useRealtime hook in Next.js 
 
 <Info>
   In v4, React subscriptions use `useRealtime` from `inngest/react` together
-  with `getSubscriptionToken()` or `inngest.realtime.token()` on the server.
+  with `getClientSubscriptionToken()` on the server.
 </Info>
 
 <Warning>
@@ -31,21 +31,15 @@ and typed message access per topic. The typical Next.js flow is:
 ```tsx {{ filename: "app/actions.ts" }}
 "use server";
 
-import { getSubscriptionToken } from "inngest/react";
+import { getClientSubscriptionToken } from "inngest/react";
 import { inngest } from "@/inngest/client";
 import { helloChannel } from "@/inngest/channels";
 
 export async function fetchRealtimeSubscriptionToken(runId: string) {
-  const token = await getSubscriptionToken(inngest, {
+  return getClientSubscriptionToken(inngest, {
     channel: helloChannel({ runId }),
     topics: ["logs"],
   });
-
-  if (!token.key) {
-    throw new Error("No realtime token returned");
-  }
-
-  return token.key;
 }
 ```
 
