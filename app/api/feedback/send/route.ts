@@ -1,36 +1,35 @@
+import { NextResponse } from "next/server";
 import { Inngest } from "inngest";
+
+export const runtime = "nodejs";
 
 const inngest = new Inngest({
   id: "website",
   eventKey: process.env.NEXT_PUBLIC_INNGEST_KEY,
 });
 
-export default async (req, res) => {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
-
+export async function POST(req: Request) {
   const {
     page,
     rating,
   }: {
     page: string | null;
     rating: string | null;
-  } = req.body;
+  } = await req.json();
 
   if (!page) {
-    return res.status(400).json({ error: "Page ID is required" });
+    return NextResponse.json({ error: "Page ID is required" }, { status: 400 });
   }
 
   if (!rating) {
-    return res.status(400).json({ error: "Rating is required" });
+    return NextResponse.json({ error: "Rating is required" }, { status: 400 });
   }
 
   //  disable in development
   if (process.env.NODE_ENV === "development") {
     console.log("Skipping feedback in development");
     console.log({ page, rating });
-    return res.status(201).json({ error: "" });
+    return NextResponse.json({ error: "" }, { status: 201 });
   }
 
   try {
@@ -42,8 +41,11 @@ export default async (req, res) => {
       },
     });
 
-    return res.status(201).json({ error: "" });
+    return NextResponse.json({ error: "" }, { status: 201 });
   } catch (error) {
-    return res.status(500).json({ error: error.message || error.toString() });
+    return NextResponse.json(
+      { error: error.message || error.toString() },
+      { status: 500 }
+    );
   }
-};
+}
