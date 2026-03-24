@@ -1,4 +1,4 @@
-import { Callout, GuideSelector, GuideSection, ButtonDeploy } from "src/shared/Docs/mdx";
+import { Callout, GuideSelector, GuideSection, ButtonDeploy, Tip } from "src/shared/Docs/mdx";
 
 # Vercel
 
@@ -25,6 +25,9 @@ import { serve } from "inngest/next";
 import { client } from "../../inngest/client";
 import { firstFunction, anotherFunction } from "../../inngest/functions";
 
+// This endpoint can run for a maximum of 300 seconds
+export const maxDuration = 300;
+
 export default serve({
   client: client,
   functions: [
@@ -41,6 +44,9 @@ import { serve } from "inngest/next";
 import { client } from "../../inngest/client";
 import { firstFunction, anotherFunction } from "../../inngest/functions";
 
+// This endpoint can run for a maximum of 300 seconds
+export const maxDuration = 300;
+
 export const { GET, POST, PUT } = serve({
   client: client,
   functions: [
@@ -52,6 +58,12 @@ export const { GET, POST, PUT } = serve({
 </GuideSection>
 
 </GuideSelector>
+
+<Tip>
+  We strongly recommend that you configure the `maxDuration` for your Inngest endpoint to ensure that your steps can successfully execute without timeouts. When using with [`checkpointing`](/docs/setup/checkpointing) (the default in our v4 SDK), you should set checkpointing's `maxRuntime` option to 20-40% below your `maxDuration` setting on Vercel. [See the Vercel docs for more information](https://vercel.com/docs/functions/configuring-functions/duration).
+
+  Note, when `streaming` is enabled, your function can execute well beyond the `maxDuration`. Learn more about [the streaming option here](/docs/reference/typescript/v4/serve/streaming).
+</Tip>
 
 ## Deploying to Vercel
 
@@ -103,10 +115,10 @@ By default, Inngest uses your Vercel project's "[deployment urls](https://vercel
 https://myapp-pxz35n5o2-acmeinc.vercel.app
 ```
 
-If you desire Inngest to use your custom domain in production, you can set the `INNGEST_SERVE_HOST` in your Vercel project's environment variables for production. When you push to production and Inngest syncs your app, it will instead use this URL. Please note: if your application is not reachable on this URL, your app sync will fail.
+If you desire Inngest to use your custom domain in production, you can set the `INNGEST_SERVE_ORIGIN` in your Vercel project's environment variables for production. When you push to production and Inngest syncs your app, it will instead use this URL. Please note: if your application is not reachable on this URL, your app sync will fail.
 
 ```
-INNGEST_SERVE_HOST=https://acme.com
+INNGEST_SERVE_ORIGIN=https://acme.com
 ```
 
 ## Multiple apps in one single Vercel project

@@ -9,6 +9,7 @@ In some workflows or pipeline functions, you may want to broadcast events from w
 * You want to decouple logic into separate functions that can be re-used across your system
 * You want to send an event to [fan-out](/docs/guides/fan-out-jobs) to multiple other functions
 * Your function is handling many items that you want to process in parallel functions
+* You want to [delegate tasks to sub-agents asynchronously](/docs/ai-patterns/sub-agent-delegation#delegate-asynchronously-with-stepsendevent) in an AI agent system
 * You want to [cancel](/docs/guides/cancel-running-functions) another function
 * You want to send data to another function [waiting for an event](/docs/reference/functions/step-wait-for-event)
 
@@ -33,8 +34,7 @@ const inngest = new Inngest({ id: "signup-flow" });
 type Events = GetEvents<typeof inngest>;
 
 export const loadCron = inngest.createFunction(
-  { id: "weekly-activity-load-users" },
-  { cron: "0 12 * * 5" },
+  { id: "weekly-activity-load-users", triggers: { cron: "0 12 * * 5" } },
   async ({ event, step }) => {
     // Fetch all users
     const users = await step.run("fetch-users", async () => {
@@ -69,8 +69,7 @@ Next, create a function that listens for the `"app/weekly-email-activity.send"` 
 
 ```ts
 export const sendReminder = inngest.createFunction(
-  { id: "weekly-activity-send-email" },
-  { event: "app/weekly-email-activity.send" },
+  { id: "weekly-activity-send-email", triggers: { event: "app/weekly-email-activity.send" } },
   async ({ event, step }) => {
     const data = await step.run("load-user-data", async () => {
       return loadUserData(event.data.user.id);

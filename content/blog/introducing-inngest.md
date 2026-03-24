@@ -44,7 +44,7 @@ The long version is that you can:
 - Version each workflow, and roll back instantly if need be
 - Visually see and understand the workflows
 - Get retries and error handling out of the box
-- Step-debug thtourhg your workflows
+- Step-debug through your workflows
 - Run _any_ code as part of a workflow, in any language
 - Automatically create schemas for each of your events
 - Collaborate and hand-off workflows to non-developer folk

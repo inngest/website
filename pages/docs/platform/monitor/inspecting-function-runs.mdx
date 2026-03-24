@@ -77,8 +77,7 @@ output.name == "NonRetriableError" && output.message == "Failed to import data"
     }
   }
   inngest.createFunction(
-    { id: "my-fn" },
-    { event: "user" },
+    { id: "my-fn", triggers: { event: "user" } },
     async ({ step, event }) => {
       await step.run("get-user", async () => {
         const user = await getUser(event.data.userId);

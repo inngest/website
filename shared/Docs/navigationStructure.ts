@@ -214,14 +214,17 @@ const sectionReference: (NavGroup | NavLink)[] = [
             title: "ESLint plugin",
             href: `/docs/sdk/eslint`,
           },
-          { title: "Upgrading to v3", href: tsRef("v3", "migrations/v2-to-v3") },
+          {
+            title: "Upgrading to v3",
+            href: tsRef("v3", "migrations/v2-to-v3"),
+          },
         ],
       },
     ],
   },
   {
     title: "TypeScript SDK v4",
-    tag: "beta",
+    tag: "new",
     links: [
       {
         title: "Introduction",
@@ -811,10 +814,6 @@ const sectionLearn: (NavGroup | NavLink)[] = [
     defaultOpen: true,
     links: [
       {
-        title: "Versioning",
-        href: `/docs/learn/versioning`,
-      },
-      {
         title: "Local development",
         href: `/docs/local-development`,
       },
@@ -893,6 +892,23 @@ const sectionLearn: (NavGroup | NavLink)[] = [
         ],
       },
       {
+        title: "AI Patterns",
+        links: [
+          {
+            title: "Agent tool loops",
+            href: `/docs/ai-patterns/agent-tool-loops`,
+          },
+          {
+            title: "Human-in-the-loop",
+            href: `/docs/ai-patterns/human-in-the-loop`,
+          },
+          {
+            title: "Sub-agents",
+            href: `/docs/ai-patterns/sub-agent-delegation`,
+          },
+        ],
+      },
+      {
         title: "Deploying",
         defaultOpen: true,
         links: [
@@ -907,7 +923,7 @@ const sectionLearn: (NavGroup | NavLink)[] = [
           {
             title: "Connect",
             href: `/docs/setup/connect`,
-            tag: "new",
+            tag: "beta",
           },
           {
             title: "Checkpointing",
@@ -947,8 +963,37 @@ const sectionLearn: (NavGroup | NavLink)[] = [
         ],
       },
       {
+        title: "Events & Triggers",
+        links: [
+          {
+            title: "Overview",
+            href: `/docs/features/events-triggers`,
+          },
+          {
+            title: "Sending events",
+            href: `/docs/events`,
+          },
+          {
+            title: "Event payload format",
+            href: `/docs/features/events-triggers/event-format`,
+          },
+          {
+            title: "Writing expressions",
+            href: `/docs/guides/writing-expressions`,
+          },
+          {
+            title: "Consuming webhook events",
+            href: `/docs/platform/webhooks`,
+          },
+        ],
+      },
+      {
         title: "Optimizing Performance",
         href: `/docs/improve-performance`,
+      },
+      {
+        title: "Versioning",
+        href: `/docs/learn/versioning`,
       },
       {
         title: "Logging",
@@ -976,31 +1021,6 @@ const sectionLearn: (NavGroup | NavLink)[] = [
           {
             title: "Sentry Middleware",
             href: "/docs/features/middleware/sentry-middleware",
-          },
-        ],
-      },
-      {
-        title: "Events & Triggers",
-        links: [
-          {
-            title: "Overview",
-            href: `/docs/features/events-triggers`,
-          },
-          {
-            title: "Sending events",
-            href: `/docs/events`,
-          },
-          {
-            title: "Event payload format",
-            href: `/docs/features/events-triggers/event-format`,
-          },
-          {
-            title: "Writing expressions",
-            href: `/docs/guides/writing-expressions`,
-          },
-          {
-            title: "Consuming webhook events",
-            href: `/docs/platform/webhooks`,
           },
         ],
       },

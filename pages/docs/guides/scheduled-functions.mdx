@@ -18,8 +18,7 @@ const inngest = new Inngest({ id: "signup-flow" });
 
 // This weekly digest function will run at 12:00pm on Friday in the Paris timezone
 export const prepareWeeklyDigest = inngest.createFunction(
-  { id: "prepare-weekly-digest" },
-  { cron: "TZ=Europe/Paris 0 12 * * 5" },
+  { id: "prepare-weekly-digest", triggers: { cron: "TZ=Europe/Paris 0 12 * * 5" } },
   async ({ step }) => {
     // Load all the users from your database:
     const users = await step.run(
@@ -60,8 +59,7 @@ export const prepareWeeklyDigest = inngest.createFunction(
 
 // Since we are "fanning out" with events, these functions can all run in parallel
 export const sendWeeklyDigest = inngest.createFunction(
-  { id: "send-weekly-digest-email" },
-  { event: "app/send.weekly.digest" },
+  { id: "send-weekly-digest-email", triggers: { event: "app/send.weekly.digest" } },
   async ({ event }) => {
     // 3️⃣ We can now grab the email and user id from the event payload
     const { email, user_id } = event.data;

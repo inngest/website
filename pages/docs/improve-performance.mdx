@@ -32,19 +32,22 @@ What happens when something goes wrong? If a step fails and needs to retry, the 
 
 <LanguageSection show="typescript">
 
-To enable checkpointing:
+Checkpointing is enabled by default. No additional configuration is required for long-running or always-on servers.
 
-1. Install `inngest@3.51.0` or higher
-2. Set `checkpointing: true` on your Inngest client
+For serverless platforms, configure `maxRuntime` to slightly below your function's maximum duration:
 
 ```ts
 import { Inngest } from "inngest";
 
 export const inngest = new Inngest({
   id: "my-app",
-  checkpointing: true,
+  checkpointing: {
+    maxRuntime: '50s',
+  },
 });
 ```
+
+To disable checkpointing, set `checkpointing: false` on the client or per-function.
 
 </LanguageSection>
 

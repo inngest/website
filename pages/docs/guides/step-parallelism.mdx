@@ -25,8 +25,7 @@ import { Inngest } from "inngest";
 const inngest = new Inngest({ id: "signup-flow" });
 
 export const fn = inngest.createFunction(
-  { id: "post-payment-flow" },
-  { event: "stripe/charge.created" },
+  { id: "post-payment-flow", triggers: { event: "stripe/charge.created" } },
   async ({ event, step }) => {
     // These steps are not `awaited` and run in parallel when Promise.all
     // is invoked.
@@ -94,44 +93,30 @@ def fn(ctx: inngest.ContextSync) -> None:
 
 ## Optimizing parallel step performance
 
-By default, parallel steps require 2 requests per step to your application. If you have many parallel steps (e.g., hundreds), this can lead to:
+Without optimized parallelism, parallel steps require 2 requests per step to your application. If you have many parallel steps (e.g., hundreds), this can lead to:
 - High number of HTTP requests to your application
 - Increased ingress bandwidth
 - Higher CPU usage from request parsing
 
-The `optimizeParallelism` feature reduces this to just 1 request per parallel step, significantly improving performance for functions with many parallel operations.
+Optimized parallelism reduces this to just 1 request per parallel step, significantly improving performance for functions with many parallel operations.
 
-### TypeScript: Opt-in via function configuration
+### TypeScript
 
-In TypeScript, you can enable optimized parallelism by adding `optimizeParallelism: true` to your function configuration:
+You can disable optimized parallelism by setting `optimizeParallelism: false` on your client or function.
 
-```ts
-import { Inngest } from "inngest";
-
-const inngest = new Inngest({ id: "my-app" });
-
-export const fn = inngest.createFunction(
-  { 
-    id: "process-batch",
-    optimizeParallelism: true  // Enable optimized parallelism
-  },
-  { event: "batch/process" },
-  async ({ event, step }) => {
-    // These parallel steps will now use only 1 request each instead of 2
-    const results = await Promise.all(
-      event.data.items.map((item, i) =>
-        step.run(`process-${i}`, () => processItem(item))
-      )
-    );
-    
-    return results;
-  }
-);
-```
 
 **Important considerations:**
 
-- **`Promise.race` behavior**: When using optimized parallelism, `Promise.race` will wait for all parallel steps to complete before returning the first result. This differs from the standard JavaScript behavior where it returns immediately when the first promise resolves. A future `group.race()` API may address this.
+- **`Promise.race` behavior**: With optimized parallelism (the default in v4), `Promise.race` waits for all parallel steps to complete before resolving. If you need early resolution behavior, use `group.parallel()`:
+
+```ts
+const winner = await group.parallel(async () => {
+  return Promise.race([
+    step.run("a", () => "a"),
+    step.run("b", () => "b"),
+  ]);
+});
+```
 
 - **Sequential steps in parallel groups**: Steps that run sequentially within different parallel branches may not execute in the order you expect. For example:
 
@@ -139,8 +124,7 @@ export const fn = inngest.createFunction(
 const stepOrder: string[] = [];
 
 export const fn = inngest.createFunction(
-  { id: "fn-1", optimizeParallelism: true },
-  { event: "event-1" },
+  { id: "fn-1", triggers: { event: "event-1" } },
   async ({ step }) => {
     await Promise.all([
       (async () => {
@@ -214,8 +198,7 @@ import { Inngest } from "inngest";
 const inngest = new Inngest({ id: "signup-flow" });
 
 export const fn = inngest.createFunction(
-  { id: "summarize-text" },
-  { event: "app/text.summarize" },
+  { id: "summarize-text", triggers: { event: "app/text.summarize" } },
   async ({ event, step }) => {
     const chunks = splitTextIntoChunks(event.data.text);
 

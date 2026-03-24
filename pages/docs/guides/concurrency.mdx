@@ -49,8 +49,8 @@ inngest.createFunction(
   {
     id: "generate-ai-summary",
     concurrency: 10,
+    triggers: { event: "ai/summary.requested" },
   },
-  { event: "ai/summary.requested" },
   async ({ event, step }) => {
     // Your function handler here
   }
@@ -79,8 +79,8 @@ inngest.createFunction(
         limit: 10,
       },
     ],
+    triggers: { event: "ai/summary.requested" },
   },
-  { event: "ai/summary.requested" },
   async ({ event, step }) => {
   }
 );
@@ -115,8 +115,8 @@ inngest.createFunction(
         limit: 60,
       },
     ],
+    triggers: { event: "ai/summary.requested" },
   },
-  { event: "ai/summary.requested" },
   async ({ event, step }) => {
   }
 );
@@ -163,8 +163,8 @@ inngest.createFunction(
          limit: 1,
       },
     ],
+    triggers: { event: "ai/summary.requested" },
   },
-  { event: "ai/summary.requested" },
   async ({ event, step }) => {
   }
 );
@@ -247,8 +247,8 @@ inngest.createFunction(
       key: `"openai"`,
       limit: 5,
     },
+    triggers: { event: "ai/summary.requested" },
   },
-  { event: "ai/summary.requested" },
   async ({ event, step }) => {
   }
 );
@@ -261,8 +261,8 @@ inngest.createFunction(
       key: `"openai"`,
       limit: 50,
     },
+    triggers: { event: "ai/summary.requested" },
   },
-  { event: "ai/summary.requested" },
   async ({ event, step }) => {
   }
 );
@@ -340,8 +340,8 @@ export const send = inngest.createFunction(
       limit: 1,
       key: `event.data.customerId`, // You can use any piece of data from the event payload
     },
+    triggers: { event: "csv/file.uploaded" },
   },
-  { event: "csv/file.uploaded" },
   async ({ event, step }) => {
     await step.run("process-file", async () => {
       const file = await bucket.fetch(event.data.fileURI);

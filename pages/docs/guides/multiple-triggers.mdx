@@ -17,12 +17,14 @@ Functions support up to 10 unique triggers. This allows you to explicitly match 
 <CodeGroup>
 ```ts {{ title: "TypeScript" }}
 inngest.createFunction(
-  { id: "resync-user-data" },
-  [
-    { event: "user.created" },
-    { event: "user.updated" },
-    { cron: "0 5 * * *" }, // Every morning at 5am
-  ],
+  {
+    id: "resync-user-data",
+    triggers: [
+      { event: "user.created" },
+      { event: "user.updated" },
+      { cron: "0 5 * * *" }, // Every morning at 5am
+    ],
+  },
   async ({ event, step }) => {
     // ...
   },
@@ -76,28 +78,32 @@ Wildcards cannot be used following any characters other than `/` and `.` or in t
 To define types for wildcard triggers, you need to explicitly define
 
 ```ts
-type WildcardEvents = {
-  "app/blog.post.*": {
-    name: "app/blog.post.created" | "app/blog.post.published";
-    data: {
-      postId: string;
-      authorId: string;
-      createdAt: string;
-    } | {
-      postId: string;
-      authorId: string;
-      publishedAt: string;
-    }
-  }
-}
+import { eventType, Inngest } from "inngest";
+
+const blogPostCreated = eventType({
+  name: "app/blog.post.created",
+  data: {} as {
+    postId: string;
+    authorId: string;
+    createdAt: string;
+  },
+});
+
+const blogPostPublished = eventType({
+  name: "app/blog.post.published",
+  data: {} as {
+    postId: string;
+    authorId: string;
+    publishedAt: string;
+  },
+});
+
 const inngest = new Inngest({
   id: "my-app",
-  schemas: new EventSchemas().fromRecord<WildcardEvents>()
 });
 
 inngest.createFunction(
-  { id: "blog-updates-to-slack" },
-  { event: "app/blog.post.*" },
+  { id: "blog-updates-to-slack", triggers: [{ event: "app/blog.post.*" }] },
   async ({ event, step }) => {
     // ...
   },

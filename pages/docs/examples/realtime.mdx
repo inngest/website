@@ -58,8 +58,7 @@ export const helloChannel = channel((uuid: string) => `hello-world.${uuid}`).add
 );
 
 export const someTask = inngest.createFunction(
-  { id: "hello-world" },
-  { event: "hello-world/hello" },
+  { id: "hello-world", triggers: [{ event: "hello-world/hello" }] },
   async ({ event, step, publish }) => {
     const { uuid } = event.data;
     await publish(helloChannel(uuid).logs("Hello, world!"));
@@ -124,16 +123,14 @@ import {
   subscribe,
   topic,
 } from "@inngest/realtime";
-import { EventSchemas, Inngest } from "inngest";
+import { Inngest } from "inngest";
 import { globalChannel, postChannel } from "../channels";
 
 export const likePost = app.createFunction(
   {
     id: "post/like",
     retries: 0,
-  },
-  {
-    event: "app/post.like",
+    triggers: [{ event: "app/post.like" }],
   },
   async ({
     event: {
@@ -185,7 +182,7 @@ The `globalChannel` will be used to stream updates for all posts, and the `postC
 
 ## Human in the loop: Bi-directional workflows
 
-Combine Realtime with `waitForEvent()` to enable workflows that require user input, such as review or approval steps. Here's how to send a message to the user and wait for their confirmation:
+Combine Realtime with `waitForEvent()` to enable workflows that require user input, such as [review or approval steps](/docs/ai-patterns/human-in-the-loop). Here's how to send a message to the user and wait for their confirmation:
 
 ```ts { title: "src/inngest/functions/agentic-workflow.ts" }
 import crypto from "crypto";
@@ -207,8 +204,7 @@ export const agenticWorkflowChannel = channel("agentic-workflow").addTopic(
 );
 
 export const agenticWorkflow = inngest.createFunction(
-  { id: "agentic-workflow" },
-  { event: "agentic-workflow/start" },
+  { id: "agentic-workflow", triggers: [{ event: "agentic-workflow/start" }] },
   async ({ event, step, publish }) => {
     await step.run(/* ... */);
     const confirmationUUid = await step.run("get-confirmation-uuid", async () => crypto.randomUUID());

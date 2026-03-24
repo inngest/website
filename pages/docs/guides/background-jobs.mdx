@@ -41,8 +41,7 @@ import { Inngest } from "inngest";
 const inngest = new Inngest({ id: "signup-flow" });
 
 export const sendSignUpEmail = inngest.createFunction(
-  { id: "send-signup-email" },
-  { event: "app/user.created" },
+  { id: "send-signup-email", triggers: { event: "app/user.created" } },
   ({ event, step }) => {
     await step.run("send-the-user-a-signup-email", async () => {
       await sesclient.clientsendEmail({

@@ -20,8 +20,7 @@ You can use `step.fetch()` to make HTTP requests within an Inngest function.
 import { inngest } from "./client";
 
 export const retrieveTextFile = inngest.createFunction(
-  { id: "retrieveTextFile" },
-  { event: "textFile/retrieve" },
+  { id: "retrieveTextFile", triggers: { event: "textFile/retrieve" } },
   async ({ step }) => {
     // The fetching of the text file is offloaded to the Inngest Platform
     const response = await step.fetch(
@@ -81,8 +80,7 @@ await api.getProduct(1);
 
 // A call from inside an Inngest function will be made durable and offloaded to the Inngest Platform
 inngest.createFunction(
-  { id: "my-fn" },
-  { event: "product/activated" },
+  { id: "my-fn", triggers: { event: "product/activated" } },
   async () => {
     await api.getProduct(1);
   },
@@ -121,8 +119,7 @@ const response = await generateText({
 
 // A call from inside an Inngest function will be made durable
 inngest.createFunction(
-  { id: "generate-summary" },
-  { event: "post.created" },
+  { id: "generate-summary", triggers: { event: "post.created" } },
   async ({ event }) => {
     // This will use step.fetch automatically!
     const response = await generateText({
@@ -160,8 +157,7 @@ const openai = createOpenAI({
 });
 
 inngest.createFunction(
-  { id: "generate-with-o3" },
-  { event: "content/generate" },
+  { id: "generate-with-o3", triggers: { event: "content/generate" } },
   async ({ event }) => {
     // Disable AI SDK retries - let Inngest handle them instead
     const response = await generateText({
@@ -185,8 +181,7 @@ const anthropic = createAnthropic({
 });
 
 inngest.createFunction(
-  { id: "stream-completion" },
-  { event: "completion/stream" },
+  { id: "stream-completion", triggers: { event: "completion/stream" } },
   async ({ event, step }) => {
     // Disable AI SDK retries for streaming operations
     const result = await streamText({
@@ -220,8 +215,7 @@ const anthropic = createAnthropic({
 });
 
 inngest.createFunction(
-  { id: "generate-summary" },
-  { event: "post.created" },
+  { id: "generate-summary", triggers: { event: "post.created" } },
   async ({ step }) => {
     const response = await generateText({
       model: anthropic('claude-3-5-sonnet-20240620'),

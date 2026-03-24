@@ -35,11 +35,11 @@ An Inngest Function is composed of 3 main parts that provide robust tools for re
 ```ts
 inngest.createFunction({
     id: "sync-systems",
+    // A Function is triggered by events
+    triggers: { event: "auto/sync.request" },
     // Easily add Throttling with Flow Control
     throttle: { limit: 3, period: "1min"},
   },
-  // A Function is triggered by events
-  { event: "auto/sync.request" },
   async ({ step }) => {
     // step is retried if it throws an error
     const data = await step.run("get-data", async () => {

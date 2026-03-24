@@ -7,6 +7,7 @@ Inngest's `step.invoke()` function provides a powerful tool for calling function
 - Allows functions to call and receive the result of other functions
 - Naturally separates your system into reusable functions that can spread across process boundaries
 - Allows use of synchronous interaction between functions in an otherwise-asynchronous event-driven architecture, making it much easier to manage functions that require immediate outcomes
+- Enables [synchronous sub-agent delegation](/docs/ai-patterns/sub-agent-delegation#delegate-synchronously-with-stepinvoke) in AI agent systems
 
 
 ## Invoking another function
@@ -27,8 +28,7 @@ If you don't need to define granular configuration or if your function won't be 
 ```ts
 // Some function we'll call
 const computeSquare = inngest.createFunction(
-  { id: "compute-square" },
-  { event: "calculate/square" },
+  { id: "compute-square", triggers: { event: "calculate/square" } },
   async ({ event }) => {
     return { result: event.data.number * event.data.number }; // Result typed as { result: number }
   }
@@ -36,8 +36,7 @@ const computeSquare = inngest.createFunction(
 
 // In this function, we'll call `computeSquare`
 const mainFunction = inngest.createFunction(
-  { id: "main-function" },
-  { event: "main/event" },
+  { id: "main-function", triggers: { event: "main/event" } },
   async ({ step }) => {
     const square = await step.invoke("compute-square-value", {
       function: computeSquare,
@@ -93,8 +92,7 @@ import { inngest, referenceFunction } from "inngest";
 import { type computeSquare } from "@/inngest/computeSquare"; // Import only the type
 
 const mainFunction = inngest.createFunction(
-  { id: "main-function" },
-  { event: "main/event" },
+  { id: "main-function", triggers: { event: "main/event" } },
   async ({ step }) => {
     const square = await step.invoke("compute-square-value", {
       function: referenceFunction<typeof computeSquare>({

@@ -29,8 +29,8 @@ const scheduleReminder = inngest.createFunction(
       // If the run takes longer than 10s to start, cancel the run.
       start: "10s",
     },
-  }
-  { event: "tasks/reminder.created" },
+    triggers: { event: "tasks/reminder.created" },
+  },
   async ({ event, step }) => {
     await step.run('send-reminder-push', async () => {
       await pushNotificationService.push(event.data.reminder)
@@ -64,8 +64,8 @@ const scheduleReminder = inngest.createFunction(
       // And if the run takes longer than 30s to finish after starting, cancel the run.
       finish: "30s",
     },
-  }
-  { event: "tasks/reminder.created" },
+    triggers: { event: "tasks/reminder.created" },
+  },
   async ({ event, step }) => {
     await step.run('send-reminder-push', async () => {
       await pushNotificationService.push(event.data.reminder)

@@ -148,7 +148,7 @@ If your transform throws and error, Inngest will return
 
 ### Example transforms
 
-<Callout variant="info">
+<Callout variant="info" skipSearchCrawler>
   💡 Header names are case-insensitive and are canonicalized by making the first character and any characters following a hyphen uppercase and the rest lowercase.
 
   Remember to check your transforms for header usage and make sure to use the correct case.
@@ -278,8 +278,7 @@ Now that you have events flowing into Inngest, you can write functions that that
 
 ```ts {{ title: "Example: Send a welcome email when the clerk/user.created event is received"}}
 inngest.createFunction(
-  { name: "Send welcome email", id: "send-welcome-email" },
-  { event: "clerk/user.created" },
+  { name: "Send welcome email", id: "send-welcome-email", triggers: { event: "clerk/user.created" } },
   async ({ event, step }) => {
     const emailAddress = event.data.email_addresses[0].email_address;
     await step.run('send-email', async () => {
@@ -320,8 +319,7 @@ Then you can use that data to verify the signature in your Inngest functions:
 
 ```ts
 inngest.createFunction(
-  { id: "stripe/charge.updated" },
-  { event: "stripe/charge.updated" },
+  { id: "stripe/charge.updated", triggers: { event: "stripe/charge.updated" } },
   async ({ attempt, event, step }) => {
     if (!verifySig(event.data.raw, event.data.sig, stripeSecret)) {
       throw new NonRetriableError("failed signature verification");

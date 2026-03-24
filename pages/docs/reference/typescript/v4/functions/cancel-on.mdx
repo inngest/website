@@ -6,7 +6,6 @@ import { InformationCircleIcon } from '@heroicons/react/24/outline'
 
 Stop the execution of a running function when a specific event is received using `cancelOn`.
 
-<CodeGroup>
 ```ts
 inngest.createFunction(
   {
@@ -14,6 +13,7 @@ inngest.createFunction(
     triggers: { event: "app/user.created" },
     cancelOn: [
       {
+        // Can be a string or EventType
         event: "app/user.deleted",
         // ensure the async (future) event's userId matches the trigger userId
         if: "async.data.userId == event.data.userId",
@@ -23,7 +23,6 @@ inngest.createFunction(
   // ...
 );
 ```
-</CodeGroup>
 
 Using `cancelOn` is very useful for handling scenarios where a long-running function should be terminated early due to changes elsewhere in your system.
 
@@ -91,8 +90,8 @@ Match expressions can be simple equalities or be more complex. Read [our guide t
   <Property name="cancelOn" type="array of objects">
     Define events that can be used to cancel a running or sleeping function
     <Properties nested={true}>
-      <Property name="event" type="string" required>
-        The event name which will be used to cancel
+      <Property name="event" type="string | EventType" required>
+        The event that will be used to cancel. This can be a string event name (e.g. `"app/user.deleted"`) or an event object created with `eventType()`
       </Property>
       <Property name="match" type="string">
         The property to match the event trigger and the cancelling event, using dot-notation, for example, `data.userId`. Read [our guide to writing expressions](/docs/guides/writing-expressions) for more info.
@@ -112,6 +111,28 @@ Match expressions can be simple equalities or be more complex. Read [our guide t
 </Properties>
 
 ## Examples
+
+### Using an event object
+
+The `event` property also accepts an event object instead of a string. This is useful when you have typed event definitions or want to reference events from a schema.
+
+```ts
+import { userCreatedEvent, userDeletedEvent } from "./events";
+
+inngest.createFunction(
+  {
+    id: "sync-contacts",
+    triggers: userCreatedEvent,
+    cancelOn: [
+      {
+        event: userDeletedEvent,
+        if: "async.data.userId == event.data.userId",
+      },
+    ],
+  }
+  // ...
+);
+```
 
 ### With a timeout window
 

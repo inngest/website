@@ -1,7 +1,7 @@
 import { Info, Callout, Properties, Property, Row, Col, CodeGroup, VersionBadge } from "src/shared/Docs/mdx";
 
 # Create Function
-<Info>
+<Info skipSearchCrawler>
   **TypeScript SDK v4 is now in beta.** See the [v4 docs](/docs/reference/typescript/v4) and [migration guide](/docs/reference/typescript/v4/migrations/v3-to-v4).
 </Info>
 
@@ -45,7 +45,7 @@ The `createFunction` method accepts a series of arguments to define your functio
       </Property>
       <Property name="scope" type="'account' | 'env' | 'fn'">
         The scope for the concurrency limit, which impacts whether concurrency is managed on an individual function, across an environment, or across your entire account.
-    
+
         * `fn` (default):  only the runs of this function affects the concurrency limit
         * `env`:  all runs within the same environment that share the same evaluated key value will affect the concurrency limit.  This requires setting a `key` which evaluates to a virtual queue name.
         * `account`:  every run that shares the same evaluated key value will affect the concurrency limit, across every environment.  This requires setting a `key` which evaluates to a virtual queue name.
@@ -144,7 +144,7 @@ The `createFunction` method accepts a series of arguments to define your functio
   <Property name="batchEvents" type="object">
     Configure how the function should consume batches of events ([reference](/docs/guides/batching))
 
-    <Properties nested={true} collapse={true}>  
+    <Properties nested={true} collapse={true}>
       <Property name="maxSize" type="number" required>
         The maximum number of events a batch can have. Current limit is `100`.
       </Property>

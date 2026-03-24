@@ -22,8 +22,8 @@ export default inngest.createFunction(
       period: "4h",
       key: "event.data.company_id",
     },
+    triggers: { event: "intercom/company.updated" },
   },
-  { event: "intercom/company.updated" },
   async ({ event, step }) => {
     // This function will be rate limited
     // It will only run once per 4 hours for a given event payload with matching company_id

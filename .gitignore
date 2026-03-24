@@ -39,3 +39,7 @@
 cdn
 
 tsconfig.tsbuildinfo
+
+# AI
+.playwright-mcp/
+.claude/worktrees

@@ -8,7 +8,7 @@ export const hidePageSidebar = true;
 
 You can pause a Function's run until a given event is received.
 
-This is a useful pattern to react to specific user actions (for example, implement "Human in the loop" in AI Agent workflows), or to wait until something happens in external systems.
+This is a useful pattern to react to specific user actions (for example, implement [Human in the loop](/docs/ai-patterns/human-in-the-loop) in AI Agent workflows), or to wait until something happens in external systems.
 
 This is the recommended and preferred way to pause and resume a function via events or signals because:
 
@@ -28,8 +28,7 @@ This is the recommended and preferred way to pause and resume a function via eve
 
 ```ts
 export default inngest.createFunction(
-  { id: "send-onboarding-nudge-email" },
-  { event: "app/account.created" },
+  { id: "send-onboarding-nudge-email", triggers: { event: "app/account.created" } },
   async ({ event, step }) => {
     const onboardingCompleted = await step.waitForEvent(
       "wait-for-onboarding-completion",
@@ -64,8 +63,7 @@ Below is an example of an Inngest function that creates an Intercom or Customer.
 
 ```ts
 export default inngest.createFunction(
-  { id: "onboarding-email-drip-campaign" },
-  { event: "app/account.created" },
+  { id: "onboarding-email-drip-campaign", triggers: { event: "app/account.created" } },
   async ({ event, step }) => {
     // Send the user the welcome email immediately
     await step.run("send-welcome-email", async () => {
