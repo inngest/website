@@ -15,6 +15,7 @@ export const description = "Frequently asked questions about Inngest";
 - [Why am I getting a `NON_DETERMINISTIC_FUNCTION`
   error?](#why-am-i-getting-a-non-deterministic-function-error)
 - [Why am I getting an `Illegal invocation` error?](#why-am-i-getting-an-illegal-invocation-error)
+- [Why am I getting an `Invalid signature` error on my runs?](#why-am-i-getting-an-invalid-signature-error-on-my-runs)
 - [Why is the dev server polling endpoints that don't exist?](#why-is-the-dev-server-polling-endpoints-that-don-t-exist)
 
 ## How do I run crons only in production?
@@ -122,6 +123,9 @@ new Inngest({
   fetch: fetch.bind(globalThis),
 });
 ```
+
+## Why am I getting an `Invalid signature` error on my runs?
+Recent changes in Vercel's runtime surfaced a signature validation issue in older SDK versions. Updating to TypeScript SDK `3.50.0` (or later) resolves this and restores normal run verification behavior.
 
 ## Why is the dev server polling endpoints that don't exist?
 The dev server will automatically detect and connect to apps running on common ports and endpoints. These endpoints include `/api/inngest`, `/x/inngest`, `/.netlify/functions/inngest`, `/.redwood/functions/inngest`.
