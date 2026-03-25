@@ -194,7 +194,7 @@ ch.message.config;  // { schema: ... }
 await publish(ch.message, { text: "Hello!", sender: "alice" });
 ```
 
-Topic refs are the primary way to reference a specific topic on a specific channel instance. They're used by [`publish`](/docs/reference/typescript/v4/realtime/publishing), [`step.realtime.publish`](/docs/reference/typescript/v4/realtime/publishing#steprealtimepublish), and [`getSubscriptionToken`](/docs/reference/typescript/v4/realtime/subscribing).
+Topic refs are the primary way to reference a specific topic on a specific channel instance. They're used by [`publish`](/docs/reference/typescript/v4/realtime/publishing), [`step.realtime.publish`](/docs/reference/typescript/v4/realtime/publishing#steprealtimepublish), and [`getClientSubscriptionToken`](/docs/reference/typescript/v4/realtime/subscribing).
 
 ## Type inference
 

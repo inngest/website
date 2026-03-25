@@ -18,7 +18,7 @@ function Pipeline({ runId }: { runId: string }) {
     channel: ch,
     topics,
     token: () =>
-      fetch(`/api/realtime-token?runId=${runId}`).then((r) => r.text()),
+      fetch(`/api/realtime-token?runId=${runId}`).then((r) => r.json()),
   });
 
   return (
@@ -45,8 +45,8 @@ function Pipeline({ runId }: { runId: string }) {
   <Property name="topics" type="string[]">
     The topics to subscribe to within the channel. Required when your `token` factory returns only a token key string.
   </Property>
-  <Property name="token" type="Token | () => Promise<string | Token>">
-    Authentication for the subscription. Pass a pre-minted token object, or an async factory that returns either a token key string or a full token object. The async factory pattern is recommended because it runs on mount and on reconnect.
+  <Property name="token" type="Token | () => Promise<string | ClientSubscriptionToken | Token>">
+    Authentication for the subscription. Pass a pre-minted token object, or an async factory that returns a token key string, a `ClientSubscriptionToken` from `getClientSubscriptionToken()`, or a full token object. The async factory pattern is recommended because it runs on mount and on reconnect.
   </Property>
   <Property name="key" type="string">
     Optional subscription identity key. Change it to force the hook to reset its retained state and reconnect even if `channel` and `topics` are unchanged.
@@ -153,20 +153,15 @@ The recommended approach is to pass an async factory function for `token`. This 
 ```tsx {{ title: "Next.js Server Action" }}
 // app/actions.ts
 "use server";
-import { getSubscriptionToken } from "inngest/react";
+import { getClientSubscriptionToken } from "inngest/react";
 import { inngest } from "../inngest/client";
 import { pipelineChannel } from "../inngest/channels";
 
 export async function getToken(runId: string) {
-  const ch = pipelineChannel({ runId });
-  const token = await getSubscriptionToken(inngest, {
-    channel: ch,
+  return getClientSubscriptionToken(inngest, {
+    channel: pipelineChannel({ runId }),
     topics: ["status", "tokens"],
   });
-  if (!token.key) {
-    throw new Error("No realtime token returned");
-  }
-  return token.key;
 }
 
 // app/page.tsx
@@ -193,25 +188,20 @@ function Pipeline({ runId }: { runId: string }) {
 
 ```tsx {{ title: "API Route" }}
 // app/api/realtime-token/route.ts
-import { getSubscriptionToken } from "inngest/react";
+import { getClientSubscriptionToken } from "inngest/react";
 import { inngest } from "../../inngest/client";
 import { pipelineChannel } from "../../inngest/channels";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const runId = searchParams.get("runId")!;
-  const ch = pipelineChannel({ runId });
 
-  const token = await getSubscriptionToken(inngest, {
-    channel: ch,
+  const token = await getClientSubscriptionToken(inngest, {
+    channel: pipelineChannel({ runId }),
     topics: ["status", "tokens"],
   });
 
-  if (!token.key) {
-    throw new Error("No realtime token returned");
-  }
-
-  return new Response(token.key);
+  return Response.json(token);
 }
 
 // app/page.tsx
@@ -225,7 +215,7 @@ function Pipeline({ runId }: { runId: string }) {
     channel: pipelineChannel({ runId }),
     topics,
     token: () =>
-      fetch(`/api/realtime-token?runId=${runId}`).then((r) => r.text()),
+      fetch(`/api/realtime-token?runId=${runId}`).then((r) => r.json()),
   });
 
   return <p>{messages.byTopic.status?.data.message}</p>;

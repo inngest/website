@@ -26,7 +26,7 @@ functions. It is memoized and durable, unlike `publish()` and
 | What | Import from |
 |------|------------|
 | `realtime`, `staticSchema` | `"inngest"` |
-| `useRealtime`, `getSubscriptionToken` | `"inngest/react"` |
+| `useRealtime`, `getClientSubscriptionToken` | `"inngest/react"` |
 | `subscribe`, `getSubscriptionToken` | `"inngest/realtime"` |
 | `publish`, `step.realtime.publish` | Function handler context (no import needed) |
 | `inngest.publish`, `inngest.realtime.subscribe`, `inngest.realtime.token` | Your `Inngest` client instance |
@@ -124,4 +124,4 @@ export default function PipelinePage({ runId }: { runId: string }) {
 - [Channels & topics](/docs/reference/typescript/v4/realtime/channels): defining channels, parameterized names, schemas, and type inference
 - [Publishing](/docs/reference/typescript/v4/realtime/publishing): `publish()`, `inngest.publish()`, and `step.realtime.publish()`
 - [`useRealtime`](/docs/reference/typescript/v4/realtime/use-realtime): full React hook API reference
-- [Subscribing](/docs/reference/typescript/v4/realtime/subscribing): `getSubscriptionToken()`, `subscribe()`, and client aliases
+- [Subscribing](/docs/reference/typescript/v4/realtime/subscribing): `getClientSubscriptionToken()`, `subscribe()`, and client aliases

@@ -109,21 +109,15 @@ export const generatePost = inngest.createFunction(
 ```tsx {{ title: "app/actions.ts" }}
 "use server";
 
-import { getSubscriptionToken } from "inngest/react";
+import { getClientSubscriptionToken } from "inngest/react";
 import { inngest } from "@/inngest/client";
 import { contentPipeline } from "@/inngest/channels";
 
 export async function getRealtimeToken(runId: string) {
-  const token = await getSubscriptionToken(inngest, {
+  return getClientSubscriptionToken(inngest, {
     channel: contentPipeline({ runId }),
     topics: ["status", "tokens"],
   });
-
-  if (!token.key) {
-    throw new Error("No realtime token returned");
-  }
-
-  return token.key;
 }
 ```
 
