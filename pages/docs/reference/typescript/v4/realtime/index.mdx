@@ -14,12 +14,12 @@ The v4 SDK includes a built-in realtime system for streaming updates from your I
 
 - **Channels** define a named scope for messages. They can be static or parameterized with runtime values like a `runId`.
 - **Topics** are typed message streams within a channel, each with a schema.
-- **Publishing** sends data to a topic with `publish()` in a function handler, `inngest.publish()` from server-side code, or `step.realtime.publish()` for durable publishes.
+- **Publishing** sends data to a topic with `publish()` in a function handler, `inngest.realtime.publish()` from server-side code, or `step.realtime.publish()` for durable publishes.
 - **Subscribing** consumes messages via `useRealtime`, `subscribe()`, or the client aliases `inngest.realtime.subscribe()` and `inngest.realtime.token()`.
 
 As a rule of thumb, prefer `step.realtime.publish()` for publishes inside
 functions. It is memoized and durable, unlike `publish()` and
-`inngest.publish()`, which will fire again if the function retries.
+`inngest.realtime.publish()`, which will fire again if the function retries.
 
 ## Imports
 
@@ -29,7 +29,7 @@ functions. It is memoized and durable, unlike `publish()` and
 | `useRealtime`, `getClientSubscriptionToken` | `"inngest/react"` |
 | `subscribe`, `getSubscriptionToken` | `"inngest/realtime"` |
 | `publish`, `step.realtime.publish` | Function handler context (no import needed) |
-| `inngest.publish`, `inngest.realtime.subscribe`, `inngest.realtime.token` | Your `Inngest` client instance |
+| `inngest.realtime.publish`, `inngest.realtime.subscribe`, `inngest.realtime.token` | Your `Inngest` client instance |
 
 ## Quick start
 
@@ -122,6 +122,6 @@ export default function PipelinePage({ runId }: { runId: string }) {
 ## Next steps
 
 - [Channels & topics](/docs/reference/typescript/v4/realtime/channels): defining channels, parameterized names, schemas, and type inference
-- [Publishing](/docs/reference/typescript/v4/realtime/publishing): `publish()`, `inngest.publish()`, and `step.realtime.publish()`
+- [Publishing](/docs/reference/typescript/v4/realtime/publishing): `publish()`, `inngest.realtime.publish()`, and `step.realtime.publish()`
 - [`useRealtime`](/docs/reference/typescript/v4/realtime/use-realtime): full React hook API reference
 - [Subscribing](/docs/reference/typescript/v4/realtime/subscribing): `getClientSubscriptionToken()`, `subscribe()`, and client aliases

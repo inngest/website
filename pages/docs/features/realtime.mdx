@@ -17,8 +17,9 @@ export const description = "Learn the v4 realtime concepts and workflow for stre
 
 <Info>
   Realtime is built into the v4 SDK. You define channels with
-  `realtime.channel()`, publish with `publish()` or `step.realtime.publish()`,
-  and subscribe with `useRealtime` or `subscribe()`.
+  `realtime.channel()`, publish with `step.realtime.publish()` or
+  `inngest.realtime.publish()`, and subscribe with `useRealtime` or
+  `subscribe()`.
 </Info>
 
 <Warning>
@@ -36,14 +37,14 @@ The v4 model revolves around five primitives:
 
 - `channel` defines the scope for updates, such as a specific `runId`, user, or thread.
 - `topic` defines the category of data inside a channel, such as `status`, `tokens`, or `artifact`.
-- `publish()` emits non-durable messages from inside your function handler.
+- `publish()` emits non-durable messages from inside your function handler (also available as `inngest.realtime.publish()` from server-side code outside a function).
 - `step.realtime.publish()` emits durable, memoized messages that should not re-fire on retry.
 - `token` authorizes a client subscription to a specific channel and a specific set of topics.
 
 In practice, prefer `step.realtime.publish()` whenever possible. Use
-non-durable `publish()` or `inngest.publish()` only when you intentionally want
-low-overhead, retryable updates like token streams or you are publishing from
-outside a function.
+non-durable `publish()` or `inngest.realtime.publish()` only when you
+intentionally want low-overhead, retryable updates like token streams or you are
+publishing from outside a function.
 
 ## Quick start
 
@@ -152,7 +153,7 @@ export default function Home({ runId }: { runId: string }) {
 
 - Prefer `step.realtime.publish()` for important state transitions and final results.
 - Use `publish()` for high-frequency updates like tokens, logs, or progress ticks where replay on retry is acceptable.
-- Use `inngest.publish()` from routes, webhooks, or other server-side code outside a function run.
+- Use `inngest.realtime.publish()` from routes, webhooks, or other server-side code outside a function run.
 
 ## Learn more
 

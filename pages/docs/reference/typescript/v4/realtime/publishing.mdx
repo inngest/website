@@ -9,7 +9,7 @@ There are three ways to publish realtime messages in the v4 SDK.
 <Info>
   Prefer `step.realtime.publish()` whenever you can. It is durable and
   memoized, so it will not run again if the function retries. Reach for
-  `publish()` or `inngest.publish()` only when you specifically need
+  `publish()` or `inngest.realtime.publish()` only when you specifically need
   non-durable behavior, such as high-frequency token streaming or publishing
   from code outside a function.
 </Info>
@@ -17,7 +17,7 @@ There are three ways to publish realtime messages in the v4 SDK.
 | Method | Durable | Usable outside functions | Step ID | Best for |
 |--------|---------|------------------------|---------|----------|
 | `publish()` | No | No | - | High-frequency progress inside a function handler |
-| `inngest.publish()` | No | Yes | - | Publishing from routes, webhooks, or server-side code |
+| `inngest.realtime.publish()` | No | Yes | - | Publishing from routes, webhooks, or server-side code |
 | `step.realtime.publish()` | Yes | No | Required | State transitions, final results, deduped publishes |
 
 ---
@@ -76,9 +76,9 @@ Available in the function handler arguments. Publishes immediately with no memoi
   `step.run()` blocks. It is still non-durable, so it fires again on retry.
 </Info>
 
-## `inngest.publish(topicRef, data)`
+## `inngest.realtime.publish(topicRef, data)`
 
-Publishes from your `Inngest` client. Use this anywhere you already have the client available, such as API routes, webhooks, or other server-side code. Inside a function run, `inngest.publish()` also attaches the current run ID automatically.
+Publishes from your `Inngest` client. Use this anywhere you already have the client available, such as API routes, webhooks, or other server-side code. Inside a function run, `inngest.realtime.publish()` also attaches the current run ID automatically.
 
 <Row>
   <Col>
@@ -104,7 +104,7 @@ Publishes from your `Inngest` client. Use this anywhere you already have the cli
     //
     // Non-durable by design. Prefer step.realtime.publish() when this work
     // lives inside a function and duplicates on retry would be a problem.
-    await inngest.publish(alertsChannel.alert, {
+    await inngest.realtime.publish(alertsChannel.alert, {
       message: body.message,
       severity: body.severity,
     });
@@ -173,9 +173,9 @@ Use **`publish()`** when:
 - The data is ephemeral and duplicates on retry are fine
 - You want minimum latency (no step overhead)
 
-Use **`inngest.publish()`** when:
+Use **`inngest.realtime.publish()`** when:
 - Publishing from outside a function (API routes, webhooks, cron jobs)
-- Reusing the client directly instead of the handler-scoped `publish()`
+- Reusing the client instance instead of the handler-scoped `publish()`
 - Sending non-durable updates where retries are acceptable
 
 Use **`step.realtime.publish()`** when:
