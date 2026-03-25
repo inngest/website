@@ -180,8 +180,8 @@ The `createFunction` method accepts a series of arguments to define your functio
   <Property name="cancelOn" type="array of objects">
     Define events that can be used to cancel a running or sleeping function ([reference](/docs/reference/typescript/v4/functions/cancel-on))
     <Properties nested={true} collapse={true}>
-      <Property name="event" type="string" required>
-        The event name which will be used to cancel
+      <Property name="event" type="string | EventType" required>
+        The event that will be used to cancel. This can be a string event name (e.g. `"app/user.deleted"`) or an event object created with `eventType()`
       </Property>
       <Property name="match" type="string">
         The property to match the event trigger and the cancelling event, using dot-notation, for example, `data.userId`. Read [our guide to writing expressions](/docs/guides/writing-expressions) for more info.
@@ -248,8 +248,8 @@ Cron triggers with overlapping schedules for a single function will be deduplica
 </Callout>
 
 <Properties>
-  <Property name="event" type="string">
-    The name of the event that will trigger this event to run
+  <Property name="event" type="string | EventType">
+    The event that will trigger this function to run. This can be a string event name (e.g. `"app/user.created"`) or an event object created with `eventType()`.
   </Property>
   <Property name="cron" type="string">
     A [unix-cron](https://crontab.guru/) compatible schedule string. <br/>Optional timezone prefix, e.g. `TZ=Europe/Paris 0 12 * * 5`.

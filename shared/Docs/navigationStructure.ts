@@ -238,7 +238,7 @@ const sectionReference: (NavGroup | NavLink)[] = [
   },
   {
     title: "TypeScript SDK v4",
-    tag: "beta",
+    tag: "new",
     links: [
       {
         title: "Introduction",
@@ -933,6 +933,23 @@ const sectionLearn: (NavGroup | NavLink)[] = [
         ],
       },
       {
+        title: "AI Patterns",
+        links: [
+          {
+            title: "Agent tool loops",
+            href: `/docs/ai-patterns/agent-tool-loops`,
+          },
+          {
+            title: "Human-in-the-loop",
+            href: `/docs/ai-patterns/human-in-the-loop`,
+          },
+          {
+            title: "Sub-agents",
+            href: `/docs/ai-patterns/sub-agent-delegation`,
+          },
+        ],
+      },
+      {
         title: "Deploying",
         defaultOpen: true,
         links: [
@@ -947,7 +964,7 @@ const sectionLearn: (NavGroup | NavLink)[] = [
           {
             title: "Connect",
             href: `/docs/setup/connect`,
-            tag: "new",
+            tag: "beta",
           },
           {
             title: "Checkpointing",

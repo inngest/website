@@ -8,7 +8,9 @@ This is the Inngest marketing website and documentation site built with Next.js.
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS with custom design system
 - **Content**: MDX for blog posts, docs, and changelog
-- **Package Manager**: pnpm (required - do not use npm or yarn)
+- **Package Manager**: pnpm
+  - ALWAYS USE pnpm
+  - DO NOT use npm
 - **Node Version**: 22.x (required)
 
 ## Getting Started
