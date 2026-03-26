@@ -108,8 +108,7 @@ Define the function:
 import { inngest } from "./client";
 
 export const processTask = inngest.createFunction(
-  { id: "process-task" },
-  { event: "app/task.created" },
+  { id: "process-task", triggers: { event: "app/task.created" } },
   async ({ event, step }) => {
     const result = await step.run("handle-task", async () => {
       return { processed: true, id: event.data.id };
@@ -124,8 +123,7 @@ export const processTask = inngest.createFunction(
 ```ts {{ title: "Pages Router" }}
 // pages/api/inngest.ts - add to existing file
 export const processTask = inngest.createFunction(
-  { id: "process-task" },
-  { event: "app/task.created" },
+  { id: "process-task", triggers: { event: "app/task.created" } },
   async ({ event, step }) => {
     const result = await step.run("handle-task", async () => {
       return { processed: true, id: event.data.id };
@@ -231,6 +229,7 @@ You'll see a new run appear in the Dev Server. In practice, you would call `inng
 
 You now have Inngest running locally in a Next.js app. From here, a few directions worth exploring:
 
+- **Configure checkpointing for serverless.** v4 enables [checkpointing](/docs/setup/checkpointing) by default, which lets multiple steps run in a single request. If you're on Vercel or another serverless platform, set `maxRuntime` on your client and `maxDuration` on your `/api/inngest` route to avoid timeout issues. See the [Vercel deployment guide](/docs/deploy/vercel?ref=docs-nextjs-quick-start) for details.
 - **Deploy to production.** Connect your app to Inngest Cloud and sync your functions. See the [deployment guide](/docs/deploy/vercel?ref=docs-nextjs-quick-start) if you're on Vercel.
 - **Build a multi-step workflow.** Add branching logic, retries, and parallel steps. The [Inngest Functions overview](/docs/learn/inngest-functions?ref=docs-nextjs-quick-start) covers what's available.
 - **Orchestrate AI workflows.** Use `step.ai.wrap()` to make LLM calls durable and retryable, or `step.waitForSignal()` to pause a workflow until a human approves an action. See the [AI orchestration guide](/docs/features/inngest-functions/steps-workflows/step-ai-orchestration?ref=docs-nextjs-quick-start).
