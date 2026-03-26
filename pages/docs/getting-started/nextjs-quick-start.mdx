@@ -23,11 +23,13 @@ npx create-next-app@latest --ts --eslint --tailwind --no-src-dir --no-app --impo
 ```
 </CodeGroup>
 
-Once your project is ready, start the development server:
+Once your project is ready, start the development server. If you're using the v4 SDK, set `INNGEST_DEV=1` so your app connects to the local Dev Server instead of Inngest Cloud:
 
 ```shell
-npm run dev
+INNGEST_DEV=1 npm run dev
 ```
+
+You can also add `INNGEST_DEV=1` to your `.env` file so you don't need to pass it inline every time.
 
 ---
 
@@ -49,23 +51,13 @@ The Inngest Dev Server is a local environment where you can send events, trigger
 npx inngest-cli@latest dev
 ```
 
-<Callout>
-**Note if you're on the v4 SDK:** In v4, the SDK defaults to cloud mode, which means you'll need to set `INNGEST_DEV=1` before running the dev server. Without it, you'll see a signing key error, which is just indicating the variable is unset. You can add it to your `.env` file or pass it inline with your dev command:
-
-```shell
-INNGEST_DEV=1 npx inngest-cli@latest dev
-```
-
-Once that's set, you're good to go.
-</Callout>
-
 Open [http://localhost:8288](http://localhost:8288) to see the Dev Server UI. You'll use this to monitor function runs as you work through the tutorial.
 
 ---
 
 ## 3. Create an Inngest client
 
-Inngest invokes your functions through an API endpoint at `/api/inngest`. To set that up, you first need to create an Inngest client and a serve route handler.
+Inngest invokes your functions through an API endpoint at `/api/inngest`. The serve handler at this endpoint lets Inngest discover which functions your app has and execute them when triggered. To set that up, you need an Inngest client and a serve route handler.
 
 <CodeGroup>
 ```ts {{ title: "App Router" }}
@@ -106,7 +98,7 @@ export const { GET, POST, PUT } = serve({
 
 In this step you'll write a function that processes a task in the background. The function waits for a trigger event, runs a sequence of steps, and returns a result.
 
-This pattern is useful for anything you don't want running in a request/response cycle — sending emails, calling an AI model, processing a file upload, or chaining multiple operations together.
+This pattern is useful for anything you don't want running in a request/response cycle: sending emails, calling an AI model, processing a file upload, or chaining multiple operations together.
 
 Define the function:
 
@@ -123,14 +115,14 @@ export const processTask = inngest.createFunction(
       return { processed: true, id: event.data.id };
     });
 
-    await step.sleep("wait-before-notify", "1s");
+    await step.sleep("pause", "1s");
 
     return { message: `Task ${event.data.id} complete`, result };
   }
 );
 ```
 ```ts {{ title: "Pages Router" }}
-// pages/api/inngest.ts — add to existing file
+// pages/api/inngest.ts - add to existing file
 export const processTask = inngest.createFunction(
   { id: "process-task" },
   { event: "app/task.created" },
@@ -139,7 +131,7 @@ export const processTask = inngest.createFunction(
       return { processed: true, id: event.data.id };
     });
 
-    await step.sleep("wait-before-notify", "1s");
+    await step.sleep("pause", "1s");
 
     return { message: `Task ${event.data.id} complete`, result };
   }
@@ -162,7 +154,7 @@ export const { GET, POST, PUT } = serve({
 });
 ```
 ```ts {{ title: "Pages Router" }}
-// pages/api/inngest.ts — update the serve call
+// pages/api/inngest.ts - update the serve call
 export default serve({
   client: inngest,
   functions: [processTask],
@@ -196,13 +188,11 @@ To trigger the function from code, send an event using the `inngest.send()` meth
 
 <CodeGroup>
 ```ts {{ title: "App Router" }}
-// src/app/api/trigger/route.ts
+// src/app/api/create-task/route.ts
 import { NextResponse } from "next/server";
 import { inngest } from "../../../inngest/client";
 
-export const dynamic = "force-dynamic";
-
-export async function GET() {
+export async function POST() {
   await inngest.send({
     name: "app/task.created",
     data: { id: "task_001" },
@@ -212,11 +202,9 @@ export async function GET() {
 }
 ```
 ```ts {{ title: "Pages Router" }}
-// pages/api/trigger.ts
+// pages/api/create-task.ts
 import { NextApiRequest, NextApiResponse } from "next";
 import { inngest } from "./inngest";
-
-export const dynamic = "force-dynamic";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   await inngest.send({
@@ -229,7 +217,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 ```
 </CodeGroup>
 
-Visit [http://localhost:3000/api/trigger](http://localhost:3000/api/trigger) to send the event. You'll see a new run appear in the Dev Server.
+Send a request to your new endpoint:
+
+```shell
+curl -X POST http://localhost:3000/api/create-task
+```
+
+You'll see a new run appear in the Dev Server. In practice, you would call `inngest.send()` from the places in your app that send events: form submissions, webhook handlers, API routes, and so on.
 
 ---
 
@@ -237,6 +231,6 @@ Visit [http://localhost:3000/api/trigger](http://localhost:3000/api/trigger) to 
 
 You now have Inngest running locally in a Next.js app. From here, a few directions worth exploring:
 
-- **Deploy to production** — Connect your app to Inngest Cloud and sync your functions. See the [deployment guide](/docs/deploy/vercel?ref=docs-nextjs-quick-start) if you're on Vercel.
-- **Build a multi-step workflow** — Add branching logic, retries, and parallel steps. The [Inngest Functions overview](/docs/learn/inngest-functions?ref=docs-nextjs-quick-start) covers what's available.
-- **Orchestrate AI workflows** — Use `step.ai.wrap()` to make LLM calls durable and retryable, or `step.waitForSignal()` to pause a workflow until a human approves an action. See the [AI orchestration guide](/docs/features/inngest-functions/steps-workflows/step-ai-orchestration?ref=docs-nextjs-quick-start).
+- **Deploy to production.** Connect your app to Inngest Cloud and sync your functions. See the [deployment guide](/docs/deploy/vercel?ref=docs-nextjs-quick-start) if you're on Vercel.
+- **Build a multi-step workflow.** Add branching logic, retries, and parallel steps. The [Inngest Functions overview](/docs/learn/inngest-functions?ref=docs-nextjs-quick-start) covers what's available.
+- **Orchestrate AI workflows.** Use `step.ai.wrap()` to make LLM calls durable and retryable, or `step.waitForSignal()` to pause a workflow until a human approves an action. See the [AI orchestration guide](/docs/features/inngest-functions/steps-workflows/step-ai-orchestration?ref=docs-nextjs-quick-start).
