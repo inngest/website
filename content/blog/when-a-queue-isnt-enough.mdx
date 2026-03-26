@@ -17,7 +17,7 @@ That's when it's time to start thinking about durable execution. Not instead of 
 
 **Queuing platforms** — BullMQ, Celery, Sidekiq — **guarantee delivery.** They ensure a worker receives your job and runs it. What happens inside the job, whether it completes, and what to do if it fails midway are outside the queue's contract. It knows a job exists, its retry count, and its status. That's it.
 
-**Durable execution platforms** — Temporal, Inngest, AWS Step Functions — **guarantee completion** under any scenario. They persist execution state as work progresses, so that if a process crashes mid-execution, it resumes exactly where it stopped.
+**Durable execution platforms** — Temporal, Inngest, AWS Step Functions — **guarantee completion** under any scenario. They persist execution state as work progresses, so that if a process crashes mid-execution, it resumes exactly where it stopped.  Some platforms like Inngest also bundle deep observability, flow control, and metrics directly into the platform.
 
 ## When is a queue good enough?
 
