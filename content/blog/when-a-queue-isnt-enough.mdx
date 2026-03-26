@@ -7,7 +7,7 @@ author: Lauren Craigie
 category: engineering
 ---
 
-When engineering teams need background jobs, they reach for a queue—BullMQ, Celery, Sidekiq, etc. Because they're simple: enqueue a payload, run a function, mark it done. This model makes sense when background work means "send this email" or "resize this image." Single operations.
+When engineering teams need background jobs, they reach for a queue (BullMQ, Celery, Sidekiq, etc.) because they're simple, and it's tech from the 2000's: enqueue a payload, run a function, mark it done. This model makes sense when background work means "send this email" or "resize this image." Single operations.
 
 But what happens when the jobs get more complex? Someone adds a polling loop for a job that needs to wait. Or an LLM call times out on retry and runs twice, billing you for the same tokens twice. To accommodate these changes, you start building more infrastructure around your queue just to keep things moving.
 
