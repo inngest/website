@@ -35,6 +35,8 @@ If your work needs to run for hours or days, wait indefinitely for external sign
 
 **When you don't want to deploy polling to wait for external events.** A job is something that runs, not something that waits. If a workflow needs to pause for a human approval, a webhook, or a timer, a two-hour wait becomes a polling loop. A three-day approval gate becomes a job that runs thousands of times checking a database flag.
 
+**When you want to run on serverless functions.** Most queues aren't push based:  you need a worker to be online to consistently pull from the queue.  Inngest inverts this model and pushes work to any API, which allows us to push work to serverless functions.  This is great for simple horizontal scalability without any extra effort.
+
 ## **How durable execution platforms handle retries, state, and long-running jobs**
 
 First, let's be clear: a durable execution platform doesn't ask you to abandon queues. It just handles them for you, along with job distribution, concurrency, retries, and backpressure when things get sticky. You get everything a queue gives you without having to manage it separately, plus the step-level durability, suspension, and observability that queues don't provide.
