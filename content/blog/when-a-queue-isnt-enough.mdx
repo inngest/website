@@ -1,0 +1,64 @@
+---
+heading: "When a queue isn't enough"
+subtitle: "Queuing and durable execution are two layers of the same problem. In this post we’ll look at solutions dedicated to each, and when each are most appropriate for what you’re building."
+image: /assets/blog/when-a-queue-isnt-enough/featured-image.png
+date: 2026-03-25
+author: Lauren Craigie
+category: engineering
+---
+
+When engineering teams need background jobs, they reach for a queue—BullMQ, Celery, Sidekiq, etc. Because they're simple: enqueue a payload, run a function, mark it done. This model makes sense when background work means "send this email" or "resize this image." Single operations.
+
+But what happens when the jobs get more complex? Someone adds a polling loop for a job that needs to wait. Or an LLM call times out on retry and runs twice, billing you for the same tokens twice. To accommodate these changes, you start building more infrastructure around your queue just to keep things moving.
+
+That's when it's time to start thinking about durable execution. Not instead of queues, but in support of them. In this guide I'll share the scenarios when queues alone still work, and when it's time to add job distribution, concurrency, retries, backpressure… and a guarantee of completion.
+
+## **What's the difference between a queue and a durable execution platform?**
+
+**Queuing platforms** — BullMQ, Celery, Sidekiq — **guarantee delivery.** They ensure a worker receives your job and runs it. What happens inside the job, whether it completes, and what to do if it fails midway are outside the queue's contract. It knows a job exists, its retry count, and its status. That's it.
+
+**Durable execution platforms** — Temporal, Inngest, AWS Step Functions — **guarantee completion** under any scenario. They persist execution state as work progresses, so that if a process crashes mid-execution, it resumes exactly where it stopped.
+
+## When is a queue good enough?
+
+Queues alone are the right choice for work that is atomic, self-contained, and can restart cleanly from scratch. Sending a transactional email, processing an uploaded file, syncing a record to a third-party API, running a nightly report. If a failure means "try the whole thing again" and that's always safe to do, a queue handles this well. BullMQ is a well-maintained, reliable choice for this category of work.
+
+A useful heuristic: if you can describe the work as a single verb—send, process, sync, generate—it's probably job-shaped. If describing it requires "and then" or "if that," or "when that," it's probably process-shaped, and you're going to feel the job model fighting you.
+
+## When queues hit their limit
+
+If your work needs to run for hours or days, wait indefinitely for external signals, guarantee completion regardless of infrastructure failures, or retry individual steps without re-running expensive earlier ones, you need more than a queue. Examples of when this breaks down:
+
+**When you don't want retries to re-run work you've already paid for.** If step one charged a payment and step four failed, you may charge twice on resume. Teams handle this in queue solutions by manually tracking which sub-operations completed—writing progress state to Redis or a database, checking it at the top of each operation, and skipping what already ran. That adds up.
+
+**When you don't want to coordinate multi-step work across jobs.** With queue-only solutions, the result from step one has to travel to step five via the job payload, or get written to a database and fetched again at each step. A single process is fragmented into a chain of disconnected events.
+
+**When you don't want to deploy polling to wait for external events.** A job is something that runs, not something that waits. If a workflow needs to pause for a human approval, a webhook, or a timer, a two-hour wait becomes a polling loop. A three-day approval gate becomes a job that runs thousands of times checking a database flag.
+
+## **How durable execution platforms handle retries, state, and long-running jobs**
+
+First, let's be clear: a durable execution platform doesn't ask you to abandon queues. It just handles them for you, along with job distribution, concurrency, retries, and backpressure when things get sticky. You get everything a queue gives you without having to manage it separately, plus the step-level durability, suspension, and observability that queues don't provide.
+
+We also talked about a "guarantee of completion" when it comes to durable execution engines. So how does that actually work, and when does it matter?
+
+The answer is that different platforms handle this differently. Temporal uses event sourcing and history replay, Inngest uses step-level checkpointing. But the core idea is consistent: the platform persists execution state as work progresses, so that if a process crashes, work resumes from where it stopped rather than from the beginning. For certain platforms like Inngest, that track the outcome of each step, observability is intrinsic. You get a structured execution trace for every run—each step, its output, its duration, where it failed—without writing a single log statement.
+
+## Job queue alone vs durable execution: a real example
+
+Consider an AI lead processing pipeline: enrich a lead, score it with an LLM, find contacts if the score clears a threshold, draft a personalized email, wait for human review, send. Six operations, multiple external APIs, one human gate, and LLM calls you pay per token.
+
+**On a queuing platform**, this is six chained jobs with a state table tracking progress, retry logic that skips completed sub-operations, and a polling loop checking the review status every few minutes. There's no object that represents "this lead's journey through the pipeline."
+
+**On a durable execution platform,** it's one function with six steps that retry independently. The LLM calls don't re-run if a later step fails. The human approval is a `step.waitForEvent()` that suspends at zero cost for however long it takes. If the process crashes at any point, it resumes from the last completed step automatically. The execution trace is built in.
+
+## Quick reference: When to use a queue vs durable workflows
+
+The reason why you're likely hearing more about durable execution is because the rise of AI almost necessitates it. Long-running jobs, non-deterministic outcomes, and the need to incorporate human-in-the-loop mean other solutions just won't fit the bill. Many teams are now reaching for the durable execution platform first, knowing they'll grow into that complexity sooner rather than later.
+
+But there are still reasons to choose something like BullMQ, if you don't plan to add these other complexities:
+
+**You can use queues alone** when your work is atomic, independently retryable, and describable as a single operation. The work can restart cleanly from scratch and "try again" is always safe.
+
+**You should use a durable execution platform** when your work is process-shaped: multi-step, long-running, stateful, and where completion must be guaranteed regardless of what fails in between. API calls that cost money per invocation. Human gates that may stay open for days. Sequences where restarting from scratch has business consequences.
+
+As noted above, the rise of AI is pushing more work into that second category. If that's where your product is heading, [get started with Inngest for free](https://app.inngest.com/sign-up).
