@@ -4,7 +4,7 @@ export const description = "Attach custom key-value metadata to function runs an
 
 # Metadata <VersionBadge version="TypeScript only" />
 
-Metadata lets you attach custom key-value data to function runs and steps. This data is visible in the Inngest dashboard traces view, making it useful for tracking processing status, recording business-level metrics, or annotating runs with contextual information. Metadata is attached at the step attempt level, meaning each retry of a step can have its own metadata.
+Metadata lets you attach custom key-value data to function runs and steps. This data is visible in the Inngest dashboard traces view, making it useful for tracking processing status, recording business-level metrics, or annotating runs with contextual information.
 
 ## Setup
 
@@ -54,6 +54,10 @@ const processOrder = inngest.createFunction(
   },
 );
 ```
+
+<Info>
+  Metadata is attached at the step attempt level, meaning each retry of a step gets its own metadata. Previous attempts' metadata is preserved.
+</Info>
 
 ### Using `inngest.metadata` inside a step
 
@@ -161,7 +165,7 @@ await step.metadata("id-3").update(
 
 ### Built-in metadata kinds
 
-Inngest automatically attaches system metadata to steps when applicable. These are read-only and managed by the platform:
+Inngest automatically attaches system metadata to steps when applicable. These are read-only and managed by the platform. The `inngest.*` namespace is reserved for system use - custom kinds must not use this prefix.
 
 | Kind | Label in dashboard | Description |
 |------|-------------------|-------------|
