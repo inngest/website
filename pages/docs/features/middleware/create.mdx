@@ -33,6 +33,7 @@ Creating middleware means defining the lifecycles and subsequent hooks in those 
 
     // Create a new middleware
     class MyMiddleware extends Middleware.BaseMiddleware {
+      id = "my-middleware";
       // Override hook methods here
     }
 
@@ -85,6 +86,7 @@ As you can see above, we start with a class that extends `Middleware.BaseMiddlew
 import { Middleware } from "inngest";
 
 class MyMiddleware extends Middleware.BaseMiddleware {
+  id = "my-middleware";
   // A new instance is created for every request
   // Override hook methods here
 }
@@ -115,6 +117,7 @@ class MyMiddleware extends Middleware.BaseMiddleware {
 
     ```ts
     class MyMiddleware extends Middleware.BaseMiddleware {
+      id = "my-middleware";
       static onRegister({ client }: Middleware.OnRegisterArgs) {
         // One-time setup, e.g. initialize a database connection
       }
@@ -154,6 +157,8 @@ As it's possible for an application to use multiple Inngest clients, it's recomm
     import { Middleware } from "inngest";
 
     class MyMiddleware extends Middleware.BaseMiddleware {
+      id = "my-middleware";
+
       // Observable hook: runs before the function handler on the first attempt
       onRunStart({ ctx, functionInfo }: Middleware.OnRunStartArgs) {
         console.log(`Starting ${functionInfo.id}`);
@@ -228,6 +233,7 @@ It's common for middleware to require additional customization or options from d
 
     export function createMyMiddleware(logEventOutput: string) {
       return class MyMiddleware extends Middleware.BaseMiddleware {
+        id = "my-middleware";
         onRunComplete({ ctx, functionInfo, output }: Middleware.OnRunCompleteArgs) {
           if (ctx.event.name === logEventOutput) {
             console.log(
