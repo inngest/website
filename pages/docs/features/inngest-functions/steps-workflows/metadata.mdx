@@ -88,7 +88,7 @@ await inngest.metadata.run(runId).update({
 ```
 
 <Warning>
-  Calling `inngest.metadata.update()` in the function body but outside of a `step.run()` callback sends the update via a REST API call. This update is **not durable** - it will be **repeated on every subsequent step execution** as the function re-executes from the top. For durable metadata, use `step.metadata()` or call `inngest.metadata` inside a `step.run()`.
+  Calling `inngest.metadata.update()` in the function body but outside of a `step.run()` callback sends the update via a REST API call. This update is **not durable** - it will be **repeated on every subsequent step execution** as the function re-executes from the top. For example, if you place `inngest.metadata.update()` between `step1` and `step2`, it will fire again during the driver calls for `step2`, `step3`, and finalization. For durable metadata, use `step.metadata()` or call `inngest.metadata` inside a `step.run()`.
 </Warning>
 
 ## Scoping
