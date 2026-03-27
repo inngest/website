@@ -15,6 +15,7 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 class PrismaMiddleware extends Middleware.BaseMiddleware {
+  id = "prisma";
   transformFunctionInput(args: Middleware.TransformFunctionInputArgs) {
     return {
       ...args,
@@ -52,6 +53,7 @@ Use `wrapRequest` to capture incoming HTTP headers, then `transformFunctionInput
 import { Middleware } from "inngest";
 
 class HeadersMiddleware extends Middleware.BaseMiddleware {
+  id = "headers";
   private headers: Record<string, string> = {};
 
   async wrapRequest({ next, requestInfo }: Middleware.WrapRequestArgs) {
@@ -79,6 +81,7 @@ Log function and step lifecycle events for monitoring and metrics.
 import { Middleware } from "inngest";
 
 class ObservabilityMiddleware extends Middleware.BaseMiddleware {
+  id = "o11y";
   onRunStart({ functionInfo }: Middleware.OnRunStartArgs) {
     console.log(`[run:start] ${functionInfo.id}`);
   }
@@ -112,6 +115,7 @@ Use `wrapStepHandler` to catch step errors and convert them to `NonRetriableErro
 import { Middleware, NonRetriableError } from "inngest";
 
 class ErrorHandlingMiddleware extends Middleware.BaseMiddleware {
+  id = "error-handling";
   async wrapStepHandler({ next }: Middleware.WrapStepHandlerArgs) {
     try {
       return await next();
@@ -142,6 +146,7 @@ Use `wrapFunctionHandler` to run steps before or after the function handler. Bec
 import { Middleware } from "inngest";
 
 class InsertStepsMiddleware extends Middleware.BaseMiddleware {
+  id = "insert-steps";
   async wrapFunctionHandler({ ctx, next }: Middleware.WrapFunctionHandlerArgs) {
     // Run a step before the function handler
     await ctx.step.run("setup", async () => {
@@ -166,6 +171,7 @@ The same pattern works with `wrapStep` to insert steps around individual step ex
 import { Middleware } from "inngest";
 
 class StepAuditMiddleware extends Middleware.BaseMiddleware {
+  id = "step-audit";
   async wrapStep({ ctx, next, stepInfo }: Middleware.WrapStepArgs) {
     try {
       return await next();

@@ -12,6 +12,7 @@ Extend `Middleware.BaseMiddleware` and override the hooks you need:
 import { Middleware } from "inngest";
 
 class MyMiddleware extends Middleware.BaseMiddleware {
+  id = "my-middleware";
   // Override hook methods here
 }
 ```
@@ -204,6 +205,7 @@ Wrapping hooks (`wrap*`) follow an onion model: you **must** call `next()` to co
 
 ```ts
 class MyMiddleware extends Middleware.BaseMiddleware {
+  id = "my-middleware";
   async wrapFunctionHandler({ next }: Middleware.WrapFunctionHandlerArgs) {
     console.log("before");
     const result = await next();
@@ -449,6 +451,7 @@ interface PreserveDate extends Middleware.StaticTransform {
 }
 
 class MyMiddleware extends Middleware.BaseMiddleware {
+  id = "my-middleware";
   declare functionOutputTransform: PreserveDate;
 }
 ```
@@ -467,6 +470,7 @@ interface PreserveDate extends Middleware.StaticTransform {
 }
 
 class MyMiddleware extends Middleware.BaseMiddleware {
+  id = "my-middleware";
   declare stepOutputTransform: PreserveDate;
 }
 ```
@@ -483,6 +487,7 @@ Example use cases: one-time setup.
 
 ```ts
 class MyMiddleware extends Middleware.BaseMiddleware {
+  id = "my-middleware";
   static onRegister({ client, functionInfo }: Middleware.OnRegisterArgs) {
     // One-time setup
   }
