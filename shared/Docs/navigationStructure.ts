@@ -724,8 +724,8 @@ const sectionLearn: (NavGroup | NavLink)[] = [
             href: "/docs/features/inngest-functions/steps-workflows/fetch",
           },
           {
-            title: "Step Metadata",
-            href: "/docs/features/inngest-functions/steps-workflows/step-metadata",
+            title: "Metadata",
+            href: "/docs/features/inngest-functions/steps-workflows/metadata",
             tag: "new",
           },
         ],

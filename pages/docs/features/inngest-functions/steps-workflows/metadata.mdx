@@ -1,14 +1,14 @@
 import { CodeGroup, VersionBadge, Info, Warning } from "src/shared/Docs/mdx";
 
-export const description = "Attach custom key-value metadata to function runs, steps, and step attempts visible in the Inngest dashboard traces view.";
+export const description = "Attach custom key-value metadata to function runs and steps visible in the Inngest dashboard traces view.";
 
-# Step Metadata <VersionBadge version="TypeScript only" />
+# Metadata <VersionBadge version="TypeScript only" />
 
-Step Metadata lets you attach custom key-value data to function runs, steps, and step attempts. This data is visible in the Inngest dashboard traces view, making it useful for tracking processing status, recording business-level metrics, or annotating runs with contextual information.
+Metadata lets you attach custom key-value data to function runs and steps. This data is visible in the Inngest dashboard traces view, making it useful for tracking processing status, recording business-level metrics, or annotating runs with contextual information. Metadata is attached at the step attempt level, meaning each retry of a step can have its own metadata.
 
 ## Setup
 
-Step Metadata requires the `metadataMiddleware()` to be added to your Inngest client:
+Metadata requires the `metadataMiddleware()` to be added to your Inngest client:
 
 ```ts
 import { Inngest } from "inngest";
@@ -24,11 +24,14 @@ Once enabled, `step.metadata()` becomes available inside your function handlers 
 
 ## Basic usage
 
-### Inside a step (recommended)
+There are two ways to update metadata:
 
-The primary way to attach metadata is via `step.metadata(memoId)` inside your function body. The `memoId` is a unique step ID used for memoization, ensuring the metadata update is only performed once even if the function retries.
+- **`step.metadata(memoId)`** - A convenience wrapper that creates its own memoized step. It is equivalent to calling `inngest.metadata` inside a `step.run()`. Because it is a step, it **cannot** be called inside another step.
+- **`inngest.metadata`** - The underlying client-level API. Can be called anywhere: inside `step.run()`, in the function body, or from external contexts.
 
-When called inside `step.run()`, metadata is batched with the step's output -- making it **durable**. The metadata persists even if the function retries.
+### Using `step.metadata()` (recommended)
+
+`step.metadata(memoId)` is the simplest way to attach metadata. The `memoId` is a unique step ID used for memoization, ensuring the metadata update is only performed once even if the function re-executes.
 
 ```ts
 const processOrder = inngest.createFunction(
@@ -38,7 +41,7 @@ const processOrder = inngest.createFunction(
       return await chargeCustomer(event.data.customerId, event.data.amount);
     });
 
-    // Attach metadata to the current step attempt (durable)
+    // Attach metadata (this creates its own memoized step)
     await step.metadata("record-payment-info").update({
       paymentId: charge.id,
       processor: "stripe",
@@ -52,7 +55,25 @@ const processOrder = inngest.createFunction(
 );
 ```
 
-{/* ![Step metadata displayed in the trace detail panel for a step](/assets/docs/features/step-metadata/basic-usage-step.png) */}
+### Using `inngest.metadata` inside a step
+
+When called inside `step.run()`, metadata is batched with the step's output - making it **durable**. The metadata persists even if the function retries.
+
+```ts
+const processOrder = inngest.createFunction(
+  { id: "process-order", triggers: [{ event: "shop/order.created" }] },
+  async ({ event, step }) => {
+    const user = await step.run("fetch-user", async () => {
+      const user = await fetchUser(event.data.userId);
+      // Attach metadata inside the step - batched with the step output
+      await inngest.metadata.update({ company: user.company });
+      return user;
+    });
+  },
+);
+```
+
+![Step metadata displayed in the trace detail panel for a step](/assets/docs/features/step-metadata/basic-usage-step.png)
 
 ### Client-level access
 
@@ -67,7 +88,7 @@ await inngest.metadata.run(runId).update({
 ```
 
 <Warning>
-  Calling `metadata.update()` inside a function body but outside of a `step.run()` callback sends the update via a REST API call. This metadata is **not durable** and may be lost if the function retries. For durable metadata, always wrap updates in a step using `step.metadata()`.
+  Calling `inngest.metadata.update()` in the function body but outside of a `step.run()` callback sends the update via a REST API call. This update is **not durable** - it will be **repeated on every subsequent step execution** as the function re-executes from the top. For durable metadata, use `step.metadata()` or call `inngest.metadata` inside a `step.run()`.
 </Warning>
 
 ## Scoping
@@ -77,15 +98,16 @@ Metadata can be attached at different levels of granularity using the builder pa
 | Scope | Builder method | Description | Default when... |
 |-------|---------------|-------------|-----------------|
 | `run` | `.run(id?)` | Attached to the entire function run | Outside `step.run()` |
-| `step` | `.step(id?, index?)` | Attached to a specific step | -- |
-| `step_attempt` | `.attempt(index?)` | Attached to a specific step attempt | Inside `step.run()` |
+| `step` | `.step(id?)` | Attached to a specific step attempt | -- |
 | `extended_trace` | `.span(id)` | Attached to an extended trace span | -- |
+
+Metadata is always attached at the step attempt level. When a step retries, each attempt gets its own metadata - previous attempts' metadata is preserved.
 
 ### Auto-detection
 
-When you call `step.metadata(id).update(values)` without explicitly setting a scope, the builder automatically detects your context:
+When you call `inngest.metadata.update(values)` without explicitly setting a scope, the builder automatically detects your context:
 
-- **Inside `step.run()`**: defaults to `step_attempt` scope for the current step and attempt
+- **Inside `step.run()`**: defaults to the current step's attempt
 - **Outside `step.run()`** (function body): defaults to `run` scope
 
 ### Explicit scoping examples
@@ -103,14 +125,6 @@ const myFunction = inngest.createFunction(
     await step.metadata("step-annotation").step("process-data").update({
       recordsProcessed: 1500,
     });
-
-    // Scope to a specific step attempt (attempt index 0)
-    await step.metadata("attempt-info")
-      .step("process-data")
-      .attempt(0)
-      .update({
-        startedAt: Date.now(),
-      });
 
     // Scope to an extended trace span
     await step.metadata("span-details").span(spanId).update({
@@ -143,7 +157,7 @@ await step.metadata("id-3").update(
 );
 ```
 
-{/* ![Multiple metadata kinds displayed in the trace detail panel](/assets/docs/features/step-metadata/custom-kinds.png) */}
+![Multiple metadata kinds displayed in the trace detail panel](/assets/docs/features/step-metadata/custom-kinds.png)
 
 ### Built-in metadata kinds
 
@@ -173,23 +187,23 @@ All updates inside `.do()` share the same memoization step, so they are all perf
 
 ## Cross-run metadata
 
-You can update metadata on a different run -- for example, a child function notifying its parent run of completion:
+You can update metadata on a different run - for example, attaching evaluation scores to a completed run from a separate scoring function:
 
 ```ts
-const childFunction = inngest.createFunction(
-  { id: "child-process", triggers: [{ event: "workflow/child.started" }] },
+const evaluateRun = inngest.createFunction(
+  { id: "evaluate-run", triggers: [{ event: "ai/run.completed" }] },
   async ({ event, step }) => {
-    const result = await step.run("do-work", async () => {
-      return await processData(event.data);
+    const score = await step.run("score-output", async () => {
+      return await evaluateOutput(event.data.output);
     });
 
-    // Update the parent run's metadata from the child function
-    await step.metadata("notify-parent")
-      .run(event.data.parentRunId)
+    // Attach the evaluation score to the original run's metadata
+    await step.metadata("record-score")
+      .run(event.data.runId)
       .update({
-        childCompleted: true,
-        resultCount: result.count,
-        completedAt: Date.now(),
+        qualityScore: score.quality,
+        relevanceScore: score.relevance,
+        evaluatedAt: Date.now(),
       });
   },
 );
@@ -231,18 +245,18 @@ When a size limit is exceeded, the server returns an HTTP `413` error:
 
 ## Viewing metadata in the dashboard
 
-Step metadata is displayed in the **trace detail panel** when you select a span in the function run timeline.
+Metadata is displayed in the **trace detail panel** when you select a span in the function run timeline.
 
-{/* ![Trace view showing metadata in the detail panel](/assets/docs/features/step-metadata/trace-view-overview.png) */}
+![Trace view showing metadata in the detail panel](/assets/docs/features/step-metadata/trace-view-overview.png)
 
 Each metadata entry shows:
 
 - **Kind label** -- "User Metadata" for the default kind, or "User Metadata (custom_kind)" for custom kinds
-- **Scope** -- The level the metadata is attached to (run, step, step\_attempt, or extended\_trace)
+- **Scope** -- The level the metadata is attached to (run, step, or extended\_trace)
 - **Updated at** -- Timestamp of when the metadata was last updated
 - **Key-value pairs** -- Sorted alphabetically, with special formatting for byte values
 
-{/* ![Close-up of metadata key-value display](/assets/docs/features/step-metadata/metadata-detail-closeup.png) */}
+![Close-up of metadata key-value display](/assets/docs/features/step-metadata/metadata-detail-closeup.png)
 
 ## How it works
 
@@ -250,7 +264,7 @@ Understanding the data flow helps when debugging or optimizing metadata usage.
 
 ### Inside `step.run()` (batched path)
 
-1. Your code calls `step.metadata(id).update(values)`
+1. Your code calls `inngest.metadata.update(values)` inside a `step.run()` callback
 2. The metadata is collected in-memory alongside the step's output
 3. When the step completes, both the step result and metadata are sent to the Inngest server in a single response
 4. The server validates the metadata, enforces size limits, and creates OpenTelemetry spans
@@ -258,7 +272,7 @@ Understanding the data flow helps when debugging or optimizing metadata usage.
 
 ### Outside `step.run()` (API path)
 
-1. Your code calls `step.metadata(id).update(values)` or `inngest.metadata.update(values)`
+1. Your code calls `inngest.metadata.update(values)` in the function body or `step.metadata(id).update(values)`
 2. A REST API call is made to `POST /v1/runs/{runID}/metadata`
 3. The server loads the run's existing metadata to check cumulative size
 4. After validation, the server creates metadata spans and persists the size delta
@@ -282,7 +296,7 @@ SDK (your code)
 ## Limitations
 
 - **TypeScript SDK only** -- Python and Go SDK support is planned but not yet available.
-- **Durability requires `step.run()`** -- Metadata updates outside of a step context are sent via REST and may be lost on function retries.
+- **Durability requires a step** -- Metadata updates outside of a step context are sent via REST and will be repeated on every subsequent step execution as the function re-executes.
 - **Merge-only** -- The only supported operation is `merge`, which combines values of the same kind. You cannot delete or replace individual metadata keys.
 - **Unique memoization IDs** -- Each `step.metadata(memoId)` call creates an internal step. The `memoId` must be unique within the function, just like any other step ID.
 - **Server-side enforcement** -- Size limits are enforced by the server, not the SDK. Exceeding limits returns HTTP 413 errors that surface as exceptions in your function.
@@ -296,8 +310,7 @@ Creates a durable metadata update wrapped in a step. Requires `metadataMiddlewar
 | Method | Signature | Description |
 |--------|-----------|-------------|
 | `.run(id?)` | `(id?: string) => MetadataBuilder` | Scope to a run. Omit `id` for the current run. |
-| `.step(id?, index?)` | `(id?: string, index?: number) => MetadataBuilder` | Scope to a step. Omit `id` for the current step. |
-| `.attempt(index?)` | `(index?: number) => MetadataBuilder` | Scope to a step attempt. Omit `index` for the current attempt. |
+| `.step(id?)` | `(id?: string) => MetadataBuilder` | Scope to a step. Omit `id` for the current step. Defaults to the current or latest attempt. |
 | `.span(id)` | `(id: string) => MetadataBuilder` | Scope to an extended trace span. |
 | `.update(values, kind?)` | `(values: Record<string, unknown>, kind?: string) => Promise<void>` | Send the metadata update. `kind` defaults to `"default"`. |
 | `.do(fn)` | `(fn: (builder: MetadataBuilder) => Promise<void>) => Promise<void>` | Batch multiple updates in a single memoized step. |
@@ -309,7 +322,6 @@ Client-level metadata builder. Same methods as above except `.do()`. Requires `m
 | Method | Signature | Description |
 |--------|-----------|-------------|
 | `.run(id?)` | `(id?: string) => MetadataBuilder` | Scope to a run. |
-| `.step(id?, index?)` | `(id?: string, index?: number) => MetadataBuilder` | Scope to a step. |
-| `.attempt(index?)` | `(index?: number) => MetadataBuilder` | Scope to a step attempt. |
+| `.step(id?)` | `(id?: string) => MetadataBuilder` | Scope to a step. Defaults to the current or latest attempt. |
 | `.span(id)` | `(id: string) => MetadataBuilder` | Scope to an extended trace span. |
 | `.update(values, kind?)` | `(values: Record<string, unknown>, kind?: string) => Promise<void>` | Send the metadata update. |
