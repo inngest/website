@@ -2,7 +2,6 @@ import Image from "next/image";
 import clsx from "clsx";
 import Tiles from "src/components/LandingPage/Tiles";
 import Header from "src/components/LandingPage/Header";
-import Feature from "src/components/LandingPage/Feature";
 import {
   H1,
   H2,
@@ -168,60 +167,65 @@ export function AIPage({
 
         <section className="my-32">
           <Header
-            title="AgentKit: The fastest way to build production-ready AI workflows"
-            description="AgentKit is a framework for building and orchestrating AI agents, from single-model inference to multi-agent systems, enabling reliable AI at scale."
+            title="Build powerful AI agent patterns"
+            description="Inngest provides the primitives to build complex AI workflows — from tool calling loops to multi-agent systems with human oversight."
           />
-          <Feature
-            heading="Simplified orchestration"
-            text="Define complex AI workflows in code, including agentic orchestration, and let the AgentKit handle the heavy lifting of managing dependencies, retries, and failures with ease."
-            ctas={
-              showCTAs
-                ? [
-                    {
-                      href: `https://agentkit.inngest.com/?ref=${ref}`,
-                      text: "Get started",
-                    },
-                  ]
-                : []
-            }
-            content={{
-              code: {
-                snippet: `// Define simple agents
-const writer = new Agent({
-  name: "writer",
-  system: "You are an expert writer. " +
-    "You write readable, concise, simple content.",
-  model: openai({ model: "gpt-4o", step }),
-});
-
-// Compose into networks of agents that can work together
-const network = new Network({
-  agents: [writer],
-  defaultModel: openai({ model: "gpt-4o", step }),
-})`,
-                language: "typescript",
+          <Tiles
+            height="large"
+            tiles={[
+              {
+                heading: "Tool loops",
+                text: (
+                  <>
+                    Orchestrate iterative tool calling loops with automatic
+                    retries and full observability.{" "}
+                    <Link
+                      href={`/docs/ai-patterns/agent-tool-loops?ref=${ref}`}
+                      className="text-link"
+                    >
+                      Learn more →
+                    </Link>
+                  </>
+                ),
               },
-            }}
-          />
-          <Feature
-            heading="Locally debug for faster iteration"
-            text="Debug and test your workflows locally with Inngest's Dev Server, providing the tools to iterate quickly and refine agentic workflows before shipping to production."
-            content={{
-              image: {
-                src: "/assets/ai/2024-11-27-prompt-debug.png",
-                alt: "Screenshot of the Inngest prompt playground",
-                height: 414,
-                width: 663,
+              {
+                heading: "Sub-agents",
+                text: (
+                  <>
+                    Compose complex workflows by invoking child functions as
+                    sub-agents, each with their own configuration.{" "}
+                    <Link
+                      href={`/docs/ai-patterns/sub-agent-delegation?ref=${ref}`}
+                      className="text-link"
+                    >
+                      Learn more →
+                    </Link>
+                  </>
+                ),
               },
-            }}
-            layout="right"
+              {
+                heading: "Human in the loop",
+                text: (
+                  <>
+                    Pause agent execution to wait for human approval or input
+                    before continuing.{" "}
+                    <Link
+                      href={`/docs/ai-patterns/human-in-the-loop?ref=${ref}`}
+                      className="text-link"
+                    >
+                      Learn more →
+                    </Link>
+                  </>
+                ),
+              },
+            ]}
           />
         </section>
 
         <section className="my-32">
           <Header
             title="Production-grade reliability"
-            description="AgentKit workflows are production-ready with reliable orchestration, full observability, and the ability to seamlessly integrate external tools and models"
+            description="AI workflows are production-ready with reliable orchestration, full observability, and the ability to seamlessly integrate external tools and models"
           />
           <Image
             className="mx-auto max-w-[938]"
@@ -340,10 +344,10 @@ export default inngest.createFunction(
             items={[
               {
                 type: "docs",
-                title: "AgentKit",
+                title: "AI agent patterns",
                 description:
-                  "Learn how to use AgentKit to build, test and deploy reliable AI workflows.",
-                url: `https://agentkit.inngest.com/?ref=${ref}`,
+                  "Learn how to build tool loops, sub-agents, and human-in-the-loop workflows.",
+                url: `/docs/ai-patterns/agent-tool-loops?ref=${ref}`,
               },
               {
                 type: "blog",
