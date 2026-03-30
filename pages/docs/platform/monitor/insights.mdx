@@ -23,7 +23,7 @@ Insights provides an in-app SQL editor and query interface where you can:
 
 ## Getting Started
 
-Access Insights through the Inngest dashboard by clicking on the "Insights" tab in the left navigation. 
+Access Insights through the Inngest dashboard by clicking on the "Insights" tab in the left navigation.
 
 ![Getting Started Dashboard View](/assets/docs/platform/monitor/insights/insights_dashboard_view.png)
 
@@ -109,6 +109,55 @@ The `runs` table contains data about your function executions. This allows you t
 | `output` | JSON | The output/return value from the function (NULL if not completed or no output) |
 | `error` | JSON | Error details if the run failed (NULL if successful) |
 
+### Steps & Step Attempts Tables
+
+The `steps` and `step_attempts` tables contains data about your functions' step executions. This allows you to analyze individual step performance, debug failures, and track execution patterns. The `step_attempts` table contains all step attempts including all retries while the `steps` table only contains the latest retry of an individual step.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `run_id` | String | Unique identifier for the run (ULID) |
+| `app_id` | String | The app ID as defined in your app |
+| `function_id` | String | The "fully qualified" function ID. This is the app ID concatenated to the function ID as defined in your app with a `-` (e.g., `my-app-my-function`) |
+| `type` | String | Step type: StepRun, StepPlanned, StepFailed, InvokeFunction, Sleep, AIGateway, StepError |
+| `name` | String | The name of the step (usually the same as id) |
+| `id` | String | The id used when creating the step like `step.run('<id>', ...)` |
+| `loop_index` | Int | The index for repeated steps |
+| `attempt` | Int | The attempt number for retried steps |
+| `status` | String | Step status: `Queued`, `Running`, `Failed`, `Errored`, `Completed` |
+| `queued_at` | DateTime | When the step was queued |
+| `started_at` | DateTime | When the step started executing (NULL if it hasn't started yet) |
+| `ended_at` | DateTime | When the step ended (NULL if still running) |
+| `output` | JSON | The output/return value from the step (NULL if not completed or no output) |
+| `error` | JSON | Error details if the step failed (NULL if successful) |
+| `attributes` | JSON | Raw attributes on the step including step-type specific info |
+| `inngest` | JSON | Inngest-defined structured metadata |
+| `metadata` | JSON | User-defined unstructured metadata |
+
+### Extended Trace Spans Table
+
+The `extended_trace_spans` table contains data about your functions' step executions. This allows you to analyze performance inside of steps, debug failures, and track execution patterns. These are the spans emitted by your functions using the [Extended Traces](/docs/platform/monitor/traces#extended-traces) feature.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `run_id` | String | Unique identifier for the run (ULID) |
+| `app_id` | String | The app ID as defined in your app |
+| `function_id` | String | The "fully qualified" function ID. This is the app ID concatenated to the function ID as defined in your app with a `-` (e.g., `my-app-my-function`) |
+| `step_id` | String | The id of the step executing when the span was created |
+| `step_index` | Int | The index of the parent step for repeated steps |
+| `step_attempt` | Int | The attempt number of the step for retried steps |
+| `span_id` | String | The OpenTelemetry span ID |
+| `parent_span_id` | String | The id of this span's parent |
+| `start_time` | DateTime | The start timestamp of the span |
+| `end_time` | DateTime | The end timestamp of the span |
+| `name` | String | The name of the span |
+| `kind` | String | The OpenTelemetry span kind of the span |
+| `scope_name` | String | The OpenTelemetry scope name for the span |
+| `scope_version` | String | The OpenTelemetry scope version for the span |
+| `service_name` | String | The OpenTelemetry service name for the span |
+| `attributes` | JSON | Raw attributes on the span |
+| `inngest` | JSON | Inngest-defined structured metadata |
+| `metadata` | JSON | User-defined unstructured metadata |
+
 <Info>
   The `function_id` and `app_id` columns closely match your SDK calls in your app. For example, if you define a function with `inngest.createFunction({ id: "process-order", ... })` in an app with ID `my-app`, the "fully qualified" `function_id` will be `my-app-process-order`. This also matches the slugs in URLs used on https://app.inngest.com/env/production/functions.
 </Info>
@@ -128,13 +177,13 @@ Refer to [pricing plans](/pricing) for data retention limits.
 
 ## Schema Explorer
 
-The Schema Explorer, located on the right side, enables you to explore the fields available to write your Insight query. Browse and search your event schemas without leaving the editor. 
+The Schema Explorer, located on the right side, enables you to explore the fields available to write your Insight query. Browse and search your event schemas without leaving the editor.
 
-The two types of schemas you will notice are: 
-- Common Schemas - Standard fields across all events (`id`, `name`, `ts`, etc.) 
+The two types of schemas you will notice are:
+- Common Schemas - Standard fields across all events (`id`, `name`, `ts`, etc.)
 - Event-specific schemas - The structure of each event type's `data` payload
 
-Search is also available for more efficient filtering of fields. After you have located the field you want, you can click to copy and paste it into your SQL editor. 
+Search is also available for more efficient filtering of fields. After you have located the field you want, you can click to copy and paste it into your SQL editor.
 
 ![Schema Explorer](/assets/docs/platform/monitor/insights/insights_schema_explorer.png)
 
@@ -270,7 +319,7 @@ You can save frequently used queries for quick access. Saved queries are private
 
 Some queries are valuable to the whole organization, and now you can more easily share those across your organization. Once you save a query, you can select the actions dropdown and share it with your organization.
 
-Shared queries will be added to a `Shared queries` navigation dropdown within the Insights Sidebar. 
+Shared queries will be added to a `Shared queries` navigation dropdown within the Insights Sidebar.
 
 ![Share With Org](/assets/docs/platform/monitor/insights/insights_share_with_org.png)
 ![Shared Queries Navigation](/assets/docs/platform/monitor/insights/insights_shared_queries.png)
