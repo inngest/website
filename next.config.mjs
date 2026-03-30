@@ -429,6 +429,10 @@ async function rewrites() {
       source: "/docs/reference/typescript/:path((?!v3|v4).+)",
       destination: `/docs/reference/typescript/${TS_STABLE_VERSION}/:path`,
     },
+    {
+      source: "/docs-markdown/reference/typescript/:path((?!v3|v4).+)",
+      destination: `/docs-markdown/reference/typescript/${TS_STABLE_VERSION}/:path`,
+    },
   ];
 }
 
