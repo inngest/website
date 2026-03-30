@@ -723,11 +723,6 @@ const sectionLearn: (NavGroup | NavLink)[] = [
             title: "Durable Fetch",
             href: "/docs/features/inngest-functions/steps-workflows/fetch",
           },
-          {
-            title: "Metadata",
-            href: "/docs/features/inngest-functions/steps-workflows/metadata",
-            tag: "new",
-          },
         ],
       },
       {
