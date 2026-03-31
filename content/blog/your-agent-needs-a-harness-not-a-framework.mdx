@@ -97,6 +97,8 @@ A few things to note:
 
 **Text response means done.** When the LLM responds with text and no tool calls, the turn is over. No explicit "done" signal needed.
 
+For a step-by-step walkthrough of this pattern, see the [agent tool loop guide](/docs/ai-patterns/agent-tool-loops?ref=blog-your-agent-needs-a-harness-not-a-framework).
+
 ## You don't need to build your own tools
 
 Utah doesn't hand-roll file I/O and shell execution. It pulls in [`pi-coding-agent`](https://github.com/badlogic/pi-mono) — battle-tested tool implementations from the OpenClaw/Pi ecosystem:
@@ -254,7 +256,7 @@ Utah's a personal single-player harness that runs locally on your machine or a s
 
 To make it multi-player, we're going to explore swappable sandboxes, external state and memory. This would enable Utah to run on serverless if someone wanted to.
 
-There are a lot of fun UX things we'd like to add built on the Inngest API and our Insights feature to build session monitoring for coding sessions. We will also explore using `step.waitForEvent()` to create human-in-the-loop approval flows when more input is needed.
+There are a lot of fun UX things we'd like to add built on the Inngest API and our Insights feature to build session monitoring for coding sessions. We will also explore using `step.waitForEvent()` to create [human-in-the-loop approval flows](/docs/ai-patterns/human-in-the-loop?ref=blog-your-agent-needs-a-harness-not-a-framework) when more input is needed.
 
 The last piece that we're exploring to make this truly “universally triggered” is enabling Utah to write itself — building new agents and workflows, creating new webhooks, and monitoring itself via API. If you're interested, share some ideas on the GitHub repo.
 

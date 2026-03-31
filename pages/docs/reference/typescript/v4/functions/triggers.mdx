@@ -86,7 +86,7 @@ Pass an `eventType()` result directly in the `triggers` array of `createFunction
       {
         id: "process-large-orders",
         triggers: [{
-          ...orderPlaced,
+          event: orderPlaced,
           if: "event.data.total > 100",
         }],
       },

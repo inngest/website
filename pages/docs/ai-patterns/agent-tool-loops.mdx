@@ -1,0 +1,192 @@
+export const description = "Build a durable AI agent loop with Inngest where each LLM call and tool execution is a retriable, checkpointed step."
+
+# Build an Agent Tool Loop
+
+This guide walks you through building a ReAct-style agent loop (Reason → Act → Observe → Repeat) where each iteration is a durable, retriable step.
+
+## The basic loop
+
+Create a function that takes a user message, calls an LLM, executes any requested tools, and repeats until the LLM returns a final answer:
+
+```ts
+import { inngest } from "./client";
+import Anthropic from "@anthropic-ai/sdk";
+
+const anthropic = new Anthropic();
+
+export const agent = inngest.createFunction(
+  { id: "agent-loop", triggers: [{ event: "agent/message.received" }] },
+  async ({ event, step }) => {
+    const messages: Anthropic.MessageParam[] = [
+	  // Prepare your initial messages array w/ system, user prompts
+      { role: "user", content: event.data.message },
+    ];
+
+    const MAX_ITERATIONS = 10;
+    let iterations = 0;
+    let done = false;
+
+    while (!done && iterations < MAX_ITERATIONS) {
+      iterations++;
+
+      // 1. Think — ask the LLM what to do next
+      const llmResult = await step.run(`think`, async () => {
+        return await anthropic.messages.create({
+          model: "claude-opus-4-6",
+          max_tokens: 4096,
+          // Use your own expertly crafted prompt:
+          system: "You are a helpful assistant with access to tools.",
+          messages,
+          tools, // your tool definitions
+        });
+      });
+
+      // 2. Check if the LLM wants to use tools
+      const toolCalls = llmResult.content.filter(
+        (block): block is Anthropic.ToolUseBlock => block.type === "tool_use"
+      );
+
+      if (toolCalls.length === 0) {
+        // No tools — we're done
+        const text = llmResult.content.find(
+          (b): b is Anthropic.TextBlock => b.type === "text"
+        );
+        done = true;
+        return { response: text?.text ?? "", iterations };
+      }
+
+      // 3. Act — execute each tool
+      messages.push({ role: "assistant", content: llmResult.content });
+      const toolResults: Anthropic.ToolResultBlockParam[] = [];
+
+      for (const toolCall of toolCalls) {
+        const result = await step.run(
+          `tool-${toolCall.name}`,
+          async () => executeTool(toolCall.name, toolCall.input)
+        );
+        toolResults.push({
+          type: "tool_result",
+          tool_use_id: toolCall.id,
+          content: result,
+        });
+      }
+
+      // 4. Observe — feed results back and loop
+      messages.push({ role: "user", content: toolResults });
+    }
+
+    return { response: "Reached iteration limit", iterations };
+  }
+);
+```
+
+Implement `executeTool` however you want. It can be a switch statement, a map of functions, a plugin system. It takes a tool name and input, and returns a string result.
+
+That's the entire pattern. Everything below breaks down each piece and how to tune it.
+
+## Make LLM calls durable
+
+Wrap every LLM call in [`step.run()`](/docs/reference/typescript/v4/functions/step-run) to make it retriable and checkpointed:
+
+```ts
+// ✅ Durable — retries on failure, result is checkpointed
+const result = await step.run("think", async () => {
+  return await anthropic.messages.create({ /* ... */ });
+});
+
+// ❌ Not durable — if this fails, you lose all prior work
+const result = await anthropic.messages.create({ /* ... */ });
+```
+
+When an LLM call fails (rate limit, timeout, network error), Inngest retries just that step. Previous iterations, tool results — everything else is preserved.
+
+## Run each tool as a step
+
+Wrap each tool execution in its own `step.run()` so tools retry independently from the LLM call and from each other. Using `step.run()` provides:
+
+- **Independent retries** — a failing tool doesn't re-run the LLM call
+- **Granular observability** — see exactly which tool failed in the dashboard
+- **Parallel execution** — tools that don't depend on each other can run concurrently
+
+Sequential execution (most common):
+
+```ts
+for (const toolCall of toolCalls) {
+  const result = await step.run(
+    `tool-${toolCall.name}`,
+    async () => executeTool(toolCall.name, toolCall.input)
+  );
+  toolResults.push({ type: "tool_result", tool_use_id: toolCall.id, content: result });
+}
+```
+
+To run independent tools in parallel, use `Promise.all`. Include the index to make each step ID unique and easier to debug parallel calls:
+
+```ts
+const results = await Promise.all(
+  toolCalls.map((toolCall, idx) =>
+    step.run(`tool-${toolCall.name}-${idx}`, async () => ({
+      toolUseId: toolCall.id,
+      result: executeTool(toolCall.name, toolCall.input),
+    }))
+  )
+);
+```
+
+## Control the loop
+
+### Set a max iteration count
+
+Always cap iterations. Choose the limit based on task complexity — simple Q&A might need 2–3, a coding agent that reads, edits, and tests might need 15–20.
+
+### Track token usage
+
+To stop before exceeding your budget, accumulate usage across iterations:
+
+```ts
+let totalInputTokens = 0;
+
+while (!done && iterations < MAX_ITERATIONS) {
+  const llmResult = await step.run(`think`, async () => {
+    return await anthropic.messages.create({ /* ... */ });
+  });
+
+  totalInputTokens += llmResult.usage.input_tokens;
+  if (totalInputTokens > 500_000) {
+    return { response: "Token budget exceeded", iterations };
+  }
+
+  // ... rest of loop
+}
+```
+
+### Detect stuck loops
+
+If the agent keeps calling the same tool repeatedly, break the loop:
+
+```ts
+if (iterations > 3 && lastThreeTools.every(t => t === prevTool)) {
+  done = true;
+}
+```
+
+## Prune context as the loop grows
+
+As your agent loops, the message array grows with each iteration. To avoid hitting context window limits, keep the original user message and recent messages, and drop the middle:
+
+```ts
+function pruneMessages(messages, maxMessages) {
+  if (messages.length <= maxMessages) return messages;
+  const first = messages[0];
+  const recent = messages.slice(-maxMessages + 1);
+  return [first, ...recent];
+}
+```
+
+{/*For LLM-powered conversation compaction and other advanced techniques, see the [Context Management guide](/docs/ai-patterns/context-management).*/}
+
+## Next steps
+
+- [Delegate subtasks to child agents](/docs/ai-patterns/sub-agent-delegation) with `step.invoke()`
+- [Pause the loop for user approval](/docs/ai-patterns/human-in-the-loop) with `step.waitForEvent()`
+- [How to build a durable AI agent with Inngest](/blog/ai-agents-inngest-durable-steps) — a deep dive covering context loading, session management, and observability

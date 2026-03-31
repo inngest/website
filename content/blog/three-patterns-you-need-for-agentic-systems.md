@@ -38,7 +38,7 @@ Sub-agents can cover a variety of use cases in any agentic system. Sometimes the
 
 ![Sub-agent architecture diagram](/assets/blog/three-patterns-you-need-for-agentic-systems/utah-sub-agents.png)
 
-Every agentic system needs all three and they all have their own purpose and considerations. Let's dive into each of them.
+Every agentic system needs all three and they all have their own purpose and considerations. For implementation details, see the [sub-agent delegation guide](/docs/ai-patterns/sub-agent-delegation?ref=blog-three-patterns-you-need-for-agentic-systems). Let's dive into each of them.
 
 ## Pattern 1: Sync — "Do this and wait"
 

@@ -1,9 +1,16 @@
-import { CardGroup, Card } from "src/shared/Docs/mdx";
+import { CardGroup, Card, Warning } from "src/shared/Docs/mdx";
 import { RiGithubFill } from "@remixicon/react";
 
 export const description = 'How to use Realtime in your Next.js app.'
 
 # Realtime in Next.js
+
+<Warning>
+  This page documents deprecated v3 Next.js streaming patterns based on
+  `@inngest/realtime`. For the current v4 approach, see
+  [/docs/features/realtime/react-hooks](/docs/features/realtime/react-hooks)
+  or [/docs/reference/typescript/v4/realtime/subscribing](/docs/reference/typescript/v4/realtime/subscribing).
+</Warning>
 
 Realtime provides a direct compatibility with Next.js API Routes's streaming capabilities.
 
