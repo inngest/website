@@ -1,0 +1,157 @@
+import { CodeGroup, VersionBadge, Info, Warning } from "src/shared/Docs/mdx";
+
+export const description = "Practical guides for attaching metadata to steps and runs, using custom kinds, batching updates, and working with cross-run metadata.";
+
+# Step metadata how-to <VersionBadge version="TypeScript only" />
+
+This page walks through common tasks with step metadata. For the full API surface, see the [step metadata reference](/docs/features/inngest-functions/steps-workflows/metadata).
+
+## Attach metadata to a step
+
+The simplest approach is `step.metadata()`. Pass a unique memoization ID and call `.update()` with your key-value pairs.
+
+```ts
+const processOrder = inngest.createFunction(
+  { id: "process-order", triggers: [{ event: "shop/order.created" }] },
+  async ({ event, step }) => {
+    const charge = await step.run("process-payment", async () => {
+      return await chargeCustomer(event.data.customerId, event.data.amount);
+    });
+
+    await step.metadata("record-payment-info").update({
+      paymentId: charge.id,
+      processor: "stripe",
+      amount: event.data.amount,
+    });
+
+    await step.run("send-confirmation", async () => {
+      await sendEmail(event.data.email, charge.receiptUrl);
+    });
+  },
+);
+```
+
+`step.metadata("record-payment-info")` creates its own memoized step under the hood. That means the update runs exactly once, even if the function re-executes during later steps. It also means you cannot call `step.metadata()` inside another step.
+
+If you need to attach metadata from within a `step.run()` callback, use `inngest.metadata` instead:
+
+```ts
+const processOrder = inngest.createFunction(
+  { id: "process-order", triggers: [{ event: "shop/order.created" }] },
+  async ({ event, step }) => {
+    const user = await step.run("fetch-user", async () => {
+      const user = await fetchUser(event.data.userId);
+      await inngest.metadata.update({ company: user.company });
+      return user;
+    });
+  },
+);
+```
+
+When called inside `step.run()`, the metadata update is batched with the step's output in a single response. This makes it durable. The metadata persists even if the function retries later steps.
+
+## Use custom kinds to group metadata
+
+By default, all metadata lands under the "default" kind. Pass a second argument to `.update()` to organize metadata into named groups:
+
+```ts
+await step.metadata("payment-meta").update(
+  { invoiceId: "inv_123", total: 99.99 },
+  "billing",
+);
+
+await step.metadata("tracking-meta").update(
+  { source: "organic", campaign: "spring-2025" },
+  "analytics",
+);
+```
+
+In the dashboard, these show up as separate sections: "User Metadata (billing)" and "User Metadata (analytics)". This keeps things readable when a step has several categories of metadata.
+
+## Batch multiple updates in one step
+
+Use `.do()` to send several metadata updates within a single memoized step. This avoids creating a separate step for each update:
+
+```ts
+await step.metadata("update-all-statuses").do(async (builder) => {
+  await builder.update({ phase: "started", initiator: "system" }, "workflow");
+  await builder.update({ estimatedDuration: 30 }, "timing");
+  await builder.update({ region: "us-east-1" }, "infra");
+});
+```
+
+All three updates share the same memoization step and execute exactly once.
+
+## Scope metadata to a specific target
+
+By default, metadata auto-detects its scope: run-level when outside a step, step-level when inside one. You can override this with the builder methods:
+
+```ts
+const myFunction = inngest.createFunction(
+  { id: "my-function", triggers: [{ event: "app/task.started" }] },
+  async ({ event, step }) => {
+    // Explicitly scope to the current run
+    await step.metadata("run-status").run().update({
+      priority: "high",
+    });
+
+    // Scope to a specific step by its ID
+    await step.metadata("step-annotation").step("process-data").update({
+      recordsProcessed: 1500,
+    });
+
+    // Scope to an extended trace span
+    await step.metadata("span-details").span(spanId).update({
+      externalCallDuration: 230,
+    });
+  },
+);
+```
+
+Builder methods are chainable and self-removing. Once you call `.run()`, you can't also call `.step()` on the same builder.
+
+## Update metadata on a different run
+
+You can attach metadata to a completed or in-progress run from a separate function. This is useful for post-processing, like scoring the output of an AI run:
+
+```ts
+const evaluateRun = inngest.createFunction(
+  { id: "evaluate-run", triggers: [{ event: "ai/run.completed" }] },
+  async ({ event, step }) => {
+    const score = await step.run("score-output", async () => {
+      return await evaluateOutput(event.data.output);
+    });
+
+    await step.metadata("record-score")
+      .run(event.data.runId)
+      .update({
+        qualityScore: score.quality,
+        relevanceScore: score.relevance,
+        evaluatedAt: Date.now(),
+      });
+  },
+);
+```
+
+When targeting a different run, the update is sent via REST API (not batched), since the target run has a different execution context.
+
+## Update metadata from outside a function
+
+Use `inngest.metadata` with an explicit run ID to update metadata from an API route or external service:
+
+```ts
+await inngest.metadata.run(runId).update({
+  approvedBy: "admin@example.com",
+  approvalTimestamp: Date.now(),
+});
+```
+
+<Warning>
+  Calling `inngest.metadata.update()` in the function body but outside of a `step.run()` is not durable. The function re-executes from the top on each subsequent step, so that update will fire again during every driver call. Use `step.metadata()` or call `inngest.metadata` inside a `step.run()` for durable updates.
+</Warning>
+
+## View metadata in the dashboard
+
+Metadata appears in the trace detail panel when you select a step or run in the function timeline. Each entry shows the kind label, scope, timestamp, and key-value pairs sorted alphabetically.
+
+![Trace view showing metadata in the detail panel](/assets/docs/features/step-metadata/trace-view-overview.png)
