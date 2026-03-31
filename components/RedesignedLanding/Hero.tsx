@@ -57,12 +57,13 @@ export default function Hero() {
                 <h2 className="font-circular text-base font-light text-stone-50">
                   Trusted in production at
                 </h2>
-                <div className="mt-10 grid grid-cols-2 items-center gap-8 sm:grid-cols-3 md:justify-between lg:mx-auto lg:grid-cols-7">
+                <div className="mt-10 grid grid-cols-2 place-items-center gap-x-8 gap-y-8 sm:grid-cols-3 lg:grid-cols-7 lg:mx-auto">
                   {[
                     {
                       src: "/assets/customers/replit-logo.svg",
                       name: "Replit",
                       scale: 1.5,
+                      className: "scale-[2.5]",
                     },
                     {
                       src: "/assets/customers/soundcloud-logo-white-horizontal.svg",
@@ -83,6 +84,7 @@ export default function Hero() {
                       src: "/assets/customers/resend.svg",
                       name: "Resend",
                       scale: 0.8,
+                      className: "w-4/5",
                     },
                     {
                       src: "/assets/customers/outtake/outtake-logo.svg",
@@ -99,16 +101,17 @@ export default function Hero() {
                     //   name: "Contentful",
                     //   scale: 1.2,
                     // },
-                  ].map(({ src, name, scale = 1 }, idx) => (
-                    <Image
-                      key={idx}
-                      src={src}
-                      alt={name}
-                      title={name}
-                      width={120 * 0.8 * scale}
-                      height={30 * 0.8 * scale}
-                      className="width-auto col-span-1 m-auto opacity-80 grayscale transition-all sm:col-span-1 lg:col-span-1"
-                    />
+                  ].map(({ src, name, className: logoClassName = "w-full" }, idx, arr) => (
+                    <div key={idx} className={`flex h-8 w-32 items-center justify-center overflow-hidden lg:w-auto${idx === arr.length - 1 && arr.length % 2 !== 0 ? " col-span-2 sm:col-span-1" : ""}`}>
+                      <Image
+                        src={src}
+                        alt={name}
+                        title={name}
+                        width={120}
+                        height={40}
+                        className={`h-full object-contain opacity-80 grayscale transition-all ${logoClassName}`}
+                      />
+                    </div>
                   ))}
                 </div>
               </div>
