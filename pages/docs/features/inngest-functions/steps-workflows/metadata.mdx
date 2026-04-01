@@ -1,10 +1,10 @@
 import { CodeGroup, VersionBadge, Info, Warning } from "src/shared/Docs/mdx";
 
-export const description = "API reference for step metadata: middleware setup, builder methods, scoping, size limits, and built-in metadata kinds.";
+export const description = "API reference for metadata: middleware setup, builder methods, scoping, size limits, and built-in metadata kinds.";
 
-# Step metadata reference <VersionBadge version="TypeScript only" />
+# Metadata reference <VersionBadge version="TypeScript only" />
 
-Step metadata lets you attach custom key-value data to function runs and steps. This page covers the API surface. For practical usage examples, see the [step metadata how-to guide](/docs/features/inngest-functions/steps-workflows/step-metadata-how-to).
+Metadata lets you attach custom key-value data to function runs. This data is visible in the Inngest dashboard traces view, useful for tracking processing status, recording business-level metrics, or annotating runs with contextual information. This page covers the API surface. For practical usage examples, see the [metadata how-to guide](/docs/features/inngest-functions/steps-workflows/step-metadata-how-to).
 
 ## Setup
 
@@ -24,7 +24,7 @@ This makes `step.metadata()` available inside function handlers and `inngest.met
 
 ## `step.metadata(memoId)`
 
-A convenience wrapper that creates its own memoized step. Equivalent to calling `inngest.metadata` inside a `step.run()`. Because it creates a step, it **cannot** be called inside another step.
+A convenience wrapper that creates its own memoized step to attach metadata to the current run. Equivalent to calling `inngest.metadata` inside a `step.run()`. Because it creates a step, it **cannot** be called inside another step.
 
 The `memoId` is a unique step ID used for memoization, ensuring the update runs exactly once even if the function re-executes.
 
@@ -75,7 +75,7 @@ The `inngest.*` namespace is reserved for system use. Custom kinds must not use 
 
 ## Built-in metadata kinds
 
-Inngest automatically attaches system metadata to steps when applicable. These are read-only.
+Inngest automatically attaches system metadata when applicable. These are read-only.
 
 | Kind | Dashboard label | Description |
 |------|----------------|-------------|
