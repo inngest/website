@@ -31,16 +31,18 @@ Once you've chosen a project, open it in a code editor.
 
 ## Starting your project
 
-Start your server using your typical script. We recommend using something like [`tsx`](https://www.npmjs.com/package/tsx) or [`nodemon`](https://www.npmjs.com/package/nodemon) for automatically restarting on file save:
+Start your server using your typical script. We recommend using something like [`tsx`](https://www.npmjs.com/package/tsx) or [`nodemon`](https://www.npmjs.com/package/nodemon) for automatically restarting on file save. If you're using the v4 SDK, set `INNGEST_DEV=1` so your app connects to the local Dev Server instead of Inngest Cloud:
 
 <CodeGroup>
 ```shell {{ title: "tsx" }}
-npx tsx watch ./index.ts # replace with your own main entrypoint file
+INNGEST_DEV=1 npx tsx watch ./index.ts # replace with your own main entrypoint file
 ```
 ```shell {{ title: "nodemon" }}
-nodemon ./index.js # replace with your own main entrypoint file
+INNGEST_DEV=1 nodemon ./index.js # replace with your own main entrypoint file
 ```
 </CodeGroup>
+
+You can also add `INNGEST_DEV=1` to your `.env` file so you don't need to pass it inline every time.
 
 Now let's add Inngest to your project.
 
