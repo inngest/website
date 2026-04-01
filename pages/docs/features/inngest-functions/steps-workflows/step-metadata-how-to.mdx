@@ -1,12 +1,14 @@
 import { CodeGroup, VersionBadge, Info, Warning } from "src/shared/Docs/mdx";
 
-export const description = "Practical guides for attaching metadata to steps and runs, using custom kinds, batching updates, and working with cross-run metadata.";
+export const description = "Practical guides for attaching metadata to function runs, using custom kinds, batching updates, and working with cross-run metadata.";
 
-# Step metadata how-to <VersionBadge version="TypeScript only" />
+# Metadata how-to <VersionBadge version="TypeScript only" />
 
-This page walks through common tasks with step metadata. For the full API surface, see the [step metadata reference](/docs/features/inngest-functions/steps-workflows/metadata).
+When you're debugging a failed run or trying to understand what happened during execution, the function's input and output only tell part of the story. Metadata lets you attach your own context to a run so it shows up right in the trace view. That might be a payment ID from Stripe, a customer tier, token counts from an LLM call, or a flag marking a run as part of an A/B test.
 
-## Attach metadata to a step
+There are two ways to add metadata from within a function. `step.metadata()` creates its own memoized step and attaches metadata to the run. `inngest.metadata` is the underlying client API and can be called inside a `step.run()` callback, in the function body, or from external contexts like an API route. For the full API surface, see the [metadata reference](/docs/features/inngest-functions/steps-workflows/metadata).
+
+## Add metadata to a run
 
 The simplest approach is `step.metadata()`. Pass a unique memoization ID and call `.update()` with your key-value pairs.
 
@@ -31,9 +33,9 @@ const processOrder = inngest.createFunction(
 );
 ```
 
-`step.metadata("record-payment-info")` creates its own memoized step under the hood. That means the update runs exactly once, even if the function re-executes during later steps. It also means you cannot call `step.metadata()` inside another step.
+`step.metadata("record-payment-info")` creates its own memoized step under the hood. That means the update runs exactly once, even if the function re-executes during later steps.
 
-If you need to attach metadata from within a `step.run()` callback, use `inngest.metadata` instead:
+If you need to attach metadata from within an existing `step.run()` callback, use `inngest.metadata` instead. When called inside a step, the metadata is batched with the step's output in a single response. This makes it durable. The metadata persists even if the function retries later steps.
 
 ```ts
 const processOrder = inngest.createFunction(
@@ -47,8 +49,6 @@ const processOrder = inngest.createFunction(
   },
 );
 ```
-
-When called inside `step.run()`, the metadata update is batched with the step's output in a single response. This makes it durable. The metadata persists even if the function retries later steps.
 
 ## Use custom kinds to group metadata
 
@@ -66,7 +66,7 @@ await step.metadata("tracking-meta").update(
 );
 ```
 
-In the dashboard, these show up as separate sections: "User Metadata (billing)" and "User Metadata (analytics)". This keeps things readable when a step has several categories of metadata.
+In the dashboard, these show up as separate sections: "User Metadata (billing)" and "User Metadata (analytics)". This keeps things readable when a run has several categories of metadata.
 
 ## Batch multiple updates in one step
 
@@ -152,6 +152,6 @@ await inngest.metadata.run(runId).update({
 
 ## View metadata in the dashboard
 
-Metadata appears in the trace detail panel when you select a step or run in the function timeline. Each entry shows the kind label, scope, timestamp, and key-value pairs sorted alphabetically.
+Metadata appears in the trace detail panel when you select a run or step in the function timeline. Each entry shows the kind label, scope, timestamp, and key-value pairs sorted alphabetically.
 
 ![Trace view showing metadata in the detail panel](/assets/docs/features/step-metadata/trace-view-overview.png)
