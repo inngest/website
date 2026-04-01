@@ -4,13 +4,15 @@ export const description = "Practical guides for attaching metadata to function 
 
 # Metadata how-to <VersionBadge version="TypeScript only" />
 
-When you're debugging a failed run or trying to understand what happened during execution, the function's input and output only tell part of the story. Metadata lets you attach your own context to a run so it shows up right in the trace view. That might be a payment ID from Stripe, a customer tier, token counts from an LLM call, or a flag marking a run as part of an A/B test.
+`step.metadata()` is a step tool, like `step.run()`, `step.sleep()`, or `step.waitForEvent()`. It attaches custom key-value data to your function runs. Like every step tool, it takes a memoization ID, executes exactly once, and appears as its own step in the trace.
 
-There are two ways to add metadata from within a function. `step.metadata()` creates its own memoized step and attaches metadata to the run. `inngest.metadata` is the underlying client API and can be called inside a `step.run()` callback, in the function body, or from external contexts like an API route. For the full API surface, see the [metadata reference](/docs/features/inngest-functions/steps-workflows/metadata).
+When you're debugging a failed run or trying to understand what happened during execution, the function's input and output only tell part of the story. Metadata lets you attach your own context so it shows up right in the trace view. That might be a payment ID from Stripe, a customer tier, token counts from an LLM call, or a flag marking a run as part of an A/B test.
+
+For the full API surface, see the [metadata reference](/docs/features/inngest-functions/steps-workflows/metadata).
 
 ## Add metadata to a run
 
-The simplest approach is `step.metadata()`. Pass a unique memoization ID and call `.update()` with your key-value pairs.
+`step.metadata()` works like any other step tool. Pass a memoization ID and call `.update()` with your key-value pairs. The ID ensures the update runs exactly once, even if the function re-executes during later steps.
 
 ```ts
 const processOrder = inngest.createFunction(
@@ -20,6 +22,7 @@ const processOrder = inngest.createFunction(
       return await chargeCustomer(event.data.customerId, event.data.amount);
     });
 
+    // Creates its own step in the trace, attaches metadata to the run
     await step.metadata("record-payment-info").update({
       paymentId: charge.id,
       processor: "stripe",
@@ -33,9 +36,11 @@ const processOrder = inngest.createFunction(
 );
 ```
 
-`step.metadata("record-payment-info")` creates its own memoized step under the hood. That means the update runs exactly once, even if the function re-executes during later steps.
+In the trace view, this run would show three steps: "process-payment," "record-payment-info," and "send-confirmation." The metadata from "record-payment-info" is visible on the run.
 
-If you need to attach metadata from within an existing `step.run()` callback, use `inngest.metadata` instead. When called inside a step, the metadata is batched with the step's output in a single response. This makes it durable. The metadata persists even if the function retries later steps.
+### Add metadata from within an existing step
+
+If you want to attach metadata without creating a separate step, use `inngest.metadata` inside a `step.run()` callback. The metadata is batched with the step's output in a single response, making it durable.
 
 ```ts
 const processOrder = inngest.createFunction(
@@ -43,6 +48,7 @@ const processOrder = inngest.createFunction(
   async ({ event, step }) => {
     const user = await step.run("fetch-user", async () => {
       const user = await fetchUser(event.data.userId);
+      // Batched with the step output, no additional step created
       await inngest.metadata.update({ company: user.company });
       return user;
     });
@@ -84,13 +90,13 @@ All three updates share the same memoization step and execute exactly once.
 
 ## Scope metadata to a specific target
 
-By default, metadata auto-detects its scope: run-level when outside a step, step-level when inside one. You can override this with the builder methods:
+By default, metadata attaches to the run. You can override this with the builder methods to target a specific step or extended trace span:
 
 ```ts
 const myFunction = inngest.createFunction(
   { id: "my-function", triggers: [{ event: "app/task.started" }] },
   async ({ event, step }) => {
-    // Explicitly scope to the current run
+    // Explicitly scope to the current run (same as default)
     await step.metadata("run-status").run().update({
       priority: "high",
     });
