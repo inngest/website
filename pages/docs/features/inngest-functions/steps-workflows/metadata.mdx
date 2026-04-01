@@ -67,7 +67,24 @@ Metadata is always attached at the step attempt level. When a step retries, each
 
 ## Custom kinds
 
-The second argument to `.update()` specifies a metadata **kind**. Kinds group related metadata together. When multiple updates share the same kind and scope, their values are merged.
+The second argument to `.update()` specifies a metadata **kind**. Kinds are used to group related metadata together. When multiple updates share the same kind and scope, their values are merged.
+
+```ts
+// Default kind: stored as "userland.default", displayed as "User Metadata"
+await step.metadata("id-1").update({ status: "processing" });
+
+// Custom kind: stored as "userland.billing", displayed as "User Metadata (billing)"
+await step.metadata("id-2").update(
+  { invoiceId: "inv_123", total: 99.99 },
+  "billing",
+);
+
+// Another custom kind: stored as "userland.analytics", displayed as "User Metadata (analytics)"
+await step.metadata("id-3").update(
+  { source: "organic", campaign: "spring-2025" },
+  "analytics",
+);
+```
 
 | Kind string | Stored as | Dashboard label |
 |-------------|-----------|------------------|
@@ -79,10 +96,10 @@ The `inngest.*` namespace is reserved for system use. Custom kinds must not use 
 
 ## Built-in metadata kinds
 
-Inngest automatically attaches system metadata when applicable. These are read-only.
+Inngest automatically attaches system metadata when applicable. These are read-only and managed by the platform. The `inngest.*` namespace is reserved for system use.
 
-| Kind | Dashboard label | Description |
-|------|----------------|-------------|
+| Kind | Label in dashboard | Description |
+|------|-------------------|-------------|
 | `inngest.ai` | AI Metadata | LLM/AI gateway data: input/output tokens, model, latency, cost |
 | `inngest.http` | HTTP Metadata | HTTP request details: method, status code, request/response sizes |
 | `inngest.http.timing` | HTTP Timing | Timing breakdown: DNS, TCP, TLS, TTFB, transfer |
@@ -91,10 +108,14 @@ Inngest automatically attaches system metadata when applicable. These are read-o
 
 ## Size limits
 
-| Limit | Maximum | Description |
-|-------|---------|-------------|
-| Per update | 64 KB | Maximum size of a single metadata update |
-| Per run | 1 MB | Cumulative size of all metadata across the entire function run |
+Metadata is subject to the following size limits, enforced server-side:
+
+| Limit | Maximum size | Description |
+|-------|-------------|-------------|
+| **Per update** | **64 KB** | Maximum size of a single metadata update (span) |
+| **Per run** | **1 MB** | Cumulative size of all metadata across the entire function run |
+
+### How size is calculated
 
 Size is calculated as the sum of each key's byte length plus the JSON-serialized byte length of each value:
 
@@ -102,7 +123,11 @@ Size is calculated as the sum of each key's byte length plus the JSON-serialized
 size = sum(len(key) + len(JSON.stringify(value))) for each entry
 ```
 
-When a limit is exceeded, the server returns HTTP `413`:
+For example, `{ "status": "ok" }` costs approximately `6 + 4 = 10 bytes` (key `"status"` = 6 bytes, value `"ok"` serialized = 4 bytes including quotes).
+
+### Error handling
+
+When a size limit is exceeded, the server returns an HTTP `413` error:
 
 | Error | Message |
 |-------|---------|
@@ -110,12 +135,12 @@ When a limit is exceeded, the server returns HTTP `413`:
 | Per-run exceeded | `"Cumulative metadata size exceeds limit"` |
 
 <Info>
-  If you're working with large payloads, store the data externally (database, object store) and attach only a reference ID or URL as metadata.
+  If you're working with large metadata payloads, consider storing the data externally (e.g., in a database or object store) and attaching only a reference ID or URL as metadata.
 </Info>
 
 ## Limitations
 
-- **TypeScript SDK only.** Python and Go support is planned.
-- **Merge-only.** The only supported operation is `merge`. You cannot delete or replace individual keys.
+- **TypeScript SDK only.** Python and Go SDK support is planned but not yet available.
+- **Merge-only.** The only supported operation is `merge`, which combines values of the same kind. You cannot delete or replace individual metadata keys.
 - **Unique memoization IDs.** Each `step.metadata(memoId)` creates a step in the run. The `memoId` must be unique within the function, just like any other step ID.
-- **Server-side enforcement.** Size limits are enforced by the server, not the SDK. Exceeding limits surfaces as exceptions in your function.
+- **Server-side enforcement.** Size limits are enforced by the server, not the SDK. Exceeding limits returns HTTP 413 errors that surface as exceptions in your function.
