@@ -4,7 +4,11 @@ export const description = "API reference for metadata: middleware setup, builde
 
 # Metadata reference <VersionBadge version="TypeScript only" />
 
-Metadata lets you attach custom key-value data to function runs. This data is visible in the Inngest dashboard traces view, useful for tracking processing status, recording business-level metrics, or annotating runs with contextual information. This page covers the API surface. For practical usage examples, see the [metadata how-to guide](/docs/features/inngest-functions/steps-workflows/step-metadata-how-to).
+`step.metadata()` is a step tool, like `step.run()`, `step.sleep()`, or `step.waitForEvent()`. It attaches custom key-value data to your function runs. Like every step tool, it takes a memoization ID, executes exactly once, and appears as its own step in the trace.
+
+The data you attach shows up in the Inngest dashboard trace view. Use it for tracking processing status, recording business-level metrics, or annotating runs with contextual information.
+
+This page covers the API surface. For practical usage examples, see the [metadata how-to guide](/docs/features/inngest-functions/steps-workflows/step-metadata-how-to).
 
 ## Setup
 
@@ -24,9 +28,7 @@ This makes `step.metadata()` available inside function handlers and `inngest.met
 
 ## `step.metadata(memoId)`
 
-A convenience wrapper that creates its own memoized step to attach metadata to the current run. Equivalent to calling `inngest.metadata` inside a `step.run()`. Because it creates a step, it **cannot** be called inside another step.
-
-The `memoId` is a unique step ID used for memoization, ensuring the update runs exactly once even if the function re-executes.
+Creates a step that attaches metadata to the current run. Like `step.run("my-id", ...)` or `step.sleep("my-id", ...)`, the `memoId` is a unique step ID that ensures the update runs exactly once, even if the function re-executes.
 
 | Method | Signature | Description |
 |--------|-----------|-------------|
@@ -39,6 +41,8 @@ The `memoId` is a unique step ID used for memoization, ensuring the update runs 
 ## `inngest.metadata`
 
 The client-level metadata builder. Same scoping methods as `step.metadata()`, but without `.do()`. Can be called inside `step.run()`, in the function body, or from external contexts.
+
+When called inside a `step.run()` callback, the metadata update is batched with the step's output. This makes it durable without creating an additional step.
 
 | Method | Signature | Description |
 |--------|-----------|-------------|
@@ -113,5 +117,5 @@ When a limit is exceeded, the server returns HTTP `413`:
 
 - **TypeScript SDK only.** Python and Go support is planned.
 - **Merge-only.** The only supported operation is `merge`. You cannot delete or replace individual keys.
-- **Unique memoization IDs.** Each `step.metadata(memoId)` creates an internal step. The `memoId` must be unique within the function, like any other step ID.
+- **Unique memoization IDs.** Each `step.metadata(memoId)` creates a step in the run. The `memoId` must be unique within the function, just like any other step ID.
 - **Server-side enforcement.** Size limits are enforced by the server, not the SDK. Exceeding limits surfaces as exceptions in your function.
