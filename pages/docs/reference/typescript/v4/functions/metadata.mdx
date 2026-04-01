@@ -1,0 +1,146 @@
+import { CodeGroup, VersionBadge, Info, Warning } from "src/shared/Docs/mdx";
+
+export const description = "API reference for metadata: middleware setup, builder methods, scoping, size limits, and built-in metadata kinds.";
+
+# Metadata reference <VersionBadge version="TypeScript only" />
+
+`step.metadata()` is a step tool, like `step.run()`, `step.sleep()`, or `step.waitForEvent()`. It attaches custom key-value data to your function runs. Like every step tool, it takes a memoization ID, executes exactly once, and appears as its own step in the trace.
+
+The data you attach shows up in the Inngest dashboard trace view. Use it for tracking processing status, recording business-level metrics, or annotating runs with contextual information.
+
+This page covers the API surface. For practical usage examples, see the [metadata how-to guide](/docs/features/inngest-functions/steps-workflows/step-metadata-how-to).
+
+## Setup
+
+Add `metadataMiddleware()` to your Inngest client:
+
+```ts
+import { Inngest } from "inngest";
+import { metadataMiddleware } from "inngest";
+
+const inngest = new Inngest({
+  id: "my-app",
+  middleware: [metadataMiddleware()],
+});
+```
+
+This makes `step.metadata()` available inside function handlers and `inngest.metadata` available on the client instance.
+
+## `step.metadata(memoId)`
+
+Creates a step that attaches metadata to the current run. Like `step.run("my-id", ...)` or `step.sleep("my-id", ...)`, the `memoId` is a unique step ID that ensures the update runs exactly once, even if the function re-executes.
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `.run(id?)` | `(id?: string) => MetadataBuilder` | Scope to a run. Omit `id` for the current run. |
+| `.step(id?)` | `(id?: string) => MetadataBuilder` | Scope to a step. Omit `id` for the current step. Defaults to the current or latest attempt. |
+| `.span(id)` | `(id: string) => MetadataBuilder` | Scope to an extended trace span. |
+| `.update(values, kind?)` | `(values: Record<string, unknown>, kind?: string) => Promise<void>` | Send the metadata update. `kind` defaults to `"default"`. |
+| `.do(fn)` | `(fn: (builder: MetadataBuilder) => Promise<void>) => Promise<void>` | Batch multiple updates in a single memoized step. |
+
+## `inngest.metadata`
+
+The client-level metadata builder. Same scoping methods as `step.metadata()`, but without `.do()`. Can be called inside `step.run()`, in the function body, or from external contexts.
+
+When called inside a `step.run()` callback, the metadata update is batched with the step's output. This makes it durable without creating an additional step.
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `.run(id?)` | `(id?: string) => MetadataBuilder` | Scope to a run. |
+| `.step(id?)` | `(id?: string) => MetadataBuilder` | Scope to a step. Defaults to the current or latest attempt. |
+| `.span(id)` | `(id: string) => MetadataBuilder` | Scope to an extended trace span. |
+| `.update(values, kind?)` | `(values: Record<string, unknown>, kind?: string) => Promise<void>` | Send the metadata update. |
+
+## Scoping
+
+Metadata attaches at different levels of granularity. Builder methods narrow the scope. They are chainable and each one removes itself from the available methods, preventing invalid combinations.
+
+| Scope | Builder method | Description | Default when... |
+|-------|---------------|-------------|------------------|
+| `run` | `.run(id?)` | Attached to the entire function run | Outside `step.run()` |
+| `step` | `.step(id?)` | Attached to a specific step attempt | Inside `step.run()` |
+| `extended_trace` | `.span(id)` | Attached to an extended trace span | Never (must be explicit) |
+
+When you call `.update()` without setting a scope, the builder auto-detects: inside `step.run()` it defaults to the current step's attempt; outside `step.run()` it defaults to `run` scope.
+
+Metadata is always attached at the step attempt level. When a step retries, each attempt gets its own metadata. Previous attempts' metadata is preserved.
+
+## Custom kinds
+
+The second argument to `.update()` specifies a metadata **kind**. Kinds are used to group related metadata together. When multiple updates share the same kind and scope, their values are merged.
+
+```ts
+// Default kind: stored as "userland.default", displayed as "User Metadata"
+await step.metadata("id-1").update({ status: "processing" });
+
+// Custom kind: stored as "userland.billing", displayed as "User Metadata (billing)"
+await step.metadata("id-2").update(
+  { invoiceId: "inv_123", total: 99.99 },
+  "billing",
+);
+
+// Another custom kind: stored as "userland.analytics", displayed as "User Metadata (analytics)"
+await step.metadata("id-3").update(
+  { source: "organic", campaign: "spring-2025" },
+  "analytics",
+);
+```
+
+| Kind string | Stored as | Dashboard label |
+|-------------|-----------|------------------|
+| *(omitted or `"default"`)* | `userland.default` | User Metadata |
+| `"billing"` | `userland.billing` | User Metadata (billing) |
+| `"analytics"` | `userland.analytics` | User Metadata (analytics) |
+
+The `inngest.*` namespace is reserved for system use. Custom kinds must not use this prefix.
+
+## Built-in metadata kinds
+
+Inngest automatically attaches system metadata when applicable. These are read-only and managed by the platform. The `inngest.*` namespace is reserved for system use.
+
+| Kind | Label in dashboard | Description |
+|------|-------------------|-------------|
+| `inngest.ai` | AI Metadata | LLM/AI gateway data: input/output tokens, model, latency, cost |
+| `inngest.http` | HTTP Metadata | HTTP request details: method, status code, request/response sizes |
+| `inngest.http.timing` | HTTP Timing | Timing breakdown: DNS, TCP, TLS, TTFB, transfer |
+| `inngest.response_headers` | Response Headers | HTTP response header key-value pairs |
+| `inngest.warnings` | Warnings | Warning messages from the execution engine |
+
+## Size limits
+
+Metadata is subject to the following size limits, enforced server-side:
+
+| Limit | Maximum size | Description |
+|-------|-------------|-------------|
+| **Per update** | **64 KB** | Maximum size of a single metadata update (span) |
+| **Per run** | **1 MB** | Cumulative size of all metadata across the entire function run |
+
+### How size is calculated
+
+Size is calculated as the sum of each key's byte length plus the JSON-serialized byte length of each value:
+
+```
+size = sum(len(key) + len(JSON.stringify(value))) for each entry
+```
+
+For example, `{ "status": "ok" }` costs approximately `6 + 4 = 10 bytes` (key `"status"` = 6 bytes, value `"ok"` serialized = 4 bytes including quotes).
+
+### Error handling
+
+When a size limit is exceeded, the server returns an HTTP `413` error:
+
+| Error | Message |
+|-------|---------|
+| Per-update exceeded | `"Metadata span exceeds maximum size of 64KB"` |
+| Per-run exceeded | `"Cumulative metadata size exceeds limit"` |
+
+<Info>
+  If you're working with large metadata payloads, consider storing the data externally (e.g., in a database or object store) and attaching only a reference ID or URL as metadata.
+</Info>
+
+## Limitations
+
+- **TypeScript SDK only.** Python and Go SDK support is planned but not yet available.
+- **Merge-only.** The only supported operation is `merge`, which combines values of the same kind. You cannot delete or replace individual metadata keys.
+- **Unique memoization IDs.** Each `step.metadata(memoId)` creates a step in the run. The `memoId` must be unique within the function, just like any other step ID.
+- **Server-side enforcement.** Size limits are enforced by the server, not the SDK. Exceeding limits returns HTTP 413 errors that surface as exceptions in your function.
