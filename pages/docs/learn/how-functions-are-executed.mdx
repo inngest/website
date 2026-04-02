@@ -4,6 +4,8 @@ export const description = "Learn how Inngest functions are executed using Durab
 
 # How Inngest functions are executed: Durable Execution
 
+Most systems that offer durable execution require you to manage separate worker infrastructure, learn custom runtimes, or rewrite your application code to fit a specific programming model. Inngest takes a different approach: you write standard TypeScript, Python, or Go functions using a simple SDK, and Inngest handles execution durability, state persistence, retries, and flow control for you. There are no queues to configure, no workers to deploy, and no infrastructure to manage. Your functions run on your own compute, in any environment, including serverless.
+
 One of the core features of Inngest is Durable Execution. Durable Execution allows your functions to be fault-tolerant and resilient to failures. The end result is that your code, and therefore, your overall application, is more reliable.
 
 This page covers what Durable Execution is, how it works, and how it works with Inngest functions.
@@ -103,6 +105,29 @@ Some steps may throw errors or exceptions during execution. Here's how error han
 {/* TODO - Add how parallel steps are executed differently (more complex topic) */}
 
 To learn about how determinism is handled and how you can version functions, read the [Versioning long running functions](/docs/learn/versioning) guide.
+
+## How Inngest's execution model compares to Temporal
+
+Temporal is the most well-known durable execution platform, and teams often evaluate both when choosing how to build reliable, long-running workflows. The two systems take fundamentally different approaches to the problem.
+
+**Infrastructure and setup.** Temporal requires you to run and manage a Temporal Server cluster (or use Temporal Cloud), along with separate worker processes that poll for tasks. Inngest requires no separate infrastructure. Your functions run on your existing compute, whether that's a serverless platform, a container, or a traditional server. Inngest handles orchestration, state management, and retries through its execution engine, which communicates with your functions over HTTP or persistent connections.
+
+**Programming model.** Temporal uses a deterministic replay model where your entire workflow function is re-executed from the beginning on each step, relying on an internal event history to skip completed work. This requires developers to learn and follow strict determinism rules. Inngest uses a step-based memoization model where each step runs once, its result is persisted, and subsequent executions skip completed steps by injecting their stored results. This uses standard language features with no custom runtime rules.
+
+**Flow control.** Inngest includes concurrency controls, prioritization, throttling, debouncing, rate limiting, and idempotency as built-in features of the SDK, available in every environment: local development, self-hosted, and cloud. Temporal has recently introduced priority and fairness features for task queues, but fairness is a paid feature available only in Temporal Cloud.
+
+**Local development.** The Inngest Dev Server provides a complete local development experience with the same execution model, flow control, and observability you get in production. You can test concurrency limits, step retries, and function orchestration locally without connecting to any external service. Temporal's local development tooling forwards requests through their cloud infrastructure and does not provide a fully self-contained offline experience.
+
+**Self-hosting.** Inngest can be self-hosted as a single binary with SQLite or Postgres as a backing store. Temporal self-hosting requires running multiple server components with a Cassandra or Postgres dependency, along with separate worker infrastructure.
+
+| | Inngest | Temporal |
+| --- | --- | --- |
+| **Infrastructure** | No separate infrastructure required. Functions run on your compute. | Requires Temporal Server cluster + separate worker processes. |
+| **Programming model** | Step-based memoization with standard language primitives. | Deterministic replay with strict runtime rules. |
+| **Flow control** | Built-in: concurrency, priority, throttling, debounce, rate limiting. Available everywhere. | Priority and fairness features are paid, cloud-only. |
+| **Local development** | Full-featured Dev Server runs entirely offline. | Cloud-dependent; no fully self-contained local experience. |
+| **Self-hosting** | Single binary with SQLite or Postgres. | Multi-component cluster with Cassandra/Postgres. |
+| **Serverless support** | Native. Designed for serverless-first environments. | Requires persistent worker processes; not serverless-native. |
 
 ## Conclusion
 
