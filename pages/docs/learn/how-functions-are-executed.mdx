@@ -116,8 +116,6 @@ Temporal is the most well-known durable execution platform, and teams often eval
 
 **Flow control.** Inngest includes concurrency controls, prioritization, throttling, debouncing, rate limiting, and idempotency as built-in features of the SDK, available in every environment: local development, self-hosted, and cloud. Temporal has recently introduced priority and fairness features for task queues, but fairness is a paid feature available only in Temporal Cloud.
 
-**Local development.** The Inngest Dev Server provides a complete local development experience with the same execution model, flow control, and observability you get in production. You can test concurrency limits, step retries, and function orchestration locally without connecting to any external service. Temporal's local development tooling forwards requests through their cloud infrastructure and does not provide a fully self-contained offline experience.
-
 **Self-hosting.** Inngest can be self-hosted as a single binary with SQLite or Postgres as a backing store. Temporal self-hosting requires running multiple server components with a Cassandra or Postgres dependency, along with separate worker infrastructure.
 
 | | Inngest | Temporal |
@@ -125,7 +123,6 @@ Temporal is the most well-known durable execution platform, and teams often eval
 | **Infrastructure** | No separate infrastructure required. Functions run on your compute. | Requires Temporal Server cluster + separate worker processes. |
 | **Programming model** | Step-based memoization with standard language primitives. | Deterministic replay with strict runtime rules. |
 | **Flow control** | Built-in: concurrency, priority, throttling, debounce, rate limiting. Available everywhere. | Priority and fairness features are paid, cloud-only. |
-| **Local development** | Full-featured Dev Server runs entirely offline. | Cloud-dependent; no fully self-contained local experience. |
 | **Self-hosting** | Single binary with SQLite or Postgres. | Multi-component cluster with Cassandra/Postgres. |
 | **Serverless support** | Native. Designed for serverless-first environments. | Requires persistent worker processes; not serverless-native. |
 
