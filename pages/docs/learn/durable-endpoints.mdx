@@ -4,10 +4,10 @@ import { RiNextjsFill } from "@remixicon/react";
 
 export const description = 'Learn how to create Durable Endpoints with Inngest. Turn any API endpoint into a durable, observable workflow with step-based checkpointing.';
 
-# Durable Endpoints <VersionBadge version="Beta" />
+# Durable Endpoints <VersionBadge version="Preview" />
 
 <Info>
-  Durable Endpoints is currently in Public Beta. Read more about the [Public Beta release phase here](/docs/release-phases#public-beta).
+  Durable Endpoints is currently in [Developer Preview](/docs/release-phases#developer-preview).
 </Info>
 
 Durable Endpoints let you build or transform your API into fault-tolerant endpoints simply by wrapping your critical logic into [durable steps](/docs/learn/inngest-steps).
@@ -291,12 +291,12 @@ fetch(`/api/your-durable-endpoint`)
 
 | SDK | Support | Version |
 |-----|---------|---------|
-| TypeScript | ✅ Beta | >= 3.x (with `endpointAdapter`) |
+| TypeScript | ✅ Preview | >= 3.x (with `endpointAdapter`) |
 | Go | ✅ | >= v0.14.0 |
 
 ## Limitations
 
-Durable Endpoints is currently in beta. The following limitations apply:
+Durable Endpoints is currently in Developer Preview. The following limitations apply:
 
 - **Flow control is not supported** — Features like concurrency limits and rate limiting are not available for Durable Endpoints
 - **POST body is not yet supported** — Prefer using query strings for passing data. POST body support is coming soon
