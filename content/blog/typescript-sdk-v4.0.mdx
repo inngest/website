@@ -31,6 +31,7 @@ The new API uses classes with explicit lifecycle hooks:
 import { Inngest, Middleware } from "inngest";
 
 class TimingMiddleware extends Middleware.BaseMiddleware {
+  id = "timing";
   async wrapFunctionHandler({ next }: Middleware.WrapFunctionHandlerArgs) {
     const start = Date.now();
     const result = await next();

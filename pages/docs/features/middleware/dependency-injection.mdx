@@ -86,6 +86,7 @@ The following is an example of adding a OpenAI client to all Inngest functions, 
         const openai = new OpenAI();
 
         class OpenAIMiddleware extends Middleware.BaseMiddleware {
+          id = "openai";
           transformFunctionInput(args: Middleware.TransformFunctionInputArgs) {
             return {
               ...args,

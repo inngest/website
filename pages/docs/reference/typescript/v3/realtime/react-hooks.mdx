@@ -1,0 +1,119 @@
+import {
+  RiNextjsFill,
+  RiNodejsFill,
+} from "@remixicon/react";
+import {
+  Warning,
+  Info,
+  CardGroup,
+  Card,
+  VersionBadge,
+} from "src/shared/Docs/mdx";
+
+export const description = "Archived v3 React hook docs for useInngestSubscription().";
+
+# React hooks / Next.js <VersionBadge version="TypeScript SDK v3" />
+
+<Warning>
+  This page documents the deprecated v3 hook API,
+  `useInngestSubscription()` from `@inngest/realtime/hooks`.
+  For new work, use [`useRealtime`](/docs/features/realtime/react-hooks) from
+  the v4 SDK.
+</Warning>
+
+In v3, the React subscription experience centered around
+`useInngestSubscription()`. The hook subscribed using a server-minted realtime
+token and returned accumulated message data for the selected channel and topics.
+
+## Typical v3 flow
+
+1. Define your realtime channel and topics with `@inngest/realtime`.
+2. Mint a token on the server with `getSubscriptionToken()`.
+3. Pass that token, or a `refreshToken` function, to `useInngestSubscription()`.
+
+```tsx {{ filename: "app/actions.ts" }}
+"use server";
+
+import { getSubscriptionToken, Realtime } from "@inngest/realtime";
+import { getInngestApp } from "@/inngest";
+import { helloChannel } from "@/inngest/channels";
+
+export async function fetchSubscriptionToken(): Promise<
+  Realtime.Token<typeof helloChannel, ["logs"]>
+> {
+  return getSubscriptionToken(getInngestApp(), {
+    channel: helloChannel(),
+    topics: ["logs"],
+  });
+}
+```
+
+```tsx {{ filename: "app/page.tsx" }}
+"use client";
+
+import { useInngestSubscription } from "@inngest/realtime/hooks";
+import { fetchSubscriptionToken } from "./actions";
+
+export default function Home() {
+  const { data, latestData, freshData, error, state, clear } =
+    useInngestSubscription({
+      refreshToken: fetchSubscriptionToken,
+      bufferInterval: 100,
+    });
+
+  return (
+    <div>
+      <p>State: {state}</p>
+      {error && <p>{error.message}</p>}
+      <p>Latest: {JSON.stringify(latestData?.data)}</p>
+      <p>Fresh batch: {freshData.length}</p>
+      <button onClick={() => clear()}>Clear</button>
+      {data.map((message, i) => (
+        <div key={i}>{JSON.stringify(message.data)}</div>
+      ))}
+    </div>
+  );
+}
+```
+
+## v3 hook API
+
+- `enabled?: boolean`
+- `bufferInterval?: number`
+- `token?: Realtime.Subscribe.Token`
+- `refreshToken?: () => Promise<Realtime.Subscribe.Token>`
+
+The hook returned:
+
+- `data`
+- `latestData`
+- `freshData`
+- `error`
+- `state`
+- `clear()`
+
+<Info>
+  In v4, this model was replaced with `useRealtime`, which exposes
+  `connectionStatus`, `runStatus`, and `messages.byTopic` / `messages.all`
+  instead of the v3 `data` / `latestData` shape.
+</Info>
+
+<CardGroup cols={2}>
+  <Card
+    href="/docs/features/realtime/react-hooks"
+    title={"See the v4 hook docs"}
+    icon={<RiNextjsFill className="text-basis h-8 w-8" />}
+    iconPlacement="top"
+  >
+    Learn the new `useRealtime` flow for Next.js and React.
+  </Card>
+
+  <Card
+    href="/docs/reference/typescript/v3/realtime"
+    title={"v3 realtime overview"}
+    icon={<RiNodejsFill className="text-basis h-8 w-8" />}
+    iconPlacement="top"
+  >
+    Return to the archived v3 realtime concepts page.
+  </Card>
+</CardGroup>

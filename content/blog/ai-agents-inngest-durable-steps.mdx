@@ -10,7 +10,7 @@ showSubtitle: true
 
 Most AI agent tutorials stop at the happy path — call the LLM, run a tool, loop. But the moment you ship an agent to production, you hit the real problems: tool calls fail, LLM providers rate-limit you, long-running tasks time out, and you can't see what the hell happened when something goes wrong.
 
-This post walks through building an AI agent on Inngest that handles all of that. We'll cover the agent loop, durable tool execution, observability, and sub-agent delegation with real code.
+This post walks through building an AI agent on Inngest that handles all of that. We'll cover the agent loop, durable tool execution, observability, and sub-agent delegation with real code. (For a higher-level look at [durable context management and debugging](/blog/building-durable-agents?ref=blog-ai-agents-inngest-durable-steps), see our companion guide.)
 
 You'll need Inngest, an LLM provider (Anthropic, OpenAI, whatever), and TypeScript. The patterns work regardless of which SDK you use.
 
@@ -72,7 +72,7 @@ In production, you deploy the same serve handler and connect your Inngest app to
 
 ## The Agent Loop
 
-Now let’s dig in. Every agent is a loop. Think → act → observe → repeat. The LLM decides what to do, you execute the tool, feed the result back, and let the LLM decide again. It keeps going until the model responds with text instead of a tool call. Simplifying, often in agents you'll do the following steps:
+Now let’s dig in. Every agent is a loop. Think → act → observe → repeat. The LLM decides what to do, you execute the tool, feed the result back, and let the LLM decide again. It keeps going until the model responds with text instead of a tool call. (For a concise reference, see the [agent tool loop pattern guide](/docs/ai-patterns/agent-tool-loops?ref=blog-ai-agents-inngest-durable-steps).) Simplifying, often in agents you’ll do the following steps:
 
 1. **Load context** - Build the system prompt using the goal of your agent and any other helpful context it may need.
 2. **Load history (Optional)** - Pre-load any recent history from conversations if you're building a conversational agent.
@@ -280,7 +280,7 @@ That's it. Every step's arguments and return values show up in the Inngest dashb
 
 ## Sub-Agents: Delegating Work
 
-A single agent loop gets you surprisingly far. But some tasks are better run in isolation: long-running research, background file processing, scheduled reminders. That's where sub-agents come in.
+A single agent loop gets you surprisingly far. But some tasks are better run in isolation: long-running research, background file processing, scheduled reminders. That's where [sub-agents](/docs/ai-patterns/sub-agent-delegation?ref=blog-ai-agents-inngest-durable-steps) come in.
 
 With Inngest, a sub-agent is just another Inngest function with its own agent loop. The parent agent uses `step.invoke` to call the child agent.
 
@@ -348,5 +348,5 @@ All of these same patterns work for support bots, coding agents, research agents
 | Observability | `extendedTracesMiddleware` | Full step-level traces |
 | Reply events | `step.run()` | Handle the result |
 
-Check out the [Inngest docs](/docs?ref=blog-ai-agents-inngest-durable-steps) for more on steps, invoke, and event-driven functions.
+Check out the [Inngest docs](/docs?ref=blog-ai-agents-inngest-durable-steps) for more on steps, invoke, and event-driven functions. To add approval gates to your agent, see the [human-in-the-loop pattern](/docs/ai-patterns/human-in-the-loop?ref=blog-ai-agents-inngest-durable-steps).
 

@@ -1,0 +1,379 @@
+export const description = `Create AI workflows that pause for human input before continuing. Use Inngest's "waitForEvent" to build decoupled flows.`
+
+# Human-in-the-loop (HITL)
+
+Use [`step.waitForEvent()`](/docs/features/inngest-functions/steps-workflows/wait-for-event) to pause agent execution for human approval, then resume or abort based on the response.
+
+## The basic pattern
+
+Create a function that proposes an action, notifies a human, waits for a response, and resumes or aborts:
+
+```typescript
+import { inngest } from "./client";
+
+export const emailApprovalWorkflow = inngest.createFunction(
+  { id: "email-approval-workflow", triggers: [{ event: "agent/email.draft-requested" }] },
+  async ({ event, step }) => {
+    const { recipient, context, userId } = event.data;
+
+    // Step 1: Agent drafts the email
+    const draft = await step.run("draft-email", async () => {
+      return await generateEmail({
+        recipient,
+        context,
+        tone: "professional",
+      });
+    });
+
+    // Step 2: Notify the human via Slack
+    await step.run("request-approval", async () => {
+      await sendSlackMessage({
+        channel: "#agent-approvals",
+        blocks: [
+          {
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: `*Agent wants to send an email*\n\n*To:* ${recipient}\n*Subject:* ${draft.subject}\n\n${draft.body}`,
+            },
+          },
+          {
+            type: "actions",
+            elements: [
+              {
+                type: "button",
+                text: { type: "plain_text", text: "✅ Approve" },
+                action_id: "approve_email",
+                value: JSON.stringify({
+                  approvalId: event.data.approvalId,
+                  approved: true,
+                }),
+                style: "primary",
+              },
+              {
+                type: "button",
+                text: { type: "plain_text", text: "❌ Reject" },
+                action_id: "reject_email",
+                value: JSON.stringify({
+                  approvalId: event.data.approvalId,
+                  approved: false,
+                }),
+                style: "danger",
+              },
+            ],
+          },
+        ],
+      });
+    });
+
+    // Step 3: Wait for human response — no compute cost while waiting
+    const approval = await step.waitForEvent("wait-for-approval", {
+      event: "agent/approval.response",
+      match: "data.approvalId",
+      timeout: "24h",
+    });
+
+    // Step 4: Handle the response
+    // No event means it timed out
+    if (!approval) {
+      await step.run("notify-timeout", async () => {
+        await sendSlackMessage({
+          channel: "#agent-approvals",
+          text: `⏰ Email approval timed out. Draft discarded.\n*To:* ${recipient}\n*Subject:* ${draft.subject}`,
+        });
+      });
+      return { status: "timed_out", action: "email_not_sent" };
+    }
+
+    // The event payload can be used with whatever parameters that you send
+    if (approval.data.approved) {
+      await step.run("send-email", async () => {
+        await sendEmail({
+          to: recipient,
+          subject: draft.subject,
+          body: draft.body,
+        });
+      });
+      return { status: "approved", action: "email_sent" };
+    }
+
+    return {
+      status: "rejected",
+      reason: approval.data.reason || "No reason provided",
+      action: "email_not_sent",
+    };
+  }
+);
+```
+
+The `match` field correlates the response to the correct waiting function — if you have 50 pending approvals, each resolves independently. The function is suspended while waiting, so there's no compute cost while a human reviews.
+
+## Send the approval response back
+
+When the human clicks a button (Slack, email, dashboard, etc.), send an event to Inngest so `step.waitForEvent()` resolves.
+
+**From a Slack interaction webhook:**
+
+```typescript
+// NOTE - This is pseudo code for handling Slack interactions, please review their docs for implementation
+app.post("/api/slack/interactions", async (req, res) => {
+  const payload = JSON.parse(req.body.payload);
+  const action = payload.actions[0];
+  const value = JSON.parse(action.value);
+
+  // Send the event using the client
+  await inngest.send({
+    name: "agent/approval.response",
+    data: {
+      approvalId: value.approvalId,
+      approved: value.approved,
+      respondedBy: payload.user.id,
+      reason: value.approved ? undefined : "Rejected via Slack",
+    },
+  });
+
+  res.json({ text: value.approved ? "✅ Approved" : "❌ Rejected" });
+});
+```
+
+**From a custom dashboard API:**
+
+```typescript
+app.post("/api/approvals/:approvalId/respond", async (req, res) => {
+  const { approvalId } = req.params;
+  const { approved, reason } = req.body;
+
+  await inngest.send({
+    name: "agent/approval.response",
+    data: {
+      approvalId,
+      approved,
+      respondedBy: req.user.id,
+      reason,
+    },
+  });
+
+  res.json({ status: "response_recorded" });
+});
+```
+
+The event's `data.approvalId` must match the `approvalId` from the original request. This is how `step.waitForEvent()` correlates the response.
+
+## Handle approved, rejected, and timed-out responses
+
+Every approval gate has three outcomes. Handle all three:
+
+```typescript
+const approval = await step.waitForEvent("wait-for-approval", {
+  event: "agent/approval.response",
+  match: "data.approvalId",
+  timeout: "24h",
+});
+
+if (!approval) {
+  // TIMEOUT: No response within the window
+  return { status: "timed_out" };
+}
+
+if (approval.data.approved) {
+  // APPROVED: Proceed with the action
+  const result = await step.run("execute-action", async () => {
+    return await performAction(approval.data);
+  });
+  return { status: "approved", result };
+}
+
+// REJECTED
+return { status: "rejected", reason: approval.data.reason };
+```
+
+### Choose a timeout strategy
+
+You can choose how your AI workflow handles the human-in-the-loop timeout. Here are some ideas for suggestions:
+
+| Strategy | When to use | Implementation |
+|---|---|---|
+| **Auto-reject** | High-risk actions (delete, deploy, send to external) | Return early with `status: "timed_out"` |
+| **Auto-approve** | Low-risk, time-sensitive actions | Proceed if `!approval`, same as approved path |
+| **Escalate** | Actions that _must_ get a response | Notify a different reviewer, then `waitForEvent` again |
+| **Retry notification** | Human might have missed the first message | Re-notify, then wait with a new timeout |
+
+To escalate when nobody responds, wait again with a new reviewer:
+
+```typescript
+const approval = await step.waitForEvent("wait-for-approval", {
+  event: "agent/approval.response",
+  match: "data.approvalId",
+  timeout: "4h",
+});
+
+if (!approval) {
+  await step.run("escalate-to-manager", async () => {
+    await sendSlackDM({
+      userId: event.data.escalationContact,
+      text: `⚠️ Approval needed — original reviewer didn't respond in 4 hours.\n\n${actionSummary}`,
+    });
+  });
+
+  const escalatedApproval = await step.waitForEvent("wait-for-escalation", {
+    event: "agent/approval.response",
+    match: "data.approvalId",
+    timeout: "4h",
+  });
+
+  if (!escalatedApproval) {
+    return { status: "timed_out", escalated: true };
+  }
+
+  return handleApproval(escalatedApproval);
+}
+```
+
+## Add approval gates inside a tool loop
+
+To gate dangerous tools while letting safe tools (reading data, searching) run freely, check tool names against an approval list inside [the loop](/docs/ai-patterns/agent-tool-loops):
+
+```typescript
+const APPROVAL_REQUIRED_TOOLS = ["send_email", "delete_record", "run_sql", "deploy"];
+
+export const agentWithApproval = inngest.createFunction(
+  { id: "agent-with-approval" },
+  { event: "agent/task.received" },
+  async ({ event, step }) => {
+    let messages = [{ role: "user" as const, content: event.data.task }];
+    let iterations = 0;
+
+    while (iterations < 20) {
+      iterations++;
+
+      const llmResponse = await step.run(`think`, async () => {
+        return await callLLM(messages, allTools);
+      });
+
+      if (!llmResponse.toolCalls.length) {
+        return { response: llmResponse.text, iterations };
+      }
+
+      for (const toolCall of llmResponse.toolCalls) {
+        if (APPROVAL_REQUIRED_TOOLS.includes(toolCall.name)) {
+          // Create a unique approval ID that will not be re-used
+          const approvalId = `${event.data.taskId}-${iterations}-${toolCall.name}`;
+
+          await step.run(`request-approval-${approvalId}`, async () => {
+            await sendSlackMessage({
+              channel: "#agent-approvals",
+              text: [
+                `🔒 *Agent wants to execute: \`${toolCall.name}\`*`,
+                `\`\`\`${JSON.stringify(toolCall.arguments, null, 2)}\`\`\``,
+              ].join("\n"),
+            });
+          });
+
+          const approval = await step.waitForEvent(
+            `wait-approval-${approvalId}`,
+            {
+              event: "agent/approval.response",
+              match: "data.approvalId",
+              timeout: "4h",
+            }
+          );
+
+          if (!approval?.data.approved) {
+            messages.push({
+              role: "tool" as const,
+              content: `Tool call rejected by human reviewer. Reason: ${
+                approval?.data.reason || "No response / timed out"
+              }. Choose a different approach.`,
+            });
+            continue;
+          }
+        }
+
+        const result = await step.run(
+          `tool-${toolCall.name}`,
+          async () => {
+            return await executeTool(toolCall.name, toolCall.arguments);
+          }
+        );
+
+        messages.push({ role: "tool" as const, content: result });
+      }
+    }
+
+    return { status: "max_iterations_reached" };
+  }
+);
+```
+
+The loop pauses mid-iteration when a tool is called that requires approval. The human can take as long as the `timeout` waits - the function resumes exactly where it left off.
+
+## Chain multiple approval gates
+
+To require sequential approvals from different reviewers (e.g., editorial then legal), chain multiple `step.waitForEvent()` calls:
+
+```typescript
+export const multiApprovalWorkflow = inngest.createFunction(
+  { id: "multi-approval-publish" },
+  { event: "content/publish.requested" },
+  async ({ event, step }) => {
+    const { contentId } = event.data;
+
+    const content = await step.run("generate-content", async () => {
+      return await generateContent(contentId);
+    });
+
+    // --- Gate 1: Editorial approval ---
+    await step.run("request-editorial-review", async () => {
+      await sendSlackMessage({
+        channel: "#editorial",
+        text: `📝 Review needed: ${content.title}\n\n${content.preview}`,
+      });
+    });
+
+    const editorialApproval = await step.waitForEvent("wait-editorial", {
+      event: "content/review.completed",
+      match: "data.contentId",
+      timeout: "48h",
+    });
+
+    if (!editorialApproval?.data.approved) {
+      return { status: "rejected_by_editorial" };
+    }
+
+    // --- Gate 2: Legal approval ---
+    await step.run("request-legal-review", async () => {
+      await sendSlackMessage({
+        channel: "#legal-review",
+        text: `⚖️ Legal review needed: ${content.title}\n\nEditorial approved. Awaiting legal sign-off.`,
+      });
+    });
+
+    const legalApproval = await step.waitForEvent("wait-legal", {
+      event: "content/legal-review.completed",
+      match: "data.contentId",
+      timeout: "72h",
+    });
+
+    if (!legalApproval?.data.approved) {
+      return { status: "rejected_by_legal" };
+    }
+
+    // --- Both gates passed ---
+    await step.run("publish", async () => {
+      await publishContent(content);
+    });
+
+    return { status: "published", approvals: ["editorial", "legal"] };
+  }
+);
+```
+
+Each gate is durable and independent. If the editorial reviewer approves at 2 AM and the legal reviewer approves three days later, the function resumes correctly each time.
+
+## Next steps
+
+- [Build an agent tool loop](/docs/ai-patterns/agent-tool-loops) with `step.run()`
+- [Delegate subtasks to child agents](/docs/ai-patterns/sub-agent-delegation) with `step.invoke()`
+- Learn more about [`step.waitForEvent()`](/docs/features/inngest-functions/steps-workflows/wait-for-event) in the reference docs
+- [Combine this approach with our "realtime" feature](/docs/examples/realtime#human-in-the-loop-bi-directional-workflows) for approvals from the UI
+- [Why durable execution matters for HITL](/blog/durable-execution-key-to-harnessing-ai-agents?ref=docs-ai-patterns-human-in-the-loop) — how suspend/resume makes approval gates possible

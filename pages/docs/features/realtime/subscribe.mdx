@@ -1,6 +1,13 @@
-import { Steps, Step, CodeGroup } from "src/shared/Docs/mdx";
+import { Steps, Step, CodeGroup, Warning } from "src/shared/Docs/mdx";
 
 export const description = 'Learn how to subscribe to data from Inngest functions.';
+
+<Warning>
+  This page documents deprecated v3 subscribe patterns. For the current v4
+  APIs, see [/docs/reference/typescript/v4/realtime/subscribing](/docs/reference/typescript/v4/realtime/subscribing).
+  For archived v3 concepts, see
+  [/docs/reference/typescript/v3/realtime](/docs/reference/typescript/v3/realtime).
+</Warning>
 
 ### Subscribing
 
@@ -77,7 +84,7 @@ Your application uses the Inngest SDK to create a token, which is then used by t
     </CodeGroup>
   </Step>
   <Step title="Subscribe to a channel">
-    Once you have a token, you can subscribe to a channel by calling the `subscribe` function with the token. You can also subscribe using the `useInngestSubscription` React hook. Read more about the [React hook here](/docs/features/realtime/react-hooks).
+    Once you have a token, you can subscribe to a channel by calling the `subscribe` function with the token. You can also subscribe using the `useInngestSubscription` React hook. Read more about the [archived v3 React hook docs here](/docs/reference/typescript/v3/realtime/react-hooks).
 
     <CodeGroup>
 

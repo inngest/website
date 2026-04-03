@@ -1,0 +1,316 @@
+import { Info, Properties, Property, Row, Col, CodeGroup } from "src/shared/Docs/mdx";
+
+export const description = "Mint subscription tokens and consume realtime streams server-side with getClientSubscriptionToken and subscribe."
+
+# Subscribing
+
+Server-side subscription covers two operations: **minting tokens** for client use and **consuming streams** on the server. The v4 SDK exposes both standalone helpers and client aliases:
+
+- `getClientSubscriptionToken(app, ...)` for minting client-safe tokens
+- `subscribe({ app, ... })` or `inngest.realtime.subscribe(...)` for server-side streams
+
+---
+
+## `getClientSubscriptionToken(app, options)`
+
+Mints a scoped subscription token on the server and returns a serializable object safe to pass to the client. The returned object includes the token key and the resolved API base URL, so `useRealtime` automatically connects to the right environment (cloud or dev server) without any client-side env var configuration.
+
+<Row>
+  <Col>
+    <Properties>
+      <Property name="app" type="Inngest" required>
+        Your Inngest client instance.
+      </Property>
+      <Property name="options.channel" type="ChannelInstance | string" required>
+        The channel to authorize. Can be a channel instance or a plain string.
+      </Property>
+      <Property name="options.topics" type="string[]" required>
+        The topics the token grants access to. The client can only subscribe to these topics.
+      </Property>
+    </Properties>
+
+    Returns `Promise<ClientSubscriptionToken>` with `key` (the JWT string) and `apiBaseUrl` (the resolved server URL).
+  </Col>
+  <Col>
+  ```ts
+  import { getClientSubscriptionToken } from "inngest/react";
+  import { inngest } from "./client";
+  import { pipelineChannel } from "./channels";
+
+  const ch = pipelineChannel({ runId: "abc123" });
+
+  const token = await getClientSubscriptionToken(inngest, {
+    channel: ch,
+    topics: ["status", "tokens"],
+  });
+
+  // token.key         - JWT string for the client
+  // token.apiBaseUrl   - resolved API URL (e.g. cloud or localhost)
+  ```
+  </Col>
+</Row>
+
+<Info>
+  Always mint tokens on the server. Never expose your Inngest signing key to the client. The token is scoped to the specified channel and topics, so a client cannot use it to access other channels.
+</Info>
+
+<Info>
+  The server resolves `INNGEST_DEV` and passes the correct API URL through the token. Your client code does not need `NEXT_PUBLIC_INNGEST_DEV`, `VITE_INNGEST_DEV`, or any other browser-side env var.
+</Info>
+
+### Framework examples
+
+<CodeGroup forceTabs={true}>
+```ts {{ title: "Next.js Server Action" }}
+// app/actions.ts
+"use server";
+import { getClientSubscriptionToken } from "inngest/react";
+import { inngest } from "../inngest/client";
+import { pipelineChannel } from "../inngest/channels";
+
+export async function getRealtimeToken(runId: string) {
+  return getClientSubscriptionToken(inngest, {
+    channel: pipelineChannel({ runId }),
+    topics: ["status", "tokens"],
+  });
+}
+```
+
+```ts {{ title: "Express" }}
+import express from "express";
+import { getClientSubscriptionToken } from "inngest/react";
+import { inngest } from "./client";
+import { pipelineChannel } from "./channels";
+
+const app = express();
+
+app.get("/api/realtime-token", async (req, res) => {
+  const { runId } = req.query;
+  const token = await getClientSubscriptionToken(inngest, {
+    channel: pipelineChannel({ runId: runId as string }),
+    topics: ["status", "tokens"],
+  });
+  res.json(token);
+});
+```
+
+```ts {{ title: "TanStack Start" }}
+import { createServerFn } from "@tanstack/start";
+import { getClientSubscriptionToken } from "inngest/react";
+import { inngest } from "./inngest/client";
+import { pipelineChannel } from "./inngest/channels";
+
+export const getRealtimeToken = createServerFn({ method: "GET" })
+  .validator((runId: string) => runId)
+  .handler(async ({ data: runId }) => {
+    return getClientSubscriptionToken(inngest, {
+      channel: pipelineChannel({ runId }),
+      topics: ["status", "tokens"],
+    });
+  });
+```
+</CodeGroup>
+
+---
+
+## `subscribe(options)`
+
+Creates a server-side subscription to a realtime channel. Without `onMessage`, it returns a `ReadableStream`-based subscription object. With `onMessage`, it returns a callback subscription handle.
+
+### Stream subscription
+
+Without `onMessage`, `subscribe` returns a stream subscription.
+
+<Row>
+  <Col>
+    <Properties>
+      <Property name="app" type="Inngest">
+        Your Inngest client instance. Used to resolve connection details.
+      </Property>
+      <Property name="channel" type="ChannelInstance | string" required>
+        The channel to subscribe to.
+      </Property>
+      <Property name="topics" type="string[]" required>
+        The topics to subscribe to.
+      </Property>
+      <Property name="key" type="string">
+        A pre-minted JWT token key. If not provided, `app` is used to mint a token automatically.
+      </Property>
+      <Property name="validate" type="boolean">
+        Enable schema validation on incoming messages. Defaults to `true`.
+      </Property>
+    </Properties>
+  </Col>
+  <Col>
+  ```ts
+  import { subscribe } from "inngest/realtime";
+  import { inngest } from "./client";
+  import { pipelineChannel } from "./channels";
+
+  const ch = pipelineChannel({ runId: "abc123" });
+
+  const stream = await subscribe({
+    app: inngest,
+    channel: ch,
+    topics: ["status", "tokens"],
+  });
+
+  // ReadableStream - use getReader()
+  const reader = stream.getReader();
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    console.log(value.topic, value.data);
+  }
+  ```
+  </Col>
+</Row>
+
+<Info>
+  The same API is available as `inngest.realtime.subscribe({ channel, topics })`, which omits the `app` option because the client is already known.
+</Info>
+
+### Stream methods
+
+The returned stream has additional helper methods:
+
+<Properties>
+  <Property name="getJsonStream()" type="ReadableStream<Message>">
+    Returns a new `ReadableStream` that emits parsed JSON messages. Each call creates a fresh reader view of future messages only.
+  </Property>
+  <Property name="getEncodedStream()" type="ReadableStream<Uint8Array>">
+    Returns a new `ReadableStream` with SSE-formatted `Uint8Array` chunks (`data: {...}\n\n`). Useful for piping the subscription through a streaming HTTP response.
+  </Property>
+  <Property name="close(reason?)" type="(reason?: string) => void">
+    Closes the underlying WebSocket connection.
+  </Property>
+  <Property name="unsubscribe(reason?)" type="(reason?: string) => void">
+    Alias for `close()`.
+  </Property>
+</Properties>
+
+```ts
+// Stream JSON to another consumer
+const jsonStream = stream.getJsonStream();
+const response = new Response(jsonStream);
+
+// Stream as SSE
+const sseStream = stream.getEncodedStream();
+return new Response(sseStream, {
+  headers: { "Content-Type": "text/event-stream" },
+});
+
+// Clean up
+stream.close();
+```
+
+### Callback subscription
+
+Pass `onMessage` to use an event-driven pattern instead of streams.
+
+<Row>
+  <Col>
+    <Properties>
+      <Property name="onMessage" type="(message: Message) => void" required>
+        Called for each incoming message.
+      </Property>
+      <Property name="onError" type="(error: unknown) => void">
+        Called when a connection error occurs.
+      </Property>
+    </Properties>
+
+    Returns `Promise<{ close, unsubscribe }>`.
+  </Col>
+  <Col>
+  ```ts
+  import { subscribe } from "inngest/realtime";
+  import { inngest } from "./client";
+  import { pipelineChannel } from "./channels";
+
+  const ch = pipelineChannel({ runId: "abc123" });
+
+  const sub = await subscribe({
+    app: inngest,
+    channel: ch,
+    topics: ["status"],
+    onMessage: (message) => {
+      console.log(`[${message.topic}]`, message.data);
+    },
+    onError: (err) => {
+      console.error("Subscription error:", err);
+    },
+  });
+
+  // Clean up when done
+  sub.close();
+  ```
+  </Col>
+</Row>
+
+## Message shape
+
+Each message received from a subscription includes:
+
+<Properties>
+  <Property name="topic" type="string">
+    The topic name this message was published to.
+  </Property>
+  <Property name="channel" type="string">
+    The resolved channel name.
+  </Property>
+  <Property name="data" type="TData">
+    The message payload, typed according to the topic's schema.
+  </Property>
+  <Property name="kind" type={`"data" | "run" | "datastream-start" | "datastream-end" | "chunk"`}>
+    The message kind. Most topic publishes are `"data"`. Run lifecycle updates arrive as `"run"`.
+  </Property>
+  <Property name="runId" type="string | undefined">
+    The Inngest function run ID, if the message was published from within a function.
+  </Property>
+  <Property name="fnId" type="string | undefined">
+    The Inngest function ID.
+  </Property>
+  <Property name="createdAt" type="Date">
+    When the message was created.
+  </Property>
+</Properties>
+
+Run messages are platform lifecycle events. Their `data` is intentionally broad, while topic messages remain typed from your channel schema.
+
+## Server-side stream example
+
+A complete example using `subscribe` to monitor a long-running function and react to its output:
+
+```ts
+import { subscribe } from "inngest/realtime";
+import { inngest } from "./client";
+import { workflowChannel } from "./channels";
+
+async function monitorWorkflow(runId: string) {
+  const ch = workflowChannel({ runId });
+
+  const stream = await subscribe({
+    app: inngest,
+    channel: ch,
+    topics: ["status", "result"],
+  });
+
+  const reader = stream.getReader();
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    if (value.topic === "status") {
+      console.log("Status:", value.data.message);
+    }
+
+    if (value.topic === "result") {
+      console.log("Result:", value.data);
+      stream.close();
+    }
+  }
+}
+```

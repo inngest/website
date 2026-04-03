@@ -96,12 +96,6 @@ export const SECTIONS: Section[] = [
         tags: ["Activation", "User Journeys", "Event Coordination"],
         slug: "event-coordination-for-lost-customers",
       },
-      /*{
-        title: "Human-in-the-middle",
-        subtitle: "Workflows that require human input to run conditional code",
-        tags: ["Compliance", "Internal Tooling"],
-        slug: "#TODO",
-      },*/
     ],
   },
 ];
@@ -133,11 +127,11 @@ export default function Patterns() {
 
       <div>
         <Container>
-          <h1 className="text-3xl lg:text-5xl text-white mt-12 md:mt-20 font-semibold tracking-tight">
+          <h1 className="mt-12 text-3xl font-semibold tracking-tight text-white md:mt-20 lg:text-5xl">
             Patterns
           </h1>
           <p className="text-xl text-slate-100">Async + Event-Driven</p>
-          <p className="my-4 text-indigo-200 max-w-xl  mb-16 md:mb-28">
+          <p className="my-4 mb-16 max-w-xl  text-indigo-200 md:mb-28">
             The common patterns listed here are flexible and powerful enough to
             solve problems across all types of projects and codebases.
           </p>
@@ -148,42 +142,42 @@ export default function Patterns() {
             {SECTIONS.map((s, idx) => (
               <div
                 key={s.title}
-                className="gap-y-6 xl:gap-y-8 flex flex-col xl:grid xl:grid-cols-4 rounded-lg md:px-3 md:py-6 lg:p-6"
+                className="flex flex-col gap-y-6 rounded-lg md:px-3 md:py-6 lg:p-6 xl:grid xl:grid-cols-4 xl:gap-y-8"
               >
                 <div className="flex items-center gap-4 xl:block">
-                  <div className="w-10 h-10 bg-surfaceMuted flex items-center justify-center text-lg font-bold text-white rounded">
+                  <div className="flex h-10 w-10 items-center justify-center rounded bg-surfaceMuted text-lg font-bold text-white">
                     {zeroPad(idx + 1)}
                   </div>
-                  <h2 className="text-xl xl:mt-4 text-white font-medium tracking-tight">
+                  <h2 className="text-xl font-medium tracking-tight text-white xl:mt-4">
                     {s.title}
                   </h2>
                 </div>
-                <div className="grid col-span-3 md:grid-cols-2 gap-x-6 gap-y-6">
+                <div className="col-span-3 grid gap-x-6 gap-y-6 md:grid-cols-2">
                   {s.articles.map(({ title, subtitle, tags, slug }) => (
                     <Link
                       key={slug}
                       href={`/patterns/${slug}`}
-                      className="flex flex-col justify-between bg-surfaceSubtle hover:drop-shadow-[0_0_35px_rgba(124,124,124,0.25)] rounded-lg group/card transition-all"
+                      className="group/card flex flex-col justify-between rounded-lg bg-surfaceSubtle transition-all hover:drop-shadow-[0_0_35px_rgba(124,124,124,0.25)]"
                     >
-                      <div className="px-6 py-4 lg:px-8 lg:py-6 h-full flex flex-col justify-between">
+                      <div className="flex h-full flex-col justify-between px-6 py-4 lg:px-8 lg:py-6">
                         <div>
-                          <h2 className="text-lg text-basis font-semibold tracking-tight">
+                          <h2 className="text-lg font-semibold tracking-tight text-basis">
                             {title}
                           </h2>
-                          <p className="text-sm mt-1 mb-3 text-subtle font-regular tracking-tight">
+                          <p className="font-regular mb-3 mt-1 text-sm tracking-tight text-subtle">
                             {subtitle}.
                           </p>
                         </div>
-                        <span className="text-sm text-link font-medium group-hover/card:underline transition-all flex items-center gap-1">
+                        <span className="flex items-center gap-1 text-sm font-medium text-link transition-all group-hover/card:underline">
                           Read pattern
-                          <ArrowRight className="group-hover/card:translate-x-1 transition-transform duration-150  -mr-1.5" />
+                          <ArrowRight className="-mr-1.5 transition-transform duration-150  group-hover/card:translate-x-1" />
                         </span>
                       </div>
-                      <div className="flex flex-wrap gap-2 bg-carbon-500/10 rounded-b-lg py-3 px-6 border-t border-subtle transition-all">
+                      <div className="flex flex-wrap gap-2 rounded-b-lg border-t border-subtle bg-carbon-500/10 px-6 py-3 transition-all">
                         {tags.map((t) => (
                           <span
                             key={t}
-                            className="py-1 px-2 rounded bg-surfaceBase text-basis font-medium text-xs"
+                            className="rounded bg-surfaceBase px-2 py-1 text-xs font-medium text-basis"
                           >
                             {t}
                           </span>

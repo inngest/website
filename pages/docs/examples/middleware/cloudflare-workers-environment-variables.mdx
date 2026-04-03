@@ -23,6 +23,7 @@ The `requestArgs` property in `wrapRequest` provides the raw arguments passed to
 import { Inngest, Middleware } from 'inngest';
 
 class WorkersBindingsMiddleware extends Middleware.BaseMiddleware {
+  id = "workers-bindings";
   private env!: Env;
 
   async wrapRequest({ next, requestArgs }: Middleware.WrapRequestArgs) {
@@ -62,6 +63,7 @@ type Bindings = {
 };
 
 class HonoBindingsMiddleware extends Middleware.BaseMiddleware {
+  id = "hono-bindings";
   private env!: Bindings;
 
   async wrapRequest({ next, requestArgs }: Middleware.WrapRequestArgs) {
