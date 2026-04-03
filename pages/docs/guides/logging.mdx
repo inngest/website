@@ -29,11 +29,13 @@ We provide a thin wrapper over existing logging tools, and export it to Inngest 
 
 A `logger` object is available within all Inngest functions as a handler argument. You can use it with the logger of your choice, or if absent, `logger` will default to use `console`.
 
+The SDK uses **Pino-style object-first** logging, where structured data is passed before the message string:
+
 ```ts
 inngest.createFunction(
   { id: "my-awesome-function", triggers: { event: "func/awesome" } },
-  async ({ event, step, logger }) => { // <== logger is available as an argument
-    logger.info("starting function", { metadataKey: "metadataValue" });
+  async ({ event, step, logger }) => {
+    logger.info({ eventId: event.data.id }, "Starting function");
 
     const val = await step.run("do-something", () => {
       if (somethingBadHappens) logger.warn("something bad happened");
@@ -45,79 +47,73 @@ inngest.createFunction(
 ```
 
 <Tip>
-We recommend using a logger library that supports a child logger `.child()` implementation which automatically adds function runtime metadata to your logs. Read more about [enriched logs with function metadata](#enriched-logs-with-function-metadata) for more details.
+We recommend using a structured logger like [Pino](https://github.com/pinojs/pino) that supports a child logger `.child()` implementation, which automatically adds function runtime metadata to your logs. Read more about [enriched logs with function metadata](#enriched-logs-with-function-metadata) for more details.
 </Tip>
-
-The exported logger provides the following interface methods:
-
-```ts
-export interface Logger {
-  info(...args: any[]): void;
-  warn(...args: any[]): void;
-  error(...args: any[]): void;
-  debug(...args: any[]): void;
-}
-```
-
-These are very typical interfaces and are also on the [RFC5424 guidelines](https://datatracker.ietf.org/doc/html/rfc5424#section-6.2.1), so most loggers you choose should work without issues.
-
 
 ## Using your preferred logger
 
-While `console.log` may be good enough for local development, other logging libraries provide more features that are suitable for production use.
-
-The following examples use [winston][winston] for the logging library, including a basic example and an example with a Datadog transport.
+While the default `ConsoleLogger` may be good enough for local development, structured logging libraries provide more features that are suitable for production use. Pass a logger to the `logger` option on the Inngest client to make it available as `ctx.logger` in all functions.
 
 <CodeGroup>
-```ts {{ title: "Winston basic example" }}
+```ts {{ title: "Pino" }}
+import pino from "pino";
 import { Inngest } from "inngest";
+
+const logger = pino({ level: "debug" });
+
+export const inngest = new Inngest({
+  id: "my-awesome-app",
+  logger: logger,
+});
+inngest.createFunction(
+  { id: 'my-fn', },
+  ({ event, step, logger }) => {
+    logger.info({ hello: "world" }, "this uses my pino logger");
+  }
+);
+```
+```ts {{ title: "Winston" }}
 import winston from "winston";
+import { Inngest, wrapStringFirstLogger } from "inngest";
 
 const logger = winston.createLogger({
   level: "info",
-  exitOnError: false,
   format: winston.format.json(),
   transports: [new winston.transports.Console()],
 });
 
-// Pass `logger` to the Inngest client, and this winston logger will be accessible within functions
+// Winston uses string-first logging, so wrap it for compatibility
 export const inngest = new Inngest({
   id: "my-awesome-app",
-  logger: logger,
-  // ...
+  logger: wrapStringFirstLogger(logger),
 });
-```
-```ts {{ title: "Winston with Datadog transport" }}
-import { Inngest } from "inngest";
-import winston from "winston";
-
-/// Assuming we're deploying to Vercel.
-/// Other providers likely have their own pre-defined environment variables you can use.
-const env = process.env.VERCEL_ENV || "development";
-const ddTransportOps = {
-  host: "http-intake.logs.datadoghq.com",
-  path: `/api/v2/logs?dd-api-key=${process.env.DD_API_KEY}&ddsource=nextjs&service=inngest&ddtags=env:${env}`,
-  ssl: true,
-};
-
-const logger = winston.createLogger({
-  level: "info",
-  exitOnError: false,
-  format: winston.format.json(),
-  transports: [
-    new winston.transports.Console(),
-    new winston.transports.Http(ddTransportOps),
-  ],
-});
-
-// Pass `logger` to the Inngest client, and this winston logger will be accessible within functions
-export const inngest = new Inngest({
-  id: "my-awesome-app",
-  logger: logger,
-  // ...
-});
+inngest.createFunction(
+  { id: 'my-fn', },
+  ({ event, step, logger }) => {
+    logger.info("this uses my winston logger", { hello: "world" });
+  }
+);
 ```
 </CodeGroup>
+
+### Object-first vs string-first loggers
+
+The SDK expects **object-first** loggers (like [Pino][pino]), where structured data comes before the message:
+
+```ts
+// Object-first (Pino style) - works out of the box
+logger.info({ userId: "abc" }, "User created");
+```
+
+Some loggers like [Winston][winston] use **string-first** conventions, where the message comes first. For these loggers, use `wrapStringFirstLogger` to adapt them:
+
+```ts
+import { wrapStringFirstLogger } from "inngest";
+
+const logger = wrapStringFirstLogger(winstonLogger);
+```
+
+See the [Logging reference](/docs/reference/typescript/v4/logging) for more details on logger configuration, the `ConsoleLogger`, and the `internalLogger` option.
 
 ## Enriched logs with function metadata
 
@@ -127,14 +123,14 @@ If the logger library supports a child logger `.child()` implementation, the bui
 - Event name
 - Run ID
 
-```ts {{ title: "Example usage with Winston logger" }}
+```ts {{ title: "Example usage with Pino logger" }}
 await step.run("summarize-content", async ({ step, logger }) => {
-  logger.info("calling Claude", { max_tokens: 1000 });
+  logger.info({ max_tokens: 1000 }, "Calling Claude");
 });
 ```
 ```json {{ title: "Example log output" }}
 {"eventName":"inngest/function.invoked","functionName":"Summarize content via GPT-4",
-"level":"info","max_tokens":1000,"message":"Querying vector database",
+"level":"info","max_tokens":1000,"message":"Calling Claude",
 "runID":"01KB7YQXYNPEX3XB257A3RQDRX"}
 ```
 
@@ -142,8 +138,8 @@ await step.run("summarize-content", async ({ step, logger }) => {
 
 The following is a list of loggers we're aware of that work, but is not an exhaustive list:
 
-- [Winston][winston] <Tag>child logger support</Tag>
-- [Pino](https://github.com/pinojs/pino) <Tag>child logger support</Tag>
+- [Pino][pino] <Tag>child logger support</Tag>
+- [Winston][winston] <Tag>child logger support</Tag> (requires `wrapStringFirstLogger`)
 - [Bunyan](https://github.com/trentm/node-bunyan) <Tag>child logger support</Tag>
 - [Roarr](https://github.com/gajus/roarr) <Tag>child logger support</Tag>
 - [LogLevel](https://github.com/pimterry/loglevel)
@@ -158,6 +154,8 @@ The built-in logger is implemented using [middleware](/docs/features/middleware)
 
 ## Further reading
 
+- [Logging reference](/docs/reference/typescript/v4/logging) - Full details on logger configuration, `ConsoleLogger`, `internalLogger`, and `wrapStringFirstLogger`.
 - [Traces](/docs/platform/monitor/traces?ref=guides-logging) - View detailed execution traces for your functions in the Inngest dashboard, including step-by-step breakdowns and timing information.
 
+[pino]: https://github.com/pinojs/pino
 [winston]: https://github.com/winstonjs/winston
