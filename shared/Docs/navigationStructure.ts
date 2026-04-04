@@ -123,7 +123,7 @@ const sectionReference: (NavGroup | NavLink)[] = [
       {
         title: "Durable Endpoints",
         href: tsRef("v3", "durable-endpoints"),
-        tag: "new",
+        tag: "preview",
       },
       {
         title: "Steps",
@@ -311,7 +311,7 @@ const sectionReference: (NavGroup | NavLink)[] = [
       {
         title: "Durable Endpoints",
         href: tsRef("v4", "durable-endpoints"),
-        tag: "new",
+        tag: "preview",
       },
       {
         title: "Steps",
@@ -694,7 +694,7 @@ const sectionLearn: (NavGroup | NavLink)[] = [
       {
         title: "Durable Endpoints",
         href: `/docs/learn/durable-endpoints`,
-        tag: "new",
+        tag: "preview",
       },
       {
         title: "Steps",
