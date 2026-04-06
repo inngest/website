@@ -7,7 +7,7 @@ author: Aaron Harper
 category: engineering
 ---
 
-You can't cancel a JavaScript promise. There's no `.cancel()` method, no `AbortController` integration, no built-in way to say "never mind, stop." The TC39 committee [considered adding cancellation](https://github.com/tc39/proposal-cancelable-promises) in 2016, but the proposal was withdrawn after heated debate.
+You can't cancel a JavaScript promise. There's no `.cancel()` method, no `AbortController` integration, no built-in way to say "never mind, stop." The TC39 committee [considered adding cancellation](https://github.com/tc39/proposal-cancelable-promises) in 2016, but the proposal was withdrawn after heated debate. Part of the problem is that cancelling arbitrary code mid-execution can leave resources in a dirty state (open handles, half-written data), so true cancellation requires cooperative cleanup, which undermines the simplicity people want from a `.cancel()` method.
 
 But you can do something weirder: return a promise that never resolves, `await` it, and let the garbage collector clean up the suspended function. No exceptions, no `try/catch`, no special return values. The function just stops.
 
