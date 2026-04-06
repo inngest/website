@@ -149,9 +149,11 @@ Conditional Batching can be enabled by providing a boolean expression in `if`.  
 
 Batching does not work with all other flow control features.
 
-### Batching with concurrency limits
+### Batching with Concurrency limits
 
-You can combine batching with [concurrency](/docs/guides/concurrency) limits, including limits with a `key` expression.
+You can combine batching with [concurrency](/docs/guides/concurrency) limits. For example, setting `concurrency: { limit: 1 }` will process one batch at a time.
+
+### Batching with Custom Concurrency keys
 
 When a concurrency limit has a `key`, **the key is evaluated against the first event in the batch**. This means:
 
