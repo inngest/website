@@ -17,7 +17,7 @@ This is how the Inngest TypeScript SDK interrupts async workflow functions. But 
 
 Sometimes you need to stop someone else's async function at an exact point, without their code doing anything special. The function's author writes normal `async`/`await` code. Your runtime decides when and where to interrupt it.
 
-The concrete case we hit: running workflow functions on serverless infrastructure where each invocation has a hard timeout. A workflow might have dozens of steps that take hours to complete end-to-end, but each invocation can only run for seconds or minutes. The SDK needs to interrupt the function, save progress, and re-invoke it later to pick up where it left off, all without the user's code knowing it happened.
+The concrete case we hit: running workflow functions on serverless infrastructure where each invocation has a hard timeout. A workflow might have dozens of steps that take hours to complete end-to-end, but each invocation can only run for seconds or minutes. The runtime (in our case, the SDK itself) needs to interrupt the function, save progress, and re-invoke it later to pick up where it left off, all without the user's code knowing it happened.
 
 That requires interrupting an `await` without throwing.
 
