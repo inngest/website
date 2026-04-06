@@ -323,7 +323,7 @@ In the real Inngest SDK, `stepState` is persisted to a database so results survi
 
 **Why use a `setTimeout` of 0 milliseconds?**
 
-We need the workflow function to advance through all its memoized steps before we check whether it found a new one. When `step.run` returns a memoized result, the `await` resolves as a microtask. Microtasks run before any macrotask, so the function keeps advancing through already-completed steps in a tight loop, each resolved `await` queuing the next as another microtask. That chain stops when the function hits a new step (the never-resolving promise queues nothing) or finishes entirely. By scheduling a macrotask with `setTimeout`, we guarantee all those microtasks drain first. The Inngest SDK has a smarter approach, but the macrotask is a simple way to demonstrate the concept.
+We need the workflow function to advance through all its memoized steps before we check whether it found a new one. When `step.run` returns a memoized result, the `await` resolves as a microtask. Microtasks run before any macrotask, so the function keeps advancing through already-completed steps in a tight loop, each resolved `await` queuing the next as another microtask. That chain stops when the function hits a new step (the never-resolving promise queues nothing) or finishes entirely. By scheduling a macrotask with `setTimeout`, we guarantee all those microtasks drain first. The Inngest SDK has a smarter approach, but the macrotask is a simple way to demonstrate the concept. If you want a deeper understanding of the event loop, microtasks, and macrotasks, Philip Roberts' talk [What the heck is the event loop anyway?](https://www.youtube.com/watch?v=8aGhZQkoFbQ) is the best explanation out there.
 
 ## But wait, doesn't that leak memory?
 
