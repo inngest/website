@@ -871,10 +871,6 @@ const sectionLearn: (NavGroup | NavLink)[] = [
         title: "Patterns",
         links: [
           {
-            title: "Multi-step functions",
-            href: "/docs/learn/inngest-steps",
-          },
-          {
             title: "Parallel steps",
             href: "/docs/guides/step-parallelism",
           },
