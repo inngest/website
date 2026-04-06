@@ -415,4 +415,4 @@ The real footgun is reference chains. If anything holds a reference to the hangi
 
 Intentionally hanging promises sound like heresy, but they're a legitimate control flow tool. We use this pattern in production in the [Inngest TypeScript SDK](https://github.com/inngest/inngest-js) to interrupt workflow functions, memoize step results, and resume across serverless invocations, all while letting users write plain `async`/`await` code.
 
-The next time you need to pause or interrupt an async function, consider not throwing an error. Maybe just... let it hang.
+Generators give you clean interruption, but force a different syntax on your users. Throwing gives you `async`/`await`, but `try`/`catch` breaks it. A promise that never resolves gives you both: native syntax with reliable interruption. Sometimes the best way to stop a function is to give it nothing to wait for.
