@@ -61,6 +61,57 @@ async function myWorkflow() {
 
 The developer just wanted a fallback if `fetchData()` fails. But because `step.run` throws to interrupt, the `catch` block swallows the interruption too. Instead of interrupting, the function falls through to `defaultData` and keeps running steps it shouldn't. Every `try/catch` in every user's code becomes a potential trap that silently breaks your control flow.
 
+## Interrupting with generators
+
+Generators were _made_ for interruption. A generator function pauses at each `yield`, and the caller controls whether to resume it. To interrupt, you just stop calling `.next()`:
+
+```ts
+function* myWorkflow(step) {
+  let data;
+  try {
+    data = yield step.run("fetch-data", async () => fetchData());
+  } catch {
+    console.log("Failed to fetch data, using default");
+    data = defaultData;
+  }
+
+  yield step.run("process-data", async () => processData(data));
+}
+```
+
+Internally, you could have a driver that's calling `.next()`. To interrupt, it just stops calling `.next()`.
+
+```ts
+// The runtime drives the generator
+const gen = myWorkflow(step);
+
+// Runs until the first yield 
+const firstStep = gen.next();
+
+// To interrupt, just don't call gen.next() again. The catch block never runs.
+// The generator is frozen mid-yield.
+```
+
+No exceptions, no swallowed interrupts. The caller has full control because `yield` hands execution back by design.
+
+In fact, before `async`/`await` existed, generators were the standard way to write async-looking code. Libraries like `co` drove generator functions, resolving each yielded promise and feeding the result back in via `.next(value)`. When JavaScript added `async`/`await` in ES2017, it formalized that pattern with dedicated syntax, but traded away the caller's control over resumption.
+
+The primary tradeoff with generators is ergonomics. Users must write `function*` instead of `async function`, and `yield` instead of `await`. Libraries like Effect have increased the popularity of generators, but it's still an unusual syntax for the vast majority of JavaScript developers.
+
+Generators also break down with concurrency. With `async`/`await`, running steps in parallel is natural:
+
+```ts
+const results = await Promise.all([
+  step.run("a", async () => fetchA()),
+  step.run("b", async () => fetchB()),
+  step.run("c", async () => fetchC()),
+]);
+```
+
+But `yield` is sequential by definition. Each `yield` pauses the generator and hands control back to the caller, so you can't yield multiple values simultaneously. You'd have to yield an array of promises and have the runner detect that case and `Promise.all` them. Now you're inventing conventions on top of generators, and users have to learn those conventions instead of using the language's built-in concurrency primitives.
+
+So: can we get generator-style interruption while letting users write plain `async`/`await`?
+
 ## The trick: a promise that never resolves
 
 Instead of throwing, you can return a promise that _never resolves_. Try running this code:
