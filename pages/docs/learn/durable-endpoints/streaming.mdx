@@ -4,7 +4,7 @@ export const description = 'Learn how to durably stream data back to clients fro
 
 # Durable Endpoints Streaming <VersionBadge version="Developer Preview" />
 
-Durable Endpoints can stream data back to clients in real-time using Server-Sent Events (SSE). This lets you stream AI inference tokens, progress updates, or any other data — while keeping the durability guarantees of [durable steps](/docs/learn/inngest-steps).
+Durable Endpoints can stream data back to clients in real-time using Server-Sent Events (SSE). This lets you stream AI inference tokens, progress updates, or any other data, while keeping the durability guarantees of [durable steps](/docs/learn/inngest-steps).
 
 Streaming works across multiple steps within a single endpoint invocation, and handles the transition from sync to async mode seamlessly. If a step fails and retries, any data streamed during that step is automatically rolled back on the client.
 
@@ -140,7 +140,7 @@ stream.push({ progress: 50, message: "Halfway there" });
 ```
 
 - Accepts any JSON-serializable value.
-- Fire-and-forget — does not block execution or return a value.
+- Fire-and-forget. Does not block execution or return a value.
 - No-op outside of an Inngest execution context, so your code works the same when called outside of a durable endpoint.
 
 `push()` is ideal for one-off status messages or streaming via provider SDK event callbacks.
@@ -190,12 +190,12 @@ The primary way to consume a streaming Durable Endpoint. Import it from `inngest
 import { fetchWithStream } from "inngest/experimental/durable-endpoints/client";
 ```
 
-`fetchWithStream()` returns a `Promise<Response>` — `await` it to drive the stream to completion. When the endpoint finishes, the returned `Response` contains the endpoint's final return value. If the endpoint does not use streaming, `fetchWithStream()` returns the raw `Response` as-is.
+`fetchWithStream()` returns a `Promise<Response>`. `await` it to drive the stream to completion. When the endpoint finishes, the returned `Response` contains the endpoint's final return value. If the endpoint does not use streaming, `fetchWithStream()` returns the raw `Response` as-is.
 
 The core callbacks handle the majority of streaming use cases:
 
 - **`onData({ data, hashedStepId })`** — Called for each chunk. `data` is the deserialized value; `hashedStepId` identifies which step produced it (or `null` if streamed outside a step). Data should be considered uncommitted until `onCommit` fires.
-- **`onRollback({ hashedStepId })`** — Called when a step fails and will retry. Your code is responsible for tracking and removing the chunks produced by that step (see the [Quick start](#client) example for a pattern using a ref counter).
+- **`onRollback({ hashedStepId })`** — Called when a step fails and will retry. Your code is responsible for tracking and removing the chunks produced by that step (see the [example above](#client) for a pattern using a ref counter).
 - **`onCommit({ hashedStepId })`** — Called when a step completes successfully. Chunks from that step are now permanent and will never be rolled back.
 
 Because `stream.push()` accepts any JSON-serializable value, `data` in the `onData` callback is typed as `unknown`. Narrow the type in your callback as needed:
@@ -231,7 +231,7 @@ For all available options see the [full API reference](/docs/reference/typescrip
 
 When a client calls a streaming Durable Endpoint, the SSE stream flows directly from your app to the client. If the endpoint needs to go async (e.g. due to `step.sleep()`, `step.waitForEvent()`, or a retry), the SDK sends a redirect event telling the client where to reconnect, and the stream continues through the Inngest server.
 
-`fetchWithStream()` handles this redirect automatically — the client sees a single continuous stream regardless of sync-to-async transitions.
+`fetchWithStream()` handles this redirect automatically. The client sees a single continuous stream regardless of sync-to-async transitions.
 
 ### Streaming activation
 
@@ -244,22 +244,22 @@ If neither `push()` nor `pipe()` is called, the endpoint behaves like a regular 
 
 ### Rollback on retry
 
-Each chunk is tagged with the step that produced it (via `hashedStepId`). When a step completes, `onCommit` fires and those chunks become permanent. When a step fails and retries, `onRollback` fires and your client code should discard the uncommitted chunks from that step. On the retry attempt, the step streams fresh data that replaces what was rolled back. See the [Quick start](#client) for an implementation pattern.
+Each chunk is tagged with the step that produced it (via `hashedStepId`). When a step completes, `onCommit` fires and those chunks become permanent. When a step fails and retries, `onRollback` fires and your client code should discard the uncommitted chunks from that step. On the retry attempt, the step streams fresh data that replaces what was rolled back. See the [example above](#client) for an implementation pattern.
 
 Data streamed outside of a `step.run()` is never rolled back.
 
 ### SSE event types
 
-The stream uses SSE with the following event types. The `inngest.*` events are internal protocol events handled by `fetchWithStream()` automatically — only `inngest.stream` events contain user data.
+The stream uses SSE with the following event types. The `inngest.*` events are internal protocol events handled by `fetchWithStream()` automatically; only `inngest.stream` events contain user data.
 
 | Event name | Payload | Purpose |
 |---|---|---|
 | `inngest.metadata` | `{ runId }` | Always first. Identifies the run. |
-| `inngest.stream` | `{ data, stepId? }` | User data from `push()` / `pipe()`. |
-| `inngest.commit` | `{ hashedStepId }` | Step succeeded — its streamed data is permanent. |
-| `inngest.rollback` | `{ hashedStepId }` | Step failed — discard its uncommitted data. |
+| `inngest.stream` | `{ data, hashedStepId? }` | User data from `push()` / `pipe()`. |
+| `inngest.commit` | `{ hashedStepId }` | Step succeeded. Its streamed data is permanent. |
+| `inngest.rollback` | `{ hashedStepId }` | Step failed. Discard its uncommitted data. |
 | `inngest.redirect_info` | `{ runId, url }` | Tells the client to reconnect for async continuation. |
-| `inngest.response` | `{ status, response: { body, headers, statusCode } }` | Terminal event — closes the stream. |
+| `inngest.response` | `{ status, response: { body, headers, statusCode } }` | Terminal event. Closes the stream. |
 
 ## Limitations
 
