@@ -158,7 +158,7 @@ You can combine batching with [concurrency](/docs/guides/concurrency) limits. Fo
 When a concurrency limit has a `key`, **the key is evaluated against the first event in the batch**. This means:
 
 - If your batch contains events with different key values, only the first event's key value is used for the concurrency check
-- This can lead to unintuitive behavior if events with different key values end up in the same batch
+- This can lead to unintuitive behavior if events with different key values end up in the same batch, which can happen when there is no batch key or when the batch key is different from the concurrency key.
 
 For predictable behavior, **use the same key expression for both batching and concurrency**. When the batch `key` and the concurrency `key` match, batches are naturally grouped by key value, so the concurrency limit applies per key as expected — allowing up to `n` concurrent batches per unique key.
 
