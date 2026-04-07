@@ -9,7 +9,7 @@ Durable Endpoints can stream data back to clients in real-time using Server-Sent
 Streaming works across multiple steps within a single endpoint invocation, and handles the transition from sync to async mode seamlessly. If a step fails and retries, any data streamed during that step is automatically rolled back on the client.
 
 <Callout>
-  Streaming SSE from Durable Endpoints is currently only available in the TypeScript SDK. This guide assumes you've already [set up a Durable Endpoint](/docs/learn/durable-endpoints).
+  Durable Endpoints streaming is currently only available in the TypeScript SDK. This guide assumes you've already [set up a Durable Endpoint](/docs/learn/durable-endpoints).
 </Callout>
 
 ## When to use streaming
@@ -263,7 +263,7 @@ The stream uses SSE with the following event types. The `inngest.*` events are i
 
 ## Limitations
 
-Streaming SSE from Durable Endpoints is currently in developer preview. In addition to any [general Durable Endpoint limitations](/docs/learn/durable-endpoints#limitations), the following apply:
+Durable Endpoints streaming is currently in developer preview. In addition to any [general Durable Endpoint limitations](/docs/learn/durable-endpoints#limitations), the following apply:
 
 - **15 minute timeout** — Client connections time out after 15 minutes, meaning your endpoint should complete within this window (including any retries) to ensure the stream is delivered end-to-end.
 - **No rollback outside of steps** — Data streamed outside of a `step.run()` is never rolled back. If you need rollback guarantees, stream from within a step.
