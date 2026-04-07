@@ -35,11 +35,11 @@ export default function Hero() {
                     asChild
                     className="max-[520px]:py-6 max-[520px]:text-[1.1rem]"
                   >
-                    <a
+                    <Link
                       href={`${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=homepage-hero`}
                     >
                       Start building for free
-                    </a>
+                    </Link>
                   </Button>
                   <Button
                     variant="outline"

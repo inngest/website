@@ -24,7 +24,7 @@ interface DraggableImageConfig {
 
 const DRAGGABLE_IMAGE_CONFIGS: DraggableImageConfig[] = [
   {
-    src: "/draggable/draggable.png",
+    src: "/assets/draggable/draggable.png",
     positions: {
       default: { x: 225, y: 75 },
       ipad: { x: 75, y: 0 },
@@ -34,7 +34,7 @@ const DRAGGABLE_IMAGE_CONFIGS: DraggableImageConfig[] = [
     },
   },
   {
-    src: "/draggable/draggable2.png",
+    src: "/assets/draggable/draggable2.png",
     positions: {
       default: { x: 675, y: 75 },
       ipad: { x: 450, y: 75 },
@@ -44,7 +44,7 @@ const DRAGGABLE_IMAGE_CONFIGS: DraggableImageConfig[] = [
     },
   },
   {
-    src: "/draggable/draggable3.png",
+    src: "/assets/draggable/draggable3.png",
     positions: {
       xl: { x: 1425, y: 675 },
       default: { x: 1050, y: 675 },
@@ -55,7 +55,7 @@ const DRAGGABLE_IMAGE_CONFIGS: DraggableImageConfig[] = [
     },
   },
   {
-    src: "/draggable/draggable4.png",
+    src: "/assets/draggable/draggable4.png",
     positions: {
       xl: { x: 1500, y: 225 },
       default: { x: 1200, y: 300 },
@@ -66,7 +66,7 @@ const DRAGGABLE_IMAGE_CONFIGS: DraggableImageConfig[] = [
     },
   },
   {
-    src: "/draggable/draggable5.png",
+    src: "/assets/draggable/draggable5.png",
     positions: {
       default: { x: 75, y: 375 },
       ipad: { x: 225, y: 150 },
@@ -76,7 +76,7 @@ const DRAGGABLE_IMAGE_CONFIGS: DraggableImageConfig[] = [
     },
   },
   {
-    src: "/draggable/draggable6.png",
+    src: "/assets/draggable/draggable6.png",
     positions: {
       default: { x: 75, y: 675 },
       ipad: { x: 675, y: 450 },
@@ -86,7 +86,7 @@ const DRAGGABLE_IMAGE_CONFIGS: DraggableImageConfig[] = [
     },
   },
   {
-    src: "/draggable/draggable7.png",
+    src: "/assets/draggable/draggable7.png",
     positions: {
       xl: { x: 1050, y: 450 },
       default: { x: 900, y: 525 },
@@ -97,7 +97,7 @@ const DRAGGABLE_IMAGE_CONFIGS: DraggableImageConfig[] = [
     },
   },
   {
-    src: "/draggable/draggable8.png",
+    src: "/assets/draggable/draggable8.png",
     positions: {
       default: { x: 975, y: 150 },
       ipad: { x: 900, y: 225 },
