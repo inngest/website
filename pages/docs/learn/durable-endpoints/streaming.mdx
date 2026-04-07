@@ -1,8 +1,8 @@
 import { Callout, VersionBadge } from "src/shared/Docs/mdx";
 
-export const description = 'Learn how to stream SSE data from Durable Endpoints to clients using stream.push() and stream.pipe(), with automatic rollback on retry.';
+export const description = 'Learn how to durably stream data back to clients from Durable Endpoints';
 
-# Streaming SSE from Durable Endpoints <VersionBadge version="Developer Preview" />
+# Durable Endpoints Streaming <VersionBadge version="Developer Preview" />
 
 Durable Endpoints can stream data back to clients in real-time using Server-Sent Events (SSE). This lets you stream AI inference tokens, progress updates, or any other data — while keeping the durability guarantees of [durable steps](/docs/learn/inngest-steps).
 
@@ -20,7 +20,9 @@ Streaming works across multiple steps within a single endpoint invocation, and h
 
 If you don't need to stream data directly to an HTTP client, consider using [Realtime](/docs/features/realtime) to push updates from background Inngest functions via pub/sub channels.
 
-## Quick start
+## Example
+
+In this example, we'll create an HTTP endpoint that generates a haiku and then translates it to French. The client will be the browser, and it'll render the haiku and its translation as they're generated. The user will see the streamed LLM output appear in realtime.
 
 ### Server
 

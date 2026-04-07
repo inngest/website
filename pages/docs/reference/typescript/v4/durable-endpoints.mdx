@@ -1,6 +1,6 @@
 import { Info, Callout, CodeGroup, Col, Properties, Property, Row, VersionBadge } from "src/shared/Docs/mdx";
 
-export const description = 'TypeScript SDK reference for Durable Endpoints. Create HTTP handlers with step-based checkpointing, streaming, and automatic recovery.';
+export const description = 'TypeScript SDK reference for Durable Endpoints. Create HTTP handlers with step-based checkpointing and streaming.'
 
 # Durable Endpoints <VersionBadge version="Beta" />
 
@@ -53,8 +53,7 @@ const inngest = new Inngest({
 </CodeGroup>
 
 <Callout>
-  The `endpointAdapter` is required for Durable Endpoints to function. Without it,
-  `inngest.endpoint()` will not be available.
+  The `endpointAdapter` is required. Without it, `inngest.endpoint()` will not be available.
 </Callout>
 
 ### `endpointAdapter.withOptions(options)`
@@ -122,7 +121,6 @@ Creates a durable endpoint handler that can use step primitives for checkpointin
       return Response.json({ result });
     }
   );
-
   ```
   </Col>
 </Row>
@@ -266,6 +264,7 @@ can be used to create your own URL to satisfy CORS constraints when the endpoint
 is used from browsers.
 
 ```typescript
+// When setting the `endpointAdapter`, use `.withOptions()` to set more config
 const inngest = new Inngest({
   id: "my-app",
   endpointAdapter: endpointAdapter.withOptions({
@@ -273,7 +272,7 @@ const inngest = new Inngest({
   }),
 });
 
-// Create the proxy route with `inngest.endpointProxy()`
+// Then create the route with `inngest.endpointProxy()`
 Bun.serve({
   port: 3000,
   routes: {
@@ -285,15 +284,13 @@ Bun.serve({
 
 Requests will now be redirected to `/wait`.
 
-To stream data to the client during execution, see [Streaming](#streaming) below or the full [Streaming SSE guide](/docs/learn/durable-endpoints/streaming).
+To stream data to the client during execution, see [streaming](#streaming) below or the full [streaming guide](/docs/learn/durable-endpoints/streaming).
 
 ---
 
 ## Streaming <VersionBadge version="Developer Preview" />
 
-Durable Endpoints can stream data back to clients in real-time using Server-Sent Events (SSE). This lets you stream AI inference tokens, progress updates, or any other data while keeping durability guarantees. If you don't need to stream data directly to an HTTP client, consider using [Realtime](/docs/features/realtime) to push updates via pub/sub channels instead.
-
-For a full guide covering concepts, examples, and rollback semantics, see [Streaming SSE from Durable Endpoints](/docs/learn/durable-endpoints/streaming).
+Durable Endpoints can stream data back to clients in real-time using Server-Sent Events (SSE). For a full guide covering concepts, examples, and rollback semantics, see [the guide](/docs/learn/durable-endpoints/streaming).
 
 ### Server: `stream.push()` and `stream.pipe()`
 
@@ -310,65 +307,25 @@ import { stream } from "inngest/experimental/durable-endpoints";
       <Property name="stream.push" type="(data: unknown) => void">
         Send a single chunk of data to the client as an SSE event. Accepts any JSON-serializable value. Does not block execution. No-op outside of an Inngest execution context.
       </Property>
-    </Properties>
-  </Col>
-  <Col>
-    ```ts
-    await step.run("process", async () => {
-      stream.push("Loading...");
-      stream.push({ progress: 50 });
-      const result = await doWork();
-      stream.push("Done!");
-      return result;
-    });
-    ```
-  </Col>
-</Row>
-
-<Row>
-  <Col>
-    <Properties>
       <Property name="stream.pipe" type="(source: ReadableStream | AsyncIterable<string> | (() => AsyncIterable<string>)) => Promise<string>">
-        Pipe a stream to the client, sending each chunk as an SSE event in real-time. Resolves with the concatenated text of all chunks — it both streams to the client _and_ collects the result for you.
-
-        Accepts three source types:
-        - **`ReadableStream`** — piped directly, decoded from bytes to string chunks.
-        - **`AsyncIterable<string>`** — each yielded value becomes a chunk.
-        - **`() => AsyncIterable<string>`** — a factory function, letting you pass `async function*` generators directly.
-
-        Outside of an Inngest execution context, resolves with an empty string.
+        Pipe a stream source to the client, sending each chunk as an SSE event in real-time. Resolves with the concatenated text of all chunks. No-op outside of an Inngest execution context (resolves with an empty string).
       </Property>
     </Properties>
-  </Col>
-  <Col>
-    ```ts
-    await step.run("generate", async () => {
-      // Pipe a ReadableStream
-      const res = await fetch("https://api.example.com/stream");
-      const text = await stream.pipe(res.body);
-
-      // Or pipe an async generator
-      const text = await stream.pipe(async function* () {
-        for await (const event of llmStream) {
-          if (event.type === "content_block_delta") {
-            yield event.delta.text;
-          }
-        }
-      });
-    });
-    ```
   </Col>
 </Row>
 
 ### Client: `fetchWithStream()`
 
-Import from `inngest/experimental/durable-endpoints/client` to consume a streaming Durable Endpoint:
+Handles the implementation details of streaming, including:
+- Automatically committing and rolling back chunks based on the step's success or failure
+- Filtering out internal events
+- Handling the sync-to-async redirect
 
 ```ts
 import { fetchWithStream } from "inngest/experimental/durable-endpoints/client";
 ```
 
-Returns a `Promise<Response>`. The returned `Response` contains the endpoint's final return value. If the endpoint does not use streaming, the raw `Response` is returned as-is. Sync-to-async redirects are handled automatically.
+Returns a `Promise<Response>` containing the endpoint's final return value. Sync-to-async redirects are handled automatically. If the endpoint does not use streaming, the raw `Response` is returned as-is.
 
 <Row>
   <Col>
@@ -386,34 +343,15 @@ Returns a `Promise<Response>`. The returned `Response` contains the endpoint's f
         Called when run metadata is received. Always fires first.
       </Property>
       <Property name="onData" type="(args: { data: unknown; hashedStepId: string | null }) => void">
-        Called for each streamed chunk. Each `stream.push()` or `stream.pipe()` yield produces one `onData` call. `data` is the deserialized value. Data should be considered uncommitted until `onCommit` fires.
+        Called for each streamed chunk. Data should be considered uncommitted until `onCommit` fires.
       </Property>
       <Property name="onCommit" type="(args: { hashedStepId: string | null }) => void">
-        Called when a step completes successfully. Chunks from that step are now permanent and will never be rolled back.
+        Called when a step completes successfully. Chunks from that step are now permanent.
       </Property>
       <Property name="onRollback" type="(args: { hashedStepId: string | null }) => void">
-        Called when a step fails and will retry. Your code is responsible for discarding the uncommitted chunks from that step.
+        Called when a step fails and will retry. Discard uncommitted chunks from that step.
       </Property>
     </Properties>
-  </Col>
-  <Col>
-    ```ts
-    const resp = await fetchWithStream("/api/generate", {
-      onData: ({ data }) => {
-        if (typeof data === "string") {
-          console.log("Chunk:", data);
-        }
-      },
-      onCommit: () => {
-        // Chunks are permanent
-      },
-      onRollback: () => {
-        // Discard uncommitted chunks
-      },
-    });
-
-    const result = await resp.text();
-    ```
   </Col>
 </Row>
 
