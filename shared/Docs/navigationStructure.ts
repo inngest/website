@@ -699,7 +699,7 @@ const sectionLearn: (NavGroup | NavLink)[] = [
             href: `/docs/learn/durable-endpoints`
           },
           {
-            title: "Streaming SSE",
+            title: "Streaming",
             href: "/docs/learn/durable-endpoints/streaming"
           }
         ],
