@@ -1,0 +1,418 @@
+---
+heading: "You can't cancel a JavaScript promise (except sometimes you can)"
+subtitle: "A promise that never resolves is a surprisingly clean way to interrupt an async function."
+image: /assets/blog/hanging-promises-for-control-flow/featured-image.jpg
+date: 2026-04-07
+author: Aaron Harper
+category: engineering
+---
+
+You can't cancel a JavaScript promise. There's no `.cancel()` method, no `AbortController` integration, no built-in way to say "never mind, stop." The TC39 committee [considered adding cancellation](https://github.com/tc39/proposal-cancelable-promises) in 2016, but the proposal was withdrawn after heated debate. Part of the problem is that cancelling arbitrary code mid-execution can leave resources in a dirty state (open handles, half-written data), so true cancellation requires cooperative cleanup, which undermines the simplicity people want from a `.cancel()` method.
+
+But you can do something weirder: return a promise that never resolves, `await` it, and let the garbage collector clean up the suspended function. No exceptions, no `try/catch`, no special return values. The function just stops.
+
+This is how the Inngest TypeScript SDK interrupts async workflow functions. But the technique is general-purpose, and the JavaScript semantics behind it are worth understanding on their own.
+
+## Why you'd want to interrupt a function
+
+Sometimes you need to stop someone else's async function at an exact point, without their code doing anything special. The function's author writes normal `async`/`await` code. Your runtime decides when and where to interrupt it.
+
+The concrete case we hit: running workflow functions on serverless infrastructure where each invocation has a hard timeout. A workflow might have dozens of steps that take hours to complete end-to-end, but each invocation can only run for seconds or minutes. The runtime (in our case, the SDK itself) needs to interrupt the function, save progress, and re-invoke it later to pick up where it left off, all without the user's code knowing it happened.
+
+That requires interrupting an `await` without throwing.
+
+## Interrupting with errors
+
+When implementing interruption, the obvious approach is to throw an exception. Imagine a `run` function that executes a callback and then throws a special error to stop the caller from continuing:
+
+```ts
+class InterruptError extends Error {}
+
+async function run(callback) {
+  const result = await callback();
+  // Save the result somewhere, then interrupt
+  throw new InterruptError();
+}
+
+async function myWorkflow() {
+  const data = await run(() => fetchData());
+
+  // If run() throws, we never get here
+  await run(() => processData(data));
+}
+```
+
+This works until someone wraps their code in a `try/catch`:
+
+```ts
+async function myWorkflow() {
+  let data;
+  try {
+    data = await run(() => fetchData());
+  } catch {
+    console.log("Failed to fetch data, using default");
+    data = defaultData;
+  }
+
+  // This runs even when we wanted to interrupt,
+  // because the catch block swallowed InterruptError
+  await run(() => processData(data));
+}
+```
+
+The developer just wanted a fallback if `fetchData()` fails. But because `run` throws to interrupt, the `catch` block swallows the interruption too. Instead of interrupting, the function falls through to `defaultData` and keeps running code it shouldn't. Every `try/catch` in every user's code becomes a potential trap that silently breaks your control flow.
+
+## Interrupting with generators
+
+Generators were _made_ for interruption. A generator function pauses at each `yield`, and the caller controls whether to resume it. To interrupt, you just stop calling `.next()`:
+
+```ts
+function* myWorkflow() {
+  let data;
+  try {
+    data = yield run(async () => fetchData());
+  } catch {
+    console.log("Failed to fetch data, using default");
+    data = defaultData;
+  }
+
+  yield run(async () => processData(data));
+}
+```
+
+The caller drives the generator by calling `.next()`. To interrupt, it just stops:
+
+```ts
+const gen = myWorkflow();
+
+// Runs until the first yield
+const first = gen.next();
+
+// To interrupt: don't call gen.next() again.
+// The catch block never runs. The generator is frozen mid-yield.
+```
+
+No exceptions, no swallowed interrupts. The caller has full control because `yield` hands execution back by design.
+
+In fact, before `async`/`await` existed, generators were the standard way to write async-looking code. Libraries like `co` drove generator functions, resolving each yielded promise and feeding the result back in via `.next(value)`. When JavaScript added `async`/`await` in ES2017, it formalized that pattern with dedicated syntax, but traded away the caller's control over resumption.
+
+The primary tradeoff with generators is ergonomics. Users must write `function*` instead of `async function`, and `yield` instead of `await`. Libraries like Effect have increased the popularity of generators, but it's still an unusual syntax for the vast majority of JavaScript developers.
+
+Generators also break down with concurrency. With `async`/`await`, running things in parallel is natural:
+
+```ts
+const results = await Promise.all([
+  run(async () => fetchA()),
+  run(async () => fetchB()),
+  run(async () => fetchC()),
+]);
+```
+
+But `yield` is sequential by definition. Each `yield` pauses the generator and hands control back to the caller, so you can't yield multiple values simultaneously. You'd have to yield an array of promises and have the runner detect that case and `Promise.all` them. Now you're inventing conventions on top of generators, and users have to learn those conventions instead of using the language's built-in concurrency primitives.
+
+So: can we get generator-style interruption while letting users write plain `async`/`await`?
+
+## The trick: a promise that never resolves
+
+Instead of throwing, you can return a promise that _never resolves_. Try running this code:
+
+```ts
+const start = Date.now();
+process.on("exit", () => {
+  const elapsed = Math.round((Date.now() - start) / 1000);
+  console.log(`Exited after ${elapsed}s`);
+});
+
+async function interrupt() {
+  return new Promise(() => {});
+}
+
+async function main() {
+  console.log("Before interrupt");
+  await interrupt();
+
+  // Unreachable
+  console.log("After interrupt");
+}
+
+main();
+```
+
+You'll see the following output:
+
+```
+Before interrupt
+Exited after 0s
+```
+
+Note that `After interrupt` is not printed. Once the interrupt is hit, the program exits cleanly with no errors. That behavior might surprise you. Many people expect the program to hang forever since the promise returned by `interrupt` never resolves.
+
+The process exits because promises alone don't keep Node's event loop alive. The event loop stays running only when there are active handles: timers, sockets, I/O watchers. An unsettled promise is just an object in memory. With nothing else to wait on, Node sees an empty event loop and exits.
+
+To prove the promise is truly hanging (and not just exiting before it has a chance to resolve), add a timer that keeps the event loop alive:
+
+```ts
+async function main() {
+  setTimeout(() => {}, 2000);
+
+  console.log("Before interrupt");
+  await interrupt();
+
+  // Unreachable
+  console.log("After interrupt");
+}
+```
+
+You'll see the following output:
+
+```
+Before interrupt
+Exited after 2s
+```
+
+This time, the program ran for 2 seconds before exiting. The `setTimeout` timer keeps the event loop alive.
+
+## Putting it together: step-by-step execution
+
+Clean exits are neat, but not useful on their own. What we actually need is to call a function multiple times, interrupting after each step and picking up where we left off on the next call. That means memoizing: if a step already ran, return its saved result instead of running it again.
+
+Here's what this looks like from the perspective of someone writing a workflow function (a simplified version of what the Inngest SDK does internally):
+
+```ts
+async function myWorkflow(step) {
+  console.log("  Workflow: top");
+
+  const data = await step.run("fetch", () => {
+    console.log("  Step: fetch");
+    return [1, 2, 3];
+  });
+
+  const processed = await step.run("process", () => {
+    console.log("  Step: process");
+    return data.map((n) => n * 2);
+  });
+
+  console.log("  Workflow: complete", processed);
+}
+```
+
+The runtime's job is to repeatedly call `myWorkflow`, executing one new step per invocation:
+
+```ts
+async function main() {
+  // In-memory store of completed step results
+  const stepState = new Map();
+
+  // Keep entering the workflow function until it's done
+  let done = false;
+  let i = 0;
+  while (!done) {
+    console.log(`Run ${i}:`);
+    done = await execute(myWorkflow, stepState);
+    console.log("--------------------------------");
+    i++;
+  }
+}
+```
+
+If `execute` is implemented correctly, we expect to see:
+```
+Run 0:
+  Workflow: top
+  Step: fetch
+--------------------------------
+Run 1:
+  Workflow: top
+  Step: process
+--------------------------------
+Run 2:
+  Workflow: top
+  Workflow: complete [ 2, 4, 6 ]
+--------------------------------
+```
+
+Notice what's happening:
+- `Workflow: top` prints 3 times. The function re-executes from the top on every invocation.
+- Each `Step` log prints exactly once. Memoized steps return instantly; only the new step actually runs.
+
+So we need to implement `execute` to:
+1. Find the next new `step.run`.
+2. Run it.
+3. Memoize its result.
+4. Interrupt.
+5. Repeat until the workflow function is done.
+
+Here's the whole thing as a single runnable script:
+
+```ts
+async function execute(fn, stepState) {
+  let newStep = null;
+
+  // Run the user function in the background. It will hang at the new step
+  fn({
+    run: async (id, callback) => {
+      // If this step already ran, return the memoized result
+      if (stepState.has(id)) {
+        return stepState.get(id);
+      }
+
+      // This is a new step. Report it
+      newStep = { id, callback };
+
+      // Hang forever
+      return new Promise(() => {});
+    },
+  });
+  
+  // Schedule a macrotask. All pending microtasks (the resolved awaits from
+  // memoized steps) will drain before this runs, giving the workflow function
+  // time to advance through already-completed steps and reach the next new one.
+  await new Promise((r) => setTimeout(r, 0));
+
+  if (newStep) {
+    // A new step was found. Execute it and save the result
+    const result = await newStep.callback();
+    stepState.set(newStep.id, result);
+
+    // Function is not done
+    return false;
+  }
+
+  // Function is done
+  return true;
+}
+
+// User-defined workflow function
+async function myWorkflow(step) {
+  console.log("  Workflow: top");
+
+  const data = await step.run("fetch", () => {
+    console.log("  Step: fetch");
+    return [1, 2, 3];
+  });
+
+  const processed = await step.run("process", () => {
+    console.log("  Step: process");
+    return data.map((n) => n * 2);
+  });
+
+  console.log("  Workflow: complete", processed);
+}
+
+async function main() {
+  // In-memory store of completed step results
+  const stepState = new Map();
+
+  // Keep entering the workflow function until it's done
+  let done = false;
+  let i = 0;
+  while (!done) {
+    console.log(`Run ${i}:`);
+    done = await execute(myWorkflow, stepState);
+    console.log("--------------------------------");
+    i++;
+  }
+}
+
+main();
+```
+
+**Why use in-memory step state?**
+
+In the real Inngest SDK, `stepState` is persisted to a database so results survive across separate invocations. Here we'll use an in-memory `Map` to keep things simple.
+
+**Why use a `setTimeout` of 0 milliseconds?**
+
+We need the workflow function to advance through all its memoized steps before we check whether it found a new one. When `step.run` returns a memoized result, the `await` resolves as a microtask. Microtasks run before any macrotask, so the function keeps advancing through already-completed steps in a tight loop, each resolved `await` queuing the next as another microtask. That chain stops when the function hits a new step (the never-resolving promise queues nothing) or finishes entirely. By scheduling a macrotask with `setTimeout`, we guarantee all those microtasks drain first. The Inngest SDK has a smarter approach, but the macrotask is a simple way to demonstrate the concept. If you want a deeper understanding of the event loop, microtasks, and macrotasks, Philip Roberts' talk [What the heck is the event loop anyway?](https://www.youtube.com/watch?v=8aGhZQkoFbQ) is the best explanation out there.
+
+## But wait, doesn't that leak memory?
+
+If we're creating promises that hang forever, doesn't that leak memory? In a long-lived process, abandoned promises could accumulate.
+
+Except they don't, if nothing references them.
+
+JavaScript's garbage collector doesn't care whether a promise is settled. It cares whether anything _references_ it. If you create a promise, `await` it inside a function, and then that function's entire call stack becomes unreachable, the garbage collector will clean up everything: the promise, the function's suspended state, all of it.
+
+To prove this, we'll use JavaScript's `FinalizationRegistry` to observe garbage collection. This API lets you register a callback that fires when an object is garbage collected. Let's add it to our script:
+
+```ts
+// Log when a registered object is garbage collected
+const registry = new FinalizationRegistry((value) => {
+  console.log("  GC", value);
+});
+
+// User-defined workflow function
+async function myWorkflow(step) {
+  console.log("  Workflow: top");
+
+  const fetchP = step.run("fetch", () => {
+    console.log("  Step: fetch");
+    return [1, 2, 3];
+  });
+  registry.register(fetchP, "fetch");
+  const data = await fetchP;
+
+  const processP = step.run("process", () => {
+    console.log("  Step: process");
+    return data.map((n) => n * 2);
+  });
+  registry.register(processP, "process");
+  const processed = await processP;
+
+  console.log("  Workflow: complete", processed);
+}
+
+async function main() {
+  // In-memory store of completed step results
+  const stepState = new Map();
+
+  // Keep entering the workflow function until it's done
+  let done = false;
+  let i = 0;
+  while (!done) {
+    console.log(`Run ${i}:`);
+    done = await execute(myWorkflow, stepState);
+    console.log("--------------------------------");
+    i++;
+  }
+
+  // Force garbage collection
+  globalThis.gc();
+}
+```
+
+Now when you run the script (using the `--expose-gc` flag) you'll see the following output:
+
+```
+Run 0:
+  Workflow: top
+  Step: fetch
+--------------------------------
+Run 1:
+  Workflow: top
+  Step: process
+--------------------------------
+Run 2:
+  Workflow: top
+  Workflow: complete [ 2, 4, 6 ]
+--------------------------------
+  GC process
+  GC fetch
+  GC fetch
+  GC fetch
+  GC process
+```
+
+You'll notice `GC fetch` appears three times and `GC process` appears twice. That's because each re-invocation of `myWorkflow` calls `registry.register` on a new promise object, even for memoized steps (since `step.run` is `async`, every call returns a fresh promise). Run 0 registers one `fetch` promise; run 1 registers `fetch` and `process`; run 2 registers both again. All five promises, including the ones that hung forever, get collected.
+
+## The catch
+
+You're relying on garbage collection, which is nondeterministic. You don't get to know _when_ the suspended function is collected. For our use case, that's fine. We only need to know that it _will_ be collected, and modern engines are reliable about that.
+
+The real footgun is reference chains. If anything holds a reference to the hanging promise or the suspended function's closure, the garbage collector can't touch it. The pattern only works when you intentionally sever all references.
+
+## Wrapping up
+
+Intentionally hanging promises sound like heresy, but they're a legitimate control flow tool. We use this pattern in production in the [Inngest TypeScript SDK](https://github.com/inngest/inngest-js) to interrupt workflow functions, memoize step results, and resume across serverless invocations, all while letting users write plain `async`/`await` code.
+
+Generators give you clean interruption, but force a different syntax on your users. Throwing gives you `async`/`await`, but `try`/`catch` breaks it. A promise that never resolves gives you both: native syntax with reliable interruption. Sometimes the best way to stop a function is to give it nothing to wait for.
