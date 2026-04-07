@@ -149,17 +149,18 @@ Conditional Batching can be enabled by providing a boolean expression in `if`.  
 
 Batching does not work with all other flow control features.
 
-### Batching with concurrency limits
+### Batching with Concurrency limits
 
-You _can_ combine batching with simple [concurrency](/docs/guides/concurrency) limits. For example, setting `concurrency: { limit: 1 }` will process one batch at a time.
+You can combine batching with [concurrency](/docs/guides/concurrency) limits. For example, setting `concurrency: { limit: 1 }` will process one batch at a time.
 
-However, **the concurrency `key` option is ignored when batching is enabled**. This means:
+### Batching with Custom Concurrency keys
 
-- If you configure `concurrency: { limit: 1, key: "event.data.user_id" }` with batching, the `key` expression will have no effect
-- Batches will be processed one at a time globally (based on the `limit`), not per unique key value
-- The concurrency limit applies to all batches regardless of what key values the events contain
+When a concurrency limit has a `key`, **the key is evaluated against the first event in the batch**. This means:
 
-If you need per-key concurrency with batched events, consider processing events individually with a keyed concurrency limit instead of using batching.
+- If your batch contains events with different key values, only the first event's key value is used for the concurrency check
+- This can lead to unintuitive behavior if events with different key values end up in the same batch, which can happen when there is no batch key or when the batch key is different from the concurrency key.
+
+For predictable behavior, **use the same key expression for both batching and concurrency**. When the batch `key` and the concurrency `key` match, batches are naturally grouped by key value, so the concurrency limit applies per key as expected — allowing up to `n` concurrent batches per unique key.
 
 ### Incompatible flow control features
 
