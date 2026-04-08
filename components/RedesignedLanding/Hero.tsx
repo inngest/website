@@ -61,6 +61,7 @@ export default function Hero() {
                     {
                       src: "/assets/customers/replit-logo.svg",
                       name: "Replit",
+                      height: "1.5rem",
                     },
                     {
                       src: "/assets/customers/soundcloud-logo-white-horizontal.svg",
@@ -69,6 +70,7 @@ export default function Hero() {
                     {
                       src: "/assets/customers/cohere-logo-white.svg",
                       name: "Cohere",
+                      height: "1.15rem",
                     },
                     {
                       src: "/assets/customers/tripadvisor.svg",
@@ -85,14 +87,15 @@ export default function Hero() {
                     {
                       src: "/assets/customers/elevenlabs-logo-white.svg",
                       name: "ElevenLabs",
+                      height: "1.05rem",
                     },
-                  ].map(({ src, name }, idx, arr) => (
+                  ].map(({ src, name, height = "1.25rem" }, idx, arr) => (
                     <img
                       key={name}
                       src={src}
                       alt={name}
                       title={name}
-                      style={{ height: "1.25rem" }}
+                      style={{ height }}
                       className={`w-auto opacity-80 grayscale transition-all${idx === arr.length - 1 ? " col-span-2 sm:col-span-4 lg:col-span-1" : ""}`}
                     />
                   ))}
