@@ -351,6 +351,11 @@ const sectionReference: (NavGroup | NavLink)[] = [
             href: tsRef("v4", "functions/step-send-event"),
             className: "font-mono",
           },
+          {
+            title: "step.fetch()",
+            href: tsRef("v4", "functions/fetch"),
+            className: "font-mono",
+          },
         ],
       },
       {
@@ -734,7 +739,7 @@ const sectionLearn: (NavGroup | NavLink)[] = [
           },
           {
             title: "Durable Fetch",
-            href: "/docs/features/inngest-functions/steps-workflows/fetch",
+            href: "/docs/reference/typescript/functions/fetch",
           },
         ],
       },
@@ -874,10 +879,6 @@ const sectionLearn: (NavGroup | NavLink)[] = [
       {
         title: "Patterns",
         links: [
-          {
-            title: "Multi-step functions",
-            href: "/docs/guides/multi-step-functions",
-          },
           {
             title: "Parallel steps",
             href: "/docs/guides/step-parallelism",
