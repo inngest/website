@@ -1,7 +1,8 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 
-import { HeaderInit, PageViews } from "@/components/InngestClientSDK";
+import Script from "next/script";
+import { PageViews } from "@/components/InngestClientSDK";
 import GoogleTagManger from "@/components/GoogleTagManager";
 import { getFullURL } from "src/utils/social";
 
@@ -52,9 +53,14 @@ export default function RootLayout({
           rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.4.0/styles/github-dark.min.css"
         />
-        <Suspense>
-          <HeaderInit />
-        </Suspense>
+        <Script
+          id="js-inngest-queue-init"
+          async
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `window._inngestQueue=[];if(typeof window.Inngest==="undefined"){window.Inngest={event:function(p){window._inngestQueue.push(p);}}}`,
+          }}
+        />
       </head>
       <body className="dark font-sans">
         <AnnouncementBanner />

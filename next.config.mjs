@@ -5,6 +5,7 @@ import { recmaPlugins } from "./mdx/recma.mjs";
 import chokidar from "chokidar";
 import fs from "fs";
 import path from "path";
+import { fileURLToPath } from "url";
 
 // All permanent redirects (source -> destination)
 const permanentRedirects = [
@@ -444,12 +445,19 @@ const nextConfig = {
   pageExtensions: ["js", "jsx", "ts", "tsx", "mdx"],
   experimental: {
     scrollRestoration: true,
+    turbopackFileSystemCacheForDev: true,
   },
   images: {
     remotePatterns: [
       {
         protocol: "https",
         hostname: "resend.com",
+      },
+    ],
+    // Next.js 16 requires explicit localPatterns for all next/image local sources
+    localPatterns: [
+      {
+        pathname: "/assets/**",
       },
     ],
   },
@@ -462,6 +470,11 @@ const nextConfig = {
       test: /_\w+\/.+\.mdx?$/,
       use: "ignore-loader",
     });
+    // Import plain .md files as raw strings (webpack asset/source equivalent)
+    config.module.rules.push({
+      test: /\.md$/,
+      type: "asset/source",
+    });
     // Disable cache for production builds to reduce bundle size on Vercel
     if (config.cache && !dev) {
       config.cache = Object.freeze({
@@ -473,4 +486,40 @@ const nextConfig = {
   },
 };
 
-export default withMDX(nextConfig);
+let config = withMDX(nextConfig);
+
+// When Turbopack is active, @next/mdx registers mdx-js-loader with plugin functions
+// as loader options. Turbopack requires serializable options, so functions fail.
+// Override the rule with a custom loader that imports plugins internally.
+if (process.env.TURBOPACK) {
+  const turbopackLoaderPath = fileURLToPath(
+    new URL("./mdx/turbopack-loader.cjs", import.meta.url)
+  );
+  const rawMdLoaderPath = fileURLToPath(
+    new URL("./mdx/raw-md-loader.cjs", import.meta.url)
+  );
+  config = {
+    ...config,
+    turbopack: {
+      ...config.turbopack,
+      rules: {
+        ...config.turbopack?.rules,
+        // Override the @next/mdx rule with our plugin-bundling loader
+        "{*,next-mdx-rule}": [
+          {
+            loaders: [{ loader: turbopackLoaderPath }],
+            as: "*.tsx",
+            condition: { path: /\.mdx$/ },
+          },
+        ],
+        // Handle plain .md files as raw string imports
+        "*.md": {
+          loaders: [{ loader: rawMdLoaderPath }],
+          as: "*.js",
+        },
+      },
+    },
+  };
+}
+
+export default config;
