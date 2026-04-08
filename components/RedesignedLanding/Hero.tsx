@@ -1,7 +1,6 @@
 import Link from "next/link";
 import GridBackground from "./GridBackground";
 import { MultipleDraggableElements } from "./MultipleDraggableElements";
-import Image from "next/image";
 import { Button } from "src/components/RedesignedLanding/Button";
 
 export default function Hero() {
@@ -57,61 +56,45 @@ export default function Hero() {
                 <h2 className="font-circular text-base font-light text-stone-50">
                   Trusted in production at
                 </h2>
-                <div className="mt-10 grid grid-cols-2 place-items-center gap-x-8 gap-y-8 sm:grid-cols-3 lg:grid-cols-7 lg:mx-auto">
+                <div className="mt-10 grid grid-cols-2 place-items-center gap-x-8 gap-y-8 sm:grid-cols-4 lg:flex lg:items-center lg:justify-between">
                   {[
                     {
                       src: "/assets/customers/replit-logo.svg",
                       name: "Replit",
-                      scale: 1.5,
-                      className: "scale-[2.5]",
                     },
                     {
                       src: "/assets/customers/soundcloud-logo-white-horizontal.svg",
                       name: "SoundCloud",
-                      scale: 1.5,
                     },
                     {
                       src: "/assets/customers/cohere-logo-white.svg",
                       name: "Cohere",
-                      scale: 1.5,
                     },
                     {
                       src: "/assets/customers/tripadvisor.svg",
                       name: "TripAdvisor",
-                      scale: 1.4,
                     },
                     {
                       src: "/assets/customers/resend.svg",
                       name: "Resend",
-                      scale: 0.8,
-                      className: "w-4/5",
                     },
                     {
                       src: "/assets/customers/outtake/outtake-logo.svg",
                       name: "Outtake",
-                      scale: 1.2,
                     },
                     {
                       src: "/assets/customers/elevenlabs-logo-white.svg",
                       name: "ElevenLabs",
-                      scale: 1.5,
                     },
-                    // {
-                    //   src: "/assets/customers/contentful-logo-white.svg",
-                    //   name: "Contentful",
-                    //   scale: 1.2,
-                    // },
-                  ].map(({ src, name, className: logoClassName = "w-full" }, idx, arr) => (
-                    <div key={idx} className={`flex h-8 w-32 items-center justify-center overflow-hidden lg:w-auto${idx === arr.length - 1 && arr.length % 2 !== 0 ? " col-span-2 sm:col-span-1" : ""}`}>
-                      <Image
-                        src={src}
-                        alt={name}
-                        title={name}
-                        width={120}
-                        height={40}
-                        className={`h-full object-contain opacity-80 grayscale transition-all ${logoClassName}`}
-                      />
-                    </div>
+                  ].map(({ src, name }, idx, arr) => (
+                    <img
+                      key={name}
+                      src={src}
+                      alt={name}
+                      title={name}
+                      style={{ height: "1.25rem" }}
+                      className={`w-auto opacity-80 grayscale transition-all${idx === arr.length - 1 ? " col-span-2 sm:col-span-4 lg:col-span-1" : ""}`}
+                    />
                   ))}
                 </div>
               </div>
