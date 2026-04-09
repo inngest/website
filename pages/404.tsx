@@ -1,14 +1,9 @@
 import { useRouter } from "next/router";
-import shiki from "shiki";
-import SyntaxHighlighter from "react-syntax-highlighter";
-import { atomOneDark as syntaxThemeDark } from "react-syntax-highlighter/dist/cjs/styles/hljs";
 
 import Header from "../shared/Header";
 import Container from "src/shared/layout/Container";
 import PageHeader from "src/shared/PageHeader";
 import Footer from "../shared/Footer";
-
-const REPLACE_PATHNAME = "%%PATHNAME%%";
 
 export async function getStaticProps() {
   return {
