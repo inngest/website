@@ -93,6 +93,12 @@ const permanentRedirects = [
   // Durable Endpoints rename
   ["/docs/learn/rest-endpoints", "/docs/learn/durable-endpoints"],
 
+  // Metadata reference moved to /reference/typescript/functions/metadata
+  [
+    "/docs/features/inngest-functions/steps-workflows/metadata",
+    "/docs/reference/typescript/functions/metadata",
+  ],
+
   // TypeScript SDK versioned docs - landing page redirect
   [
     "/docs/reference/typescript/v4",
