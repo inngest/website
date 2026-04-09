@@ -20,23 +20,10 @@ export async function getStaticProps() {
 export default function Custom404({}) {
   const router = useRouter();
   const pathname = router.asPath;
-  const isDocs = pathname.match(/^\/docs/);
-
-  // For debugging
-  // console.log("404 - Page not found: ", pathname);
 
   const title = `404 - Page not found`;
   const lede = `We've triggered an event and a serverless function is forwarding it to the team as you read this.`;
 
-  if (isDocs) {
-    return (
-      <>
-        <h1>{title}</h1>
-        <p>{lede}</p>
-        <TrackPageNotFound pathname={pathname} />
-      </>
-    );
-  }
   return (
     <div className="font-sans">
       <Header />
