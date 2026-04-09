@@ -114,7 +114,7 @@ Temporal is a pull-based durable execution platform, and teams often evaluate bo
 
 **Programming model.** Temporal uses a deterministic replay model where your entire workflow function is re-executed from the beginning on each step, relying on an internal event history to skip completed work. This requires developers to learn and follow strict determinism rules. Inngest uses a step-based memoization model where each step runs once, its result is persisted, and subsequent executions skip completed steps by injecting their stored results. This uses standard language features with no custom runtime rules.
 
-**Flow control.** Inngest includes [concurrency controls](/docs/functions/concurrency), [prioritization](/docs/guides/priority), [throttling](/docs/functions/throttle), [debouncing](/docs/functions/debounce), [rate limiting](/docs/functions/rate-limit), and [idempotency](/docs/functions/idempotency) as built-in features of the SDK, available in every environment: local development, self-hosted, and cloud. Temporal has recently introduced priority and fairness features for task queues, but fairness is a paid feature available only in Temporal Cloud.
+**Flow control.** Inngest includes [concurrency controls](/docs/functions/concurrency), [prioritization](/docs/guides/priority), [throttling](/docs/guides/throttling), [debouncing](/docs/guides/debounce), [rate limiting](/docs/guides/rate-limiting), and [idempotency](/docs/guides/handling-idempotency) as built-in features of the SDK, available in every environment: local development, self-hosted, and cloud. Temporal has recently introduced priority and fairness features for task queues, but fairness is a paid feature available only in Temporal Cloud.
 
 **Self-hosting.** Inngest can be self-hosted as a single binary with SQLite or Postgres as a backing store. Temporal self-hosting requires running multiple server components with a Cassandra or Postgres dependency, along with separate worker infrastructure.
 
@@ -122,7 +122,7 @@ Temporal is a pull-based durable execution platform, and teams often evaluate bo
 | --- | --- | --- |
 | **Infrastructure** | No separate infrastructure. Serve (serverless) or Connect (workers) on your compute. | Requires Temporal Server cluster + separate worker processes. |
 | **Programming model** | Step-based memoization with standard language primitives. | Deterministic replay with strict runtime rules. |
-| **Flow control** | Built-in: [concurrency](/docs/functions/concurrency), [priority](/docs/guides/priority), [throttling](/docs/functions/throttle), [debounce](/docs/functions/debounce), [rate limiting](/docs/functions/rate-limit). Available everywhere. | Priority and fairness features are paid, cloud-only. |
+| **Flow control** | Built-in: [concurrency](/docs/functions/concurrency), [priority](/docs/guides/priority), [throttling](/docs/guides/throttling), [debounce](/docs/guides/debounce), [rate limiting](/docs/guides/rate-limiting). Available everywhere. | Priority and fairness features are paid, cloud-only. |
 | **Self-hosting** | Single binary with SQLite or Postgres. | Multi-component cluster with Cassandra/Postgres. |
 | **Serverless support** | Native. Designed for serverless-first environments. | Requires persistent worker processes; not serverless-native. |
 
