@@ -1,14 +1,9 @@
 import { useRouter } from "next/router";
-import shiki from "shiki";
-import SyntaxHighlighter from "react-syntax-highlighter";
-import { atomOneDark as syntaxThemeDark } from "react-syntax-highlighter/dist/cjs/styles/hljs";
 
 import Header from "../shared/Header";
 import Container from "src/shared/layout/Container";
 import PageHeader from "src/shared/PageHeader";
 import Footer from "../shared/Footer";
-
-const REPLACE_PATHNAME = "%%PATHNAME%%";
 
 export async function getStaticProps() {
   return {
@@ -25,23 +20,10 @@ export async function getStaticProps() {
 export default function Custom404({}) {
   const router = useRouter();
   const pathname = router.asPath;
-  const isDocs = pathname.match(/^\/docs/);
-
-  // For debugging
-  // console.log("404 - Page not found: ", pathname);
 
   const title = `404 - Page not found`;
   const lede = `We've triggered an event and a serverless function is forwarding it to the team as you read this.`;
 
-  if (isDocs) {
-    return (
-      <>
-        <h1>{title}</h1>
-        <p>{lede}</p>
-        <TrackPageNotFound pathname={pathname} />
-      </>
-    );
-  }
   return (
     <div className="font-sans">
       <Header />
