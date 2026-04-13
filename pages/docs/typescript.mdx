@@ -27,10 +27,8 @@ This comes with powerful inference; we autocomplete your event names when select
 import { eventType, Inngest, staticSchema } from "inngest";
 
 type UserSignup = {
-  data: {
-    email: string;
-    name: string;
-  };
+  email: string;
+  name: string;
 };
 
 export const userNewSignup = eventType("user/new.signup", {
@@ -65,42 +63,37 @@ Here's an example of sending an event within a Next.js API handler:
 
 ```ts {{ filename: "pages/api/signup.ts" }}
 import type { NextApiRequest, NextApiResponse } from "next";
-import { inngest } from "../../inngest/client";
+import { inngest, userNewSignup } from "../../inngest/client";
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const user = createNewUser(req.body.email, req.body.password, req.body.name);
 
   // TypeScript will now warn you if types do not match for the event payload
   // and the user object's properties:
-  await inngest.send({
-    name: "user/new.signup",
-    data: {
+  await inngest.send(
+    userNewSignup.create({
       email: user.email,
       name: user.name,
-    }
-  });
+    })
+  );
   res.status(200).json({ success: true });
 }
 ```
 
 ### Using with `waitForEvent`
 
-When writing step functions, you can use `waitForEvent` to pause the current function until another event is received or the timeout expires - whichever happens first. When you declare your types using the `Inngest` constructor, `waitForEvent` leverages any types that you have:
+When writing step functions, you can use `waitForEvent` to pause the current function until another event is received or the timeout expires - whichever happens first. Passing an `EventType` variable as the `event` option returns a fully-typed event payload:
 
 ```ts {{ filename: "inngest/client.ts" }}
 import { eventType, Inngest, staticSchema } from "inngest";
 
 type UserSignup = {
-  data: {
-    email: string;
-    user_id: string;
-    name: string;
-  };
+  email: string;
+  user_id: string;
+  name: string;
 };
 type UserAccountSetupCompleted = {
-  data: {
-    user_id: string;
-  };
+  user_id: string;
 };
 
 export const userNewSignup = eventType("user/new.signup", {
@@ -116,7 +109,7 @@ export const inngest = new Inngest({
 ```
 
 ```ts {{ filename: "inngest/onboardingDripCampaign.ts" }}
-import { inngest, userNewSignup } from "./client";
+import { inngest, userNewSignup, userAccountSetupCompleted } from "./client";
 
 export default inngest.createFunction(
   { id: "onboarding-drip-campaign", triggers: [userNewSignup] },
@@ -130,10 +123,8 @@ export default inngest.createFunction(
     const accountSetupCompleted = await step.waitForEvent(
       "wait-for-setup-complete",
       {
-        event: "user/account.setup.completed",
+        event: userAccountSetupCompleted,
         timeout: "2d",
-        // ⬇️ This matches both events using the same property
-        // Since both events types are registered above, this is match is typesafe
         match: "data.user_id",
       }
     );
