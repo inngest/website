@@ -88,7 +88,7 @@ export function Layout({
 
   if (isLearnPage || isOutdatedTypeScriptReferencePage) {
     tsV4Banner = (
-      <div className="sticky top-14 z-30 flex items-center gap-2 border-b border-indigo-500/20 bg-indigo-500/10 px-4 py-2 text-sm text-indigo-700 dark:text-indigo-300">
+      <div className="sticky top-14 z-30 flex items-center gap-2 border-b border-indigo-500/20 bg-indigo-50 px-4 py-2 text-sm text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
         TypeScript SDK {TS_STABLE} is now available!{" "}
         <Link
           href="/docs/reference/typescript/v4/migrations/v3-to-v4"

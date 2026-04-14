@@ -17,7 +17,7 @@ const permanentRedirects = [
   ["/docs/event-format-and-structure", "/docs/reference/events/send"],
   ["/docs/events/event-format-and-structure", "/docs/reference/events/send"],
   ["/docs/writing-and-running-fuctions", "/docs/functions"], //typo
-  ["/docs/cli/steps/", "/docs/guides/multi-step-functions"],
+  ["/docs/cli/steps/", "/docs/learn/inngest-steps"],
   ["/docs/events/sources/sdks", "/docs/events"],
   ["/docs/deploying-fuctions", "/docs/apps/cloud"],
   ["/docs/deploy", "/docs/apps/cloud"],
@@ -47,7 +47,9 @@ const permanentRedirects = [
   // new IA
   ["/docs/security", "/docs/learn/security"],
   ["/docs/functions", "/docs/learn/inngest-functions"],
-  ["/docs/functions/multi-step", "/docs/guides/multi-step-functions"],
+  ["/docs/functions/multi-step", "/docs/learn/inngest-steps"],
+  ["/docs/guides/multi-step-functions", "/docs/learn/inngest-steps"],
+  ["/docs/features/inngest-functions/steps-workflows/fetch", "/docs/reference/typescript/functions/fetch"],
   ["/docs/guides/enqueueing-future-jobs", "/docs/guides/delayed-functions"],
   ["/docs/steps", "/docs/learn/inngest-steps"],
   ["/docs/features/inngest-functions", "/docs/learn/inngest-functions"],
@@ -91,6 +93,12 @@ const permanentRedirects = [
 
   // Durable Endpoints rename
   ["/docs/learn/rest-endpoints", "/docs/learn/durable-endpoints"],
+
+  // Metadata reference moved to /reference/typescript/functions/metadata
+  [
+    "/docs/features/inngest-functions/steps-workflows/metadata",
+    "/docs/reference/typescript/functions/metadata",
+  ],
 
   // TypeScript SDK versioned docs - landing page redirect
   [
@@ -221,7 +229,7 @@ async function redirects() {
     },
     {
       source: "/features/step-functions",
-      destination: "/docs/guides/multi-step-functions",
+      destination: "/docs/learn/inngest-steps",
       permanent: true,
     },
 
@@ -429,6 +437,10 @@ async function rewrites() {
     {
       source: "/docs/reference/typescript/:path((?!v3|v4).+)",
       destination: `/docs/reference/typescript/${TS_STABLE_VERSION}/:path`,
+    },
+    {
+      source: "/docs-markdown/reference/typescript/:path((?!v3|v4).+)",
+      destination: `/docs-markdown/reference/typescript/${TS_STABLE_VERSION}/:path`,
     },
   ];
 }

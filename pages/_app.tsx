@@ -40,8 +40,11 @@ function MyApp({ Component, pageProps }: AppProps<DefaultProps>) {
   const { anonymousID, existing } = useAnonymousID();
 
   // Temp Layout swapping before we move to "app" dir
-  const isDocs = !!router.asPath.match(/^\/docs/);
-  const isCaseStudy = !!router.asPath.match(/^\/customers\//);
+  // Use router.pathname (not asPath) to check for 404 so the layout is
+  // consistent between static generation and client-side hydration.
+  const is404 = router.pathname === "/404";
+  const isDocs = !is404 && !!router.asPath.match(/^\/docs/);
+  const isCaseStudy = !is404 && !!router.asPath.match(/^\/customers\//);
   const Layout = isDocs
     ? DocsLayout
     : isCaseStudy

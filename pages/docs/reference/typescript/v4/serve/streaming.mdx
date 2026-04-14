@@ -2,6 +2,10 @@ import { Callout, CodeGroup } from "src/shared/Docs/mdx";
 
 # Streaming
 
+<Callout>
+  This page covers streaming responses **back to Inngest** to extend serverless timeouts. To stream data **to clients** from Durable Endpoints, see [Durable Endpoints streaming](/docs/reference/typescript/v4/durable-endpoints#streaming?ref=docs-serve-streaming).
+</Callout>
+
 In select environments, the SDK allows streaming responses back to Inngest, hugely increasing maximum timeouts on many serverless platforms up to 15 minutes.
 
 While we add wider support for streaming to other platforms, we currently support the following:

@@ -68,6 +68,9 @@ const inngest = new Inngest({
   <Property name="middleware" type="array">
     A stack of [middleware](/docs/features/middleware) to add to the client.
   </Property>
+  <Property name="endpointAdapter" type="InngestEndpointAdapter.Like">
+    An endpoint adapter that enables [Durable Endpoints](/docs/reference/typescript/v4/durable-endpoints).  When provided, `inngest.endpoint()` and `inngest.endpointProxy()` become available.
+  </Property>
 </Properties>
 
 <Callout>

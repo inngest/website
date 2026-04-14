@@ -362,17 +362,24 @@ export async function getStaticPaths() {
   const matter = require("gray-matter");
   const paths = fs
     .readdirSync("./content/blog/")
-    .filter((fname) => {
+    .filter(
+      (fname: string) =>
+        fname.endsWith(".md") || fname.endsWith(".mdx")
+    )
+    .filter((fname: string) => {
       // Skip files that have redirect frontmatter
       let filePath = `./content/blog/${fname}`;
       const source = fs.readFileSync(filePath);
       const { data } = matter(source);
       return !data.redirect;
     })
-    .map((fname) => {
-      return `/blog/${fname.replace(/.mdx?/, "")}`;
+    .map((fname: string) => {
+      return `/blog/${fname.replace(/\.mdx?$/, "")}`;
     });
-  return { paths, fallback: false };
+  // `blocking` allows new posts to resolve on first request (e.g. after adding an
+  // MDX file without restarting dev, or ISR-style updates) instead of 404ing when
+  // `fallback` is false.
+  return { paths, fallback: "blocking" as const };
 }
 
 // This function also gets called at build time to generate specific content.
@@ -384,8 +391,11 @@ export async function getStaticProps({ params }) {
   const matter = require("gray-matter");
 
   let filePath = `./content/blog/${params.slug}.md`;
-  if (!fs.existsSync(filePath) && fs.existsSync(filePath + "x")) {
-    filePath += "x";
+  if (!fs.existsSync(filePath)) {
+    filePath = `./content/blog/${params.slug}.mdx`;
+  }
+  if (!fs.existsSync(filePath)) {
+    return { notFound: true };
   }
 
   const source = fs.readFileSync(filePath);

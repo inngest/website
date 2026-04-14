@@ -333,7 +333,7 @@ export const FEATURES: Feature[] = [
     description: "Direct P0 support from our team",
     plans: {
       [PLAN_NAMES.basicFree]: false,
-      [PLAN_NAMES.pro]: "$200",
+      [PLAN_NAMES.pro]: false,
       [PLAN_NAMES.enterprise]: true,
     },
     section: "platform",

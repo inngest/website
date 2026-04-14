@@ -1,9 +1,8 @@
 import { Info, Callout, CodeGroup, Col, Properties, Property, Row, VersionBadge } from "src/shared/Docs/mdx";
 
-export const description = 'TypeScript SDK reference for Durable Endpoints. Create HTTP handlers with step-based checkpointing.';
+export const description = 'TypeScript SDK reference for Durable Endpoints. Create HTTP handlers with step-based checkpointing and streaming.'
 
 # Durable Endpoints <VersionBadge version="Beta" />
-
 
 Create durable HTTP endpoints using `inngest.endpoint()`. Each step within the handler is checkpointed, allowing automatic recovery from failures.
 
@@ -28,9 +27,10 @@ export const handler = inngest.endpoint(async (req: Request): Promise<Response> 
 
 ### `endpointAdapter`
 
-The `endpointAdapter` must be passed to the Inngest client constructor to enable Durable Endpoints.
+The `endpointAdapter` must be passed to the Inngest client constructor to enable Durable Endpoints. Import it from the entry point matching your runtime:
 
-```ts
+<CodeGroup>
+```ts {{ title: "Edge" }}
 import { Inngest } from "inngest";
 import { endpointAdapter } from "inngest/edge";
 
@@ -38,13 +38,56 @@ const inngest = new Inngest({
   id: "my-app",
   endpointAdapter,
 });
+
+```
+```ts {{ title: "Node.js" }}
+import { Inngest } from "inngest";
+import { endpointAdapter } from "inngest/node";
+
+const inngest = new Inngest({
+  id: "my-app",
+  endpointAdapter,
+});
 ```
 
+</CodeGroup>
+
 <Callout>
-  The `endpointAdapter` is imported from `inngest/edge` (or any compatible
-  framework entrypoint) and is required for Durable Endpoints to function. Without it,
-  `inngest.endpoint()` will not be available.
+  The `endpointAdapter` is required. Without it, `inngest.endpoint()` will not be available.
 </Callout>
+
+### `endpointAdapter.withOptions(options)`
+
+Use `withOptions()` to customize adapter behavior:
+
+```ts
+const inngest = new Inngest({
+  id: "my-app",
+  endpointAdapter: endpointAdapter.withOptions({
+    asyncRedirectUrl: "/api/inngest/poll",
+    retries: 5,
+  }),
+});
+```
+
+<Row>
+  <Col>
+    <Properties>
+      <Property name="asyncRedirectUrl" type="string | ((params: { runId: string; token: string }) => string | Promise<string>)">
+        Custom URL to redirect to when transitioning from sync to async mode. A string path is resolved relative to the request origin and automatically appends `runId` and `token` query parameters. A function gives you full control over URL construction.
+      </Property>
+      <Property name="functionId" type="string">
+        Override the auto-detected function ID for this endpoint. Defaults to `{METHOD} {path}`.
+      </Property>
+      <Property name="retries" type="number">
+        Maximum retries for all steps in this endpoint. Must be between `0` and `20`. Defaults to `3`.
+      </Property>
+      <Property name="asyncResponse" type='"redirect" | "token"'>
+        Response type when transitioning from sync to async mode. Defaults to `"redirect"`.
+      </Property>
+    </Properties>
+  </Col>
+</Row>
 
 ---
 
@@ -240,3 +283,113 @@ Bun.serve({
 ```
 
 Requests will now be redirected to `/wait`.
+
+To stream data to the client during execution, see [streaming](#streaming) below or the full [streaming guide](/docs/learn/durable-endpoints/streaming).
+
+---
+
+## Streaming <VersionBadge version="Developer Preview" />
+
+Durable Endpoints can stream data back to clients in real-time using Server-Sent Events (SSE). For a full guide covering concepts, examples, and rollback semantics, see [the guide](/docs/learn/durable-endpoints/streaming).
+
+### Server: `stream.push()` and `stream.pipe()`
+
+Import the `stream` object from `inngest/experimental/durable-endpoints` and use it inside your endpoint handler within a [`step.run()`](/docs/reference/typescript/v4/functions/step-run) call:
+
+```ts
+import { step } from "inngest";
+import { stream } from "inngest/experimental/durable-endpoints";
+```
+
+<Row>
+  <Col>
+    <Properties>
+      <Property name="stream.push" type="(data: unknown) => void">
+        Send a single chunk of data to the client as an SSE event. Accepts any JSON-serializable value. Does not block execution. No-op outside of an Inngest execution context.
+      </Property>
+      <Property name="stream.pipe" type="(source: ReadableStream | AsyncIterable<string> | (() => AsyncIterable<string>)) => Promise<string>">
+        Pipe a stream source to the client, sending each chunk as an SSE event in real-time. Resolves with the concatenated text of all chunks. No-op outside of an Inngest execution context (resolves with an empty string).
+      </Property>
+    </Properties>
+  </Col>
+</Row>
+
+### Client: `fetchWithStream()`
+
+Handles the implementation details of streaming, including:
+- Automatically committing and rolling back chunks based on the step's success or failure
+- Filtering out internal events
+- Handling the sync-to-async redirect
+
+```ts
+import { fetchWithStream } from "inngest/experimental/durable-endpoints/client";
+```
+
+Returns a `Promise<Response>` containing the endpoint's final return value. Sync-to-async redirects are handled automatically. If the endpoint does not use streaming, the raw `Response` is returned as-is.
+
+<Row>
+  <Col>
+    <Properties>
+      <Property name="url" type="string" required>
+        The URL of the Durable Endpoint to call.
+      </Property>
+      <Property name="fetch" type="typeof fetch">
+        Custom fetch implementation. Defaults to `globalThis.fetch`.
+      </Property>
+      <Property name="fetchOpts" type="RequestInit">
+        Options passed to the underlying `fetch` call (e.g. `{ signal }` for cancellation).
+      </Property>
+      <Property name="onMetadata" type="(args: { runId: string }) => void">
+        Called when run metadata is received. Always fires first.
+      </Property>
+      <Property name="onData" type="(args: { data: unknown; hashedStepId: string | null }) => void">
+        Called for each streamed chunk. Data should be considered uncommitted until `onCommit` fires.
+      </Property>
+      <Property name="onCommit" type="(args: { hashedStepId: string | null }) => void">
+        Called when a step completes successfully. Chunks from that step are now permanent.
+      </Property>
+      <Property name="onRollback" type="(args: { hashedStepId: string | null }) => void">
+        Called when a step fails and will retry. Discard uncommitted chunks from that step.
+      </Property>
+    </Properties>
+  </Col>
+</Row>
+
+---
+
+## Node.js Utilities
+
+The `inngest/node` entry point exports helpers for serving Durable Endpoints in Node.js environments:
+
+```ts
+import { serveEndpoint, createEndpointServer } from "inngest/node";
+```
+
+<Row>
+  <Col>
+    <Properties>
+      <Property name="serveEndpoint" type="(handler: (req: Request) => Promise<Response>) => http.RequestListener">
+        Bridge a Web API endpoint handler to a Node.js `http.RequestListener`. Converts an incoming `http.IncomingMessage` into a Web API `Request`, invokes the handler, then streams the resulting `Response` back through the Node.js `http.ServerResponse`.
+      </Property>
+      <Property name="createEndpointServer" type="(handler: (req: Request) => Promise<Response>) => http.Server">
+        Create an `http.Server` that serves a Durable Endpoint handler directly. A convenience wrapper around `serveEndpoint()`.
+      </Property>
+    </Properties>
+  </Col>
+  <Col>
+    ```ts
+    import { createEndpointServer } from "inngest/node";
+
+    const server = createEndpointServer(
+      inngest.endpoint(async (req) => {
+        const result = await step.run("work", async () => {
+          return await doWork();
+        });
+        return Response.json({ result });
+      })
+    );
+
+    server.listen(3000);
+    ```
+  </Col>
+</Row>

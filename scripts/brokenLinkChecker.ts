@@ -67,6 +67,7 @@ const options = {
     "https://react.email/", // 429s
     "https://docs.deno.com/",
     "https://banger.show", // 520s
+    "https://muckrack.com", // 403s, requires human verification
   ],
 };
 
