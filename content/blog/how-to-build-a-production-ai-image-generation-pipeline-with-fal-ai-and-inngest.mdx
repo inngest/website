@@ -153,7 +153,7 @@ This is where the combination of fal.ai and Inngest pays off in ways that matter
 
 ### **Step-level retries protect your inference costs.**
 
-Each `step.run` is a checkpoint. The result of every step is memoized once it completes. If the S3 upload on step 3 fails and retries, fal.ai doesn't run again — `requestId` and `result` are already stored. At $0.03–$0.08 per image this matters at any meaningful scale. [NonRetriableError](https://www.inngest.com/docs/reference/functions/errors) tells Inngest not to retry when retrying genuinely can't help — like a generation timeout.
+Each `step.run` is a checkpoint. The result of every step is memoized once it completes. If the S3 upload on step 3 fails and retries, fal.ai doesn't run again — `requestId` and `result` are already stored. At $0.03–$0.08 per image this matters at any meaningful scale. [NonRetriableError](https://www.inngest.com/docs/features/inngest-functions/error-retries/inngest-errors) tells Inngest not to retry when retrying genuinely can't help — like a generation timeout.
 
 ### **Per-user fairness comes from one line of config.**
 
