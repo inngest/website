@@ -1,7 +1,7 @@
 ---
 heading: "Why we built a support bot that investigates tickets before drafting a reply"
 subtitle: "Support questions need evidence, not guesses. We built a bot that reads the live thread, searches the docs, finds similar historical tickets, and only then drafts a response."
-image: /assets/blog/agentkit-stepai.png
+image: /assets/blog/why-we-built-a-support-bot-that-investigates-tickets/header.jpg
 date: 2026-04-12
 category: engineering
 author: Jakob Evangelista
@@ -78,6 +78,10 @@ This gives us something support teams rarely have in a clean, searchable form: p
 
 Not just keyword matches, but tickets that look like the current issue even when the wording is different.
 
+In simple terms, an embedding turns a piece of text into a long list of numbers: a vector. You can think of that vector as a point in mathematical space. If you embed "a rock is hard" and then embed "rock," those two points will usually end up closer together than either one would be to something unrelated like "refund my invoice."
+
+Once both the current ticket and past tickets have been turned into vectors, the database can measure the distance between them and return the nearest matches. That is what lets us search for conceptual similarity instead of exact wording.
+
 If we find relevant matches, we fetch the full conversation for those tickets from Plain as well. That lets the bot see how a similar issue was actually resolved instead of only seeing a shallow summary or a title.
 
 This turned out to be one of the highest-leverage parts of the system.
@@ -85,6 +89,8 @@ This turned out to be one of the highest-leverage parts of the system.
 Documentation tells you what should happen.
 
 Historical tickets tell you what actually confused people, what misconfigurations recur, and what explanations have already worked in practice.
+
+![image.png](/assets/blog/why-we-built-a-support-bot-that-investigates-tickets/embeddingvisual.png)
 
 ### Path two: docs search
 
