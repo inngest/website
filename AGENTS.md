@@ -4,7 +4,7 @@ This is the Inngest marketing website and documentation site built with Next.js.
 
 ## Tech Stack
 
-- **Framework**: Next.js 15 (App Router + Pages Router hybrid)
+- **Framework**: Next.js 16 (App Router + Pages Router hybrid)
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS with custom design system
 - **Content**: MDX for blog posts, docs, and changelog

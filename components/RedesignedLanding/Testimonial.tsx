@@ -20,14 +20,14 @@ export default function Testimonial() {
               <Image
                 width={640}
                 height={160}
-                src="/image2.png"
+                src="/assets/homepage-2025/image2.png"
                 alt=""
                 className="h-full w-full rounded-none object-cover object-bottom lg:hidden"
               />
               <Image
                 width={288}
                 height={287.23}
-                src="/image.png"
+                src="/assets/homepage-2025/image.png"
                 alt=""
                 className="hidden lg:block"
               />
