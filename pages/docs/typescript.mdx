@@ -27,10 +27,8 @@ This comes with powerful inference; we autocomplete your event names when select
 import { eventType, Inngest, staticSchema } from "inngest";
 
 type UserSignup = {
-  data: {
-    email: string;
-    name: string;
-  };
+  email: string;
+  name: string;
 };
 
 export const userNewSignup = eventType("user/new.signup", {
@@ -65,20 +63,19 @@ Here's an example of sending an event within a Next.js API handler:
 
 ```ts {{ filename: "pages/api/signup.ts" }}
 import type { NextApiRequest, NextApiResponse } from "next";
-import { inngest } from "../../inngest/client";
+import { inngest, userNewSignup } from "../../inngest/client";
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const user = createNewUser(req.body.email, req.body.password, req.body.name);
 
   // TypeScript will now warn you if types do not match for the event payload
   // and the user object's properties:
-  await inngest.send({
-    name: "user/new.signup",
-    data: {
-      email: user.email,
-      name: user.name,
-    }
+  const userNewSignupEvent = userNewSignup.create({
+    email: user.email,
+    name: user.name,
   });
+
+  await inngest.send(userNewSignupEvent);
   res.status(200).json({ success: true });
 }
 ```
