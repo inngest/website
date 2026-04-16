@@ -24,7 +24,7 @@ This is “Goodhart’s Law” in real time: "when a measure becomes a target, i
 That initial failure revealed the real challenges behind self-improving agents.
 Scoring responses based on sound metrics, generating improvements from the data, but ultimately building a system that can improve safely without learning to optimize for the test itself.
 
-In this tutorial, I'll walk through how to build a self-improving agent with automated scoring, prompt versioning, and a cron-based evaluation pipeline; and the guardrails I had to add after watching it game its own test. 
+In this tutorial, I'll walk through how to build a self-improving agent with automated scoring, prompt versioning, and a cron-based evaluation pipeline; and the guardrails I had to add after watching it game its own test.
 
 Repo linked at the end if you want to follow along.
 
@@ -32,7 +32,7 @@ Repo linked at the end if you want to follow along.
 
 The prompt is the most important part of useful AI inference, but is static from the day the developer wrote it. It only changes once someone manually analyzes the output, rewrites it, tests it, and deploys an improved version.
 
-Meanwhile, the rest of the engineering world has already solved this problem for legacy workflows. A/B testing, feature flags, monitoring, rollouts; we already know how to incrementally update systems, so why not apply these lessons to AI agents? 
+Meanwhile, the rest of the engineering world has already solved this problem for legacy workflows. A/B testing, feature flags, monitoring, rollouts; we already know how to incrementally update systems, so why not apply these lessons to AI agents?
 
 Hand-tuning prompts is what the DSPy team calls "labor-intensive" and "chaotic when changes are introduced."
 OpenClaw is experimenting with a "dreaming" feature that uses scheduled sweeps to consolidate memory, and Andrej Karpathy's [autoresearch](https://github.com/karpathy/autoresearch) gives an agent a training loop, a time budget, and an objective so it can iterate on its own code overnight.
@@ -43,7 +43,7 @@ These systems are solving different problems, but they point in the same directi
 
 In this tutorial we'll add three capabilities to an existing chat agent: **automated scoring**, **prompt versioning**, and a **cron-based evaluation pipeline** that rewrites underperforming prompts.
 
-The base is a fork of the Utah reference implementation by the Inngest team, a general-purpose agent harness with a behavioral prompt in `SOUL.md`. We're using a lighter model for agent responses (to give the scoring pipeline variance to work with) and a larger model for scoring and prompt generation. 
+The base is a fork of the Utah reference implementation by the Inngest team, a general-purpose agent harness with a behavioral prompt in `SOUL.md`. We're using a lighter model for agent responses (to give the scoring pipeline variance to work with) and a larger model for scoring and prompt generation.
 
 Slack is the test interface; JSONL files handle score persistence. All intentionally streamlined so that we can focus on training the agent instead of wrangling npm packages.
 
@@ -391,4 +391,4 @@ Events decouple scoring from critical path user interaction, Crons handle schedu
 
 With the infrastructure handled, your job as an engineer is to define what “good” means to your agent.
 
-If you want to experiment with the pattern yourself, [**clone the repo**](https://github.com/mitchellalderson/Inngest-Self-Learning-Agent) and swap in your own behavioral prompt.
+If you want to experiment with the pattern yourself, [**clone the repo**](https://github.com/inngest/inngest-self-learning-agent) and swap in your own behavioral prompt.
