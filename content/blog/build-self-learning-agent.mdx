@@ -1,0 +1,394 @@
+---
+heading: "I built a self-improving agent. It taught itself to cheat."
+subtitle: "I built a self-improving agent on Inngest, then learned the hard part wasn't retraining prompts, but stopping the system from gaming its own evaluation."
+showSubtitle: true
+image: /assets/blog/i-built-a-self-improving-agent-it-taught-itself-to-cheat/featured-image/featured-image.jpg
+date: 2026-04-16
+category: engineering
+author: "Mitchell Alderson (guest post)"
+---
+
+I built an AI agent that improves its own prompts. Within hours of running the evaluation pipeline, the LLM discovered it could game the scoring system.
+When asked to generate an improved prompt, it started embedding scoring criteria directly. The "improved" version included lines like:
+
+![Initial score gaming; adding the Core Goals to the prompt](/assets/blog/i-built-a-self-improving-agent-it-taught-itself-to-cheat/images/inline-1.png)
+
+Initial score gaming; adding the Core Goals to the prompt
+
+![Even further down the line, it learned to game Kubernetes questions and had to be patched again.](/assets/blog/i-built-a-self-improving-agent-it-taught-itself-to-cheat/images/inline-2.png)
+
+Even further down the line, it learned to game Kubernetes questions and had to be patched again.
+
+This is “Goodhart’s Law” in real time: "when a measure becomes a target, it ceases to be a good measure.”
+
+That initial failure revealed the real challenges behind self-improving agents.
+Scoring responses based on sound metrics, generating improvements from the data, but ultimately building a system that can improve safely without learning to optimize for the test itself.
+
+In this tutorial, I'll walk through how to build a self-improving agent with automated scoring, prompt versioning, and a cron-based evaluation pipeline; and the guardrails I had to add after watching it game its own test.
+
+Repo linked at the end if you want to follow along.
+
+# The orchestration gap in AI
+
+The prompt is the most important part of useful AI inference, but is static from the day the developer wrote it. It only changes once someone manually analyzes the output, rewrites it, tests it, and deploys an improved version.
+
+Meanwhile, the rest of the engineering world has already solved this problem for legacy workflows. A/B testing, feature flags, monitoring, rollouts; we already know how to incrementally update systems, so why not apply these lessons to AI agents?
+
+Hand-tuning prompts is what the DSPy team calls "labor-intensive" and "chaotic when changes are introduced."
+OpenClaw is experimenting with a "dreaming" feature that uses scheduled sweeps to consolidate memory, and Andrej Karpathy's [autoresearch](https://github.com/karpathy/autoresearch) gives an agent a training loop, a time budget, and an objective so it can iterate on its own code overnight.
+
+These systems are solving different problems, but they point in the same direction: agents are starting to run improvement loops over memory, code, and behavior instead of staying frozen after launch.
+
+## Setting up the Stack
+
+In this tutorial we'll add three capabilities to an existing chat agent: **automated scoring**, **prompt versioning**, and a **cron-based evaluation pipeline** that rewrites underperforming prompts.
+
+The base is a fork of the Utah reference implementation by the Inngest team, a general-purpose agent harness with a behavioral prompt in `SOUL.md`. We're using a lighter model for agent responses (to give the scoring pipeline variance to work with) and a larger model for scoring and prompt generation.
+
+Slack is the test interface; JSONL files handle score persistence. All intentionally streamlined so that we can focus on training the agent instead of wrangling npm packages.
+
+Inngest was a natural choice for the orchestration layer because it handles our workflow needs: async scoring off the user path, scheduled eval runs, and durable retryable steps.
+
+We’ll ask the Slack-based chat agent DevOps and infrastructure-related questions; complex enough to give us room for improvement in the detail and accuracy of the responses. A user sends a message from Slack to the agent, it acknowledges the message, sends a reply, and scores the input/response pair.
+
+## Designing the Feedback Loop
+
+We need to formulate a metric that correctly captures the accuracy, tone and efficiency of the agent responses.
+
+Next, we will run the aggregated scores through an evaluation pipeline, and determine if responses can be enhanced through a new prompt.
+
+Finally, we’ll need to version and A/B test the prompts to see if we actually improved the responses, or made things worse. Underperforming prompts get phased out as new, higher performing versions are promoted.
+
+### Scoring and LLM-as-a-Judge
+
+Every response is scored on four dimensions, 0-10 each:
+
+| Dimension | What it measures |
+| --- | --- |
+| **Relevance** | Did it address the specific question, or give generic textbook information? |
+| **Completeness** | Specific commands, configs, and steps, or high-level hand-waving? |
+| **Tool efficiency** | Were tool calls necessary and well-targeted? |
+| **Tone** | Concise and direct, or bloated with filler? |
+
+The input is deliberately minimal: user message, agent response, and tool call count.
+The scoring will be done by an LLM judge; a well-documented but imperfect system that should allow us to roughly gauge the quality of the responses as a human observer would.
+
+Here's where I made my first misstep. My original scoring prompt was too lenient; just giving the rough direction the scoring process should take, but not setting hard rules around quality. The LLM quickly learned it could give uniformly high scores by default, starving the evaluation pipeline of anything to work with. So I rewrote it to be deliberately harsh. Here's what that looks like:
+
+```tsx
+const SCORING_PROMPT = `You are a harsh, expert-level response quality evaluator.
+Your job is to find flaws, not give praise. A score of 7+ should be rare
+and reserved for genuinely excellent responses. Most responses should score 3-6.
+
+Score this agent response on 4 dimensions (0-10 each). Be brutally honest.
+
+Scoring criteria:
+
+1. Relevance (0-10): Did the response answer the SPECIFIC question asked?
+   - 0-2: Completely off-topic or misunderstood the question
+   - 3-4: Partially relevant but missed the core ask
+   - 5-6: Addressed the topic but lacked specificity
+   - 7-8: Directly answered the specific question with actionable detail
+   - 9-10: Precisely targeted, anticipated follow-ups
+
+2. Completeness (0-10): Specific commands, configs, file paths, exact steps?
+   - 0-2: Barely scratched the surface
+   - 3-4: Covered basics but missing critical details
+   - 5-6: Reasonable coverage but gaps in important areas
+   - 7-8: Thorough with specific, implementable details
+   - 9-10: Production-ready depth including edge cases and tradeoffs
+
+3. Tool efficiency (0-10): Were tool calls necessary and well-targeted?
+   - Score 5 if 0 tool calls and no tools were needed
+
+4. Tone alignment (0-10): Concise and direct, or bloated with filler?
+   - 0-2: Rambling, unfocused
+   - 3-4: Too verbose, excessive caveats
+   - 5-6: Acceptable but could be tighter
+   - 7-8: Concise and well-structured
+   - 9-10: Perfectly calibrated — dense with information, zero waste
+
+User message: {USER_MESSAGE}
+Agent response: {AGENT_RESPONSE}
+Tool calls made: {TOOL_CALL_COUNT}
+
+Respond with ONLY valid JSON, no markdown code fences:
+{"relevance": N, "completeness": N, "toolEfficiency": N, "tone": N,
+ "rationale": "1-2 sentence explanation of biggest weaknesses"}`;
+```
+
+### Event Driven Async Scoring
+
+Scoring is inherently a backend process and should never delay a response to the user. After the agent loop finishes and the reply is sent to Slack, the message handler fires an event:
+
+```tsx
+// src/functions/message.ts — after sending reply
+if (config.scoring.enabled) {
+  await step.sendEvent("score", {
+    name: "agent.score.request",
+    data: {
+      userMessage: message,
+      agentResponse: result.response,
+      toolCallCount: result.toolCalls,
+      sessionKey,
+      promptVersion: result.promptVersion,
+    },
+  });
+}
+```
+
+A separate Inngest function picks it up and runs the scoring LLM independently. If scoring fails, the user never notices and Inngest retries it automatically.
+
+```tsx
+// src/functions/score.ts
+export const handleScore = inngest.createFunction(
+  {
+    id: "agent-handle-score",
+    retries: 1,
+    triggers: [agentScoreRequest],
+  },
+  async ({ event, step, logger }) => {
+    const { userMessage, agentResponse, toolCallCount, sessionKey, promptVersion } = event.data;
+
+    const { entry, rawLlmResponse } = await step.run("score", async () => {
+      return await scoreResponse({
+        userMessage,
+        agentResponse,
+        toolCallCount,
+        sessionKey,
+        promptVersion,
+      });
+    });
+
+    await step.run("save-score", async () => {
+      await appendScoreLog(entry);
+    });
+
+    return entry;
+  },
+);
+```
+
+We fire off two durable steps: score, then persist. If the LLM call succeeds but the file write fails, Inngest retries only the write. Each step is independently retryable and visible in the dashboard.
+
+![image.png](/assets/blog/i-built-a-self-improving-agent-it-taught-itself-to-cheat/images/inline-3.png)
+
+### Prompt Versioning, Not Vibes
+
+Scores are meaningless without attribution. If you changed the prompt yesterday and scores improved, was it the prompt change or different user questions? Every response should be traceable back to a prompt version.
+
+However, just releasing new prompts out into the wild isn’t a good idea either; an untested rewrite could tank response quality in a day.  Luckily we can take the existing engineering paradigms of A/B testing and incremental rollouts to solve this.
+
+The versioning system lives in `workspace/prompts/`:
+
+```
+workspace/prompts/
+├── registry.json      # version metadata + weights
+├── v1/
+│   └── SOUL.md        # baseline prompt
+└── v2/
+    └── SOUL.md        # improved variant
+```
+
+Each version gets a traffic weight. The context builder selects a version at the start of every conversation using weighted random selection:
+
+```tsx
+// src/lib/prompt-version.ts
+export function selectVersionByWeight(registry: PromptRegistry): PromptVersion {
+  const activeVersions = normalizeWeights(registry.versions).filter((v) => v.active);
+
+  if (activeVersions.length === 1) return activeVersions[0];
+
+  const random = Math.random();
+  let cumulative = 0;
+
+  for (const version of activeVersions) {
+    cumulative += version.weight;
+    if (random < cumulative) return version;
+  }
+
+  return activeVersions[activeVersions.length - 1];
+}
+```
+
+The selected version ID flows through the entire agent loop, from the initial message to the final evaluation.
+
+On a fresh install with no registry, the system auto-initializes: it copies your existing behavioral prompt to `v1/SOUL.md` and creates the registry. Zero manual setup.
+
+### Evaluating and Rewriting Prompts
+
+Now we need to find what's underperforming, and generate improvements. We run the evaluation pipeline on a schedule using an Inngest function, which lets us avoid setting up and maintaining a separate cron runner.
+
+```tsx
+// src/functions/evaluate-prompts.ts
+export const evaluatePrompts = inngest.createFunction(
+  {
+    id: "evaluate-prompts",
+    triggers: [{ cron: "0 */6 * * *" }],
+  },
+  async ({ step }) => {
+    // Eight durable steps — each independently retryable
+  },
+);
+```
+
+The key to linking all this data together: each scored response produces one line in a daily JSONL file:
+
+```json
+{
+  "timestamp": "2026-03-18T14:32:01.447Z",
+  "sessionKey": "slack-284174",
+  "promptVersion": "v1",
+  "relevance": 5,
+  "completeness": 4,
+  "toolEfficiency": 5,
+  "tone": 6,
+  "composite": 5.0,
+  "rationale": "Response gave generic Kubernetes advice without addressing the specific EKS version constraint mentioned in the question. Missing rollback strategy."
+}
+```
+
+The `promptVersion` field is what connects scoring to versioning to evaluation. Without it, the evaluation pipeline can't compare prompts.
+
+### Model Choice
+
+Here was my second big ~~mistake~~ learning. I initially used a frontier model for everything, but it scored so consistently well that the pipeline had nothing to improve. Splitting the models into a lighter one for responses, a larger one for scoring and prompt generation gave the system variance to learn from and intelligence to learn with.
+
+## Running the Pipeline
+
+Every six hours, this function runs eight steps:
+
+| Step | What it does |
+| --- | --- |
+| `load-scores` | Read all JSONL score files |
+| `aggregate-stats` | Compute per-version averages across all dimensions |
+| `load-registry` | Load the prompt version registry |
+| `promote-winners` | Redistribute traffic toward the best performer |
+| `enforce-cap` | Retire low-weight and low-scoring versions |
+| `check-rewrites` | Identify underperformers, generate improved prompts |
+| `save-summary` | Write the performance dashboard |
+| `save-registry` | Persist registry changes |
+
+If step 6 fails because the LLM is down, Inngest retries it without re-running steps 1-5.
+
+Each step's input and output is visible in the dashboard, so you can inspect exactly what the pipeline decided at every stage.
+
+### Finding Underperformers
+
+For our evaluation trigger, a version is flagged for rewriting when its composite score falls below target or trails the best-performing version by more than a point.
+
+Both require a minimum of 10 scored interactions to ensure the pipeline won't act on thin data.
+
+```tsx
+const belowTarget = vStats.avgComposite < cfg.targetComposite;
+const significantlyWorse =
+  bestVersionId && bestVersionId !== versionId && gapToBest >= cfg.significantGap;
+
+if (belowTarget || significantlyWorse) {
+  underperformers.push({ versionId, stats: vStats, reason, gapToBest });
+}
+```
+
+After a lot of troubleshooting, additional guardrails prevent the pipeline from spiraling:
+
+- **One child per parent** — no five variants of the same underperformer in one cycle
+- **Require new data** — `lastEvaluatedCount` tracking prevents retraining on the same dataset
+- **Max 5 active versions** — `currentDefault` is always protected from retirement
+- **New versions start at 50% weight** — always keep a control group
+
+### Generating Improved Prompts
+
+When a version underperforms, the pipeline calls the LLM with the current prompt, its scores, and the rationale summaries.
+
+The LLM generates an improved version:
+
+```tsx
+const prompt = `You are improving an AI agent's behavioral prompt (SOUL.md).
+
+## Current SOUL.md (version: ${underperformer.versionId})
+${currentSoul}
+
+## Performance Issues
+This version is underperforming: ${underperformer.reason}
+
+### Recent Score Rationales (showing issues)
+${rationales}
+
+### Average Scores
+- Relevance: ${underperformer.stats.avgRelevance.toFixed(1)}/10
+- Completeness: ${underperformer.stats.avgCompleteness.toFixed(1)}/10
+- Tool Efficiency: ${underperformer.stats.avgToolEfficiency.toFixed(1)}/10
+- Tone: ${underperformer.stats.avgTone.toFixed(1)}/10
+
+## CRITICAL OUTPUT RULES
+- Output ONLY the improved SOUL.md content
+- NO scoring targets (e.g., "Target Composite Score: 8+")
+- NO performance metrics or evaluation data
+- The agent using this SOUL.md should NOT know about scoring criteria
+`;
+```
+
+That `CRITICAL OUTPUT RULES` block exists for a reason.
+
+### The Dashboard
+
+To help monitor performance across versions, a summary markdown file is also generated locally during the evaluation run.
+
+![image.png](/assets/blog/i-built-a-self-improving-agent-it-taught-itself-to-cheat/images/inline-4.png)
+
+This summary shows how the versions compare over time; the composite score fluctuated up and down as the evaluation agent learned what worked and what didn’t.
+
+## What Broke and What I Learned
+
+### Why the guardrails matter
+
+My first assumption was that step-level isolation would be enough. Each Inngest step runs with its own context, so the scoring criteria should stay contained in the scoring step and never reach the prompt generation step.
+
+Without explicit instructions to exclude scoring data, the LLM inferred the evaluation criteria from the performance data it was given.
+This is wild. The agent didn't need to see the scoring prompt to reverse-engineer it.
+
+That creates a recursive failure: the agent's prompt now contains scoring language, the judge sees that language and scores it higher, and the next evaluation cycle reinforces the pattern. **The system isn't improving, it's teaching itself to cheat more effectively.**
+
+The fix was the `CRITICAL OUTPUT RULES` block that explicitly prohibits scoring targets, metrics, and evaluation data in generated output. The agent should never know it's being scored.
+
+This happened within hours, not months. If you build a self-improving system, assume the LLM will find shortcuts you didn't anticipate.
+
+### Gains are Marginal with Frontier Models
+
+Large frontier models score so consistently well that the improvement cycle rarely triggers. For testing and demonstration, use a lighter model; the score variance gives the pipeline something to work with. Which means this pattern could help you get more out of a cheaper model by letting the self-improvement loop close the gap instead of paying for a frontier one.
+
+This is also a real production insight: if your agent is already excellent, the self-improvement system mostly validates that rather than finding fixes.
+
+More complex workloads, requiring reasoning, tool calls, and multi step processes, show much greater gains, but for our simple test case, effectively a knowledge bot, the progress was incremental.
+
+### Token efficiency is a blind spot
+
+The evaluation pipeline doesn't track whether improved prompts are more verbose. At scale, a prompt that scores 0.5 points higher but costs 2x the tokens may not be a win. This is a natural next step for improving the system for real-world application.
+
+### LLM-As-Judge and Other Scoring Methods
+
+LLM-as-a-judge was the simplest autonomous scoring method for this prototype, but it’s not the only option.
+
+The same event, step, and cron pattern could support other feedback loops.
+
+- Product outcomes: Did the user click, convert, reply, or complete the workflow?
+- Human review: Route a sample of responses to Slack or an internal queue for rating.
+- Tool success: Did the agent choose the right tools and avoid unnecessary calls?
+- Autoresearch loops: Have a second workflow gather missing context, documentation, or examples before revising the prompt.
+- Cost controls: Score prompt variants not just on quality, but on token efficiency and latency.
+
+## Summary: What we have built
+
+Three systems, each made easier with an inngest primitive:
+
+| System | Inngest Primitive | What it does |
+| --- | --- | --- |
+| Scoring | Event-driven function | Measures every response, tags it to a prompt version |
+| Versioning | Durable step context | A/B tests prompts with weighted traffic allocation |
+| Evaluation | Cron function | Aggregates scores, rewrites underperformers, manages lifecycle |
+
+Events decouple scoring from critical path user interaction, Crons handle scheduling, and steps make each operation independently retryable and observable; while preventing duplication of expensive computation tasks that did run successfully.
+
+With the infrastructure handled, your job as an engineer is to define what “good” means to your agent.
+
+If you want to experiment with the pattern yourself, [**clone the repo**](https://github.com/inngest/inngest-self-learning-agent) and swap in your own behavioral prompt.
