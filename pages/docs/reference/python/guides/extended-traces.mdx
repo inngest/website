@@ -1,0 +1,125 @@
+import { Callout, Properties, Property, CodeGroup } from "src/shared/Docs/mdx";
+
+export const description = "Reference for manual OpenTelemetry tracing with the Python SDK";
+
+# Extended Traces (Python)
+
+<Callout>
+The Python SDK does not yet include built-in extended traces support. This page documents the manual middleware approach for sending OpenTelemetry traces to Inngest.
+</Callout>
+
+## Overview
+
+Extended Traces let you see your application's OpenTelemetry spans alongside Inngest's execution traces. In Python, this requires two components:
+
+1. **`InngestOTELMiddleware`** - An Inngest middleware that creates a parent span for each function execution
+2. **`InngestSpanProcessor`** - A custom OpenTelemetry SpanProcessor that propagates Inngest attributes to child spans
+
+## Required packages
+
+```sh
+pip install opentelemetry-api opentelemetry-sdk opentelemetry-exporter-otlp-proto-http opentelemetry-instrumentation-requests
+```
+
+## InngestOTELMiddleware
+
+The `InngestOTELMiddleware` class extends `inngest.MiddlewareSync` and is responsible for:
+
+- Parsing the W3C `tracestate` header to extract the parent span ID from Inngest
+- Creating a userland span named `inngest.execution/{function_name}` with scope `inngest`
+- Setting required Inngest attributes on the span
+- Making the span active so auto-instrumented child spans are properly parented
+
+### Key methods
+
+**`_parse_tracestate(tracestate: str) -> Optional[str]`**
+
+Extracts the parent span ID from the W3C tracestate header. The Inngest traceref is encoded as JSON in the tracestate and contains the parent span ID under the `tp` field.
+
+**`_ensure_span_created(ctx: Context) -> None`**
+
+Creates the main execution span from the incoming request headers. This span represents the entire function execution in the Inngest context and is made active so child spans are properly parented.
+
+**`transform_input(ctx: Context, fn_name: str) -> tuple`**
+
+Called before function execution. Creates and activates the Inngest execution span.
+
+**`after_execution(result: any, exception: Optional[Exception] = None) -> None`**
+
+Called after function execution finishes. Closes the span and records any errors that occurred.
+
+## InngestSpanProcessor
+
+The `InngestSpanProcessor` class extends `opentelemetry.sdk.trace.SpanProcessor` and propagates Inngest attributes from parent spans to all child spans.
+
+### Key methods
+
+**`on_start(span: Span, parent_context=None) -> None`**
+
+Called when a span starts. Copies Inngest attributes from the parent context to this span so that nested auto-instrumented spans (like HTTP requests) have the necessary Inngest context.
+
+**`set_inngest_context(span_id: str, attributes: Dict[str, Any]) -> None`**
+
+Stores Inngest context for propagation to child spans.
+
+**`clear_context() -> None`**
+
+Clears the context stack. Useful when finishing execution.
+
+## Setup
+
+Here's a complete example with Flask:
+
+```py {{ filename: "app.py" }}
+from flask import Flask
+from opentelemetry import trace
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+from opentelemetry.instrumentation.requests import RequestsInstrumentor
+import inngest
+from otel_middleware import InngestOTELMiddleware
+from otel_processor import InngestSpanProcessor
+
+app = Flask(__name__)
+
+# Create Inngest client with middleware
+inngest_client = inngest.Inngest(
+    app_id="my-app",
+    middleware=[InngestOTELMiddleware()],
+)
+
+# Set up OpenTelemetry tracer provider
+inngest_span_processor = InngestSpanProcessor()
+provider = TracerProvider()
+
+# Add Inngest processor first so it can propagate context to child spans
+provider.add_span_processor(inngest_span_processor)
+
+# Configure OTLP exporter for Inngest
+otlp_endpoint = f"{inngest_client.api_origin.rstrip('/')}/v1/traces/userland"
+exporter = OTLPSpanExporter(
+    endpoint=otlp_endpoint,
+    headers={"Authorization": f"Bearer {inngest_client.signing_key}"},
+)
+provider.add_span_processor(BatchSpanProcessor(exporter))
+
+# Set global tracer provider
+trace.set_tracer_provider(provider)
+
+# Enable auto-instrumentation for HTTP requests
+RequestsInstrumentor().instrument()
+```
+
+## How it works
+
+When an Inngest function is invoked:
+
+1. Inngest sends an HTTP request with `traceparent` and `tracestate` headers
+2. The middleware extracts `traceref.tp` from the tracestate header (this is the correct parent span, not the HTTP traceparent)
+3. A userland span is created with scope `inngest` and name `inngest.execution/{fn_id}`
+4. The span is marked as active so auto-instrumented library calls (HTTP, database, etc.) create child spans
+5. The SpanProcessor propagates required Inngest attributes to all child spans
+6. When execution completes, the span is closed and exported to Inngest's `/v1/traces/userland` endpoint via OTLP
+
+This ensures your application's instrumented calls (like HTTP requests via the `requests` library) are properly linked to the Inngest execution context and visible in the extended traces view.
