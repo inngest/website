@@ -16,7 +16,7 @@ If you only remember one thing: **a function run flows event → schedule → qu
 4. The **executor** pulls from the queue and invokes your function — either over HTTP (**serve**) or over a persistent worker connection (**Connect**).
 5. The result of each step is written to the **state store**, and the next step is enqueued. This repeats until the function completes.
 
-Steps that wait — `step.waitForEvent`, `step.invoke`, `step.sleep`, and `cancelOn` — leave a **pause** in the state store instead of an immediate queue item. The pause is resumed by an incoming event, a signal, or a timer.
+Steps that wait — [`step.waitForEvent`](/docs/features/inngest-functions/steps-workflows/wait-for-event), [`step.invoke`](/docs/guides/invoking-functions-directly), `step.sleep`, and `cancelOn` — leave a **pause** in the state store instead of an immediate queue item. The pause is resumed by an incoming event, a signal, or a timer.
 
 ## Subsystems
 
@@ -31,7 +31,7 @@ The Event API is intentionally one of the smallest subsystems we run, because av
 The scheduler consumes from the event stream and decides which functions to invoke. For every event, it:
 
 - Matches the event name against function triggers (including wildcards and CEL expressions).
-- Resumes any **pauses** that are waiting for this event (`step.waitForEvent`, `cancelOn`, `step.invoke` replies).
+- Resumes any **pauses** that are waiting for this event ([`step.waitForEvent`](/docs/features/inngest-functions/steps-workflows/wait-for-event), `cancelOn`, [`step.invoke`](/docs/guides/invoking-functions-directly) replies).
 - Evaluates [batching](/docs/guides/batching), [debounce](/docs/guides/debounce), and [rate limits](/docs/guides/rate-limiting) to decide whether (and when) to create a run.
 - Creates new function runs and enqueues their first step.
 
@@ -70,8 +70,8 @@ The Connect Gateway is its own subsystem. If Connect is degraded, serve-based fu
 
 A pause is a row in the state store that says "resume this run when X happens". Three things create pauses:
 
-- `step.waitForEvent` and `step.waitForSignal` — resume on a matching event or signal.
-- `step.invoke` — resume on the completion of another function run.
+- [`step.waitForEvent`](/docs/features/inngest-functions/steps-workflows/wait-for-event) and [`step.waitForSignal`](/docs/features/inngest-functions/steps-workflows/wait-for-signal) — resume on a matching event or signal.
+- [`step.invoke`](/docs/guides/invoking-functions-directly) — resume on the completion of another function run.
 - [`cancelOn`](/docs/features/inngest-functions/cancellation/cancel-on-events) — cancel the run if a matching event arrives.
 
 All three share the same pause-matching infrastructure, and all three depend on the global **event stream**: every inbound event is checked against outstanding pauses before it can wake a run. That means `waitForEvent`, `cancelOn`, and `invoke` latency track the health of the scheduler and event stream, not the queue.
@@ -98,7 +98,7 @@ Flow control features are not all enforced in the same place. Where a feature ru
 | [Throttling](/docs/guides/throttling) | Function Execution | Enforced by the executor at lease time. |
 | [Priority](/docs/guides/priority) | Function Execution | Decides which queue item the executor leases next. |
 | [Singleton](/docs/guides/singleton) | Function Execution | Enforced by the executor; prevents concurrent runs of the same key. |
-| `step.waitForEvent`, `step.invoke`, `cancelOn` | Pauses + Event Stream | Share pause-matching; depend on the global event stream. |
+| [`step.waitForEvent`](/docs/features/inngest-functions/steps-workflows/wait-for-event), [`step.invoke`](/docs/guides/invoking-functions-directly), `cancelOn` | Pauses + Event Stream | Share pause-matching; depend on the global event stream. |
 
 A useful rule of thumb: **features that decide whether a run happens at all run in Scheduling; features that decide when an existing run runs next run in the Executor.**
 
@@ -109,7 +109,7 @@ When something looks wrong, the subsystem usually narrows itself down quickly:
 - `inngest.send()` is failing or slow → **Event API**.
 - Events are accepted but functions never start → **Scheduler** or **Queue**.
 - Runs start but get stuck mid-flight → **Executor**, your **serve endpoint**, or **Connect Gateway**.
-- `step.waitForEvent` or `cancelOn` is not firing → **Scheduler** or **State store** (pauses).
+- [`step.waitForEvent`](/docs/features/inngest-functions/steps-workflows/wait-for-event) or `cancelOn` is not firing → **Scheduler** or **State store** (pauses).
 - Dashboards and the REST API are slow but runs are fine → **REST API**, not the runtime.
 
 Each subsystem is reported on independently in our [status page](https://status.inngest.com), so the failure mode you observe should map directly to one of the subsystems above.
