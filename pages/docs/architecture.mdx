@@ -39,7 +39,7 @@ Run scheduling depends on the global **event stream**, so an unhealthy event str
 
 ### Queue
 
-The queue holds every step of every run between executions. It is a multi-tenant, fair queue with first-class support for [priority](/docs/guides/priority), [singleton](/docs/guides/singleton), and the constraint data used by concurrency and throttling.
+The queue holds every step of every run between executions. It is a multi-tenant, fair queue that stores queue items and the constraint data used by concurrency, throttling, priority, and singleton — but the gating logic itself runs in the executor at lease time, not in the queue.
 
 Enqueue latency, lease time, and time-in-queue are all queue concerns — when a function is "slow to start", the queue is usually where to look first.
 
@@ -51,7 +51,7 @@ The state store holds everything Inngest needs to resume a function: the trigger
 
 ### Executor (Function Execution)
 
-The executor leases a queue item, loads the run's state, and invokes the next step against your code. At lease time it also enforces per-function [concurrency limits](/docs/guides/concurrency) and [throttling](/docs/guides/throttling) — these are checked during function execution rather than in the queue itself, so a function saturating its concurrency only blocks its own items, not the queue as a whole.
+The executor leases a queue item, loads the run's state, and invokes the next step against your code. At lease time it also enforces per-function [concurrency limits](/docs/guides/concurrency), [throttling](/docs/guides/throttling), [priority](/docs/guides/priority), and [singleton](/docs/guides/singleton) — these are checked during function execution rather than in the queue itself, so a function saturating its concurrency only blocks its own items, not the queue as a whole.
 
 It then captures the result (success, error, or a new step request), writes it to the state store, and enqueues whatever comes next. Retries, error classification, and step output truncation also happen here.
 
@@ -96,11 +96,11 @@ Flow control features are not all enforced in the same place. Where a feature ru
 | [Rate limits](/docs/guides/rate-limiting) | Run Scheduling | Drops extra runs before they are created. |
 | [Concurrency](/docs/guides/concurrency) | Function Execution | Enforced by the executor at lease time. |
 | [Throttling](/docs/guides/throttling) | Function Execution | Enforced by the executor at lease time. |
-| [Priority](/docs/guides/priority) | Queue | Decides which queue item is leased next. |
-| [Singleton](/docs/guides/singleton) | Queue | Prevents concurrent runs of the same key. |
+| [Priority](/docs/guides/priority) | Function Execution | Decides which queue item the executor leases next. |
+| [Singleton](/docs/guides/singleton) | Function Execution | Enforced by the executor; prevents concurrent runs of the same key. |
 | `step.waitForEvent`, `step.invoke`, `cancelOn` | Pauses + Event Stream | Share pause-matching; depend on the global event stream. |
 
-A useful rule of thumb: **features that decide whether a run happens at all run in Scheduling; features that decide when an existing run runs next run in the Queue or Executor.**
+A useful rule of thumb: **features that decide whether a run happens at all run in Scheduling; features that decide when an existing run runs next run in the Executor.**
 
 ## Reading the architecture during an incident
 
