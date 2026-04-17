@@ -1,7 +1,7 @@
 export const featuredBlogPost = {
-  title: "How to Build a Durable AI Agent with Inngest",
-  image: "/assets/blog/ai-agents-inngest-durable-steps/featured-image.jpg",
+  title: "Inngest + Stripe Projects: Ship Durable Apps Without Leaving the Terminal",
+  image: "/assets/blog/inngest-stripe-projects/featured-image/featured-image.png",
   description:
-    "Use Inngest's step primitives to build resilient, observable AI agents without a heavyweight framework.",
-  href: "/blog/ai-agents-inngest-durable-steps",
+    "Inngest is an official launch partner for Stripe Projects—a new agent-first protocol for standing up production stacks without hopping between dashboards, digging around docs, or copying keys.",
+  href: "/blog/inngest-stripe-projects-ship-durable-apps-without-leaving-the-terminal?ref=nav-resources-featured",
 };
