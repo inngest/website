@@ -29,10 +29,10 @@ The full timeline of the incident, root cause, and corrective actions are detail
 - **2026-04-15 13:49 UTC** Manual failover triggered of saturated shard after earlier measures to address were unsuccessful.
 - **2026-04-15 14:00 UTC** Accounts are migrated between queue shards to rebalance load. Executor capacity is scaled up.
 - **2026-04-15 15:08 UTC** Failover completed for saturated shard, ending 100% saturation of single shard.
-- **2026-04-15 15:10 UTC** Initiated scaling of 2 additional shards to state score cluster (13 to 15).
+- **2026-04-15 15:10 UTC** Initiated scaling of 2 additional shards to state store cluster (13 to 15).
 - **2026-04-15 15:38 UTC** 2 new shards join cluster. Rebalancing commences.
 - **2026-04-15 15:40-18:50 UTC** Additional fixes and mitigations are performed (see below) to relieve pressure on the affected components and increase processing throughput. This includes enabling draining mode on problem functions.
-- **2026-04-15 17:00 UTC** Two additional state store shards are added to rebalance keys and reduce hot-shard impact.
+- **2026-04-15 17:00 UTC** Two additional state store shards complete rebalancing.
 - **2026-04-15 17:30 UTC** Inbound event backlog fully cleared.
 - **2026-04-15 21:37 UTC** Async operations (`step.waitForEvent`, `step.invoke`, `cancelOn`) restored to normal latency.
 - **2026-04-15 22:00 UTC** All backlogs fully cleared. **Incident resolved.**
@@ -41,11 +41,11 @@ The full timeline of the incident, root cause, and corrective actions are detail
 
 Inngest's platform routes run scheduling, batching, pause processing, and async step operations through a shared, horizontally sharded state store. Function run state is sharded uniformly by run ID, but batching uses the function ID as the shard key, which is non-uniform by design.
 
-As events are received through our event stream, they are matched in realtime to the appropriate function triggers that are set by customers. These events are stored in our "state store" database with additional metadata then functions are scheduled by enqueuing them the correct queue for that Inngest account. Run IDs are used to evenly distribute state across all shards.
+As events are received through our event stream, they are matched in realtime to the appropriate function triggers that are set by customers. These events are stored in our "state store" database with additional metadata then functions are scheduled by enqueuing them into the correct queue for that Inngest account. Run IDs are used to evenly distribute state across all shards.
 
 When functions are configured with event batching, events for each _function_ are co-located on a shard which prevents batches from being distributed across shards to avoid cross-shard transactions and issues with leaky batches. Many functions handle millions of events, but typically, there is adequate cardinality and load across function ids to keep data evenly distributed across shards.
 
-On April 15, a bug in Inngest's own SDK caused a customer's event volume to spike abnormally (20-200x). This bug was in a SDK version which only affected step-less functions with `maxRuntime` configured and checkpointing enabled. This customer heavily relied on event batching in their functions. Because all batches for a given function land on the same shard, this concentrated load on a single state store node, pinning its CPU at 100%.
+On April 15, a bug in Inngest's own SDK caused a customer's event volume to spike abnormally (50x+). This bug was in a SDK version which only affected step-less functions with `maxRuntime` configured and checkpointing enabled. This customer heavily relied on event batching in their functions. Because all batches for a given function land on the same shard, this concentrated load on a single state store node, pinning its CPU at 100%.
 
 Because this storage layer is shared across the platform, the hot shard caused cascading latency for every customer's function scheduling, not just the one that triggered it. The degradation manifested as:
 
@@ -85,11 +85,12 @@ We have already shipped a number of fixes during and immediately after the incid
 ### In progress
 
 - **Review of all system metrics throughout the incident for earlier detection.** The 10-hour gap between scheduling delays beginning and our detection when delays increased significantly was a failure. We are performing an audit of all metrics and determine new metrics and indicators that should have alerted us when slowness started, before the state store shard became saturated.
-- **Additional tenant isolation across the critical path.** We are actively working on further sharding event stream processing (function scheduling, async step operations, batching) by tenant groups and individual tenants and isolating the state store further to prevent noisy neighbor issues from degrade scheduling for others. This is now our top engineering priority.
+- **New training, workflows, automations for faster customer notification via status page.** Even with our current alerting, our customers should have been notified via our customer status page much faster. We also are improving the visibility of active incidents within our dashboard.
+- **Additional tenant isolation across the critical path.** We are actively working on further sharding event stream processing (function scheduling, async step operations, batching) by tenant groups and individual tenants and isolating the state store further to prevent noisy neighbor issues from degrading scheduling for others. This is now our top engineering priority.
 - **Removing batching from the shared state store** **entirely**, so that batching load is permanently decoupled from run scheduling.
 - **Moving cancellations off of unsharded storage**, so that bulk cancellations cannot create slowlogs that affect other workloads.
 - **Decoupling the event data ingestion pipeline from the scheduling critical path**, so observability data is not delayed by backups with function scheduling.
-- **Reviewing SLA commitments** for contracted customers.
+- **Reviewing and honoring SLA commitments** for contracted users. Impacted customers with contracted SLAs are asked to reach out to [our support team](https://support.inngest.com).
 - **New SLOs and improved alerting on state store CPU, I/O, and per-tenant latency**, so we detect and page on hot-shard conditions well before they cause customer impact.
   - Our team already has a major project under way to migrate our state store database to another technology and self-host this to have additional control over this part of the stack. Our current database is currently managed by a cloud vendor and this limits our operational control.
 
