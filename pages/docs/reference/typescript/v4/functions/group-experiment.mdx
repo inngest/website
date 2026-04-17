@@ -1,0 +1,130 @@
+import { Callout, Properties, Property, Row, Col, CodeGroup } from "src/shared/Docs/mdx";
+
+export const description = `API reference for group.experiment() — run experiments within durable functions`
+
+# `group.experiment()`
+
+Selects and executes a single variant from a set of options. The selection is memoized as a durable step, so the same variant runs on retries and replays.
+
+---
+
+## `group.experiment(id, options): Promise`
+
+<Row>
+  <Col>
+    <Properties>
+      <Property name="id" type="string" required>
+        A unique identifier for the experiment. Used in logs and to memoize the variant selection across retries and replays.
+      </Property>
+      <Property name="options" type="object" required>
+        Configuration for the experiment:
+        <Properties nested={true}>
+          <Property name="variants" type="Record<string, () => unknown>" required>
+            A map of variant names to callbacks. Each callback should contain one or more `step.*` calls. Only the selected variant's callback is executed.
+          </Property>
+          <Property name="select" type="ExperimentSelectFn" required>
+            A selection strategy that determines which variant to run. Use one of the built-in strategies: `experiment.fixed()`, `experiment.weighted()`, `experiment.bucket()`, or `experiment.custom()`.
+          </Property>
+          <Property name="withVariant" type="boolean">
+            When `true`, the return value includes the selected variant name alongside the result. Defaults to `false`.
+          </Property>
+        </Properties>
+      </Property>
+    </Properties>
+  </Col>
+  <Col>
+    <CodeGroup title="Basic usage">
+    ```ts
+    const result = await group.experiment("my-experiment", {
+      variants: {
+        a: () => step.run("variant-a", () => doA()),
+        b: () => step.run("variant-b", () => doB()),
+      },
+      select: experiment.weighted({ a: 50, b: 50 }),
+    });
+    ```
+    </CodeGroup>
+    <CodeGroup title="With variant name returned">
+    ```ts
+    const { result, variant } = await group.experiment("my-experiment", {
+      variants: {
+        a: () => step.run("variant-a", () => doA()),
+        b: () => step.run("variant-b", () => doB()),
+      },
+      select: experiment.fixed("a"),
+      withVariant: true,
+    });
+    // variant === "a"
+    ```
+    </CodeGroup>
+  </Col>
+</Row>
+
+<Callout>
+  Every variant callback **must** invoke at least one `step.*` tool (e.g., `step.run()`). Code that runs outside of a step is not memoized and will re-execute on every replay. The SDK throws a `NonRetriableError` if a variant completes without calling any step tools.
+</Callout>
+
+## Selection strategies
+
+Import the `experiment` object from the `inngest` package:
+
+```ts
+import { experiment } from "inngest";
+```
+
+### `experiment.fixed(variantName)`
+
+Always selects the specified variant. Useful for manual overrides or testing a specific code path.
+
+```ts
+select: experiment.fixed("control")
+```
+
+### `experiment.weighted(weights)`
+
+Weighted random selection, seeded with the current Inngest run ID. Deterministic: the same run always gets the same variant, even across retries.
+
+```ts
+select: experiment.weighted({ control: 80, treatment: 20 })
+```
+
+Weights are relative, not percentages. `{ a: 1, b: 3 }` gives `a` a 25% chance and `b` a 75% chance.
+
+### `experiment.bucket(value, options?)`
+
+Consistent hashing. The same input value always maps to the same variant. Useful for user-level bucketing where a user should see the same variant across multiple runs.
+
+```ts
+select: experiment.bucket(event.data.userId, {
+  weights: { control: 70, treatment: 30 },
+})
+```
+
+When `weights` are omitted, equal weights are derived from the variant names:
+
+```ts
+select: experiment.bucket(event.data.userId)
+```
+
+If `value` is `null` or `undefined`, the SDK hashes an empty string and attaches a warning to the step metadata.
+
+### `experiment.custom(fn)`
+
+Provide your own selection logic. The function can be synchronous or asynchronous. The result is memoized durably, so it only runs once per function run.
+
+```ts
+select: experiment.custom(async () => {
+  const flag = await getFeatureFlag("checkout-variant");
+  return flag; // Must return a key from `variants`
+})
+```
+
+<Callout>
+  The `custom` function must return a string that matches one of the keys in `variants`. If it returns an unknown variant name, the SDK throws a `NonRetriableError`.
+</Callout>
+
+## Observability
+
+The selection step carries experiment metadata: the experiment name, selected variant, strategy, available variants, and weights. This metadata is visible in the Inngest dashboard.
+
+Steps executed within the selected variant's callback also carry experiment context, so you can trace which experiment and variant produced each step in a run.
