@@ -1,4 +1,5 @@
 ---
+focus: false
 heading: "Incident report for April 15, 2026 - Function scheduling and execution delays"
 subtitle: A full report on the incident that caused significant delays in function scheduling and execution for all customers.
 image: /assets/blog/2026-04-17-incident-report-for-april-15-2026/featured-image.png
