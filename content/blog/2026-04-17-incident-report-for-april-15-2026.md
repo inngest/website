@@ -96,9 +96,7 @@ We have already shipped a number of fixes during and immediately after the incid
 
 ## In closing
 
-We know that many of our customers depend on Inngest as critical infrastructure for quick and timely execution, and a 19-hour scheduling delay is not acceptable. In this incident, we failed in time-to-detect, time-to-acknowledge, and time-to-recover. There is no excuse for this and we will improve all of these.
-
-We are deeply sorry for the impact this had on your products and your own customers.
+We know that many of our customers depend on Inngest as critical infrastructure for quick and timely execution, and a 19-hour scheduling delay is not acceptable. We are deeply sorry for the impact this had on your products and your own customers.
 
 The underlying cause, insufficient tenant isolation with our shared state store, is something we have been working to eliminate, and this incident makes clear that we need to move faster. Tenant isolation, better and earlier alerting on our critical path, and a decoupled data ingestion pipeline are now the top priorities for our systems and platform teams, with work already in progress.
 

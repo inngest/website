@@ -70,7 +70,7 @@ export const resourceDropdown = [
   },
   {
     name: "Support",
-    href: "https://app.inngest.com/support?ref=nav",
+    href: "https://support.inngest.com/?ref=nav",
     description: "Get help from the Inngest team",
     icon: (
       <svg
