@@ -668,6 +668,10 @@ const sectionLearn: (NavGroup | NavLink)[] = [
     defaultOpen: true,
     links: [
       {
+        title: "Architecture",
+        href: `/docs/architecture`,
+      },
+      {
         title: "How Durable execution works",
         href: `/docs/learn/how-functions-are-executed`,
       },

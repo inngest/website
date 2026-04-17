@@ -32,13 +32,16 @@ The scheduler consumes from the event stream and decides which functions to invo
 
 - Matches the event name against function triggers (including wildcards and CEL expressions).
 - Resumes any **pauses** that are waiting for this event (`step.waitForEvent`, `cancelOn`, `step.invoke` replies).
+- Evaluates [batching](/docs/guides/batching), [debounce](/docs/guides/debounce), and [rate limits](/docs/guides/rate-limiting) to decide whether (and when) to create a run.
 - Creates new function runs and enqueues their first step.
 
-Batching, debounce, and `rateLimit` are also evaluated here, before a run is created.
+Run scheduling depends on the global **event stream**, so an unhealthy event stream delays run creation across the system.
 
 ### Queue
 
-The queue is the heart of Inngest. It is a multi-tenant, fair queue with first-class support for [concurrency limits](/docs/guides/concurrency), [throttling](/docs/guides/throttling), [priority](/docs/guides/priority), and [singleton](/docs/guides/singleton) constraints. Every step of every run is a queue item. Enqueue latency, lease time, and time-in-queue are all queue concerns — when a function is "slow to start", the queue is usually where to look first.
+The queue holds every step of every run between executions. It is a multi-tenant, fair queue with first-class support for [priority](/docs/guides/priority), [singleton](/docs/guides/singleton), and the constraint data used by concurrency and throttling.
+
+Enqueue latency, lease time, and time-in-queue are all queue concerns — when a function is "slow to start", the queue is usually where to look first.
 
 For background reading, see [How we built a fair multi-tenant queuing system](/blog/building-the-inngest-queue-pt-i-fairness-multi-tenancy).
 
@@ -48,7 +51,9 @@ The state store holds everything Inngest needs to resume a function: the trigger
 
 ### Executor (Function Execution)
 
-The executor leases a queue item, loads the run's state, and invokes the next step against your code. It then captures the result (success, error, or a new step request), writes it to the state store, and enqueues whatever comes next. The executor is also where retries, error classification, and step output truncation happen.
+The executor leases a queue item, loads the run's state, and invokes the next step against your code. At lease time it also enforces per-function [concurrency limits](/docs/guides/concurrency) and [throttling](/docs/guides/throttling) — these are checked during function execution rather than in the queue itself, so a function saturating its concurrency only blocks its own items, not the queue as a whole.
+
+It then captures the result (success, error, or a new step request), writes it to the state store, and enqueues whatever comes next. Retries, error classification, and step output truncation also happen here.
 
 Each step is executed as a separate request to your code, so the executor never holds long-lived references to your application — your function can scale, deploy, or restart freely between steps.
 
@@ -69,7 +74,7 @@ A pause is a row in the state store that says "resume this run when X happens". 
 - `step.invoke` — resume on the completion of another function run.
 - [`cancelOn`](/docs/features/inngest-functions/cancellation/cancel-on-events) — cancel the run if a matching event arrives.
 
-Pauses are matched by the scheduler against incoming events, so latency on `waitForEvent` and `cancelOn` depends on both the scheduler and the state store, not on the queue.
+All three share the same pause-matching infrastructure, and all three depend on the global **event stream**: every inbound event is checked against outstanding pauses before it can wake a run. That means `waitForEvent`, `cancelOn`, and `invoke` latency track the health of the scheduler and event stream, not the queue.
 
 ### APIs
 
@@ -79,6 +84,23 @@ Two APIs sit alongside the runtime:
 - **[Checkpointing API](/docs/setup/checkpointing)** — used by the SDK to stream step results back to Inngest as they complete, instead of waiting for the next request. This reduces tail latency for multi-step functions.
 
 These APIs are independent of the executor, so a degraded REST API does not stop runs from executing, and a degraded executor does not stop you from reading run history.
+
+## Flow control by subsystem
+
+Flow control features are not all enforced in the same place. Where a feature runs tells you which subsystem to look at when it misbehaves.
+
+| Feature | Subsystem | Notes |
+| --- | --- | --- |
+| [Batching](/docs/guides/batching) | Run Scheduling | Accumulates events before a run is created. |
+| [Debounce](/docs/guides/debounce) | Run Scheduling | Delays run creation until a quiet period passes. |
+| [Rate limits](/docs/guides/rate-limiting) | Run Scheduling | Drops extra runs before they are created. |
+| [Concurrency](/docs/guides/concurrency) | Function Execution | Enforced by the executor at lease time. |
+| [Throttling](/docs/guides/throttling) | Function Execution | Enforced by the executor at lease time. |
+| [Priority](/docs/guides/priority) | Queue | Decides which queue item is leased next. |
+| [Singleton](/docs/guides/singleton) | Queue | Prevents concurrent runs of the same key. |
+| `step.waitForEvent`, `step.invoke`, `cancelOn` | Pauses + Event Stream | Share pause-matching; depend on the global event stream. |
+
+A useful rule of thumb: **features that decide whether a run happens at all run in Scheduling; features that decide when an existing run runs next run in the Queue or Executor.**
 
 ## Reading the architecture during an incident
 
