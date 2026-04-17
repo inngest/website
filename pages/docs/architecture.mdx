@@ -20,7 +20,7 @@ Steps that wait, such as [`step.waitForEvent`](/docs/features/inngest-functions/
 
 ### Event Ingestion (Event API)
 
-The Event API is the public ingress point for all events. It authenticates the request with your event key, validates the payload, and writes events onto the internal **event stream**. Once an event has a 200 response from `inngest.send()`, Inngest is responsible for it, even if every downstream subsystem is currently degraded.
+The Event API is the public ingress point for all events. It authenticates the request with your event key, validates the payload, and writes events onto the internal **event stream**. Once an event has a 200 response from [`inngest.send()`](/docs/events), Inngest is responsible for it, even if every downstream subsystem is currently degraded.
 
 The Event API is intentionally one of the smallest subsystems we run, because availability of ingestion is the most important guarantee Inngest makes.
 
@@ -104,7 +104,7 @@ A useful rule of thumb: **features that decide whether a run happens at all run 
 
 When something looks wrong, the subsystem usually narrows itself down quickly:
 
-- `inngest.send()` is failing or slow → **Event API**.
+- [`inngest.send()`](/docs/events) is failing or slow → **Event API**.
 - Events are accepted but functions never start → **Scheduler** or **Queue**.
 - Runs start but get stuck mid-flight → **Executor**, your **serve endpoint**, or **[Connect](/docs/setup/connect) Gateway**.
 - [`step.waitForEvent`](/docs/features/inngest-functions/steps-workflows/wait-for-event) or [`cancelOn`](/docs/features/inngest-functions/cancellation/cancel-on-events) is not firing → **Scheduler** or **State store** (pauses).
