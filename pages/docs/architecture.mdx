@@ -1,0 +1,93 @@
+import { Callout } from "shared/Docs/mdx";
+
+export const description = "An overview of Inngest's core subsystems — event ingestion, run scheduling, the queue and state store, the executor, the Connect Gateway, and pauses — so you can reason about which subsystem is involved in any given function run or incident.";
+
+# Architecture
+
+Inngest is built from a small set of independent subsystems. Each one owns a single responsibility in the lifecycle of a function run, and each one can fail or degrade independently. This page is a short tour of those subsystems so you can quickly orient yourself when reading status updates, debugging a slow run, or planning capacity.
+
+If you only remember one thing: **a function run flows event → schedule → queue → executor → your code**, with the **state store** holding everything in between. Pauses, Connect, and the public APIs are supporting subsystems around that core path.
+
+## The path of a function run
+
+1. Your service (or another function) sends an event to the **Event API**.
+2. The event is fanned out to every function that subscribes to it — this is **run scheduling**.
+3. Each new run, and every step within it, becomes an item on the **queue**.
+4. The **executor** pulls from the queue and invokes your function — either over HTTP (**serve**) or over a persistent worker connection (**Connect**).
+5. The result of each step is written to the **state store**, and the next step is enqueued. This repeats until the function completes.
+
+Steps that wait — `step.waitForEvent`, `step.invoke`, `step.sleep`, and `cancelOn` — leave a **pause** in the state store instead of an immediate queue item. The pause is resumed by an incoming event, a signal, or a timer.
+
+## Subsystems
+
+### Event Ingestion (Event API)
+
+The Event API is the public ingress point for all events. It authenticates the request with your event key, validates the payload, and writes events onto the internal **event stream**. Once an event has a 200 response from `inngest.send()`, Inngest is responsible for it — even if every downstream subsystem is currently degraded.
+
+The Event API is intentionally one of the smallest subsystems we run, because availability of ingestion is the most important guarantee Inngest makes.
+
+### Run Scheduling
+
+The scheduler consumes from the event stream and decides which functions to invoke. For every event, it:
+
+- Matches the event name against function triggers (including wildcards and CEL expressions).
+- Resumes any **pauses** that are waiting for this event (`step.waitForEvent`, `cancelOn`, `step.invoke` replies).
+- Creates new function runs and enqueues their first step.
+
+Batching, debounce, and `rateLimit` are also evaluated here, before a run is created.
+
+### Queue
+
+The queue is the heart of Inngest. It is a multi-tenant, fair queue with first-class support for [concurrency limits](/docs/guides/concurrency), [throttling](/docs/guides/throttling), [priority](/docs/guides/priority), and [singleton](/docs/guides/singleton) constraints. Every step of every run is a queue item. Enqueue latency, lease time, and time-in-queue are all queue concerns — when a function is "slow to start", the queue is usually where to look first.
+
+For background reading, see [How we built a fair multi-tenant queuing system](/blog/building-the-inngest-queue-pt-i-fairness-multi-tenancy).
+
+### State Store
+
+The state store holds everything Inngest needs to resume a function: the triggering event(s), the memoized result of every completed step, attempt counts, and any active pauses. Because state is persisted outside your function process, a run can resume on different infrastructure after a failure or deploy. See [How Durable execution works](/docs/learn/how-functions-are-executed) for how memoization uses this store.
+
+### Executor (Function Execution)
+
+The executor leases a queue item, loads the run's state, and invokes the next step against your code. It then captures the result (success, error, or a new step request), writes it to the state store, and enqueues whatever comes next. The executor is also where retries, error classification, and step output truncation happen.
+
+Each step is executed as a separate request to your code, so the executor never holds long-lived references to your application — your function can scale, deploy, or restart freely between steps.
+
+### SDK Connection: Serve and Connect
+
+The executor invokes your code in one of two ways:
+
+- **[Serve](/docs/learn/serving-inngest-functions)** — the executor sends an HTTP request to an endpoint exposed by your application. This is the default for serverless and HTTP-based deployments.
+- **[Connect](/docs/setup/connect)** — your workers open a persistent connection to the **Connect Gateway**, and the executor delivers work over that connection. This is preferred for long-lived workers, environments without a public HTTP endpoint, and workloads that benefit from avoiding per-step HTTP overhead.
+
+The Connect Gateway is its own subsystem. If Connect is degraded, serve-based functions are unaffected, and vice versa.
+
+### Pauses (`waitForEvent`, `invoke`, `cancelOn`)
+
+A pause is a row in the state store that says "resume this run when X happens". Three things create pauses:
+
+- `step.waitForEvent` and `step.waitForSignal` — resume on a matching event or signal.
+- `step.invoke` — resume on the completion of another function run.
+- [`cancelOn`](/docs/features/inngest-functions/cancellation/cancel-on-events) — cancel the run if a matching event arrives.
+
+Pauses are matched by the scheduler against incoming events, so latency on `waitForEvent` and `cancelOn` depends on both the scheduler and the state store, not on the queue.
+
+### APIs
+
+Two APIs sit alongside the runtime:
+
+- **[REST API](https://api-docs.inngest.com/docs/inngest-api/1j9i5603g5768-introduction)** — read runs, events, and metrics; trigger cancellations and replays. Used by dashboards, your own tooling, and CI workflows.
+- **[Checkpointing API](/docs/setup/checkpointing)** — used by the SDK to stream step results back to Inngest as they complete, instead of waiting for the next request. This reduces tail latency for multi-step functions.
+
+These APIs are independent of the executor, so a degraded REST API does not stop runs from executing, and a degraded executor does not stop you from reading run history.
+
+## Reading the architecture during an incident
+
+When something looks wrong, the subsystem usually narrows itself down quickly:
+
+- `inngest.send()` is failing or slow → **Event API**.
+- Events are accepted but functions never start → **Scheduler** or **Queue**.
+- Runs start but get stuck mid-flight → **Executor**, your **serve endpoint**, or **Connect Gateway**.
+- `step.waitForEvent` or `cancelOn` is not firing → **Scheduler** or **State store** (pauses).
+- Dashboards and the REST API are slow but runs are fine → **REST API**, not the runtime.
+
+Each subsystem is reported on independently in our [status page](https://status.inngest.com), so the failure mode you observe should map directly to one of the subsystems above.
