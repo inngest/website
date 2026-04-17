@@ -92,11 +92,13 @@ We have already shipped a number of fixes during and immediately after the incid
 - **Decoupling the event data ingestion pipeline from the scheduling critical path**, so observability data is not delayed by backups with function scheduling.
 - **Reviewing and honoring SLA commitments** for contracted users. Impacted customers with contracted SLAs are asked to reach out to [our support team](https://support.inngest.com).
 - **New SLOs and improved alerting on state store CPU, I/O, and per-tenant latency**, so we detect and page on hot-shard conditions well before they cause customer impact.
-  - Our team already has a major project under way to migrate our state store database to another technology and self-host this to have additional control over this part of the stack. Our current database is currently managed by a cloud vendor and this limits our operational control.
+  - Our team already has a major project under way to migrate our state store database to another technology and self-host this to have additional control over this part of the stack. Our current database is currently managed by a cloud vendor and this limits our operational control and speed of recovery.
 
 ## In closing
 
-We know that many of our customers depend on Inngest as critical infrastructure for quick and timely execution, and a 19-hour scheduling delay is not acceptable. We are sorry for the impact this had on your products and your own customers.
+We know that many of our customers depend on Inngest as critical infrastructure for quick and timely execution, and a 19-hour scheduling delay is not acceptable. In this incident, we failed in time-to-detect, time-to-acknowledge, and time-to-recover. There is no excuse for this and we will improve all of these.
+
+We are deeply sorry for the impact this had on your products and your own customers.
 
 The underlying cause, insufficient tenant isolation with our shared state store, is something we have been working to eliminate, and this incident makes clear that we need to move faster. Tenant isolation, better and earlier alerting on our critical path, and a decoupled data ingestion pipeline are now the top priorities for our systems and platform teams, with work already in progress.
 
