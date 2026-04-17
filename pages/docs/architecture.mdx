@@ -11,10 +11,10 @@ Inngest is built from a small set of independent subsystems. Each one owns a sin
 1. Your service (or another function) sends an event to the **Event API**.
 2. The event is fanned out to every function that subscribes to it; this is **run scheduling**.
 3. Each new run, and every step within it, becomes an item on the **queue**.
-4. The **executor** pulls from the queue and invokes your function, either over HTTP (**serve**) or over a persistent worker connection (**Connect**).
+4. The **executor** pulls from the queue and invokes your function, either over HTTP (**serve**) or over a persistent worker connection (**[Connect](/docs/setup/connect)**).
 5. The result of each step is written to the **state store**, and the next step is enqueued. This repeats until the function completes.
 
-Steps that wait, such as [`step.waitForEvent`](/docs/features/inngest-functions/steps-workflows/wait-for-event), [`step.invoke`](/docs/guides/invoking-functions-directly), `step.sleep`, and [`cancelOn`](/docs/features/inngest-functions/cancellation/cancel-on-events), leave a **pause** in the state store instead of an immediate queue item. The pause is resumed by an incoming event, a signal, or a timer.
+Steps that wait, such as [`step.waitForEvent`](/docs/features/inngest-functions/steps-workflows/wait-for-event), [`step.invoke`](/docs/guides/invoking-functions-directly), [`step.sleep`](/docs/features/inngest-functions/steps-workflows/sleeps), and [`cancelOn`](/docs/features/inngest-functions/cancellation/cancel-on-events), leave a **pause** in the state store instead of an immediate queue item. The pause is resumed by an incoming event, a signal, or a timer.
 
 ## Subsystems
 
@@ -106,7 +106,7 @@ When something looks wrong, the subsystem usually narrows itself down quickly:
 
 - `inngest.send()` is failing or slow → **Event API**.
 - Events are accepted but functions never start → **Scheduler** or **Queue**.
-- Runs start but get stuck mid-flight → **Executor**, your **serve endpoint**, or **Connect Gateway**.
+- Runs start but get stuck mid-flight → **Executor**, your **serve endpoint**, or **[Connect](/docs/setup/connect) Gateway**.
 - [`step.waitForEvent`](/docs/features/inngest-functions/steps-workflows/wait-for-event) or [`cancelOn`](/docs/features/inngest-functions/cancellation/cancel-on-events) is not firing → **Scheduler** or **State store** (pauses).
 - Dashboards and the REST API are slow but runs are fine → **REST API**, not the runtime.
 
