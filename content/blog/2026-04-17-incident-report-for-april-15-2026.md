@@ -53,12 +53,12 @@ Because this storage layer is shared across the platform, the hot shard caused c
 - Despite backlogs in function scheduling, the overall increased load caused a queue shard (where functions are enqueued after scheduling) memory to increase and executor workers for that shard became saturated.
 - Significant memory pressure on shared infrastructure, approaching capacity limits, as work could not be processed fast enough.
 - Slowed async operations (`step.waitForEvent`, `step.invoke`, `cancelOn`) processing.
-  - This was further exacerbated by increased customer programmatic bulk cancellations initiated. Bulk cancellations can include future timestamps which require the event stream consumer to match event payload expressions in realtime during scheduling.
+  - This was further exacerbated by a high volume of programmatic bulk cancellations from customer workspaces. Bulk cancellations can include future timestamps which require the event stream consumer to match event payload expressions in realtime during scheduling.
 - Delayed ingestion into our observability pipeline, which meant the dashboard event and run data was delayed even when scheduling was still making forward progress. This prevented customers from understanding if data was being processed.
 
 Additionally, our system typically sees increased load during nightly periods as customers schedule large workloads to run in off-hours. This is consistent and usually subsides before a daily increase in morning hours for US timezones.
 
-Three factors combined to produce an incident of this size: a latent SDK bug that amplified event volume for a high-throughput customer, insufficient tenant isolation in the state store and event stream layers, and the typical increased nightly load.
+Three factors combined to produce an incident of this size: an bug in our SDK that amplified event volume for a high-throughput customer, insufficient tenant isolation in the state store and event stream layers, and the typical increased nightly load.
 
 ## Impact
 
@@ -84,15 +84,15 @@ We have already shipped a number of fixes during and immediately after the incid
 
 ### In progress
 
-- **Review of all system metrics throughout the incident for earlier detection.** The 10-hour gap between scheduling delays beginning and our detection when delays increased significantly was a failure. We are performing an audit of all metrics and determine new metrics and indicators that should have alerted us when slowness started, before the state store shard became saturated.
+- **Review of all system metrics throughout the incident for earlier detection.** The 10-hour gap between scheduling delays beginning and our detection when delays increased significantly was a failure. We are performing an audit of all metrics and determining new metrics and indicators that should have alerted us when slowness started, before the state store shard became saturated.
 - **New training, workflows, automations for faster customer notification via status page.** Even with our current alerting, our customers should have been notified via our customer status page much faster. We also are improving the visibility of active incidents within our dashboard.
 - **Additional tenant isolation across the critical path.** We are actively working on further sharding event stream processing (function scheduling, async step operations, batching) by tenant groups and individual tenants and isolating the state store further to prevent noisy neighbor issues from degrading scheduling for others. This is now our top engineering priority.
 - **Removing batching from the shared state store** **entirely**, so that batching load is permanently decoupled from run scheduling.
 - **Moving cancellations off of unsharded storage**, so that bulk cancellations cannot create slowlogs that affect other workloads.
 - **Decoupling the event data ingestion pipeline from the scheduling critical path**, so observability data is not delayed by backups with function scheduling.
-- **Reviewing and honoring SLA commitments** for contracted users. Impacted customers with contracted SLAs are asked to reach out to [our support team](https://support.inngest.com).
+- **Reviewing and honoring SLA commitments** for contracted users. We will be proactively reaching out to contracted customers.
 - **New SLOs and improved alerting on state store CPU, I/O, and per-tenant latency**, so we detect and page on hot-shard conditions well before they cause customer impact.
-  - Our team already has a major project under way to migrate our state store database to another technology and self-host this to have additional control over this part of the stack. Our current database is currently managed by a cloud vendor and this limits our operational control and speed of recovery.
+  - Our team already has a major project under way to migrate our state store database to another technology and self-host this to have additional control over this part of the stack. Our database is currently managed by a cloud vendor and this limits our operational control and speed of recovery.
 
 ## In closing
 
