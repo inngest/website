@@ -258,6 +258,23 @@ inngest.createFunction(
   </Property>
 </Properties>
 
+<Info>
+The `cron()` helper accepts a schedule string only. To add optional fields like `jitter`, use the object trigger form directly: `{ cron: "0 * * * *", jitter: "30s" }`. See the [jitter section](/docs/guides/scheduled-functions#adding-jitter) for details.
+</Info>
+
+### Cron trigger object
+
+You can also pass a cron trigger as an object, which supports additional options:
+
+<Properties>
+  <Property name="cron" type="string" required>
+    A [unix-cron](https://crontab.guru/) compatible schedule string.
+  </Property>
+  <Property name="jitter" type="string">
+    A duration string (e.g. `"30s"`, `"5m"`) that adds a random delay after the scheduled boundary. Each occurrence fires at a random time within the jitter window. Must be between `"1s"` and `"5m"`.
+  </Property>
+</Properties>
+
 ### Examples
 
 <CodeGroup>
@@ -281,6 +298,18 @@ inngest.createFunction(
   },
   async ({ step }) => {
     // Runs at 9am ET on weekdays
+  }
+);
+```
+
+```ts {{ title: "With jitter" }}
+inngest.createFunction(
+  {
+    id: "hourly-sync",
+    triggers: [{ cron: "0 * * * *", jitter: "5m" }],
+  },
+  async ({ step }) => {
+    // Fires at a random time within 5 minutes after each hour
   }
 );
 ```
