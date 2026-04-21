@@ -321,7 +321,7 @@ export function CodeGroup({
     getPanelTitle(child.props)
   );
   const [currentLanguage] = useLocalStorage("currentLanguage", null);
-  const { language: globalLanguage } = useLanguageStore();
+  const { language: globalLanguage, setLanguage: setGlobalLanguage } = useLanguageStore();
   const { preferredLanguages, addPreferredLanguage } =
     usePreferredLanguageStore();
   const { positionRef, preventLayoutShift } = usePreventLayoutShift();
@@ -368,7 +368,17 @@ export function CodeGroup({
   ]);
 
   const handleChange = (newSelectedIndex: number) => {
-    preventLayoutShift(() => addPreferredLanguage(languages[newSelectedIndex]));
+    preventLayoutShift(() => {
+      addPreferredLanguage(languages[newSelectedIndex]);
+      // Sync to global language store so the tab stays selected (selectedIndex
+      // gives globalLanguage the highest priority, so without this the tab
+      // would snap back to the previously-selected global language).
+      const clickedTitle = languages[newSelectedIndex]?.toLowerCase();
+      const sdkLang = GUIDE_KEY_TO_SDK[clickedTitle];
+      if (sdkLang) {
+        setGlobalLanguage(sdkLang);
+      }
+    });
   };
 
   const headerProps = hasTabs ? { selectedIndex } : {};
