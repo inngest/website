@@ -1,0 +1,104 @@
+---
+heading: "After the Agent Signs In"
+subtitle: "Orchestration has been the undefined pillar of Agent Experience. Stripe Projects just made it core infrastructure."
+showSubtitle: true
+image: /assets/blog/after-the-agent-signs-in/featured-image/featured-image.png
+date: 2026-04-21
+category: engineering
+author: Sterling Chin
+---
+
+*Companion to: [Inngest + Stripe Projects: Ship Durable Apps Without Leaving the Terminal](https://www.inngest.com/blog/inngest-stripe-projects-ship-durable-apps-without-leaving-the-terminal)*
+
+Recently, Stripe launched Projects. Their new [Agent Provisioning Protocol (APP)](https://docs.stripe.com/projects) lets AI agents stand up a production stack directly from the terminal. Inngest is one of the launch partners. [Lauren wrote a great piece](https://www.inngest.com/blog/inngest-stripe-projects-ship-durable-apps-without-leaving-the-terminal) on what that means for anyone shipping durable applications.
+
+Go read that first. Then come back, because the hard part is the five minutes *after* the agent signs in.
+
+## The Demo vs. Production Gap
+
+Watch a Stripe Projects demo. An agent runs `stripe projects init my-app`, picks Inngest, gets keys, writes code. Magic.
+
+But what happens on step 14 of a 20-step workflow, at 3 AM, when the LLM provider times out and the agent's state vanishes mid-run?
+
+The industry has been talking about Agent Experience for about a year now. The conversation has moved fast, and Stripe Projects is the most concrete thing to ship inside it so far. But the layer the industry has actually made good at, discovery and authentication and context, is the front door of the house. It's not the house.
+
+## The Four Pillars Everyone Names, the One Nobody Defines
+
+Matt Biilmann [coined Agent Experience (AX)](https://biilmann.blog/articles/introducing-ax/) in January 2025. He defined four pillars:
+
+1. **Access** — can agents reach and authenticate into your platform?
+2. **Context** — can they understand what your platform does and doesn't do?
+3. **Tools** — can they use your capabilities inside their loops?
+4. **Orchestration** — can your platform trigger and coordinate agent workflows?
+
+The AX community has written extensively about Pillars 1 through 3. `llms.txt`, MCP, `agents.json`, clean REST APIs with strong schemas. All of that work lives in Access and Context. The explosion of "agent-ready" APIs over the past twelve months lives in Tools. I spent most of my Postman years on that pillar. I coined the phrase "you can't do AI without APIs" and wrote the 90-day AI-Ready APIs playbook to help teams get Pillar 3 right. That work needs to keep happening, and it's finally happening at scale.
+
+Pillar 4 got named, and then no one filled the void. Not for lack of people willing to talk about it. There just wasn't a company making orchestration the center of the AX conversation.
+
+That's the pillar I think about every day.
+
+## Orchestration: `undefined`
+
+When I say Orchestration is `undefined`, I mean the industry hasn't written the definitive piece on what a platform actually owes an agent once the agent is *inside* and trying to do something that takes longer than a single API call.
+
+An agent starts a multi-step workflow. Say it's processing a refund, or running research, or orchestrating a pipeline that calls four different LLMs in sequence. Step 1 succeeds. Step 2 succeeds. Step 3 calls an external API that times out. The agent retries. The retry hangs. The worker crashes.
+
+What does your platform owe that agent?
+
+Today, most agents paper over this with cron jobs, homegrown daemons, and whatever background queue the framework happens to ship with. That gets you a demo. It does not survive a real user running a real workflow on a real Tuesday afternoon.
+
+A platform owes the following, all of which are Pillar 4:
+
+- **State that survives failure.** The agent should not have to recompute the first three steps. Step-level checkpointing is a contract.
+- **Deterministic retry.** Transient errors should not become human tickets. The platform should retry with backoff, deduplicate side effects, and keep the workflow moving.
+- **Pause and resume across time.** If step 5 requires human approval, the workflow should wait hours or days, not die.
+- **Failure-as-first-class.** Rollbacks, compensating actions, graceful degradation. The error case is the product.
+- **Multi-agent coordination.** When agent A hands off to agent B, the platform should make that reliable, not turn it into a message-queue science project.
+
+If your platform strands an agent mid-task, it doesn't matter how clean your `llms.txt` is. You gave the agent access to a house with no doors between rooms.
+
+## Why Stripe Projects Is the Tip of the Spear
+
+Lauren's post lays out three reasons we partnered with Stripe: reliability as a default at setup time, agent-ready design, and secure key custody. I want to add a fourth.
+
+**Stripe Projects is the first time durability shows up in the critical path of stack setup.**
+
+Before now, you could provision your auth, your analytics, your database, your compute, and ship something. Durability was something you added after your first outage. The tooling existed (we build it), but it was never on the default stack-setup list.
+
+Stripe Projects puts Inngest in that default list. Stripe independently concluded that the agents using this protocol are going to build things that need to survive production, and the protocol should surface the layer that makes that possible.
+
+That's Pillar 4 being treated as non-optional infrastructure. For the first time.
+
+Look at who Stripe picked as launch partners. Vercel and Cloudflare for hosting. Supabase and Neon for database. Clerk for auth. PostHog and Amplitude for analytics. Inngest for durability. That's a category leader from every layer an agent will reach for, all showing up to the same launch. You don't get a lineup like that by accident. You get it when the companies closest to the workload have independently concluded the workload has changed.
+
+Orchestration made the cut. Pillar 4 is sitting in the core stack next to auth, hosting, database, and analytics, which tells you where the center of gravity is moving.
+
+> "If you're building with agents, it's important to start with orchestration that is flexible enough to evolve with your needs over time. It's the hardest thing to change, so choosing something too rigid can restrict how fast you can change as models and patterns improve over time."
+>
+> — **Dan Farrelly**, co-founder & CTO, Inngest
+
+## What Still Has to Exist
+
+Projects solves the provisioning problem. It doesn't solve the rest of AX.
+
+Pillar 4 still needs this, loud enough that I'd write the definitive piece on each if I had a year:
+
+- **AX observability.** How do you measure agent health? What does an agent's usage pattern tell you about friction in your platform? I have not seen a good answer.
+- **Reliability contracts.** A technical vocabulary for what platforms promise agents mid-task, the way HTTP status codes became a contract.
+- **Cross-platform state.** When agents span multiple services (Stripe provisions, Inngest orchestrates, an LLM reasons, a vector DB remembers), who owns the thread that makes the whole thing coherent?
+
+These are wide-open questions. The answers will shape how the next wave of agent infrastructure gets built.
+
+## Why I Took This Job
+
+A few days ago I published a longer piece on why I joined Inngest as their first DevRel hire. The short version: the career arc I've been on, from API design to API reliability to API-ready-for-agents, landed me at the exact company solving the hardest unsolved AX problem. Pillar 4 is where the work is, and Inngest is where the tools to do it already exist.
+
+Stripe Projects validates the bet. The most sophisticated agent-first protocol shipped to date assumes durability is part of the stack. That's Pillar 4 going from "nobody defines it" to "nobody ships without it," and it's happening faster than I expected when I signed the offer.
+
+If you're building for agents, or on a platform that agents consume, run this test.
+
+Go watch an agent run a twenty-step workflow on your platform. Let step fourteen fail. What happens next is your AX, measured honestly.
+
+---
+
+*I work on Developer Relations and Agent Experience at [Inngest](https://www.inngest.com). Come find me on [LinkedIn](https://www.linkedin.com/in/sterlingchin/), [Twitter](https://twitter.com/sterling_chin), or in the AX community at [agentexperience.ax](https://agentexperience.ax).*
