@@ -183,6 +183,9 @@ The `create_function` decorator accepts a configuration and wraps a plain functi
   <Property name="cron" type="str" required>
     A [unix-cron](https://crontab.guru/) compatible schedule string. <br/>Optional timezone prefix, e.g. `TZ=Europe/Paris 0 12 * * 5`.
   </Property>
+  <Property name="jitter" type="str">
+    A duration string (e.g. `"30s"`, `"5m"`) that adds a random delay after the scheduled boundary. Each occurrence fires at a random time within the jitter window. Must be between `"1s"` and `"5m"`. See the [jitter guide](/docs/guides/scheduled-functions#adding-jitter) for details.
+  </Property>
 </Properties>
 
 ### Multiple Triggers

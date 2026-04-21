@@ -247,3 +247,58 @@ On the free plan, if your function fails 20 times consecutively it will automati
 
 Inngest's cron behavior follows the underlying cron library and does not apply special DST correction. To reduce risk, avoid transition-hour schedules (such as `2:00 AM` in many US regions, or `12:00 AM` in some other regions), and prefer `TZ=UTC` when you need consistent execution timing.
 </Callout>
+
+## Adding jitter
+
+By default, cron functions fire at the exact scheduled time. If you have many cron functions on the same schedule, they all fire at once which can create load spikes on your system or on third-party APIs.
+
+You can add an optional `jitter` to spread out the execution. When jitter is set, each cron occurrence fires at a random time within the jitter window after the scheduled boundary.
+
+Jitter must be between 1 second and 5 minutes.
+
+<LanguageSelector>
+
+<LanguageSection show="typescript">
+
+```ts
+inngest.createFunction(
+  {
+    id: "hourly-sync",
+    triggers: [{ cron: "0 * * * *", jitter: "5m" }],
+  },
+  async ({ step }) => {
+    // Fires at a random time within 5 minutes after each hour
+  }
+);
+```
+
+</LanguageSection>
+<LanguageSection show="go">
+
+```go
+inngestgo.CreateFunction(
+    client,
+    inngestgo.FunctionOpts{Name: "hourly-sync"},
+    inngestgo.CronTriggerWithJitter("0 * * * *", 5*time.Minute),
+    func(ctx context.Context, input inngestgo.Input[any]) (any, error) {
+        // Fires at a random time within 5 minutes after each hour
+        return nil, nil
+    },
+)
+```
+
+</LanguageSection>
+<LanguageSection show="python">
+
+```python
+@inngest_client.create_function(
+    fn_id="hourly-sync",
+    trigger=inngest.TriggerCron(cron="0 * * * *", jitter="5m"),
+)
+async def hourly_sync(ctx: inngest.Context) -> None:
+    # Fires at a random time within 5 minutes after each hour
+    pass
+```
+
+</LanguageSection>
+</LanguageSelector>
