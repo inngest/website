@@ -1,6 +1,6 @@
 import { Info, Warning, CodeGroup, Steps, Step } from "shared/Docs/mdx";
 
-# Connect
+# Connect (workers)
 
 <Info>
   Connect is currently in Public Beta. Read more about the [Public Beta release phase here](/docs/release-phases#public-beta).
@@ -12,6 +12,7 @@ The `connect` API allows your app to create an outbound persistent connection to
 - **Elastic horizontal scaling** - Easily add more capacity by running additional workers.
 - **Ideal for container runtimes** -  Deploy on Kubernetes or ECS without the need of a load balancer for inbound traffic
 - **Simpler long running steps** - Step execution is not bound by platform http timeouts.
+- **Automatic syncing** - Connect apps automatically sync your functions with Inngest when a worker connects. No manual app syncing is required.
 
 The number of concurrent worker connections available depends on your plan. For new plans, the limits are:
 
@@ -116,12 +117,12 @@ func main() {
 	}
 
   defer func(conn connect.WorkerConnection) {
-		<-ctx.Done()
-		err := conn.Close()
-		if err != nil {
-			fmt.Printf("could not close connection: %s\n", err)
-		}
-	}(conn)
+			<-ctx.Done()
+			err := conn.Close()
+			if err != nil {
+				fmt.Printf("could not close connection: %s\n", err)
+			}
+		}(conn)
 }
 ```
 ```python
@@ -154,7 +155,7 @@ The `connect` API establishes a persistent WebSocket connection to Inngest. Each
 
 - **Automatic re-connections** - The connection will automatically reconnect if it is closed.
 - **Graceful shutdown** - The connection will gracefully shutdown when the app receives a signal to terminate (`SIGTERM`). New steps will not be accepted after the connection is closed, and existing steps will be allowed to complete.
-- **Worker-level maximum concurrency (Coming soon)** - Each worker can configure the maximum number of concurrent steps it can handle. This allows Inngest to distribute load across multiple workers and not overload a single worker.
+- **Worker-level maximum concurrency** - Each worker can configure the maximum number of concurrent steps it can handle. This allows Inngest to distribute load across multiple workers and not overload a single worker. See [Worker concurrency](#worker-concurrency) for details.
 
 ## Local development
 
@@ -369,11 +370,11 @@ This view is helpful for debugging connection issues or verifying rolling deploy
 
 ## Syncing and Rollbacks
 
-[//]: <> (TODO: Create diagram to explain syncing)
+{/* TODO: Create diagram to explain syncing */}
 
 Inngest keeps track of the version your workers are running on. This internal representation changes when you update your function configuration, provide a new app version identifier to the client configuration, or change the SDK version or language.
 
-When you deploy a new version of your application, the first worker to connect to Inngest will automatically sync your app. This will update function configurations to the desired state configured in your code.
+When you deploy a new version of your application, the first worker to connect to Inngest will automatically sync your app. This will update function configurations to the desired state configured in your code. Unlike `serve`, connect apps do not require [manual syncing](/docs/apps/cloud) with Inngest Cloud.
 
 `connect` supports rolling releases: During a deployment of your app, Inngest will run functions on all connected workers, regardless of the version, as long as they are able to process a request for a given function. This prevents traffic from concentrating on a single instance during rollouts and causing a thundering herd issue.
 
@@ -622,10 +623,6 @@ asyncio.run(
 </CodeGroup>
 
 ## Self hosted Inngest
-
-<Info>
-  Self-hosting support for `connect` is in development. Please [contact us](https://app.inngest.com/support) for more info.
-</Info>
 
 If you are [self-hosting](/docs/self-hosting?ref=docs-connect) Inngest, you need to ensure that the Inngest WebSocket gateway is accessible within your network. The Inngest WebSocket gateway is available at port `8289`.
 

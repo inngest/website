@@ -1,0 +1,7 @@
+This is a note for the PR reviewer:
+
+The navigationStructure.ts file needs this change applied manually (file too large to push via API):
+
+Line 979: Change `title: "Connect",` to `title: "Connect (workers)",`
+
+The `tag: "beta"` on line 981 should remain since connect is still in Public Beta.
