@@ -45,9 +45,12 @@ When it is necessary to rotate your Inngest event and signing keys, use the foll
     From the "Apps" tab in the dashboard, manually re-sync your applications. This will use the new signing key and confirm that your signing key has successfully been rotated.
   </Step>
   <Step title="Delete your old event key(s)">
-    In the event key list, select your old key and
+    In the event key list, select your old key and in the 3-dot menu next to the key name, click "Delete"
 
     <img src="/assets/docs/platform/manage/key-rotation/delete-event-key.png" alt="Deleting an event key from the event key management page" className="max-w-lg"/>
+  </Step>
+  <Step title="Rotation complete">
+    Your key rotation is now complete. You can now remove the `INNGEST_SIGNING_KEY_FALLBACK` key if you would like as this key is no longer valid and will not be used by your application.
   </Step>
 </Steps>
 
