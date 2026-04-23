@@ -50,7 +50,7 @@ If RevOps teams are already using infrastructure tooling with an attempt to ensu
 
 The gap is the same in both cases: fast execution or a coherent workflow model, but not both.
 
-Inngest is built around [**durable functions**](https://www.inngest.com/docs/learn/how-inngest-works)—code that checkpoints after each [step](https://www.inngest.com/docs/reference/functions/step-run) and resumes from the last successful point after any failure. Three things set it apart for this workload:
+Inngest is built around [**durable functions**](https://www.inngest.com/docs/learn/how-functions-are-executed)—code that checkpoints after each [step](https://www.inngest.com/docs/reference/functions/step-run) and resumes from the last successful point after any failure. Three things set it apart for this workload:
 
 - **No provisioning overhead.** Functions are invoked via HTTP. When work arrives, it executes—no container to spin up, no agent to initialize. Overhead per execution is in the milliseconds, not competing with your actual processing time.
 - **Steps are individually retried and cached.** If firmographic enrichment succeeds but LLM qualification fails, only that step retries. You're not re-calling providers you already paid for. On [replay](https://www.inngest.com/docs/platform/replay), completed steps return their cached results—your GPT-4o-mini call happens exactly once per lead.
