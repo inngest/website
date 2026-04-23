@@ -1,0 +1,252 @@
+---
+heading: "How to make your lead enrichment pipeline durable"
+subtitle: "Learn how to build a scalable, multi-step lead enrichment and qualification pipeline using Inngest's durable execution and concurrency controls. Handles tens of thousands of leads per day across multiple enrichment providers, LLM scoring, and CRM writes—without queue sprawl or provisioning overhead."
+showSubtitle: true
+image: /assets/blog/lead-enrichment-pipeline-durable-execution-inngest/featured-image/featured-image.png
+date: 2026-04-23
+category: engineering
+author: Lauren Craigie
+---
+
+RevOps has become one of the most demanding customers of infrastructure teams. They have serious volume requirements with a low tolerance for latency, and an increasingly long tail of agents and automations dependent on every action. 
+
+And yet, most are either running on a Python orchestrator borrowed from the data team, or a drag-and-drop orchestration that fails silently.
+
+This post covers why things like lead enrichment pipelines are now infrastructure problems, and why durable execution is the only answer. 
+
+## Not just an orchestration problem
+
+Let’s start with the difference between pure orchestration, and orchestration with guarantees, or durable execution. A lot of RevOps teams adopt n8n or Zapier for connecting systems and executing work based on triggers. “Enrich this lead when it hits HubSpot" is exactly what they're built for.
+
+The problem is what happens when something breaks, and when subsequent downtime affects a ton of other downstream activities. 
+
+Orchestration tools typically treat a failed run as a lost run. There's no step-level checkpointing, no per-step retry logic, no way to resume from the point of failure without re-running everything before it. At low volume and low stakes that's fine. When your pipeline is feeding 100 sales reps or agents that act autonomously on its output, it isn't.
+
+Consider a typical enrichment pipeline. A lead enters your system from a list import, CRM sync, form submission, or product event. Before it reaches a human, it passes through a chain of enrichment and qualification steps that might look like this:
+
+1. Dedup check against existing records
+2. Firmographic enrichment (company size, industry, tech stack)
+3. Contact enrichment (title, seniority, verified email)
+4. Intent or technographic data lookup
+5. ICP scoring against defined criteria
+6. LLM-based qualification and reasoning
+7. Conditional routing based on score
+8. Write enriched record back to CRM or database
+9. Notify sales rep if qualified
+10. Log enrichment metadata and audit trail
+
+Ten steps, each a discrete API call or database write, each a potential failure point. So what happens when step 6 fails at 3am across 800 concurrent runs? 
+
+If that sounds like a nightmare, your pipeline is now a durable execution problem rather than a matter of simple automation. 
+
+## Inngest for Durable Execution
+
+If RevOps teams are already using infrastructure tooling with an attempt to ensure durability at scale, they’re likely using one of two methods—each with their own failure modes to consider:
+
+**Python-based orchestrators** (Prefect, Airflow) are designed for heavy, infrequent jobs—not high-frequency pipelines where individual steps complete in seconds. The culprit is provisioning overhead: spinning up a run before your code executes can take 20–30 seconds. If the actual job takes 10 seconds, you're spending twice as long on the platform as on the work. At 50,000 leads per day, that overhead becomes the dominant infrastructure cost.
+
+**Queue-based systems** (Celery, SQS, BullMQ) solve the latency problem but create a coordination problem. A 10-step workflow spread across 10 queues means 10 consumers to maintain, manual state serialization at every boundary, dead-letter queues at every failure point, and debugging that requires correlating logs across multiple workers. What you gain in speed you trade for complexity that compounds every time something goes wrong.
+
+The gap is the same in both cases: fast execution or a coherent workflow model, but not both.
+
+Inngest is built around [**durable functions**](https://www.inngest.com/docs/learn/how-inngest-works)—code that checkpoints after each [step](https://www.inngest.com/docs/reference/functions/step-run) and resumes from the last successful point after any failure. Three things set it apart for this workload:
+
+- **No provisioning overhead.** Functions are invoked via HTTP. When work arrives, it executes—no container to spin up, no agent to initialize. Overhead per execution is in the milliseconds, not competing with your actual processing time.
+- **Steps are individually retried and cached.** If firmographic enrichment succeeds but LLM qualification fails, only that step retries. You're not re-calling providers you already paid for. On [replay](https://www.inngest.com/docs/platform/replay), completed steps return their cached results—your GPT-4o-mini call happens exactly once per lead.
+- **Concurrency is a control surface, not a capacity limit.** You configure how many steps execute in parallel; Inngest queues everything beyond that and processes it continuously. The limit applies only to *actively executing* steps—runs sleeping or waiting between steps don't consume a slot. Enterprise customers run between 1,000 and 10,000 concurrent steps as a baseline.
+
+## How to build a durable lead enrichment pipeline
+
+Let’s start at the source; how you structure the pipeline depends on where enrichment happens:
+
+#### **If you're calling enrichment providers directly**
+
+Inngest coordinates those API calls—waterfall sequencing, per-provider [concurrency keys](https://www.inngest.com/docs/guides/concurrency) to respect rate limits, and independent retry logic per step so a failed Apollo call doesn't re-run a successful Clearbit call. 
+
+#### **If enrichment is already handled upstream**
+
+If you’re using Clay or another enrichment provider—Inngest picks up after that data arrives. Your trigger event becomes `lead/enriched` rather than `lead/submitted`, and the enrichment steps drop out entirely. Clay and Inngest compose naturally: Clay handles waterfall enrichment across its 150+ providers; Inngest handles the durable scoring, qualification, routing, and CRM writes that follow.
+
+#### **Pattern A: calling enrichment providers directly**
+
+```tsx
+import { inngest } from "./client";
+
+export const enrichAndQualifyLead = inngest.createFunction(
+  {
+    id: "enrich-and-qualify-lead",
+    triggers: [{ event: "lead/submitted" }],
+    concurrency: [
+      { limit: 200 },                                          // global cap; raise as you validate throughput
+      { scope: "fn", key: "event.data.source", limit: 50 },   // isolates bulk imports from real-time submissions
+    ],
+    retries: 3,
+  },
+  async ({ event, step }) => {
+    const { leadId, email, domain } = event.data;
+
+    // Dedup before burning enrichment credits
+    const existing = await step.run("check-existing", async () => {
+      return await db.leads.findUnique({ where: { email } });
+    });
+
+    if (existing?.enrichedAt) {
+      return { skipped: true };
+    }
+
+    // Independent enrichment calls—run in parallel, checkpointed separately
+    const [firmographic, contact] = await Promise.all([
+      step.run("enrich-firmographic", async () => firmographicProvider.lookup({ domain })),
+      step.run("enrich-contact",      async () => contactProvider.lookup({ email })),
+    ]);
+
+    // ICP scoring
+    const score = await step.run("score-lead", async () => {
+      return computeICPScore({ firmographic, contact });
+    });
+
+    // LLM qualification — cached on replay, runs once per lead regardless of retries
+    const qualification = await step.run("qualify-lead", async () => {
+      return await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: "You are a B2B sales qualification assistant. Return QUALIFIED or DISQUALIFIED with a one-sentence reason." },
+          { role: "user",   content: buildQualificationPrompt({ firmographic, contact, score }) },
+        ],
+      });
+    });
+
+    const qualificationText = qualification.choices[0].message.content ?? "";
+    const qualified = score >= 65 && qualificationText.startsWith("QUALIFIED");
+
+    // Write back to CRM/database
+    await step.run("update-lead-record", async () => {
+      return await db.leads.update({
+        where: { email },
+        data: { enrichedAt: new Date(), firmographic, contact, icpScore: score, qualified, qualificationReason: qualificationText },
+      });
+    });
+
+    if (qualified) {
+      await step.run("notify-sales", async () => {
+        return await crm.createTask({
+          type: "follow_up",
+          leadId,
+          priority: score >= 80 ? "high" : "normal",
+          notes: qualificationText,
+        });
+      });
+    }
+
+    await step.run("log-enrichment", async () => {
+      return await analytics.track("lead_enriched", { leadId, icpScore: score, qualified });
+    });
+
+    return { leadId, icpScore: score, qualified };
+  }
+);
+```
+
+Once this is deployed and you send a `lead/submitted` event, you'll see the run appear in the Inngest dashboard with each step listed in order. Completed steps show their duration and cached output. If anything fails, you'll see exactly which step, the full error, and the retry count—without touching a log file. A fully successful run through all 10 steps should complete in 15–25 seconds of wall time, depending on your provider latencies.
+
+### Pattern B: enrichment handled upstream (Clay variant)
+
+If Clay or another tool is doing enrichment and webhooking out the results, the provider calls drop out entirely—enrichment data arrives in the event payload and the function focuses on scoring, qualification, and routing:
+
+```tsx
+export const qualifyEnrichedLead = inngest.createFunction(
+  { id: "qualify-enriched-lead", triggers: [{ event: "lead/enriched" }], concurrency: { limit: 200 }, retries: 3 }, // triggered by Clay webhook or CRM sync
+  async ({ event, step }) => {
+    const { leadId, firmographic, contact } = event.data;
+
+    const score = await step.run("score-lead", () =>
+      computeICPScore({ firmographic, contact })
+    );
+
+    const qualification = await step.run("qualify-lead", () =>
+      openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: QUALIFICATION_SYSTEM_PROMPT },
+          { role: "user",   content: buildQualificationPrompt({ firmographic, contact, score }) },
+        ],
+      })
+    );
+
+    const qualified = score >= 65 && qualification.choices[0].message.content?.startsWith("QUALIFIED");
+
+    await step.run("update-crm", () =>
+      crm.updateContact(leadId, { icpScore: score, qualified })
+    );
+
+    if (qualified) {
+      await step.run("notify-sales", () =>
+        crm.createTask({ leadId, priority: score >= 80 ? "high" : "normal" })
+      );
+    }
+
+    return { leadId, score, qualified };
+  }
+);
+```
+
+Clay webhooks out on row completion—that becomes your Inngest event. Enrichment lives in Clay; scoring, qualification, routing, and CRM writes live in Inngest.
+
+The run view looks the same as Pattern A—each step listed, durations visible, failures isolated. The difference is your function starts at `score-lead` rather than `check-existing`, so runs are shorter and cheaper. If Clay sends a malformed payload or a required field is missing, you'll see it fail cleanly on `score-lead` rather than somewhere unexpected downstream.
+
+## Running it in production
+
+Getting the pipeline running is the easy part. What separates a pipeline that stays healthy at volume from one that quietly degrades is how you operate it after the first successful run.
+
+### What this looks like at volume
+
+Let’s do the math. A 10-step pipeline at 50,000 leads per day is 500,000 step executions daily—roughly 15 million per month. A 12-step pipeline at 80,000 leads/day is about 30 million. Several Inngest customers operate in the hundreds of millions per month; with some in the billions. These numbers are normal operating range, not cases requiring special architecture.
+
+The parallel enrichment calls cut per-lead wall time roughly in half for that part of the pipeline. Each step is still independently checkpointed—if `enrich-contact` fails, `enrich-firmographic`'s result is preserved and doesn't re-execute.
+
+The concurrency keys do two things: the global limit controls aggregate throughput, and the per-source key means a bulk import can't crowd out real-time form submissions. If your providers have different rate limits, add a key scoped to the provider name—each gets its own cap in one function configuration, no separate queue consumers.
+
+**On Vercel,** scaling isn't something you manage. Configure concurrency limits in Inngest, send events, and Vercel handles instance count automatically. The constraint you're managing is your Inngest limit and your downstream API rate limits—not infrastructure capacity.
+
+**On Render, Railway, or self-hosted infrastructure,** use the `connect` [worker model](https://www.inngest.com/docs/setup/connect). Each worker declares its [`maxWorkerConcurrency`](https://www.inngest.com/docs/setup/connect#worker-concurrency); Inngest distributes load across workers automatically. Scale your autoscaling group on Inngest backlog depth rather than CPU—a worker handling two-second API calls won't peg CPU, so CPU is a lagging signal. Backlog depth reflects actual work waiting.
+
+### What debugging looks like
+
+When something fails in a queue-per-step architecture, you're correlating logs across multiple workers, replaying messages into the right queue, and hoping a retry doesn't double-write a record that partially wrote the first time.
+
+With Inngest, each lead's run is a single traced entity. Every step, its duration, its input and output, and exactly where it failed is visible in one place. Replaying a failed run is a button press. The checkpoint model handles idempotency—re-running a step that already wrote to your CRM returns the cached result without writing again.
+
+### Recovering from bulk failures
+
+When something goes wrong at volume—a provider outage, a bad deploy, a rate limit you didn't anticipate—you're typically looking at hundreds or thousands of failed runs rather than one. In a queue-based system, recovering from that means manually identifying the affected messages, replaying them into the right queues, and verifying nothing double-wrote.
+
+With Inngest, bulk replay lets you re-run all failed runs for a function from the dashboard in one action. Because each step is checkpointed, runs resume from the point of failure—not from the beginning. A provider outage that killed 2,000 runs at `enrich-firmographic` doesn't re-run `check-existing` for all 2,000 records when you replay. It picks up at the failed step, with the prior steps' results already cached.
+
+For pipelines feeding live sales activity, this is the operational property that matters most. The question isn't whether something will fail—it's how quickly and cleanly you can recover when it does.
+
+## Conclusion
+
+Lead intelligence pipelines are where RevOps teams are increasingly doing serious engineering work. The workload is demanding in ways that sneak up on you—fast steps, high concurrency, external API dependencies, operational requirements tied to real revenue outcomes. Treating it as a first-class infrastructure concern, rather than a background job that happens to touch your CRM, is what separates pipelines that scale from ones that become a full-time maintenance project.
+
+## Common Questions
+
+**Can I use Clay for enrichment and Inngest for everything after?**
+Yes—this is a common pattern. Clay handles waterfall enrichment across its 150+ providers and webhooks out the enriched record. That webhook becomes an Inngest event, and Inngest takes over for ICP scoring, LLM qualification, routing, CRM writes, and notifications.
+
+**Can Inngest handle tens of thousands of leads per day?**
+Yes. A 10-step pipeline at 50,000 leads per day is ~500,000 step executions daily. Inngest customers operate at hundreds of millions of executions per month; several are in the billions. This is normal operating range.
+
+**Is Inngest designed for short-duration jobs, or only long-running workflows?**
+Both. Many customers run high-frequency pipelines where individual steps complete in milliseconds to a few seconds at high concurrency—exactly the profile of a lead enrichment pipeline. The "durable execution" label can imply slow, infrequent jobs, but that's not an architectural constraint.
+
+**Do I need to manage autoscaling on Vercel?**
+No. Configure concurrency limits in Inngest; Vercel manages instance scaling automatically. You're managing throttle, not infrastructure.
+
+**What about autoscaling on Render or self-hosted infrastructure?**
+Use the `connect` worker model. Each worker declares its `maxWorkerConcurrency`; Inngest distributes load automatically. Scale on backlog depth, not CPU—it's a more responsive signal for I/O-bound pipelines.
+
+**How does Inngest handle rate limits across multiple enrichment providers?**
+Concurrency keys let you set per-dimension limits without separate queue consumers—global cap plus a per-provider or per-source scope, all in one function configuration.
+
+**What's the difference between Inngest concurrency and in-flight runs?**
+The concurrency limit applies only to actively executing steps. Runs sleeping or waiting between steps don't consume a slot—you can have far more in-flight runs than your concurrency number implies.
