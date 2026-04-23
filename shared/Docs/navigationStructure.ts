@@ -976,7 +976,7 @@ const sectionLearn: (NavGroup | NavLink)[] = [
             href: `/docs/apps/cloud`,
           },
           {
-            title: "Connect",
+            title: "Connect (workers)",
             href: `/docs/setup/connect`,
             tag: "beta",
           },
