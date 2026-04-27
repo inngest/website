@@ -6,7 +6,7 @@ date: 2023-03-15
 author: Dan Farrelly
 ---
 
-Reliably and efficiently importing thousands of products from e-commerce APIs is a non-trivial task. Most applications that leverage any e-commerce API like [Shopify](https://shopify.dev/docs/api), [WooCommerce](https://woocommerce.com/document/woocommerce-rest-api/), [BigCommerce](https://developer.bigcommerce.com/api-docs/overview), or similar will need to fetch entire lists of products, inventory, sales from your user's storefront. You may want to use that data to use [AI to create new product images](https://pebblely.com/?utm_source=inngest&utm_medium=blog&utm_campaign=ecommerce_api), provide analytics or create a catalog to use them for marketing.
+Reliably and efficiently importing thousands of products from e-commerce APIs is a non-trivial task. Most applications that leverage any e-commerce API like [Shopify](https://shopify.dev/docs/api), [WooCommerce](https://woocommerce.com/document/woocommerce-rest-api/), [BigCommerce](https://docs.bigcommerce.com/developer/api-reference/about-our-apis), or similar will need to fetch entire lists of products, inventory, sales from your user's storefront. You may want to use that data to use [AI to create new product images](https://pebblely.com/?utm_source=inngest&utm_medium=blog&utm_campaign=ecommerce_api), provide analytics or create a catalog to use them for marketing.
 
 The challenge is that all of this data is paginated and storefronts might have thousands or tens of thousands of items to import and you have to deal with performance, rate limiting and failures. We're going to break down these challenges and learn how you can build a system that addresses all of them.
 

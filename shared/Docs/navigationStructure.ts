@@ -1103,6 +1103,10 @@ const sectionLearn: (NavGroup | NavLink)[] = [
             title: "Rotating keys",
             href: "/docs/platform/manage/rotating-keys",
           },
+          {
+            title: "API keys",
+            href: "/docs/platform/api-keys",
+          },
         ],
       },
       {
