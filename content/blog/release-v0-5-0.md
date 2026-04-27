@@ -102,7 +102,7 @@ Make durable HTTP requests within functions by offloading to the Inngest platfor
 Export Inngest metrics to Prometheus for existing monitoring systems. [View changelog](https://www.inngest.com/changelog/2025-02-11-prometheus-metrics-export) | [Learn more](/docs/platform/monitor/prometheus-metrics-export-integration)
 
 **Webhook management API (February 2025)**  
-Programmatically create, update, and delete webhooks via REST API. [View changelog](https://www.inngest.com/changelog/2025-02-11-webhooks-api) | [Learn more](https://api-docs.inngest.com/docs/inngest-api/b539bae406d1f-get-all-webhook-endpoints-in-given-environment)
+Programmatically create, update, and delete webhooks via REST API. [View changelog](https://www.inngest.com/changelog/2025-02-11-webhooks-api) | [Learn more](https://api-docs.inngest.com/v1/webhooks/ListWebhooks)
 
 **Postgres support for self-hosting (January 2025)**  
 Use Postgres as event storage backend instead of SQLite. Available in CLI v1.4.0+. [View changelog](https://www.inngest.com/changelog/2025-01-20-postgres-self-hosting) | [Learn more](/docs/self-hosting)
