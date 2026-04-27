@@ -1,0 +1,29 @@
+import { Info, Warning, CodeGroup, Steps, Step } from "shared/Docs/mdx";
+
+export const description = 'Learn about API keys for use with the Inngest REST API.'
+
+# API Keys
+
+API keys can be created to make authenticated requests to the [Inngest **v2** REST API](https://api-docs.inngest.com/). API Keys are different than [event keys](/docs/events/creating-an-event-key) and [signing keys](/docs/platform/signing-keys) which are designed to be used by your app. API Keys are useful for:
+
+* Syncing an app in CI/CD pipelines
+* Writing scripts for investigation or recovery
+* Building custom tooling
+
+## Creating an API key
+
+You can create an API key from the Inngest Cloud dashboard by selecting the profile menu at the bottom left of the dashboard then "API Keys" or you can [navigate directly here](https://app.inngest.com/settings/api-keys). From this page you can:
+
+* Create an API key
+* Rename an existing key
+* Delete an existing key
+
+<Info>
+  Only organization admins can create, update, or delete API Keys.
+</Info>
+
+Keys can be assigned to a specific environment, e.g. production, to limit their scope.
+
+![The Inngest Cloud dashboard API Key management page](/assets/docs/platform/api-keys-2026-04-27.png)
+
+Learn more about making requests to the Inngest REST API [here](https://api-docs.inngest.com/authentication).
