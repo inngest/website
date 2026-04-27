@@ -592,7 +592,7 @@ const sectionReference: (NavGroup | NavLink)[] = [
   },
   {
     title: "REST API",
-    href: "https://api-docs.inngest.com/docs/inngest-api/1j9i5603g5768-introduction",
+    href: "https://api-docs.inngest.com",
   },
   {
     title: "System events",

@@ -21,7 +21,7 @@ const options = {
     "https://envelop.dev",
     "https://twitter.com",
     "https://postmarkapp.com",
-    "https://api-docs.inngest.com/docs/inngest-api",
+    "https://api-docs.inngest.com",
     "http://localhost:8288",
     "http://127.0.0.1:8288",
     "http://localhost:",
