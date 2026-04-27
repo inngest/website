@@ -1,43 +1,37 @@
 # Security
 
-Security is a primary consideration when moving systems into production.  In this section we'll dive into how Inngest handles security, including endpoint security, encryption, standard practices, and how to add SAML authentication to your account.
+Security is a primary consideration when moving systems into production.  In this section we'll dive into how Inngest handles security, including endpoint security, encryption, standard practices, and how to add SAML authentication to your account. Learn more about
 
-## Compliance, audits, and reports
+* [Inngest platform security](#inngest-platform-security)
+* [Best practices](#security-best-practices) that you can apply
+
+## Inngest platform security
+
+### Compliance, audits, and reports
 
 Inngest is [SOC 2 Type II compliant](/blog/soc2-compliant?ref=docs-security). Our company and platform is regularly audited to adhere to the standards of SOC 2. This ensures that we have the necessary controls in place to protect our customers' data and ensure the security and privacy of their information. Our platform and SDKs undergo periodic independent security assessments including penetration testing and red-team simulated attacks.
 
-For more information on our security practices, or to request a copy of our SOC 2 report, please [contact our team](/contact?ref=docs-security).
+For more information on our security practices, or to request a copy of our SOC 2 report, please visit our [trust center](https://trust.inngest.com/).
 
-## Signing keys and SDK security
+### End to end encryption
 
-Firstly, it's important to understand that in production all communication between Inngest and your servers is encrypted via TLS. The SDK also actively mitigates attacks by use of the [signing key](/docs/platform/signing-keys), a secret pre-shared key unique to each environment. By default, the signing key adds the following:
-- **Authentication**: requests to your endpoint are authenticated, ensuring that they originate from Inngest. Inngest SDKs reject all requests that are not authenticated with the signing key.
-- **Replay attack prevention:** requests are signed with a timestamp embedded, and old requests are rejected, even if the requests are authenticated correctly.
+All data in Inngest databases is encrypted at rest and encrypted in transit, including between Inngest's servers and your servers. For an added layer of encryption and control of your data, install [encryption middleware](#encryption-middleware) and bring your own encryption key.
 
-**It's important that the signing key is kept secret.** If your signing key is exposed, it puts the security of your endpoints at risk. Note that it's possible to [rotate signing keys](/docs/platform/signing-keys#rotation) with zero downtime.
+### Signing keys and SDK security
 
-### Function registration + handshake
+In addition to TLS encryption, all requests between the Inngest platforms and your servers are signed with a [signing key](/docs/platform/signing-keys). The signing key is a pre-shared key which is unique to each environment.
 
-Functions are defined and served on your own infrastructure using one of our SDKs. In order to run your functions, they must be [synced](/docs/apps/cloud), or registered, with your Inngest account. This is required for Inngest to know which functions your application is serving and the configuration of each function. Syncing functions is done via a secure handshake. Here's how the handshake works:
-1. After your SDK's endpoint is live, a PUT request to the endpoint initiates a secure handshake with the Inngest servers.
-2. The SDK sends function configuration to Inngest's API, with the signing key as a bearer token.
-3. The SDK idempotently updates your apps and functions. If there are no changes, nothing happens.
+The Inngest SDKs all automatically verify the signature via the `serve` endpoint adapter. Every request includes a signature with an embedded timestamp as to reject old requests to prevent replay attacks.
 
-This process is necessary for several reasons, largely as serverless environments are the lowest common denominator. Serverless environments have no default bootup/init process, which means serverless environments can't self-initiate the sync. Secondly, serverless platforms such as AWS Lambda and Vercel create unique URLs for each function deployed, which can't be known ahead of time. The incoming PUT request allows the SDK to introspect the request's URL, which is then used for all function calls.
+**It's important that the signing key is kept secret.** If your signing key is exposed, it puts the security of your endpoints at risk. Note that it's possible to [rotate signing keys](/docs/platform/manage/rotating-keys) with zero downtime.
 
-Note that because the SDK only sends HTTP requests to `api.inngest.com` to complete the sync, it never leaks the signing key to clients attempting registration, keeping your key secure.
+Signing keys are also leveraged as an authentication mechanism to interact with the Inngest API for apps (e.g. checkpointing runs) as well as enabling [`connect` workers](/docs/setup/connect) to establish a connection with Inngest servers.
 
-## End to end encryption
+### API Keys
 
-Inngest runs functions automatically, based off of event data that you send to Inngest. Additionally, Inngest runs steps transactionally, and stores the output of each `step.run` within function state. This may contain regulated, sensitive data.
+For programmatic access to [the Inngest REST API](https://api-docs.inngest.com/), you can create [API keys](/docs/platform/api-keys), scoping them to a specific environment. We recommend using API keys if or when you are writing custom scripts, tooling, or performing actions in CI/CD pipelines.
 
-**If you process sensitive data, we** **strongly recommend, and sometimes require, end-to-end encryption enabled in our SDKs**. [End-to-end encryption is a middleware](/docs/features/middleware/encryption-middleware) which intercepts requests, responses, and SDK logic on your own servers. With end to end encryption, data is encrypted on your servers with a key that only you have access to. The following applies:
-- All data in `event.data.encrypted` is encrypted _before_ it leaves your servers. Inngest can never read data in this object.
-- All step output and function output is encrypted _before_ it leaves your servers. Inngest only receives the encrypted values, and can never read this data. Function state is sent fully encrypted to the SDKs. The SDKs decrypt data on your servers and then resume as usual.
-
-With this enabled, even in the case of unexpected issues your data is encrypted and secure. This greatly improves the security posture for sensitive data.
-
-## SAML
+### SAML
 
 Enterprise users can enable SAML authentication to access their account. In order to enable SAML, you must:
 1. Reach out to your account manager and request a SAML integration.
@@ -46,14 +40,42 @@ Enterprise users can enable SAML authentication to access their account. In orde
 3. Your account manager will then send you the ACS and Metadata URL used to configure your account.
 4. Your account manager will work with you to correctly map attributes to ensure fully functioning sign in.
 
-It's important to note that once SAML is enabled, users **must** sign in via SAML. If you're not on an enterprise plan, [contact us here](/contact?ref=docs-security), and we'll get you set up. There is no additional charge for SAML authentication below 200 users.
+It's important to note that once SAML is enabled, users **must** sign in via SAML. To learn more about enterprise plans for Inngest, [contact our team here](/contact?ref=docs-security).
 
-## IP Addresses
+### App syncing & function registration
+
+Functions are defined within your codebase and run on your own infrastructure. Inngest must "[sync](/docs/apps/cloud)" your application to read the current function configurations. For apps that use `serve` on public HTTP endpoints, Inngest syncs your application using one of two methods:
+
+* **Direct sync**: Inngest sends a signed `PUT` request to your application's endpoint, your application's configuration including all function config is returned synchronously back to Inngest. This is the default method as of these SDK versions: TS [v3.31.0](https://github.com/inngest/inngest-js/releases/tag/inngest%403.31.0), Python [0.4.18](https://github.com/inngest/inngest-py/releases/tag/0.4.18).
+* **Indirect sync**: Prior to direct sync, indirect syncs were the default. They can still be used to initiate a sync from your server. The handshake would be initiated by sending a `PUT` request to your endpoint which would then serialize and send the app configuration to the Inngest API, authenticating with the signing key set in your application. The SDK only sends requests to `https://api.inngest.com` unless configured to work with a self-hosted Inngest server.
+
+For `connect` workers, app configuration is synced upon startup, directly with the Inngest API.
+
+## Security best practices
+
+### Encryption middleware
+
+Inngest runs functions automatically, based off of event data that you send to Inngest. Additionally, Inngest runs steps transactionally, and stores the output of each `step.run` within function state. This may contain regulated, sensitive data.
+
+**If you process sensitive data, we _strongly_ recommend, and sometimes require, end-to-end encryption enabled in our SDKs**. [End-to-end encryption middleware](/docs/features/middleware/encryption-middleware) intercepts requests, responses, and SDK logic on your own servers. With end to end encryption, data is encrypted on your servers with a key that only you have access to. The following applies:
+- All data in `event.data.encrypted` is encrypted _before_ it leaves your servers. Inngest can never read data in this object.
+- All step output and function output is encrypted _before_ it leaves your servers. Inngest only receives the encrypted values, and can never read this data. Function state is sent fully encrypted to the SDKs. The SDKs decrypt data on your servers and then resume as usual.
+- Middleware automatically decrypts the data as it's received within your application.
+
+With this enabled, even in the case of unexpected issues your data is encrypted and secure. This greatly improves the security posture for sensitive data.
+
+### Firewall allowlist with Inngest IP addresses
+
+Inngest's servers make outbound requests to your application and it's advised to add the Inngest IPs to your firewall allowlist.
 
 For security and networking purposes, you may need to know the IP addresses that Inngest uses for outbound requests to your functions and webhooks. These IP addresses are used by Inngest's infrastructure to make authenticated requests to your endpoints.
 
 You can find the current list of IP addresses at:
-- [IPv4 addresses](https://www.inngest.com/ips-v4)
-- [IPv6 addresses](https://www.inngest.com/ips-v6)
+- [IPv4 addresses](https://www.inngest.com/ips-v4) - `https://www.inngest.com/ips-v4`
+- [IPv6 addresses](https://www.inngest.com/ips-v6) - `https://www.inngest.com/ips-v6`
 
 These IP ranges are used for all Inngest function invocations and webhook deliveries. If you need to whitelist these IPs in your firewall or security groups, please use the complete ranges listed on these pages.
+
+### Key rotation
+
+Signing, event, and API keys can all be rotated using built in tools. If you need to rotate signing and event keys for your app, follow the steps in [this guide here](/docs/platform/manage/rotating-keys).
