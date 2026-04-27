@@ -8,7 +8,10 @@ export const analytics = AnalyticsBrowser.load(
   {
     integrations: {
       "Segment.io": {
-        apiHost: "analytics.inngest.com/v1",
+        apiHost:
+          process.env.NODE_ENV === "production"
+            ? "analytics.inngest.com/v1"
+            : null,
         protocol: "https",
       },
     },
