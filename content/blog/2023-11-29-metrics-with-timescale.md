@@ -53,7 +53,7 @@ Choosing the right tool for the job is always important. We’ve looked into a c
 
 - [InfluxDB](https://www.influxdata.com/)
 - [Prometheus](https://prometheus.io/)
-- [TimescaleDB](https://www.timescale.com/)
+- [TimescaleDB](https://www.tigerdata.com/)
 - [Clickhouse](https://clickhouse.com/)
 - [M3](https://m3db.io/)
 - [Grafana Mimir](https://grafana.com/oss/mimir/)
@@ -367,5 +367,5 @@ While there were some challenges, those were more due to the technical choices w
 ---
 
 [^1]: Uber has a good [blog post](https://www.uber.com/blog/logging/) about this for their logging if you're interested. This can also apply to metrics as they're also just logs in a different format.
-[^2]: Although they do seem to have a [hybrid vectorization](https://www.timescale.com/blog/teaching-postgres-new-tricks-simd-vectorization-for-faster-analytical-queries/) as well if you're interested.
+[^2]: Although they do seem to have a [hybrid vectorization](https://www.tigerdata.com/blog/teaching-postgres-new-tricks-simd-vectorization-for-faster-analytical-queries) as well if you're interested.
 [^3]: There are other ways to smooth the transition, including delete -> update to merge segments or create a new table and record to both at the same time, but truncate was the quickest and most bullet proof method for our need at the time.
