@@ -5,7 +5,7 @@ export const description = "See how to fetch the run status and output of a func
 
 # Fetch run status and output
 
-Inngest provides a way to fetch the status and output of a function run using [the REST API](https://api-docs.inngest.com/docs/inngest-api/1j9i5603g5768-introduction). This is useful when:
+Inngest provides a way to fetch the status and output of a function run using [the REST API](https://api-docs.inngest.com). This is useful when:
 
 * You want to check the status or output of a given run.
 * You want to display the status of a function run in your application, for example, in a user dashboard.
@@ -47,7 +47,7 @@ const { ids } = await inngest.send({
 
 ### Fetching triggered function status and output
 
-Using the REST API, we can use the Event ID to fetch all runs triggered by that event using the [event's runs endpoint](https://api-docs.inngest.com/docs/inngest-api/yoyeen3mu7wj0-list-event-function-runs):
+Using the REST API, we can use the Event ID to fetch all runs triggered by that event using the [event's runs endpoint](https://api-docs.inngest.com/v1/events/ListEventRuns):
 
 ```bash
 https://api.inngest.com/v1/events/01HWAVEB858VPPX47Z65GR6P6R/runs
@@ -138,7 +138,7 @@ Check the resources below to learn more about working with the Inngest REST API.
 <ResourceGrid cols={2}>
 
 <Resource resource={{
-  href: "https://api-docs.inngest.com/docs/inngest-api/yoyeen3mu7wj0-list-event-function-runs",
+  href: "https://api-docs.inngest.com/v1/events/ListEventRuns",
   name: "Reference: REST API: List event function runs",
   icon: RiBracesFill,
   description: "Return all runs triggered by an event.",
