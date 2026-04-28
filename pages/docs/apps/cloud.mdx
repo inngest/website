@@ -8,9 +8,9 @@ After deploying your code to a hosting platform, it is time to go to production 
 ## Sync a new app in Inngest Cloud
 
 You can synchronize your app with Inngest using three methods:
-- Manually;
-- Automatically using an integration;
-- With a curl command.
+- Manually
+- Automatically using an integration
+- Programmatically with the REST API
 
 ### Manually
 
@@ -51,14 +51,21 @@ You can synchronize your app with Inngest using three methods:
 <ButtonDeploy href="/docs/deploy/netlify?ref=docs-app" type="netlify" label="Learn how to install our official Netlify integration" />
 </ButtonCol>
 
-### Curl command
+### Programmatically
 
-Use the curl command to sync from your machine or automate the process within a CI/CD pipeline.
+Use the [Inngest REST API](https://api-docs.inngest.com/v2/apps/SyncApp) to programmatically sync your app. This is particularly useful when syncing from a CI/CD pipeline.
 
-Send a PUT request to your application's serve endpoint using the following command:
+Before you send the request, you'll need 3 things:
+1. An [API key](/docs/platform/api-keys).
+2. The URL for your app's Inngest endpoint (e.g. `https://my-app.com/api/inngest`).
+3. Your app's ID (this is the Inngest client's ID).
 
-```shell
-curl -X PUT https://<your-app>.com/api/inngest --fail-with-body
+Once you have these, you can send a request like this:
+
+```sh
+curl -X POST "https://api.inngest.com/v2/apps/$APP_ID/syncs" \
+  -H "Authorization: Bearer $INNGEST_API_KEY" \
+  -d "{\"url\": \"$APP_URL\"}"
 ```
 
 <Callout>
