@@ -28,7 +28,7 @@ AI agents are harder to control at scale. At Outtake’s volume, the surface are
 
 Diego Escobedo, Founding Engineer at Outtake, describes the complexity plainly:
 
-> *"Our pipelines are intricate, with many interdependent components chained together, each with their own concurrency challenges. Lots can go wrong in that workflow—including unpredictable behavior from the models themselves. Inngest gives us fine-grained control over errors, and how they propagate, so we can just focus on what the agents should do, not what to do when they fail."*
+> *Our pipelines are intricate, with many interdependent components chained together, each with their own concurrency challenges. Lots can go wrong in that workflow—including unpredictable behavior from the models themselves. Inngest gives us fine-grained control over errors, and how they propagate, so we can just focus on what the agents should do, not what to do when they fail.*
 
 The things Outtake needs to handle—rate limits on both sides, unpredictable agent behavior, error propagation, concurrency across chained components—are all complex engineering problems that used to take weeks to build and weekly effort to maintain.
 
@@ -38,7 +38,7 @@ Outtake knows what they're up against: if attackers can use AI to spin up incred
 
 They use Inngest for both. At its simplest, Inngest is an event-driven API—engineers wrap existing code in steps, and durability, flow control, and error handling come with it. For Outtake, it's also the operational backbone of their context-building pipeline—the layer they employ to ensure models get the right data, in the right format, at the right moment.
 
-> *"Our agents reason and act on millions of datapoints at once. With Inngest, we can queue up millions of events without worrying about loss or disruption. That reliability is everything."*
+> *Our agents reason and act on millions of datapoints at once. With Inngest, we can queue up millions of events without worrying about loss or disruption. That reliability is everything.*
 
 Built on that foundation, the context-building pipeline runs in three stages:
 
@@ -60,7 +60,7 @@ Running AI agents at Internet scale means two things are always true: traffic is
 
 **Replay.** When an issue is identified and fixed, affected events can be [replayed](/docs/platform/replay?ref=outtake-case-study) through the corrected function logic. That’s continuity without manual triage. Outtake can use replays to recover from infrastructure outages, verify bug fixes against real failed traffic, and re-process runs in bulk after upstream API failures.
 
-> *"Replays and error handling are so critical. Being able to replay functions is incredibly useful because outcomes can be unpredictable. Whether it's an outage or data inconsistency somewhere that affects function runs, having the ability to retry that work ensures we process everything end-to-end without missing a thing."*
+> *Replays and error handling are so critical. Being able to replay functions is incredibly useful because outcomes can be unpredictable. Whether it's an outage or data inconsistency somewhere that affects function runs, having the ability to retry that work ensures we process everything end-to-end without missing a thing.*
 
 ![Replay functions in Inngest](/assets/customers/outtake/replay-functions.png)
 
