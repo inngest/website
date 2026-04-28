@@ -5,9 +5,9 @@ export const hidePageSidebar = true;
 
 # Setting up your Inngest app
 
-With Inngest, you define functions or workflows using the SDK and deploy them to whatever platform or cloud provider you want including including serverless and container runtimes.
+Inngest executes your functions by calling them directly, either over HTTP or WebSocket. You don't run worker processes or poll a queue. Instead, you expose your functions to Inngest through a connection from your app, and Inngest's execution engine handles invoking them, retrying failures, and managing state.
 
-For Inngest to remotely execute your functions, you will need to set up a connection between your app and Inngest. This can be done in one of two ways:
+There are two ways to set up that connection:
 
 <CardGroup>
   <Card title="serve()" href="#serving-inngest-functions">
@@ -50,6 +50,10 @@ serve({
   /* Optional extra configuration */
 });
 ```
+
+<Callout variant="warn">
+  **Using TypeScript SDK v4?** The default mode changed from dev to cloud in v4. When developing locally, set the `INNGEST_DEV=1` environment variable or your app will attempt to connect to Inngest Cloud and fail with a signing key error. [Learn more about local development](/docs/local-development).
+</Callout>
 
 ## Supported frameworks and platforms
 
@@ -841,24 +845,6 @@ Deno.serve(serve({
 
 Ensure that `servePath` matches your Supabase Edge Function name. Alternatively, you can set this with the `INNGEST_SERVE_PATH` environment variable. This is necessary because Supabase Edge Functions rewrite the request path.
 
-### Framework: Firebase Cloud Functions
-
-Based on the Google Cloud Function architecture, the Firebase Cloud Functions provide a different API to serve functions using `onRequest`:
-
-```typescript
-import { onRequest } from "firebase-functions/v2/https";
-
-import { serve } from "inngest/express";
-import { inngest as inngestClient } from "./inngest/client";
-
-export const inngest = onRequest(
-  serve({
-    client: inngestClient,
-    functions: [/* ...functions... */],
-  })
-);
-```
-
 ### Framework: SvelteKit
 
 Add the following to `./src/routes/api/inngest/+server.ts`:
@@ -1058,10 +1044,13 @@ inngest.fast_api.serve(
 
 ### Signing key
 
-You'll need to assign your [signing key](/docs/platform/signing-keys) to an [`INNGEST_SIGNING_KEY`](/docs/sdk/environment-variables#inngest-signing-key) environment variable in your hosting
-provider or `.env` file locally, which lets the SDK securely communicate with Inngest. If you can't
-use an environment variable, you can pass the signing key directly to the Inngest client constructor via the `signingKey` option. [Read
-the reference for more information](/docs/sdk/reference/serve#reference).
+To securely communicate with Inngest Cloud, your app needs a [signing key](/docs/platform/signing-keys). Set the [`INNGEST_SIGNING_KEY`](/docs/sdk/environment-variables#inngest-signing-key) environment variable in your hosting provider or `.env` file. You can find your signing key in the [Inngest dashboard](https://app.inngest.com).
+
+If you can't use an environment variable, you can pass the signing key directly to the Inngest client constructor via the `signingKey` option. In TypeScript SDK v4, the signing key is configured on the client (not in the `serve()` options). [Read the reference for more information](/docs/reference/serve#serve-client-functions-options).
+
+<Callout variant="info">
+  You do not need a signing key for local development. When `INNGEST_DEV=1` is set, the SDK skips signature verification and connects to your local Dev Server.
+</Callout>
 
 ### Other configuration
 
