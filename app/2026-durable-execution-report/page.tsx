@@ -79,21 +79,21 @@ function Hero() {
                 backgroundSize: "cover",
                 backgroundPosition: "center",
                 mixBlendMode: "soft-light",
-                opacity: 0.35,
+                opacity: 0.10,
               }}
             />
 
             {/* Decorative shape accent */}
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute -right-32 top-1/2 h-[700px] w-[700px] -translate-y-1/2 md:-right-40 md:h-[820px] md:w-[820px]"
+              className="pointer-events-none absolute right-0 bottom-[18%] h-[420px] w-[540px] md:h-[520px] md:w-[660px]"
               style={{
                 backgroundImage: "url('/assets/report-assets/report_shape.png')",
                 backgroundRepeat: "no-repeat",
                 backgroundSize: "contain",
                 backgroundPosition: "right center",
                 mixBlendMode: "multiply",
-                opacity: 0.22,
+                opacity: 0.05,
               }}
             />
 
