@@ -72,12 +72,26 @@ function Hero() {
             {/* Grain texture overlay */}
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute inset-0 opacity-[0.18]"
+              className="pointer-events-none absolute inset-0 opacity-60"
               style={{
-                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E")`,
-                backgroundRepeat: "repeat",
-                backgroundSize: "200px 200px",
-                mixBlendMode: "overlay",
+                backgroundImage: "url('/assets/report-assets/report_texture.png')",
+                backgroundRepeat: "no-repeat",
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                mixBlendMode: "multiply",
+              }}
+            />
+
+            {/* Decorative shape accent */}
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute -right-20 -bottom-16 h-[420px] w-[420px] opacity-70 md:-right-24 md:-bottom-20 md:h-[560px] md:w-[560px]"
+              style={{
+                backgroundImage: "url('/assets/report-assets/report_shape.png')",
+                backgroundRepeat: "no-repeat",
+                backgroundSize: "contain",
+                backgroundPosition: "center",
+                mixBlendMode: "multiply",
               }}
             />
 
