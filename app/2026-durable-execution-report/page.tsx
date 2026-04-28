@@ -56,10 +56,10 @@ export default function Page() {
 
 function Hero() {
   return (
-    <section className="bg-[#080808] px-4 pb-8 pt-6 md:px-8">
-      <div className="mx-auto w-full max-w-[1440px]">
+    <section className="bg-[#080808] pb-8 pt-6">
+      <div className="w-full">
         {/* Unified split card */}
-        <div className="grid overflow-hidden rounded-3xl bg-[#080808] lg:grid-cols-[1.75fr_1fr]">
+        <div className="grid overflow-hidden rounded-r-3xl bg-[#080808] lg:grid-cols-[1.75fr_1fr]">
 
           {/* ── Green gradient panel ── */}
           <div
@@ -126,7 +126,7 @@ function Hero() {
           {/* ── Form panel (dark, no wrapper card) ── */}
           <div
             id="get-the-report"
-            className="flex flex-col justify-center scroll-mt-24 px-8 py-12 md:px-12"
+            className="flex flex-col justify-center scroll-mt-24 px-8 py-12 md:px-12 md:pr-16 xl:pr-24"
           >
             <ReportDownloadForm />
           </div>
