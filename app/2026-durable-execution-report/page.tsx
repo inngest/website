@@ -45,7 +45,7 @@ const STATS = [
 
 export default function Page() {
   return (
-    <div className="text-basis">
+    <div className="bg-[#080808] text-basis">
       <Hero />
       <KeyFindings />
       <Methodology />
@@ -56,14 +56,14 @@ export default function Page() {
 
 function Hero() {
   return (
-    <section className="flex min-h-[calc(100vh-68px)] items-center bg-[#0d0d0d] px-4 py-8 md:px-8">
+    <section className="bg-[#080808] px-4 pb-8 pt-6 md:px-8">
       <div className="mx-auto w-full max-w-[1440px]">
         {/* Unified split card */}
-        <div className="grid overflow-hidden rounded-3xl bg-[#141414] lg:grid-cols-[1.75fr_1fr]">
+        <div className="grid overflow-hidden rounded-3xl bg-[#080808] lg:grid-cols-[1.75fr_1fr]">
 
           {/* ── Green gradient panel ── */}
           <div
-            className="relative m-3 flex flex-col justify-between overflow-hidden rounded-2xl p-8 md:m-4 md:p-12"
+            className="relative m-3 flex min-h-[75vh] flex-col justify-between overflow-hidden rounded-2xl p-8 md:m-4 md:p-12"
             style={{
               background:
                 "radial-gradient(ellipse at 15% 85%, #a8ef3c 0%, #4ec83d 35%, #1b6e30 65%, #0c2414 100%)",
