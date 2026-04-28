@@ -34,9 +34,23 @@ The things Outtake needs to handle—rate limits on both sides, unpredictable ag
 
 ## The solution: Durability in existing code, not adjacent infrastructure
 
+<div className="md:flex md:items-start md:gap-10">
+
+<div className="min-w-0 md:w-1/2">
+
 Outtake knows what they're up against: if attackers can use AI to spin up incredibly convincing clones of enterprise websites within minutes, Outtake's agents have to work even faster. The team also can't afford to waste any time on things that aren't directly contributing to agent improvement.
 
 They use Inngest for both. At its simplest, Inngest is an event-driven API—engineers wrap existing code in steps, and durability, flow control, and error handling come with it. For Outtake, it's also the operational backbone of their context-building pipeline—the layer they employ to ensure models get the right data, in the right format, at the right moment.
+
+</div>
+
+<div className="mt-8 min-w-0 md:mt-0 md:w-1/2">
+
+![image.png](/assets/customers/outtake/Diagram_A.png)
+
+</div>
+
+</div>
 
 > *Our agents reason and act on millions of datapoints at once. With Inngest, we can queue up millions of events without worrying about loss or disruption. That reliability is everything.*
 
@@ -47,8 +61,6 @@ Built on that foundation, the context-building pipeline runs in three stages:
 **2. Detect.** That data flows into advanced detection pipelines where AI agents classify abuse types — phishing, impersonation, intellectual property violations. Pipelines this complex, with many interdependent steps, are where failures cascade. Inngest's [**durable workflows**](https://www.inngest.com/docs/learn/how-functions-are-executed#what-is-durable-execution) ensure that if a third-party API goes down mid-run, the workflow pauses and picks up from the last successful step — no lost data, no duplicate work, no manual intervention.
 
 **3. Remediate.** Guided by each client's brand guidelines, IP policies, and enforcement preferences, agents automatically take action. At millions of events daily, triggering a function run per event isn't sustainable. Inngest's [**batching**](https://www.inngest.com/docs/guides/batching) groups related signals before passing them downstream, meaningfully reducing compute and database load — without Outtake's engineers having to design or maintain a batching layer.
-
-![image.png](/assets/customers/outtake/Diagram_A.png)
 
 ## Beyond retries: How Outtake handles the sticky parts of scale
 
