@@ -63,7 +63,7 @@ function Hero() {
 
           {/* ── Green gradient panel ── */}
           <div
-            className="relative m-3 flex min-h-[75vh] flex-col justify-between overflow-hidden rounded-2xl p-8 md:m-4 md:p-12"
+            className="relative my-3 mr-3 flex min-h-[75vh] flex-col justify-between overflow-hidden rounded-r-2xl p-8 md:my-4 md:mr-4 md:p-12"
             style={{
               background:
                 "radial-gradient(ellipse at 15% 85%, #a8ef3c 0%, #4ec83d 35%, #1b6e30 65%, #0c2414 100%)",
