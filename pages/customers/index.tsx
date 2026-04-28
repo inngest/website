@@ -46,12 +46,10 @@ const caseStudies: {
     name: "Outtake",
     logoScale: 0.7,
     title:
-      "Securing the Internet: How Outtake's AI Agents Dismantle Cyber Attacks at Scale with Inngest",
+      "How Outtake uses Inngest to ensure the reliability of millions of threat scans every minute, without extra infrastructure",
     snippet: (
       <>
-        Outtake's approach demonstrates that effective AI agents require a
-        robust architecture to handle large datasets, manage rate limits, and
-        ensure reliability
+        Outtake chose Inngest to abstract away the complexity of reliability infrastructure, so they can focus on advancing their agents, not worrying about how they break.
       </>
     ),
     tags: ["AI"],
