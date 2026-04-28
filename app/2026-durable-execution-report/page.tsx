@@ -63,7 +63,7 @@ function Hero() {
 
           {/* ── Green gradient panel ── */}
           <div
-            className="relative my-3 mr-3 flex min-h-[75vh] flex-col justify-between overflow-hidden rounded-r-2xl p-8 md:my-4 md:mr-4 md:p-12"
+            className="relative my-3 mr-3 flex flex-col overflow-hidden rounded-r-2xl p-8 md:my-4 md:mr-4 md:p-12"
             style={{
               background:
                 "linear-gradient(135deg, rgba(220,240,210,0.85) 6%, #2C9B63 33%, #79D617 49%, #2C9B63 64%, rgba(220,240,210,0.85) 100%)",
@@ -87,7 +87,7 @@ function Hero() {
             </div>
 
             {/* Centre copy */}
-            <div className="relative z-10 my-8 flex flex-col gap-5">
+            <div className="relative z-10 mb-8 mt-10 flex flex-col gap-5">
               <span className="self-start rounded border border-[#0c1f10]/50 px-3 py-1 font-mono text-xs uppercase tracking-[0.18em] text-[#0c1f10]">
                 AI in Production
               </span>
@@ -111,7 +111,7 @@ function Hero() {
             </div>
 
             {/* Stats tiles anchored to bottom */}
-            <dl className="relative z-10 grid grid-cols-3 gap-3">
+            <dl className="relative z-10 mt-auto grid grid-cols-3 gap-3 pt-8">
               {STATS.map((s) => (
                 <div
                   key={s.id}
