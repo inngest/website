@@ -23,8 +23,10 @@ and any data you want to inject into the function run.
           <Property name="signal" type="string" required>
             A unique identifier for the signal, used to resume this function run.
           </Property>
-          <Property name="timeout" type="string" required>
-            The amount of time to wait to receive the signal. A time string compatible with the [ms](https://npm.im/ms) package, e.g. `"30m"`, `"3 hours"`, or `"2.5d"`.
+          <Property name="timeout" type="string | Date" required>
+            How long to wait to receive the signal. Either:
+            - A duration string compatible with the [ms](https://npm.im/ms) package, e.g. `"30m"`, `"3 hours"`, or `"2.5d"`, or
+            - An absolute `Date`.
 
             If the signal is not received before this timeout, the run will resume with an undefined return value.
           </Property>
@@ -41,7 +43,7 @@ and any data you want to inject into the function run.
   </Col>
   <Col>
   ```ts
-  // Wait 15m for an approval
+  // Wait 7d for an approval
   const approval = await step.waitForSignal("wait-for-approval", {
     signal: "task/71651db4-9f27-466a-a6be-4759b9784b3c",
     timeout: "7d",
