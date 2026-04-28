@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { generateMetadata as buildMetadata } from "src/utils/social";
+import Logo from "src/shared/Icons/Logo";
 
 import ReportDownloadForm from "./ReportDownloadForm";
 
@@ -44,7 +45,7 @@ const STATS = [
 
 export default function Page() {
   return (
-    <div className="bg-canvasBase text-basis">
+    <div className="text-basis">
       <Hero />
       <KeyFindings />
       <Methodology />
@@ -55,55 +56,81 @@ export default function Page() {
 
 function Hero() {
   return (
-    <section className="relative overflow-hidden">
-      <div className="mx-auto grid max-w-7xl gap-10 px-6 py-16 md:py-24 lg:grid-cols-[1.2fr_1fr] lg:gap-16">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0c2a14] via-[#1f7a36] to-[#7ddc4a] p-8 text-carbon-1000 md:p-12">
+    <section className="flex min-h-[calc(100vh-68px)] items-center bg-[#0d0d0d] px-4 py-8 md:px-8">
+      <div className="mx-auto w-full max-w-[1440px]">
+        {/* Unified split card */}
+        <div className="grid overflow-hidden rounded-3xl bg-[#141414] lg:grid-cols-[1.75fr_1fr]">
+
+          {/* ── Green gradient panel ── */}
           <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 opacity-40 mix-blend-overlay"
+            className="relative m-3 flex flex-col justify-between overflow-hidden rounded-2xl p-8 md:m-4 md:p-12"
             style={{
-              backgroundImage:
-                "radial-gradient(ellipse at 70% 20%, rgba(255,255,255,0.6), transparent 60%), radial-gradient(ellipse at 20% 80%, rgba(0,0,0,0.4), transparent 60%)",
+              background:
+                "radial-gradient(ellipse at 15% 85%, #a8ef3c 0%, #4ec83d 35%, #1b6e30 65%, #0c2414 100%)",
             }}
-          />
-          <div className="relative flex flex-col gap-8">
-            <div>
-              <span className="inline-flex items-center rounded-md border border-carbon-1000/40 bg-carbon-1000/5 px-3 py-1 text-xs font-mono uppercase tracking-[0.18em] text-carbon-1000">
+          >
+            {/* Grain texture overlay */}
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 opacity-[0.18]"
+              style={{
+                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E")`,
+                backgroundRepeat: "repeat",
+                backgroundSize: "200px 200px",
+                mixBlendMode: "overlay",
+              }}
+            />
+
+            {/* Logo at top */}
+            <div className="relative z-10">
+              <Logo width={130} fill="#0c1f10" />
+            </div>
+
+            {/* Centre copy */}
+            <div className="relative z-10 my-8 flex flex-col gap-5">
+              <span className="self-start rounded border border-[#0c1f10]/50 px-3 py-1 font-mono text-xs uppercase tracking-[0.18em] text-[#0c1f10]">
                 AI in Production
               </span>
+              <h1 className="font-whyteInktrap text-5xl font-bold leading-[1.05] text-[#0c1f10] sm:text-6xl xl:text-7xl">
+                2026 Durable Execution
+                <br />
+                Benchmark Report
+              </h1>
+              <p className="max-w-lg text-lg text-[#0c1f10]/75">
+                We surveyed 130 engineers about how they build, run, and keep
+                reliable the AI workflows powering their products.
+              </p>
             </div>
-            <h1 className="font-whyteInktrap text-4xl font-semibold leading-[1.05] sm:text-5xl md:text-6xl">
-              2026 Durable Execution
-              <br />
-              Benchmark Report
-            </h1>
-            <p className="max-w-xl text-lg text-carbon-1000/80 md:text-xl">
-              We surveyed 130 engineers about how they build, run, and keep
-              reliable the AI workflows powering their products.
-            </p>
-            <dl className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+
+            {/* Stats tiles anchored to bottom */}
+            <dl className="relative z-10 grid grid-cols-3 gap-3">
               {STATS.map((s) => (
                 <div
                   key={s.id}
-                  className="rounded-xl bg-carbon-1000/10 p-5 ring-1 ring-carbon-1000/20"
+                  className="flex flex-col gap-1 rounded-xl bg-[#0c1f10]/10 p-4 ring-1 ring-[#0c1f10]/20"
                 >
-                  <p className="font-mono text-xs uppercase tracking-[0.18em] text-carbon-1000/70">
+                  <span className="font-mono text-xs text-[#0c1f10]/60">
                     — {s.id}
-                  </p>
-                  <dd className="mt-2 font-whyteInktrap text-4xl font-semibold leading-none">
+                  </span>
+                  <dd className="font-whyteInktrap text-4xl font-bold leading-none text-[#0c1f10]">
                     {s.value}
                   </dd>
-                  <dt className="mt-2 text-xs uppercase tracking-wide text-carbon-1000/80">
+                  <dt className="text-xs font-medium uppercase tracking-wider text-[#0c1f10]/70">
                     {s.label}
                   </dt>
                 </div>
               ))}
             </dl>
           </div>
-        </div>
 
-        <div id="get-the-report" className="scroll-mt-24 self-center">
-          <ReportDownloadForm />
+          {/* ── Form panel (dark, no wrapper card) ── */}
+          <div
+            id="get-the-report"
+            className="flex flex-col justify-center scroll-mt-24 px-8 py-12 md:px-12"
+          >
+            <ReportDownloadForm />
+          </div>
+
         </div>
       </div>
     </section>
@@ -112,7 +139,7 @@ function Hero() {
 
 function KeyFindings() {
   return (
-    <section className="mx-auto max-w-7xl px-6 pb-16 md:pb-24">
+    <section className="mx-auto max-w-7xl px-6 pb-16 pt-20 md:pb-24 md:pt-28">
       <div className="mx-auto max-w-3xl text-center">
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-[rgb(var(--color-matcha-400))]">
           Key findings

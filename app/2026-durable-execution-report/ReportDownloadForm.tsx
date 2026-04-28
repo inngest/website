@@ -19,10 +19,9 @@ import {
 const REPORT_FILENAME = "inngest-2026-durable-execution-benchmark-report.pdf";
 const REPORT_ID = "2026-durable-execution-benchmark";
 
-// TODO: replace this placeholder with the shared <ContentDownloadForm> from
-// marketing's branch (Segment → Customer.io → Attio). The wrapper's submitted
-// state below is the post-submit UI that should remain after the swap, so the
-// integration only needs to call setSubmitted(true) on success.
+// TODO: replace placeholder form with the shared <ContentDownloadForm> from
+// marketing's branch (Segment → Customer.io → Attio). Wire its onSuccess
+// callback to call setSubmitted(true) so the post-submit panel below renders.
 
 function ReportDownloadFormInner() {
   const searchParams = useSearchParams();
@@ -50,7 +49,7 @@ function ReportDownloadFormInner() {
   };
 
   return (
-    <div className="rounded-2xl bg-canvasBase/95 p-8 shadow-xl ring-1 ring-white/10 backdrop-blur md:p-10">
+    <>
       <a
         ref={downloadAnchorRef}
         href={REPORT_PATH}
@@ -59,11 +58,10 @@ function ReportDownloadFormInner() {
         aria-hidden="true"
         tabIndex={-1}
       >
-        Download report
+        download
       </a>
-
       {submitted ? <SubmittedPanel /> : <FormPanel onSubmit={onSubmit} />}
-    </div>
+    </>
   );
 }
 
@@ -73,48 +71,46 @@ function FormPanel({
   onSubmit: (e: FormEvent<HTMLFormElement>) => void;
 }) {
   return (
-    <form onSubmit={onSubmit} className="flex flex-col gap-5">
+    <form onSubmit={onSubmit} className="flex flex-col gap-6">
       <div>
-        <h2 className="font-whyteInktrap text-3xl font-semibold text-basis">
+        <h2 className="font-whyteInktrap text-4xl font-semibold text-white">
           Read the Report
         </h2>
-        <p className="mt-1 text-sm text-subtle">It's free.</p>
+        <p className="mt-1 text-base text-white/60">It's free.</p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Field name="firstName" label="First name" required />
-        <Field name="lastName" label="Last name" required />
-      </div>
-
-      <Field name="email" label="Work email" type="email" required />
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Field name="jobTitle" label="Job title" />
+      <div className="flex flex-col gap-4">
+        <Field name="name" label="Name" required />
+        <Field name="email" label="Email Address" type="email" required />
         <Field name="company" label="Company" />
       </div>
 
-      <label className="flex items-start gap-3 text-sm text-subtle">
-        <input
-          type="checkbox"
-          name="emailOptIn"
-          defaultChecked
-          className="mt-1 h-4 w-4 rounded border-muted bg-transparent accent-[rgb(var(--color-matcha-400))]"
-        />
-        <span>Email me occasional Inngest research and product updates.</span>
-      </label>
-
-      <p className="text-xs text-muted">
-        By submitting this form, you are sharing your information with Inngest
-        and agree to our{" "}
-        <a className="underline hover:text-basis" href="/privacy?ref=2026-durable-execution-report">
-          Privacy Policy
-        </a>
-        .
-      </p>
+      <div className="flex flex-col gap-3">
+        <label className="flex cursor-pointer items-center gap-3 text-sm text-white/80">
+          <input
+            type="checkbox"
+            name="emailOptIn"
+            defaultChecked
+            className="h-4 w-4 rounded border-white/20 bg-white/10 accent-[#a8ef3c]"
+          />
+          Email Opt-In
+        </label>
+        <p className="text-xs text-white/50">
+          By submitting this form, you are sharing your information with Inngest
+          and agree to our{" "}
+          <a
+            className="underline hover:text-white/80"
+            href="/privacy?ref=2026-durable-execution-report"
+          >
+            Privacy Policy
+          </a>
+          .
+        </p>
+      </div>
 
       <button
         type="submit"
-        className="group inline-flex items-center justify-center gap-2 rounded-md bg-cta px-6 py-3 text-sm font-medium text-carbon-1000 transition-all hover:bg-ctaHover"
+        className="group inline-flex items-center gap-2 self-start rounded-md bg-[#a8ef3c] px-6 py-3 text-sm font-semibold text-[#0c1f10] transition-all hover:bg-[#baf54d]"
       >
         Submit
         <span aria-hidden="true" className="transition-transform group-hover:translate-x-0.5">
@@ -129,22 +125,22 @@ function SubmittedPanel() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <p className="text-xs uppercase tracking-[0.2em] text-[rgb(var(--color-matcha-400))]">
+        <p className="text-xs uppercase tracking-[0.2em] text-[#a8ef3c]">
           Thanks for downloading
         </p>
-        <h2 className="mt-2 font-whyteInktrap text-3xl font-semibold text-basis">
+        <h2 className="mt-2 font-whyteInktrap text-4xl font-semibold text-white">
           Your report is ready.
         </h2>
-        <p className="mt-2 text-sm text-subtle">
-          The download should start automatically. If it doesn't, use the button
-          below.
+        <p className="mt-2 text-sm text-white/60">
+          The download should start automatically. Use the button below if it
+          doesn't.
         </p>
       </div>
 
       <a
         href={REPORT_PATH}
         download={REPORT_FILENAME}
-        className="group inline-flex items-center justify-center gap-2 rounded-md bg-cta px-6 py-3 text-sm font-medium text-carbon-1000 transition-all hover:bg-ctaHover"
+        className="group inline-flex items-center gap-2 self-start rounded-md bg-[#a8ef3c] px-6 py-3 text-sm font-semibold text-[#0c1f10] transition-all hover:bg-[#baf54d]"
       >
         Download the report (PDF)
         <span aria-hidden="true" className="transition-transform group-hover:translate-x-0.5">
@@ -152,10 +148,10 @@ function SubmittedPanel() {
         </span>
       </a>
 
-      <div className="border-t border-subtle pt-6">
-        <p className="text-sm font-medium text-basis">Share key findings</p>
-        <p className="mt-1 text-xs text-subtle">
-          Each link previews a specific finding from the report on social.
+      <div className="border-t border-white/10 pt-6">
+        <p className="text-sm font-medium text-white">Share key findings</p>
+        <p className="mt-1 text-xs text-white/50">
+          Each link shows a specific finding as the social preview.
         </p>
         <ul className="mt-4 flex flex-col gap-2">
           {(Object.keys(REPORT_GRAPHS) as ReportGraphId[]).map((id) => {
@@ -164,9 +160,9 @@ function SubmittedPanel() {
             return (
               <li
                 key={id}
-                className="flex flex-col gap-2 rounded-lg border border-subtle bg-surfaceSubtle/40 p-3 sm:flex-row sm:items-center sm:justify-between"
+                className="flex flex-col gap-2 rounded-lg border border-white/10 bg-white/5 p-3 sm:flex-row sm:items-center sm:justify-between"
               >
-                <span className="pr-2 text-sm text-basis">{graph.title}</span>
+                <span className="pr-2 text-xs text-white/80">{graph.title}</span>
                 <span className="flex shrink-0 gap-2">
                   <ShareLink network="twitter" url={shareUrl} text={graph.shareText} />
                   <ShareLink network="linkedin" url={shareUrl} text={graph.shareText} />
@@ -193,18 +189,15 @@ function Field({
 }) {
   return (
     <label className="flex flex-col gap-1.5">
-      <span className="text-xs font-medium text-subtle">
-        {label}
-        {required && <span className="ml-0.5 text-[rgb(var(--color-matcha-400))]">*</span>}
-      </span>
+      <span className="text-sm font-medium text-white/80">{label}</span>
       <input
         type={type}
         name={name}
         required={required}
         autoCapitalize="off"
         autoCorrect="off"
-        className="rounded-md border border-muted bg-transparent px-3 py-2 text-sm text-basis placeholder:text-muted focus:border-transparent focus:outline-none focus:ring-1 focus:ring-[rgb(var(--color-border-success))]"
-        placeholder=" "
+        className="rounded-md border border-white/15 bg-white/5 px-3 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-transparent focus:outline-none focus:ring-1 focus:ring-[#a8ef3c]"
+        placeholder="Placeholder text"
       />
     </label>
   );
@@ -238,7 +231,7 @@ function ShareLink({
       rel="noreferrer noopener"
       aria-label={label}
       title={label}
-      className="inline-flex h-8 items-center justify-center rounded-md border border-subtle px-3 text-xs font-medium text-basis transition-colors hover:bg-surfaceSubtle"
+      className="inline-flex h-8 items-center justify-center rounded-md border border-white/15 px-3 text-xs font-medium text-white/70 transition-colors hover:border-white/30 hover:text-white"
     >
       {network === "twitter" ? "X" : "in"}
     </a>
