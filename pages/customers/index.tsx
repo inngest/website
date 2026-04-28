@@ -46,7 +46,7 @@ const caseStudies: {
     name: "Outtake",
     logoScale: 0.7,
     title:
-      "How Outtake uses Inngest to ensure the reliability of millions of threat scans every minute, without extra infrastructure",
+      "How Outtake uses Inngest to ensure the reliability of millions of thteat scans every minute",
     snippet: (
       <>
         Outtake chose Inngest to abstract away the complexity of reliability infrastructure, so they can focus on advancing their agents, not worrying about how they break.
