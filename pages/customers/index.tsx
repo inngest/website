@@ -46,7 +46,7 @@ const caseStudies: {
     name: "Outtake",
     logoScale: 0.7,
     title:
-      "How Outtake uses Inngest to ensure the reliability of millions of thteat scans every minute",
+      "How Outtake uses Inngest to ensure the reliability of millions of threat scans every minute",
     snippet: (
       <>
         Outtake's approach demonstrates that effective AI agents require a
