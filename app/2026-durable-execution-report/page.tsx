@@ -92,13 +92,21 @@ function Hero() {
                 AI in Production
               </span>
               <h1 className="font-whyteInktrap text-5xl font-bold leading-[1.05] text-[#0c1f10] sm:text-6xl xl:text-7xl">
-                2026 Durable Execution
-                <br />
-                Benchmark Report
+                AI in Production: The 2026 Benchmark Report
               </h1>
-              <p className="max-w-lg text-lg text-[#0c1f10]/75">
-                We surveyed 130 engineers about how they build, run, and keep
-                reliable the AI workflows powering their products.
+              <p className="max-w-lg text-xl italic text-[#0c1f10]/80">
+                How engineering teams are building, breaking, and scaling AI in
+                production.
+              </p>
+              <p className="max-w-lg text-base text-[#0c1f10]/70">
+                We surveyed 130 backend, full-stack, and AI engineers about
+                what it takes to run reliable AI workflows in production. We
+                wanted to know what's causing failures, and which infrastructure
+                choices—across orchestration, observability, evals, and agent
+                frameworks—actually reduce the burden of reliability.
+                <br />
+                <br />
+                Explore the patterns that predict scaling confidence.
               </p>
             </div>
 
