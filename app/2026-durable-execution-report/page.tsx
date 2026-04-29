@@ -72,8 +72,8 @@ export default function Page() {
 
 function FinalCTA() {
   return (
-    <section className="border-t border-subtle">
-      <div className="mx-auto max-w-7xl px-6 py-16 text-center md:py-24">
+    <section className="border-b border-white/10 bg-black">
+      <div className="mx-auto max-w-4xl px-6 py-16 text-center md:py-24">
         <h2 className="font-whyteInktrap text-3xl font-semibold text-basis md:text-4xl">
           Get the full report.
         </h2>
@@ -84,10 +84,10 @@ function FinalCTA() {
         <div className="mt-8">
           <a
             href="#get-the-report"
-            className="inline-flex items-center gap-2 rounded-md bg-cta px-6 py-3 text-sm font-medium text-carbon-1000 transition-all hover:bg-ctaHover"
+            className="group inline-flex items-center gap-2 rounded-md bg-[#a8ef3c] px-6 py-3 text-sm font-semibold text-[#0c1f10] transition-all hover:bg-[#baf54d]"
           >
             Download the full report
-            <span aria-hidden="true">→</span>
+            <span aria-hidden="true" className="transition-transform group-hover:translate-x-0.5">→</span>
           </a>
         </div>
       </div>
@@ -176,7 +176,7 @@ function KeyFindings() {
 function Methodology() {
   return (
     <section>
-      <div className="mx-auto grid max-w-7xl gap-10 px-6 py-16 md:grid-cols-[1fr_2fr] md:py-24">
+      <div className="mx-auto grid max-w-4xl gap-10 px-6 py-20 md:grid-cols-[1fr_2fr] md:py-28">
         <div>
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-[rgb(var(--color-matcha-400))]">
             Methodology

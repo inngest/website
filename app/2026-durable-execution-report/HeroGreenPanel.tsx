@@ -110,7 +110,7 @@ export function HeroGreenPanel() {
           <p className="mb-4 font-mono text-xs uppercase tracking-[0.2em] text-[#0c1f10]/70">
             With participation from engineers at
           </p>
-          <div className="grid grid-cols-5 items-center justify-items-center gap-x-8 gap-y-6">
+          <div className="grid grid-cols-3 items-center justify-items-center gap-x-8 gap-y-6 sm:grid-cols-5">
             {LOGOS.map((l) => (
               <Image
                 key={l.name}
