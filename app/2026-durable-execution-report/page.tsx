@@ -47,46 +47,37 @@ const KEY_FINDINGS = [
 
 export default function Page() {
   return (
-    <div className="bg-[#212121] text-basis">
-      <Hero />
-      <div
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(33,33,33,0.65), rgba(33,33,33,0.65)), url('/assets/report-assets/report_texture.png')",
-          backgroundRepeat: "no-repeat, no-repeat",
-          backgroundSize: "100% 100%, 100% 100%",
-        }}
-      >
-        <KeyFindings />
-        <Methodology />
-        <FinalCTA />
-      </div>
-    </div>
-  );
-}
-
-function Hero() {
-  return (
-    <section className="bg-black pt-0">
-      <div className="w-full">
-        {/* Unified split card */}
-        <div className="grid overflow-hidden rounded-r-3xl bg-black lg:grid-cols-[1.75fr_1fr]">
-
-          {/* ── Green gradient panel ── */}
+    <div className="flex min-h-screen bg-black text-basis">
+      {/* Left: all scrollable content */}
+      <div className="min-w-0 flex-1 bg-[#212121]">
+        <div className="bg-black">
           <HeroGreenPanel />
-
-          {/* ── Form panel (dark, no wrapper card) ── */}
-          <div
-            id="get-the-report"
-            className="flex flex-col justify-center scroll-mt-24 px-8 py-12 md:px-12 md:pr-16 xl:pr-24"
-            style={{ backgroundColor: "#000000" }}
-          >
-            <ReportDownloadForm />
-          </div>
-
+        </div>
+        <div
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(33,33,33,0.65), rgba(33,33,33,0.65)), url('/assets/report-assets/report_texture.png')",
+            backgroundRepeat: "no-repeat, no-repeat",
+            backgroundSize: "100% 100%, 100% 100%",
+          }}
+        >
+          <KeyFindings />
+          <Methodology />
+          <FinalCTA />
         </div>
       </div>
-    </section>
+
+      {/* Right: sticky form */}
+      <div className="w-[400px] shrink-0 xl:w-[440px]">
+        <div
+          id="get-the-report"
+          className="sticky top-0 flex h-screen flex-col justify-center overflow-y-auto px-8 py-12"
+          style={{ backgroundColor: "#000000" }}
+        >
+          <ReportDownloadForm />
+        </div>
+      </div>
+    </div>
   );
 }
 
