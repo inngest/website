@@ -3,6 +3,7 @@ import { generateMetadata as buildMetadata } from "src/utils/social";
 import Logo from "src/shared/Icons/Logo";
 
 import ReportDownloadForm from "./ReportDownloadForm";
+import { ObservabilityChart } from "./ObservabilityChart";
 
 const PAGE_TITLE = "AI in Production: The 2026 Durable Execution Benchmark Report";
 const PAGE_DESCRIPTION =
@@ -204,6 +205,11 @@ function KeyFindings() {
           </li>
         ))}
       </ul>
+
+      {/* Observability gap chart */}
+      <div className="mt-10">
+        <ObservabilityChart />
+      </div>
     </section>
   );
 }
