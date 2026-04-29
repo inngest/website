@@ -40,7 +40,6 @@ export function ObservabilityChart() {
                style={{ opacity: hovered !== null && hovered !== i ? 0.4 : 1, transition: "opacity 0.15s" }}>
               {d.label}
             </p>
-            <p className="mt-0.5 font-mono text-xs text-white/40">n={d.n}</p>
           </div>
 
           <div
@@ -74,10 +73,6 @@ export function ObservabilityChart() {
         </div>
       )}
 
-      <p className="mt-2 font-mono text-xs text-white/40">
-        Q5: When a workflow fails in production, how long does it typically take
-        to understand what went wrong? All respondents n=130.
-      </p>
     </div>
   );
 }

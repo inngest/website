@@ -129,9 +129,6 @@ export function InfrastructureChart() {
         </div>
       )}
 
-      <p className="mt-4 font-mono text-xs text-white/30">
-        Net = % confident (n=73) minus % unconfident (n=15). *** p&lt;0.01, ** p&lt;0.05, * p&lt;0.10, ns not significant. Greyed rows shown for context only.
-      </p>
     </div>
   );
 }

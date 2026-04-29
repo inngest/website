@@ -120,11 +120,11 @@ export function ReliabilityChart() {
       <div className="mb-4 flex flex-wrap gap-6">
         <div className="flex items-center gap-2">
           <span className="h-3 w-3 rounded-sm" style={{ background: AI_COLOR }} />
-          <span className="text-xs text-white/70">AI in production (n=88)</span>
+          <span className="text-xs text-white/70">AI in production</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="h-3 w-3 rounded-sm" style={{ background: NOAI_COLOR }} />
-          <span className="text-xs text-white/70">No AI in production (n=42)</span>
+          <span className="text-xs text-white/70">No AI in production</span>
         </div>
       </div>
 
@@ -161,9 +161,6 @@ export function ReliabilityChart() {
       <p className="mt-4 text-sm italic text-white/50">
         AI teams are twice as likely to be in the 26–50% band (20% vs. 10%).
         Non-AI teams are more likely to be lean — 43% spending less than 10% vs. 32% of AI teams.
-      </p>
-      <p className="mt-3 font-mono text-xs text-white/40">
-        Q8: Roughly what share of your team's engineering time goes to reliability work rather than shipping new features? % of each group in each band.
       </p>
     </div>
   );
