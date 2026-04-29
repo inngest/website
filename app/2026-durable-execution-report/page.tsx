@@ -75,9 +75,7 @@ function FinalCTA() {
   return (
     <section
       className="border-b border-white/10"
-      style={{
-        background: "linear-gradient(135deg, #0c1f10 0%, #111 60%)",
-      }}
+      style={{ backgroundColor: "rgba(0, 0, 0, 0.3)" }}
     >
       <div className="mx-auto max-w-4xl px-6 py-16 text-center md:py-24">
         <h2 className="font-whyteInktrap text-3xl font-semibold text-basis md:text-4xl">
