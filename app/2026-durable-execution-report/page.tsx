@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { generateMetadata as buildMetadata } from "src/utils/social";
-import Logo from "src/shared/Icons/Logo";
-
 import ReportDownloadForm from "./ReportDownloadForm";
 import { ObservabilityChart } from "./ObservabilityChart";
 import { ReliabilityChart } from "./ReliabilityChart";
 import { InfrastructureChart } from "./InfrastructureChart";
 import { StatTiles } from "./StatTiles";
+import { HeroGreenPanel } from "./HeroGreenPanel";
+import { ParallaxCard } from "./ParallaxCard";
 
 const PAGE_TITLE = "AI in Production: The 2026 Durable Execution Benchmark Report";
 const PAGE_DESCRIPTION =
@@ -69,71 +69,7 @@ function Hero() {
         <div className="grid overflow-hidden rounded-r-3xl bg-black lg:grid-cols-[1.75fr_1fr]">
 
           {/* ── Green gradient panel ── */}
-          <div
-            className="relative mr-3 flex min-h-[640px] flex-col overflow-hidden rounded-r-2xl p-8 md:mr-4 md:min-h-[820px] md:p-12 lg:min-h-[900px]"
-            style={{
-              background:
-                "linear-gradient(135deg, rgba(220,240,210,0.85) 6%, #2C9B63 33%, #79D617 49%, #2C9B63 64%, rgba(220,240,210,0.85) 100%)",
-            }}
-          >
-            {/* Grain texture overlay */}
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-0"
-              style={{
-                backgroundImage: "url('/assets/report-assets/report_texture.png')",
-                backgroundRepeat: "no-repeat",
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-                mixBlendMode: "soft-light",
-                opacity: 0.25,
-              }}
-            />
-
-            {/* Decorative shape accent */}
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-0"
-              style={{
-                backgroundImage: "url('/assets/report-assets/report_shape.png')",
-                backgroundRepeat: "no-repeat",
-                backgroundSize: "contain",
-                backgroundPosition: "center",
-                mixBlendMode: "multiply",
-                opacity: 0.05,
-              }}
-            />
-
-            {/* Logo at top */}
-            <div className="relative z-10">
-              <Logo width={130} fill="#0c1f10" />
-            </div>
-
-            {/* Centre copy */}
-            <div className="relative z-10 mb-8 mt-10 flex flex-col gap-5">
-              <span className="self-start rounded border border-[#0c1f10]/50 px-3 py-1 font-mono text-xs uppercase tracking-[0.18em] text-[#0c1f10]">
-                AI in Production
-              </span>
-              <h1 className="font-whyteInktrap text-5xl font-bold leading-[1.05] text-[#0c1f10] sm:text-6xl xl:text-7xl">
-                AI in Production: The 2026 Benchmark Report
-              </h1>
-              <p className="max-w-lg text-xl italic text-[#0c1f10]/80">
-                How engineering teams are building, breaking, and scaling AI in
-                production.
-              </p>
-              <p className="max-w-lg text-base text-[#0c1f10]/70">
-                We surveyed 130 backend, full-stack, and AI engineers about
-                what it takes to run reliable AI workflows in production. We
-                wanted to know what's causing failures, and which infrastructure
-                choices—across orchestration, observability, evals, and agent
-                frameworks—actually reduce the burden of reliability.
-                <br />
-                <br />
-                Explore the patterns that predict scaling confidence.
-              </p>
-            </div>
-
-          </div>
+          <HeroGreenPanel />
 
           {/* ── Form panel (dark, no wrapper card) ── */}
           <div
@@ -167,12 +103,8 @@ function KeyFindings() {
         </p>
       </div>
       <ul className="mt-12 flex flex-col gap-6">
-        {KEY_FINDINGS.map((finding) => (
-          <li
-            key={finding.eyebrow}
-            className="flex flex-col gap-4 rounded-2xl border border-white/5 p-6 md:p-8"
-            style={{ background: "rgba(33, 33, 33, 0.98)" }}
-          >
+        {KEY_FINDINGS.map((finding, i) => (
+          <ParallaxCard key={finding.eyebrow} index={i}>
             <p className="font-mono text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-matcha-400))]">
               {finding.eyebrow}
             </p>
@@ -200,7 +132,7 @@ function KeyFindings() {
                 <InfrastructureChart />
               </div>
             )}
-          </li>
+          </ParallaxCard>
         ))}
       </ul>
     </section>
