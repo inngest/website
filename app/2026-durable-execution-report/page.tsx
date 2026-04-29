@@ -51,8 +51,7 @@ export default function Page() {
         style={{
           backgroundImage: "url('/assets/report-assets/report_texture.png')",
           backgroundRepeat: "no-repeat",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
+          backgroundSize: "100% 100%",
         }}
       >
         <KeyFindings />
