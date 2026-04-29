@@ -89,17 +89,14 @@ export function HeroGreenPanel() {
         </div>
 
         <div className="mb-8 mt-10 flex flex-col gap-5">
-          <span className="self-start rounded border border-[#0c1f10]/50 px-3 py-1 font-mono text-xs uppercase tracking-[0.18em] text-[#0c1f10]">
-            AI in Production
-          </span>
-          <h1 className="font-whyteInktrap text-5xl font-bold leading-[1.05] text-[#0c1f10] sm:text-6xl xl:text-7xl">
+          <h1 className="font-whyteInktrap text-5xl font-black leading-[1.05] text-[#0c1f10] sm:text-6xl xl:text-7xl">
             AI in Production: The 2026 Benchmark Report
           </h1>
-          <p className="max-w-lg text-xl italic text-[#0c1f10]/80">
+          <p className="max-w-2xl text-xl font-semibold italic text-[#0c1f10]">
             How engineering teams are building, breaking, and scaling AI in
             production.
           </p>
-          <p className="max-w-lg text-base text-[#0c1f10]/70">
+          <p className="max-w-2xl text-base font-medium text-[#0c1f10]">
             We surveyed 130 backend, full-stack, and AI engineers about
             what it takes to run reliable AI workflows in production. We
             wanted to know what&apos;s causing failures, and which infrastructure
