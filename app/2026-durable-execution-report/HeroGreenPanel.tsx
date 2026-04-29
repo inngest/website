@@ -51,7 +51,7 @@ export function HeroGreenPanel() {
           backgroundSize: "cover",
           backgroundPosition: "center",
           mixBlendMode: "soft-light",
-          opacity: 0.25,
+          opacity: 0.1,
           transform: `translateY(${progress * 0.35}px)`,
           willChange: "transform",
         }}
