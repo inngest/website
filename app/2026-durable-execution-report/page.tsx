@@ -7,6 +7,7 @@ import { InfrastructureChart } from "./InfrastructureChart";
 import { StatTiles } from "./StatTiles";
 import { HeroGreenPanel } from "./HeroGreenPanel";
 import { ParallaxCard } from "./ParallaxCard";
+import { ScrollToFormButton } from "./ScrollToFormButton";
 
 const PAGE_TITLE = "AI in Production: The 2026 Durable Execution Benchmark Report";
 const PAGE_DESCRIPTION =
@@ -72,7 +73,12 @@ export default function Page() {
 
 function FinalCTA() {
   return (
-    <section className="border-b border-white/10 bg-black">
+    <section
+      className="border-b border-white/10"
+      style={{
+        background: "linear-gradient(135deg, #0c1f10 0%, #111 60%)",
+      }}
+    >
       <div className="mx-auto max-w-4xl px-6 py-16 text-center md:py-24">
         <h2 className="font-whyteInktrap text-3xl font-semibold text-basis md:text-4xl">
           Get the full report.
@@ -82,13 +88,7 @@ function FinalCTA() {
           confidence — all in the PDF.
         </p>
         <div className="mt-8">
-          <a
-            href="#get-the-report"
-            className="group inline-flex items-center gap-2 rounded-md bg-[#a8ef3c] px-6 py-3 text-sm font-semibold text-[#0c1f10] transition-all hover:bg-[#baf54d]"
-          >
-            Download the full report
-            <span aria-hidden="true" className="transition-transform group-hover:translate-x-0.5">→</span>
-          </a>
+          <ScrollToFormButton />
         </div>
       </div>
     </section>
@@ -122,7 +122,7 @@ function Hero() {
 
 function KeyFindings() {
   return (
-    <section className="mx-auto max-w-4xl px-6 pb-16 pt-20 md:pb-24 md:pt-28">
+    <section className="mx-auto max-w-4xl px-6 pb-8 pt-20 md:pb-12 md:pt-28">
       <div className="max-w-3xl">
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-[rgb(var(--color-matcha-400))]">
           Key findings
@@ -176,7 +176,7 @@ function KeyFindings() {
 function Methodology() {
   return (
     <section>
-      <div className="mx-auto grid max-w-4xl gap-10 px-6 py-20 md:grid-cols-[1fr_2fr] md:py-28">
+      <div className="mx-auto grid max-w-4xl gap-10 px-6 py-14 md:grid-cols-[1fr_2fr] md:py-20">
         <div>
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-[rgb(var(--color-matcha-400))]">
             Methodology
