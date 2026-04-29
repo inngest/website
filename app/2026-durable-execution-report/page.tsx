@@ -47,43 +47,78 @@ const KEY_FINDINGS = [
 
 export default function Page() {
   return (
-    <div className="flex min-h-screen bg-black text-basis">
-      {/* Left: all scrollable content */}
-      <div className="min-w-0 flex-1 bg-[#212121]">
-        <div className="bg-black">
-          <HeroGreenPanel />
-        </div>
-        <div
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(33,33,33,0.65), rgba(33,33,33,0.65)), url('/assets/report-assets/report_texture.png')",
-            backgroundRepeat: "no-repeat, no-repeat",
-            backgroundSize: "100% 100%, 100% 100%",
-          }}
-        >
-          <KeyFindings />
-          <Methodology />
-        </div>
-      </div>
-
-      {/* Right: sticky form */}
-      <div className="w-[400px] shrink-0 xl:w-[440px]">
-        <div
-          id="get-the-report"
-          className="sticky top-0 flex h-screen flex-col justify-center overflow-y-auto px-8 py-12"
-          style={{ backgroundColor: "#000000" }}
-        >
-          <ReportDownloadForm />
-        </div>
+    <div className="bg-[#212121] text-basis">
+      <Hero />
+      <div
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(33,33,33,0.65), rgba(33,33,33,0.65)), url('/assets/report-assets/report_texture.png')",
+          backgroundRepeat: "no-repeat, no-repeat",
+          backgroundSize: "100% 100%, 100% 100%",
+        }}
+      >
+        <KeyFindings />
+        <Methodology />
+        <FinalCTA />
       </div>
     </div>
+  );
+}
+
+function FinalCTA() {
+  return (
+    <section className="border-t border-subtle">
+      <div className="mx-auto max-w-7xl px-6 py-16 text-center md:py-24">
+        <h2 className="font-whyteInktrap text-3xl font-semibold text-basis md:text-4xl">
+          Get the full report.
+        </h2>
+        <p className="mx-auto mt-4 max-w-xl text-base text-subtle md:text-lg">
+          Charts, breakouts by team size, and the patterns that predict scaling
+          confidence — all in the PDF.
+        </p>
+        <div className="mt-8">
+          <a
+            href="#get-the-report"
+            className="inline-flex items-center gap-2 rounded-md bg-cta px-6 py-3 text-sm font-medium text-carbon-1000 transition-all hover:bg-ctaHover"
+          >
+            Download the full report
+            <span aria-hidden="true">→</span>
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Hero() {
+  return (
+    <section className="bg-black pt-0">
+      <div className="w-full">
+        {/* Unified split card */}
+        <div className="grid overflow-hidden rounded-r-3xl bg-black lg:grid-cols-[1.75fr_1fr]">
+
+          {/* ── Green gradient panel ── */}
+          <HeroGreenPanel />
+
+          {/* ── Form panel (dark, no wrapper card) ── */}
+          <div
+            id="get-the-report"
+            className="flex flex-col justify-center scroll-mt-24 px-8 py-12 md:px-12 md:pr-16 xl:pr-24"
+            style={{ backgroundColor: "#000000" }}
+          >
+            <ReportDownloadForm />
+          </div>
+
+        </div>
+      </div>
+    </section>
   );
 }
 
 function KeyFindings() {
   return (
     <section className="mx-auto max-w-7xl px-6 pb-16 pt-20 md:pb-24 md:pt-28">
-      <div className="mx-auto max-w-3xl text-center">
+      <div className="max-w-3xl">
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-[rgb(var(--color-matcha-400))]">
           Key findings
         </p>
@@ -162,4 +197,3 @@ function Methodology() {
     </section>
   );
 }
-
