@@ -6,8 +6,8 @@ const MAX_NET = 40;
 
 const DATA = [
   { label: "Durable execution + using evals + report declining reliability overhead",                                  net: 36, conf: 49, unconf: 13, significant: true  },
-  { label: "Durable execution + using evals",                                                                          net: 33, conf: 60, unconf: 27, significant: true  },
   { label: "Durable execution + using orchestration platform for observability + report declining reliability overhead", net: 34, conf: 47, unconf: 13, significant: true  },
+  { label: "Durable execution + using evals",                                                                          net: 33, conf: 60, unconf: 27, significant: true  },
   { label: "Using evals + report under an hour to debug",                                                              net: 32, conf: 32, unconf: 0,  significant: false },
   { label: "Durable execution + report under an hour to debug",                                                        net: 30, conf: 37, unconf: 7,  significant: false },
   { label: "Using orchestration platform for observability + report under an hour to debug",                           net: 27, conf: 27, unconf: 0,  significant: false },
