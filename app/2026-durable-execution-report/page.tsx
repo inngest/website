@@ -63,7 +63,6 @@ export default function Page() {
         >
           <KeyFindings />
           <Methodology />
-          <FinalCTA />
         </div>
       </div>
 
@@ -136,7 +135,7 @@ function KeyFindings() {
 
 function Methodology() {
   return (
-    <section className="border-t border-subtle">
+    <section>
       <div className="mx-auto grid max-w-7xl gap-10 px-6 py-16 md:grid-cols-[1fr_2fr] md:py-24">
         <div>
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-[rgb(var(--color-matcha-400))]">
@@ -164,27 +163,3 @@ function Methodology() {
   );
 }
 
-function FinalCTA() {
-  return (
-    <section className="border-t border-subtle">
-      <div className="mx-auto max-w-7xl px-6 py-16 text-center md:py-24">
-        <h2 className="font-whyteInktrap text-3xl font-semibold text-basis md:text-4xl">
-          Get the full report.
-        </h2>
-        <p className="mx-auto mt-4 max-w-xl text-base text-subtle md:text-lg">
-          Charts, breakouts by team size, and the patterns that predict scaling
-          confidence — all in the PDF.
-        </p>
-        <div className="mt-8">
-          <a
-            href="#get-the-report"
-            className="inline-flex items-center gap-2 rounded-md bg-cta px-6 py-3 text-sm font-medium text-carbon-1000 transition-all hover:bg-ctaHover"
-          >
-            Download the full report
-            <span aria-hidden="true">→</span>
-          </a>
-        </div>
-      </div>
-    </section>
-  );
-}
