@@ -35,7 +35,7 @@ export function HeroGreenPanel() {
   return (
     <div
       ref={ref}
-      className="relative mr-3 flex min-h-screen flex-col overflow-hidden rounded-r-2xl md:mr-4"
+      className="relative mr-3 flex min-h-[85vh] flex-col overflow-hidden rounded-r-2xl md:mr-4"
       style={{
         background:
           "linear-gradient(135deg, #2C9B63 0%, #79D617 22%, #a8ef3c 50%, #79D617 78%, #2C9B63 100%)",
