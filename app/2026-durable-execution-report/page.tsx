@@ -45,21 +45,35 @@ const STATS = [
 
 export default function Page() {
   return (
-    <div className="bg-[#080808] text-basis">
+    <div className="bg-[#212121] text-basis">
       <Hero />
-      <KeyFindings />
-      <Methodology />
-      <FinalCTA />
+      <div className="relative">
+        {/* Body texture overlay */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0"
+          style={{
+            backgroundImage: "url('/assets/report-assets/report_texture.png')",
+            backgroundRepeat: "repeat",
+            backgroundSize: "600px 600px",
+            mixBlendMode: "hard-light",
+            opacity: 0.25,
+          }}
+        />
+        <KeyFindings />
+        <Methodology />
+        <FinalCTA />
+      </div>
     </div>
   );
 }
 
 function Hero() {
   return (
-    <section className="bg-[#080808] pb-8 pt-0">
+    <section className="bg-[#212121] pb-8 pt-0">
       <div className="w-full">
         {/* Unified split card */}
-        <div className="grid overflow-hidden rounded-r-3xl bg-[#080808] lg:grid-cols-[1.75fr_1fr]">
+        <div className="grid overflow-hidden rounded-r-3xl bg-[#212121] lg:grid-cols-[1.75fr_1fr]">
 
           {/* ── Green gradient panel ── */}
           <div
@@ -181,7 +195,8 @@ function KeyFindings() {
         {KEY_FINDINGS.map((finding) => (
           <li
             key={finding.eyebrow}
-            className="flex flex-col gap-4 rounded-2xl border border-subtle bg-surfaceSubtle/40 p-6 md:p-8"
+            className="flex flex-col gap-4 rounded-2xl p-6 md:p-8"
+            style={{ background: "#212121", mixBlendMode: "hard-light" }}
           >
             <p className="font-mono text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-matcha-400))]">
               {finding.eyebrow}
