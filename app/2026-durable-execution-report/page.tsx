@@ -47,16 +47,20 @@ export default function Page() {
   return (
     <div className="bg-[#212121] text-basis">
       <Hero />
-      <div
-        style={{
-          backgroundImage: "url('/assets/report-assets/report_texture.png')",
-          backgroundRepeat: "no-repeat",
-          backgroundSize: "100% 100%",
-        }}
-      >
+      <div className="relative">
         <KeyFindings />
         <Methodology />
         <FinalCTA />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0"
+          style={{
+            backgroundImage: "url('/assets/report-assets/report_texture.png')",
+            backgroundRepeat: "no-repeat",
+            backgroundSize: "100% 100%",
+            opacity: 0.3,
+          }}
+        />
       </div>
     </div>
   );
