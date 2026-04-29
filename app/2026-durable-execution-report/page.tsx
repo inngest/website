@@ -65,10 +65,10 @@ export default function Page() {
 
 function Hero() {
   return (
-    <section className="bg-[#212121] pb-8 pt-0">
+    <section className="bg-black pt-0">
       <div className="w-full">
         {/* Unified split card */}
-        <div className="grid overflow-hidden rounded-r-3xl bg-[#212121] lg:grid-cols-[1.75fr_1fr]">
+        <div className="grid overflow-hidden rounded-r-3xl bg-black lg:grid-cols-[1.75fr_1fr]">
 
           {/* ── Green gradient panel ── */}
           <div
