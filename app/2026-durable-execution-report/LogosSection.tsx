@@ -1,16 +1,16 @@
 import Image from "next/image";
 
 const COMPANIES = [
-  { name: "Cohere",              logo: "/assets/customers/cohere-logo-white.svg",         h: 20 },
-  { name: "11x",                 logo: "/assets/customers/11x-logo.svg",                   h: 22 },
-  { name: "LiveKit",             logo: null,                                                h: 20 },
-  { name: "mintlify",            logo: null,                                                h: 20 },
-  { name: "BÆRSkin",            logo: "/assets/customers/baerskintactical-logo-white.svg", h: 28 },
-  { name: "Stuut Technologies",  logo: null,                                                h: 20 },
-  { name: "Mercury",             logo: null,                                                h: 20 },
-  { name: "Wealthfront",         logo: null,                                                h: 20 },
-  { name: "Gnosis Freight",      logo: null,                                                h: 20 },
-  { name: "Remitly",             logo: null,                                                h: 20 },
+  { name: "Cohere",              logo: "/assets/report-assets/logos/Cohere.png",     h: 22 },
+  { name: "11x",                 logo: "/assets/report-assets/logos/11x.png",        h: 22 },
+  { name: "LiveKit",             logo: "/assets/report-assets/logos/Livekit.png",    h: 22 },
+  { name: "mintlify",            logo: "/assets/report-assets/logos/Mintlify.png",   h: 22 },
+  { name: "BÆRSkin",            logo: "/assets/report-assets/logos/Bearskin.png",   h: 28 },
+  { name: "Stuut Technologies",  logo: "/assets/report-assets/logos/Stuut.png",      h: 22 },
+  { name: "Mercury",             logo: "/assets/report-assets/logos/Mercury.png",    h: 22 },
+  { name: "Wealthfront",         logo: "/assets/report-assets/logos/Wealthfront.png",h: 22 },
+  { name: "Gnosis Freight",      logo: "/assets/report-assets/logos/Gnosis.png",     h: 28 },
+  { name: "Remitly",             logo: "/assets/report-assets/logos/Remintly.png",   h: 22 },
 ];
 
 export function LogosSection() {
