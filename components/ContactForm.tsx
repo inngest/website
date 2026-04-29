@@ -263,7 +263,7 @@ export default function ContactForm({
         <p className="text-basis">
           {successMessage ||
             (isContentDownload
-              ? "Check your email — the content is on its way. If you don't see it in a few minutes, check your spam folder."
+              ? "Your report is ready! You'll also receive an email with a download link shortly."
               : "Thanks for reaching out. We'll be in touch shortly.")}
         </p>
       </div>
