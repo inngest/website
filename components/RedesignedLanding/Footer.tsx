@@ -7,13 +7,12 @@ import FooterLogo from "./FooterLogo";
 
 export default function Footer() {
   const pathname = usePathname();
-
-  if (pathname?.startsWith("/2026-durable-execution-report")) return null;
+  const isReportPage = pathname?.startsWith("/2026-durable-execution-report");
 
   return (
     <>
       <footer className="relative bg-stone-950">
-        <FooterCTA />
+        {!isReportPage && <FooterCTA />}
         <FooterLinks />
         <FooterLogo />
       </footer>

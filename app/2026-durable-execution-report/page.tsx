@@ -53,11 +53,11 @@ export default function Page() {
         <Hero />
       </div>
       <div
-        className="relative z-10 rounded-t-3xl"
+        className="relative z-10"
         style={{
           backgroundColor: "#212121",
           backgroundImage:
-            "linear-gradient(rgba(33,33,33,0.65), rgba(33,33,33,0.65)), url('/assets/report-assets/report_texture.png')",
+            "linear-gradient(rgba(33,33,33,0.88), rgba(33,33,33,0.88)), url('/assets/report-assets/report_texture.png')",
           backgroundRepeat: "no-repeat, no-repeat",
           backgroundSize: "100% 100%, 100% 100%",
         }}
