@@ -203,19 +203,19 @@ function KeyFindings() {
               {finding.title}
             </h3>
             <p className="text-sm text-subtle md:text-base">{finding.body}</p>
+            {finding.eyebrow.startsWith("02") && (
+              <div className="mt-2">
+                <ObservabilityChart />
+              </div>
+            )}
+            {finding.eyebrow.startsWith("03") && (
+              <div className="mt-2">
+                <ReliabilityChart />
+              </div>
+            )}
           </li>
         ))}
       </ul>
-
-      {/* Observability gap chart */}
-      <div className="mt-10">
-        <ObservabilityChart />
-      </div>
-
-      {/* Reliability tax chart */}
-      <div className="mt-6">
-        <ReliabilityChart />
-      </div>
     </section>
   );
 }
