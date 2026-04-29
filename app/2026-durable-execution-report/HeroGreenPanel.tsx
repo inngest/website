@@ -38,7 +38,7 @@ export function HeroGreenPanel() {
       className="relative mr-3 flex min-h-[640px] flex-col overflow-hidden rounded-r-2xl md:mr-4 md:min-h-[820px] lg:min-h-[900px]"
       style={{
         background:
-          "linear-gradient(135deg, rgba(220,240,210,0.85) 6%, #2C9B63 33%, #79D617 49%, #2C9B63 64%, rgba(220,240,210,0.85) 100%)",
+          "linear-gradient(135deg, #2C9B63 0%, #79D617 22%, #a8ef3c 50%, #79D617 78%, #2C9B63 100%)",
       }}
     >
       {/* Grain texture — dramatic scroll parallax */}
