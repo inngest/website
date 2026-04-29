@@ -22,13 +22,14 @@ const AXIS_COLOR = "rgba(255,255,255,0.2)";
 const LABEL_COLOR = "rgba(255,255,255,0.5)";
 const MARGIN = { top: 24, right: 16, bottom: 48, left: 44 };
 
-type TooltipState = { band: string; x: number; y: number } | null;
+type HoveredBar = { band: string; type: "ai" | "noAi" } | null;
+type TooltipState = { band: string; type: "ai" | "noAi"; x: number; y: number } | null;
 
-function ReliabilityChartInner({ width, onTooltip, onHide, hoveredBand }: {
+function ReliabilityChartInner({ width, onTooltip, onHide, hovered }: {
   width: number;
-  onTooltip: (band: string, x: number, y: number) => void;
+  onTooltip: (band: string, type: "ai" | "noAi", x: number, y: number) => void;
   onHide: () => void;
-  hoveredBand: string | null;
+  hovered: HoveredBar;
 }) {
   const [animated, setAnimated] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -73,21 +74,35 @@ function ReliabilityChartInner({ width, onTooltip, onHide, hoveredBand }: {
             const x0    = xBand(d.band) ?? 0;
             const aiH   = animated ? innerHeight - yScale(d.ai)   : 0;
             const noAiH = animated ? innerHeight - yScale(d.noAi) : 0;
-            const isHov = hoveredBand === d.band;
-            const dimmed = hoveredBand !== null && !isHov;
+            const aiHov   = hovered?.band === d.band && hovered?.type === "ai";
+            const noAiHov = hovered?.band === d.band && hovered?.type === "noAi";
 
             return (
-              <Group
-                key={d.band}
-                left={x0}
-                onMouseEnter={(e) => onTooltip(d.band, e.clientX, e.clientY)}
-                onMouseMove={(e)  => onTooltip(d.band, e.clientX, e.clientY)}
-                onMouseLeave={onHide}
-              >
-                <Bar x={xGroup("ai") ?? 0}   y={yScale(d.ai)}   width={barW} height={aiH}   fill={AI_COLOR}   rx={3}
-                  style={{ opacity: dimmed ? 0.25 : 1, filter: isHov ? "brightness(1.2)" : "none", transition: "height 0.7s cubic-bezier(0.4,0,0.2,1), opacity 0.15s, filter 0.15s" }} />
-                <Bar x={xGroup("noAi") ?? 0} y={yScale(d.noAi)} width={barW} height={noAiH} fill={NOAI_COLOR} rx={3}
-                  style={{ opacity: dimmed ? 0.25 : 1, filter: isHov ? "brightness(1.4)" : "none", transition: "height 0.7s cubic-bezier(0.4,0,0.2,1) 0.1s, opacity 0.15s, filter 0.15s" }} />
+              <Group key={d.band} left={x0}>
+                <Bar
+                  x={xGroup("ai") ?? 0} y={yScale(d.ai)} width={barW} height={aiH} fill={AI_COLOR} rx={3}
+                  onMouseEnter={(e) => onTooltip(d.band, "ai", e.clientX, e.clientY)}
+                  onMouseMove={(e)  => onTooltip(d.band, "ai", e.clientX, e.clientY)}
+                  onMouseLeave={onHide}
+                  style={{
+                    opacity: hovered && !aiHov ? 0.25 : 1,
+                    filter: aiHov ? "brightness(1.2)" : "none",
+                    transition: "height 0.7s cubic-bezier(0.4,0,0.2,1), opacity 0.15s, filter 0.15s",
+                    cursor: "crosshair",
+                  }}
+                />
+                <Bar
+                  x={xGroup("noAi") ?? 0} y={yScale(d.noAi)} width={barW} height={noAiH} fill={NOAI_COLOR} rx={3}
+                  onMouseEnter={(e) => onTooltip(d.band, "noAi", e.clientX, e.clientY)}
+                  onMouseMove={(e)  => onTooltip(d.band, "noAi", e.clientX, e.clientY)}
+                  onMouseLeave={onHide}
+                  style={{
+                    opacity: hovered && !noAiHov ? 0.25 : 1,
+                    filter: noAiHov ? "brightness(1.4)" : "none",
+                    transition: "height 0.7s cubic-bezier(0.4,0,0.2,1) 0.1s, opacity 0.15s, filter 0.15s",
+                    cursor: "crosshair",
+                  }}
+                />
               </Group>
             );
           })}
@@ -104,16 +119,17 @@ function ReliabilityChartInner({ width, onTooltip, onHide, hoveredBand }: {
 }
 
 export function ReliabilityChart() {
-  const [hoveredBand, setHoveredBand] = useState<string | null>(null);
-  const [tooltip, setTooltip]         = useState<TooltipState>(null);
+  const [hovered, setHovered] = useState<HoveredBar>(null);
+  const [tooltip, setTooltip] = useState<TooltipState>(null);
 
-  const showTooltip = (band: string, x: number, y: number) => {
-    setHoveredBand(band);
-    setTooltip({ band, x, y });
+  const showTooltip = (band: string, type: "ai" | "noAi", x: number, y: number) => {
+    setHovered({ band, type });
+    setTooltip({ band, type, x, y });
   };
-  const hideTooltip = () => { setHoveredBand(null); setTooltip(null); };
+  const hideTooltip = () => { setHovered(null); setTooltip(null); };
 
   const tooltipData = tooltip ? DATA.find((d) => d.band === tooltip.band) : null;
+  const isAi = tooltip?.type === "ai";
 
   return (
     <div className="relative mt-4">
@@ -135,7 +151,7 @@ export function ReliabilityChart() {
               width={width}
               onTooltip={showTooltip}
               onHide={hideTooltip}
-              hoveredBand={hoveredBand}
+              hovered={hovered}
             />
           ) : null
         }
@@ -147,16 +163,17 @@ export function ReliabilityChart() {
           style={{ left: tooltip.x + 14, top: tooltip.y - 56 }}
         >
           <p className="mb-1 font-mono text-xs text-white/40">{tooltipData.band}</p>
-          <div className="flex flex-col gap-1.5">
+          {isAi ? (
             <div>
               <p className="text-sm font-bold" style={{ color: AI_COLOR }}>AI: {tooltipData.ai}%</p>
               <p className="font-mono text-xs text-white/40">n={tooltipData.aiN}</p>
             </div>
+          ) : (
             <div>
-              <p className="text-sm font-bold text-white/50">No AI: {tooltipData.noAi}%</p>
+              <p className="text-sm font-bold text-white/60">No AI: {tooltipData.noAi}%</p>
               <p className="font-mono text-xs text-white/40">n={tooltipData.noAiN}</p>
             </div>
-          </div>
+          )}
         </div>
       )}
 
