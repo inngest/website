@@ -27,7 +27,7 @@ const KEY_FINDINGS = [
   },
   {
     eyebrow: "02 — The observability gap",
-    color: "#CEE9FF",
+    color: "#FFBAC7",
     title: "Observability is the #1 unsolved problem engineers named in the survey.",
     body: "Even respondents using a mix of third-party and homegrown solutions are spending hours diagnosing failures. The report shows which observability approaches actually correlate with faster recovery.",
   },
@@ -39,7 +39,7 @@ const KEY_FINDINGS = [
   },
   {
     eyebrow: "04 — Summary",
-    color: "#FFBAC7",
+    color: "#a8ef3c",
     title: "Three infrastructure layers separate confident AI teams from the rest.",
     body: "What separates the most confident AI teams isn't bigger budgets or bigger teams — it's tighter integration between three infrastructure layers: orchestration that persists state and handles failures, observability that lives inside the workflow, and evals connected to where things actually break. When those layers share context, confidence follows.",
   },

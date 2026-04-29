@@ -7,13 +7,13 @@ import Logo from "src/shared/Icons/Logo";
 
 // h = target optical height in px — adjust per-logo for visual balance
 const LOGOS = [
-  { name: "Cohere",             src: "/assets/report-assets/logos/Cohere.png",      h: 22 },
+  { name: "Cohere",             src: "/assets/report-assets/logos/Cohere.png",      h: 24 },
   { name: "11x",                src: "/assets/report-assets/logos/11x.png",         h: 28 },
-  { name: "LiveKit",            src: "/assets/report-assets/logos/Livekit.png",     h: 19 },
-  { name: "mintlify",           src: "/assets/report-assets/logos/Mintlify.png",    h: 20 },
-  { name: "BÆRSkin",           src: "/assets/report-assets/logos/Bearskin.png",    h: 30 },
-  { name: "Stuut Technologies", src: "/assets/report-assets/logos/Stuut.png",       h: 26 },
-  { name: "Mercury",            src: "/assets/report-assets/logos/Mercury.png",     h: 26 },
+  { name: "LiveKit",            src: "/assets/report-assets/logos/Livekit.png",     h: 22 },
+  { name: "mintlify",           src: "/assets/report-assets/logos/Mintlify.png",    h: 22 },
+  { name: "BÆRSkin",           src: "/assets/report-assets/logos/Bearskin.png",    h: 32 },
+  { name: "Stuut Technologies", src: "/assets/report-assets/logos/Stuut.png",       h: 28 },
+  { name: "Mercury",            src: "/assets/report-assets/logos/Mercury.png",     h: 36 },
   { name: "Wealthfront",        src: "/assets/report-assets/logos/Wealthfront.png", h: 20 },
   { name: "Gnosis Freight",     src: "/assets/report-assets/logos/Gnosis.png",      h: 28 },
   { name: "Remitly",            src: "/assets/report-assets/logos/Remintly.png",    h: 28 },
@@ -110,7 +110,7 @@ export function HeroGreenPanel() {
           <p className="mb-4 font-mono text-xs uppercase tracking-[0.2em] text-[#0c1f10]/70">
             With participation from engineers at
           </p>
-          <div className="grid grid-cols-5 items-center gap-x-8 gap-y-5">
+          <div className="grid grid-cols-5 items-center justify-items-center gap-x-8 gap-y-6">
             {LOGOS.map((l) => (
               <Image
                 key={l.name}
