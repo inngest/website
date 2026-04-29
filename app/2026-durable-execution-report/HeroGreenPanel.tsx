@@ -1,37 +1,46 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import Logo from "src/shared/Icons/Logo";
+
+const LOGOS = [
+  { name: "Cohere",             src: "/assets/report-assets/logos/Cohere.png",      w: 100 },
+  { name: "11x",                src: "/assets/report-assets/logos/11x.png",         w: 56  },
+  { name: "LiveKit",            src: "/assets/report-assets/logos/Livekit.png",     w: 80  },
+  { name: "mintlify",           src: "/assets/report-assets/logos/Mintlify.png",    w: 84  },
+  { name: "BÆRSkin",           src: "/assets/report-assets/logos/Bearskin.png",    w: 100 },
+  { name: "Stuut Technologies", src: "/assets/report-assets/logos/Stuut.png",       w: 96  },
+  { name: "Mercury",            src: "/assets/report-assets/logos/Mercury.png",     w: 88  },
+  { name: "Wealthfront",        src: "/assets/report-assets/logos/Wealthfront.png", w: 104 },
+  { name: "Gnosis Freight",     src: "/assets/report-assets/logos/Gnosis.png",      w: 96  },
+  { name: "Remitly",            src: "/assets/report-assets/logos/Remintly.png",    w: 84  },
+];
 
 export function HeroGreenPanel() {
   const ref = useRef<HTMLDivElement>(null);
-  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [scrollY, setScrollY] = useState(0);
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    const rect = ref.current?.getBoundingClientRect();
-    if (!rect) return;
-    setOffset({
-      x: e.clientX - (rect.left + rect.width / 2),
-      y: e.clientY - (rect.top + rect.height / 2),
-    });
-  };
+  useEffect(() => {
+    const onScroll = () => setScrollY(window.scrollY);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
-  const handleMouseLeave = () => setOffset({ x: 0, y: 0 });
-
-  const transition = "transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)";
+  // Clamp so parallax stops once hero is scrolled past
+  const heroH = ref.current?.offsetHeight ?? 900;
+  const progress = Math.min(scrollY, heroH);
 
   return (
     <div
       ref={ref}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
       className="relative mr-3 flex min-h-[640px] flex-col overflow-hidden rounded-r-2xl p-8 md:mr-4 md:min-h-[820px] md:p-12 lg:min-h-[900px]"
       style={{
         background:
           "linear-gradient(135deg, rgba(220,240,210,0.85) 6%, #2C9B63 33%, #79D617 49%, #2C9B63 64%, rgba(220,240,210,0.85) 100%)",
       }}
     >
-      {/* Grain texture — deep layer */}
+      {/* Grain texture — scrolls slower than page */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-[-8%]"
@@ -42,12 +51,11 @@ export function HeroGreenPanel() {
           backgroundPosition: "center",
           mixBlendMode: "soft-light",
           opacity: 0.25,
-          transform: `translate(${offset.x * 0.018}px, ${offset.y * 0.018}px)`,
-          transition,
+          transform: `translateY(${progress * 0.12}px)`,
         }}
       />
 
-      {/* Shape accent — mid layer */}
+      {/* Shape — scrolls at a different rate for depth */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-[-8%]"
@@ -58,19 +66,12 @@ export function HeroGreenPanel() {
           backgroundPosition: "center",
           mixBlendMode: "multiply",
           opacity: 0.05,
-          transform: `translate(${offset.x * 0.05}px, ${offset.y * 0.05}px)`,
-          transition,
+          transform: `translateY(${progress * 0.22}px)`,
         }}
       />
 
-      {/* Content — foreground, counter-drifts for depth */}
-      <div
-        className="relative z-10 flex flex-col"
-        style={{
-          transform: `translate(${offset.x * -0.007}px, ${offset.y * -0.007}px)`,
-          transition,
-        }}
-      >
+      {/* Content */}
+      <div className="relative z-10 flex flex-col">
         <div>
           <Logo width={130} fill="#0c1f10" />
         </div>
@@ -93,6 +94,29 @@ export function HeroGreenPanel() {
             <br />
             Explore the patterns that predict scaling confidence.
           </p>
+        </div>
+
+        {/* Logos */}
+        <div className="mt-auto pt-8">
+          <p className="mb-5 font-mono text-xs uppercase tracking-[0.2em] text-[#0c1f10]/50">
+            With participation from engineers at
+          </p>
+          <div className="flex flex-wrap items-center gap-x-8 gap-y-5">
+            {LOGOS.map((l) => (
+              <Image
+                key={l.name}
+                src={l.src}
+                alt={l.name}
+                width={l.w}
+                height={32}
+                style={{
+                  height: 28,
+                  width: "auto",
+                  filter: "brightness(0) opacity(0.55)",
+                }}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </div>

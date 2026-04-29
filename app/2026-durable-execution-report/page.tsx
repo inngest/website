@@ -7,7 +7,6 @@ import { InfrastructureChart } from "./InfrastructureChart";
 import { StatTiles } from "./StatTiles";
 import { HeroGreenPanel } from "./HeroGreenPanel";
 import { ParallaxCard } from "./ParallaxCard";
-import { LogosSection } from "./LogosSection";
 
 const PAGE_TITLE = "AI in Production: The 2026 Durable Execution Benchmark Report";
 const PAGE_DESCRIPTION =
@@ -54,7 +53,6 @@ export default function Page() {
           backgroundSize: "100% 100%, 100% 100%",
         }}
       >
-        <LogosSection />
         <KeyFindings />
         <Methodology />
         <FinalCTA />
