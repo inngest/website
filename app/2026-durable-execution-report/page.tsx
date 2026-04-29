@@ -189,7 +189,7 @@ function KeyFindings() {
           frameworks — actually reduce the burden of reliability.
         </p>
       </div>
-      <ul className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2">
+      <ul className="mt-12 flex flex-col gap-6">
         {KEY_FINDINGS.map((finding) => (
           <li
             key={finding.eyebrow}
