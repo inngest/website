@@ -80,8 +80,12 @@ function FormPanel({
       </div>
 
       <div className="flex flex-col gap-4">
-        <Field name="name" label="Name" required />
+        <div className="grid grid-cols-2 gap-3">
+          <Field name="firstName" label="First Name" required />
+          <Field name="lastName" label="Last Name" required />
+        </div>
         <Field name="email" label="Email Address" type="email" required />
+        <Field name="jobTitle" label="Job Title" />
         <Field name="company" label="Company" />
       </div>
 
@@ -189,7 +193,9 @@ function Field({
 }) {
   return (
     <label className="flex flex-col gap-1.5">
-      <span className="text-sm font-medium text-white/80">{label}</span>
+      <span className="text-sm font-medium text-white/80">
+        {label}{required && <span className="ml-0.5 text-[#a8ef3c]">*</span>}
+      </span>
       <input
         type={type}
         name={name}
@@ -197,7 +203,6 @@ function Field({
         autoCapitalize="off"
         autoCorrect="off"
         className="rounded-md border border-white/15 bg-white/5 px-3 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-transparent focus:outline-none focus:ring-1 focus:ring-[#a8ef3c]"
-        placeholder="Placeholder text"
       />
     </label>
   );
