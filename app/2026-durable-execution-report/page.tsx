@@ -48,9 +48,14 @@ const KEY_FINDINGS = [
 export default function Page() {
   return (
     <div className="bg-[#212121] text-basis">
-      <Hero />
+      {/* Hero is pinned; content scrolls up over it */}
+      <div className="sticky top-0 z-0">
+        <Hero />
+      </div>
       <div
+        className="relative z-10 rounded-t-3xl"
         style={{
+          backgroundColor: "#212121",
           backgroundImage:
             "linear-gradient(rgba(33,33,33,0.65), rgba(33,33,33,0.65)), url('/assets/report-assets/report_texture.png')",
           backgroundRepeat: "no-repeat, no-repeat",
