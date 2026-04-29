@@ -2,19 +2,21 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import Logo from "src/shared/Icons/Logo";
 
+// h = target optical height in px — adjust per-logo for visual balance
 const LOGOS = [
-  { name: "Cohere",             src: "/assets/report-assets/logos/Cohere.png",      w: 100 },
-  { name: "11x",                src: "/assets/report-assets/logos/11x.png",         w: 56  },
-  { name: "LiveKit",            src: "/assets/report-assets/logos/Livekit.png",     w: 80  },
-  { name: "mintlify",           src: "/assets/report-assets/logos/Mintlify.png",    w: 84  },
-  { name: "BÆRSkin",           src: "/assets/report-assets/logos/Bearskin.png",    w: 100 },
-  { name: "Stuut Technologies", src: "/assets/report-assets/logos/Stuut.png",       w: 96  },
-  { name: "Mercury",            src: "/assets/report-assets/logos/Mercury.png",     w: 88  },
-  { name: "Wealthfront",        src: "/assets/report-assets/logos/Wealthfront.png", w: 104 },
-  { name: "Gnosis Freight",     src: "/assets/report-assets/logos/Gnosis.png",      w: 96  },
-  { name: "Remitly",            src: "/assets/report-assets/logos/Remintly.png",    w: 84  },
+  { name: "Cohere",             src: "/assets/report-assets/logos/Cohere.png",      h: 22 },
+  { name: "11x",                src: "/assets/report-assets/logos/11x.png",         h: 20 },
+  { name: "LiveKit",            src: "/assets/report-assets/logos/Livekit.png",     h: 19 },
+  { name: "mintlify",           src: "/assets/report-assets/logos/Mintlify.png",    h: 20 },
+  { name: "BÆRSkin",           src: "/assets/report-assets/logos/Bearskin.png",    h: 30 },
+  { name: "Stuut Technologies", src: "/assets/report-assets/logos/Stuut.png",       h: 26 },
+  { name: "Mercury",            src: "/assets/report-assets/logos/Mercury.png",     h: 20 },
+  { name: "Wealthfront",        src: "/assets/report-assets/logos/Wealthfront.png", h: 20 },
+  { name: "Gnosis Freight",     src: "/assets/report-assets/logos/Gnosis.png",      h: 28 },
+  { name: "Remitly",            src: "/assets/report-assets/logos/Remintly.png",    h: 22 },
 ];
 
 export function HeroGreenPanel() {
@@ -27,23 +29,22 @@ export function HeroGreenPanel() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Clamp so parallax stops once hero is scrolled past
   const heroH = ref.current?.offsetHeight ?? 900;
   const progress = Math.min(scrollY, heroH);
 
   return (
     <div
       ref={ref}
-      className="relative mr-3 flex min-h-[640px] flex-col overflow-hidden rounded-r-2xl p-8 md:mr-4 md:min-h-[820px] md:p-12 lg:min-h-[900px]"
+      className="relative mr-3 flex min-h-[640px] flex-col overflow-hidden rounded-r-2xl md:mr-4 md:min-h-[820px] lg:min-h-[900px]"
       style={{
         background:
           "linear-gradient(135deg, rgba(220,240,210,0.85) 6%, #2C9B63 33%, #79D617 49%, #2C9B63 64%, rgba(220,240,210,0.85) 100%)",
       }}
     >
-      {/* Grain texture — scrolls slower than page */}
+      {/* Grain texture — dramatic scroll parallax */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-[-8%]"
+        className="pointer-events-none absolute inset-[-12%]"
         style={{
           backgroundImage: "url('/assets/report-assets/report_texture.png')",
           backgroundRepeat: "no-repeat",
@@ -51,32 +52,41 @@ export function HeroGreenPanel() {
           backgroundPosition: "center",
           mixBlendMode: "soft-light",
           opacity: 0.25,
-          transform: `translateY(${progress * 0.12}px)`,
+          transform: `translateY(${progress * 0.35}px)`,
+          willChange: "transform",
         }}
       />
 
-      {/* Shape — scrolls at a different rate for depth */}
+      {/* Shape — scrolls fastest for max depth */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-[-8%]"
+        className="pointer-events-none absolute inset-[-12%]"
         style={{
           backgroundImage: "url('/assets/report-assets/report_shape.png')",
           backgroundRepeat: "no-repeat",
           backgroundSize: "contain",
           backgroundPosition: "center",
           mixBlendMode: "multiply",
-          opacity: 0.05,
-          transform: `translateY(${progress * 0.22}px)`,
+          opacity: 0.06,
+          transform: `translateY(${progress * 0.55}px)`,
+          willChange: "transform",
         }}
       />
 
-      {/* Content */}
-      <div className="relative z-10 flex flex-col">
-        <div>
-          <Logo width={130} fill="#0c1f10" />
-        </div>
+      {/* Content — padding: more top, less bottom */}
+      <div className="relative z-10 flex flex-col px-8 pb-8 pt-10 md:px-12 md:pb-10 md:pt-14 h-full">
 
-        <div className="mb-8 mt-10 flex flex-col gap-5">
+        {/* Logo link */}
+        <Link
+          href="/"
+          className="self-start transition-opacity hover:opacity-60"
+          aria-label="Inngest homepage"
+        >
+          <Logo width={130} fill="#0c1f10" />
+        </Link>
+
+        {/* Copy */}
+        <div className="mt-8 flex flex-col gap-5">
           <h1 className="font-whyteInktrap text-5xl font-black leading-[1.05] text-[#0c1f10] sm:text-6xl xl:text-7xl">
             AI in Production: The 2026 Benchmark Report
           </h1>
@@ -90,34 +100,34 @@ export function HeroGreenPanel() {
             wanted to know what&apos;s causing failures, and which infrastructure
             choices—across orchestration, observability, evals, and agent
             frameworks—actually reduce the burden of reliability.
-            <br />
-            <br />
+            <br /><br />
             Explore the patterns that predict scaling confidence.
           </p>
         </div>
 
-        {/* Logos */}
-        <div className="mt-auto pt-8">
-          <p className="mb-5 font-mono text-xs uppercase tracking-[0.2em] text-[#0c1f10]/50">
+        {/* Logos — anchored to bottom */}
+        <div className="mt-auto pt-10">
+          <p className="mb-4 font-mono text-xs uppercase tracking-[0.2em] text-[#0c1f10]/50">
             With participation from engineers at
           </p>
-          <div className="flex flex-wrap items-center gap-x-8 gap-y-5">
+          <div className="flex flex-wrap items-center gap-x-7 gap-y-5">
             {LOGOS.map((l) => (
               <Image
                 key={l.name}
                 src={l.src}
                 alt={l.name}
-                width={l.w}
-                height={32}
+                width={160}
+                height={l.h}
                 style={{
-                  height: 28,
+                  height: l.h,
                   width: "auto",
-                  filter: "brightness(0) opacity(0.55)",
+                  filter: "brightness(0) opacity(0.5)",
                 }}
               />
             ))}
           </div>
         </div>
+
       </div>
     </div>
   );
