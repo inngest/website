@@ -73,20 +73,20 @@ export function HeroGreenPanel() {
         }}
       />
 
-      {/* Content — padding: more top, less bottom */}
-      <div className="relative z-10 flex flex-col px-8 pb-8 pt-10 md:px-12 md:pb-10 md:pt-14 h-full">
+      {/* Content */}
+      <div className="relative z-10 flex h-full flex-col px-8 pb-8 pt-10 md:px-12 md:pb-10 md:pt-14">
 
         {/* Logo link */}
         <Link
           href="/"
-          className="self-start transition-opacity hover:opacity-60"
+          className="self-center transition-opacity hover:opacity-60"
           aria-label="Inngest homepage"
         >
           <Logo width={130} fill="#0c1f10" />
         </Link>
 
-        {/* Copy */}
-        <div className="mt-8 flex flex-col gap-5">
+        {/* Copy — vertically centered in available space */}
+        <div className="flex flex-1 flex-col items-center justify-center gap-5 text-center">
           <h1 className="font-whyteInktrap text-5xl font-black leading-[1.05] text-[#0c1f10] sm:text-6xl xl:text-7xl">
             AI in Production: The 2026 Benchmark Report
           </h1>
@@ -106,11 +106,11 @@ export function HeroGreenPanel() {
         </div>
 
         {/* Logos — anchored to bottom */}
-        <div className="mt-auto pt-10">
-          <p className="mb-4 font-mono text-xs uppercase tracking-[0.2em] text-[#0c1f10]/50">
+        <div className="pt-10">
+          <p className="mb-4 font-mono text-xs uppercase tracking-[0.2em] text-[#0c1f10]/70">
             With participation from engineers at
           </p>
-          <div className="flex flex-wrap items-center gap-x-7 gap-y-5">
+          <div className="flex flex-wrap items-center justify-center gap-x-7 gap-y-5">
             {LOGOS.map((l) => (
               <Image
                 key={l.name}
@@ -121,7 +121,7 @@ export function HeroGreenPanel() {
                 style={{
                   height: l.h,
                   width: "auto",
-                  filter: "brightness(0) opacity(0.5)",
+                  filter: "brightness(0)",
                 }}
               />
             ))}
