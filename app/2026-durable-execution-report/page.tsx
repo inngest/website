@@ -122,7 +122,7 @@ function Hero() {
 
 function KeyFindings() {
   return (
-    <section className="mx-auto max-w-7xl px-6 pb-16 pt-20 md:pb-24 md:pt-28">
+    <section className="mx-auto max-w-4xl px-6 pb-16 pt-20 md:pb-24 md:pt-28">
       <div className="max-w-3xl">
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-[rgb(var(--color-matcha-400))]">
           Key findings
