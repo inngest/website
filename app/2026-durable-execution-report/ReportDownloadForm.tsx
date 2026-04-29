@@ -9,12 +9,7 @@ import {
 } from "react";
 import { useSearchParams } from "next/navigation";
 
-import {
-  REPORT_GRAPHS,
-  REPORT_PATH,
-  REPORT_LANDING_PATH,
-  type ReportGraphId,
-} from "./graphs";
+import { REPORT_PATH } from "./graphs";
 
 const REPORT_FILENAME = "inngest-2026-durable-execution-benchmark-report.pdf";
 const REPORT_ID = "2026-durable-execution-benchmark";
@@ -151,31 +146,6 @@ function SubmittedPanel() {
           ↓
         </span>
       </a>
-
-      <div className="border-t border-white/10 pt-6">
-        <p className="text-sm font-medium text-white">Share key findings</p>
-        <p className="mt-1 text-xs text-white/50">
-          Each link shows a specific finding as the social preview.
-        </p>
-        <ul className="mt-4 flex flex-col gap-2">
-          {(Object.keys(REPORT_GRAPHS) as ReportGraphId[]).map((id) => {
-            const graph = REPORT_GRAPHS[id];
-            const shareUrl = `${REPORT_LANDING_PATH}/share/${id}`;
-            return (
-              <li
-                key={id}
-                className="flex flex-col gap-2 rounded-lg border border-white/10 bg-white/5 p-3 sm:flex-row sm:items-center sm:justify-between"
-              >
-                <span className="pr-2 text-xs text-white/80">{graph.title}</span>
-                <span className="flex shrink-0 gap-2">
-                  <ShareLink network="twitter" url={shareUrl} text={graph.shareText} />
-                  <ShareLink network="linkedin" url={shareUrl} text={graph.shareText} />
-                </span>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
     </div>
   );
 }
@@ -205,41 +175,6 @@ function Field({
         className="rounded-md border border-white/15 bg-white/5 px-3 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-transparent focus:outline-none focus:ring-1 focus:ring-[#a8ef3c]"
       />
     </label>
-  );
-}
-
-function ShareLink({
-  network,
-  url,
-  text,
-}: {
-  network: "twitter" | "linkedin";
-  url: string;
-  text: string;
-}) {
-  const absoluteUrl = `${
-    process.env.NEXT_PUBLIC_HOST ?? "https://www.inngest.com"
-  }${url}`;
-  const href =
-    network === "twitter"
-      ? `https://twitter.com/intent/tweet?url=${encodeURIComponent(
-          absoluteUrl
-        )}&text=${encodeURIComponent(text)}`
-      : `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
-          absoluteUrl
-        )}`;
-  const label = network === "twitter" ? "Share on X" : "Share on LinkedIn";
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noreferrer noopener"
-      aria-label={label}
-      title={label}
-      className="inline-flex h-8 items-center justify-center rounded-md border border-white/15 px-3 text-xs font-medium text-white/70 transition-colors hover:border-white/30 hover:text-white"
-    >
-      {network === "twitter" ? "X" : "in"}
-    </a>
   );
 }
 
