@@ -190,22 +190,16 @@ function KeyFindings() {
         {KEY_FINDINGS.map((finding) => (
           <li
             key={finding.eyebrow}
-            className="relative rounded-2xl border border-white/5"
+            className="flex flex-col gap-4 rounded-2xl border border-white/5 p-6 md:p-8"
+            style={{ background: "rgba(33, 33, 33, 0.95)" }}
           >
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-0 rounded-2xl"
-              style={{ background: "#212121", mixBlendMode: "hard-light" }}
-            />
-            <div className="relative flex flex-col gap-4 p-6 md:p-8">
-              <p className="font-mono text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-matcha-400))]">
-                {finding.eyebrow}
-              </p>
-              <h3 className="font-whyteInktrap text-xl font-semibold text-basis md:text-2xl">
-                {finding.title}
-              </h3>
-              <p className="text-sm text-subtle md:text-base">{finding.body}</p>
-            </div>
+            <p className="font-mono text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-matcha-400))]">
+              {finding.eyebrow}
+            </p>
+            <h3 className="font-whyteInktrap text-xl font-semibold text-basis md:text-2xl">
+              {finding.title}
+            </h3>
+            <p className="text-sm text-subtle md:text-base">{finding.body}</p>
           </li>
         ))}
       </ul>
