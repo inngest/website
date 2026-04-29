@@ -58,62 +58,51 @@ export function InfrastructureChart() {
         Strongest positive combinations
       </p>
 
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-3">
         {DATA.map((d, i) => {
           const isHov = hovered === i;
           const dimmed = hovered !== null && !isHov;
           return (
             <div
               key={d.label}
-              className="grid items-center gap-3 py-2 cursor-crosshair"
-              style={{ gridTemplateColumns: "1fr 2fr auto" }}
+              className="flex flex-col gap-1.5 cursor-crosshair"
+              style={{ opacity: dimmed ? 0.35 : 1, transition: "opacity 0.15s" }}
               onMouseEnter={() => setHovered(i)}
               onMouseMove={(e) => setTooltip({ data: d, x: e.clientX, y: e.clientY })}
               onMouseLeave={() => { setHovered(null); setTooltip(null); }}
             >
-              {/* Label */}
-              <p
-                className="text-sm font-medium leading-tight"
-                style={{
-                  color: d.significant ? "white" : "rgba(255,255,255,0.35)",
-                  opacity: dimmed ? 0.4 : 1,
-                  transition: "opacity 0.15s",
-                }}
-              >
-                {d.label}
-              </p>
-
-              {/* Bar */}
-              <div className="flex items-center gap-2">
-                <div className="h-9 w-px shrink-0" style={{ background: "rgba(255,255,255,0.15)" }} />
-                <div className="relative flex-1 h-9 rounded" style={{ background: "rgba(255,255,255,0.06)" }}>
-                  <div
-                    className="absolute inset-y-0 left-0 rounded"
-                    style={{
-                      background: d.significant ? "#a8ef3c" : "rgba(255,255,255,0.2)",
-                      width: animated ? `${(d.net / MAX_NET) * 100}%` : "0%",
-                      transition: `width 0.7s cubic-bezier(0.4,0,0.2,1) ${i * 0.07}s`,
-                      opacity: dimmed ? 0.25 : 1,
-                      filter: isHov ? "brightness(1.25)" : "none",
-                    }}
-                  />
+              {/* Label row */}
+              <div className="flex items-center justify-between gap-4">
+                <p
+                  className="text-sm font-medium leading-tight"
+                  style={{ color: d.significant ? "white" : "rgba(255,255,255,0.4)" }}
+                >
+                  {d.label}
+                </p>
+                <div className="flex items-center gap-3 shrink-0">
+                  <div className="text-right">
+                    <p className="font-mono text-xs font-medium" style={{ color: d.significant ? "#a8ef3c" : "rgba(255,255,255,0.3)" }}>
+                      {d.conf}% conf
+                    </p>
+                    <p className="font-mono text-xs text-white/30">
+                      {String(d.unconf).padStart(2, "0")}% unconf
+                    </p>
+                  </div>
+                  <SigBadge sig={d.sig} significant={d.significant} />
                 </div>
               </div>
 
-              {/* Stats + badge */}
-              <div
-                className="flex items-center gap-3"
-                style={{ opacity: dimmed ? 0.4 : 1, transition: "opacity 0.15s" }}
-              >
-                <div className="text-right">
-                  <p className="font-mono text-xs font-medium" style={{ color: d.significant ? "#a8ef3c" : "rgba(255,255,255,0.3)" }}>
-                    {d.conf}% conf
-                  </p>
-                  <p className="font-mono text-xs text-white/30">
-                    {String(d.unconf).padStart(2, "0")}% unconf
-                  </p>
-                </div>
-                <SigBadge sig={d.sig} significant={d.significant} />
+              {/* Bar */}
+              <div className="relative h-2 w-full rounded-full" style={{ background: "rgba(255,255,255,0.08)" }}>
+                <div
+                  className="absolute inset-y-0 left-0 rounded-full"
+                  style={{
+                    background: d.significant ? "#a8ef3c" : "rgba(255,255,255,0.25)",
+                    width: animated ? `${(d.net / MAX_NET) * 100}%` : "0%",
+                    transition: `width 0.7s cubic-bezier(0.4,0,0.2,1) ${i * 0.07}s`,
+                    filter: isHov ? "brightness(1.3)" : "none",
+                  }}
+                />
               </div>
             </div>
           );
