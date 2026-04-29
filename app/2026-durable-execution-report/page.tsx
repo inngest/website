@@ -6,6 +6,7 @@ import ReportDownloadForm from "./ReportDownloadForm";
 import { ObservabilityChart } from "./ObservabilityChart";
 import { ReliabilityChart } from "./ReliabilityChart";
 import { InfrastructureChart } from "./InfrastructureChart";
+import { StatTiles } from "./StatTiles";
 
 const PAGE_TITLE = "AI in Production: The 2026 Durable Execution Benchmark Report";
 const PAGE_DESCRIPTION =
@@ -38,12 +39,6 @@ const KEY_FINDINGS = [
     title: "Three infrastructure layers separate confident AI teams from the rest.",
     body: "What separates the most confident AI teams isn't bigger budgets or bigger teams — it's tighter integration between three infrastructure layers: orchestration that persists state and handles failures, observability that lives inside the workflow, and evals connected to where things actually break. When those layers share context, confidence follows.",
   },
-];
-
-const STATS = [
-  { id: "01", value: "130", label: "Engineers surveyed" },
-  { id: "02", value: "74%", label: "Had incidents in last 90 days" },
-  { id: "03", value: "19%", label: "Had confidence at scale" },
 ];
 
 export default function Page() {
@@ -138,25 +133,6 @@ function Hero() {
               </p>
             </div>
 
-            {/* Stats tiles anchored to bottom */}
-            <dl className="relative z-10 mt-auto grid grid-cols-3 gap-3 pt-8">
-              {STATS.map((s) => (
-                <div
-                  key={s.id}
-                  className="flex flex-col gap-1 rounded-xl bg-[#0c1f10]/10 p-4 ring-1 ring-[#0c1f10]/20"
-                >
-                  <span className="font-mono text-xs text-[#0c1f10]/60">
-                    — {s.id}
-                  </span>
-                  <dd className="font-whyteInktrap text-4xl font-bold leading-none text-[#0c1f10]">
-                    {s.value}
-                  </dd>
-                  <dt className="text-xs font-medium uppercase tracking-wider text-[#0c1f10]/70">
-                    {s.label}
-                  </dt>
-                </div>
-              ))}
-            </dl>
           </div>
 
           {/* ── Form panel (dark, no wrapper card) ── */}
@@ -204,6 +180,11 @@ function KeyFindings() {
               {finding.title}
             </h3>
             <p className="text-sm text-subtle md:text-base">{finding.body}</p>
+            {finding.eyebrow.startsWith("01") && (
+              <div className="mt-2">
+                <StatTiles />
+              </div>
+            )}
             {finding.eyebrow.startsWith("02") && (
               <div className="mt-2">
                 <ObservabilityChart />

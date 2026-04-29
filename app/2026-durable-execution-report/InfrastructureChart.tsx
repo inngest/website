@@ -13,6 +13,8 @@ const DATA = [
   { label: "Orch-native insights + fast debug",                     net: 27, conf: 27, unconf: 0,  sig: "ns",  significant: false },
 ];
 
+type TooltipState = { data: typeof DATA[0]; x: number; y: number } | null;
+
 function SigBadge({ sig, significant }: { sig: string; significant: boolean }) {
   if (!significant) {
     return (
@@ -35,6 +37,8 @@ function SigBadge({ sig, significant }: { sig: string; significant: boolean }) {
 
 export function InfrastructureChart() {
   const [animated, setAnimated] = useState(false);
+  const [hovered, setHovered]   = useState<number | null>(null);
+  const [tooltip, setTooltip]   = useState<TooltipState>(null);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -55,57 +59,86 @@ export function InfrastructureChart() {
       </p>
 
       <div className="flex flex-col gap-1">
-        {DATA.map((d, i) => (
-          <div
-            key={d.label}
-            className="grid items-center gap-3 py-2"
-            style={{ gridTemplateColumns: "1fr 2fr auto" }}
-          >
-            {/* Label */}
-            <p
-              className="text-sm font-medium leading-tight"
-              style={{ color: d.significant ? "white" : "rgba(255,255,255,0.35)" }}
+        {DATA.map((d, i) => {
+          const isHov = hovered === i;
+          const dimmed = hovered !== null && !isHov;
+          return (
+            <div
+              key={d.label}
+              className="grid items-center gap-3 py-2 cursor-crosshair"
+              style={{ gridTemplateColumns: "1fr 2fr auto" }}
+              onMouseEnter={() => setHovered(i)}
+              onMouseMove={(e) => setTooltip({ data: d, x: e.clientX, y: e.clientY })}
+              onMouseLeave={() => { setHovered(null); setTooltip(null); }}
             >
-              {d.label}
-            </p>
+              {/* Label */}
+              <p
+                className="text-sm font-medium leading-tight"
+                style={{
+                  color: d.significant ? "white" : "rgba(255,255,255,0.35)",
+                  opacity: dimmed ? 0.4 : 1,
+                  transition: "opacity 0.15s",
+                }}
+              >
+                {d.label}
+              </p>
 
-            {/* Bar */}
-            <div className="flex items-center gap-2">
-              {/* Vertical axis line */}
-              <div className="h-9 w-px shrink-0" style={{ background: "rgba(255,255,255,0.15)" }} />
-              <div className="relative flex-1 h-9 rounded" style={{ background: "rgba(255,255,255,0.06)" }}>
-                <div
-                  className="absolute inset-y-0 left-0 flex items-center justify-center rounded text-sm font-bold"
-                  style={{
-                    background: d.significant ? "#a8ef3c" : "rgba(255,255,255,0.2)",
-                    color: d.significant ? "#0c1f10" : "rgba(255,255,255,0.5)",
-                    width: animated ? `${(d.net / MAX_NET) * 100}%` : "0%",
-                    minWidth: animated ? "52px" : "0px",
-                    transition: `width 0.7s cubic-bezier(0.4,0,0.2,1) ${i * 0.07}s, min-width 0.7s cubic-bezier(0.4,0,0.2,1) ${i * 0.07}s`,
-                    overflow: "hidden",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  +{d.net}pp
+              {/* Bar */}
+              <div className="flex items-center gap-2">
+                <div className="h-9 w-px shrink-0" style={{ background: "rgba(255,255,255,0.15)" }} />
+                <div className="relative flex-1 h-9 rounded" style={{ background: "rgba(255,255,255,0.06)" }}>
+                  <div
+                    className="absolute inset-y-0 left-0 rounded"
+                    style={{
+                      background: d.significant ? "#a8ef3c" : "rgba(255,255,255,0.2)",
+                      width: animated ? `${(d.net / MAX_NET) * 100}%` : "0%",
+                      transition: `width 0.7s cubic-bezier(0.4,0,0.2,1) ${i * 0.07}s`,
+                      opacity: dimmed ? 0.25 : 1,
+                      filter: isHov ? "brightness(1.25)" : "none",
+                    }}
+                  />
                 </div>
               </div>
-            </div>
 
-            {/* Stats + badge */}
-            <div className="flex items-center gap-3">
-              <div className="text-right">
-                <p className="font-mono text-xs font-medium" style={{ color: d.significant ? "#a8ef3c" : "rgba(255,255,255,0.3)" }}>
-                  {d.conf}% conf
-                </p>
-                <p className="font-mono text-xs text-white/30">
-                  {String(d.unconf).padStart(2, "0")}% unconf
-                </p>
+              {/* Stats + badge */}
+              <div
+                className="flex items-center gap-3"
+                style={{ opacity: dimmed ? 0.4 : 1, transition: "opacity 0.15s" }}
+              >
+                <div className="text-right">
+                  <p className="font-mono text-xs font-medium" style={{ color: d.significant ? "#a8ef3c" : "rgba(255,255,255,0.3)" }}>
+                    {d.conf}% conf
+                  </p>
+                  <p className="font-mono text-xs text-white/30">
+                    {String(d.unconf).padStart(2, "0")}% unconf
+                  </p>
+                </div>
+                <SigBadge sig={d.sig} significant={d.significant} />
               </div>
-              <SigBadge sig={d.sig} significant={d.significant} />
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
+
+      {tooltip && (
+        <div
+          className="pointer-events-none fixed z-50 rounded-lg border border-white/10 bg-[#1a1a1a] px-3 py-2 shadow-xl"
+          style={{ left: tooltip.x + 14, top: tooltip.y - 64 }}
+        >
+          <p className="mb-1 font-mono text-xs text-white/40 leading-snug max-w-[220px]">{tooltip.data.label}</p>
+          <div className="flex flex-col gap-0.5">
+            <p className="text-sm font-bold" style={{ color: "#a8ef3c" }}>
+              Net +{tooltip.data.net}pp
+            </p>
+            <p className="font-mono text-xs text-white/60">
+              {tooltip.data.conf}% confident · {tooltip.data.unconf}% unconfident
+            </p>
+            <p className="font-mono text-xs text-white/40">
+              sig: {tooltip.data.sig}
+            </p>
+          </div>
+        </div>
+      )}
 
       <p className="mt-4 font-mono text-xs text-white/30">
         Net = % confident (n=73) minus % unconfident (n=15). *** p&lt;0.01, ** p&lt;0.05, * p&lt;0.10, ns not significant. Greyed rows shown for context only.
