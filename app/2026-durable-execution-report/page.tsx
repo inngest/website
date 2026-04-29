@@ -27,13 +27,13 @@ const KEY_FINDINGS = [
   },
   {
     eyebrow: "02 — The observability gap",
-    color: "#FFBAC7",
+    color: "#CEE9FF",
     title: "Observability is the #1 unsolved problem engineers named in the survey.",
     body: "Even respondents using a mix of third-party and homegrown solutions are spending hours diagnosing failures. The report shows which observability approaches actually correlate with faster recovery.",
   },
   {
     eyebrow: "03 — The reliability tax",
-    color: "#A90B3F",
+    color: "#FFBAC7",
     title: "20% of AI teams spend up to half their engineering time on reliability work.",
     body: "That's twice the rate of non-AI teams. And for most, the burden is growing. Our report identifies which orchestration approaches correlate with lower — and higher — reliability burden.",
   },
