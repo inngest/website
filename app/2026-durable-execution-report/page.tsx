@@ -86,12 +86,12 @@ function Hero() {
             {/* Decorative shape accent */}
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute right-0 bottom-[18%] h-[420px] w-[540px] md:h-[520px] md:w-[660px]"
+              className="pointer-events-none absolute inset-0"
               style={{
                 backgroundImage: "url('/assets/report-assets/report_shape.png')",
                 backgroundRepeat: "no-repeat",
                 backgroundSize: "contain",
-                backgroundPosition: "right center",
+                backgroundPosition: "center",
                 mixBlendMode: "multiply",
                 opacity: 0.05,
               }}
