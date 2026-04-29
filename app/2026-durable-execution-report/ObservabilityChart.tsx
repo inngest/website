@@ -150,18 +150,13 @@ function ObservabilityChartInner({ width }: { width: number }) {
 
 export function ObservabilityChart() {
   return (
-    <div className="rounded-2xl bg-black p-6 md:p-8">
-      <h3 className="mb-6 font-whyteInktrap text-2xl font-semibold text-white md:text-3xl">
-        Time to understand what went wrong
-      </h3>
-      <div className="relative">
-        <ParentSize>
-          {({ width }) =>
-            width > 0 ? <ObservabilityChartInner width={width} /> : null
-          }
-        </ParentSize>
-      </div>
-      <p className="mt-6 font-mono text-xs text-white/40">
+    <div className="mt-4">
+      <ParentSize>
+        {({ width }) =>
+          width > 0 ? <ObservabilityChartInner width={width} /> : null
+        }
+      </ParentSize>
+      <p className="mt-4 font-mono text-xs text-white/40">
         Q5: When a workflow fails in production, how long does it typically take
         to understand what went wrong? All respondents n=130.
       </p>
