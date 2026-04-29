@@ -147,13 +147,15 @@ export function ReliabilityChart() {
           style={{ left: tooltip.x + 14, top: tooltip.y - 56 }}
         >
           <p className="mb-1 font-mono text-xs text-white/40">{tooltipData.band}</p>
-          <div className="flex flex-col gap-0.5">
-            <p className="text-sm font-bold" style={{ color: AI_COLOR }}>
-              AI: {tooltipData.ai}% <span className="font-mono text-xs font-normal text-white/40">n={tooltipData.aiN}</span>
-            </p>
-            <p className="text-sm font-bold text-white/50">
-              No AI: {tooltipData.noAi}% <span className="font-mono text-xs font-normal text-white/40">n={tooltipData.noAiN}</span>
-            </p>
+          <div className="flex flex-col gap-1.5">
+            <div>
+              <p className="text-sm font-bold" style={{ color: AI_COLOR }}>AI: {tooltipData.ai}%</p>
+              <p className="font-mono text-xs text-white/40">n={tooltipData.aiN}</p>
+            </div>
+            <div>
+              <p className="text-sm font-bold text-white/50">No AI: {tooltipData.noAi}%</p>
+              <p className="font-mono text-xs text-white/40">n={tooltipData.noAiN}</p>
+            </div>
           </div>
         </div>
       )}
