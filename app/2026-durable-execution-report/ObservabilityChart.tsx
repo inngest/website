@@ -122,11 +122,7 @@ export function ObservabilityChart() {
                     >
                       <span
                         className="text-[11px] font-semibold tabular-nums"
-                        style={{
-                          color: textColor,
-                          opacity: isHovered ? 1 : 0,
-                          transition: "opacity 0.15s",
-                        }}
+                        style={{ color: textColor }}
                       >
                         {value}
                       </span>
