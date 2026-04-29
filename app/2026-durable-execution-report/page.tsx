@@ -4,6 +4,7 @@ import Logo from "src/shared/Icons/Logo";
 
 import ReportDownloadForm from "./ReportDownloadForm";
 import { ObservabilityChart } from "./ObservabilityChart";
+import { ReliabilityChart } from "./ReliabilityChart";
 
 const PAGE_TITLE = "AI in Production: The 2026 Durable Execution Benchmark Report";
 const PAGE_DESCRIPTION =
@@ -209,6 +210,11 @@ function KeyFindings() {
       {/* Observability gap chart */}
       <div className="mt-10">
         <ObservabilityChart />
+      </div>
+
+      {/* Reliability tax chart */}
+      <div className="mt-6">
+        <ReliabilityChart />
       </div>
     </section>
   );
