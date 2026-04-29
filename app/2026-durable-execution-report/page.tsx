@@ -63,7 +63,7 @@ function Hero() {
 
           {/* ── Green gradient panel ── */}
           <div
-            className="relative my-3 mr-3 flex flex-col overflow-hidden rounded-r-2xl p-8 md:my-4 md:mr-4 md:p-12"
+            className="relative my-3 mr-3 flex min-h-[640px] flex-col overflow-hidden rounded-r-2xl p-8 md:my-4 md:mr-4 md:min-h-[820px] md:p-12 lg:min-h-[900px]"
             style={{
               background:
                 "linear-gradient(135deg, rgba(220,240,210,0.85) 6%, #2C9B63 33%, #79D617 49%, #2C9B63 64%, rgba(220,240,210,0.85) 100%)",
@@ -79,7 +79,7 @@ function Hero() {
                 backgroundSize: "cover",
                 backgroundPosition: "center",
                 mixBlendMode: "soft-light",
-                opacity: 0.10,
+                opacity: 0.06,
               }}
             />
 
