@@ -47,20 +47,17 @@ export default function Page() {
   return (
     <div className="bg-[#212121] text-basis">
       <Hero />
-      <div className="relative">
+      <div
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(33,33,33,0.65), rgba(33,33,33,0.65)), url('/assets/report-assets/report_texture.png')",
+          backgroundRepeat: "no-repeat, no-repeat",
+          backgroundSize: "100% 100%, 100% 100%",
+        }}
+      >
         <KeyFindings />
         <Methodology />
         <FinalCTA />
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0"
-          style={{
-            backgroundImage: "url('/assets/report-assets/report_texture.png')",
-            backgroundRepeat: "no-repeat",
-            backgroundSize: "100% 100%",
-            opacity: 0.3,
-          }}
-        />
       </div>
     </div>
   );
