@@ -56,8 +56,8 @@ export default function Page() {
             backgroundImage: "url('/assets/report-assets/report_texture.png')",
             backgroundRepeat: "repeat",
             backgroundSize: "600px 600px",
-            mixBlendMode: "hard-light",
-            opacity: 0.25,
+            mixBlendMode: "overlay",
+            opacity: 0.5,
           }}
         />
         <KeyFindings />
@@ -195,8 +195,8 @@ function KeyFindings() {
         {KEY_FINDINGS.map((finding) => (
           <li
             key={finding.eyebrow}
-            className="flex flex-col gap-4 rounded-2xl p-6 md:p-8"
-            style={{ background: "#212121", mixBlendMode: "hard-light" }}
+            className="flex flex-col gap-4 rounded-2xl border border-white/5 p-6 md:p-8"
+            style={{ background: "#2a2a2a" }}
           >
             <p className="font-mono text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-matcha-400))]">
               {finding.eyebrow}
