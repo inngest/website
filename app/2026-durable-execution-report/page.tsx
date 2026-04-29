@@ -159,7 +159,7 @@ function Hero() {
           {/* ── Form panel (dark, no wrapper card) ── */}
           <div
             id="get-the-report"
-            className="flex flex-col justify-center scroll-mt-24 px-8 py-12 md:px-12 md:pr-16 xl:pr-24"
+            className="flex flex-col justify-center scroll-mt-24 bg-black px-8 py-12 md:px-12 md:pr-16 xl:pr-24"
           >
             <ReportDownloadForm />
           </div>
