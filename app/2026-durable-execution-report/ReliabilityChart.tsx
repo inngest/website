@@ -159,21 +159,20 @@ export function ReliabilityChart() {
 
       {tooltip && tooltipData && (
         <div
-          className="pointer-events-none fixed z-50 rounded-lg border border-white/10 bg-[#1a1a1a] px-3 py-2 shadow-xl"
-          style={{ left: tooltip.x + 14, top: tooltip.y - 56 }}
+          className="pointer-events-none fixed z-50 rounded-lg border border-white/10 bg-[#111] px-4 py-3 shadow-xl"
+          style={{ left: tooltip.x + 16, top: tooltip.y - 80 }}
         >
-          <p className="mb-1 font-mono text-xs text-white/40">{tooltipData.band}</p>
-          {isAi ? (
-            <div>
-              <p className="text-sm font-bold" style={{ color: AI_COLOR }}>AI: {tooltipData.ai}%</p>
-              <p className="font-mono text-xs text-white/40">n={tooltipData.aiN}</p>
-            </div>
-          ) : (
-            <div>
-              <p className="text-sm font-bold text-white/60">No AI: {tooltipData.noAi}%</p>
-              <p className="font-mono text-xs text-white/40">n={tooltipData.noAiN}</p>
-            </div>
-          )}
+          <p className="mb-0.5 text-xs text-white/40">{tooltipData.band}</p>
+          <p className="mb-2 text-xs font-medium" style={{ color: isAi ? AI_COLOR : "rgba(255,255,255,0.5)" }}>
+            {isAi ? "AI in production" : "No AI in production"}
+          </p>
+          <p className="text-3xl font-bold tabular-nums" style={{ color: isAi ? AI_COLOR : "white" }}>
+            {isAi ? tooltipData.ai : tooltipData.noAi}
+            <span className="text-base font-normal text-white/40">%</span>
+          </p>
+          <p className="mt-1 font-mono text-xs text-white/30">
+            n = {isAi ? tooltipData.aiN : tooltipData.noAiN}
+          </p>
         </div>
       )}
 

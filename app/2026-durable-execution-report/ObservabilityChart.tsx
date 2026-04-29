@@ -65,11 +65,14 @@ export function ObservabilityChart() {
 
       {tooltip && (
         <div
-          className="pointer-events-none fixed z-50 rounded-lg border border-white/10 bg-[#1a1a1a] px-3 py-2 shadow-xl"
-          style={{ left: tooltip.x + 14, top: tooltip.y - 40 }}
+          className="pointer-events-none fixed z-50 rounded-lg border border-white/10 bg-[#111] px-4 py-3 shadow-xl"
+          style={{ left: tooltip.x + 16, top: tooltip.y - 72 }}
         >
-          <p className="text-sm font-bold text-white">{tooltip.data.pct}%</p>
-          <p className="font-mono text-xs text-white/50">n = {tooltip.data.n}</p>
+          <p className="mb-2 text-xs text-white/40 max-w-[180px] leading-snug">{tooltip.data.label}</p>
+          <p className="text-3xl font-bold tabular-nums" style={{ color: "#a8ef3c" }}>
+            {tooltip.data.pct}
+            <span className="text-base font-normal text-white/40">%</span>
+          </p>
         </div>
       )}
 

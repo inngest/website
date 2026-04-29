@@ -71,28 +71,12 @@ export function InfrastructureChart() {
               onMouseMove={(e) => setTooltip({ data: d, x: e.clientX, y: e.clientY })}
               onMouseLeave={() => { setHovered(null); setTooltip(null); }}
             >
-              {/* Label row */}
-              <div className="flex items-center justify-between gap-4">
-                <p
-                  className="text-sm font-medium leading-tight"
-                  style={{ color: d.significant ? "white" : "rgba(255,255,255,0.4)" }}
-                >
-                  {d.label}
-                </p>
-                <div className="flex items-center gap-3 shrink-0">
-                  <div className="text-right">
-                    <p className="font-mono text-xs font-medium" style={{ color: d.significant ? "#a8ef3c" : "rgba(255,255,255,0.3)" }}>
-                      {d.conf}% conf
-                    </p>
-                    <p className="font-mono text-xs text-white/30">
-                      {String(d.unconf).padStart(2, "0")}% unconf
-                    </p>
-                  </div>
-                  <SigBadge sig={d.sig} significant={d.significant} />
-                </div>
-              </div>
-
-              {/* Bar */}
+              <p
+                className="text-sm font-medium leading-tight"
+                style={{ color: d.significant ? "white" : "rgba(255,255,255,0.4)" }}
+              >
+                {d.label}
+              </p>
               <div className="relative h-2 w-full rounded-full" style={{ background: "rgba(255,255,255,0.08)" }}>
                 <div
                   className="absolute inset-y-0 left-0 rounded-full"
@@ -111,20 +95,26 @@ export function InfrastructureChart() {
 
       {tooltip && (
         <div
-          className="pointer-events-none fixed z-50 rounded-lg border border-white/10 bg-[#1a1a1a] px-3 py-2 shadow-xl"
-          style={{ left: tooltip.x + 14, top: tooltip.y - 64 }}
+          className="pointer-events-none fixed z-50 rounded-lg border border-white/10 bg-[#111] px-4 py-3 shadow-xl"
+          style={{ left: tooltip.x + 16, top: tooltip.y - 80 }}
         >
-          <p className="mb-1 font-mono text-xs text-white/40 leading-snug max-w-[220px]">{tooltip.data.label}</p>
-          <div className="flex flex-col gap-0.5">
-            <p className="text-sm font-bold" style={{ color: "#a8ef3c" }}>
-              Net +{tooltip.data.net}pp
-            </p>
-            <p className="font-mono text-xs text-white/60">
-              {tooltip.data.conf}% confident · {tooltip.data.unconf}% unconfident
-            </p>
-            <p className="font-mono text-xs text-white/40">
-              sig: {tooltip.data.sig}
-            </p>
+          <p className="mb-2 text-xs text-white/40 leading-snug max-w-[200px]">{tooltip.data.label}</p>
+          <p className="text-2xl font-bold tabular-nums" style={{ color: tooltip.data.significant ? "#a8ef3c" : "rgba(255,255,255,0.5)" }}>
+            +{tooltip.data.net}<span className="text-sm font-normal ml-0.5">pp net</span>
+          </p>
+          <div className="mt-2 flex flex-col gap-0.5 border-t border-white/10 pt-2">
+            <div className="flex items-center justify-between gap-6">
+              <span className="text-xs text-white/40">Confident</span>
+              <span className="font-mono text-xs font-medium text-white/80">{tooltip.data.conf}%</span>
+            </div>
+            <div className="flex items-center justify-between gap-6">
+              <span className="text-xs text-white/40">Unconfident</span>
+              <span className="font-mono text-xs text-white/50">{tooltip.data.unconf}%</span>
+            </div>
+            <div className="mt-1.5 flex items-center justify-between gap-6">
+              <span className="text-xs text-white/40">Significance</span>
+              <SigBadge sig={tooltip.data.sig} significant={tooltip.data.significant} />
+            </div>
           </div>
         </div>
       )}
