@@ -1,40 +1,24 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { useRef, useState } from "react";
 import Logo from "src/shared/Icons/Logo";
 
 export function HeroGreenPanel() {
   const ref = useRef<HTMLDivElement>(null);
-
-  const rawX = useMotionValue(0);
-  const rawY = useMotionValue(0);
-  const springX = useSpring(rawX, { stiffness: 60, damping: 20 });
-  const springY = useSpring(rawY, { stiffness: 60, damping: 20 });
-
-  // Texture drifts gently with the mouse (deep background layer)
-  const texX = useTransform(springX, (v) => v * 0.018);
-  const texY = useTransform(springY, (v) => v * 0.018);
-
-  // Shape drifts more (mid layer)
-  const shapeX = useTransform(springX, (v) => v * 0.05);
-  const shapeY = useTransform(springY, (v) => v * 0.05);
-
-  // Content counter-drifts subtly (foreground — moves opposite for depth illusion)
-  const contentX = useTransform(springX, (v) => v * -0.007);
-  const contentY = useTransform(springY, (v) => v * -0.007);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
 
   const handleMouseMove = (e: React.MouseEvent) => {
     const rect = ref.current?.getBoundingClientRect();
     if (!rect) return;
-    rawX.set(e.clientX - (rect.left + rect.width / 2));
-    rawY.set(e.clientY - (rect.top + rect.height / 2));
+    setOffset({
+      x: e.clientX - (rect.left + rect.width / 2),
+      y: e.clientY - (rect.top + rect.height / 2),
+    });
   };
 
-  const handleMouseLeave = () => {
-    rawX.set(0);
-    rawY.set(0);
-  };
+  const handleMouseLeave = () => setOffset({ x: 0, y: 0 });
+
+  const transition = "transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)";
 
   return (
     <div
@@ -47,45 +31,45 @@ export function HeroGreenPanel() {
           "linear-gradient(135deg, rgba(220,240,210,0.85) 6%, #2C9B63 33%, #79D617 49%, #2C9B63 64%, rgba(220,240,210,0.85) 100%)",
       }}
     >
-      {/* Grain texture — deep layer, drifts with mouse */}
-      <motion.div
+      {/* Grain texture — deep layer */}
+      <div
         aria-hidden="true"
-        style={{ x: texX, y: texY, position: "absolute", inset: "-8%" }}
-      >
-        <div
-          className="pointer-events-none h-full w-full"
-          style={{
-            backgroundImage: "url('/assets/report-assets/report_texture.png')",
-            backgroundRepeat: "no-repeat",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            mixBlendMode: "soft-light",
-            opacity: 0.25,
-          }}
-        />
-      </motion.div>
+        className="pointer-events-none absolute inset-[-8%]"
+        style={{
+          backgroundImage: "url('/assets/report-assets/report_texture.png')",
+          backgroundRepeat: "no-repeat",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          mixBlendMode: "soft-light",
+          opacity: 0.25,
+          transform: `translate(${offset.x * 0.018}px, ${offset.y * 0.018}px)`,
+          transition,
+        }}
+      />
 
-      {/* Shape accent — mid layer, drifts more */}
-      <motion.div
+      {/* Shape accent — mid layer */}
+      <div
         aria-hidden="true"
-        style={{ x: shapeX, y: shapeY, position: "absolute", inset: "-8%" }}
-      >
-        <div
-          className="pointer-events-none h-full w-full"
-          style={{
-            backgroundImage: "url('/assets/report-assets/report_shape.png')",
-            backgroundRepeat: "no-repeat",
-            backgroundSize: "contain",
-            backgroundPosition: "center",
-            mixBlendMode: "multiply",
-            opacity: 0.05,
-          }}
-        />
-      </motion.div>
+        className="pointer-events-none absolute inset-[-8%]"
+        style={{
+          backgroundImage: "url('/assets/report-assets/report_shape.png')",
+          backgroundRepeat: "no-repeat",
+          backgroundSize: "contain",
+          backgroundPosition: "center",
+          mixBlendMode: "multiply",
+          opacity: 0.05,
+          transform: `translate(${offset.x * 0.05}px, ${offset.y * 0.05}px)`,
+          transition,
+        }}
+      />
 
       {/* Content — foreground, counter-drifts for depth */}
-      <motion.div
-        style={{ x: contentX, y: contentY, position: "relative", zIndex: 10, display: "flex", flexDirection: "column" }}
+      <div
+        className="relative z-10 flex flex-col"
+        style={{
+          transform: `translate(${offset.x * -0.007}px, ${offset.y * -0.007}px)`,
+          transition,
+        }}
       >
         <div>
           <Logo width={130} fill="#0c1f10" />
@@ -110,7 +94,7 @@ export function HeroGreenPanel() {
             Explore the patterns that predict scaling confidence.
           </p>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }
