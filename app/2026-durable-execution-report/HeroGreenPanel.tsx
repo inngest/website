@@ -50,39 +50,42 @@ export function HeroGreenPanel() {
       {/* Grain texture — deep layer, drifts with mouse */}
       <motion.div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-[-8%]"
-        style={{
-          backgroundImage: "url('/assets/report-assets/report_texture.png')",
-          backgroundRepeat: "no-repeat",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          mixBlendMode: "soft-light",
-          opacity: 0.25,
-          x: texX,
-          y: texY,
-        }}
-      />
+        style={{ x: texX, y: texY, position: "absolute", inset: "-8%" }}
+      >
+        <div
+          className="pointer-events-none h-full w-full"
+          style={{
+            backgroundImage: "url('/assets/report-assets/report_texture.png')",
+            backgroundRepeat: "no-repeat",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            mixBlendMode: "soft-light",
+            opacity: 0.25,
+          }}
+        />
+      </motion.div>
 
       {/* Shape accent — mid layer, drifts more */}
       <motion.div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-[-8%]"
-        style={{
-          backgroundImage: "url('/assets/report-assets/report_shape.png')",
-          backgroundRepeat: "no-repeat",
-          backgroundSize: "contain",
-          backgroundPosition: "center",
-          mixBlendMode: "multiply",
-          opacity: 0.05,
-          x: shapeX,
-          y: shapeY,
-        }}
-      />
+        style={{ x: shapeX, y: shapeY, position: "absolute", inset: "-8%" }}
+      >
+        <div
+          className="pointer-events-none h-full w-full"
+          style={{
+            backgroundImage: "url('/assets/report-assets/report_shape.png')",
+            backgroundRepeat: "no-repeat",
+            backgroundSize: "contain",
+            backgroundPosition: "center",
+            mixBlendMode: "multiply",
+            opacity: 0.05,
+          }}
+        />
+      </motion.div>
 
       {/* Content — foreground, counter-drifts for depth */}
       <motion.div
-        className="relative z-10 flex flex-col"
-        style={{ x: contentX, y: contentY }}
+        style={{ x: contentX, y: contentY, position: "relative", zIndex: 10, display: "flex", flexDirection: "column" }}
       >
         <div>
           <Logo width={130} fill="#0c1f10" />
