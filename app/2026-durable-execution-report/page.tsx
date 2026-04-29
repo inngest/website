@@ -79,7 +79,7 @@ function Hero() {
                 backgroundSize: "cover",
                 backgroundPosition: "center",
                 mixBlendMode: "soft-light",
-                opacity: 0.06,
+                opacity: 0.25,
               }}
             />
 
