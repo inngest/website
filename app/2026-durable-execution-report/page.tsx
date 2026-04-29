@@ -47,19 +47,14 @@ export default function Page() {
   return (
     <div className="bg-[#212121] text-basis">
       <Hero />
-      <div className="relative">
-        {/* Body texture overlay */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0"
-          style={{
-            backgroundImage: "url('/assets/report-assets/report_texture.png')",
-            backgroundRepeat: "repeat",
-            backgroundSize: "600px 600px",
-            mixBlendMode: "overlay",
-            opacity: 0.5,
-          }}
-        />
+      <div
+        style={{
+          backgroundImage: "url('/assets/report-assets/report_texture.png')",
+          backgroundRepeat: "no-repeat",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
         <KeyFindings />
         <Methodology />
         <FinalCTA />
