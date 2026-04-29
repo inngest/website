@@ -15,8 +15,8 @@ const DATA = [
   { band: "51–75%",        ai: 0,  noAi: 2,  aiN: 0,  noAiN: 1  },
 ];
 
-const AI_COLOR   = "#a8ef3c";
-const NOAI_COLOR = "rgba(168,239,60,0.35)";
+const AI_COLOR   = "#FFBAC7";
+const NOAI_COLOR = "#A90B3F";
 const GRID_COLOR = "rgba(255,255,255,0.08)";
 const AXIS_COLOR = "rgba(255,255,255,0.2)";
 const LABEL_COLOR = "rgba(255,255,255,0.5)";

@@ -10,6 +10,7 @@ export function ParallaxCard({
   index: number;
 }) {
   const [visible, setVisible] = useState(false);
+  const [done, setDone] = useState(false);
   const ref = useRef<HTMLLIElement>(null);
 
   useEffect(() => {
@@ -23,6 +24,14 @@ export function ParallaxCard({
     return () => observer.disconnect();
   }, []);
 
+  // Once animation finishes, remove transform entirely so it no longer creates
+  // a new stacking context — fixed-position tooltips inside will work correctly.
+  useEffect(() => {
+    if (!visible) return;
+    const t = setTimeout(() => setDone(true), 700 + index * 50);
+    return () => clearTimeout(t);
+  }, [visible, index]);
+
   return (
     <li
       ref={ref}
@@ -30,8 +39,8 @@ export function ParallaxCard({
       style={{
         background: "rgba(33, 33, 33, 0.98)",
         opacity: visible ? 1 : 0,
-        transform: visible ? "translateY(0)" : "translateY(40px)",
-        transition: `opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1) ${index * 0.05}s, transform 0.6s cubic-bezier(0.22, 1, 0.36, 1) ${index * 0.05}s`,
+        transform: done ? undefined : (visible ? "translateY(0px)" : "translateY(40px)"),
+        transition: done ? undefined : `opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1) ${index * 0.05}s, transform 0.6s cubic-bezier(0.22, 1, 0.36, 1) ${index * 0.05}s`,
       }}
     >
       {children}

@@ -9,7 +9,7 @@ const DATA = [
   { label: "We often can't fully explain what happened",           n: 5,  pct: 4  },
 ];
 
-const BAR_COLOR   = "#a8ef3c";
+const BAR_COLOR   = "#1365D6";
 const TRACK_COLOR = "rgba(255,255,255,0.08)";
 
 type TooltipState = { data: typeof DATA[0]; x: number; y: number } | null;
@@ -69,7 +69,7 @@ export function ObservabilityChart() {
           style={{ left: tooltip.x + 16, top: tooltip.y - 72 }}
         >
           <p className="mb-2 text-xs text-white max-w-[180px] leading-snug">{tooltip.data.label}</p>
-          <p className="text-3xl font-bold tabular-nums" style={{ color: "#a8ef3c" }}>
+          <p className="text-3xl font-bold tabular-nums" style={{ color: "#1365D6" }}>
             {tooltip.data.pct}
             <span className="text-base font-normal text-white/40">%</span>
           </p>
