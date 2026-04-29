@@ -5,35 +5,15 @@ import { useEffect, useRef, useState } from "react";
 const MAX_NET = 40;
 
 const DATA = [
-  { label: "Durable execution + using evals + report declining reliability overhead",                                  net: 36, conf: 49, unconf: 13, sig: "**",  significant: true  },
-  { label: "Durable execution + using evals",                                                                          net: 33, conf: 60, unconf: 27, sig: "**",  significant: true  },
-  { label: "Using evals + report under an hour to debug",                                                              net: 32, conf: 32, unconf: 0,  sig: "***", significant: true  },
-  { label: "Durable execution + using orchestration platform for observability + report declining reliability overhead", net: 34, conf: 47, unconf: 13, sig: "ns",  significant: false },
-  { label: "Durable execution + report under an hour to debug",                                                        net: 30, conf: 37, unconf: 7,  sig: "ns",  significant: false },
-  { label: "Using orchestration platform for observability + report under an hour to debug",                           net: 27, conf: 27, unconf: 0,  sig: "ns",  significant: false },
+  { label: "Durable execution + using evals + report declining reliability overhead",                                  net: 36, conf: 49, unconf: 13, significant: true  },
+  { label: "Durable execution + using evals",                                                                          net: 33, conf: 60, unconf: 27, significant: true  },
+  { label: "Durable execution + using orchestration platform for observability + report declining reliability overhead", net: 34, conf: 47, unconf: 13, significant: true  },
+  { label: "Using evals + report under an hour to debug",                                                              net: 32, conf: 32, unconf: 0,  significant: false },
+  { label: "Durable execution + report under an hour to debug",                                                        net: 30, conf: 37, unconf: 7,  significant: false },
+  { label: "Using orchestration platform for observability + report under an hour to debug",                           net: 27, conf: 27, unconf: 0,  significant: false },
 ];
 
 type TooltipState = { data: typeof DATA[0]; x: number; y: number } | null;
-
-function SigBadge({ sig, significant }: { sig: string; significant: boolean }) {
-  if (!significant) {
-    return (
-      <span className="inline-flex items-center rounded px-2 py-0.5 font-mono text-xs text-white/40" style={{ background: "rgba(255,255,255,0.08)" }}>
-        ns
-      </span>
-    );
-  }
-  const stars = sig === "***" ? 3 : 2;
-  return (
-    <span className="inline-flex items-center gap-0.5 rounded px-2 py-0.5" style={{ background: "rgba(168,239,60,0.15)" }}>
-      {Array.from({ length: stars }).map((_, i) => (
-        <svg key={i} width="10" height="10" viewBox="0 0 10 10" fill="none">
-          <path d="M5 1l1.12 2.27L8.5 3.6l-1.75 1.7.41 2.4L5 6.5 2.84 7.7l.41-2.4L1.5 3.6l2.38-.33L5 1z" stroke="#a8ef3c" strokeWidth="0.8" strokeLinejoin="round" />
-        </svg>
-      ))}
-    </span>
-  );
-}
 
 export function InfrastructureChart() {
   const [animated, setAnimated] = useState(false);
@@ -110,10 +90,6 @@ export function InfrastructureChart() {
             <div className="flex items-center justify-between gap-6">
               <span className="text-xs text-white/40">Unconfident</span>
               <span className="font-mono text-xs text-white/50">{tooltip.data.unconf}%</span>
-            </div>
-            <div className="mt-1.5 flex items-center justify-between gap-6">
-              <span className="text-xs text-white/40">Significance</span>
-              <SigBadge sig={tooltip.data.sig} significant={tooltip.data.significant} />
             </div>
           </div>
         </div>
