@@ -191,7 +191,7 @@ function KeyFindings() {
           <li
             key={finding.eyebrow}
             className="flex flex-col gap-4 rounded-2xl border border-white/5 p-6 md:p-8"
-            style={{ background: "rgba(33, 33, 33, 0.95)" }}
+            style={{ background: "rgba(33, 33, 33, 0.98)" }}
           >
             <p className="font-mono text-xs uppercase tracking-[0.18em] text-[rgb(var(--color-matcha-400))]">
               {finding.eyebrow}
