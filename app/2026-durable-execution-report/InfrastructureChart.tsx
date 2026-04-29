@@ -5,12 +5,12 @@ import { useEffect, useRef, useState } from "react";
 const MAX_NET = 40;
 
 const DATA = [
-  { label: "Durable execution + evals + low burden",                net: 36, conf: 49, unconf: 13, sig: "**",  significant: true  },
-  { label: "Durable execution + evals",                             net: 33, conf: 60, unconf: 27, sig: "**",  significant: true  },
-  { label: "Evals + fast debug",                                    net: 32, conf: 32, unconf: 0,  sig: "***", significant: true  },
-  { label: "Durable execution + orch-native insights + low burden",  net: 34, conf: 47, unconf: 13, sig: "ns",  significant: false },
-  { label: "Durable execution + fast debug",                        net: 30, conf: 37, unconf: 7,  sig: "ns",  significant: false },
-  { label: "Orch-native insights + fast debug",                     net: 27, conf: 27, unconf: 0,  sig: "ns",  significant: false },
+  { label: "Durable execution + using evals + report declining reliability overhead",                                  net: 36, conf: 49, unconf: 13, sig: "**",  significant: true  },
+  { label: "Durable execution + using evals",                                                                          net: 33, conf: 60, unconf: 27, sig: "**",  significant: true  },
+  { label: "Using evals + report under an hour to debug",                                                              net: 32, conf: 32, unconf: 0,  sig: "***", significant: true  },
+  { label: "Durable execution + using orchestration platform for observability + report declining reliability overhead", net: 34, conf: 47, unconf: 13, sig: "ns",  significant: false },
+  { label: "Durable execution + report under an hour to debug",                                                        net: 30, conf: 37, unconf: 7,  sig: "ns",  significant: false },
+  { label: "Using orchestration platform for observability + report under an hour to debug",                           net: 27, conf: 27, unconf: 0,  sig: "ns",  significant: false },
 ];
 
 type TooltipState = { data: typeof DATA[0]; x: number; y: number } | null;

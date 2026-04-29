@@ -44,18 +44,17 @@ function Tile({ stat, active, index }: { stat: typeof STATS[0]; active: boolean;
     <div
       className="flex flex-col gap-1.5 rounded-xl p-5"
       style={{
-        background: "rgba(44,155,99,0.08)",
-        border: "1px solid rgba(44,155,99,0.2)",
+        background: "#9ADAB3",
         opacity: active ? 1 : 0,
         transform: active ? "translateY(0)" : "translateY(12px)",
         transition: `opacity 0.5s ease ${index * 0.12}s, transform 0.5s ease ${index * 0.12}s`,
       }}
     >
-      <span className="font-mono text-xs text-white/30">— {stat.id}</span>
-      <span className="font-whyteInktrap text-4xl font-bold leading-none" style={{ color: "#2C9B63" }}>
+      <span className="font-mono text-xs" style={{ color: "rgba(12,31,16,0.5)" }}>— {stat.id}</span>
+      <span className="font-whyteInktrap text-4xl font-bold leading-none" style={{ color: "#0c1f10" }}>
         {count}{stat.suffix}
       </span>
-      <span className="text-xs font-medium uppercase tracking-wider text-white/50">
+      <span className="text-xs font-medium uppercase tracking-wider" style={{ color: "rgba(12,31,16,0.7)" }}>
         {stat.label}
       </span>
     </div>

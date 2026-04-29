@@ -28,7 +28,7 @@ const KEY_FINDINGS = [
   },
   {
     eyebrow: "02 — The observability gap",
-    color: "#CEE9FF",
+    color: "#FB5536",
     title: "Observability is the #1 unsolved problem engineers named in the survey.",
     body: "Even respondents using a mix of third-party and homegrown solutions are spending hours diagnosing failures. The report shows which observability approaches actually correlate with faster recovery.",
   },
