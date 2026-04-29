@@ -162,7 +162,7 @@ export function ReliabilityChart() {
           className="pointer-events-none fixed z-50 rounded-lg border border-white/10 bg-[#111] px-4 py-3 shadow-xl"
           style={{ left: tooltip.x + 16, top: tooltip.y - 80 }}
         >
-          <p className="mb-0.5 text-xs text-white/40">{tooltipData.band}</p>
+          <p className="mb-0.5 text-xs text-white">{tooltipData.band}</p>
           <p className="mb-2 text-xs font-medium" style={{ color: isAi ? AI_COLOR : "rgba(255,255,255,0.5)" }}>
             {isAi ? "AI in production" : "No AI in production"}
           </p>

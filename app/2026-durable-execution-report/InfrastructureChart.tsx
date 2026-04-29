@@ -98,7 +98,7 @@ export function InfrastructureChart() {
           className="pointer-events-none fixed z-50 rounded-lg border border-white/10 bg-[#111] px-4 py-3 shadow-xl"
           style={{ left: tooltip.x + 16, top: tooltip.y - 80 }}
         >
-          <p className="mb-2 text-xs text-white/40 leading-snug max-w-[200px]">{tooltip.data.label}</p>
+          <p className="mb-2 text-xs text-white leading-snug max-w-[200px]">{tooltip.data.label}</p>
           <p className="text-2xl font-bold tabular-nums" style={{ color: tooltip.data.significant ? "#a8ef3c" : "rgba(255,255,255,0.5)" }}>
             +{tooltip.data.net}<span className="text-sm font-normal ml-0.5">pp net</span>
           </p>

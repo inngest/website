@@ -68,7 +68,7 @@ export function ObservabilityChart() {
           className="pointer-events-none fixed z-50 rounded-lg border border-white/10 bg-[#111] px-4 py-3 shadow-xl"
           style={{ left: tooltip.x + 16, top: tooltip.y - 72 }}
         >
-          <p className="mb-2 text-xs text-white/40 max-w-[180px] leading-snug">{tooltip.data.label}</p>
+          <p className="mb-2 text-xs text-white max-w-[180px] leading-snug">{tooltip.data.label}</p>
           <p className="text-3xl font-bold tabular-nums" style={{ color: "#a8ef3c" }}>
             {tooltip.data.pct}
             <span className="text-base font-normal text-white/40">%</span>
