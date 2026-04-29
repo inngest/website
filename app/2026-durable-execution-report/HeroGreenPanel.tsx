@@ -76,17 +76,17 @@ export function HeroGreenPanel() {
       {/* Content */}
       <div className="relative z-10 flex h-full flex-col px-8 pb-8 pt-10 md:px-12 md:pb-10 md:pt-14">
 
-        {/* Logo link */}
+        {/* Logo link — left */}
         <Link
           href="/"
-          className="self-center transition-opacity hover:opacity-60"
+          className="self-start transition-opacity hover:opacity-60"
           aria-label="Inngest homepage"
         >
           <Logo width={130} fill="#0c1f10" />
         </Link>
 
-        {/* Copy — vertically centered in available space */}
-        <div className="flex flex-1 flex-col items-center justify-center gap-5 text-center">
+        {/* Copy — left-aligned, vertically centered in available space */}
+        <div className="flex flex-1 flex-col justify-center gap-5">
           <h1 className="font-whyteInktrap text-5xl font-black leading-[1.05] text-[#0c1f10] sm:text-6xl xl:text-7xl">
             AI in Production: The 2026 Benchmark Report
           </h1>
@@ -105,12 +105,12 @@ export function HeroGreenPanel() {
           </p>
         </div>
 
-        {/* Logos — anchored to bottom */}
+        {/* Logos — 5 per row */}
         <div className="pt-10">
           <p className="mb-4 font-mono text-xs uppercase tracking-[0.2em] text-[#0c1f10]/70">
             With participation from engineers at
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-x-7 gap-y-5">
+          <div className="grid grid-cols-5 items-center gap-x-8 gap-y-5">
             {LOGOS.map((l) => (
               <Image
                 key={l.name}
@@ -121,6 +121,7 @@ export function HeroGreenPanel() {
                 style={{
                   height: l.h,
                   width: "auto",
+                  maxWidth: "100%",
                   filter: "brightness(0)",
                 }}
               />
