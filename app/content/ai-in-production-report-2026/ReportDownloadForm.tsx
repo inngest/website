@@ -99,7 +99,7 @@ function FormPanel({
           and agree to our{" "}
           <a
             className="underline hover:text-white/80"
-            href="/privacy?ref=2026-durable-execution-report"
+            href="/privacy?ref=ai-in-production-report-2026"
           >
             Privacy Policy
           </a>

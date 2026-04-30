@@ -28,7 +28,7 @@ export default function Header() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  if (pathname?.startsWith("/2026-durable-execution-report")) return null;
+  if (pathname?.startsWith("/content/ai-in-production-report-2026")) return null;
 
   return (
     <header

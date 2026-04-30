@@ -8,7 +8,7 @@ export type ReportGraph = {
 export const REPORT_PATH =
   "/assets/reports/2026-benchmark/2026-durable-execution-benchmark-report.pdf";
 
-export const REPORT_LANDING_PATH = "/2026-durable-execution-report";
+export const REPORT_LANDING_PATH = "/content/ai-in-production-report-2026";
 
 export const REPORT_GRAPHS = {
   "confidence-in-scaling-ai-workflows-by-team-size": {

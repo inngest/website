@@ -7,7 +7,7 @@ import FooterLogo from "./FooterLogo";
 
 export default function Footer() {
   const pathname = usePathname();
-  const isReportPage = pathname?.startsWith("/2026-durable-execution-report");
+  const isReportPage = pathname?.startsWith("/content/ai-in-production-report-2026");
 
   return (
     <>
