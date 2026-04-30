@@ -1,0 +1,18 @@
+# ai.txt - AI Usage Policy for inngest.com
+# Learn more: https://ai-txt.org
+
+User-agent: *
+Allow-AI-Training: yes
+Allow-AI-Summarization: yes
+Allow-AI-Citation: yes
+Allow-AI-Inference: yes
+
+# Inngest documentation is designed to be consumed by AI systems.
+# We provide structured formats for LLM consumption:
+#
+# llms.txt:      https://www.inngest.com/llms.txt
+# llms-full.txt: https://www.inngest.com/llms-full.txt
+# Markdown API:  https://www.inngest.com/docs-markdown/{path}
+# AGENTS.md:     https://github.com/inngest/website/blob/main/AGENTS.md
+#
+# Contact: support@inngest.com
