@@ -18,82 +18,58 @@ interface Section {
 
 export const SECTIONS: Section[] = [
   {
-    title: "The Basics",
+    title: "Flow Control",
     articles: [
+      {
+        title: "Flash sales and bursty workflows",
+        subtitle:
+          "Use throttle, concurrency, debounce, and idempotency to handle traffic spikes without overwhelming downstream services",
+        tags: ["Flow Control", "Reliability"],
+        slug: "flash-sales-and-bursty-workflows",
+      },
       {
         title: "Keeping your API fast",
         subtitle:
-          "Moving code out of the critical path into background jobs to keep API response times performant",
-        tags: ["Performance"],
+          "Offload LLM calls, data processing, and other heavy work from the request path into reliable background functions",
+        tags: ["Performance", "AI"],
         slug: "keeping-your-api-fast",
       },
       {
-        title: "Running code on a schedule",
-        subtitle:
-          "Run task periodically, as cron jobs, like weekly emails or daily backups",
-        tags: ["Scheduling"],
-        slug: "running-code-on-a-schedule",
-      },
-      {
         title: "Build reliable webhooks",
-        subtitle: "Handle high throughput webhooks in a fault tolerant way",
-        tags: ["Performance", "Reliability"],
+        subtitle:
+          "Ingest webhooks and model callbacks at scale with built-in retries and replay",
+        tags: ["Reliability", "Integrations"],
         slug: "build-reliable-webhooks",
       },
-      {
-        title: "Reliably run critical workflows",
-        subtitle: "Break complex code into reliable, independently ran steps",
-        tags: ["Reliability"],
-        slug: "reliably-run-critical-workflows",
-      },
     ],
   },
   {
-    title: "The Advantage of Events",
+    title: "Durable Workflows",
     articles: [
       {
+        title: "Reliably run critical workflows",
+        subtitle:
+          "Break multi-step AI pipelines and complex business logic into durable, independently retried steps",
+        tags: ["Durability", "AI"],
+        slug: "reliably-run-critical-workflows",
+      },
+      {
         title: "Running functions in parallel",
-        subtitle: "Trigger multiple functions from a single event",
-        tags: ["Architecture"],
+        subtitle:
+          "Fan out to multiple model calls, evaluations, or processing tasks from a single event",
+        tags: ["Architecture", "AI"],
         slug: "running-functions-in-parallel",
-      },
-      {
-        title: "Running at specific times",
-        subtitle:
-          "Pause and wait until a specific time based off of data within an event",
-        tags: ["Scheduling", "Architecture"],
-        slug: "running-at-specific-times",
-      },
-      {
-        title: "Cancelling scheduled functions",
-        subtitle:
-          "Automatically cancel scheduled, paused, and waiting work using events",
-        tags: ["Scheduling"],
-        slug: "cancelling-scheduled-functions",
-      },
-      /*{
-        title: "Data recovery through replay",
-        subtitle: "Use event history to re-run work to fix issues",
-        tags: ["Architecture"],
-        slug: "#TODO",
-      },*/
-      {
-        title: "Batching jobs via fan-out",
-        subtitle:
-          "Reliably manage thousands of jobs triggered by a single event or cron",
-        tags: ["Architecture", "Scheduling"],
-        slug: "reliable-scheduling-systems",
       },
     ],
   },
   {
-    title: "Event-coordination",
+    title: "Event Coordination",
     articles: [
       {
         title: "Building flows for lost customers",
         subtitle:
-          "Combine events into a single function to build things like cart abandonment, sales processes, and churn flows",
-        tags: ["Activation", "User Journeys", "Event Coordination"],
+          "Coordinate between events to build human-in-the-loop approvals, cart abandonment flows, and multi-step user journeys",
+        tags: ["Event Coordination", "User Journeys"],
         slug: "event-coordination-for-lost-customers",
       },
     ],
@@ -111,9 +87,9 @@ export async function getStaticProps() {
     props: {
       designVersion: "2",
       meta: {
-        title: "Patterns: Async + Event-Driven",
+        title: "Patterns: AI Orchestration + Durable Workflows",
         description:
-          "A collection of software architecture patterns for asynchronous flows",
+          "Architecture patterns for building reliable AI pipelines, background jobs, and event-driven workflows",
         image: "/assets/patterns/og-image-patterns.jpg",
       },
     },
@@ -130,10 +106,10 @@ export default function Patterns() {
           <h1 className="mt-12 text-3xl font-semibold tracking-tight text-white md:mt-20 lg:text-5xl">
             Patterns
           </h1>
-          <p className="text-xl text-slate-100">Async + Event-Driven</p>
+          <p className="text-xl text-slate-100">AI Orchestration + Durable Workflows</p>
           <p className="my-4 mb-16 max-w-xl  text-indigo-200 md:mb-28">
-            The common patterns listed here are flexible and powerful enough to
-            solve problems across all types of projects and codebases.
+            Proven approaches for building reliable AI pipelines, handling
+            traffic spikes, and coordinating complex workflows with Inngest.
           </p>
 
           <section className="flex flex-col gap-12">
@@ -184,33 +160,6 @@ export default function Patterns() {
                         ))}
                       </div>
                     </Link>
-                    // <Link
-                    //   key={slug}
-                    //   href={`/patterns/${slug}`}
-                    //   className="flex flex-col bg-white rounded-lg"
-                    // >
-                    //   <div className="px-8 py-6">
-                    //     <h2 className="text-lg text-slate-700 font-semibold tracking-tight">
-                    //       {title}
-                    //     </h2>
-                    //     <p className="text-sm mt-1 mb-3 text-slate-600 font-regular tracking-tight">
-                    //       {subtitle}.
-                    //     </p>
-                    //     <span className="text-sm text-indigo-500 font-medium">
-                    //       Read pattern
-                    //     </span>
-                    //   </div>
-                    //   <div className="flex gap-2 bg-slate-100 rounded-b-lg py-3 px-6 border-t border-slate-200/60">
-                    //     {tags.map((t) => (
-                    //       <span
-                    //         key={t}
-                    //         className="py-1 px-2 rounded bg-slate-200 text-slate-600 font-medium text-xs"
-                    //       >
-                    //         {t}
-                    //       </span>
-                    //     ))}
-                    //   </div>
-                    // </Link>
                   ))}
                 </div>
               </div>

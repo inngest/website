@@ -29,9 +29,9 @@ export const getStaticProps: GetStaticProps = async (ctx) => {
       ...pageData,
       designVersion: "2",
       meta: {
-        title: "Patterns: Async + Event-Driven",
+        title: "Patterns: AI Orchestration + Durable Workflows",
         description:
-          "A collection of software architecture patterns for asynchronous flows",
+          "Architecture patterns for building reliable AI pipelines, background jobs, and event-driven workflows",
         image: "/assets/patterns/og-image-patterns.jpg",
       },
     },
@@ -110,7 +110,6 @@ export default function Patterns({
             </ol>
           </aside>
 
-          {/* <article className="col-span-3 row-start-1 col-start-1 xl:col-start-2 xl:col-span-3 max-w-[65ch] prose m-auto mb-20 prose-img:rounded-lg prose-code:bg-slate-800 prose-code:tracking-tight text-slate-300 prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline hover:prose-a:text-white prose-a:font-medium prose-a:transition-all prose-invert"> */}
           <article className="lg:col-span-3 lg:pr-12 xl:pr-20 lg:col-start-1 lg:row-start-1 max-w-[65ch] lg:max-w-none m-auto lg:m-0 prose mb-20 prose-img:rounded-lg prose-code:bg-canvasMuted text-basis prose-a:text-link prose-a:no-underline hover:prose-a:underline prose-a:font-medium prose-a:transition-all prose-invert">
             <SectionProvider sections={[]}>
               {/* @ts-ignore */}
@@ -120,17 +119,6 @@ export default function Patterns({
               />
             </SectionProvider>
           </article>
-          {/* <div className="col-start-2 col-span-3 max-w-[65ch]">
-          <Button
-            href="/patterns"
-            variant="secondary"
-            size="sm"
-            arrow="left"
-            className="col-start-2 place-self-start"
-          >
-            Back to Patterns
-          </Button>
-        </div> */}
         </Container>
       </div>
 
