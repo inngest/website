@@ -45,12 +45,5 @@ export default async function Page({ params }: Props) {
   if (!graph) {
     notFound();
   }
-  return (
-    <>
-      {/* Fallback for non-JS clients (excluding social scrapers, which read OG tags
-          server-side and never follow refreshes). */}
-      <meta httpEquiv="refresh" content={`0; url=${REPORT_LANDING_PATH}`} />
-      <ShareRedirect />
-    </>
-  );
+  return <ShareRedirect />;
 }
