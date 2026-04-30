@@ -4,10 +4,14 @@ import Script from "next/script";
 import { usePathname, useSearchParams } from "next/navigation";
 
 import { useAnonymousID } from "src/shared/trackingHooks";
+import { useFirstTouch } from "src/shared/firstTouch";
 import { trackPageView } from "src/utils/tracking";
 
 export function PageViews() {
   const { anonymousID, existing } = useAnonymousID();
+  // Capture/persist first-touch attribution (utm_*, ref, landing_url, referrer).
+  // The hook is a no-op on subsequent visits because the cookie already exists.
+  useFirstTouch();
 
   return (
     <Script
