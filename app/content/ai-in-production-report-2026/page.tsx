@@ -193,8 +193,7 @@ function Methodology() {
           </p>
           <p className="mt-4">
             The survey covered orchestration, observability, evals, agent
-            frameworks, and scaling confidence. The full methodology is included
-            in the report.
+            frameworks, and scaling confidence.
           </p>
         </div>
       </div>
