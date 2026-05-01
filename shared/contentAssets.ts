@@ -41,9 +41,7 @@ export const CONTENT_ASSETS: Record<string, ContentAsset> = {
     description:
       "We surveyed 130 backend, full-stack, and AI engineers about what it takes to run reliable AI workflows in production. We wanted to know what's causing failures, and which infrastructure choices—across orchestration, observability, evals, and agent frameworks—actually reduce the burden of reliability. Explore the patterns that predict scaling confidence.",
     buttonCopy: "Read the report",
-    // PLACEHOLDER for local testing — swap to the real interactive report URL
-    // (e.g. /reports/ai-in-production-2026) once that page is built.
-    redirectTo: "https://www.inngest.com/blog/ai-agents-inngest-durable-steps",
+    redirectTo: "https://www.inngest.com/assets/reports/2026-benchmark/2026-durable-execution-benchmark-report.pdf",
   },
 };
 
