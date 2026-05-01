@@ -104,6 +104,7 @@ export function ObservabilityChart() {
                     className="flex items-center justify-center"
                     onMouseEnter={() => setHovered({ r, c })}
                     onMouseLeave={() => setHovered(null)}
+                    onClick={() => setHovered({ r, c })}
                   >
                     <div
                       className="flex cursor-crosshair items-center justify-center rounded-full"

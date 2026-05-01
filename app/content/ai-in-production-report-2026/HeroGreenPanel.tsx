@@ -79,7 +79,7 @@ export function HeroGreenPanel() {
         {/* Logo link — left */}
         <Link
           href="/"
-          className="self-start transition-opacity hover:opacity-60"
+          className="mb-8 self-start transition-opacity hover:opacity-60 md:mb-12"
           aria-label="Inngest homepage"
         >
           <Logo width={130} fill="#0c1f10" />

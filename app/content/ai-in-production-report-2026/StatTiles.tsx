@@ -77,7 +77,7 @@ export function StatTiles() {
   }, []);
 
   return (
-    <div ref={ref} className="grid grid-cols-3 gap-3">
+    <div ref={ref} className="grid grid-cols-1 gap-3 sm:grid-cols-3">
       {STATS.map((s, i) => (
         <Tile key={s.id} stat={s} active={active} index={i} />
       ))}

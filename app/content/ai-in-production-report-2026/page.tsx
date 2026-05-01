@@ -49,8 +49,9 @@ const KEY_FINDINGS = [
 export default function Page() {
   return (
     <div className="bg-[#212121] text-basis">
-      {/* Hero is pinned; content scrolls up over it */}
-      <div className="sticky top-0 z-0">
+      {/* Hero is pinned on desktop; content scrolls up over it. On mobile,
+          the hero scrolls normally so logos + form remain accessible. */}
+      <div className="lg:sticky lg:top-0 lg:z-0">
         <Hero />
       </div>
       <div

@@ -50,6 +50,7 @@ export function InfrastructureChart() {
               onMouseEnter={() => setHovered(i)}
               onMouseMove={(e) => setTooltip({ data: d, x: e.clientX, y: e.clientY })}
               onMouseLeave={() => { setHovered(null); setTooltip(null); }}
+              onClick={(e) => { setHovered(i); setTooltip({ data: d, x: e.clientX, y: e.clientY }); }}
             >
               <p
                 className="text-sm font-medium leading-tight"

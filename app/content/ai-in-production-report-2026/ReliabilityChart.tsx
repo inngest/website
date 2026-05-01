@@ -84,6 +84,7 @@ function ReliabilityChartInner({ width, onTooltip, onHide, hovered }: {
                   onMouseEnter={(e) => onTooltip(d.band, "ai", e.clientX, e.clientY)}
                   onMouseMove={(e)  => onTooltip(d.band, "ai", e.clientX, e.clientY)}
                   onMouseLeave={onHide}
+                  onClick={(e) => onTooltip(d.band, "ai", e.clientX, e.clientY)}
                   style={{
                     opacity: hovered && !aiHov ? 0.25 : 1,
                     filter: aiHov ? "brightness(1.2)" : "none",
@@ -96,6 +97,7 @@ function ReliabilityChartInner({ width, onTooltip, onHide, hovered }: {
                   onMouseEnter={(e) => onTooltip(d.band, "noAi", e.clientX, e.clientY)}
                   onMouseMove={(e)  => onTooltip(d.band, "noAi", e.clientX, e.clientY)}
                   onMouseLeave={onHide}
+                  onClick={(e) => onTooltip(d.band, "noAi", e.clientX, e.clientY)}
                   style={{
                     opacity: hovered && !noAiHov ? 0.25 : 1,
                     filter: noAiHov ? "brightness(1.4)" : "none",
