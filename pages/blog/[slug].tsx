@@ -24,6 +24,7 @@ import YouTube from "react-youtube-embed";
 import remarkGfm from "remark-gfm";
 import { SectionProvider } from "src/shared/Docs/SectionProvider";
 import FloatingCTA from "src/components/Blog/FloatingCTA";
+import { formatShortLocaleDate } from "src/utils/date";
 
 // @ts-ignore
 import { remarkCodeHike, recmaCodeHike } from "codehike/mdx";
@@ -155,7 +156,7 @@ export default function BlogLayout(props) {
   let dateUpdated: string | null = null;
   try {
     dateUpdated = scope.dateUpdated
-      ? new Date(scope.dateUpdated).toLocaleDateString()
+      ? formatShortLocaleDate(scope.dateUpdated)
       : null;
   } catch (err) {
     console.log(`Could not parse updated date: ${scope.dateUpdated}`);
@@ -405,11 +406,7 @@ export async function getStaticProps({ params }) {
   data.reading = readingTime(content);
   // Format the reading date.
   if (data.date) {
-    if (typeof data.date === "string") {
-      data.humanDate = new Date(data.date).toLocaleDateString();
-    } else {
-      data.humanDate = data.date.toLocaleDateString();
-    }
+    data.humanDate = formatShortLocaleDate(data.date);
   }
 
   data.tags =
