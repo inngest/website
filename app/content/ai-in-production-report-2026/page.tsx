@@ -106,7 +106,7 @@ function Hero() {
           {/* ── Form panel (dark, no wrapper card) ── */}
           <div
             id="get-the-report"
-            className="flex flex-col justify-center scroll-mt-24 px-8 py-12 md:px-12 md:pr-16 xl:pr-24"
+            className="flex flex-col justify-center scroll-mt-24 px-8 py-12 md:px-12 md:pr-16 xl:pr-24 [&_button.button]:!bg-[#a8ef3c] [&_button.button]:!text-[#0c1f10] [&_button.button:hover]:!bg-[#baf54d]"
             style={{ backgroundColor: "#000000" }}
           >
             <ContentDownloadForm asset="ai-in-production-report-2026" />
