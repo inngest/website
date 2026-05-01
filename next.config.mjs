@@ -217,6 +217,16 @@ async function redirects() {
       permanent: true,
     },
     {
+      source: "/2026-durable-execution-report",
+      destination: "/content/ai-in-production-report-2026",
+      permanent: true,
+    },
+    {
+      source: "/2026-durable-execution-report/:path*",
+      destination: "/content/ai-in-production-report-2026/:path*",
+      permanent: true,
+    },
+    {
       // From the UI's source editing page:
       source: "/docs/event-webhooks",
       destination: "/docs/events/webhooks",

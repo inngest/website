@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import {
   Dialog,
   DialogPanel,
@@ -24,7 +25,10 @@ import { featuredBlogPost } from "./helpers";
 import classNames from "src/utils/classNames";
 
 export default function Header() {
+  const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  if (pathname?.startsWith("/content/ai-in-production-report-2026")) return null;
 
   return (
     <header

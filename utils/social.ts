@@ -12,8 +12,19 @@ export const getOpenGraphImageURL = ({ title }: { title: string }) =>
     title
   )}&v=${openGraphImageVersion}`;
 
-export const getFullURL = (absolutePath: string) =>
-  new URL(absolutePath, process.env.NEXT_PUBLIC_HOST).toString();
+export const getFullURL = (absolutePath: string) => {
+  // On Vercel preview deploys, use the preview host so OG/Twitter scrapers
+  // can fetch newly-deployed assets that aren't on production yet. Falls back
+  // to NEXT_PUBLIC_HOST in production and local dev.
+  const previewHost =
+    process.env.VERCEL_ENV === "preview"
+      ? process.env.VERCEL_BRANCH_URL || process.env.VERCEL_URL
+      : null;
+  const host = previewHost
+    ? `https://${previewHost}`
+    : process.env.NEXT_PUBLIC_HOST;
+  return new URL(absolutePath, host).toString();
+};
 
 // ...
 export const generateMetadata = ({
