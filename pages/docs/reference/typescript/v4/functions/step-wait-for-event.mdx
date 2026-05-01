@@ -21,10 +21,13 @@ Use `step.waitForEvent()` to pause your function's execution until a matching ev
           <Property name="event" type="string | EventType" required>
             The name of a given event to wait for, or an [`eventType()`](/docs/reference/typescript/v4/functions/triggers#eventtype) result for typed return values.
           </Property>
-          <Property name="timeout" type="string | Date" required>
+          <Property name="timeout" type="string | number | Date | Temporal.Duration | Temporal.Instant | Temporal.ZonedDateTime" required>
             How long to wait to receive the event. Either:
-            - A duration string compatible with the [ms](https://npm.im/ms) package, e.g. `"30m"`, `"3 hours"`, or `"2.5d"`, or
-            - An absolute `Date`.
+            - A duration string compatible with the [ms](https://npm.im/ms) package, e.g. `"30m"`, `"3 hours"`, or `"2.5d"`,
+            - A `number` of milliseconds,
+            - An absolute `Date`,
+            - A [`Temporal.Duration`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Temporal/Duration) for a relative wait, or
+            - A [`Temporal.Instant`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Temporal/Instant) or [`Temporal.ZonedDateTime`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Temporal/ZonedDateTime) for an absolute deadline.
           </Property>
           <Property name="match" type="string">
             The property to match the event trigger and the wait event, using dot-notation, e.g. `data.userId`. Cannot be combined with `if`.
