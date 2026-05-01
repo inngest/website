@@ -34,7 +34,7 @@ const KEY_FINDINGS = [
   },
   {
     eyebrow: "03 — The reliability tax",
-    color: "#FFBAC7",
+    color: "#CEE9FF",
     title: "20% of AI teams spend up to half their engineering time on reliability work.",
     body: "That's twice the rate of non-AI teams. And for most, the burden is growing. Our report identifies which orchestration approaches correlate with lower — and higher — reliability burden.",
   },
