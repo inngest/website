@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { generateMetadata as buildMetadata } from "src/utils/social";
-import ReportDownloadForm from "./ReportDownloadForm";
+import ContentDownloadForm from "src/components/ContentDownloadForm";
 import { ObservabilityChart } from "./ObservabilityChart";
 import { ReliabilityChart } from "./ReliabilityChart";
 import { InfrastructureChart } from "./InfrastructureChart";
@@ -109,7 +109,7 @@ function Hero() {
             className="flex flex-col justify-center scroll-mt-24 px-8 py-12 md:px-12 md:pr-16 xl:pr-24"
             style={{ backgroundColor: "#000000" }}
           >
-            <ReportDownloadForm />
+            <ContentDownloadForm asset="ai-in-production-report-2026" />
           </div>
 
         </div>
