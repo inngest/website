@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { generateMetadata as buildMetadata } from "src/utils/social";
 import ContentDownloadForm from "src/components/ContentDownloadForm";
+import { CONTENT_ASSETS } from "src/shared/contentAssets";
 import { ObservabilityChart } from "./ObservabilityChart";
 import { ReliabilityChart } from "./ReliabilityChart";
 import { InfrastructureChart } from "./InfrastructureChart";
@@ -110,7 +111,10 @@ function Hero() {
             className="flex flex-col justify-center scroll-mt-24 px-8 py-12 md:px-12 md:pr-16 xl:pr-24 [&_button.button]:!bg-[#a8ef3c] [&_button.button]:!text-[#0c1f10] [&_button.button:hover]:!bg-[#baf54d]"
             style={{ backgroundColor: "#000000" }}
           >
-            <ContentDownloadForm asset="ai-in-production-report-2026" />
+            <ContentDownloadForm
+              asset="ai-in-production-report-2026"
+              redirectTo={CONTENT_ASSETS["ai-in-production-report-2026"].redirectTo}
+            />
           </div>
 
         </div>
