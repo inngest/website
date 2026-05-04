@@ -10,7 +10,7 @@ import { HeroGreenPanel } from "./HeroGreenPanel";
 import { ParallaxCard } from "./ParallaxCard";
 import { ScrollToFormButton } from "./ScrollToFormButton";
 
-const PAGE_TITLE = "AI in Production: The 2026 Durable Execution Benchmark Report";
+const PAGE_TITLE = "AI in Production: The 2026 Benchmark Report";
 const PAGE_DESCRIPTION =
   "We surveyed 130 backend, full-stack, and AI engineers about what it takes to run reliable AI workflows in production. Explore the patterns that predict scaling confidence.";
 
