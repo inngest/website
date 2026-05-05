@@ -169,15 +169,16 @@ export default function ResourcePopover() {
                 </h3>
                 <div className="mt-2 flow-root w-full">
                   <div className="-my-2">
-                    <article className="relative isolate p-2 hover:bg-stone-800">
-                      <div className="max-h-[120px]">
-                        <img
-                          alt=""
-                          src={featuredBlogPost.image}
-                          className="h-32 w-full rounded-md object-cover"
-                        />
-                      </div>
-                      <div className="max-w-[240px]">
+                    <article className="relative isolate rounded-sm p-2 hover:bg-stone-800">
+                      {/* One column width for image + copy; aspect box avoids uneven letterboxing */}
+                      <div className="flex w-full max-w-[260px] flex-col">
+                        <div className="aspect-[2/1] w-full overflow-hidden rounded-md bg-stone-800">
+                          <img
+                            alt=""
+                            src={featuredBlogPost.image}
+                            className="h-full w-full object-cover object-center"
+                          />
+                        </div>
                         <h4 className="mt-4 text-base text-stone-50">
                           <Link
                             href={featuredBlogPost.href}
