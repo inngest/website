@@ -307,7 +307,7 @@ export default function Header() {
                     </div>
                     <div className="mt-4 px-6">
                       <h3 className="pb-2 text-sm font-medium leading-6 text-stone-400">
-                        Latest blog
+                        Featured report
                       </h3>
                       <article className="relative isolate flex flex-row gap-y-3 pb-2">
                         <div className="relative flex-none">
