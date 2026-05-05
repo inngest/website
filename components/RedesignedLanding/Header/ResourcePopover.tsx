@@ -162,16 +162,15 @@ export default function ResourcePopover() {
                 </div>
               </div>
             </div>
-            <div className="lg:pl-3">
-              <div className="flex flex-col items-start gap-1 pb-4">
+            <div className="w-full min-w-0 lg:pl-3">
+              <div className="flex w-full min-w-0 flex-col gap-1 pb-4">
                 <h3 className="text-sm font-medium leading-6 text-stone-400">
                   Featured report
                 </h3>
                 <div className="mt-2 flow-root w-full">
                   <div className="-my-2">
                     <article className="relative isolate rounded-sm p-2 hover:bg-stone-800">
-                      {/* One column width for image + copy; aspect box avoids uneven letterboxing */}
-                      <div className="flex w-full max-w-[260px] flex-col">
+                      <div className="flex w-full flex-col">
                         <div className="aspect-[2/1] w-full overflow-hidden rounded-md bg-stone-800">
                           <img
                             alt=""
