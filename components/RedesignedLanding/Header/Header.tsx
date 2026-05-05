@@ -307,16 +307,16 @@ export default function Header() {
                     </div>
                     <div className="mt-4 px-6">
                       <h3 className="pb-2 text-sm font-medium leading-6 text-stone-400">
-                        Latest blog
+                        Featured report
                       </h3>
                       <article className="relative isolate flex flex-row gap-y-3 pb-2">
-                        <div className="relative flex-none">
+                        <div className="relative flex h-16 w-[7.5rem] flex-none items-center justify-center overflow-hidden rounded-lg bg-stone-800">
                           <img
                             alt=""
                             src={featuredBlogPost.image}
-                            className="aspect-[2/1] max-h-16 rounded-lg bg-gray-100 object-cover"
+                            className="max-h-full max-w-full object-contain object-center"
                           />
-                          <div className="absolute inset-0 rounded-lg ring-1 ring-inset ring-gray-900/10" />
+                          <div className="pointer-events-none absolute inset-0 rounded-lg ring-1 ring-inset ring-stone-600/40" />
                         </div>
                         <div className="flex items-center">
                           <h4 className="ml-4 mt-2 font-whyte text-sm font-normal leading-[1.05rem] text-stone-50">

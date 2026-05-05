@@ -85,7 +85,7 @@ export default function BlogIndex(props) {
                     <p className="text-stone-50">{focus.subtitle}</p>
                   </div>
                   <span className="mt-4 flex flex-row items-center gap-1 rounded-lg bg-inngestLux px-4 py-1.5 text-sm font-medium text-stone-950 group-hover:bg-inngestLuxDark">
-                    Read article
+                    {focus.focusCta ?? "Read article"}
                     <RiArrowRightLine className="h-4 w-4" />
                   </span>
                 </div>
