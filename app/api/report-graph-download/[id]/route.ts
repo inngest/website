@@ -1,7 +1,16 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 
-import { getReportGraph } from "app/content/ai-in-production-report-2026/graphs";
+import {
+  getReportGraph,
+  REPORT_GRAPHS,
+} from "app/content/ai-in-production-report-2026/graphs";
+
+export const dynamic = "force-static";
+
+export async function generateStaticParams() {
+  return Object.keys(REPORT_GRAPHS).map((id) => ({ id }));
+}
 
 export async function GET(
   _request: Request,
