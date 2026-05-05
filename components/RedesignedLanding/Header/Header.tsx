@@ -310,11 +310,11 @@ export default function Header() {
                         Featured report
                       </h3>
                       <article className="relative isolate flex flex-row gap-y-3 pb-2">
-                        <div className="relative h-16 w-[7.5rem] flex-none overflow-hidden rounded-lg bg-stone-800">
+                        <div className="relative flex h-16 w-[7.5rem] flex-none items-center justify-center overflow-hidden rounded-lg bg-stone-800">
                           <img
                             alt=""
                             src={featuredBlogPost.image}
-                            className="h-full w-full object-cover object-center"
+                            className="max-h-full max-w-full object-contain object-center"
                           />
                           <div className="pointer-events-none absolute inset-0 rounded-lg ring-1 ring-inset ring-stone-600/40" />
                         </div>

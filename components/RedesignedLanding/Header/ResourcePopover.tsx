@@ -172,11 +172,13 @@ export default function ResourcePopover() {
                     <article className="relative isolate rounded-sm p-2 hover:bg-stone-800">
                       <div className="flex w-full flex-col">
                         <div className="aspect-[2/1] w-full overflow-hidden rounded-md bg-stone-800">
-                          <img
-                            alt=""
-                            src={featuredBlogPost.image}
-                            className="h-full w-full object-cover object-center"
-                          />
+                          <div className="flex h-full w-full items-center justify-center">
+                            <img
+                              alt=""
+                              src={featuredBlogPost.image}
+                              className="max-h-full max-w-full object-contain object-center"
+                            />
+                          </div>
                         </div>
                         <h4 className="mt-4 text-base text-stone-50">
                           <Link
