@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import Logo from "src/shared/Icons/Logo";
 
@@ -112,19 +111,24 @@ export function HeroGreenPanel() {
           </p>
           <div className="grid grid-cols-3 items-center justify-items-center gap-x-8 gap-y-6 sm:grid-cols-5">
             {LOGOS.map((l) => (
-              <Image
+              <div
                 key={l.name}
-                src={l.src}
-                alt={l.name}
-                width={160}
-                height={l.h}
-                style={{
-                  height: l.h,
-                  width: "auto",
-                  maxWidth: "100%",
-                  filter: "brightness(0)",
-                }}
-              />
+                className={`flex items-center justify-center${l.name === "Remitly" ? " hidden sm:flex" : ""}`}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={l.src}
+                  alt={l.name}
+                  style={{
+                    maxHeight: l.h,
+                    maxWidth: "100%",
+                    height: "auto",
+                    width: "auto",
+                    display: "block",
+                    filter: "brightness(0)",
+                  }}
+                />
+              </div>
             ))}
           </div>
         </div>
