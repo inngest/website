@@ -24,6 +24,8 @@ export type BlogPost = {
 
   // When true, the post will be the highlighted post on the main feed
   focus?: boolean;
+  /** Hero CTA label on /blog when this post is `focus` (default: "Read article") */
+  focusCta?: string;
   // When hidden, the post will be available on at the URL, but not in any blog feed of RSS
   hide?: boolean;
   // When featured is false, post will be hidden from main feed, but available on category pages
