@@ -120,9 +120,10 @@ export function HeroGreenPanel() {
                   src={l.src}
                   alt={l.name}
                   style={{
-                    height: l.h,
-                    width: "auto",
+                    maxHeight: l.h,
                     maxWidth: "100%",
+                    height: "auto",
+                    width: "auto",
                     display: "block",
                     filter: "brightness(0)",
                   }}
