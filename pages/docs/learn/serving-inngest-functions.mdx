@@ -1049,7 +1049,7 @@ To securely communicate with Inngest Cloud, your app needs a [signing key](/docs
 If you can't use an environment variable, you can pass the signing key directly to the Inngest client constructor via the `signingKey` option. In TypeScript SDK v4, the signing key is configured on the client (not in the `serve()` options). [Read the reference for more information](/docs/reference/serve#serve-client-functions-options).
 
 <Callout variant="info">
-  You do not need a signing key for local development. When `INNGEST_DEV=1` is set, the SDK skips signature verification and connects to your local Dev Server.
+  You do not need a signing key for local development. When `INNGEST_DEV=1` is set, the SDK skips signature verification and connects to your local Inngest Dev Server.
 </Callout>
 
 ### Other configuration
