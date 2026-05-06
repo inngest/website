@@ -51,8 +51,8 @@ serve({
 });
 ```
 
-<Callout variant="warn">
-  **Using TypeScript SDK v4?** The default mode changed from dev to cloud in v4. When developing locally, set the `INNGEST_DEV=1` environment variable or your app will attempt to connect to Inngest Cloud and fail with a signing key error. [Learn more about local development](/docs/local-development).
+<Callout variant="info">
+  When developing locally, set the `INNGEST_DEV=1` environment variable to test with the Inngest dev server. By default, the SDK will run in production mode when this key is not set. [Learn more about local development](/docs/local-development).
 </Callout>
 
 ## Supported frameworks and platforms
