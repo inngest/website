@@ -52,6 +52,8 @@ const KEY_FINDINGS = [
 
 export default function Page() {
   return (
+    <>
+      <style>{`.page-banner { display: none; }`}</style>
     <div className="bg-[#212121] text-basis">
       <ScrollIndicator />
       <StickyDownloadCTA />
@@ -75,6 +77,7 @@ export default function Page() {
         <Methodology />
       </div>
     </div>
+    </>
   );
 }
 
