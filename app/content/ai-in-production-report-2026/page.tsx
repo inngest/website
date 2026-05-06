@@ -9,6 +9,9 @@ import { StatTiles } from "./StatTiles";
 import { HeroGreenPanel } from "./HeroGreenPanel";
 import { ParallaxCard } from "./ParallaxCard";
 import { ScrollToFormButton } from "./ScrollToFormButton";
+import { FindingCTA } from "./FindingCTA";
+import { ScrollIndicator } from "./ScrollIndicator";
+import { StickyDownloadCTA } from "./StickyDownloadCTA";
 
 const PAGE_TITLE = "AI in Production: The 2026 Benchmark Report";
 const PAGE_DESCRIPTION =
@@ -40,7 +43,7 @@ const KEY_FINDINGS = [
     body: "That's twice the rate of non-AI teams. And for most, the burden is growing. Our report identifies which orchestration approaches correlate with lower — and higher — reliability burden.",
   },
   {
-    eyebrow: "04 — Summary",
+    eyebrow: "04 — What separates confident teams",
     color: "#a8ef3c",
     title: "Three infrastructure layers separate confident AI teams from the rest.",
     body: "What separates the most confident AI teams isn't bigger budgets or bigger teams — it's tighter integration between three infrastructure layers: orchestration that persists state and handles failures, observability that lives inside the workflow, and evals connected to where things actually break. When those layers share context, confidence follows.",
@@ -50,6 +53,8 @@ const KEY_FINDINGS = [
 export default function Page() {
   return (
     <div className="bg-[#212121] text-basis">
+      <ScrollIndicator />
+      <StickyDownloadCTA />
       {/* Hero is pinned on desktop; content scrolls up over it. On mobile,
           the hero scrolls normally so logos + form remain accessible. */}
       <div className="lg:sticky lg:top-0 lg:z-0">
@@ -66,8 +71,8 @@ export default function Page() {
         }}
       >
         <KeyFindings />
-        <Methodology />
         <FinalCTA />
+        <Methodology />
       </div>
     </div>
   );
@@ -80,12 +85,15 @@ function FinalCTA() {
       style={{ backgroundColor: "rgba(0, 0, 0, 0.3)" }}
     >
       <div className="mx-auto max-w-4xl px-6 py-16 text-center md:py-24">
-        <h2 className="font-whyteInktrap text-3xl font-semibold text-basis md:text-4xl">
+        <p className="font-mono text-xs uppercase tracking-[0.2em] text-[rgb(var(--color-matcha-400))]">
+          Free PDF
+        </p>
+        <h2 className="mt-3 font-whyteInktrap text-3xl font-semibold text-basis md:text-4xl">
           Get the full report.
         </h2>
         <p className="mx-auto mt-4 max-w-xl text-base text-subtle md:text-lg">
           Charts, breakouts by team size, and the patterns that predict scaling
-          confidence — all in the PDF.
+          confidence — free PDF, instant access.
         </p>
         <div className="mt-8">
           <ScrollToFormButton />
@@ -111,6 +119,9 @@ function Hero() {
             className="flex flex-col justify-center scroll-mt-24 px-8 py-12 md:px-12 md:pr-16 xl:pr-24 [&_button.button]:!bg-[#a8ef3c] [&_button.button]:!text-[#0c1f10] [&_button.button:hover]:!bg-[#baf54d]"
             style={{ backgroundColor: "#000000" }}
           >
+            <h2 className="mb-5 text-center font-whyteInktrap text-2xl font-black leading-[1.05] text-basis">
+              Download your free copy today.
+            </h2>
             <ContentDownloadForm
               asset="ai-in-production-report-2026"
               redirectTo={CONTENT_ASSETS["ai-in-production-report-2026"].redirectTo}
@@ -128,15 +139,17 @@ function KeyFindings() {
     <section className="mx-auto max-w-4xl px-6 pb-8 pt-20 md:pb-12 md:pt-28">
       <div className="max-w-3xl">
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-[rgb(var(--color-matcha-400))]">
-          Key findings
+          Key findings — preview
         </p>
         <h2 className="mt-3 font-whyteInktrap text-3xl font-semibold text-basis md:text-4xl">
           What 130 engineers told us about running AI in production.
         </h2>
         <p className="mt-4 text-base text-subtle md:text-lg">
-          We wanted to know what's causing failures, and which infrastructure
-          choices — across orchestration, observability, evals, and agent
-          frameworks — actually reduce the burden of reliability.
+          A preview of what's inside. We wanted to know what's causing failures,
+          and which infrastructure choices — across orchestration, observability,
+          evals, and agent frameworks — actually reduce the burden of reliability.
+          Download our full report to go deeper with team-size breakouts, complete
+          charts, and the statistical significance behind every finding.
         </p>
       </div>
       <ul className="mt-12 flex flex-col gap-6">
@@ -169,6 +182,12 @@ function KeyFindings() {
                 <InfrastructureChart />
               </div>
             )}
+            {finding.eyebrow.startsWith("04") && (
+              <p className="text-sm text-subtle md:text-base">
+                The full report breaks down these combinations by team size with complete chart data and statistical significance.
+              </p>
+            )}
+            <FindingCTA />
           </ParallaxCard>
         ))}
       </ul>
