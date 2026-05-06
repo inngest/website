@@ -332,47 +332,21 @@ export default function ContactForm({
           />
         </label>
       )}
-      {isContentDownload && (
-        <>
-          <label className="flex w-full flex-col gap-2">
-            <span>
-              Company <span className="text-warning">*</span>
-            </span>
-            <input
-              type="text"
-              name="company"
-              required
-              onChange={(e) => setCompany(e.target.value)}
-              className="w-full rounded-md border border-muted bg-canvasBase p-3 outline-none"
-            />
-          </label>
-          <label className="flex w-full flex-col gap-2">
-            <span>
-              Job Title <span className="text-warning">*</span>
-            </span>
-            <input
-              type="text"
-              name="job_title"
-              required
-              onChange={(e) => setJobTitle(e.target.value)}
-              className="w-full rounded-md border border-muted bg-canvasBase p-3 outline-none"
-            />
-          </label>
-        </>
+      {!isContentDownload && (
+        <label className="flex w-full flex-col gap-2">
+          <span>
+            {surveyLabel || "How did you hear about us?"}{" "}
+            <span className="text-warning">*</span>
+          </span>
+          <input
+            type="text"
+            name="survey"
+            required
+            onChange={(e) => setSurvey(e.target.value)}
+            className="w-full rounded-md border border-muted bg-canvasBase p-3 outline-none"
+          />
+        </label>
       )}
-      <label className="flex w-full flex-col gap-2">
-        <span>
-          {surveyLabel || "How did you hear about us?"}{" "}
-          <span className="text-warning">*</span>
-        </span>
-        <input
-          type="text"
-          name="survey"
-          required
-          onChange={(e) => setSurvey(e.target.value)}
-          className="w-full rounded-md border border-muted bg-canvasBase p-3 outline-none"
-        />
-      </label>
       {!isContentDownload && (
         <label className="flex w-full flex-col gap-2">
           <span>{messageLabel || "What can we help you with?"}</span>
