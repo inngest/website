@@ -15,14 +15,14 @@ export function ScrollIndicator() {
       className="fixed bottom-8 left-1/2 z-50 -translate-x-1/2 pointer-events-none transition-opacity duration-500"
       style={{ opacity: visible ? 1 : 0 }}
     >
-      <div className="flex animate-bounce items-center justify-center rounded-full border border-white/20 bg-white/10 p-3 backdrop-blur-sm">
+      <div className="flex animate-bounce items-center justify-center rounded-full border border-[#a8ef3c]/40 bg-black/40 p-3 backdrop-blur-sm">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="20"
           height="20"
           viewBox="0 0 24 24"
           fill="none"
-          stroke="white"
+          stroke="#a8ef3c"
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
