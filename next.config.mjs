@@ -49,7 +49,10 @@ const permanentRedirects = [
   ["/docs/functions", "/docs/learn/inngest-functions"],
   ["/docs/functions/multi-step", "/docs/learn/inngest-steps"],
   ["/docs/guides/multi-step-functions", "/docs/learn/inngest-steps"],
-  ["/docs/features/inngest-functions/steps-workflows/fetch", "/docs/reference/typescript/functions/fetch"],
+  [
+    "/docs/features/inngest-functions/steps-workflows/fetch",
+    "/docs/reference/typescript/functions/fetch",
+  ],
   ["/docs/guides/enqueueing-future-jobs", "/docs/guides/delayed-functions"],
   ["/docs/steps", "/docs/learn/inngest-steps"],
   ["/docs/features/inngest-functions", "/docs/learn/inngest-functions"],
@@ -468,6 +471,7 @@ const nextConfig = {
     turbopackFileSystemCacheForDev: true,
   },
   images: {
+    qualities: [75, 95],
     remotePatterns: [
       {
         protocol: "https",
