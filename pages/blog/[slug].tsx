@@ -224,6 +224,7 @@ export default function BlogLayout(props) {
                     width={768}
                     height={768 / 2}
                     quality={95}
+                    loading="eager"
                   />
                   {scope.imageCredits && (
                     <figcaption
@@ -245,22 +246,20 @@ export default function BlogLayout(props) {
                   )}
                   <p className="mt-2 flex items-center gap-2 text-sm text-subtle">
                     {authors.map((author, idx, arr) => (
-                      <>
-                        <span>
-                          {authorURLs[author] ? (
-                            <a
-                              href={authorURLs[author]}
-                              target="_blank"
-                              className="text-subtle hover:underline"
-                            >
-                              {author}
-                            </a>
-                          ) : (
-                            <>{author}</>
-                          )}
-                          {idx < arr.length - 1 && ", "}
-                        </span>
-                      </>
+                      <span key={idx}>
+                        {authorURLs[author] ? (
+                          <a
+                            href={authorURLs[author]}
+                            target="_blank"
+                            className="text-subtle hover:underline"
+                          >
+                            {author}
+                          </a>
+                        ) : (
+                          <>{author}</>
+                        )}
+                        {idx < arr.length - 1 && ", "}
+                      </span>
                     ))}
                     {authors.length > 0 && <>&middot; </>}
                     <span className="flex items-center gap-1">
@@ -363,10 +362,7 @@ export async function getStaticPaths() {
   const matter = require("gray-matter");
   const paths = fs
     .readdirSync("./content/blog/")
-    .filter(
-      (fname: string) =>
-        fname.endsWith(".md") || fname.endsWith(".mdx")
-    )
+    .filter((fname: string) => fname.endsWith(".md") || fname.endsWith(".mdx"))
     .filter((fname: string) => {
       // Skip files that have redirect frontmatter
       let filePath = `./content/blog/${fname}`;
