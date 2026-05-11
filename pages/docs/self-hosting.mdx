@@ -31,7 +31,7 @@ The system is composed of the following services:
 * **Event API** - Receives events from SDKs via HTTP requests. Authenticates client requests via [Event Keys](/docs/events/creating-an-event-key?ref=docs-self-hosting). The Event API publishes event payloads to an internal event stream.
 * **Event stream** - Acts as a buffer between the _Event API_ and the _Runner_.
 * **Runner** - Consumes incoming events and performs several actions:
-  * Scheduling of new “function runs” (aka jobs) given the event type, creating initial run state in the _State store_ database. Runs are added to queues given the function's flow control configuration.
+  * Scheduling of new "function runs" (aka jobs) given the event type, creating initial run state in the _State store_ database. Runs are added to queues given the function's flow control configuration.
   * Resumes functions paused via [`waitForEvent`](/docs/features/inngest-functions/steps-workflows/wait-for-event?ref=docs-self-hosting) with matching expressions.
   * Cancels running functions with matching [`cancelOn`](/docs/features/inngest-functions/cancellation/cancel-on-events?ref=docs-self-hosting) expressions.
   * Writes ingested events to a database for historical record and future replay.
@@ -312,9 +312,7 @@ You can find the chart, documentation, and configuration examples here:
 Planned features for self-hosting include:
 
 * Improved health checks.
-* Backlog monitoring endpoints for auto-scaling.
 * High availability guide.
-* Helm chart for easy deployment to Kubernetes.
 * Data retention guides and recommendations.
 * Event key and signing key management via API and UI.
 
