@@ -119,6 +119,15 @@ export const REPORT_GRAPHS = {
     shareText:
       "Engineers' #1 unsolved problem: observability. 19% of all responses — the highest of any theme, equal across AI and non-AI teams.",
   },
+  "reliability-burden-change-by-ai-orchestration-tool": {
+    title: "Has reliability burden gone up or down? AI teams by orchestration tool",
+    description:
+      "AI teams on Inngest report the largest drop in reliability burden (-10pp), followed by custom-built (-9pp). Teams on AWS/Vercel/CF (+9pp) and Temporal (+22pp) report it getting worse.",
+    image:
+      "/assets/reports/2026-benchmark/og/13-reliability-burden-change-by-ai-orchestration-tool.png",
+    shareText:
+      "Has reliability burden gone up or down for AI teams? Inngest users report the biggest drop (-10pp). Teams on AWS/Vercel/CF (+9pp) and Temporal (+22pp) say it's getting worse.",
+  },
 } as const satisfies Record<string, ReportGraph>;
 
 export type ReportGraphId = keyof typeof REPORT_GRAPHS;
