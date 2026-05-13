@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Container from "../layout/Container";
 import CopyBtn from "./CopyBtn";
+import { INSTALL_COMMAND } from "../consts";
 
 import Heading from "./Heading";
 
@@ -17,7 +18,7 @@ export default function LocalDev({ className }: { className?: string }) {
         backgroundSize: "2000px 1100px",
       }}
     >
-      <Container className={`mt-44 relative z-30 ${className}`}>
+      <Container className={`relative z-30 mt-44 ${className}`}>
         <div>
           <Heading
             title="Unparalleled Local Dev"
@@ -27,23 +28,20 @@ export default function LocalDev({ className }: { className?: string }) {
             className="mx-auto max-w-3xl text-center"
           />
 
-          <div className="mt-12 mb-20 flex gap-4 flex-col md:flex-row items-center justify-center">
-            <div className="bg-white/10 backdrop-blur-md flex rounded text-sm text-slate-200 shadow-lg">
-              <pre className=" pl-4 pr-2 py-2">
+          <div className="mb-20 mt-12 flex flex-col items-center justify-center gap-4 md:flex-row">
+            <div className="flex rounded bg-white/10 text-sm text-slate-200 shadow-lg backdrop-blur-md">
+              <pre className=" py-2 pl-4 pr-2">
                 <code className="bg-transparent text-slate-300">
-                  <span>npx</span> inngest-cli dev
+                  {INSTALL_COMMAND}
                 </code>
               </pre>
-              <div className="rounded-r flex items-center justify-center pl-2 pr-2.5">
-                <CopyBtn
-                  btnAction={handleCopyClick}
-                  copy="npx --ignore-scripts=false inngest-cli@latest dev"
-                />
+              <div className="flex items-center justify-center rounded-r pl-2 pr-2.5">
+                <CopyBtn btnAction={handleCopyClick} copy={INSTALL_COMMAND} />
               </div>
             </div>
             <Link
               href="/docs/getting-started/nextjs-quick-start?ref=homepage-dev-tools"
-              className="rounded-md px-3 py-1.5 text-sm bg-slate-800 hover:bg-slate-600 transition-all text-white border border-slate-800 hover:border-slate-600 hover:bg-slate-500/10 whitespace-nowrap"
+              className="whitespace-nowrap rounded-md border border-slate-800 bg-slate-800 px-3 py-1.5 text-sm text-white transition-all hover:border-slate-600 hover:bg-slate-500/10 hover:bg-slate-600"
             >
               Read the quick start guide
             </Link>
@@ -55,11 +53,11 @@ export default function LocalDev({ className }: { className?: string }) {
           loop
           muted
           className={`
-          mt-14 w-full
-          rounded-lg shadow-none m-auto scale-80 origin-center
-          pointer-events-none
-          max-w-8xl
-          border border-white/10
+          scale-80 max-w-8xl
+          pointer-events-none m-auto mt-14 w-full origin-center
+          rounded-lg
+          border
+          border-white/10 shadow-none
         `}
         />
       </Container>

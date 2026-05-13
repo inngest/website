@@ -3,6 +3,7 @@ import Heading from "./Heading";
 import Command from "src/components/Command";
 import { Button } from "src/shared/Button";
 import Feature from "src/components/Feature";
+import { INSTALL_COMMAND } from "src/shared/consts";
 
 const features = [
   {
@@ -41,8 +42,8 @@ export default function LocalDevelopment() {
         }
         className="my-8"
       />
-      <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
-        <Command command="npx --ignore-scripts=false inngest-cli@latest dev" />
+      <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+        <Command command={INSTALL_COMMAND} />
         <Button
           href="/docs/local-development?ref=homepage-dev-tools"
           variant="secondaryV2"
@@ -57,15 +58,15 @@ export default function LocalDevelopment() {
         loop
         muted
         className={`
-          mt-14 w-full
-          rounded-lg m-auto scale-80 origin-center
-          pointer-events-none
-          max-w-8xl
+          scale-80 max-w-8xl
+          pointer-events-none m-auto mt-14 w-full
+          origin-center
+          rounded-lg
           border border-subtle
           shadow-[0_0_220px_16px_rgba(20,284,286,0.2)]
         `}
       />
-      <div className="my-12 mx-6 md:mx-auto max-w-6xl grid sm:grid-cols-3 gap-x-10 gap-y-10">
+      <div className="mx-6 my-12 grid max-w-6xl gap-x-10 gap-y-10 sm:grid-cols-3 md:mx-auto">
         {features.map(({ title, description }, idx) => (
           <Feature title={title} description={description} key={idx} />
         ))}

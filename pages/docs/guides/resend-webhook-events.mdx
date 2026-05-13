@@ -1,4 +1,4 @@
-import { ImageTheme } from "src/shared/Docs/mdx";
+import { ImageTheme, CodeGroup } from "src/shared/Docs/mdx";
 import ResendLogo from "src/public/assets/docs/guides/resend-webhook-events/featured-image.png";
 
 export const description = 'Set up Resend webhooks with Inngest and use Resend events within Inngest functions.'
@@ -303,9 +303,23 @@ Voilà! You've created a dynamic marketing drip campaign where subsequent emails
 
 During local development with Inngest, you can use the Inngest Dev Server to run and test your functions on your own machine. To start the server, in your project directory run the following command:
 
-```bash
-npx --ignore-scripts=false inngest-cli@latest dev
+<CodeGroup>
+```shell  {{ title: "Bash installer" }}
+# Install the CLI - follow the steps to complete install:
+curl -sSfL https://cli.inngest.com/install.sh | sh
+# Run the dev server
+inngest dev -u http://localhost:3000/api/inngest
 ```
+```shell {{ title: "npx (npm)" }}
+npx --ignore-scripts=false inngest-cli@latest dev
+# You can specify the URL of your development `serve` API endpoint
+npx --ignore-scripts=false inngest-cli@latest dev -u http://localhost:3000/api/inngest
+```
+```shell {{ title: "Docker" }}
+docker run -p 8288:8288 -p 8289:8289 inngest/inngest \
+  inngest dev -u http://host.docker.internal:3000/api/inngest
+```
+</CodeGroup>
 
 In your browser open [http://localhost:8288](http://localhost:8288/) to see the development UI.
 

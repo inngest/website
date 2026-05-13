@@ -11,6 +11,7 @@ import PlatformComparison from "./PlatformComparison";
 import Card from "src/components/Card";
 import { generateMetadata } from "src/utils/social";
 import TrustFeaturesSection from "./Trust";
+import { INSTALL_COMMAND } from "src/shared/consts";
 
 export const metadata: Metadata = generateMetadata({
   title: "Platform overview",
@@ -81,7 +82,7 @@ export default function Page() {
             View the open source repo
           </Button>
           <p>or run it now</p>
-          <Command command="npx --ignore-scripts=false inngest-cli@latest dev" />
+          <Command command={INSTALL_COMMAND} />
         </div>
       </section>
 
