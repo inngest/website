@@ -1,95 +1,145 @@
-import React from "react";
 import Link from "next/link";
 
 import Header from "../../shared/Header";
 import Footer from "../../shared/Footer";
 import Container from "../../shared/layout/Container";
 import ArrowRight from "src/shared/Icons/ArrowRight";
+import { PATTERNS_DATA, type PatternSection } from "./patternsData";
 
-interface Section {
-  title: string;
-  articles: {
-    title: string;
-    subtitle: string;
-    tags: string[];
-    slug: string;
-  }[];
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+const totalPatterns = PATTERNS_DATA.reduce(
+  (sum, s) => sum + s.patterns.length,
+  0
+);
+
+// ── Section components ───────────────────────────────────────────────────────
+
+function SectionRule({ section }: { section: PatternSection }) {
+  return (
+    <div className="mb-10 grid grid-cols-[auto_1fr_auto] items-center gap-6 border-t border-subtle pt-5">
+      <div className="flex items-baseline gap-3.5">
+        <span className={`font-mono text-xs tracking-widest ${section.accent.text}`}>
+          {section.number}
+        </span>
+        <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-subtle">
+          {section.name}
+        </span>
+      </div>
+      <div
+        className={`h-px bg-gradient-to-r ${section.accent.gradient} opacity-55`}
+      />
+      <span className="font-mono text-[11px] tracking-widest text-muted">
+        {section.patterns.length} PATTERNS
+      </span>
+    </div>
+  );
 }
 
-export const SECTIONS: Section[] = [
-  {
-    title: "Flow Control",
-    articles: [
-      {
-        title: "Flash sales and bursty workflows",
-        subtitle:
-          "Use throttle, concurrency, debounce, and idempotency to handle traffic spikes without overwhelming downstream services",
-        tags: ["Flow Control", "Reliability"],
-        slug: "flash-sales-and-bursty-workflows",
-      },
-      {
-        title: "Keeping your API fast",
-        subtitle:
-          "Offload LLM calls, data processing, and other heavy work from the request path into reliable background functions",
-        tags: ["Performance", "AI"],
-        slug: "keeping-your-api-fast",
-      },
-      {
-        title: "Build reliable webhooks",
-        subtitle:
-          "Ingest webhooks and model callbacks at scale with built-in retries and replay",
-        tags: ["Reliability", "Integrations"],
-        slug: "build-reliable-webhooks",
-      },
-    ],
-  },
-  {
-    title: "Durable Workflows",
-    articles: [
-      {
-        title: "Reliably run critical workflows",
-        subtitle:
-          "Break multi-step AI pipelines and complex business logic into durable, independently retried steps",
-        tags: ["Durability", "AI"],
-        slug: "reliably-run-critical-workflows",
-      },
-      {
-        title: "Running functions in parallel",
-        subtitle:
-          "Fan out to multiple model calls, evaluations, or processing tasks from a single event",
-        tags: ["Architecture", "AI"],
-        slug: "running-functions-in-parallel",
-      },
-    ],
-  },
-  {
-    title: "Event Coordination",
-    articles: [
-      {
-        title: "Building flows for lost customers",
-        subtitle:
-          "Coordinate between events to build human-in-the-loop approvals, cart abandonment flows, and multi-step user journeys",
-        tags: ["Event Coordination", "User Journeys"],
-        slug: "event-coordination-for-lost-customers",
-      },
-    ],
-  },
-];
+function PatternRow({
+  slug,
+  title,
+  subtitle,
+  accentText,
+}: {
+  slug: string;
+  title: string;
+  subtitle: string;
+  accentText: string;
+}) {
+  return (
+    <Link
+      href={`/patterns/${slug}`}
+      className="group grid grid-cols-[1fr_auto] items-center gap-4 border-b border-subtle bg-canvasBase px-5 py-4 transition-colors hover:bg-surfaceSubtle"
+    >
+      <div className="flex flex-col gap-1">
+        <span className="text-[15px] font-medium tracking-tight text-basis">
+          {title}
+        </span>
+        <span className="text-[13px] leading-relaxed text-subtle">
+          {subtitle}
+        </span>
+      </div>
+      <span className={`flex text-muted transition-all group-hover:translate-x-0.5 group-hover:${accentText}`}>
+        <ArrowRight className="h-4 w-4" />
+      </span>
+    </Link>
+  );
+}
 
-const zeroPad = (n: number, digits = 2): string => {
-  const ns = n.toString();
-  const len = ns.length;
-  return len >= digits ? ns : `${new Array(digits - len + 1).join("0")}${n}`;
-};
+function PatternSection({
+  section,
+  featured = false,
+}: {
+  section: PatternSection;
+  featured?: boolean;
+}) {
+  return (
+    <section id={section.id} className="scroll-mt-20">
+      <SectionRule section={section} />
+
+      <div className="flex flex-col gap-8">
+        {/* Header */}
+        <div className="max-w-[540px]">
+          <p
+            className={`mb-5 font-mono text-[11px] uppercase tracking-[0.16em] ${section.accent.text}`}
+          >
+            {section.kicker}
+          </p>
+          <h2
+            className={`mb-6 font-heading tracking-tight text-basis ${
+              featured
+                ? "text-5xl font-medium lg:text-7xl"
+                : "text-4xl font-medium lg:text-6xl"
+            }`}
+            style={{ lineHeight: 1 }}
+          >
+            {section.name}
+          </h2>
+          <p
+            className={`mb-8 leading-relaxed text-subtle ${
+              featured ? "text-lg" : "text-base"
+            }`}
+            style={{ textWrap: "pretty" }}
+          >
+            {section.description}
+          </p>
+          <Link
+            href={`#${section.id}`}
+            className={`inline-flex items-center gap-2.5 rounded border border-muted bg-surfaceSubtle px-4 py-2.5 text-[13px] text-basis transition-colors hover:${section.accent.border} hover:${section.accent.text}`}
+          >
+            Explore patterns
+            <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+          </Link>
+        </div>
+
+        {/* Pattern list */}
+        <div className="overflow-hidden rounded border border-subtle">
+          {section.patterns.map((p) => (
+            <PatternRow
+              key={p.slug}
+              slug={p.slug}
+              title={p.title}
+              subtitle={p.subtitle}
+              accentText={section.accent.text}
+            />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ── Page ─────────────────────────────────────────────────────────────────────
 
 export async function getStaticProps() {
   return {
     props: {
       designVersion: "2",
       meta: {
-        title: "Patterns: AI Orchestration + Durable Workflows",
+        title: "Patterns — How to build with Inngest",
         description:
-          "Architecture patterns for building reliable AI pipelines, background jobs, and event-driven workflows",
+          "Production-tested patterns for AI agents, durable workflows, and the event-driven systems they live in.",
         image: "/assets/patterns/og-image-patterns.jpg",
       },
     },
@@ -98,75 +148,65 @@ export async function getStaticProps() {
 
 export default function Patterns() {
   return (
-    <div>
+    <div className="bg-canvasBase">
       <Header />
 
-      <div>
-        <Container>
-          <h1 className="mt-12 text-3xl font-semibold tracking-tight text-white md:mt-20 lg:text-5xl">
-            Patterns
-          </h1>
-          <p className="text-xl text-slate-100">AI Orchestration + Durable Workflows</p>
-          <p className="my-4 mb-16 max-w-xl  text-indigo-200 md:mb-28">
-            Proven approaches for building reliable AI pipelines, handling
-            traffic spikes, and coordinating complex workflows with Inngest.
-          </p>
+      {/* Hero */}
+      <Container className="pb-24 pt-32">
+        <h1
+          className="mb-10 max-w-[14ch] font-heading text-6xl font-medium tracking-tight text-basis md:text-8xl lg:text-[132px]"
+          style={{ lineHeight: 0.94 }}
+        >
+          How to build
+          <br />
+          with <em className="font-normal not-italic text-cta">Inngest</em>.
+        </h1>
 
-          <section className="flex flex-col gap-12">
-            {/* Content layout */}
+        <p
+          className="mb-20 max-w-xl text-lg leading-relaxed text-subtle"
+          style={{ textWrap: "pretty" }}
+        >
+          Production-tested patterns for AI agents, durable workflows, and the
+          event-driven systems they live in. Each pattern is built on Inngest
+          primitives — steps, events, throttling, schedules, channels — and the
+          guarantees they provide.
+        </p>
 
-            {SECTIONS.map((s, idx) => (
-              <div
-                key={s.title}
-                className="flex flex-col gap-y-6 rounded-lg md:px-3 md:py-6 lg:p-6 xl:grid xl:grid-cols-4 xl:gap-y-8"
-              >
-                <div className="flex items-center gap-4 xl:block">
-                  <div className="flex h-10 w-10 items-center justify-center rounded bg-surfaceMuted text-lg font-bold text-white">
-                    {zeroPad(idx + 1)}
-                  </div>
-                  <h2 className="text-xl font-medium tracking-tight text-white xl:mt-4">
-                    {s.title}
-                  </h2>
-                </div>
-                <div className="col-span-3 grid gap-x-6 gap-y-6 md:grid-cols-2">
-                  {s.articles.map(({ title, subtitle, tags, slug }) => (
-                    <Link
-                      key={slug}
-                      href={`/patterns/${slug}`}
-                      className="group/card flex flex-col justify-between rounded-lg bg-surfaceSubtle transition-all hover:drop-shadow-[0_0_35px_rgba(124,124,124,0.25)]"
-                    >
-                      <div className="flex h-full flex-col justify-between px-6 py-4 lg:px-8 lg:py-6">
-                        <div>
-                          <h2 className="text-lg font-semibold tracking-tight text-basis">
-                            {title}
-                          </h2>
-                          <p className="font-regular mb-3 mt-1 text-sm tracking-tight text-subtle">
-                            {subtitle}.
-                          </p>
-                        </div>
-                        <span className="flex items-center gap-1 text-sm font-medium text-link transition-all group-hover/card:underline">
-                          Read pattern
-                          <ArrowRight className="-mr-1.5 transition-transform duration-150  group-hover/card:translate-x-1" />
-                        </span>
-                      </div>
-                      <div className="flex flex-wrap gap-2 rounded-b-lg border-t border-subtle bg-carbon-500/10 px-6 py-3 transition-all">
-                        {tags.map((t) => (
-                          <span
-                            key={t}
-                            className="rounded bg-surfaceBase px-2 py-1 text-xs font-medium text-basis"
-                          >
-                            {t}
-                          </span>
-                        ))}
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </section>
-        </Container>
-      </div>
+        <div className="flex max-w-xl gap-14 border-t border-subtle pt-8">
+          <div className="flex flex-col gap-1.5">
+            <span className="font-mono text-4xl text-basis">{totalPatterns}</span>
+            <span className="font-mono text-[11px] uppercase tracking-widest text-muted">
+              Patterns
+            </span>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <span className="font-mono text-4xl text-basis">
+              {PATTERNS_DATA.length}
+            </span>
+            <span className="font-mono text-[11px] uppercase tracking-widest text-muted">
+              Primitives
+            </span>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <span className="font-mono text-4xl text-basis">3</span>
+            <span className="font-mono text-[11px] uppercase tracking-widest text-muted">
+              Languages
+            </span>
+          </div>
+        </div>
+      </Container>
+
+      {/* Sections */}
+      <Container className="flex flex-col gap-20 pb-32">
+        {PATTERNS_DATA.map((section, idx) => (
+          <PatternSection
+            key={section.id}
+            section={section}
+            featured={idx === 0}
+          />
+        ))}
+      </Container>
+
       <Footer />
     </div>
   );

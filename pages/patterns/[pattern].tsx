@@ -7,7 +7,7 @@ import Header from "../../shared/Header";
 import Footer from "../../shared/Footer";
 import { loadMarkdownFile, Heading } from "utils/markdown";
 import * as MDXComponents from "../../shared/Patterns/mdx";
-import { SECTIONS } from "./index";
+import { SECTIONS } from "./index-old";
 import { Button } from "src/shared/Button";
 import { SectionProvider } from "src/shared/Docs/SectionProvider";
 
@@ -110,7 +110,7 @@ export default function Patterns({
             </ol>
           </aside>
 
-          <article className="lg:col-span-3 lg:pr-12 xl:pr-20 lg:col-start-1 lg:row-start-1 max-w-[65ch] lg:max-w-none m-auto lg:m-0 prose mb-20 prose-img:rounded-lg prose-code:bg-canvasMuted text-basis prose-a:text-link prose-a:no-underline hover:prose-a:underline prose-a:font-medium prose-a:transition-all prose-invert">
+          <article className="lg:col-span-3 lg:pr-12 xl:pr-20 lg:col-start-1 lg:row-start-1 lg:min-w-0 max-w-[65ch] lg:max-w-none m-auto lg:m-0 prose mb-20 prose-img:rounded-lg prose-code:bg-canvasMuted prose-pre:max-w-full prose-pre:overflow-x-auto text-basis prose-a:text-link prose-a:no-underline hover:prose-a:underline prose-a:font-medium prose-a:transition-all dark:prose-invert">
             <SectionProvider sections={[]}>
               {/* @ts-ignore */}
               <MDXRemote

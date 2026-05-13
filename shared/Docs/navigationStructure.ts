@@ -4,6 +4,7 @@ import {
   LightBulbIcon,
   BookOpenIcon,
   CodeBracketIcon,
+  Squares2X2Icon,
 } from "@heroicons/react/24/outline";
 import { parse } from "node:path";
 import { TS_STABLE, type TSVersion } from "./LanguageStore";
@@ -1332,6 +1333,7 @@ const matchers: Record<string, (pathname: string) => any> = {
     /^\/docs\/reference/.test(pathname) ||
     linkSearch(sectionReference, pathname),
   learn: (pathname) => linkSearch(sectionLearn, pathname),
+  patterns: (pathname) => /^\/patterns/.test(pathname),
 };
 matchers.default = matchers.learn;
 
@@ -1350,6 +1352,12 @@ export const menuTabs = [
     icon: LightBulbIcon,
     href: "/docs/examples/",
     matcher: matchers.examples,
+  },
+  {
+    title: "Patterns",
+    icon: Squares2X2Icon,
+    href: "/patterns",
+    matcher: matchers.patterns,
   },
 ];
 
