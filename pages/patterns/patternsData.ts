@@ -23,7 +23,7 @@ export interface PatternSection {
   patterns: PatternItem[];
 }
 
-export const PATTERNS_DATA: PatternSection[] = [
+const PATTERNS_DATA: PatternSection[] = [
   {
     id: "ai",
     number: "00",
@@ -317,3 +317,5 @@ export const PATTERNS_DATA: PatternSection[] = [
     ],
   },
 ];
+
+export default PATTERNS_DATA
