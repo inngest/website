@@ -4,7 +4,7 @@ import Header from "../../shared/Header";
 import Footer from "../../shared/Footer";
 import Container from "../../shared/layout/Container";
 import ArrowRight from "src/shared/Icons/ArrowRight";
-import PATTERNS_DATA, { type PatternSection } from "./patternsData";
+import PATTERNS_DATA, { type PatternSection } from "../../shared/Patterns/patternsData";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
