@@ -60,16 +60,13 @@ bun add inngest
 Next, start the [Inngest Dev Server](/docs/local-development#inngest-dev-server?ref=tanstack-start-quick-start), which is a fast, in-memory version of Inngest where you can quickly send and view events and function runs:
 
 <CodeGroup>
-```shell {{ title: "npm" }}
-npx inngest-cli@latest dev
+```shell  {{ title: "Bash installer" }}
+# Install the CLI - follow the steps to complete install:
+curl -sSfL https://cli.inngest.com/install.sh | sh
+# Run the dev server
+inngest dev
 ```
-```shell {{ title: "yarn" }}
-yarn dlx inngest-cli@latest dev
-```
-```shell {{ title: "pnpm" }}
-pnpm dlx inngest-cli@latest dev
-```
-```shell {{ title: "bun" }}
+```shell  {{ title: "npx" }}
 npx inngest-cli@latest dev
 ```
 </CodeGroup>
@@ -80,7 +77,7 @@ npx inngest-cli@latest dev
 <CodeGroup>
 
 ```bash {{ language: 'js' }}
-$ npx inngest-cli@latest dev
+$ inngest dev
 
 12:33PM INF executor > service starting
 12:33PM INF runner > starting event stream backend=redis

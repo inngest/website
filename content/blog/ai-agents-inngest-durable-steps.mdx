@@ -49,7 +49,10 @@ export const inngest = new Inngest({ id: "ai-agent" });
 To run functions locally, start the Inngest dev server alongside your app:
 
 ```bash
-npx inngest-cli@latest dev
+# Install the CLI - follow the steps to complete install:
+curl -sSfL https://cli.inngest.com/install.sh | sh
+# Run the dev server
+inngest dev
 ```
 
 Then serve your functions over HTTP. Here's a Next.js example — the pattern is the same for Express, Hono, or any other framework:

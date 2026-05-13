@@ -87,17 +87,14 @@ bun add inngest
 Next, start the [Inngest Dev Server](/docs/local-development#inngest-dev-server), which is a fast, in-memory version of Inngest where you can quickly send and view events and function runs. This tutorial assumes that your Astro server will be running on port `4321`; change this to match your port if you use another.
 
 <CodeGroup>
-```shell {{ title: "npm" }}
+```shell  {{ title: "Bash installer" }}
+# Install the CLI - follow the steps to complete install:
+curl -sSfL https://cli.inngest.com/install.sh | sh
+# Run the dev server
+inngest dev -u http://localhost:4321/api/inngest
+```
+```shell  {{ title: "npx" }}
 npx inngest-cli@latest dev -u http://localhost:4321/api/inngest
-```
-```shell {{ title: "yarn" }}
-yarn dlx inngest-cli@latest dev -u http://localhost:4321/api/inngest
-```
-```shell {{ title: "pnpm" }}
-pnpm dlx inngest-cli@latest dev -u http://localhost:4321/api/inngest
-```
-```shell {{ title: "bun" }}
-bunx inngest-cli@latest dev -u http://localhost:4321/api/inngest
 ```
 </CodeGroup>
 
