@@ -47,9 +47,17 @@ npm install inngest
 
 The Inngest Dev Server is a local environment where you can send events, trigger functions, and inspect runs in real time. Start it with:
 
-```shell
+<CodeGroup>
+```shell  {{ title: "Bash installer" }}
+# Install the CLI - follow the steps to complete install:
+curl -sSfL https://cli.inngest.com/install.sh | sh
+# Run the dev server
+inngest dev
+```
+```shell  {{ title: "npx" }}
 npx inngest-cli@latest dev
 ```
+</CodeGroup>
 
 Open [http://localhost:8288](http://localhost:8288) to see the Dev Server UI. You'll use this to monitor function runs as you work through the tutorial.
 

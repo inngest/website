@@ -18,7 +18,7 @@ In this article, you'll learn how to add background jobs with real-time updates 
 
 CampaignCraft is a Next.js application that helps in sending personalized email campaigns by automatically segmenting uploaded contacts CSV files and drafting AI campaigns.
 
-<AutoplayVideo src={'/assets/blog/background-jobs-realtime-nextjs/campaigndraft-loop-video.mp4'} /> 
+<AutoplayVideo src={'/assets/blog/background-jobs-realtime-nextjs/campaigndraft-loop-video.mp4'} />
 
 
 CampaignCraft is built with the following technologies:
@@ -265,7 +265,7 @@ export const contactImport = inngest.createFunction(
           html: `${contactList} has been imported into the following segments: ${segmentation.segments.map(s => s.name)}`,
         });
     })
-    
+
     return {
       success: true,
       imported: inserted.length,
@@ -582,7 +582,9 @@ npm run dev
 Then, start the [Inngest DevServer](/docs/local-development?ref=blogpost-nextjs-bg-jobs-realtime) as follows:
 
 ```bash
-npx --ignore-scripts=false inngest-cli@latest dev
+curl -sSfL https://cli.inngest.com/install.sh | sh
+# Move the binary into your path
+inngest dev
 ```
 
 Open the Inngest DevServer ([127.0.0.1:8288/runs](http://127.0.0.1:8288/runs)) in a new tab.
