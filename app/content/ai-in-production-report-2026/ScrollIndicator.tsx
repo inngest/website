@@ -12,7 +12,7 @@ export function ScrollIndicator() {
 
   return (
     <div
-      className="fixed bottom-24 left-1/2 z-50 -translate-x-1/2 pointer-events-none transition-opacity duration-500"
+      className="fixed bottom-8 left-1/2 z-50 -translate-x-1/2 pointer-events-none transition-opacity duration-500"
       style={{ opacity: visible ? 1 : 0 }}
     >
       <div className="flex animate-bounce items-center justify-center rounded-full border border-[#a8ef3c]/40 bg-black/40 p-3 backdrop-blur-sm">
