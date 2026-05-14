@@ -948,7 +948,7 @@ const sectionLearn: (NavGroup | NavLink)[] = [
         ],
       },
       {
-        title: "AI Patterns",
+        title: "Agents",
         links: [
           {
             title: "Agent tool loops",
