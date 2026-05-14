@@ -11,26 +11,18 @@ The first thing you should do is minimize the work performed in each request. Yo
 
 This is especially important for AI-powered features. A single LLM call can take 5-30 seconds. Chaining multiple calls for summarization, classification, or tool use can take minutes. None of that belongs in a request handler. Send an event, return a 200, and let a background function handle the heavy lifting with built-in retries and observability.
 
-## How to implement this pattern
+## What this requires
 
-A common way to implement this is with a queue and a worker service that runs continuously, polling the queue:
+A request handler that finishes in under a second has to push every non-essential piece of work elsewhere:
 
-1. Set up your queuing infrastructure (e.g. Redis, SQS)
-2. Configure a queue within your queuing system (e.g. `process_upload`)
-3. Configure your application to connect to your queue using an appropriate library or SDK
-4. In your API request handler, send a message to your new queue
-5. Create a new worker service that polls your queue for messages
-6. Define a handler function for when messages are received
-7. Deploy your service to a platform that can run continuously (not serverlessly)
+- **A transport** to hand the work off — a queue, an event bus, or an HTTP call to another service.
+- **A worker** that picks it up — long-running process, container, or serverless function — and a way to deploy and observe it.
+- **Retry semantics** when the worker fails. At-least-once delivery, dead-letter routing, and a way to inspect what's stuck.
+- **Idempotency** so that retries don't double-charge, double-send, or double-create.
 
-For reliability and resiliency, you'll need to:
+In a hand-rolled system, each of these is a separate concern with separate operational tooling. Most teams build it incrementally and end up with a system that no single person on the team fully understands.
 
-* Ensure your new worker service handles graceful shutdowns so all messages are processed
-* Add logging to track successes, failures, debugging, audits
-* Write logic to handle retries including configuring [dead-letter queues](https://en.wikipedia.org/wiki/Dead_letter_queue)
-* Define how you'll re-route messages from your dead-letter queue
-
-## How to implement with Inngest
+## With Inngest
 
 Inngest is serverless, so there are no queues to set up or configure. You send events and any number of functions can be defined to automatically run when that event is received:
 
@@ -61,8 +53,7 @@ Functions are defined by declaring which event(s) should trigger them. When matc
 import { inngest } from "./client";
 
 export const processDocument = inngest.createFunction(
-  { id: "process-document" },
-  { event: "api/document.uploaded" },
+  { id: "process-document", triggers: [{ event: "api/document.uploaded" }] },
   async ({ event, step }) => {
     const doc = await step.run("fetch-document", async () => {
       return await getDocument(event.data.documentId);
@@ -84,6 +75,12 @@ export const processDocument = inngest.createFunction(
 ```
 
 Functions can be [deployed in several ways](/docs/deploy?ref=patterns) that fit your current stack or needs.
+
+## Alternative approaches
+
+- **Redis + BullMQ / Celery / Sidekiq.** Mature, well-understood. You own the Redis instance, the worker fleet, and the observability layer that ties them together.
+- **AWS SQS + Lambda.** Serverless workers solve the hosting problem but introduce SQS-specific behaviors (visibility timeouts, batching, redrive policies) you now have to learn and operate.
+- **Inline in the request.** No queue, no worker — fine for sub-100ms tasks. Becomes a problem the first time someone adds an LLM call.
 
 ## Additional Resources
 
