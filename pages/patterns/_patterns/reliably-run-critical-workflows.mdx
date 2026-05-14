@@ -11,7 +11,7 @@ You might start with a single long function, but what happens when it fails half
 
 The answer is to break your long-running jobs into discrete steps. Each step runs independently, can throw its own errors, retries on its own, and passes data to the next step. This is the core of durable execution: your workflow makes progress even when individual pieces fail.
 
-## How to implement with Inngest
+## With Inngest
 
 Inngest lets you compose workflows using [built-in step tools](/docs/guides/multi-step-functions?ref=patterns). Each `step.run()` call is independently executed and retried. The following example demonstrates a multi-step AI content pipeline triggered by a document upload:
 
@@ -19,8 +19,7 @@ Inngest lets you compose workflows using [built-in step tools](/docs/guides/mult
 import { inngest } from "./client";
 
 export const processDocument = inngest.createFunction(
-  { id: "process-uploaded-document" },
-  { event: "api/document.uploaded" },
+  { id: "process-uploaded-document", triggers: [{ event: "api/document.uploaded" }] },
   async ({ event, step }) => {
     // Step 1: Validate the upload
     const { isValid, errors } = await step.run(
