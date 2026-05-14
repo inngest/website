@@ -1,3 +1,10 @@
+---
+title: Running code on a schedule
+subtitle: Define cron jobs in code that survive deploys and serverless cold starts.
+pattern: schedule
+tags: [Scheduling]
+---
+
 Not all core logic in an application happens directly from user input. Often code needs to be run every `X` hours, days, or weeks or [when external data is received](/patterns/build-reliable-webhooks). This focuses on the former &mdash; _cron jobs_.
 
 Popular use cases for cron jobs are sending weekly email digests, performing daily system audits or cleanups, and exporting data for backups or similar. Other applications may require more frequent schedules like running every 5 minutes to trigger notifications or run user-created scheduled tasks.

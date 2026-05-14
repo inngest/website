@@ -1,17 +1,14 @@
 import Link from "next/link";
 
-import Header from "../../shared/Header";
+import Header from "src/components/RedesignedLanding/Header/Header";
 import Footer from "../../shared/Footer";
 import Container from "../../shared/layout/Container";
 import ArrowRight from "src/shared/Icons/ArrowRight";
-import PATTERNS_DATA, { type PatternSection } from "../../shared/Patterns/patternsData";
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
-const totalPatterns = PATTERNS_DATA.reduce(
-  (sum, s) => sum + s.patterns.length,
-  0
-);
+import { loadMarkdownFilesMetadata } from "utils/markdown";
+import PATTERN_SECTIONS, {
+  type PatternItem,
+  type PatternSection,
+} from "../../shared/Patterns/patternsData";
 
 // ── Section components ───────────────────────────────────────────────────────
 
@@ -30,7 +27,7 @@ function SectionRule({ section }: { section: PatternSection }) {
         className={`h-px bg-gradient-to-r ${section.accent.gradient} opacity-55`}
       />
       <span className="font-mono text-[11px] tracking-widest text-muted">
-        {section.patterns.length} PATTERNS
+        {section.patterns.length} {section.patterns.length === 1 ? "PATTERN" : "PATTERNS"}
       </span>
     </div>
   );
@@ -67,7 +64,7 @@ function PatternRow({
   );
 }
 
-function PatternSection({
+function PatternSectionBlock({
   section,
   featured = false,
 }: {
@@ -132,9 +129,43 @@ function PatternSection({
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 
+type PatternFrontmatter = {
+  title?: string;
+  subtitle?: string;
+  pattern?: string;
+};
+
 export async function getStaticProps() {
+  const entries = await loadMarkdownFilesMetadata<PatternFrontmatter>(
+    "pages/patterns/_patterns"
+  );
+
+  const bySection = new Map<string, PatternItem[]>();
+  for (const entry of entries) {
+    if (!entry.pattern || !entry.title || !entry.subtitle) continue;
+    const list = bySection.get(entry.pattern) ?? [];
+    list.push({
+      slug: entry.slug,
+      title: entry.title,
+      subtitle: entry.subtitle,
+    });
+    bySection.set(entry.pattern, list);
+  }
+
+  // Stable in-section ordering: alphabetical by title.
+  bySection.forEach((list) => {
+    list.sort((a, b) => a.title.localeCompare(b.title));
+  });
+
+  const sections: PatternSection[] = PATTERN_SECTIONS.flatMap((meta) => {
+    const patterns = bySection.get(meta.id);
+    if (!patterns || patterns.length === 0) return [];
+    return [{ ...meta, patterns }];
+  });
+
   return {
     props: {
+      sections,
       designVersion: "2",
       meta: {
         title: "Patterns — How to build with Inngest",
@@ -146,7 +177,9 @@ export async function getStaticProps() {
   };
 }
 
-export default function Patterns() {
+export default function Patterns({ sections }: { sections: PatternSection[] }) {
+  const totalPatterns = sections.reduce((sum, s) => sum + s.patterns.length, 0);
+
   return (
     <div className="bg-canvasBase">
       <Header />
@@ -181,7 +214,7 @@ export default function Patterns() {
           </div>
           <div className="flex flex-col gap-1.5">
             <span className="font-mono text-4xl text-basis">
-              {PATTERNS_DATA.length}
+              {sections.length}
             </span>
             <span className="font-mono text-[11px] uppercase tracking-widest text-muted">
               Primitives
@@ -198,8 +231,8 @@ export default function Patterns() {
 
       {/* Sections */}
       <Container className="flex flex-col gap-20 pb-32">
-        {PATTERNS_DATA.map((section, idx) => (
-          <PatternSection
+        {sections.map((section, idx) => (
+          <PatternSectionBlock
             key={section.id}
             section={section}
             featured={idx === 0}

@@ -1,3 +1,10 @@
+---
+title: Cancelling scheduled functions
+subtitle: Cancel or reschedule queued work by sending a follow-up event.
+pattern: events
+tags: [Event Coordination, Scheduling]
+---
+
 When you [schedule work for the future](/patterns/running-at-specific-times) there's always a chance that you might need to cancel or reschedule these jobs.  For example, if you're scheduling a product to go live at a specific time, you might end up changing the go-live time multiple times. You need a way to cancel work that's already scheduled.
 
 Rescheduling is very similar.  First, you cancel the current work.  Then, you schedule a new function.

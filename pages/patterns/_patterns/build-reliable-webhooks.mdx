@@ -1,3 +1,10 @@
+---
+title: Build reliable webhooks
+subtitle: Ingest webhooks and model callbacks at scale with built-in retries and replay.
+pattern: jobs
+tags: [Reliability, Integrations]
+---
+
 Webhooks are one of the most common ways to integrate with external services: payment processors, e-commerce platforms, CRMs, AI model APIs, and communication tools all use them. They're simple in concept but have failure modes you need to handle to build something reliable at scale.
 
 Reliable webhooks need to do three things: respond quickly, handle varying throughput, and recover from downtime. Most webhook providers will mark a delivery as failed if your endpoint doesn't respond within a few seconds. Your application also needs to handle bursts of requests without crashing and properly re-process any events that fail.

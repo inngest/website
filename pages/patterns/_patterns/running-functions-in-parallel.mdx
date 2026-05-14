@@ -1,3 +1,10 @@
+---
+title: Running functions in parallel
+subtitle: Fan out to multiple model calls, evaluations, or processing tasks from a single event.
+pattern: events
+tags: [Architecture, AI]
+---
+
 Event-driven systems let you have multiple subscribers for a single event stream. This allows you to [fan out](https://en.wikipedia.org/wiki/Fan-out_(software)#Message-oriented_middleware) an event to multiple functions that run in parallel, each retrying independently on failure.
 
 This is different from how most queueing systems work. In systems like SQS or Celery, a specific job in a queue runs a single function. This can cause developers to bundle unrelated logic into a single background job, where a failure in one part causes unrelated code to fail too.

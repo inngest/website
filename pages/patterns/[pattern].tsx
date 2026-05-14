@@ -5,32 +5,41 @@ import { MDXRemote } from "next-mdx-remote";
 import Container from "src/shared/layout/Container";
 import Header from "../../shared/Header";
 import Footer from "../../shared/Footer";
-import { loadMarkdownFile, Heading } from "utils/markdown";
+import {
+  loadMarkdownFile,
+  loadMarkdownFilesMetadata,
+  Heading,
+} from "utils/markdown";
 import * as MDXComponents from "../../shared/Patterns/mdx";
-import { SECTIONS } from "./index-old";
 import { Button } from "src/shared/Button";
 import { SectionProvider } from "src/shared/Docs/SectionProvider";
 
-const getPatternProps = (slug: string) => {
-  return SECTIONS.map((s) => s.articles)
-    .flat()
-    .find((a) => a.slug === slug);
+type PatternMetadata = {
+  title?: string;
+  subtitle?: string;
+  tags?: string[];
 };
 
 export const getStaticProps: GetStaticProps = async (ctx) => {
   const slug = Array.isArray(ctx?.params?.pattern)
     ? ctx?.params?.pattern[0]
     : ctx?.params?.pattern;
-  const pageInfo = getPatternProps(slug || "");
   const pageData = await loadMarkdownFile("pages/patterns/_patterns", slug);
+  const metadata = (pageData.metadata ?? {}) as PatternMetadata;
   return {
     props: {
-      ...pageInfo,
-      ...pageData,
+      title: metadata.title ?? "",
+      subtitle: metadata.subtitle ?? "",
+      tags: metadata.tags ?? [],
+      headings: pageData.headings,
+      compiledSource: (pageData as { compiledSource: string }).compiledSource,
       designVersion: "2",
       meta: {
-        title: "Patterns: AI Orchestration + Durable Workflows",
+        title: metadata.title
+          ? `${metadata.title} — Inngest patterns`
+          : "Patterns — How to build with Inngest",
         description:
+          metadata.subtitle ??
           "Architecture patterns for building reliable AI pipelines, background jobs, and event-driven workflows",
         image: "/assets/patterns/og-image-patterns.jpg",
       },
@@ -39,11 +48,10 @@ export const getStaticProps: GetStaticProps = async (ctx) => {
 };
 
 export const getStaticPaths: GetStaticPaths = async () => {
-  const slugs = SECTIONS.map((s) => s.articles.map((a) => a.slug)).flat();
-  // TEMP - filter only paths that have valid slugs
-  const paths = slugs
-    .filter((s) => s !== "#TODO")
-    .map((slug) => ({ params: { pattern: slug } }));
+  const entries = await loadMarkdownFilesMetadata<PatternMetadata>(
+    "pages/patterns/_patterns"
+  );
+  const paths = entries.map((e) => ({ params: { pattern: e.slug } }));
   return { paths, fallback: false };
 };
 

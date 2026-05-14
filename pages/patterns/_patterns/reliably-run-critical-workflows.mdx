@@ -1,3 +1,10 @@
+---
+title: Reliably run critical workflows
+subtitle: Break multi-step AI pipelines and complex business logic into durable, independently retried steps.
+pattern: durable
+tags: [Durability, AI]
+---
+
 Many applications run mission-critical code in the background: processing payments, orchestrating multi-step AI pipelines, syncing data across systems, or handling complex fulfillment logic. Because this work is asynchronous, it's harder to observe success or failure compared to synchronous API requests. And when a job runs for minutes or hours, reliability and durability become essential.
 
 You might start with a single long function, but what happens when it fails halfway through? Does the entire job restart from the beginning? If you're running an AI pipeline that calls an LLM, stores the result, then calls another LLM to evaluate the output, a failure on the evaluation step shouldn't force you to re-run (and re-pay for) the first LLM call.

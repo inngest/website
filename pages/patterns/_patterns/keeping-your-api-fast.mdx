@@ -1,3 +1,10 @@
+---
+title: Keeping your API fast
+subtitle: Offload LLM calls, data processing, and other heavy work from the request path into reliable background functions.
+pattern: jobs
+tags: [Performance, AI]
+---
+
 For web applications, [best practices recommend](https://web.dev/rail/) completing a user's task between 100ms and 1000ms. Beyond that, the user is likely to abandon your app or feel that it's sluggish. In e-commerce, this tolerance is even lower.
 
 The first thing you should do is minimize the work performed in each request. Your API endpoint should only perform what is needed to complete the critical path: return a response to the user. Everything else, whether it's sending a notification, calling an LLM, syncing data to a third-party service, or processing an uploaded file, should run asynchronously in the background.
