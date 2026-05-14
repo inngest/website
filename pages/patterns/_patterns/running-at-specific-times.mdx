@@ -56,10 +56,10 @@ const delayed = inngest.createFunction(
 
 This function runs immediately when the `blog/post.scheduled` event is received, then pauses until the time and date within the event.  This lets you create a single function that can schedule work at any time using data from the event, intsead of hard-coding times within your code.
 
-You can also cancel these scheduled functions using [the cancellation pattern](/patterns/cancelling-scheduled-functions).
+You can also cancel these scheduled functions using the [cancellation guide](/docs/guides/cancel-running-functions).
 
 ## Additional Resources
 
 * [Docs: Sending Events](/docs/events?ref=patterns)
 * [Docs: Writing Functions](/docs/functions?ref=patterns)
-* [Patterns: Cancelling scheduled functions](/patterns/cancelling-scheduled-functions?ref=patterns)
+* [Docs: Cancel running functions](/docs/guides/cancel-running-functions?ref=patterns)
