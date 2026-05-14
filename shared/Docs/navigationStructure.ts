@@ -878,7 +878,7 @@ const sectionLearn: (NavGroup | NavLink)[] = [
         href: `/docs/local-development`,
       },
       {
-        title: "Patterns",
+        title: "Events and Triggers",
         links: [
           {
             title: "Parallel steps",
