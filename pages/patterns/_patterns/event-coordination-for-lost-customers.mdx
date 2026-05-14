@@ -14,7 +14,7 @@ It's common to build functions that react to user journeys, allowing you to coor
 
 In each case, you want to start a function from one event, then wait for another event within a time window. If the second event arrives, you continue one way. If it doesn't, you continue another. This lets you model complex user journeys and human-in-the-loop workflows declaratively, without managing timers, state machines, or polling loops.
 
-## How to implement this pattern
+## How this works
 
 Inngest lets you build functions that coordinate between events using `step.waitForEvent()`:
 
@@ -24,6 +24,7 @@ import { inngest } from "./client";
 export default inngest.createFunction(
   {
     id: "cart-abandonment-flow",
+    triggers: [{ event: "cart/product.added" }],
     // Cancel this instance whenever the user adds another product.
     // A new instance starts, resetting the 24-hour window.
     cancelOn: {
@@ -32,7 +33,6 @@ export default inngest.createFunction(
       match: "data.cart_id",
     },
   },
-  { event: "cart/product.added" },
   async ({ event, step }) => {
     // Pause and wait up to 24 hours for a purchase event
     // from the same cart.
@@ -70,8 +70,7 @@ The same coordination primitive works for AI approval flows. Start a generation,
 
 ```typescript
 export const generateAndPublish = inngest.createFunction(
-  { id: "generate-and-publish" },
-  { event: "content/generation.requested" },
+  { id: "generate-and-publish", triggers: [{ event: "content/generation.requested" }] },
   async ({ event, step }) => {
     // Generate content with an LLM
     const draft = await step.run("generate-draft", async () => {
