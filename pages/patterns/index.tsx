@@ -9,6 +9,9 @@ import PATTERN_SECTIONS, {
   type PatternItem,
   type PatternSection,
 } from "../../shared/Patterns/patternsData";
+import Featured, {
+  FEATURED_PATTERN,
+} from "../../shared/Patterns/Featured";
 
 // ── Section components ───────────────────────────────────────────────────────
 
@@ -163,9 +166,23 @@ export async function getStaticProps() {
     return [{ ...meta, patterns }];
   });
 
+  const featuredSection = sections.find((s) => s.id === FEATURED_PATTERN.sectionId);
+  const featuredPattern = featuredSection?.patterns.find(
+    (p) => p.slug === FEATURED_PATTERN.slug
+  );
+  const featuredPayload =
+    featuredSection && featuredPattern
+      ? {
+          featured: FEATURED_PATTERN,
+          section: featuredSection,
+          pattern: featuredPattern,
+        }
+      : null;
+
   return {
     props: {
       sections,
+      featuredPayload,
       designVersion: "2",
       meta: {
         title: "Patterns — How to build with Inngest",
@@ -177,7 +194,19 @@ export async function getStaticProps() {
   };
 }
 
-export default function Patterns({ sections }: { sections: PatternSection[] }) {
+type FeaturedPayload = {
+  featured: typeof FEATURED_PATTERN;
+  section: PatternSection;
+  pattern: PatternSection["patterns"][number];
+};
+
+export default function Patterns({
+  sections,
+  featuredPayload,
+}: {
+  sections: PatternSection[];
+  featuredPayload: FeaturedPayload | null;
+}) {
   const totalPatterns = sections.reduce((sum, s) => sum + s.patterns.length, 0);
 
   return (
@@ -228,6 +257,15 @@ export default function Patterns({ sections }: { sections: PatternSection[] }) {
           </div>
         </div>
       </Container>
+
+      {/* Featured pattern */}
+      {featuredPayload && (
+        <Featured
+          featured={featuredPayload.featured}
+          section={featuredPayload.section}
+          pattern={featuredPayload.pattern}
+        />
+      )}
 
       {/* Sections */}
       <Container className="flex flex-col gap-20 pb-32">

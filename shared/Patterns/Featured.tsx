@@ -1,5 +1,6 @@
 import Link from "next/link";
-import type { FeaturedPattern } from "./featured";
+import type { FeaturedPattern } from "./featuredPattern";
+export { FEATURED_PATTERN } from "./featuredPattern";
 import type { PatternItem, PatternSection } from "./patternsData";
 
 import "./featured.css";
