@@ -11,7 +11,7 @@ Job systems allow you to specify the time that a code should run when you enqueu
 
 The answer is: pass the date and time that you want the event to run at within the event itself.  Within your function, you can `sleep` or `sleepUntil` the date within the event.
 
-## How to implement this pattern
+## How this works
 
 In order to run code at a specific time based off of event data, first make sure that you send your desired time in the event:
 
@@ -19,7 +19,7 @@ In order to run code at a specific time based off of event data, first make sure
 import { Inngest } from "inngest";
 
 // Create a new client
-const inngest = new Inngest("API");
+const inngest = new Inngest({ id: "API" });
 
 // Send an event with the time to schedule a blog post in the event data.
 await inngest.send({
@@ -37,8 +37,7 @@ Then, within your function, you can pause until the time in the event:
 import { inngest } from "./client";
 
 const delayed = inngest.createFunction(
-  { id: "schedule-post" },
-  { event: "blog/post.scheduled" },
+  { id: "schedule-post", triggers: [{ event: "blog/post.scheduled" }] },
   async ({ event, step }) => {
     const at = new Date(event.data.scheduleAt);
 
@@ -57,6 +56,14 @@ const delayed = inngest.createFunction(
 This function runs immediately when the `blog/post.scheduled` event is received, then pauses until the time and date within the event.  This lets you create a single function that can schedule work at any time using data from the event, intsead of hard-coding times within your code.
 
 You can also cancel these scheduled functions using the [cancellation guide](/docs/guides/cancel-running-functions).
+
+## Alternative approaches
+
+- **Scheduled queue jobs.** Most job queues (BullMQ, Sidekiq, SQS with delay queues) accept a `runAt` or delay parameter when enqueueing. Works for delays under ~15 minutes; provider-specific limits kick in beyond that, and your jobs hold queue resources the whole time they wait.
+- **Cron + a database table.** Run a sweeper cron that polls a `scheduled_jobs` table for due work. Simple, but the cron is now the bottleneck (see [Reliable scheduling systems](/patterns/reliable-scheduling-systems)) and "due" is rounded to the cron interval.
+- **Inline `setTimeout`.** Works locally; gets erased the moment your server restarts. Don't.
+
+The pattern above — emit an event with a future timestamp, then `sleepUntil` inside a durable function — keeps the wait state in Inngest rather than your queue, and survives deploys without re-architecting anything.
 
 ## Additional Resources
 
