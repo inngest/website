@@ -1,22 +1,27 @@
 import React from "react";
 import { GetStaticProps, GetStaticPaths } from "next";
-import { MDXRemote } from "next-mdx-remote";
+import Link from "next/link";
+import { useRouter } from "next/router";
 
-import Container from "src/shared/layout/Container";
 import Header from "../../shared/Header";
 import Footer from "../../shared/Footer";
 import {
   loadMarkdownFile,
   loadMarkdownFilesMetadata,
-  Heading,
 } from "utils/markdown";
-import * as MDXComponents from "../../shared/Patterns/mdx";
-import { Button } from "src/shared/Button";
-import { SectionProvider } from "src/shared/Docs/SectionProvider";
+import { patternMarkdown } from "../../shared/Patterns/markdown";
+import { MarkdownRender, extractMdHeadings } from "../../shared/Patterns/MarkdownRender";
+import PATTERN_SECTIONS, {
+  type PatternItem,
+  type PatternSectionMeta,
+} from "../../shared/Patterns/patternsData";
+import Container from "src/shared/layout/Container";
+import "../../shared/Patterns/pattern-page.css";
 
-type PatternMetadata = {
+type PatternFrontmatter = {
   title?: string;
   subtitle?: string;
+  pattern?: string;
   tags?: string[];
 };
 
@@ -24,15 +29,31 @@ export const getStaticProps: GetStaticProps = async (ctx) => {
   const slug = Array.isArray(ctx?.params?.pattern)
     ? ctx?.params?.pattern[0]
     : ctx?.params?.pattern;
+
   const pageData = await loadMarkdownFile("pages/patterns/_patterns", slug);
-  const metadata = (pageData.metadata ?? {}) as PatternMetadata;
+  const metadata = (pageData.metadata ?? {}) as PatternFrontmatter;
+  const sectionId = metadata.pattern ?? "";
+
+  // Load siblings for prev/next and position label.
+  const allEntries = await loadMarkdownFilesMetadata<PatternFrontmatter>(
+    "pages/patterns/_patterns"
+  );
+  const sectionPatterns: PatternItem[] = allEntries
+    .filter((e) => e.pattern === sectionId && e.title && e.subtitle)
+    .map((e) => ({ slug: e.slug, title: e.title!, subtitle: e.subtitle! }))
+    .sort((a, b) => a.title.localeCompare(b.title));
+
+  const section = PATTERN_SECTIONS.find((s) => s.id === sectionId) ?? null;
+
   return {
     props: {
+      slug: slug ?? "",
       title: metadata.title ?? "",
       subtitle: metadata.subtitle ?? "",
       tags: metadata.tags ?? [],
-      headings: pageData.headings,
-      compiledSource: (pageData as { compiledSource: string }).compiledSource,
+      content: pageData.content,
+      section,
+      sectionPatterns,
       designVersion: "2",
       meta: {
         title: metadata.title
@@ -48,7 +69,7 @@ export const getStaticProps: GetStaticProps = async (ctx) => {
 };
 
 export const getStaticPaths: GetStaticPaths = async () => {
-  const entries = await loadMarkdownFilesMetadata<PatternMetadata>(
+  const entries = await loadMarkdownFilesMetadata<PatternFrontmatter>(
     "pages/patterns/_patterns"
   );
   const paths = entries.map((e) => ({ params: { pattern: e.slug } }));
@@ -56,79 +77,183 @@ export const getStaticPaths: GetStaticPaths = async () => {
 };
 
 type Props = {
+  slug: string;
   title: string;
   subtitle: string;
   tags: string[];
-  headings: Heading[];
-  compiledSource: string;
+  content: string;
+  section: PatternSectionMeta | null;
+  sectionPatterns: PatternItem[];
 };
 
-export default function Patterns({
+export default function PatternDetailPage({
+  slug,
   title,
   subtitle,
   tags,
-  headings,
-  compiledSource,
+  content,
+  section,
+  sectionPatterns,
 }: Props) {
+  const router = useRouter();
+  const isAgent = router.query.view === "agent";
+
+  if (isAgent) {
+    return (
+      <div className="relative">
+        <Header />
+        <Container className="py-20">
+          <pre className="whitespace-pre-wrap font-mono text-sm leading-relaxed text-basis">
+            {patternMarkdown(title, subtitle, slug, tags, content)}
+          </pre>
+        </Container>
+        <Footer />
+      </div>
+    );
+  }
+
+  const idxInSection = sectionPatterns.findIndex((p) => p.slug === slug);
+  const prev = idxInSection > 0 ? sectionPatterns[idxInSection - 1] : null;
+  const next =
+    idxInSection < sectionPatterns.length - 1
+      ? sectionPatterns[idxInSection + 1]
+      : null;
+  const positionLabel =
+    sectionPatterns.length > 0
+      ? `${String(idxInSection + 1).padStart(2, "0")} / ${String(sectionPatterns.length).padStart(2, "0")}`
+      : "";
+  const headings = extractMdHeadings(content);
+
+  const accentStyle = section
+    ? ({
+        "--accent": section.accent.hex,
+        "--accent-rgb": section.accent.rgb,
+      } as React.CSSProperties)
+    : undefined;
+
   return (
-    <div className="relative">
+    <div className="relative page page--pattern" style={accentStyle}>
       <Header />
 
-      <Container className="pt-12 pb-20">
-        <div className="text-left max-w-[65ch] m-auto lg:max-w-none">
-          <header>
-            <Button href="/patterns" variant="secondary" size="sm" arrow="left">
-              Back to Patterns
-            </Button>
+      {/* Hero */}
+      <section className="pattern-hero">
+        <div className="pp-breadcrumb">
+          <Link href="/patterns" className="pp-breadcrumb-link">
+            Patterns
+          </Link>
+          {section && (
+            <>
+              <span className="pp-breadcrumb-sep">/</span>
+              <span className="pp-breadcrumb-link">{section.name}</span>
+            </>
+          )}
+          <span className="pp-breadcrumb-sep">/</span>
+          <span className="pp-breadcrumb-current">{title}</span>
+        </div>
 
-            <h1 className="text-basis font-semibold text-3xl mt-8 sm:text-5xl tracking-tighter">
-              {title}
-            </h1>
-          </header>
-          <p className="text-subtle text-base md:text-lg mt-2 mb-6 max-w-[640px]">
-            {subtitle}
-          </p>
-          <div className="flex gap-2">
-            {tags.map((t) => (
-              <span
-                key={t}
-                className="py-1 px-2 rounded bg-surfaceMuted text-basis group-hover/card:text-slate-500 transition-all font-medium text-xs"
-              >
-                {t}
+        <div className="pattern-hero-grid">
+          {section && (
+            <div className="pattern-hero-meta">
+              <span className="pattern-hero-section">
+                <span className="pattern-hero-section-num">{section.number}</span>
+                <span className="pattern-hero-section-name">{section.name}</span>
               </span>
-            ))}
+              {positionLabel && (
+                <span className="pattern-hero-position">{positionLabel}</span>
+              )}
+            </div>
+          )}
+          <div className="pattern-hero-body">
+            {section && (
+              <p className="pattern-hero-kicker">{section.kicker}</p>
+            )}
+            <h1 className="pattern-hero-title">{title}</h1>
+            <p className="pattern-hero-sub">{subtitle}</p>
+            {tags.length > 0 && (
+              <div className="pattern-hero-tags">
+                {tags.map((t) => (
+                  <span key={t} className="pattern-hero-tag">
+                    {t}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         </div>
-      </Container>
-      <div>
-        <Container className="lg:grid lg:grid-cols-3 sm:pt-8">
-          <aside className="max-w-[65ch] lg:max-w-[320px] xl:max-w-[400px] bg-surfaceSubtle sm:rounded p-6 pr-8 xl:pr-12 xl:p-8 lg:sticky top-32 -mx-6 sm:mx-auto mb-12 lg:col-start-4 self-start ">
-            <h3 className="text-sm text-subtle font-medium">Jump to</h3>
-            <ol className="mt-2 flex flex-col gap-2">
-              {headings.map((h) => (
-                <li key={h.slug} className=" ">
-                  <a
-                    href={`#${h.slug}`}
-                    className="text-basis text-sm font-medium tracking-tight hover:underline transition-all leading-tight "
-                  >
-                    {h.title}
-                  </a>
-                </li>
-              ))}
-            </ol>
-          </aside>
+      </section>
 
-          <article className="lg:col-span-3 lg:pr-12 xl:pr-20 lg:col-start-1 lg:row-start-1 lg:min-w-0 max-w-[65ch] lg:max-w-none m-auto lg:m-0 prose mb-20 prose-img:rounded-lg prose-code:bg-canvasMuted prose-pre:max-w-full prose-pre:overflow-x-auto text-basis prose-a:text-link prose-a:no-underline hover:prose-a:underline prose-a:font-medium prose-a:transition-all dark:prose-invert">
-            <SectionProvider sections={[]}>
-              {/* @ts-ignore */}
-              <MDXRemote
-                compiledSource={compiledSource}
-                components={MDXComponents}
-              />
-            </SectionProvider>
-          </article>
-        </Container>
-      </div>
+      {/* Article + TOC */}
+      <section className="pattern-article">
+        <article className="pattern-article-body">
+          <MarkdownRender source={content} />
+        </article>
+
+        {headings.length > 0 && (
+          <aside className="pattern-toc">
+            <div className="pattern-toc-inner">
+              <span className="pattern-toc-label">On this page</span>
+              <ol className="pattern-toc-list">
+                {headings.map((h, i) => (
+                  <li key={h.slug}>
+                    <a
+                      href={`#${h.slug}`}
+                      className="pattern-toc-link"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        document
+                          .getElementById(h.slug)
+                          ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                      }}
+                    >
+                      <span className="pattern-toc-num">
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <span>{h.title}</span>
+                    </a>
+                  </li>
+                ))}
+              </ol>
+              <div className="pattern-toc-meta">
+                <Link href="/patterns" className="pattern-toc-back">
+                  ← All Patterns
+                </Link>
+              </div>
+            </div>
+          </aside>
+        )}
+      </section>
+
+      {/* Prev / Next */}
+      {(prev || next) && (
+        <section className="pattern-nav">
+          <div className="pattern-nav-grid">
+            {prev ? (
+              <Link
+                href={`/patterns/${prev.slug}`}
+                className="pattern-nav-card pattern-nav-card--prev"
+              >
+                <span className="pattern-nav-direction">← Previous pattern</span>
+                <span className="pattern-nav-title">{prev.title}</span>
+                <span className="pattern-nav-subtitle">{prev.subtitle}</span>
+              </Link>
+            ) : (
+              <span />
+            )}
+            {next ? (
+              <Link
+                href={`/patterns/${next.slug}`}
+                className="pattern-nav-card pattern-nav-card--next"
+              >
+                <span className="pattern-nav-direction">Next pattern →</span>
+                <span className="pattern-nav-title">{next.title}</span>
+                <span className="pattern-nav-subtitle">{next.subtitle}</span>
+              </Link>
+            ) : (
+              <span />
+            )}
+          </div>
+        </section>
+      )}
 
       <Footer />
     </div>

@@ -4,20 +4,18 @@ import ViewToggle from "./ViewToggle";
 
 export default function PatternsViewToggle() {
   const router = useRouter();
-  const path = router.asPath.split("?")[0].split("#")[0];
-  const agent = path.endsWith("/md");
+  const agent = router.query.view === "agent";
 
   const setView = useCallback(
     (view: "human" | "agent") => {
-      if (view === "agent" && !agent) {
-        const next = (path.replace(/\/$/, "") || "/patterns") + "/md";
-        router.push(next);
-      } else if (view === "human" && agent) {
-        const next = path.replace(/\/md$/, "") || "/patterns";
-        router.push(next);
+      const { view: _v, ...rest } = router.query;
+      if (view === "agent") {
+        router.push({ query: { ...rest, view: "agent" } }, undefined, { shallow: true });
+      } else {
+        router.push({ query: rest }, undefined, { shallow: true });
       }
     },
-    [agent, path, router]
+    [router]
   );
 
   useEffect(() => {

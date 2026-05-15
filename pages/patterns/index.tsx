@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { useRouter } from "next/router";
 
 import Header from "src/components/RedesignedLanding/Header/Header";
 import Footer from "../../shared/Footer";
@@ -12,6 +13,7 @@ import PATTERN_SECTIONS, {
 import Featured, {
   FEATURED_PATTERN,
 } from "../../shared/Patterns/Featured";
+import { indexMarkdown } from "../../shared/Patterns/markdown";
 
 // ── Section components ───────────────────────────────────────────────────────
 
@@ -207,7 +209,23 @@ export default function Patterns({
   sections: PatternSection[];
   featuredPayload: FeaturedPayload | null;
 }) {
+  const router = useRouter();
+  const isAgent = router.query.view === "agent";
   const totalPatterns = sections.reduce((sum, s) => sum + s.patterns.length, 0);
+
+  if (isAgent) {
+    return (
+      <div className="bg-canvasBase">
+        <Header />
+        <Container className="py-20">
+          <pre className="whitespace-pre-wrap font-mono text-sm leading-relaxed text-basis">
+            {indexMarkdown(sections, FEATURED_PATTERN)}
+          </pre>
+        </Container>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="bg-canvasBase">

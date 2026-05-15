@@ -21,6 +21,8 @@ export interface PatternSectionMeta {
     border: string;    // Tailwind border color class
     bg: string;        // Tailwind bg tint class
     gradient: string;  // CSS gradient for rule line
+    hex: string;       // Raw hex for CSS custom properties
+    rgb: string;       // "R G B" for rgba mixing
   };
 }
 
@@ -41,6 +43,8 @@ const PATTERN_SECTIONS: PatternSectionMeta[] = [
       border: "border-matcha-500",
       bg: "bg-matcha-500/[0.08]",
       gradient: "from-matcha-500 to-transparent",
+      hex: "#2C9B63",
+      rgb: "44 155 99",
     },
   },
   {
@@ -55,6 +59,8 @@ const PATTERN_SECTIONS: PatternSectionMeta[] = [
       border: "border-honey-500",
       bg: "bg-honey-500/[0.07]",
       gradient: "from-honey-500 to-transparent",
+      hex: "#D56B13",
+      rgb: "213 107 19",
     },
   },
   {
@@ -69,6 +75,8 @@ const PATTERN_SECTIONS: PatternSectionMeta[] = [
       border: "border-breeze-500",
       bg: "bg-breeze-500/[0.08]",
       gradient: "from-breeze-500 to-transparent",
+      hex: "#2389F1",
+      rgb: "35 137 241",
     },
   },
   {
@@ -83,6 +91,8 @@ const PATTERN_SECTIONS: PatternSectionMeta[] = [
       border: "border-purplehaze-500",
       bg: "bg-purplehaze-500/[0.08]",
       gradient: "from-purplehaze-500 to-transparent",
+      hex: "#8B74F9",
+      rgb: "139 116 249",
     },
   },
   {
@@ -97,6 +107,8 @@ const PATTERN_SECTIONS: PatternSectionMeta[] = [
       border: "border-blush-500",
       bg: "bg-blush-500/[0.08]",
       gradient: "from-blush-500 to-transparent",
+      hex: "#F93E6A",
+      rgb: "249 62 106",
     },
   },
 ];

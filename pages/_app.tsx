@@ -69,6 +69,9 @@ function MyApp({ Component, pageProps }: AppProps<DefaultProps>) {
       htmlEl.classList.add(`docs`);
     } else {
       htmlEl.classList.remove(`docs`);
+      // Non-docs pages are dark-themed. Docs toggles `dark` based on user
+      // preference, so we must restore it when navigating away from docs.
+      htmlEl.classList.add(`dark`);
     }
   });
   useEffect(() => {
