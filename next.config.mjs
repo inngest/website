@@ -444,6 +444,14 @@ async function rewrites() {
       source: "/docs-markdown/reference/typescript/:path((?!v3|v4).+)",
       destination: `/docs-markdown/reference/typescript/${TS_STABLE_VERSION}/:path`,
     },
+    {
+      source: "/patterns/md",
+      destination: "/api/patterns/md",
+    },
+    {
+      source: "/patterns/:pattern/md",
+      destination: "/api/patterns/:pattern/md",
+    },
   ];
 }
 
