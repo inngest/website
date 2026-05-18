@@ -11,11 +11,11 @@ import {
 } from "utils/markdown";
 import { patternMarkdown } from "../../shared/Patterns/markdown";
 import { MarkdownRender, extractMdHeadings } from "../../shared/Patterns/MarkdownRender";
+import AgentView from "../../shared/Patterns/AgentView";
 import PATTERN_SECTIONS, {
   type PatternItem,
   type PatternSectionMeta,
 } from "../../shared/Patterns/patternsData";
-import Container from "src/shared/layout/Container";
 import "../../shared/Patterns/pattern-page.css";
 
 type PatternFrontmatter = {
@@ -57,8 +57,8 @@ export const getStaticProps: GetStaticProps = async (ctx) => {
       designVersion: "2",
       meta: {
         title: metadata.title
-          ? `${metadata.title} — Inngest patterns`
-          : "Patterns — How to build with Inngest",
+          ? `${metadata.title} | Inngest patterns`
+          : "Patterns: How to build with Inngest",
         description:
           metadata.subtitle ??
           "Architecture patterns for building reliable AI pipelines, background jobs, and event-driven workflows",
@@ -98,15 +98,22 @@ export default function PatternDetailPage({
   const router = useRouter();
   const isAgent = router.query.view === "agent";
 
+  const accentStyle = section
+    ? ({
+        "--accent": section.accent.hex,
+        "--accent-rgb": section.accent.rgb,
+      } as React.CSSProperties)
+    : undefined;
+
   if (isAgent) {
     return (
-      <div className="relative">
+      <div className="relative page page--pattern" style={accentStyle}>
         <Header />
-        <Container className="py-20">
-          <pre className="whitespace-pre-wrap font-mono text-sm leading-relaxed text-basis">
-            {patternMarkdown(title, subtitle, slug, tags, content)}
-          </pre>
-        </Container>
+        <AgentView
+          title={`/patterns/${slug}.md`}
+          markdown={patternMarkdown(title, subtitle, slug, tags, content)}
+          mdUrl={`/patterns/${slug}/md`}
+        />
         <Footer />
       </div>
     );
@@ -123,13 +130,6 @@ export default function PatternDetailPage({
       ? `${String(idxInSection + 1).padStart(2, "0")} / ${String(sectionPatterns.length).padStart(2, "0")}`
       : "";
   const headings = extractMdHeadings(content);
-
-  const accentStyle = section
-    ? ({
-        "--accent": section.accent.hex,
-        "--accent-rgb": section.accent.rgb,
-      } as React.CSSProperties)
-    : undefined;
 
   return (
     <div className="relative page page--pattern" style={accentStyle}>

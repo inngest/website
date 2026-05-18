@@ -15,7 +15,7 @@ This matters more as you connect to AI services. Model providers like OpenAI, An
 
 Whatever you build, you need to cover four things:
 
-- **Fast acknowledgement.** Most providers retry after 3–10 seconds. Your endpoint must respond well under that — usually by handing the payload off before doing any real work.
+- **Fast acknowledgement.** Most providers retry after 3–10 seconds. Your endpoint must respond well under that, usually by handing the payload off before doing any real work.
 - **Signature verification.** Verify the provider's signature before you trust the payload. Stripe, GitHub, and Shopify all sign deliveries differently, and a missed verification is a security issue, not a reliability one.
 - **At-least-once delivery handling.** Most providers retry on transient failures. Your handler has to be idempotent on the natural key the provider supplies (event ID, delivery ID).
 - **Replay.** When you ship a bug and 10,000 events failed silently in production, you need to replay them against the new code without asking the provider to resend.
@@ -83,7 +83,7 @@ Functions can be [deployed to several supported platforms](/docs/deploy?ref=patt
 ## Alternative approaches
 
 - **AWS API Gateway + SQS + Lambda.** Works, but you're now wiring three services together and writing your own retry/dead-letter routing. Replay means querying CloudWatch logs and re-publishing manually.
-- **Hosted webhook gateways (Hookdeck, Svix).** Closer to what Inngest does for webhook *ingestion* — but they hand off to your own job runner, so you still need a durable execution layer downstream.
+- **Hosted webhook gateways (Hookdeck, Svix).** Closer to what Inngest does for webhook *ingestion*, but they hand off to your own job runner, so you still need a durable execution layer downstream.
 - **Direct in your API.** Skipping the queue entirely. Fine until your endpoint stalls for 30 seconds during an LLM call and the provider stops delivering.
 
 ## Additional Resources

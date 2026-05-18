@@ -15,8 +15,8 @@ This is especially important for AI-powered features. A single LLM call can take
 
 A request handler that finishes in under a second has to push every non-essential piece of work elsewhere:
 
-- **A transport** to hand the work off — a queue, an event bus, or an HTTP call to another service.
-- **A worker** that picks it up — long-running process, container, or serverless function — and a way to deploy and observe it.
+- **A transport** to hand the work off: a queue, an event bus, or an HTTP call to another service.
+- **A worker** that picks it up (long-running process, container, or serverless function) and a way to deploy and observe it.
 - **Retry semantics** when the worker fails. At-least-once delivery, dead-letter routing, and a way to inspect what's stuck.
 - **Idempotency** so that retries don't double-charge, double-send, or double-create.
 
@@ -80,7 +80,7 @@ Functions can be [deployed in several ways](/docs/deploy?ref=patterns) that fit 
 
 - **Redis + BullMQ / Celery / Sidekiq.** Mature, well-understood. You own the Redis instance, the worker fleet, and the observability layer that ties them together.
 - **AWS SQS + Lambda.** Serverless workers solve the hosting problem but introduce SQS-specific behaviors (visibility timeouts, batching, redrive policies) you now have to learn and operate.
-- **Inline in the request.** No queue, no worker — fine for sub-100ms tasks. Becomes a problem the first time someone adds an LLM call.
+- **Inline in the request.** No queue, no worker. Fine for sub-100ms tasks. Becomes a problem the first time someone adds an LLM call.
 
 ## Additional Resources
 

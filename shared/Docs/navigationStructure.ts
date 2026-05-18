@@ -881,6 +881,22 @@ const sectionLearn: (NavGroup | NavLink)[] = [
         title: "Events and Triggers",
         links: [
           {
+            title: "Overview",
+            href: `/docs/features/events-triggers`,
+          },
+          {
+            title: "Sending events",
+            href: `/docs/events`,
+          },
+          {
+            title: "Writing expressions",
+            href: `/docs/guides/writing-expressions`,
+          },
+          {
+            title: "Consuming webhook events",
+            href: `/docs/platform/webhooks`,
+          },
+          {
             title: "Parallel steps",
             href: "/docs/guides/step-parallelism",
           },
@@ -1015,31 +1031,6 @@ const sectionLearn: (NavGroup | NavLink)[] = [
                 href: `/docs/usage-limits/providers`,
               },
             ],
-          },
-        ],
-      },
-      {
-        title: "Events & Triggers",
-        links: [
-          {
-            title: "Overview",
-            href: `/docs/features/events-triggers`,
-          },
-          {
-            title: "Sending events",
-            href: `/docs/events`,
-          },
-          {
-            title: "Event payload format",
-            href: `/docs/features/events-triggers/event-format`,
-          },
-          {
-            title: "Writing expressions",
-            href: `/docs/guides/writing-expressions`,
-          },
-          {
-            title: "Consuming webhook events",
-            href: `/docs/platform/webhooks`,
           },
         ],
       },

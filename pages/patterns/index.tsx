@@ -1,10 +1,8 @@
-import Link from "next/link";
 import { useRouter } from "next/router";
 
 import Header from "src/components/RedesignedLanding/Header/Header";
 import Footer from "../../shared/Footer";
 import Container from "../../shared/layout/Container";
-import ArrowRight from "src/shared/Icons/ArrowRight";
 import { loadMarkdownFilesMetadata } from "utils/markdown";
 import PATTERN_SECTIONS, {
   type PatternItem,
@@ -14,123 +12,7 @@ import Featured, {
   FEATURED_PATTERN,
 } from "../../shared/Patterns/Featured";
 import { indexMarkdown } from "../../shared/Patterns/markdown";
-
-// ── Section components ───────────────────────────────────────────────────────
-
-function SectionRule({ section }: { section: PatternSection }) {
-  return (
-    <div className="mb-10 grid grid-cols-[auto_1fr_auto] items-center gap-6 border-t border-subtle pt-5">
-      <div className="flex items-baseline gap-3.5">
-        <span className={`font-mono text-xs tracking-widest ${section.accent.text}`}>
-          {section.number}
-        </span>
-        <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-subtle">
-          {section.name}
-        </span>
-      </div>
-      <div
-        className={`h-px bg-gradient-to-r ${section.accent.gradient} opacity-55`}
-      />
-      <span className="font-mono text-[11px] tracking-widest text-muted">
-        {section.patterns.length} {section.patterns.length === 1 ? "PATTERN" : "PATTERNS"}
-      </span>
-    </div>
-  );
-}
-
-function PatternRow({
-  slug,
-  title,
-  subtitle,
-  accentText,
-}: {
-  slug: string;
-  title: string;
-  subtitle: string;
-  accentText: string;
-}) {
-  return (
-    <Link
-      href={`/patterns/${slug}`}
-      className="group grid grid-cols-[1fr_auto] items-center gap-4 border-b border-subtle bg-canvasBase px-5 py-4 transition-colors hover:bg-surfaceSubtle"
-    >
-      <div className="flex flex-col gap-1">
-        <span className="text-[15px] font-medium tracking-tight text-basis">
-          {title}
-        </span>
-        <span className="text-[13px] leading-relaxed text-subtle">
-          {subtitle}
-        </span>
-      </div>
-      <span className={`flex text-muted transition-all group-hover:translate-x-0.5 group-hover:${accentText}`}>
-        <ArrowRight className="h-4 w-4" />
-      </span>
-    </Link>
-  );
-}
-
-function PatternSectionBlock({
-  section,
-  featured = false,
-}: {
-  section: PatternSection;
-  featured?: boolean;
-}) {
-  return (
-    <section id={section.id} className="scroll-mt-20">
-      <SectionRule section={section} />
-
-      <div className="flex flex-col gap-8">
-        {/* Header */}
-        <div className="max-w-[540px]">
-          <p
-            className={`mb-5 font-mono text-[11px] uppercase tracking-[0.16em] ${section.accent.text}`}
-          >
-            {section.kicker}
-          </p>
-          <h2
-            className={`mb-6 font-heading tracking-tight text-basis ${
-              featured
-                ? "text-5xl font-medium lg:text-7xl"
-                : "text-4xl font-medium lg:text-6xl"
-            }`}
-            style={{ lineHeight: 1 }}
-          >
-            {section.name}
-          </h2>
-          <p
-            className={`mb-8 leading-relaxed text-subtle ${
-              featured ? "text-lg" : "text-base"
-            }`}
-            style={{ textWrap: "pretty" }}
-          >
-            {section.description}
-          </p>
-          <Link
-            href={`#${section.id}`}
-            className={`inline-flex items-center gap-2.5 rounded border border-muted bg-surfaceSubtle px-4 py-2.5 text-[13px] text-basis transition-colors hover:${section.accent.border} hover:${section.accent.text}`}
-          >
-            Explore patterns
-            <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-          </Link>
-        </div>
-
-        {/* Pattern list */}
-        <div className="overflow-hidden rounded border border-subtle">
-          {section.patterns.map((p) => (
-            <PatternRow
-              key={p.slug}
-              slug={p.slug}
-              title={p.title}
-              subtitle={p.subtitle}
-              accentText={section.accent.text}
-            />
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
+import AgentView from "../../shared/Patterns/AgentView";
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 
@@ -187,7 +69,7 @@ export async function getStaticProps() {
       featuredPayload,
       designVersion: "2",
       meta: {
-        title: "Patterns — How to build with Inngest",
+        title: "Patterns: How to build with Inngest",
         description:
           "Production-tested patterns for AI agents, durable workflows, and the event-driven systems they live in.",
         image: "/assets/patterns/og-image-patterns.jpg",
@@ -214,14 +96,15 @@ export default function Patterns({
   const totalPatterns = sections.reduce((sum, s) => sum + s.patterns.length, 0);
 
   if (isAgent) {
+    const md = indexMarkdown(sections, FEATURED_PATTERN);
     return (
       <div className="bg-canvasBase">
         <Header />
-        <Container className="py-20">
-          <pre className="whitespace-pre-wrap font-mono text-sm leading-relaxed text-basis">
-            {indexMarkdown(sections, FEATURED_PATTERN)}
-          </pre>
-        </Container>
+        <AgentView
+          title="/patterns.md"
+          markdown={md}
+          mdUrl="/patterns/md"
+        />
         <Footer />
       </div>
     );
@@ -248,7 +131,7 @@ export default function Patterns({
         >
           Production-tested patterns for AI agents, durable workflows, and the
           event-driven systems they live in. Each pattern is built on Inngest
-          primitives — steps, events, throttling, schedules, channels — and the
+          primitives (steps, events, throttling, schedules, channels) and the
           guarantees they provide.
         </p>
 
@@ -284,17 +167,6 @@ export default function Patterns({
           pattern={featuredPayload.pattern}
         />
       )}
-
-      {/* Sections */}
-      <Container className="flex flex-col gap-20 pb-32">
-        {sections.map((section, idx) => (
-          <PatternSectionBlock
-            key={section.id}
-            section={section}
-            featured={idx === 0}
-          />
-        ))}
-      </Container>
 
       <Footer />
     </div>

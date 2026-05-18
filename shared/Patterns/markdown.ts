@@ -13,7 +13,7 @@ export function indexMarkdown(
   const lines: string[] = [];
   lines.push("# Inngest Patterns", "");
   lines.push(
-    "> Production-tested patterns for AI agents, durable workflows, and the event-driven systems they live in. Each pattern is built on Inngest primitives — steps, events, throttling, schedules, channels — and the guarantees they provide.",
+    "> Production-tested patterns for AI agents, durable workflows, and the event-driven systems they live in. Each pattern is built on Inngest primitives (steps, events, throttling, schedules, channels) and the guarantees they provide.",
     ""
   );
   lines.push("URL: https://www.inngest.com/patterns");
@@ -28,7 +28,7 @@ export function indexMarkdown(
       lines.push("---", "");
       lines.push(`## ⭐ ${featured.label}: ${pattern.title}`, "");
       lines.push(
-        `*${section.number} · ${section.name} — published ${featured.publishedAt} · ${featured.readTime}*`,
+        `*${section.number} · ${section.name} · published ${featured.publishedAt} · ${featured.readTime}*`,
         ""
       );
       lines.push(featured.excerpt, "");
@@ -43,7 +43,7 @@ export function indexMarkdown(
   lines.push("---", "", "## Table of contents", "");
   sections.forEach((s) => {
     lines.push(
-      `- **${s.number} · ${s.name}** — ${s.kicker} (${s.patterns.length} patterns)`
+      `- **${s.number} · ${s.name}**: ${s.kicker} (${s.patterns.length} patterns)`
     );
   });
   lines.push("", "---", "");
@@ -53,7 +53,7 @@ export function indexMarkdown(
     lines.push(s.description, "");
     lines.push("### Patterns", "");
     s.patterns.forEach((p) => {
-      lines.push(`- **[${p.title}](/patterns/${p.slug})** — ${p.subtitle}`);
+      lines.push(`- **[${p.title}](/patterns/${p.slug})**: ${p.subtitle}`);
     });
     lines.push("");
   });

@@ -23,9 +23,9 @@ export const FEATURED_PATTERN: FeaturedPattern = {
   slug: "flash-sales-and-bursty-workflows",
   label: "Featured pattern",
   excerpt:
-    "When traffic spikes, webhooks fire twice, or third-party APIs push back, four primitives keep your pipeline upright: throttle, concurrency, debounce, and idempotency. This pattern shows when to reach for each — and how they compose on one function.",
+    "When traffic spikes, webhooks fire twice, or third-party APIs push back, four primitives keep your pipeline upright: throttle, concurrency, debounce, and idempotency. This pattern shows when to reach for each and how they compose on one function.",
   highlights: [
-    "Throttle vs concurrency — when each matters",
+    "Throttle vs concurrency: when each matters",
     "Debounce noisy webhooks without losing the last update",
     "Idempotency keys for at-least-once delivery",
     "Compose all four on one function",

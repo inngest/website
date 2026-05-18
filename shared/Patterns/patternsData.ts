@@ -1,7 +1,7 @@
 // Section metadata for the Inngest patterns hub.
 // Each section maps to an Inngest primitive with its brand accent color.
 // Pattern items themselves are sourced from MDX frontmatter in
-// pages/patterns/_patterns/ at build time — see pages/patterns/index.tsx.
+// pages/patterns/_patterns/ at build time; see pages/patterns/index.tsx.
 // Tailwind color classes reference tokens defined in tailwind.config.js.
 
 export interface PatternItem {
@@ -37,7 +37,7 @@ const PATTERN_SECTIONS: PatternSectionMeta[] = [
     name: "Durable Workflows",
     kicker: "Steps that don't lose state",
     description:
-      "Multi-step business logic that survives crashes, deploys, and minute-long LLM calls. Each step is independently retried and persisted — no glue code, no external queues to babysit.",
+      "Multi-step business logic that survives crashes, deploys, and minute-long LLM calls. Each step is independently retried and persisted. No glue code, no external queues to babysit.",
     accent: {
       text: "text-matcha-500",
       border: "border-matcha-500",
@@ -53,7 +53,7 @@ const PATTERN_SECTIONS: PatternSectionMeta[] = [
     name: "Flow Control",
     kicker: "Spike-proof the boring stuff",
     description:
-      "Throttle, debounce, rate-limit, and cap concurrency — declaratively, per-tenant or globally. Survive flash sales, runaway LLM bills, and noisy webhook providers.",
+      "Throttle, debounce, rate-limit, and cap concurrency, declaratively per-tenant or globally. Survive flash sales, runaway LLM bills, and noisy webhook providers.",
     accent: {
       text: "text-honey-500",
       border: "border-honey-500",
@@ -85,7 +85,7 @@ const PATTERN_SECTIONS: PatternSectionMeta[] = [
     name: "Scheduling",
     kicker: "Time as a first-class input",
     description:
-      "Cron, sleep, and sleepUntil — durable across deploys and process restarts. Schedule work for tomorrow, next quarter, or whenever a user picks a date.",
+      "Cron, sleep, and sleepUntil, durable across deploys and process restarts. Schedule work for tomorrow, next quarter, or whenever a user picks a date.",
     accent: {
       text: "text-purplehaze-500",
       border: "border-purplehaze-500",
@@ -101,7 +101,7 @@ const PATTERN_SECTIONS: PatternSectionMeta[] = [
     name: "Background Jobs",
     kicker: "Off the request path",
     description:
-      "Heavy work — image processing, email, exports, webhook ingestion — belongs in the background where retries and concurrency control live. Get it out of your API responses.",
+      "Heavy work (image processing, email, exports, webhook ingestion) belongs in the background where retries and concurrency control live. Get it out of your API responses.",
     accent: {
       text: "text-blush-500",
       border: "border-blush-500",

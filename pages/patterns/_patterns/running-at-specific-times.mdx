@@ -1,6 +1,6 @@
 ---
 title: Running code at specific times
-subtitle: Schedule one-off work — appointment reminders, embargoed publishing, user-picked send times.
+subtitle: Schedule one-off work for appointment reminders, embargoed publishing, and user-picked send times.
 pattern: schedule
 tags: [Scheduling]
 ---
@@ -63,7 +63,7 @@ You can also cancel these scheduled functions using the [cancellation guide](/do
 - **Cron + a database table.** Run a sweeper cron that polls a `scheduled_jobs` table for due work. Simple, but the cron is now the bottleneck (see [Reliable scheduling systems](/patterns/reliable-scheduling-systems)) and "due" is rounded to the cron interval.
 - **Inline `setTimeout`.** Works locally; gets erased the moment your server restarts. Don't.
 
-The pattern above — emit an event with a future timestamp, then `sleepUntil` inside a durable function — keeps the wait state in Inngest rather than your queue, and survives deploys without re-architecting anything.
+The pattern above (emit an event with a future timestamp, then `sleepUntil` inside a durable function) keeps the wait state in Inngest rather than your queue, and survives deploys without re-architecting anything.
 
 ## Additional Resources
 

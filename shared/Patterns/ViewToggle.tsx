@@ -38,7 +38,7 @@ export default function ViewToggle({ agent, onChange }: Props) {
         onClick={() => onChange("agent")}
         role="radio"
         aria-checked={agent}
-        title="View raw markdown — for LLMs and agents"
+        title="View raw markdown for LLMs and agents"
       >
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden>
           <rect
