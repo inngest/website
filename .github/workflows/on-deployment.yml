@@ -41,7 +41,7 @@ jobs:
             './content/**/*.mdx'
             './pages/**/*.{mdx,tsx}'
             './app/**/*.tsx'
-          fail: false
+          fail: true
           output: ./lychee-report.md
 
       - name: Upload report
