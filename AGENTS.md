@@ -148,6 +148,21 @@ See `shared/Docs/SEARCH.md` for docs search (Algolia) architecture.
 - Default dev variables in `.env.development`
 - Run `pnpm prettier` before committing (Prettier with Tailwind plugin)
 
+## Link Checking
+
+Broken-link validation runs in CI on every push via [lychee](https://github.com/lycheeverse/lychee). After the Vercel preview deploys, `.github/workflows/on-deployment.yml` invokes `lycheeverse/lychee-action` against the MDX, TSX, and content source files; the report lands in the workflow Summary tab and as a `lychee-report` artifact. Failures are **report-only** — the job does not block merges.
+
+To run locally:
+
+```bash
+brew install lychee        # one-time
+pnpm dev                   # in a separate terminal (port 3001)
+pnpm link-check            # checks internal + external links
+pnpm link-check:offline    # source-only, skips network
+```
+
+Edit `.lycheeignore` to skip flaky external domains and `lychee.toml` to tune retries, timeouts, or accepted status codes.
+
 ## Troubleshooting
 
 - **Port in use**: `PORT=3002 pnpm dev`
