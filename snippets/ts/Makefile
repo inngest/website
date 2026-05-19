@@ -1,9 +1,8 @@
 .PHONY: install
 install:
-	cd v3 && npm install
-	cd v4 && npm install
+	cd ../.. && pnpm install
 
 .PHONY: check
 check:
-	cd v3 && npm run type-check
-	cd v4 && npm run type-check
+	cd v3 && pnpm run type-check
+	cd v4 && pnpm run type-check
