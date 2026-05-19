@@ -122,7 +122,7 @@
     "prettier-plugin-tailwindcss": "0.4.1",
     "tailwindcss": "3.4.16",
     "typescript": "5.7.3",
-    "vercel": "^54.1.0"
+    "vercel": "^53.4.0"
   },
   "engines": {
     "node": "22.x",
