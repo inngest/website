@@ -2,6 +2,8 @@ packages:
   - 'snippets/ts/v3'
   - 'snippets/ts/v4'
 
+minimumReleaseAge: 10080
+
 patchedDependencies:
   react-medium-image-zoom@5.2.8: patches/react-medium-image-zoom@5.2.8.patch
 
