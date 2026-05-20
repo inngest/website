@@ -445,6 +445,11 @@ async function rewrites() {
       destination: `/docs-markdown/reference/typescript/${TS_STABLE_VERSION}/:path`,
     },
     {
+      source: "/patterns",
+      destination: "/patterns/flash-sales-and-bursty-workflows",
+      permanent: false,
+    },
+    {
       source: "/patterns/md",
       destination: "/api/patterns/md",
     },
