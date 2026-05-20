@@ -1,0 +1,104 @@
+import { Callout, CodeGroup } from "src/shared/Docs/mdx";
+
+export const description = "Build reusable scorers that run in the background and score based on events that arrive after a function completes."
+
+# Build a deferred scorer
+
+Sometimes you don't know how well a function performed until later. A user clicks "helpful." A support ticket gets reopened. A conversion happens hours after the initial run.
+
+Deferred scorers handle this. They run as separate functions in the background, with access to step tooling like `step.waitForEvent()`. You define what signals matter, and the scorer collects them over time.
+
+<Callout variant="info">
+  Deferred scoring uses `createScorer` from `inngest/experimental`. The API may change before GA.
+</Callout>
+
+---
+
+## Create a scorer
+
+A scorer is a function that receives input data and returns a score. Define it with `createScorer`.
+
+```ts
+import { createScorer } from "inngest/experimental";
+import { z } from "zod";
+
+export const feedbackScorer = createScorer(
+  inngest,
+  {
+    id: "feedback-scorer",
+    schema: z.object({ ticketId: z.string(), runId: z.string() }),
+  },
+  async ({ event, step }) => {
+    // Wait up to 7 days for the user to give feedback
+    const feedback = await step.waitForEvent("wait-for-feedback", {
+      event: "support/feedback.received",
+      timeout: "7d",
+      if: `async.data.ticketId == '${event.data.input.ticketId}'`,
+    });
+
+    if (!feedback) {
+      // No feedback received within the window
+      return { name: "user-feedback", value: 0.5 };
+    }
+
+    return {
+      name: "user-feedback",
+      value: feedback.data.helpful ? 1 : 0,
+    };
+  }
+);
+```
+
+Register the scorer alongside your other functions in the serve handler.
+
+```ts
+serve({
+  client: inngest,
+  functions: [...myFunctions, feedbackScorer],
+});
+```
+
+---
+
+## Trigger a scorer from a function
+
+Inside any Inngest function, use `defer()` to trigger a scorer with the data it needs.
+
+```ts
+export default inngest.createFunction(
+  { id: "handle-support-ticket", triggers: { event: "support/ticket.created" } },
+  async ({ event, step, defer }) => {
+    const response = await step.run("generate-response", async () => {
+      return await generateAIResponse(event.data.content);
+    });
+
+    // Kick off the deferred scorer in the background
+    defer("score-feedback", {
+      function: feedbackScorer,
+      data: {
+        ticketId: event.data.ticketId,
+        runId: event.data.runId,
+      },
+    });
+
+    return { response };
+  }
+);
+```
+
+The scorer runs independently. The original function returns immediately. The score arrives when the signal does.
+
+---
+
+## When to use deferred vs direct scoring
+
+**Direct scoring** (inline `step.score()`) is for outcomes you know before the function finishes. A guardrail passed. JSON parsed correctly. A tool call returned the expected format.
+
+**Deferred scoring** is for outcomes that depend on what happens next. User feedback. Ticket resolution. Conversion events. Anything that requires waiting for a signal from outside the run.
+
+---
+
+## Next steps
+
+- [Score a function run](/docs/features/inngest-functions/steps-workflows/scoring) for inline scoring
+- [Run experiments](/docs/features/inngest-functions/steps-workflows/running-experiments) to compare variants using scores
