@@ -72,6 +72,29 @@ export function Layout({
     ? GITHUB_PREFIX + sourceFilePath
     : undefined;
 
+  // Markdown alternate URL for AI/LLM discoverability
+  const docsPath = router.asPath.replace(/^\/(docs)/, "").split("?")[0].split("#")[0];
+  const markdownAlternateUrl = `https://www.inngest.com/docs-markdown${docsPath}`;
+  const canonicalUrl = `https://www.inngest.com${router.asPath.split("?")[0].split("#")[0]}`;
+
+  // JSON-LD structured data for documentation pages
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    headline: preferredTitle,
+    description: metaDescription,
+    url: canonicalUrl,
+    publisher: {
+      "@type": "Organization",
+      name: "Inngest",
+      url: "https://www.inngest.com",
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": canonicalUrl,
+    },
+  };
+
   let tsV4Banner = null;
 
   // Is any of the "Learn" pages (except for the Python quick start)
@@ -119,10 +142,21 @@ export function Layout({
           <meta name="docsearch:sdkLanguage" content={sdkLanguage} />
           <meta name="docsearch:sdkVersion" content={sdkVersion} />
 
+          {/* Markdown alternate for AI/LLM discoverability */}
+          <link rel="alternate" type="text/markdown" href={markdownAlternateUrl} />
+
           <link rel="preconnect" href="https://fonts-cdn.inngest.com/" />
           <link
             rel="stylesheet"
             href="https://fonts-cdn.inngest.com/fonts.css"
+          />
+
+          {/* Schema.org structured data for documentation */}
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify(structuredData),
+            }}
           />
 
           <script dangerouslySetInnerHTML={{ __html: modeScript }} />

@@ -1,0 +1,23 @@
+{
+  "@context": "https://www.w3.org/2022/tdmrep",
+  "@type": "TDMPolicy",
+  "tdm_policy": "https://www.inngest.com/terms",
+  "tdm_reservation": 0,
+  "tdm_permissions": [
+    {
+      "type": "text-mining",
+      "status": "allowed",
+      "scope": "https://www.inngest.com/docs/*"
+    },
+    {
+      "type": "text-mining",
+      "status": "allowed",
+      "scope": "https://www.inngest.com/blog/*"
+    },
+    {
+      "type": "data-mining",
+      "status": "allowed",
+      "scope": "https://www.inngest.com/docs/*"
+    }
+  ]
+}
