@@ -49,7 +49,10 @@ const permanentRedirects = [
   ["/docs/functions", "/docs/learn/inngest-functions"],
   ["/docs/functions/multi-step", "/docs/learn/inngest-steps"],
   ["/docs/guides/multi-step-functions", "/docs/learn/inngest-steps"],
-  ["/docs/features/inngest-functions/steps-workflows/fetch", "/docs/reference/typescript/functions/fetch"],
+  [
+    "/docs/features/inngest-functions/steps-workflows/fetch",
+    "/docs/reference/typescript/functions/fetch",
+  ],
   ["/docs/guides/enqueueing-future-jobs", "/docs/guides/delayed-functions"],
   ["/docs/steps", "/docs/learn/inngest-steps"],
   ["/docs/features/inngest-functions", "/docs/learn/inngest-functions"],
@@ -216,6 +219,16 @@ async function redirects() {
     {
       source: "/mailing-list",
       destination: "http://eepurl.com/hI3dCr",
+      permanent: true,
+    },
+    {
+      source: "/2026-durable-execution-report",
+      destination: "/content/ai-in-production-report-2026",
+      permanent: true,
+    },
+    {
+      source: "/2026-durable-execution-report/:path*",
+      destination: "/content/ai-in-production-report-2026/:path*",
       permanent: true,
     },
     {
@@ -473,6 +486,7 @@ const nextConfig = {
     turbopackFileSystemCacheForDev: true,
   },
   images: {
+    qualities: [75, 95],
     remotePatterns: [
       {
         protocol: "https",

@@ -8,6 +8,7 @@ import GoogleTagManager from "@/components/GoogleTagManager";
 import { trackPageView } from "../utils/tracking";
 import { getOpenGraphImageURL } from "../utils/social";
 import { useAnonymousID } from "../shared/trackingHooks";
+import { useFirstTouch } from "../shared/firstTouch";
 import "../styles/globals.css";
 import * as fullstory from "@fullstory/browser";
 import Analytics from "@/components/Analytics";
@@ -39,6 +40,9 @@ type DefaultProps = PageProps & DocsLayoutProps & CaseStudyLayoutProps;
 function MyApp({ Component, pageProps }: AppProps<DefaultProps>) {
   const router = useRouter();
   const { anonymousID, existing } = useAnonymousID();
+  // Capture/persist first-touch attribution (utm_*, ref, landing_url, referrer).
+  // The hook is a no-op on subsequent visits because the cookie already exists.
+  useFirstTouch();
 
   // Temp Layout swapping before we move to "app" dir
   // Use router.pathname (not asPath) to check for 404 so the layout is

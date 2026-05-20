@@ -30,7 +30,7 @@ The Inngest MCP server runs locally with your dev server and requires no externa
 The MCP server is automatically available when you start the Inngest dev server:
 
 ```bash
-npx --ignore-scripts=false inngest-cli@latest dev
+inngest dev
 ```
 
 The MCP endpoint will be available at `http://127.0.0.1:8288/mcp`
@@ -211,11 +211,11 @@ export const handleSignup = inngest.createFunction(
     const user = await step.run("create-user", async () => {
       return createUser(event.data.email);
     });
-    
+
     await step.run("send-welcome-email", async () => {
       return sendWelcomeEmail(user.email);
     });
-    
+
     return { success: true, userId: user.id };
   }
 );
@@ -262,7 +262,7 @@ The AI can:
 ### Common Issues
 
 **MCP server not found**
-- Ensure the Inngest dev server is running: `npx --ignore-scripts=false inngest-cli@latest dev`
+- Ensure the Inngest dev server is running: `inngest dev`
 - Verify the MCP endpoint is accessible: `curl http://127.0.0.1:8288/mcp`
 - Check your MCP client configuration
 
@@ -345,7 +345,7 @@ pattern: 1,
 ## Related Concepts
 
 - [Inngest Functions](/docs/features/inngest-functions): Learn how to create and configure functions
-- [Event Triggers](/docs/features/events-triggers): Understanding event-driven architectures  
+- [Event Triggers](/docs/features/events-triggers): Understanding event-driven architectures
 - [Local Development](/docs/local-development): Setting up your development environment
 - [Testing Functions](/docs/reference/testing): Comprehensive testing strategies
 - [Dev Server](/docs/dev-server): Complete dev server documentation

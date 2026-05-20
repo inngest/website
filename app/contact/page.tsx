@@ -2,7 +2,8 @@ import { type Metadata } from "next";
 
 import Container from "src/shared/layout/Container";
 import Quote from "src/components/Quote";
-import ContactForm, { FORM_TYPE } from "src/components/ContactForm";
+import ContactForm from "src/components/ContactForm";
+import { FORM_TYPE } from "src/components/ContactForm.constants";
 import { RiLifebuoyLine } from "@remixicon/react";
 import { generateMetadata } from "src/utils/social";
 

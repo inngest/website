@@ -1,0 +1,126 @@
+---
+heading: "How I Built an MTG Deck Analyzer with TanStack Start and Inngest"
+subtitle: "I was looking for a side project to test some real concurrency. A Commander deck analyzer turned out to be the perfect excuse. Here's how I used Inngest's durable functions and Realtime to fan out parallel steps and stream results live to the UI."
+showSubtitle: true
+image: /assets/blog/how-i-built-an-mtg-deck-analyzer-with-tanstack-start-and-inngest/featured-image/featured-image.jpg
+date: 2026-05-01
+category: engineering
+author: Linell Bonnette
+---
+
+[Live project:](https://mtg.thelinell.com/) *Paste a Moxfield decklist and watch card images, prices, salt scores, a WotC bracket classification, a composition report, and a Claude-written roast stream in as Inngest fans the work out.*
+
+I was fishing for a side project — something concurrent, ideally in Go — and my friend Michael pitched me his long-simmering Commander deck-building tool: feed it a decklist, get back EDHREC salt scores, a bracket classification, card replacement suggestions, the whole deal. I immediately thought "Inngest demo," and you're looking at the result.
+
+For the uninitiated: Magic: The Gathering (MTG) is a trading card game where players build and battle with custom decks. Commander is one of its most popular formats—each player builds a 100-card deck around a legendary creature, and games are typically multiplayer free-for-alls. A deck analyzer takes your list and tells you things the raw cards don't: how annoying your deck is to play against (salt score), how powerful it is relative to the format (bracket), and whether your fundamental ratios of card draw, ramp, and removal are where they should be.
+
+So, what did I actually build?
+
+Inside the analyzer I now have: card images and prices from Scryfall, EDHREC salt scores, a WotC bracket classification built from four parallel signal checks (Game Changers, tutors, mass land denial, combos via Commander Spellbook), a ramp/draw/removal/board-wipe composition report scored against conventional deckbuilding targets, and a paragraph of Claude-written commentary at the end.
+
+Paste a Moxfield export, watch it all stream in, get roasted.
+
+![image.png](/assets/blog/how-i-built-an-mtg-deck-analyzer-with-tanstack-start-and-inngest/images/inline-1.png)
+
+### How I Used Inngest to Orchestrate the Analysis
+
+This is really an excuse to show off Inngest. The whole analysis is a single durable function with several parallel fan-outs that meet at a `Promise.all`:
+
+- Scryfall enrichment runs in 8-card batches, so each batch is its own `step.run` — retries, caching, and visible concurrency all come for free.
+- EDHREC salt lookups fan out one step per unique card, in parallel with the Scryfall work.
+- Four bracket signal checks (Game Changers, tutors, mass land denial, combos) run as four more parallel legs, each publishing to the realtime channel as it lands; a classifier step consumes all four once they resolve.
+- A composition step pulls Scryfall oracle tags for ramp, draw, removal, and board wipes and scores the counts against conventional targets.
+- A final `ai-review` step hands the enriched deck to Claude for a pithy paragraph.
+
+Fan-out is just `Promise.all` over `step.run`. Here's the salt leg in full:
+
+```tsx
+const saltWork = Promise.all(
+  uniqueNames.map((name) =>
+    step.run(`salt-${name}`, async () => {
+      const salt = await fetchSaltScore(name);
+      await inngest.realtime.publish(ch["card:salt"], { runId, name, salt });
+      return { name, salt };
+    }),
+  ),
+);
+```
+
+That's the whole pattern — give each step a stable ID and Inngest runs them in parallel, retries failures in isolation, memoizes their results across replays, and surfaces every leg in the dashboard. A deck with 99 unique cards produces 99 independent steps with zero extra plumbing. It's a silly example, but the ergonomics are the point: the same shape holds whether you're hitting EDHREC 99 times or kicking off 10,000 background jobs.
+
+The retries aren't theoretical, either. Scryfall will happily 429 you on a bigger deck, and because each batch is its own step, Inngest just backs off and retries the offending batch — the rest of the fan-out keeps moving, and I didn't write a line of code to make that happen.
+
+External calls degrade gracefully, too. Warm cache hits get published before the Scryfall POST even fires, so an outage during a re-analysis still renders every card we've seen before. On a fresh run, if Commander Spellbook or the Scryfall tagger is unreachable, the relevant panel shows "unknown" and the rest of the run still finishes.
+
+One confession: the 8-card batch size and the 120ms publish stagger inside each batch are both smaller and slower than they need to be. Scryfall's collection endpoint happily takes 75 identifiers at a time, and nothing forces the publishes apart — I tuned both down so the fan-out actually looks concurrent in the demo instead of landing as one indistinguishable flash. Demo affordances, not advice.
+
+### How Inngest Realtime Works: Typed Streaming from Step to UI
+
+The other reason Inngest earns its keep here is [Realtime](https://www.inngest.com/docs/features/realtime). Every intermediate result — each card, each salt score, each bracket signal — is published the instant its step resolves, so the UI fills in as the function runs rather than waiting for the whole thing to finish.
+
+The way it works: your function publishes to a named channel as each step completes, and your frontend subscribes to that channel. There's no polling, no manually managed WebSocket connection, no separate pub/sub infrastructure. Inngest handles the transport; you just declare what you want to publish and subscribe to.
+
+The channel declares every topic up front with a Zod schema, keyed to the browser tab:
+
+```tsx
+export const deckChannel = channel({
+  name: (pageId: string) => `deck.${pageId}`,
+  topics: {
+    "card:salt": {
+      schema: z.object({
+        runId: z.string(),
+        name: z.string(),
+        salt: z.number().nullable(),
+      }),
+    },
+    "bracket:signal": {
+      schema: z.object({
+        runId: z.string(),
+        signal: bracketSignalSchema,
+      }),
+    },
+    // card:ready, bracket:verdict, composition:ready, deck:review, run:done
+  },
+});
+```
+
+Publishing from inside a step is one line, and the payload is validated against the topic's schema at runtime:
+
+```tsx
+const ch = deckChannel(pageId);
+await inngest.realtime.publish(ch["card:salt"], { runId, name, salt });
+```
+
+The client uses the same channel definition, so `subscribe()` narrows each message to its topic's payload type automatically:
+
+```tsx
+const sub = await subscribe({
+  channel: `deck.${pageId}`,
+  topics: ["card:ready", "card:salt", "bracket:signal" /* ... */],
+  onMessage: (message) => {
+    switch (message.topic) {
+      case "card:salt": {
+        const { name, salt } = message.data; // fully typed
+        updateSalt(name, salt);
+        break;
+      }
+      // ...
+    }
+  },
+});
+```
+
+The channel is the contract between your function and your frontend. A new topic is only a few lines on each side. The fact that it's all TypeScript means if you rename a topic or change a payload shape, the compiler tells you everywhere that needs updating.
+
+This is what makes the streaming feel live rather than batched — each of the 99 salt lookups publishes individually as it resolves, so cards populate one by one as the function runs. The bracket signals appear as each of the four parallel legs finishes. The UI isn't waiting on a single response; it's reacting to a stream of typed events from a running function.
+
+### Stack
+
+- [TanStack Start](https://tanstack.com/start) (React 19, Vite, file-based routing) for the frontend and API routes
+- [Inngest](https://www.inngest.com/) for durable functions and realtime streaming
+- [Scryfall](https://scryfall.com/docs/api) for card data and oracle tags, [EDHREC](https://edhrec.com/) for salt scores, [Commander Spellbook](https://commanderspellbook.com/) for combo detection
+- Claude for the deck review
+- Tailwind, Biome, Vitest
+- Cloudflare Workers via Wrangler for deploys
+
+I'm biased, obviously, but TypeScript + Inngest + Cloudflare was a pleasure for this — the parts I wanted to stay boring stayed boring.

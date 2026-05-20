@@ -7,7 +7,7 @@ export const description = 'Query and analyze event and run data with SQL in the
 Inngest Insights allows you to query and analyze your event and function run data using SQL directly within the Inngest platform. Every event sent to Inngest and every function run contains valuable information, and Insights gives you the power to extract meaningful patterns and analytics from that data.
 
 <Info>
-  Insights support is currently in Public Beta. Some details including SQL syntax and feature availability are still subject to change during this period. Read more about the [Public Beta release phase here](/docs/release-phases#public-beta) and the [roadmap here](#roadmap).
+  Insights is currently in Public Beta. Read more about the [Public Beta release phase here](/docs/release-phases#private-public-beta).
 </Info>
 
 ## Overview
@@ -114,7 +114,7 @@ The `runs` table contains data about your function executions. This allows you t
 </Info>
 
 <Warning>
-  Due to a temporary limitation with `function_id` and `app_id`, you will not be able to query on partial strings (e.g., using `LIKE`) and sorting may be out of order.
+  Due to a limitation with `function_id` and `app_id`, you will not be able to query on partial strings (e.g., using `LIKE`) and sorting may be out of order.
 </Warning>
 
 ### Steps & Step Attempts Tables
@@ -126,7 +126,7 @@ The `steps` and `step_attempts` tables contain data about your functions' step e
 | `run_id` | String | Unique identifier for the run (ULID) |
 | `app_id` | String | The app ID as defined in your app |
 | `function_id` | String | The "fully qualified" function ID. This is the app ID concatenated to the function ID as defined in your app with a `-` (e.g., `my-app-my-function`) |
-| `type` | String | Step type: StepRun, StepPlanned, StepFailed, InvokeFunction, Sleep, AIGateway, StepError |
+| `type` | String | Step type: run, sendEvent, waitForEvent, sleep, invoke, sendSignal, waitForSignal, fetch, aiInfer, aiWrap, realtimePublish |
 | `name` | String | The name of the step which is the same as id unless an explicit display name is provided |
 | `id` | String | The id used when creating the step like `step.run('<id>', ...)` |
 | `loop_index` | Int | The index for repeated steps |
@@ -146,7 +146,7 @@ The `steps` and `step_attempts` tables contain data about your functions' step e
 </Info>
 
 <Warning>
-  Due to a temporary limitation with `function_id` and `app_id`, you will not be able to query on partial strings (e.g., using `LIKE`) and sorting may be out of order.
+  Due to a limitation with `function_id` and `app_id`, you will not be able to query on partial strings (e.g., using `LIKE`) and sorting may be out of order.
 </Warning>
 
 ### Extended Trace Spans Table
@@ -179,7 +179,7 @@ The `extended_trace_spans` table contains [Extended Trace](/docs/platform/monito
 </Info>
 
 <Warning>
-  Due to a temporary limitation with `function_id` and `app_id`, you will not be able to query on partial strings (e.g., using `LIKE`) and sorting may be out of order.
+  Due to a limitation with `function_id` and `app_id`, you will not be able to query on partial strings (e.g., using `LIKE`) and sorting may be out of order.
 </Warning>
 
 ### Data Retention
@@ -189,7 +189,6 @@ Refer to [pricing plans](/pricing) for data retention limits.
 ### Result Limits
 
 - Current page limit: **1000 rows**
-- Future updates will support larger result sets through async data exports
 
 ## Schema Explorer
 
@@ -225,11 +224,20 @@ For analyzing event timing and patterns.
 [View ClickHouse date/time functions documentation](https://clickhouse.com/docs/sql-reference/functions/date-time-functions)
 
 #### Other Supported Function Categories
+- [Conditional functions](https://clickhouse.com/docs/sql-reference/functions/conditional-functions) — `if`, `multiIf`, `greatest`, `least`, `clamp`
+- [Mathematical functions](https://clickhouse.com/docs/sql-reference/functions/math-functions) — trig, log/exp, `sqrt`, `pow`, `sign`, `factorial`, and more
+- [Array functions](https://clickhouse.com/docs/sql-reference/functions/array-functions) — construct, access, sort, and aggregate arrays; includes `has`, `hasAny`, `hasAll`, and `arrayJoin`
+- [Map functions](https://clickhouse.com/docs/sql-reference/functions/map-functions) — `map`, `mapKeys`, `mapValues`, `mapAdd`, `mapContains`, and more
+- [Tuple functions](https://clickhouse.com/docs/sql-reference/functions/tuple-functions) — `tuple`, `tupleElement`, arithmetic on tuples, `dotProduct`, `untuple`, and more
 - [Logical functions](https://clickhouse.com/docs/sql-reference/functions/logical-functions)
 - [Rounding functions](https://clickhouse.com/docs/sql-reference/functions/rounding-functions)
 - [Type conversion functions](https://clickhouse.com/docs/sql-reference/functions/type-conversion-functions)
 - [Functions for nulls](https://clickhouse.com/docs/sql-reference/functions/functions-for-nulls)
 - [ULID functions](https://clickhouse.com/docs/sql-reference/functions/ulid-functions)
+- [UUID functions](https://clickhouse.com/docs/sql-reference/functions/uuid-functions)
+- [Bit functions](https://clickhouse.com/docs/sql-reference/functions/bit-functions)
+- [Hash functions](https://clickhouse.com/docs/sql-reference/functions/hash-functions)
+- [Encoding functions](https://clickhouse.com/docs/sql-reference/functions/encoding-functions)
 
 ### Aggregate Functions
 
@@ -237,17 +245,40 @@ The following aggregate functions are supported:
 
 | Function | Description |
 |----------|-------------|
-| `ARRAY_AGG()` | [Aggregates values into an array](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/grouparray)  * |
+| `ARRAY_AGG()` / `groupArray()` | [Aggregates values into an array](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/grouparray) |
 | `AVG()` | [Calculates average](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/avg) |
+| `avgWeighted()` | [Weighted average](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/avgweighted) |
+| `any()` | [Returns an arbitrary value from the group](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/any) |
+| `anyLast()` | [Returns the last value in the group](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/anylast) |
+| `argMin(val, key)` | [Returns `val` for the row with the minimum `key`](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/argmin) |
+| `argMax(val, key)` | [Returns `val` for the row with the maximum `key`](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/argmax) |
 | `COUNT()` | [Counts rows](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/count) |
 | `MAX()` | [Finds maximum value](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/max) |
 | `MIN()` | [Finds minimum value](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/min) |
+| `median()` | [Approximate median](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/median) |
+| `quantile(level)(val)` | [Approximate quantile at a given level (e.g. `quantile(0.95)(duration_ms)`)](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/quantile) |
+| `quantiles(l1, l2, ...)(val)` | [Multiple quantiles in a single pass](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/quantiles) |
 | `STDDEV_POP()` | [Population standard deviation](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/stddevpop) |
 | `STDDEV_SAMP()` | [Sample standard deviation](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/stddevsamp) |
 | `SUM()` | [Calculates sum](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/sum) |
 | `VAR_POP()` | [Population variance](https://clickhouse.com/docs/en/sql-reference/aggregate-functions/reference/varPop) |
 | `VAR_SAMP()` | [Sample variance](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/varSamp) |
-| `median()` | [Finds median value](https://clickhouse.com/docs/sql-reference/aggregate-functions/reference/median) |
+
+### Aggregate Function Combinators
+
+Most aggregate functions support combinators that modify their behavior by appending a suffix:
+
+| Combinator | Effect |
+|------------|--------|
+| `If` | Adds a condition — e.g. `countIf(status = 'Failed')` |
+| `OrNull` | Returns `NULL` instead of a default when there are no rows |
+| `OrDefault` | Returns the type's default value instead of `NULL` when there are no rows |
+| `ArgMin` / `ArgMax` | Adds `argMin`/`argMax` semantics to an existing aggregate |
+| `ForEach` | Applies the aggregate to each element of an array column |
+| `Array` | Takes array columns as input instead of individual values |
+| `Map` | Applies the aggregate per key of a `Map` column |
+
+[View ClickHouse combinator documentation](https://clickhouse.com/docs/sql-reference/aggregate-functions/combinators)
 
 
 ## Working with JSON Data
@@ -349,23 +380,9 @@ Shared queries will be added to a `Shared queries` navigation dropdown within th
 ![Share With Org](/assets/docs/platform/monitor/insights/insights_share_with_org.png)
 ![Shared Queries Navigation](/assets/docs/platform/monitor/insights/insights_shared_queries.png)
 
-## Roadmap
-
-### Coming Soon
-- Pagination for large result sets
-- Async data exports for results larger than 1000 rows
-
-### Future Enhancements
-- Support for CTEs (Common Table Expressions)
-- Advanced visualization capabilities and dashboards
-
 ## Need Help?
 
 If you encounter issues or have questions about Insights:
 1. Check this documentation for common solutions
 2. Review the [ClickHouse SQL reference](https://clickhouse.com/docs/sql-reference/) for advanced function usage
 3. Contact support through the Inngest platform
-
----
-
-*Insights is actively under development. Features and column names may change as we continue to improve the product.*

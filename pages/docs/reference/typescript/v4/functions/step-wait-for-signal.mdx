@@ -23,10 +23,13 @@ and any data you want to inject into the function run.
           <Property name="signal" type="string" required>
             A unique identifier for the signal, used to resume this function run.
           </Property>
-          <Property name="timeout" type="string | Date" required>
+          <Property name="timeout" type="string | number | Date | Temporal.Duration | Temporal.Instant | Temporal.ZonedDateTime" required>
             How long to wait to receive the signal. Either:
-            - A duration string compatible with the [ms](https://npm.im/ms) package, e.g. `"30m"`, `"3 hours"`, or `"2.5d"`, or
-            - An absolute `Date`.
+            - A duration string compatible with the [ms](https://npm.im/ms) package, e.g. `"30m"`, `"3 hours"`, or `"2.5d"`,
+            - A `number` of milliseconds,
+            - An absolute `Date`,
+            - A [`Temporal.Duration`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Temporal/Duration) for a relative wait, or
+            - A [`Temporal.Instant`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Temporal/Instant) or [`Temporal.ZonedDateTime`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Temporal/ZonedDateTime) for an absolute deadline.
 
             If the signal is not received before this timeout, the run will resume with an undefined return value.
           </Property>

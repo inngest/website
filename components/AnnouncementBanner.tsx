@@ -32,20 +32,17 @@ const Banner: React.FC<Props> = ({ href, children, className }) => (
     <span className="rotate-45">
       <RiRocket2Fill className="h-4 w-4 group-hover:animate-[wiggle_200ms_ease-in-out_infinite]" />
     </span>
-    <span className="underline decoration-[rgba(var(--color-carbon-0)/0.5)] underline-offset-2 transition-colors group-hover:decoration-[rgba(var(--color-carbon-0)/1)]">
+    <span>
       {children}
     </span>
   </a>
 );
 
 export default function AnnouncementBanner() {
-  // // Return null if we want to disable the banner
-  return null;
-
-  // return (
-  //   <Banner href="https://luma.com/5bi1om1r">
-  //     <strong>Join us this Friday, Feb 20</strong> for a Durable Endpoints live
-  //     coding session.
-  //   </Banner>
-  // );
+  return (
+    <Banner href="https://www.inngest.com/content/ai-in-production-report-2026?ref=site-banner">
+      What are the most confident teams using to build AI? →{" "}
+      <strong className="underline underline-offset-2">2026 Benchmark Report</strong>
+    </Banner>
+  );
 }

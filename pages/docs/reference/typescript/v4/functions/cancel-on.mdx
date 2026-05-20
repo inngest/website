@@ -103,10 +103,13 @@ Match expressions can be simple equalities or be more complex. Read [our guide t
 
         * `event.data.userId == async.data.userId && async.data.billing_plan == 'pro'`
       </Property>
-      <Property name="timeout" type="string | Date">
+      <Property name="timeout" type="string | number | Date | Temporal.Duration | Temporal.Instant | Temporal.ZonedDateTime">
         How long to wait to receive the cancelling event. Either:
-        - A duration string compatible with the [ms](https://npm.im/ms) package, e.g. `"30m"`, `"3 hours"`, or `"2.5d"`, or
-        - An absolute `Date`.
+        - A duration string compatible with the [ms](https://npm.im/ms) package, e.g. `"30m"`, `"3 hours"`, or `"2.5d"`,
+        - A `number` of milliseconds,
+        - An absolute `Date`,
+        - A [`Temporal.Duration`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Temporal/Duration) for a relative wait, or
+        - A [`Temporal.Instant`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Temporal/Instant) or [`Temporal.ZonedDateTime`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Temporal/ZonedDateTime) for an absolute deadline.
       </Property>
     </Properties>
   </Property>

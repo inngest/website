@@ -1,7 +1,8 @@
 export const featuredBlogPost = {
-  title: "Inngest + Stripe Projects: Ship Durable Apps Without Leaving the Terminal",
-  image: "/assets/blog/inngest-stripe-projects/featured-image/featured-image.png",
+  title: "AI in Production: The 2026 Benchmark Report",
+  image:
+    "/assets/blog/ai-in-production-report-2026-card/featured-image/featured-image.png",
   description:
-    "Inngest is an official launch partner for Stripe Projects—a new agent-first protocol for standing up production stacks without hopping between dashboards, digging around docs, or copying keys.",
-  href: "/blog/inngest-stripe-projects-ship-durable-apps-without-leaving-the-terminal?ref=nav-resources-featured",
+    "We surveyed 130 backend, full-stack, and AI engineers about what it takes to run reliable AI workflows in production—and which choices actually reduce the burden of reliability.",
+  href: "/content/ai-in-production-report-2026?ref=nav-resources-featured",
 };
