@@ -386,6 +386,11 @@ async function redirects() {
       destination: process.env.NEXT_PUBLIC_SIGNUP_URL,
       permanent: true,
     },
+    {
+      source: "/patterns",
+      destination: "/patterns/flash-sales-and-bursty-workflows",
+      permanent: false,
+    },
   ];
 }
 
@@ -456,11 +461,6 @@ async function rewrites() {
     {
       source: "/docs-markdown/reference/typescript/:path((?!v3|v4).+)",
       destination: `/docs-markdown/reference/typescript/${TS_STABLE_VERSION}/:path`,
-    },
-    {
-      source: "/patterns",
-      destination: "/patterns/flash-sales-and-bursty-workflows",
-      permanent: false,
     },
     {
       source: "/patterns/md",
