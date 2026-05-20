@@ -7,58 +7,23 @@ Allow: /
 # See also: /llms.txt, /llms-full.txt, /ai.txt
 
 User-agent: GPTBot
-Allow: /docs/
-Allow: /blog/
-Allow: /patterns/
-Allow: /llms.txt
-Allow: /llms-full.txt
-Allow: /docs-markdown/
-Disallow: /app/
-
 User-agent: ChatGPT-User
-Allow: /docs/
-Allow: /blog/
-Allow: /patterns/
-Allow: /llms.txt
-Allow: /llms-full.txt
-Allow: /docs-markdown/
-Disallow: /app/
-
 User-agent: ClaudeBot
-Allow: /docs/
-Allow: /blog/
-Allow: /patterns/
-Allow: /llms.txt
-Allow: /llms-full.txt
-Allow: /docs-markdown/
-Disallow: /app/
-
-User-agent: Google-Extended
-Allow: /
-
 User-agent: PerplexityBot
-Allow: /docs/
-Allow: /blog/
-Allow: /patterns/
-Allow: /llms.txt
-Allow: /llms-full.txt
-Allow: /docs-markdown/
-Disallow: /app/
-
 User-agent: Amazonbot
-Allow: /docs/
-Allow: /blog/
-Allow: /patterns/
-Disallow: /app/
-
-User-agent: Bytespider
-Disallow: /
-
 User-agent: CCBot
 Allow: /docs/
 Allow: /blog/
 Allow: /patterns/
-Disallow: /app/
+Allow: /llms.txt
+Allow: /llms-full.txt
+Allow: /docs-markdown/
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Bytespider
+Disallow: /
 
 # Host
 Host: https://www.inngest.com
