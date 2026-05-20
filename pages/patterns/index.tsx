@@ -72,7 +72,7 @@ export async function getStaticProps() {
         title: "Patterns: How to build with Inngest",
         description:
           "Production-tested patterns for AI agents, durable workflows, and the event-driven systems they live in.",
-        image: "/assets/patterns/og-image-patterns.jpg",
+        image: "/assets/homepage/open-graph-june-2025.png",
       },
     },
   };
@@ -139,7 +139,7 @@ export default function Patterns({
           <div className="flex flex-col gap-1.5">
             <span className="font-mono text-4xl text-basis">{totalPatterns}</span>
             <span className="font-mono text-[11px] uppercase tracking-widest text-muted">
-              Patterns
+              Primitives
             </span>
           </div>
           <div className="flex flex-col gap-1.5">
@@ -147,7 +147,7 @@ export default function Patterns({
               {sections.length}
             </span>
             <span className="font-mono text-[11px] uppercase tracking-widest text-muted">
-              Primitives
+              Categories
             </span>
           </div>
           <div className="flex flex-col gap-1.5">
