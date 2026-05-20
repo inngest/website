@@ -69,12 +69,6 @@ export default function Featured({ featured, section, pattern }: Props) {
                 />
               </svg>
             </Link>
-            <Link
-              href={`/patterns#${section.id}`}
-              className="featured-card-cta-secondary"
-            >
-              More in {section.name}
-            </Link>
           </div>
         </div>
 

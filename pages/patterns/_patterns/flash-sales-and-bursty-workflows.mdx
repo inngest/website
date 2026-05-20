@@ -68,7 +68,7 @@ export const generateShippingLabel = inngest.createFunction(
 
 - Change `limit` and `period` to match your API's published rate limit. Leave 10-20% headroom.
 - Set `key` to whatever dimension your rate limit applies to (API key, account, carrier, region). Omit `key` if the limit is global.
-- Runs over the limit are enqueued and execute when capacity is available.
+- Throttled runs are queued and processed in order once capacity is available.
 
 ---
 
@@ -153,10 +153,10 @@ export const syncOrderToFulfillment = inngest.createFunction(
     },
   },
   async ({ event, step }) => {
-    // event contains the *last* event after the debounce window closes,
-    // so we're always working with the most recent data.
-
-    // Fetch the current order state, not the potentially stale event payload.
+    // event contains the *last* event fired before the debounce window closed.
+    // However, that event payload can be stale by the time the function fires
+    // (the debounce window itself adds latency). Refetch the current state to
+    // guarantee you're working with the authoritative record, not a snapshot.
     const order = await step.run("fetch-latest-order", async () => {
       return await shopify.orders.get(event.data.order_id);
     });
@@ -195,6 +195,7 @@ export const capturePayment = inngest.createFunction(
   {
     id: "capture-payment",
     triggers: [{ event: "payment/authorized" }],
+    // payment_id is our internal dedup key; payment_intent_id is Stripe's identifier
     idempotency: "event.data.payment_id",   // one execution per payment, guaranteed
   },
   async ({ event, step }) => {
@@ -248,7 +249,8 @@ export const fulfillOrder = inngest.createFunction(
     id: "fulfill-order",
     triggers: [{ event: "order/fulfillment.ready" }],
 
-    // Don't process the same webhook twice
+    // Don't process the same webhook twice.
+    // idempotency_key is set at the event source — often a webhook delivery ID.
     idempotency: "event.data.idempotency_key",
 
     // Wait for rapid-fire order updates to settle

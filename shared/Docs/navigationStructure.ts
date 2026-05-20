@@ -889,6 +889,10 @@ const sectionLearn: (NavGroup | NavLink)[] = [
             href: `/docs/events`,
           },
           {
+            title: "Event payload format",
+            href: `/docs/features/events-triggers/event-format`,
+          },
+          {
             title: "Writing expressions",
             href: `/docs/guides/writing-expressions`,
           },

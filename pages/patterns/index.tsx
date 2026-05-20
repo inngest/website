@@ -139,15 +139,13 @@ export default function Patterns({
           <div className="flex flex-col gap-1.5">
             <span className="font-mono text-4xl text-basis">{totalPatterns}</span>
             <span className="font-mono text-[11px] uppercase tracking-widest text-muted">
-              Primitives
+              Patterns
             </span>
           </div>
           <div className="flex flex-col gap-1.5">
-            <span className="font-mono text-4xl text-basis">
-              {sections.length}
-            </span>
+            <span className="font-mono text-4xl text-basis">5</span>
             <span className="font-mono text-[11px] uppercase tracking-widest text-muted">
-              Categories
+              Primitives
             </span>
           </div>
           <div className="flex flex-col gap-1.5">
