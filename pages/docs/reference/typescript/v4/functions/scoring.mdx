@@ -1,0 +1,145 @@
+import { Callout, Properties, Property, Row, Col } from "src/shared/Docs/mdx";
+
+export const description = "API reference for scoring function runs and steps in Inngest."
+
+# Scoring
+
+Score function runs and steps to track how well your workflows perform over time.
+
+<Callout variant="info">
+  Scoring is in beta. Install the latest SDK with `npm install inngest@latest`.
+</Callout>
+
+---
+
+## `inngest.score(options)`
+
+Score a run or step. Can be called inside or outside a function.
+
+<Properties>
+  <Property name="name" type="string" required>
+    A label for the score. Use consistent names across runs for aggregation. Examples: `"accuracy"`, `"user-feedback"`, `"guardrail-pass"`.
+  </Property>
+  <Property name="value" type="number" required>
+    The score value. Numeric. Use 0-1 for percentages, integers for counts, or any range that fits your use case.
+  </Property>
+  <Property name="runId" type="string">
+    The run to score. Required when scoring from outside a function. Omit when scoring the current run from inside a function.
+  </Property>
+  <Property name="stepId" type="string">
+    The step to score. Optional. When provided, the score attaches to that specific step in the trace view.
+  </Property>
+</Properties>
+
+```ts
+// Score the current run (inside a function)
+await inngest.score({ name: "accuracy", value: 0.9 });
+
+// Score a specific run (from anywhere)
+await inngest.score({ name: "accuracy", value: 0.9, runId: "01ABC..." });
+
+// Score a specific step
+await inngest.score({
+  name: "accuracy",
+  value: 0.9,
+  runId: "01ABC...",
+  stepId: "generate-summary",
+});
+```
+
+---
+
+## `step.score(options)`
+
+Score the current run from within a step context. Same options as `inngest.score()` but `runId` is automatically set to the current run.
+
+<Properties>
+  <Property name="name" type="string" required>
+    Score label.
+  </Property>
+  <Property name="value" type="number" required>
+    Score value.
+  </Property>
+</Properties>
+
+```ts
+await step.score({ name: "guardrail-pass", value: 1 });
+```
+
+---
+
+## `createScorer(client, config, handler)`
+
+Create a reusable deferred scorer. Returns an Inngest function that can be triggered via `defer()`.
+
+Imported from `inngest/experimental`.
+
+<Properties>
+  <Property name="client" type="Inngest" required>
+    Your Inngest client instance.
+  </Property>
+  <Property name="config" type="object" required>
+    <Properties nested>
+      <Property name="id" type="string" required>
+        Unique identifier for the scorer function.
+      </Property>
+      <Property name="schema" type="ZodSchema" required>
+        Zod schema defining the input data the scorer expects.
+      </Property>
+    </Properties>
+  </Property>
+  <Property name="handler" type="function" required>
+    Async function that receives `event` and `step`, and returns `{ name: string, value: number }`.
+  </Property>
+</Properties>
+
+```ts
+import { createScorer } from "inngest/experimental";
+import { z } from "zod";
+
+export const verbosityScorer = createScorer(
+  inngest,
+  { id: "verbosity-scorer", schema: z.object({ text: z.string() }) },
+  async ({ event }) => {
+    const wordCount = event.data.input.text.split(" ").length;
+    return { name: "verbosity", value: wordCount };
+  }
+);
+```
+
+---
+
+## `defer(id, options)`
+
+Trigger a deferred scorer from inside a function. Available as a handler argument.
+
+<Properties>
+  <Property name="id" type="string" required>
+    A deterministic identifier for this deferred call.
+  </Property>
+  <Property name="options" type="object" required>
+    <Properties nested>
+      <Property name="function" type="InngestFunction" required>
+        The scorer function to trigger.
+      </Property>
+      <Property name="data" type="object" required>
+        Input data matching the scorer's schema.
+      </Property>
+    </Properties>
+  </Property>
+</Properties>
+
+```ts
+defer("score-feedback", {
+  function: feedbackScorer,
+  data: { ticketId: "tk_123", runId: "run_456" },
+});
+```
+
+---
+
+## Further reading
+
+- [Score a function run](/docs/features/inngest-functions/steps-workflows/scoring)
+- [Build a deferred scorer](/docs/features/inngest-functions/steps-workflows/deferred-scoring)
+- [Run experiments](/docs/features/inngest-functions/steps-workflows/running-experiments)
