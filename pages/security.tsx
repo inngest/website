@@ -58,7 +58,7 @@ const Security = () => {
                   </a>{" "}
                   or{" "}
                   <a
-                    href="/contact?ref=security"
+                    href="mailto:hello@inngest.com"
                     className="font-medium text-link hover:underline"
                   >
                     contact us
@@ -254,6 +254,19 @@ const Security = () => {
                 If you have any questions, comments or concerns or if you wish
                 to report a potential security issue, please contact{" "}
                 <a href="mailto:security@inngest.com">security@inngest.com</a>.
+                We do offer bounties for qualifying, valid reports of system or
+                SDK vulnerabilities.
+              </p>
+              <p>
+                For encrypted communication, our{" "}
+                <a href="https://age-encryption.org">
+                  <code>age</code>
+                </a>{" "}
+                public key is{" "}
+                <code>
+                  age1ljrw40qggulsgau0wgduh3mpkahwnjaaakm206wlmdh72x2a3p0sps6q9p
+                </code>
+                .
               </p>
               <p>
                 In order to ensure security reports are actionable and to

@@ -4,10 +4,14 @@ import Script from "next/script";
 import { usePathname, useSearchParams } from "next/navigation";
 
 import { useAnonymousID } from "src/shared/trackingHooks";
+import { useFirstTouch } from "src/shared/firstTouch";
 import { trackPageView } from "src/utils/tracking";
 
 export function PageViews() {
   const { anonymousID, existing } = useAnonymousID();
+  // Capture/persist first-touch attribution (utm_*, ref, landing_url, referrer).
+  // The hook is a no-op on subsequent visits because the cookie already exists.
+  useFirstTouch();
 
   return (
     <Script
@@ -43,20 +47,3 @@ export function PageViews() {
   );
 }
 
-export function HeaderInit() {
-  return (
-    <script
-      // We use a simple array queue to send any events after the SDK is loaded
-      // These are sent onLoad where the script is loaded in _app.js
-      type="text/javascript"
-      dangerouslySetInnerHTML={{
-        __html: `
-          window._inngestQueue = [];
-          if (typeof window.Inngest === "undefined") {
-            window.Inngest = { event: function(p){ window._inngestQueue.push(p); } };
-          }
-        `,
-      }}
-    />
-  );
-}

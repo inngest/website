@@ -6,7 +6,7 @@ module.exports = ({ theme }) => ({
       "--tw-prose-links": "rgb(var(--color-foreground-link))",
       "--tw-prose-links-hover": "rgb(var(--color-foreground-link))",
       "--tw-prose-links-underline": "rgb(var(--color-foreground-link))",
-      "--tw-prose-counters": "rgb(--color-foreground-muted))",
+      "--tw-prose-counters": "rgb(var(--color-foreground-muted))",
       "--tw-prose-bullets": "rgb(var(--color-foreground-muted))",
       "--tw-prose-hr": "rgb(var(--color-border-subtle))",
       "--tw-prose-quotes": "rgb(var(--color-foreground-base))",

@@ -592,7 +592,7 @@ const sectionReference: (NavGroup | NavLink)[] = [
   },
   {
     title: "REST API",
-    href: "https://api-docs.inngest.com/docs/inngest-api/1j9i5603g5768-introduction",
+    href: "https://api-docs.inngest.com",
   },
   {
     title: "System events",
@@ -701,12 +701,12 @@ const sectionLearn: (NavGroup | NavLink)[] = [
         links: [
           {
             title: "Overview",
-            href: `/docs/learn/durable-endpoints`
+            href: `/docs/learn/durable-endpoints`,
           },
           {
             title: "Streaming",
-            href: "/docs/learn/durable-endpoints/streaming"
-          }
+            href: "/docs/learn/durable-endpoints/streaming",
+          },
         ],
         tag: "new",
       },
@@ -1098,6 +1098,14 @@ const sectionLearn: (NavGroup | NavLink)[] = [
           {
             title: "Pausing",
             href: "/docs/guides/pause-functions",
+          },
+          {
+            title: "Rotating keys",
+            href: "/docs/platform/manage/rotating-keys",
+          },
+          {
+            title: "API keys",
+            href: "/docs/platform/api-keys",
           },
         ],
       },

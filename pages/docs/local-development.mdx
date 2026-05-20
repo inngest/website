@@ -22,6 +22,12 @@ The Inngest Dev Server is a fully-featured and [open-source](https://github.com/
 You can start the dev server with a single command. The dev server will attempt to find an Inngest `serve` API endpoint by scanning ports and endpoints that are commonly used for this purpose (See "[Auto-discovery](#auto-discovery)"). Alternatively, you can specify the URL of the `serve` endpoint:
 
 <CodeGroup>
+```shell  {{ title: "Bash installer" }}
+# Install the CLI - follow the steps to complete install:
+curl -sSfL https://cli.inngest.com/install.sh | sh
+# Run the dev server
+inngest dev -u http://localhost:3000/api/inngest
+```
 ```shell {{ title: "npx (npm)" }}
 npx --ignore-scripts=false inngest-cli@latest dev
 # You can specify the URL of your development `serve` API endpoint
@@ -41,7 +47,7 @@ There are two ways to connect apps to the Dev Server:
 
 1. **Automatically**: The Dev Server will attempt to "auto-discover" apps running on common ports and endpoints (See "[Auto-discovery](#auto-discovery)").
 2. **Manually**: You scan explicitly add the URL of the app to the Dev Server using one of the following options:
-    - Using the CLI `-u` param (ex. `npx --ignore-scripts=false inngest-cli@latest dev -u http://localhost:3000/api/inngest`)
+    - Using the CLI `-u` param (ex. `inngest dev -u http://localhost:3000/api/inngest`)
     - Adding the URL in the Dev Server Apps page. You can edit the URL or delete a manually added app at any point in time
     - Using the `inngest.json` (or similar) configuration file (See "[Configuration file](#configuration-file)")
 

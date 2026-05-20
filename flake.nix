@@ -15,7 +15,7 @@
         };
         corepack = pkgs.stdenv.mkDerivation {
           name = "corepack";
-          buildInputs = [ pkgs.nodejs-18_x ];
+          buildInputs = [ pkgs.nodejs_22 ];
           phases = [ "installPhase" ];
           installPhase = ''
             mkdir -p $out/bin
@@ -29,11 +29,11 @@
 
           nativeBuildInputs = with pkgs; [
             typescript
-            nodejs_20
+            nodejs_22
 
-            nodePackages.typescript-language-server
-            nodePackages.vscode-json-languageserver
-            nodePackages.yaml-language-server
+            typescript-language-server
+            vscode-json-languageserver
+            yaml-language-server
           ];
         };
       });

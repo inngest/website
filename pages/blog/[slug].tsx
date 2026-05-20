@@ -24,6 +24,7 @@ import YouTube from "react-youtube-embed";
 import remarkGfm from "remark-gfm";
 import { SectionProvider } from "src/shared/Docs/SectionProvider";
 import FloatingCTA from "src/components/Blog/FloatingCTA";
+import { formatShortLocaleDate } from "src/utils/date";
 
 // @ts-ignore
 import { remarkCodeHike, recmaCodeHike } from "codehike/mdx";
@@ -107,7 +108,7 @@ const authorURLs = {
   "Taylor Facen": "https://twitter.com/ItsTayFay",
   "Igor Samokhovets": "https://twitter.com/IgorSamokhovets",
   "Dave Kiss": "https://twitter.com/davekiss",
-  "Bruno Scheufler": "", // "https://brunoscheufler.com", // removed while site TLS is invalid
+  "Bruno Scheufler": "https://brunoscheufler.com", // removed while site TLS is invalid
   "Lydia Hallie": "https://x.com/lydiahallie",
   "Joe Adams": "https://www.linkedin.com/in/josephadams9/",
   "Charly Poly": "https://x.com/whereischarly",
@@ -155,7 +156,7 @@ export default function BlogLayout(props) {
   let dateUpdated: string | null = null;
   try {
     dateUpdated = scope.dateUpdated
-      ? new Date(scope.dateUpdated).toLocaleDateString()
+      ? formatShortLocaleDate(scope.dateUpdated)
       : null;
   } catch (err) {
     console.log(`Could not parse updated date: ${scope.dateUpdated}`);
@@ -223,6 +224,7 @@ export default function BlogLayout(props) {
                     width={768}
                     height={768 / 2}
                     quality={95}
+                    loading="eager"
                   />
                   {scope.imageCredits && (
                     <figcaption
@@ -244,22 +246,20 @@ export default function BlogLayout(props) {
                   )}
                   <p className="mt-2 flex items-center gap-2 text-sm text-subtle">
                     {authors.map((author, idx, arr) => (
-                      <>
-                        <span>
-                          {authorURLs[author] ? (
-                            <a
-                              href={authorURLs[author]}
-                              target="_blank"
-                              className="text-subtle hover:underline"
-                            >
-                              {author}
-                            </a>
-                          ) : (
-                            <>{author}</>
-                          )}
-                          {idx < arr.length - 1 && ", "}
-                        </span>
-                      </>
+                      <span key={idx}>
+                        {authorURLs[author] ? (
+                          <a
+                            href={authorURLs[author]}
+                            target="_blank"
+                            className="text-subtle hover:underline"
+                          >
+                            {author}
+                          </a>
+                        ) : (
+                          <>{author}</>
+                        )}
+                        {idx < arr.length - 1 && ", "}
+                      </span>
                     ))}
                     {authors.length > 0 && <>&middot; </>}
                     <span className="flex items-center gap-1">
@@ -362,10 +362,7 @@ export async function getStaticPaths() {
   const matter = require("gray-matter");
   const paths = fs
     .readdirSync("./content/blog/")
-    .filter(
-      (fname: string) =>
-        fname.endsWith(".md") || fname.endsWith(".mdx")
-    )
+    .filter((fname: string) => fname.endsWith(".md") || fname.endsWith(".mdx"))
     .filter((fname: string) => {
       // Skip files that have redirect frontmatter
       let filePath = `./content/blog/${fname}`;
@@ -405,11 +402,7 @@ export async function getStaticProps({ params }) {
   data.reading = readingTime(content);
   // Format the reading date.
   if (data.date) {
-    if (typeof data.date === "string") {
-      data.humanDate = new Date(data.date).toLocaleDateString();
-    } else {
-      data.humanDate = data.date.toLocaleDateString();
-    }
+    data.humanDate = formatShortLocaleDate(data.date);
   }
 
   data.tags =

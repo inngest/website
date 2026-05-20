@@ -34,11 +34,11 @@ export default function Hero() {
                     asChild
                     className="max-[520px]:py-6 max-[520px]:text-[1.1rem]"
                   >
-                    <a
+                    <Link
                       href={`${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=homepage-hero`}
                     >
                       Start building for free
-                    </a>
+                    </Link>
                   </Button>
                   <Button
                     variant="outline"
@@ -56,7 +56,7 @@ export default function Hero() {
                 <h2 className="font-circular text-base font-light text-stone-50">
                   Trusted in production at
                 </h2>
-                <div className="mt-10 grid grid-cols-2 place-items-center gap-x-8 gap-y-8 sm:grid-cols-4 lg:flex lg:items-center lg:justify-between">
+                <div className="mt-10 grid grid-cols-3 place-items-center gap-x-8 gap-y-8 sm:grid-cols-5 lg:flex lg:items-center lg:justify-between lg:gap-x-6">
                   {[
                     {
                       src: "/assets/customers/replit-logo.svg",
@@ -89,6 +89,11 @@ export default function Hero() {
                       name: "ElevenLabs",
                       height: "1.05rem",
                     },
+                    {
+                      src: "/assets/customers/avoca-logo-white.svg",
+                      name: "Avoca",
+                      height: "1.05rem",
+                    },
                   ].map(({ src, name, height = "1.25rem" }, idx, arr) => (
                     <img
                       key={name}
@@ -96,7 +101,7 @@ export default function Hero() {
                       alt={name}
                       title={name}
                       style={{ height }}
-                      className={`w-auto opacity-80 grayscale transition-all${idx === arr.length - 1 ? " col-span-2 sm:col-span-4 lg:col-span-1" : ""}`}
+                      className="w-auto opacity-80 grayscale transition-all"
                     />
                   ))}
                 </div>

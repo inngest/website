@@ -13,7 +13,7 @@ author: Charly Poly
     </div>
     <footer className="flex min-w-[180px] flex-col gap-4">
     <img
-        src={'/assets/customers/day-ai/erik-munson.png'}
+        src='/assets/customers/day-ai/erik-munson.png'
         alt={`Image of Erik Munson`}
         height="72"
         width="72"
@@ -42,7 +42,7 @@ Importantly, while we always wanted to notify quickly and reliably, we also had 
 <div className="mx-auto my-8 flex max-w-3xl flex-col gap-2 bg-[url(/assets/textures/wave.svg)] bg-[length:auto_80%] bg-center bg-no-repeat px-8 md:flex-row md:p-12">
     <footer className="flex min-w-[160px] flex-col gap-4">
     <img
-        src={'/assets/customers/day-ai/erik-munson.png'}
+        src='assets/customers/day-ai/erik-munson.png'
         alt={`Image of Erik Munson`}
         height="72"
         width="72"
@@ -62,7 +62,7 @@ Importantly, while we always wanted to notify quickly and reliably, we also had 
 
 At the time Kafka was still emerging and wasn't the ubiquitous tool it is today. Some folks on the team had become familiar with it, and found a lot of success using it as a high-throughput queue with some event ingestion API endpoints in front to accept requests from tracking URLs.
 **Events like email opens and clicks flowed through a collection of topics**. We also had **Redis on the side of the topics to store complementary state**, mimicking the functionality many modern streaming systems have today. **The state stored in Redis helped do things like** **manage deduplication via a Bloom filter** — we recognized that complete determinism was not feasible given the volume of data.
-Despite the technical complexities, our goal was to create a seamless experience for users. When that part of the system was working reliably, it was invisible in the best way. But if it was laggy, or down, the whole product experience would grind to a halt, and we could even lose incoming data due to ingestion failures. Keeping availability high and latency low required significant, continuously available operational support, including a dedicated pager duty rotation. Outages could be very challenging to remediate. While Kafka recently transitioned away from ZooKeeper as its metadata store, and ZooKeeper has gotten more reliable over the years, at the time we often ran into trouble with it and had to scramble to get it back up. 
+Despite the technical complexities, our goal was to create a seamless experience for users. When that part of the system was working reliably, it was invisible in the best way. But if it was laggy, or down, the whole product experience would grind to a halt, and we could even lose incoming data due to ingestion failures. Keeping availability high and latency low required significant, continuously available operational support, including a dedicated pager duty rotation. Outages could be very challenging to remediate. While Kafka recently transitioned away from ZooKeeper as its metadata store, and ZooKeeper has gotten more reliable over the years, at the time we often ran into trouble with it and had to scramble to get it back up.
 
 <div className="mx-auto my-8 flex max-w-3xl flex-col gap-8 bg-[url(/assets/textures/wave.svg)] bg-[length:auto_80%] bg-center bg-no-repeat px-8 md:flex-row md:p-12">
     <div className="relative text-lg leading-7">
@@ -72,7 +72,7 @@ Despite the technical complexities, our goal was to create a seamless experience
     </div>
     <footer className="flex min-w-[180px] flex-col gap-4">
     <img
-        src={'/assets/customers/day-ai/erik-munson.png'}
+        src='assets/customers/day-ai/erik-munson.png'
         alt={`Image of Erik Munson`}
         height="72"
         width="72"
@@ -106,7 +106,7 @@ Overall, my experience at Netflix highlighted that the hardest part of work orch
 <div className="mx-auto my-8 flex max-w-3xl flex-col gap-2 bg-[url(/assets/textures/wave.svg)] bg-[length:auto_80%] bg-center bg-no-repeat px-8 md:flex-row md:p-12">
     <footer className="flex min-w-[160px] flex-col gap-4">
     <img
-        src={'/assets/customers/day-ai/erik-munson.png'}
+        src='assets/customers/day-ai/erik-munson.png'
         alt={`Image of Erik Munson`}
         height="72"
         width="72"
@@ -127,7 +127,7 @@ Overall, my experience at Netflix highlighted that the hardest part of work orch
 Given my previous experience, I was initially overwhelmed by the complexity of the task. I understood that we might need to expand our team purely to manage the scale of the orchestration work ahead. As I began brainstorming the technical stack, **I considered using Temporal, but quickly realized it wouldn't align with our needs. First, we were focused on leveraging TypeScript and running on AWS Lambda** to simplify operations early on, especially with a small team. I didn't want to manage container clusters or spin up other complicated infrastructure, as that would almost immediately trigger the need to grow the team. Second, I felt strongly that to tackle the scale of orchestration complexity we had ahead of us, **we needed to find a way to write workflow code at a much higher level of abstraction** that what I had seen and done in the past.
 **In my search for alternatives, I discovered Inngest**, which stood out because it allowed me to utilize Lambda without the need for extensive infrastructure setup. **The built-in event-driven architecture and flow control features were particularly appealing. Inngest enabled us to fire events that could translate into multi-step workflows without the complexity of running SQS, SNS, or Redis on the side to manage state**. Its concurrency control was impressive and felt like one of the most important cognitive unlocks to make managing immense volumes of streaming data an order of magnitude simpler.
 
-Ultimately, choosing **Inngest allowed us to radically simplify our architecture, reduce operational complexity, and focus on delivering our product while still meeting the demands of real-time processing at unusual scale**. I count this decision as among the most pivotal in the technical choices we made early on that kept us moving quickly — and kept reliability high — with a very small and nimble team. 
+Ultimately, choosing **Inngest allowed us to radically simplify our architecture, reduce operational complexity, and focus on delivering our product while still meeting the demands of real-time processing at unusual scale**. I count this decision as among the most pivotal in the technical choices we made early on that kept us moving quickly — and kept reliability high — with a very small and nimble team.
 
 
 <div className="mx-auto my-8 flex max-w-3xl flex-col gap-8 bg-[url(/assets/textures/wave.svg)] bg-[length:auto_80%] bg-center bg-no-repeat px-8 md:flex-row md:p-12">
@@ -138,7 +138,7 @@ Ultimately, choosing **Inngest allowed us to radically simplify our architecture
     </div>
     <footer className="flex min-w-[180px] flex-col gap-4">
     <img
-        src={'/assets/customers/day-ai/erik-munson.png'}
+        src='assets/customers/day-ai/erik-munson.png'
         alt={`Image of Erik Munson`}
         height="72"
         width="72"
@@ -161,7 +161,7 @@ It was incredibly satisfying to realize Inngest could be the realization of that
 <div className="mx-auto my-8 flex max-w-3xl flex-col gap-2 bg-[url(/assets/textures/wave.svg)] bg-[length:auto_80%] bg-center bg-no-repeat px-8 md:flex-row md:p-12">
     <footer className="flex min-w-[160px] flex-col gap-4">
     <img
-        src={'/assets/customers/day-ai/erik-munson.png'}
+        src='assets/customers/day-ai/erik-munson.png'
         alt={`Image of Erik Munson`}
         height="72"
         width="72"

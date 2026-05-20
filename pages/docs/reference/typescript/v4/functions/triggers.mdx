@@ -203,6 +203,33 @@ inngest.createFunction(
   Wildcard event types cannot define a schema, since the matched events may have different payload shapes.
 </Callout>
 
+### Schema transformations
+
+Schema transforms (e.g. Zod's `.transform()`) are not supported with `eventType()`. Only the "input" shape of a schema can be used for validation.
+
+<Callout>
+  **Why transforms aren't supported:** When you send an event using a schema with a transform, the data is transformed on the producer side before being sent to Inngest. For example, if your schema transforms `{ input: "hello" }` into `{ output: 5 }`, the platform receives `{ output: 5 }`. When that event triggers a function, the SDK tries to validate the incoming data using the same schema, but the schema expects the _input_ shape (`{ input: string }`) not the _output_ shape (`{ output: number }`). This means validation will fail because StandardSchema transforms can only validate input-shaped data.
+</Callout>
+
+If you need to transform event data, do it inside your function handler instead:
+
+```ts
+const rawEvent = eventType("app/data.received", {
+  schema: z.object({ input: z.string() }),
+});
+
+inngest.createFunction(
+  {
+    id: "process-data",
+    triggers: [rawEvent],
+  },
+  async ({ event }) => {
+    // Transform inside the handler, not in the schema
+    const output = event.data.input.length;
+  }
+);
+```
+
 ---
 
 ## `cron`
@@ -231,6 +258,23 @@ inngest.createFunction(
   </Property>
 </Properties>
 
+<Info>
+The `cron()` helper accepts a schedule string only. To add optional fields like `jitter`, use the object trigger form directly: `{ cron: "0 * * * *", jitter: "30s" }`. See the [jitter section](/docs/guides/scheduled-functions#adding-jitter) for details.
+</Info>
+
+### Cron trigger object
+
+You can also pass a cron trigger as an object, which supports additional options:
+
+<Properties>
+  <Property name="cron" type="string" required>
+    A [unix-cron](https://crontab.guru/) compatible schedule string.
+  </Property>
+  <Property name="jitter" type="string">
+    A duration string (e.g. `"30s"`, `"5m"`) that adds a random delay after the scheduled boundary. Each occurrence fires at a random time within the jitter window. Must be between `"1s"` and `"5m"`.
+  </Property>
+</Properties>
+
 ### Examples
 
 <CodeGroup>
@@ -254,6 +298,18 @@ inngest.createFunction(
   },
   async ({ step }) => {
     // Runs at 9am ET on weekdays
+  }
+);
+```
+
+```ts {{ title: "With jitter" }}
+inngest.createFunction(
+  {
+    id: "hourly-sync",
+    triggers: [{ cron: "0 * * * *", jitter: "5m" }],
+  },
+  async ({ step }) => {
+    // Fires at a random time within 5 minutes after each hour
   }
 );
 ```

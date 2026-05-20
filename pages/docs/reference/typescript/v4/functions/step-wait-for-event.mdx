@@ -21,8 +21,13 @@ Use `step.waitForEvent()` to pause your function's execution until a matching ev
           <Property name="event" type="string | EventType" required>
             The name of a given event to wait for, or an [`eventType()`](/docs/reference/typescript/v4/functions/triggers#eventtype) result for typed return values.
           </Property>
-          <Property name="timeout" type="string" required>
-            The amount of time to wait to receive the event. A time string compatible with the [ms](https://npm.im/ms) package, e.g. `"30m"`, `"3 hours"`, or `"2.5d"`
+          <Property name="timeout" type="string | number | Date | Temporal.Duration | Temporal.Instant | Temporal.ZonedDateTime" required>
+            How long to wait to receive the event. Either:
+            - A duration string compatible with the [ms](https://npm.im/ms) package, e.g. `"30m"`, `"3 hours"`, or `"2.5d"`,
+            - A `number` of milliseconds,
+            - An absolute `Date`,
+            - A [`Temporal.Duration`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Temporal/Duration) for a relative wait, or
+            - A [`Temporal.Instant`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Temporal/Instant) or [`Temporal.ZonedDateTime`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Temporal/ZonedDateTime) for an absolute deadline.
           </Property>
           <Property name="match" type="string">
             The property to match the event trigger and the wait event, using dot-notation, e.g. `data.userId`. Cannot be combined with `if`.
@@ -53,6 +58,13 @@ Use `step.waitForEvent()` to pause your function's execution until a matching ev
     event: "app/subscription.created",
     timeout: "30d",
     if: "event.data.userId == async.data.userId && async.data.billing_plan == 'pro'",
+  });
+
+  // Wait until a specific deadline
+  const response = await step.waitForEvent("wait-for-response", {
+    event: "app/response.received",
+    timeout: new Date("2026-05-01T00:00:00Z"),
+    match: "data.requestId",
   });
 
   // Use eventType() for typed return values

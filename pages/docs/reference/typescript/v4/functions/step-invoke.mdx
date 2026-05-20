@@ -60,9 +60,14 @@ const mainFunction = inngest.createFunction(
           <Property name="user" type="object">
             Optional user context for the invocation.
           </Property>
-          <Property name="timeout" type="string | number | Date">
+          <Property name="timeout" type="string | number | Date | Temporal.Duration | Temporal.Instant | Temporal.ZonedDateTime">
             {/* Purposefully not mentioning the default timeout of 1 year, as we expect to lower this very soon. */}
-            The amount of time to wait for the invoked function to complete. The time to wait can be specified using a `number` of milliseconds, an `ms`-compatible time string like `"1 hour"`, `"30 mins"`, or `"2.5d"`, or a `Date` object.
+            How long to wait for the invoked function to complete. Either:
+            - A duration string compatible with the [ms](https://npm.im/ms) package, e.g. `"30m"`, `"3 hours"`, or `"2.5d"`,
+            - A `number` of milliseconds,
+            - An absolute `Date`,
+            - A [`Temporal.Duration`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Temporal/Duration) for a relative wait, or
+            - A [`Temporal.Instant`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Temporal/Instant) or [`Temporal.ZonedDateTime`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Temporal/ZonedDateTime) for an absolute deadline.
 
             If the timeout is reached, the step will throw an error. See [Error handling](#error-handling) below. Note that the invoked function will continue to run even if this step times out.
           </Property>

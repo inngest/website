@@ -5,6 +5,7 @@ import { recmaPlugins } from "./mdx/recma.mjs";
 import chokidar from "chokidar";
 import fs from "fs";
 import path from "path";
+import { fileURLToPath } from "url";
 
 // All permanent redirects (source -> destination)
 const permanentRedirects = [
@@ -48,7 +49,10 @@ const permanentRedirects = [
   ["/docs/functions", "/docs/learn/inngest-functions"],
   ["/docs/functions/multi-step", "/docs/learn/inngest-steps"],
   ["/docs/guides/multi-step-functions", "/docs/learn/inngest-steps"],
-  ["/docs/features/inngest-functions/steps-workflows/fetch", "/docs/reference/typescript/functions/fetch"],
+  [
+    "/docs/features/inngest-functions/steps-workflows/fetch",
+    "/docs/reference/typescript/functions/fetch",
+  ],
   ["/docs/guides/enqueueing-future-jobs", "/docs/guides/delayed-functions"],
   ["/docs/steps", "/docs/learn/inngest-steps"],
   ["/docs/features/inngest-functions", "/docs/learn/inngest-functions"],
@@ -213,6 +217,16 @@ async function redirects() {
     {
       source: "/mailing-list",
       destination: "http://eepurl.com/hI3dCr",
+      permanent: true,
+    },
+    {
+      source: "/2026-durable-execution-report",
+      destination: "/content/ai-in-production-report-2026",
+      permanent: true,
+    },
+    {
+      source: "/2026-durable-execution-report/:path*",
+      destination: "/content/ai-in-production-report-2026/:path*",
       permanent: true,
     },
     {
@@ -454,12 +468,20 @@ const nextConfig = {
   pageExtensions: ["js", "jsx", "ts", "tsx", "mdx"],
   experimental: {
     scrollRestoration: true,
+    turbopackFileSystemCacheForDev: true,
   },
   images: {
+    qualities: [75, 95],
     remotePatterns: [
       {
         protocol: "https",
         hostname: "resend.com",
+      },
+    ],
+    // Next.js 16 requires explicit localPatterns for all next/image local sources
+    localPatterns: [
+      {
+        pathname: "/assets/**",
       },
     ],
   },
@@ -472,6 +494,11 @@ const nextConfig = {
       test: /_\w+\/.+\.mdx?$/,
       use: "ignore-loader",
     });
+    // Import plain .md files as raw strings (webpack asset/source equivalent)
+    config.module.rules.push({
+      test: /\.md$/,
+      type: "asset/source",
+    });
     // Disable cache for production builds to reduce bundle size on Vercel
     if (config.cache && !dev) {
       config.cache = Object.freeze({
@@ -483,4 +510,40 @@ const nextConfig = {
   },
 };
 
-export default withMDX(nextConfig);
+let config = withMDX(nextConfig);
+
+// When Turbopack is active, @next/mdx registers mdx-js-loader with plugin functions
+// as loader options. Turbopack requires serializable options, so functions fail.
+// Override the rule with a custom loader that imports plugins internally.
+if (process.env.TURBOPACK) {
+  const turbopackLoaderPath = fileURLToPath(
+    new URL("./mdx/turbopack-loader.cjs", import.meta.url)
+  );
+  const rawMdLoaderPath = fileURLToPath(
+    new URL("./mdx/raw-md-loader.cjs", import.meta.url)
+  );
+  config = {
+    ...config,
+    turbopack: {
+      ...config.turbopack,
+      rules: {
+        ...config.turbopack?.rules,
+        // Override the @next/mdx rule with our plugin-bundling loader
+        "{*,next-mdx-rule}": [
+          {
+            loaders: [{ loader: turbopackLoaderPath }],
+            as: "*.tsx",
+            condition: { path: /\.mdx$/ },
+          },
+        ],
+        // Handle plain .md files as raw string imports
+        "*.md": {
+          loaders: [{ loader: rawMdLoaderPath }],
+          as: "*.js",
+        },
+      },
+    },
+  };
+}
+
+export default config;

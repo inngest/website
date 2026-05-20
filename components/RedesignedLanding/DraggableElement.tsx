@@ -20,7 +20,7 @@ interface DraggableElementProps {
 export function DraggableElement({
   initialPosition = { x: 20, y: 20 },
   gridSize = 75,
-  imageSrc = "/draggable/draggable.png",
+  imageSrc = "/assets/draggable/draggable.png",
   id = "draggable",
   scale = 1,
 }: DraggableElementProps) {
@@ -147,7 +147,7 @@ function DraggableItem({
       >
         <div className={`absolute inset-0 -z-10 rounded-full blur-xl`} />
         <Image
-          src={imageSrc || "/draggable/draggable.png"}
+          src={imageSrc || "/assets/draggable/draggable.png"}
           alt="Draggable element"
           width={elementSize}
           height={elementSize}

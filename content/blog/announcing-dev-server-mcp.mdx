@@ -41,11 +41,11 @@ export const handleUserSignup = inngest.createFunction(
     const user = await step.run("create-user", async () => {
       return createUser(event.data);
     });
-    
+
     await step.run("send-welcome-email", async () => {
       return sendEmail(user.email, "welcome");
     });
-    
+
     return { userId: user.id, emailSent: true };
   }
 );
@@ -91,7 +91,7 @@ For complex workflows involving multiple functions, AI can orchestrate comprehen
 // AI can test this entire workflow
 const signupWorkflow = [
   "app/user.created",      // Triggers user creation
-  "app/user.verified",     // Triggers account setup  
+  "app/user.verified",     // Triggers account setup
   "app/welcome.sent"       // Triggers onboarding flow
 ];
 ```
@@ -107,7 +107,7 @@ The Inngest MCP server provides eight tools organized into three categories:
 - **`list_functions`** - Discover available functions and their event triggers
 - **`invoke_function`** - Execute functions synchronously and get immediate results
 
-### Execution Monitoring  
+### Execution Monitoring
 - **`get_run_status`** - Get detailed status and trace information for specific runs
 - **`poll_run_status`** - Monitor multiple runs until completion for integration testing
 
@@ -124,7 +124,9 @@ The MCP integration runs entirely locally with your dev server—no API keys, no
 
 1. **Start your dev server** as usual:
    ```bash
-   npx --ignore-scripts=false inngest-cli dev
+   curl -sSfL https://cli.inngest.com/install.sh | sh
+   # Move the binary into your path
+   inngest dev
    ```
 
 2. **Configure your AI tool** to connect to `http://localhost:8288/mcp`
@@ -169,7 +171,7 @@ This integration represents a fundamental shift in how we build and debug server
 
 We're just getting started. Future enhancements will include:
 - AI-assisted function optimization based on execution traces
-- Automatic test generation from function behavior patterns  
+- Automatic test generation from function behavior patterns
 - Intelligent error diagnosis with suggested fixes
 - Integration with production monitoring for AI-assisted debugging
 

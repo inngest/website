@@ -406,7 +406,7 @@ function NavigationGroup({
 
   return (
     <NavigationGroupStructure value={group.title} nestingLevel={nestingLevel}>
-      <li className={clsx("relative", className)}>
+      <li className={clsx("relative", className, nestingLevel == 0 && "mb-2")}>
         <NavigationGroupStructure.Trigger className="animate-accordion-trigger w-full rounded-md transition-colors hover:bg-canvasSubtle">
           <div
             className={clsx("m-0 flex items-center justify-between", {

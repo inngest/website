@@ -1,0 +1,77 @@
+---
+heading: "Inngest + Stripe Projects: Ship Durable Apps Without Leaving the Terminal"
+subtitle: "Inngest is an official launch partner for Stripe Projects—a new agent-first protocol for standing up production stacks without hopping between dashboards, digging around docs, or copying keys."
+showSubtitle: true
+image: /assets/blog/inngest-stripe-projects/featured-image/featured-image.png
+date: 2026-04-16
+category: engineering
+author: Lauren Craigie
+---
+
+Building apps has come a long way. Agents made it easy for anyone to write code. Durable execution made it easy for anyone to ensure code completes. But the middle bit—setting up the stack to actually run code in production—has gotten worse. Analytics, auth, workflows, compute… every solution has separate flows for sign-up, billing, provisioning, and configuration. 
+
+If a human is doing that work, it’s a slog. If an agent’s doing it—well, they can’t. The last hurdle for anyone trying to ship quickly still requires a human to copy keys. 
+
+Until today.
+
+## Stripe’s New Agent Provisioning Protocol
+
+Today, Inngest is launching on [Stripe Projects](https://projects.dev/)—a new workflow in the Stripe CLI that lets developers and AI coding agents provision real services, in real provider accounts, from a single terminal session. No dashboard hopping. No copy-pasted credentials. No brittle setup scripts.
+
+The new Agent Provisioning Protocol (APP) powering Stripe Projects turns a slow, fragmented setup process into a secure, deterministic deployment experience for building production-ready apps, fast.
+
+As an official launch partner for Stripe Projects, Inngest’s integration ensures those applications keep running no matter what—through outages, blips, bursts, and anything else that could disrupt production. 
+
+Stripe Projects is an extension of our commitment to enable anyone to build durable apps without a team of infrastructure engineers.
+
+## Why We Partnered on Stripe Projects
+
+Inngest’s mission has always been to eliminate engineering complexity—for humans and agents alike. So this partnership was important to us for three reasons:
+
+**Reliability is now a default part of setup, not an afterthought.** Stripe Projects makes it easy to add durability by default, right alongside the other core parts of a production stack like hosting, auth, and analytics—not after your first outage. 
+
+**Agent-ready by design.** We know agents need determinism, not documentation and UIs built for humans. Stripe's Agentic Provisioning Protocol was designed with this in mind, and Inngest's integration means the full setup—account creation, key provisioning, integration context is an agent-friendly experience.
+
+**Security and key custody when the market needs it most.** The way credentials move around today is a problem. Keys copied into dotenv files, stashed in Slack messages, rotated inconsistently. Stripe Projects ensures credentials land where they should and ownership is clear.
+
+Together, Stripe and Inngest are helping to ensure durability is a first class part of every production application—no matter who (or what) is building. 
+
+## Where Durability Has Become a Day 1 Default
+
+The apps being built today aren't simple CRUD apps. They're multi-step, agent-driven workflows that touch LLM providers, payment systems, and external APIs all at once. We see durability mattering most when:
+
+- **Payments that can't double-fire** — a charge, refund, or ledger update that runs twice due to a retry can drain support, or even become a compliance issue.
+- **AI generation that survives provider outages** — a long-running synthesis or research job that dies mid-run shouldn't require a human to notice and restart it.
+- **Fair order and booking sequencing** — restocked inventory and open appointment slots need guaranteed ordering so the right customer “wins.”
+- **Background jobs that underpin user-facing products** — report generation, export processing, and notification delivery feel invisible until they stop working.
+- **Webhook fan-outs that can't drop events** — a single inbound event triggering dozens of downstream processes needs guaranteed delivery, not fire-and-forget.
+- **Onboarding flows that have to complete** — with plenty of choice in software, a new customer that gets stuck halfway through setup is a churned customer.
+- **Data sync pipelines with no tolerance for gaps** — when two systems need to stay in sync, a silently dropped step corrupts everything downstream.
+
+Durability is now a baseline expectation for anything that ships.
+
+## Try It Today
+
+Stripe Projects is live in developer preview. Here's how to get started:
+
+1. Install the Stripe CLI
+2. Run `stripe projects init my-app`
+3. Run `stripe projects add inngest` to add Inngest to your stack
+4. Stripe Projects provisions resources in your Inngest account, or creates a new one
+5. Your signing and event keys are returned to your environment or secret store in an agent-readable way
+
+From there, your agent has everything it needs to complete the integration. No dashboard. No copy-paste. Just a running app.
+
+<video
+  controls
+  className="w-full max-w-3xl rounded-xl border border-subtle mt-8"
+>
+  <source src="/assets/blog/inngest-stripe-projects/video/stripe-projects-inngest-padding (1).mp4" type="video/mp4" />
+  Your browser does not support the video tag.
+</video>
+
+Full details at [projects.dev](https://projects.dev/), [docs.stripe.com/projects](https://docs.stripe.com/projects), and the [Stripe Dev Blog](https://stripe.dev/blog/production-ready-dev-stack-from-terminal).
+
+---
+
+*Inngest is the durable execution platform for modern applications. Write functions that know when to run, wait, retry, and recover—without extra infrastructure.*

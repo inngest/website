@@ -1,0 +1,60 @@
+import { Info, Warning, CodeGroup, Steps, Step } from "shared/Docs/mdx";
+
+export const description = 'Learn about how to rotate event and signing keys for Inngest apps.'
+
+# Rotating keys
+
+When it is necessary to rotate your Inngest event and signing keys, use the following guide to safely rotate keys without downtime.
+
+<Steps>
+  <Step title="Select your environment">
+    From the Inngest dashboard, select your environment you wish to rotate keys for. Inngest keys are all managed per-environment.
+  </Step>
+  <Step title="Create a new signing key">
+    Using the key icon next to the environment drop down, select "[Signing keys](/docs/platform/signing-keys)." Click "Create new signing key:"
+    ![The signing key management page and the "Create new signing key" button](/assets/docs/platform/manage/key-rotation/create-signing-key.png)
+  </Step>
+  <Step title="Set your new signing key and the fallback key">
+    All requests to your app will use the "current" signing key until rotation is complete, so you'll need to have both the new and old key set in your app to avoid downtime. Set the new key at `INNGEST_SIGNING_KEY` and the old key as `INNGEST_SIGNING_KEY_FALLBACK`:
+
+    ```
+    INNGEST_SIGNING_KEY="<NEWLY CREATED SIGNING KEY>"
+    INNGEST_SIGNING_KEY_FALLBACK="<OLD SIGNING KEY>"
+    ```
+
+    Please note, as the signing key is shared across all apps within an Inngest environment, you will need to rotate this across all of your apps.
+  </Step>
+  <Step title="Create new event key(s)">
+    Using the key icon next to the environment drop down, select "[Event keys](/docs/events/creating-an-event-key)." Click the "Create event key" button at the top right.
+
+    * Enter a name for your new event key
+    * Copy any event or IP filters from your old key
+  </Step>
+  <Step title="Set your new event key">
+    Set your new event key in your application with `INNGEST_EVENT_KEY`.
+  </Step>
+  <Step title="Re-deploy your application(s)">
+    Deploy or restart your application to ensure all new environment variables are now being used in your application. Only once you have confirmed that all new versions of you app have fully rolled out with all new keys, proceed to the next step.
+  </Step>
+  <Step title="Rotate the signing key">
+    On the signing key management page, now click "Rotate key." A dialog will appear to confirm this action. <u>This will delete your original signing key</u> and promote your new key to the current key.
+
+    ![The signing key management page's rotate key functionality](/assets/docs/platform/manage/key-rotation/create-signing-key.png)
+  </Step>
+  <Step title="Re-sync your app(s)">
+    From the "Apps" tab in the dashboard, manually re-sync your applications. This will use the new signing key and confirm that your signing key has successfully been rotated.
+  </Step>
+  <Step title="Delete your old event key(s)">
+    In the event key list, select your old key and in the 3-dot menu next to the key name, click "Delete"
+
+    <img src="/assets/docs/platform/manage/key-rotation/delete-event-key.png" alt="Deleting an event key from the event key management page" className="max-w-lg"/>
+  </Step>
+  <Step title="Rotation complete">
+    Your key rotation is now complete. You can now remove the `INNGEST_SIGNING_KEY_FALLBACK` key if you would like as this key is no longer valid and will not be used by your application.
+  </Step>
+</Steps>
+
+## Additional resources
+
+* [Creating an event key](/docs/events/creating-an-event-key)
+* [Managing signing keys](/docs/platform/signing-keys)

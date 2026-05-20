@@ -70,7 +70,7 @@ export const resourceDropdown = [
   },
   {
     name: "Support",
-    href: "https://app.inngest.com/support?ref=nav",
+    href: "https://support.inngest.com/?ref=nav",
     description: "Get help from the Inngest team",
     icon: (
       <svg
@@ -162,22 +162,24 @@ export default function ResourcePopover() {
                 </div>
               </div>
             </div>
-            <div className="lg:pl-3">
-              <div className="flex flex-col items-start gap-1 pb-4">
+            <div className="w-full min-w-0 lg:pl-3">
+              <div className="flex w-full min-w-0 flex-col gap-1 pb-4">
                 <h3 className="text-sm font-medium leading-6 text-stone-400">
-                  Latest blog
+                  Featured report
                 </h3>
                 <div className="mt-2 flow-root w-full">
                   <div className="-my-2">
-                    <article className="relative isolate p-2 hover:bg-stone-800">
-                      <div className="max-h-[120px]">
-                        <img
-                          alt=""
-                          src={featuredBlogPost.image}
-                          className="h-32 w-full rounded-md object-cover"
-                        />
-                      </div>
-                      <div className="max-w-[240px]">
+                    <article className="relative isolate rounded-sm p-2 hover:bg-stone-800">
+                      <div className="flex w-full flex-col">
+                        <div className="aspect-[2/1] w-full overflow-hidden rounded-md bg-stone-800">
+                          <div className="flex h-full w-full items-center justify-center">
+                            <img
+                              alt=""
+                              src={featuredBlogPost.image}
+                              className="max-h-full max-w-full object-contain object-center"
+                            />
+                          </div>
+                        </div>
                         <h4 className="mt-4 text-base text-stone-50">
                           <Link
                             href={featuredBlogPost.href}
