@@ -1,0 +1,102 @@
+import { Callout, CodeGroup } from "src/shared/Docs/mdx";
+
+export const description = "Score Inngest function runs and steps to measure how well your AI workflows perform in production."
+
+# Score a function run
+
+Scoring lets you measure how well a function run performed. You attach a named score to a run or a specific step, and Inngest tracks it over time in traces and dashboards.
+
+This is useful for anything where "did it work?" isn't a binary answer: AI accuracy, response relevance, user satisfaction, task completion rates.
+
+<Callout variant="info">
+  Scoring requires the v4 SDK. Install with `npm install inngest@latest`.
+</Callout>
+
+---
+
+## Score the current run
+
+Inside a function, call `inngest.score()` or `step.score()` with a name and a numeric value.
+
+```ts
+export default inngest.createFunction(
+  { id: "summarize-ticket", triggers: { event: "support/ticket.created" } },
+  async ({ event, step }) => {
+    const summary = await step.run("generate-summary", async () => {
+      return await generateSummary(event.data.content);
+    });
+
+    const passed = await step.run("check-guardrails", async () => {
+      return validateOutput(summary);
+    });
+
+    // Score this run based on whether guardrails passed
+    await step.score({ name: "guardrail-pass", value: passed ? 1 : 0 });
+
+    return { summary, passed };
+  }
+);
+```
+
+`step.score()` attaches the score to the current run. Use it when you know the outcome before the function finishes.
+
+---
+
+## Score a specific step
+
+Score within a step to attach the measurement directly to that step's trace.
+
+```ts
+await step.run("call-model", async () => {
+  const result = await callModel(prompt);
+  const confidence = result.metadata.confidence;
+
+  // Score this specific step
+  await inngest.score({ name: "model-confidence", value: confidence });
+
+  return result;
+});
+```
+
+The score appears on the step in the trace view, not just the run.
+
+---
+
+## Score from outside a function
+
+You can score any run from external code. Pass the `runId` and optionally a `stepId`.
+
+```ts
+await inngest.score({
+  name: "user-feedback",
+  value: 1,
+  runId: "01ABC123...",
+});
+
+// Score a specific step in that run
+await inngest.score({
+  name: "accuracy",
+  value: 0.9,
+  runId: "01ABC123...",
+  stepId: "generate-summary",
+});
+```
+
+This is how you score based on signals that arrive after the function finishes: a user clicks "helpful," a support ticket gets resolved, a conversion happens downstream.
+
+---
+
+## Where scores appear
+
+Scores show up in two places:
+
+**Trace views.** Each score is attached to the run or step it was scored against. You can see what a run scored alongside its execution timeline.
+
+**Function dashboards.** Score aggregates over time show trends. A degrading score after a prompt change tells you something broke. A stable score after a model swap tells you the change is safe.
+
+---
+
+## Next steps
+
+- [Build a deferred scorer](/docs/features/inngest-functions/steps-workflows/deferred-scoring) for outcomes that take time to resolve
+- [Run experiments](/docs/features/inngest-functions/steps-workflows/running-experiments) to compare models or prompts with traffic splits
