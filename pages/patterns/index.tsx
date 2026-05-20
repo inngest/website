@@ -1,6 +1,4 @@
-import type { GetServerSideProps } from "next";
-
-export const getServerSideProps: GetServerSideProps = async ({ query }) => {
+export async function getServerSideProps({ query }: { query: Record<string, string | string[] | undefined> }) {
   const destination =
     query.view === "agent"
       ? "/patterns/flash-sales-and-bursty-workflows?view=agent"
