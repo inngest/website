@@ -1,7 +1,7 @@
 import { useRouter } from "next/router";
 
 import Header from "src/components/RedesignedLanding/Header/Header";
-import Footer from "../../shared/Footer";
+import Footer from "src/components/RedesignedLanding/Footer";
 import Container from "../../shared/layout/Container";
 import { loadMarkdownFilesMetadata } from "utils/markdown";
 import PATTERN_SECTIONS, {

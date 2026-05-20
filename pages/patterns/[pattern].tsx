@@ -3,8 +3,8 @@ import { GetStaticProps, GetStaticPaths } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
 
-import Header from "../../shared/Header";
-import Footer from "../../shared/Footer";
+import Header from "src/components/RedesignedLanding/Header/Header";
+import Footer from "src/components/RedesignedLanding/Footer";
 import {
   loadMarkdownFile,
   loadMarkdownFilesMetadata,
