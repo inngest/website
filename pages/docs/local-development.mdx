@@ -11,7 +11,7 @@ import GoIcon from 'src/shared/Icons/Go';
 
 # Local development
 
-Inngest's tooling makes it easy to develop your functions locally with any framework using the Inngest Dev Server.
+Testing background jobs, durable workflows, and event-driven functions locally is notoriously painful. Most solutions require running a full Redis stack, managing separate worker processes, or writing mocks that don't reflect how your code behaves in production. The Inngest Dev Server eliminates all of that with a single command, giving you a complete local environment with the same execution model, flow control, and observability you get in production.
 
 The Inngest Dev Server is a fully-featured and [open-source](https://github.com/inngest/inngest) local version of the [Inngest Platform](/docs/platform/deployment) enabling a seamless transition from your local development to feature, staging and production environments.
 
@@ -40,6 +40,10 @@ docker run -p 8288:8288 -p 8289:8289 inngest/inngest \
 </CodeGroup>
 
 You can now open the dev server's browser interface on [`http://localhost:8288`](http://localhost:8288).
+
+<Callout variant="info">
+  Set the `INNGEST_DEV=1` environment variable when starting your app so it connects to the local Dev Server instead of Inngest Cloud. You can add this to your `.env` file or pass it inline: `INNGEST_DEV=1 npm run dev`. [Learn more about local development environment variables](/docs/sdk/environment-variables#inngest-dev).
+</Callout>
 
 ## Connecting apps to the Dev Server
 
@@ -285,7 +289,7 @@ services:
     ports:
       - '3000:3000'
   inngest:
-    image: inngest/inngest:v1.17.2 # Update to the latest version
+    image: inngest/inngest
     command: 'inngest dev -u http://app:3000/api/inngest'
     ports:
       - '8288:8288'
