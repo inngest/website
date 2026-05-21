@@ -4,6 +4,7 @@ subtitle: Every six months, the "right" way to build an AI agent changes. How ca
 image: /assets/blog/background-agents-are-here/featured-image-gold.png
 date: 2026-05-08
 author: Dan Farrelly
+primaryCTA: "report2026"
 ---
 
 Every six months, the "right" way to build an AI agent changes.
