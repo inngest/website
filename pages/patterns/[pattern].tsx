@@ -119,16 +119,6 @@ export default function PatternDetailPage({
     );
   }
 
-  const idxInSection = sectionPatterns.findIndex((p) => p.slug === slug);
-  const prev = idxInSection > 0 ? sectionPatterns[idxInSection - 1] : null;
-  const next =
-    idxInSection < sectionPatterns.length - 1
-      ? sectionPatterns[idxInSection + 1]
-      : null;
-  const positionLabel =
-    sectionPatterns.length > 0
-      ? `${String(idxInSection + 1).padStart(2, "0")} / ${String(sectionPatterns.length).padStart(2, "0")}`
-      : "";
   const headings = extractMdHeadings(content);
 
   return (
@@ -138,16 +128,12 @@ export default function PatternDetailPage({
       {/* Hero */}
       <section className="pattern-hero">
         <div className="pp-breadcrumb">
-          <Link href="/patterns" className="pp-breadcrumb-link">
-            Patterns
-          </Link>
           {section && (
             <>
-              <span className="pp-breadcrumb-sep">/</span>
               <span className="pp-breadcrumb-link">{section.name}</span>
+              <span className="pp-breadcrumb-sep">/</span>
             </>
           )}
-          <span className="pp-breadcrumb-sep">/</span>
           <span className="pp-breadcrumb-current">{title}</span>
         </div>
 
@@ -158,9 +144,6 @@ export default function PatternDetailPage({
                 <span className="pattern-hero-section-num">{section.number}</span>
                 <span className="pattern-hero-section-name">{section.name}</span>
               </span>
-              {positionLabel && (
-                <span className="pattern-hero-position">{positionLabel}</span>
-              )}
             </div>
           )}
           <div className="pattern-hero-body">
@@ -213,47 +196,11 @@ export default function PatternDetailPage({
                   </li>
                 ))}
               </ol>
-              <div className="pattern-toc-meta">
-                <Link href="/patterns" className="pattern-toc-back">
-                  ← All Patterns
-                </Link>
-              </div>
             </div>
           </aside>
         )}
       </section>
 
-      {/* Prev / Next */}
-      {(prev || next) && (
-        <section className="pattern-nav">
-          <div className="pattern-nav-grid">
-            {prev ? (
-              <Link
-                href={`/patterns/${prev.slug}`}
-                className="pattern-nav-card pattern-nav-card--prev"
-              >
-                <span className="pattern-nav-direction">← Previous pattern</span>
-                <span className="pattern-nav-title">{prev.title}</span>
-                <span className="pattern-nav-subtitle">{prev.subtitle}</span>
-              </Link>
-            ) : (
-              <span />
-            )}
-            {next ? (
-              <Link
-                href={`/patterns/${next.slug}`}
-                className="pattern-nav-card pattern-nav-card--next"
-              >
-                <span className="pattern-nav-direction">Next pattern →</span>
-                <span className="pattern-nav-title">{next.title}</span>
-                <span className="pattern-nav-subtitle">{next.subtitle}</span>
-              </Link>
-            ) : (
-              <span />
-            )}
-          </div>
-        </section>
-      )}
 
       <Footer />
     </div>
