@@ -58,10 +58,11 @@ export default function Patterns({ sections }: { sections: PatternSection[] }) {
   const isAgent = router.query.view === "agent";
 
   useEffect(() => {
+    if (!router.isReady) return;
     if (!isAgent) {
       router.replace("/patterns/flash-sales-and-bursty-workflows");
     }
-  }, [isAgent, router]);
+  }, [router.isReady, isAgent]);
 
   if (isAgent) {
     const md = indexMarkdown(sections, FEATURED_PATTERN);
