@@ -7,9 +7,9 @@ tags: [Flow Control, Reliability]
 
 If your functions call external APIs, process webhooks, or handle spiky traffic, you need flow control. Whether it's a flash sale flooding your fulfillment pipeline, a batch import hammering a third-party API, or an AI agent making dozens of tool calls in parallel, these four patterns help you stay in control without writing retry logic or rate limiting by hand.
 
-## Which pattern do you need?
+## Which primitive do you need?
 
-| Symptom | Pattern | What it does |
+| Symptom | Primitive | What it does |
 |---|---|---|
 | External APIs return 429s or timeout under load | **Throttle** | Caps executions per time window |
 | Too many functions hit the same resource at once | **Concurrency** | Caps parallel executions per key |
