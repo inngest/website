@@ -1,0 +1,208 @@
+import { Callout, CodeGroup } from "src/shared/Docs/mdx";
+
+export const description = "Stream AI model output and processing status to your UI in real time using Inngest Realtime."
+
+# Stream AI responses to your UI
+
+This guide walks you through pushing AI output to the browser as it's generated. You'll define a typed channel, publish from an Inngest function, and subscribe from a React component.
+
+The pattern works for any AI workflow: LLM token streaming, document processing progress, agent tool call updates, or multi-step pipeline status.
+
+---
+
+## Define the channel
+
+Create a channel with topics for the different types of updates your UI needs.
+
+```ts {{ filename: "inngest/channels.ts" }}
+import { channel, topic } from "inngest";
+
+export const aiChannel = channel((runId: string) => `ai:${runId}`)
+  .addTopic(
+    topic("status").type<{ message: string; progress: number }>()
+  )
+  .addTopic(
+    topic("tokens").type<{ token: string }>()
+  )
+  .addTopic(
+    topic("result").type<{ output: string; model: string; tokensUsed: number }>()
+  );
+```
+
+Three topics. `status` for progress updates. `tokens` for streaming LLM output. `result` for the final output. Each topic has a typed payload.
+
+---
+
+## Publish from your function
+
+Use `publish()` for streaming tokens (high frequency, duplicates on retry are fine) and `step.realtime.publish()` for the final result (durable, won't duplicate).
+
+```ts {{ filename: "inngest/functions/generate.ts" }}
+import { inngest } from "../client";
+import { aiChannel } from "../channels";
+import OpenAI from "openai";
+
+const openai = new OpenAI();
+
+export default inngest.createFunction(
+  { id: "generate-response", triggers: { event: "app/prompt.submitted" } },
+  async ({ event, step, publish }) => {
+    const ch = aiChannel({ runId: event.data.runId });
+
+    // Status: starting
+    await publish(ch.status, { message: "Generating response...", progress: 0 });
+
+    // Stream tokens from the model
+    const fullText = await step.run("stream-model", async () => {
+      const stream = await openai.chat.completions.create({
+        model: "gpt-4o",
+        stream: true,
+        messages: [{ role: "user", content: event.data.prompt }],
+      });
+
+      let text = "";
+      for await (const chunk of stream) {
+        const token = chunk.choices[0]?.delta?.content ?? "";
+        if (token) {
+          text += token;
+          await publish(ch.tokens, { token });
+        }
+      }
+      return text;
+    });
+
+    // Durable publish for the final result
+    await step.realtime.publish("send-result", ch.result, {
+      output: fullText,
+      model: "gpt-4o",
+      tokensUsed: fullText.split(" ").length,
+    });
+  }
+);
+```
+
+The `publish()` call inside the `for await` loop fires on every token. The client receives each one and can render incrementally. The final `step.realtime.publish()` is memoized so it won't re-send if the function retries.
+
+---
+
+## Create a subscription token
+
+The client needs a scoped token to connect. Create a server action or API route that mints one.
+
+<CodeGroup>
+```ts {{ title: "Next.js Server Action" }}
+// app/actions.ts
+"use server";
+
+import { getClientSubscriptionToken } from "inngest/react";
+import { inngest } from "@/inngest/client";
+import { aiChannel } from "@/inngest/channels";
+
+export async function fetchAIToken(runId: string) {
+  return getClientSubscriptionToken(inngest, {
+    channel: aiChannel({ runId }),
+    topics: ["status", "tokens", "result"],
+  });
+}
+```
+```ts {{ title: "Express" }}
+import { inngest } from "./inngest/client";
+import { getSubscriptionToken } from "inngest";
+import { aiChannel } from "./inngest/channels";
+
+app.post("/api/ai-token", async (req, res) => {
+  const token = await getSubscriptionToken(inngest, {
+    channel: aiChannel({ runId: req.body.runId }),
+    topics: ["status", "tokens", "result"],
+  });
+  res.json(token);
+});
+```
+</CodeGroup>
+
+The token is scoped to the specific channel and topics. The client can only subscribe to what you authorize.
+
+---
+
+## Subscribe and render
+
+Use `useRealtime` to connect and render updates as they arrive.
+
+```tsx {{ filename: "app/components/AIStream.tsx" }}
+"use client";
+
+import { useState } from "react";
+import { useRealtime } from "inngest/react";
+import { aiChannel } from "@/inngest/channels";
+import { fetchAIToken } from "../actions";
+
+export function AIStream({ runId }: { runId: string }) {
+  const [fullText, setFullText] = useState("");
+  const ch = aiChannel({ runId });
+
+  const { messages, connectionStatus } = useRealtime({
+    channel: ch,
+    topics: ["status", "tokens", "result"] as const,
+    token: () => fetchAIToken(runId),
+    enabled: !!runId,
+    onMessage: (msg) => {
+      if (msg.topic === "tokens") {
+        setFullText((prev) => prev + msg.data.token);
+      }
+    },
+  });
+
+  const status = messages.byTopic.status?.data;
+  const result = messages.byTopic.result?.data;
+
+  return (
+    <div>
+      <p>Connection: {connectionStatus}</p>
+
+      {status && !result && (
+        <p>{status.message} ({status.progress}%)</p>
+      )}
+
+      {fullText && !result && (
+        <div className="whitespace-pre-wrap">{fullText}</div>
+      )}
+
+      {result && (
+        <div>
+          <div className="whitespace-pre-wrap">{result.output}</div>
+          <p className="text-sm text-gray-500">
+            Model: {result.model} | Tokens: {result.tokensUsed}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+Each token arrives and appends to the displayed text. When the final result publishes, the component shows the complete output with metadata.
+
+---
+
+## Trigger the workflow
+
+Send an event to kick off the function. The `runId` connects the function's publish calls to the client's subscription.
+
+```ts
+const runId = crypto.randomUUID();
+
+await inngest.send({
+  name: "app/prompt.submitted",
+  data: { runId, prompt: "Summarize the key points of this document..." },
+});
+
+// Pass runId to the AIStream component
+```
+
+---
+
+## Next steps
+
+- [Realtime overview](/docs/features/realtime) for the core concepts
+- [Publishing reference](/docs/reference/typescript/v4/realtime/publishing) for all three publish methods and when to use each
+- [useRealtime reference](/docs/reference/typescript/v4/realtime/use-realtime) for the full hook API including buffering and pause options
