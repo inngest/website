@@ -24,7 +24,7 @@ Throttle is about *rate* (X per minute). Concurrency is about *parallelism* (X a
 
 ---
 
-## Pattern 1: Throttle
+## Primitive 1: Throttle
 
 **You need this if:** You're calling a third-party API (Stripe, Shopify, SendGrid, any shipping provider) and you've seen 429 errors or silent failures under load.
 
@@ -72,7 +72,7 @@ export const generateShippingLabel = inngest.createFunction(
 
 ---
 
-## Pattern 2: Concurrency
+## Primitive 2: Concurrency
 
 **You need this if:** Multiple function runs hit the same database, warehouse, or downstream service, and you've seen timeouts, connection pool exhaustion, or degraded performance under load.
 
@@ -134,7 +134,7 @@ export const processOrderFulfillment = inngest.createFunction(
 
 ---
 
-## Pattern 3: Debounce
+## Primitive 3: Debounce
 
 **You need this if:** A single user action or external event fires multiple webhooks in quick succession, and your function does redundant work processing each one. Shopify, for example, can fire several `order/updated` webhooks within seconds of a single change.
 
@@ -182,7 +182,7 @@ export const syncOrderToFulfillment = inngest.createFunction(
 
 ---
 
-## Pattern 4: Idempotency
+## Primitive 4: Idempotency
 
 **You need this if:** Your event source has at-least-once delivery (most webhooks do, including Shopify's), and duplicate execution has real consequences: double charges, duplicate shipments, duplicate records.
 
@@ -237,7 +237,7 @@ export const capturePayment = inngest.createFunction(
 
 ---
 
-## Composing patterns
+## Composing primitives
 
 These patterns stack. Here's what a production function handling a fulfillment pipeline looks like with all four:
 
