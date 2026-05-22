@@ -178,6 +178,8 @@ const permanentRedirects = [
     "/docs/reference/typescript/v4/migrations/v3-to-v4",
   ],
   ["/docs/sdk/migration", "/docs/reference/typescript/v3/migrations/v2-to-v3"],
+  ["/patterns/cancelling-scheduled-functions", "/docs/guides/cancel-running-functions"],
+  ["/patterns/running-code-on-a-schedule", "/docs/guides/scheduled-functions"],
 ];
 
 async function redirects() {
@@ -384,6 +386,11 @@ async function redirects() {
       destination: process.env.NEXT_PUBLIC_SIGNUP_URL,
       permanent: true,
     },
+    {
+      source: "/patterns",
+      destination: "/patterns/flash-sales-and-bursty-workflows",
+      permanent: false,
+    },
   ];
 }
 
@@ -454,6 +461,14 @@ async function rewrites() {
     {
       source: "/docs-markdown/reference/typescript/:path((?!v3|v4).+)",
       destination: `/docs-markdown/reference/typescript/${TS_STABLE_VERSION}/:path`,
+    },
+    {
+      source: "/patterns/md",
+      destination: "/api/patterns/md",
+    },
+    {
+      source: "/patterns/:pattern/md",
+      destination: "/api/patterns/:pattern/md",
     },
   ];
 }

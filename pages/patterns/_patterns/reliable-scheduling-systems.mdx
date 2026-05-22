@@ -1,8 +1,15 @@
+---
+title: Reliable scheduling systems
+subtitle: Fan out to hundreds or thousands of independently-retried jobs from a single trigger.
+pattern: events
+tags: [Event Coordination, Architecture]
+---
+
 Sometimes you need to reliably trigger hundreds or thousands of jobs at once, making sure that every job succeeds independently.  For example, you might have a cron which triggers importing thousands of products, or a user might require 100 different OpenAPI calls at once.
 
 You might start by running everything in a single function, or within steps.  However, as the number of jobs grows this becomes slower, more difficult to observe, and more prone to temporary failures.  Instead of doing everything in a single job you should **fan-out** by sending events to trigger new jobs.
 
-## How to implement this pattern
+## How this works
 
 In order to manage thousands of jobs at once you'll need to **fan-out to run functions in parallel**. The fan-out pattern works as follows:
 
@@ -12,19 +19,16 @@ In order to manage thousands of jobs at once you'll need to **fan-out to run fun
 
 When you schedule each job independently by sending events, each job gets its own retries and runs in parallel.  This makes your system faster, more observable, and  more resilient to temporary failures.
 
-## How to implement with Inngest
+## With Inngest
 
 Inngest supports scheduled functions and event-triggered functions. Combining the two enables you to [fan-out functions to run in parallel](/patterns/running-functions-in-parallel?ref=patterns). We'll define two these two functions:
 
 ```typescript
 import { inngest } from "./client";
 
-const inngest = new Inngest({ id: "scheduling-backend" });
-
 // A scheduled function uses the current time to find notifications to send
 const slackCron = inngest.createFunction(
-  { id: "slack-notification-cron" },
-  { cron: "0 9,12 * * MON,FRI" },
+  { id: "slack-notification-cron", triggers: [{ cron: "0 9,12 * * MON,FRI" }] },
   async () => {
     const notifications = await getNotificationsToRun();
 
@@ -43,8 +47,7 @@ const slackCron = inngest.createFunction(
 // A function runs for every app/notification.dispatched event to
 // post the notification to Slack
 const postSlackNotification = inngest.createFunction(
-  { id: "send-slack-notification" },
-  { event: "app/notification.dispatched" },
+  { id: "send-slack-notification", triggers: [{ event: "app/notification.dispatched" }] },
   async ({ event }) => {
     const reportData = getAccountReportData(event.data.notification.accountId);
 
@@ -59,9 +62,18 @@ const postSlackNotification = inngest.createFunction(
 
 This is the system &mdash; both functions can even be defined in the same file to keep things simple and maintainable. This approach works well for systems that have commonly scheduled times, but for more flexible systems that are scheduled as one-off, non-repeated tasks you should review [Patterns: Running at specific times](/patterns/running-at-specific-times?ref=patterns).
 
+## Alternative approaches
+
+You can wire cron-driven fan-out yourself, but each component carries its own failure modes:
+
+- **Cron + queue (SQS, BullMQ, Sidekiq):** the cron enqueues jobs, workers consume them. Workable, but you own the worker fleet, the queue's dead-letter routing, and the observability story across both halves.
+- **Cron + serverless function:** simpler to run, but most serverless platforms cap function duration at 5–15 minutes. A single cron that fans out across 10,000 tenants can't finish before the platform kills it.
+- **All-in-one in the cron:** what people start with. Works at 100 tenants, breaks at 10,000 when the cron itself runs longer than its interval and starts lapping itself.
+
+The Inngest version above keeps the cron lightweight: it only loads IDs and sends events. Each tenant's work runs as an independently-retried function with its own logs, retries, and concurrency budget.
 
 ## Additional Resources
 
 * [Patterns: Running at specific times](/patterns/running-at-specific-times?ref=patterns)
-* [Patterns: Cancelling scheduled functions](/patterns/cancelling-scheduled-functions?ref=patterns)
+* [Docs: Cancel running functions](/docs/guides/cancel-running-functions?ref=patterns)
 * [Docs: Writing Functions](/docs/functions?ref=patterns)

@@ -1,0 +1,292 @@
+---
+title: Flash sales and bursty workflows
+subtitle: Use throttle, concurrency, debounce, and idempotency to handle traffic spikes without overwhelming downstream services.
+pattern: flow
+tags: [Flow Control, Reliability]
+---
+
+If your functions call external APIs, process webhooks, or handle spiky traffic, you need flow control. Whether it's a flash sale flooding your fulfillment pipeline, a batch import hammering a third-party API, or an AI agent making dozens of tool calls in parallel, these four patterns help you stay in control without writing retry logic or rate limiting by hand.
+
+## Which primitive do you need?
+
+| Symptom | Primitive | What it does |
+|---|---|---|
+| External APIs return 429s or timeout under load | **Throttle** | Caps executions per time window |
+| Too many functions hit the same resource at once | **Concurrency** | Caps parallel executions per key |
+| One action triggers the same function multiple times | **Debounce** | Waits for a burst to settle, runs once |
+| Webhooks or events arrive more than once | **Idempotency** | Guarantees exactly-once execution per key |
+
+Most real workloads need two or more of these. Start with the one that matches your most painful symptom, then layer.
+
+### Throttle vs. Concurrency: when it's not obvious
+
+Throttle is about *rate* (X per minute). Concurrency is about *parallelism* (X at the same time). If your API says "100 requests per minute," use throttle. If your database performs poorly with more than 20 concurrent writes, use concurrency.
+
+---
+
+## Primitive 1: Throttle
+
+**You need this if:** You're calling a third-party API (Stripe, Shopify, SendGrid, any shipping provider) and you've seen 429 errors or silent failures under load.
+
+**Without throttle:** Retries compound the problem. Each one hits the same rate limit, backs off, and tries again.
+
+```typescript
+import { inngest } from "./client";
+
+export const generateShippingLabel = inngest.createFunction(
+  {
+    id: "generate-shipping-label",
+    triggers: [{ event: "order/fulfillment.ready" }],
+    throttle: {
+      limit: 80,                    // stay under the provider's 100/min limit
+      period: "1m",
+      key: "event.data.carrier",    // separate budget per carrier
+    },
+  },
+  async ({ event, step }) => {
+    // Create the label. Throttle ensures we never exceed the carrier's rate limit.
+    const label = await step.run("create-label", async () => {
+      return await shippingProvider.createLabel({
+        orderId: event.data.order_id,
+        address: event.data.shipping_address,
+        carrier: event.data.carrier,
+      });
+    });
+
+    // Update the order with tracking info. Separate step so it retries independently.
+    await step.run("update-order-tracking", async () => {
+      await db.orders.update({
+        where: { id: event.data.order_id },
+        data: { trackingNumber: label.tracking_number },
+      });
+    });
+  }
+);
+```
+
+**Adapt it:**
+
+- Change `limit` and `period` to match your API's published rate limit. Leave 10-20% headroom.
+- Set `key` to whatever dimension your rate limit applies to (API key, account, carrier, region). Omit `key` if the limit is global.
+- Throttled runs are queued and processed in order once capacity is available.
+
+---
+
+## Primitive 2: Concurrency
+
+**You need this if:** Multiple function runs hit the same database, warehouse, or downstream service, and you've seen timeouts, connection pool exhaustion, or degraded performance under load.
+
+**Without concurrency:** Parallel requests overwhelm connection pools and cause timeouts across unrelated functions.
+
+```typescript
+import { inngest } from "./client";
+
+export const processOrderFulfillment = inngest.createFunction(
+  {
+    id: "process-order-fulfillment",
+    triggers: [{ event: "order/created" }],
+    concurrency: [
+      {
+        key: "event.data.warehouse_id",  // each warehouse gets its own limit
+        limit: 10,
+      },
+    ],
+  },
+  async ({ event, step }) => {
+    // Check inventory. Concurrency limit prevents overwhelming the warehouse API.
+    const inventory = await step.run("check-inventory", async () => {
+      return await warehouse.checkStock({
+        warehouseId: event.data.warehouse_id,
+        sku: event.data.sku,
+      });
+    });
+
+    // Reserve stock. Runs only after inventory check succeeds.
+    await step.run("reserve-stock", async () => {
+      await warehouse.reserveUnits({
+        warehouseId: event.data.warehouse_id,
+        sku: event.data.sku,
+        quantity: event.data.quantity,
+      });
+    });
+
+    // Hand off to shipping. Triggers the throttled label generation function.
+    await step.run("route-to-shipping", async () => {
+      await inngest.send({
+        name: "order/fulfillment.ready",
+        data: {
+          order_id: event.data.order_id,
+          warehouse_id: event.data.warehouse_id,
+          carrier: inventory.preferred_carrier,
+          shipping_address: event.data.shipping_address,
+        },
+      });
+    });
+  }
+);
+```
+
+**Adapt it:**
+
+- Set `key` to the resource you're protecting (warehouse, database shard, tenant ID, API account).
+- Set `limit` based on what the downstream system can handle. Start conservative; you can always increase.
+- You can stack multiple concurrency keys on one function (e.g., limit per warehouse *and* per tenant).
+
+---
+
+## Primitive 3: Debounce
+
+**You need this if:** A single user action or external event fires multiple webhooks in quick succession, and your function does redundant work processing each one. Shopify, for example, can fire several `order/updated` webhooks within seconds of a single change.
+
+**Without debounce:** A single order change can fire 5-8 webhooks in 30 seconds, each triggering the same fulfillment logic.
+
+```typescript
+import { inngest } from "./client";
+
+export const syncOrderToFulfillment = inngest.createFunction(
+  {
+    id: "sync-order-to-fulfillment",
+    triggers: [{ event: "order/updated" }],
+    debounce: {
+      key: "event.data.order_id",   // one debounce window per order
+      period: "30s",                 // wait 30s after the last event
+    },
+  },
+  async ({ event, step }) => {
+    // event contains the *last* event fired before the debounce window closed.
+    // However, that event payload can be stale by the time the function fires
+    // (the debounce window itself adds latency). Refetch the current state to
+    // guarantee you're working with the authoritative record, not a snapshot.
+    const order = await step.run("fetch-latest-order", async () => {
+      return await shopify.orders.get(event.data.order_id);
+    });
+
+    // Sync once with the latest data instead of 5 times with intermediate states.
+    await step.run("sync-to-fulfillment-system", async () => {
+      await fulfillment.syncOrder({
+        orderId: order.id,
+        status: order.status,
+        lineItems: order.line_items,
+        shippingAddress: order.shipping_address,
+      });
+    });
+  }
+);
+```
+
+**Adapt it:**
+
+- Set `key` to the entity generating rapid-fire events (order ID, user ID, document ID).
+- Set `period` based on how long your bursts typically last. For Shopify webhooks, 15-30s is usually enough. For real-time user input, 1-5s.
+- The function fires once, with the *last* event's data. If you need data from every event in the burst, debounce isn't the right tool. Use idempotency with a step that fetches current state instead.
+
+---
+
+## Primitive 4: Idempotency
+
+**You need this if:** Your event source has at-least-once delivery (most webhooks do, including Shopify's), and duplicate execution has real consequences: double charges, duplicate shipments, duplicate records.
+
+**Without idempotency:** A webhook retry delivers the same `payment/authorized` event twice. Two payment captures fire. The customer gets charged double and you get a support ticket.
+
+```typescript
+import { inngest } from "./client";
+
+export const capturePayment = inngest.createFunction(
+  {
+    id: "capture-payment",
+    triggers: [{ event: "payment/authorized" }],
+    // payment_id is our internal dedup key; payment_intent_id is Stripe's identifier
+    idempotency: "event.data.payment_id",   // one execution per payment, guaranteed
+  },
+  async ({ event, step }) => {
+    // Capture the charge. Idempotency ensures this only runs once per payment_id.
+    const capture = await step.run("capture-charge", async () => {
+      return await stripe.paymentIntents.capture(
+        event.data.payment_intent_id
+      );
+    });
+
+    // Record in your database. Separate step so it retries independently if DB is down.
+    await step.run("record-payment", async () => {
+      await db.payments.create({
+        data: {
+          orderId: event.data.order_id,
+          amount: capture.amount,
+          status: "captured",
+        },
+      });
+    });
+
+    // Send receipt. Only fires once even if the webhook delivered twice.
+    await step.run("send-receipt", async () => {
+      await email.send({
+        to: event.data.customer_email,
+        template: "payment-receipt",
+        data: { amount: capture.amount, orderId: event.data.order_id },
+      });
+    });
+  }
+);
+```
+
+**Adapt it:**
+
+- Set the idempotency expression to a field that uniquely identifies the logical event: payment ID, webhook delivery ID, transaction ID.
+- If your events don't have a natural unique key, generate one at the event source (e.g., a hash of order ID + event type + timestamp).
+- Idempotency keys expire after 24 hours. For longer windows, use `rateLimit` with `limit: 1` and a custom `period`.
+
+---
+
+## Composing primitives
+
+These patterns stack. Here's what a production function handling a fulfillment pipeline looks like with all four:
+
+```typescript
+import { inngest } from "./client";
+
+export const fulfillOrder = inngest.createFunction(
+  {
+    id: "fulfill-order",
+    triggers: [{ event: "order/fulfillment.ready" }],
+
+    // Don't process the same webhook twice.
+    // idempotency_key is set at the event source — often a webhook delivery ID.
+    idempotency: "event.data.idempotency_key",
+
+    // Wait for rapid-fire order updates to settle
+    debounce: {
+      key: "event.data.order_id",
+      period: "30s",
+    },
+
+    // Max 10 orders processing per warehouse at a time
+    concurrency: [
+      { key: "event.data.warehouse_id", limit: 10 },
+    ],
+
+    // Stay under shipping API rate limits
+    throttle: {
+      key: "event.data.carrier",
+      limit: 80,
+      period: "1m",
+    },
+  },
+  async ({ event, step }) => {
+    // Your fulfillment logic here. Each step is individually retriable,
+    // and the function is deduplicated, debounced, concurrency-limited,
+    // and throttled.
+  }
+);
+```
+
+You don't need all four on every function. Start with the one that solves your current pain, deploy it, and add more as you find new failure modes.
+
+---
+
+## Additional Resources
+
+* [Docs: Flow Control reference](/docs/guides/flow-control?ref=patterns)
+* [Docs: Throttle](/docs/guides/throttling?ref=patterns)
+* [Docs: Concurrency](/docs/reference/functions/concurrency?ref=patterns)
+* [Docs: Debounce](/docs/reference/functions/debounce?ref=patterns)
+* [Docs: Idempotency](/docs/reference/functions/idempotency?ref=patterns)
