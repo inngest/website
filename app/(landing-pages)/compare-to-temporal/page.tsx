@@ -22,11 +22,29 @@ export const metadata: Metadata = generateMetadata({
     "Discover a serverless, event-driven platform that developers love. Build faster, debug easier, and scale effortlessly with Inngest.",
 });
 
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  name: "Inngest vs Temporal: Durable execution that developers love",
+  description:
+    "Discover a serverless, event-driven platform that developers love. Build faster, debug easier, and scale effortlessly with Inngest.",
+  url: "https://www.inngest.com/compare-to-temporal",
+  publisher: {
+    "@type": "Organization",
+    name: "Inngest",
+    url: "https://www.inngest.com",
+  },
+};
+
 const baseCTA = "compare-to-temporal";
 
 export default function Page() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
       <Hero
         headline="Inngest vs Temporal: Durable execution that developers love"
         subheadline="Discover a serverless, event-driven platform that developers love. Build faster, debug easier, and scale effortlessly with Inngest."
