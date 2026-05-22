@@ -153,7 +153,7 @@ export default function BlogLayout(props) {
       name: "Inngest",
       url: process.env.NEXT_PUBLIC_HOST,
     },
-    ...(scope.category && { articleSection: scope.category }),
+    ...((scope as any).category && { articleSection: (scope as any).category }),
     ...(scope.tags && scope.tags.length > 0 && { keywords: scope.tags.join(", ") }),
     author:
       structuredDataAuthors.length > 0
