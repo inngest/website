@@ -100,7 +100,7 @@ export default function PipelinePage({ runId }: { runId: string }) {
     channel: ch,
     topics,
     token: () =>
-      fetch(`/api/realtime-token?runId=${runId}`).then((res) => res.text()),
+      fetch(`/api/realtime-token?runId=${runId}`).then((res) => res.json()),
   });
 
   return (
