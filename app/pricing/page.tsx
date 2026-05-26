@@ -24,9 +24,56 @@ export const metadata: Metadata = generateMetadata({
     "Pricing plans that scale with you, from our Free Tier all the way to custom Enterprise pricing.",
 });
 
+const HOST = "https://www.inngest.com";
+
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  name: "Inngest Pricing",
+  description:
+    "Pricing plans that scale with you, from our Free Tier all the way to custom Enterprise pricing.",
+  url: `${HOST}/pricing`,
+  publisher: {
+    "@type": "Organization",
+    name: "Inngest",
+    url: HOST,
+  },
+  mainEntity: [
+    {
+      "@type": "Offer",
+      name: "Hobby",
+      description:
+        "Get started with modern durable execution for free, no credit card required.",
+      price: "0",
+      priceCurrency: "USD",
+      url: `${HOST}/pricing`,
+    },
+    {
+      "@type": "Offer",
+      name: "Pro",
+      description:
+        "The metrics and concurrency you need for early stage production products.",
+      price: "75",
+      priceCurrency: "USD",
+      url: `${HOST}/pricing`,
+    },
+    {
+      "@type": "Offer",
+      name: "Enterprise",
+      description:
+        "Ensure reliability at scale, with advanced recovery and dedicated support.",
+      url: `${HOST}/contact`,
+    },
+  ],
+};
+
 export default function Pricing() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
       <div className="max-w-screen relative">
         <GridBackground />
         <div className="relative">

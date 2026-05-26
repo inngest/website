@@ -133,6 +133,8 @@ export default function BlogLayout(props) {
     };
   });
 
+  const postUrl = `${process.env.NEXT_PUBLIC_HOST}${scope.path}`;
+
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
@@ -141,6 +143,18 @@ export default function BlogLayout(props) {
     image: [`${process.env.NEXT_PUBLIC_HOST}${scope.image}`],
     datePublished: scope.date,
     dateModified: scope.dateUpdated ? scope.dateUpdated : scope.date,
+    url: postUrl,
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": postUrl,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "Inngest",
+      url: process.env.NEXT_PUBLIC_HOST,
+    },
+    ...((scope as any).category && { articleSection: (scope as any).category }),
+    ...(scope.tags && scope.tags.length > 0 && { keywords: scope.tags.join(", ") }),
     author:
       structuredDataAuthors.length > 0
         ? structuredDataAuthors
@@ -200,6 +214,13 @@ export default function BlogLayout(props) {
             content={`${process.env.NEXT_PUBLIC_HOST}${scope.image}`}
           />
         )}
+        {/* Markdown alternate for AI/LLM discoverability */}
+        <link
+          rel="alternate"
+          type="text/markdown"
+          href={`${process.env.NEXT_PUBLIC_HOST}/blog/${slug}.md`}
+        />
+
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

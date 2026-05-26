@@ -143,7 +143,7 @@ export function Layout({
           <meta name="docsearch:sdkVersion" content={sdkVersion} />
 
           {/* Markdown alternate for AI/LLM discoverability */}
-          <link rel="alternate" type="text/markdown" href={markdownAlternateUrl} />
+          <link rel="alternate" type="text/markdown" href={`https://www.inngest.com/docs${docsPath}.md`} />
 
           <link rel="preconnect" href="https://fonts-cdn.inngest.com/" />
           <link
