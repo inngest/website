@@ -28,13 +28,13 @@ const GTM_EVENT_NAMES: Record<string, string> = {
 // Per-form-type Segment event names. Mirrors GTM_EVENT_NAMES so analytics
 // schemas stay consistent across platforms.
 //
-// Conservative migration: only content_download is mapped today so we don't
-// silently change Amplitude/Customer.io behavior for the existing sales_lead
-// and yc_lead flows. Unknown/unmapped form types fall back to the legacy
-// generic "Form Submitted" name. As part of the FORM_TYPE refactor cleanup,
-// add sales_lead and yc_lead here once downstream destinations are ready.
+// Conservative migration: only content_download and sales_lead are mapped.
+// yc_lead still falls back to the legacy generic "Form Submitted" name until
+// downstream destinations are ready. Unknown/unmapped form types fall back
+// to "Form Submitted".
 const SEGMENT_EVENT_NAMES: Record<string, string> = {
   content_download: "Content Download Form Submitted",
+  sales_lead: "Contact Sales Form Submitted",
 };
 
 export default function ContactForm({
@@ -91,6 +91,7 @@ export default function ContactForm({
   const [buttonCopy, setButtonCopy] = useState(button);
 
   const isContentDownload = formType === FORM_TYPE.CONTENT_DOWNLOAD;
+  const isSalesLead = formType === FORM_TYPE.SALES_LEAD_FORM;
 
   const doesMentionSoc2 =
     message.match(/soc 2/i) ||
@@ -163,8 +164,8 @@ export default function ContactForm({
             ycVerificationBadgeURL,
             // Content download asset slug (only set for CONTENT_DOWNLOAD forms).
             ...(asset ? { asset } : {}),
-            // Content download extra fields — only present on this form type.
-            ...(isContentDownload ? { company, job_title: jobTitle } : {}),
+            // Extra fields — present for content_download and sales_lead.
+            ...((isContentDownload || isSalesLead) ? { company, job_title: jobTitle } : {}),
             // First-touch attribution (lifted to top-level for easy querying).
             // Null when the cookie wasn't set or couldn't be read.
             ...(firstTouch || {}),
@@ -184,9 +185,18 @@ export default function ContactForm({
         how_did_you_hear_about_us: survey,
         what_can_we_help_you_with: message,
         form_source: 'website',
-        ref,
+        // Sales lead: use document.referrer (HTTP referrer of the page that
+        // brought the visitor here). Other forms keep the URL ?ref= param.
+        ref: isSalesLead ? (typeof document !== 'undefined' ? document.referrer : '') : ref,
+        // Sales-lead-only fields for CIO / Attio destination mappings.
+        ...(isSalesLead ? {
+          lead_source: 'contact_form',
+          submitted_company_name: company,
+        } : {}),
         ...(asset ? { asset } : {}),
-        ...(isContentDownload ? { company, job_title: jobTitle } : {}),
+        // company + job_title: collected by the form for content_download and
+        // sales_lead. Empty strings for other form types (state is never set).
+        ...((isContentDownload || isSalesLead) ? { company, job_title: jobTitle } : {}),
         ...(firstTouch || {}),
       });
       // This will happen async, so we don't want them to leave the website
@@ -311,6 +321,7 @@ export default function ContactForm({
           onChange={(e) => setHoneyPot(e.target.value)}
         />
       </label>
+
       {eventName === "website/yc-deal.submitted" && (
         <label className="flex w-full flex-col gap-2">
           <span>
