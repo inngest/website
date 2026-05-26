@@ -1,0 +1,24 @@
+accept = [200, 206, 308, 429]
+
+max_retries = 2
+retry_wait_time = 5
+timeout = 20
+
+max_concurrency = 8
+
+cache = true
+max_cache_age = "1d"
+
+include_mail = false
+include_fragments = false
+method = "get"
+
+user_agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+
+exclude_path = [
+  "node_modules",
+  ".next",
+  "out",
+  "public",
+  "snippets",
+]

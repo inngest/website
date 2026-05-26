@@ -1,111 +1,139 @@
-It's common to want to build functions which react to user journeys, and allow you to react to user activity within code directly.  Some common examples are:
+---
+title: Building flows for lost customers
+subtitle: Coordinate between events to build human-in-the-loop approvals, cart abandonment flows, and multi-step user journeys.
+pattern: events
+tags: [Event Coordination, User Journeys]
+---
 
-- In e-commerce, when a user adds a product to their cart without checking out in 24 hours send them a reminder email
-- In a SaaS app, if a user signs up but doesn't perform a required action in 3 days, send them a message
-- When a lead enters your sales pipeline, send a reminder to the sales team if there's no outreach in a week
+It's common to build functions that react to user journeys, allowing you to coordinate multiple signals within your code. Some examples:
 
-In each example, you want to start a function using one event, then _wait some time for another event_, then continue your logic when the time is up (or when the event is received). This allows you to model complex user journeys by simply waiting for new events triggered by users in your product.
+- In e-commerce, when a user adds a product to their cart without checking out in 24 hours, send them a reminder email
+- In a SaaS app, if a user signs up but doesn't complete onboarding in 3 days, send them a nudge
+- When a lead enters your sales pipeline, remind the sales team if there's no outreach in a week
+- In an AI workflow, kick off a generation job and wait for a human to approve the output before publishing
 
-## How to implement this pattern
+In each case, you want to start a function from one event, then wait for another event within a time window. If the second event arrives, you continue one way. If it doesn't, you continue another. This lets you model complex user journeys and human-in-the-loop workflows declaratively, without managing timers, state machines, or polling loops.
 
-Inngest allows you to build functions which coordinate between events using a few lines fo the SDK:
+## How this works
+
+Inngest lets you build functions that coordinate between events using `step.waitForEvent()`:
 
 ```typescript
 import { inngest } from "./client";
 
-/*
-This is the data received whenever the `cart/product.added` event is received:
-
-type CartProductAdded = {
-  name: "cart/product.added"
-  data: {
-    cart_id: string;
-    product_id: string;
-    product_name: string;
-  };
-  user: {
-    email: string;
-  };
-};
-*/
-
 export default inngest.createFunction(
   {
-    id: "product-added-to-cart",
-    // Automatically cancel this instance of the function whenever a user adds another
-    // product to their cart.  Another instance of this function will run and schedule
-    // another wait from 24 hours after the new product was added to their cart.
+    id: "cart-abandonment-flow",
+    triggers: [{ event: "cart/product.added" }],
+    // Cancel this instance whenever the user adds another product.
+    // A new instance starts, resetting the 24-hour window.
     cancelOn: {
       event: "cart/product.added",
       timeout: "24h",
       match: "data.cart_id",
     },
   },
-  { event: "cart/product.added" },
-  ({ event, step }) => {
-    // This function runs as soon as a product is added to the cart.
-    // We immediately pause and wait up to 24 hours for the `cart/purchased`
-    // event from the same cart_id.
+  async ({ event, step }) => {
+    // Pause and wait up to 24 hours for a purchase event
+    // from the same cart.
     const purchased = await step.waitForEvent("wait-for-purchase", {
       event: "cart/purchased",
       timeout: "24h",
-      match: "data.cart_id", // The "data.cart_id" field in both events must match.
+      match: "data.cart_id",
     });
 
-    // waitForEvent will return the `cart/purchased` event immediately when the
-    // matching event is received, or after the timeout with `null` if the event
-    // was not received (ie. the user didn't purchase).
+    // If the user purchased, we're done.
     if (purchased !== null) {
-      // The user has purchased their products;  we can end.
       return;
     }
 
+    // No purchase after 24 hours. Send a reminder.
     await step.run("send-reminder", () => {
       sendCartReminderEmail({
         email: event.user.email,
         cart: event.data.cart_id,
       });
     });
-
-    // Idea: We could also wait another 6 days to send a 1 week cart reminder
   }
 );
 ```
 
-In this example we create a function that models key points in the user journey declaratively, without worrying about state or timing in code.
-
-First, we create a function that runs any time a user adds a product to their cart.  We then wait for the checkout event (`cart/purchased`) for up to 24 hours, via `await step.waitForEvent`.  This pauses the function until a matching event is received or the event isn't received within your time specified.
-
-Inngest resumes the function passing in the received event data, or null if the event was not received within the timeout.  Your code then continues to run from after `waitForEvent`, allowing you to process the incoming event or timeouts easily.
-
-This has the following benefits:
-
-- All user-journey code is colocated within the same function
-- This makes the code easy to read, understand, and modify
-- You don't have to manage state, queues, or crons to check for specific conditions to run logic
+`step.waitForEvent()` pauses the function until a matching event arrives or the timeout expires. Inngest resumes your function with the received event data, or `null` if the timeout was reached. Your code continues from where it left off.
 
 **Cancellations: running the function once**
 
-We only want to run this function once for each `cart_id`.  A user might add 3 products, but they should only receive a single reminder email.  In this case, we set a `cancelOn` option when defining the function which cancels any running or paused functions.  Any time another product is added to the same cart ID, older runs of this function are cancelled.  For example:
+We only want one active reminder flow per cart. If a user adds 3 products, they should receive a single reminder email, not three. The `cancelOn` option handles this: whenever another product is added to the same cart, older runs of this function are cancelled automatically. The last event resets the 24-hour window.
 
-- A user adds a product to the cart.  This function runs with an ID of #1
-- A user adds another product.  Function #1 is cancelled automatically, and another copy of this function runs with an ID of #2
+### Human-in-the-loop AI workflows
 
-The first product's journey is cancelled automatically, and the user only receives an email 24 hours after the second product is added.
+The same coordination primitive works for AI approval flows. Start a generation, wait for a human to review it, and continue based on their decision:
+
+```typescript
+export const generateAndPublish = inngest.createFunction(
+  { id: "generate-and-publish", triggers: [{ event: "content/generation.requested" }] },
+  async ({ event, step }) => {
+    // Generate content with an LLM
+    const draft = await step.run("generate-draft", async () => {
+      return await llm.generate({
+        prompt: event.data.prompt,
+        model: "claude-sonnet-4-20250514",
+      });
+    });
+
+    // Notify the reviewer
+    await step.run("request-review", async () => {
+      await notifyReviewer({
+        contentId: event.data.contentId,
+        draft: draft.text,
+        reviewUrl: `${baseUrl}/review/${event.data.contentId}`,
+      });
+    });
+
+    // Wait up to 48 hours for a review decision
+    const review = await step.waitForEvent("wait-for-review", {
+      event: "content/review.completed",
+      timeout: "48h",
+      match: "data.contentId",
+    });
+
+    if (review === null) {
+      return await step.run("notify-timeout", async () => {
+        await notifyReviewer({
+          contentId: event.data.contentId,
+          message: "Review timed out after 48 hours. Please re-request.",
+        });
+      });
+    }
+
+    if (review.data.approved) {
+      await step.run("publish", async () => {
+        await cms.publish(event.data.contentId, draft.text);
+      });
+    } else {
+      await step.run("archive-rejected", async () => {
+        await cms.archive(event.data.contentId, {
+          reason: review.data.feedback,
+        });
+      });
+    }
+  }
+);
+```
+
+The function generates content, sends it for review, and pauses. When the reviewer clicks "approve" or "reject" in your app, your app sends the corresponding event. Inngest resumes the function and continues with the publish or archive step. No polling, no state table, no cron job checking for pending reviews.
 
 ## Alternative approaches
 
-It's possible to handle these flows within standard applications by:
+You can handle these flows within standard applications by:
 
-- Creating scheduled functions that run every hour to check for abandoned carts within the age range of 23-24 hours.
-- Enqueueing a function to wait for 24 hours, then checking to see if the cart has been purchased directly within the database.
+- Creating scheduled functions that run every hour to check for abandoned carts within the 23-24 hour window
+- Enqueuing a function to wait 24 hours, then checking the database directly for the current state
 
-These are both possible within Inngest and using traditional queueing systems, although these approaches typically have more code and distributed state to maintain, increasing the chances of bugs and breaking changes.
-
+These approaches work but require more code, more distributed state to manage, and more things that can break during a refactor. Event coordination with `step.waitForEvent()` keeps all the logic in one place and makes the flow readable as a single function.
 
 ## Additional resources
 
-- [Reference: `step.waitForEvent()`](/docs/reference/functions/step-wait-for-event)
-- [Reference: `step.run()`](/docs/reference/functions/step-run)
-- [Reference: `step.sleep()`](/docs/reference/functions/step-sleep)
-- [Guide: Cancel running functions](/docs/guides/cancel-running-functions)
+- [Reference: `step.waitForEvent()`](/docs/reference/functions/step-wait-for-event?ref=patterns)
+- [Reference: `step.run()`](/docs/reference/functions/step-run?ref=patterns)
+- [Reference: `step.sleep()`](/docs/reference/functions/step-sleep?ref=patterns)
+- [Guide: Cancel running functions](/docs/guides/cancel-running-functions?ref=patterns)

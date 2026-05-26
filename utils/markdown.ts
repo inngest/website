@@ -4,6 +4,7 @@ import rehypeAutolinkHeadings from "rehype-autolink-headings";
 
 import { rehypeParseCodeBlocks } from "src/mdx/rehype.mjs";
 import { rehypeRemoveTwoSlashMarkup, rehypeShiki } from "src/utils/code";
+import { formatShortLocaleDate } from "src/utils/date";
 
 export type MDXFileMetadata = {
   slug: string;
@@ -47,13 +48,10 @@ export async function loadMarkdownFilesMetadata<T>(
       data.reading = readingTime(content);
       data.slug = filename.replace(/.mdx?$/, "");
       if (data.date) {
-        if (typeof data.date === "string") {
-          data.humanDate = new Date(data.date).toLocaleDateString();
-        } else {
-          data.humanDate = data.date.toLocaleDateString
-            ? data.date.toLocaleDateString()
+        data.humanDate =
+          typeof data.date === "string" || data.date instanceof Date
+            ? formatShortLocaleDate(data.date)
             : String(data.date);
-        }
       }
       if (data.tags) {
         data.tags =

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { AIPage } from "src/app/ai/AIPage";
-import ContactForm, { FORM_TYPE } from "src/components/ContactForm";
+import ContactForm from "src/components/ContactForm";
+import { FORM_TYPE } from "src/components/ContactForm.constants";
 import { generateMetadata } from "src/utils/social";
 import { H2 } from "src/components/LandingPage/Heading";
 

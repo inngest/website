@@ -29,7 +29,19 @@ export default function BlogPostList({ posts }: { posts: MDXBlogPost[] }) {
                 {post.heading}
               </h2>
               <p className="mb-4 mt-2 flex items-center gap-1 text-sm font-medium text-muted">
-                <RiCalendarLine className="h-3 w-3" />
+                <span className="">
+                  {Array.isArray(post.author) ? (
+                    post.author.map((a, idx, arr) => (
+                      <span>
+                        {a}
+                        {idx < arr.length - 1 ? ", " : ""}
+                      </span>
+                    ))
+                  ) : (
+                    <span>{post.author}</span>
+                  )}
+                </span>
+                <RiCalendarLine className="ml-1.5 h-3 w-3" />
                 {post.humanDate} <Tags tags={post.tags || []} />
               </p>
               <p className="text-sm text-subtle">{post.subtitle}</p>

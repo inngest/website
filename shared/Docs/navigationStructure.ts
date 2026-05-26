@@ -4,6 +4,7 @@ import {
   LightBulbIcon,
   BookOpenIcon,
   CodeBracketIcon,
+  Squares2X2Icon,
 } from "@heroicons/react/24/outline";
 import { parse } from "node:path";
 import { TS_STABLE, type TSVersion } from "./LanguageStore";
@@ -877,8 +878,28 @@ const sectionLearn: (NavGroup | NavLink)[] = [
         href: `/docs/local-development`,
       },
       {
-        title: "Patterns",
+        title: "Events and Triggers",
         links: [
+          {
+            title: "Overview",
+            href: `/docs/features/events-triggers`,
+          },
+          {
+            title: "Sending events",
+            href: `/docs/events`,
+          },
+          {
+            title: "Event payload format",
+            href: `/docs/features/events-triggers/event-format`,
+          },
+          {
+            title: "Writing expressions",
+            href: `/docs/guides/writing-expressions`,
+          },
+          {
+            title: "Consuming webhook events",
+            href: `/docs/platform/webhooks`,
+          },
           {
             title: "Parallel steps",
             href: "/docs/guides/step-parallelism",
@@ -947,7 +968,7 @@ const sectionLearn: (NavGroup | NavLink)[] = [
         ],
       },
       {
-        title: "AI Patterns",
+        title: "Agents",
         links: [
           {
             title: "Agent tool loops",
@@ -976,7 +997,7 @@ const sectionLearn: (NavGroup | NavLink)[] = [
             href: `/docs/apps/cloud`,
           },
           {
-            title: "Connect",
+            title: "Connect (workers)",
             href: `/docs/setup/connect`,
             tag: "beta",
           },
@@ -1014,31 +1035,6 @@ const sectionLearn: (NavGroup | NavLink)[] = [
                 href: `/docs/usage-limits/providers`,
               },
             ],
-          },
-        ],
-      },
-      {
-        title: "Events & Triggers",
-        links: [
-          {
-            title: "Overview",
-            href: `/docs/features/events-triggers`,
-          },
-          {
-            title: "Sending events",
-            href: `/docs/events`,
-          },
-          {
-            title: "Event payload format",
-            href: `/docs/features/events-triggers/event-format`,
-          },
-          {
-            title: "Writing expressions",
-            href: `/docs/guides/writing-expressions`,
-          },
-          {
-            title: "Consuming webhook events",
-            href: `/docs/platform/webhooks`,
           },
         ],
       },
@@ -1332,6 +1328,7 @@ const matchers: Record<string, (pathname: string) => any> = {
     /^\/docs\/reference/.test(pathname) ||
     linkSearch(sectionReference, pathname),
   learn: (pathname) => linkSearch(sectionLearn, pathname),
+  patterns: (pathname) => /^\/patterns/.test(pathname),
 };
 matchers.default = matchers.learn;
 
@@ -1350,6 +1347,12 @@ export const menuTabs = [
     icon: LightBulbIcon,
     href: "/docs/examples/",
     matcher: matchers.examples,
+  },
+  {
+    title: "Patterns",
+    icon: Squares2X2Icon,
+    href: "/patterns",
+    matcher: matchers.patterns,
   },
 ];
 

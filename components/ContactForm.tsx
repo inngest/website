@@ -3,19 +3,38 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "src/components/utils/classNames";
 import { analytics } from "@/utils/segment";
+import { readFirstTouch } from "src/shared/firstTouch";
+import { FORM_TYPE } from "src/components/ContactForm.constants";
+
+// Re-export FORM_TYPE so existing imports of `FORM_TYPE` from this file keep
+// working during the migration. New code should import directly from
+// `src/components/ContactForm.constants` to avoid the Server Component
+// resolution bug (where importing constants from a "use client" module can
+// resolve to undefined at render time).
+export { FORM_TYPE } from "src/components/ContactForm.constants";
 
 const CONTACT_KEY = process.env.NEXT_PUBLIC_INNGEST_KEY;
 
 const DEBUG = process.env.NEXT_PUBLIC_HOST.match(/localhost/) ? true : false;
 
-// Check Notion tracking plan for event names and schemas:
-export const FORM_TYPE = {
-  SALES_LEAD_FORM: "sales_lead",
-  YC_LEAD_FORM: "yc_lead",
-}
-const GTM_EVENT_NAMES = {
-  [FORM_TYPE.SALES_LEAD_FORM]: "Sales Lead Form Submitted",
-  [FORM_TYPE.YC_LEAD_FORM]: "YC Lead Form Submitted",
+// Use plain string keys (not computed property keys) so the lookup is
+// resilient to module-init ordering and HMR. Keys must match FORM_TYPE values.
+const GTM_EVENT_NAMES: Record<string, string> = {
+  sales_lead: "Sales Lead Form Submitted",
+  yc_lead: "YC Lead Form Submitted",
+  content_download: "Content Download Form Submitted",
+};
+
+// Per-form-type Segment event names. Mirrors GTM_EVENT_NAMES so analytics
+// schemas stay consistent across platforms.
+//
+// Conservative migration: only content_download is mapped today so we don't
+// silently change Amplitude/Customer.io behavior for the existing sales_lead
+// and yc_lead flows. Unknown/unmapped form types fall back to the legacy
+// generic "Form Submitted" name. As part of the FORM_TYPE refactor cleanup,
+// add sales_lead and yc_lead here once downstream destinations are ready.
+const SEGMENT_EVENT_NAMES: Record<string, string> = {
+  content_download: "Content Download Form Submitted",
 };
 
 export default function ContactForm({
@@ -24,6 +43,10 @@ export default function ContactForm({
   formType,
   button = "Send",
   redirectTo,
+  asset,
+  successMessage,
+  messageLabel,
+  surveyLabel,
   className,
 }: {
   eventName: string;
@@ -31,6 +54,21 @@ export default function ContactForm({
   formType: string;
   button?: string;
   redirectTo?: string;
+  /**
+   * Slug or identifier for the asset being downloaded (only relevant for
+   * CONTENT_DOWNLOAD forms). Lifted into the event payload so the downstream
+   * Inngest function knows which asset to deliver.
+   */
+  asset?: string;
+  /**
+   * Inline success message rendered when there's no redirect (e.g. content
+   * download flow). Falls back to a generic copy if not provided.
+   */
+  successMessage?: string;
+  /** Override the "What can we help you with?" textarea label. */
+  messageLabel?: string;
+  /** Override the "How did you hear about us?" input label. */
+  surveyLabel?: string;
   className?: string;
 }) {
   const router = useRouter();
@@ -41,11 +79,18 @@ export default function ContactForm({
   const [message, setMessage] = useState("");
   const [honeyPot, setHoneyPot] = useState("");
   const [survey, setSurvey] = useState("");
+  // Content-download–only fields. Stay empty (and excluded from the payload)
+  // for any other form type.
+  const [company, setCompany] = useState("");
+  const [jobTitle, setJobTitle] = useState("");
   const [ycVerificationBadgeURL, setYCVerificationBadgeURL] = useState<
     string | undefined
   >();
   const [disabled, setDisabled] = useState<boolean>(false);
+  const [submitted, setSubmitted] = useState<boolean>(false);
   const [buttonCopy, setButtonCopy] = useState(button);
+
+  const isContentDownload = formType === FORM_TYPE.CONTENT_DOWNLOAD;
 
   const doesMentionSoc2 =
     message.match(/soc 2/i) ||
@@ -92,17 +137,38 @@ export default function ContactForm({
       }
     }
 
+    // Pull first-touch attribution from the cookie (set on the visitor's
+    // first landing). Used to recover UTMs on submissions that came in via
+    // static CTAs which strip query params.
+    const firstTouch = readFirstTouch();
+
     if (DEBUG) {
       console.log("Debug mode enabled");
       console.log("URL ref:", ref);
       console.log("Redirect URL:", redirectTo);
+      console.log("First touch:", firstTouch);
+      console.log("Asset:", asset);
     }
 
     try {
       await window.Inngest.event(
         {
           name: eventName,
-          data: { email, name, message, survey, ref, ycVerificationBadgeURL },
+          data: {
+            email,
+            name,
+            message,
+            survey,
+            ref,
+            ycVerificationBadgeURL,
+            // Content download asset slug (only set for CONTENT_DOWNLOAD forms).
+            ...(asset ? { asset } : {}),
+            // Content download extra fields — only present on this form type.
+            ...(isContentDownload ? { company, job_title: jobTitle } : {}),
+            // First-touch attribution (lifted to top-level for easy querying).
+            // Null when the cookie wasn't set or couldn't be read.
+            ...(firstTouch || {}),
+          },
           user: { email, name },
           v: eventVersion,
         },
@@ -110,7 +176,8 @@ export default function ContactForm({
       );
       // Segment
       // NOTE - We don't yet identify as it isn't authenticated so we shouldn't over-write any existing user attributes
-      analytics.track('Form Submitted', {
+      const segmentEventName = SEGMENT_EVENT_NAMES[formType] || 'Form Submitted';
+      analytics.track(segmentEventName, {
         email,
         form_type: formType,
         name,
@@ -118,6 +185,9 @@ export default function ContactForm({
         what_can_we_help_you_with: message,
         form_source: 'website',
         ref,
+        ...(asset ? { asset } : {}),
+        ...(isContentDownload ? { company, job_title: jobTitle } : {}),
+        ...(firstTouch || {}),
       });
       // This will happen async, so we don't want them to leave the website
       // GTM
@@ -125,32 +195,80 @@ export default function ContactForm({
         event: GTM_EVENT_NAMES[formType],
         ref,
         survey,
+        ...(asset ? { asset } : {}),
+        ...(isContentDownload ? { company, job_title: jobTitle } : {}),
+        ...(firstTouch || {}),
       });
       if (redirectTo) {
-        setButtonCopy("Redirecting to scheduling...");
         const redirectURL = new URL(redirectTo);
         // If the URL of the page has a ref param, we override the UTM source
         if (ref) {
           redirectURL.searchParams.set("utm_source", ref);
         }
-        // Assume it's a Savvycal call URL
-        redirectURL.searchParams.set("display_name", name);
-        redirectURL.searchParams.set("email", email);
 
-        if (DEBUG) {
-          console.log(redirectURL.toString());
+        if (isContentDownload) {
+          // Content download: redirect in the SAME tab to the interactive
+          // report page. The email-with-PDF is delivered separately by the
+          // downstream `content-download-handler` Inngest function — we don't
+          // need to await anything here, the event has already been fired.
+          // We don't append SavvyCal-style display_name/email params.
+          setButtonCopy("Redirecting to the report...");
+          if (DEBUG) {
+            console.log(redirectURL.toString());
+          }
+          // Brief delay so Segment + GTM beacon requests can flush before
+          // the navigation cancels them. The Inngest event was already
+          // awaited above so it's guaranteed delivered.
+          setTimeout(() => {
+            window.location.href = redirectURL.toString();
+          }, 300);
+        } else {
+          // Existing sales/YC flow — open SavvyCal in a new tab, prefill
+          // display_name + email so the calendar is ready to book.
+          setButtonCopy("Redirecting to scheduling...");
+          redirectURL.searchParams.set("display_name", name);
+          redirectURL.searchParams.set("email", email);
+
+          if (DEBUG) {
+            console.log(redirectURL.toString());
+          }
+
+          // Open a new tab. We need tracking to flush/complete so we open a new tab
+          window.open(redirectURL.toString(), "_blank");
+          setButtonCopy("Your message has been sent!");
         }
-
-        // Open a new tab. We need tracking to flush/complete so we open a new tab
-        window.open(redirectURL.toString(), "_blank");
+      } else {
+        // No redirect → show inline success state (e.g. content download flow).
+        setSubmitted(true);
+        setButtonCopy("Your message has been sent!");
       }
-      setButtonCopy("Your message has been sent!");
     } catch (e) {
       console.warn("Message not sent", e);
       setButtonCopy("Message not sent");
       setDisabled(false);
     }
   };
+
+  if (submitted) {
+    return (
+      <div
+        className={cn(
+          "flex flex-col items-start gap-4 rounded-lg border border-subtle bg-surfaceSubtle p-4 sm:p-6",
+          className
+        )}
+      >
+        <h2 className="text-xl font-semibold text-white">
+          {isContentDownload ? "You're all set" : "Thanks — we got it"}
+        </h2>
+        <p className="text-basis">
+          {successMessage ||
+            (isContentDownload
+              ? "Your report is ready! You'll also receive an email with a download link shortly."
+              : "Thanks for reaching out. We'll be in touch shortly.")}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <form
@@ -214,26 +332,31 @@ export default function ContactForm({
           />
         </label>
       )}
-      <label className="flex w-full flex-col gap-2">
-        <span>
-          How did you hear about us? <span className="text-warning">*</span>
-        </span>
-        <input
-          type="text"
-          name="survey"
-          required
-          onChange={(e) => setSurvey(e.target.value)}
-          className="w-full rounded-md border border-muted bg-canvasBase p-3 outline-none"
-        />
-      </label>
-      <label className="flex w-full flex-col gap-2">
-        <span>What can we help you with?</span>
-        <textarea
-          name="message"
-          onChange={(e) => setMessage(e.target.value)}
-          className="min-h-[6rem] w-full rounded-md border border-muted bg-canvasBase p-3 outline-none"
-        />
-      </label>
+      {!isContentDownload && (
+        <label className="flex w-full flex-col gap-2">
+          <span>
+            {surveyLabel || "How did you hear about us?"}{" "}
+            <span className="text-warning">*</span>
+          </span>
+          <input
+            type="text"
+            name="survey"
+            required
+            onChange={(e) => setSurvey(e.target.value)}
+            className="w-full rounded-md border border-muted bg-canvasBase p-3 outline-none"
+          />
+        </label>
+      )}
+      {!isContentDownload && (
+        <label className="flex w-full flex-col gap-2">
+          <span>{messageLabel || "What can we help you with?"}</span>
+          <textarea
+            name="message"
+            onChange={(e) => setMessage(e.target.value)}
+            className="min-h-[6rem] w-full rounded-md border border-muted bg-canvasBase p-3 outline-none"
+          />
+        </label>
+      )}
 
       {doesMentionSoc2 && (
         <div className="w-full rounded-lg border border-subtle p-2 px-4 py-2">

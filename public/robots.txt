@@ -1,6 +1,29 @@
-# *
+# Standard crawlers
 User-agent: *
 Allow: /
+
+# AI Crawlers
+# Inngest welcomes AI crawlers to index our documentation.
+# See also: /llms.txt, /llms-full.txt, /ai.txt
+
+User-agent: GPTBot
+User-agent: ChatGPT-User
+User-agent: ClaudeBot
+User-agent: PerplexityBot
+User-agent: Amazonbot
+User-agent: CCBot
+Allow: /docs/
+Allow: /blog/
+Allow: /patterns/
+Allow: /llms.txt
+Allow: /llms-full.txt
+Allow: /docs-markdown/
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Bytespider
+Disallow: /
 
 # Host
 Host: https://www.inngest.com

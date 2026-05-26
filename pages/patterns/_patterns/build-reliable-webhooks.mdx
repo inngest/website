@@ -1,63 +1,93 @@
-Webhooks are an incredible useful way to build real-time integrations. They're widely supported and simple in concept, but failure modes need to be understood in order to build reliable webhooks that can scale under load.
+---
+title: Build reliable webhooks
+subtitle: Ingest webhooks and model callbacks at scale with built-in retries and replay.
+pattern: jobs
+tags: [Reliability, Integrations]
+---
 
-Webhooks must do three things: **respond quickly**, **handle varying throughput levels**, and be able to **recover during downtime**.
+Webhooks are one of the most common ways to integrate with external services: payment processors, e-commerce platforms, CRMs, AI model APIs, and communication tools all use them. They're simple in concept but have failure modes you need to handle to build something reliable at scale.
 
-Most third party webhooks will consider the request failed if it doesn't respond fast enough, so you need to respond immediately. Your application also should have a built in way to handle bursts of requests that don't bring down your HTTP handler/server. Your application also needs to properly handle and re-process failed webhook events. This will likely mean a combination of re-queuing failed events and/or logging all webhook events for audits, debugging and replaying events from a specific time period.
+Reliable webhooks need to do three things: respond quickly, handle varying throughput, and recover from downtime. Most webhook providers will mark a delivery as failed if your endpoint doesn't respond within a few seconds. Your application also needs to handle bursts of requests without crashing and properly re-process any events that fail.
 
-## How to implement this pattern
+This matters more as you connect to AI services. Model providers like OpenAI, Anthropic, and Replicate use webhooks and callbacks to notify your application when async inference jobs complete. If your webhook handler drops a callback because it was overwhelmed by a burst of completions, you lose the result and have to re-run the inference.
 
-A common approach to build a reliable webhook that covers the requirements listed above will include:
+## What reliable webhook handling requires
 
-1. Create a queue to buffer webhook events
-2. Create an HTTP handler for a webhook endpoint that verifies [the webhook payload signature](https://docs.stripe.com/webhooks#verify-events) and pushes webhook events to a particular queue
-3. Create a worker that polls the queue for messages and processes them
-4. Configure your worker
-5. Define a [dead-letter queue](https://en.wikipedia.org/wiki/Dead_letter_queue) for events that fail to be processed and potentially, a redrive policy for retrying at a later time.
-6. Implement webhook event logging to archive all events for future audits or replays
+Whatever you build, you need to cover four things:
 
-For replays, you'll also need to:
+- **Fast acknowledgement.** Most providers retry after 3–10 seconds. Your endpoint must respond well under that, usually by handing the payload off before doing any real work.
+- **Signature verification.** Verify the provider's signature before you trust the payload. Stripe, GitHub, and Shopify all sign deliveries differently, and a missed verification is a security issue, not a reliability one.
+- **At-least-once delivery handling.** Most providers retry on transient failures. Your handler has to be idempotent on the natural key the provider supplies (event ID, delivery ID).
+- **Replay.** When you ship a bug and 10,000 events failed silently in production, you need to replay them against the new code without asking the provider to resend.
 
-* Write code to query logs and replay events
-* Ensure your worker code is _idempotent_, meaning that if the handler runs multiple times it produces the same side effects and results once
+In a hand-rolled system, that's a webhook handler, a queue (Redis/SQS/RabbitMQ), a worker process, a dead-letter queue, a log archive, and a replay job. Each adds its own operational surface.
 
-## How to implement with Inngest
+## With Inngest
 
-Inngest is a serverless platform which combines an event hub and a job scheduler. This means that it is designed to receive huge volumes of events via HTTP request and call functions that are defined to run when those given events are received. It simplifies building reliable webhooks by enabling you to just write the code to process the webhook event, leaving the rest to Inngest.
+Inngest combines an event hub with a job scheduler. It's designed to receive large volumes of events via HTTP and automatically call functions that match those events. You can set up a webhook by creating a [webhook source in the Inngest dashboard](https://app.inngest.com/env/production/manage/webhooks), which gives you a unique URL to add to any service that supports webhooks.
 
-You can set up a webhook with Inngest by creating a [webhook "source" in the Inngest dashboard](https://app.inngest.com/env/production/manage/webhooks) which will give you a unique URL which you can add to any third party service that supports webhooks. You can then write an Inngest function that will run when that webhook event is received.
+After connecting your webhook, events start flowing into your Inngest dashboard. Here's an example processing a Stripe payment failure:
 
-After connecting your webhook, you'll start to receive events in your Inngest dashboard. Here's an example of using the `stripe/invoice.payment_failed` event ([Stripe docs](https://stripe.com/docs/api/invoices/object))
-
-```js
+```typescript
 import { inngest } from "./client";
 
-inngest.createFunction(
-  { id: "downgrade-customer" },
-  { event: "stripe/invoice.payment_failed" },
+export const handlePaymentFailed = inngest.createFunction(
+  { id: "handle-payment-failed", triggers: [{ event: "stripe/invoice.payment_failed" }] },
   async ({ event, step }) => {
     const invoice = event.data.data.object;
 
-    const user = await step.run("load-user-via-stripe-id", async () => {
+    const user = await step.run("load-user", async () => {
       return await getUserByStripeCustomerId(invoice.customer);
     });
 
-    await step.run("downgrade-user", async () => {
+    await step.run("downgrade-plan", async () => {
       await billingUtils.downgradeUser(user.id);
     });
 
-    await step.run("send-email", async () => {
-      sendDowngradeEmail(user.email);
+    await step.run("send-notification", async () => {
+      await sendDowngradeEmail(user.email);
     });
 
-    return `Downgraded user plan & ${user.id}`;
+    return `Downgraded user ${user.id}`;
   }
 );
 ```
 
-Functions can then be [deployed to several supported platforms](/docs/deploy?ref=patterns).
+Every event is persisted and observable in the dashboard. If a function fails, it retries automatically. If you deploy a fix after a bug, you can replay failed events without asking the webhook provider to resend them.
+
+For AI model callbacks, the same approach applies. When a long-running inference job completes and the provider sends a webhook, Inngest receives the event, triggers your function, and handles retries if any step fails:
+
+```typescript
+export const handleModelCallback = inngest.createFunction(
+  { id: "handle-model-result", triggers: [{ event: "ai/inference.completed" }] },
+  async ({ event, step }) => {
+    const result = await step.run("process-result", async () => {
+      return await processModelOutput(event.data.output);
+    });
+
+    await step.run("store-result", async () => {
+      await db.results.create({
+        data: {
+          jobId: event.data.jobId,
+          output: result,
+          model: event.data.model,
+        },
+      });
+    });
+  }
+);
+```
+
+Functions can be [deployed to several supported platforms](/docs/deploy?ref=patterns).
+
+## Alternative approaches
+
+- **AWS API Gateway + SQS + Lambda.** Works, but you're now wiring three services together and writing your own retry/dead-letter routing. Replay means querying CloudWatch logs and re-publishing manually.
+- **Hosted webhook gateways (Hookdeck, Svix).** Closer to what Inngest does for webhook *ingestion*, but they hand off to your own job runner, so you still need a durable execution layer downstream.
+- **Direct in your API.** Skipping the queue entirely. Fine until your endpoint stalls for 30 seconds during an LLM call and the provider stops delivering.
 
 ## Additional Resources
 
-* [Blog: Building Webhooks That Scale](/blog/building-webhooks-that-scale?ref=patterns)
+* [Docs: Webhooks](/docs/platform/webhooks?ref=patterns)
 * [Docs: Writing Functions](/docs/functions?ref=patterns)
-* [Docs: Testing Functions](/docs/functions/testing-functions?ref=patterns)
+* [Patterns: Flash sales and bursty workflows](/patterns/flash-sales-and-bursty-workflows?ref=patterns)

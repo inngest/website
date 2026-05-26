@@ -19,6 +19,12 @@ export async function GET() {
 
   const overview = `# Inngest
 
+> Inngest is the durable workflow engine for AI applications. It provides step-level retries, event coordination, throttling, concurrency controls, and human-in-the-loop patterns. Write reliable background jobs and multi-step AI pipelines as regular code, with built-in observability and zero infrastructure to manage.
+
+- [Documentation](${process.env.NEXT_PUBLIC_HOST}/docs-markdown/)
+- [Full documentation as single file](${process.env.NEXT_PUBLIC_HOST}/llms-full.txt)
+- [LLM integration context](${process.env.NEXT_PUBLIC_HOST}/llm-context.md)
+
 ## Learn
 
 ${recursiveLinks(learnDocs)}
