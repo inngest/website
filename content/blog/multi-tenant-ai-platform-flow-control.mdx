@@ -1,0 +1,95 @@
+---
+heading: "Your multi-tenant AI platform fails without flow control"
+subtitle: "If you're building a platform where every customer request will hit the same OpenAI bill, you need the ability to slice and shape concurrency at a per-tenant level."
+showSubtitle: true
+image: /assets/blog/multi-tenant-ai-platform-flow-control/featured-image.png
+date: 2026-05-27
+author: Lauren Craigie
+category: engineering
+---
+
+If you have an AI platform that serves many customers, or maybe more specifically—if every customer request hits the same OpenAI bill—this blog is for you. Regardless of your business model, your pipeline probably looks the same: **Long-running, non-deterministic, multi-step pipelines, where every step depends on 1-7 external providers that could fail for any number of reasons.** Which means, your product _is_ your pipeline.
+
+Some examples:
+
+- **AI sales-coaching platforms** ingesting Zoom calls and generating per-rep coaching reports.
+- **Document-intelligence SaaS** turning contracts, PDFs, or medical records into structured fields and summaries.
+- **Voice-agent platforms** powering call centers, where each call is a long, stateful, multi-LLM conversation.
+- **AI content-generation platforms** producing decks, ad creative, or video from a brief.
+- **RAG-as-a-service** companies indexing customer corpora and serving grounded answers.
+- **Agentic coding tools** running long autonomous task loops across thousands of customer codebases.
+- **AI compliance and audit platforms** scanning communications for regulated events.
+- **Customer-support copilots** triaging tickets, drafting replies, and orchestrating handoffs.
+- **AI-native analytics tools** generating insights, queries, or dashboards on customer data.
+
+If any of these look like something you're building, your unit economics are at the mercy of someone else's rate limiter.
+
+So, of course you're using something to ensure pipeline durability—retries, reliability. Maybe a basic queue, maybe something more. But you might be missing the most important piece.
+
+OpenAI, Anthropic, a transcription provider, your vector DB—none of them meter capacity per-customer. Every request your platform makes is competing with every other request your platform makes, all the time. Without a way to [control flow](/docs/guides/flow-control?ref=blog-multi-tenant-ai-platform-flow-control), your largest customer's upload won't just slow _them_ down, it will slow _everyone_ down. And if your customers can't rely on you for timely turnaround, they'll just go somewhere else.
+
+Retries don't solve this problem. The thing that decides whether you survive contact with real, chaotic, irrational, and really just bursty customer use is **flow control**—specifically, the ability to slice and shape concurrency at a per-tenant level. This post is about why, and how Inngest helps.
+
+## **First, the floor: durability**
+
+Let's get the table-stakes piece out of the way. You need retries. When step 7 of a 10-step pipeline fails because your LLM provider has an outage, you need the system to retry that step—with backoff, with idempotency, and ideally, without re-running the six _expensive_ steps that already succeeded. Every serious workflow engine—Inngest, Temporal, Hatchet, even a well-built BullMQ setup—gives you this.
+
+But solving durability solves exactly one problem: job completion. Durability has nothing to do with _how_ that job completes.
+
+## Who gets what, and why?
+
+When a single customer pushes a giant batch of work, your other customers shouldn't notice. That's the entire point of a multi-tenant platform.
+
+But in practice, it's harder to get right. The default behavior of every job queue and most workflow engines is **global FIFO**—work runs in roughly the order it arrived, against a shared pool of capacity. When a massive customer on your transcription platform drops 80 hours of audio at 9am Monday, their jobs fill the queue, and saturate your OpenAI TPM ceiling. Every other customer waits behind them. Not ideal.
+
+With Inngest, you can declare [concurrency](/docs/guides/concurrency?ref=blog-multi-tenant-ai-platform-flow-control) partitions on the function itself:
+
+```ts
+concurrency: { key: "event.data.projectId", limit: 10 }
+```
+
+In that example, no single project can have more than 10 jobs of that type in flight. Your big customer's batch still gets done, but it spreads across hours instead of starving the platform for minutes. And because the partition is declared per-function, you can tier it — `limit: 50` for enterprise, `10` for pro, `2` for free — and have the runtime enforce those SLAs automatically across every worker, every retry, every replay.
+
+## **How to make sure two events never corrupt the same artifact**
+
+When two customer workflows target the same deliverable, the same document, or the same customer knowledge base, they shouldn't trample each other.
+
+But here's how that usually goes: a user edits a project; an upstream sync fires; an auto-summary runs; an audit kicks off—three of those land in the runtime within the same second, all targeting the same artifact. So they run at the same time, overwriting each other. Customer sees the final product is missing critical information, and cancels their subscription immediately. Distributed locks with something like Redis can help, but that's one more substrate to manage.
+
+With Inngest, you write:
+
+```ts
+concurrency: { key: "event.data.presentationId", limit: 1 }
+```
+
+That's the entire lock. For any given presentation, only one of those workflows runs at a time, automatically, across every worker. Apply it to six different functions that all mutate presentations and you've built artifact-level transactional safety in six lines of config.
+
+## **How to keep your costs predictable as you add customers**
+
+As you sign more customers, your COGS per customer should be predictable and forecastable. You should be able to look at a price sheet, look at usage, and know your margin.
+
+But AI platforms insert a lot of variability: Demand spikes. You hit your OpenAI TPM ceiling. Requests start returning 429s. Now you have a retry storm—cascading failures that consume retry budget without making progress, while you pay for every failed token.
+
+The fix is provider-aware flow control: [throttle](/docs/guides/throttling?ref=blog-multi-tenant-ai-platform-flow-control), [rate-limit](/docs/guides/rate-limiting?ref=blog-multi-tenant-ai-platform-flow-control), and env-scoped concurrency lanes that match each upstream's actual capacity. Fast providers get wide lanes (`limit: 15`). Slow providers get narrow lanes (`limit: 5`). A global ceiling caps total throughput against your overall quota.
+
+With Inngest, this lives on the function definition as `throttle`, `rateLimit`, and env-scoped `concurrency` keyed on the provider. You can route work to provider-specific pools declaratively, and change the routing when quotas change without re-architecting anything. Your provider quotas become part of your runtime topology, modeled as first-class objects.
+
+## **How to debug what an AI actually did**
+
+When a customer asks why their deliverable came out wrong, you should be able to answer. Show them the inputs. Show them the steps. Fix it.
+
+In practice, AI pipelines run in a black box. A step doesn't return 200 or 500—it returns _something_, possibly hallucinated, truncated mid-stream, and subtly wrong. Request-level APM tools and standard logs can't help you. Three scenarios you will face within your first year in production:
+
+1. A customer tells you the output generated for them is wrong, but you don't know what run produced an error, or what the model returned at each step.
+2. You change a prompt to improve one extraction, but then discover it degraded a different extraction across 30% of pipelines.
+3. An agent loop calls the wrong tool. You need to know _why_ it made that decision, with full step context.
+
+With Inngest, you get all that necessary observability by default, since every step of every run is captured automatically, with [replay](/docs/platform/replay?ref=blog-multi-tenant-ai-platform-flow-control). Without this, every escalation is a forensic exercise that takes half a day.
+
+## **Why Inngest**
+
+Job queues give you durability and a global concurrency knob. Workflow engines like Temporal give you durability and primitives to _build_ the rest yourself, usually involving signal channels, side services, or bespoke worker logic. Even purpose-built platforms tend to bolt these features on as separate products or escape hatches.
+
+Inngest treats every one of them as a **first-class, declarative feature of the function definition.** Per-tenant concurrency, per-resource serialization, per-provider quota lanes, throttle, rate-limit, debounce, batching, priority, cancellation—they all live in the same place, next to the function they govern, enforced automatically. If your product is a long-running, non-deterministic, multi-step AI pipeline shared across multiple customers, then **your workflow runtime is your business.** The capabilities that decide whether your business works aren't durability and retries. They're per-tenant fairness, artifact-level safety, provider-aware cost shaping, and step-level visibility.
+
+Pick a runtime that treats those as core. Or build them yourself, badly, for the next three years.
