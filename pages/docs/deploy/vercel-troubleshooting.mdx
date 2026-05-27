@@ -1,0 +1,87 @@
+import { Callout, CodeGroup } from "src/shared/Docs/mdx";
+
+export const description = "Troubleshoot common Vercel integration issues: preview branches, key rotation, Marketplace vs direct accounts, multi-project setup, and WAF interactions."
+
+# Vercel integration troubleshooting
+
+This page covers the most common issues when running Inngest on Vercel. If your functions aren't syncing, your preview environments aren't working, or you're seeing unexpected behavior after changing keys, start here.
+
+---
+
+## Preview branches not created after key rotation
+
+After rotating your signing key in the Inngest dashboard, preview branch environments may stop syncing. New deploys succeed on Vercel but Inngest doesn't pick up the updated functions.
+
+**Fix:** After rotating keys in the Inngest dashboard, update the `INNGEST_SIGNING_KEY` environment variable in your Vercel project settings. Then redeploy. The Vercel integration sets this automatically on first install, but key rotation requires a manual update to the environment variable.
+
+If you installed via the Vercel Marketplace, check that your Marketplace connection is still active in the [Inngest dashboard integrations page](https://app.inngest.com/settings/integrations/vercel).
+
+---
+
+## Vercel Marketplace vs direct account
+
+There are two ways to connect Inngest to Vercel:
+
+**Vercel Marketplace install** creates your Inngest account through Vercel's integration marketplace. Billing goes through Vercel. Environment variables are set automatically.
+
+**Direct Inngest account** is created at app.inngest.com. You install the Vercel integration separately. Billing goes through Inngest directly.
+
+If you started with a Marketplace install and want to switch to a direct account (or vice versa), contact support. The two account types use different authentication flows and mixing them causes sync failures.
+
+---
+
+## Adding a second Vercel app to one Inngest account
+
+You can connect multiple Vercel projects to a single Inngest account. Each project syncs as a separate Inngest app.
+
+In the [Inngest dashboard Vercel integration settings](https://app.inngest.com/settings/integrations/vercel), click "Add path" on your Vercel project to register additional serve endpoints. Each endpoint path (like `/api/inngest` or `/api/inngest-worker`) becomes its own Inngest app.
+
+If your second app's functions aren't appearing, check that the serve endpoint is at a different path than the first app.
+
+---
+
+## Duplicate request IDs and Vercel WAF
+
+If you have Vercel's Web Application Firewall (WAF) enabled, it may interfere with Inngest's requests to your serve endpoint. Symptoms include duplicate request IDs or requests being blocked silently.
+
+**Fix:** Add Inngest's IP ranges to your WAF allowlist, or configure a [Deployment Protection bypass](/docs/deploy/vercel#bypassing-deployment-protection) key.
+
+---
+
+## Functions not syncing after deploy
+
+If you deploy to Vercel and your functions don't appear in the Inngest dashboard:
+
+1. Check that the `INNGEST_SIGNING_KEY` environment variable is set correctly for the environment you're deploying to (production, preview, or a custom environment).
+2. Open your serve endpoint directly in the browser (e.g. `https://your-app.vercel.app/api/inngest`). You should see a JSON response confirming the endpoint is configured. If you see an error, the issue is in your serve setup, not the Vercel integration.
+3. Check the [Inngest dashboard Apps page](https://app.inngest.com) for sync errors. Failed syncs show an error message explaining what went wrong.
+4. If using Deployment Protection, make sure you've configured the [protection bypass](/docs/deploy/vercel#bypassing-deployment-protection).
+
+---
+
+## Runs timing out on Vercel
+
+Vercel serverless functions have execution time limits that depend on your plan. If your function runs are timing out:
+
+1. Set `maxDuration` on your serve endpoint to match your Vercel plan's limit (up to 300 seconds on Pro).
+2. If using checkpointing (default in v4 SDK), set the `maxRuntime` option to 20-40% below your `maxDuration`. This gives checkpointing time to save state before the function times out.
+3. For longer-running functions, enable [streaming](/docs/reference/typescript/v4/serve/streaming) which allows execution beyond `maxDuration`.
+
+```ts
+export const { GET, POST, PUT } = serve({
+  client: inngest,
+  functions: [myFunction],
+  streaming: true,
+});
+
+export const maxDuration = 300;
+```
+
+---
+
+## Related
+
+- [Vercel deployment guide](/docs/deploy/vercel)
+- [Signing keys](/docs/platform/signing-keys)
+- [Environments](/docs/platform/environments)
+- [Syncing apps](/docs/apps/cloud)
