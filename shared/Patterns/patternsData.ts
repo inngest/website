@@ -16,6 +16,7 @@ export interface PatternSectionMeta {
   name: string;
   kicker: string;
   description: string;
+  viz: "durable" | "flow" | "events" | "schedule" | "jobs";
   accent: {
     text: string;      // Tailwind text color class
     border: string;    // Tailwind border color class
@@ -38,6 +39,7 @@ const PATTERN_SECTIONS: PatternSectionMeta[] = [
     kicker: "Steps that don't lose state",
     description:
       "Multi-step business logic that survives crashes, deploys, and minute-long LLM calls. Each step is independently retried and persisted. No glue code, no external queues to babysit.",
+    viz: "durable",
     accent: {
       text: "text-matcha-500",
       border: "border-matcha-500",
@@ -54,6 +56,7 @@ const PATTERN_SECTIONS: PatternSectionMeta[] = [
     kicker: "Spike-proof the boring stuff",
     description:
       "Throttle, debounce, rate-limit, and cap concurrency, declaratively per-tenant or globally. Survive flash sales, runaway LLM bills, and noisy webhook providers.",
+    viz: "flow",
     accent: {
       text: "text-honey-500",
       border: "border-honey-500",
@@ -70,6 +73,7 @@ const PATTERN_SECTIONS: PatternSectionMeta[] = [
     kicker: "Choreograph the chaos",
     description:
       "Wait for events, correlate signals across time, and cancel in-flight work based on what users do. The substrate underneath approvals, sagas, and abandonment flows.",
+    viz: "events",
     accent: {
       text: "text-breeze-500",
       border: "border-breeze-500",
@@ -86,6 +90,7 @@ const PATTERN_SECTIONS: PatternSectionMeta[] = [
     kicker: "Time as a first-class input",
     description:
       "Cron, sleep, and sleepUntil, durable across deploys and process restarts. Schedule work for tomorrow, next quarter, or whenever a user picks a date.",
+    viz: "schedule",
     accent: {
       text: "text-purplehaze-500",
       border: "border-purplehaze-500",
@@ -102,6 +107,7 @@ const PATTERN_SECTIONS: PatternSectionMeta[] = [
     kicker: "Off the request path",
     description:
       "Heavy work (image processing, email, exports, webhook ingestion) belongs in the background where retries and concurrency control live. Get it out of your API responses.",
+    viz: "jobs",
     accent: {
       text: "text-blush-500",
       border: "border-blush-500",

@@ -12,6 +12,9 @@ import Header from "src/components/RedesignedLanding/Header/Header";
 import Footer from "src/components/RedesignedLanding/Footer";
 import AgentView from "../../shared/Patterns/AgentView";
 import PatternsViewToggle from "../../shared/Patterns/PatternsViewToggle";
+import Viz from "../../shared/Patterns/Viz";
+
+import "../../shared/Patterns/patternsHub.css";
 
 type PatternFrontmatter = {
   title?: string;
@@ -28,11 +31,17 @@ export async function getStaticProps() {
   for (const entry of entries) {
     if (!entry.pattern || !entry.title || !entry.subtitle) continue;
     const list = bySection.get(entry.pattern) ?? [];
-    list.push({ slug: entry.slug, title: entry.title!, subtitle: entry.subtitle! });
+    list.push({
+      slug: entry.slug,
+      title: entry.title!,
+      subtitle: entry.subtitle!,
+    });
     bySection.set(entry.pattern, list);
   }
 
-  bySection.forEach((list) => list.sort((a, b) => a.title.localeCompare(b.title)));
+  bySection.forEach((list) =>
+    list.sort((a, b) => a.title.localeCompare(b.title))
+  );
 
   const sections: PatternSection[] = PATTERN_SECTIONS.flatMap((meta) => {
     const patterns = bySection.get(meta.id);
@@ -54,7 +63,11 @@ export async function getStaticProps() {
   };
 }
 
-export default function Patterns({ sections }: { sections: PatternSection[] }) {
+export default function Patterns({
+  sections,
+}: {
+  sections: PatternSection[];
+}) {
   const router = useRouter();
   const isAgent = router.query.view === "agent";
 
@@ -69,39 +82,60 @@ export default function Patterns({ sections }: { sections: PatternSection[] }) {
     );
   }
 
-  // Find the featured pattern's section + item for the Featured card
-  const featuredSection = sections.find((s) => s.id === FEATURED_PATTERN.sectionId);
+  const totalPatterns = sections.reduce(
+    (acc, s) => acc + s.patterns.length,
+    0
+  );
+
+  const featuredSection = sections.find(
+    (s) => s.id === FEATURED_PATTERN.sectionId
+  );
   const featuredPattern = featuredSection?.patterns.find(
     (p) => p.slug === FEATURED_PATTERN.slug
   );
 
   return (
-    <div className="bg-canvasBase min-h-screen">
+    <div className="patterns-hub bg-canvasBase min-h-screen">
       <Header />
 
-      <main
-        className="mx-auto max-w-[1240px] px-6 md:px-14 pt-20 pb-32"
-        style={{ "--patterns-gap": "80px" } as React.CSSProperties}
-      >
-        {/* Page header */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-10">
-            <p className="font-mono text-[11px] tracking-[0.18em] uppercase text-subtle">
-              Patterns
-            </p>
-            <PatternsViewToggle />
-          </div>
-          <h1 className="text-4xl md:text-6xl font-medium tracking-tight text-basis mb-6 text-balance">
-            How to build with Inngest
-          </h1>
-          <p className="text-lg text-subtle max-w-2xl leading-relaxed">
-            Production-tested patterns for AI agents, durable workflows, and the
-            event-driven systems they live in. Each pattern is built on Inngest
-            primitives and the guarantees they provide.
-          </p>
+      <div className="page">
+        <div className="hub-toolbar">
+          <span className="hub-eyebrow">Patterns</span>
+          <PatternsViewToggle />
         </div>
 
-        {/* Featured pattern */}
+        <section className="hero">
+          <div className="hero-meta">
+            <span className="hero-meta-item">PATTERNS · v0.1</span>
+            <span className="hero-meta-sep">·</span>
+            <span className="hero-meta-item">UPDATED MAY 2026</span>
+          </div>
+          <h1 className="hero-title">
+            How to build with{" "}
+            <span className="hero-title-soft">Inngest</span>.
+          </h1>
+          <p className="hero-sub">
+            Production-tested patterns for AI agents, durable workflows, and
+            the event-driven systems they live in. Each pattern is built on
+            Inngest primitives — steps, events, throttling, schedules,
+            channels — and the guarantees they provide.
+          </p>
+          <div className="hero-stats">
+            <div className="hero-stat">
+              <span className="hero-stat-n">{sections.length}</span>
+              <span className="hero-stat-l">Primitives</span>
+            </div>
+            <div className="hero-stat">
+              <span className="hero-stat-n">{totalPatterns}</span>
+              <span className="hero-stat-l">Patterns</span>
+            </div>
+            <div className="hero-stat">
+              <span className="hero-stat-n">∞</span>
+              <span className="hero-stat-l">Runs / month</span>
+            </div>
+          </div>
+        </section>
+
         {featuredSection && featuredPattern && (
           <Featured
             featured={FEATURED_PATTERN}
@@ -110,62 +144,93 @@ export default function Patterns({ sections }: { sections: PatternSection[] }) {
           />
         )}
 
-        {/* Section grid */}
-        <div className="mt-20 flex flex-col" style={{ gap: "var(--patterns-gap)" }}>
-          {sections.map((section) => (
-            <section key={section.id}>
-              {/* Section header */}
-              <div className="mb-8">
-                <div className="flex items-baseline gap-3 mb-3">
-                  <span
-                    className={`font-mono text-[11px] tracking-[0.16em] uppercase ${section.accent.text}`}
-                  >
-                    {section.number}
-                  </span>
-                  <span className="font-mono text-[11px] tracking-[0.16em] uppercase text-subtle">
-                    {section.name}
-                  </span>
-                </div>
-                <p className="text-xs font-mono tracking-[0.14em] uppercase text-subtle mb-4">
-                  {section.kicker}
-                </p>
-                <p className="text-[15px] text-subtle leading-relaxed max-w-2xl">
-                  {section.description}
-                </p>
-              </div>
-
-              {/* Accent rule */}
-              <div
-                className="h-px mb-6"
-                style={{
-                  background: `linear-gradient(to right, ${section.accent.hex}, transparent 60%)`,
-                  opacity: 0.35,
-                }}
-              />
-
-              {/* Pattern list */}
-              <div className="grid gap-4 md:grid-cols-2">
-                {section.patterns.map((pattern) => (
-                  <Link
-                    key={pattern.slug}
-                    href={`/patterns/${pattern.slug}`}
-                    className={`group block rounded-lg border border-subtle/10 p-6 transition-colors hover:border-[rgba(${section.accent.rgb},0.3)] hover:bg-[rgba(${section.accent.rgb},0.04)]`}
-                  >
-                    <h3 className="text-[17px] font-medium text-basis mb-2 group-hover:text-white transition-colors">
-                      {pattern.title}
-                    </h3>
-                    <p className="text-sm text-subtle leading-relaxed">
-                      {pattern.subtitle}
-                    </p>
-                  </Link>
-                ))}
-              </div>
-            </section>
+        <main className="sections">
+          {sections.map((section, i) => (
+            <SectionBlock
+              key={section.id}
+              section={section}
+              featured={i === 0}
+            />
           ))}
-        </div>
-      </main>
+        </main>
+      </div>
 
       <Footer />
     </div>
+  );
+}
+
+function SectionBlock({
+  section,
+  featured,
+}: {
+  section: PatternSection;
+  featured: boolean;
+}) {
+  return (
+    <section
+      className={`section ${featured ? "section--featured" : ""}`}
+      id={`section-${section.id}`}
+      style={
+        {
+          "--accent": section.accent.hex,
+          "--accent-rgb": section.accent.rgb,
+        } as React.CSSProperties
+      }
+    >
+      <div className="section-rule">
+        <span className="section-rule-label">
+          <span className="section-rule-num">{section.number}</span>
+          <span className="section-rule-name">{section.name}</span>
+        </span>
+        <span className="section-rule-line" />
+        <span className="section-rule-meta">
+          {section.patterns.length}{" "}
+          {section.patterns.length === 1 ? "pattern" : "patterns"}
+        </span>
+      </div>
+
+      <div
+        className={`section-body ${
+          featured ? "section-body--featured" : ""
+        }`}
+      >
+        <header className="section-header">
+          <p className="section-kicker">{section.kicker}</p>
+          <h2 className="section-title">{section.name}</h2>
+          <p className="section-desc">{section.description}</p>
+        </header>
+
+        <div className="section-viz">
+          <Viz id={section.viz} accent={section.accent.hex} />
+        </div>
+
+        <div className="section-list">
+          {section.patterns.map((pattern) => (
+            <Link
+              key={pattern.slug}
+              href={`/patterns/${pattern.slug}`}
+              className="pattern-row"
+            >
+              <span className="pattern-row-inner">
+                <span className="pattern-row-title">{pattern.title}</span>
+                <span className="pattern-row-subtitle">
+                  {pattern.subtitle}
+                </span>
+              </span>
+              <span className="pattern-row-arrow" aria-hidden>
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path
+                    d="M3 7 L11 7 M7 3 L11 7 L7 11"
+                    stroke="currentColor"
+                    strokeWidth="1.4"
+                  />
+                </svg>
+              </span>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
