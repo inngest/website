@@ -143,30 +143,18 @@
 }
 
 .patterns-hub .section-body {
-  display: grid;
-  grid-template-columns: 1.05fr 1fr;
-  grid-template-rows: auto auto;
-  gap: 48px 64px;
-  align-items: start;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
 }
 .patterns-hub .section-body--featured {
-  grid-template-columns: 1.1fr 1fr;
-  gap: 56px 72px;
+  gap: 48px;
 }
 
 .patterns-hub .section-header {
-  grid-column: 1;
-  grid-row: 1;
-  max-width: 540px;
-}
-.patterns-hub .section-viz {
-  grid-column: 2;
-  grid-row: 1 / span 2;
-  align-self: stretch;
+  max-width: 720px;
 }
 .patterns-hub .section-list {
-  grid-column: 1;
-  grid-row: 2;
   display: flex;
   flex-direction: column;
   gap: 1px;
@@ -249,52 +237,6 @@
   transform: translateX(2px);
 }
 
-.patterns-hub .viz-frame {
-  --accent: var(--lux);
-  position: relative;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  overflow: hidden;
-  background:
-    radial-gradient(ellipse at top left, rgba(255,255,255,0.02), transparent 60%),
-    var(--bg-elev);
-  padding: 12px;
-  aspect-ratio: 1.45 / 1;
-  display: flex;
-  flex-direction: column;
-}
-.patterns-hub .viz-frame::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    135deg,
-    rgb(from var(--accent) r g b / 0.04),
-    transparent 60%
-  );
-  pointer-events: none;
-}
-.patterns-hub .viz-svg {
-  flex: 1;
-  width: 100%;
-  height: 100%;
-  min-height: 0;
-}
-.patterns-hub .viz-caption {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px 6px 2px;
-  border-top: 1px dashed var(--border);
-  margin-top: 8px;
-  font-family: "Geist Mono", ui-monospace, monospace;
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-.patterns-hub .viz-caption-label { color: var(--accent); }
-.patterns-hub .viz-caption-sub { color: var(--fg-faint); }
-
 .patterns-hub .hub-toolbar {
   max-width: 1240px;
   margin: 0 auto;
@@ -318,15 +260,6 @@
   .patterns-hub .hub-toolbar { padding: 0 24px 16px; }
   .patterns-hub .section-body,
   .patterns-hub .section-body--featured {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto;
     gap: 32px;
-  }
-  .patterns-hub .section-viz {
-    grid-column: 1;
-    grid-row: 2;
-  }
-  .patterns-hub .section-list {
-    grid-row: 3;
   }
 }

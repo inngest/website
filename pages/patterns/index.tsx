@@ -12,7 +12,6 @@ import Header from "src/components/RedesignedLanding/Header/Header";
 import Footer from "src/components/RedesignedLanding/Footer";
 import AgentView from "../../shared/Patterns/AgentView";
 import PatternsViewToggle from "../../shared/Patterns/PatternsViewToggle";
-import Viz from "../../shared/Patterns/Viz";
 
 import "../../shared/Patterns/patternsHub.css";
 
@@ -200,10 +199,6 @@ function SectionBlock({
           <h2 className="section-title">{section.name}</h2>
           <p className="section-desc">{section.description}</p>
         </header>
-
-        <div className="section-viz">
-          <Viz id={section.viz} accent={section.accent.hex} />
-        </div>
 
         <div className="section-list">
           {section.patterns.map((pattern) => (
