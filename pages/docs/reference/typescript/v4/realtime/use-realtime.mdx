@@ -43,10 +43,10 @@ function Pipeline({ runId }: { runId: string }) {
     The channel to subscribe to. Can be a channel instance from `realtime.channel()` or a plain string. When you use a channel instance, topic data is typed automatically.
   </Property>
   <Property name="topics" type="string[]">
-    The topics to subscribe to within the channel. Required when your `token` factory returns only a token key string.
+    The topics to subscribe to within the channel. Required when your `token` is a `ClientSubscriptionToken` from `getClientSubscriptionToken()` or when your token factory returns only a token key string.
   </Property>
-  <Property name="token" type="Token | () => Promise<string | ClientSubscriptionToken | Token>">
-    Authentication for the subscription. Pass a pre-minted token object, or an async factory that returns a token key string, a `ClientSubscriptionToken` from `getClientSubscriptionToken()`, or a full token object. The async factory pattern is recommended because it runs on mount and on reconnect.
+  <Property name="token" type="ClientSubscriptionToken | Token | () => Promise<string | ClientSubscriptionToken | Token>">
+    Authentication for the subscription. Pass a `ClientSubscriptionToken` from `getClientSubscriptionToken()`, a full token object, or an async factory that returns a token key string, `ClientSubscriptionToken`, or full token object. The async factory pattern is recommended because it runs on mount and on reconnect.
   </Property>
   <Property name="key" type="string">
     Optional subscription identity key. Change it to force the hook to reset its retained state and reconnect even if `channel` and `topics` are unchanged.
@@ -223,6 +223,33 @@ function Pipeline({ runId }: { runId: string }) {
 ```
 </CodeGroup>
 
+## Pre-minted loader tokens
+
+If your framework passes data from a server loader into a client component, you can pass the `ClientSubscriptionToken` from `getClientSubscriptionToken()` directly. Keep `channel` and `topics` as top-level `useRealtime` options; the client token intentionally contains only `key` and `apiBaseUrl`, and the top-level channel and topics are what preserve typed message inference.
+
+```tsx
+import { useLoaderData } from "react-router";
+import { useRealtime } from "inngest/react";
+import { pipelineChannel } from "../inngest/channels";
+import type { loader } from "./route";
+
+export function Pipeline() {
+  const { runId, realtimeToken } = useLoaderData<typeof loader>();
+  const channel = pipelineChannel({ runId });
+  const topics = ["status", "tokens"] as const;
+
+  const { connectionStatus, messages } = useRealtime({
+    channel,
+    topics,
+    token: realtimeToken,
+  });
+
+  return <p>{connectionStatus}: {messages.byTopic.status?.data.message}</p>;
+}
+```
+
+For long-lived subscriptions, prefer a token factory or route handler so `useRealtime` can request a fresh token when it reconnects.
+
 ## Typed topic access
 
 When you pass a channel instance instead of a plain string, `messages.byTopic`, `messages.all`, `messages.last`, and `messages.delta` all stay typed to the subscribed topics:
@@ -318,4 +345,4 @@ isPaused; // true when disabled or hidden
 pauseReason; // "disabled" | "hidden" | null
 ```
 
-If your token factory returns only a string key, make sure `channel` and `topics` are present. If it returns a full token object, the hook can derive them from the token instead.
+If your token is a `ClientSubscriptionToken`, or your token factory returns either a `ClientSubscriptionToken` or only a string key, make sure `channel` and `topics` are present. If it returns a full token object, the hook can derive them from the token instead, though top-level `channel` and `topics` are still recommended for typed message inference.
