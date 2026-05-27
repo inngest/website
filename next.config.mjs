@@ -386,11 +386,6 @@ async function redirects() {
       destination: process.env.NEXT_PUBLIC_SIGNUP_URL,
       permanent: true,
     },
-    {
-      source: "/patterns",
-      destination: "/patterns/flash-sales-and-bursty-workflows",
-      permanent: false,
-    },
   ];
 }
 
