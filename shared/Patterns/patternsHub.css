@@ -119,15 +119,15 @@
 }
 .patterns-hub .section-rule-num {
   font-family: "Geist Mono", ui-monospace, monospace;
-  font-size: 12px;
+  font-size: 11px;
   color: var(--accent);
-  letter-spacing: 0.12em;
+  letter-spacing: 0.16em;
 }
 .patterns-hub .section-rule-name {
   font-family: "Geist Mono", ui-monospace, monospace;
   font-size: 11px;
   color: var(--fg-mut);
-  letter-spacing: 0.18em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
 }
 .patterns-hub .section-rule-line {
@@ -157,43 +157,31 @@
 .patterns-hub .section-list {
   display: flex;
   flex-direction: column;
-  gap: 1px;
-  background: var(--border);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  overflow: hidden;
+  border-top: 1px solid var(--border);
 }
 
 .patterns-hub .section--featured .section-title {
-  font-size: clamp(48px, 6vw, 88px);
+  font-size: clamp(40px, 5vw, 64px);
 }
 .patterns-hub .section--featured .section-desc {
-  font-size: 18px;
+  font-size: 17px;
 }
 
-.patterns-hub .section-kicker {
-  font-family: "Geist Mono", ui-monospace, monospace;
-  font-size: 11px;
-  color: var(--accent);
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  margin: 0 0 22px;
-}
 .patterns-hub .section-title {
-  font-size: clamp(40px, 5.5vw, 72px);
-  line-height: 1;
-  letter-spacing: -0.03em;
+  font-size: clamp(32px, 4vw, 48px);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
   font-weight: 500;
   color: var(--fg);
-  margin: 0 0 24px;
+  margin: 0 0 20px;
 }
 .patterns-hub .section-desc {
   font-size: 16px;
   line-height: 1.55;
   color: var(--fg-mut);
-  margin: 0 0 36px;
+  margin: 0 0 32px;
   text-wrap: pretty;
-  max-width: 540px;
+  max-width: 640px;
 }
 
 .patterns-hub .pattern-row {
@@ -202,13 +190,13 @@
   grid-template-columns: 1fr auto;
   gap: 18px;
   align-items: center;
-  padding: 18px 22px;
-  background: var(--bg);
+  padding: 20px 0;
+  border-bottom: 1px solid var(--border);
   transition: background .15s ease;
   cursor: pointer;
 }
-.patterns-hub .pattern-row:hover {
-  background: var(--bg-elev);
+.patterns-hub .pattern-row:hover .pattern-row-title {
+  color: var(--accent);
 }
 .patterns-hub .pattern-row-inner {
   display: flex;
@@ -216,10 +204,11 @@
   gap: 4px;
 }
 .patterns-hub .pattern-row-title {
-  font-size: 15px;
+  font-size: 17px;
   color: var(--fg);
   font-weight: 500;
   letter-spacing: -0.01em;
+  transition: color .15s ease;
 }
 .patterns-hub .pattern-row-subtitle {
   font-size: 13px;
