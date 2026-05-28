@@ -81,11 +81,6 @@ export default function Patterns({
     );
   }
 
-  const totalPatterns = sections.reduce(
-    (acc, s) => acc + s.patterns.length,
-    0
-  );
-
   const featuredSection = sections.find(
     (s) => s.id === FEATURED_PATTERN.sectionId
   );
@@ -99,7 +94,6 @@ export default function Patterns({
 
       <div className="page">
         <div className="hub-toolbar">
-          <span className="hub-eyebrow">Patterns</span>
           <PatternsViewToggle />
         </div>
 
@@ -119,20 +113,6 @@ export default function Patterns({
             Inngest primitives — steps, events, throttling, schedules,
             channels — and the guarantees they provide.
           </p>
-          <div className="hero-stats">
-            <div className="hero-stat">
-              <span className="hero-stat-n">{sections.length}</span>
-              <span className="hero-stat-l">Primitives</span>
-            </div>
-            <div className="hero-stat">
-              <span className="hero-stat-n">{totalPatterns}</span>
-              <span className="hero-stat-l">Patterns</span>
-            </div>
-            <div className="hero-stat">
-              <span className="hero-stat-n">∞</span>
-              <span className="hero-stat-l">Runs / month</span>
-            </div>
-          </div>
         </section>
 
         {featuredSection && featuredPattern && (
@@ -195,7 +175,6 @@ function SectionBlock({
         }`}
       >
         <header className="section-header">
-          <p className="section-kicker">{section.kicker}</p>
           <h2 className="section-title">{section.name}</h2>
           <p className="section-desc">{section.description}</p>
         </header>

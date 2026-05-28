@@ -128,12 +128,19 @@ export default function PatternDetailPage({
       {/* Hero */}
       <section className="pattern-hero">
         <div className="pp-breadcrumb">
+          <Link href="/patterns" className="pp-breadcrumb-link pp-breadcrumb-link--back">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden>
+              <path d="M7 1 L3 5 L7 9" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            All Patterns
+          </Link>
           {section && (
             <>
-              <span className="pp-breadcrumb-link">{section.name}</span>
               <span className="pp-breadcrumb-sep">/</span>
+              <span className="pp-breadcrumb-link">{section.name}</span>
             </>
           )}
+          <span className="pp-breadcrumb-sep">/</span>
           <span className="pp-breadcrumb-current">{title}</span>
         </div>
 

@@ -121,6 +121,13 @@
 }
 .pp-breadcrumb-link { color: var(--fg-mut); transition: color .15s ease; }
 .pp-breadcrumb-link:hover { color: var(--fg); }
+.pp-breadcrumb-link--back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--accent);
+}
+.pp-breadcrumb-link--back:hover { color: var(--accent); filter: brightness(1.15); }
 .pp-breadcrumb-sep { color: var(--fg-dim); }
 .pp-breadcrumb-current { color: var(--accent); }
 
