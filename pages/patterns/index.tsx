@@ -98,11 +98,6 @@ export default function Patterns({
         </div>
 
         <section className="hero">
-          <div className="hero-meta">
-            <span className="hero-meta-item">PATTERNS · v0.1</span>
-            <span className="hero-meta-sep">·</span>
-            <span className="hero-meta-item">UPDATED MAY 2026</span>
-          </div>
           <h1 className="hero-title">
             How to build with{" "}
             <span className="hero-title-soft">Inngest</span>.
