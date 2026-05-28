@@ -104,9 +104,7 @@ export default function Patterns({
           </h1>
           <p className="hero-sub">
             Production-tested patterns for AI agents, durable workflows, and
-            the event-driven systems they live in. Each pattern is built on
-            Inngest primitives — steps, events, throttling, schedules,
-            channels — and the guarantees they provide.
+            the event-driven systems
           </p>
         </section>
 
