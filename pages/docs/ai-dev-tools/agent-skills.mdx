@@ -1,38 +1,51 @@
 import { ResourceGrid, Resource } from "shared/Docs/Resources";
 import { Callout, CodeGroup } from "shared/Docs/mdx";
 
-import { BookOpenIcon, CodeBracketIcon, WrenchScrewdriverIcon } from "@heroicons/react/24/outline";
+import { CodeBracketIcon, ComputerDesktopIcon, WrenchScrewdriverIcon } from "@heroicons/react/24/outline";
 
-export const description = "Pre-built agent skills that teach AI coding agents like Claude Code and Cursor how to write, test, and debug Inngest functions."
+export const description = "Install Inngest plugins and skills for Claude Code, Codex, Cursor, and other AI coding agents so they can write, test, and debug durable functions."
 
-# Agent Skills
+# AI Coding Agent Plugins and Skills
 
-Inngest Skills provides pre-built [agent skills](https://agentskills.io) for AI coding agents like Claude Code, Cursor, and Windsurf. They give your coding agent comprehensive, up-to-date guidance on building reliable applications with Inngest — from initial setup to advanced flow control.
+Inngest provides official plugins and [agent skills](https://agentskills.io) for AI coding agents like Claude Code, Codex, Cursor, and Windsurf. They give your agent current guidance for building reliable applications with Inngest — from initial setup to advanced flow control and realtime updates.
 
 <Callout>
-  Inngest Skills is open source at [github.com/inngest/inngest-skills](https://github.com/inngest/inngest-skills).
+  Use the Claude Code or Codex plugin for the best experience. Each plugin packages Inngest skills with local dev server MCP wiring so your agent can write code and inspect running functions in one loop.
 </Callout>
 
-## Why use agent skills?
+## What to install
 
-Instead of relying on an AI model's training data (which may be outdated or incomplete), agent skills provide:
+| AI tool | Recommended install | What it includes |
+| --- | --- | --- |
+| **Claude Code** | Inngest Claude Code plugin | Seven Inngest skills, MCP config for the local dev server, and an eval harness |
+| **Codex** | Inngest Codex plugin bundle | Seven Codex skills, Codex plugin metadata, MCP config, and local marketplace metadata |
+| **Cursor, Windsurf, and other agents** | Standalone `inngest-skills` repository | The same skill content in a portable format |
+
+## Why use Inngest plugins?
+
+Instead of relying on an AI model's training data, which may be outdated or incomplete, Inngest plugins provide:
 
 - **Current API knowledge** — Accurate function signatures, configuration options, and best practices
 - **Step-by-step guidance** — Structured instructions for common Inngest patterns
-- **Workflow templates** — Proven patterns for background jobs, scheduled tasks, and event-driven workflows
+- **Workflow templates** — Proven patterns for background jobs, scheduled tasks, webhook handlers, and event-driven workflows
+- **Local feedback loops** — MCP access to your running dev server so agents can list functions, send events, and inspect runs
 
-## Installation
+## Install
 
 <CodeGroup>
 
-```bash {{ title: "Skills.sh" }}
-npx skills add inngest/inngest-skills
+```bash {{ title: "Claude Code" }}
+/plugin marketplace add inngest/inngest-claude-code-plugin
+/plugin install inngest@inngest-claude-code-plugin
 ```
 
+```bash {{ title: "Codex" }}
+# From a checkout of the Inngest Codex plugin repository:
+/plugin install /path/to/inngest-codex-plugin/plugins/inngest
+```
 
-```bash {{ title: "Claude Code" }}
-/plugin marketplace add inngest/inngest-skills
-/plugin install inngest-skills@inngest-agent-skills
+```bash {{ title: "Skills.sh" }}
+npx skills add inngest/inngest-skills
 ```
 
 ```text {{ title: "Cursor" }}
@@ -42,7 +55,7 @@ Load the Inngest skills from https://github.com/inngest/inngest-skills for build
 
 </CodeGroup>
 
-For other agents, reference the [repository](https://github.com/inngest/inngest-skills) directly or clone it to your agent's skills directory. Each skill is self-contained with full documentation in its `SKILL.md` file.
+For other agents, reference the [standalone skills repository](https://github.com/inngest/inngest-skills) directly or clone it to your agent's skills directory. Each skill is self-contained with full documentation in its `SKILL.md` file.
 
 ## Available skills
 
@@ -54,10 +67,11 @@ For other agents, reference the [repository](https://github.com/inngest/inngest-
 | **inngest-steps** | Use step methods to build durable workflows | `step.run`, `step.sleep`, `step.waitForEvent`, loops, parallel execution |
 | **inngest-flow-control** | Configure flow control for functions | Concurrency limits, throttling, rate limiting, debounce, priority, batching |
 | **inngest-middleware** | Create middleware for cross-cutting concerns | Middleware lifecycle, dependency injection, built-in middleware |
+| **inngest-realtime** | Stream workflow updates to users | Realtime channels, subscription tokens, React hooks, SSE consumers |
 
 ## Language support
 
-These skills are currently focused on **TypeScript**. Core concepts like events, steps, and flow control apply across all Inngest SDKs, but code examples and setup instructions are TypeScript-specific.
+These plugins and skills are currently focused on **TypeScript**. Core concepts like events, steps, flow control, and realtime updates apply across all Inngest SDKs, but code examples and setup instructions are TypeScript-specific.
 
 For Python or Go, refer to the [Inngest documentation](/docs) and [llms.txt](https://www.inngest.com/llms.txt) for language-specific guidance.
 
@@ -70,15 +84,27 @@ For the best AI development experience, use agent skills alongside the [Inngest 
 
 This enables a complete write, test, and debug loop powered by your coding agent.
 
+## Repositories
+
+The plugin repositories mirror their skills from [`inngest/inngest-skills`](https://github.com/inngest/inngest-skills) so Claude Code, Codex, and portable skills installs stay aligned.
+
 ## Resources
 
-<ResourceGrid cols={2}>
+<ResourceGrid cols={3}>
+
+<Resource resource={{
+  href: "https://github.com/inngest/inngest-claude-code-plugin",
+  name: "Claude Code plugin",
+  icon: ComputerDesktopIcon,
+  description: "Official Inngest plugin for Claude Code with skills and dev-server MCP wiring.",
+  pattern: 1,
+}}/>
 
 <Resource resource={{
   href: "https://github.com/inngest/inngest-skills",
   name: "inngest-skills on GitHub",
   icon: CodeBracketIcon,
-  description: "Source code, installation instructions, and contribution guide.",
+  description: "Portable skills source of truth for coding agents that support skill directories.",
   pattern: 1,
 }}/>
 
