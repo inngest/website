@@ -4,9 +4,11 @@ export const description = "Monitor function runs, event throughput, and step ex
 
 # Observability & Metrics
 
-Durable execution means your code runs across multiple steps, retries, and time boundaries. A single function might sleep for hours, fan out across hundreds of jobs, or chain LLM calls with tool execution loops. When something fails at step 14 of a 20-step workflow, or an agent's fifth inference call times out, you need to see exactly where it broke and why.
+Durable execution runs your code across steps, retries, and time boundaries. Each step is retried and persisted independently. When something fails, you need to see where.
 
-Inngest automatically captures this execution data for every function run. You get metrics, traces, event logs, and per-step timing without adding any instrumentation to your code. This page covers the metrics dashboard. For step-level execution detail, see [Traces](/docs/platform/monitor/traces). For querying raw event and run data with SQL, see [Insights](/docs/platform/monitor/insights).
+Inngest captures execution data for every function run. You get metrics, traces, event logs, and per-step timing without instrumenting your code.
+
+This page covers the metrics dashboard. For step-level execution detail, see [Traces](/docs/platform/monitor/traces). For querying raw event and run data with SQL, see [Insights](/docs/platform/monitor/insights).
 
 ## Function runs observability
 
