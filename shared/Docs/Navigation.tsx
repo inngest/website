@@ -761,13 +761,17 @@ function VersionSwitcher({
   const handleVersionChange = (newVersion: TSVersion) => {
     setTsVersion(newVersion);
 
-    // If on a versioned TS page for a different version, navigate to version intro
+    // If on a versioned TS page for a different version, navigate to version intro.
+    // Target the post-redirect /intro page so the client router does a SPA
+    // navigation instead of a hard reload — the bare version paths
+    // (/docs/reference/typescript and /docs/reference/typescript/vX) are
+    // redirects() sources, and pushing those forces a full-page reload (flash).
     const pathVersion = getSdkVersionFromPath(pathname);
     if (pathVersion && pathVersion !== newVersion) {
       if (newVersion === TS_STABLE) {
-        router.push("/docs/reference/typescript");
+        router.push("/docs/reference/typescript/intro");
       } else {
-        router.push(`/docs/reference/typescript/${newVersion}`);
+        router.push(`/docs/reference/typescript/${newVersion}/intro`);
       }
     }
   };
@@ -935,7 +939,10 @@ export function Navigation(props) {
                           language === "typescript" &&
                           tsVersion !== TS_STABLE
                         ) {
-                          href = `/docs/reference/typescript/${tsVersion}`;
+                          // Target the post-redirect /intro page so the client
+                          // router does a SPA navigation instead of a hard
+                          // reload (the bare version path is a redirect source).
+                          href = `/docs/reference/typescript/${tsVersion}/intro`;
                         }
 
                         router.push(href);

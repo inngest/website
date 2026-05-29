@@ -40,9 +40,13 @@ export const SDK_TITLE_TO_LANGUAGE: Record<string, SDKLanguage> = {
   "Go SDK": "go",
 };
 
-// Map language IDs to their reference home pages
+// Map language IDs to their reference home pages.
+// These must be post-redirect destinations, not redirects() sources: pushing a
+// redirect source (e.g. "/docs/reference/typescript") forces a hard page reload
+// because the client router can't resolve a server redirect, which causes a
+// visible flash. The TS home redirects to /intro, so we target that directly.
 export const SDK_HOME_PAGES: Record<SDKLanguage, string> = {
-  typescript: "/docs/reference/typescript",
+  typescript: "/docs/reference/typescript/intro",
   python: "/docs/reference/python",
   go: "/docs/reference/go/migrations/v0.8-to-v0.11", // Go has limited docs, this is first available page
 };
