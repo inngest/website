@@ -679,12 +679,7 @@ function LanguageSwitcher({
   const CurrentIcon = SDK_ICONS[displayLanguage];
 
   return (
-    <div
-      className={clsx(
-        "mt-3 opacity-0 transition-opacity duration-150",
-        hydrated && "opacity-100"
-      )}
-    >
+    <div className="mt-3">
       <Select.Root
         value={displayLanguage}
         onValueChange={(val) => handleLanguageChange(val as SDKLanguage)}
@@ -789,12 +784,7 @@ function VersionSwitcher({
   const currentVersion = TS_VERSIONS.find((v) => v.id === displayVersion);
 
   return (
-    <div
-      className={clsx(
-        "mt-2 opacity-0 transition-opacity duration-150",
-        hydrated && "opacity-100"
-      )}
-    >
+    <div className="mt-2">
       <Select.Root
         value={displayVersion}
         onValueChange={(val) => handleVersionChange(val as TSVersion)}
