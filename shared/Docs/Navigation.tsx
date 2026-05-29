@@ -144,27 +144,19 @@ export function TabItem({ href, children, matcher, title }) {
   const router = useRouter();
   const pathname = router.pathname;
   const isActive = isMatch(matcher, pathname) || href === pathname;
-  const className = clsx(
-    "relative top-0.5 block cursor-pointer whitespace-nowrap px-3 py-4 text-sm font-medium leading-5 transition",
-    isActive &&
-      "border-b-2 border-b-black text-black hover:text-black dark:border-b-carbon-300 dark:text-carbon-100",
-    !isActive &&
-      "text-carbon-600 hover:text-carbon-900 dark:text-carbon-400 dark:hover:text-white"
-  );
-
-  if (href == null) {
-    return (
-      <li>
-        <span className={className}>
-          <span className="relative -top-0.5">{children}</span>
-        </span>
-      </li>
-    );
-  }
 
   return (
     <li>
-      <Link href={href} className={className}>
+      <Link
+        href={href}
+        className={clsx(
+          "relative top-0.5 block cursor-pointer whitespace-nowrap px-3 py-4 text-sm font-medium leading-5 transition",
+          isActive &&
+            "border-b-2 border-b-black text-black hover:text-black dark:border-b-carbon-300 dark:text-carbon-100",
+          !isActive &&
+            "text-carbon-600 hover:text-carbon-900 dark:text-carbon-400 dark:hover:text-white"
+        )}
+      >
         <span className="relative -top-0.5">{children}</span>
       </Link>
     </li>
@@ -193,29 +185,11 @@ function NavLink({
   target?: string;
   children: React.ReactNode;
 }) {
-  // Guard against a nullish href. A malformed nav entry (href undefined) would
-  // otherwise throw here on href.match(...) and, further down, crash next/link
-  // (formatUrl(undefined) → "Cannot destructure property 'auth'"), which
-  // white-screens the entire docs page. Render the label without a link instead.
-  if (href == null) {
-    return (
-      <span className={clsx("block py-1 pl-2 text-sm", className)}>
-        {children}
-      </span>
-    );
-  }
   const isExternal = target === "_blank" || href.match(/^https?:\/\//);
   const linkTarget = target ?? href.match(/^https?:\/\//) ? "_blank" : null;
-  // Anchor-only hrefs (e.g. "#section-id") must render as plain <a> rather
-  // than Next.js <Link>. Next's Link resolves fragment hrefs against the
-  // route's pathname, which differs from the public URL when a rewrite is
-  // in play (e.g. /typescript/intro → /typescript/v4/intro). That mismatch
-  // causes hydration errors on Reference pages.
-  const isFragmentOnly = href.startsWith("#");
   return (
     <LinkOrHref
       href={href}
-      forceAnchor={isFragmentOnly}
       aria-current={active ? "page" : undefined}
       target={linkTarget}
       className={clsx(
@@ -239,16 +213,9 @@ function NavLink({
 }
 
 // LinkOrHref returns a standard link with target="_blank" if we want to open a docs
-// link in a new tab. Plain <a> is also used when forceAnchor is set, e.g. for
-// fragment-only hrefs that must resolve consistently between SSR and CSR.
-const LinkOrHref = ({ forceAnchor, ...props }: any) => {
-  // Defense in depth: next/link calls formatUrl(href) and throws on a nullish
-  // href. Render a non-navigating <span> so a bad href never white-screens.
-  if (props.href == null) {
-    const { href, target, ...rest } = props;
-    return <span {...rest} />;
-  }
-  if (props.target === "_blank" || forceAnchor) {
+// link in a new tab.
+const LinkOrHref = (props: any) => {
+  if (props.target === "_blank") {
     return <a {...props} />;
   }
   return <Link {...props} />;
@@ -954,9 +921,8 @@ export function Navigation(props) {
                           effectiveLanguage === "typescript" &&
                           effectiveTsVersion !== TS_STABLE
                         ) {
-                          // Target the post-redirect /intro page so the client
-                          // router does a SPA navigation instead of a hard
-                          // reload (the bare version path is a redirect source).
+                          // Target the concrete generated /intro page so the
+                          // client router fetches `_next/data` JSON.
                           href = `/docs/reference/typescript/${effectiveTsVersion}/intro`;
                         }
 

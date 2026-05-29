@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import Link from "next/link";
 import { useInView } from "framer-motion";
 
 import { useSectionStore } from "./SectionProvider";
@@ -38,12 +39,8 @@ function Eyebrow({ tag, label }) {
 }
 
 function Anchor({ id, inView, children, className = "" }) {
-  // Plain <a> rather than next/link: fragment-only hrefs are resolved against
-  // the route on the server but against the URL bar on the client. Under the
-  // /typescript versionless → /typescript/v4 rewrite, those differ, which
-  // produces a hydration mismatch on every heading.
   return (
-    <a
+    <Link
       href={`#${id}`}
       className={`group text-inherit no-underline hover:text-inherit ${className}`}
     >
@@ -55,7 +52,7 @@ function Anchor({ id, inView, children, className = "" }) {
         </div>
       )}
       {children}
-    </a>
+    </Link>
   );
 }
 

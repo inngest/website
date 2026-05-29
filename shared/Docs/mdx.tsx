@@ -1,5 +1,5 @@
 "use client";
-import Link from "next/link";
+import Link, { LinkProps } from "next/link";
 import clsx from "clsx";
 
 import { Heading } from "./Heading";
@@ -18,42 +18,23 @@ import "react-medium-image-zoom/dist/styles.css";
 
 export { default as YouTube } from "react-youtube-embed";
 
+// export const a: React.FunctionComponent<LinkProps> = (props) => (
+//   <Link {...props} />
+// );
+
 export const a: React.FunctionComponent<
   React.AnchorHTMLAttributes<HTMLAnchorElement>
-> = ({ children, href, target, rel, download }) => {
-  const className =
-    "text-breeze-600 hover:text-breeze-500 hover:decoration-breeze-500 dark:text-breeze-300 hover:dark:text-breeze-400 hover:dark:decoration-breeze-400";
-
-  if (!href) {
-    return <span className={className}>{children}</span>;
-  }
-
-  const useAnchor =
-    target === "_blank" ||
-    !!download ||
-    href.startsWith("#") ||
-    /^https?:\/\//.test(href);
-
-  if (useAnchor) {
-    return (
-      <a
-        href={href}
-        target={target}
-        rel={rel}
-        download={download}
-        className={className}
-      >
-        {children}
-      </a>
-    );
-  }
-
-  return (
-    <Link href={href} className={className}>
-      {children}
-    </Link>
-  );
-};
+> = ({ children, href, target, rel, download }) => (
+  <Link
+    href={href}
+    target={target}
+    rel={rel}
+    download={download}
+    className="text-breeze-600 hover:text-breeze-500 hover:decoration-breeze-500 dark:text-breeze-300 hover:dark:text-breeze-400 hover:dark:decoration-breeze-400"
+  >
+    {children}
+  </Link>
+);
 
 export { Button } from "../Button";
 export {
