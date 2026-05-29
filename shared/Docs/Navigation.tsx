@@ -186,6 +186,13 @@ function NavLink({
   target?: string;
   children: React.ReactNode;
 }) {
+  // Guard against a nullish href. A malformed nav entry (href undefined) would
+  // otherwise throw here on href.match(...) and, further down, crash next/link
+  // (formatUrl(undefined) → "Cannot destructure property 'auth'"), which
+  // white-screens the entire docs page. Render the label without a link instead.
+  if (href == null) {
+    return <span className={clsx("block py-1 pl-2 text-sm", className)}>{children}</span>;
+  }
   const isExternal = target === "_blank" || href.match(/^https?:\/\//);
   const linkTarget = target ?? href.match(/^https?:\/\//) ? "_blank" : null;
   // Anchor-only hrefs (e.g. "#section-id") must render as plain <a> rather
@@ -224,6 +231,12 @@ function NavLink({
 // link in a new tab. Plain <a> is also used when forceAnchor is set, e.g. for
 // fragment-only hrefs that must resolve consistently between SSR and CSR.
 const LinkOrHref = ({ forceAnchor, ...props }: any) => {
+  // Defense in depth: next/link calls formatUrl(href) and throws on a nullish
+  // href. Render a non-navigating <span> so a bad href never white-screens.
+  if (props.href == null) {
+    const { href, target, ...rest } = props;
+    return <span {...rest} />;
+  }
   if (props.target === "_blank" || forceAnchor) {
     return <a {...props} />;
   }

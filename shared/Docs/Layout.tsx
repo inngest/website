@@ -10,6 +10,7 @@ import { Home } from "./Home";
 import { Header } from "./Header";
 import Logo from "../Icons/Logo";
 import { Navigation, PageSidebar, ActiveSectionProvider } from "./Navigation";
+import { ErrorBoundary } from "./ErrorBoundary";
 import { Prose } from "./Prose";
 import { SectionProvider } from "./SectionProvider";
 import { useMobileNavigationStore } from "./MobileNavigation";
@@ -174,7 +175,9 @@ export function Layout({
               layoutScroll
               className="fixed inset-y-0 mt-14 left-0 z-40 contents lg:w-[248px]  xl:w-[280px] overflow-y-auto border-r border-subtle pl-4 pr-3 py-4 pb-8 lg:block"
             >
-              <Navigation className="hidden lg:block" />
+              <ErrorBoundary name="navigation">
+                <Navigation className="hidden lg:block" />
+              </ErrorBoundary>
             </motion.header>
 
             {hidePageSidebar ? null : (
@@ -200,8 +203,20 @@ export function Layout({
             >
               <main className="pt-6 lg:pt-8 xl:pr-8">
                 <Prose as="article">
-                  <Breadcrumb />
-                  {children}
+                  <ErrorBoundary
+                    name="content"
+                    fallback={
+                      <div className="py-10">
+                        <p>
+                          Something went wrong rendering this page. Try
+                          reloading; if it persists, please let us know.
+                        </p>
+                      </div>
+                    }
+                  >
+                    <Breadcrumb />
+                    {children}
+                  </ErrorBoundary>
                   <div
                     className={
                       hidePageSidebar ? "py-10" : "pt-10 pb-12 xl:pr-0"
