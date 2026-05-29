@@ -42,7 +42,6 @@ import {
   SDK_HOME_PAGES,
   getLanguageFromPath,
   getSdkVersionFromPath,
-  normalizeTsReferencePath,
   TS_STABLE,
   TS_VERSIONS,
   type SDKLanguage,
@@ -427,9 +426,7 @@ function NavigationGroup({
   let isInsideMobileNavigation = useIsInsideMobileNavigation();
   let [router] = useInitialValue([useRouter()], isInsideMobileNavigation);
 
-  // Normalize the pathname so the versioned path from Next.js rewrites
-  // (e.g. /typescript/v3/intro) matches versionless nav hrefs (/typescript/intro).
-  const currentPath = normalizeTsReferencePath(router.pathname);
+  const currentPath = router.pathname;
 
   // hack: animation flickers on initial render so let's enable it after mount
   let [animateAccordion, setAnimateAccordion] = useState(false);
@@ -787,14 +784,12 @@ function VersionSwitcher({
     setTsVersion(newVersion);
 
     // If on a versioned TS page for a different version, navigate to version intro.
-    // Target the post-redirect /intro page so the client router does a SPA
-    // navigation instead of a hard reload — the bare version paths
-    // (/docs/reference/typescript and /docs/reference/typescript/vX) are
-    // redirects() sources, and pushing those forces a full-page reload (flash).
+    // Target the concrete generated /intro page so the client router fetches
+    // `_next/data` JSON instead of hitting a redirect or rewrite source.
     const pathVersion = getSdkVersionFromPath(pathname);
     if (pathVersion && pathVersion !== newVersion) {
       if (newVersion === TS_STABLE) {
-        router.push("/docs/reference/typescript/intro");
+        router.push(`/docs/reference/typescript/${TS_STABLE}/intro`);
       } else {
         router.push(`/docs/reference/typescript/${newVersion}/intro`);
       }
@@ -874,9 +869,7 @@ function VersionSwitcher({
 export function Navigation(props) {
   const router = useRouter();
 
-  // Normalize the pathname so the versioned path from Next.js rewrites
-  // matches versionless nav hrefs.
-  const pathname = normalizeTsReferencePath(router.pathname);
+  const pathname = router.pathname;
 
   const { activeSection, setActiveSection } = useActiveSection();
   const { effectiveLanguage, effectiveTsVersion, setLanguage, setTsVersion } =

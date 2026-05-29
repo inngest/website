@@ -9,12 +9,13 @@ import {
 import { parse } from "node:path";
 import { TS_STABLE, type TSVersion } from "./LanguageStore";
 
-// Build a TypeScript SDK reference path. Stable version gets versionless
-// paths; non-stable gets a version prefix.
+// Build a TypeScript SDK reference path.
+//
+// We intentionally link to the concrete generated SSG route for every version,
+// including the stable version. The versionless public route is served by a
+// rewrite, but its `_next/data/...json` URL does not resolve to JSON on Vercel,
+// which breaks Pages Router client transitions.
 function tsRef(version: TSVersion, path: string): string {
-  if (version === TS_STABLE) {
-    return `/docs/reference/typescript/${path}`;
-  }
   return `/docs/reference/typescript/${version}/${path}`;
 }
 
@@ -740,7 +741,7 @@ const sectionLearn: (NavGroup | NavLink)[] = [
           },
           {
             title: "Durable Fetch",
-            href: "/docs/reference/typescript/functions/fetch",
+            href: tsRef("v4", "functions/fetch"),
           },
         ],
       },
@@ -1369,7 +1370,7 @@ export const sidebarMenuTabs = [
   {
     title: "Reference",
     icon: CodeBracketIcon,
-    href: "/docs/reference/typescript",
+    href: `/docs/reference/typescript/${TS_STABLE}/intro`,
     matcher: matchers.reference,
   },
 ];
@@ -1388,7 +1389,7 @@ export const topLevelNav = [
   {
     title: "Reference",
     icon: CodeBracketIcon,
-    href: "/docs/reference/typescript",
+    href: `/docs/reference/typescript/${TS_STABLE}/intro`,
     matcher: matchers.reference,
     sectionLinks: sectionReference,
   },
