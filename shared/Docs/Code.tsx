@@ -16,7 +16,6 @@ import clsx from "clsx";
 import create from "zustand";
 
 import { Tag } from "./Tag";
-import { useSearchParams } from "next/navigation";
 import { useLocalStorage } from "react-use";
 import {
   useLanguageStore,
@@ -38,6 +37,15 @@ const languageNames = {
 
 function getPanelTitle({ title, language }) {
   return title ?? languageNames[language] ?? "Code";
+}
+
+function getQueryParamFromAsPath(asPath: string, key: string) {
+  const query = asPath.split("#")[0]?.split("?")[1];
+  if (!query) {
+    return null;
+  }
+
+  return new URLSearchParams(query).get(key);
 }
 
 function ClipboardIcon(props) {
@@ -471,8 +479,10 @@ export function GuideSelector({
   const searchParamKey = "guide";
   const [localStorageCurrentLanguage, setLocalStorageCurrentLanguage] =
     useLocalStorage("currentLanguage", null);
-  const searchParams = useSearchParams();
-  const qsCurrentLanguage = searchParams.get(searchParamKey);
+  const qsCurrentLanguage = getQueryParamFromAsPath(
+    router.asPath,
+    searchParamKey
+  );
 
   const [selected, setSelected] = useState<string>(options[0].key);
   const [defaultSelected, setDefaultSelected] = useState<string>(
@@ -574,8 +584,10 @@ export function LanguageSelector({ children }: { children: React.ReactNode }) {
     "currentLanguage",
     null
   );
-  const searchParams = useSearchParams();
-  const qsCurrentLanguage = searchParams.get(searchParamKey);
+  const qsCurrentLanguage = getQueryParamFromAsPath(
+    router.asPath,
+    searchParamKey
+  );
 
   // Get the global language store
   const { language: globalLanguage, setLanguage: setGlobalLanguage } =
