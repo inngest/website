@@ -188,9 +188,16 @@ function NavLink({
 }) {
   const isExternal = target === "_blank" || href.match(/^https?:\/\//);
   const linkTarget = target ?? href.match(/^https?:\/\//) ? "_blank" : null;
+  // Anchor-only hrefs (e.g. "#section-id") must render as plain <a> rather
+  // than Next.js <Link>. Next's Link resolves fragment hrefs against the
+  // route's pathname, which differs from the public URL when a rewrite is
+  // in play (e.g. /typescript/intro → /typescript/v4/intro). That mismatch
+  // causes hydration errors on Reference pages.
+  const isFragmentOnly = href.startsWith("#");
   return (
     <LinkOrHref
       href={href}
+      forceAnchor={isFragmentOnly}
       aria-current={active ? "page" : undefined}
       target={linkTarget}
       className={clsx(
@@ -214,9 +221,10 @@ function NavLink({
 }
 
 // LinkOrHref returns a standard link with target="_blank" if we want to open a docs
-// link in a new tab.
-const LinkOrHref = (props: any) => {
-  if (props.target === "_blank") {
+// link in a new tab. Plain <a> is also used when forceAnchor is set, e.g. for
+// fragment-only hrefs that must resolve consistently between SSR and CSR.
+const LinkOrHref = ({ forceAnchor, ...props }: any) => {
+  if (props.target === "_blank" || forceAnchor) {
     return <a {...props} />;
   }
   return <Link {...props} />;
