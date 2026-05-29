@@ -1084,10 +1084,16 @@ export function Navigation(props) {
 }
 
 /**
- * Consolidated hydration-safe wrapper around the language store. During SSR and
- * the first client render, values are derived from the URL so the markup
- * matches what the server produced. After hydration, the persisted store
- * becomes the source of truth and the store is synced to the URL once.
+ * Hydration-safe wrapper around the persisted language store.
+ *
+ * The URL is the source of truth for which SDK/version the page is showing.
+ * The persisted store only fills in when the URL has no language/version info
+ * (e.g. /docs/learn/* pages) so the switchers remember the user's preference
+ * across navigations.
+ *
+ * Pre-hydration we never read the store. Post-hydration the store is consulted
+ * only as a fallback. This means: when the URL has SDK info, the value never
+ * changes between SSR and CSR — no flicker, no sidebar re-shuffle.
  */
 export function useHydratedLanguageState(pathname: string) {
   const [hydrated, setHydrated] = useState(false);
@@ -1109,12 +1115,13 @@ export function useHydratedLanguageState(pathname: string) {
     }
   }, [pathLanguage, pathTsVersion, setLanguage, setTsVersion]);
 
-  let effectiveLanguage: SDKLanguage = pathLanguage || "typescript";
-  let effectiveTsVersion: TSVersion = pathTsVersion || TS_STABLE;
-  if (hydrated) {
-    effectiveLanguage = language;
-    effectiveTsVersion = tsVersion;
-  }
+  // URL wins. Store only fills in when the URL is silent (e.g. /docs/learn/*).
+  // Pre-hydration we ignore the store entirely so SSR and the first client
+  // render produce identical markup.
+  const effectiveLanguage: SDKLanguage =
+    pathLanguage ?? (hydrated ? language : "typescript");
+  const effectiveTsVersion: TSVersion =
+    pathTsVersion ?? (hydrated ? tsVersion : TS_STABLE);
 
   return {
     effectiveLanguage,
