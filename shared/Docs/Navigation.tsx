@@ -645,11 +645,9 @@ const SDK_ICONS: Record<
 function LanguageSwitcher({
   displayLanguage,
   setLanguage,
-  hydrated,
 }: {
   displayLanguage: SDKLanguage;
   setLanguage: (lang: SDKLanguage) => void;
-  hydrated: boolean;
 }) {
   const router = useRouter();
   const pathname = router.asPath.replace(/(\?|#).+$/, "");
@@ -751,13 +749,11 @@ function VersionSwitcher({
   activeSection,
   displayVersion,
   setTsVersion,
-  hydrated,
 }: {
   language: SDKLanguage;
   activeSection: string;
   displayVersion: TSVersion;
   setTsVersion: (version: TSVersion) => void;
-  hydrated: boolean;
 }) {
   const router = useRouter();
   const pathname = router.asPath.replace(/(\?|#).+$/, "");
@@ -857,7 +853,6 @@ export function Navigation(props) {
   const {
     effectiveLanguage,
     effectiveTsVersion,
-    hydrated,
     setLanguage,
     setTsVersion,
   } = useHydratedLanguageState(pathname);
@@ -971,14 +966,12 @@ export function Navigation(props) {
             <LanguageSwitcher
               displayLanguage={effectiveLanguage}
               setLanguage={setLanguage}
-              hydrated={hydrated}
             />
             <VersionSwitcher
               language={effectiveLanguage}
               activeSection={activeSection}
               displayVersion={effectiveTsVersion}
               setTsVersion={setTsVersion}
-              hydrated={hydrated}
             />
           </div>
         )}
