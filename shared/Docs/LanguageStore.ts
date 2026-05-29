@@ -4,14 +4,14 @@ import { persist } from "zustand/middleware";
 export type SDKLanguage = "typescript" | "python" | "go";
 
 const tsVersions = ["v3", "v4"] as const;
-export type TSVersion = (typeof tsVersions)[number];
+export type TSVersion = typeof tsVersions[number];
 function isTSVersion(version: string): version is TSVersion {
   return tsVersions.includes(version as TSVersion);
 }
 
 // Source of truth is TS_STABLE_VERSION in next.config.mjs, exposed here
 // via NEXT_PUBLIC_TS_STABLE so both build rewrites and client code agree.
-const tsStableEnvVar = process.env.NEXT_PUBLIC_TS_STABLE ?? "v3";
+const tsStableEnvVar = process.env.NEXT_PUBLIC_TS_STABLE ?? "v4";
 if (!isTSVersion(tsStableEnvVar)) {
   throw new Error(`Invalid NEXT_PUBLIC_TS_STABLE env var: ${tsStableEnvVar}`);
 }
@@ -21,7 +21,11 @@ export const TS_STABLE = tsStableEnvVar;
 // Used in both meta tags (for Algolia indexing) and search filters (for querying).
 export const SDK_ALL = "all";
 
-export const SDK_LANGUAGES: { id: SDKLanguage; title: string; shortTitle: string }[] = [
+export const SDK_LANGUAGES: {
+  id: SDKLanguage;
+  title: string;
+  shortTitle: string;
+}[] = [
   { id: "typescript", title: "TypeScript", shortTitle: "TS" },
   { id: "python", title: "Python", shortTitle: "Py" },
   { id: "go", title: "Go", shortTitle: "Go" },
@@ -72,7 +76,6 @@ export const useLanguageStore = create<LanguageState>()(
   )
 );
 
-
 /**
  * Check if a given URL path belongs to a specific SDK
  */
@@ -106,10 +109,19 @@ export function normalizeTsReferencePath(path: string): string {
  * Detect SDK version from a URL path
  */
 export function getSdkVersionFromPath(path: string): TSVersion | null {
-  if (path.includes("/typescript/v4/") || path.endsWith("/typescript/v4")) { return "v4"; }
-  if (path.includes("/typescript/v3/") || path.endsWith("/typescript/v3")) { return "v3"; }
+  if (path.includes("/typescript/v4/") || path.endsWith("/typescript/v4")) {
+    return "v4";
+  }
+  if (path.includes("/typescript/v3/") || path.endsWith("/typescript/v3")) {
+    return "v3";
+  }
 
   // Versionless TypeScript reference paths map to stable
-  if (path === "/docs/reference/typescript" || path.startsWith("/docs/reference/typescript/")) { return TS_STABLE; }
+  if (
+    path === "/docs/reference/typescript" ||
+    path.startsWith("/docs/reference/typescript/")
+  ) {
+    return TS_STABLE;
+  }
   return null;
 }

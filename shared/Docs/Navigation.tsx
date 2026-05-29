@@ -145,19 +145,27 @@ export function TabItem({ href, children, matcher, title }) {
   const router = useRouter();
   const pathname = router.pathname;
   const isActive = isMatch(matcher, pathname) || href === pathname;
+  const className = clsx(
+    "relative top-0.5 block cursor-pointer whitespace-nowrap px-3 py-4 text-sm font-medium leading-5 transition",
+    isActive &&
+      "border-b-2 border-b-black text-black hover:text-black dark:border-b-carbon-300 dark:text-carbon-100",
+    !isActive &&
+      "text-carbon-600 hover:text-carbon-900 dark:text-carbon-400 dark:hover:text-white"
+  );
+
+  if (href == null) {
+    return (
+      <li>
+        <span className={className}>
+          <span className="relative -top-0.5">{children}</span>
+        </span>
+      </li>
+    );
+  }
 
   return (
     <li>
-      <Link
-        href={href}
-        className={clsx(
-          "relative top-0.5 block cursor-pointer whitespace-nowrap px-3 py-4 text-sm font-medium leading-5 transition",
-          isActive &&
-            "border-b-2 border-b-black text-black hover:text-black dark:border-b-carbon-300 dark:text-carbon-100",
-          !isActive &&
-            "text-carbon-600 hover:text-carbon-900 dark:text-carbon-400 dark:hover:text-white"
-        )}
-      >
+      <Link href={href} className={className}>
         <span className="relative -top-0.5">{children}</span>
       </Link>
     </li>
@@ -191,7 +199,11 @@ function NavLink({
   // (formatUrl(undefined) → "Cannot destructure property 'auth'"), which
   // white-screens the entire docs page. Render the label without a link instead.
   if (href == null) {
-    return <span className={clsx("block py-1 pl-2 text-sm", className)}>{children}</span>;
+    return (
+      <span className={clsx("block py-1 pl-2 text-sm", className)}>
+        {children}
+      </span>
+    );
   }
   const isExternal = target === "_blank" || href.match(/^https?:\/\//);
   const linkTarget = target ?? href.match(/^https?:\/\//) ? "_blank" : null;
@@ -867,13 +879,8 @@ export function Navigation(props) {
   const pathname = normalizeTsReferencePath(router.pathname);
 
   const { activeSection, setActiveSection } = useActiveSection();
-  const {
-    effectiveLanguage,
-    effectiveTsVersion,
-    setLanguage,
-    setTsVersion,
-  } = useHydratedLanguageState(pathname);
-  const { language, tsVersion } = useLanguageStore();
+  const { effectiveLanguage, effectiveTsVersion, setLanguage, setTsVersion } =
+    useHydratedLanguageState(pathname);
 
   // Find the section based on the active tab (Learn/Reference)
   const nestedSection =
@@ -942,20 +949,22 @@ export function Navigation(props) {
                       setActiveSection(tab.title);
                       // Navigate to SDK home page when switching to Reference tab
                       if (tab.title === "Reference" && !isActive) {
-                        let href = SDK_HOME_PAGES[language];
+                        let href =
+                          SDK_HOME_PAGES[effectiveLanguage] ??
+                          SDK_HOME_PAGES.typescript;
 
                         // Preserve non-stable TS version in the URL. This was
                         // added because the VersionSwitcher would lose the
                         // selected version when the user switched between the
                         // "Learn" and "Reference" tabs.
                         if (
-                          language === "typescript" &&
-                          tsVersion !== TS_STABLE
+                          effectiveLanguage === "typescript" &&
+                          effectiveTsVersion !== TS_STABLE
                         ) {
                           // Target the post-redirect /intro page so the client
                           // router does a SPA navigation instead of a hard
                           // reload (the bare version path is a redirect source).
-                          href = `/docs/reference/typescript/${tsVersion}/intro`;
+                          href = `/docs/reference/typescript/${effectiveTsVersion}/intro`;
                         }
 
                         router.push(href);
@@ -1107,6 +1116,12 @@ export function useHydratedLanguageState(pathname: string) {
   const { language, setLanguage, tsVersion, setTsVersion } = useLanguageStore();
   const pathLanguage = getLanguageFromPath(pathname);
   const pathTsVersion = getSdkVersionFromPath(pathname);
+  const storeLanguage = SDK_LANGUAGES.some((l) => l.id === language)
+    ? language
+    : "typescript";
+  const storeTsVersion = TS_VERSIONS.some((v) => v.id === tsVersion)
+    ? tsVersion
+    : TS_STABLE;
 
   // Sync store to URL on mount and on navigation so the URL always wins
   useEffect(() => {
@@ -1122,9 +1137,9 @@ export function useHydratedLanguageState(pathname: string) {
   // Pre-hydration we ignore the store entirely so SSR and the first client
   // render produce identical markup.
   const effectiveLanguage: SDKLanguage =
-    pathLanguage ?? (hydrated ? language : "typescript");
+    pathLanguage ?? (hydrated ? storeLanguage : "typescript");
   const effectiveTsVersion: TSVersion =
-    pathTsVersion ?? (hydrated ? tsVersion : TS_STABLE);
+    pathTsVersion ?? (hydrated ? storeTsVersion : TS_STABLE);
 
   return {
     effectiveLanguage,
