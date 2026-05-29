@@ -52,8 +52,6 @@ This workflow system is built with our [Go SDK](https://pkg.go.dev/github.com/in
 
 ![VM scheduling and placement flow](/assets/blog/event-driven-infrastructure-inventory-inngest-netbox/vm-schedule-placement.png)
 
-![Inngest inventory coordination architecture](/assets/blog/event-driven-infrastructure-inventory-inngest-netbox/architecture.jpg)
-
 On the Ansible side, a handler fires at the end of each playbook run. It collects host facts and sends them as an event to the Inngest event API:
 
 ```yaml
