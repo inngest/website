@@ -33,12 +33,7 @@ The main challenges were:
 
 Here's what that looked like:
 
-```
-Hardware info ──┐
-Ansible facts ──┼──► Transform / coordinate ──► NetBox
-Placement     ──┘
-(other sources)
-```
+![ETL data flow to NetBox](/assets/blog/event-driven-infrastructure-inventory-inngest-netbox/etl-flow.png)
 
 When drawn out like this, the shape looks a lot like an ETL. Which makes sense—we're really just taking data from one end, restructuring it, and then putting it at another location.
 
