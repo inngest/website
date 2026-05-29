@@ -10,10 +10,16 @@ import { Home } from "./Home";
 import { Header } from "./Header";
 import Logo from "../Icons/Logo";
 import { Navigation, PageSidebar, ActiveSectionProvider } from "./Navigation";
+import { ErrorBoundary } from "./ErrorBoundary";
 import { Prose } from "./Prose";
 import { SectionProvider } from "./SectionProvider";
 import { useMobileNavigationStore } from "./MobileNavigation";
-import { getLanguageFromPath, getSdkVersionFromPath, TS_STABLE, SDK_ALL } from "./LanguageStore";
+import {
+  getLanguageFromPath,
+  getSdkVersionFromPath,
+  TS_STABLE,
+  SDK_ALL,
+} from "./LanguageStore";
 import { getOpenGraphImageURL } from "../../utils/social";
 import clsx from "clsx";
 
@@ -73,9 +79,14 @@ export function Layout({
     : undefined;
 
   // Markdown alternate URL for AI/LLM discoverability
-  const docsPath = router.asPath.replace(/^\/(docs)/, "").split("?")[0].split("#")[0];
+  const docsPath = router.asPath
+    .replace(/^\/(docs)/, "")
+    .split("?")[0]
+    .split("#")[0];
   const markdownAlternateUrl = `https://www.inngest.com/docs-markdown${docsPath}`;
-  const canonicalUrl = `https://www.inngest.com${router.asPath.split("?")[0].split("#")[0]}`;
+  const canonicalUrl = `https://www.inngest.com${
+    router.asPath.split("?")[0].split("#")[0]
+  }`;
 
   // JSON-LD structured data for documentation pages
   const structuredData = {
@@ -123,7 +134,6 @@ export function Layout({
     );
   }
 
-
   return (
     <div className="dark:bg-carbon-1000">
       <MDXProvider components={mdxComponents as any}>
@@ -143,7 +153,11 @@ export function Layout({
           <meta name="docsearch:sdkVersion" content={sdkVersion} />
 
           {/* Markdown alternate for AI/LLM discoverability */}
-          <link rel="alternate" type="text/markdown" href={`https://www.inngest.com/docs${docsPath}.md`} />
+          <link
+            rel="alternate"
+            type="text/markdown"
+            href={`https://www.inngest.com/docs${docsPath}.md`}
+          />
 
           <link rel="preconnect" href="https://fonts-cdn.inngest.com/" />
           <link
@@ -160,60 +174,78 @@ export function Layout({
           />
 
           <script dangerouslySetInnerHTML={{ __html: modeScript }} />
-          <script dangerouslySetInnerHTML={{ __html: `
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
             window.editPageURL = "${editPageURL}";
-          `}} />
+          `,
+            }}
+          />
         </Head>
         <ActiveSectionProvider>
-        <SectionProvider sections={sections}>
-          <Header />
+          <SectionProvider sections={sections}>
+            <Header />
 
-          <div className="lg:ml-[248px] xl:ml-[280px]">
-            {/* @ts-ignore */}
-            <motion.header
-              layoutScroll
-              className="fixed inset-y-0 mt-14 left-0 z-40 contents lg:w-[248px]  xl:w-[280px] overflow-y-auto border-r border-subtle pl-4 pr-3 py-4 pb-8 lg:block"
-            >
-              <Navigation className="hidden lg:block" />
-            </motion.header>
-
-            {hidePageSidebar ? null : (
-              // @ts-ignore
-              <motion.nav
+            <div className="lg:ml-[248px] xl:ml-[280px]">
+              {/* @ts-ignore */}
+              <motion.header
                 layoutScroll
-                className="fixed overflow-y-auto inset-y-0 mt-14 pt-16 pb-12 right-0 z-40 hidden w-60 px-6 2xl:px-10 xl:block 2xl:w-96"
+                className="fixed inset-y-0 left-0 z-40 mt-14 contents overflow-y-auto  border-r border-subtle py-4 pb-8 pl-4 pr-3 lg:block lg:w-[248px] xl:w-[280px]"
               >
-                <div className="pt-2">
-                  <PageSidebar />
-                </div>
-              </motion.nav>
-            )}
+                <ErrorBoundary name="navigation">
+                  <Navigation className="hidden lg:block" />
+                </ErrorBoundary>
+              </motion.header>
 
-            {tsV4Banner}
-
-            <div
-              className={clsx(
-                "relative px-4 pt-14 sm:px-6 lg:px-8 xl:pl-8 xl:pr-16",
-                hidePageSidebar && "xl:mr-32 2xl:mr-10",
-                !hidePageSidebar && "xl:mr-40 2xl:mr-80"
-              )}
-            >
-              <main className="pt-6 lg:pt-8 xl:pr-8">
-                <Prose as="article">
-                  <Breadcrumb />
-                  {children}
-                  <div
-                    className={
-                      hidePageSidebar ? "py-10" : "pt-10 pb-12 xl:pr-0"
-                    }
-                  >
-                    <Footer editPageURL={editPageURL} />
+              {hidePageSidebar ? null : (
+                // @ts-ignore
+                <motion.nav
+                  layoutScroll
+                  className="fixed inset-y-0 right-0 z-40 mt-14 hidden w-60 overflow-y-auto px-6 pb-12 pt-16 xl:block 2xl:w-96 2xl:px-10"
+                >
+                  <div className="pt-2">
+                    <PageSidebar />
                   </div>
-                </Prose>
-              </main>
+                </motion.nav>
+              )}
+
+              {tsV4Banner}
+
+              <div
+                className={clsx(
+                  "relative px-4 pt-14 sm:px-6 lg:px-8 xl:pl-8 xl:pr-16",
+                  hidePageSidebar && "xl:mr-32 2xl:mr-10",
+                  !hidePageSidebar && "xl:mr-40 2xl:mr-80"
+                )}
+              >
+                <main className="pt-6 lg:pt-8 xl:pr-8">
+                  <Prose as="article">
+                    <ErrorBoundary
+                      name="content"
+                      fallback={
+                        <div className="py-10">
+                          <p>
+                            Something went wrong rendering this page. Try
+                            reloading; if it persists, please let us know.
+                          </p>
+                        </div>
+                      }
+                    >
+                      <Breadcrumb />
+                      {children}
+                    </ErrorBoundary>
+                    <div
+                      className={
+                        hidePageSidebar ? "py-10" : "pb-12 pt-10 xl:pr-0"
+                      }
+                    >
+                      <Footer editPageURL={editPageURL} />
+                    </div>
+                  </Prose>
+                </main>
+              </div>
             </div>
-          </div>
-        </SectionProvider>
+          </SectionProvider>
         </ActiveSectionProvider>
       </MDXProvider>
     </div>

@@ -1369,7 +1369,7 @@ export const sidebarMenuTabs = [
   {
     title: "Reference",
     icon: CodeBracketIcon,
-    href: "/docs/reference/typescript",
+    href: "/docs/reference/typescript/intro",
     matcher: matchers.reference,
   },
 ];
@@ -1388,7 +1388,7 @@ export const topLevelNav = [
   {
     title: "Reference",
     icon: CodeBracketIcon,
-    href: "/docs/reference/typescript",
+    href: "/docs/reference/typescript/intro",
     matcher: matchers.reference,
     sectionLinks: sectionReference,
   },

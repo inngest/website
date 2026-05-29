@@ -186,11 +186,22 @@ function NavLink({
   target?: string;
   children: React.ReactNode;
 }) {
+  if (href == null) {
+    return (
+      <span className={clsx("block py-1 pl-2 text-sm", className)}>
+        {children}
+      </span>
+    );
+  }
+
   const isExternal = target === "_blank" || href.match(/^https?:\/\//);
-  const linkTarget = target ?? href.match(/^https?:\/\//) ? "_blank" : null;
+  const isFragmentOnly = href.startsWith("#");
+  const linkTarget = target ?? (isExternal ? "_blank" : undefined);
+
   return (
     <LinkOrHref
       href={href}
+      forceAnchor={isFragmentOnly}
       aria-current={active ? "page" : undefined}
       target={linkTarget}
       className={clsx(
@@ -213,10 +224,16 @@ function NavLink({
   );
 }
 
-// LinkOrHref returns a standard link with target="_blank" if we want to open a docs
-// link in a new tab.
-const LinkOrHref = (props: any) => {
-  if (props.target === "_blank") {
+// LinkOrHref returns a standard link with target="_blank" if we want to open a
+// docs link in a new tab. Fragment-only hrefs also use a plain anchor so they
+// resolve consistently across rewrites during hydration.
+const LinkOrHref = ({ forceAnchor, ...props }: any) => {
+  if (props.href == null) {
+    const { href, target, ...rest } = props;
+    return <span {...rest} />;
+  }
+
+  if (props.target === "_blank" || forceAnchor) {
     return <a {...props} />;
   }
   return <Link {...props} />;
@@ -637,11 +654,9 @@ const SDK_ICONS: Record<
 function LanguageSwitcher({
   displayLanguage,
   setLanguage,
-  hydrated,
 }: {
   displayLanguage: SDKLanguage;
   setLanguage: (lang: SDKLanguage) => void;
-  hydrated: boolean;
 }) {
   const router = useRouter();
   const pathname = router.asPath.replace(/(\?|#).+$/, "");
@@ -671,12 +686,7 @@ function LanguageSwitcher({
   const CurrentIcon = SDK_ICONS[displayLanguage];
 
   return (
-    <div
-      className={clsx(
-        "mt-3 opacity-0 transition-opacity duration-150",
-        hydrated && "opacity-100"
-      )}
-    >
+    <div className="mt-3">
       <Select.Root
         value={displayLanguage}
         onValueChange={(val) => handleLanguageChange(val as SDKLanguage)}
@@ -748,13 +758,11 @@ function VersionSwitcher({
   activeSection,
   displayVersion,
   setTsVersion,
-  hydrated,
 }: {
   language: SDKLanguage;
   activeSection: string;
   displayVersion: TSVersion;
   setTsVersion: (version: TSVersion) => void;
-  hydrated: boolean;
 }) {
   const router = useRouter();
   const pathname = router.asPath.replace(/(\?|#).+$/, "");
@@ -762,13 +770,15 @@ function VersionSwitcher({
   const handleVersionChange = (newVersion: TSVersion) => {
     setTsVersion(newVersion);
 
-    // If on a versioned TS page for a different version, navigate to version intro
+    // If on a versioned TS page for a different version, navigate to version
+    // intro. Use final page URLs instead of redirect sources to keep this as an
+    // SPA navigation.
     const pathVersion = getSdkVersionFromPath(pathname);
     if (pathVersion && pathVersion !== newVersion) {
       if (newVersion === TS_STABLE) {
-        router.push("/docs/reference/typescript");
+        router.push("/docs/reference/typescript/intro");
       } else {
-        router.push(`/docs/reference/typescript/${newVersion}`);
+        router.push(`/docs/reference/typescript/${newVersion}/intro`);
       }
     }
   };
@@ -781,12 +791,7 @@ function VersionSwitcher({
   const currentVersion = TS_VERSIONS.find((v) => v.id === displayVersion);
 
   return (
-    <div
-      className={clsx(
-        "mt-2 opacity-0 transition-opacity duration-150",
-        hydrated && "opacity-100"
-      )}
-    >
+    <div className="mt-2">
       <Select.Root
         value={displayVersion}
         onValueChange={(val) => handleVersionChange(val as TSVersion)}
@@ -856,13 +861,8 @@ export function Navigation(props) {
   const pathname = normalizeTsReferencePath(router.pathname);
 
   const { activeSection, setActiveSection } = useActiveSection();
-  const {
-    effectiveLanguage,
-    effectiveTsVersion,
-    hydrated,
-    setLanguage,
-    setTsVersion,
-  } = useHydratedLanguageState(pathname);
+  const { effectiveLanguage, effectiveTsVersion, setLanguage, setTsVersion } =
+    useHydratedLanguageState(pathname);
   const { language, tsVersion } = useLanguageStore();
 
   // Find the section based on the active tab (Learn/Reference)
@@ -942,7 +942,7 @@ export function Navigation(props) {
                           language === "typescript" &&
                           tsVersion !== TS_STABLE
                         ) {
-                          href = `/docs/reference/typescript/${tsVersion}`;
+                          href = `/docs/reference/typescript/${tsVersion}/intro`;
                         }
 
                         router.push(href);
@@ -973,14 +973,12 @@ export function Navigation(props) {
             <LanguageSwitcher
               displayLanguage={effectiveLanguage}
               setLanguage={setLanguage}
-              hydrated={hydrated}
             />
             <VersionSwitcher
               language={effectiveLanguage}
               activeSection={activeSection}
               displayVersion={effectiveTsVersion}
               setTsVersion={setTsVersion}
-              hydrated={hydrated}
             />
           </div>
         )}
@@ -1076,10 +1074,9 @@ export function Navigation(props) {
 }
 
 /**
- * Consolidated hydration-safe wrapper around the language store. During SSR and
- * the first client render, values are derived from the URL so the markup
- * matches what the server produced. After hydration, the persisted store
- * becomes the source of truth and the store is synced to the URL once.
+ * Hydration-safe wrapper around the persisted language store. The URL is the
+ * source of truth when it includes SDK info; the store only fills in on pages
+ * without SDK info so the switchers remember the user's preference.
  */
 export function useHydratedLanguageState(pathname: string) {
   const [hydrated, setHydrated] = useState(false);
@@ -1101,12 +1098,10 @@ export function useHydratedLanguageState(pathname: string) {
     }
   }, [pathLanguage, pathTsVersion, setLanguage, setTsVersion]);
 
-  let effectiveLanguage: SDKLanguage = pathLanguage || "typescript";
-  let effectiveTsVersion: TSVersion = pathTsVersion || TS_STABLE;
-  if (hydrated) {
-    effectiveLanguage = language;
-    effectiveTsVersion = tsVersion;
-  }
+  const effectiveLanguage: SDKLanguage =
+    pathLanguage ?? (hydrated ? language : "typescript");
+  const effectiveTsVersion: TSVersion =
+    pathTsVersion ?? (hydrated ? tsVersion : TS_STABLE);
 
   return {
     effectiveLanguage,
