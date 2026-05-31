@@ -133,6 +133,8 @@ export default function BlogLayout(props) {
     };
   });
 
+  const postUrl = `${process.env.NEXT_PUBLIC_HOST}${scope.path}`;
+
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
@@ -141,6 +143,18 @@ export default function BlogLayout(props) {
     image: [`${process.env.NEXT_PUBLIC_HOST}${scope.image}`],
     datePublished: scope.date,
     dateModified: scope.dateUpdated ? scope.dateUpdated : scope.date,
+    url: postUrl,
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": postUrl,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "Inngest",
+      url: process.env.NEXT_PUBLIC_HOST,
+    },
+    ...((scope as any).category && { articleSection: (scope as any).category }),
+    ...(scope.tags && scope.tags.length > 0 && { keywords: scope.tags.join(", ") }),
     author:
       structuredDataAuthors.length > 0
         ? structuredDataAuthors
@@ -200,6 +214,13 @@ export default function BlogLayout(props) {
             content={`${process.env.NEXT_PUBLIC_HOST}${scope.image}`}
           />
         )}
+        {/* Markdown alternate for AI/LLM discoverability */}
+        <link
+          rel="alternate"
+          type="text/markdown"
+          href={`${process.env.NEXT_PUBLIC_HOST}/blog/${slug}.md`}
+        />
+
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -297,9 +318,45 @@ function CTAs({
   primary = "docs",
   ctaRef = "",
 }: {
-  primary: "docs" | "sales" | "signUp";
+  primary: "docs" | "sales" | "signUp" | "report2026";
   ctaRef: string;
 }) {
+  if (primary === "report2026") {
+    return (
+      <aside className="m-auto max-w-[70ch] border-t-[2px] border-stone-700 pt-8">
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:gap-8">
+          <div className="flex flex-col items-start">
+            <h2 className="mt-0 text-xl font-medium text-basis">
+              AI in Production: The 2026 Benchmark Report
+            </h2>
+            <p className="mb-6 mt-2 text-sm text-subtle">
+              We surveyed 130 backend, full-stack, and AI engineers to find out
+              how teams are actually running AI in production, and what's
+              holding them back.
+            </p>
+            <Button
+              variant="primary"
+              size="sm"
+              href={`https://www.inngest.com/content/ai-in-production-report-2026?ref=${ctaRef}`}
+              arrow="right"
+            >
+              View Key Findings
+            </Button>
+          </div>
+          <div className="flex-shrink-0">
+            <Image
+              src="/assets/blog/ai-in-production-report-2026-card/featured-image/featured-image.png"
+              alt="AI in Production: The 2026 Benchmark Report"
+              width={220}
+              height={165}
+              className="rounded-lg"
+            />
+          </div>
+        </div>
+      </aside>
+    );
+  }
+
   const ctas = {
     sales: {
       title: "Chat with a solutions expert",

@@ -1,11 +1,14 @@
 import { Callout, Col, Row } from "src/shared/Docs/mdx";
 
+export const description = "Monitor function runs, event throughput, and step execution across your durable workflows and AI pipelines with built-in observability.";
+
 # Observability & Metrics
 
+Durable execution runs your code across steps, retries, and time boundaries. Each step is retried and persisted independently. When something fails, you need to see where.
 
-With hundreds to thousands of events going through your Inngest Apps, triggering multiple Function runs, getting a clear view of what is happening at any time is crucial.
+Inngest captures execution data for every function run. You get metrics, traces, event logs, and per-step timing without instrumenting your code.
 
-The Inngest Platform provides observability features for both Events and Function runs, coupled with Event logs and [a detailed Function Run details to inspect arguments and steps timings](/docs/platform/monitor/inspecting-function-runs).
+This page covers the metrics dashboard. For step-level execution detail, see [Traces](/docs/platform/monitor/traces). For querying raw event and run data with SQL, see [Insights](/docs/platform/monitor/insights).
 
 ## Function runs observability
 
