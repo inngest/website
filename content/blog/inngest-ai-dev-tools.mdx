@@ -1,0 +1,58 @@
+---
+heading: "Inngest, meet your coding agent"
+subtitle: "Official Inngest plugins and skills for Claude Code, Codex, Cursor, and whatever agent you already use."
+showSubtitle: true
+focus: true
+image: /assets/blog/inngest-ai-dev-tools/featured-image/featured-image.png
+date: 2026-06-03T12:00:00
+category: engineering
+author: Sterling Chin
+---
+
+Today we're launching official Inngest tooling for the coding agents you already use: Claude Code, Codex, Cursor, and anything else you reach for.
+
+## You're already building this way
+
+You're already coding with an agent. Maybe it's Claude Code in the terminal, maybe it's Codex, maybe it's Cursor. And if you're doing anything past a toy app, you already know you need durable infrastructure underneath it. Background jobs that don't vanish on deploy. Webhooks that survive a crash. AI workflows that retry instead of silently dropping work at step four.
+
+That intersection is where we wanted to show up. Not in a docs tab you alt-tab to and then paste from. Right inside the agent, while you're building.
+
+## How we built it
+
+We move fast. New flow control, native realtime in v4, new step methods, API improvements. We want that current, accurate knowledge in your hands the moment you're writing code, and we keep it that way as the product grows. The plugins and skills are maintained alongside Inngest, so what your agent knows tracks what we've shipped.
+
+So we packaged Inngest's up-to-date guidance into skills, and we gave the agent a way to actually run things:
+
+- **The skills** teach your agent how to write Inngest code: setup, events, durable functions, steps, flow control, middleware, and realtime. The right one loads automatically based on what you're building.
+- **A dev-server MCP connection** lets the agent inspect runs, events, and function state on your local Inngest dev server while you work. It writes a function, triggers a test event, and watches it run, all without leaving the loop.
+
+One layer of skills, different doors into it:
+
+| Your agent | What you get | Install |
+|------------|--------------|---------|
+| **Claude Code** | Full plugin: 7 skills, dev-server MCP, an eval harness, more on the way | `/plugin marketplace add inngest/inngest-claude-code-plugin` |
+| **Codex** | The same skills, plus codebase durability audits, SDK migrations, and the alpha API CLI | `git clone` + `/plugin install` |
+| **Cursor, Windsurf, anything else** | The portable `inngest-skills` repo | `.cursorrules` reference or `npx skills add inngest/inngest-skills` |
+
+{/* ASSET: install GIF (Lauren) — drop at /assets/blog/inngest-ai-dev-tools/install.gif and embed here */}
+
+The standalone skills are the substance. The Claude Code and Codex plugins are richer packaging around that same core, with the MCP loop and, in Codex's case, a durability audit that scans a codebase for places background work, webhooks, cron jobs, or AI workflows can get lost on a deploy or a crash.
+
+## Better together
+
+Better together means Inngest plus the agent you already use. Inngest and Claude Code. Inngest and Codex. Inngest and Cursor. You don't change your setup, you don't pick our agent, you keep working exactly where you already are. We come to you.
+
+What you get is an agent that generates durable infrastructure with the current step patterns, real retry and idempotency behavior, and flow control that matches the version you actually have installed. You're using an agent to build production-grade durable systems, and the code it writes holds up.
+
+That's the bet underneath all of this. Coding agents are how a lot of you build now. Every one of them should be able to make what you ship more durable, together with Inngest. Today it's three doors. We're actively building, adding new skills and new agents, and keeping all of it current as Inngest grows.
+
+## Try it out
+
+All of this is open source and in beta. We want your feedback. Open an issue, drop into the Discord, or send a PR. We mean it on the PRs.
+
+- **Docs:** [https://www.inngest.com/docs/ai-dev-tools/agent-skills](https://www.inngest.com/docs/ai-dev-tools/agent-skills)
+- **Claude Code plugin:** [https://github.com/inngest/inngest-claude-code-plugin](https://github.com/inngest/inngest-claude-code-plugin)
+- **Codex plugin:** [https://github.com/inngest/inngest-codex-plugin](https://github.com/inngest/inngest-codex-plugin)
+- **Standalone skills:** [https://github.com/inngest/inngest-skills](https://github.com/inngest/inngest-skills)
+
+Install it, open your project, and ask your agent to make something durable. Then tell us how it went.
