@@ -1,0 +1,139 @@
+import { Callout } from "src/shared/Docs/mdx";
+
+export const description = "Group related function runs by adding session metadata to events.";
+
+# Sessions
+
+Sessions group function runs that belong to the same user flow, conversation, or job.
+
+Add a `sessions` object to an event when you want the Inngest dashboard to show all runs related to the same external ID. For example, all runs started by messages in the same AI conversation can share a `conversation_id` session.
+
+Sessions do not change which functions run. They add metadata that makes related runs easier to find and inspect.
+
+## Add sessions to an event
+
+Add `sessions` as a top-level field on the event payload, next to `name` and `data`.
+
+```ts
+import { inngest } from "./client";
+
+await inngest.send({
+  name: "app/message.created",
+  data: {
+    messageId: "msg_01JYY8R9C5R6VAW5EJ0P4K7V90",
+    conversationId: "conv_1234",
+  },
+  sessions: {
+    conversation_id: "conv_1234",
+  },
+});
+```
+
+The object key is the session key. The value is the session ID.
+
+In the example above:
+
+- `conversation_id` is the session key
+- `conv_1234` is the session ID
+
+You can use the same session key across many events. Each unique session ID becomes a session in the dashboard.
+
+## Sessions and steps
+
+Sessions follow events, not runs:
+
+- **`step.sendEvent()`** attaches sessions the same way as `inngest.send()`.
+- **`step.invoke()`** accepts an explicit `sessions` option. Sessions are **not** inherited from the calling run — the invoked function only joins a session if you pass one.
+- **`step.waitForEvent()`** does not match on sessions; the matched event's sessions are returned on the result.
+- **Failure and lifecycle events** (`inngest/function.finished`, `.failed`, `.cancelled`) carry the sessions of the event they report on, so an `onFailure` handler stays in the same session as the run that failed.
+
+## Supported values
+
+Session IDs can be strings or numbers. Numbers are stored as strings.
+
+```ts
+await inngest.send({
+  name: "app/agent.step.completed",
+  data: {
+    stepId: "step_1",
+  },
+  sessions: {
+    conversation_id: "conv_1234",
+    thread_id: 29563,
+  },
+});
+```
+
+Use stable IDs that are safe to show in the dashboard. Do not store secrets or sensitive personal data in session IDs.
+
+<Callout>
+  Sessions are for high-cardinality identifiers — one ID per conversation, ticket, or job. They are not for low-cardinality labels like `environment: prod` or `model: gpt-4`. For label-style filtering, use [Insights](/docs/platform/monitor/insights) instead.
+</Callout>
+
+## Limits
+
+Each event can include up to 5 sessions.
+
+| Field | Limit |
+| --- | --- |
+| Session key | 128 characters |
+| Session ID | 512 characters |
+
+Session keys and IDs cannot be empty.
+
+## Choose a good session key
+
+Use a session key for the kind of thing you want to inspect later.
+
+Good examples:
+
+- `conversation_id`
+- `agent_run_id`
+- `ticket_id`
+- `workflow_id`
+- `import_id`
+
+Avoid putting the session ID in the session key. For example, use this:
+
+```ts
+sessions: {
+  conversation_id: "conv_1234",
+}
+```
+
+Not this:
+
+```ts
+sessions: {
+  "conversation_id:conv_1234": "true",
+}
+```
+
+Session IDs are treated as opaque strings. They can contain characters like `:` or `/`, and the dashboard will keep the session key and ID separate.
+
+## View sessions in the dashboard
+
+Open the Inngest dashboard and select an environment.
+
+Go to **Monitor > Sessions**. Search for a session key, such as `conversation_id`.
+
+The results page shows each session ID for that key, along with:
+
+- number of runs
+- failed runs and failure rate
+- last active time
+- functions seen in that session
+
+Click a session row to open the detail page. The detail page shows the runs for that specific session key and ID.
+
+<Callout>
+  Sessions are scoped to the selected environment. If you do not see a session, check that you are in the environment where the event was sent.
+</Callout>
+
+## When to use sessions
+
+Use sessions when you already have a domain ID that ties multiple function runs together.
+
+Common examples include AI conversations, agent runs, support tickets, imports, customer workflows, and long-running business processes.
+
+For one-off filtering, use [Insights](/docs/platform/monitor/insights) or the normal runs search instead. Sessions are best for IDs you expect to search and inspect repeatedly.
