@@ -180,6 +180,7 @@ const permanentRedirects = [
   ["/docs/sdk/migration", "/docs/reference/typescript/v3/migrations/v2-to-v3"],
   ["/patterns/cancelling-scheduled-functions", "/docs/guides/cancel-running-functions"],
   ["/patterns/running-code-on-a-schedule", "/docs/guides/scheduled-functions"],
+
 ];
 
 async function redirects() {
@@ -389,6 +390,12 @@ async function redirects() {
     {
       source: "/patterns",
       destination: "/patterns/flash-sales-and-bursty-workflows",
+      permanent: false,
+    },
+    // OOH campaign - SF car wrap (AI Engineer World's Fair 2026)
+    {
+      source: "/sf",
+      destination: "/?utm_medium=ooh&utm_source=car-wrap-sf&utm_campaign=aiewf-2026",
       permanent: false,
     },
   ];
