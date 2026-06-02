@@ -13,7 +13,7 @@ import { indexMarkdown } from "../../../shared/Patterns/markdown";
 import "../../../shared/Patterns/patterns-docs.css";
 
 const META_DESCRIPTION =
-  "Production-tested patterns for AI agents, durable workflows, and the event-driven systems they live in.";
+  "Patterns for building on Inngest: AI agents, durable workflows, scheduling, flow control, and background jobs. Each explains a recurring problem, the tradeoffs, and how to solve it with Inngest's primitives.";
 
 export async function getStaticProps() {
   return {
@@ -49,7 +49,6 @@ function scope(s: { accent: { hex: string }; accentDeep: string }) {
 export default function PatternsLanding() {
   const router = useRouter();
   const sections = getPatternSections();
-  const total = sections.reduce((acc, s) => acc + s.patterns.length, 0);
 
   if (router.query.view === "agent") {
     return (
@@ -73,10 +72,10 @@ export default function PatternsLanding() {
           Patterns
         </h1>
         <p className="md-p md-lead">
-          Production-tested patterns for AI agents, durable workflows, and the
-          event-driven systems they live in. Each pattern is built on Inngest
-          primitives — steps, events, throttling, schedules, channels — and the
-          guarantees they provide. {sections.length} primitives, {total} patterns.
+          Patterns for building on Inngest: AI agents, durable workflows,
+          scheduling, flow control, and background jobs. Each one explains a
+          recurring problem, the tradeoffs involved, and how to solve it with
+          Inngest&apos;s primitives.
         </p>
       </div>
 

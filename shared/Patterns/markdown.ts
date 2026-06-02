@@ -13,7 +13,7 @@ export function indexMarkdown(
   const lines: string[] = [];
   lines.push("# Inngest Patterns", "");
   lines.push(
-    "> Production-tested patterns for AI agents, durable workflows, and the event-driven systems they live in. Each pattern is built on Inngest primitives (steps, events, throttling, schedules, channels) and the guarantees they provide.",
+    "> Patterns for building on Inngest: AI agents, durable workflows, scheduling, flow control, and background jobs. Each explains a recurring problem, the tradeoffs, and how to solve it with Inngest's primitives.",
     ""
   );
   lines.push("URL: https://www.inngest.com/docs/patterns");
