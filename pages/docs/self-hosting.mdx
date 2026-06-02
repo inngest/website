@@ -1,4 +1,4 @@
-import { Callout, Info, Warning, CodeGroup, DownloadLink, CardGroup, Card } from "src/shared/Docs/mdx";
+import { Callout, Info, Warning, CodeGroup, DownloadLink, CardGroup, Card, VersionBadge } from "src/shared/Docs/mdx";
 import Github from "src/shared/Icons/Github.tsx";
 
 export const description = 'Learn how to self-host Inngest. Includes configuration options and instructions for using external services.'
@@ -318,7 +318,7 @@ You can find the chart, documentation, and configuration examples here:
   </Card>
 </CardGroup>
 
-## Prometheus metrics
+## Prometheus metrics <VersionBadge version="v1.19.0+" />
 
 Inngest exposes a Prometheus-compatible scrape endpoint at `GET /metrics` on the server port (e.g. `http://localhost:8288/metrics`). By default it emits a single gauge, `inngest_queue_depth`. To enable per-function lifecycle counters (`inngest_function_run_*_total`, `inngest_sdk_req_*_total`), start the server with the experimental flag enabled: `INNGEST_EXPERIMENTAL_PROM_METRICS=1`. Point your Prometheus scrape config at the `/metrics` path on that port — no auth is configured by default.
 
@@ -326,9 +326,7 @@ Inngest exposes a Prometheus-compatible scrape endpoint at `GET /metrics` on the
 
 Planned features for self-hosting include:
 
-* Improved health checks (In-development: `v1.19.3` adds new `inngest alpha doctor healthcheck` command)
-* High availability guide.
-* Data retention guides and recommendations.
+* Improved diagnostic checks and APIs (via `inngest alpha doctor` and `inngest alpha debug` - currently in alpha)
 
 To suggest additional features, report issues, submit pull requests, and view the source code please visit the repo on GitHub:
 
