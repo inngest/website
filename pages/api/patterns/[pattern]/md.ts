@@ -21,7 +21,7 @@ export default async function handler(
   }
 
   try {
-    const data = await loadMarkdownFile("pages/patterns/_patterns", slug);
+    const data = await loadMarkdownFile("shared/Patterns/_patterns", slug);
     const metadata = (data.metadata ?? {}) as PatternFrontmatter;
     const body = (data as { content: string }).content;
     const markdown = patternMarkdown(

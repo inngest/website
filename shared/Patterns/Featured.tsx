@@ -59,7 +59,7 @@ export default function Featured({ featured, section, pattern }: Props) {
           )}
 
           <div className="featured-card-cta-row">
-            <Link href={`/patterns/${pattern.slug}`} className="featured-card-cta">
+            <Link href={`/docs/patterns/${pattern.slug}`} className="featured-card-cta">
               <span>Read the pattern</span>
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                 <path

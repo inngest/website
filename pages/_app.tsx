@@ -50,7 +50,9 @@ function MyApp({ Component, pageProps }: AppProps<DefaultProps>) {
   const is404 = router.pathname === "/404";
   const isDocs = !is404 && !!router.asPath.match(/^\/docs/);
   const isCaseStudy = !is404 && !!router.asPath.match(/^\/customers\//);
-  const isPatterns = !is404 && router.asPath.startsWith("/patterns");
+  // Patterns live under /docs/patterns and render inside the docs `Layout`
+  // (docs header, side nav, content column) like the rest of the docs.
+  const isPatterns = !is404 && router.asPath.startsWith("/docs/patterns");
   const Layout = isDocs
     ? DocsLayout
     : isCaseStudy

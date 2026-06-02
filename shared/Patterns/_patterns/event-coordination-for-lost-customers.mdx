@@ -96,13 +96,9 @@ export const generateAndPublish = inngest.createFunction(
       match: "data.contentId",
     });
 
+    // No decision within 48 hours: leave the draft unpublished.
     if (review === null) {
-      return await step.run("notify-timeout", async () => {
-        await notifyReviewer({
-          contentId: event.data.contentId,
-          message: "Review timed out after 48 hours. Please re-request.",
-        });
-      });
+      return;
     }
 
     if (review.data.approved) {

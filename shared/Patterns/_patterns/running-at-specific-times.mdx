@@ -60,7 +60,7 @@ You can also cancel these scheduled functions using the [cancellation guide](/do
 ## Alternative approaches
 
 - **Scheduled queue jobs.** Most job queues (BullMQ, Sidekiq, SQS with delay queues) accept a `runAt` or delay parameter when enqueueing. Works for delays under ~15 minutes; provider-specific limits kick in beyond that, and your jobs hold queue resources the whole time they wait.
-- **Cron + a database table.** Run a sweeper cron that polls a `scheduled_jobs` table for due work. Simple, but the cron is now the bottleneck (see [Reliable scheduling systems](/patterns/reliable-scheduling-systems)) and "due" is rounded to the cron interval.
+- **Cron + a database table.** Run a sweeper cron that polls a `scheduled_jobs` table for due work. Simple, but the cron is now the bottleneck (see [Reliable scheduling systems](/docs/patterns/reliable-scheduling-systems)) and "due" is rounded to the cron interval.
 - **Inline `setTimeout`.** Works locally; gets erased the moment your server restarts. Don't.
 
 The pattern above (emit an event with a future timestamp, then `sleepUntil` inside a durable function) keeps the wait state in Inngest rather than your queue, and survives deploys without re-architecting anything.

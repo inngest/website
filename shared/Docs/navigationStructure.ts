@@ -8,6 +8,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { parse } from "node:path";
 import { TS_STABLE, type TSVersion } from "./LanguageStore";
+import PATTERN_SECTIONS, { PATTERNS } from "../Patterns/patternsData";
 
 // Build a TypeScript SDK reference path.
 //
@@ -1329,7 +1330,7 @@ const matchers: Record<string, (pathname: string) => any> = {
     /^\/docs\/reference/.test(pathname) ||
     linkSearch(sectionReference, pathname),
   learn: (pathname) => linkSearch(sectionLearn, pathname),
-  patterns: (pathname) => /^\/patterns/.test(pathname),
+  patterns: (pathname) => /^\/docs\/patterns/.test(pathname),
 };
 matchers.default = matchers.learn;
 
@@ -1352,7 +1353,7 @@ export const menuTabs = [
   {
     title: "Patterns",
     icon: Squares2X2Icon,
-    href: "/patterns",
+    href: "/docs/patterns",
     matcher: matchers.patterns,
   },
 ];
@@ -1378,6 +1379,24 @@ export const sidebarMenuTabs = [
 // =============================================================================
 // TOP LEVEL NAV
 // =============================================================================
+// Patterns nav: one non-collapsible group per primitive (Examples-style),
+// derived from the static pattern index. `defaultOpen` keeps every group open.
+const sectionPatterns: NavGroup[] = [
+  {
+    title: "Overview",
+    defaultOpen: true,
+    links: [{ title: "All patterns", href: "/docs/patterns" }],
+  },
+  ...PATTERN_SECTIONS.flatMap((s): NavGroup[] => {
+    const links = PATTERNS.filter((p) => p.category === s.id).map((p) => ({
+      title: p.title,
+      href: `/docs/patterns/${s.id}/${p.slug}`,
+    }));
+    if (links.length === 0) return [];
+    return [{ title: s.name, defaultOpen: true, links }];
+  }),
+];
+
 export const topLevelNav = [
   {
     title: "Learn",
@@ -1385,6 +1404,13 @@ export const topLevelNav = [
     href: `/docs`,
     sectionLinks: sectionLearn,
     matcher: matchers.learn,
+  },
+  {
+    title: "Patterns",
+    icon: Squares2X2Icon,
+    href: "/docs/patterns",
+    sectionLinks: sectionPatterns,
+    matcher: matchers.patterns,
   },
   {
     title: "Reference",

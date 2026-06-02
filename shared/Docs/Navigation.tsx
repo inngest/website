@@ -83,6 +83,11 @@ export function ActiveSectionProvider({
     if (examplesTab?.matcher && !!examplesTab.matcher(pathname)) {
       return "Examples";
     }
+    // Check if current path matches the Patterns section
+    const patternsTab = topLevelNav.find((tab) => tab.title === "Patterns");
+    if (patternsTab?.matcher && !!patternsTab.matcher(pathname)) {
+      return "Patterns";
+    }
     return "Learn";
   }, [pathname]);
 
@@ -897,7 +902,7 @@ export function Navigation(props) {
           ))}
         </ul>
 
-        {activeSection !== "Examples" && (
+        {!["Examples", "Patterns"].includes(activeSection) && (
           <div className="mb-4 lg:mb-8">
             <div className="flex rounded-lg bg-slate-100 p-1 dark:bg-slate-800/50">
               {sidebarMenuTabs.map((tab) => {

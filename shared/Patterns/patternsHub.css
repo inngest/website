@@ -1,13 +1,15 @@
 .patterns-hub {
-  --bg: #0A0908;
-  --bg-elev: #131110;
-  --bg-elev2: #1A1715;
-  --border: #1F1C1A;
-  --border-strong: #2E2A26;
-  --fg: #F4F1EC;
-  --fg-mut: #ADA59B;
-  --fg-faint: #6F665D;
-  --fg-dim: #4A433D;
+  /* Derive from the docs canvas tokens so the hub follows the user's
+     dark/light docs theme (these flip via the `.dark` class). */
+  --bg: rgb(var(--color-background-canvas-base));
+  --bg-elev: rgb(var(--color-background-canvas-subtle));
+  --bg-elev2: rgb(var(--color-background-surface-subtle));
+  --border: rgb(var(--color-border-subtle));
+  --border-strong: rgb(var(--color-border-muted));
+  --fg: rgb(var(--color-foreground-base));
+  --fg-mut: rgb(var(--color-foreground-subtle));
+  --fg-faint: rgb(var(--color-foreground-muted));
+  --fg-dim: rgba(var(--color-foreground-muted) / 0.5);
   --lux: #CBB26A;
 }
 
