@@ -1,8 +1,8 @@
 ---
 title: Building flows for lost customers
-subtitle: Coordinate between events to build human-in-the-loop approvals, cart abandonment flows, and multi-step user journeys.
+subtitle: Coordinate between events to build AI-driven re-engagement, human-in-the-loop approvals, and multi-step user journeys.
 pattern: events
-tags: [Event Coordination, User Journeys]
+tags: [Event Coordination, AI, User Journeys]
 ---
 
 It's common to build functions that react to user journeys, allowing you to coordinate multiple signals within your code. Some examples:
@@ -96,13 +96,9 @@ export const generateAndPublish = inngest.createFunction(
       match: "data.contentId",
     });
 
+    // No decision within 48 hours: leave the draft unpublished.
     if (review === null) {
-      return await step.run("notify-timeout", async () => {
-        await notifyReviewer({
-          contentId: event.data.contentId,
-          message: "Review timed out after 48 hours. Please re-request.",
-        });
-      });
+      return;
     }
 
     if (review.data.approved) {

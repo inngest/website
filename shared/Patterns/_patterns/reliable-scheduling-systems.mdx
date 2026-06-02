@@ -1,11 +1,11 @@
 ---
 title: Reliable scheduling systems
-subtitle: Fan out to hundreds or thousands of independently-retried jobs from a single trigger.
+subtitle: Fan out to hundreds or thousands of independently-retried jobs from a single trigger, from batch AI processing to multi-tenant report generation.
 pattern: events
-tags: [Event Coordination, Architecture]
+tags: [Event Coordination, Architecture, AI]
 ---
 
-Sometimes you need to reliably trigger hundreds or thousands of jobs at once, making sure that every job succeeds independently.  For example, you might have a cron which triggers importing thousands of products, or a user might require 100 different OpenAPI calls at once.
+Sometimes you need to reliably trigger hundreds or thousands of jobs at once, making sure that every job succeeds independently. For example, you might run nightly batch inference across 10,000 documents, fan out embedding generation for a RAG pipeline, or trigger product imports for thousands of tenants.
 
 You might start by running everything in a single function, or within steps.  However, as the number of jobs grows this becomes slower, more difficult to observe, and more prone to temporary failures.  Instead of doing everything in a single job you should **fan-out** by sending events to trigger new jobs.
 
@@ -21,7 +21,7 @@ When you schedule each job independently by sending events, each job gets its ow
 
 ## With Inngest
 
-Inngest supports scheduled functions and event-triggered functions. Combining the two enables you to [fan-out functions to run in parallel](/patterns/running-functions-in-parallel?ref=patterns). We'll define two these two functions:
+Inngest supports scheduled functions and event-triggered functions. Combining the two enables you to [fan-out functions to run in parallel](/docs/patterns/running-functions-in-parallel?ref=patterns). We'll define two these two functions:
 
 ```typescript
 import { inngest } from "./client";
@@ -60,7 +60,7 @@ const postSlackNotification = inngest.createFunction(
 );
 ```
 
-This is the system &mdash; both functions can even be defined in the same file to keep things simple and maintainable. This approach works well for systems that have commonly scheduled times, but for more flexible systems that are scheduled as one-off, non-repeated tasks you should review [Patterns: Running at specific times](/patterns/running-at-specific-times?ref=patterns).
+This is the system &mdash; both functions can even be defined in the same file to keep things simple and maintainable. This approach works well for systems that have commonly scheduled times, but for more flexible systems that are scheduled as one-off, non-repeated tasks you should review [Patterns: Running at specific times](/docs/patterns/running-at-specific-times?ref=patterns).
 
 ## Alternative approaches
 
@@ -74,6 +74,6 @@ The Inngest version above keeps the cron lightweight: it only loads IDs and send
 
 ## Additional Resources
 
-* [Patterns: Running at specific times](/patterns/running-at-specific-times?ref=patterns)
+* [Patterns: Running at specific times](/docs/patterns/running-at-specific-times?ref=patterns)
 * [Docs: Cancel running functions](/docs/guides/cancel-running-functions?ref=patterns)
 * [Docs: Writing Functions](/docs/functions?ref=patterns)

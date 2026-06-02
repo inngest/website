@@ -43,3 +43,5 @@ tsconfig.tsbuildinfo
 # AI
 .playwright-mcp/
 .claude/worktrees
+
+ASSETS.md

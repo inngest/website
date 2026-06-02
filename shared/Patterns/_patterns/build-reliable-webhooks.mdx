@@ -1,15 +1,13 @@
 ---
 title: Build reliable webhooks
-subtitle: Ingest webhooks and model callbacks at scale with built-in retries and replay.
+subtitle: Handle webhooks and AI model callbacks with fast acknowledgement, at-least-once delivery, and replay.
 pattern: jobs
-tags: [Reliability, Integrations]
+tags: [Reliability, Integrations, AI]
 ---
 
-Webhooks are one of the most common ways to integrate with external services: payment processors, e-commerce platforms, CRMs, AI model APIs, and communication tools all use them. They're simple in concept but have failure modes you need to handle to build something reliable at scale.
+Webhooks are how AI providers notify your app when async work completes, whether that's LLM inference, embedding generation, or image synthesis from providers like Replicate, fal.ai, or Together AI. The same pattern covers payment processors, e-commerce platforms, and CRMs. They all share the same failure modes: slow acknowledgement triggers retries, burst traffic drops events, and downtime means lost results you can't recover without re-running the job.
 
 Reliable webhooks need to do three things: respond quickly, handle varying throughput, and recover from downtime. Most webhook providers will mark a delivery as failed if your endpoint doesn't respond within a few seconds. Your application also needs to handle bursts of requests without crashing and properly re-process any events that fail.
-
-This matters more as you connect to AI services. Model providers like OpenAI, Anthropic, and Replicate use webhooks and callbacks to notify your application when async inference jobs complete. If your webhook handler drops a callback because it was overwhelmed by a burst of completions, you lose the result and have to re-run the inference.
 
 ## What reliable webhook handling requires
 
@@ -90,4 +88,4 @@ Functions can be [deployed to several supported platforms](/docs/deploy?ref=patt
 
 * [Docs: Webhooks](/docs/platform/webhooks?ref=patterns)
 * [Docs: Writing Functions](/docs/functions?ref=patterns)
-* [Patterns: Flash sales and bursty workflows](/patterns/flash-sales-and-bursty-workflows?ref=patterns)
+* [Patterns: Flash sales and bursty workflows](/docs/patterns/flash-sales-and-bursty-workflows?ref=patterns)

@@ -207,7 +207,11 @@ const Divider: React.FC<React.PropsWithChildren> = ({ children }) => {
   );
 };
 
-function EditPageLink({ url }: { url: string }) {
+function EditPageLink({ url }: { url?: string }) {
+  // Pages without a source file (e.g. the patterns pages, which render custom
+  // components rather than MDX) have no edit URL — skip the link entirely so
+  // we never pass an undefined href to next/link.
+  if (!url) return null;
   return (
     <div className="flex justify-center md:justify-start">
       <Link

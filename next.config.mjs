@@ -183,6 +183,20 @@ const permanentRedirects = [
 
 ];
 
+// Pattern slug -> category, for redirecting old flat pattern URLs to the new
+// /docs/patterns/<category>/<slug> shape. Keep in sync with
+// shared/Patterns/patternsData.ts (PATTERNS).
+const PATTERN_SLUG_TO_CATEGORY = {
+  "reliably-run-critical-workflows": "durable",
+  "flash-sales-and-bursty-workflows": "flow",
+  "event-coordination-for-lost-customers": "events",
+  "reliable-scheduling-systems": "events",
+  "running-functions-in-parallel": "events",
+  "running-at-specific-times": "schedule",
+  "build-reliable-webhooks": "jobs",
+  "keeping-your-api-fast": "jobs",
+};
+
 async function redirects() {
   // Read blog redirects from MDX frontmatter
   const fs = await import("fs");
@@ -377,20 +391,42 @@ async function redirects() {
       destination,
       permanent: true,
     })),
+    // Patterns moved under /docs/patterns/<category>/<slug>. Keep these after
+    // permanentRedirects so the specific /patterns/* → /docs/guides/* entries
+    // above still win.
+    {
+      source: "/patterns",
+      destination: "/docs/patterns",
+      permanent: true,
+    },
+    {
+      source: "/patterns/md",
+      destination: "/docs/patterns/md",
+      permanent: true,
+    },
+    // Old flat pattern URLs (/patterns/<slug> and the interim
+    // /docs/patterns/<slug>) → the new category-scoped URLs.
+    ...Object.entries(PATTERN_SLUG_TO_CATEGORY).flatMap(([slug, category]) => [
+      {
+        source: `/patterns/${slug}`,
+        destination: `/docs/patterns/${category}/${slug}`,
+        permanent: true,
+      },
+      {
+        source: `/docs/patterns/${slug}`,
+        destination: `/docs/patterns/${category}/${slug}`,
+        permanent: true,
+      },
+    ]),
     {
       source: "/library/:path*",
-      destination: "/patterns",
+      destination: "/docs/patterns",
       permanent: true,
     },
     {
       source: "/sign-up",
       destination: process.env.NEXT_PUBLIC_SIGNUP_URL,
       permanent: true,
-    },
-    {
-      source: "/patterns",
-      destination: "/patterns/flash-sales-and-bursty-workflows",
-      permanent: false,
     },
     // OOH campaign - SF car wrap (AI Engineer World's Fair 2026)
     {
@@ -459,25 +495,37 @@ function touchFilesWithString(str, { dir = "./pages", ext = "mdx" } = {}) {
 const TS_STABLE_VERSION = "v4";
 
 async function rewrites() {
-  return [
-    // Versionless subpaths (excludes /v3/ and /v4/ prefixed paths)
-    {
-      source: "/docs/reference/typescript/:path((?!v3|v4).+)",
-      destination: `/docs/reference/typescript/${TS_STABLE_VERSION}/:path`,
-    },
-    {
-      source: "/docs-markdown/reference/typescript/:path((?!v3|v4).+)",
-      destination: `/docs-markdown/reference/typescript/${TS_STABLE_VERSION}/:path`,
-    },
-    {
-      source: "/patterns/md",
-      destination: "/api/patterns/md",
-    },
-    {
-      source: "/patterns/:pattern/md",
-      destination: "/api/patterns/:pattern/md",
-    },
-  ];
+  return {
+    // beforeFiles run before page/filesystem matching, so these intercept the
+    // raw-markdown URLs before the dynamic /docs/patterns/[category]/[slug]
+    // pages would 404 on them. Segment counts don't collide: index (3) /
+    // category (4) / pattern (5).
+    beforeFiles: [
+      {
+        source: "/docs/patterns/md",
+        destination: "/api/patterns/md",
+      },
+      {
+        source: "/docs/patterns/:category/md",
+        destination: "/api/patterns/category/:category/md",
+      },
+      {
+        source: "/docs/patterns/:category/:slug/md",
+        destination: "/api/patterns/:slug/md",
+      },
+    ],
+    afterFiles: [
+      // Versionless subpaths (excludes /v3/ and /v4/ prefixed paths)
+      {
+        source: "/docs/reference/typescript/:path((?!v3|v4).+)",
+        destination: `/docs/reference/typescript/${TS_STABLE_VERSION}/:path`,
+      },
+      {
+        source: "/docs-markdown/reference/typescript/:path((?!v3|v4).+)",
+        destination: `/docs-markdown/reference/typescript/${TS_STABLE_VERSION}/:path`,
+      },
+    ],
+  };
 }
 
 const nextConfig = {

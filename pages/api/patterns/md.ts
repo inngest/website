@@ -18,7 +18,7 @@ export default async function handler(
   res: NextApiResponse
 ) {
   const entries = await loadMarkdownFilesMetadata<PatternFrontmatter>(
-    "pages/patterns/_patterns"
+    "shared/Patterns/_patterns"
   );
 
   const bySection = new Map<string, PatternItem[]>();
