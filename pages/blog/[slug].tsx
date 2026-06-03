@@ -154,7 +154,8 @@ export default function BlogLayout(props) {
       url: process.env.NEXT_PUBLIC_HOST,
     },
     ...((scope as any).category && { articleSection: (scope as any).category }),
-    ...(scope.tags && scope.tags.length > 0 && { keywords: scope.tags.join(", ") }),
+    ...(scope.tags &&
+      scope.tags.length > 0 && { keywords: scope.tags.join(", ") }),
     author:
       structuredDataAuthors.length > 0
         ? structuredDataAuthors
@@ -239,7 +240,7 @@ export default function BlogLayout(props) {
               {scope.image && (
                 <figure className="mx-auto flex max-w-[768px] flex-col items-end">
                   <Image
-                    className="rounded-lg shadow-lg"
+                    className="rounded-lg"
                     src={scope.image}
                     alt={`Featured image for ${scope.heading} blog post`}
                     width={768}
