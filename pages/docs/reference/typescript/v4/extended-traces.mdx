@@ -9,6 +9,10 @@ export const description = "Inngest supports OpenTelemetry for distributed traci
 
 Inngest supports OpenTelemetry for distributed tracing and observability across your functions. The `extendedTracesMiddleware` automatically instruments your Inngest functions and integrates with your existing OpenTelemetry providers, giving you deep insights into function execution, step timing, and performance. It includes [automatic instrumentation](#instrumentation) for many popular libraries.
 
+<Callout variant="info">
+  Extended Traces will become enabled by default in a future release. Currently, you opt in by adding the middleware. See [Usage and limits](#usage-and-limits) for plan-specific caps.
+</Callout>
+
 ## Basic Usage
 
 <Callout>
@@ -149,6 +153,25 @@ const provider = new BasicTracerProvider({
 provider.register();
 ```
 
+---
+
+## Usage and limits
+
+Extended Traces usage is metered by the total size of spans ingested per billing period. Each plan includes a usage cap. When you reach the cap, new spans are discarded for the remainder of the billing period.
+
+| Plan | Included | Overage |
+|------|----------|---------|
+| Free | 500 MB | Not available |
+| Pro | 5 GB | $3 / GB |
+| Enterprise | 50 GB | Custom |
+
+Inngest tracks two metrics for your account: total spans ingested and total KB ingested. Both are visible per app and per function.
+
+<Callout variant="warning">
+  When your account reaches its cap, spans are dropped. They are not queued or recoverable. If you are approaching your limit, consider reducing the number of instrumented libraries or adding sampling to your OpenTelemetry configuration.
+</Callout>
+
+---
 
 ## Instrumentation
 
@@ -210,3 +233,11 @@ import { extendedTracesMiddleware } from "inngest/experimental";
 const extendedTraces = extendedTracesMiddleware({
   instrumentations: [new PrismaInstrumentation()],
 });
+```
+
+---
+
+## Related
+
+- [Traces](/docs/platform/monitor/traces) for the built-in trace view in the Inngest dashboard
+- [Pricing](https://www.inngest.com/pricing) for current plan details and usage caps
