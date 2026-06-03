@@ -86,7 +86,30 @@ export default inngest.createFunction(
 );
 ```
 
-The scorer runs independently. The original function returns immediately. The score arrives when the signal does.
+## How deferred scoring works
+
+The scorer is a completely separate function run. It is enqueued when the parent run finalizes, not when the signal arrives. The scorer starts running on its own, and if it includes a `step.waitForEvent()`, it pauses and waits for that signal independently.
+
+If the signal never arrives within the timeout, the scorer still completes and returns a default score. The parent function is never affected by the scorer's lifecycle.
+
+---
+
+## Sending the signal
+
+The scorer above waits for a `support/feedback.received` event. Your app sends this event when the user takes action. For example, when a user clicks "helpful" in your UI:
+
+```ts
+// In your API route or event handler
+await inngest.send({
+  name: "support/feedback.received",
+  data: {
+    ticketId: "tk_123",
+    helpful: true,
+  },
+});
+```
+
+Inngest matches this event to any waiting scorer by the `ticketId` field. The scorer resumes, reads `feedback.data.helpful`, and returns the score.
 
 ---
 
