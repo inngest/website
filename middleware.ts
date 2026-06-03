@@ -1,32 +1,37 @@
 import { NextRequest, NextResponse } from "next/server";
 
 /**
- * Markdown serving middleware for AI agents / AEO.
+ * Middleware for AI agent content negotiation and SEO canonicalization.
  *
- * Two complementary strategies, checked in order:
+ * Responsibilities:
  *
- * 1. .md extension routes — no header sniffing required
- *    Any client that can construct a URL gets raw markdown by appending .md:
+ * 1. Canonical tag forwarding (all pages)
+ *    Sets an `x-pathname` request header so the root layout's CanonicalTag
+ *    server component can emit `<link rel="canonical" href="...">` without
+ *    query params. Also emits a `Link: <canonical>; rel="canonical"` HTTP
+ *    response header as a belt-and-suspenders signal to crawlers.
  *
+ * 2. Markdown serving for AI agents / AEO (blog + docs only)
+ *
+ *    Strategy A — .md extension routes (no header sniffing required):
  *      GET /blog/my-post.md
  *      → internal rewrite → /blog-markdown/my-post   (returns text/markdown)
  *
  *      GET /docs/getting-started/nextjs-quick-start.md
  *      → internal rewrite → /docs-markdown/getting-started/nextjs-quick-start
  *
- * 2. Accept: text/markdown content negotiation
- *    Agents that send a proper Accept header get markdown from the canonical URL:
- *
+ *    Strategy B — Accept: text/markdown content negotiation:
  *      GET /blog/my-post          Accept: text/markdown
  *      → internal rewrite → /blog-markdown/my-post   (returns text/markdown)
  *
  *      GET /docs/getting-started  Accept: text/markdown
  *      → internal rewrite → /docs-markdown/getting-started
  *
- * For normal browser requests the middleware is a no-op, but it adds a
- * `Vary: Accept` header so CDN/edge caches keep the two representations
- * separate.
+ *    For normal browser requests the middleware adds a `Vary: Accept` header
+ *    so CDN/edge caches keep the two representations separate.
  */
+
+const SITE_ORIGIN = "https://www.inngest.com";
 
 function acceptsMarkdown(req: NextRequest): boolean {
   const accept = req.headers.get("accept") ?? "";
@@ -36,7 +41,12 @@ function acceptsMarkdown(req: NextRequest): boolean {
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // ── Strategy 1: .md extension routes ──────────────────────────────────────
+  // Forward pathname as a request header so the root layout CanonicalTag
+  // component can read it via next/headers without needing searchParams.
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set("x-pathname", pathname);
+
+  // ── Strategy A: .md extension routes ──────────────────────────────────────
 
   if (pathname.endsWith(".md")) {
     // /blog/[slug].md  →  /blog-markdown/[slug]
@@ -44,7 +54,7 @@ export function middleware(req: NextRequest) {
       const slug = pathname.slice("/blog/".length, -".md".length);
       const url = req.nextUrl.clone();
       url.pathname = `/blog-markdown/${slug}`;
-      return NextResponse.rewrite(url);
+      return NextResponse.rewrite(url, { request: { headers: requestHeaders } });
     }
 
     // /docs/[...path].md  →  /docs-markdown/[...path]
@@ -52,11 +62,11 @@ export function middleware(req: NextRequest) {
       const docPath = pathname.slice("/docs/".length, -".md".length);
       const url = req.nextUrl.clone();
       url.pathname = `/docs-markdown/${docPath}`;
-      return NextResponse.rewrite(url);
+      return NextResponse.rewrite(url, { request: { headers: requestHeaders } });
     }
   }
 
-  // ── Strategy 2: Accept: text/markdown content negotiation ─────────────────
+  // ── Strategy B: Accept: text/markdown content negotiation ─────────────────
 
   if (acceptsMarkdown(req)) {
     // /blog/[slug]  →  /blog-markdown/[slug]
@@ -64,7 +74,7 @@ export function middleware(req: NextRequest) {
       const slug = pathname.replace(/^\/blog\//, "");
       const url = req.nextUrl.clone();
       url.pathname = `/blog-markdown/${slug}`;
-      return NextResponse.rewrite(url);
+      return NextResponse.rewrite(url, { request: { headers: requestHeaders } });
     }
 
     // /docs/[...path]  →  /docs-markdown/[...path]
@@ -72,29 +82,34 @@ export function middleware(req: NextRequest) {
       const docPath = pathname.replace(/^\/docs\/?/, "");
       const url = req.nextUrl.clone();
       url.pathname = `/docs-markdown/${docPath}`;
-      return NextResponse.rewrite(url);
+      return NextResponse.rewrite(url, { request: { headers: requestHeaders } });
     }
   }
 
-  // Pass through — add Vary and Link headers so agents see the markdown
-  // alternate without needing to parse the HTML body at all.
-  const res = NextResponse.next();
+  // ── Pass-through: add Vary, canonical Link, and markdown alternate headers ─
+
+  const res = NextResponse.next({ request: { headers: requestHeaders } });
   res.headers.set("Vary", "Accept");
 
-  const { origin } = req.nextUrl;
+  // Canonical: always the clean pathname with no query params.
+  res.headers.set(
+    "Link",
+    `<${SITE_ORIGIN}${pathname}>; rel="canonical"`
+  );
 
+  // Markdown alternate link for blog/docs so agents can discover raw content.
   if (/^\/blog\/[^/]+$/.test(pathname)) {
     const slug = pathname.replace(/^\/blog\//, "");
-    res.headers.set(
+    res.headers.append(
       "Link",
-      `<${origin}/blog/${slug}.md>; rel="alternate"; type="text/markdown"`
+      `<${SITE_ORIGIN}/blog/${slug}.md>; rel="alternate"; type="text/markdown"`
     );
   } else if (pathname.startsWith("/docs/") || pathname === "/docs") {
     const docPath = pathname.replace(/^\/docs\/?/, "");
     const mdPath = docPath ? `/docs/${docPath}.md` : `/docs.md`;
-    res.headers.set(
+    res.headers.append(
       "Link",
-      `<${origin}${mdPath}>; rel="alternate"; type="text/markdown"`
+      `<${SITE_ORIGIN}${mdPath}>; rel="alternate"; type="text/markdown"`
     );
   }
 
@@ -104,13 +119,13 @@ export function middleware(req: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * Match /blog/:slug (individual post pages only, not /blog index)
-     * and /docs + /docs/:path* (all docs routes).
-     * Excludes _next/, static files, and API routes automatically
-     * because none of those paths start with /blog/ or /docs.
+     * Match all routes except:
+     * - _next/static  (static assets)
+     * - _next/image   (image optimisation)
+     * - favicon.*     (favicon files)
+     * - public files with common static extensions
+     * - api routes    (handled separately)
      */
-    "/blog/:slug*",
-    "/docs",
-    "/docs/:path*",
+    "/((?!_next/static|_next/image|favicon|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff2?|ttf|otf|eot|css|js|map)$).*)",
   ],
 };
