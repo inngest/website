@@ -5,11 +5,12 @@ import { NextRequest, NextResponse } from "next/server";
  *
  * Responsibilities:
  *
- * 1. Canonical tag forwarding (all pages)
- *    Sets an `x-pathname` request header so the root layout's CanonicalTag
- *    server component can emit `<link rel="canonical" href="...">` without
- *    query params. Also emits a `Link: <canonical>; rel="canonical"` HTTP
- *    response header as a belt-and-suspenders signal to crawlers.
+ * 1. SEO canonicalization (all pages)
+ *    Emits a `Link: <canonical>; rel="canonical"` HTTP response header (clean
+ *    pathname, no query params) as a belt-and-suspenders signal to crawlers.
+ *    The HTML `<link rel="canonical">` tag itself comes from the root layout's
+ *    `metadata.alternates.canonical` (app router) and `pages/_app.tsx` (pages
+ *    router) — not from middleware.
  *
  * 2. Markdown serving for AI agents / AEO (blog + docs only)
  *
@@ -41,11 +42,6 @@ function acceptsMarkdown(req: NextRequest): boolean {
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Forward pathname as a request header so the root layout CanonicalTag
-  // component can read it via next/headers without needing searchParams.
-  const requestHeaders = new Headers(req.headers);
-  requestHeaders.set("x-pathname", pathname);
-
   // ── Strategy A: .md extension routes ──────────────────────────────────────
 
   if (pathname.endsWith(".md")) {
@@ -54,7 +50,7 @@ export function middleware(req: NextRequest) {
       const slug = pathname.slice("/blog/".length, -".md".length);
       const url = req.nextUrl.clone();
       url.pathname = `/blog-markdown/${slug}`;
-      return NextResponse.rewrite(url, { request: { headers: requestHeaders } });
+      return NextResponse.rewrite(url);
     }
 
     // /docs/[...path].md  →  /docs-markdown/[...path]
@@ -62,7 +58,7 @@ export function middleware(req: NextRequest) {
       const docPath = pathname.slice("/docs/".length, -".md".length);
       const url = req.nextUrl.clone();
       url.pathname = `/docs-markdown/${docPath}`;
-      return NextResponse.rewrite(url, { request: { headers: requestHeaders } });
+      return NextResponse.rewrite(url);
     }
   }
 
@@ -74,7 +70,7 @@ export function middleware(req: NextRequest) {
       const slug = pathname.replace(/^\/blog\//, "");
       const url = req.nextUrl.clone();
       url.pathname = `/blog-markdown/${slug}`;
-      return NextResponse.rewrite(url, { request: { headers: requestHeaders } });
+      return NextResponse.rewrite(url);
     }
 
     // /docs/[...path]  →  /docs-markdown/[...path]
@@ -82,13 +78,13 @@ export function middleware(req: NextRequest) {
       const docPath = pathname.replace(/^\/docs\/?/, "");
       const url = req.nextUrl.clone();
       url.pathname = `/docs-markdown/${docPath}`;
-      return NextResponse.rewrite(url, { request: { headers: requestHeaders } });
+      return NextResponse.rewrite(url);
     }
   }
 
   // ── Pass-through: add Vary, canonical Link, and markdown alternate headers ─
 
-  const res = NextResponse.next({ request: { headers: requestHeaders } });
+  const res = NextResponse.next();
   res.headers.set("Vary", "Accept");
 
   // Canonical: always the clean pathname with no query params.
