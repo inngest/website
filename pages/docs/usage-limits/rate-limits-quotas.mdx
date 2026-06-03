@@ -4,7 +4,7 @@ export const description = "Rate limits, quotas, and size limits for the Inngest
 
 # Rate limits and quotas
 
-This page lists the rate limits, size limits, and quotas for the Inngest platform. If you're hitting 429 errors or unexpected rejections, check here first.
+Rate limits, size limits, and quotas for the Inngest platform. Check here first if you are hitting 429 errors or unexpected rejections.
 
 ---
 
@@ -13,12 +13,12 @@ This page lists the rate limits, size limits, and quotas for the Inngest platfor
 | Limit | Value | Notes |
 |-------|-------|-------|
 | REST API rate limit | 75 requests per 5 seconds | Per event key. Returns 429 when exceeded. |
-| Batch size | Up to 5,000 events per request | Use `inngest.send()` with an array for batches. |
-| Event payload size | 3 MB max | Per individual event. Larger payloads are rejected. |
-| Event name length | 256 characters max | Use slash-namespaced, dot-separated names like `app/user.created`. |
+| Batch size | Up to 5,000 events per request | Use `inngest.send()` with an array. |
+| Event payload size | 3 MB max | Per individual event. |
+| Event name length | 256 characters max | Use slash-namespaced names like `app/user.created`. |
 
 <Callout variant="info">
-  If you're seeing 429 errors from `inngest.send()`, you're exceeding the 75 req/5s limit. Batch events into fewer, larger requests instead of sending one event per request.
+  Seeing 429 errors from `inngest.send()`? You are exceeding the 75 req/5s limit. Batch events into fewer, larger requests instead of sending one event per request.
 </Callout>
 
 ---
@@ -27,7 +27,7 @@ This page lists the rate limits, size limits, and quotas for the Inngest platfor
 
 | Limit | Value | Notes |
 |-------|-------|-------|
-| Concurrency (free) | 5 concurrent steps | Per account. |
+| Concurrency (Free) | 5 concurrent steps | Per account. |
 | Concurrency (Pro) | 100 concurrent steps | Per account. Configurable per function. |
 | Concurrency (Enterprise) | Custom | Contact sales. |
 | Step output size | 4 MB | Data returned from a single `step.run()`. |
@@ -49,7 +49,7 @@ This page lists the rate limits, size limits, and quotas for the Inngest platfor
 
 | Limit | Value | Notes |
 |-------|-------|-------|
-| Event retention | 7 days (default) | Advanced Observability add-on extends this. Received events stored indefinitely. |
+| Event retention | 7 days (default) | Advanced Observability add-on extends this. |
 | Function run history | 7 days (default) | Advanced Observability add-on for longer retention. |
 | Apps per environment | No hard limit | Each serve endpoint registers as one app. |
 | Functions per app | No hard limit | Practical limit depends on sync payload size. |
