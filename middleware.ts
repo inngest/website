@@ -87,10 +87,16 @@ export function middleware(req: NextRequest) {
   const res = NextResponse.next();
   res.headers.set("Vary", "Accept");
 
-  // Canonical: always the clean pathname with no query params.
+  // Canonical: always the clean pathname with no query params. For the
+  // markdown mirrors (/docs-markdown, /blog-markdown), canonicalize to the
+  // corresponding HTML page so crawlers don't index the raw markdown as a
+  // duplicate.
+  const canonicalPathname = pathname
+    .replace(/^\/docs-markdown(\/|$)/, "/docs$1")
+    .replace(/^\/blog-markdown(\/|$)/, "/blog$1");
   res.headers.set(
     "Link",
-    `<${SITE_ORIGIN}${pathname}>; rel="canonical"`
+    `<${SITE_ORIGIN}${canonicalPathname}>; rel="canonical"`
   );
 
   // Markdown alternate link for blog/docs so agents can discover raw content.
