@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 
 import Script from "next/script";
 import { PageViews } from "@/components/InngestClientSDK";
@@ -12,7 +13,21 @@ import Header from "src/components/RedesignedLanding/Header/Header";
 import Footer from "src/components/RedesignedLanding/Footer";
 import Analytics from "@/components/Analytics";
 
+/**
+ * Emits <link rel="canonical"> in <head> using the clean pathname forwarded
+ * by middleware (no query params). This ensures every page — regardless of
+ * which ?ref= or UTM combination a user arrived with — declares the same
+ * canonical URL to crawlers.
+ */
+async function CanonicalTag() {
+  const hdrs = await headers();
+  const pathname = hdrs.get("x-pathname") ?? "/";
+  const canonical = `https://www.inngest.com${pathname}`;
+  return <link rel="canonical" href={canonical} />;
+}
+
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.inngest.com"),
   title: {
     default: "Inngest - Develop AI products at the speed of thought",
     template: "%s - Inngest",
@@ -47,6 +62,7 @@ export default function RootLayout({
   return (
     <html className="scroll-smooth">
       <head>
+        <CanonicalTag />
         <link rel="preconnect" href="https://fonts-cdn.inngest.com/" />
         <link rel="stylesheet" href="https://fonts-cdn.inngest.com/fonts.css" />
         <link

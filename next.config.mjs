@@ -434,6 +434,12 @@ async function redirects() {
       destination: "/?utm_medium=ooh&utm_source=car-wrap-sf&utm_campaign=aiewf-2026",
       permanent: false,
     },
+    // OOH campaign - SF car wrap (AI Engineer World's Fair 2026)
+    {
+      source: "/sf",
+      destination: "/?utm_medium=ooh&utm_source=car-wrap-sf&utm_campaign=aiewf-2026",
+      permanent: false,
+    },
   ];
 }
 
