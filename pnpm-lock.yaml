@@ -187,8 +187,8 @@ importers:
         specifier: 6.0.0
         version: 6.0.0(@types/react@19.1.2)(react@19.0.0)
       next-sitemap:
-        specifier: 3.1.44
-        version: 3.1.44(@next/env@16.2.6)(next@16.2.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))
+        specifier: 4.2.3
+        version: 4.2.3(next@16.2.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))
       prism-react-renderer:
         specifier: 2.4.1
         version: 2.4.1(react@19.0.0)
@@ -1051,6 +1051,9 @@ packages:
     peerDependencies:
       '@emnapi/core': ^1.7.1
       '@emnapi/runtime': ^1.7.1
+
+  '@next/env@13.5.11':
+    resolution: {integrity: sha512-fbb2C7HChgM7CemdCY+y3N1n8pcTKdqtQLbC7/EQtPdLvlMUT9JX/dBYl8MMZAtYG4uVMyPFHXckb68q/NRwqg==}
 
   '@next/env@16.2.6':
     resolution: {integrity: sha512-gd8HoHN4ufj73WmR3JmVolrpJR47ILK6LouP5xElPglaVxir6e1a7VzvTvDWkOoPXT9rkkTzyCxBu4yeZfZwcw==}
@@ -5017,12 +5020,11 @@ packages:
     peerDependencies:
       react: '>=16'
 
-  next-sitemap@3.1.44:
-    resolution: {integrity: sha512-dg+qGfOpQemAb+LGShJmaJHyuf36rVqsIbkCBt0ldu10sAx+eMowVx6DzEtf2HoIIGWc7J+kfy//YsBCPdj47Q==}
+  next-sitemap@4.2.3:
+    resolution: {integrity: sha512-vjdCxeDuWDzldhCnyFCQipw5bfpl4HmZA7uoo3GAaYGjGgfL4Cxb1CiztPuWGmS+auYs7/8OekRS8C2cjdAsjQ==}
     engines: {node: '>=14.18'}
     hasBin: true
     peerDependencies:
-      '@next/env': '*'
       next: '*'
 
   next@16.2.6:
@@ -7167,6 +7169,8 @@ snapshots:
       '@emnapi/runtime': 1.10.0
       '@tybys/wasm-util': 0.10.2
     optional: true
+
+  '@next/env@13.5.11': {}
 
   '@next/env@16.2.6': {}
 
@@ -11929,10 +11933,11 @@ snapshots:
       - '@types/react'
       - supports-color
 
-  next-sitemap@3.1.44(@next/env@16.2.6)(next@16.2.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)):
+  next-sitemap@4.2.3(next@16.2.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)):
     dependencies:
       '@corex/deepmerge': 4.0.43
-      '@next/env': 16.2.6
+      '@next/env': 13.5.11
+      fast-glob: 3.3.3
       minimist: 1.2.8
       next: 16.2.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
 
