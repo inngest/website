@@ -1,0 +1,61 @@
+import { Callout } from "src/shared/Docs/mdx";
+
+export const description = "Understand the difference between Branch Environments and Custom Environments in Inngest."
+
+# Branch vs Custom Environments
+
+Inngest has two types of non-production environments. They serve different purposes and behave differently. Confusing them is one of the most common setup issues.
+
+---
+
+## Branch Environments
+
+Branch environments are created automatically when you deploy a branch to your hosting provider (like Vercel preview deployments). Each git branch gets its own isolated Inngest environment with its own functions, events, and runs.
+
+Branch environments are temporary. They're tied to the lifecycle of your git branch and Vercel preview deployment.
+
+When you use the [Vercel integration](/docs/deploy/vercel), branch environments are created and synced automatically on every push. No manual setup required.
+
+<Callout variant="info">
+  Branch environments use the same signing key as your production environment. The Vercel integration handles this automatically.
+</Callout>
+
+---
+
+## Custom Environments
+
+Custom environments are manually created in the [Inngest dashboard](/docs/platform/environments#custom-environments). They're for persistent, named environments like staging, QA, or testing.
+
+Custom environments have their own signing keys and event keys. You set these as environment variables in your hosting provider.
+
+Custom environments are permanent. They persist until you delete them.
+
+---
+
+## The common mistake
+
+Your preview deployments target a Custom Environment instead of Branch Environments. This happens when your `INNGEST_SIGNING_KEY` environment variable in Vercel's preview/development settings points to a custom environment's signing key instead of letting the Vercel integration handle it automatically.
+
+**Symptoms:**
+
+Functions from your preview branches appear in a custom environment (like "staging") instead of creating their own branch environment. Multiple branches overwrite each other's functions in the same environment.
+
+**Fix:**
+
+Remove any manually set `INNGEST_SIGNING_KEY` from Vercel's preview environment variable settings. Let the Vercel integration manage the keys for preview deployments. Only set keys manually for custom environments you've explicitly created.
+
+---
+
+## When to use which
+
+Use **Branch Environments** for PR previews and feature branch testing. These are automatic and ephemeral.
+
+Use **Custom Environments** for persistent non-production environments like staging, QA, or load testing. These require manual key setup but give you a stable, long-lived environment.
+
+---
+
+## Related
+
+- [Environments overview](/docs/platform/environments)
+- [Vercel deployment guide](/docs/deploy/vercel)
+- [Setting up a staging environment](/docs/deploy/vercel#setting-up-a-staging-environment)
