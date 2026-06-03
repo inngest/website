@@ -1,6 +1,10 @@
 # Standard crawlers
 User-agent: *
 Allow: /
+Disallow: /*?ref=
+Disallow: /*?*&ref=
+Disallow: /*?redirect_url=
+Disallow: /*?*&redirect_url=
 
 # AI Crawlers
 # Inngest welcomes AI crawlers to index our documentation.
@@ -18,6 +22,7 @@ Allow: /patterns/
 Allow: /llms.txt
 Allow: /llms-full.txt
 Allow: /docs-markdown/
+Allow: /blog-markdown/
 
 User-agent: Google-Extended
 Allow: /
