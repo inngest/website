@@ -58,12 +58,28 @@ export default function RootLayout({
   return (
     <html className="scroll-smooth">
       <head>
-        <link rel="preconnect" href="https://fonts-cdn.inngest.com/" />
-        <link rel="stylesheet" href="https://fonts-cdn.inngest.com/fonts.css" />
         <link
-          rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.4.0/styles/github-dark.min.css"
+          rel="preconnect"
+          href="https://fonts-cdn.inngest.com/"
+          crossOrigin="anonymous"
         />
+        {/* Preload the primary CircularXX weights used above the fold:
+            Bold (700) for headings/LCP and Regular (400) for body. */}
+        <link
+          rel="preload"
+          as="font"
+          type="font/woff2"
+          href="https://fonts-cdn.inngest.com/Circular/CircularXXWeb-Bold.woff2"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          as="font"
+          type="font/woff2"
+          href="https://fonts-cdn.inngest.com/Circular/CircularXXWeb-Regular.woff2"
+          crossOrigin="anonymous"
+        />
+        <link rel="stylesheet" href="https://fonts-cdn.inngest.com/fonts.css" />
         <Script
           id="js-inngest-queue-init"
           async

@@ -29,10 +29,10 @@ export default function BlogPostList({ posts }: { posts: MDXBlogPost[] }) {
                 {post.heading}
               </h2>
               <p className="mb-4 mt-2 flex items-center gap-1 text-sm font-medium text-muted">
-                <span className="">
+                <span>
                   {Array.isArray(post.author) ? (
                     post.author.map((a, idx, arr) => (
-                      <span>
+                      <span key={idx}>
                         {a}
                         {idx < arr.length - 1 ? ", " : ""}
                       </span>
