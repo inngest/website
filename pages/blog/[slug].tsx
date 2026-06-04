@@ -245,8 +245,9 @@ export default function BlogLayout(props) {
                     alt={`Featured image for ${scope.heading} blog post`}
                     width={768}
                     height={768 / 2}
-                    quality={95}
-                    loading="eager"
+                    quality={75}
+                    sizes="(min-width: 848px) 768px, (min-width: 768px) calc(100vw - 80px), calc(100vw - 48px)"
+                    priority
                   />
                   {scope.imageCredits && (
                     <figcaption
@@ -350,6 +351,7 @@ function CTAs({
               alt="AI in Production: The 2026 Benchmark Report"
               width={220}
               height={165}
+              quality={75}
               className="rounded-lg"
             />
           </div>
