@@ -145,7 +145,27 @@ export function Layout({
           {/* Markdown alternate for AI/LLM discoverability */}
           <link rel="alternate" type="text/markdown" href={`https://www.inngest.com/docs${docsPath}.md`} />
 
-          <link rel="preconnect" href="https://fonts-cdn.inngest.com/" />
+          <link
+            rel="preconnect"
+            href="https://fonts-cdn.inngest.com/"
+            crossOrigin="anonymous"
+          />
+          {/* Preload the primary CircularXX weights used above the fold:
+              Bold (700) for headings/LCP and Regular (400) for body. */}
+          <link
+            rel="preload"
+            as="font"
+            type="font/woff2"
+            href="https://fonts-cdn.inngest.com/Circular/CircularXXWeb-Bold.woff2"
+            crossOrigin="anonymous"
+          />
+          <link
+            rel="preload"
+            as="font"
+            type="font/woff2"
+            href="https://fonts-cdn.inngest.com/Circular/CircularXXWeb-Regular.woff2"
+            crossOrigin="anonymous"
+          />
           <link
             rel="stylesheet"
             href="https://fonts-cdn.inngest.com/fonts.css"

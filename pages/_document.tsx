@@ -23,7 +23,27 @@ export default class MyDocument extends Document {
             }
             media="(prefers-color-scheme: dark)"
           />
-          <link rel="preconnect" href="https://fonts-cdn.inngest.com/" />
+          <link
+            rel="preconnect"
+            href="https://fonts-cdn.inngest.com/"
+            crossOrigin="anonymous"
+          />
+          {/* Preload the primary CircularXX weights used above the fold:
+              Bold (700) for headings/LCP and Regular (400) for body. */}
+          <link
+            rel="preload"
+            as="font"
+            type="font/woff2"
+            href="https://fonts-cdn.inngest.com/Circular/CircularXXWeb-Bold.woff2"
+            crossOrigin="anonymous"
+          />
+          <link
+            rel="preload"
+            as="font"
+            type="font/woff2"
+            href="https://fonts-cdn.inngest.com/Circular/CircularXXWeb-Regular.woff2"
+            crossOrigin="anonymous"
+          />
           <link
             rel="stylesheet"
             href="https://fonts-cdn.inngest.com/fonts.css"
