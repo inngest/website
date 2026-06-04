@@ -181,8 +181,7 @@ export default function ResourcePopover() {
                               alt={`Featured image for ${featuredBlogPost.title}`}
                               width={372}
                               height={198}
-                              quality={85}
-                              // loading="eager"
+                              quality={75}
                             />
                           </div>
                         </div>
