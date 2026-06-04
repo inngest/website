@@ -1,0 +1,155 @@
+import { Callout, Properties, Property, Row, Col, CodeGroup, VersionBadge } from "src/shared/Docs/mdx";
+
+export const description = "Fire-and-forget independent work with typed data using deferred functions."
+
+# Deferred Functions
+
+A deferred function is an Inngest function that runs in the background as a side effect of another run. Instead of the usual triggers, a parent run launches it by calling `defer("some-id", { function, data })`. The parent doesn't wait, doesn't see a result, and keeps executing. The deferred run is fully independent: its own retries, concurrency, step state, and typed payload.
+
+<Callout variant="info">
+  Deferred functions are experimental. `createDefer` is imported from `inngest/experimental` and the API may change before GA.
+</Callout>
+
+Use deferred functions for work that should happen *because of* a run, not *as part of* it: scoring an agent's output, sending a notification, logging a side effect, queueing follow-up work. Any function can call the same deferred function, and each call is its own run.
+
+## When to use
+
+| Tool                            | Returns to caller?  | Independent execution?    |
+| ------------------------------- | ------------------- | ------------------------- |
+| `step.invoke(fn, { data })`     | Yes (awaits result) | No (caller blocks)        |
+| `step.sendEvent(...)`           | No                  | Yes (any matching fn)     |
+| `defer(id, { function, data })` | No                  | Yes (single typed target) |
+
+A common use case is an [LLM scorer](/docs/features/inngest-functions/steps-workflows/deferred-scoring) that runs against the output of an agent run.
+
+---
+
+## Defining a deferred function
+
+Use `createDefer` to define a deferred function:
+
+```ts
+import { createDefer } from "inngest/experimental";
+import { z } from "zod";
+
+export const sendEmail = createDefer(
+  inngest,
+  {
+    id: "send-email",
+    schema: z.object({ to: z.string(), body: z.string() }),
+    concurrency: { limit: 5 },
+  },
+  async ({ event, step }) => {
+    event.data.to; // typed from `schema`
+    event.data.body;
+  }
+);
+```
+
+A deferred function is a regular Inngest function with its own retries, concurrency, and step state. Register it alongside your other functions in the serve handler:
+
+```ts
+serve({ client: inngest, functions: [...myFunctions, sendEmail] });
+```
+
+### `createDefer(client, config, handler): DeferredFunction`
+
+`createDefer` mirrors [`inngest.createFunction`](/docs/reference/typescript/v4/functions/create) with a few differences:
+
+- The client is the first positional argument.
+- `triggers` is not accepted — the function is triggered implicitly by `defer(...)`.
+- `schema` describes the payload that callers send.
+- `onFailure` and `batchEvents` are not currently supported.
+
+<Properties>
+  <Property name="client" type="Inngest" required>
+    Your Inngest client instance.
+  </Property>
+  <Property name="config" type="object" required>
+    Function configuration. Accepts the same options as `inngest.createFunction` (`concurrency`, `throttle`, `rateLimit`, etc.) except `triggers`, `onFailure`, and `batchEvents`, and adds `schema`.
+    <Properties nested>
+      <Property name="id" type="string" required>
+        A unique identifier for the function.
+      </Property>
+      <Property name="schema" type="StandardSchemaV1">
+        A [Standard Schema](https://standardschema.dev/) describing the payload that callers send via `defer(...)`. Optional. When present, `data` is validated on both the caller and receiver side and types `event.data` in the handler. Without a schema, `data` falls back to `Record<string, any>`.
+      </Property>
+    </Properties>
+  </Property>
+  <Property name="handler" type="function" required>
+    The async handler. Receives the same arguments as a normal Inngest function handler.
+  </Property>
+</Properties>
+
+---
+
+## Calling `defer`
+
+`defer` is always available on the handler context of any Inngest function:
+
+```ts
+const orderPlaced = inngest.createFunction(
+  { id: "order-placed", triggers: { event: "order/placed" } },
+  async ({ defer }) => {
+    defer("send", {
+      function: sendEmail,
+      data: { to: "a@b.com", body: "hi" },
+    });
+  }
+);
+```
+
+`defer(...)` is **synchronous and fire-and-forget**. It returns `void` and the parent run continues immediately. The deferred run starts when the parent run finalizes.
+
+It also works inside `step.run()`:
+
+```ts
+await step.run("notify", async () => {
+  defer("send", { function: sendEmail, data: { to, body } });
+});
+```
+
+### `defer(id, options): void`
+
+<Properties>
+  <Property name="id" type="string" required>
+    A unique identifier for this call. Must be unique within the parent run — unlike step IDs, no implicit index is appended to dedupe. (This is because `defer` can be used inside `step.run()`, where an implicit index would change on re-entry.)
+  </Property>
+  <Property name="options" type="object" required>
+    <Properties nested>
+      <Property name="function" type="DeferredFunction" required>
+        The deferred function to trigger.
+      </Property>
+      <Property name="data" type="object" required>
+        Payload to send to the deferred function. Typed from `function.schema` when present.
+      </Property>
+    </Properties>
+  </Property>
+</Properties>
+
+---
+
+## Schemas
+
+When `schema` is provided on the deferred function:
+
+- `data` is validated at the call site (synchronously).
+- `data` is validated again on the receiver side. This catches serialization round-trips that change the shape (e.g. a `Date` becoming an ISO string).
+- The same schema types `event.data` in the handler.
+
+Call-site validation must be synchronous because `defer(...)` itself is sync. If the schema's `validate` returns a Promise, the SDK logs an error and the call is skipped. Receiver-side validation is async, so async validators work there.
+
+---
+
+## Error handling
+
+`defer(...)` is fire-and-forget, so a bad call should not derail the surrounding handler.
+
+- **Call-site errors** (for example, a synchronous schema failure) are logged via the internal logger and the call is silently skipped. The parent run continues normally and the deferred function does not fire.
+- **Receiver-side errors** (the deferred run reading invalid `event.data`, or the handler throwing) fail the deferred run itself with normal retry semantics.
+
+---
+
+## Sharing across parent functions
+
+A deferred function is one Inngest function in the backend. Multiple parents can hold a reference to it; each `defer(...)` call triggers an independent run with its own retries and concurrency state.

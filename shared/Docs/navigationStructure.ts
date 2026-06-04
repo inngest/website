@@ -314,6 +314,11 @@ const sectionReference: (NavGroup | NavLink)[] = [
         tag: "new",
       },
       {
+        title: "Deferred Functions",
+        href: tsRef("v4", "functions/deferred-functions"),
+        tag: "beta",
+      },
+      {
         title: "Steps",
         links: [
           {
