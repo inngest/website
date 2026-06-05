@@ -24,6 +24,9 @@ export const metadata: Metadata = {
     image: "/assets/reports/2026-benchmark/og/landing.png",
   }),
   robots: { index: false, follow: false },
+  alternates: {
+    canonical: "https://www.inngest.com/blog/ai-in-production-report-2026",
+  },
 };
 
 const KEY_FINDINGS = [
