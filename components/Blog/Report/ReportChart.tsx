@@ -1,3 +1,4 @@
+import Image from "next/image";
 import {
   RiDownload2Line,
   RiFilePdf2Line,
@@ -6,18 +7,26 @@ import {
 } from "@remixicon/react";
 import {
   getReportGraph,
+  REPORT_GRAPH_HEIGHT,
+  REPORT_GRAPH_WIDTH,
   REPORT_LANDING_PATH,
   REPORT_PATH,
   type ReportGraphId,
 } from "app/content/ai-in-production-report-2026/graphs";
 import { getFullURL } from "src/utils/social";
-import { REPORT_COLUMN_BLEED } from "./constants";
 
 type Props = {
   graphId: ReportGraphId;
   /** Tighter vertical rhythm when charts stack as a set */
   tight?: boolean;
 };
+
+/** Display width cap — matches `.report-prose` (75ch). Native PNG is 3600px. */
+const CHART_DISPLAY_WIDTH = 1200;
+const CHART_DISPLAY_HEIGHT = Math.round(
+  (CHART_DISPLAY_WIDTH * REPORT_GRAPH_HEIGHT) / REPORT_GRAPH_WIDTH
+);
+const CHART_SIZES = "(min-width: 768px) 75ch, 100vw";
 
 export function ReportChart({ graphId, tight = false }: Props) {
   const graph = getReportGraph(graphId);
@@ -30,15 +39,19 @@ export function ReportChart({ graphId, tight = false }: Props) {
 
   return (
     <figure
-      className={`${REPORT_COLUMN_BLEED} not-prose ${tight ? "my-6" : "my-10"}`}
+      className={`report-chart not-prose ${tight ? "my-6" : "my-10"}`}
+      style={{ maxWidth: "75ch", width: "100%" }}
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      <Image
         src={graph.image}
         alt={graph.title}
+        width={CHART_DISPLAY_WIDTH}
+        height={CHART_DISPLAY_HEIGHT}
+        sizes={CHART_SIZES}
+        quality={75}
         loading="lazy"
-        decoding="async"
-        className="block h-auto w-full max-w-full rounded-lg"
+        className="h-auto w-full rounded-lg"
+        style={{ width: "100%", height: "auto" }}
       />
       <figcaption className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-white/10 pt-3">
         <span className="sr-only">Share or download this chart</span>

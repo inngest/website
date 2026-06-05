@@ -1,6 +1,7 @@
+import Image from "next/image";
 import Link from "next/link";
 import Logo from "src/shared/Icons/Logo";
-import { REPORT_COLUMN_BLEED, REPORT_LOGOS } from "./constants";
+import { REPORT_FULL_BLEED, REPORT_LOGOS, REPORT_TEXTURE } from "./constants";
 
 type Props = {
   author?: string[];
@@ -11,21 +12,21 @@ type Props = {
 export function ReportHero({ author, date, readingTime }: Props = {}) {
   return (
     <div
-      className={`${REPORT_COLUMN_BLEED} relative mb-14 overflow-hidden rounded-lg`}
+      className={`${REPORT_FULL_BLEED} relative mb-14 overflow-hidden rounded-lg`}
       style={{
         background:
           "linear-gradient(145deg, #FB5536 0%, #e84a2e 35%, #d43d24 70%, #c23520 100%)",
       }}
     >
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 opacity-[0.12]"
-        style={{
-          backgroundImage: "url('/assets/report-assets/report_texture.png')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          mixBlendMode: "soft-light",
-        }}
+      <Image
+        src={REPORT_TEXTURE}
+        alt=""
+        aria-hidden
+        fill
+        sizes="100vw"
+        quality={75}
+        priority
+        className="pointer-events-none object-cover opacity-[0.12] mix-blend-soft-light"
       />
 
       <div className="relative mx-auto max-w-5xl px-6 py-12 md:px-10 md:py-16 lg:py-20">
@@ -71,19 +72,13 @@ export function ReportHero({ author, date, readingTime }: Props = {}) {
                 key={logo.name}
                 className={`flex items-center justify-center${logo.name === "Remitly" ? " hidden sm:flex" : ""}`}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <Image
                   src={logo.src}
                   alt={logo.name}
-                  style={{
-                    maxHeight: logo.h,
-                    maxWidth: "100%",
-                    height: "auto",
-                    width: "auto",
-                    display: "block",
-                    filter: "brightness(0) invert(1)",
-                    opacity: 0.95,
-                  }}
+                  width={logo.width}
+                  height={logo.height}
+                  className="block h-auto w-auto max-w-full opacity-95 brightness-0 invert"
+                  style={{ maxHeight: logo.h }}
                 />
               </div>
             ))}

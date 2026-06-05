@@ -1,4 +1,4 @@
-import { REPORT_COLUMN_BLEED } from "./constants";
+import { REPORT_FULL_BLEED } from "./constants";
 
 type Finding = {
   number: number;
@@ -14,7 +14,7 @@ type Props = {
 
 export function ReportExecSummary({ id = "executive-summary", intro, findings }: Props) {
   return (
-    <div id={id} className={`${REPORT_COLUMN_BLEED} scroll-mt-28 mb-14`}>
+    <div id={id} className={`${REPORT_FULL_BLEED} scroll-mt-28 mb-14`}>
       <div className="grid md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
         {/* Sidebar label — mirrors PDF left column */}
         <div

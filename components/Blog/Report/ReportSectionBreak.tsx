@@ -1,4 +1,5 @@
-import { REPORT_COLUMN_BLEED } from "./constants";
+import Image from "next/image";
+import { REPORT_FULL_BLEED, REPORT_SHAPE, REPORT_TEXTURE } from "./constants";
 
 type Stat = {
   value: string;
@@ -61,29 +62,27 @@ export function ReportSectionBreak({
   return (
     <div
       id={id}
-      className={`${REPORT_COLUMN_BLEED} relative my-14 scroll-mt-28 overflow-hidden rounded-lg`}
+      className={`${REPORT_FULL_BLEED} relative my-14 scroll-mt-28 overflow-hidden rounded-lg`}
       style={{ background: theme.background }}
     >
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 opacity-[0.08]"
-        style={{
-          backgroundImage: "url('/assets/report-assets/report_shape.png')",
-          backgroundSize: "contain",
-          backgroundPosition: "left top",
-          backgroundRepeat: "no-repeat",
-        }}
+      <Image
+        src={REPORT_SHAPE}
+        alt=""
+        aria-hidden
+        fill
+        sizes="(min-width: 1280px) 900px, 100vw"
+        quality={75}
+        className="pointer-events-none object-contain object-left-top opacity-[0.08]"
       />
       {variant === "blue" && (
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 opacity-[0.12]"
-          style={{
-            backgroundImage: "url('/assets/report-assets/report_texture.png')",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            mixBlendMode: "soft-light",
-          }}
+        <Image
+          src={REPORT_TEXTURE}
+          alt=""
+          aria-hidden
+          fill
+          sizes="(min-width: 1280px) 900px, 100vw"
+          quality={75}
+          className="pointer-events-none object-cover opacity-[0.12] mix-blend-soft-light"
         />
       )}
 

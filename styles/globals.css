@@ -756,13 +756,35 @@ ul.check li {
 }
 
 /**
- * Report blog posts (reportLayout: true): override default prose column
- * constraints so charts fill the content column while body copy stays readable.
+ * Report blog posts (reportLayout: true): body copy, charts, and blockquotes
+ * share a 75ch measure. Section breaks and exec summary opt into full bleed.
  */
 .report-prose > * {
-  max-width: none;
+  max-width: 75ch;
+  width: 100%;
   margin-left: 0;
   margin-right: 0;
+}
+
+.report-prose > .report-full-bleed {
+  max-width: none;
+  width: 100%;
+}
+
+.report-prose > figure.report-chart {
+  max-width: 75ch !important;
+  width: 100%;
+}
+
+.report-prose > figure {
+  display: block;
+}
+
+.report-prose > figure img,
+.report-prose > figure span {
+  max-width: 100% !important;
+  width: 100% !important;
+  height: auto !important;
 }
 
 .report-prose > p,
