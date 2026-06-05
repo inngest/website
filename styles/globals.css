@@ -767,7 +767,7 @@ ul.check li {
 }
 
 .report-prose > .report-full-bleed {
-  max-width: 75ch;
+  max-width: none;
   width: 100%;
 }
 
