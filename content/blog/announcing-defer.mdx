@@ -2,7 +2,7 @@
 heading: "Introducing defer(): Giving Follow-Up Work the Context it Never Had"
 image: /assets/blog/announcing-connect/featured-image.png
 showSubtitle: false
-subtitle: "Defer() is a powerful new primitive Inngest is happy to announce!"
+subtitle: "A new Inngest API for launching typed, durable follow-up work from inside a function."
 date: 2026-06-05
 author:
   - Lauren Craigie
@@ -10,29 +10,25 @@ author:
 category: product-updates
 ---
 
-Orchestration tools are great at running one thing after another — less so when the follow-up work needs to know exactly what happened *during* the function, not just what triggered it.
+Orchestration tools are great at running one thing after another. They're worse at the follow-up — scoring an AI response with the prompt and latency the parent just produced, or waiting days for a conversion before recording whether a recommendation paid off. Today, that means a separate handler, a hand-rolled payload contract, and often a second platform sitting between them.
 
-Take a scorer for an AI response. It needs the prompt, the retrieved documents, the model version, and the latency — none of which is in the trigger event. Today, getting that context into a follow-up handler means either padding the trigger event with everything the handler might need, or writing the parent's intermediate state to your database and reading it back. Either way, you're maintaining a contract between two functions that don't know about each other, and keeping it in sync as the parent changes. And that's before you start scoring against signals that haven't arrived yet: a user conversion days out, a thumbs up that may never come.
+Until today. `defer()` is a new Inngest API that launches a typed, durable follow-up function from inside a parent run, passing it the data it needs. Deferred runs can pause on `step.waitForEvent` for days, and each one shows up linked to its parent in the UI.
 
-`defer()` is a new Inngest API for exactly this. You define follow-up work as a typed, durable Inngest function and launch it directly from the parent — passing exactly the data it needs. Reach for it when work should happen *because of* a run, not *as part of* it: scoring an agent's output, sending a notification, logging a side effect, or queueing follow-up work. Each deferred run is its own durable function with separate retries and full access to `step.run`, `step.waitForEvent`, and `step.sleep`. It's scoped to the parent run in the UI so you can see what fired what.
-
-This capability is only possible because all Inngest functions run directly from your codebase. The deferred function is right next to the one that launches it, the payload contract is enforced at the type level, and refactors keep working because you're passing a function reference — not matching on an event name string.
-
-Learn exactly how it works, and when to use it, below.
-
-> `defer()` is available today as an experimental API. `createDefer` is imported from `inngest/experimental` and the surface may change before GA.
+<Callout variant="info">
+`defer()` is available today in beta. `createDefer` is imported from `inngest/experimental` and the surface may change before GA.
+</Callout>
 
 ## Why is this a problem right now?
 
-Post-completion background work is not a new problem, but it's becoming a more painful one. Business logic explodes in multi-step durable workflows, and the surface area of "things that should happen because of a run" keeps widening. There are only a few ways to solve this today, and they all share the same drawback: the follow-up is disconnected from the work that triggered it.
+Post-completion background work is not a new problem, but it's becoming a more painful one. Business logic explodes in multi-step durable workflows, and the context gap around "what actually happened" keeps widening. There are only three ways to solve this today, but they all share the same drawback: the follow-up is disconnected from the work that triggered it.
 
-**Traditional job queues** let you enqueue work after a function, but the queued job is a separate handler in a separate file. You define a payload contract by convention, hope the producer and consumer agree on its shape, and lose any visual link between the original run and its follow-up.
+**Traditional job queues** (Sidekiq, BullMQ, Celery) let you enqueue work after a function, but the queued job is a separate handler in a separate file. You define a payload contract by hand and hope the producer and consumer agree on its shape.
 
-**Workflow engines** give you failure callbacks and child workflows, but the wiring still lives outside your function — another file, another event shape, another place a refactor can quietly drift.
+**Workflow engines** (Temporal, Trigger, Restate) give you failure callbacks and child workflows, but the wiring lives outside the function it's reacting to — in a separate file, with a payload shape held together by convention.
 
-**Eval platforms** put the scorer in a separate system from the function it's scoring. The feedback loop between "I shipped a change" and "I understand how it performed" runs through a second SDK, a second deployment, and a second source of truth.
+**Eval platforms** (Braintrust, LangSmith, Arize) put the scorer in a separate system from the function it's scoring. The feedback loop between "I shipped a change" and "I understand how it performed" involves significant manual effort to trace a result back to the code that produced it.
 
-What none of these approaches offer is a typed, single-target, durable follow-up that you can launch in one line from the function that produced the data — and see linked back to that run in the UI.
+What none of these approaches offer is a typed, durable follow-up that you can launch in one line from the function that produced the data. The run is linked back to its parent in the UI.
 
 ## How `defer()` works
 
@@ -79,25 +75,28 @@ export const processOrder = inngest.createFunction(
 );
 ```
 
-When the parent run finalizes, the deferred callback fires as its own linked Inngest run — durable, observable, retryable — with the exact payload you passed in.
+When the parent run finalizes, the deferred callback fires as its own linked Inngest run — durable, observable, retryable — with the payload you passed in.
 
-**Deferred runs are separate, linked runs.** Each `defer()` call produces its own run, connected to the parent. It has its own `runId`, its own step history, its own retry behavior. They don't pollute your runs list; deferred runs are scoped to the parent run's detail view.
+**Deferred runs are separate, linked runs.** Each `defer()` call produces its own run, connected to the parent. It has its own `runId`, its own step history, its own retry behavior. But it doesn't pollute your runs list; deferred runs are scoped to the parent run's detail view.
 
 **`defer()` is fire-and-forget.** The call returns `void` and the parent run continues immediately. Buffered defer ops ship when the parent run finalizes, so the deferred function can't block, fail, or change the parent's outcome.
 
 **Steps work inside deferred runs.** The full power of Inngest — `step.run()`, `step.waitForEvent()`, `step.sleep()` — is available inside the deferred handler. This is what makes patterns like outcome-based scoring possible.
 
-**Payloads are typed.** When you pass a `schema` to `createDefer`, the `data` you send is validated at the call site and on the receiver, and `event.data` is typed in the handler. Refactoring the payload becomes a type error at every call site rather than a runtime surprise.
+**Payloads are typed.** Pass a `schema` to `createDefer` and the `data` you send is validated at the call site and on the receiver, with `event.data` typed in the handler. Change the schema later and TypeScript points at every call site that needs updating, so refactors are painless.
 
-**IDs must be unique within the parent run.** Unlike step IDs, no implicit index is appended. This is intentional: `defer()` works inside `step.run()`, and an implicit index would change on re-entry. If you call `defer()` with the same ID twice, the duplicate is logged and dropped.
+You already have a few ways to launch work from inside a function:
 
-You already have ways to launch work from inside a function. `step.invoke` runs another function and waits for the result — useful when you need the return value, but the parent blocks until it finishes. `step.sendEvent` is fire-and-forget, but broadcasts to any function whose trigger matches. And a plain `step.run` becomes *part of* the parent run, with its retries bundled in and visible in the parent's step list. `defer` fills the gap. The call itself is fire-and-forget like `sendEvent`, but the target is one specific typed function like `invoke`. And unlike any of them, the run it produces is linked back to the parent in the UI, so you can find it later without instrumenting anything yourself.
+- `step.invoke` runs another function and waits for the result. The parent blocks until it finishes.
+- `step.sendEvent` is fire-and-forget, but broadcasts to any function whose trigger matches.
+- `step.run` becomes *part of* the parent run, retries bundled in.
+- `defer` is fire-and-forget like `sendEvent`, targeted at one typed function like `invoke`, and linked back to the parent in the UI.
 
 ## When to use defer()
 
 ### Scoring AI responses after serving them
 
-You ran an LLM call and served a result to the user. Now you want to evaluate quality programmatically without blocking the response — and without re-fetching everything that went into producing the output. With `defer`, the scorer is a function in your codebase, deploying alongside everything else and observed by the same tooling. No second SDK, no separate deployment surface, no extra identifier to thread through your database so a later signal can be joined back.
+You ran an LLM call and served a result to the user. Now you want to evaluate quality programmatically without blocking the response or re-fetching the context that produced it.
 
 ```tsx
 export const scoreResponse = createDefer(
@@ -147,11 +146,11 @@ export const generateReply = inngest.createFunction(
 );
 ```
 
-Because the deferred run is a full durable function, the scorer can also `step.waitForEvent()` — waiting days for a conversion signal, a thumbs up, or any downstream event, and then scoring retroactively with that richer signal.
+Because the deferred run is a full durable function, the scorer can also `step.waitForEvent()` — waiting days for a thumbs up or a conversion event, then scoring retroactively.
 
 ### Outcome-based scoring (or "wait for conversion")
 
-Some signals don't show up for days. A user converts, a support ticket gets reopened, a recommendation pays off. You can't block a parent run for a week waiting on that. With `defer`, the deferred run itself does the waiting — pausing on `step.waitForEvent` for as long as you need before recording the outcome.
+**No existing eval platform handles this use case well.** With other tools, you won't know if an AI recommendation worked until a week later, when the user either purchased or didn't. `defer()` changes this. The deferred run waits on `step.waitForEvent` for as long as you need.
 
 ```tsx
 export const conversionScore = createDefer(
@@ -188,11 +187,9 @@ export const conversionScore = createDefer(
 );
 ```
 
-The scorer pauses for up to seven days for a matching `purchase/completed` event, records the outcome whether or not it arrives, and stays linked to the run that made the original recommendation.
-
 ### Cache invalidation after a write
 
-Register invalidation inline with the write, so it's hard to forget and easy to find when you're reading the parent:
+Register invalidation inline with the write, so it's impossible to forget:
 
 ```tsx
 export const invalidateProductCache = createDefer(
@@ -228,7 +225,7 @@ export const updateProduct = inngest.createFunction(
 
 ### Sending analytics without blocking
 
-You want rich analytics — including state that was only assembled mid-function — without holding up the response:
+You want rich analytics that include mid-function state, without holding up the response:
 
 ```tsx
 export const trackRecommendationServed = createDefer(
@@ -277,11 +274,11 @@ export const serveRecommendations = inngest.createFunction(
 );
 ```
 
-The parent returns immediately. The analytics call runs in the background with the full context it needs, as a durable run you can inspect from the parent's detail view.
+The parent returns immediately. The analytics call runs in the background with the full context it needs.
 
 ## A new primitive, not just a feature
 
-We built `defer()` as a primitive. The underlying mechanism is a full durable run with access to the rest of the Inngest API surface, which means there's more coming. The feedback loop between shipping logic and understanding how something actually performed should be as tight as possible.
+We built `defer()` as a primitive. The underlying mechanism is a full durable run with access to the rest of Inngest's API, which means there's more coming. The feedback loop between shipping logic and understanding how something actually performed should be as tight as possible.
 
 ## Getting started
 
