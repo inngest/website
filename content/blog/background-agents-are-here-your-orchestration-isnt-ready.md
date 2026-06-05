@@ -81,7 +81,7 @@ When you have `step.run()`, `step.invoke()`, `step.waitForEvent()`, and `step.sl
 
 Patterns change faster than ever. They're all compositions. Frameworks struggle to adapt for these things as they encode a fixed topology. Composable primitives don't have that same issue.
 
-There's another angle here that's easy to miss: [teams with strong orchestration and observability iterate faster](/content/ai-in-production-report-2026?ref=blog-background-agents-are-here). When you can see every step of every agent run (structured, not just logs) you can identify what's working and swap what isn't. **The composability gap is really an observability problem.** You can't recompose what you can't see.
+There's another angle here that's easy to miss: [teams with strong orchestration and observability iterate faster](/blog/ai-in-production-report-2026?ref=blog-background-agents-are-here). When you can see every step of every agent run (structured, not just logs) you can identify what's working and swap what isn't. **The composability gap is really an observability problem.** You can't recompose what you can't see.
 
 ## What this looks like in practice
 
