@@ -81,7 +81,7 @@ export function ReportSectionBreak({
           aria-hidden
           fill
           sizes="(min-width: 1280px) 900px, 100vw"
-          quality={75}
+          quality={40}
           className="pointer-events-none object-cover opacity-[0.12] mix-blend-soft-light"
         />
       )}

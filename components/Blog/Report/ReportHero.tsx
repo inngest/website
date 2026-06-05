@@ -24,7 +24,7 @@ export function ReportHero({ author, date, readingTime }: Props = {}) {
         aria-hidden
         fill
         sizes="100vw"
-        quality={75}
+        quality={40}
         priority
         className="pointer-events-none object-cover opacity-[0.12] mix-blend-soft-light"
       />
