@@ -453,26 +453,28 @@ const withMDX = createMDX({
 
 // Necessary for hot reloading after snippet changes. Watches for snippet
 // changes and invalidates the cache for all files that reference the snippet
-try {
-  fs.watch("./snippets", { recursive: true }, (eventType, filename) => {
-    if (filename && eventType === "change") {
-      // Skip non-snippet files (documentation, config, etc.)
-      if (filename.endsWith(".md")) {
-        return;
+if (process.env.NODE_ENV === "development") {
+  try {
+    fs.watch("./snippets", { recursive: true }, (eventType, filename) => {
+      if (filename && eventType === "change") {
+        // Skip non-snippet files (documentation, config, etc.)
+        if (filename.endsWith(".md")) {
+          return;
+        }
+        filename = `./snippets/${filename}`;
+        // const fullPath = path.join(process.cwd(), filename).replace(/\\/g, '/');
+        const relativePath = path.relative(".", filename).replace(/\\/g, "/");
+        console.log(`File changed: ${relativePath}`);
+        console.log(
+          `Looking for files containing: !snippet:path=${relativePath}`
+        );
+        touchFilesWithString(`!snippet:path=${relativePath}`);
       }
-      filename = `./snippets/${filename}`;
-      // const fullPath = path.join(process.cwd(), filename).replace(/\\/g, '/');
-      const relativePath = path.relative(".", filename).replace(/\\/g, "/");
-      console.log(`File changed: ${relativePath}`);
-      console.log(
-        `Looking for files containing: !snippet:path=${relativePath}`
-      );
-      touchFilesWithString(`!snippet:path=${relativePath}`);
-    }
-  });
-  console.log("File watcher ready");
-} catch (error) {
-  console.error("File watcher error:", error);
+    });
+    console.log("File watcher ready");
+  } catch (error) {
+    console.error("File watcher error:", error);
+  }
 }
 
 // Recursively find all files in the current directory that contain the given

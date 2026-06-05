@@ -20,7 +20,7 @@ export type BlogPost = {
 
   // CTAs
   floatingCTA?: boolean;
-  primaryCTA?: "sales" | "docs";
+  primaryCTA?: "sales" | "docs" | "signUp" | "report2026";
 
   // When true, the post will be the highlighted post on the main feed
   focus?: boolean;

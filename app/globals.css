@@ -361,3 +361,25 @@ body {
 .language-plaintext {
   white-space: pre-wrap;
 }
+
+@media (max-width: 1024px) {
+  .blog-content pre.shiki {
+    padding: 1.5rem 1.2rem;
+    max-width: 100% !important;
+  }
+}
+
+.blog-image-container\:2 {
+  display: grid;
+  gap: 1rem;
+}
+
+.blog-image-container\:2 img {
+  margin-bottom: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .blog-image-container\:2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
