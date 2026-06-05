@@ -1,0 +1,123 @@
+---
+title: Post-completion side effects
+subtitle: Run analytics, notifications, and logging after your function finishes without blocking the critical path or losing context.
+pattern: durable
+tags: [Durability, AI, Architecture]
+---
+
+Your function does the important work. After it finishes, you need to do secondary things: log token usage, send a Slack summary, update a CRM record, track analytics. None of that should block the user-facing response or affect the parent run's success status.
+
+Today you either do this before the return (blocking) or send events to separate functions (losing easy access to the data your function just produced). Deferred functions let you register side effects inline, keep them typed and linked to the parent, and run them independently after the parent completes.
+
+## How this works
+
+Define deferred functions for each side effect. Each one receives a typed payload from the parent.
+
+```typescript
+import { createDefer } from "inngest/experimental";
+import { z } from "zod";
+
+const logUsage = createDefer(inngest, {
+  id: "log-ai-usage",
+  schema: z.object({
+    model: z.string(),
+    promptTokens: z.number(),
+    completionTokens: z.number(),
+    runId: z.string(),
+  }),
+}, async ({ event, step }) => {
+  await step.run("record-usage", async () => {
+    await analytics.track("ai.tokens.used", {
+      model: event.data.model,
+      prompt_tokens: event.data.promptTokens,
+      completion_tokens: event.data.completionTokens,
+      inngest_run_id: event.data.runId,
+    });
+  });
+});
+
+const notifySlack = createDefer(inngest, {
+  id: "notify-slack-completion",
+  schema: z.object({
+    channel: z.string(),
+    summary: z.string(),
+    ticketId: z.string(),
+  }),
+}, async ({ event, step }) => {
+  await step.run("post-message", async () => {
+    await slack.chat.postMessage({
+      channel: event.data.channel,
+      text: `Ticket ${event.data.ticketId} resolved: ${event.data.summary}`,
+    });
+  });
+});
+```
+
+In the parent function, call `defer()` with the data each side effect needs. The parent returns immediately. The deferred runs fire after it finalizes.
+
+```typescript
+const handleTicket = inngest.createFunction(
+  { id: "handle-support-ticket", triggers: { event: "support/ticket.created" } },
+  async ({ event, step, defer }) => {
+    const response = await step.run("generate-response", async () => {
+      return await llm.chat({
+        model: "gpt-4o",
+        messages: [
+          { role: "system", content: "You are a support agent." },
+          { role: "user", content: event.data.content },
+        ],
+      });
+    });
+
+    await step.run("send-reply", async () => {
+      await supportPlatform.reply(event.data.ticketId, response.text);
+    });
+
+    // Side effects. None of these block the response.
+    defer("log-tokens", {
+      function: logUsage,
+      data: {
+        model: response.model,
+        promptTokens: response.usage.prompt_tokens,
+        completionTokens: response.usage.completion_tokens,
+        runId: event.data.runId,
+      },
+    });
+
+    defer("notify-team", {
+      function: notifySlack,
+      data: {
+        channel: "#support-resolved",
+        summary: response.text.slice(0, 200),
+        ticketId: event.data.ticketId,
+      },
+    });
+
+    return { ticketId: event.data.ticketId, status: "resolved" };
+  }
+);
+```
+
+The parent run completes and returns `resolved`. The token logging and Slack notification run as separate functions with their own retries. If Slack is down, the notification retries without affecting the parent. If analytics fails, the customer still got their response.
+
+## Why not just add more steps?
+
+Adding `step.run("log-usage", ...)` at the end of the function works, but it means:
+
+- The function stays running longer than it needs to.
+- A failure in analytics logging fails the whole run and triggers retries of the entire function.
+- The parent run's success status depends on secondary work that the user doesn't care about.
+
+Deferred functions keep the parent run clean. It succeeds or fails based on the work that matters. The side effects run on their own timeline.
+
+## Alternative approaches
+
+- **Send events to trigger separate functions.** Works, but you lose the typed schema contract and the parent/child linking in traces. You also need to serialize all the data into the event payload manually.
+- **Fire-and-forget HTTP calls.** No retries, no observability, no way to know if they succeeded.
+- **External tools (Segment, Datadog agents).** Fine for generic telemetry, but you lose the run-level context that makes Inngest traces useful.
+
+## Additional resources
+
+- [Deferred Functions reference](/docs/reference/typescript/v4/functions/deferred-functions)
+- [Build a deferred scorer](/docs/features/inngest-functions/steps-workflows/deferred-scoring)
+- [Keeping your API fast](/patterns/keeping-your-api-fast)
