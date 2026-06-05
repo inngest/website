@@ -755,6 +755,62 @@ ul.check li {
   margin: 0 0.25rem 0 0;
 }
 
+/**
+ * Report blog posts (reportLayout: true): override default prose column
+ * constraints so charts fill the content column while body copy stays readable.
+ */
+.report-prose > * {
+  max-width: none;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.report-prose > p,
+.report-prose > h2,
+.report-prose > h3,
+.report-prose > h4,
+.report-prose > ul,
+.report-prose > ol {
+  max-width: 75ch;
+}
+
+.report-prose h2 {
+  font-family: "Whyte Inktrap", Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: 1.875rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin-top: 3rem;
+}
+
+.report-prose h3 {
+  font-family: "Whyte Inktrap", Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: 1.625rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin-top: 2.5rem;
+}
+
+@media (min-width: 768px) {
+  .report-prose h2 {
+    font-size: 2.25rem;
+  }
+
+  .report-prose h3 {
+    font-size: 1.875rem;
+  }
+}
+
+.report-prose > p:has(> img) {
+  max-width: none;
+}
+
+.report-prose table {
+  max-width: none;
+  width: 100%;
+}
+
 .blog-image-container\:2 {
   display: grid;
   gap: 1rem;
