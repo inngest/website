@@ -17,11 +17,14 @@ const PAGE_TITLE = "AI in Production: The 2026 Benchmark Report";
 const PAGE_DESCRIPTION =
   "We surveyed 130 backend, full-stack, and AI engineers about what it takes to run reliable AI workflows in production. Explore the patterns that predict scaling confidence.";
 
-export const metadata: Metadata = buildMetadata({
-  title: PAGE_TITLE,
-  description: PAGE_DESCRIPTION,
-  image: "/assets/reports/2026-benchmark/og/landing.png",
-});
+export const metadata: Metadata = {
+  ...buildMetadata({
+    title: PAGE_TITLE,
+    description: PAGE_DESCRIPTION,
+    image: "/assets/reports/2026-benchmark/og/landing.png",
+  }),
+  robots: { index: false, follow: false },
+};
 
 const KEY_FINDINGS = [
   {
