@@ -145,6 +145,20 @@ export const PATTERNS: PatternIndexItem[] = [
       "Break multi-step AI pipelines and complex business logic into durable, independently retried steps.",
   },
   {
+    category: "durable",
+    slug: "deferred-cleanup-and-rollbacks",
+    title: "Deferred cleanup and rollbacks",
+    subtitle:
+      "Register background cleanup when you create the mess, cancel it if everything succeeds, and keep your critical path fast.",
+  },
+  {
+    category: "durable",
+    slug: "post-completion-side-effects",
+    title: "Post-completion side effects",
+    subtitle:
+      "Run analytics, notifications, and logging after your function finishes without blocking the critical path or losing context.",
+  },
+  {
     category: "flow",
     slug: "flash-sales-and-bursty-workflows",
     title: "Flash sales and bursty workflows",
