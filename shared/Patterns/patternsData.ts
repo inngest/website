@@ -154,9 +154,9 @@ export const PATTERNS: PatternIndexItem[] = [
   {
     category: "durable",
     slug: "post-completion-side-effects",
-    title: "Post-completion side effects",
+    title: "Post-completion side effects for AI agents",
     subtitle:
-      "Run analytics, notifications, and logging after your function finishes without blocking the critical path or losing context.",
+      "Score model output, log token costs, and notify your team after an agent run finishes without blocking the response or losing context.",
   },
   {
     category: "flow",
