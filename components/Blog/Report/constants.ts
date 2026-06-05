@@ -38,7 +38,7 @@ export const REPORT_BLEED =
   "not-prose relative left-1/2 w-screen max-w-[100vw] -translate-x-1/2";
 
 /** Full-bleed within the report content column (section breaks, exec summary). */
-export const REPORT_FULL_BLEED = "report-full-bleed w-full";
+export const REPORT_FULL_BLEED = "not-prose report-full-bleed w-full";
 
 /** @deprecated Use REPORT_FULL_BLEED */
 export const REPORT_COLUMN_BLEED = REPORT_FULL_BLEED;

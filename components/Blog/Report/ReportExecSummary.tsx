@@ -45,7 +45,7 @@ export function ReportExecSummary({ id = "executive-summary", intro, findings }:
           </p>
           <ol className="mt-6 flex flex-col gap-8">
             {findings.map((finding) => (
-              <li key={finding.number} className="flex items-start gap-5">
+              <li key={finding.number} className="flex gap-5">
                 <span
                   className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full font-whyteInktrap text-lg font-bold text-[#0c1f10]"
                   style={{ backgroundColor: "#a8ef3c" }}
