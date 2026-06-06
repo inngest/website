@@ -877,6 +877,45 @@ export const PUT = inngestServe.PUT;
 
 See the [SvelteKit example](https://github.com/inngest/inngest-js/tree/main/examples/framework-sveltekit) for more information.
 
+#### Streaming
+
+SvelteKit can also stream responses back to Inngest, potentially allowing much longer timeouts.
+
+Use `streaming: "allow"` when the SDK can detect that your deployment supports streaming, such as on Cloudflare Pages. Use `streaming: "force"` only when you know your adapter supports streaming but the SDK cannot detect it automatically, such as when deploying SvelteKit to Vercel.
+
+<CodeGroup>
+```ts {{ title: "Auto-detect support" }}
+import { functions, inngest } from '$lib/inngest';
+import { serve } from 'inngest/sveltekit';
+
+const inngestServe = serve({
+  client: inngest,
+  functions,
+  streaming: "allow",
+});
+
+export const GET = inngestServe.GET;
+export const POST = inngestServe.POST;
+export const PUT = inngestServe.PUT;
+```
+```ts {{ title: "Force streaming" }}
+import { functions, inngest } from '$lib/inngest';
+import { serve } from 'inngest/sveltekit';
+
+const inngestServe = serve({
+  client: inngest,
+  functions,
+  streaming: "force",
+});
+
+export const GET = inngestServe.GET;
+export const POST = inngestServe.POST;
+export const PUT = inngestServe.PUT;
+```
+</CodeGroup>
+
+For more information, check out the [Streaming](/docs/streaming) page.
+
 ### Framework: Tanstack Start
 
 Add the following to `./src/routes/api/inngest.ts`:
