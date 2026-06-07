@@ -3,7 +3,7 @@ import { CodeGroup, CardGroup, Card, VersionBadge, Callout } from "src/shared/Do
 
 export const description = "Enrich your Inngest Traces with your application's OpenTelemetry traces";
 
-# Set up OpenTelemetry with Inngest <VersionBadge version="TypeScript only" />
+# Set up OpenTelemetry with Inngest
 
 Inngest's [Extended Traces](/docs/platform/monitor/traces#extended-traces) enables you to forward your application OpenTelemetry traces into
 Inngest's Traces for a unified observability and debugging experience, both in the DevServer and Platform.
@@ -17,7 +17,7 @@ capture your application traces while not registering the Node.js instrumentatio
 
 Here's a Node.js application OpenTelemetry setup (_exporting traces via OTLP_) using Inngest Extended Traces:
 
-```ts tracing.ts
+```ts {{ filename: "tracing.ts" }}
 import { NodeSDK } from "@opentelemetry/sdk-node";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
 
@@ -81,7 +81,7 @@ If you'd like to benefit from database queries and HTTP request traces in your I
 Setting up Inngest Extended Traces without an existing OpenTelemetry client only requires adding the `extendedTracesMiddleware()`
 to your Inngest client as follows:
 
- ```ts client.ts
+ ```ts {{ filename: "client.ts" }}
 // Create your client the same as you would normally
 import { Inngest } from "inngest";
 import { extendedTracesMiddleware } from "inngest/experimental";
@@ -99,7 +99,7 @@ This configuration will enrich your Inngest Traces with database queries and HTT
 
 Once Inngest Extended Traces is properly set up in your application, your Inngest workflow will receive an additional `tracer` argument:
 
-```ts workflow.ts
+```ts {{ filename: "workflow.ts" }}
 import { inngest } from './client'
 
 export const userOnboarding = inngest.createFunction(
@@ -112,7 +112,7 @@ export const userOnboarding = inngest.createFunction(
 
 The `tracer` object is an `@opentelemetry/api`'s `Tracer` instance enabling you to create custom traces as follows:
 
-```ts workflow.ts
+```ts {{ filename: "workflow.ts" }}
 import { inngest } from './client'
 import { sendEmail } from './emails'
 
@@ -141,3 +141,9 @@ Using `tracer.startActiveSpan()`, we create a custom `call-email-service` span t
 Our custom span is properly displayed within our Inngest workflow run Traces:
 
 ![The user-onboarding run displays Inngest Traces featuring the call-email-service custom span](/assets/docs/examples/open-telemetry/custom-span.png)
+
+## Python
+
+The Python SDK does not yet include a built-in `extendedTracesMiddleware()`. You can set up extended traces manually using the Inngest middleware API and a custom OpenTelemetry SpanProcessor.
+
+For the full implementation guide covering `InngestOTELMiddleware`, `InngestSpanProcessor`, and Flask wiring, see the [Extended Traces (Python)](/docs/reference/python/guides/extended-traces) reference.
