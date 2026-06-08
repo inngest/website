@@ -1,6 +1,6 @@
 ---
 heading: "Introducing defer(): Giving Follow-Up Work the Context it Never Had"
-image: /assets/blog/announcing-connect/featured-image.png
+image: /assets/blog/announcing-defers/featured-image.png
 showSubtitle: false
 subtitle: "A new Inngest API for launching typed, durable follow-up work from inside a function."
 date: 2026-06-05
@@ -278,10 +278,10 @@ The parent returns immediately. The analytics call runs in the background with t
 
 ## A new primitive, not just a feature
 
-We built `defer()` as a primitive. The underlying mechanism is a full durable run with access to the rest of Inngest's API, which means there's more coming. The feedback loop between shipping logic and understanding how something actually performed should be as tight as possible.
+We built `defer()` as a primitive. The underlying mechanism is a full durable run with access to the rest of Inngest's API, which means there's more coming: things like batching, immediate scheduling, and an abort API for in-flight deferred runs, plus encryption middleware support and observability improvements. The feedback loop between shipping logic and understanding how something actually performed should be as tight as possible.
 
 ## Getting started
 
-`defer()` is available today as an experimental API in the Inngest TypeScript SDK. Check the [deferred functions documentation](/docs/features/inngest-functions/steps-workflows/deferred-functions) for the full API reference.
+`defer()` is available today as an experimental API in the Inngest TypeScript SDK. Check the [deferred functions documentation](/docs/reference/typescript/v4/functions/deferred-functions) for the full API reference.
 
 We're especially interested in hearing how teams use this for durable workflows — including ensuring agents run as expected. If you're building eval pipelines or scoring loops and want to talk through how `defer()` fits, reach out.
