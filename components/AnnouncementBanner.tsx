@@ -38,7 +38,7 @@ const Banner: React.FC<Props> = ({ href, children, className }) => (
 
 export default function AnnouncementBanner() {
   return (
-    <Banner href="https://www.inngest.com/content/ai-in-production-report-2026?ref=site-banner">
+    <Banner href="/blog/ai-in-production-report-2026?ref=site-banner">
       What are the most confident teams using to build AI? →{" "}
       <strong className="underline underline-offset-2">
         2026 Benchmark Report

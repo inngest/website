@@ -174,7 +174,6 @@ export default function ResourcePopover() {
                       <div className="flex w-full flex-col">
                         <div className="aspect-[2/1] w-full overflow-hidden rounded-md bg-stone-800">
                           <div className="flex h-full w-full items-center justify-center">
-                            {/* <img alt="" src={featuredBlogPost.image} /> */}
                             <Image
                               className="max-h-full max-w-full object-contain object-center"
                               src={featuredBlogPost.image}

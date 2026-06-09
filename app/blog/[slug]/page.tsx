@@ -30,6 +30,16 @@ import CTACallout from "src/shared/CTACallout";
 import Blockquote from "src/shared/Blog/Blockquote";
 import AutoplayVideo from "src/shared/Blog/AutoplayVideo";
 import FloatingCTA from "src/components/Blog/FloatingCTA";
+import {
+  ReportChart,
+  ReportExecSummary,
+  ReportHero,
+  ReportLayoutShell,
+  ReportMobileContentsBar,
+  ReportSectionBreak,
+  ReportTableOfContents,
+  ReportWhatWeAsked,
+} from "src/components/Blog/Report";
 import { Code } from "src/shared/Code/CodeHike";
 import ProductHunt from "src/app/launch-week/ProductHunt";
 import { formatShortLocaleDate } from "src/utils/date";
@@ -72,6 +82,7 @@ type Scope = {
   primaryCTA?: CTA;
   floatingCTA?: boolean;
   category?: string;
+  reportLayout?: boolean;
   reading: {
     text: string;
     minutes: number;
@@ -144,6 +155,11 @@ const components: MDXComponents = {
   Col,
   Row,
   img: MdxImage,
+  ReportChart,
+  ReportExecSummary,
+  ReportHero,
+  ReportSectionBreak,
+  ReportWhatWeAsked,
 };
 
 function readImageDimensions(filePath: string) {
@@ -614,8 +630,13 @@ export default async function BlogPostPage({ params }: PageProps) {
       />
       <Container>
         <article>
-          <div className="relative m-auto max-w-3xl py-16">
-            {scope.image && (
+          <div
+            className={clsx(
+              "relative py-16",
+              scope.reportLayout ? "w-full max-w-none" : "m-auto max-w-3xl"
+            )}
+          >
+            {scope.image && !scope.reportLayout && (
               <figure className="mx-auto flex max-w-[768px] flex-col items-end">
                 <Image
                   className="rounded-lg"
@@ -635,48 +656,67 @@ export default async function BlogPostPage({ params }: PageProps) {
                 )}
               </figure>
             )}
-            <div className="lg:pt-18 m-auto max-w-[76ch] pt-12">
-              <header>
-                <h1 className="mb-2 text-2xl font-medium tracking-tighter text-basis md:mb-4 md:text-4xl lg:leading-loose xl:text-5xl">
-                  {scope.heading}
-                </h1>
-                {scope.showSubtitle && (
-                  <p className="mb-6 flex items-center gap-1 text-lg font-bold text-subtle">
-                    {scope.subtitle}
+            {scope.reportLayout ? (
+              <ReportLayoutShell toc={<ReportTableOfContents />}>
+                <>
+                  <ReportHero
+                    author={authors}
+                    date={scope.humanDate}
+                    readingTime={scope.reading.text}
+                  />
+                  <div className="w-full pt-0">
+                    <ReportMobileContentsBar />
+                    <div className="report-prose prose-invert blog-content prose mb-20 mt-0 max-w-none text-basis prose-a:font-medium prose-a:no-underline prose-a:transition-all hover:prose-a:underline prose-code:tracking-tight prose-pre:border prose-pre:border-subtle [&_h2]:scroll-mt-28">
+                      {mdxContent}
+                    </div>
+                    <CTAs primary={primaryCTA} ctaRef={`blog-${slug}`} />
+                  </div>
+                </>
+              </ReportLayoutShell>
+            ) : (
+              <div className="lg:pt-18 m-auto max-w-[76ch] pt-12">
+                <header>
+                  <h1 className="mb-2 text-2xl font-medium tracking-tighter text-basis md:mb-4 md:text-4xl lg:leading-loose xl:text-5xl">
+                    {scope.heading}
+                  </h1>
+                  {scope.showSubtitle && (
+                    <p className="mb-6 flex items-center gap-1 text-lg font-bold text-subtle">
+                      {scope.subtitle}
+                    </p>
+                  )}
+                  <p className="mt-2 flex items-center gap-2 text-sm text-subtle">
+                    {authors.map((author, idx, arr) => (
+                      <span key={author}>
+                        {hasAuthorURL(author) ? (
+                          <a
+                            href={authorURLs[author]}
+                            target="_blank"
+                            className="text-subtle hover:underline"
+                          >
+                            {author}
+                          </a>
+                        ) : (
+                          <>{author}</>
+                        )}
+                        {idx < arr.length - 1 && ", "}
+                      </span>
+                    ))}
+                    {authors.length > 0 && <>&middot; </>}
+                    <span className="flex items-center gap-1">
+                      <RiCalendarLine className="mr-px h-3 w-3" />{" "}
+                      {scope.humanDate}{" "}
+                      {!!dateUpdated && <> (Updated: {dateUpdated})</>}
+                    </span>{" "}
+                    &middot; <span>{scope.reading.text}</span>
+                    <Tags tags={scope.tags} />
                   </p>
-                )}
-                <p className="mt-2 flex items-center gap-2 text-sm text-subtle">
-                  {authors.map((author, idx, arr) => (
-                    <span key={author}>
-                      {hasAuthorURL(author) ? (
-                        <a
-                          href={authorURLs[author]}
-                          target="_blank"
-                          className="text-subtle hover:underline"
-                        >
-                          {author}
-                        </a>
-                      ) : (
-                        <>{author}</>
-                      )}
-                      {idx < arr.length - 1 && ", "}
-                    </span>
-                  ))}
-                  {authors.length > 0 && <>&middot; </>}
-                  <span className="flex items-center gap-1">
-                    <RiCalendarLine className="mr-px h-3 w-3" />{" "}
-                    {scope.humanDate}{" "}
-                    {!!dateUpdated && <> (Updated: {dateUpdated})</>}
-                  </span>{" "}
-                  &middot; <span>{scope.reading.text}</span>
-                  <Tags tags={scope.tags} />
-                </p>
-              </header>
-              <div className="prose-invert blog-content prose mb-20 mt-12 text-basis prose-a:font-medium prose-a:no-underline prose-a:transition-all hover:prose-a:underline prose-code:tracking-tight prose-pre:border prose-pre:border-subtle prose-img:rounded-lg">
-                {mdxContent}
+                </header>
+                <div className="prose-invert blog-content prose mb-20 mt-12 text-basis prose-a:font-medium prose-a:no-underline prose-a:transition-all hover:prose-a:underline prose-code:tracking-tight prose-pre:border prose-pre:border-subtle prose-img:rounded-lg">
+                  {mdxContent}
+                </div>
+                <CTAs primary={primaryCTA} ctaRef={`blog-${slug}`} />
               </div>
-              <CTAs primary={primaryCTA} ctaRef={`blog-${slug}`} />
-            </div>
+            )}
             {scope.floatingCTA && <FloatingCTA ctaRef={`blog-${slug}`} />}
           </div>
         </article>
@@ -708,10 +748,10 @@ function CTAs({
             <Button
               variant="primary"
               size="sm"
-              href={`https://www.inngest.com/content/ai-in-production-report-2026?ref=${ctaRef}`}
+              href={`/blog/ai-in-production-report-2026?ref=${ctaRef}`}
               arrow="right"
             >
-              View Key Findings
+              Read the report
             </Button>
           </div>
           <div className="flex-shrink-0">

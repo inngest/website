@@ -28,6 +28,8 @@ export type BlogPost = {
   focusCta?: string;
   // When hidden, the post will be available on at the URL, but not in any blog feed of RSS
   hide?: boolean;
+  /** Hides default hero image/title; use Report* MDX components instead. */
+  reportLayout?: boolean;
   // When featured is false, post will be hidden from main feed, but available on category pages
   featured?: boolean;
   // When included, the post will be included on the category feed
