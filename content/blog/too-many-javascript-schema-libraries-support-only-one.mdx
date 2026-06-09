@@ -2,7 +2,7 @@
 heading: "There are too many JavaScript schema libraries, so support only one"
 subtitle: What Standard Schema is, and what we learned adopting it in our TypeScript SDK.
 showSubtitle: true
-image: /assets/blog/too-many-javascript-schema-libraries-support-only-one/featured-image.png
+image: /assets/blog/too-many-javascript-schema-libraries-support-only-one/cover.jpg
 date: 2026-06-10
 author: Aaron Harper
 category: engineering
@@ -16,9 +16,27 @@ For library authors who accept user-defined schemas, that abundance used to coll
 2. Don't support runtime validation, frustrating everyone who expected it.
 3. Roll your own validation interface and adapters, frustrating yourself.
 
-Now there's a better way: support one schema interface that all libraries can implement. This is [Standard Schema](https://github.com/standard-schema/standard-schema).
+Now there's a better way: support one schema interface that many popular schema libraries already implement. This is [Standard Schema](https://github.com/standard-schema/standard-schema).
 
 We switched to Standard Schema in our [TypeScript SDK v4.0](/blog/typescript-sdk-v4.0).
+
+## Is this just another competing standard?
+
+<figure>
+  <a href="https://xkcd.com/927/">
+    <img
+      src="/assets/blog/too-many-javascript-schema-libraries-support-only-one/xkcd-standards.png"
+      alt="xkcd comic Standards, showing how trying to create one universal standard can result in one more competing standard."
+    />
+  </a>
+  <figcaption>
+    Source: <a href="https://xkcd.com/927/">xkcd "Standards"</a>.
+  </figcaption>
+</figure>
+
+Standard Schema is not a new schema language, validation library, or syntax users have to learn. Users still write Zod, Valibot, ArkType, Yup, or whatever else they already chose. Standard Schema is only the small compatibility interface those schema objects expose so other libraries can validate unknown input and recover input/output types without knowing which schema library produced them.
+
+That narrowness is important. Standard Schema does not standardize error formatting, metadata, defaults, JSON Schema generation, or schema introspection. If you need those, you still have library-specific work to do. It helped us because our SDK needed the narrow part: validation plus type inference.
 
 ## What Standard Schema is
 
@@ -46,7 +64,7 @@ interface StandardSchemaV1<Input, Output = Input> {
 
 That small surface area is the point. Even the property name is designed to stay out of the way: the `~` prefix sorts last in autocomplete and signals "don't touch this directly."
 
-Schema authors implement it, library authors consume it, and users never see it. Zod, Valibot, ArkType, and others ship `~standard` natively. If your library accepts a `StandardSchemaV1`, you support all of them today and any new schema library that implements the spec tomorrow.
+Schema libraries implement it, libraries like ours consume it, and users never see it. [Zod, Valibot, ArkType, Yup, Joi, and others already support `~standard`](https://standardschema.dev/schema#what-schema-libraries-implement-the-spec). If your library accepts a `StandardSchemaV1`, you support every schema library that implements the spec without writing per-library adapters.
 
 ## What our users' code looks like
 
@@ -91,7 +109,7 @@ In our library code, we just accept `StandardSchemaV1`. Users keep their schema 
 
 ### 1. Some users want static types without runtime validation
 
-A schema library is overkill if you only want compile-time types. Standard Schema makes this case trivial: ship a passthrough implementation.
+A schema library is overkill if you only want compile-time types. Standard Schema makes this case trivial: use a no-op validator.
 
 ```ts
 export function staticSchema<T extends Record<string, unknown>>(): StandardSchemaV1<T> {
@@ -105,7 +123,7 @@ export function staticSchema<T extends Record<string, unknown>>(): StandardSchem
 }
 ```
 
-Users get static types with no runtime cost and no new dependencies:
+Users get static types with no runtime validation cost and no new dependencies:
 
 ```ts
 const userCreated = eventType("user.created", {
@@ -113,39 +131,42 @@ const userCreated = eventType("user.created", {
 });
 ```
 
-The helper is just a no-op validator that lets the type system do the rest. That only works because Standard Schema is small enough to implement directly.
-
 ### 2. Transforms can make validation non-repeatable
 
 Event-driven systems often need double validation: producers validate before sending (so bad data never enters the system) and consumers validate when receiving (so bad data is not processed). Producers and consumers are often different processes, sometimes different codebases, so each side owns its validation against the same schema.
 
-That works as long as validation leaves the payload unchanged. However, some schema libraries support "transforms", which break the "double validation is safe" assumption. This means that the producer's validation could return modified data that will ll fail consumer-side validation.
+That works as long as validation leaves the payload unchanged. However, some schema libraries support "transforms", which break the "double validation is safe" assumption. This means that the producer's validation could return modified data that will fail consumer-side validation.
 
-For example, your schema might coerce `Date` objects into Unix millis. After the first validation, the payload has a number instead of a `Date`, so the second validation fails. Here's a runnable example:
+For example, your schema might transform a string into a number. After the first validation, the payload has a number instead of a string, so the second validation fails. Here's a runnable example that calls `~standard` directly only to isolate the failure mode. In real Inngest usage, the SDK wraps this call; users keep using their schema library's public API.
 
 ```ts
 import { z } from "zod";
+import type { StandardSchemaV1 } from "@standard-schema/spec";
 
 const schema = z
-  .object({ time: z.date() })
-  .transform(({ time }) => ({ time: time.getTime() }));
+  .object({ amount: z.string() })
+  .transform(({ amount }) => ({ amount: Number(amount) }));
 
-// Producer returns the transformed value.
-async function producer() {
-  const result = await schema["~standard"].validate({ time: new Date() });
+// Internal function in our library, since ~standard isn't exposed to end users
+async function validate<TSchema extends StandardSchemaV1>(
+  schema: TSchema,
+  data: unknown,
+) {
+  const result = await schema["~standard"].validate(data);
   if (result.issues) {
     throw new Error("validation failed");
   }
   return result.value;
 }
 
+// Producer returns the transformed value.
+async function producer() {
+  return validate(schema, { amount: "100" });
+}
+
 // Consumer validates with the same schema, but validation fails.
 async function consumer(data: unknown) {
-  const result = await schema["~standard"].validate(data);
-  if (result.issues) {
-    throw new Error("validation failed");
-  }
-  return result.value;
+  return validate(schema, data);
 }
 
 async function main() {
@@ -160,7 +181,7 @@ main();
 
 Standard Schema represents transforms by allowing `Input` and `Output` to differ: a schema can accept one shape, produce another.
 
-We disallow transforms at the type level:
+We reject schemas whose input and output types differ:
 
 ```ts
 type AssertNoTransform<TSchema extends StandardSchemaV1 | undefined> =
@@ -168,18 +189,20 @@ type AssertNoTransform<TSchema extends StandardSchemaV1 | undefined> =
     ? undefined
     : TSchema extends StandardSchemaV1<infer TInput, infer TOutput>
       ? [TInput] extends [TOutput]
-        ? TSchema
+        ? [TOutput] extends [TInput]
+          ? TSchema
+          : StaticTypeError<"Transforms not supported: schema input/output types must match">
         : StaticTypeError<"Transforms not supported: schema input/output types must match">
       : StaticTypeError<"Transforms not supported: schema input/output types must match">;
 ```
 
-A transforming schema is a compile error pointing at the problem. We catch it before runtime.
+A schema whose input and output types differ is a compile error pointing at the problem. We catch shape-changing transforms before runtime.
 
-Worth flagging: `Input != Output` doesn't guarantee a transform. For example, Zod's branded types diverge the input and output types without changing the runtime value. This can be handled, though it makes `AssertNoTransform` more complicated.
+Worth flagging: this is a type-level proxy, not perfect transform detection. `Input != Output` doesn't guarantee a runtime transform. For example, Zod's branded types diverge the input and output types without changing the runtime value. The inverse is also true: a transform can preserve the same static type while still changing the value.
 
 ### 3. Validators can be sync or async
 
-`validate()` can return a result directly or return a `Promise`. The schema author decides, so any code that calls `validate()` has to account for both.
+`validate()` can return a result directly or return a `Promise`. The schema implementation decides, so any code that calls `validate()` has to account for both.
 
 For async APIs, this is easy: `await` the result and move on. `sendEvent()` is already async, so that's what we do.
 
@@ -187,7 +210,7 @@ Sync APIs are where it gets awkward. You either change the signature and break c
 
 ### 4. Validators can still throw
 
-`validate()` returns `{value} | {issues} | Promise<...>`, so the signature makes validation failures look like returned values, not thrown errors. In practice, validators can still throw. The spec doesn't forbid it, and validators are still userland code.
+`validate()` returns `{value} | {issues} | Promise<...>`, so the signature makes validation failures look like returned values, not thrown errors. Standard Schema standardizes the successful and failed validation result shapes, but it does not make validator execution safe. Validators are still userland code, and userland code can throw.
 
 If you trust the signature too much, a thrown validator can escape your validation path entirely. We wrap every validator call in `try/catch` and treat thrown errors the same as failed validation results.
 
@@ -236,9 +259,9 @@ When a library author picks one, users of the others either lose support or inst
 
 ## What Standard Schema doesn't solve
 
-Standard Schema is deliberately narrow: it standardizes validation, not the rest of a schema library's surface area. Error formatting, defaults, metadata, and schema introspection are still library-specific. That was fine for us because we only needed runtime validation for typed event payloads.
+Standard Schema is deliberately narrow: it standardizes runtime validation and static type inference, not the rest of a schema library's surface area. Error formatting, defaults, metadata, and schema introspection are still library-specific. That was fine for us because we only needed validation and type inference for event payloads.
 
-If you need JSON Schema representations of your types (for OpenAPI, docs, or other schema-driven tooling), the related [Standard JSON Schema](https://standardschema.dev/json-schema) spec exposes a common interface for converting schemas to JSON Schema. That's a separate interface from the validation interface we adopted here.
+It also isn't JSON Schema. If you need JSON Schema representations of your types (for OpenAPI, docs, or other schema-driven tooling), the related [Standard JSON Schema](https://standardschema.dev/json-schema) spec exposes a common interface for converting schemas to JSON Schema. That's a separate interface from the validation and type inference interface we adopted here.
 
 ## Takeaways
 
