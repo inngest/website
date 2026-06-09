@@ -76,7 +76,7 @@ export default function Observability() {
             bodyClassName="max-w-[445px]"
             actions={
               <ButtonLink
-                href="/docs/observability?ref=durable-execution"
+                href="/platform/observability?ref=durable-execution"
                 variant="primary"
               >
                 Learn more about Observability

@@ -13,7 +13,7 @@ export default function FinalCTA() {
       containerClassName="max-w-[1100px]"
     >
       <ButtonLink href={SIGNUP_URL} variant="primary">
-        Create free account
+        Start Free
       </ButtonLink>
       <ButtonLink href={CONTACT_URL} variant="secondary">
         Talk to the team

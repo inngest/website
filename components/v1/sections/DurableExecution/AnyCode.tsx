@@ -32,7 +32,7 @@ export default function AnyCode() {
             href="/docs/runtimes?ref=durable-execution"
             variant="primary"
           >
-            See AI Docs
+            See Docs
           </ButtonLink>
         }
       />

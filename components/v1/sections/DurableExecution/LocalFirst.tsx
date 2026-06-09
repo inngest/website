@@ -39,10 +39,10 @@ export default function LocalFirst() {
             }
             actions={
               <ButtonLink
-                href="/docs/local-development?ref=durable-execution"
+                href="/docs/observability?ref=durable-execution"
                 variant="primary"
               >
-                See AI Docs
+                See docs
               </ButtonLink>
             }
           />
