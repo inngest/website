@@ -1,8 +1,10 @@
-export const description = "Step-by-step guide to deferring scoring, cost tracking, and notifications from an AI agent function."
+export const description = "Step-by-step guide to deferring token cost tracking, notifications, and other background work from an AI agent function."
 
 # Defer AI side effects
 
 This guide walks you through adding deferred side effects to an AI agent function. You will define a deferred function, call it from your agent, register it in the serve handler, and verify it in the Inngest dashboard.
+
+For the general concept of deferred functions, see [Deferred functions](/docs/guides/deferred-functions).
 
 ## Prerequisites
 
@@ -14,40 +16,29 @@ This guide walks you through adding deferred side effects to an AI agent functio
 
 ## 1. Define a deferred function
 
-Create a deferred function that will run after your agent completes. This example scores the agent's output using a cheaper model.
+Create a deferred function that runs after your agent completes. This example tracks token costs per customer.
 
 ```ts
 import { createDefer } from "inngest/experimental";
 import { z } from "zod";
 
-export const scoreResponse = createDefer(inngest, {
-  id: "score-agent-response",
+export const trackCosts = createDefer(inngest, {
+  id: "track-ai-costs",
   schema: z.object({
-    response: z.string(),
     model: z.string(),
-    parentRunId: z.string(),
+    promptTokens: z.number(),
+    completionTokens: z.number(),
+    customerId: z.string(),
   }),
 }, async ({ event, step }) => {
-  const evaluation = await step.run("llm-judge", async () => {
-    return await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content: "Rate this response 1-5 for helpfulness and accuracy. Return JSON: { helpfulness: number, accuracy: number }",
-        },
-        { role: "user", content: event.data.response },
-      ],
-    });
-  });
+  await step.run("log-cost", async () => {
+    const costPer1k = event.data.model === "gpt-4o" ? 0.005 : 0.00015;
+    const totalTokens = event.data.promptTokens + event.data.completionTokens;
 
-  await step.run("save-scores", async () => {
-    const scores = JSON.parse(evaluation.choices[0].message.content);
-    await db.scores.insert({
-      runId: event.data.parentRunId,
+    await analytics.track("ai.cost", {
+      customer_id: event.data.customerId,
+      cost_usd: (totalTokens / 1000) * costPer1k,
       model: event.data.model,
-      helpfulness: scores.helpfulness,
-      accuracy: scores.accuracy,
     });
   });
 });
@@ -59,7 +50,7 @@ The `schema` defines the typed payload. When you call `defer()` from the parent,
 
 ## 2. Call defer from your agent function
 
-Add a `defer()` call at the end of your agent function. The agent returns its response to the user. The scoring runs after the parent finalizes.
+Add a `defer()` call after the agent work is done. The agent returns its response to the user. Cost tracking runs after the parent finalizes.
 
 ```ts
 const handleTicket = inngest.createFunction(
@@ -81,13 +72,14 @@ const handleTicket = inngest.createFunction(
       await support.reply(event.data.ticketId, reply);
     });
 
-    // Score the response after the parent completes
-    defer("score", {
-      function: scoreResponse,
+    // Track token costs after the parent completes
+    defer("track-costs", {
+      function: trackCosts,
       data: {
-        response: reply,
         model: "gpt-4o",
-        parentRunId: event.data.ticketId,
+        promptTokens: response.usage.prompt_tokens,
+        completionTokens: response.usage.completion_tokens,
+        customerId: event.data.customerId,
       },
     });
 
@@ -108,11 +100,11 @@ Add both the agent function and the deferred function to your serve handler. Def
 import { serve } from "inngest/next";
 import { inngest } from "./client";
 import { handleTicket } from "./functions/handle-ticket";
-import { scoreResponse } from "./functions/score-response";
+import { trackCosts } from "./functions/track-costs";
 
 export const { GET, POST, PUT } = serve({
   client: inngest,
-  functions: [handleTicket, scoreResponse],
+  functions: [handleTicket, trackCosts],
 });
 ```
 
@@ -120,24 +112,22 @@ export const { GET, POST, PUT } = serve({
 
 ## 4. Add more deferred functions
 
-You can call `defer()` multiple times in one parent. Each call creates an independent run. Add cost tracking alongside scoring:
+You can call `defer()` multiple times in one parent. Each call creates an independent run. Add a Slack notification alongside cost tracking:
 
 ```ts
-export const trackCosts = createDefer(inngest, {
-  id: "track-ai-costs",
+export const notifyTeam = createDefer(inngest, {
+  id: "notify-agent-completion",
   schema: z.object({
+    channel: z.string(),
+    summary: z.string(),
+    ticketId: z.string(),
     model: z.string(),
-    promptTokens: z.number(),
-    completionTokens: z.number(),
-    customerId: z.string(),
   }),
 }, async ({ event, step }) => {
-  await step.run("log-cost", async () => {
-    const costPer1k = event.data.model === "gpt-4o" ? 0.005 : 0.00015;
-    const totalTokens = event.data.promptTokens + event.data.completionTokens;
-    await analytics.track("ai.cost", {
-      customer_id: event.data.customerId,
-      cost_usd: (totalTokens / 1000) * costPer1k,
+  await step.run("post-to-slack", async () => {
+    await slack.chat.postMessage({
+      channel: event.data.channel,
+      text: `Agent resolved ticket ${event.data.ticketId} using ${event.data.model}:\n>${event.data.summary}`,
     });
   });
 });
@@ -146,19 +136,19 @@ export const trackCosts = createDefer(inngest, {
 Add the second `defer()` call to the parent:
 
 ```ts
-// After the existing defer("score", ...) call
-defer("costs", {
-  function: trackCosts,
+// After the existing defer("track-costs", ...) call
+defer("notify", {
+  function: notifyTeam,
   data: {
+    channel: "#support-resolved",
+    summary: reply.slice(0, 200),
+    ticketId: event.data.ticketId,
     model: "gpt-4o",
-    promptTokens: response.usage.prompt_tokens,
-    completionTokens: response.usage.completion_tokens,
-    customerId: event.data.customerId,
   },
 });
 ```
 
-Register `trackCosts` in the serve handler alongside the others.
+Register `notifyTeam` in the serve handler alongside the others.
 
 ---
 
@@ -166,12 +156,11 @@ Register `trackCosts` in the serve handler alongside the others.
 
 Open the Inngest dashboard and navigate to the parent run's trace view. You will see the parent run's steps (call-model, send-reply) and the deferred runs linked below it. Each deferred run has its own trace with its own steps and retry history.
 
-The parent run's status is "completed" regardless of whether the deferred runs succeed. A failed scorer does not affect the parent.
+The parent run's status is "completed" regardless of whether the deferred runs succeed. A failed notification does not affect the parent.
 
 ---
 
 ## Next steps
 
-- [Deferred work](/docs/ai-patterns/deferred-work) for the concept and mental model
+- [Deferred functions](/docs/guides/deferred-functions) for the concept and when to use defer
 - [Deferred Functions reference](/docs/reference/typescript/v4/functions/deferred-functions) for the full API
-- [Build a deferred scorer](/docs/features/inngest-functions/steps-workflows/deferred-scoring) for temporal scoring with waitForEvent
