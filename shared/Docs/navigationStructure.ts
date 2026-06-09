@@ -10,17 +10,10 @@ import { parse } from "node:path";
 import { TS_STABLE, type TSVersion } from "./LanguageStore";
 import PATTERN_SECTIONS, { PATTERNS } from "../Patterns/patternsData";
 
-// Build a TypeScript SDK reference path.
-//
-// We intentionally link to the concrete generated SSG route for every version,
-// including the stable version. The versionless public route is served by a
-// rewrite, but its `_next/data/...json` URL does not resolve to JSON on Vercel,
-// which breaks Pages Router client transitions.
 function tsRef(version: TSVersion, path: string): string {
   return `/docs/reference/typescript/${version}/${path}`;
 }
 
-// A basic link in the nav
 export type NavLink = {
   title: string;
   href: string;
@@ -33,18 +26,17 @@ export type NavLinkGroup = {
   title: string;
   className?: string;
 };
-// A group nested of nav links with a header
+
 export type NavGroup = {
   title: string;
   href?: string;
   icon?: React.FC<React.SVGProps<SVGSVGElement>>;
   links: (NavGroup | NavLink | NavSection | NavLinkGroup)[];
-  /* Whether group should be open when there is no active group */
   defaultOpen?: boolean;
   tag?: string;
   target?: string;
 };
-// A nav section with a nested navigation section
+
 export type NavSection = NavLink & {
   icon?: React.FC<React.SVGProps<SVGSVGElement>>;
   matcher?: RegExp | Function;
@@ -56,9 +48,6 @@ export type NavSection = NavLink & {
   }[];
 };
 
-// =============================================================================
-// REFERENCE SECTION
-// =============================================================================
 const sectionReference: (NavGroup | NavLink)[] = [
   {
     title: "TypeScript SDK v3",
@@ -193,9 +182,7 @@ const sectionReference: (NavGroup | NavLink)[] = [
       },
       {
         title: "Migrations",
-        links: [
-          { title: "v3 to v4", href: tsRef("v4", "migrations/v3-to-v4") },
-        ],
+        links: [{ title: "v3 to v4", href: tsRef("v4", "migrations/v3-to-v4") }],
       },
       {
         title: "Using the SDK",
@@ -278,9 +265,6 @@ const sectionReference: (NavGroup | NavLink)[] = [
   { title: "Self-hosting", href: `/docs/self-hosting` },
 ];
 
-// =============================================================================
-// LEARN SECTION
-// =============================================================================
 const sectionLearn: (NavGroup | NavLink)[] = [
   { title: "Home", href: "/docs" },
   {
@@ -358,6 +342,7 @@ const sectionLearn: (NavGroup | NavLink)[] = [
           { title: "Singleton", href: `/docs/guides/singleton` },
           { title: "Debounce", href: `/docs/guides/debounce` },
           { title: "Priority", href: `/docs/guides/priority` },
+          { title: "Deferred functions", href: `/docs/guides/deferred-functions`, tag: "beta" },
         ],
       },
       {
@@ -431,7 +416,6 @@ const sectionLearn: (NavGroup | NavLink)[] = [
           { title: "Agent tool loops", href: `/docs/ai-patterns/agent-tool-loops` },
           { title: "Human-in-the-loop", href: `/docs/ai-patterns/human-in-the-loop` },
           { title: "Sub-agents", href: `/docs/ai-patterns/sub-agent-delegation` },
-          { title: "Deferred work", href: `/docs/ai-patterns/deferred-work`, tag: "beta" },
           { title: "Defer AI side effects", href: `/docs/ai-patterns/defer-ai-side-effects`, tag: "beta" },
         ],
       },
@@ -524,9 +508,6 @@ const sectionLearn: (NavGroup | NavLink)[] = [
   },
 ];
 
-// =============================================================================
-// EXAMPLES SECTION (kept for backwards compatibility)
-// =============================================================================
 const sectionExamples: NavGroup[] = [
   {
     title: "Examples",
@@ -558,114 +539,52 @@ const sectionExamples: NavGroup[] = [
   },
 ];
 
-// =============================================================================
-// TYPE GUARDS
-// =============================================================================
-export const isNavGroup = (
-  item: NavGroup | NavLink | NavSection | NavLinkGroup
-): item is NavGroup => {
+export const isNavGroup = (item: NavGroup | NavLink | NavSection | NavLinkGroup): item is NavGroup => {
   return !!(item as NavGroup).links;
 };
-export const isNavSection = (
-  item: NavGroup | NavLink | NavSection | NavLinkGroup
-): item is NavSection => {
+export const isNavSection = (item: NavGroup | NavLink | NavSection | NavLinkGroup): item is NavSection => {
   return !!(item as NavSection).sectionLinks;
 };
-export const isNavLinkGroup = (
-  item: NavGroup | NavLink | NavSection | NavLinkGroup
-): item is NavLinkGroup => {
+export const isNavLinkGroup = (item: NavGroup | NavLink | NavSection | NavLinkGroup): item is NavLinkGroup => {
   return item.title && !(item as NavGroup).links && !(item as NavLink).href;
 };
-export const isNavLink = (
-  item: NavGroup | NavLink | NavSection | NavLinkGroup
-): item is NavLink => {
+export const isNavLink = (item: NavGroup | NavLink | NavSection | NavLinkGroup): item is NavLink => {
   return !!item.title && !!(item as NavLink).href;
 };
 
-// =============================================================================
-// LINK SEARCH HELPERS
-// =============================================================================
 function linkSearch(groups: (NavGroup | NavLink)[], pathname) {
   return groups.find((item) =>
-    isNavGroup(item)
-      ? recursiveLinkSearch(item, pathname)
-      : item.href === pathname
+    isNavGroup(item) ? recursiveLinkSearch(item, pathname) : item.href === pathname
   );
 }
 
 function recursiveLinkSearch(group: NavGroup, pathname) {
-  if (group.href === pathname) {
-    return true;
-  }
+  if (group.href === pathname) return true;
   return group.links.find((link) => {
-    return isNavLink(link)
-      ? link.href === pathname
-      : "links" in link && recursiveLinkSearch(link, pathname);
+    return isNavLink(link) ? link.href === pathname : "links" in link && recursiveLinkSearch(link, pathname);
   });
 }
 
-// =============================================================================
-// MATCHERS
-// =============================================================================
 const matchers: Record<string, (pathname: string) => any> = {
   docs: (pathname) => pathname === "/docs" || pathname === "/docs/",
-  examples: (pathname) =>
-    /^\/docs\/examples/.test(pathname) || linkSearch(sectionExamples, pathname),
-  reference: (pathname) =>
-    /^\/docs\/reference/.test(pathname) ||
-    linkSearch(sectionReference, pathname),
+  examples: (pathname) => /^\/docs\/examples/.test(pathname) || linkSearch(sectionExamples, pathname),
+  reference: (pathname) => /^\/docs\/reference/.test(pathname) || linkSearch(sectionReference, pathname),
   learn: (pathname) => linkSearch(sectionLearn, pathname),
   patterns: (pathname) => /^\/docs\/patterns/.test(pathname),
 };
 matchers.default = matchers.learn;
 
-// =============================================================================
-// MENU TABS (Top navigation)
-// =============================================================================
 export const menuTabs = [
-  {
-    title: "Documentation",
-    icon: PlayIcon,
-    href: "/docs",
-    matcher: matchers.default,
-  },
-  {
-    title: "Examples",
-    icon: LightBulbIcon,
-    href: "/docs/examples/",
-    matcher: matchers.examples,
-  },
-  {
-    title: "Patterns",
-    icon: Squares2X2Icon,
-    href: "/docs/patterns",
-    matcher: matchers.patterns,
-  },
+  { title: "Documentation", icon: PlayIcon, href: "/docs", matcher: matchers.default },
+  { title: "Examples", icon: LightBulbIcon, href: "/docs/examples/", matcher: matchers.examples },
+  { title: "Patterns", icon: Squares2X2Icon, href: "/docs/patterns", matcher: matchers.patterns },
 ];
 
-// =============================================================================
-// SIDEBAR TABS (Sidebar navigation)
-// =============================================================================
 export const sidebarMenuTabs = [
-  {
-    title: "Learn",
-    icon: BookOpenIcon,
-    href: "/docs",
-    matcher: matchers.learn,
-  },
-  {
-    title: "Reference",
-    icon: CodeBracketIcon,
-    href: `/docs/reference/typescript/${TS_STABLE}/intro`,
-    matcher: matchers.reference,
-  },
+  { title: "Learn", icon: BookOpenIcon, href: "/docs", matcher: matchers.learn },
+  { title: "Reference", icon: CodeBracketIcon, href: `/docs/reference/typescript/${TS_STABLE}/intro`, matcher: matchers.reference },
 ];
 
-// =============================================================================
-// TOP LEVEL NAV
-// =============================================================================
-// Patterns nav: one non-collapsible group per primitive (Examples-style),
-// derived from the static pattern index. `defaultOpen` keeps every group open.
 const sectionPatterns: NavGroup[] = [
   {
     title: "Overview",
@@ -683,32 +602,8 @@ const sectionPatterns: NavGroup[] = [
 ];
 
 export const topLevelNav = [
-  {
-    title: "Learn",
-    icon: BookOpenIcon,
-    href: `/docs`,
-    sectionLinks: sectionLearn,
-    matcher: matchers.learn,
-  },
-  {
-    title: "Patterns",
-    icon: Squares2X2Icon,
-    href: "/docs/patterns",
-    sectionLinks: sectionPatterns,
-    matcher: matchers.patterns,
-  },
-  {
-    title: "Reference",
-    icon: CodeBracketIcon,
-    href: `/docs/reference/typescript/${TS_STABLE}/intro`,
-    matcher: matchers.reference,
-    sectionLinks: sectionReference,
-  },
-  {
-    title: "Examples",
-    icon: LightBulbIcon,
-    href: "/docs/examples/",
-    sectionLinks: sectionExamples,
-    matcher: matchers.examples,
-  },
+  { title: "Learn", icon: BookOpenIcon, href: `/docs`, sectionLinks: sectionLearn, matcher: matchers.learn },
+  { title: "Patterns", icon: Squares2X2Icon, href: "/docs/patterns", sectionLinks: sectionPatterns, matcher: matchers.patterns },
+  { title: "Reference", icon: CodeBracketIcon, href: `/docs/reference/typescript/${TS_STABLE}/intro`, matcher: matchers.reference, sectionLinks: sectionReference },
+  { title: "Examples", icon: LightBulbIcon, href: "/docs/examples/", sectionLinks: sectionExamples, matcher: matchers.examples },
 ];
