@@ -9,18 +9,6 @@ import { notFound } from "next/navigation";
 
 import matter from "gray-matter";
 import readingTime from "reading-time";
-import rehypeSlug from "rehype-slug";
-import rehypeRaw from "rehype-raw";
-import rehypeCodeTitles from "rehype-code-titles";
-import remarkGfm from "remark-gfm";
-import { serialize } from "next-mdx-remote/serialize";
-import type { MDXRemoteSerializeResult } from "next-mdx-remote";
-// @ts-ignore — codehike has no published types for the mdx entrypoint
-import { remarkCodeHike, recmaCodeHike } from "codehike/mdx";
-
-import { rehypeRemoveTwoSlashMarkup, rehypeShiki } from "@/utils/code";
-// @ts-ignore — local .mjs without bundled types
-import { rehypeParseCodeBlocks } from "@/mdx/rehype.mjs";
 
 import sharp from "sharp";
 
@@ -30,9 +18,8 @@ import Chip from "@/components/v1/sections/shared/Chip";
 import SpotlightFrame from "@/components/v1/sections/Events/SpotlightFrame";
 import RegisterCue from "@/components/v1/sections/Events/RegisterCue";
 import StippleCtaSection from "@/components/v1/sections/shared/StippleCtaSection";
-import { SectionProvider } from "src/shared/Docs/SectionProvider";
 import ArticleBody from "./ArticleBody";
-import BlogToc from "./BlogToc";
+import BlogToc, { type BlogTocItem } from "./BlogToc";
 
 const ARTICLE_BODY_ID = "blog-article-body";
 
@@ -46,20 +33,19 @@ const getImageSize = cache(
     if (!src.startsWith("/")) return fallback;
     try {
       const { width, height } = await sharp(
-        path.join(process.cwd(), "public", src),
+        path.join(process.cwd(), "public", src)
       ).metadata();
       if (!width || !height) return fallback;
       return { width, height };
     } catch {
       return fallback;
     }
-  },
+  }
 );
 
-// Canonical /blog/[slug] route. Reads + serialises the post's MDX
-// server-side (shared content/blog source + the same rehype/remark
-// pipeline as the legacy pages-router blog) and renders v1 typography
-// inside PageShell.
+// Canonical /blog/[slug] route. Reads the shared content/blog MDX and
+// renders it in a server component with the same rehype/remark pipeline
+// as the legacy pages-router blog, but without hydrating the whole body.
 
 const BLOG_DIR = path.join(process.cwd(), "content/blog");
 
@@ -92,45 +78,6 @@ type RelatedPost = {
   image: string | null;
   date: string | null;
 };
-
-const chConfig = {
-  components: { code: "Code" },
-  syntaxHighlighting: {
-    theme: "dracula-soft",
-  },
-};
-
-const MDX_REHYPE_NODE_TYPES = [
-  "mdxFlowExpression",
-  "mdxJsxFlowElement",
-  "mdxJsxTextElement",
-  "mdxTextExpression",
-  "mdxjsEsm",
-];
-
-// Plugin lists have noisy union types from upstream packages; cast to
-// `any` so the MDXRemote options prop accepts the shape — same trick
-// the legacy pages-router file used with `@ts-ignore` on `blockJS`.
-const MDX_OPTIONS = {
-  // codehike injects each fenced block's data as inline JS object
-  // literals in the compiled source; blockJS must be false or they're
-  // stripped and <Code> renders with an undefined `codeblock`. Matches
-  // the live pages-router /blog/[slug] serialize call.
-  blockJS: false,
-  mdxOptions: {
-    rehypePlugins: [
-      rehypeCodeTitles,
-      rehypeParseCodeBlocks,
-      rehypeRemoveTwoSlashMarkup,
-      rehypeShiki,
-      [rehypeRaw, { passThrough: MDX_REHYPE_NODE_TYPES }],
-      rehypeSlug,
-    ],
-    remarkPlugins: [[remarkCodeHike, chConfig], remarkGfm],
-    recmaPlugins: [[recmaCodeHike, chConfig]],
-  },
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-} as any;
 
 // Module-level cache of frontmatter for every post — built once per
 // process via React.cache(). generateStaticParams and loadRelated both
@@ -196,8 +143,8 @@ function loadRelated(currentSlug: string): RelatedPost[] {
         fm.date instanceof Date
           ? fm.date.toISOString()
           : typeof fm.date === "string"
-            ? fm.date
-            : null;
+          ? fm.date
+          : null;
       return {
         slug: p.slug,
         title: String(fm.heading),
@@ -213,6 +160,64 @@ function loadRelated(currentSlug: string): RelatedPost[] {
       return new Date(b.date).getTime() - new Date(a.date).getTime();
     })
     .slice(0, 3);
+}
+
+const GITHUB_SLUG_ASCII_PUNCTUATION = /[\0-\x1F!-,.\/:-@\[-\^`\{-~]/g;
+
+function cleanHeadingText(value: string): string {
+  return value
+    .replace(/\s+\{#[^}]+\}\s*$/, "")
+    .replace(/<[^>]+>/g, "")
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    .replace(/[`*_~]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function slugifyHeading(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(GITHUB_SLUG_ASCII_PUNCTUATION, "")
+    .replace(/ /g, "-");
+}
+
+function extractArticleHeadings(content: string): BlogTocItem[] {
+  const occurrences = new Map<string, number>();
+  const headings: BlogTocItem[] = [];
+  let inFence = false;
+  let fenceMarker: string | null = null;
+
+  for (const line of content.split("\n")) {
+    const trimmed = line.trimStart();
+    const fence = trimmed.match(/^(```|~~~)/)?.[1] ?? null;
+    if (fence) {
+      if (!inFence) {
+        inFence = true;
+        fenceMarker = fence;
+      } else if (fence === fenceMarker) {
+        inFence = false;
+        fenceMarker = null;
+      }
+      continue;
+    }
+    if (inFence) continue;
+
+    const match = line.match(/^##(?!#)\s+(.+?)\s*#*\s*$/);
+    if (!match) continue;
+
+    const text = cleanHeadingText(match[1]);
+    if (!text) continue;
+
+    const base = slugifyHeading(text) || "section";
+    const count = occurrences.get(base) ?? 0;
+    occurrences.set(base, count + 1);
+    headings.push({
+      id: count === 0 ? base : `${base}-${count}`,
+      text,
+    });
+  }
+
+  return headings;
 }
 
 export function generateStaticParams(): { slug: string }[] {
@@ -271,15 +276,8 @@ export default async function BlogPostPage({
   if (!post) notFound();
   const { content, data: scope } = post;
 
-  // Compile MDX server-side so the client island only ships the
-  // serialised result, not the heavy mdx-bundler / rehype / remark
-  // toolchain. Both chromes re-hydrate it with their own components map.
-  const mdxSource = await serialize(content, {
-    ...MDX_OPTIONS,
-    scope: { json: JSON.stringify(scope) },
-  });
-
   const related = loadRelated(slug);
+  const tocItems = extractArticleHeadings(content);
 
   const authors = scope.author
     ? Array.isArray(scope.author)
@@ -328,7 +326,7 @@ export default async function BlogPostPage({
             dateStr={dateStr}
             readingText={readingText}
           />
-          <ArticleSection source={mdxSource} />
+          <ArticleSection content={content} scope={scope} tocItems={tocItems} />
           <RelatedContent posts={related} />
           <BuildBetterAgentsCta />
         </article>
@@ -366,7 +364,7 @@ function BlogHero({
           <h1 className="font-v1Heading text-[28px] leading-[1.15] tracking-[-0.01em] text-v1-frost [text-box-edge:cap_alphabetic] [text-box-trim:trim-both] sm:text-[32px] sm:leading-[40px] sm:tracking-[-0.32px]">
             {heading}
           </h1>
-          <p className="flex flex-wrap items-center gap-x-[10px] gap-y-1 text-v1-body-xs text-v1-frost/60">
+          <p className="text-v1-body-xs flex flex-wrap items-center gap-x-[10px] gap-y-1 text-v1-frost/60">
             {authors.length > 0 ? (
               <>
                 <span>{authors.join(", ")}</span>
@@ -388,7 +386,15 @@ function BlogHero({
   );
 }
 
-function ArticleSection({ source }: { source: MDXRemoteSerializeResult }) {
+function ArticleSection({
+  content,
+  scope,
+  tocItems,
+}: {
+  content: string;
+  scope: Scope;
+  tocItems: BlogTocItem[];
+}) {
   // Same 448 / 912 grid as the hero. Left rail holds a sticky scrollspy
   // TOC built from the article's headings; the article column carries
   // 64px inner gutters so its prose sits in a 784px measure (matching
@@ -399,18 +405,16 @@ function ArticleSection({ source }: { source: MDXRemoteSerializeResult }) {
         {/* Desktop-only side rail (same convention as the reference
             pages' `hidden lg:block` rails) — a TOC stacked at the foot
             of a mobile article is useless, so it's dropped < lg. */}
-        <div className="hidden lg:block lg:sticky lg:top-[100px]">
-          <BlogToc articleId={ARTICLE_BODY_ID} />
+        <div className="hidden lg:sticky lg:top-[100px] lg:block">
+          <BlogToc items={tocItems} />
         </div>
         <div className="lg:px-16">
-          <SectionProvider sections={[]}>
-            <div
-              id={ARTICLE_BODY_ID}
-              className="prose prose-invert blog-content max-w-none text-v1-frost prose-headings:font-v1Heading prose-headings:font-normal prose-headings:scroll-mt-[100px] prose-headings:tracking-[-0.01em] prose-headings:text-v1-frost prose-h2:text-[26px] prose-h2:leading-[1.2] prose-h2:tracking-[-0.26px] prose-h2:mt-10 prose-h2:mb-3.5 prose-h3:text-[20px] prose-h3:leading-[1.3] prose-h3:mt-8 prose-h3:mb-2.5 prose-h4:text-[17px] prose-h4:leading-[1.4] prose-h4:mt-7 prose-h4:mb-2 prose-h5:text-[15px] prose-h5:leading-[1.4] prose-h5:mt-6 prose-h5:mb-1.5 prose-h6:text-[15px] prose-h6:leading-[1.4] prose-h6:mt-6 prose-h6:mb-1.5 prose-p:text-[16px] prose-p:leading-[24px] prose-p:my-0 prose-p:text-v1-frost prose-li:text-[16px] prose-li:leading-[24px] prose-li:my-0 prose-li:text-v1-frost prose-a:text-v1-frost prose-a:underline prose-a:underline-offset-4 prose-a:decoration-v1-frost/40 hover:prose-a:decoration-v1-frost prose-code:rounded prose-code:bg-v1-frost/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:text-[14px] prose-code:font-mono prose-code:text-v1-accent-salmon prose-pre:rounded-[8px] prose-pre:border prose-pre:border-[rgba(124,124,124,0.35)] prose-pre:bg-v1-jetBlack prose-img:rounded-[8px] prose-img:border prose-img:border-[rgba(124,124,124,0.35)] prose-blockquote:border-v1-accent-salmon prose-blockquote:not-italic prose-blockquote:text-v1-frost"
-            >
-              <ArticleBody source={source} />
-            </div>
-          </SectionProvider>
+          <div
+            id={ARTICLE_BODY_ID}
+            className="prose-invert blog-content prose max-w-none text-v1-frost prose-headings:scroll-mt-[100px] prose-headings:font-v1Heading prose-headings:font-normal prose-headings:tracking-[-0.01em] prose-headings:text-v1-frost prose-h2:mb-3.5 prose-h2:mt-10 prose-h2:text-[26px] prose-h2:leading-[1.2] prose-h2:tracking-[-0.26px] prose-h3:mb-2.5 prose-h3:mt-8 prose-h3:text-[20px] prose-h3:leading-[1.3] prose-h4:mb-2 prose-h4:mt-7 prose-h4:text-[17px] prose-h4:leading-[1.4] prose-h5:mb-1.5 prose-h5:mt-6 prose-h5:text-[15px] prose-h5:leading-[1.4] prose-h6:mb-1.5 prose-h6:mt-6 prose-h6:text-[15px] prose-h6:leading-[1.4] prose-p:my-0 prose-p:text-[16px] prose-p:leading-[24px] prose-p:text-v1-frost prose-a:text-v1-frost prose-a:underline prose-a:decoration-v1-frost/40 prose-a:underline-offset-4 hover:prose-a:decoration-v1-frost prose-blockquote:border-v1-accent-salmon prose-blockquote:not-italic prose-blockquote:text-v1-frost prose-code:rounded prose-code:bg-v1-frost/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:font-mono prose-code:text-[14px] prose-code:text-v1-accent-salmon prose-pre:rounded-[8px] prose-pre:border prose-pre:border-[rgba(124,124,124,0.35)] prose-pre:bg-v1-jetBlack prose-li:my-0 prose-li:text-[16px] prose-li:leading-[24px] prose-li:text-v1-frost prose-img:rounded-[8px] prose-img:border prose-img:border-[rgba(124,124,124,0.35)]"
+          >
+            <ArticleBody source={content} scope={scope} />
+          </div>
         </div>
       </div>
     </section>
@@ -484,9 +488,7 @@ function RelatedContent({ posts }: { posts: RelatedPost[] }) {
       className="relative mx-auto w-full max-w-[1440px] px-6 pb-[80px] text-v1-frost sm:px-9 sm:pb-[120px] lg:px-8"
     >
       <div className="mb-8 flex items-center justify-between gap-4">
-        <h2 className="text-v1-heading-sm">
-          Related content
-        </h2>
+        <h2 className="text-v1-heading-sm">Related content</h2>
         <ButtonLink
           href="/blog"
           variant="secondary"
@@ -503,10 +505,7 @@ function RelatedContent({ posts }: { posts: RelatedPost[] }) {
                 way — rather than `asChild` — avoids cloneElement/
                 Children.only, so this whole tree can render in a Server
                 Component without the lazy-child RSC failure. */}
-            <Link
-              href={`/blog/${p.slug}`}
-              className="block h-full rounded-lg"
-            >
+            <Link href={`/blog/${p.slug}`} className="block h-full rounded-lg">
               <SpotlightFrame
                 tilt
                 className="h-full"

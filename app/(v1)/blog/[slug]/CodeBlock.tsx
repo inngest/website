@@ -1,27 +1,11 @@
-"use client";
+import type { ReactNode } from "react";
+import {
+  GRADIENT_DIVIDER_FILL,
+  GRADIENT_RING_FILL,
+} from "@/utils/v1/gradientRing";
 
-import { Highlight, type PrismTheme } from "prism-react-renderer";
-import V1CodeBlock, {
-  type Line,
-  type Token,
-  type TokenKind,
-} from "@/components/v1/sections/shared/CodeBlock";
-
-// Blog-redesign code block. The chrome (gradient frame + fill) and the
-// syntax palette are owned by the shared v1 CodeBlock so article code
-// reads with the same crisp, high-contrast styling as the marketing
-// snippets — instead of the muted flat panel it had before.
-//
-// That shared component consumes pre-tokenised `Line[]` tuples rather
-// than a raw string, so here we run the code through prism-react-
-// renderer purely to tokenise it, map each Prism token type onto the
-// component's 8-kind `TokenKind` model, and hand off the lines. The
-// caret/typewriter are disabled (static article context) and the
-// header is hidden — only the gradient frame remains.
-//
-// Scoped to the v1 /blog/[slug] chrome (mapped as `Code` in this
-// route's ArticleBody) so the shared shared/Code/CodeHike component —
-// used by the legacy (flag-off) article layout — is untouched.
+// Blog article code block. It renders static HTML on the server: no
+// client Prism, no typewriter state, and no hydration for every snippet.
 
 type CodeBlockData = {
   lang?: string;
@@ -30,9 +14,10 @@ type CodeBlockData = {
   code?: string;
 };
 
-// prism-react-renderer's bundled Prism keys grammars by full name;
-// normalise the common frontmatter aliases so TS/JS highlight instead
-// of falling back to plain text.
+type TokenKind = "kw" | "fn" | "id" | "var" | "str" | "num" | "punc" | "cmt";
+type Token = readonly [string, TokenKind];
+type Line = readonly Token[];
+
 const LANG_ALIASES: Record<string, string> = {
   ts: "typescript",
   js: "javascript",
@@ -41,87 +26,207 @@ const LANG_ALIASES: Record<string, string> = {
   yml: "yaml",
 };
 
-// We only use prism for tokenisation (token `types` + `content`), never
-// its colours — the v1 CodeBlock paints from its own palette keyed by
-// TokenKind. So the theme passed to <Highlight> can be empty.
-const NULL_THEME: PrismTheme = { plain: { color: "" }, styles: [] };
+const DEFAULT_TOKEN_COLOR: Record<TokenKind, string> = {
+  kw: "#c586c0",
+  fn: "#dcdcaa",
+  id: "#9cdcfe",
+  var: "#4fc1ff",
+  str: "#ce9178",
+  num: "#b5cea8",
+  punc: "#d4d4d4",
+  cmt: "#6a9955",
+};
 
-// Collapse prism's fine-grained token types onto the v1 component's
-// 8-kind model. Prism hands each token an array of types (most specific
-// last); membership tests keep the mapping order-independent.
-function mapKind(types: readonly string[]): TokenKind {
-  const has = (t: string) => types.includes(t);
-  if (has("comment") || has("prolog") || has("cdata") || has("doctype"))
-    return "cmt";
-  if (
-    has("string") ||
-    has("char") ||
-    has("template-string") ||
-    has("attr-value") ||
-    has("regex") ||
-    has("url")
-  )
-    return "str";
-  if (has("number") || has("boolean") || has("constant") || has("symbol"))
-    return "num";
-  if (
-    has("keyword") ||
-    has("control-flow") ||
-    has("important") ||
-    has("atrule")
-  )
-    return "kw";
-  if (
-    has("function") ||
-    has("function-variable") ||
-    has("method") ||
-    has("class-name") ||
-    has("maybe-class-name") ||
-    has("builtin")
-  )
-    return "fn";
-  if (has("punctuation") || has("operator") || has("entity")) return "punc";
-  return "id";
+const KEYWORDS = new Set([
+  "async",
+  "await",
+  "break",
+  "case",
+  "catch",
+  "class",
+  "const",
+  "continue",
+  "def",
+  "default",
+  "do",
+  "else",
+  "export",
+  "false",
+  "finally",
+  "for",
+  "from",
+  "function",
+  "if",
+  "import",
+  "in",
+  "interface",
+  "let",
+  "new",
+  "null",
+  "return",
+  "switch",
+  "throw",
+  "true",
+  "try",
+  "type",
+  "undefined",
+  "var",
+  "while",
+  "yield",
+]);
+
+const FRAME_GRADIENT = GRADIENT_RING_FILL;
+const FILL_GRADIENT =
+  "linear-gradient(297deg, rgb(var(--color-v1-carbon-400) / 0.59) -2.25%, rgb(var(--color-v1-carbon-500)) 46.83%)";
+
+function getCodeText(codeblock?: CodeBlockData, children?: ReactNode): string {
+  if (codeblock?.value || codeblock?.code) {
+    return (codeblock.value ?? codeblock.code ?? "").replace(/\n+$/, "");
+  }
+  if (typeof children === "string") return children.replace(/\n+$/, "");
+  if (Array.isArray(children)) {
+    return children
+      .map((child) => (typeof child === "string" ? child : ""))
+      .join("")
+      .replace(/\n+$/, "");
+  }
+  return "";
 }
 
-export function CodeBlock({ codeblock }: { codeblock: CodeBlockData }) {
-  const rawLang = codeblock.lang ?? "";
+function pushToken(tokens: Token[], text: string, kind: TokenKind) {
+  if (!text) return;
+  const last = tokens[tokens.length - 1];
+  if (last?.[1] === kind) {
+    tokens[tokens.length - 1] = [last[0] + text, kind];
+  } else {
+    tokens.push([text, kind]);
+  }
+}
+
+function scanString(line: string, start: number): number {
+  const quote = line[start];
+  let i = start + 1;
+  while (i < line.length) {
+    if (line[i] === "\\") {
+      i += 2;
+      continue;
+    }
+    if (line[i] === quote) return i + 1;
+    i++;
+  }
+  return line.length;
+}
+
+function tokenizeLine(line: string, language: string): Line {
+  const tokens: Token[] = [];
+  let i = 0;
+
+  while (i < line.length) {
+    const char = line[i];
+    const next = line[i + 1];
+
+    if (
+      (char === "/" && next === "/" && language !== "python") ||
+      (char === "#" && language !== "tsx" && language !== "typescript")
+    ) {
+      pushToken(tokens, line.slice(i), "cmt");
+      break;
+    }
+
+    if (char === '"' || char === "'" || char === "`") {
+      const end = scanString(line, i);
+      pushToken(tokens, line.slice(i, end), "str");
+      i = end;
+      continue;
+    }
+
+    const number = line.slice(i).match(/^\d+(?:\.\d+)?/);
+    if (number) {
+      pushToken(tokens, number[0], "num");
+      i += number[0].length;
+      continue;
+    }
+
+    const word = line.slice(i).match(/^[A-Za-z_$][\w$-]*/);
+    if (word) {
+      const value = word[0];
+      const after = line.slice(i + value.length).trimStart();
+      pushToken(
+        tokens,
+        value,
+        KEYWORDS.has(value) ? "kw" : after.startsWith("(") ? "fn" : "id"
+      );
+      i += value.length;
+      continue;
+    }
+
+    pushToken(
+      tokens,
+      char,
+      /[{}[\]().,;:<>/+*=|&!?-]/.test(char) ? "punc" : "id"
+    );
+    i++;
+  }
+
+  return tokens;
+}
+
+export function CodeBlock({
+  codeblock,
+  children,
+}: {
+  codeblock?: CodeBlockData;
+  children?: ReactNode;
+}) {
+  const rawLang = codeblock?.lang ?? "";
   const language = LANG_ALIASES[rawLang] ?? rawLang;
-  const code = (codeblock.value ?? codeblock.code ?? "").replace(/\n+$/, "");
+  const code = getCodeText(codeblock, children);
+  const lines = (code || " ")
+    .split("\n")
+    .map((line) => tokenizeLine(line, language));
 
   return (
     <div className="not-prose my-6">
-      <Highlight code={code} language={language as never} theme={NULL_THEME}>
-        {({ tokens }) => {
-          // Drop a trailing all-empty line (prism appends one for the
-          // final newline) so the panel doesn't render a blank row.
-          const rows =
-            tokens.length > 1 &&
-            tokens[tokens.length - 1].every(
-              (t) => t.empty || t.content === ""
-            )
-              ? tokens.slice(0, -1)
-              : tokens;
-
-          const lines: Line[] = rows.map((line) =>
-            line.map((t) => [t.content, mapKind(t.types)] as Token)
-          );
-
-          return (
-            <V1CodeBlock
-              lines={lines}
-              header={false}
-              footer={false}
-              gutter={false}
-              animate={false}
-              caret={false}
-              fontSize="15px"
-              maxWidth="100%"
-              maxHeight="none"
-            />
-          );
+      <div
+        className="flex w-full min-w-0 flex-1 overflow-hidden rounded-md p-[1px]"
+        style={{
+          background: FRAME_GRADIENT,
+          maxWidth: "100%",
+          maxHeight: "none",
         }}
-      </Highlight>
+      >
+        <div
+          className="flex w-full flex-col overflow-hidden rounded-md bg-v1-surfaceBase"
+          style={{ backgroundImage: FILL_GRADIENT }}
+        >
+          <div
+            aria-hidden="true"
+            className="h-px shrink-0"
+            style={{ background: GRADIENT_DIVIDER_FILL }}
+          />
+          <div className="flex min-h-0 w-full flex-1 items-start overflow-y-auto bg-v1-surfaceBase px-[22px] py-4 lg:overflow-visible">
+            <pre
+              className="min-w-0 flex-1 whitespace-pre-wrap break-words font-v1Mono leading-[1.55] text-v1-frost"
+              style={{ fontSize: "15px" }}
+            >
+              {lines.map((line, lineIndex) => (
+                <div key={lineIndex}>
+                  {line.length
+                    ? line.map(([text, kind], tokenIndex) => (
+                        <span
+                          key={tokenIndex}
+                          style={{ color: DEFAULT_TOKEN_COLOR[kind] }}
+                        >
+                          {text}
+                        </span>
+                      ))
+                    : " "}
+                </div>
+              ))}
+            </pre>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

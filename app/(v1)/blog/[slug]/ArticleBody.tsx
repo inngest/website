@@ -1,44 +1,39 @@
-"use client";
-
 import type { MDXComponents } from "mdx/types";
-import { MDXRemote, type MDXRemoteSerializeResult } from "next-mdx-remote";
+import { MDXRemote } from "next-mdx-remote/rsc";
 
-import ButtonLink from "@/components/v1/ButtonLink";
 import DiscordCTA from "src/shared/Blog/DiscordCTA";
 import CTACallout from "src/shared/CTACallout";
 import Blockquote from "src/shared/Blog/Blockquote";
-import AutoplayVideo from "src/shared/Blog/AutoplayVideo";
-import YouTube from "react-youtube-embed";
-import { Callout, Col, Row } from "src/shared/Docs/mdx";
-import ProductHunt from "src/app/(v0)/launch-week/ProductHunt";
-import {
-  ReportChart,
-  ReportExecSummary,
-  ReportSectionBreak,
-  ReportWhatWeAsked,
-} from "@/components/Blog/Report";
+import { ReportChart } from "@/components/Blog/Report/ReportChart";
+import { ReportExecSummary } from "@/components/Blog/Report/ReportExecSummary";
+import { ReportSectionBreak } from "@/components/Blog/Report/ReportSectionBreak";
+import { ReportWhatWeAsked } from "@/components/Blog/Report/ReportWhatWeAsked";
 import { CodeBlock } from "./CodeBlock";
-
-// Lives in a "use client" boundary so the legacy shared/Blog/*
-// components (which use React hooks without their own client
-// directive) can be imported safely. The page reads + serialises
-// the MDX server-side, then hands the compiled result here for
-// rendering.
+import {
+  BlogAutoplayVideo,
+  BlogButton,
+  BlogCallout,
+  BlogCol,
+  BlogProductHunt,
+  BlogRow,
+  BlogYouTube,
+} from "./MdxComponents";
+import { MDX_OPTIONS } from "./mdxOptions";
 
 const components: MDXComponents = {
-  // MDX posts inline <Button href=...>; route through v1 ButtonLink.
-  Button: ButtonLink as unknown as MDXComponents["Button"],
+  // MDX posts inline <Button href=...>; keep it server-rendered.
+  Button: BlogButton as unknown as MDXComponents["Button"],
   DiscordCTA,
   CTACallout,
   Blockquote,
-  AutoplayVideo,
-  // @ts-ignore older lib, still works
-  YouTube,
+  AutoplayVideo: BlogAutoplayVideo as unknown as MDXComponents["AutoplayVideo"],
+  YouTube: BlogYouTube as unknown as MDXComponents["YouTube"],
   Code: CodeBlock,
-  Callout,
-  WorkflowKitProductOfTheDay: ProductHunt,
-  Col,
-  Row,
+  Callout: BlogCallout as unknown as MDXComponents["Callout"],
+  WorkflowKitProductOfTheDay:
+    BlogProductHunt as unknown as MDXComponents["WorkflowKitProductOfTheDay"],
+  Col: BlogCol as unknown as MDXComponents["Col"],
+  Row: BlogRow as unknown as MDXComponents["Row"],
   // Report posts (e.g. the AI-in-Production report) embed these.
   ReportChart,
   ReportExecSummary,
@@ -46,10 +41,21 @@ const components: MDXComponents = {
   ReportWhatWeAsked,
 };
 
-export default function ArticleBody({
+export default async function ArticleBody({
   source,
+  scope,
 }: {
-  source: MDXRemoteSerializeResult;
+  source: string;
+  scope: Record<string, unknown>;
 }) {
-  return <MDXRemote {...source} components={components} />;
+  return (
+    <MDXRemote
+      source={source}
+      options={{
+        ...MDX_OPTIONS,
+        scope: { json: JSON.stringify(scope) },
+      }}
+      components={components}
+    />
+  );
 }
