@@ -18,11 +18,13 @@ import {
   BlogRow,
   BlogYouTube,
 } from "./MdxComponents";
+import { MdxImage } from "./MdxImage";
 import { MDX_OPTIONS } from "./mdxOptions";
 
 const components: MDXComponents = {
   // MDX posts inline <Button href=...>; keep it server-rendered.
   Button: BlogButton as unknown as MDXComponents["Button"],
+  img: MdxImage,
   DiscordCTA,
   CTACallout,
   Blockquote,
