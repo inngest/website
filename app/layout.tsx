@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 
 import Script from "next/script";
 import { PageViews } from "@/components/InngestClientSDK";
@@ -11,22 +12,16 @@ import AnnouncementBanner from "src/components/AnnouncementBanner";
 import Header from "src/components/RedesignedLanding/Header/Header";
 import Footer from "src/components/RedesignedLanding/Footer";
 import Analytics from "@/components/Analytics";
+import { isV1Enabled, isV1Route } from "@/utils/v1/routes";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.inngest.com"),
-  // Pathname-relative canonical: resolves to each page's own clean path
-  // (no query params) against metadataBase. This ensures every page —
-  // regardless of which ?ref= or UTM combination a user arrived with —
-  // declares the same canonical URL to crawlers, without using dynamic
-  // APIs like headers() that would opt every route out of static
-  // prerendering (and out of the sitemap). Pages may override via their
-  // own `alternates.canonical`.
   alternates: {
     canonical: "./",
   },
   title: {
-    default: "Inngest - Develop AI products at the speed of thought",
-    template: "%s - Inngest",
+    default: "Develop AI products at the speed of thought | Inngest",
+    template: "%s | Inngest",
   },
   openGraph: {
     // We cannot dynamically set the image URL with the page title, so we use this default
@@ -50,21 +45,25 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = (await headers()).get("x-pathname") ?? "";
+  const useV1Chrome = isV1Enabled() && isV1Route(pathname);
+  // The pathname is empty for static /_not-found / /404 prerenders; skip the
+  // legacy chrome there so its env-driven Link hrefs don't break the build.
+  const hideChrome = pathname === "";
+
   return (
-    <html className="scroll-smooth">
+    <html className="scroll-smooth" suppressHydrationWarning>
       <head>
         <link
           rel="preconnect"
           href="https://fonts-cdn.inngest.com/"
           crossOrigin="anonymous"
         />
-        {/* Preload the primary CircularXX weights used above the fold:
-            Bold (700) for headings/LCP and Regular (400) for body. */}
         <link
           rel="preload"
           as="font"
@@ -80,6 +79,10 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
         <link rel="stylesheet" href="https://fonts-cdn.inngest.com/fonts.css" />
+        <link
+          rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.4.0/styles/github-dark.min.css"
+        />
         <Script
           id="js-inngest-queue-init"
           async
@@ -90,12 +93,12 @@ export default function RootLayout({
         />
       </head>
       <body className="dark font-sans">
-        <AnnouncementBanner />
-        <Header />
+        {!useV1Chrome && !hideChrome && <AnnouncementBanner />}
+        {!useV1Chrome && !hideChrome && <Header />}
 
         <main className="text-basis">{children}</main>
 
-        <Footer />
+        {!useV1Chrome && !hideChrome && <Footer />}
 
         <Suspense>
           <PageViews />

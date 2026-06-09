@@ -1,6 +1,7 @@
 import classNames from "src/utils/classNames";
 import clsx from "clsx";
 import { Metadata } from "next";
+import { generateMetadata as generateOgMetadata } from "src/utils/social";
 import Link from "next/link";
 
 import GridBackground from "src/components/RedesignedLanding/GridBackground";
@@ -10,6 +11,8 @@ import ArrowRight from "src/shared/Icons/ArrowRight";
 import Card from "src/components/Card";
 import { IS_HIRING } from "@/shared/flags";
 import { Button } from "src/components/RedesignedLanding/Button";
+import { isV1Enabled } from "@/utils/v1/routes";
+import About from "@/components/v1/pages/About";
 
 const TEAM = [
   {
@@ -210,13 +213,30 @@ const FEATURED_BLOG_POSTS: { title: string; href: string; date?: string }[] = [
   },
 ];
 
-export const metadata: Metadata = {
-  title: "About Inngest",
-  description:
-    "Inngest is the developer platform for easily building reliable workflows with zero infrastructure",
-};
+export function generateMetadata(): Metadata {
+  if (isV1Enabled()) {
+    return generateOgMetadata({
+      title: "The Team Behind the Developer Platform",
+      description:
+        "Learn about the Inngest team building the developer platform for durable execution, background jobs, and reliable workflows without extra infrastructure.",
+    });
+  }
+  return {
+    title: "About Inngest",
+    description:
+      "Inngest is the developer platform for easily building reliable workflows with zero infrastructure",
+  };
+}
 
-export default function About() {
+// v1 redesign is served at the canonical /about when the feature flag is
+// on; the legacy page below is preserved and renders when it's off. Same
+// isV1Enabled() pattern as / and /ai.
+export default function Page() {
+  if (isV1Enabled()) return <About />;
+  return <AboutLegacy />;
+}
+
+function AboutLegacy() {
   return (
     <>
       <div className="max-w-screen relative pb-24 text-stone-50">

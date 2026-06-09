@@ -1,4 +1,8 @@
 import Image from "next/image";
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { isV1Enabled } from "@/utils/v1/routes";
+import { renderV1Story, customerMetadata } from "../_story";
 import { ComposableAbout } from "../_shared/ComposableAbout";
 import { ComposableCaseStudy } from "../_shared/ComposableCaseStudy";
 import { ComposableHeader } from "../_shared/ComposableHeader";
@@ -250,7 +254,16 @@ const pageData = {
   },
 };
 
-export default function BaerskinTacticalPage() {
+export function generateMetadata(): Metadata {
+  return isV1Enabled() ? customerMetadata("baerskin-tactical") : {};
+}
+
+// Flag on -> the v1 CustomerStory (from content/customers/baerskin-
+// tactical.mdx); flag off -> this bespoke legacy design.
+export default async function BaerskinTacticalPage() {
+  if (isV1Enabled()) {
+    return (await renderV1Story("baerskin-tactical")) ?? notFound();
+  }
   return (
     <>
       <ComposableHeader {...pageData.header} />

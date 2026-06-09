@@ -1,0 +1,93 @@
+---
+title: How Day AI built a CRM that can reason using Inngest
+companyName: Day AI
+logo: /assets/customers/day-ai-wordmark.png
+companyEmployees: 2-100
+companyIndustry: SaaS / AI Agents
+companyUseCase: CRM, AI Agents
+quote:
+  text: >-
+    Day AI is a complex network of LLMs, data processing, and 3rd party
+    services. Every component in the system needs to wake up at the right
+    times, run for long periods of time, and react intelligently to behavior in
+    other components. Inngest is like the nervous system for all of that, it
+    makes things reliable by default so we can focus on building.
+  attribution:
+    name: Erik Munson
+    title: Founding Engineer
+  avatar: /assets/customers/day-ai/eric-dither.png
+companyURL: https://day.ai
+companyDescription: The CRM for AI Native Companies
+ogImage: /assets/customers/case-study/og-image-default.png
+---
+
+Day AI is a Sequoia-backed startup building a new kind of CRM: an AI-native system of record that you can talk to like your most helpful colleague. Day AI automatically curates a high-resolution, real-time view of your business's ground truth, materialized directly from your customer conversations in platforms like Google Workspace, Zoom, and Slack.
+
+Their founding engineer, Erik Munson, has a 10-year track record working with orchestration at scale at HubSpot and Netflix.
+
+## Integrating with companies' tool suite through Inngest's event-driven architecture
+
+Day AI's revolutionary take on CRM starts at its first layer — the integration layer.
+
+The integration layer powers Day AI's system of record by connecting directly to all the systems where customer conversations happen. This includes productivity software like Google Workspace, Zoom, and Slack, along with third-party services like Recall.ai to record meetings and Mux to process video.
+
+Technically, this translates into a system handling a large number of webhooks (with spikes during working hours) while interacting with multiple stateful external services:
+
+![Handling webhooks at scale and managing external state with Inngest events](/assets/customers/day-ai/diagram.png)
+
+> Inngest choreographs these services, acting as the orchestration hub that coordinates everything. We use a vendor API for meeting bots that sends a bot to a meeting at a specific time. Inngest handles everything else — processing incoming calendar events, figuring out what to do with the bots, tracking their current state, and more. It's like the nervous system for our entire operation, using our database state and communicating with third-party systems. Everything is ultimately triggered by webhooks from various sources.
+>
+> — Max Shaw, Founding Engineer, Day AI
+
+> For this part of the system, "wait for events" makes our work much easier because we can start a process with many steps, pause it, and then continue when something happens in another part of the system. We can have one process start work, then wait for a completely different process on another computer to finish its task before continuing — it's like magic!
+>
+> — Max Shaw, Founding Engineer, Day AI
+
+On top of Inngest's native event-driven support comes its durable component, enabling any workflow to retry and resume from its last checkpoint upon failure.
+
+Erik and his team heavily rely on workflow durability to build complex and long-running workflows which require a carefully ordered and orchestrated approach to ensure reliability, as seen in their meeting recording workflows, which interact with their meeting bot and video providers, along with a constellation of LLM jobs that consume incoming meeting data.
+
+Another Inngest feature that saves Erik and his team's time is Events Replay, which helps them recover from intermittent failures that happen in such systems:
+
+> Every system eventually has incidents. Issues with webhook processing? Just replay it, and the rest of the system works like magic. What's satisfying about Inngest's replay feature is how ridiculously good it is. Because workflows trigger other workflows through events, you can see exactly where in the chain something broke. You just go to that spot, click replay, and the whole system resumes. That never gets old for me.
+>
+> — Max Shaw, Founding Engineer, Day AI
+
+## Tackling the complexity of operating hundreds of workflows with Flow Control
+
+Day AI's second layer converts incoming data into a comprehensive, structured record system. As customer conversations flow in, LLMs autonomously reason over the new data, relevant existing data, and context about your business processes to decide which records to create and update in the CRM.
+
+Once more, Inngest addresses another challenge: handling large volumes of data to process without reaching third-party rate limits, overloading databases, or suffering from the unpredictable system behavior that can arise from using LLM APIs at scale.
+
+> We had problems with just managing the complexity of the flows. There are so many different things that play off of each other and create unexpected emergent behavior. In a complicated event-driven system, things can take on a life of their own — you get overloaded in one component, or components are spamming each other. A big advantage is being able to debounce, throttle, and set concurrency on different parts of the system. We can have everything flow into one choke point with a debounce, which reduces unpredictability because we know that point will flow in a specific way no matter what gets thrown at it.
+>
+> — Max Shaw, Founding Engineer, Day AI
+
+![Day AI fully utilizes Inngest Flow Control to guarantee their CRM data pipeline functions correctly](/assets/customers/day-ai/diagram2.png)
+
+Day AI fully utilizes Inngest Flow Control to guarantee their CRM data pipeline functions correctly, regardless of input volume or external disruptions:
+
+- **Debouncing:** prevents processing duplicate information and overwhelming downstream components during spikes, saving on LLM costs and speeding up overall processing.
+- **Concurrency control:** key to managing 3rd party API rate limits and keeping output data correct by preventing race conditions between competing jobs.
+- **Multi-tenancy:** distributes the execution of workflows evenly to prevent situations where a spike of emails or meetings in a single organization slows down the overall user experience.
+
+## Using Inngest to reliably put AI Agents in users' hands
+
+Building on their robust context capture and enrichment workflows, Day AI has created AI assistants with distinct identities that users can personalize.
+
+These assistants aren't just generic chatbots — they're configurable agents that can be tailored to match your preferred communication style and problem-solving approach. What makes these assistants particularly powerful is their access to Day AI's comprehensive data and tool ecosystem. They can analyze CRM data, draft emails in your style, manage schedules, and even perform regular tasks like sending morning briefings — all running reliably in the background thanks to Inngest's orchestration capabilities.
+
+![Day AI assistants](/assets/customers/day-ai/assistants.png)
+
+1. Waking up AI workflows reliably, based on users' prompts.
+2. Running AI workflows for very long periods, to perform multiple tool calls and reasoning.
+
+> It means that we can effortlessly have these things running in the background, doing work at the time horizons and level of sophistication that a person would. They can sit there and do stuff without us worrying about the mechanics. That kind of behavior is typically very hard to orchestrate, but for us it was a no-brainer to use Inngest and be done with it.
+>
+> — Max Shaw, Founding Engineer, Day AI
+
+## Building AI products with Inngest
+
+Building effective AI products requires a strong foundation of data and agentic workflows. Day AI demonstrates how context engineering — the careful orchestration of data collection, processing, and enrichment — is critical to creating AI systems that provide real value.
+
+By providing a single platform that handles both the data foundation and AI execution layers, Inngest enables companies to build sophisticated AI products with confidence. Day AI's experience shows how this unified approach simplifies development while ensuring reliability at scale.

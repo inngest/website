@@ -1,13 +1,13 @@
 import { type Metadata } from "next";
 import { generateMetadata } from "src/utils/social";
-import { AIPage } from "./AIPage";
+import AIPageV1 from "@/components/v1/pages/AIPage";
 
 export const metadata: Metadata = generateMetadata({
-  title: "AI",
+  title: "AI Workflow Orchestration & Agent Infrastructure",
   description:
-    "Orchestration for AI workflows and AI agents. Build, iterate and ship to production with confidence.",
+    "Build durable AI workflows and agents that survive rate limits and LLM failures. Automatic retries, step-level tracing, serverless-first. No extra infra.",
 });
 
 export default function Page() {
-  return <AIPage />;
+  return <AIPageV1 />;
 }

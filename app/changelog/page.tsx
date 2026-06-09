@@ -9,6 +9,8 @@ import { Code } from "src/shared/Code/CodeHike";
 import { formatDate } from "src/utils/date";
 import { loadPost, type ChangelogEntry, getChangelogURL } from "./helpers";
 import TrackChangelogView from "./TrackChangelogView";
+import { isV1Enabled } from "@/utils/v1/routes";
+import ChangelogV1 from "@/components/v1/pages/Changelog";
 
 export const metadata: Metadata = generateMetadata({
   title: "Changelog",
@@ -19,7 +21,11 @@ const components: MDXComponents = {
   Code,
 };
 
+// v1 redesign serves at the canonical /changelog when the flag is on; the
+// legacy page below is preserved and renders when it's off.
 export default async function Page() {
+  if (isV1Enabled()) return <ChangelogV1 />;
+
   const data = await loadMarkdownFilesMetadata<ChangelogEntry>(
     "content/changelog"
   );

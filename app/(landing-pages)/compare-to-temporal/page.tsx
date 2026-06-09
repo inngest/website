@@ -15,6 +15,8 @@ import { FORM_TYPE } from "src/components/ContactForm.constants";
 import CodeWindow from "src/shared/CodeWindow";
 import SocialProof from "src/app/new-homepage/SocialProof";
 import { cn } from "src/components/utils/classNames";
+import { isV1Enabled } from "@/utils/v1/routes";
+import CompareToTemporal from "@/components/v1/pages/CompareToTemporal";
 
 export const metadata: Metadata = generateMetadata({
   title: "Inngest vs Temporal: Durable execution that developers love",
@@ -38,7 +40,14 @@ const structuredData = {
 
 const baseCTA = "compare-to-temporal";
 
+// v1 redesign serves at the canonical /compare-to-temporal when the flag
+// is on; the legacy landing page is preserved and renders when it's off.
 export default function Page() {
+  if (isV1Enabled()) return <CompareToTemporal />;
+  return <CompareLegacy />;
+}
+
+function CompareLegacy() {
   return (
     <>
       <script

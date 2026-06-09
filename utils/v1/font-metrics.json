@@ -1,0 +1,47 @@
+{
+  "circularXX": {
+    "familyName": "CircularXX",
+    "capHeight": 709,
+    "ascent": 955,
+    "descent": -245,
+    "lineGap": 0,
+    "unitsPerEm": 1000,
+    "xHeight": 479
+  },
+  "circularXXMono": {
+    "familyName": "CircularXX Mono",
+    "capHeight": 709,
+    "ascent": 955,
+    "descent": -245,
+    "lineGap": 0,
+    "unitsPerEm": 1000,
+    "xHeight": 479
+  },
+  "whyte": {
+    "familyName": "ABC Whyte",
+    "capHeight": 700,
+    "ascent": 958,
+    "descent": -258,
+    "lineGap": 0,
+    "unitsPerEm": 1000,
+    "xHeight": 496
+  },
+  "whyteInktrap": {
+    "familyName": "ABC Whyte Inktrap",
+    "capHeight": 700,
+    "ascent": 958,
+    "descent": -258,
+    "lineGap": 0,
+    "unitsPerEm": 1000,
+    "xHeight": 496
+  },
+  "whyteMono": {
+    "familyName": "ABC Whyte Mono",
+    "capHeight": 700,
+    "ascent": 958,
+    "descent": -258,
+    "lineGap": 0,
+    "unitsPerEm": 1000,
+    "xHeight": 496
+  }
+}

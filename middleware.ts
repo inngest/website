@@ -86,6 +86,9 @@ export function middleware(req: NextRequest) {
 
   const res = NextResponse.next();
   res.headers.set("Vary", "Accept");
+  // Expose the request path to Server Components (the root layout reads
+  // `x-pathname` to drive route-aware chrome).
+  res.headers.set("x-pathname", req.nextUrl.pathname);
 
   // Canonical: always the clean pathname with no query params. For the
   // markdown mirrors (/docs-markdown, /blog-markdown), canonicalize to the
