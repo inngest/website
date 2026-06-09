@@ -15,14 +15,16 @@ export const getOpenGraphImageURL = ({ title }: { title: string }) =>
 export const getFullURL = (absolutePath: string) => {
   // On Vercel preview deploys, use the preview host so OG/Twitter scrapers
   // can fetch newly-deployed assets that aren't on production yet. Falls back
-  // to NEXT_PUBLIC_HOST in production and local dev.
+  // to NEXT_PUBLIC_HOST in production, then to the canonical host when that
+  // isn't set on the build env (preview/CI often lack it) so `new URL()`
+  // doesn't throw "Invalid URL" during page-data collection.
   const previewHost =
     process.env.VERCEL_ENV === "preview"
       ? process.env.VERCEL_BRANCH_URL || process.env.VERCEL_URL
       : null;
   const host = previewHost
     ? `https://${previewHost}`
-    : process.env.NEXT_PUBLIC_HOST;
+    : process.env.NEXT_PUBLIC_HOST ?? "https://www.inngest.com";
   return new URL(absolutePath, host).toString();
 };
 

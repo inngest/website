@@ -41,7 +41,9 @@ const permanentRedirects = [
 
   // Other pages
   ["/uses/zero-infra-llm-ai", "/ai"],
-  ["/uses/internal-tools", "/uses/workflow-engine"],
+  // Was -> /uses/workflow-engine, which now redirects to /uses/webhooks.
+  // Point straight at the final destination to avoid a redirect chain.
+  ["/uses/internal-tools", "/uses/webhooks"],
   ["/uses/user-journey-automation", "/blog/lifecycle-emails-with-resend"],
 
   // new IA
@@ -181,6 +183,18 @@ const permanentRedirects = [
   ["/patterns/cancelling-scheduled-functions", "/docs/guides/cancel-running-functions"],
   ["/patterns/running-code-on-a-schedule", "/docs/guides/scheduled-functions"],
 
+  // New IA: platform + use-case pages replacing legacy landing pages, plus
+  // a few standalone LPs being retired.
+  ["/uses/durable-workflows", "/platform/durable-execution"],
+  ["/compare-to-legacy-queues", "/platform/flow-control"],
+  ["/uses/serverless-cron-jobs", "/uses/scheduled-jobs"],
+  ["/uses/workflow-engine", "/uses/webhooks"],
+  ["/durable-endpoints", "/platform/durable-execution"],
+  ["/platform", "/platform/durable-execution"],
+  ["/ai-personalized-documentation", "/docs/ai-dev-tools/agent-skills"],
+  ["/launch-week", "/"],
+  // The scheduled-jobs page moved under /uses; preserve the old URL.
+  ["/scheduled-jobs", "/uses/scheduled-jobs"],
 ];
 
 // Pattern slug -> category, for redirecting old flat pattern URLs to the new
@@ -221,6 +235,13 @@ async function redirects() {
 
   return [
     ...blogRedirects,
+    {
+      // General contact page moved to /get-in-touch. Query strings (the
+      // ?ref= CTA tracking) are carried over to the destination by default.
+      source: "/contact",
+      destination: "/get-in-touch",
+      permanent: true,
+    },
     {
       source: "/workflow-kit",
       destination: "/docs/reference/workflow-kit",
@@ -423,17 +444,18 @@ async function redirects() {
       destination: "/docs/patterns",
       permanent: true,
     },
-    {
-      source: "/sign-up",
-      destination: process.env.NEXT_PUBLIC_SIGNUP_URL,
-      permanent: true,
-    },
-    // OOH campaign - SF car wrap (AI Engineer World's Fair 2026)
-    {
-      source: "/sf",
-      destination: "/?utm_medium=ooh&utm_source=car-wrap-sf&utm_campaign=aiewf-2026",
-      permanent: false,
-    },
+    // Conditionally include /sign-up redirect — only valid when the
+    // signup URL env var is set on this environment. Otherwise Vercel
+    // preview builds fail with "destination is missing".
+    ...(process.env.NEXT_PUBLIC_SIGNUP_URL
+      ? [
+          {
+            source: "/sign-up",
+            destination: process.env.NEXT_PUBLIC_SIGNUP_URL,
+            permanent: true,
+          },
+        ]
+      : []),
     // OOH campaign - SF car wrap (AI Engineer World's Fair 2026)
     {
       source: "/sf",
@@ -542,6 +564,11 @@ const nextConfig = {
   rewrites,
   reactStrictMode: true,
   pageExtensions: ["js", "jsx", "ts", "tsx", "mdx"],
+  // next-mdx-remote ships a pre-bundled CJS build that, in the App Router
+  // (e.g. /blog/[slug]), resolves its own React copy and throws
+  // "Invalid hook call / more than one copy of React" when MDXRemote runs.
+  // Transpiling it makes Next bundle it against the app's single React.
+  transpilePackages: ["next-mdx-remote"],
   experimental: {
     scrollRestoration: true,
     turbopackFileSystemCacheForDev: true,

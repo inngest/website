@@ -25,7 +25,7 @@ export default function BlogPostList({ posts }: { posts: MDXBlogPost[] }) {
               </div>
             )}
             <div className="pt-4 xl:py-4 xl:pt-6">
-              <h2 className="mb-1 text-base text-basis text-white transition-all group-hover:text-[#CBB26A] xl:text-lg">
+              <h2 className="mb-1 text-base text-white transition-all group-hover:text-[#CBB26A] xl:text-lg">
                 {post.heading}
               </h2>
               <p className="mb-4 mt-2 flex items-center gap-1 text-sm font-medium text-muted">

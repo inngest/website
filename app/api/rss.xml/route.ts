@@ -2,9 +2,17 @@ import RSS from "rss";
 
 import { loadMarkdownFilesMetadata } from "utils/markdown";
 import { type MDXBlogPost } from "src/components/Blog";
-import { loadPost } from "app/changelog/helpers";
+import { loadPost } from "app/_changelog/helpers";
 
 export const dynamic = "force-static";
+
+// Fallback to the canonical host when NEXT_PUBLIC_HOST isn't set on
+// the build environment. The `rss` package internally calls
+// url.parse(site_url) and destructures { auth } from the result —
+// passing undefined throws "Cannot destructure property 'auth' of
+// 'a'" and breaks the entire build.
+const HOST = process.env.NEXT_PUBLIC_HOST ?? "https://www.inngest.com";
+const FAVICON = process.env.NEXT_PUBLIC_FAVICON ?? "favicon-june-2025-light.svg";
 
 export async function GET() {
   const blogPosts = await loadMarkdownFilesMetadata<MDXBlogPost>(
@@ -24,8 +32,8 @@ export async function GET() {
       // Blog posts can just be redirects to customer stories
       // they start with a leading slash
       url: post.redirect
-        ? `${process.env.NEXT_PUBLIC_HOST}${post.redirect}`
-        : `${process.env.NEXT_PUBLIC_HOST}/blog/${post.slug}`,
+        ? `${HOST}${post.redirect}`
+        : `${HOST}/blog/${post.slug}`,
       categories: post.tags || [],
     }));
 
@@ -35,7 +43,7 @@ export async function GET() {
     changelogPostsTransformed.push({
       title: metadata.title,
       date: metadata.date,
-      url: `${process.env.NEXT_PUBLIC_HOST}/changelog/${post.slug}`,
+      url: `${HOST}/changelog/${post.slug}`,
       categories: ["changelog"],
     });
   }
@@ -44,9 +52,9 @@ export async function GET() {
     title: "Inngest Product & Engineering Blog",
     description:
       "Updates from the Inngest team about our product, engineering, and community",
-    feed_url: `${process.env.NEXT_PUBLIC_HOST}/rss.xml`,
-    site_url: process.env.NEXT_PUBLIC_HOST,
-    image_url: `${process.env.NEXT_PUBLIC_HOST}/${process.env.NEXT_PUBLIC_FAVICON}`,
+    feed_url: `${HOST}/rss.xml`,
+    site_url: HOST,
+    image_url: `${HOST}/${FAVICON}`,
     language: "en-us",
   });
 
