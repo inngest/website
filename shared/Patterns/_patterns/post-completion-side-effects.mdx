@@ -7,7 +7,9 @@ tags: [Durability, AI, Architecture]
 
 AI agent functions do expensive, latency-sensitive work: calling models, executing tool loops, generating responses. After the agent finishes, you need to do secondary things that the user should never wait for: score the output quality, log token costs to track spend per customer, send a summary to Slack, update a CRM record.
 
-If you add those as steps at the end of the function, a failure in your analytics pipeline retries the entire agent run, including the model calls you already paid for. If you send events to separate functions, you lose the typed connection to the data the agent just produced.
+If you add those as steps at the end of the function, the parent run stays open while secondary work completes. A failure in your analytics step marks the entire run as failed and triggers retries of a run that already did its job. The parent's success status ends up depending on work the user doesn't care about.
+
+If you send events to separate functions, you lose the typed connection to the data the agent just produced.
 
 Deferred functions solve this. Register side effects inline with typed payloads. The agent returns immediately. Each side effect runs as its own function after the parent finalizes, with independent retries and no impact on the parent's success status.
 
@@ -159,16 +161,15 @@ const handleTicket = inngest.createFunction(
 
 The agent responds to the customer in under a second. Three deferred functions fire after the parent finalizes: one scores the output with a cheaper model, one logs token costs per customer, one posts to Slack. Each has its own retries. If Slack is down, scoring and cost tracking still succeed. If the scoring model is slow, the customer already has their answer.
 
-## Why this matters for AI
+## Why not just add more steps?
 
-AI functions are uniquely expensive to retry. A failed analytics step at the end of a function that made three GPT-4o calls means re-running those calls on retry. With deferred functions, the agent run succeeds or fails based on the agent work alone. The scoring, logging, and notifications run on their own lifecycle.
+Adding `step.run("log-usage", ...)` at the end of the function works, and completed steps are memoized so retries skip them. But the parent run stays open while secondary work completes. If the analytics step fails, the entire run is marked as failed even though the agent already delivered the response. The parent's success status ends up reflecting work the user doesn't care about.
 
-This also opens up patterns like LLM-as-judge scoring where you use a second model to evaluate the first. That evaluation can take seconds or minutes, and it should never hold the user's response hostage.
+Deferred functions keep the parent run clean. It succeeds or fails based on the agent work alone. The side effects run on their own timeline with their own success/failure status.
 
 ## Alternative approaches
 
-- **Add more steps at the end.** A failure in analytics retries the entire function, including the model calls. Expensive and wasteful.
-- **Send events to separate functions.** Works, but you lose the typed schema and the parent/child linking in traces. You serialize data into event payloads manually.
+- **Send events to trigger separate functions.** Works, but you lose the typed schema and the parent/child linking in traces. You serialize data into event payloads manually.
 - **External eval platforms (Braintrust, LangSmith, Arize).** Scoring and cost tracking live in a separate system. Tightening the feedback loop between your agent code and its evaluation requires maintaining two platforms.
 - **Fire-and-forget HTTP calls.** No retries, no observability, no connection to the run that produced the data.
 
