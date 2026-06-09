@@ -28,6 +28,8 @@ This is what worker threads look like when they become production infrastructure
   This post is intentionally specific to our use case. It isn't a generic worker-threads tutorial or a complete survey of the API. The point is to show what it looked like to add worker threads to a production SDK, including the awkward details that don't show up in small examples.
 </Callout>
 
+If you want the TL;DR before reading the full walkthrough, skip to the [production checklist](#production-checklist).
+
 ## Start with the boundary
 
 A worker thread isn't a function you run in parallel. It's a separate JavaScript program with its own entrypoint, imports, heap, and event loop.
@@ -193,6 +195,10 @@ This is one of the biggest mindset shifts with worker threads. You started with 
 That sounds like extra ceremony, and it's real work. But it also makes failure modes explicit. You can decide what happens if the handler is missing, if the handler throws, if the worker's closing, or if a response arrives late.
 
 It does not make user code interruptible. If the main thread is busy, the execution response is still delayed. The point is narrower: while that response is delayed, the worker can continue doing connection management work around it. Heartbeats can still fire, leases can still be extended, and shutdown can become a drain protocol instead of a forced kill.
+
+<Callout>
+  Pending request maps also need cleanup. Add timeouts, reject anything still waiting when either side closes, and delete entries after both success and failure paths. Otherwise a missed response can become an unbounded memory leak.
+</Callout>
 
 ## Prefer boring payloads
 
@@ -370,13 +376,17 @@ The backoff matters. Without it, a bad configuration or deterministic startup bu
 
 We cap consecutive crashes and reset the counter only after the worker reaches `CONNECTION_READY`. A worker that starts and immediately dies has not recovered. A worker that reaches a healthy connection has.
 
-## Mirror observability back to the parent
+<Callout>
+  A crash cap should have a visible failure mode. In Connect, if the worker exceeds the crash threshold, we stop respawning it and emit an error log on the main thread instead of silently retrying forever. At that point, the connection is not healthy and the host process needs to know.
+</Callout>
 
-Once the connection manager lives in a worker, the main thread no longer has direct access to its state.
+## Expose worker health to the parent
 
-That matters for debugging. Users still expect to inspect the connection. The parent still needs to know whether the connection is active, closing, reconnecting, or closed. It needs in-flight request counts, heartbeat timestamps, and shutdown state.
+Once the connection manager lives in a worker, the main thread can no longer directly inspect its health.
 
-The worker periodically sends debug state to the main thread:
+That matters for debugging. Users still expect to inspect the connection. The parent still needs to know whether the connection is active, closing, reconnecting, or closed. It needs in-flight request counts, heartbeat timestamps, shutdown status, and enough detail to explain why a worker is stuck.
+
+So the worker periodically mirrors a health and debug snapshot back to the main thread:
 
 ```ts
 debugStateInterval = setInterval(() => {
@@ -462,6 +472,20 @@ One test starts a long-running function, calls `connection.close()`, and verifie
 These tests aren't just testing worker threads. They're testing the lifecycle around worker threads.
 
 That's the production lesson: the thread is only one component. The lifecycle is the system.
+
+## Production checklist
+
+If you're using worker threads for production infrastructure, make sure you've handled the lifecycle around the thread:
+
+- Define the thread boundary.
+- Design typed messages for both directions.
+- Keep behaviorful objects on the parent thread.
+- Add correlation IDs, timeouts, and cleanup for in-flight request-response messages.
+- Handle worker crash and restart with capped backoff.
+- Send worker health, connection state, and in-flight counts back to the parent thread.
+- Package the worker file explicitly.
+- Treat shutdown as a drain protocol.
+- Test crash, reconnect, shutdown, and late-response cases.
 
 ## Wrapping up
 
