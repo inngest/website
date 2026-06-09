@@ -80,7 +80,7 @@ const TABS: Tab[] = [
       </>
     ),
     ctaLabel: "Step Functions Docs",
-    ctaHref: "/docs/step-functions",
+    ctaHref: "/docs/learn/inngest-functions",
     graphic: <ReliabilityGraphic />,
   },
   {

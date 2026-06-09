@@ -15,7 +15,7 @@ import { reveals } from "@/utils/v1/reveals";
 // Two-column showcase card — heading + body + CTA on the left,
 // syntax-highlighted payment-failed snippet on the right.
 
-const SEE_DOCS_URL = "/docs?ref=webhooks-events";
+const SEE_DOCS_URL = "/docs/patterns/jobs/build-reliable-webhooks?ref=webhooks-events";
 
 // Custom syntax palette — overrides CodeBlock's VSCode-dark default.
 // Comments and punctuation deliberately share the same muted grey.

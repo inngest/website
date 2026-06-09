@@ -27,7 +27,7 @@ export default function StartBuilding() {
       }
     >
       <ButtonLink href="/sign-up?ref=background-jobs" prefetch={false} variant="primary">
-        Create free account
+        Start Free
       </ButtonLink>
       <ButtonLink href="/docs/quick-start?ref=background-jobs" variant="secondary">
         Quick start guide →

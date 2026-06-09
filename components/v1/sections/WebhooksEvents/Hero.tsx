@@ -6,7 +6,7 @@ import WebhooksEventsDotsCanvas from "@/components/v1/sections/WebhooksEvents/We
 export default function Hero() {
   return (
     <SplitHero
-      docsHref="/docs?ref=webhooks-events"
+      docsHref="/docs/platform/webhooks?ref=webhooks-events"
       signupHref="/sign-up?ref=webhooks-events"
       breadcrumbs={[
         { label: "Use Cases" },
