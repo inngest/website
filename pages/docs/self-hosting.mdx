@@ -1,4 +1,4 @@
-import { Callout, Info, Warning, CodeGroup, DownloadLink, CardGroup, Card, VersionBadge } from "src/shared/Docs/mdx";
+import { Callout, Info, Warning, Tip, CodeGroup, DownloadLink, CardGroup, Card, VersionBadge } from "src/shared/Docs/mdx";
 import Github from "src/shared/Icons/Github.tsx";
 
 export const description = 'Learn how to self-host Inngest. Includes configuration options and instructions for using external services.'
@@ -322,11 +322,44 @@ You can find the chart, documentation, and configuration examples here:
 
 Inngest exposes a Prometheus-compatible scrape endpoint at `GET /metrics` on the server port (e.g. `http://localhost:8288/metrics`). By default it emits a single gauge, `inngest_queue_depth`. To enable per-function lifecycle counters (`inngest_function_run_*_total`, `inngest_sdk_req_*_total`), start the server with the experimental flag enabled: `INNGEST_EXPERIMENTAL_PROM_METRICS=1`. Point your Prometheus scrape config at the `/metrics` path on that port — no auth is configured by default.
 
+## Performance considerations
+
+Each system workload is different, so each deployment of the Inngest server may require different adjustments for scaling. We recommend monitoring your Redis and Postgres servers to asses how you may need to scale for your workflow. Consider some of the following options for improving performance:
+
+* **Execution slowness** - Functions are executing slower than expected.
+  * Function configuration: Adjust the [flow control](/docs/guides/flow-control) configuration for your functions that may be limiting throughput.
+  * Increase `--queue-workers`: By default, each Inngest server only runs `100` queue workers in parallel for execution. Increase this number to increase the amount of concurrent executions for each Inngest server ([see configuration](#configuration)). Note that this will increase CPU and memory usage on your Inngest server.
+  * Horizontal scaling: You can opt to horizontally scale your Inngest server to add more capacity by adding more replicas/containers to your setup instead of increasing `--queue-workers`.
+  * Redis vertical scaling: If your Redis server is showing high CPU usage, you may need to vertically scale your Redis server(s).
+* **Dashboard or API slowness** - It's slow to load parts of the Inngest server dashboard.
+  * Postgres vertical scaling: If your Postgres server is undersized, it may cause slowness under load. Review Postgres metrics to help determine how you may need to scale your database.
+  * Postgres table periodic cleanup: The Inngest server does not automatically delete old database rows within Postgres for events, runs, or traces. Large table growth can hurt performance for loading or searching runs or events. {/*See [postgres retention](#postgres-retention). */}
+  * Custom indexes:
+
+{/*### Postgres retention
+
+The Inngest server does not automatically delete old database rows within Postgres for events, runs, or traces. This is currently intentional as different teams have different data retention needs and different functions that may pause or sleep for long periods of time. To keep these tables performant and reclaim disk space, you should periodically delete older data based on your needs.
+
+<Info>
+  Postgres tables are used for observability purposes and actively executing functions' state is stored within the Redis server. Deleting data from Postgres can reduce observability overall. Deleting data for active functions can cause issues for how data is queried or returned.
+
+  For example, if a run is deleted from Postgres before it completes, the root trace spans will be lost and later trace spans will not be ingested or present correctly.
+</Info>
+
+For additional guidance on deletion strategies [view the guide in our open source repo](https://github.com/inngest/inngest/blob/main/docs/POSTRES_RETENTION.md).
+
+<Tip>
+  When cleaning up old data, we recommend setting a cron task to perform this cleanup. This can be an Inngest cron function or a Kubernetes cron job.
+</Tip>
+
+*/}
+
 ## Roadmap & feature requests
 
 Planned features for self-hosting include:
 
 * Improved diagnostic checks and APIs (via `inngest alpha doctor` and `inngest alpha debug` - currently in alpha)
+* Postgres data retention guides and commands
 
 To suggest additional features, report issues, submit pull requests, and view the source code please visit the repo on GitHub:
 
