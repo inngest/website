@@ -811,6 +811,11 @@ const sectionLearn: (NavGroup | NavLink)[] = [
             title: "Priority",
             href: `/docs/guides/priority`,
           },
+          {
+            title: "Deferred functions",
+            href: `/docs/guides/deferred-functions`,
+            tag: "beta",
+          },
         ],
       },
       {
@@ -988,6 +993,11 @@ const sectionLearn: (NavGroup | NavLink)[] = [
           {
             title: "Sub-agents",
             href: `/docs/ai-patterns/sub-agent-delegation`,
+          },
+          {
+            title: "Defer AI side effects",
+            href: `/docs/ai-patterns/defer-ai-side-effects`,
+            tag: "beta",
           },
         ],
       },
