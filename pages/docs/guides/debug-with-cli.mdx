@@ -1,0 +1,125 @@
+export const description = "Step-by-step guide to inspecting a failed function run and identifying the broken step using the Inngest CLI."
+
+# Debug a function run from your terminal
+
+This guide walks you through finding a failed run, pulling its trace, and identifying which step broke. You do this entirely from the terminal using the Inngest CLI.
+
+## Prerequisites
+
+- Inngest CLI: `npx inngest-cli@latest`
+- An API key set as `INNGEST_API_KEY` (create one in the [Inngest dashboard](https://app.inngest.com) under Settings > API Keys)
+
+---
+
+## 1. Get the run summary
+
+You have a run ID from a log, alert, or the dashboard. Fetch the summary:
+
+```bash
+npx inngest-cli@latest api --prod get-run 01KTCTWT8XDEGWDMVX3Q9M69ND
+```
+
+The response shows the run's status, function, timing, and trigger:
+
+```json
+{
+  "data": {
+    "id": "01KTCTWT8XDEGWDMVX3Q9M69ND",
+    "status": "FAILED",
+    "function": {
+      "name": "process-order",
+      "slug": "my-app-process-order"
+    },
+    "queuedAt": "2026-06-05T21:26:44.765Z",
+    "endedAt": "2026-06-05T21:26:45.954Z",
+    "durationMs": "1096"
+  }
+}
+```
+
+The run failed. Pull the trace to see which step broke.
+
+---
+
+## 2. Fetch the trace
+
+The trace shows every step in the run with its status, timing, and output:
+
+```bash
+npx inngest-cli@latest api --prod get-function-trace 01KTCTWT8XDEGWDMVX3Q9M69ND --include-output
+```
+
+The response is a tree of spans. Each span is a step. Look for the one with a failed status:
+
+```json
+{
+  "data": {
+    "runId": "01KTCTWT8XDEGWDMVX3Q9M69ND",
+    "rootSpan": {
+      "name": "process-order",
+      "status": "FAILED",
+      "children": [
+        {
+          "name": "validate-input",
+          "status": "COMPLETED",
+          "stepOp": "RUN",
+          "durationMs": "12"
+        },
+        {
+          "name": "charge-card",
+          "status": "COMPLETED",
+          "stepOp": "RUN",
+          "durationMs": "340"
+        },
+        {
+          "name": "create-shipment",
+          "status": "FAILED",
+          "stepOp": "RUN",
+          "durationMs": "744",
+          "output": {
+            "error": "shipping API returned 503"
+          }
+        }
+      ]
+    }
+  }
+}
+```
+
+The `create-shipment` step failed with a 503 from the shipping API. The `validate-input` and `charge-card` steps completed. You know exactly where it broke and what the error was.
+
+---
+
+## 3. Pipe to jq for quick filtering
+
+Extract just the failed steps:
+
+```bash
+npx inngest-cli@latest api --prod get-function-trace 01KTCTWT8XDEGWDMVX3Q9M69ND --include-output \
+  | jq '[.data.rootSpan.children[] | select(.status == "FAILED")]'
+```
+
+---
+
+## 4. Test a fix locally
+
+Once you identify the issue, fix the code and test against your local dev server. The CLI targets the dev server by default:
+
+```bash
+# Invoke the function locally
+npx inngest-cli@latest api invoke-function-by-slug my-app-process-order \
+  --data '{"orderId": "test-123", "address": "123 Main St"}'
+
+# Check the run
+npx inngest-cli@latest api get-event-runs <event_id> --include-output
+```
+
+No `--prod` flag means it hits `http://localhost:8288`. The dev server must be running.
+
+---
+
+## Next steps
+
+- [Inngest CLI reference](/docs/cli) for all commands and auth options
+- [Traces](/docs/platform/monitor/traces) for the dashboard trace view
+- [Error handling](/docs/guides/error-handling) for retry and failure handler patterns
