@@ -32,6 +32,8 @@ export const trackCosts = createDefer(inngest, {
   }),
 }, async ({ event, step }) => {
   await step.run("log-cost", async () => {
+    // Illustrative rates only -- check your provider's current pricing,
+    // which typically differs for prompt vs. completion tokens
     const costPer1k = event.data.model === "gpt-4o" ? 0.005 : 0.00015;
     const totalTokens = event.data.promptTokens + event.data.completionTokens;
 

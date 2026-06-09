@@ -40,8 +40,6 @@ Multiple `defer()` calls in one parent all run in parallel after finalization. A
 
 **Delayed signals.** A deferred function can use `step.waitForEvent()` to pause for days or weeks. Wait for a user action, a conversion event, or a ticket resolution. The deferred run collects the signal on its own timeline.
 
-**Cancellable work.** `defer()` returns a handle with `.cancel()`. Register a deferred function, then cancel it later in the same run if conditions change.
-
 ---
 
 ## Comparison with alternatives
