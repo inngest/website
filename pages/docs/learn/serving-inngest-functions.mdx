@@ -5,7 +5,7 @@ export const hidePageSidebar = true;
 
 # Setting up your Inngest app
 
-Inngest executes your functions by calling them directly. You don't poll a queue or manage separate job infrastructure. Instead, you expose your functions to Inngest through a connection from your app, and Inngest's execution engine handles invoking them, retrying failures, and managing state. With serve(), Inngest calls your functions over HTTP. With connect(), your app opens a persistent WebSocket connection and acts as a worker that receives function calls directly.
+Inngest executes your functions by calling them directly. You don't poll a queue or manage separate job infrastructure. Instead, you expose your functions to Inngest through a connection from your app, and Inngest's execution engine handles invoking them, retrying failures, and managing state. With `serve()`, your app exposes an HTTP endpoint that Inngest calls to run your functions—no long-running worker required. With `connect()`, your app runs as a worker, opening a persistent outbound WebSocket connection that Inngest uses to invoke your functions directly.
 
 For Inngest to remotely execute your functions, you will need to set up a connection between your app and Inngest. This can be done in one of two ways:
 
