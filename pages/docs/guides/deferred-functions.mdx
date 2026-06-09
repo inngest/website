@@ -1,0 +1,112 @@
+export const description = "Deferred functions run independent background work after a function completes. Send notifications, log analytics, clean up resources, and collect delayed signals without blocking the parent run."
+
+# Deferred functions
+
+A deferred function runs in the background as a side effect of another run. You call `defer()` inside your function, passing typed data to an independent function that starts after the parent finalizes. The parent returns immediately. The deferred run gets its own retries, concurrency, and step state.
+
+Use defer for work that should happen *because of* a run, not *as part of* it: sending notifications, logging analytics, cleaning up resources, or collecting signals that arrive hours or days later.
+
+---
+
+## The mental model
+
+Steps are work that is part of a run. Deferred functions are work that happens because of a run.
+
+A `step.run()` call is part of the parent. If it fails, the parent retries. If it's slow, the parent waits. The parent's success depends on every step completing.
+
+A `defer()` call is not part of the parent. The parent doesn't wait, doesn't see a result, and doesn't care if the deferred function fails. The deferred run is a completely separate function with its own lifecycle.
+
+This matters when your function does expensive work. If you add a notification step at the end and Slack is down, the entire function retries from the beginning, including the expensive steps you already completed. With defer, the parent run succeeds based on the core work alone. The notification retries on its own.
+
+---
+
+## How deferred runs work
+
+Each `defer()` call creates a separate Inngest function run. The deferred run is linked to the parent in traces. You can see the full picture: the parent run, its steps, and every deferred run it spawned.
+
+Deferred runs are enqueued when the parent run finalizes (succeeds, fails, or is cancelled). They do not start during the parent's execution. The parent always completes first, then the deferred work begins.
+
+Multiple `defer()` calls in one parent all run in parallel after finalization. A failed deferred run does not affect the parent's status or trigger the parent's failure handler.
+
+---
+
+## When to use defer
+
+**Notifications.** Send a Slack message, email, or webhook after your function completes. If the notification service is down, it retries independently.
+
+**Analytics and logging.** Log usage metrics, track costs, or write audit records. Your analytics pipeline's reliability doesn't affect the parent run.
+
+**Cleanup and rollbacks.** Register cleanup after each step. Cancel it if everything succeeds. If a later step fails, the deferred cleanup fires automatically. See [Deferred cleanup and rollbacks](/docs/patterns/durable/deferred-cleanup-and-rollbacks).
+
+**Delayed signals.** A deferred function can use `step.waitForEvent()` to pause for days or weeks. Wait for a user action, a conversion event, or a ticket resolution. The deferred run collects the signal on its own timeline.
+
+**Cancellable work.** `defer()` returns a handle with `.cancel()`. Register a deferred function, then cancel it later in the same run if conditions change.
+
+---
+
+## Comparison with alternatives
+
+| Approach | Blocks parent? | Independent retries? | Typed data? | Linked in traces? |
+|----------|---------------|---------------------|------------|-------------------|
+| More steps at the end | Yes | No | N/A | Yes |
+| `onFailure` handler | No | Yes | No (only error + input) | Partial |
+| Send events to other functions | No | Yes | No (manual serialization) | No |
+| `defer()` | No | Yes | Yes (schema-validated) | Yes |
+
+---
+
+## Quick example
+
+```ts
+import { createDefer } from "inngest/experimental";
+import { z } from "zod";
+
+const notifySlack = createDefer(inngest, {
+  id: "notify-slack",
+  schema: z.object({ channel: z.string(), message: z.string() }),
+}, async ({ event, step }) => {
+  await step.run("post", async () => {
+    await slack.chat.postMessage({
+      channel: event.data.channel,
+      text: event.data.message,
+    });
+  });
+});
+
+const processOrder = inngest.createFunction(
+  { id: "process-order", triggers: { event: "order/placed" } },
+  async ({ event, step, defer }) => {
+    await step.run("charge", async () => {
+      return await stripe.charges.create({ amount: event.data.total });
+    });
+
+    await step.run("fulfill", async () => {
+      return await shipping.createLabel(event.data.address);
+    });
+
+    // Notify the team after the order ships. Doesn't block the return.
+    defer("notify", {
+      function: notifySlack,
+      data: {
+        channel: "#orders",
+        message: `Order ${event.data.orderId} shipped`,
+      },
+    });
+
+    return { status: "shipped" };
+  }
+);
+```
+
+Register both functions in the serve handler:
+
+```ts
+serve({ client: inngest, functions: [processOrder, notifySlack] });
+```
+
+---
+
+## Next steps
+
+- [Defer AI side effects](/docs/ai-patterns/defer-ai-side-effects) for deferring work from AI agent functions
+- [Deferred Functions reference](/docs/reference/typescript/v4/functions/deferred-functions) for the full API
