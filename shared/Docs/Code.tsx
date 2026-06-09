@@ -139,7 +139,15 @@ type CodePanelProps = {
 };
 
 function CodePanel({ tag, label, code, children }: CodePanelProps) {
-  let child = Children.only<any>(children);
+  // Tolerate multiple children (some MDX content blocks pass more
+  // than one) — take the first element rather than throwing via
+  // Children.only. Falls back to an empty props object if there's
+  // nothing renderable.
+  const childArray = Children.toArray(children);
+  const child: any =
+    (childArray.find((c) => typeof c === "object" && c !== null) as any) ?? {
+      props: {},
+    };
 
   return (
     <div className="group bg-codeEditor">

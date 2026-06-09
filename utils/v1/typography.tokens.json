@@ -1,0 +1,243 @@
+{
+  "display-lg": {
+    "fontFamily": "\"Whyte Inktrap\", Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
+    "fontSize": "100px",
+    "lineHeight": "80px",
+    "fontWeight": 400,
+    "letterSpacing": "-0.01em",
+    "trim": "cap",
+    "capHeightTrim": "-0.05em",
+    "baselineTrim": "-0.05em"
+  },
+  "display-sm": {
+    "fontFamily": "\"Whyte Inktrap\", Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
+    "fontSize": "64px",
+    "lineHeight": "80px",
+    "fontWeight": 400,
+    "letterSpacing": "-0.01em",
+    "trim": "cap",
+    "capHeightTrim": "-0.275em",
+    "baselineTrim": "-0.275em"
+  },
+  "display-md": {
+    "fontFamily": "\"Whyte Inktrap\", Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
+    "fontSize": "80px",
+    "lineHeight": "100px",
+    "fontWeight": 400,
+    "letterSpacing": "-0.01em",
+    "trim": "cap",
+    "capHeightTrim": "-0.275em",
+    "baselineTrim": "-0.275em"
+  },
+  "display-xs": {
+    "fontFamily": "\"Whyte Inktrap\", Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
+    "fontSize": "40px",
+    "lineHeight": "50px",
+    "fontWeight": 400,
+    "letterSpacing": "-0.01em",
+    "trim": "cap",
+    "capHeightTrim": "-0.275em",
+    "baselineTrim": "-0.275em"
+  },
+  "heading-lg": {
+    "fontFamily": "WhyteV1, Whyte, Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
+    "fontSize": "58px",
+    "lineHeight": "70px",
+    "fontWeight": 400,
+    "letterSpacing": "-0.01em",
+    "trim": "cap",
+    "capHeightTrim": "-0.2534em",
+    "baselineTrim": "-0.2534em"
+  },
+  "heading-sm": {
+    "fontFamily": "WhyteV1, Whyte, Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
+    "fontSize": "26px",
+    "lineHeight": "31.2px",
+    "fontWeight": 400,
+    "letterSpacing": "-0.01em",
+    "trim": "cap",
+    "capHeightTrim": "-0.25em",
+    "baselineTrim": "-0.25em"
+  },
+  "heading-xs": {
+    "fontFamily": "WhyteV1, Whyte, Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
+    "fontSize": "20px",
+    "lineHeight": "30px",
+    "fontWeight": 400,
+    "letterSpacing": "-0.01em",
+    "trim": "cap",
+    "capHeightTrim": "-0.4em",
+    "baselineTrim": "-0.4em"
+  },
+  "body-lg": {
+    "fontFamily": "CircularXX, Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
+    "fontSize": "18px",
+    "lineHeight": "27px",
+    "fontWeight": 400,
+    "letterSpacing": "-0.01em",
+    "trim": "cap",
+    "capHeightTrim": "-0.396em",
+    "baselineTrim": "-0.395em"
+  },
+  "body-md": {
+    "fontFamily": "CircularXX, Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
+    "fontSize": "20px",
+    "lineHeight": "30px",
+    "fontWeight": 400,
+    "letterSpacing": "-0.01em",
+    "trim": "none"
+  },
+  "body-sm": {
+    "fontFamily": "CircularXX, Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
+    "fontSize": "16px",
+    "lineHeight": "24px",
+    "fontWeight": 400,
+    "letterSpacing": "-0.01em",
+    "trim": "cap",
+    "capHeightTrim": "-0.396em",
+    "baselineTrim": "-0.395em"
+  },
+  "body-xs": {
+    "fontFamily": "CircularXX, Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
+    "fontSize": "14px",
+    "lineHeight": "20px",
+    "fontWeight": 400,
+    "trim": "none"
+  },
+  "label-md": {
+    "fontFamily": "WhyteMonoV1, WhyteMono, Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, monospace",
+    "fontSize": "16px",
+    "lineHeight": "16px",
+    "fontWeight": 400,
+    "trim": "cap",
+    "capHeightTrim": "-0.15em",
+    "baselineTrim": "-0.15em"
+  },
+  "eyebrow": {
+    "fontFamily": "WhyteMonoV1, WhyteMono, Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, monospace",
+    "fontSize": "16px",
+    "lineHeight": "16px",
+    "fontWeight": 400,
+    "trim": "cap",
+    "capHeightTrim": "-0.15em",
+    "baselineTrim": "-0.15em"
+  },
+  "label-sm": {
+    "fontFamily": "WhyteMonoV1, WhyteMono, Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, monospace",
+    "fontSize": "12px",
+    "lineHeight": "15px",
+    "fontWeight": 400,
+    "trim": "cap",
+    "capHeightTrim": "-0.275em",
+    "baselineTrim": "-0.275em"
+  },
+  "label-spaced": {
+    "fontFamily": "WhyteMonoV1, WhyteMono, Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, monospace",
+    "fontSize": "11px",
+    "lineHeight": "11px",
+    "fontWeight": 400,
+    "letterSpacing": "0.1em",
+    "trim": "cap",
+    "capHeightTrim": "-0.15em",
+    "baselineTrim": "-0.15em"
+  },
+  "caption": {
+    "fontFamily": "CircularXX, Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
+    "fontSize": "12px",
+    "lineHeight": "12.757px",
+    "fontWeight": 400,
+    "trim": "cap",
+    "capHeightTrim": "-0.1775em",
+    "baselineTrim": "-0.1765em"
+  },
+  "heading-xs-loose": {
+    "fontFamily": "WhyteV1, Whyte, Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
+    "fontSize": "18px",
+    "lineHeight": "27px",
+    "fontWeight": 400,
+    "letterSpacing": "-0.01em",
+    "trim": "none"
+  },
+  "body-lg-loose": {
+    "fontFamily": "CircularXX, Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
+    "fontSize": "18px",
+    "lineHeight": "27px",
+    "fontWeight": 400,
+    "letterSpacing": "-0.01em",
+    "trim": "none"
+  },
+  "heading-sm-loose": {
+    "fontFamily": "WhyteV1, Whyte, Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
+    "fontSize": "26px",
+    "lineHeight": "32px",
+    "fontWeight": 400,
+    "trim": "none"
+  },
+  "body-sm-loose": {
+    "fontFamily": "CircularXX, Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
+    "fontSize": "16px",
+    "lineHeight": "24px",
+    "fontWeight": 400,
+    "trim": "none"
+  },
+  "heading-card": {
+    "fontFamily": "WhyteV1, Whyte, Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
+    "fontSize": "32px",
+    "lineHeight": "40px",
+    "fontWeight": 400,
+    "trim": "none"
+  },
+  "heading-md-cap": {
+    "fontFamily": "WhyteV1, Whyte, Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
+    "fontSize": "32px",
+    "lineHeight": "40px",
+    "fontWeight": 400,
+    "letterSpacing": "-0.01em",
+    "trim": "cap",
+    "capHeightTrim": "-0.275em",
+    "baselineTrim": "-0.275em"
+  },
+  "heading-md": {
+    "fontFamily": "WhyteV1, Whyte, Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
+    "fontSize": "32px",
+    "lineHeight": "48px",
+    "fontWeight": 400,
+    "letterSpacing": "-0.01em",
+    "trim": "none"
+  },
+  "quote": {
+    "fontFamily": "WhyteV1, Whyte, Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
+    "fontSize": "36.97px",
+    "lineHeight": "55.455px",
+    "fontWeight": 400,
+    "letterSpacing": "-0.01em",
+    "trim": "none"
+  },
+  "byline": {
+    "fontFamily": "WhyteV1, Whyte, Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
+    "fontSize": "20.54px",
+    "lineHeight": "24.648px",
+    "fontWeight": 400,
+    "trim": "none"
+  },
+  "code": {
+    "fontFamily": "WhyteMonoV1, WhyteMono, Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, monospace",
+    "fontSize": "14.378px",
+    "lineHeight": "27px",
+    "fontWeight": 400,
+    "trim": "none"
+  },
+  "display-hero": {
+    "fontFamily": "\"Whyte Inktrap\", Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
+    "fontSize": "clamp(2.5rem, 10vw, 4rem)",
+    "lineHeight": "1",
+    "fontWeight": 400,
+    "letterSpacing": "-0.01em",
+    "trim": "none",
+    "responsive": {
+      "lg": {
+        "fluid": "clamp(2.5rem, 7vw, 6.25rem)"
+      }
+    }
+  }
+}

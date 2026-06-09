@@ -7,26 +7,16 @@ import GoogleTagManger from "@/components/GoogleTagManager";
 import { getFullURL } from "src/utils/social";
 
 import "./globals.css";
-import AnnouncementBanner from "src/components/AnnouncementBanner";
-import Header from "src/components/RedesignedLanding/Header/Header";
-import Footer from "src/components/RedesignedLanding/Footer";
 import Analytics from "@/components/Analytics";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.inngest.com"),
-  // Pathname-relative canonical: resolves to each page's own clean path
-  // (no query params) against metadataBase. This ensures every page —
-  // regardless of which ?ref= or UTM combination a user arrived with —
-  // declares the same canonical URL to crawlers, without using dynamic
-  // APIs like headers() that would opt every route out of static
-  // prerendering (and out of the sitemap). Pages may override via their
-  // own `alternates.canonical`.
   alternates: {
     canonical: "./",
   },
   title: {
-    default: "Inngest - Develop AI products at the speed of thought",
-    template: "%s - Inngest",
+    default: "Develop AI products at the speed of thought | Inngest",
+    template: "%s | Inngest",
   },
   openGraph: {
     // We cannot dynamically set the image URL with the page title, so we use this default
@@ -50,21 +40,24 @@ export const metadata: Metadata = {
   },
 };
 
+// Root layout is intentionally chrome-free: it only sets up <html>/<body>,
+// fonts, and analytics. Page chrome is supplied per route group —
+// redesigned (v1) pages self-shell via PageShell; legacy pages get their
+// Header/Footer from app/(v0)/layout.tsx. Keeping this layout free of
+// request-time APIs (e.g. headers()) lets static pages prerender.
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <html className="scroll-smooth">
+    <html className="scroll-smooth" suppressHydrationWarning>
       <head>
         <link
           rel="preconnect"
           href="https://fonts-cdn.inngest.com/"
           crossOrigin="anonymous"
         />
-        {/* Preload the primary CircularXX weights used above the fold:
-            Bold (700) for headings/LCP and Regular (400) for body. */}
         <link
           rel="preload"
           as="font"
@@ -79,6 +72,13 @@ export default function RootLayout({
           href="https://fonts-cdn.inngest.com/Circular/CircularXXWeb-Regular.woff2"
           crossOrigin="anonymous"
         />
+        <link
+          rel="preload"
+          as="font"
+          type="font/woff2"
+          href="/assets/v1/fonts/ABCWhyte-Regular.woff2"
+          crossOrigin="anonymous"
+        />
         <link rel="stylesheet" href="https://fonts-cdn.inngest.com/fonts.css" />
         <Script
           id="js-inngest-queue-init"
@@ -89,13 +89,8 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="dark font-sans">
-        <AnnouncementBanner />
-        <Header />
-
-        <main className="text-basis">{children}</main>
-
-        <Footer />
+      <body className="dark font-sans text-basis">
+        {children}
 
         <Suspense>
           <PageViews />
