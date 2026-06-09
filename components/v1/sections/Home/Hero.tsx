@@ -147,14 +147,9 @@ export default function Hero() {
 
         <p
           aria-hidden="true"
-          className="text-v1-display-hero pl-[33%] mt-12 uppercase text-v1-frost lg:mt-[108px] lg:pl-[162px]"
+          className="text-v1-display-hero mt-12 uppercase text-v1-frost lg:mt-[108px] lg:pr-[100px] lg:text-right lg:leading-[0.8] lg:!text-[clamp(2.5rem,6.7vw,6rem)] lg:tracking-[-0.025em]"
         >
-          <span className="block">
-            <HeroLetters text="Invisible" />
-          </span>
-          <span className="block">
-            <HeroLetters text="Infra." />
-          </span>
+          <HeroLetters text="Invisible Infra." />
         </p>
 
         <div className="mt-[63px] space-y-[10px] pl-[33%] lg:mt-12 lg:space-y-[20px] lg:pl-[170px]">
