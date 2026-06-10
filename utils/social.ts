@@ -1,7 +1,7 @@
 import { type Metadata } from "next";
 
 // Use the image version to bust social network's caches
-const openGraphImageVersion = 4;
+const openGraphImageVersion = 5;
 
 /*
  * Generates a URL to dynamically generate an open graph image for posts on social media
@@ -46,7 +46,7 @@ export const generateMetadata = ({
     ? image.match(/^\//)
       ? getFullURL(image)
       : image
-    : getFullURL("/assets/og-image-2026.png");
+    : getOpenGraphImageURL({ title });
   const metaTitle = `Inngest - ${title}`;
   const metadata: Metadata = {
     title,
