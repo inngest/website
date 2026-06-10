@@ -143,8 +143,7 @@ export default function Terms() {
             <H3>This Application is provided by:</H3>
             <Body>
               <p>
-                Inngest Inc - 600 California St Suite 1200 San Francisco, CA
-                94109, USA
+                Inngest Inc - 821 Howard St, San Francisco CA, 94103, USA
               </p>
               <Blank />
               <p>
@@ -1538,7 +1537,7 @@ export default function Terms() {
 
           {/* Footer note — same iubenda block as the Privacy page. */}
           <Body>
-            <p>Latest update: June 16, 2023</p>
+            <p>Latest update: June 09, 2026</p>
             <Blank />
             <p>
               This document has been created with the iubenda{" "}
