@@ -23,8 +23,9 @@ export default function Hero() {
         <div className="flex flex-col gap-12 lg:justify-between lg:gap-0 lg:pb-[120px] lg:pl-[90px] lg:pt-[44px]">
           <div className="flex flex-col gap-2">
             <p className="text-v1-body-lg-loose text-v1-frost">
-              Questions about Inngest, partnerships, or support? We&apos;ll
-              get you to the right place.
+              Scale from thousands to millions of executions with the
+              concurrency, recovery, and support your production workflows
+              demand.
             </p>
             <p className="font-v1Body text-[18px] italic leading-[1.5] tracking-[-0.01em] text-v1-frost/50">
               * Typically respond within 24 hours.

@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+// interest is fixed to "sales" — radio buttons removed per design update
 import Button from "@/components/v1/Button";
 import {
-  INTEREST_OPTIONS,
-  RadioOption,
   TextField,
   TextareaField,
   type Interest,
@@ -56,24 +55,6 @@ export default function SalesForm() {
       onSubmit={handleSubmit}
       className="flex flex-col gap-6 lg:justify-center lg:pl-[70px] lg:pr-[140px] lg:pt-[44px]"
     >
-      <fieldset className="flex flex-col gap-2 border-0 p-0">
-        <legend className="p-0 text-v1-body-lg-loose text-v1-frost">
-          What are you looking for?
-        </legend>
-        <div className="mt-1.5 flex flex-col gap-2 lg:pl-3">
-          {INTEREST_OPTIONS.map((opt) => (
-            <RadioOption
-              key={opt.value}
-              name="interest"
-              value={opt.value}
-              label={opt.label}
-              checked={interest === opt.value}
-              onChange={() => setInterest(opt.value)}
-            />
-          ))}
-        </div>
-      </fieldset>
-
       {/* px-24 is the column inset — desktop only, so the fields
           stay flush with the section padding on mobile. */}
       <div className="flex flex-col gap-[44px] lg:px-6">

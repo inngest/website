@@ -30,7 +30,7 @@ const FAQS: FaqItem[] = [
     question: "I have other billing questions. How do I get in touch?",
     answer:
       "Email us at support@inngest.com or open a support ticket from the dashboard. Pro and Enterprise customers get faster SLAs on billing and account questions.",
-    link: { label: "Contact sales", href: "/get-in-touch?ref=pricing-faq" },
+    link: { label: "Contact sales", href: "/contact?ref=pricing-faq" },
   },
 ];
 
