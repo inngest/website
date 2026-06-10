@@ -824,14 +824,12 @@ const WATERFALL_ROWS: WaterfallRow[] = [
 ];
 
 const WATERFALL_GREEN = "#0bdd48";
-// The whole trace plays over this window. Each bar's delay + duration
-// are pinned to its real start% / width% on the timeline so the spans
-// fire at their actual moments — Run keeps drawing through the entire
-// window, children blip in at their points in time.
-const WATERFALL_TOTAL_MS = 2000;
-// Minimum animation duration so 1–2 % width bars don't snap in (a real
-// trace's short spans still take a perceptible beat to "land").
-const WATERFALL_MIN_BAR_MS = 160;
+// The whole trace plays over this window of wall-clock time: nowSec ramps
+// 0 → total across it, and every span's geometry is recomputed against
+// nowSec each frame so the timeline re-proportions as it "runs".
+const WATERFALL_TOTAL_MS = 3500;
+// Beat to hold on the empty track before the trace begins running.
+const WATERFALL_START_DELAY_MS = 100;
 // Row pitch in px (row-to-row spacing is 43.41). Fixed across
 // breakpoints so the absolutely-positioned tree spine stays aligned.
 const WATERFALL_ROW_H = 43;
@@ -864,8 +862,62 @@ function RunCheck() {
 }
 
 function TraceWaterfall() {
+  const ref = useRef<HTMLDivElement>(null);
+  // Gate the run on intersection (same pattern as SqlBlock) so the trace
+  // plays when it scrolls into view rather than finishing off-screen.
+  const [active, setActive] = useState(false);
+  // Elapsed trace time in seconds, driven 0 → total by rAF. Every span's
+  // on-screen left%/width% is recomputed against this each frame, so the
+  // timeline re-proportions like a live APM trace: the denominator (elapsed
+  // time) keeps growing, so completed spans shrink as a percentage while the
+  // active span's right edge keeps tracking "now".
+  const [nowSec, setNowSec] = useState(0);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            setActive(true);
+            io.disconnect();
+            return;
+          }
+        }
+      },
+      { rootMargin: "0px 0px -10% 0px", threshold: 0.05 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!active) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setNowSec(total);
+      return;
+    }
+    let frame = 0;
+    const start = performance.now();
+    const tick = (now: number) => {
+      // Hold at the empty track for a beat before the trace starts running.
+      const elapsedMs = now - start - WATERFALL_START_DELAY_MS;
+      const t = Math.min(1, Math.max(0, elapsedMs) / WATERFALL_TOTAL_MS);
+      setNowSec(t * total);
+      if (t < 1) frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [active]);
+
+  // Timeline denominator = elapsed trace time, growing each frame. Guarded
+  // off zero; the root is pinned to 100% and every other span only appears
+  // once it has fully elapsed, so denom is always ≥ that span's end.
+  const denom = Math.max(nowSec, 0.001);
+
   return (
-    <div className="relative w-full">
+    <div ref={ref} className="relative w-full">
       {/* Vertical tree spine: runs from the Insights Event Matcher row
           down to the last span. Anchored to the fixed row pitch so it
           stays aligned across breakpoints. */}
@@ -885,11 +937,32 @@ function TraceWaterfall() {
         style={{ lineHeight: `${WATERFALL_ROW_H}px`, color: WATERFALL_LABEL }}
       >
         {WATERFALL_ROWS.map((row, i) => {
-          const delay = (row.start / 100) * WATERFALL_TOTAL_MS;
-          const animMs = Math.max(
-            WATERFALL_MIN_BAR_MS,
-            (row.width / 100) * WATERFALL_TOTAL_MS
+          // Resolve each row back to real start/end seconds on the trace.
+          // (start/width are authored as % of the *final* total.)
+          const realStart = (row.start / 100) * total;
+          const realEnd = Math.max(
+            realStart,
+            ((row.start + row.width) / 100) * total
           );
+          // The root Run spans the whole timeline, so its bar is always the
+          // full track — render it at 100% from the first frame.
+          const isRoot = row.start === 0 && row.width === 100;
+          const isChild = row.indent >= 1;
+          // Parent spans (indent 0) appear when they *start* and grow with the
+          // live edge ("now") while still running — their right edge tracks
+          // now until they finish, then they re-proportion down like the rest.
+          // Child spans pop in complete at the live edge and only ever shrink.
+          // The root Run is always the full track.
+          const visible = isRoot
+            ? true
+            : isChild
+              ? nowSec >= realEnd
+              : nowSec >= realStart;
+          const visibleEnd = isChild ? realEnd : Math.min(realEnd, nowSec);
+          const left = isRoot ? 0 : (realStart / denom) * 100;
+          const widthPct = isRoot
+            ? 100
+            : Math.max(0, ((visibleEnd - realStart) / denom) * 100);
           return (
             <div key={i} className="contents">
               <div
@@ -927,14 +1000,14 @@ function TraceWaterfall() {
                   className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-v1-frost/[0.07]"
                 />
                 <span
-                  className="v1-trace-bar absolute h-[22px] rounded-[2px]"
+                  className="absolute h-[22px] rounded-[2px] transition-opacity duration-150 ease-out"
                   style={{
-                    left: `${row.start}%`,
-                    // min-width so 1.5 %–width bars aren't a single pixel.
-                    width: `max(${row.width}%, 6px)`,
+                    left: `${left}%`,
+                    // min-width so sub-percent spans don't vanish to a pixel.
+                    width: `max(${widthPct}%, 6px)`,
                     background: WATERFALL_GREEN,
-                    ["--delay" as string]: `${delay}ms`,
-                    ["--dur" as string]: `${animMs}ms`,
+                    // Parents fade in when they start, children when they finish.
+                    opacity: visible ? 1 : 0,
                   }}
                 />
               </div>
