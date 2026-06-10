@@ -22,40 +22,59 @@ interface CustomerLogo {
   src: string;
   width: number;
   height: number;
+  /** Optical vertical nudge (px). Wordmarks with descenders ("p" in
+   *  Replit/Tripadvisor) have bounding-box below the baseline, so
+   *  flex centering leaves their visual mass high — a small positive
+   *  nudge re-centers the cap-height mass on the strip's midline. */
+  dy?: number;
 }
 
+// Heights are optically cheated per logo: very wide wordmarks
+// (Soundcloud 8.4:1, ElevenLabs 7.7:1, BAERskin 7:1) render shorter,
+// compact marks (Cubic, Resend, Avoca ~4:1) render taller, so every
+// logo reads at roughly the same visual mass in the strip.
 const LOGOS: CustomerLogo[] = [
+  { name: "Replit", src: "/assets/v1/logos/replit.svg", width: 116, height: 29, dy: 2 },
+  { name: "Cubic", src: "/assets/v1/logos/cubic.svg", width: 118, height: 29 },
+  {
+    name: "ElevenLabs",
+    src: "/assets/v1/logos/elevenlabs.svg",
+    width: 185,
+    height: 24,
+  },
+  { name: "Cohere", src: "/assets/v1/logos/cohere.svg", width: 169, height: 26 },
   {
     name: "Soundcloud",
     src: "/assets/v1/logos/soundcloud.svg",
-    width: 252,
-    height: 30,
+    width: 202,
+    height: 24,
   },
   {
     name: "GitBook",
     src: "/assets/v1/logos/gitbook.svg",
-    width: 150,
-    height: 33,
+    width: 127,
+    height: 28,
   },
-  { name: "Otto", src: "/assets/v1/logos/otto.svg", width: 90, height: 30 },
+  { name: "Resend", src: "/assets/v1/logos/resend.svg", width: 118, height: 29 },
+  { name: "Avoca", src: "/assets/v1/logos/avoca.svg", width: 118, height: 29 },
   {
-    name: "Outtake",
-    src: "/assets/v1/logos/outtake.svg",
+    name: "Tripadvisor",
+    src: "/assets/customers/tripadvisor.svg",
     width: 170,
-    height: 30,
+    height: 26,
+    dy: 2,
   },
-  { name: "Cubic", src: "/assets/v1/logos/cubic.svg", width: 122, height: 30 },
   {
     name: "BAERskin",
     src: "/assets/v1/logos/baerskin.svg",
-    width: 211,
-    height: 30,
+    width: 176,
+    height: 25,
   },
   {
-    name: "Windmill",
-    src: "/assets/v1/logos/windmill.svg",
-    width: 178,
-    height: 40,
+    name: "Outtake",
+    src: "/assets/v1/logos/outtake.svg",
+    width: 153,
+    height: 27,
   },
 ];
 
@@ -124,6 +143,7 @@ export default function LogoStrip({ contained = false }: LogoStripProps) {
                 style={{
                   height: `clamp(${Math.round(logo.height * 0.6)}px, 4vw, ${logo.height}px)`,
                   width: "auto",
+                  transform: logo.dy ? `translateY(${logo.dy}px)` : undefined,
                 }}
                 className="shrink-0 opacity-70 motion-safe:transition-opacity motion-safe:duration-300 motion-safe:ease-v1-out hover:opacity-100"
               />
