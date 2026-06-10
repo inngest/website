@@ -32,10 +32,10 @@ export default function Hero() {
           </motion.h1>
           <motion.p
             {...reveals.body}
-            className="text-v1-body-lg text-v1-frost"
+            className="text-v1-body-lg text-balance text-v1-frost"
           >
-            Inngest is the observable execution layer for agents and
-            workflows &mdash; from the first function to full production.
+            Inngest is the observable execution layer for agents and workflows
+            &mdash; from the first function to full production.
           </motion.p>
         </div>
         {/* Right column — fixed `w-[640px] h-[272px]` rail split into
@@ -46,36 +46,35 @@ export default function Hero() {
             lg it falls back to a simple stacked layout. */}
         <motion.div
           {...reveals.item(2)}
-          className="flex flex-1 flex-col gap-[1.5em] text-v1-body-lg-loose text-v1-frost lg:h-[272px] lg:w-[640px] lg:flex-none lg:gap-0"
+          className="text-v1-body-lg-loose flex flex-1 flex-col gap-[1.5em] text-v1-frost lg:h-[272px] lg:w-[640px] lg:flex-none lg:gap-0"
         >
           <div className="flex flex-col justify-end lg:flex-1">
-          <p>
-            Engineers spend half their time on the code that propels
-            their apps forward, and half their time just keeping that
-            code from failing. We think that ratio sucks. So in 2022, we
-            released a new way to build and optimize event-driven
-            workflows without leaving your codebase. Inngest is{" "}
-            <a
-              href="https://github.com/inngest/inngest"
-              target="_blank"
-              rel="noreferrer"
-              className="text-v1-accent-salmon-light motion-safe:transition-colors hover:underline"
-            >
-              open core
-            </a>{" "}
-            and can be run on any developer&apos;s laptop or on Inngest
-            Cloud, using any compute platform.
-          </p>
+            <p>
+              Engineers spend half their time on the code that propels their
+              apps forward, and half their time just keeping that code from
+              failing. We think that ratio sucks. So in 2022, we released a new
+              way to build and optimize event-driven workflows without leaving
+              your codebase. Inngest is{" "}
+              <a
+                href="https://github.com/inngest/inngest"
+                target="_blank"
+                rel="noreferrer"
+                className="text-v1-accent-salmon-light hover:underline motion-safe:transition-colors"
+              >
+                open core
+              </a>{" "}
+              and can be run on any developer&apos;s laptop or on Inngest Cloud,
+              using any compute platform.
+            </p>
           </div>
           <div className="flex flex-col justify-end lg:flex-1">
-          <p>
-            We&rsquo;re mostly a team of grizzled engineers who have no
-            desire to return to a world of hand-rolled queues, manual
-            retry logic, and full architecture rebuilds when the
-            &ldquo;right&rdquo; way to build something changes. We also
-            have a few marketers and sellers who don&rsquo;t really
-            understand but bet that was really hard 🤍
-          </p>
+            <p>
+              We&rsquo;re mostly a team of grizzled engineers who have no desire
+              to return to a world of hand-rolled queues, manual retry logic,
+              and full architecture rebuilds when the &ldquo;right&rdquo; way to
+              build something changes. We also have a few marketers and sellers
+              who don&rsquo;t really understand but bet that was really hard 🤍
+            </p>
           </div>
         </motion.div>
       </div>
