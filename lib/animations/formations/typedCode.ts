@@ -31,7 +31,7 @@ export function typedCodeFormation({ code, W, H }: Config): TypedCodeFormation {
   // 1100 and 1400 the headlines (fluid 11.11vw) are wide enough that a
   // large, left-shifted code block would collide with "INVISIBLE /
   // INFRA." — so keep the code smaller + further right there.
-  const wide        = W >= 1280;
+  const wide        = W >= 1400;
   const maxBlockW = mobile ? W * 0.92 : tinyScreen ? W * 0.38 : smallScreen ? W * 0.32 : wide ? W * 0.44 : W * 0.32;
   const maxBlockH = mobile ? H * 0.34 : tinyScreen ? H * 0.52 : smallScreen ? H * 0.58 : wide ? H * 0.78 : H * 0.68;
   // centerX shifted further right at lg+ so the code formation

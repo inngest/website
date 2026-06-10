@@ -36,6 +36,7 @@ export default function NavMenuPanel({
   onNavigate?: () => void;
 }) {
   const hasPromo = Boolean(menu.promo);
+  const compact = Boolean(menu.compact);
 
   return (
     <div
@@ -47,7 +48,11 @@ export default function NavMenuPanel({
       className={cn(
         "relative isolate w-full overflow-clip rounded-[6px] bg-carbon-1000",
         PANEL_BORDER,
-        hasPromo ? "flex gap-14 px-8 py-8" : "px-8 pt-8 pb-10",
+        hasPromo
+          ? "flex gap-14 px-8 py-8"
+          : compact
+            ? "px-8 py-5"
+            : "px-8 pt-8 pb-10",
         "items-start"
       )}
     >
@@ -63,7 +68,11 @@ export default function NavMenuPanel({
         style={{ background: CURSOR_SPOTLIGHT_BG }}
       />
       {menu.items && (
-        <MenuItemList items={menu.items} fill={!hasPromo} />
+        <MenuItemList
+          items={menu.items}
+          fill={!hasPromo}
+          compact={menu.compact}
+        />
       )}
       {menu.columns && <MenuColumns columns={menu.columns} />}
       {menu.promo && <NavPromoCard promo={menu.promo} />}
@@ -74,15 +83,17 @@ export default function NavMenuPanel({
 function MenuItemList({
   items,
   fill,
+  compact,
 }: {
   items: NavMenuItem[];
   fill: boolean;
+  compact?: boolean;
 }) {
   return (
-    <ul className={cn("flex flex-col gap-8", fill && "w-full")}>
+    <ul className={cn("flex flex-col", compact ? "gap-4" : "gap-8", fill && "w-full")}>
       {items.map((item) => (
         <li key={item.label} className={cn(fill && "w-full")}>
-          <MenuRow item={item} fill={fill} />
+          <MenuRow item={item} fill={fill} compact={compact} />
         </li>
       ))}
     </ul>
@@ -115,7 +126,15 @@ function MenuColumns({ columns }: { columns: NavMenuColumn[] }) {
 // hover) + optional description. `fill` rows stretch and wrap their
 // description (Platform, Resources columns); non-fill rows size to
 // content with a single-line description (Use Cases beside the card).
-function MenuRow({ item, fill }: { item: NavMenuItem; fill: boolean }) {
+function MenuRow({
+  item,
+  fill,
+  compact,
+}: {
+  item: NavMenuItem;
+  fill: boolean;
+  compact?: boolean;
+}) {
   const external = item.href.startsWith("http");
   return (
     <Link
@@ -140,7 +159,12 @@ function MenuRow({ item, fill }: { item: NavMenuItem; fill: boolean }) {
             title centred, so the glyph aligns center-to-center with the
             title text rather than hanging below it. */}
         <span className="flex h-6 items-center">
-          <WipeLabel className="!text-[1rem] text-v1-heading-xs text-white">
+          <WipeLabel
+            className={cn(
+              "text-v1-heading-xs text-white",
+              compact ? "!text-[0.875rem]" : "!text-[1rem]"
+            )}
+          >
             {item.label}
           </WipeLabel>
         </span>

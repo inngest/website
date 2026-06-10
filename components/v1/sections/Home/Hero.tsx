@@ -92,14 +92,14 @@ export default function Hero() {
       />
       {codeReady && (
         <HeroCodeCanvas
-          className="pointer-events-none absolute inset-0 z-v1-backdrop hidden h-full w-full xl:block"
+          className="pointer-events-none absolute inset-0 z-v1-backdrop hidden h-full w-full lg:block"
           code={HERO_CODE}
         />
       )}
       {/* Mobile: lightweight CSS-only ambient dots in place of the
           canvas scene (which is too heavy for phones and isn't shown
           there). Hidden on lg+ where the real canvas takes over. */}
-      <HeroAmbientDots className="xl:hidden" />
+      <HeroAmbientDots className="lg:hidden" />
 
       <h1 id="hero-headline" className="sr-only">
         Unbreakable Agents. Invisible Infra.
@@ -111,7 +111,7 @@ export default function Hero() {
         // which sit BELOW it at `z-v1-backdrop`. Interactive children
         // (the NPM button; the mobile accordion rows in HeroCodeStatic)
         // re-enable hits with `pointer-events-auto`. Mirrors HeroTest.
-        className="pointer-events-none relative z-30 flex w-full flex-col px-6 pb-12 pt-20 sm:px-10 sm:pt-32 lg:pl-[34px] lg:pr-[70px] xl:pt-[calc(40vh_-_1.64*min(11.11vw,18vh)_+_27px)] lg:pb-[40px]"
+        className="pointer-events-none relative z-30 flex w-full flex-col px-6 pb-12 pt-20 sm:px-10 sm:pt-32 lg:pl-[34px] lg:pr-[70px] lg:pt-[calc(40vh_-_1.64*min(11.11vw,18vh)_+_27px)] lg:pb-[40px]"
       >
         {/* Stacked two-tone display: each phrase breaks onto two lines,
             the first word at full frost, the second dimmed. */}
@@ -154,7 +154,7 @@ export default function Hero() {
             CTA. Real semantics, joins the parent's `v1-hero-text-in` fade.
             (Also covers phones, where the canvas is always off.) */}
         <HeroCodeStatic
-          className="mt-11 xl:hidden"
+          className="mt-11 lg:hidden"
           code={HERO_CODE}
         />
       </div>

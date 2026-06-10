@@ -147,7 +147,7 @@ export default function TestimonialsCarousel({
           disableReveal={disablePortraitReveal}
         />
       </div>
-      <div className="flex flex-col justify-between gap-[45px] sm:min-h-[clamp(320px,32vw,460px)] sm:gap-[clamp(20px,3.5vw,45px)]">
+      <div className="flex flex-col justify-between gap-7 sm:min-h-[clamp(320px,32vw,460px)] sm:gap-[clamp(20px,3.5vw,45px)]">
         <LogoNav slides={slides} activeIndex={active} onSelect={setActive} />
         <Quote
           slide={current}
@@ -416,7 +416,10 @@ function LogoButton({
         "group/logo relative min-w-0 shrink-0 cursor-pointer snap-center overflow-hidden sm:shrink",
         "motion-safe:transition-transform motion-safe:duration-[420ms] motion-safe:ease-v1-in",
         "motion-safe:active:scale-[0.97]",
-        !isActive && "focus-visible:opacity-70"
+        // Mobile shows only the active customer's logo (the arrows +
+        // progress dots already drive navigation); the 3-up "tabs" row
+        // returns at sm+. Avoids the clipped, overflowing logo strip.
+        !isActive && "hidden focus-visible:opacity-70 sm:inline-block"
       )}
       style={{
         width: slide.logo.width,
@@ -460,7 +463,7 @@ function LogoButton({
 // Shared quote-paragraph styling — used by BOTH the visible quote and
 // the invisible height sizers so they wrap to identical heights.
 const QUOTE_TEXT_CLASS =
-  "text-pretty text-v1-frost font-whyte font-normal text-[20px] sm:text-[clamp(24px,2.5vw,36px)] leading-[1.5]";
+  "text-pretty text-v1-frost font-whyte font-normal text-[16px] leading-[1.4] sm:text-[clamp(24px,2.5vw,36px)] sm:leading-[1.5]";
 
 // Quote body. Below lg it's a single naturally-wrapping string; at lg+
 // it honours the designer-locked `quoteLines` breaks when provided.
