@@ -171,7 +171,7 @@ function FeatureRow({ feature }: { feature: Feature }) {
   // secondary description is hidden below sm to keep that sticky
   // column narrow on phones.
   return (
-    <div className="grid min-h-[56px] grid-cols-[180px_repeat(3,minmax(160px,1fr))] lg:grid-cols-[1.5fr_repeat(3,minmax(0,1fr))] items-center border-b border-v1-strong/[0.4] lg:min-h-0 lg:h-[72px]">
+    <div className="grid grid-cols-[180px_repeat(3,minmax(160px,1fr))] lg:grid-cols-[1.5fr_repeat(3,minmax(0,1fr))] items-center border-b border-v1-strong/[0.4] py-3 lg:py-4">
       <div className="flex h-full flex-col justify-center gap-1 pl-4 pr-3 lg:gap-1.5 lg:pl-[34px] lg:pr-6">
         <div className="flex items-center gap-2">
           <p className="text-v1-body-xs text-v1-frost lg:text-v1-body-sm">
@@ -280,7 +280,7 @@ function Cell({ value }: { value: FeatureCell | undefined }) {
     );
   }
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col gap-1">
       <span className="text-v1-body-xs text-v1-frost lg:text-v1-body-sm">
         {value.value}
       </span>

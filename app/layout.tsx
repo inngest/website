@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     // We cannot dynamically set the image URL with the page title, so we use this default
-    images: [getFullURL("/assets/homepage/open-graph-june-2025.png?v=2")],
+    images: [getFullURL("/assets/homepage/open-graph-2026.png")],
   },
   icons: {
     icon: [
