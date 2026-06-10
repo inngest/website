@@ -499,8 +499,8 @@ const CHART_SERIES = [
   {
     label: "Create chat completion",
     colour: "#5fc34a",
-    base: 6.0,
-    amp: 3.2,
+    base: 8.0,
+    amp: 4.8,
     seed: 1,
   },
   {
@@ -827,7 +827,7 @@ const WATERFALL_GREEN = "#0bdd48";
 // The whole trace plays over this window of wall-clock time: nowSec ramps
 // 0 → total across it, and every span's geometry is recomputed against
 // nowSec each frame so the timeline re-proportions as it "runs".
-const WATERFALL_TOTAL_MS = 1900;
+const WATERFALL_TOTAL_MS = 3000;
 // Beat to hold on the empty track before the trace begins running.
 const WATERFALL_START_DELAY_MS = 100;
 // Row pitch in px (row-to-row spacing is 43.41). Fixed across
@@ -837,6 +837,35 @@ const WATERFALL_ROW_H = 43;
 // durations pop as carbon/50.
 const WATERFALL_LABEL = "#7c7c7c"; // carbon/300
 const WATERFALL_DURATION = "#fefefe"; // carbon/50
+
+// Each row's duration is authored in its display unit (e.g. "500ms",
+// "2.530s"). Parse it once so the count-up can climb 0 → final in that same
+// unit and precision, rather than flipping units partway through.
+function parseWaterfallDuration(s: string): {
+  value: number;
+  unit: "ms" | "s";
+  decimals: number;
+} {
+  if (s.endsWith("ms"))
+    return { value: parseFloat(s), unit: "ms", decimals: 0 };
+  const num = s.slice(0, -1); // strip trailing "s"
+  const dot = num.indexOf(".");
+  return {
+    value: parseFloat(num),
+    unit: "s",
+    decimals: dot === -1 ? 0 : num.length - dot - 1,
+  };
+}
+function formatWaterfallDuration(
+  d: { value: number; unit: "ms" | "s"; decimals: number },
+  progress: number
+): string {
+  const v = d.value * progress;
+  return d.unit === "ms" ? `${Math.round(v)}ms` : `${v.toFixed(d.decimals)}s`;
+}
+const WATERFALL_DURATIONS = WATERFALL_ROWS.map((r) =>
+  parseWaterfallDuration(r.duration)
+);
 
 // Success glyph fronting the root "Run" row: a solid green disc with a
 // dark tick cut through it (filled circle, not an outline ring).
@@ -961,6 +990,17 @@ function TraceWaterfall() {
           // The left-hand row (label + duration) fades in the moment the span
           // *starts*, independent of when its bar lands on the timeline.
           const started = isRoot || nowSec >= realStart;
+          // Duration counts up 0 → final over the span's own run, on the same
+          // clock as the bars; it freezes at the final value once complete.
+          const runDur = realEnd - realStart;
+          const progress =
+            runDur <= 0
+              ? 1
+              : Math.min(1, Math.max(0, (nowSec - realStart) / runDur));
+          const durationText = formatWaterfallDuration(
+            WATERFALL_DURATIONS[i],
+            progress
+          );
           const visibleEnd = isChild ? realEnd : Math.min(realEnd, nowSec);
           const left = isRoot ? 0 : (realStart / denom) * 100;
           const widthPct = isRoot
@@ -991,10 +1031,10 @@ function TraceWaterfall() {
                 <span className="truncate">{row.label}</span>
               </div>
               <div
-                className="whitespace-nowrap text-right tabular-nums transition-opacity duration-150 ease-out"
+                className="min-w-[74px] whitespace-nowrap text-right tabular-nums transition-opacity duration-150 ease-out"
                 style={{ color: WATERFALL_DURATION, opacity: started ? 1 : 0 }}
               >
-                {row.duration}
+                {durationText}
               </div>
               <div
                 className="relative flex items-center"
