@@ -236,6 +236,18 @@ async function redirects() {
   return [
     ...blogRedirects,
     {
+      // /sales-inquiry-form renamed to /contact
+      source: "/sales-inquiry-form",
+      destination: "/contact",
+      permanent: true,
+    },
+    {
+      // /careers redirects to /about
+      source: "/careers",
+      destination: "/about",
+      permanent: true,
+    },
+    {
       source: "/workflow-kit",
       destination: "/docs/reference/workflow-kit",
       permanent: false,
