@@ -158,7 +158,7 @@ const RESOURCES_MENU: NavMenu = {
         },
         {
           label: "Support",
-          href: process.env.NEXT_PUBLIC_SUPPORT_URL ?? "#",
+          href: "https://support.inngest.com",
           description: "Get help from the Inngest team",
         },
       ],
