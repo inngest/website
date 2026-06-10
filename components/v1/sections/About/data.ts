@@ -141,10 +141,10 @@ export interface RelatedItem {
 export const RELATED: RelatedItem[] = [
   {
     title: "Inngest raises $6.1M led by a16z",
-    href: "/blog/announcing-funding-from-a16z?ref=about",
+    href: "/blog/announcing-inngest-series-a?ref=about",
   },
   {
     title: "Inngest Raises $3M Seed led by Notable Capital (fka GGV Capital)",
-    href: "/blog/announcing-inngest-seed-financing?ref=about",
+    href: "/blog/inngest-stripe-projects-ship-durable-apps-without-leaving-the-terminal?ref=about",
   },
 ];

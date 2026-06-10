@@ -40,7 +40,7 @@ export default function HowWeWork() {
             </motion.p>
           </div>
           <motion.div {...reveals.item(2)}>
-            <ButtonLink href="/careers?ref=about" variant="accent">
+            <ButtonLink href="https://jobs.ashbyhq.com/inngest" variant="accent">
               View Open Roles
             </ButtonLink>
           </motion.div>
@@ -64,14 +64,16 @@ export default function HowWeWork() {
             ))}
           </ValueGroup>
           <ValueGroup title="Perks">
-            {PERKS.map((perk) => (
-              <p
-                key={perk}
-                className="text-v1-body-lg text-v1-frost"
-              >
-                {perk}
-              </p>
-            ))}
+            <ul className="flex list-disc flex-col gap-[22px] pl-5">
+              {PERKS.map((perk) => (
+                <li
+                  key={perk}
+                  className="text-v1-body-lg text-v1-frost"
+                >
+                  {perk}
+                </li>
+              ))}
+            </ul>
           </ValueGroup>
         </motion.div>
       </div>
