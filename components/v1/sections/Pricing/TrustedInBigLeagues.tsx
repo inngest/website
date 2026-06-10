@@ -36,7 +36,10 @@ interface CustomerCard {
   logoAlt: string;
   logoWidth: number;
   logoHeight: number;
-  headline: string;
+  /** Small lead-in line above the big callout. */
+  eyebrow: string;
+  /** The big, punchy callout statement. */
+  callout: string;
   href: string;
   /** Wears the at-rest hover treatment (salmon + lift) until the user
    * hovers any other card. Only one card should be flagged. */
@@ -50,7 +53,8 @@ const CARDS: CustomerCard[] = [
     logoAlt: "SoundCloud",
     logoWidth: 350,
     logoHeight: 42,
-    headline: "Deployed within 1 week",
+    eyebrow: "Deployed within",
+    callout: "1 week",
     href: "/customers/soundcloud?ref=pricing",
   },
   {
@@ -59,7 +63,8 @@ const CARDS: CustomerCard[] = [
     logoAlt: "Fey",
     logoWidth: 110,
     logoHeight: 45,
-    headline: "Increased processing by 50x",
+    eyebrow: "Increased processing by",
+    callout: "50x",
     href: "/customers/fey?ref=pricing",
     featured: true,
   },
@@ -69,7 +74,8 @@ const CARDS: CustomerCard[] = [
     logoAlt: "GitBook",
     logoWidth: 191,
     logoHeight: 42,
-    headline: "Solved bi-directional synchronization",
+    eyebrow: "Solved",
+    callout: "Bi-directional synchronization",
     href: "/customers/gitbook?ref=pricing",
   },
 ];
@@ -181,18 +187,17 @@ function Card({
   // hairline rather than two stacked. On mobile the seam is the
   // bottom border; on lg+ it's the left border of every non-first
   // card.
-  const innerEdgeFlat = [
-    edge === "right" ? "" : "border-b-0 lg:border-b",
-    edge === "left" ? "" : "lg:border-l-0",
-  ]
-    .filter(Boolean)
-    .join(" ");
-  const cornerShell =
-    edge === "left"
-      ? "rounded-l-md"
-      : edge === "right"
-        ? "rounded-r-md"
-        : "";
+  // Mobile (vertical stack) renders each card as its own separated,
+  // fully-bordered + rounded box — no seam collapse. The shared-seam
+  // join only kicks in at lg+ where every non-left card drops its
+  // left border.
+  const innerEdgeFlat = edge === "left" ? "" : "lg:border-l-0";
+  const cornerShell = cn(
+    "rounded-md",
+    edge === "left" && "lg:rounded-l-md lg:rounded-r-none",
+    edge === "right" && "lg:rounded-r-md lg:rounded-l-none",
+    edge === "middle" && "lg:rounded-none",
+  );
   const overlayEdgeFlat = "rounded-none";
 
   // Hold z-elevation through the lift + grow + shrink window so the
@@ -252,7 +257,7 @@ function Card({
         willChange: "transform",
       }}
       className={cn(
-        "group relative isolate flex h-full w-full flex-col items-start justify-between px-[20px] py-8 [--lift-y:0px] [--surface-y:0px] lg:[--lift-y:var(--lift)] lg:[--surface-y:var(--surface-extra-y)]",
+        "group relative isolate flex h-full w-full flex-col items-start justify-between gap-10 px-[20px] py-8 lg:gap-0 [--lift-y:0px] [--surface-y:0px] lg:[--lift-y:var(--lift)] lg:[--surface-y:var(--surface-extra-y)]",
         isActive ? "z-20" : elevated ? "z-10" : ""
       )}
     >
@@ -316,7 +321,7 @@ function Card({
           45.09 px). Each logo renders at its exact intrinsic
           width × height so SoundCloud and GitBook don't get scaled
           to match the container. */}
-      <div className="relative flex h-[45px] items-center">
+      <div className="relative flex h-[45px] items-center lg:mt-6">
         <Image
           src={card.logoSrc}
           alt={card.logoAlt}
@@ -329,7 +334,14 @@ function Card({
 
       {/* Headline + CTA — 32 px gap. */}
       <div className="relative flex w-full flex-col gap-8">
-        <h3 className="text-v1-body-lg text-v1-frost">{card.headline}</h3>
+        <h3 className="flex flex-col gap-1.5 text-v1-frost">
+          <span className="text-v1-label-sm uppercase tracking-[0.05rem] text-v1-frost/60">
+            {card.eyebrow}
+          </span>
+          <span className="font-v1Heading text-[32px] font-normal uppercase leading-[1.0] tracking-[-0.01em] text-balance sm:text-[38px]">
+            {card.callout}
+          </span>
+        </h3>
         {/* Cards flood salmon on hover, so the primary variant's salmon
             hover reads as no contrast — override it to black (`!` beats
             the variant's own hover:bg). */}

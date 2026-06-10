@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { reveals } from "@/utils/v1/reveals";
@@ -99,14 +100,14 @@ function Header() {
         <div className="flex flex-col gap-6 lg:pr-8 lg:pt-11">
           <motion.p
             {...reveals.body}
-            className="text-v1-heading-sm text-v1-frost"
+            className="text-v1-heading-sm text-v1-frost !text-[clamp(1.25rem,4vw,1.625rem)] !leading-[1.2]"
           >
             Inngest collapses event-driven complexity into APIs in your
             codebase.
           </motion.p>
           <motion.p
             {...reveals.body}
-            className="text-v1-body-lg-loose text-v1-frost"
+            className="text-v1-body-lg-loose text-v1-frost !text-[clamp(1rem,3vw,1.125rem)] !leading-[1.45]"
           >
             <span className="block">
               Because durability lives in code&mdash;not tied to any specific
@@ -123,18 +124,69 @@ function Header() {
         </div>
         <GradientFrame className="relative rounded-md" variant="charcoal">
           <BlackReveal block>
-            <img
-              src="/assets/v1/scale-instantly/dashboard.webp"
-              alt="Inngest run dashboard showing a SQL Agent function with timing, function input, and run history"
-              width={1275}
-              height={824}
-              loading="lazy"
-              sizes="(min-width: 1024px) 60vw, 100vw"
-              className="block h-auto w-full"
-            />
+            <DashboardVideo />
           </BlackReveal>
         </GradientFrame>
       </div>
+    </div>
+  );
+}
+
+// Click-to-load YouTube facade for the "Observability by default" demo
+// (same video used on /platform/durable-execution). The dashboard
+// screenshot is the poster; clicking swaps in the autoplaying player so
+// the heavy iframe stays off the initial load until the user opts in.
+const OBSERVABILITY_VIDEO_ID = "QQoBDK0OePw";
+
+function DashboardVideo() {
+  const [playing, setPlaying] = useState(false);
+  return (
+    <div
+      className="relative w-full overflow-hidden bg-v1-jetBlack"
+      style={{ aspectRatio: "1275 / 824" }}
+    >
+      {playing ? (
+        <iframe
+          className="absolute inset-0 h-full w-full"
+          src={`https://www.youtube.com/embed/${OBSERVABILITY_VIDEO_ID}?autoplay=1&rel=0`}
+          title="Observability by default — Inngest"
+          allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+          allowFullScreen
+        />
+      ) : (
+        <>
+          <img
+            src="/assets/v1/scale-instantly/dashboard.webp"
+            alt="Inngest run dashboard showing a SQL Agent function with timing, function input, and run history"
+            width={1275}
+            height={824}
+            loading="lazy"
+            decoding="async"
+            draggable={false}
+            sizes="(min-width: 1024px) 60vw, 100vw"
+            className="absolute inset-0 block h-full w-full select-none object-cover object-left-top"
+          />
+          <button
+            type="button"
+            onClick={() => setPlaying(true)}
+            aria-label="Play observability demo"
+            className="group absolute inset-0 flex cursor-pointer items-center justify-center"
+          >
+            <span className="flex size-[80px] items-center justify-center rounded-full bg-v1-frost/15 backdrop-blur-md motion-safe:transition-transform group-hover:scale-110">
+              <span className="flex size-[64px] items-center justify-center rounded-full bg-v1-frost/85">
+                <svg
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                  className="ml-[3px] size-7 text-v1-jetBlack"
+                  fill="currentColor"
+                >
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </span>
+            </span>
+          </button>
+        </>
+      )}
     </div>
   );
 }
@@ -178,7 +230,7 @@ function CapabilityTile({
           {capability.title}
         </h3>
       </div>
-      <p className="text-pretty text-v1-heading-xs-loose text-v1-frost">
+      <p className="text-pretty text-v1-heading-xs-loose text-[#B3B3B3]">
         {capability.body}
       </p>
     </>

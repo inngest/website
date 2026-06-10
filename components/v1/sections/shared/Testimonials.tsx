@@ -71,7 +71,10 @@ export default function Testimonials({
       // mb (not a wrapper gap) so the heading drops into both the
       // watermark and plain layouts; matches the home page's
       // gap-2 / lg:gap-24 between title and rail.
-      className="mb-2 whitespace-pre-line font-v1Display uppercase leading-[1.25] tracking-[-0.01em] text-v1-frost lg:mb-24"
+      // Ignore the forced "\n" on mobile (let the title wrap naturally
+      // instead of breaking awkwardly after "agents"); honor the two-line
+      // break only at lg+ where it fits cleanly.
+      className="mb-2 whitespace-normal font-v1Display uppercase leading-[1.25] tracking-[-0.01em] text-v1-frost lg:mb-24 lg:whitespace-pre-line"
       style={{ fontSize: "clamp(2rem, 4.6vw, 4rem)" }}
     >
       {title}

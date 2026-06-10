@@ -13,11 +13,10 @@ import SectionHeader from "@/components/v1/sections/shared/SectionHeader";
 // INNGEST" / problem label for the "WITH INNGEST" / solution label. The
 // icons are stipple-art SVGs.
 //
-// Touch devices have no hover, so on mobile each card self-activates
-// while it sits in the central band of the viewport as the user
-// scrolls (mirrors the desktop hover via `data-active` →
-// `group-data-[active=true]:`). Gated below `lg` so desktop keeps
-// pure pointer-hover.
+// Desktop (>= lg): inversion is driven purely by pointer hover.
+// Mobile + tablet (< lg, no reliable hover): the cards auto-cycle — one
+// card is "active" (inverted) at a time, advancing every 2s — so touch
+// users still see the "WITH INNGEST" solution states.
 
 interface Problem {
   id: string;
@@ -96,98 +95,53 @@ export default function ProblemsGrid({
   intro?: React.ReactNode;
   labelledById?: string;
 } = {}) {
-  // Mobile (no hover): the card row nearest the viewport centre is
-  // "active" as the user scrolls. In the 1-col layout that's a single
-  // card; in the 2-col (sm) layout it's the whole side-by-side row, so
-  // a pair never lights unevenly. Disabled at lg+ where pointer hover
-  // drives the inversion instead.
+  // Desktop (>= lg) is hover-only. Below lg the cards auto-cycle — one
+  // active at a time, advancing every 2s — so touch users still see the
+  // "WITH INNGEST" solution states. The cycle only runs while the
+  // section is on screen and the viewport is below lg; otherwise no card
+  // is forced active (activeIndex = null) and hover takes over.
   const sectionRef = useRef<HTMLElement | null>(null);
-  const liRefs = useRef<(HTMLLIElement | null)[]>([]);
-  const [activeIndices, setActiveIndices] = useState<readonly number[]>([]);
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   useEffect(() => {
     const section = sectionRef.current;
-    if (!section) return;
-
     const mq = window.matchMedia(`(max-width: ${BREAKPOINTS.lg - 0.02}px)`);
-    let raf = 0;
-    let listening = false;
-    let visible = false;
+    let timer: ReturnType<typeof setInterval> | undefined;
+    let visible = true;
 
-    // rAF-throttled measure of which card row sits nearest the
-    // viewport centre. getBoundingClientRect forces layout, so this
-    // only ever runs while the section itself is on screen (gated by
-    // the IntersectionObserver below) and only below lg.
-    const compute = () => {
-      raf = 0;
-      const viewportCenter = window.innerHeight / 2;
-      // First pass: each card's vertical centre + distance to viewport
-      // centre; track the nearest as the active row's anchor.
-      const centers = liRefs.current.map((el) =>
-        el ? el.getBoundingClientRect().top + el.offsetHeight / 2 : NaN,
-      );
-      let anchor = NaN;
-      let bestDist = Infinity;
-      centers.forEach((c) => {
-        if (Number.isNaN(c)) return;
-        const dist = Math.abs(c - viewportCenter);
-        if (dist < bestDist) {
-          bestDist = dist;
-          anchor = c;
-        }
-      });
-      // Second pass: light every card sharing the anchor's row (same
-      // vertical centre within a 2px tolerance) — one card in 1-col,
-      // the side-by-side pair in 2-col.
-      const next = Number.isNaN(anchor)
-        ? []
-        : centers.flatMap((c, i) => (Math.abs(c - anchor) < 2 ? [i] : []));
-      setActiveIndices((prev) =>
-        prev.length === next.length && prev.every((v, i) => v === next[i])
-          ? prev
-          : next,
-      );
+    const start = () => {
+      if (timer !== undefined) return;
+      setActiveIndex(0);
+      timer = setInterval(() => {
+        setActiveIndex((i) => ((i ?? -1) + 1) % PROBLEMS.length);
+      }, 2000);
     };
-    const onScroll = () => {
-      if (!raf) raf = requestAnimationFrame(compute);
+    const stop = () => {
+      if (timer !== undefined) {
+        clearInterval(timer);
+        timer = undefined;
+      }
+      setActiveIndex(null);
     };
+    const update = () => (mq.matches && visible ? start() : stop());
 
-    const startListening = () => {
-      if (listening) return;
-      listening = true;
-      window.addEventListener("scroll", onScroll, { passive: true });
-      window.addEventListener("resize", onScroll);
-      compute();
-    };
-    const stopListening = () => {
-      if (!listening) return;
-      listening = false;
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-      if (raf) cancelAnimationFrame(raf);
-      raf = 0;
-      setActiveIndices([]);
-    };
-    const update = () =>
-      mq.matches && visible ? startListening() : stopListening();
-
-    // Cheap gate: only track scroll position while the section is in
-    // (or near) the viewport. The 100px margin starts tracking just
-    // before it scrolls in so the first card is already lit on entry.
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        visible = entry.isIntersecting;
-        update();
-      },
-      { rootMargin: "100px 0px 100px 0px" },
-    );
-    io.observe(section);
+    const io = section
+      ? new IntersectionObserver(
+          ([entry]) => {
+            visible = entry.isIntersecting;
+            update();
+          },
+          { rootMargin: "0px 0px -10% 0px" },
+        )
+      : null;
+    if (section && io) io.observe(section);
     mq.addEventListener("change", update);
+    update();
 
     return () => {
       mq.removeEventListener("change", update);
-      io.disconnect();
-      stopListening();
+      io?.disconnect();
+      if (timer !== undefined) clearInterval(timer);
     };
   }, []);
 
@@ -218,10 +172,7 @@ export default function ProblemsGrid({
               key={p.id}
               problem={p}
               index={i}
-              active={activeIndices.includes(i)}
-              innerRef={(el) => {
-                liRefs.current[i] = el;
-              }}
+              active={activeIndex === i}
             />
           ))}
         </ul>
@@ -230,33 +181,27 @@ export default function ProblemsGrid({
 }
 
 /**
- * One problem card. `group` drives the desktop hover state; on mobile
- * the same inversion is driven by `data-active`, which the parent sets
- * on whichever card sits nearest the viewport centre as the user
- * scrolls. Every `group-hover:` style below is mirrored by a
- * `group-data-[active=true]:` twin so the two triggers stay in lockstep.
+ * One problem card. `group` drives the desktop hover state; below lg the
+ * same inversion is driven by `data-active`, which the parent sets on the
+ * single card in the 2s auto-cycle. Every `group-hover:` style is
+ * mirrored by a `group-data-[active=true]:` twin so both triggers match.
  */
 function ProblemCard({
   problem: p,
   index: i,
   active,
-  innerRef,
 }: {
   problem: Problem;
   index: number;
-  active: boolean;
-  innerRef: (el: HTMLLIElement | null) => void;
+  active?: boolean;
 }) {
   return (
     <motion.li
-      ref={innerRef}
       {...reveals.item(i)}
       data-active={active ? "true" : undefined}
-      // `group` drives the hover state below. On hover (desktop) or
-      // when active (mobile scroll), the caption block inverts (white
-      // bg, black text) while the icon stays in place but brightens —
-      // boosting the white-stipple's effective contrast against the
-      // unchanged dark backdrop.
+      // `group` drives the hover state below. On hover (desktop) or when
+      // active (mobile/tablet auto-cycle), the caption block inverts
+      // (white bg, black text) while the icon stays in place but brightens.
       className="group relative flex list-none flex-col items-stretch gap-10 sm:gap-[60px] lg:gap-[83px]"
     >
       {/* The icon and both label states below are decorative /

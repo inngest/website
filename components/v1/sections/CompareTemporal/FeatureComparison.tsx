@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { motion } from "motion/react";
 import Logo from "@/components/v1/Logo";
 import { cn } from "@/utils/v1/cn";
 import { reveals } from "@/utils/v1/reveals";
-import { V1_CYCLE_MS } from "@/utils/v1/springs";
 import Section from "@/components/v1/sections/shared/Section";
 import SectionHeader from "@/components/v1/sections/shared/SectionHeader";
 import DocsCtaPair from "@/components/v1/sections/CompareTemporal/DocsCtaPair";
@@ -551,64 +550,28 @@ function RichCell({ cell, tone }: { cell: Cell; tone: "dim" | "frost" }) {
 export default function FeatureComparison() {
   const [personaKey, setPersonaKey] = useState<string>(PERSONAS[0].key);
   const persona = PERSONAS.find((p) => p.key === personaKey) ?? PERSONAS[0];
-  // Multi-open accordion — any number of categories can be open at once.
-  // Defaults to the persona's first category; resets when persona changes.
+  // Multi-open accordion, keyed within the active persona; defaults to
+  // the persona's first category open and resets when the persona
+  // changes. Multiple categories can be expanded at once.
   const [openKeys, setOpenKeys] = useState<Set<string>>(
-    new Set([PERSONAS[0].categories[0].key]),
+    () => new Set([PERSONAS[0].categories[0].key]),
   );
   const toggle = (key: string) =>
     setOpenKeys((prev) => {
       const next = new Set(prev);
-      next.has(key) ? next.delete(key) : next.add(key);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
       return next;
     });
 
-  // ---- auto-advancing persona timer (See-it-in-action pattern) ----
-  const [inView, setInView] = useState(false);
-  const [cycleNonce, setCycleNonce] = useState(0);
-  const [userTookControl, setUserTookControl] = useState(false);
-  const sectionRef = useRef<HTMLElement | null>(null);
-
-  const selectPersona = (key: string, manual: boolean) => {
+  const selectPersona = (key: string) => {
     setPersonaKey(key);
     const next = PERSONAS.find((p) => p.key === key) ?? PERSONAS[0];
     setOpenKeys(new Set([next.categories[0].key]));
-    setCycleNonce((n) => n + 1);
-    if (manual) setUserTookControl(true);
   };
-
-  useEffect(() => {
-    const el = sectionRef.current;
-    if (!el) return;
-    const io = new IntersectionObserver(
-      ([entry]) => setInView(entry.isIntersecting),
-      { rootMargin: "-15% 0px" },
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
-
-  useEffect(() => {
-    if (!inView || userTookControl) return;
-    if (typeof window === "undefined") return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const interval = window.setInterval(() => {
-      setPersonaKey((prev) => {
-        const idx = PERSONAS.findIndex((p) => p.key === prev);
-        const next = PERSONAS[(idx + 1) % PERSONAS.length];
-        setOpenKeys(new Set([next.categories[0].key]));
-        return next.key;
-      });
-      setCycleNonce((n) => n + 1);
-    }, V1_CYCLE_MS);
-    return () => window.clearInterval(interval);
-  }, [inView, userTookControl]);
-
-  const showProgress = inView && !userTookControl;
 
   return (
     <Section
-      ref={sectionRef}
       aria-labelledby="ct-table-heading"
       className="relative"
     >
@@ -638,31 +601,12 @@ export default function FeatureComparison() {
               type="button"
               role="tab"
               aria-selected={active}
-              onClick={() => selectPersona(p.key, true)}
+              onClick={() => selectPersona(p.key)}
               className={cn(
                 "group relative flex items-center gap-[10px] whitespace-nowrap rounded-md px-4 py-5 text-left font-v1Mono text-[16px] uppercase leading-[1.5] tracking-[-0.01em] motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-v1-out sm:flex-none",
                 "hover:bg-v1-frost/[0.035] focus-visible:bg-v1-frost/[0.04] focus-visible:outline-none",
               )}
             >
-              {/* Top-edge progress bar — fills left → right over the
-                  cycle while the tab is active + auto-cycling. */}
-              <span
-                aria-hidden="true"
-                className={cn(
-                  "pointer-events-none absolute inset-x-2 top-0 block h-[2px] overflow-hidden bg-v1-frost/[0.08]",
-                  active && showProgress ? "opacity-100" : "opacity-0",
-                )}
-              >
-                {active && showProgress && (
-                  <span
-                    key={cycleNonce}
-                    className="absolute inset-0 origin-left bg-v1-accent-salmon motion-reduce:hidden"
-                    style={{
-                      animation: `v1-carousel-progress ${V1_CYCLE_MS}ms linear forwards`,
-                    }}
-                  />
-                )}
-              </span>
               {/* Salmon square (active) / steel square (resting). */}
               <span
                 aria-hidden="true"

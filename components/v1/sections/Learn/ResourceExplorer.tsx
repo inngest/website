@@ -62,8 +62,8 @@ export default function ResourceExplorer({ posts }: { posts: PostCard[] }) {
         />
       </label>
 
-      <div className="mt-20 flex items-center justify-between py-6 sm:mt-24 lg:mt-[110px]">
-        <div className="flex items-center gap-[44px]">
+      <div className="mt-20 flex flex-wrap items-center justify-between gap-y-4 py-6 sm:mt-24 lg:mt-[110px]">
+        <div className="flex items-center gap-5 sm:gap-[44px]">
           <MultiSelectDropdown
             label="Resource Type"
             trailing="arrowWide"
@@ -77,18 +77,20 @@ export default function ResourceExplorer({ posts }: { posts: PostCard[] }) {
               label: t === "ALL" ? "All" : t,
             }))}
           />
-          <SingleSelectDropdown
-            label="Topics"
-            trailing="filter"
-            triggerClassName={FILTER_TRIGGER}
-            iconVariant="large"
-            value={topic}
-            onChange={setTopic}
-            options={allTopics.map((t) => ({
-              value: t,
-              label: t === "ALL" ? "All" : t,
-            }))}
-          />
+          <div className="hidden min-[380px]:block">
+            <SingleSelectDropdown
+              label="Topics"
+              trailing="filter"
+              triggerClassName={FILTER_TRIGGER}
+              iconVariant="large"
+              value={topic}
+              onChange={setTopic}
+              options={allTopics.map((t) => ({
+                value: t,
+                label: t === "ALL" ? "All" : t,
+              }))}
+            />
+          </div>
         </div>
         <SingleSelectDropdown
           label="Sort By"

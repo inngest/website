@@ -1,6 +1,5 @@
 "use client";
 
-import ButtonLink from "@/components/v1/ButtonLink";
 import CaseStudiesCarousel, {
   type CaseStudyItem,
 } from "@/components/v1/sections/shared/CaseStudiesCarousel";
@@ -96,13 +95,12 @@ export default function Customers() {
           id={HEADING_ID}
           className="px-6 lg:px-8"
           title="What teams have built with Inngest to handle cron & scheduled jobs"
-          actions={
-            <ButtonLink href="/customers?ref=scheduled-jobs" variant="primary">
-              See all customers →
-            </ButtonLink>
-          }
         />
       }
+      footerCta={{
+        label: "See all customers →",
+        href: "/customers?ref=scheduled-jobs",
+      }}
     />
   );
 }

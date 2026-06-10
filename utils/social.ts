@@ -46,7 +46,7 @@ export const generateMetadata = ({
     ? image.match(/^\//)
       ? getFullURL(image)
       : image
-    : getOpenGraphImageURL({ title });
+    : getFullURL("/assets/og-image-2026.png");
   const metaTitle = `Inngest - ${title}`;
   const metadata: Metadata = {
     title,

@@ -259,10 +259,14 @@ export default function SplitHero({
           pal.panel,
         )}
       >
+        {/* Grain's baked directional lighting reads as a two-tone split
+            across the full-width mobile panel — hide it below lg so the
+            panel is one flat colour; it returns as texture in the 2/3
+            panel at lg+. */}
         <img
           src="/assets/v1/ai-hero/grain.webp"
           alt=""
-          className="pointer-events-none absolute left-0 top-[-221%] h-[727%] w-[150%] max-w-none mix-blend-soft-light motion-safe:[will-change:transform]"
+          className="pointer-events-none absolute left-0 top-[-221%] hidden h-[727%] w-[150%] max-w-none mix-blend-soft-light motion-safe:[will-change:transform] lg:block"
           style={{ transform: grainShift }}
         />
         {/* Smallish circle keeps repaints cheap; larger sizes were
@@ -270,7 +274,7 @@ export default function SplitHero({
             --mx/--my updates were repainting a much larger region. */}
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0"
+          className="pointer-events-none absolute inset-0 hidden lg:block"
           style={{ background: pal.spotlight }}
         />
       </div>
@@ -365,7 +369,7 @@ export default function SplitHero({
             className="flex w-full flex-col gap-[38px] sm:max-w-[321px] lg:max-w-[480px]"
             {...heroWordEntry(620)}
           >
-            <p className="text-v1-body-lg text-v1-frost lg:tracking-[-0.01em] lg:[font-size:clamp(0.7rem,1.35vw,1.125rem)] lg:[line-height:1.5]">
+            <p className="text-v1-body-lg !text-v1-frost lg:tracking-[-0.01em] lg:[font-size:clamp(0.7rem,1.35vw,1.125rem)] lg:[line-height:1.5]">
               {bodyLines.map((line, i) => (
                 <span key={i}>
                   <span className="lg:block lg:whitespace-nowrap">{line}</span>

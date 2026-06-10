@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { motion } from "motion/react";
 import { reveals } from "@/utils/v1/reveals";
 import { springs } from "@/utils/v1/springs";
@@ -124,16 +125,16 @@ export default function UseCases({
         {/* Grid + featured card keep their own (tighter) rhythm; only the
             header → content gap is the standard v1-stack (48), set above. */}
         <div className="flex flex-col gap-[29px] lg:gap-[44px]">
+          {/* No SCROLL_REVEAL_STYLE wrapper here — its translate3d
+              breaks position: fixed for the AdvanceClick cursor disk
+              inside. Entrance reveal is owned by the grid below. */}
+          <FeaturedCard useCase={current} onPrev={prev} onNext={next} />
+
           <Grid
             activeId={current.id}
             onSelect={handleSelect}
             cycling={cycling}
           />
-
-          {/* No SCROLL_REVEAL_STYLE wrapper here — its translate3d
-              breaks position: fixed for the AdvanceClick cursor disk
-              inside. Entrance reveal is owned by the grid above. */}
-          <FeaturedCard useCase={current} onPrev={prev} onNext={next} />
         </div>
       </div>
     </Section>
@@ -150,6 +151,9 @@ function FeaturedCard({
   onNext: () => void;
 }) {
   const currentIndex = USE_CASES.findIndex((u) => u.id === useCase.id);
+  const prevIndexRef = useRef(currentIndex);
+  const isWrap = Math.abs(currentIndex - prevIndexRef.current) > 1;
+  useEffect(() => { prevIndexRef.current = currentIndex; }, [currentIndex]);
   const prevIndex = (currentIndex - 1 + USE_CASES.length) % USE_CASES.length;
   const nextIndex = (currentIndex + 1) % USE_CASES.length;
   return (
@@ -202,7 +206,7 @@ function FeaturedCard({
                   className="absolute inset-0 flex items-center justify-center px-20 pb-[60px] pt-[60px] [&>*]:flex [&>*]:max-h-full [&>*]:max-w-full [&>*]:items-center [&>*]:justify-center"
                   initial={false}
                   animate={{ x: `${offset * 100}%` }}
-                  transition={springs.glide}
+                  transition={isWrap ? { duration: 0 } : springs.glide}
                   style={{
                     pointerEvents: isCurrent ? "auto" : "none",
                     willChange: "transform",

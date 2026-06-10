@@ -265,14 +265,14 @@ export default function Reliability() {
                     )}
                   />
                 </span>
-                <span className="flex flex-1 flex-col gap-2">
-                  <span className="text-v1-heading-sm text-v1-frost">
+                <span className="flex flex-1 flex-col gap-1.5">
+                  <span className="font-v1Heading text-[16px] leading-[1.25] tracking-[-0.01em] text-v1-frost">
                     {feature.title}
                   </span>
                   <span
                     className={cn(
-                      "text-v1-body-sm motion-safe:transition-colors motion-safe:duration-300",
-                      isActive ? "text-v1-frost" : "text-v1-frost/60 group-hover/row:text-v1-frost"
+                      "font-v1Body text-[13px] leading-[1.55] motion-safe:transition-colors motion-safe:duration-300",
+                      isActive ? "text-v1-frost" : "text-v1-frost/50 group-hover/row:text-v1-frost/80"
                     )}
                   >
                     {feature.body}

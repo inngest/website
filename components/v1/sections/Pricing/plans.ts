@@ -115,8 +115,8 @@ export const PLANS: Plan[] = [
     },
     features: [
       { value: "1M+", text: "executions" },
-      { value: "100+", text: "realtime connections" },
-      { value: "1000", text: "concurrent steps" },
+      { value: "1000", text: "realtime connections" },
+      { value: "100+", text: "concurrent steps" },
       { text: "Granular tracing, metrics, alerts + 7 day trace retention" },
       { text: "Increased throughput" },
     ],

@@ -40,16 +40,16 @@ export default function ResourceCard({ post }: { post: PostCard }) {
           </div>
           {/* Title — Heading/Sm (Whyte 26/31.2, -0.26px). Reserve two
               lines so descriptions align across cards. */}
-          <h3 className="text-v1-heading-sm line-clamp-2 min-h-[62px] text-white">
+          <h3 className="text-v1-heading-sm text-white">
             {post.title}
           </h3>
           {/* Description + CTA. The CTA is the shared RegisterCue
               (Label/Md, reacts to the card's group/card hover with a
               salmon + arrow nudge). */}
-          <div className="flex flex-col gap-3">
-            <p className="text-v1-body-sm line-clamp-2 text-white/80">
-              {post.subtitle ?? ""}
-            </p>
+          <p className="text-v1-body-sm line-clamp-2 text-white/80">
+            {post.subtitle ?? ""}
+          </p>
+          <div className="mt-auto">
             <RegisterCue label={ctaLabel} />
           </div>
         </div>
@@ -67,12 +67,12 @@ function Tile({ post }: { post: PostCard }) {
     return (
       <div
         aria-hidden="true"
-        className="aspect-[445/200] w-full shrink-0 bg-v1-carbon-300"
+        className="aspect-[2/1] w-full shrink-0 bg-v1-carbon-300"
       />
     );
   }
   return (
-    <div className="aspect-[445/200] w-full shrink-0 overflow-hidden">
+    <div className="aspect-[2/1] w-full shrink-0 overflow-hidden">
       <img
         src={post.image}
         alt=""

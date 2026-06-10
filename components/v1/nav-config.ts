@@ -45,6 +45,9 @@ export interface NavMenu {
   align?: "left" | "right";
   /** Single column of items (Platform, Use Cases, Open Source). */
   items?: NavMenuItem[];
+  /** Render the item titles a step smaller (e.g. the Open Source repo
+   *  list, which is a dense list of long repo slugs). */
+  compact?: boolean;
   /** Multi-column layout (Resources). */
   columns?: NavMenuColumn[];
   /** Promo card to the right of the items/columns. */
@@ -209,6 +212,7 @@ const OPEN_SOURCE_MENU: NavMenu = {
   // (64px) + slack, so names like "inngest/inngest-py" stay on one line.
   width: 264,
   align: "right",
+  compact: true,
   items: [
     { label: "inngest/inngest", href: "https://github.com/inngest/inngest" },
     { label: "inngest/inngest-js", href: "https://github.com/inngest/inngest-js" },

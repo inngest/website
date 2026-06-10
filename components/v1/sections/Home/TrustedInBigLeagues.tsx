@@ -11,8 +11,6 @@ import { V1_SECTION_TITLE } from "@/components/v1/sections/shared/sectionTitle";
 import { cn } from "@/utils/v1/cn";
 import { appendRef } from "@/utils/v1/ref";
 import { useIsDesktop } from "@/utils/v1/hooks/useIsDesktop";
-import { useMediaQuery } from "@/utils/v1/hooks/useMediaQuery";
-import { minWidth } from "@/utils/v1/breakpoints";
 
 /**
  * "Scale instantly, fix fast" + "Stuff your CISO needs to see"
@@ -233,12 +231,10 @@ function TopicRow({
  * active card.
  */
 function SeeDocsLink({ href, active }: { href: string; active: boolean }) {
-  // Below md (single-column mobile layout) every topic shows its
-  // "See docs" link — there's no hover concept on touch. At md+ the
-  // hover-reveal returns: only the active card shows its link, the
-  // others surface theirs as the cursor lands on the topic.
-  const isMdUp = useMediaQuery(minWidth("md"));
-  const reachable = active || !isMdUp;
+  // "See docs" is always visible (and keyboard-focusable) on every
+  // topic card. Unselected cards dim their link to match their dimmed
+  // (frost/70) title + body text; the active card shows it full.
+  const reachable = true;
   return (
     <Link
       href={appendRef(href, "home")}
@@ -248,9 +244,7 @@ function SeeDocsLink({ href, active }: { href: string; active: boolean }) {
         "group/cta relative z-10 mt-auto inline-flex w-fit items-center pl-8 text-v1-label-md uppercase",
         "motion-safe:transition-[color,opacity] motion-safe:duration-300",
         "hover:text-v1-accent-salmon",
-        active
-          ? "opacity-100"
-          : "opacity-100 md:pointer-events-none md:opacity-0 md:group-hover/topic:pointer-events-auto md:group-hover/topic:opacity-100"
+        active ? "opacity-100" : "opacity-70"
       )}
       tabIndex={reachable ? 0 : -1}
       aria-hidden={!reachable}
@@ -337,10 +331,10 @@ function TopicItem({
       </div>
       <p
         className={cn(
-          "pl-8 font-v1Body leading-[1.5] text-[18px] tracking-[-0.01em] md:text-[length:clamp(0.8rem,1.15vw,1rem)] md:tracking-normal",
+          "pl-8 font-v1Body leading-[1.5] text-[16px] tracking-[-0.01em] md:text-[length:clamp(0.8rem,1.15vw,1rem)] md:tracking-normal",
           ease,
           isActive
-            ? "text-v1-frost"
+            ? "text-[#B3B3B3]"
             : "text-v1-frost/70 group-hover/topic:text-v1-frost/90"
         )}
       >

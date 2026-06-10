@@ -2,7 +2,6 @@
 
 import { motion } from "motion/react";
 import { reveals } from "@/utils/v1/reveals";
-import { springs } from "@/utils/v1/springs";
 import { cn } from "@/utils/v1/cn";
 import { useReelCarousel } from "@/components/v1/sections/shared/useReelCarousel";
 import { AdvanceClick } from "@/components/v1/sections/shared/AdvanceClick";
@@ -102,11 +101,11 @@ export default function Primitives() {
         bodyClassName="max-w-[554px] text-v1-body-sm"
       />
 
-      {/* Directory grid acts as tabs (matches the AI page order:
-          grid above, featured illustration below). */}
-      <Grid activeId={current.id} onSelect={handleSelect} cycling={cycling} />
-
+      {/* Graphic sits directly under the title/subtitle; the directory
+          grid (tabs) follows below it. */}
       <FeaturedCard primitive={current} onPrev={prev} onNext={next} />
+
+      <Grid activeId={current.id} onSelect={handleSelect} cycling={cycling} />
     </Section>
   );
 }
@@ -125,19 +124,6 @@ function FeaturedCard({
   const nextIndex = (currentIndex + 1) % PRIMITIVES.length;
   return (
     <>
-      {/* Mobile nav row — sits ABOVE the card so the label reads as a
-          header for the illustration that follows. Replaces the
-          desktop side-pinned arrow pills, which would overlap the
-          illustration on narrow viewports. */}
-      <MobileReelNav
-        activeTitle={primitive.title}
-        prevTitle={PRIMITIVES[prevIndex].title}
-        nextTitle={PRIMITIVES[nextIndex].title}
-        itemNoun="primitive"
-        onPrev={onPrev}
-        onNext={onNext}
-        className="mb-4 mt-3 flex items-center justify-between gap-3 lg:hidden"
-      />
       <AdvanceClick
         onAdvance={onNext}
         onPrev={onPrev}
@@ -155,11 +141,11 @@ function FeaturedCard({
             <CardContent primitive={primitive} />
           </div>
 
-          {/* Lg+: all cards mounted, slide horizontally on activeId
-              change via translateX (offset * 100%) on springs.glide. */}
+          {/* Lg+: all cards mounted, stacked in place. The active card
+              crossfades in while the others fade out — the graphic stays
+              centered and never slides/moves position on change. */}
           <div className="relative hidden w-full items-center justify-center lg:flex lg:min-h-[535px] lg:px-20 lg:pb-20 lg:pt-[60px]">
-            {PRIMITIVES.map((p, i) => {
-              const offset = i - currentIndex;
+            {PRIMITIVES.map((p) => {
               const isCurrent = p.id === primitive.id;
               return (
                 <motion.div
@@ -167,11 +153,11 @@ function FeaturedCard({
                   aria-hidden={!isCurrent}
                   className="absolute inset-0 flex items-center justify-center px-20 pb-[60px] pt-[60px] [&>*]:flex [&>*]:max-h-full [&>*]:max-w-full [&>*]:items-center [&>*]:justify-center"
                   initial={false}
-                  animate={{ x: `${offset * 100}%` }}
-                  transition={springs.glide}
+                  animate={{ opacity: isCurrent ? 1 : 0 }}
+                  transition={{ duration: 0.35, ease: "easeInOut" }}
                   style={{
                     pointerEvents: isCurrent ? "auto" : "none",
-                    willChange: "transform",
+                    willChange: "opacity",
                   }}
                 >
                   <CardContent primitive={p} />
@@ -194,6 +180,20 @@ function FeaturedCard({
           />
         </GradientFrame>
       </AdvanceClick>
+
+      {/* Mobile nav row — sits BELOW the card (the graphic stays pinned
+          directly under the subtitle so it doesn't shift as you slide).
+          Replaces the desktop side-pinned arrow pills, which would
+          overlap the illustration on narrow viewports. */}
+      <MobileReelNav
+        activeTitle={primitive.title}
+        prevTitle={PRIMITIVES[prevIndex].title}
+        nextTitle={PRIMITIVES[nextIndex].title}
+        itemNoun="primitive"
+        onPrev={onPrev}
+        onNext={onNext}
+        className="mt-4 flex items-center justify-between gap-3 lg:hidden"
+      />
     </>
   );
 }

@@ -63,7 +63,7 @@ export type ButtonProps = NativeButtonProps | AsChildButtonProps;
 // the header nav items so every CTA on the site shares one
 // typographic voice with the chrome.
 const BASE_CLASSES =
-  "group/btn relative inline-flex shrink-0 cursor-pointer items-center justify-center whitespace-nowrap rounded-md uppercase font-v1Label font-semibold tracking-[normal]";
+  "group/btn relative inline-flex shrink-0 cursor-pointer items-center justify-center whitespace-nowrap rounded-md uppercase font-v1Label font-semibold tracking-[0.05rem]";
 
 // v1 brand button scale — height grows monotonically:
 //   sm  → 12 px label · 40 px height · 144 min-W · 20 px pad
@@ -77,8 +77,8 @@ const BASE_CLASSES =
 // The `wide` modifier still bumps horizontal pad to 28 px on top of
 // any size for higher visual weight.
 const SIZE_CLASSES: Record<ButtonSize, string> = {
-  sm: "text-[12px] h-10 min-w-[144px] px-5",
-  md: "text-[12px] h-[52px] min-w-[154px] px-5",
+  sm: "text-[12px] h-8 min-w-[100px] px-5",
+  md: "text-[12px] h-[42px] min-w-[124px] px-5",
   lg: "text-[14px] h-[60px] min-w-[168px] px-6",
   xl: "text-[16px] h-[72px] min-w-[184px] px-7",
 };

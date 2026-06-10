@@ -105,7 +105,7 @@ export default function Hero() {
       </div>
 
       <div className="relative">
-        <ul className="grid list-none grid-cols-1 pl-0 lg:grid-cols-3">
+        <ul className="grid list-none grid-cols-1 gap-6 pl-0 lg:grid-cols-3 lg:gap-0">
           {PLANS.map((plan, i) => (
             <motion.li
               key={plan.name}
@@ -152,19 +152,20 @@ function PlanCard({
   // cards except the last drop their bottom border. Lg+ (horizontal):
   // all cards except the first drop their left border, and the
   // bottom border returns.
-  const innerEdgeFlat = [
-    isLast ? "" : "border-b-0 lg:border-b",
-    isFirst ? "" : "lg:border-l-0",
-  ]
-    .filter(Boolean)
-    .join(" ");
+  // Mobile (vertical stack) renders each card as its own separated,
+  // fully-bordered box with a gap between them — so no border collapse
+  // here. The shared-seam join only kicks in at lg+ (horizontal row),
+  // where every card except the first drops its left border.
+  const innerEdgeFlat = isFirst ? "" : "lg:border-l-0";
 
-  // Outer corners of the row — first/last card own their respective
-  // ends; mobile is a vertical strip so top/bottom round, lg+
-  // rotates to left/right.
+  // Mobile: every card is fully rounded (separated boxes). Lg+ rotates
+  // to a contiguous row — first/last own the rounded outer ends, the
+  // middle cards square off so the seam reads as one strip.
   const cornerRadius = cn(
-    isFirst && "rounded-t-md lg:rounded-bl-md lg:rounded-tl-md lg:rounded-tr-none",
-    isLast && "rounded-b-md lg:rounded-br-md lg:rounded-tr-md lg:rounded-bl-none",
+    "rounded-md",
+    isFirst && "lg:rounded-l-md lg:rounded-r-none",
+    isLast && "lg:rounded-r-md lg:rounded-l-none",
+    !isFirst && !isLast && "lg:rounded-none",
   );
 
   // Hold the elevated z-index for the full lift + grow + shrink
@@ -243,7 +244,7 @@ function PlanCard({
         willChange: "transform",
       }}
       className={cn(
-        "group relative isolate flex h-full flex-col gap-[29px] p-8 [--lift-y:0px] [--surface-y:0px] [--seam-x:0px] lg:[--lift-y:var(--lift)] lg:[--surface-y:var(--surface-extra-y)] lg:[--seam-x:-2px]",
+        "pricing-plan-card group relative isolate flex h-full flex-col gap-[29px] p-8 [--lift-y:0px] [--surface-y:0px] [--seam-x:0px] lg:[--lift-y:var(--lift)] lg:[--surface-y:var(--surface-extra-y)] lg:[--seam-x:-2px]",
         isActive ? "z-20" : elevated ? "z-10" : "",
       )}
     >
@@ -383,18 +384,36 @@ function PlanCard({
         {plan.cta.text}
       </ButtonLink>
 
-      {/* Feature bullets — native list-disc, 14/20 CircularXX, 12 px
-          gap between items. */}
-      <ul className="relative z-10 flex list-disc flex-col gap-3 pl-[21px] text-v1-frost">
-        {plan.features.map((feature, i) => (
-          <li key={feature.text} className={i < 3 ? "text-v1-body-sm font-medium" : "text-v1-body-xs"}>
-            {feature.value && (
-              <span className="font-bold">{feature.value} </span>
-            )}
-            {feature.text}
-          </li>
-        ))}
-      </ul>
+      {/* Feature bullets — the first three (the headline limits:
+          executions / connections / concurrent steps) read larger,
+          then a short divider separates the supporting features below. */}
+      <div className="relative z-10 flex flex-col gap-4 text-v1-frost">
+        <ul className="flex list-disc flex-col gap-3 pl-[21px]">
+          {plan.features.slice(0, 3).map((feature) => (
+            <li key={feature.text} className="text-v1-body-sm">
+              {feature.value && (
+                <span className="font-bold">{feature.value} </span>
+              )}
+              {feature.text}
+            </li>
+          ))}
+        </ul>
+        {plan.features.length > 3 && (
+          <>
+            <span aria-hidden="true" className="h-px w-10 bg-v1-frost/30" />
+            <ul className="flex list-disc flex-col gap-3 pl-[21px]">
+              {plan.features.slice(3).map((feature) => (
+                <li key={feature.text} className="text-v1-body-xs">
+                  {feature.value && (
+                    <span className="font-bold">{feature.value} </span>
+                  )}
+                  {feature.text}
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+      </div>
     </motion.article>
   );
 }
