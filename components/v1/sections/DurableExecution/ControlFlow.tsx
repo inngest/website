@@ -76,11 +76,10 @@ function Copy() {
             stays aligned with the copy width. */}
         <motion.ul
           {...reveals.body}
-          className="flex list-none flex-col pl-0 text-v1-body-lg-loose"
+          className="flex list-disc flex-col pl-5 text-v1-body-lg-loose"
         >
           {FEATURES.map((f) => (
-            <li key={f.name} className="list-none">
-              <span aria-hidden="true">– </span>
+            <li key={f.name}>
               <strong className="font-bold">{f.name}</strong>
               <span> — {f.description}</span>
             </li>
@@ -89,7 +88,7 @@ function Copy() {
       </div>
       <motion.div {...reveals.body}>
         <ButtonLink
-          href="/docs/guides/flow-control?ref=durable-execution"
+          href="/platform/flow-control?ref=durable-execution"
           variant="primary"
         >
           Learn more about Flow Control

@@ -41,7 +41,7 @@ const INTEGRATIONS: Integration[] = [
         completions — reliably, with step-level retries.
       </>
     ),
-    link: { label: "See pattern", href: "/patterns/build-reliable-webhooks" },
+    link: undefined,
   },
   {
     id: "clerk",
@@ -57,7 +57,7 @@ const INTEGRATIONS: Integration[] = [
         send welcome email, start trial, all in parallel.
       </>
     ),
-    link: { label: "Read guide", href: "#" },
+    link: { label: "Read guide", href: "/docs/guides/clerk-webhook-events" },
   },
   {
     id: "github",
@@ -88,7 +88,7 @@ const INTEGRATIONS: Integration[] = [
         campaigns and clean your lists automatically.
       </>
     ),
-    link: { label: "Read guide", href: "#" },
+    link: { label: "Read guide", href: "/docs/guides/resend-webhook-events#resend-webhooks" },
   },
   {
     id: "shopify",

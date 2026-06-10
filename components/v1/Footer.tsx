@@ -55,7 +55,6 @@ const COLUMN_RESOURCES: FooterColumnDef = {
       label: "Inngest vs. Traditional Queues",
       href: "/platform/flow-control",
     },
-    { label: "Inngest vs. Kafka", href: "/blog" },
     { label: "Inngest vs. Temporal", href: "/compare-to-temporal" },
   ],
 };
@@ -65,14 +64,10 @@ const COLUMN_COMPANY: FooterColumnDef = {
   links: [
     { label: "About", href: "/about" },
     { label: "Contact Us", href: "/get-in-touch" },
-    { label: "Pricing Calculator", href: "/pricing" },
-    {
-      label: "Roadmap",
-      href: "https://roadmap.inngest.com/request?ref=footer-links&_gl=1*15j0vqv*_gcl_au*OTk1NjU2ODY2LjE3Nzk4MTUwNjg.*_ga*MTQ0Mjg4NTA1NC4xNzcxOTczMzYw*_ga_4YPM75W7D9*czE3ODA2MTQyMDAkbzExMCRnMSR0MTc4MDYxNDg3OCRqNTgkbDAkaDA.",
-    },
+    { label: "Pricing", href: "/pricing" },
     { label: "Changelog", href: "/changelog" },
-    { label: "Support", href: process.env.NEXT_PUBLIC_SUPPORT_URL ?? "#" },
-    { label: "Careers", href: "/careers" },
+    { label: "Support", href: "https://support.inngest.com" },
+    { label: "Careers", href: "https://jobs.ashbyhq.com/inngest" },
   ],
 };
 
@@ -83,7 +78,7 @@ const COLUMN_COMMUNITY: FooterColumnDef = {
     { label: "Github", href: "https://github.com/inngest/inngest" },
     { label: "Discord", href: "https://www.inngest.com/discord" },
     { label: "Bluesky", href: "https://bsky.app/profile/inngest.com" },
-    { label: "LinkedIn", href: "https://www.linkedin.com/company/inngest" },
+    { label: "LinkedIn", href: "https://www.linkedin.com/company/inngest-inc/" },
   ],
 };
 

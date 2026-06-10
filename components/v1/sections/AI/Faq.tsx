@@ -97,9 +97,11 @@ const FAQS: Faq[] = [
 export default function Faq({
   faqs = FAQS,
   heading = "FAQ",
+  refTag = "ai",
 }: {
   faqs?: Faq[];
   heading?: string;
+  refTag?: string;
 } = {}) {
   return (
     <Section
@@ -118,7 +120,7 @@ export default function Faq({
         <ul className="flex flex-col lg:col-span-2">
           {faqs.map((faq, i) => (
             <motion.li key={faq.id} {...reveals.item(i)}>
-              <FaqRow faq={faq} />
+              <FaqRow faq={faq} refTag={refTag} />
             </motion.li>
           ))}
         </ul>
@@ -127,7 +129,7 @@ export default function Faq({
   );
 }
 
-function FaqRow({ faq }: { faq: Faq }) {
+function FaqRow({ faq, refTag }: { faq: Faq; refTag: string }) {
   return (
     <AccordionItem
       id={faq.id}
@@ -164,7 +166,7 @@ function FaqRow({ faq }: { faq: Faq }) {
       <p className="text-pretty text-v1-body-sm">{faq.answer}</p>
       {faq.link && (
         <Link
-          href={appendRef(faq.link.href, "ai")}
+          href={appendRef(faq.link.href, refTag)}
           underline={false}
           // Same exact "Get Started →" treatment as Home/
           // StartBuilding's QuickstartCard. Color shift uses

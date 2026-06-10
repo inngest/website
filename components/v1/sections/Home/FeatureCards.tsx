@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { onCursorSpotlightMove, CURSOR_SPOTLIGHT_SEED } from "@/utils/v1/cursorFx";
 import { animate, motion, useMotionValue, useTransform } from "motion/react";
 import { springs } from "@/utils/v1/springs";
@@ -28,6 +29,8 @@ export interface FeatureCard {
   vector: string;
   vectorWidth: number;
   vectorHeight: number;
+  /** Optional URL — when set the entire card becomes a clickable link. */
+  href?: string;
   /** Designer-locked breaks at lg+ (rendered as `block whitespace-nowrap`). */
   bodyLines: string[];
 }
@@ -35,6 +38,7 @@ export interface FeatureCard {
 const CARDS: FeatureCard[] = [
   {
     label: "Retries & Reliability",
+    href: "/platform/durable-execution",
     vector: "/assets/v1/feature-cards/retries.svg",
     vectorWidth: 85,
     vectorHeight: 70.51, // viewBox 208.397 × 172.823
@@ -46,6 +50,7 @@ const CARDS: FeatureCard[] = [
   },
   {
     label: "Flow Control",
+    href: "/platform/flow-control",
     vector: "/assets/v1/feature-cards/flow-control.svg",
     vectorWidth: 85,
     vectorHeight: 59.4, // viewBox 205.865 × 143.85
@@ -57,6 +62,7 @@ const CARDS: FeatureCard[] = [
   },
   {
     label: "Observability",
+    href: "/platform/observability",
     vector: "/assets/v1/feature-cards/observability.svg",
     vectorWidth: 85,
     vectorHeight: 69.7, // viewBox 205.848 × 168.771
@@ -373,6 +379,17 @@ function Card({
           </span>
         ))}
       </p>
+
+      {/* Stretched link — covers the entire card surface so the whole
+          card is clickable. Pointer events pass through to the article
+          for spotlight + hover effects; only clicks are captured. */}
+      {card.href && (
+        <Link
+          href={card.href}
+          aria-label={card.label}
+          className="absolute inset-0 z-10"
+        />
+      )}
     </motion.article>
   );
 }

@@ -2,13 +2,6 @@ import SharedFaq, { type Faq as FaqItem } from "@/components/v1/sections/AI/Faq"
 
 const FAQS: FaqItem[] = [
   {
-    id: "free-trial",
-    question: "Is there a free trial for the Pro plan?",
-    answer:
-      "Yes — every Pro plan starts with a two-week trial at no cost. No credit card is required to sign up, and you can downgrade or cancel before the trial ends if Pro isn't the right fit.",
-    link: { label: "Get started", href: "/docs/getting-started/nextjs-quick-start" },
-  },
-  {
     id: "what-is-execution",
     question: "What counts as an execution?",
     answer:
@@ -30,7 +23,7 @@ const FAQS: FaqItem[] = [
     id: "self-host",
     question: "Can I self-host Inngest?",
     answer:
-      "Inngest is delivered as a managed service for all plans. Enterprise customers can request dedicated execution capacity for low-latency, high-throughput workloads on shared regional infrastructure.",
+      "Yes. Inngest is open-source and can be self-hosted. The cloud product adds managed infrastructure, observability, and reliability on top — but the core engine is yours to run.",
   },
   {
     id: "billing-questions",
@@ -42,5 +35,5 @@ const FAQS: FaqItem[] = [
 ];
 
 export default function Faq() {
-  return <SharedFaq faqs={FAQS} heading="FAQ" />;
+  return <SharedFaq faqs={FAQS} heading="FAQ" refTag="pricing" />;
 }

@@ -37,7 +37,7 @@ export default function Hero() {
                     <Link
                       href={`${process.env.NEXT_PUBLIC_SIGNUP_URL}?ref=homepage-hero`}
                     >
-                      Start building for free
+                      Start Building
                     </Link>
                   </Button>
                   <Button
@@ -46,7 +46,7 @@ export default function Hero() {
                     className="max-[520px]:py-6 max-[520px]:text-[1.1rem]"
                   >
                     <Link href="/contact?ref=homepage-hero">
-                      Get a demo<span aria-hidden="true">→</span>
+                      Book a 15min Demo<span aria-hidden="true">→</span>
                     </Link>
                   </Button>
                 </div>

@@ -42,7 +42,7 @@ export default function LocalFirst() {
                 href="/docs/local-development?ref=durable-execution"
                 variant="primary"
               >
-                See AI Docs
+                See docs
               </ButtonLink>
             }
           />

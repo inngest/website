@@ -108,7 +108,7 @@ export const PLANS: Plan[] = [
       additionalWorkersPrice: 10,
       additionalWorkersRate: 1,
     },
-    priceCaption: "Start today with a 2 week trial at no cost",
+    priceCaption: "",
     cta: {
       href: `${SIGNUP}?ref=pricing-card-pro`,
       text: "Get started for Free",
@@ -144,7 +144,7 @@ export const PLANS: Plan[] = [
       additionalWorkersPrice: "Custom",
       additionalWorkersRate: null,
     },
-    priceCaption: "Contact us to learn more & request a demo.",
+    priceCaption: "Contact us to learn more & request a demo",
     cta: {
       href: "/get-in-touch?ref=pricing-card-enterprise",
       text: "Contact Us",

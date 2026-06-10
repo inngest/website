@@ -32,7 +32,7 @@ export default function FinalCta() {
       }
     >
       <ButtonLink href={SIGNUP_URL} variant="primary">
-        Create free account
+        Start Free
       </ButtonLink>
       <ButtonLink href={QUICK_START_URL} variant="secondary">
         Quick start guide →

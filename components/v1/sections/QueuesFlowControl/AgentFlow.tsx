@@ -50,11 +50,11 @@ function Copy() {
       body="One bad prompt can mean hundreds of LLM calls in seconds. Flow control caps velocity in the infrastructure layer, so you can turn a “$12k surprise” into a problem you have more time to catch and kill."
       actions={
         <ButtonLink
-          href="/docs/ai?ref=queues-flow-control"
+          href="/docs/guides/flow-control?ref=queues-flow-control"
           variant="primary"
           className="max-sm:w-full"
         >
-          See AI Docs
+          See docs
         </ButtonLink>
       }
     />

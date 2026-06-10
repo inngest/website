@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "motion/react";
+import Link from "next/link";
 import { reveals } from "@/utils/v1/reveals";
 import { BlackReveal } from "@/components/v1/sections/shared/BlackReveal";
 import GradientFrame from "@/components/v1/sections/shared/GradientFrame";
@@ -15,6 +16,7 @@ interface Capability {
   icon: string;
   iconWidth: number;
   iconHeight: number;
+  href?: string;
 }
 
 const CAPABILITIES: Capability[] = [
@@ -24,6 +26,7 @@ const CAPABILITIES: Capability[] = [
     icon: "/assets/v1/scale-instantly/ai-agents.svg",
     iconWidth: 27.77,
     iconHeight: 32,
+    href: "/ai",
   },
   {
     title: "API Endpoints",
@@ -31,6 +34,7 @@ const CAPABILITIES: Capability[] = [
     icon: "/assets/v1/scale-instantly/api-endpoints.svg",
     iconWidth: 30.02,
     iconHeight: 25.71,
+    href: "/docs/learn/durable-endpoints",
   },
   {
     title: "Workflows",
@@ -38,6 +42,7 @@ const CAPABILITIES: Capability[] = [
     icon: "/assets/v1/scale-instantly/workflows.svg",
     iconWidth: 32,
     iconHeight: 32,
+    href: "/ai",
   },
   {
     title: "Schedules",
@@ -45,6 +50,7 @@ const CAPABILITIES: Capability[] = [
     icon: "/assets/v1/scale-instantly/schedules.svg",
     iconWidth: 32,
     iconHeight: 12.85,
+    href: "/uses/scheduled-jobs",
   },
   {
     title: "Serverless",
@@ -52,6 +58,7 @@ const CAPABILITIES: Capability[] = [
     icon: "/assets/v1/scale-instantly/serverless.svg",
     iconWidth: 32,
     iconHeight: 20.52,
+    href: "/docs/reference/typescript/v4/extended-traces#serverless",
   },
   {
     title: "Events",
@@ -59,6 +66,7 @@ const CAPABILITIES: Capability[] = [
     icon: "/assets/v1/scale-instantly/events.svg",
     iconWidth: 21.65,
     iconHeight: 32,
+    href: "/uses/webhooks",
   },
 ];
 
@@ -205,16 +213,10 @@ function CapabilityTile({
   capability: Capability;
   index: number;
 }) {
-  return (
-    <motion.li
-      {...reveals.item(index)}
-      className="flex cursor-default flex-col gap-2"
-    >
+  const inner = (
+    <>
       <div className="flex items-center gap-[10px]">
         <span className="flex h-8 w-8 shrink-0 items-center justify-center">
-          {/* Hover lift on the icon intentionally disabled — the
-              tiles read as a static reference grid rather than a
-              hover-driven micro-interaction. */}
           <img
             src={capability.icon}
             alt=""
@@ -231,6 +233,25 @@ function CapabilityTile({
       <p className="text-pretty text-v1-heading-xs-loose text-[#B3B3B3]">
         {capability.body}
       </p>
+    </>
+  );
+
+  return (
+    <motion.li
+      {...reveals.item(index)}
+      className="flex flex-col gap-2"
+    >
+      {capability.href ? (
+        <Link
+          href={capability.href}
+          prefetch={false}
+          className="flex flex-col gap-2 rounded-md p-3 -m-3 motion-safe:transition-colors motion-safe:duration-200 hover:bg-gradient-to-br hover:from-white/[0.06] hover:to-white/[0.02]"
+        >
+          {inner}
+        </Link>
+      ) : (
+        <div className="flex flex-col gap-2 cursor-default">{inner}</div>
+      )}
     </motion.li>
   );
 }

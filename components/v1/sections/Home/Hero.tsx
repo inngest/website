@@ -51,6 +51,26 @@ const HERO_CODE = [
   "    });|",
 ].join("\n");
 
+// HeroWord / HeroLetters are static wrappers — the per-letter span
+// structure stays so a future motion pass can stagger them without
+// touching the JSX.
+
+function HeroWord({ children }: { children: string }) {
+  return <span className="inline-block">{children}</span>;
+}
+
+function HeroLetters({ text }: { text: string }) {
+  return (
+    <>
+      {Array.from(text).map((ch, i) => (
+        <span key={i} aria-hidden="true" className="inline-block">
+          {ch}
+        </span>
+      ))}
+    </>
+  );
+}
+
 export default function Hero() {
   const [codeReady, setCodeReady] = useState(false);
   useEffect(() => {
@@ -79,7 +99,7 @@ export default function Hero() {
       // 28 28 28) so the opening frame reads with more depth. The
       // gradient bg images cover this; the colour is the fallback
       // before they load.
-      className="relative isolate w-full overflow-hidden bg-v1-surfaceBase lg:min-h-screen flex items-center lg:items-start"
+      className="relative isolate w-full overflow-hidden bg-v1-surfaceBase lg:min-h-screen flex items-center"
     >
       {/* Designer-authored hero gradient. Two assets
           via Tailwind responsive background-image utilities: a
@@ -111,48 +131,63 @@ export default function Hero() {
         // which sit BELOW it at `z-v1-backdrop`. Interactive children
         // (the NPM button; the mobile accordion rows in HeroCodeStatic)
         // re-enable hits with `pointer-events-auto`. Mirrors HeroTest.
-        className="pointer-events-none relative z-30 flex w-full flex-col px-6 pb-12 pt-20 sm:px-10 sm:pt-32 lg:pl-[34px] lg:pr-[70px] lg:pt-[calc(40vh_-_1.64*min(11.11vw,18vh)_+_27px)] lg:pb-[40px]"
+        className="pointer-events-none relative z-30 mx-auto flex max-w-[1440px] flex-col px-6 pb-12 pt-20 sm:px-10 sm:pt-32 lg:px-[70px] lg:py-[120px]"
       >
-        {/* Stacked two-tone display: each phrase breaks onto two lines,
-            the first word at full frost, the second dimmed. */}
         <p
           aria-hidden="true"
-          className="text-v1-display-hero uppercase text-v1-frost lg:pr-[100px] lg:-ml-[0.06em] text-left leading-[0.82] !text-[min(11.11vw,18vh)] tracking-[-0.025em]"
+          className="text-v1-display-hero uppercase text-v1-frost lg:whitespace-nowrap lg:pr-[100px] lg:text-right lg:leading-[0.8] lg:!text-[clamp(2.5rem,6.7vw,6rem)] lg:tracking-[-0.025em]"
         >
-          <span className="block">Unbreakable</span>
-          <span className="block">Agents.</span>
+          <span className="block lg:inline">
+            <HeroWord>Unbreakable</HeroWord>
+          </span>{" "}
+          <span className="block lg:inline lg:ml-[0.45em]">
+            <span className="inline-block">Agents</span>
+          </span>
         </p>
 
         <p
           aria-hidden="true"
-          className="text-v1-display-hero mt-4 uppercase text-v1-frost lg:mt-[4vh] lg:pr-[100px] lg:-ml-[0.06em] text-left leading-[0.82] !text-[min(11.11vw,18vh)] tracking-[-0.025em]"
+          className="text-v1-display-hero pl-[33%] mt-12 uppercase text-v1-frost lg:mt-[108px] lg:pl-[162px]"
         >
-          <span className="block text-transparent [-webkit-text-stroke:2px_rgb(255,255,255)]">Invisible</span>
-          <span className="block text-transparent [-webkit-text-stroke:2px_rgb(255,255,255)]">Infra.</span>
+          <span className="block">
+            <HeroLetters text="Invisible" />
+          </span>
+          <span className="block">
+            <HeroLetters text="Infra." />
+          </span>
         </p>
 
-        <div className="mt-[48px] space-y-[36px] lg:mt-[24px] lg:space-y-[24px] lg:pl-0">
-          {/* Mono eyebrow kicker — uppercase WhyteMono with the three
-              nouns struck through in salmon, so the line literally enacts
-              "no workers / queues / refactoring". Single row at every
-              breakpoint; fluid size keeps it on one line down to phones. */}
-          <p className="whitespace-nowrap font-v1Label uppercase tracking-[0.08em] text-[clamp(0.8125rem,1.4vw,1.25rem)] leading-[1.2] text-v1-frost">
-            No workers. No queues. No refactoring.
+        <div className="mt-[63px] space-y-[10px] pl-[33%] lg:mt-12 lg:space-y-[20px] lg:pl-[170px]">
+          <p className="text-[20px] leading-[1.2] text-v1-frost lg:max-w-[260px]">
+            {/* Plain lines — no per-line paint reveal. They ride the
+                parent container's `v1-hero-text-in` fade so all three
+                enter together, at the same moment as the
+                "Unbreakable Agents" / "Invisible Infra." headlines. */}
+            <span className="block">No workers.</span>
+            <span className="block">No queues.</span>
+            <span className="block">No refactoring.</span>
           </p>
-          <ButtonLink
-            href={NPM_URL}
-            variant="accent"
-            size="lg"
-            className="pointer-events-auto !h-[52px]"
-          >
-            NPM&nbsp;[→]
-          </ButtonLink>
+          <div className="flex flex-col gap-3 sm:flex-row pointer-events-auto">
+            <ButtonLink
+              href={`${process.env.NEXT_PUBLIC_SIGNUP_URL ?? "/sign-up"}?ref=homepage-hero`}
+              variant="accent"
+              className="pointer-events-auto"
+            >
+              Start Building
+            </ButtonLink>
+            <ButtonLink
+              href="/contact?ref=homepage-hero"
+              variant="secondary"
+              className="pointer-events-auto"
+            >
+              Book a 15min Demo
+            </ButtonLink>
+          </div>
         </div>
 
-        {/* Below xl the heavy canvas isn't shown side-by-side; the code
-            lives here as plain `<pre><code>` stacked under the headline +
-            CTA. Real semantics, joins the parent's `v1-hero-text-in` fade.
-            (Also covers phones, where the canvas is always off.) */}
+        {/* Mobile: the desktop canvas-morph isn't shown on phones, so
+            the code lives here as plain `<pre><code>`. Real semantics,
+            joins the parent's `v1-hero-text-in` fade. */}
         <HeroCodeStatic
           className="mt-11 lg:hidden"
           code={HERO_CODE}

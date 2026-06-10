@@ -7,7 +7,7 @@ import Primitives from "@/components/v1/sections/AI/Primitives";
 import Unbreakable from "@/components/v1/sections/AI/Unbreakable";
 import UseCases from "@/components/v1/sections/AI/UseCases";
 import Testimonials from "@/components/v1/sections/shared/Testimonials";
-import { AI_TESTIMONIAL_SLIDES } from "@/components/v1/sections/shared/testimonialSlides";
+import { HOME_TESTIMONIAL_SLIDES } from "@/components/v1/sections/shared/testimonialSlides";
 import cubeDotsData from "@/public/assets/v1/ai-hero/cube-dots.json";
 
 // Bundle the cube-dots manifest into the JS at build time so it ships
@@ -29,7 +29,7 @@ export default function AIPage() {
       <PageShell>
         <Hero />
         <Testimonials
-          slides={AI_TESTIMONIAL_SLIDES}
+          slides={HOME_TESTIMONIAL_SLIDES}
           portraitClassName="mix-blend-luminosity"
         />
         <Unbreakable />

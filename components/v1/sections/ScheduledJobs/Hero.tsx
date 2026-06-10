@@ -6,7 +6,7 @@ import ScheduledJobsDotsCanvas from "@/components/v1/sections/ScheduledJobs/Sche
 export default function Hero() {
   return (
     <SplitHero
-      docsHref="/docs?ref=scheduled-jobs"
+      docsHref="/docs/guides/scheduled-functions?ref=scheduled-jobs"
       signupHref="/sign-up?ref=scheduled-jobs"
       breadcrumbs={[
         { label: "Use Cases" },

@@ -2,6 +2,7 @@
 
 import { type ReactNode } from "react";
 import { motion } from "motion/react";
+import Link from "next/link";
 import GradientFrame from "@/components/v1/sections/shared/GradientFrame";
 import InlineCode from "@/components/v1/sections/shared/InlineCode";
 import Section from "@/components/v1/sections/shared/Section";
@@ -13,6 +14,7 @@ interface Feature {
   id: string;
   title: string;
   body: ReactNode;
+  docsHref?: string;
 }
 
 const FEATURES: Feature[] = [
@@ -26,6 +28,7 @@ const FEATURES: Feature[] = [
         logic needed.
       </>
     ),
+    docsHref: "/docs/guides/fan-out-jobs",
   },
   {
     id: "serverless-first",
@@ -37,6 +40,7 @@ const FEATURES: Feature[] = [
         code, invoked on schedule.
       </>
     ),
+    docsHref: "/docs/platform/deployment",
   },
   {
     id: "schedule-in-timezones",
@@ -48,6 +52,7 @@ const FEATURES: Feature[] = [
         so your jobs run when your users expect.
       </>
     ),
+    docsHref: "/docs/guides/scheduled-functions",
   },
   {
     id: "cancel-before-firing",
@@ -59,6 +64,7 @@ const FEATURES: Feature[] = [
         job IDs.
       </>
     ),
+    docsHref: "/docs/features/inngest-functions/cancellation/cancel-on-events",
   },
   {
     id: "mix-cron-and-events",
@@ -69,6 +75,7 @@ const FEATURES: Feature[] = [
         report automatically, or trigger on demand.
       </>
     ),
+    docsHref: "/docs/features/events-triggers",
   },
   {
     id: "full-visibility",
@@ -79,6 +86,7 @@ const FEATURES: Feature[] = [
         reasons for every run. No more guessing if your cron fired.
       </>
     ),
+    docsHref: "/docs/platform/monitor/inspecting-function-runs",
   },
 ];
 
@@ -117,6 +125,15 @@ export default function Features() {
                 {f.title}
               </h3>
               <p className="text-v1-body-sm">{f.body}</p>
+              {f.docsHref && (
+                <Link
+                  href={f.docsHref}
+                  prefetch={false}
+                  className="inline-flex w-fit items-center gap-1 rounded border border-v1-frost/20 px-3 py-1 font-v1Mono text-[11px] uppercase tracking-[0.08em] text-v1-frost/70 motion-safe:transition-colors motion-safe:duration-200 hover:border-v1-accent-salmon hover:text-v1-accent-salmon"
+                >
+                  See Docs
+                </Link>
+              )}
             </motion.li>
           ))}
         </ul>

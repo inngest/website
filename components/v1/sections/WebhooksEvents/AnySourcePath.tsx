@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { motion } from "motion/react";
 import { reveals } from "@/utils/v1/reveals";
 import Logo from "@/components/v1/Logo";
@@ -40,7 +41,7 @@ function SendGlyph() {
         className="h-full w-full object-contain"
       />
       <span className="pointer-events-none absolute inset-0 flex items-center justify-center font-v1Mono text-base uppercase leading-none">
-        [INNGEST.SEND()]
+        INNGEST.SEND()
       </span>
     </div>
   );
@@ -79,15 +80,17 @@ export default function AnySourcePath() {
           sub="(webhooks)"
           glyph={<OrbitsGlyph />}
           body="Point any provider at an Inngest webhook URL. Trigger functions that retry automatically."
+          href="/docs/platform/webhooks/build-an-integration"
         />
         <Card
           align="right"
           eyebrow="Your own code"
           eyebrowIcon={<Logo width={28} logomarkOnly className="h-4" />}
-          sub="[inngest.send()]"
+          sub="Inngest.Send()"
           glyph={<SendGlyph />}
           body="Fire events from anywhere in your codebase. Trigger multiple functions in parallel."
           offsetSeam
+          href="/docs"
         />
       </ul>
     </Section>
@@ -102,6 +105,7 @@ function Card({
   body,
   align = "left",
   offsetSeam = false,
+  href,
 }: {
   eyebrow: string;
   /** Optional icon rendered before the eyebrow heading. */
@@ -111,6 +115,8 @@ function Card({
   body: string;
   align?: "left" | "right";
   offsetSeam?: boolean;
+  /** When set the entire card becomes a clickable link. */
+  href?: string;
 }) {
   const isRight = align === "right";
   const colAlign = isRight ? "items-end" : "items-start";
@@ -120,7 +126,7 @@ function Card({
     <motion.li
       {...reveals.body}
       className={cn(
-        "flex h-full flex-col gap-8 border-2 border-v1-frost bg-v1-carbon-400 bg-[url('/assets/v1/webhooks-events/card-noise.webp')] bg-cover bg-center p-8",
+        "relative flex h-full flex-col gap-8 border-2 border-v1-frost bg-v1-carbon-400 bg-[url('/assets/v1/webhooks-events/card-noise.webp')] bg-cover bg-center p-8",
         colAlign,
         offsetSeam && "sm:-ml-0.5",
       )}
@@ -148,6 +154,10 @@ function Card({
       </GradientFrame>
 
       <p className={cn("text-v1-body-sm", textAlign)}>{body}</p>
+
+      {href && (
+        <Link href={href} aria-label={eyebrow} className="absolute inset-0 z-10" />
+      )}
     </motion.li>
   );
 }

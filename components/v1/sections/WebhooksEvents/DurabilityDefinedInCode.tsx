@@ -38,7 +38,7 @@ const FEATURES: Feature[] = [
     title: "Automatic retries",
     body:
       "Events that fail retry automatically with exponential backoff. Step-level — so only the failed step re-runs, not the whole function.",
-    cta: { label: "Read the docs →", href: "/docs" },
+    cta: { label: "Read the docs →", href: "/docs/features/inngest-functions/error-retries/retries" },
     visual: <RetryVisual />,
   },
   {
@@ -46,7 +46,7 @@ const FEATURES: Feature[] = [
     title: "Idempotency",
     body:
       "Providers retry on failure. Set an event ID or function key and Inngest guarantees your function runs exactly once — no duplicate charges, no double-sends.",
-    cta: { label: "Read the docs →", href: "/docs" },
+    cta: { label: "Read the docs →", href: "/docs/guides/handling-idempotency" },
     visual: <IdempotencyVisual />,
   },
   {
@@ -62,7 +62,7 @@ const FEATURES: Feature[] = [
     title: "Event Coordination",
     body:
       "Use step.waitForEvent() to pause a function. When the event arrives (or times out), execution resumes automatically. All without cron jobs or polling loops.",
-    cta: { label: "Read the pattern →", href: "/docs/guides/wait-for-event" },
+    cta: { label: "Read the pattern →", href: "/docs/patterns/events" },
     visual: <EventCoordinationVisual />,
   },
   {

@@ -58,7 +58,7 @@ export default function FasterResolution() {
               variant="primary"
               className="!w-full sm:!w-auto"
             >
-              See concurrency docs
+              See observability docs
             </ButtonLink>
           </motion.div>
         </div>

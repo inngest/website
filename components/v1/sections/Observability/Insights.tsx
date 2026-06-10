@@ -13,7 +13,7 @@ import { reveals } from "@/utils/v1/reveals";
 // inside a nested black gradient frame so it reads as a layered
 // surface against the charcoal card.
 
-const SEE_DOCS_URL = "/docs?ref=observability-insights";
+const SEE_DOCS_URL = "/docs/platform/monitor/insights?ref=observability-insights";
 
 const SYNTAX_GREEN = "#0bdd48";
 const KEYWORD = "#2389F1";

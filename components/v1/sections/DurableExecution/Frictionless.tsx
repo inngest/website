@@ -31,7 +31,7 @@ export default function Frictionless() {
         bodyClassName="max-w-[760px]"
         titleAside={
           <ButtonLink
-            href="/docs/quickstart?ref=durable-execution"
+            href="/docs/getting-started/nextjs-quick-start?ref=durable-execution"
             variant="primary"
           >
             See QuickStart Guides
