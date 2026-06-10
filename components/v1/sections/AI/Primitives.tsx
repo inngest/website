@@ -39,7 +39,7 @@ const PRIMITIVES: Primitive[] = [
     body: "Each step is an atomic transaction. When step 7 fails only step 7 retries — the tokens spent on steps 1-6 are never wasted.",
     iconSrc: "/assets/v1/primitives/icon-1-checkpointing.svg",
     iconWidth: 168,
-    href: "/docs/step-functions",
+    href: "/docs/setup/checkpointing",
   },
   {
     id: "telemetry",
@@ -47,7 +47,7 @@ const PRIMITIVES: Primitive[] = [
     body: "Every model call is captured: prompt, response, token count, latency, and cost — automatically. Offloads the wait so serverless functions don't burn compute.",
     iconSrc: "/assets/v1/primitives/icon-2-telemetry.svg",
     iconWidth: 164,
-    href: "/docs/observability",
+    href: "/docs/platform/monitor/insights",
   },
   {
     id: "flow-control",
@@ -63,7 +63,7 @@ const PRIMITIVES: Primitive[] = [
     body: "Pause mid-workflow for review or approval — hours or days. State maintained automatically. No polling, no cron, no database hacks.",
     iconSrc: "/assets/v1/primitives/icon-4-human-loop.svg",
     iconWidth: 212,
-    href: "/docs/guides/human-in-the-loop",
+    href: "/docs/ai-patterns/human-in-the-loop",
   },
   {
     id: "no-timeout",
@@ -71,7 +71,7 @@ const PRIMITIVES: Primitive[] = [
     body: "LLM chains run for minutes. Batch pipelines run for hours. Inngest functions run to completion across any host — no 30-second limits.",
     iconSrc: "/assets/v1/primitives/icon-5-no-timeout.svg",
     iconWidth: 164,
-    href: "/docs/functions",
+    href: "/docs/features/inngest-functions/cancellation/cancel-on-timeouts",
   },
   {
     id: "local-env",
