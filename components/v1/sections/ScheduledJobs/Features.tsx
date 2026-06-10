@@ -129,7 +129,7 @@ export default function Features() {
                 <Link
                   href={f.docsHref}
                   prefetch={false}
-                  className="inline-flex w-fit items-center gap-1 rounded border border-v1-frost/20 px-3 py-1 font-v1Mono text-[11px] uppercase tracking-[0.08em] text-v1-frost/70 motion-safe:transition-colors motion-safe:duration-200 hover:border-v1-frost/50 hover:text-v1-frost"
+                  className="inline-flex w-fit items-center gap-1 rounded border border-v1-frost/20 px-3 py-1 font-v1Mono text-[11px] uppercase tracking-[0.08em] text-v1-frost/70 motion-safe:transition-colors motion-safe:duration-200 hover:border-v1-accent-salmon hover:text-v1-accent-salmon"
                 >
                   See Docs
                 </Link>
