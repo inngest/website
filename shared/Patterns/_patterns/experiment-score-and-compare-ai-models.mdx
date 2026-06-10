@@ -121,15 +121,6 @@ const handleTicket = inngest.createFunction(
 );
 ```
 
-Register both functions:
-
-```typescript
-serve({
-  client: inngest,
-  functions: [handleTicket, trackCosts],
-});
-```
-
 ---
 
 ## How the pieces work together
