@@ -41,10 +41,15 @@ export default async function handler(req: NextApiRequest) {
     // ?title=<title>
     const hasTitle = searchParams.has("title");
     const title = hasTitle
-      ? searchParams.get("title")?.slice(0, 100)
+      ? searchParams.get("title")?.slice(0, 120)
       : "Inngest";
-    const isLongTitle = (title || "").length > 40;
-    const backgroundImageURL = `${process.env.NEXT_PUBLIC_HOST}/assets/open-graph/og-background-2025.png`;
+    const len = (title || "").length;
+    const isLongTitle = len > 40;
+    const isVeryLongTitle = len > 70;
+    // 2026 salmon background — the logo is baked into the artwork
+    // (top-left); the title overlays bottom-left in white to match the
+    // static homepage card.
+    const backgroundImageURL = `${process.env.NEXT_PUBLIC_HOST}/assets/og-image-2026.png`;
 
     const fontData = await loadInngestCDNFont("Whyte/ABCWhyte-Light.otf");
 
@@ -52,14 +57,15 @@ export default async function handler(req: NextApiRequest) {
       (
         <div
           style={{
-            backgroundColor: "rgb(2,2,2)", // carbon-1000
+            backgroundColor: "rgb(255,87,51)", // salmon fallback
             backgroundImage: `url("${backgroundImageURL}")`,
+            backgroundSize: "cover",
             height: "100%",
             width: "100%",
-            padding: "10% 6%",
+            padding: "64px",
             display: "flex",
             alignItems: "flex-start",
-            justifyContent: "flex-start",
+            justifyContent: "flex-end",
             flexDirection: "column",
             flexWrap: "nowrap",
             fontFamily: "Whyte, sans-serif",
@@ -67,15 +73,15 @@ export default async function handler(req: NextApiRequest) {
         >
           <div
             style={{
-              fontSize: isLongTitle ? 72 : 96,
+              fontSize: isVeryLongTitle ? 56 : isLongTitle ? 72 : 92,
               fontStyle: "normal",
               fontWeight: 300,
               letterSpacing: "-2.4px",
               color: "white",
-              marginTop: isLongTitle ? 116 : 94,
-              padding: "0 0 0 154px",
-              lineHeight: isLongTitle ? 1.22 : 1.2,
+              lineHeight: isVeryLongTitle ? 1.15 : isLongTitle ? 1.12 : 1.05,
               whiteSpace: "normal",
+              maxHeight: 420,
+              overflow: "hidden",
             }}
           >
             {title}

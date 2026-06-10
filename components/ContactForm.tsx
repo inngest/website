@@ -15,7 +15,7 @@ export { FORM_TYPE } from "src/components/ContactForm.constants";
 
 const CONTACT_KEY = process.env.NEXT_PUBLIC_INNGEST_KEY;
 
-const DEBUG = process.env.NEXT_PUBLIC_HOST.match(/localhost/) ? true : false;
+const DEBUG = process.env.NEXT_PUBLIC_HOST?.match(/localhost/) ? true : false;
 
 // Use plain string keys (not computed property keys) so the lookup is
 // resilient to module-init ordering and HMR. Keys must match FORM_TYPE values.

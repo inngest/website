@@ -15,7 +15,7 @@ export function FullWidthCTA({
   description = "Ship reliable code without manage queues, infrastructure, or state",
   ctas = [
     {
-      href: process.env.NEXT_PUBLIC_SIGNUP_URL,
+      href: process.env.NEXT_PUBLIC_SIGNUP_URL ?? "#",
       text: "Start building for free",
     },
   ],
