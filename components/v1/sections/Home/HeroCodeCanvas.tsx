@@ -117,7 +117,7 @@ export default function HeroCodeCanvas({
           type="button"
           aria-label={`Show function ${b.funcIdx + 1}`}
           onClick={() => sceneRef.current?.jumpTo(b.funcIdx)}
-          className="absolute pointer-events-auto cursor-pointer rounded-md border-0 bg-transparent p-0"
+          className="absolute pointer-events-auto cursor-pointer rounded-md border-0 bg-transparent p-0 outline-none focus:outline-none focus-visible:outline-none"
           style={{
             left: `${b.x}px`,
             top: `${b.y}px`,
