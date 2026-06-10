@@ -17,7 +17,7 @@ import { reveals } from "@/utils/v1/reveals";
 // WebhooksEvents/InPractice so both pages share one outer shell
 // (GradientFrame + CodeBlock + identical typography conventions).
 
-const SEE_DOCS_URL = "/docs?ref=scheduled-jobs";
+const SEE_DOCS_URL = "/docs/guides/scheduled-functions?ref=scheduled-jobs";
 
 // Same syntax palette as the WebhooksEvents snippet —
 // comments and punctuation share the muted grey, keywords salmon,
