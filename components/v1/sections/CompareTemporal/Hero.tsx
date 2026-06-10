@@ -97,7 +97,7 @@ export default function Hero() {
               variant="accent"
               className="!w-full sm:!w-auto"
             >
-              Talk to Sales
+              Get a Demo
             </ButtonLink>
             {/* Dark-outline CTA — `secondaryLight` is the frost-ring
                 secondary recoloured to ink for this ivory hero. */}
