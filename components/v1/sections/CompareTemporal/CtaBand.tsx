@@ -14,7 +14,7 @@ import { reveals } from "@/utils/v1/reveals";
  */
 
 const SIGNUP_URL = "/sign-up?ref=compare-to-temporal-cta";
-const CONTACT_URL = "/get-in-touch?ref=compare-to-temporal-cta";
+const CONTACT_URL = "/contact?ref=compare-to-temporal-cta";
 const VIDEO_ID = "khBvrr7YOm8";
 
 const ENTERPRISE_POINTS = [
