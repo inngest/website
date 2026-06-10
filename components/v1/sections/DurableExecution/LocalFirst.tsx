@@ -39,7 +39,7 @@ export default function LocalFirst() {
             }
             actions={
               <ButtonLink
-                href="/docs/observability?ref=durable-execution"
+                href="/docs/local-development?ref=durable-execution"
                 variant="primary"
               >
                 See docs
