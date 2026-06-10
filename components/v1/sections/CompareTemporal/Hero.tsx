@@ -37,7 +37,7 @@ const entry = (delay: number, color?: string) => {
   };
 };
 
-const DOCS_URL = "/docs?ref=compare-to-temporal";
+const DOCS_URL = "/contact?ref=compare-to-temporal";
 const SIGNUP_URL = "/sign-up?ref=compare-to-temporal";
 
 // Fine fractal-noise grain (clean, resolution-independent) for the
@@ -97,7 +97,7 @@ export default function Hero() {
               variant="accent"
               className="!w-full sm:!w-auto"
             >
-              Read the docs
+              Talk to Sales
             </ButtonLink>
             {/* Dark-outline CTA — `secondaryLight` is the frost-ring
                 secondary recoloured to ink for this ivory hero. */}
