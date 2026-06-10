@@ -356,7 +356,7 @@ function BlogHero({
       <div className="overflow-hidden rounded-[8px] border border-[rgba(124,124,124,0.35)]">
         <HeroCover image={image} imageAlt={heading} size={heroSize} />
       </div>
-      <div className="mt-8 flex max-w-[calc(800/1248*100%)] flex-col gap-4 text-v1-frost">
+      <div className="mt-8 flex flex-col gap-4 text-v1-frost lg:max-w-[calc(800/1248*100%)]">
         <Chip variant="solid" size="sm" className="self-start">
           Blog Article
         </Chip>
