@@ -7,5 +7,6 @@ module.exports = {
     "/blog-markdown/*",
     "/docs-markdown/*",
     "/api/*",
+    "*/download-gate-form*",
   ],
 };
