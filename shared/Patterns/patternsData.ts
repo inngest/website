@@ -145,6 +145,13 @@ export const PATTERNS: PatternIndexItem[] = [
       "Break multi-step AI pipelines and complex business logic into durable, independently retried steps.",
   },
   {
+    category: "durable",
+    slug: "experiment-score-and-compare-ai-models",
+    title: "Experiment, score, and compare AI models",
+    subtitle:
+      "Use experiments to split traffic between models, defer scoring to run after the response, and query results to pick the winner.",
+  },
+  {
     category: "flow",
     slug: "flash-sales-and-bursty-workflows",
     title: "Flash sales and bursty workflows",

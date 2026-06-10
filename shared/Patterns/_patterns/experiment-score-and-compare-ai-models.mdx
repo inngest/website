@@ -1,0 +1,291 @@
+---
+title: Experiment and compare AI models
+subtitle: Use experiments to split traffic between models, defer cost tracking to run after the response, and query Insights to pick the winner.
+pattern: durable
+tags: [Durability, AI, Architecture]
+---
+
+You shipped an AI feature with GPT-4o. It works. Customers are using it. Then a new model drops and your team wants to know: is it better for our use case? Faster? Cheaper? More accurate?
+
+You could spin up a notebook and test it against a handful of prompts. But that tells you how the model performs on your test data, not on your production traffic. The only way to know for real is to run both models side by side, on real requests, and measure what happens.
+
+This pattern walks through doing exactly that with three AI primitives from the Inngest SDK.
+
+---
+
+## Split the traffic
+
+The first thing you need is a way to send some requests to the new model without taking the old one offline. `group.experiment()` does this inside any Inngest function.
+
+```typescript
+const { result: response, variant } = await group.experiment(
+  "model-comparison",
+  {
+    variants: {
+      gpt4o: async () => {
+        return await step.run("call-gpt4o", async () => {
+          return await openai.chat.completions.create({
+            model: "gpt-4o",
+            messages: [
+              { role: "system", content: "You are a support agent. Be concise and helpful." },
+              { role: "user", content: event.data.content },
+            ],
+          });
+        });
+      },
+      sonnet: async () => {
+        return await step.run("call-sonnet", async () => {
+          return await anthropic.messages.create({
+            model: "claude-sonnet-4-20250514",
+            max_tokens: 1024,
+            messages: [
+              { role: "user", content: event.data.content },
+            ],
+          });
+        });
+      },
+    },
+    weights: { gpt4o: 50, sonnet: 50 },
+  }
+);
+```
+
+Each request gets one model. The selection is memoized as a durable step, so if the function retries, the same model runs again. The user never sees the experiment. They get a response from whichever model was selected.
+
+You control the split with `weights`. Start at 50/50 to collect data fast. Later, shift to 90/10 to confirm the winner at scale before cutting over.
+
+---
+
+## Track the cost
+
+The response is served. Now you want to know: what did that cost? Different models have different token pricing, and you're running both at the same time. You need per-variant cost data without slowing down the response.
+
+This is where `defer()` comes in. Define a deferred function that calculates the cost and logs it. It runs after the parent function completes, on its own timeline, with its own retries.
+
+```typescript
+import { createDefer } from "inngest/experimental";
+import { z } from "zod";
+
+const trackCosts = createDefer(inngest, {
+  id: "track-experiment-costs",
+  schema: z.object({
+    model: z.string(),
+    variant: z.string(),
+    promptTokens: z.number(),
+    completionTokens: z.number(),
+    customerId: z.string(),
+  }),
+}, async ({ event, step }) => {
+  await step.run("log-cost", async () => {
+    const rates: Record<string, number> = {
+      "gpt-4o": 0.005,
+      "claude-sonnet-4-20250514": 0.003,
+    };
+    const costPer1k = rates[event.data.model] || 0.005;
+    const totalTokens = event.data.promptTokens + event.data.completionTokens;
+
+    await analytics.track("ai.experiment.cost", {
+      variant: event.data.variant,
+      model: event.data.model,
+      tokens: totalTokens,
+      cost_usd: (totalTokens / 1000) * costPer1k,
+      customer_id: event.data.customerId,
+    });
+  });
+});
+```
+
+Call `defer()` at the end of your agent function, after the response ships:
+
+```typescript
+defer("track-costs", {
+  function: trackCosts,
+  data: {
+    model: variant === "gpt4o" ? "gpt-4o" : "claude-sonnet-4-20250514",
+    variant,
+    promptTokens: variant === "gpt4o"
+      ? response.usage.prompt_tokens
+      : response.usage.input_tokens,
+    completionTokens: variant === "gpt4o"
+      ? response.usage.completion_tokens
+      : response.usage.output_tokens,
+    customerId: event.data.customerId,
+  },
+});
+```
+
+The customer gets their response immediately. The cost tracker fires after the parent run finalizes. If your analytics platform is down, the tracker retries on its own. The parent run's success status is unaffected.
+
+---
+
+## Pick the winner
+
+You've been running the experiment for a week. Both models have handled hundreds of real requests. Now you need the answer.
+
+Open Insights and query your run data:
+
+```sql
+SELECT
+  output.variant AS variant,
+  AVG(duration_ms) AS avg_duration_ms,
+  COUNT(*) AS total_runs,
+  SUM(CASE WHEN status = 'FAILED' THEN 1 ELSE 0 END) AS failures
+FROM runs
+WHERE function_id = 'handle-support-ticket'
+  AND status IN ('COMPLETED', 'FAILED')
+GROUP BY output.variant
+```
+
+Sonnet averages 800ms. GPT-4o averages 1200ms. Failure rates are similar. Combine that with the cost data from your deferred tracker: Sonnet is 40% cheaper per response at the current token rates.
+
+That's not a benchmark result. That's a measurement from your production traffic, on your data, with your users. You shift the weights to `{ gpt4o: 10, sonnet: 90 }`, watch it for another few days, and then cut over.
+
+---
+
+## The complete function
+
+Here's everything together:
+
+```typescript
+import { inngest } from "./client";
+import { createDefer } from "inngest/experimental";
+import { z } from "zod";
+
+const trackCosts = createDefer(inngest, {
+  id: "track-experiment-costs",
+  schema: z.object({
+    model: z.string(),
+    variant: z.string(),
+    promptTokens: z.number(),
+    completionTokens: z.number(),
+    customerId: z.string(),
+  }),
+}, async ({ event, step }) => {
+  await step.run("log-cost", async () => {
+    const rates: Record<string, number> = {
+      "gpt-4o": 0.005,
+      "claude-sonnet-4-20250514": 0.003,
+    };
+    const costPer1k = rates[event.data.model] || 0.005;
+    const totalTokens = event.data.promptTokens + event.data.completionTokens;
+
+    await analytics.track("ai.experiment.cost", {
+      variant: event.data.variant,
+      model: event.data.model,
+      tokens: totalTokens,
+      cost_usd: (totalTokens / 1000) * costPer1k,
+      customer_id: event.data.customerId,
+    });
+  });
+});
+
+const handleTicket = inngest.createFunction(
+  { id: "handle-support-ticket", triggers: { event: "support/ticket.created" } },
+  async ({ event, step, group, defer }) => {
+
+    const { result: response, variant } = await group.experiment(
+      "model-comparison",
+      {
+        variants: {
+          gpt4o: async () => {
+            return await step.run("call-gpt4o", async () => {
+              return await openai.chat.completions.create({
+                model: "gpt-4o",
+                messages: [
+                  { role: "system", content: "You are a support agent. Be concise and helpful." },
+                  { role: "user", content: event.data.content },
+                ],
+              });
+            });
+          },
+          sonnet: async () => {
+            return await step.run("call-sonnet", async () => {
+              return await anthropic.messages.create({
+                model: "claude-sonnet-4-20250514",
+                max_tokens: 1024,
+                messages: [
+                  { role: "user", content: event.data.content },
+                ],
+              });
+            });
+          },
+        },
+        weights: { gpt4o: 50, sonnet: 50 },
+      }
+    );
+
+    const reply = variant === "gpt4o"
+      ? response.choices[0].message.content
+      : response.content[0].text;
+
+    await step.run("send-reply", async () => {
+      await supportPlatform.reply(event.data.ticketId, reply);
+    });
+
+    defer("track-costs", {
+      function: trackCosts,
+      data: {
+        model: variant === "gpt4o" ? "gpt-4o" : "claude-sonnet-4-20250514",
+        variant,
+        promptTokens: variant === "gpt4o"
+          ? response.usage.prompt_tokens
+          : response.usage.input_tokens,
+        completionTokens: variant === "gpt4o"
+          ? response.usage.completion_tokens
+          : response.usage.output_tokens,
+        customerId: event.data.customerId,
+      },
+    });
+
+    return { ticketId: event.data.ticketId, variant, status: "resolved" };
+  }
+);
+```
+
+---
+
+## Other things you can compare
+
+**Prompts.** Same model, different system prompts. One concise, one thorough. Which one do your users prefer? Which one resolves more tickets without follow-ups?
+
+```typescript
+variants: {
+  concise: async () => {
+    return await step.run("call-concise", async () => {
+      return await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          { role: "system", content: "You are a support agent. Answer in 2-3 sentences max." },
+          { role: "user", content: event.data.content },
+        ],
+      });
+    });
+  },
+  detailed: async () => {
+    return await step.run("call-detailed", async () => {
+      return await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          { role: "system", content: "You are a support agent. Be thorough. Include relevant links and next steps." },
+          { role: "user", content: event.data.content },
+        ],
+      });
+    });
+  },
+},
+```
+
+**RAG strategies.** One variant does a simple vector search. The other reranks the results before passing them to the model. Same model, different retrieval pipeline. Insights tells you whether the extra latency from reranking is worth it.
+
+**Rollout strategy.** You don't have to go 50/50. Start at `{ current: 95, new: 5 }` and monitor for a week. Shift to 70/30. Then 50/50. Then 90/10 in favor of the new model. Then cut over. Every run records which variant it used, so you always have the data to justify the next shift.
+
+**Background work.** The cost tracker is one deferred function. You can defer anything: a Slack notification tagged with the variant, a write to your data warehouse, a webhook to an external dashboard. Each one runs independently after the response ships.
+
+---
+
+## Additional resources
+
+- [Run experiments in AI pipelines](/docs/features/inngest-functions/steps-workflows/running-experiments) for the experiments how-to
+- [`group.experiment()` reference](/docs/reference/typescript/v4/functions/group-experiment) for the full API
+- [Deferred Functions reference](/docs/reference/typescript/v4/functions/deferred-functions) for defer
+- [Insights](/docs/platform/monitor/insights) for querying run data
