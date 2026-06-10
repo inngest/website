@@ -79,8 +79,8 @@ export const PLANS: Plan[] = [
     },
     features: [
       { value: "50k", text: "executions" },
+      { value: "5", text: "concurrent executions" },
       { value: "50", text: "realtime connections" },
-      { value: "5", text: "concurrent steps" },
       { text: "Basic tracing, metrics, and alerts" },
     ],
   },
@@ -115,8 +115,8 @@ export const PLANS: Plan[] = [
     },
     features: [
       { value: "1M+", text: "executions" },
+      { value: "100+", text: "concurrent executions" },
       { value: "1000", text: "realtime connections" },
-      { value: "100+", text: "concurrent steps" },
       { text: "Granular tracing, metrics, alerts + 7 day trace retention" },
       { text: "Increased throughput" },
     ],
@@ -151,8 +151,8 @@ export const PLANS: Plan[] = [
     },
     features: [
       { value: "Custom", text: "executions" },
+      { value: "Custom", text: "concurrent executions" },
       { value: "Custom", text: "realtime connections" },
-      { value: "Custom", text: "concurrent steps" },
       { text: "Advanced tracing, metrics, alerts + 90 day trace retention" },
       { text: "Dedicated Slack channel" },
       { text: "SAML, RBAC, audit trails" },
@@ -190,39 +190,52 @@ export interface Feature {
 
 export const FEATURE_SECTIONS: FeatureSection[] = [
   { key: "events", name: "Events" },
-  { key: "realtime", name: "Real time" },
+  { key: "realtime", name: "Realtime" },
   { key: "observability", name: "Observability" },
 ];
 
 export const FEATURES: Feature[] = [
   {
+    name: "Base price",
+    section: "comparison",
+    plans: {
+      [PLAN_NAMES.hobby]: "$0",
+      [PLAN_NAMES.pro]: "$75 /mo",
+      [PLAN_NAMES.enterprise]: "Contact us",
+    },
+  },
+  {
     name: "Executions",
     description: "A single durable function run or step execution",
-    section: "events",
-    // TODO: replace with the canonical docs/pricing URL for executions
-    infoUrl: "#",
+    section: "comparison",
+    infoUrl: "/docs/features/inngest-functions?ref=pricing-comparison-table",
     plans: {
       [PLAN_NAMES.hobby]: "50k /mo included",
-      [PLAN_NAMES.pro]: { value: "1M /mo included", description: "then $50 per 1M" },
+      [PLAN_NAMES.pro]: {
+        value: "1m /mo included",
+        description: "then $50 per 1m",
+      },
       [PLAN_NAMES.enterprise]: "Custom",
     },
   },
   {
     name: "Concurrency",
     description: "Process steps in parallel while smoothing load",
-    section: "events",
-    // TODO: replace with the canonical docs/pricing URL for concurrency
-    infoUrl: "#",
+    section: "comparison",
+    infoUrl: "/docs/guides/concurrency?ref=pricing-comparison-table",
     plans: {
       [PLAN_NAMES.hobby]: "5 included",
-      [PLAN_NAMES.pro]: { value: "100 included", description: "then $25 per 25" },
+      [PLAN_NAMES.pro]: {
+        value: "100 included",
+        description: "then $25 per 25",
+      },
       [PLAN_NAMES.enterprise]: "500 included",
     },
   },
   {
     name: "Users",
     description: "Develop with your entire team",
-    section: "events",
+    section: "comparison",
     plans: {
       [PLAN_NAMES.hobby]: "3",
       [PLAN_NAMES.pro]: { value: "15", description: "then $10/user" },
@@ -232,17 +245,17 @@ export const FEATURES: Feature[] = [
   {
     name: "Workers",
     description: "Low latency always-connected workers",
-    section: "realtime",
+    section: "comparison",
     plans: {
       [PLAN_NAMES.hobby]: "3",
-      [PLAN_NAMES.pro]: { value: "20", description: "then $10 per worker" },
-      [PLAN_NAMES.enterprise]: "Unlimited",
+      [PLAN_NAMES.pro]: { value: "20", description: "then $10/worker" },
+      [PLAN_NAMES.enterprise]: "Custom",
     },
   },
   {
     name: "Serverless workers",
     description: "Serverless endpoints for your apps",
-    section: "realtime",
+    section: "comparison",
     plans: {
       [PLAN_NAMES.hobby]: "Unlimited",
       [PLAN_NAMES.pro]: "Unlimited",
@@ -251,8 +264,8 @@ export const FEATURES: Feature[] = [
   },
   {
     name: "Dedicated slack channel",
-    description: "Direct support from our team",
-    section: "observability",
+    description: "Direct P0 support from our team",
+    section: "comparison",
     plans: {
       [PLAN_NAMES.hobby]: false,
       [PLAN_NAMES.pro]: false,
@@ -262,11 +275,116 @@ export const FEATURES: Feature[] = [
   {
     name: "HIPAA",
     description: "BAAs for healthcare compliance",
-    section: "observability",
+    section: "comparison",
     plans: {
       [PLAN_NAMES.hobby]: false,
       [PLAN_NAMES.pro]: "Add-on",
+      [PLAN_NAMES.enterprise]: true,
+    },
+  },
+  {
+    name: "Events",
+    description: "Received/processed",
+    section: "events",
+    infoUrl: "/docs/guides/sending-events-from-functions?ref=pricing-comparison-table",
+    plans: {
+      [PLAN_NAMES.hobby]: "100k/mo included",
+      [PLAN_NAMES.pro]: {
+        value: "5m/mo included",
+        description: "then $0.5 per 1m",
+      },
       [PLAN_NAMES.enterprise]: "Custom",
+    },
+  },
+  {
+    name: "Size",
+    description: "Size of a single event",
+    section: "events",
+    plans: {
+      [PLAN_NAMES.hobby]: "256 KiB",
+      [PLAN_NAMES.pro]: "3 MiB",
+      [PLAN_NAMES.enterprise]: "Custom",
+    },
+  },
+  {
+    name: "Batch capacity",
+    description: "Number of events in a single batch",
+    section: "events",
+    plans: {
+      [PLAN_NAMES.hobby]: "5",
+      [PLAN_NAMES.pro]: "100",
+      [PLAN_NAMES.enterprise]: "Custom",
+    },
+  },
+  {
+    name: "Batch timeout",
+    description: "Time to wait for a batch to be full",
+    section: "events",
+    plans: {
+      [PLAN_NAMES.hobby]: "30 seconds",
+      [PLAN_NAMES.pro]: "5 minutes",
+      [PLAN_NAMES.enterprise]: "Custom",
+    },
+  },
+  {
+    name: "Connections",
+    section: "realtime",
+    infoUrl: "/docs/features/realtime?ref=pricing-comparison-table",
+    plans: {
+      [PLAN_NAMES.hobby]: "50",
+      [PLAN_NAMES.pro]: "1000",
+      [PLAN_NAMES.enterprise]: "1000",
+    },
+  },
+  {
+    name: "Messages",
+    section: "realtime",
+    plans: {
+      [PLAN_NAMES.hobby]: "250k per day",
+      [PLAN_NAMES.pro]: "1m per day",
+      [PLAN_NAMES.enterprise]: "1m per day",
+    },
+  },
+  {
+    name: "Metrics granularity",
+    description: "Real-time function metrics",
+    section: "observability",
+    infoUrl: "/docs/platform/monitor/observability-metrics?ref=pricing-comparison-table",
+    plans: {
+      [PLAN_NAMES.hobby]: "30 minutes",
+      [PLAN_NAMES.pro]: "15 minutes",
+      [PLAN_NAMES.enterprise]: "1 minute",
+    },
+  },
+  {
+    name: "Trace and log history",
+    description: "Tracing for every function run",
+    section: "observability",
+    infoUrl: "/docs/platform/monitor/inspecting-function-runs?ref=pricing-comparison-table",
+    plans: {
+      [PLAN_NAMES.hobby]: "24 hours",
+      [PLAN_NAMES.pro]: "7 days",
+      [PLAN_NAMES.enterprise]: "90 days",
+    },
+  },
+  {
+    name: "Trace and log exports",
+    description: "Push traces and logs to other systems",
+    section: "observability",
+    plans: {
+      [PLAN_NAMES.hobby]: false,
+      [PLAN_NAMES.pro]: false,
+      [PLAN_NAMES.enterprise]: "Contact us",
+    },
+  },
+  {
+    name: "Advanced observability",
+    description: "Integration with Datadog, etc",
+    section: "observability",
+    plans: {
+      [PLAN_NAMES.hobby]: false,
+      [PLAN_NAMES.pro]: "$300",
+      [PLAN_NAMES.enterprise]: true,
     },
   },
 ];
