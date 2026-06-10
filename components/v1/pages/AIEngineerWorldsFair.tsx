@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import PageShell from "@/components/v1/PageShell";
 import LogoMarquee from "@/components/v1/sections/Home/LogoMarquee";
+import Button from "@/components/v1/Button";
+import EventCardLarge from "@/components/v1/sections/Events/EventCardLarge";
+import type { EventItem } from "@/components/v1/sections/Events/data";
 
 const EVENT = {
   title: "Meet Inngest at AI Engineer World's Fair",
@@ -15,43 +17,28 @@ const EVENT = {
 const GCAL_URL =
   "https://calendar.google.com/calendar/appointments/schedules/AcZssZ3G2ScOpUcmeFwEPSbRH3BdtK8fY627O4WX8dOeVA3s7Lzt17qKiIxu_4VgEHXJZ_Fgdj7EpB67?gv=true";
 
-function SchedulingButton() {
-  const targetRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    // Inject the Google Calendar scheduling CSS
-    const link = document.createElement("link");
-    link.href =
-      "https://calendar.google.com/calendar/scheduling-button-script.css";
-    link.rel = "stylesheet";
-    document.head.appendChild(link);
-
-    // Inject the scheduling script, then initialise the button
-    const script = document.createElement("script");
-    script.src =
-      "https://calendar.google.com/calendar/scheduling-button-script.js";
-    script.async = true;
-    script.onload = () => {
-      const cal = (window as { calendar?: { schedulingButton?: { load: (opts: object) => void } } }).calendar;
-      if (targetRef.current && cal?.schedulingButton) {
-        cal.schedulingButton.load({
-          url: GCAL_URL,
-          color: "#fb6142",
-          label: "Schedule time with us",
-          target: targetRef.current,
-        });
-      }
-    };
-    document.head.appendChild(script);
-
-    return () => {
-      document.head.removeChild(link);
-      document.head.removeChild(script);
-    };
-  }, []);
-
-  return <div ref={targetRef} />;
-}
+const OTHER_EVENTS: EventItem[] = [
+  {
+    id: "aiewf-lunch",
+    title: "innhouse lunch with E2B",
+    date: "Wednesday, July 1 · 12–2 PM",
+    location: "San Francisco, CA",
+    topics: ["free lunch", "rooftop dj", "senor sisig"],
+    excerpt:
+      "Grab-and-go from Señor Sisig, matcha & coffee, swag, and a rooftop DJ just steps away from Moscone West. Co-hosted with E2B.",
+    href: "https://luma.com/umyvwvek?utm_source=inngest",
+  },
+  {
+    id: "aiewf-afterparty",
+    title: "AI World's Fair Afterparty",
+    date: "Wednesday, July 1 · 6–9 PM",
+    location: "San Francisco, CA",
+    topics: ["happy hour", "networking", "digital darts"],
+    excerpt:
+      "The expo floor is closing, your brain is full of vector databases, and it's time to trade the keyboard for some competitive throwing. Join Tailscale, Docker, Aikido Security, Inngest and Rootly for an evening of digital darts, custom cocktails, and networking.",
+    href: "https://luma.com/2avil0ni",
+  },
+];
 
 export default function AIEngineerWorldsFair() {
   return (
@@ -101,14 +88,18 @@ export default function AIEngineerWorldsFair() {
               <div className="flex flex-col gap-4">
                 <p className="text-v1-label-md uppercase">Description</p>
                 {EVENT.description.split("\n\n").map((para, i) => (
-                  <p key={i} className="text-v1-body-sm">
+                  <p key={i} className={`text-v1-body-sm${i > 0 ? " mt-4" : ""}`}>
                     {para}
                   </p>
                 ))}
               </div>
 
-              {/* Google Calendar scheduling button */}
-              <SchedulingButton />
+              {/* Schedule time CTA — styled to match sample event page */}
+              <Button asChild variant="accent" className="self-start">
+                <a href={GCAL_URL} target="_blank" rel="noopener noreferrer">
+                  Schedule time with us →
+                </a>
+              </Button>
             </div>
           </div>
 
@@ -129,6 +120,26 @@ export default function AIEngineerWorldsFair() {
       </section>
 
       <LogoMarquee />
+
+      {/* Other upcoming events */}
+      <section
+        aria-labelledby="event-other-heading"
+        className="relative mx-auto flex w-full max-w-[1440px] flex-col gap-8 px-6 py-8 text-v1-frost sm:px-9 lg:gap-10 lg:px-[70px]"
+      >
+        <h2
+          id="event-other-heading"
+          className="text-v1-heading-md-cap text-white"
+        >
+          Other upcoming events
+        </h2>
+        <ul className="flex list-none flex-col gap-8 pl-0 lg:gap-10">
+          {OTHER_EVENTS.map((ev) => (
+            <li key={ev.id} className="list-none">
+              <EventCardLarge ev={ev} />
+            </li>
+          ))}
+        </ul>
+      </section>
     </PageShell>
   );
 }
