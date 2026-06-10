@@ -1,35 +1,62 @@
 ---
 title: Experiment and compare AI models
-subtitle: Use experiments to split traffic between models, then query Insights to compare latency, token usage, and success rates across variants.
+subtitle: Use experiments to split traffic between models, defer cost tracking to run after the response, and query Insights to pick the winner.
 pattern: durable
 tags: [Durability, AI, Architecture]
 ---
 
 You shipped an AI feature with GPT-4o. A new model drops. Your team wants to know: is it better for our use case? Faster? Cheaper? More accurate? You need to compare them in production with real traffic, not a synthetic benchmark.
 
-This pattern uses two Inngest primitives to answer that question:
-
-| Primitive | Role in this pattern |
-|---|---|
-| **`group.experiment()`** | Splits traffic between model variants |
-| **Insights** | Aggregates run data so you can query which variant performs better |
-
-The function serves a response to the user immediately. Run metadata (variant, model, token counts) is captured automatically. The data accumulates over days or weeks. You make a decision based on real production outcomes, not a one-off test.
+This pattern composes three AI primitives from the Inngest SDK to answer that question without building a separate eval pipeline. Experiments split traffic. Defer handles background work that the user should never wait for. Insights ties it all together so you can query the results.
 
 ---
 
 ## The full flow
 
-Here is the complete function. Each section is explained below.
+The agent function uses `group.experiment()` to select a model variant, serves the response, then defers a cost tracker that logs token usage per variant. Insights lets you compare latency, failure rate, and cost across variants.
 
 ```typescript
 import { inngest } from "./client";
+import { createDefer } from "inngest/experimental";
+import { z } from "zod";
 
+// --- Deferred cost tracker ---
+// Runs as an independent function after the parent completes.
+// Calculates per-variant, per-customer token cost.
+const trackCosts = createDefer(inngest, {
+  id: "track-experiment-costs",
+  schema: z.object({
+    model: z.string(),
+    variant: z.string(),
+    promptTokens: z.number(),
+    completionTokens: z.number(),
+    customerId: z.string(),
+  }),
+}, async ({ event, step }) => {
+  await step.run("log-cost", async () => {
+    const rates: Record<string, number> = {
+      "gpt-4o": 0.005,
+      "claude-sonnet-4-20250514": 0.003,
+    };
+    const costPer1k = rates[event.data.model] || 0.005;
+    const totalTokens = event.data.promptTokens + event.data.completionTokens;
+
+    await analytics.track("ai.experiment.cost", {
+      variant: event.data.variant,
+      model: event.data.model,
+      tokens: totalTokens,
+      cost_usd: (totalTokens / 1000) * costPer1k,
+      customer_id: event.data.customerId,
+    });
+  });
+});
+
+// --- Agent function ---
 const handleTicket = inngest.createFunction(
   { id: "handle-support-ticket", triggers: { event: "support/ticket.created" } },
-  async ({ event, step, group }) => {
+  async ({ event, step, group, defer }) => {
 
-    // 1. EXPERIMENT: select a model variant
+    // EXPERIMENT: select a model variant
     const { result: response, variant } = await group.experiment(
       "model-comparison",
       {
@@ -66,9 +93,27 @@ const handleTicket = inngest.createFunction(
       ? response.choices[0].message.content
       : response.content[0].text;
 
-    // 2. SERVE: send the response to the customer
+    // SERVE: send the response to the customer
     await step.run("send-reply", async () => {
       await supportPlatform.reply(event.data.ticketId, reply);
+    });
+
+    // DEFER: track costs in the background after the parent completes.
+    // This is an AI primitive — the cost tracker runs as its own function
+    // with independent retries. The customer never waits for analytics.
+    defer("track-costs", {
+      function: trackCosts,
+      data: {
+        model: variant === "gpt4o" ? "gpt-4o" : "claude-sonnet-4-20250514",
+        variant,
+        promptTokens: variant === "gpt4o"
+          ? response.usage.prompt_tokens
+          : response.usage.input_tokens,
+        completionTokens: variant === "gpt4o"
+          ? response.usage.completion_tokens
+          : response.usage.output_tokens,
+        customerId: event.data.customerId,
+      },
     });
 
     return { ticketId: event.data.ticketId, variant, status: "resolved" };
@@ -76,12 +121,12 @@ const handleTicket = inngest.createFunction(
 );
 ```
 
-Register the function:
+Register both functions:
 
 ```typescript
 serve({
   client: inngest,
-  functions: [handleTicket],
+  functions: [handleTicket, trackCosts],
 });
 ```
 
@@ -95,15 +140,17 @@ serve({
 
 Start with 50/50. Once you have enough data, shift to 90/10 to confirm the winner at scale before cutting over completely.
 
-Each variant wraps its model call in `step.run()`. This means the model call is independently retried if it fails, and the variant selection is preserved across retries.
+Each variant wraps its model call in `step.run()`. The model call is independently retried if it fails, and the variant selection is preserved across retries.
 
-### Run data captures the comparison
+### Defer handles cost tracking
 
-Every run records which variant was selected, how long each step took, and whether it succeeded. The variant name is returned in the function output. Extended traces capture token counts and latency per step if you have the middleware enabled.
+The cost tracker is an AI primitive built on `defer()`. It runs as a completely separate function after the parent finalizes. The customer gets their response immediately. The cost calculation and analytics write happen on their own timeline with their own retries.
+
+If your analytics platform is slow or down, the cost tracker retries independently. The parent run's success status is unaffected. The deferred function receives a typed payload with the model name, variant, and token counts, so it has everything it needs without querying external systems.
 
 ### Insights reveals the winner
 
-Query your run data in Insights to compare variants. For example, compare average step duration:
+Query your run data in Insights to compare variants:
 
 ```sql
 SELECT
@@ -117,25 +164,13 @@ WHERE function_id = 'handle-support-ticket'
 GROUP BY output.variant
 ```
 
-If Sonnet averages 800ms and GPT-4o averages 1200ms across 500 runs each with similar failure rates, you have a data-driven answer. Not a gut check. Not a benchmark on synthetic data. A measurement from your production traffic.
-
-With Extended Traces enabled, you can also compare token usage:
-
-```sql
-SELECT
-  output.variant AS variant,
-  AVG(steps.duration_ms) AS avg_model_call_ms,
-  COUNT(*) AS runs
-FROM runs
-WHERE function_id = 'handle-support-ticket'
-GROUP BY output.variant
-```
+If Sonnet averages 800ms and GPT-4o averages 1200ms across 500 runs each with similar failure rates, you have a data-driven answer. Combine this with the cost data from the deferred tracker to see which model gives you the best quality-to-cost ratio.
 
 ---
 
 ## Adapting this pattern
 
-**Compare prompts instead of models.** Replace the model variants with different system prompts on the same model. Everything else stays the same.
+**Compare prompts instead of models.** Replace the model variants with different system prompts on the same model. The cost tracker still works since it's tracking tokens regardless of the prompt.
 
 ```typescript
 variants: {
@@ -164,19 +199,11 @@ variants: {
 },
 ```
 
-**Compare RAG strategies.** One variant uses a simple vector search. The other adds a reranking step. Same model, different retrieval pipelines. Insights shows you whether the extra latency from reranking actually improves outcomes.
+**Compare RAG strategies.** One variant uses a simple vector search. The other adds a reranking step. Same model, different retrieval pipelines. Insights shows you whether the extra latency from reranking is worth it.
 
 **Gradually roll out a new model.** Start at `weights: { current: 95, new: 5 }`. Monitor for a week. If the new model performs well, shift to 50/50. Then 90/10 in favor of the new model. Then cut over. The experiment tracks which variant every run used, so you can always query the data by variant.
 
----
-
-## Adding scoring later
-
-When scoring ships, you can layer it onto this pattern to measure quality directly. A deferred scorer runs after the parent completes, evaluates the response with LLM-as-judge or waits for user feedback, and attaches a numeric score to the run. Insights then lets you compare average scores across variants, not just latency and success rates.
-
-The pattern structure doesn't change. You add `defer()` calls after the response ships, and the scores accumulate alongside the operational data you're already collecting.
-
-See [Build a deferred scorer](/docs/features/inngest-functions/steps-workflows/deferred-scoring) for how this works.
+**Defer more than costs.** The cost tracker is one example. You can defer any background work per variant: send a Slack notification with the variant name, log to a custom dashboard, or write to a data warehouse for longer-term analysis. Each deferred function is an independent AI primitive with its own retries.
 
 ---
 
@@ -184,5 +211,6 @@ See [Build a deferred scorer](/docs/features/inngest-functions/steps-workflows/d
 
 - [Run experiments in AI pipelines](/docs/features/inngest-functions/steps-workflows/running-experiments) for the experiments how-to
 - [`group.experiment()` reference](/docs/reference/typescript/v4/functions/group-experiment) for the full API
+- [Deferred Functions reference](/docs/reference/typescript/v4/functions/deferred-functions) for defer
 - [Insights](/docs/platform/monitor/insights) for querying run data
 - [Extended Traces](/docs/reference/typescript/v4/extended-traces) for capturing token counts and latency
