@@ -8,9 +8,9 @@ import type { EventItem } from "@/components/v1/sections/Events/data";
 // home "Get Started" cards: cursor spotlight + 4px lift + soft shadow
 // (no tilt — the card is ~1300px wide, where perspective rotation reads
 // as distortion).
-export default function EventCardLarge({ ev }: { ev: EventItem }) {
+export default function EventCardLarge({ ev, newTab }: { ev: EventItem; newTab?: boolean }) {
   return (
-    <Link href={ev.href} className="block rounded-lg">
+    <Link href={ev.href} className="block rounded-lg" {...(newTab ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
       <SpotlightFrame
         // The card is a flex row at desktop with image at 422.667 of
         // 1300 (≈ 32.51%) and content filling the remainder. Height is

@@ -66,7 +66,7 @@ export default function AIEngineerWorldsFair() {
           <div className="flex flex-col px-6 pb-16 pt-[104px] sm:px-9 lg:pb-[72px] lg:pl-[70px] lg:pr-8 lg:pt-[152px]">
             <div className="flex w-full flex-col gap-10 lg:gap-[51px] lg:pr-8">
               {/* Title + date */}
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-6">
                 <h1
                   id="event-hero-heading"
                   className="text-v1-heading-lg text-[40px] leading-[1.207] sm:text-[48px] lg:text-[58px]"
@@ -135,7 +135,7 @@ export default function AIEngineerWorldsFair() {
         <ul className="flex list-none flex-col gap-8 pl-0 lg:gap-10">
           {OTHER_EVENTS.map((ev) => (
             <li key={ev.id} className="list-none">
-              <EventCardLarge ev={ev} />
+              <EventCardLarge ev={ev} newTab />
             </li>
           ))}
         </ul>
