@@ -7,7 +7,7 @@ import ButtonLink from "@/components/v1/ButtonLink";
  */
 export default function DocsCtaPair() {
   return (
-    <div className="flex flex-shrink-0 flex-col gap-4 sm:flex-row sm:flex-wrap sm:gap-6">
+    <div className="flex flex-shrink-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-6">
       <ButtonLink
         href="/docs/quick-start?ref=compare-to-temporal"
         variant="primary"

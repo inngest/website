@@ -69,12 +69,12 @@ const BANNER_BLUE = "#2f33cb";
 export default function GoDeeper() {
   return (
     <Section aria-label="Go deeper — resources" className="relative">
-      <div className="flex max-w-[936px] flex-col gap-12">
+      <div className="flex flex-col gap-8">
         <motion.div {...reveals.heading}>
           <Banner />
         </motion.div>
 
-        <div className="grid grid-cols-1 gap-x-12 gap-y-12 sm:grid-cols-2">
+        <div className="grid grid-cols-2 gap-x-8 gap-y-6 lg:grid-cols-4">
           {RESOURCES.map((r, i) => (
             <motion.div key={r.id} {...reveals.item(i)}>
               <ResourceCard resource={r} />
@@ -88,7 +88,7 @@ export default function GoDeeper() {
 
 function Banner() {
   return (
-    <div className="relative isolate aspect-[2/1] w-full overflow-hidden">
+    <div className="relative isolate aspect-[5/1] w-full overflow-hidden">
       {/* Banner asset bleeds to edges. `?v=3` busts Vercel's edge
           cache so the new asset replaces the old one without a
           same-filename stale-cache miss. */}
@@ -144,7 +144,7 @@ function ResourceCard({ resource }: { resource: Resource }) {
       onPointerMove={onCursorTiltMove}
       onPointerLeave={onCursorTiltLeave}
       style={CURSOR_TILT_SEED}
-      className="group/card relative isolate flex flex-col items-start gap-[26px] rounded-md border border-transparent p-5 motion-safe:transition-[transform,border-color,box-shadow] motion-safe:duration-[500ms] motion-safe:ease-v1-in hover:[--lift:-4px] hover:border-v1-frost/[0.18] hover:shadow-[0_28px_60px_-32px_rgba(0,0,0,0.55)] focus:outline-none focus-visible:ring-2 focus-visible:ring-v1-frost/30"
+      className="group/card relative isolate flex h-full flex-col items-start justify-between gap-8 rounded-md border border-transparent p-4 motion-safe:transition-[transform,border-color,box-shadow] motion-safe:duration-[500ms] motion-safe:ease-v1-in hover:[--lift:-4px] hover:border-v1-frost/[0.18] hover:shadow-[0_28px_60px_-32px_rgba(0,0,0,0.55)] focus:outline-none focus-visible:ring-2 focus-visible:ring-v1-frost/30"
     >
       {/* Cursor sheen — frost wash that tracks the pointer. */}
       <span

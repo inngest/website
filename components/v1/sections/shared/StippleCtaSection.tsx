@@ -137,9 +137,11 @@ export default function StippleCtaSection({
             </motion.p>
             <motion.div
               {...reveals.item(2)}
-              className="flex flex-col items-start gap-5"
+              className="flex w-full flex-col items-start gap-5 sm:w-auto"
             >
-              <div className="flex flex-row items-stretch gap-3 sm:items-center sm:gap-4">
+              {/* Buttons stack full-width on mobile (flex-col + stretch +
+                  w-full), then sit side-by-side, content-width, at sm+. */}
+              <div className="flex w-full flex-col items-stretch gap-3 sm:w-auto sm:flex-row sm:items-center sm:gap-4">
                 {children}
               </div>
               {footnote && (

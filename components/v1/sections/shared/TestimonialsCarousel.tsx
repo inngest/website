@@ -599,7 +599,7 @@ function Quote({
           />
         </div>
         <div
-          className="flex flex-col gap-8 sm:flex-row sm:flex-wrap sm:gap-y-3"
+          className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-y-3"
           style={{ columnGap: "clamp(12px, 1.5vw, 32px)" }}
         >
           <ButtonLink

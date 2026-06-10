@@ -402,7 +402,8 @@ function TabBody({ tab }: { tab: Tab }) {
       aria-labelledby={`lifecycle-tab-${tab.id}`}
       className="grid grid-cols-1 gap-12 lg:grid-cols-3 lg:items-center lg:gap-x-12"
     >
-      <div className="flex flex-col items-start gap-8 lg:gap-[72px]">
+      <TabImage tab={tab} />
+      <div className="flex flex-col items-start gap-8 lg:order-first lg:gap-[72px]">
         <h3 className="whitespace-pre-line text-v1-heading-card text-v1-frost">
           {tab.title}
         </h3>
@@ -411,7 +412,6 @@ function TabBody({ tab }: { tab: Tab }) {
           {tab.ctaLabel}
         </ButtonLink>
       </div>
-      <TabImage tab={tab} />
     </div>
   );
 }

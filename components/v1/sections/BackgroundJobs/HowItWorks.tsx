@@ -58,7 +58,13 @@ export default function HowItWorks() {
           <div className="lg:flex-1">
             <h2
               id="bg-jobs-how-heading"
-              className={cn(V1_SECTION_TITLE, "relative z-10 lg:sticky lg:top-[22vh]")}
+              // Opaque background so the bottom-pinned "That's it." tucks
+              // behind the sticky headline as it scrolls up, instead of
+              // overlapping it. `pb-2` clears the descenders.
+              className={cn(
+                V1_SECTION_TITLE,
+                "relative z-10 bg-v1-canvasBase pb-2 lg:sticky lg:top-[22vh]",
+              )}
             >
               {["Wrap your code.", "Send an event."].map((line, i) => (
                 <motion.span key={i} {...reveals.item(i)} className="block">
