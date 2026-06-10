@@ -236,13 +236,6 @@ async function redirects() {
   return [
     ...blogRedirects,
     {
-      // General contact page moved to /get-in-touch. Query strings (the
-      // ?ref= CTA tracking) are carried over to the destination by default.
-      source: "/contact",
-      destination: "/get-in-touch",
-      permanent: true,
-    },
-    {
       source: "/workflow-kit",
       destination: "/docs/reference/workflow-kit",
       permanent: false,
