@@ -134,6 +134,9 @@ const JELLO_DAMP = 0.78;
 // Palette.
 const SALMON_R = 217, SALMON_G = 140, SALMON_B = 135;
 const BULLET_R = 244, BULLET_G = 99,  BULLET_B = 66;
+// Inert code text settles to this off-white (#B3B3B3) rather than pure
+// white, so the snippet reads a touch softer behind the headlines.
+const TEXT_R = 179, TEXT_G = 179, TEXT_B = 179;
 // Two-tone dot field: code-forming particles read in brand salmon;
 // ambient floaters + trailing pool stay a quiet neutral grey.
 const DOT_COLOR_SALMON = "rgb(251, 85, 54)";
@@ -243,6 +246,8 @@ export class HeroCodeScene extends Engine {
 
   constructor(canvas: HTMLCanvasElement, options: HeroCodeSceneOptions) {
     super(canvas, { pauseOffscreen: true });
+    // Play the whole code animation 40% faster.
+    this.timeScale = 1.4;
     this.opts = { ...DEFAULTS, ...options } as Required<HeroCodeSceneOptions>;
     this.t = { ...TIMING_DEFAULTS, ...options.timings };
 
@@ -1363,16 +1368,23 @@ export class HeroCodeScene extends Engine {
             } else {
               colorT = steadyColorT;
             }
-            // Fast path: pure white (steady-state at codeness=1) is by
-            // far the most common case — skip the salmon interpolation.
+            // Step titles (step.run() etc.) settle to pure white; the
+            // inert body code settles to a softer #B3B3B3 at 0.9 alpha.
+            const wR = p.isTitle ? 255 : TEXT_R;
+            const wG = p.isTitle ? 255 : TEXT_G;
+            const wB = p.isTitle ? 255 : TEXT_B;
+            // Fast path: settled colour (codeness=1) is by far the most
+            // common case — skip the salmon interpolation.
             if (colorT >= 1) {
-              ctx.fillStyle = '#fff';
+              ctx.fillStyle = p.isTitle ? '#fff' : '#B3B3B3';
             } else {
-              const r = Math.round(SALMON_R + (255 - SALMON_R) * colorT);
-              const g = Math.round(SALMON_G + (255 - SALMON_G) * colorT);
-              const b = Math.round(SALMON_B + (255 - SALMON_B) * colorT);
+              const r = Math.round(SALMON_R + (wR - SALMON_R) * colorT);
+              const g = Math.round(SALMON_G + (wG - SALMON_G) * colorT);
+              const b = Math.round(SALMON_B + (wB - SALMON_B) * colorT);
               ctx.fillStyle = `rgb(${r},${g},${b})`;
             }
+            // Body code rides 0.9 of the computed alpha; titles stay full.
+            if (!p.isTitle) ctx.globalAlpha *= 0.9;
             ctx.fillText(p.char, sx, sy);
           }
         }

@@ -80,7 +80,7 @@ function Copy() {
           no body token expresses that column-fit responsive scale. */}
       <ParaReveal>
         <p
-          className="font-v1Body text-v1-frost leading-[28px] text-[18px] tracking-[-0.01em] lg:text-[clamp(0.875rem,1.4vw,1.125rem)] lg:leading-[1.5]"
+          className="font-v1Body text-[#B3B3B3] leading-[28px] text-[18px] tracking-[-0.01em] lg:text-[clamp(0.875rem,1.4vw,1.125rem)] lg:leading-[1.5]"
         >
           <span className="lg:block lg:whitespace-nowrap">
             Durability that runs on top of existing code,{" "}

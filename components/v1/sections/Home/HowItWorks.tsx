@@ -230,7 +230,7 @@ function Card({ step, active }: { step: Step; active: boolean }) {
         </div>
         <div className="flex flex-col gap-3 lg:gap-[14px]">
           <h3 className="text-[24px] leading-[1.2] text-v1-frost lg:text-balance lg:text-v1-heading-card">{step.title}</h3>
-          <p className="text-pretty text-[16px] leading-[1.2] tracking-[-0.01em] text-v1-frost lg:text-v1-body-lg-loose lg:tracking-normal">{step.body}</p>
+          <p className="text-pretty text-[16px] leading-[1.2] tracking-[-0.01em] text-[#B3B3B3] lg:text-v1-body-lg-loose lg:tracking-normal">{step.body}</p>
         </div>
       </div>
     </div>

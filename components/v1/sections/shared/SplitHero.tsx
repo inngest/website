@@ -365,7 +365,7 @@ export default function SplitHero({
             className="flex w-full flex-col gap-[38px] sm:max-w-[321px] lg:max-w-[480px]"
             {...heroWordEntry(620)}
           >
-            <p className="text-v1-body-lg text-v1-frost lg:tracking-[-0.01em] lg:[font-size:clamp(0.7rem,1.35vw,1.125rem)] lg:[line-height:1.5]">
+            <p className="text-v1-body-lg !text-v1-frost lg:tracking-[-0.01em] lg:[font-size:clamp(0.7rem,1.35vw,1.125rem)] lg:[line-height:1.5]">
               {bodyLines.map((line, i) => (
                 <span key={i}>
                   <span className="lg:block lg:whitespace-nowrap">{line}</span>

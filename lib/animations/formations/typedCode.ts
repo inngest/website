@@ -27,17 +27,22 @@ export function typedCodeFormation({ code, W, H }: Config): TypedCodeFormation {
   const mobile      = W < 640;
   const tinyScreen  = W < 780;
   const smallScreen = W < 1100;
-  const maxBlockW = mobile ? W * 0.92 : tinyScreen ? W * 0.38 : smallScreen ? W * 0.32 : W * 0.32;
-  const maxBlockH = mobile ? H * 0.34 : tinyScreen ? H * 0.52 : smallScreen ? H * 0.58 : H * 0.68;
+  // The big 18px treatment only kicks in at `wide` (>= 1400). Between
+  // 1100 and 1400 the headlines (fluid 11.11vw) are wide enough that a
+  // large, left-shifted code block would collide with "INVISIBLE /
+  // INFRA." — so keep the code smaller + further right there.
+  const wide        = W >= 1280;
+  const maxBlockW = mobile ? W * 0.92 : tinyScreen ? W * 0.38 : smallScreen ? W * 0.32 : wide ? W * 0.44 : W * 0.32;
+  const maxBlockH = mobile ? H * 0.34 : tinyScreen ? H * 0.52 : smallScreen ? H * 0.58 : wide ? H * 0.78 : H * 0.68;
   // centerX shifted further right at lg+ so the code formation
   // doesn't crowd the "Invisible / Infra." title on the left. Mobile
   // stays centered; tinyScreen kept right-biased.
-  const centerX   = mobile ? W * 0.50 : tinyScreen ? W * 0.80 : smallScreen ? W * 0.80 : W * 0.79;
+  const centerX   = mobile ? W * 0.50 : tinyScreen ? W * 0.80 : smallScreen ? W * 0.80 : wide ? W * 0.75 : W * 0.80;
   // Font shrinks on medium / small viewports so the formation reads
   // smaller relative to the headlines (which themselves are being
   // scaled down by the fluid clamp in Hero.tsx). Mobile is hidden, so
   // the 11 px value is just a fallback.
-  let fontPx = mobile ? 11 : tinyScreen ? 11 : smallScreen ? 12 : 15;
+  let fontPx = mobile ? 11 : tinyScreen ? 11 : smallScreen ? 12 : wide ? 18 : 14;
   const setFont = () => {
     octx.font = `500 ${fontPx}px ui-monospace, SFMono-Regular, Menlo, monospace`;
   };

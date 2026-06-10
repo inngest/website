@@ -36,7 +36,6 @@ export default function NavMenuPanel({
   onNavigate?: () => void;
 }) {
   const hasPromo = Boolean(menu.promo);
-  const hasColumns = Boolean(menu.columns);
 
   return (
     <div
@@ -48,8 +47,8 @@ export default function NavMenuPanel({
       className={cn(
         "relative isolate w-full overflow-clip rounded-[6px] bg-carbon-1000",
         PANEL_BORDER,
-        hasPromo ? "flex gap-14 px-8 py-14" : "px-8 pt-8 pb-10",
-        hasColumns ? "items-center" : "items-start"
+        hasPromo ? "flex gap-14 px-8 py-8" : "px-8 pt-8 pb-10",
+        "items-start"
       )}
     >
       {/* Tray-wide cursor spotlight — the same salmon wash SpotlightFrame
@@ -96,14 +95,16 @@ function MenuColumns({ columns }: { columns: NavMenuColumn[] }) {
       {columns.map((column) => (
         <div
           key={column.heading}
-          className="flex flex-1 flex-col gap-8"
+          className="flex flex-1 flex-col"
         >
-          <p className="text-v1-label-md uppercase text-carbon-200">
+          <p className="!text-[0.75rem] mb-4 text-v1-label-md uppercase text-carbon-200">
             {column.heading}
           </p>
-          {column.items.map((item) => (
-            <MenuRow key={item.label} item={item} fill />
-          ))}
+          <div className="flex flex-col gap-7">
+            {column.items.map((item) => (
+              <MenuRow key={item.label} item={item} fill />
+            ))}
+          </div>
         </div>
       ))}
     </div>
@@ -133,20 +134,20 @@ function MenuRow({ item, fill }: { item: NavMenuItem; fill: boolean }) {
         />
       )}
       <span
-        className={cn("flex flex-col gap-3", fill ? "flex-1" : "shrink-0")}
+        className={cn("flex flex-col gap-1.5", fill ? "flex-1" : "shrink-0")}
       >
         {/* 24px line-box (matches the icon height) with the cap-trimmed
             title centred, so the glyph aligns center-to-center with the
             title text rather than hanging below it. */}
         <span className="flex h-6 items-center">
-          <WipeLabel className="text-v1-heading-xs text-white">
+          <WipeLabel className="!text-[1rem] text-v1-heading-xs text-white">
             {item.label}
           </WipeLabel>
         </span>
         {item.description && (
           <span
             className={cn(
-              "text-v1-body-sm text-v1-frost/70",
+              "!text-[0.875rem] text-v1-body-sm text-v1-frost/70",
               fill ? "w-full" : "whitespace-nowrap"
             )}
           >
@@ -183,10 +184,10 @@ function NavPromoCard({ promo }: { promo: NavPromo }) {
         />
       </div>
       <div className="flex h-[140px] flex-col justify-center gap-5 px-5 pb-6 pt-5">
-        <WipeLabel className="text-v1-heading-xs text-white">
+        <WipeLabel className="!text-[1rem] text-v1-heading-xs text-white">
           {promo.title}
         </WipeLabel>
-        <p className="text-v1-body-sm text-v1-frost/70">{promo.description}</p>
+        <p className="!text-[0.875rem] text-v1-body-sm text-v1-frost/70">{promo.description}</p>
       </div>
     </div>
   );

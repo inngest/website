@@ -184,6 +184,25 @@
  * applied. Stretched to viewport width and repeated `repeat-y` so the
  * authored variation cascades down any page length.
  */
+/*
+ * Body copy in the dark v1 marketing theme reads as #B3B3B3 — a touch
+ * dimmer than the near-white headings, for clearer hierarchy/contrast
+ * against the dark canvas. Targets the body typography tokens (not
+ * elements) so heading-styled <p> stay white; the `.v1-page` ancestor
+ * gives this (0,2,0) specificity, overriding the `text-v1-frost`
+ * utility these spans/paragraphs set.
+ */
+.v1-page :is(
+    .text-v1-body-lg,
+    .text-v1-body-lg-loose,
+    .text-v1-body-md,
+    .text-v1-body-sm,
+    .text-v1-body-sm-loose,
+    .text-v1-body-xs
+  ) {
+  color: #b3b3b3;
+}
+
 .v1-page-bg {
   background-image: url("/assets/v1/page/.compressed/grain-bg.webp");
   background-size: 100% auto;
