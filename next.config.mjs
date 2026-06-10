@@ -192,6 +192,7 @@ const permanentRedirects = [
   ["/durable-endpoints", "/platform/durable-execution"],
   ["/platform", "/platform/durable-execution"],
   ["/ai-personalized-documentation", "/docs/ai-dev-tools/agent-skills"],
+  ["/ai/early-access", "/ai"],
   ["/launch-week", "/"],
   // The scheduled-jobs page moved under /uses; preserve the old URL.
   ["/scheduled-jobs", "/uses/scheduled-jobs"],
