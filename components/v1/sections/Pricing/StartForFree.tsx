@@ -6,7 +6,7 @@ import StippleCtaSection from "@/components/v1/sections/shared/StippleCtaSection
 // right rail, headline + body + button row on the left).
 
 const SIGNUP = process.env.NEXT_PUBLIC_SIGNUP_URL ?? "/sign-up";
-const CONTACT = "/get-in-touch?ref=pricing-start";
+const CONTACT = "/contact?ref=pricing-start";
 
 export default function StartForFree() {
   return (

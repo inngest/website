@@ -59,7 +59,7 @@ export const GENERAL_TOPICS: Topic[] = [
     body: "Talk to our Sales Engineering team.",
     action: {
       label: "Talk to sales",
-      href: "/sales-inquiry-form?ref=contact",
+      href: "/contact?ref=contact",
     },
   },
 ];
@@ -70,7 +70,7 @@ export const SALES_TOPICS: Topic[] = [
     body: "Pricing, procurement, security reviews, and Enterprise plans — connect with our Sales Engineering team.",
     action: {
       label: "Open the sales form",
-      href: "/sales-inquiry-form?ref=contact",
+      href: "/contact?ref=contact",
     },
   },
   {
@@ -78,7 +78,7 @@ export const SALES_TOPICS: Topic[] = [
     body: "Walk through Inngest with a product expert and get pricing tailored to your workload.",
     action: {
       label: "Talk to sales",
-      href: "/sales-inquiry-form?ref=contact-demo",
+      href: "/contact?ref=contact-demo",
     },
   },
   {

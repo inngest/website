@@ -146,7 +146,7 @@ export const PLANS: Plan[] = [
     },
     priceCaption: "Contact us to learn more & request a demo",
     cta: {
-      href: "/get-in-touch?ref=pricing-card-enterprise",
+      href: "/contact?ref=pricing-card-enterprise",
       text: "Contact Us",
     },
     features: [
