@@ -126,8 +126,8 @@ export default function Hero() {
           aria-hidden="true"
           className="text-v1-display-hero mt-6 uppercase text-v1-frost lg:mt-[7vh] lg:pr-[100px] lg:-ml-[0.06em] text-left leading-[0.82] !text-[min(8vw,16vh)] tracking-[-0.025em]"
         >
-          <span className="block text-transparent [-webkit-text-stroke:2px_rgb(255,255,255)]">Invisible</span>
-          <span className="block text-transparent [-webkit-text-stroke:2px_rgb(255,255,255)]">Infra.</span>
+          <span className="block text-transparent [-webkit-text-stroke:0.75px_rgb(255,255,255)] md:[-webkit-text-stroke:1px_rgb(255,255,255)] lg:[-webkit-text-stroke:2px_rgb(255,255,255)]">Invisible</span>
+          <span className="block text-transparent [-webkit-text-stroke:0.75px_rgb(255,255,255)] md:[-webkit-text-stroke:1px_rgb(255,255,255)] lg:[-webkit-text-stroke:2px_rgb(255,255,255)]">Infra.</span>
         </p>
 
         <div className="mt-[48px] space-y-[36px] lg:mt-[6vh] lg:space-y-[42px] lg:pl-0">
