@@ -176,11 +176,6 @@ const RESOURCES_MENU: NavMenu = {
           href: "/docs",
           description: "Read the Inngest documentation",
         },
-        {
-          label: "Templates",
-          href: "/docs/examples",
-          description: "Start from a ready-made example",
-        },
       ],
     },
     {
@@ -188,11 +183,6 @@ const RESOURCES_MENU: NavMenu = {
       items: [
         {
           label: "Inngest vs. Temporal",
-          href: "/compare-to-temporal",
-          description: "See how Inngest compares",
-        },
-        {
-          label: "Inngest vs. Kafka",
           href: "/compare-to-temporal",
           description: "See how Inngest compares",
         },
@@ -209,7 +199,7 @@ const RESOURCES_MENU: NavMenu = {
     description:
       "How engineering teams are building, breaking, and scaling AI in production.",
     image: "/assets/v1/nav/promo-ai-benchmark.png",
-    href: "/download-gate-form",
+    href: "/blog/ai-in-production-report-2026",
     fit: "contain",
   },
 };
