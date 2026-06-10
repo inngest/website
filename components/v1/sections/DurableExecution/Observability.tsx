@@ -4,10 +4,8 @@ import { useState } from "react";
 import { motion } from "motion/react";
 import ButtonLink from "@/components/v1/ButtonLink";
 import GradientFrame from "@/components/v1/sections/shared/GradientFrame";
-import ReelDirectoryRow from "@/components/v1/sections/shared/ReelDirectoryRow";
 import Section from "@/components/v1/sections/shared/Section";
 import SectionHeader from "@/components/v1/sections/shared/SectionHeader";
-import { cn } from "@/utils/v1/cn";
 import { reveals } from "@/utils/v1/reveals";
 
 // "Observability by default." Bordered card with a
@@ -46,11 +44,9 @@ const FEATURES: Feature[] = [
 ];
 
 export default function Observability() {
-  // The five features double as reel-directory selectors: hover spotlight
-  // + salmon dot, with a persistent active row. There's no panel to swap
-  // here, so selection is purely a highlight — "Waterfall Traces" (the
-  // featured item) is active by default.
-  const [selected, setSelected] = useState(0);
+  // The five features are a static, non-interactive list — every row
+  // reads "active" (white title), with a uniform steel bullet and no
+  // selection/hover/click affordance.
   return (
     <Section
       aria-labelledby="de-observability-heading"
@@ -96,38 +92,20 @@ export default function Observability() {
             aligned to the frame's content edge while the hover/active
             background bleeds outward. */}
         <div className="-mx-[22px] mt-20 grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
-          {FEATURES.map((f, i) => {
-            const isActive = i === selected;
-            return (
-              <motion.div key={f.title} {...reveals.item(i)} className="h-full">
-                <ReelDirectoryRow
-                  isActive={isActive}
-                  onSelect={() => setSelected(i)}
-                >
-                  <span className="flex flex-1 flex-col gap-2">
-                    <span
-                      className={cn(
-                        "flex min-h-10 items-center text-v1-heading-sm motion-safe:transition-colors",
-                        isActive
-                          ? "text-v1-frost"
-                          : "text-v1-frost/70 group-hover/row:text-v1-frost",
-                      )}
-                    >
-                      {f.title}
-                    </span>
-                    <span
-                      className={cn(
-                        "whitespace-pre-line text-v1-body-sm motion-safe:transition-colors",
-                        isActive ? "text-v1-frost" : "text-v1-frost/80",
-                      )}
-                    >
-                      {f.body}
-                    </span>
-                  </span>
-                </ReelDirectoryRow>
-              </motion.div>
-            );
-          })}
+          {FEATURES.map((f, i) => (
+            <motion.div key={f.title} {...reveals.item(i)} className="h-full">
+              {/* Static row — no button/hover/selection and no bullet;
+                  white title so every feature reads "active". */}
+              <div className="flex h-full flex-col gap-2 px-[22px] py-[18px]">
+                <span className="flex min-h-10 items-center text-v1-heading-sm text-v1-frost">
+                  {f.title}
+                </span>
+                <span className="whitespace-pre-line text-v1-body-sm text-v1-frost/80">
+                  {f.body}
+                </span>
+              </div>
+            </motion.div>
+          ))}
         </div>
       </GradientFrame>
     </Section>

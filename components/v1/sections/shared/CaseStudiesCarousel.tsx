@@ -214,7 +214,7 @@ export default function CaseStudiesCarousel({
       {footerCta && (
         <motion.div
           {...reveals.item(4)}
-          className="mt-10 flex justify-end px-6 lg:px-8"
+          className="mt-10 flex justify-center px-6 lg:px-8"
         >
           <ButtonLink href={footerCta.href} variant="primary">
             {footerCta.label}
