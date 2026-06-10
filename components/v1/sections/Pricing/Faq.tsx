@@ -42,5 +42,5 @@ const FAQS: FaqItem[] = [
 ];
 
 export default function Faq() {
-  return <SharedFaq faqs={FAQS} heading="FAQ" />;
+  return <SharedFaq faqs={FAQS} heading="FAQ" refTag="pricing" />;
 }
