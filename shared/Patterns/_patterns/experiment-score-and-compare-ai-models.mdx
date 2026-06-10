@@ -1,21 +1,20 @@
 ---
-title: Experiment, score, and compare AI models
-subtitle: Use experiments to split traffic between models, defer scoring to run after the response, and query results to pick the winner.
+title: Experiment and compare AI models
+subtitle: Use experiments to split traffic between models, then query Insights to compare latency, token usage, and success rates across variants.
 pattern: durable
 tags: [Durability, AI, Architecture]
 ---
 
 You shipped an AI feature with GPT-4o. A new model drops. Your team wants to know: is it better for our use case? Faster? Cheaper? More accurate? You need to compare them in production with real traffic, not a synthetic benchmark.
 
-This pattern composes three Inngest primitives to answer that question without building a separate eval pipeline:
+This pattern uses two Inngest primitives to answer that question:
 
 | Primitive | Role in this pattern |
 |---|---|
 | **`group.experiment()`** | Splits traffic between model variants |
-| **`defer()`** | Scores each variant's output after the response ships |
-| **Insights** | Aggregates scores so you can query which variant wins |
+| **Insights** | Aggregates run data so you can query which variant performs better |
 
-The function serves a response to the user immediately. The scoring happens in the background. The data accumulates over days or weeks. You make a decision based on real production outcomes, not a one-off test.
+The function serves a response to the user immediately. Run metadata (variant, model, token counts) is captured automatically. The data accumulates over days or weeks. You make a decision based on real production outcomes, not a one-off test.
 
 ---
 
@@ -25,90 +24,10 @@ Here is the complete function. Each section is explained below.
 
 ```typescript
 import { inngest } from "./client";
-import { createDefer } from "inngest/experimental";
-import { z } from "zod";
 
-// --- Deferred scorer ---
-// Runs after the parent completes. Evaluates the response
-// using a cheaper model as a judge.
-const qualityScorer = createDefer(inngest, {
-  id: "score-response-quality",
-  schema: z.object({
-    response: z.string(),
-    model: z.string(),
-    variant: z.string(),
-    ticketId: z.string(),
-  }),
-}, async ({ event, step }) => {
-  const evaluation = await step.run("llm-judge", async () => {
-    return await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content: `Rate this support response on three dimensions.
-Return JSON: { "helpfulness": 1-5, "accuracy": 1-5, "tone": 1-5 }
-Be strict. A 3 means acceptable. A 5 means exceptional.`,
-        },
-        { role: "user", content: event.data.response },
-      ],
-    });
-  });
-
-  await step.run("persist-scores", async () => {
-    const scores = JSON.parse(evaluation.choices[0].message.content);
-
-    // Each score is attached to the parent run and tagged with the variant.
-    // This is what makes the data queryable in Insights.
-    await inngest.score({
-      name: "helpfulness",
-      value: scores.helpfulness / 5,
-      runId: event.data.ticketId,
-    });
-    await inngest.score({
-      name: "accuracy",
-      value: scores.accuracy / 5,
-      runId: event.data.ticketId,
-    });
-    await inngest.score({
-      name: "tone",
-      value: scores.tone / 5,
-      runId: event.data.ticketId,
-    });
-  });
-});
-
-// --- Cost tracker ---
-// Logs token usage per variant per customer.
-const costTracker = createDefer(inngest, {
-  id: "track-experiment-costs",
-  schema: z.object({
-    model: z.string(),
-    variant: z.string(),
-    promptTokens: z.number(),
-    completionTokens: z.number(),
-    customerId: z.string(),
-  }),
-}, async ({ event, step }) => {
-  await step.run("log-cost", async () => {
-    const rates = { "gpt-4o": 0.005, "claude-sonnet-4-20250514": 0.003 };
-    const costPer1k = rates[event.data.model] || 0.005;
-    const totalTokens = event.data.promptTokens + event.data.completionTokens;
-
-    await analytics.track("ai.experiment.cost", {
-      variant: event.data.variant,
-      model: event.data.model,
-      tokens: totalTokens,
-      cost_usd: (totalTokens / 1000) * costPer1k,
-      customer_id: event.data.customerId,
-    });
-  });
-});
-
-// --- Agent function ---
 const handleTicket = inngest.createFunction(
   { id: "handle-support-ticket", triggers: { event: "support/ticket.created" } },
-  async ({ event, step, group, defer }) => {
+  async ({ event, step, group }) => {
 
     // 1. EXPERIMENT: select a model variant
     const { result: response, variant } = await group.experiment(
@@ -152,49 +71,23 @@ const handleTicket = inngest.createFunction(
       await supportPlatform.reply(event.data.ticketId, reply);
     });
 
-    // 3. DEFER: score and track costs after the parent completes
-    defer("score-quality", {
-      function: qualityScorer,
-      data: {
-        response: reply,
-        model: variant === "gpt4o" ? "gpt-4o" : "claude-sonnet-4-20250514",
-        variant,
-        ticketId: event.data.ticketId,
-      },
-    });
-
-    defer("track-costs", {
-      function: costTracker,
-      data: {
-        model: variant === "gpt4o" ? "gpt-4o" : "claude-sonnet-4-20250514",
-        variant,
-        promptTokens: variant === "gpt4o"
-          ? response.usage.prompt_tokens
-          : response.usage.input_tokens,
-        completionTokens: variant === "gpt4o"
-          ? response.usage.completion_tokens
-          : response.usage.output_tokens,
-        customerId: event.data.customerId,
-      },
-    });
-
     return { ticketId: event.data.ticketId, variant, status: "resolved" };
   }
 );
 ```
 
-Register all functions:
+Register the function:
 
 ```typescript
 serve({
   client: inngest,
-  functions: [handleTicket, qualityScorer, costTracker],
+  functions: [handleTicket],
 });
 ```
 
 ---
 
-## How the pieces compose
+## How the pieces work together
 
 ### Experiments select the variant
 
@@ -202,34 +95,41 @@ serve({
 
 Start with 50/50. Once you have enough data, shift to 90/10 to confirm the winner at scale before cutting over completely.
 
-### Defer handles the scoring
+Each variant wraps its model call in `step.run()`. This means the model call is independently retried if it fails, and the variant selection is preserved across retries.
 
-The scorer runs as a completely separate function after the parent finalizes. The customer gets their response immediately. The LLM-as-judge evaluation happens on its own timeline with its own retries.
+### Run data captures the comparison
 
-This is important because scoring can be slow (the judge model needs to read and evaluate the response) and can fail (model rate limits, timeouts). Neither of those should affect the customer experience or the parent run's success status.
-
-### Scores land on the run
-
-`inngest.score()` attaches named numeric values to the parent run. Each score is tagged with the variant that produced it. Over time, you accumulate thousands of scored runs across both variants.
+Every run records which variant was selected, how long each step took, and whether it succeeded. The variant name is returned in the function output. Extended traces capture token counts and latency per step if you have the middleware enabled.
 
 ### Insights reveals the winner
 
-Query your scores in Insights to compare variants:
+Query your run data in Insights to compare variants. For example, compare average step duration:
 
 ```sql
 SELECT
-  JSON_VALUE(metadata, '$.variant') AS variant,
-  AVG(scores.helpfulness) AS avg_helpfulness,
-  AVG(scores.accuracy) AS avg_accuracy,
-  AVG(scores.tone) AS avg_tone,
+  output.variant AS variant,
+  AVG(duration_ms) AS avg_duration_ms,
+  COUNT(*) AS total_runs,
+  SUM(CASE WHEN status = 'FAILED' THEN 1 ELSE 0 END) AS failures
+FROM runs
+WHERE function_id = 'handle-support-ticket'
+  AND status IN ('COMPLETED', 'FAILED')
+GROUP BY output.variant
+```
+
+If Sonnet averages 800ms and GPT-4o averages 1200ms across 500 runs each with similar failure rates, you have a data-driven answer. Not a gut check. Not a benchmark on synthetic data. A measurement from your production traffic.
+
+With Extended Traces enabled, you can also compare token usage:
+
+```sql
+SELECT
+  output.variant AS variant,
+  AVG(steps.duration_ms) AS avg_model_call_ms,
   COUNT(*) AS runs
 FROM runs
 WHERE function_id = 'handle-support-ticket'
-  AND status = 'COMPLETED'
-GROUP BY variant
+GROUP BY output.variant
 ```
-
-If Sonnet scores 4.2 on helpfulness and GPT-4o scores 3.8 across 500 runs each, you have a data-driven answer. Not a gut check. Not a benchmark on synthetic data. A measurement from your production traffic.
 
 ---
 
@@ -264,45 +164,19 @@ variants: {
 },
 ```
 
-**Add temporal scoring.** Instead of scoring immediately with LLM-as-judge, use `step.waitForEvent()` inside the scorer to wait for a real user signal:
+**Compare RAG strategies.** One variant uses a simple vector search. The other adds a reranking step. Same model, different retrieval pipelines. Insights shows you whether the extra latency from reranking actually improves outcomes.
 
-```typescript
-const feedbackScorer = createDefer(inngest, {
-  id: "wait-for-feedback",
-  schema: z.object({ ticketId: z.string(), variant: z.string() }),
-}, async ({ event, step }) => {
-  const feedback = await step.waitForEvent("wait-for-thumbs", {
-    event: "support/feedback.received",
-    timeout: "7d",
-    if: `async.data.ticketId == '${event.data.ticketId}'`,
-  });
-
-  await step.run("record-feedback", async () => {
-    await inngest.score({
-      name: "user-satisfaction",
-      value: feedback ? (feedback.data.helpful ? 1 : 0) : 0.5,
-      runId: event.data.ticketId,
-    });
-  });
-});
-```
-
-Now your experiment measures what actually matters: did the user find the response helpful? The scorer waits up to 7 days for a thumbs-up/down event. This is something no external eval platform can do because they don't have access to your event stream.
-
-**Track cost alongside quality.** The cost tracker in the example above runs as a separate deferred function. When you query Insights, you can compare not just quality but cost-per-response across variants. A model that scores 5% better but costs 3x more might not be the right choice.
+**Gradually roll out a new model.** Start at `weights: { current: 95, new: 5 }`. Monitor for a week. If the new model performs well, shift to 50/50. Then 90/10 in favor of the new model. Then cut over. The experiment tracks which variant every run used, so you can always query the data by variant.
 
 ---
 
-## Why not use an external eval platform?
+## Adding scoring later
 
-External platforms (Braintrust, LangSmith, Arize) score what you explicitly send them, at eval time, against whatever you remembered to capture. Inngest scores alongside the execution, where all the context already lives.
+When scoring ships, you can layer it onto this pattern to measure quality directly. A deferred scorer runs after the parent completes, evaluates the response with LLM-as-judge or waits for user feedback, and attaches a numeric score to the run. Insights then lets you compare average scores across variants, not just latency and success rates.
 
-The differences that matter:
+The pattern structure doesn't change. You add `defer()` calls after the response ships, and the scores accumulate alongside the operational data you're already collecting.
 
-- **No data pipeline.** Scores are attached to runs. You don't export traces to another system.
-- **Temporal scoring.** Wait for real user feedback days after the run. External platforms can't pause and resume a scorer based on your event stream.
-- **Durable scoring.** The scorer is an Inngest function with retries and step state. If the judge model rate-limits you, the scorer retries on its own.
-- **One codebase.** Your agent code, your experiment config, and your scoring logic live in the same repo. An agent reading your code sees the full picture.
+See [Build a deferred scorer](/docs/features/inngest-functions/steps-workflows/deferred-scoring) for how this works.
 
 ---
 
@@ -310,6 +184,5 @@ The differences that matter:
 
 - [Run experiments in AI pipelines](/docs/features/inngest-functions/steps-workflows/running-experiments) for the experiments how-to
 - [`group.experiment()` reference](/docs/reference/typescript/v4/functions/group-experiment) for the full API
-- [Deferred Functions reference](/docs/reference/typescript/v4/functions/deferred-functions) for defer
-- [Score a function run](/docs/features/inngest-functions/steps-workflows/scoring) for scoring
-- [Build a deferred scorer](/docs/features/inngest-functions/steps-workflows/deferred-scoring) for temporal scoring with waitForEvent
+- [Insights](/docs/platform/monitor/insights) for querying run data
+- [Extended Traces](/docs/reference/typescript/v4/extended-traces) for capturing token counts and latency
