@@ -25,6 +25,7 @@ const CAPABILITIES: Capability[] = [
     icon: "/assets/v1/scale-instantly/ai-agents.svg",
     iconWidth: 27.77,
     iconHeight: 32,
+    href: "/ai",
   },
   {
     title: "API Endpoints",
