@@ -524,13 +524,13 @@ function RelatedContent({ posts }: { posts: RelatedPost[] }) {
                 {/* Footer mirrors the Events card: gap-6 between the
                     title group and the cue, p-20, Heading/Xs title,
                     text-sm subtitle, RegisterCue link. */}
-                <div className="flex flex-1 flex-col gap-6 p-5">
-                  <div className="flex flex-col gap-2">
-                    <h3 className="text-v1-heading-xs w-full truncate text-v1-frost">
+                <div className="flex flex-1 flex-col justify-between gap-6 p-5">
+                  <div className="flex flex-col gap-4">
+                    <h3 className="text-v1-heading-xs w-full text-v1-frost">
                       {p.title}
                     </h3>
                     {p.subtitle ? (
-                      <p className="text-v1-body-xs w-full truncate text-v1-frost/60">
+                      <p className="text-v1-body-xs w-full text-v1-frost/60">
                         {p.subtitle}
                       </p>
                     ) : null}
