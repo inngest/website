@@ -203,6 +203,23 @@
   color: #b3b3b3;
 }
 
+/*
+ * When a pricing plan card floods orange (hover / active-recommended),
+ * its body copy reads white instead of the muted #B3B3B3 so the text
+ * stays legible on the salmon surface. The descendant chain gives this
+ * (0,4,0) specificity, beating the (0,2,0) global body-copy rule above.
+ */
+.v1-page .pricing-plan-card:is(:hover, [data-active]) :is(
+    .text-v1-body-lg,
+    .text-v1-body-lg-loose,
+    .text-v1-body-md,
+    .text-v1-body-sm,
+    .text-v1-body-sm-loose,
+    .text-v1-body-xs
+  ) {
+  color: #fff;
+}
+
 .v1-page-bg {
   background-image: url("/assets/v1/page/.compressed/grain-bg.webp");
   background-size: 100% auto;

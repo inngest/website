@@ -350,37 +350,33 @@ function BlogHero({
   dateStr: string;
   readingText: string;
 }) {
-  // 2-col layout matching Figma (448 / 912 columns). Left rail: "BLOG
-  // ARTICLE" tag + title + author·date·reading meta, vertically centred
-  // against the cover. Right: the post's cover image filling the column
-  // width at its native aspect ratio.
   return (
     <section className="relative mx-auto w-full max-w-[1440px] px-6 pt-[96px] sm:px-9 lg:px-8 lg:pt-[108px]">
-      <div className="grid grid-cols-1 gap-x-4 gap-y-8 lg:grid-cols-[minmax(0,448fr)_minmax(0,912fr)] lg:items-center">
-        <div className="flex flex-col gap-5 text-v1-frost">
-          <Chip variant="solid" size="sm" className="self-start">
-            Blog Article
-          </Chip>
-          <h1 className="font-v1Heading text-[28px] leading-[1.15] tracking-[-0.01em] text-v1-frost [text-box-edge:cap_alphabetic] [text-box-trim:trim-both] sm:text-[32px] sm:leading-[40px] sm:tracking-[-0.32px]">
-            {heading}
-          </h1>
-          <p className="text-v1-body-xs flex flex-wrap items-center gap-x-[10px] gap-y-1 text-v1-frost/60">
-            {authors.length > 0 ? (
-              <>
-                <span>{authors.join(", ")}</span>
-                <span aria-hidden="true">•</span>
-              </>
-            ) : null}
-            <span>{dateStr}</span>
-            {readingText ? (
-              <>
-                <span aria-hidden="true">•</span>
-                <span>{readingText}</span>
-              </>
-            ) : null}
-          </p>
-        </div>
+      <div className="overflow-hidden rounded-[8px] border border-[rgba(124,124,124,0.35)]">
         <HeroCover image={image} imageAlt={heading} size={heroSize} />
+      </div>
+      <div className="mt-8 flex max-w-[calc(800/1248*100%)] flex-col gap-4 text-v1-frost">
+        <Chip variant="solid" size="sm" className="self-start">
+          Blog Article
+        </Chip>
+        <h1 className="font-v1Heading text-[28px] leading-[1.15] tracking-[-0.01em] text-v1-frost [text-box-edge:cap_alphabetic] [text-box-trim:trim-both] sm:text-[36px] sm:leading-[1.1] sm:tracking-[-0.36px] lg:text-[44px] lg:tracking-[-0.44px]">
+          {heading}
+        </h1>
+        <p className="text-v1-body-xs flex flex-wrap items-center gap-x-[10px] gap-y-1 text-v1-frost/60">
+          {authors.length > 0 ? (
+            <>
+              <span>{authors.join(", ")}</span>
+              <span aria-hidden="true">•</span>
+            </>
+          ) : null}
+          <span>{dateStr}</span>
+          {readingText ? (
+            <>
+              <span aria-hidden="true">•</span>
+              <span>{readingText}</span>
+            </>
+          ) : null}
+        </p>
       </div>
     </section>
   );
@@ -401,20 +397,18 @@ function ArticleSection({
   // the Figma content box).
   return (
     <section className="relative mx-auto w-full max-w-[1440px] px-6 pb-[96px] pt-12 text-v1-frost sm:px-9 sm:pb-[120px] sm:pt-16 lg:px-8 lg:pb-[160px] lg:pt-20">
-      <div className="grid grid-cols-1 gap-x-4 lg:grid-cols-[minmax(0,448fr)_minmax(0,912fr)] lg:items-start">
-        {/* Desktop-only side rail (same convention as the reference
-            pages' `hidden lg:block` rails) — a TOC stacked at the foot
-            of a mobile article is useless, so it's dropped < lg. */}
-        <div className="hidden lg:sticky lg:top-[100px] lg:block">
-          <BlogToc items={tocItems} />
-        </div>
-        <div className="lg:px-16">
+      <div className="grid grid-cols-1 gap-x-12 lg:grid-cols-[minmax(0,800fr)_minmax(0,448fr)] lg:items-start">
+        <div>
           <div
             id={ARTICLE_BODY_ID}
-            className="prose-invert blog-content prose max-w-none text-v1-frost prose-headings:scroll-mt-[100px] prose-headings:font-v1Heading prose-headings:font-normal prose-headings:tracking-[-0.01em] prose-headings:text-v1-frost prose-h2:mb-3.5 prose-h2:mt-10 prose-h2:text-[26px] prose-h2:leading-[1.2] prose-h2:tracking-[-0.26px] prose-h3:mb-2.5 prose-h3:mt-8 prose-h3:text-[20px] prose-h3:leading-[1.3] prose-h4:mb-2 prose-h4:mt-7 prose-h4:text-[17px] prose-h4:leading-[1.4] prose-h5:mb-1.5 prose-h5:mt-6 prose-h5:text-[15px] prose-h5:leading-[1.4] prose-h6:mb-1.5 prose-h6:mt-6 prose-h6:text-[15px] prose-h6:leading-[1.4] prose-p:my-0 prose-p:text-[16px] prose-p:leading-[24px] prose-p:text-v1-frost prose-a:text-v1-frost prose-a:underline prose-a:decoration-v1-frost/40 prose-a:underline-offset-4 hover:prose-a:decoration-v1-frost prose-blockquote:border-v1-accent-salmon prose-blockquote:not-italic prose-blockquote:text-v1-frost prose-code:rounded prose-code:bg-v1-frost/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:font-mono prose-code:text-[14px] prose-code:text-v1-accent-salmon prose-pre:rounded-[8px] prose-pre:border prose-pre:border-[rgba(124,124,124,0.35)] prose-pre:bg-v1-jetBlack prose-li:my-0 prose-li:text-[16px] prose-li:leading-[24px] prose-li:text-v1-frost prose-img:rounded-[8px] prose-img:border prose-img:border-[rgba(124,124,124,0.35)]"
+            className="prose-invert blog-content prose max-w-none text-v1-frost prose-headings:scroll-mt-[100px] prose-headings:font-v1Heading prose-headings:font-normal prose-headings:tracking-[-0.01em] prose-headings:text-v1-frost prose-h2:mb-3.5 prose-h2:mt-10 prose-h2:text-[26px] prose-h2:leading-[1.2] prose-h2:tracking-[-0.26px] prose-h3:mb-2.5 prose-h3:mt-8 prose-h3:text-[20px] prose-h3:leading-[1.3] prose-h4:mb-2 prose-h4:mt-7 prose-h4:text-[17px] prose-h4:leading-[1.4] prose-h5:mb-1.5 prose-h5:mt-6 prose-h5:text-[15px] prose-h5:leading-[1.4] prose-h6:mb-1.5 prose-h6:mt-6 prose-h6:text-[15px] prose-h6:leading-[1.4] prose-p:my-0 prose-p:text-[18px] prose-p:leading-[30px] prose-p:text-[#b3b3b3] prose-a:text-v1-frost prose-a:underline prose-a:decoration-v1-frost/40 prose-a:underline-offset-4 hover:prose-a:decoration-v1-frost prose-blockquote:border-v1-accent-salmon prose-blockquote:not-italic prose-blockquote:text-v1-frost prose-code:rounded prose-code:bg-v1-frost/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:font-mono prose-code:text-[14px] prose-code:text-v1-accent-salmon prose-pre:rounded-[8px] prose-pre:border prose-pre:border-[rgba(124,124,124,0.35)] prose-pre:bg-v1-jetBlack prose-li:my-0 prose-li:text-[18px] prose-li:leading-[30px] prose-li:text-[#b3b3b3] prose-img:rounded-[8px] prose-img:border prose-img:border-[rgba(124,124,124,0.35)]"
           >
             <ArticleBody source={content} scope={scope} />
           </div>
+        </div>
+        {/* TOC — right rail, sticky, hidden on mobile */}
+        <div className="hidden lg:sticky lg:top-[100px] lg:block">
+          <BlogToc items={tocItems} />
         </div>
       </div>
     </section>
@@ -461,22 +455,20 @@ function HeroCover({
     return (
       <div
         aria-hidden="true"
-        className="aspect-[2/1] w-full overflow-hidden rounded-[8px] border border-[rgba(124,124,124,0.35)] bg-[url(/assets/v1/page/.compressed/grain-bg.webp)] bg-cover bg-center"
+        className="aspect-[2/1] w-full bg-[url(/assets/v1/page/.compressed/grain-bg.webp)] bg-cover bg-center"
       />
     );
   }
   return (
-    <div className="overflow-hidden rounded-[8px] border border-[rgba(124,124,124,0.35)]">
-      <Image
-        src={image}
-        alt={imageAlt}
-        width={size.width}
-        height={size.height}
-        priority
-        sizes="(min-width: 1024px) 912px, 100vw"
-        className="h-auto w-full"
-      />
-    </div>
+    <Image
+      src={image}
+      alt={imageAlt}
+      width={size.width}
+      height={size.height}
+      priority
+      sizes="(min-width: 1024px) 1360px, 100vw"
+      className="h-auto w-full"
+    />
   );
 }
 
@@ -516,7 +508,7 @@ function RelatedContent({ posts }: { posts: RelatedPost[] }) {
                   // fill + object-cover keeps the 1.79 crop the
                   // background-image gave, but via next/image. Decorative
                   // (alt=""): the card's <h3> is the accessible link text.
-                  <span className="relative block aspect-[1.79] w-full overflow-hidden">
+                  <span className="relative block aspect-[2/1] w-full overflow-hidden">
                     <Image
                       src={p.image}
                       alt=""
@@ -528,7 +520,7 @@ function RelatedContent({ posts }: { posts: RelatedPost[] }) {
                 ) : (
                   <span
                     aria-hidden="true"
-                    className="block aspect-[1.79] w-full bg-v1-frost/[0.04]"
+                    className="block aspect-[2/1] w-full bg-v1-frost/[0.04]"
                   />
                 )}
                 {/* Footer mirrors the Events card: gap-6 between the

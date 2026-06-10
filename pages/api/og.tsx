@@ -41,9 +41,11 @@ export default async function handler(req: NextApiRequest) {
     // ?title=<title>
     const hasTitle = searchParams.has("title");
     const title = hasTitle
-      ? searchParams.get("title")?.slice(0, 100)
+      ? searchParams.get("title")?.slice(0, 120)
       : "Inngest";
-    const isLongTitle = (title || "").length > 40;
+    const len = (title || "").length;
+    const isLongTitle = len > 40;
+    const isVeryLongTitle = len > 70;
     const backgroundImageURL = `${process.env.NEXT_PUBLIC_HOST}/assets/open-graph/og-background-2025.png`;
 
     const fontData = await loadInngestCDNFont("Whyte/ABCWhyte-Light.otf");
@@ -67,15 +69,17 @@ export default async function handler(req: NextApiRequest) {
         >
           <div
             style={{
-              fontSize: isLongTitle ? 72 : 96,
+              fontSize: isVeryLongTitle ? 52 : isLongTitle ? 72 : 96,
               fontStyle: "normal",
               fontWeight: 300,
               letterSpacing: "-2.4px",
               color: "white",
-              marginTop: isLongTitle ? 116 : 94,
+              marginTop: isVeryLongTitle ? 100 : isLongTitle ? 116 : 94,
               padding: "0 0 0 154px",
-              lineHeight: isLongTitle ? 1.22 : 1.2,
+              lineHeight: isVeryLongTitle ? 1.3 : isLongTitle ? 1.22 : 1.2,
               whiteSpace: "normal",
+              maxHeight: 400,
+              overflow: "hidden",
             }}
           >
             {title}
