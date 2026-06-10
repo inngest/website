@@ -6,7 +6,7 @@ export const metadata: Metadata = generateMetadata({
   title: "Durable Execution for Developers & AI Workflows",
   description:
     "Build reliable background jobs, workflows, and AI agents without extra infrastructure. Automatic retries, flow control, and step-level observability.",
-  image: "/assets/homepage/open-graph-june-2025.png",
+  image: "/assets/homepage/open-graph-2026.png",
 });
 
 const structuredData = [

@@ -75,7 +75,6 @@ export const getStaticProps: GetStaticProps = async (ctx) => {
         description:
           md.subtitle ??
           "Architecture patterns for building reliable AI pipelines, background jobs, and event-driven workflows.",
-        image: "/assets/homepage/open-graph-june-2025.png",
       },
     },
   };
