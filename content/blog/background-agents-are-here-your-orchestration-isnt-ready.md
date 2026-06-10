@@ -51,7 +51,7 @@ As models and approaches have improved, agents can take on long-horizon tasks fo
 
 Background agents need a few things to be successful:
 
-**Long-running execution with crash recovery.** The longer something runs, the higher the cost of failure. A 45-minute agent run can't live in a Lambda with a 5-minute timeout. It can't live in memory on a single process. It needs execution that survives restarts, deployments, and infrastructure failures (see: durable execution).
+**Long-running execution with crash recovery.** The longer something runs, the higher the cost of failure. A 45-minute agent run can't live in a Lambda with a 5-minute timeout. It can't live in memory on a single process. It needs execution that survives restarts, deployments, and infrastructure failures (see: [durable execution](/platform/durable-execution)).
 
 **Multi-step observability.** When a background agent produces a bad result 30 minutes into a run, you need to trace every step it took. Every LLM call, tool invocation, decision point, and sub-agent delegation. Cobbling together logs and state isn't going to cut it.
 
