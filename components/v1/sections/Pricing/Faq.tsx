@@ -2,13 +2,6 @@ import SharedFaq, { type Faq as FaqItem } from "@/components/v1/sections/AI/Faq"
 
 const FAQS: FaqItem[] = [
   {
-    id: "free-trial",
-    question: "Is there a free trial for the Pro plan?",
-    answer:
-      "Yes — every Pro plan starts with a two-week trial at no cost. No credit card is required to sign up, and you can downgrade or cancel before the trial ends if Pro isn't the right fit.",
-    link: { label: "Get started", href: "/sign-up" },
-  },
-  {
     id: "what-is-execution",
     question: "What counts as an execution?",
     answer:
