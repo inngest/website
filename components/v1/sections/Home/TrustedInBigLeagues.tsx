@@ -241,7 +241,7 @@ function SeeDocsLink({ href, active }: { href: string; active: boolean }) {
       underline={false}
       onClick={(e) => e.stopPropagation()}
       className={cn(
-        "group/cta relative z-10 mt-auto inline-flex w-fit items-center pl-8 text-v1-label-md uppercase",
+        "group/cta text-v1-label-md relative z-10 mt-auto inline-flex w-fit items-center pl-8 uppercase",
         "motion-safe:transition-[color,opacity] motion-safe:duration-300",
         "hover:text-v1-accent-salmon",
         active ? "opacity-100" : "opacity-70"
@@ -252,7 +252,7 @@ function SeeDocsLink({ href, active }: { href: string; active: boolean }) {
       <span>See docs</span>
       <span
         aria-hidden="true"
-        className="ml-2 inline-block motion-safe:transition-transform motion-safe:duration-[400ms] motion-safe:ease-v1-in group-hover/cta:translate-x-[6px]"
+        className="ml-2 inline-block group-hover/cta:translate-x-[6px] motion-safe:transition-transform motion-safe:duration-[400ms] motion-safe:ease-v1-in"
       >
         →
       </span>
@@ -319,7 +319,7 @@ function TopicItem({
         </span>
         <span
           className={cn(
-            "font-v1Heading tracking-[-0.01em] text-[24px] leading-[32px] md:whitespace-nowrap md:text-[length:clamp(1.125rem,1.85vw,1.625rem)] md:leading-[1.2]",
+            "font-v1Heading text-[24px] leading-[32px] tracking-[-0.01em] md:whitespace-nowrap md:text-[length:clamp(1.125rem,1.85vw,1.625rem)] md:leading-[1.2]",
             ease,
             isActive
               ? "text-v1-frost"
@@ -331,7 +331,7 @@ function TopicItem({
       </div>
       <p
         className={cn(
-          "pl-8 font-v1Body leading-[1.5] text-[16px] tracking-[-0.01em] md:text-[length:clamp(0.8rem,1.15vw,1rem)] md:tracking-normal",
+          "pl-8 font-v1Body text-[16px] leading-[1.5] tracking-[-0.01em] md:text-[length:clamp(0.8rem,1.15vw,1rem)] md:tracking-normal",
           ease,
           isActive
             ? "text-[#B3B3B3]"
@@ -409,7 +409,7 @@ function CisoBlock() {
         {/* Secondary card title — display-xs (40px) at lg for a smaller
             hierarchy below the section h2; the 24px mobile size has no
             matching token, so it stays a bespoke step-down. */}
-        <h2 className="max-w-[290px] text-[24px] leading-[1.25] tracking-[-0.01em] uppercase text-v1-frost lg:max-w-none lg:text-balance lg:text-v1-display-xs">
+        <h2 className="max-w-[290px] text-[24px] uppercase leading-[1.25] tracking-[-0.01em] text-v1-frost lg:text-v1-display-xs lg:max-w-none lg:text-balance">
           Stuff your CISO needs to see
         </h2>
         {/* !tracking-normal overrides the token's baked-in -0.01em. */}
@@ -442,7 +442,7 @@ function CisoGrid() {
           <h3 className="text-v1-heading-xs-loose text-v1-frost lg:text-v1-heading-sm">
             {feature.title}
           </h3>
-          <p className="text-pretty text-v1-body-sm !tracking-normal text-v1-frost">
+          <p className="text-v1-body-sm text-pretty !tracking-normal text-v1-frost">
             {feature.body}
           </p>
         </motion.li>
@@ -496,10 +496,28 @@ const CHART_POINTS = 70;
 const CHART_SERIES = [
   // Each series is generated deterministically from a sine mix so the
   // chart looks chaotic but stable across renders / SSR.
-  { label: "Create chat completion", colour: "#5fc34a", base: 6.0, amp: 3.2, seed: 1 },
-  { label: "Data warehouse sync",     colour: "#1b34c9", base: 2.6, amp: 1.0, seed: 2 },
-  { label: "Delete integration data", colour: "#e6443f", base: 8.0, amp: 2.6, seed: 3 },
-  { label: "Generate video",          colour: "#ff8c80", base: 8.4, amp: 2.6, seed: 4 },
+  {
+    label: "Create chat completion",
+    colour: "#5fc34a",
+    base: 8.0,
+    amp: 4.8,
+    seed: 1,
+  },
+  {
+    label: "Data warehouse sync",
+    colour: "#1b34c9",
+    base: 2.6,
+    amp: 1.0,
+    seed: 2,
+  },
+  {
+    label: "Delete integration data",
+    colour: "#e6443f",
+    base: 8.0,
+    amp: 2.6,
+    seed: 3,
+  },
+  { label: "Generate video", colour: "#ff8c80", base: 8.4, amp: 2.6, seed: 4 },
 ] as const;
 
 function makeSeries(seed: number, base: number, amp: number): number[] {
@@ -587,14 +605,19 @@ function ThroughputChart() {
 
         {/* X-axis labels */}
         {CHART_X_LABELS.map((lbl, i) => {
-          const x =
-            CHART_PAD_L + (plotW * i) / (CHART_X_LABELS.length - 1);
+          const x = CHART_PAD_L + (plotW * i) / (CHART_X_LABELS.length - 1);
           return (
             <text
               key={lbl}
               x={x}
               y={padT + plotH + fs.axis + 16}
-              textAnchor={i === 0 ? "start" : i === CHART_X_LABELS.length - 1 ? "end" : "middle"}
+              textAnchor={
+                i === 0
+                  ? "start"
+                  : i === CHART_X_LABELS.length - 1
+                  ? "end"
+                  : "middle"
+              }
               fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
               fontSize={fs.axis}
               fill="#7d7f88"
@@ -609,7 +632,12 @@ function ThroughputChart() {
         {CHART_SERIES.map((s, idx) => {
           const data = makeSeries(s.seed, s.base, s.amp);
           const d = data
-            .map((v, i) => `${i === 0 ? "M" : "L"}${xAt(i).toFixed(1)},${yAt(v).toFixed(1)}`)
+            .map(
+              (v, i) =>
+                `${i === 0 ? "M" : "L"}${xAt(i).toFixed(1)},${yAt(v).toFixed(
+                  1
+                )}`
+            )
             .join(" ");
           return (
             <path
@@ -636,10 +664,20 @@ function ThroughputChart() {
           const col = i % legendCols;
           const row = Math.floor(i / legendCols);
           const x = CHART_PAD_L + (plotW * col) / legendCols;
-          const y = chartH - 18 - (legendRowH * (Math.ceil(CHART_SERIES.length / legendCols) - 1 - row));
+          const y =
+            chartH -
+            18 -
+            legendRowH *
+              (Math.ceil(CHART_SERIES.length / legendCols) - 1 - row);
           return (
             <g key={`legend-${s.label}`}>
-              <rect x={x} y={y - fs.swatch + 4} width={fs.swatch} height={fs.swatch} fill={s.colour} />
+              <rect
+                x={x}
+                y={y - fs.swatch + 4}
+                width={fs.swatch}
+                height={fs.swatch}
+                fill={s.colour}
+              />
               <text
                 x={x + fs.swatch + 8}
                 y={y + 1}
@@ -678,93 +716,120 @@ interface WaterfallRow {
 // trace. Timeline origin x=545.15, track width=565.56; each bar's
 // start%/width% is its offset over that track. The leaf spans cascade
 // as a staircase — that's the intended waterfall read.
+const total = 10.58; // time in seconds
+const width = (durationInSeconds: number) => (durationInSeconds / total) * 100;
 const WATERFALL_ROWS: WaterfallRow[] = [
-  { label: "Run", indent: 0, duration: "11.580s", start: 0, width: 100, glyph: "check" },
-  { label: "Insights Event Matcher", indent: 0, duration: "1.702s", start: 0, width: 15.78 },
   {
-    label: "generate-thread-id",
+    label: "Run",
+    indent: 0,
+    duration: total.toFixed(3) + "s",
+    start: 0,
+    width: 100,
+    glyph: "check",
+  },
+  {
+    label: "Insights Event Matcher",
+    indent: 0,
+    duration: "5.602s",
+    start: 0,
+    width: width(5.8),
+  },
+  {
+    label: "load-context",
     indent: 1,
-    duration: "1ms",
-    start: 8.53,
-    width: 1.28,
+    duration: "500ms",
+    start: 0,
+    width: width(0.5),
     glyph: "caret",
   },
   {
-    label: "generate-target-channel",
+    label: "call-llm",
     indent: 1,
-    duration: "1ms",
-    start: 12.8,
-    width: 1.28,
-    glyph: "caret",
-  },
-  {
-    label: "generate-network-id",
-    indent: 1,
-    duration: "1ms",
-    start: 17.06,
-    width: 1.28,
-    glyph: "caret",
-  },
-  {
-    label: "publish:user:insights:user_2UdJajr…",
-    indent: 1,
-    duration: "7ms",
-    start: 20.68,
-    width: 1.28,
-    glyph: "caret",
-  },
-  {
-    label: "generate-agent-ids-0",
-    indent: 1,
-    duration: "1ms",
-    start: 24.95,
-    width: 1.28,
-    glyph: "caret",
-  },
-  {
-    label: "publish: user:insights:user_2UdJajr…",
-    indent: 1,
-    duration: "5ms",
-    start: 29.21,
-    width: 1.28,
-    glyph: "caret",
-  },
-  { label: "Insights Query Writer", indent: 0, duration: "5.024s", start: 35.17, width: 53.09 },
-  {
-    label: "generate-tool-part-id-c9561480-999…",
-    indent: 1,
-    duration: "1ms",
-    start: 46.27,
-    width: 1.28,
+    duration: "2.530s",
+    start: width(0.5),
+    width: width(2.5),
     glyph: "caret",
   },
   {
     label: "publish:user:insights:user_2UdJajr…",
     indent: 1,
-    duration: "4ms",
-    start: 48.4,
-    width: 1.28,
+    duration: "280ms",
+    start: width(2.5 + 0.5),
+    width: width(0.3),
+    glyph: "caret",
+  },
+  {
+    label: "tool:event-schema-search",
+    indent: 1,
+    duration: "418ms",
+    start: width(3.3),
+    width: width(0.4),
+    glyph: "caret",
+  },
+  {
+    label: "call-llm",
+    indent: 1,
+    duration: "1.937s",
+    start: width(3.7),
+    width: width(1.9),
     glyph: "caret",
   },
   {
     label: "publish:user:insights:user_2UdJajr…",
     indent: 1,
-    duration: "5ms",
-    start: 51.82,
-    width: 1.28,
+    duration: "221ms",
+    start: width(5.6),
+    width: width(5.6 - 5.8),
+    glyph: "caret",
+  },
+  {
+    label: "Insights Query Writer",
+    indent: 0,
+    duration: (total - 5.8).toFixed(3) + "s",
+    start: width(5.8),
+    width: width(total - 5.8),
+  },
+  {
+    label: "load-session-history",
+    indent: 1,
+    duration: "182ms",
+    start: width(5.8),
+    width: width(0.2),
+    glyph: "caret",
+  },
+  {
+    label: "call-llm",
+    indent: 1,
+    duration: "3.514s",
+    start: width(5.8 + 0.2),
+    width: width(3.5),
+    glyph: "caret",
+  },
+  {
+    label: "update-session-history",
+    indent: 1,
+    duration: "768ms",
+    start: width(5.8 + 0.2 + 3.5),
+    width: width(0.8),
+    glyph: "caret",
+  },
+  {
+    label: "publish:user:insights:user_2UdJajr…",
+    indent: 1,
+    duration: "236ms",
+    start: width(5.8 + 0.2 + 3.5 + 0.8),
+    width: width(0.2),
     glyph: "caret",
   },
 ];
 
 const WATERFALL_GREEN = "#0bdd48";
-// The whole trace plays over this window. Each bar's delay + duration
-// are pinned to its real start% / width% on the timeline so the spans
-// fire at their actual moments — Run keeps drawing through the entire
-// window, children blip in at their points in time.
+// The whole trace plays over this window of wall-clock time: nowSec ramps
+// 0 → total across it, and every span's geometry is recomputed against
+// nowSec each frame so the timeline re-proportions as it "runs".
 const WATERFALL_TOTAL_MS = 3000;
-// Minimum animation duration so 1–2 % width bars don't snap in (a real
-// trace's short spans still take a perceptible beat to "land").
-const WATERFALL_MIN_BAR_MS = 160;
+// Beat to hold on the empty track before the trace begins running.
+const WATERFALL_START_DELAY_MS = 100;
 // Row pitch in px (row-to-row spacing is 43.41). Fixed across
 // breakpoints so the absolutely-positioned tree spine stays aligned.
 const WATERFALL_ROW_H = 43;
@@ -773,11 +838,46 @@ const WATERFALL_ROW_H = 43;
 const WATERFALL_LABEL = "#7c7c7c"; // carbon/300
 const WATERFALL_DURATION = "#fefefe"; // carbon/50
 
+// Each row's duration is authored in its display unit (e.g. "500ms",
+// "2.530s"). Parse it once so the count-up can climb 0 → final in that same
+// unit and precision, rather than flipping units partway through.
+function parseWaterfallDuration(s: string): {
+  value: number;
+  unit: "ms" | "s";
+  decimals: number;
+} {
+  if (s.endsWith("ms"))
+    return { value: parseFloat(s), unit: "ms", decimals: 0 };
+  const num = s.slice(0, -1); // strip trailing "s"
+  const dot = num.indexOf(".");
+  return {
+    value: parseFloat(num),
+    unit: "s",
+    decimals: dot === -1 ? 0 : num.length - dot - 1,
+  };
+}
+function formatWaterfallDuration(
+  d: { value: number; unit: "ms" | "s"; decimals: number },
+  progress: number
+): string {
+  const v = d.value * progress;
+  return d.unit === "ms" ? `${Math.round(v)}ms` : `${v.toFixed(d.decimals)}s`;
+}
+const WATERFALL_DURATIONS = WATERFALL_ROWS.map((r) =>
+  parseWaterfallDuration(r.duration)
+);
+
 // Success glyph fronting the root "Run" row: a solid green disc with a
 // dark tick cut through it (filled circle, not an outline ring).
 function RunCheck() {
   return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 18 18"
+      fill="none"
+      aria-hidden="true"
+    >
       <circle cx="9" cy="9" r="9" fill={WATERFALL_GREEN} opacity="0.1" />
       <path
         d="M5.2 9.2 8 12 12.8 6.2"
@@ -791,8 +891,62 @@ function RunCheck() {
 }
 
 function TraceWaterfall() {
+  const ref = useRef<HTMLDivElement>(null);
+  // Gate the run on intersection (same pattern as SqlBlock) so the trace
+  // plays when it scrolls into view rather than finishing off-screen.
+  const [active, setActive] = useState(false);
+  // Elapsed trace time in seconds, driven 0 → total by rAF. Every span's
+  // on-screen left%/width% is recomputed against this each frame, so the
+  // timeline re-proportions like a live APM trace: the denominator (elapsed
+  // time) keeps growing, so completed spans shrink as a percentage while the
+  // active span's right edge keeps tracking "now".
+  const [nowSec, setNowSec] = useState(0);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            setActive(true);
+            io.disconnect();
+            return;
+          }
+        }
+      },
+      { rootMargin: "0px 0px -10% 0px", threshold: 0.05 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!active) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setNowSec(total);
+      return;
+    }
+    let frame = 0;
+    const start = performance.now();
+    const tick = (now: number) => {
+      // Hold at the empty track for a beat before the trace starts running.
+      const elapsedMs = now - start - WATERFALL_START_DELAY_MS;
+      const t = Math.min(1, Math.max(0, elapsedMs) / WATERFALL_TOTAL_MS);
+      setNowSec(t * total);
+      if (t < 1) frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [active]);
+
+  // Timeline denominator = elapsed trace time, growing each frame. Guarded
+  // off zero; the root is pinned to 100% and every other span only appears
+  // once it has fully elapsed, so denom is always ≥ that span's end.
+  const denom = Math.max(nowSec, 0.001);
+
   return (
-    <div className="relative w-full">
+    <div ref={ref} className="relative w-full">
       {/* Vertical tree spine: runs from the Insights Event Matcher row
           down to the last span. Anchored to the fixed row pitch so it
           stays aligned across breakpoints. */}
@@ -812,23 +966,64 @@ function TraceWaterfall() {
         style={{ lineHeight: `${WATERFALL_ROW_H}px`, color: WATERFALL_LABEL }}
       >
         {WATERFALL_ROWS.map((row, i) => {
-          const delay = (row.start / 100) * WATERFALL_TOTAL_MS;
-          const animMs = Math.max(
-            WATERFALL_MIN_BAR_MS,
-            (row.width / 100) * WATERFALL_TOTAL_MS
+          // Resolve each row back to real start/end seconds on the trace.
+          // (start/width are authored as % of the *final* total.)
+          const realStart = (row.start / 100) * total;
+          const realEnd = Math.max(
+            realStart,
+            ((row.start + row.width) / 100) * total
           );
+          // The root Run spans the whole timeline, so its bar is always the
+          // full track — render it at 100% from the first frame.
+          const isRoot = row.start === 0 && row.width === 100;
+          const isChild = row.indent >= 1;
+          // Parent spans (indent 0) appear when they *start* and grow with the
+          // live edge ("now") while still running — their right edge tracks
+          // now until they finish, then they re-proportion down like the rest.
+          // Child spans pop in complete at the live edge and only ever shrink.
+          // The root Run is always the full track.
+          const visible = isRoot
+            ? true
+            : isChild
+            ? nowSec >= realEnd
+            : nowSec >= realStart;
+          // The left-hand row (label + duration) fades in the moment the span
+          // *starts*, independent of when its bar lands on the timeline.
+          const started = isRoot || nowSec >= realStart;
+          // Duration counts up 0 → final over the span's own run, on the same
+          // clock as the bars; it freezes at the final value once complete.
+          const runDur = realEnd - realStart;
+          const progress =
+            runDur <= 0
+              ? 1
+              : Math.min(1, Math.max(0, (nowSec - realStart) / runDur));
+          const durationText = formatWaterfallDuration(
+            WATERFALL_DURATIONS[i],
+            progress
+          );
+          const visibleEnd = isChild ? realEnd : Math.min(realEnd, nowSec);
+          const left = isRoot ? 0 : (realStart / denom) * 100;
+          const widthPct = isRoot
+            ? 100
+            : Math.max(0, ((visibleEnd - realStart) / denom) * 100);
           return (
             <div key={i} className="contents">
               <div
-                className="flex items-center whitespace-nowrap"
-                style={{ paddingLeft: row.indent === 0 ? 0 : 35 }}
+                className="flex items-center whitespace-nowrap transition-opacity duration-150 ease-out"
+                style={{
+                  paddingLeft: row.indent === 0 ? 0 : 35,
+                  opacity: started ? 1 : 0,
+                }}
               >
                 {/* fixed gutter so parent labels align at the same x
                     whether or not they carry a glyph */}
                 <span className="flex w-7 shrink-0 items-center">
                   {row.glyph === "check" && <RunCheck />}
                   {row.glyph === "caret" && (
-                    <span aria-hidden="true" className="pl-[3px] text-v1-frost/45">
+                    <span
+                      aria-hidden="true"
+                      className="pl-[3px] text-v1-frost/45"
+                    >
                       ▸
                     </span>
                   )}
@@ -836,10 +1031,10 @@ function TraceWaterfall() {
                 <span className="truncate">{row.label}</span>
               </div>
               <div
-                className="whitespace-nowrap text-right tabular-nums"
-                style={{ color: WATERFALL_DURATION }}
+                className="min-w-[74px] whitespace-nowrap text-right tabular-nums transition-opacity duration-150 ease-out"
+                style={{ color: WATERFALL_DURATION, opacity: started ? 1 : 0 }}
               >
-                {row.duration}
+                {durationText}
               </div>
               <div
                 className="relative flex items-center"
@@ -851,14 +1046,14 @@ function TraceWaterfall() {
                   className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-v1-frost/[0.07]"
                 />
                 <span
-                  className="v1-trace-bar absolute h-[22px] rounded-[2px]"
+                  className="absolute h-[22px] rounded-[2px] transition-opacity duration-150 ease-out"
                   style={{
-                    left: `${row.start}%`,
-                    // min-width so 1.5 %–width bars aren't a single pixel.
-                    width: `max(${row.width}%, 6px)`,
+                    left: `${left}%`,
+                    // min-width so sub-percent spans don't vanish to a pixel.
+                    width: `max(${widthPct}%, 6px)`,
                     background: WATERFALL_GREEN,
-                    ["--delay" as string]: `${delay}ms`,
-                    ["--dur" as string]: `${animMs}ms`,
+                    // Parents fade in when they start, children when they finish.
+                    opacity: visible ? 1 : 0,
                   }}
                 />
               </div>
