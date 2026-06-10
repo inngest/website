@@ -3,7 +3,7 @@ import { generateMetadata } from "src/utils/social";
 import HomeV1 from "@/components/v1/pages/Home";
 
 export const metadata: Metadata = generateMetadata({
-  title: "Durable Execution for Developers & AI Workflows",
+  title: "Durable Execution for Workflows & AI",
   description:
     "Build reliable background jobs, workflows, and AI agents without extra infrastructure. Automatic retries, flow control, and step-level observability.",
   image: "/assets/homepage/open-graph-june-2025.png",
