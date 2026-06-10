@@ -386,8 +386,8 @@ function PlanCard({
       {/* Feature bullets — native list-disc, 14/20 CircularXX, 12 px
           gap between items. */}
       <ul className="relative z-10 flex list-disc flex-col gap-3 pl-[21px] text-v1-frost">
-        {plan.features.map((feature) => (
-          <li key={feature.text} className="text-v1-body-xs">
+        {plan.features.map((feature, i) => (
+          <li key={feature.text} className={i < 3 ? "text-v1-body-sm font-medium" : "text-v1-body-xs"}>
             {feature.value && (
               <span className="font-bold">{feature.value} </span>
             )}

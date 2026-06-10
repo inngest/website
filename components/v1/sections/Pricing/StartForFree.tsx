@@ -15,15 +15,15 @@ export default function StartForFree() {
       heading="Start for free in under two minutes"
       body="No credit card required."
     >
-      <ButtonLink href={CONTACT} variant="primary" wide>
-        Talk to Sales
-      </ButtonLink>
       <ButtonLink
         href={`${SIGNUP}?ref=pricing-start`}
-        variant="secondary"
+        variant="primary"
         wide
       >
         Start Building
+      </ButtonLink>
+      <ButtonLink href={CONTACT} variant="secondary" wide>
+        Talk to Sales
       </ButtonLink>
     </StippleCtaSection>
   );

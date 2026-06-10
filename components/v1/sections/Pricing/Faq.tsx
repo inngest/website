@@ -6,7 +6,7 @@ const FAQS: FaqItem[] = [
     question: "Is there a free trial for the Pro plan?",
     answer:
       "Yes — every Pro plan starts with a two-week trial at no cost. No credit card is required to sign up, and you can downgrade or cancel before the trial ends if Pro isn't the right fit.",
-    link: { label: "Get started", href: "/docs/getting-started/nextjs-quick-start" },
+    link: { label: "Get started", href: "/sign-up" },
   },
   {
     id: "what-is-execution",
