@@ -2,7 +2,7 @@ import ButtonLink from "@/components/v1/ButtonLink";
 import StippleCtaSection from "@/components/v1/sections/shared/StippleCtaSection";
 
 const SIGNUP_URL = "/sign-up?ref=durable-execution-final";
-const CONTACT_URL = "/get-in-touch?ref=durable-execution-final";
+const QUICKSTART_URL = "/docs/quick-start?ref=durable-execution-final";
 
 export default function FinalCTA() {
   return (
@@ -15,8 +15,8 @@ export default function FinalCTA() {
       <ButtonLink href={SIGNUP_URL} variant="primary">
         Start Free
       </ButtonLink>
-      <ButtonLink href={CONTACT_URL} variant="secondary">
-        Talk to the team
+      <ButtonLink href={QUICKSTART_URL} variant="secondary">
+        Quick Start Guide
       </ButtonLink>
     </StippleCtaSection>
   );

@@ -15,13 +15,13 @@ export default function CTA() {
       }
     >
       <ButtonLink href="/sign-up?ref=customers" variant="primary">
-        Create free account
+        Start Free
       </ButtonLink>
       <ButtonLink
-        href="/docs/getting-started/nextjs-quick-start?ref=customers"
+        href="/docs/quick-start?ref=customers"
         variant="secondary"
       >
-        Quick start guide →
+        Quick Start Guide
       </ButtonLink>
     </StippleCtaSection>
   );

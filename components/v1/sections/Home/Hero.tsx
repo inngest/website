@@ -149,7 +149,7 @@ export default function Hero() {
               variant="secondary"
               className="pointer-events-auto"
             >
-              Book a 15min Demo
+              Book a demo
             </ButtonLink>
           </div>
         </div>

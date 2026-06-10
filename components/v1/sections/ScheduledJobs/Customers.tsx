@@ -31,7 +31,7 @@ const STUDIES: CaseStudyItem[] = [
       </>
     ),
     logo: { src: "/assets/v1/logos/outtake.svg", alt: "Outtake", width: 136, height: 24 },
-    cta: { label: "See the example", href: TODO_HREF },
+    cta: { label: "See the example", href: "/customers/outtake" },
   },
   {
     id: "data-sync",
@@ -56,7 +56,7 @@ const STUDIES: CaseStudyItem[] = [
       </>
     ),
     logo: { src: "/assets/v1/logos/resend.svg", alt: "Resend", width: 96, height: 24 },
-    cta: { label: "See the example", href: TODO_HREF },
+    cta: { label: "See the example", href: "/customers/resend" },
   },
   {
     id: "scheduled-content",
@@ -69,7 +69,7 @@ const STUDIES: CaseStudyItem[] = [
       </>
     ),
     logo: { src: "/assets/v1/logos/soundcloud.svg", alt: "SoundCloud", width: 202, height: 24 },
-    cta: { label: "Read the pattern", href: TODO_HREF },
+    cta: { label: "See the example", href: "/customers/soundcloud" },
   },
   {
     id: "trial-lifecycle",
