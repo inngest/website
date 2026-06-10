@@ -60,7 +60,7 @@ const TABS: Tab[] = [
     title: "Wrap functions. No rewrites.\nYour existing code, your\nexisting infra.",
     body: "Install the SDK.\nServe one HTTP endpoint.\nWrap any async function.",
     ctaLabel: "Quick Start",
-    ctaHref: "/docs",
+    ctaHref: "/docs/getting-started/python-quick-start",
     graphic: <SetupGraphic />,
   },
   {
@@ -100,7 +100,7 @@ const TABS: Tab[] = [
     title: "See everything.\nFix fast.",
     body: "Every step, every LLM prompt and response, every token cost — captured automatically in a live trace UI. See exactly what failed, replay it in bulk after a fix, and ship with confidence.",
     ctaLabel: "Observability & Traces Docs",
-    ctaHref: "/docs/observability",
+    ctaHref: "/docs/platform/monitor/observability-metrics",
     graphic: <ObserveGraphic />,
   },
 ];

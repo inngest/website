@@ -6,7 +6,7 @@ import AICubeCanvas from "@/components/v1/sections/AI/AICubeCanvas";
 export default function Hero() {
   return (
     <SplitHero
-      docsHref="/docs?ref=ai"
+      docsHref="/docs/examples/ai-agents-and-rag?ref=ai"
       signupHref="/sign-up?ref=ai"
       breadcrumbs={[
         { label: "Use Cases" },

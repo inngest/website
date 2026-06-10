@@ -12,7 +12,7 @@ import HillsDotsCanvas from "@/components/v1/sections/BackgroundJobs/HillsDotsCa
 export default function Hero() {
   return (
     <SplitHero
-      docsHref="/docs?ref=background-jobs"
+      docsHref="/docs/patterns/jobs?ref=background-jobs"
       signupHref="/sign-up?ref=background-jobs"
       breadcrumbs={[
         { label: "Use Cases" },

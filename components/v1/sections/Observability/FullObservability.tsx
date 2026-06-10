@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { reveals } from "@/utils/v1/reveals";
 import { tweens } from "@/utils/v1/springs";
@@ -16,6 +17,7 @@ interface Feature {
   id: string;
   title: string;
   body: string;
+  href?: string;
 }
 
 const FEATURES: Feature[] = [
@@ -23,26 +25,31 @@ const FEATURES: Feature[] = [
     id: "metrics-dashboard",
     title: "Metrics Dashboard",
     body: "Check system health and drill down into the function causing problems without losing context.",
+    href: "/docs/platform/monitor/observability-metrics",
   },
   {
     id: "run-search",
     title: "Run search",
     body: "Filter across millions of runs with the same context your log stack uses: event payload, function output, user ID.",
+    href: "/docs/platform/monitor/inspecting-function-runs#searching-function-runs",
   },
   {
     id: "waterfall-traces",
     title: "Waterfall traces",
     body: "Show every run, side by side, with the names you wrote in code. Timing, input, output, queue delay, retries—all in one place.",
+    href: "/docs/platform/monitor/traces",
   },
   {
     id: "replay",
     title: "Replay without Queues",
     body: "Forget dead-letter queues and manual ID tracking. Re-run jobs in bulk with one action.",
+    href: "/docs/platform/replay",
   },
   {
     id: "insights",
     title: "Insights",
     body: "Query event and run data without SQL. No exporting, no one-off scripts.",
+    href: "/docs/platform/monitor/insights",
   },
 ];
 
@@ -171,17 +178,39 @@ export default function FullObservability() {
                 dotAnchorClassName="lg:h-[calc(clamp(1.25rem,1.75vw,1.625rem)*1.2)]"
               >
                 <span className="flex flex-1 flex-col gap-2 font-v1Heading">
-                  <span className="text-[28px] leading-[40px] tracking-[-0.01em] lg:leading-[1.2] lg:[font-size:clamp(1.25rem,1.75vw,1.625rem)]">
-                    {f.title}
-                  </span>
-                  <span
-                    className={cn(
-                      "text-pretty text-[18px] leading-[1.5] tracking-[-0.01em] motion-safe:transition-colors motion-safe:duration-300 lg:[font-size:clamp(0.8125rem,1.05vw,1rem)]",
-                      isActive ? "text-v1-frost" : "text-v1-frost/80"
-                    )}
-                  >
-                    {f.body}
-                  </span>
+                  {f.href ? (
+                    <Link
+                      href={f.href}
+                      prefetch={false}
+                      className="flex flex-col gap-2 hover:opacity-80 motion-safe:transition-opacity motion-safe:duration-200"
+                    >
+                      <span className="text-[28px] leading-[40px] tracking-[-0.01em] lg:leading-[1.2] lg:[font-size:clamp(1.25rem,1.75vw,1.625rem)]">
+                        {f.title}
+                      </span>
+                      <span
+                        className={cn(
+                          "text-pretty text-[18px] leading-[1.5] tracking-[-0.01em] motion-safe:transition-colors motion-safe:duration-300 lg:[font-size:clamp(0.8125rem,1.05vw,1rem)]",
+                          isActive ? "text-v1-frost" : "text-v1-frost/80"
+                        )}
+                      >
+                        {f.body}
+                      </span>
+                    </Link>
+                  ) : (
+                    <>
+                      <span className="text-[28px] leading-[40px] tracking-[-0.01em] lg:leading-[1.2] lg:[font-size:clamp(1.25rem,1.75vw,1.625rem)]">
+                        {f.title}
+                      </span>
+                      <span
+                        className={cn(
+                          "text-pretty text-[18px] leading-[1.5] tracking-[-0.01em] motion-safe:transition-colors motion-safe:duration-300 lg:[font-size:clamp(0.8125rem,1.05vw,1rem)]",
+                          isActive ? "text-v1-frost" : "text-v1-frost/80"
+                        )}
+                      >
+                        {f.body}
+                      </span>
+                    </>
+                  )}
                 </span>
               </ReelDirectoryRow>
             </motion.li>
