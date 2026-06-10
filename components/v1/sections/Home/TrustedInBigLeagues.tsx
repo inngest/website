@@ -395,7 +395,7 @@ const CISO_FEATURES: CisoFeature[] = [
     body: "Single sign-on and SAML support for enterprise customers.",
   },
   {
-    title: "100K+ Execution per second",
+    title: "100K+ Executions per second",
     body: "Designed for your heavy workloads with capacity for bursting.",
   },
   {

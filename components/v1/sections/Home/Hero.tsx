@@ -167,13 +167,22 @@ export default function Hero() {
             <span className="block">No queues.</span>
             <span className="block">No refactoring.</span>
           </p>
-          <ButtonLink
-            href={NPM_URL}
-            variant="accent"
-            className="pointer-events-auto"
-          >
-            NPM&nbsp;[→]
-          </ButtonLink>
+          <div className="flex flex-col gap-3 sm:flex-row pointer-events-auto">
+            <ButtonLink
+              href={`${process.env.NEXT_PUBLIC_SIGNUP_URL ?? "/sign-up"}?ref=homepage-hero`}
+              variant="accent"
+              className="pointer-events-auto"
+            >
+              Start Building
+            </ButtonLink>
+            <ButtonLink
+              href="/contact?ref=homepage-hero"
+              variant="secondary"
+              className="pointer-events-auto"
+            >
+              Book a 15min Demo
+            </ButtonLink>
+          </div>
         </div>
 
         {/* Mobile: the desktop canvas-morph isn't shown on phones, so
