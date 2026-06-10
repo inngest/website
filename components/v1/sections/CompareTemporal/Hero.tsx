@@ -83,9 +83,10 @@ export default function Hero() {
             className="max-w-[480px] text-v1-body-lg [font-size:clamp(0.95rem,1.2vw,1.0625rem)] [line-height:1.55]"
             {...entry(280, SUBINK)}
           >
-            AI fails unpredictably. APIs crash, context windows overflow,
-            LLMs get rate limited. Wrap code in functions that checkpoint,
-            wait, and offload without extra infrastructure.
+            Temporal might make code failures irrelevant, but not the
+            infrastructure required to make that a reality. Don&apos;t get
+            stuck with workers, queues, and a layer of management that&apos;ll
+            just slow you down.
           </motion.p>
 
           <motion.div
