@@ -551,11 +551,17 @@ function RichCell({ cell, tone }: { cell: Cell; tone: "dim" | "frost" }) {
 export default function FeatureComparison() {
   const [personaKey, setPersonaKey] = useState<string>(PERSONAS[0].key);
   const persona = PERSONAS.find((p) => p.key === personaKey) ?? PERSONAS[0];
-  // Single-open accordion, keyed within the active persona; defaults to
-  // the persona's first category and resets when the persona changes.
-  const [openKey, setOpenKey] = useState<string>(PERSONAS[0].categories[0].key);
+  // Multi-open accordion — any number of categories can be open at once.
+  // Defaults to the persona's first category; resets when persona changes.
+  const [openKeys, setOpenKeys] = useState<Set<string>>(
+    new Set([PERSONAS[0].categories[0].key]),
+  );
   const toggle = (key: string) =>
-    setOpenKey((prev) => (prev === key ? "" : key));
+    setOpenKeys((prev) => {
+      const next = new Set(prev);
+      next.has(key) ? next.delete(key) : next.add(key);
+      return next;
+    });
 
   // ---- auto-advancing persona timer (See-it-in-action pattern) ----
   const [inView, setInView] = useState(false);
@@ -566,7 +572,7 @@ export default function FeatureComparison() {
   const selectPersona = (key: string, manual: boolean) => {
     setPersonaKey(key);
     const next = PERSONAS.find((p) => p.key === key) ?? PERSONAS[0];
-    setOpenKey(next.categories[0].key);
+    setOpenKeys(new Set([next.categories[0].key]));
     setCycleNonce((n) => n + 1);
     if (manual) setUserTookControl(true);
   };
@@ -590,7 +596,7 @@ export default function FeatureComparison() {
       setPersonaKey((prev) => {
         const idx = PERSONAS.findIndex((p) => p.key === prev);
         const next = PERSONAS[(idx + 1) % PERSONAS.length];
-        setOpenKey(next.categories[0].key);
+        setOpenKeys(new Set([next.categories[0].key]));
         return next.key;
       });
       setCycleNonce((n) => n + 1);
@@ -698,7 +704,7 @@ export default function FeatureComparison() {
 
           {/* Categories */}
           {persona.categories.map((cat) => {
-            const isOpen = openKey === cat.key;
+            const isOpen = openKeys.has(cat.key);
             return (
               <div key={cat.key} className="flex flex-col">
                 <button
