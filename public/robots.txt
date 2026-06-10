@@ -5,6 +5,7 @@ Disallow: /*?ref=
 Disallow: /*?*&ref=
 Disallow: /*?redirect_url=
 Disallow: /*?*&redirect_url=
+Disallow: /download-gate-form
 
 # AI Crawlers
 # Inngest welcomes AI crawlers to index our documentation.
