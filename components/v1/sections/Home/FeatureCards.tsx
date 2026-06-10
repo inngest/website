@@ -365,7 +365,7 @@ function Card({
           (1024) up to 18px at xl+, so the longest locked line
           ("Automatic traces, metrics, and logs from every part")
           fits its column at every lg+ width. */}
-      <p className="w-full text-pretty text-v1-frost text-v1-body-md leading-[1.5] lg:text-[clamp(0.8125rem,1.25vw,1.125rem)]">
+      <p className="w-full text-pretty text-v1-frost text-v1-body-md leading-[1.5] motion-safe:transition-colors group-hover:!text-white group-focus-within:!text-white lg:text-[clamp(0.8125rem,1.25vw,1.125rem)]">
         {card.bodyLines.map((line, i) => (
           <span key={i} className="lg:block lg:whitespace-nowrap">
             {line}

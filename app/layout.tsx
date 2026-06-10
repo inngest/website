@@ -51,7 +51,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html className="scroll-smooth" suppressHydrationWarning>
+    <html suppressHydrationWarning>
       <head>
         <link
           rel="preconnect"

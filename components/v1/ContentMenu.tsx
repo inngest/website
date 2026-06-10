@@ -37,7 +37,13 @@ export default function ContentMenu({
   ariaLabel?: string;
   className?: string;
 }) {
-  const [activeId, setActiveId] = useState<string | null>(null);
+  // Seed the active id with the first entry so the first group renders
+  // already expanded on initial paint — otherwise it starts collapsed
+  // (activeId null) and the scroll-spy effect opens it post-mount, which
+  // reads as a jump/accordion-open right after the page loads.
+  const initialActiveId =
+    (groups ? groups[0]?.items[0]?.id : items?.[0]?.id) ?? null;
+  const [activeId, setActiveId] = useState<string | null>(initialActiveId);
 
   // The flat, ordered id list the observer watches — identical for the
   // flat and grouped shapes.

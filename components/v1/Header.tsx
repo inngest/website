@@ -270,7 +270,7 @@ export default function Header() {
                   // Inset only inside the md+ compact pill — the mobile bar
                   // is a full-bleed band with no pill, so the logo must stay
                   // flush-left and not shift right on scroll.
-                  compact && "md:pl-6"
+                  compact && "md:pl-4"
                 )}
               >
                 {/* Mobile shows the logomark only — the mobile header omits
@@ -304,7 +304,12 @@ export default function Header() {
             </div>
 
             <div
-              className="hidden items-center whitespace-nowrap md:flex"
+              className={cn(
+                "hidden items-center whitespace-nowrap md:flex",
+                // Mirror the logo's compact-pill inset (md:pl-4) on the
+                // right so left/right padding stay symmetric in the pill.
+                compact && "md:pr-4"
+              )}
               style={{ columnGap: "clamp(0.5rem, 0.9vw, 1.5rem)" }}
             >
               {/* Open Source — visible from lg+. On AI page these items
@@ -332,13 +337,13 @@ export default function Header() {
                 }}
               >
                 <WipeLabel
-                  className="font-v1Label font-semibold leading-[1] tracking-[normal]"
+                  className="font-v1Label font-semibold leading-[1] tracking-[0.05rem]"
                   style={{ fontSize: "clamp(0.625rem, 0.9vw, 0.75rem)" }}
                 >
                   Sign in
                 </WipeLabel>
               </Link>
-              <Button asChild variant="pill">
+              <Button asChild variant="pill" size="sm">
                 <a href={appendRef(SIGN_UP_URL, "nav")}>Start free</a>
               </Button>
             </div>
@@ -416,7 +421,7 @@ function NavTrigger({
       onMouseLeave={onScheduleClose}
       onFocus={onOpen}
       onClick={onToggle}
-      className="flex h-6 cursor-pointer items-center gap-1 whitespace-nowrap uppercase text-v1-frost font-v1Label font-semibold leading-[1] tracking-[normal]"
+      className="flex h-6 cursor-pointer items-center gap-1 whitespace-nowrap uppercase text-v1-frost font-v1Label font-semibold leading-[1] tracking-[0.05rem]"
       style={{
         paddingInline: "clamp(0.25rem, 0.45vw, 0.5rem)",
         fontSize: "clamp(0.625rem, 0.9vw, 0.75rem)",
@@ -442,7 +447,7 @@ function NavTrigger({
 // auto-wrapping of string children).
 function NavLink({ label, href }: NavItem) {
   const className =
-    "flex h-6 items-center gap-1 whitespace-nowrap uppercase text-v1-frost font-v1Label font-semibold leading-[1] tracking-[normal]";
+    "flex h-6 items-center gap-1 whitespace-nowrap uppercase text-v1-frost font-v1Label font-semibold leading-[1] tracking-[0.05rem]";
   const style = {
     paddingInline: "clamp(0.25rem, 0.45vw, 0.5rem)",
     fontSize: "clamp(0.625rem, 0.9vw, 0.75rem)",

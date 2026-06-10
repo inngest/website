@@ -14,46 +14,45 @@ export default function ChangelogView({
   menuGroups: ContentMenuGroup[];
 }) {
   return (
-    // Two-column changelog: a 448px left rail
-    // (title + sticky content menu) beside an 800px entry column, 52px
+    // Two-column changelog: an 800px content column (title + entries) on
+    // the left, beside a 448px sticky content-menu rail on the right, 52px
     // apart. Top padding clears the fixed header (~76px) and matches the
     // design's 80px frame inset (76 + 80 = 156 on desktop).
     <section className="mx-auto w-full max-w-[1440px] px-6 pb-20 pt-24 text-v1-frost sm:px-9 sm:pt-[120px] lg:px-[70px] lg:pb-40 lg:pt-[172px]">
-      <div className="grid grid-cols-1 gap-y-10 lg:grid-cols-[minmax(0,448fr)_minmax(0,800fr)] lg:items-start lg:gap-x-[52px]">
-        {/* Left rail — sticks below the fixed header on scroll. */}
-        <div className="flex flex-col gap-6 lg:sticky lg:top-[100px]">
-          <header className="flex flex-col gap-5">
-            <h1 className="text-v1-display-sm uppercase leading-[1.25] text-white [font-size:clamp(2.5rem,5.4vw,4rem)]">
-              Changelog
-            </h1>
-            <p className="text-v1-body-xs text-white">
-              Updates &amp; improvements to Inngest
-            </p>
-          </header>
+      {/* Explicit grid placement: title spans the top of the left
+          column (row 1); the entry list and the sticky rail share row 2,
+          so the rail's top aligns with the first entry — not the title. */}
+      <div className="grid grid-cols-1 gap-y-12 lg:grid-cols-[minmax(0,800fr)_minmax(0,448fr)] lg:items-start lg:gap-x-[52px]">
+        {/* Title — over the content (left column, row 1). */}
+        <header className="flex flex-col gap-5 lg:col-start-1 lg:row-start-1">
+          <h1 className="text-v1-display-sm uppercase leading-[1.25] text-white [font-size:clamp(2.5rem,5.4vw,4rem)]">
+            Changelog
+          </h1>
+          <p className="text-v1-body-xs text-white">
+            Updates &amp; improvements to Inngest
+          </p>
+        </header>
 
-          {/* Content menu. Desktop-only — a section list
-              stacked atop a mobile changelog is just noise. The card caps
-              its height and scrolls internally so a long changelog can't
-              outgrow the viewport. */}
-          <div className="hidden lg:block">
-            <ContentMenu
-              groups={menuGroups}
-              ariaLabel="Changelog entries"
-              className="max-h-[calc(100vh-220px)] overflow-y-auto"
-            />
-          </div>
-        </div>
-
-        {/* Entry column — 44px between entries; the first
-            entry sits ~100px below the title to line up with the menu
-            card. */}
+        {/* Entry column — 44px between entries (left column, row 2). */}
         <SectionProvider sections={[]}>
-          <div className="flex flex-col gap-11 lg:pt-[100px]">
+          <div className="flex flex-col gap-11 lg:col-start-1 lg:row-start-2">
             {entries.map((item, idx) => (
               <EntryArticle key={`${idx}-${item.slug}`} item={item} />
             ))}
           </div>
         </SectionProvider>
+
+        {/* Right rail — sticky content menu, aligned to the entries (row
+            2). Desktop-only: a section list stacked atop a mobile
+            changelog is just noise. The card caps its height and scrolls
+            internally so a long changelog can't outgrow the viewport. */}
+        <div className="hidden lg:col-start-2 lg:row-start-2 lg:block lg:sticky lg:top-[100px]">
+          <ContentMenu
+            groups={menuGroups}
+            ariaLabel="Changelog entries"
+            className="max-h-[calc(100vh-220px)] overflow-y-auto"
+          />
+        </div>
       </div>
 
       <TrackChangelogView date={entries[0]?.metadata?.date} />

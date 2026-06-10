@@ -20,6 +20,10 @@ export abstract class Engine {
   protected scrollY = 0;
   protected scrollMax = 1;
   protected elapsedMs = 0;
+  // Per-scene playback rate. 1 = real time; >1 plays the scene faster.
+  // Scales the per-frame dt, so elapsedMs and every dt-derived clock
+  // (and thus all keyframe timings) speed up uniformly.
+  protected timeScale = 1;
 
   private raf = 0;
   private running = false;
@@ -82,7 +86,7 @@ export abstract class Engine {
       // scrolling past an off-screen canvas (or one not yet sized)
       // freezes state instead of drifting forward in wall-clock time.
       if (this.visible && this.built) {
-        const dt = now - this.lastFrame;
+        const dt = (now - this.lastFrame) * this.timeScale;
         this.elapsedMs += dt;
         this.update(dt);
         this.render();
