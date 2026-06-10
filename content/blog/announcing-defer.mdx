@@ -1,0 +1,287 @@
+---
+heading: "Introducing defer(): Giving Follow-Up Work the Context it Never Had"
+image: /assets/blog/announcing-defers/featured-image.png
+showSubtitle: false
+subtitle: "A new Inngest API for launching typed, durable follow-up work from inside a function."
+date: 2026-06-05
+author:
+  - Lauren Craigie
+  - Linell Bonnette
+category: product-updates
+---
+
+Orchestration tools are great at running one thing after another. They're worse at the follow-up — scoring an AI response with the prompt and latency the parent just produced, or waiting days for a conversion before recording whether a recommendation paid off. Today, that means a separate handler, a hand-rolled payload contract, and often a second platform sitting between them.
+
+Until today. `defer()` is a new Inngest API that launches a typed, durable follow-up function from inside a parent run, passing it the data it needs. Deferred runs can pause on `step.waitForEvent` for days, and each one shows up linked to its parent in the UI.
+
+<Callout variant="info">
+`defer()` is available today in beta. `createDefer` is imported from `inngest/experimental` and the surface may change before GA.
+</Callout>
+
+## Why is this a problem right now?
+
+Post-completion background work is not a new problem, but it's becoming a more painful one. Business logic explodes in multi-step durable workflows, and the context gap around "what actually happened" keeps widening. There are only three ways to solve this today, but they all share the same drawback: the follow-up is disconnected from the work that triggered it.
+
+**Traditional job queues** (Sidekiq, BullMQ, Celery) let you enqueue work after a function, but the queued job is a separate handler in a separate file. You define a payload contract by hand and hope the producer and consumer agree on its shape.
+
+**Workflow engines** (Temporal, Trigger, Restate) give you failure callbacks and child workflows, but the wiring lives outside the function it's reacting to — in a separate file, with a payload shape held together by convention.
+
+**Eval platforms** (Braintrust, LangSmith, Arize) put the scorer in a separate system from the function it's scoring. The feedback loop between "I shipped a change" and "I understand how it performed" involves significant manual effort to trace a result back to the code that produced it.
+
+What none of these approaches offer is a typed, durable follow-up that you can launch in one line from the function that produced the data. The run is linked back to its parent in the UI.
+
+## How `defer()` works
+
+You define the deferred function once with `createDefer`, register it alongside your other functions in `serve()`, and call it from any function via the `defer` context method:
+
+```tsx
+import { createDefer } from "inngest/experimental";
+import { z } from "zod";
+
+export const trackAnalytics = createDefer(
+  inngest,
+  {
+    id: "track-analytics",
+    schema: z.object({ orderId: z.string(), userId: z.string() }),
+  },
+  async ({ event, step }) => {
+    await step.run("send-to-segment", () =>
+      analytics.track("order_created", {
+        orderId: event.data.orderId,
+        userId: event.data.userId,
+      })
+    );
+  }
+);
+
+export const processOrder = inngest.createFunction(
+  { id: "process-order", triggers: { event: "order/created" } },
+  async ({ defer, event, step }) => {
+    const orderId = await step.run("create-order", () =>
+      db.orders.create(event.data)
+    );
+
+    const charge = await step.run("charge-payment", () =>
+      stripe.charges.create({ amount: event.data.total, orderId })
+    );
+
+    defer("track-order-analytics", {
+      function: trackAnalytics,
+      data: { orderId, userId: charge.user.id },
+    });
+
+    return orderId;
+  }
+);
+```
+
+When the parent run finalizes, the deferred callback fires as its own linked Inngest run — durable, observable, retryable — with the payload you passed in.
+
+**Deferred runs are separate, linked runs.** Each `defer()` call produces its own run, connected to the parent. It has its own `runId`, its own step history, its own retry behavior. But it doesn't pollute your runs list; deferred runs are scoped to the parent run's detail view.
+
+**`defer()` is fire-and-forget.** The call returns `void` and the parent run continues immediately. Buffered defer ops ship when the parent run finalizes, so the deferred function can't block, fail, or change the parent's outcome.
+
+**Steps work inside deferred runs.** The full power of Inngest — `step.run()`, `step.waitForEvent()`, `step.sleep()` — is available inside the deferred handler. This is what makes patterns like outcome-based scoring possible.
+
+**Payloads are typed.** Pass a `schema` to `createDefer` and the `data` you send is validated at the call site and on the receiver, with `event.data` typed in the handler. Change the schema later and TypeScript points at every call site that needs updating, so refactors are painless.
+
+You already have a few ways to launch work from inside a function:
+
+- `step.invoke` runs another function and waits for the result. The parent blocks until it finishes.
+- `step.sendEvent` is fire-and-forget, but broadcasts to any function whose trigger matches.
+- `step.run` becomes *part of* the parent run, retries bundled in.
+- `defer` is fire-and-forget like `sendEvent`, targeted at one typed function like `invoke`, and linked back to the parent in the UI.
+
+## When to use defer()
+
+### Scoring AI responses after serving them
+
+You ran an LLM call and served a result to the user. Now you want to evaluate quality programmatically without blocking the response or re-fetching the context that produced it.
+
+```tsx
+export const scoreResponse = createDefer(
+  inngest,
+  {
+    id: "score-response",
+    schema: z.object({
+      runId: z.string(),
+      prompt: z.array(z.object({ role: z.string(), content: z.string() })),
+      response: z.string(),
+    }),
+  },
+  async ({ event, step }) => {
+    const score = await step.run("run-eval", () =>
+      evaluator.score({
+        prompt: event.data.prompt,
+        response: event.data.response,
+        criteria: ["relevance", "accuracy", "tone"],
+      })
+    );
+
+    await step.run("persist-score", () =>
+      db.scores.create({ runId: event.data.runId, score })
+    );
+  }
+);
+
+export const generateReply = inngest.createFunction(
+  { id: "generate-reply", triggers: { event: "chat/message.received" } },
+  async ({ defer, event, runId, step }) => {
+    const completion = await step.run("generate-response", () =>
+      openai.chat.completions.create({
+        messages: event.data.messages,
+        model: "gpt-4o",
+      })
+    );
+
+    const response = completion.choices[0].message.content;
+
+    defer("score", {
+      function: scoreResponse,
+      data: { runId, prompt: event.data.messages, response },
+    });
+
+    return response;
+  }
+);
+```
+
+Because the deferred run is a full durable function, the scorer can also `step.waitForEvent()` — waiting days for a thumbs up or a conversion event, then scoring retroactively.
+
+### Outcome-based scoring (or "wait for conversion")
+
+**No existing eval platform handles this use case well.** With other tools, you won't know if an AI recommendation worked until a week later, when the user either purchased or didn't. `defer()` changes this. The deferred run waits on `step.waitForEvent` for as long as you need.
+
+```tsx
+export const conversionScore = createDefer(
+  inngest,
+  {
+    id: "conversion-score",
+    schema: z.object({
+      runId: z.string(),
+      userId: z.string(),
+      recommendedProductId: z.string(),
+      recommendedAt: z.string(),
+    }),
+  },
+  async ({ event, step }) => {
+    const conversion = await step.waitForEvent("wait-for-purchase", {
+      event: "purchase/completed",
+      timeout: "7d",
+      if: `async.data.userId == '${event.data.userId}'`,
+    });
+
+    const converted = conversion !== null;
+
+    await step.run("record-outcome", () =>
+      db.scores.create({
+        runId: event.data.runId,
+        recommendation: event.data.recommendedProductId,
+        converted,
+        daysToConvert: converted
+          ? daysBetween(event.data.recommendedAt, conversion.ts)
+          : null,
+      })
+    );
+  }
+);
+```
+
+### Cache invalidation after a write
+
+Register invalidation inline with the write, so it's impossible to forget:
+
+```tsx
+export const invalidateProductCache = createDefer(
+  inngest,
+  {
+    id: "invalidate-product-cache",
+    schema: z.object({ productId: z.string() }),
+  },
+  async ({ event, step }) => {
+    await step.run("clear-cdn", () =>
+      cdn.purge(`/products/${event.data.productId}`)
+    );
+    await step.run("clear-search-index", () =>
+      searchIndex.reindex(event.data.productId)
+    );
+  }
+);
+
+export const updateProduct = inngest.createFunction(
+  { id: "update-product", triggers: { event: "product/updated" } },
+  async ({ defer, event, step }) => {
+    await step.run("update-product", () =>
+      db.products.update(event.data.productId, event.data.changes)
+    );
+
+    defer("invalidate", {
+      function: invalidateProductCache,
+      data: { productId: event.data.productId },
+    });
+  }
+);
+```
+
+### Sending analytics without blocking
+
+You want rich analytics that include mid-function state, without holding up the response:
+
+```tsx
+export const trackRecommendationServed = createDefer(
+  inngest,
+  {
+    id: "track-recommendation-served",
+    schema: z.object({
+      userId: z.string(),
+      plan: z.string(),
+      recommendationCount: z.number(),
+      modelVersion: z.string(),
+      latencyMs: z.number(),
+    }),
+  },
+  async ({ event, step }) => {
+    await step.run("send-analytics", () =>
+      analytics.track("recommendations_served", event.data)
+    );
+  }
+);
+
+export const serveRecommendations = inngest.createFunction(
+  { id: "serve-recommendations", triggers: { event: "recs/requested" } },
+  async ({ defer, event, step }) => {
+    const user = await step.run("fetch-user", () =>
+      db.users.findById(event.data.userId)
+    );
+
+    const recommendations = await step.run("generate-recs", () =>
+      recommender.generate(user)
+    );
+
+    defer("track", {
+      function: trackRecommendationServed,
+      data: {
+        userId: user.id,
+        plan: user.plan,
+        recommendationCount: recommendations.items.length,
+        modelVersion: recommendations.modelVersion,
+        latencyMs: recommendations.latencyMs,
+      },
+    });
+
+    return recommendations;
+  }
+);
+```
+
+The parent returns immediately. The analytics call runs in the background with the full context it needs.
+
+## A new primitive, not just a feature
+
+We built `defer()` as a primitive. The underlying mechanism is a full durable run with access to the rest of Inngest's API, which means there's more coming: things like batching, immediate scheduling, and an abort API for in-flight deferred runs, plus encryption middleware support and observability improvements. The feedback loop between shipping logic and understanding how something actually performed should be as tight as possible.
+
+## Getting started
+
+`defer()` is available today as an experimental API in the Inngest TypeScript SDK. Check the [deferred functions documentation](/docs/reference/typescript/v4/functions/deferred-functions) for the full API reference.
+
+We're especially interested in hearing how teams use this for durable workflows — including ensuring agents run as expected. If you're building eval pipelines or scoring loops and want to talk through how `defer()` fits, reach out.
