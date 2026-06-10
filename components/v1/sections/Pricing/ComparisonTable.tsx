@@ -66,10 +66,11 @@ export default function ComparisonTable() {
           {/* Sections */}
           <div className="flex flex-col">
             {SECTIONS.map((sec) => {
-              const rows =
+              const rows = FEATURES.filter((f) =>
                 sec.key === "all"
-                  ? FEATURES
-                  : FEATURES.filter((f) => f.section === sec.key);
+                  ? f.section === "comparison"
+                  : f.section === sec.key,
+              );
               const isOpen = open.has(sec.key);
               return (
                 <div key={sec.key} className="flex flex-col">

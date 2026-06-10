@@ -385,8 +385,9 @@ function PlanCard({
       </ButtonLink>
 
       {/* Feature bullets — the first three (the headline limits:
-          executions / connections / concurrent steps) read larger,
-          then a short divider separates the supporting features below. */}
+          executions / concurrent executions / realtime connections)
+          read larger, then a short divider separates the supporting
+          features below. */}
       <div className="relative z-10 flex flex-col gap-4 text-v1-frost">
         <ul className="flex list-disc flex-col gap-3 pl-[21px]">
           {plan.features.slice(0, 3).map((feature) => (
