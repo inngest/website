@@ -827,7 +827,7 @@ const WATERFALL_GREEN = "#0bdd48";
 // The whole trace plays over this window of wall-clock time: nowSec ramps
 // 0 → total across it, and every span's geometry is recomputed against
 // nowSec each frame so the timeline re-proportions as it "runs".
-const WATERFALL_TOTAL_MS = 3500;
+const WATERFALL_TOTAL_MS = 1900;
 // Beat to hold on the empty track before the trace begins running.
 const WATERFALL_START_DELAY_MS = 100;
 // Row pitch in px (row-to-row spacing is 43.41). Fixed across
@@ -956,8 +956,11 @@ function TraceWaterfall() {
           const visible = isRoot
             ? true
             : isChild
-              ? nowSec >= realEnd
-              : nowSec >= realStart;
+            ? nowSec >= realEnd
+            : nowSec >= realStart;
+          // The left-hand row (label + duration) fades in the moment the span
+          // *starts*, independent of when its bar lands on the timeline.
+          const started = isRoot || nowSec >= realStart;
           const visibleEnd = isChild ? realEnd : Math.min(realEnd, nowSec);
           const left = isRoot ? 0 : (realStart / denom) * 100;
           const widthPct = isRoot
@@ -966,8 +969,11 @@ function TraceWaterfall() {
           return (
             <div key={i} className="contents">
               <div
-                className="flex items-center whitespace-nowrap"
-                style={{ paddingLeft: row.indent === 0 ? 0 : 35 }}
+                className="flex items-center whitespace-nowrap transition-opacity duration-150 ease-out"
+                style={{
+                  paddingLeft: row.indent === 0 ? 0 : 35,
+                  opacity: started ? 1 : 0,
+                }}
               >
                 {/* fixed gutter so parent labels align at the same x
                     whether or not they carry a glyph */}
@@ -985,8 +991,8 @@ function TraceWaterfall() {
                 <span className="truncate">{row.label}</span>
               </div>
               <div
-                className="whitespace-nowrap text-right tabular-nums"
-                style={{ color: WATERFALL_DURATION }}
+                className="whitespace-nowrap text-right tabular-nums transition-opacity duration-150 ease-out"
+                style={{ color: WATERFALL_DURATION, opacity: started ? 1 : 0 }}
               >
                 {row.duration}
               </div>
