@@ -109,14 +109,14 @@ export default function Hero() {
         // which sit BELOW it at `z-v1-backdrop`. Interactive children
         // (the NPM button; the mobile accordion rows in HeroCodeStatic)
         // re-enable hits with `pointer-events-auto`. Mirrors HeroTest.
-        className="pointer-events-none relative z-30 flex w-full flex-col px-6 pb-12 pt-20 sm:px-10 sm:pt-32 lg:pl-[34px] lg:pr-[70px] lg:pt-[calc(40vh_-_1.64*min(11.11vw,18vh)_+_27px)] lg:pb-[40px]"
+        className="pointer-events-none relative z-30 flex w-full flex-col px-6 pb-12 pt-20 sm:px-10 sm:pt-32 lg:pl-[34px] lg:pr-[70px] lg:pt-[calc(40vh_-_1.64*min(8vw,16vh)_+_27px)] lg:pb-[40px]"
       >
         {/* Stacked two-tone display: UNBREAKABLE / AGENTS. in solid
             frost, INVISIBLE / INFRA. as an outlined frost stroke. Both
             left-aligned to the logo mark via the -0.06em optical cheat. */}
         <p
           aria-hidden="true"
-          className="text-v1-display-hero uppercase text-v1-frost lg:pr-[100px] lg:-ml-[0.06em] text-left leading-[0.82] !text-[min(11.11vw,18vh)] tracking-[-0.025em]"
+          className="text-v1-display-hero uppercase text-v1-frost lg:pr-[100px] lg:-ml-[0.06em] text-left leading-[0.82] !text-[min(8vw,16vh)] tracking-[-0.025em]"
         >
           <span className="block">Unbreakable</span>
           <span className="block">Agents.</span>
@@ -124,13 +124,13 @@ export default function Hero() {
 
         <p
           aria-hidden="true"
-          className="text-v1-display-hero mt-4 uppercase text-v1-frost lg:mt-[4vh] lg:pr-[100px] lg:-ml-[0.06em] text-left leading-[0.82] !text-[min(11.11vw,18vh)] tracking-[-0.025em]"
+          className="text-v1-display-hero mt-6 uppercase text-v1-frost lg:mt-[7vh] lg:pr-[100px] lg:-ml-[0.06em] text-left leading-[0.82] !text-[min(8vw,16vh)] tracking-[-0.025em]"
         >
           <span className="block text-transparent [-webkit-text-stroke:2px_rgb(255,255,255)]">Invisible</span>
           <span className="block text-transparent [-webkit-text-stroke:2px_rgb(255,255,255)]">Infra.</span>
         </p>
 
-        <div className="mt-[48px] space-y-[36px] lg:mt-[24px] lg:space-y-[24px] lg:pl-0">
+        <div className="mt-[48px] space-y-[36px] lg:mt-[6vh] lg:space-y-[42px] lg:pl-0">
           {/* Mono eyebrow kicker — uppercase WhyteMono, single row at
               every breakpoint; fluid size keeps it on one line. */}
           <p className="whitespace-nowrap font-v1Label uppercase tracking-[0.08em] text-[clamp(0.8125rem,1.4vw,1.25rem)] leading-[1.2] text-v1-frost">
