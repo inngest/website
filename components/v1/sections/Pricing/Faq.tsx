@@ -23,7 +23,7 @@ const FAQS: FaqItem[] = [
     id: "self-host",
     question: "Can I self-host Inngest?",
     answer:
-      "Yes. Inngest is open-source and can be self-hosted. The cloud product adds managed infrastructure, observability, and reliability on top — but the core engine is yours to run.",
+      "Inngest is delivered as a managed service for all plans. Enterprise customers can request dedicated execution capacity for low-latency, high-throughput workloads on shared regional infrastructure.",
   },
   {
     id: "billing-questions",
