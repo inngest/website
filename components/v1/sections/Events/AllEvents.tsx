@@ -81,15 +81,15 @@ export default function AllEvents() {
                 panelVariant="events"
               />
               <MultiSelectDropdown
-                label="Topics"
+                label="Type"
                 trailing="filter"
                 values={topics}
                 onChange={setTopics}
                 allValue="__ALL__"
                 options={[
                   { value: "__ALL__", label: "All" },
-                  ...TOPICS.map((t, i) => ({
-                    value: `${t}-${i}`,
+                  ...TOPICS.map((t) => ({
+                    value: t,
                     label: t,
                   })),
                 ]}
@@ -114,7 +114,7 @@ export default function AllEvents() {
           <ul className="z-[1] grid list-none grid-cols-1 gap-6 pl-0 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.map((ev) => (
               <li key={ev.id} className="list-none">
-                <EventCard ev={ev} />
+                <EventCard ev={ev} newTab={ev.href.startsWith("http")} />
               </li>
             ))}
           </ul>
