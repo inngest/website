@@ -11,7 +11,7 @@ const EVENT = {
   date: "June 29 – July 2, 2026",
   location: "Moscone West, San Francisco, CA 94103 | Booth #U-G26",
   description:
-    "Inngest is agent infrastructure that lives in your codebase — write your logic as functions and get retries, control flow, and full observability with zero extra infra. If you're building agents or tired of babysitting background jobs, come see it in practice at booth #U-G26 all week.\n\nWant dedicated time? Book a slot with the team below.",
+    "Inngest is agent infrastructure that lives in your codebase—write your logic as functions and get retries, flow control, and full observability with zero extra infra. If you're building agents or tired of babysitting background jobs, come see it in practice at booth #U-G26 all week.\n\nWant dedicated time? Book a slot with the team below.",
 };
 
 const GCAL_URL =
