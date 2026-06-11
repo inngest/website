@@ -7,11 +7,27 @@ Disallow: /*?redirect_url=
 Disallow: /*?*&redirect_url=
 Disallow: /download-gate-form
 
+# Block traditional search engines from LLM markdown mirror pages.
+# These are lightweight markdown versions of our docs/blog intended for AI
+# crawlers only. Blocking prevents duplicate content issues and crawl budget waste.
+# NOTE: Deploy this block only after the X-Robots-Tag noindex headers (in the
+# /docs-markdown/ and /blog-markdown/ route handlers) have been live for ~2 weeks.
+# If Googlebot is blocked before it can re-crawl and see the noindex directive,
+# affected URLs will remain stuck in GSC "Crawled - currently not indexed".
+User-agent: Googlebot
+Disallow: /docs-markdown/
+Disallow: /blog-markdown/
+
+User-agent: Bingbot
+Disallow: /docs-markdown/
+Disallow: /blog-markdown/
+
 # AI Crawlers
 # Inngest welcomes AI crawlers to index our documentation.
 # See also: /llms.txt, /llms-full.txt, /ai.txt
 
 User-agent: GPTBot
+User-agent: OAI-SearchBot
 User-agent: ChatGPT-User
 User-agent: ClaudeBot
 User-agent: PerplexityBot
