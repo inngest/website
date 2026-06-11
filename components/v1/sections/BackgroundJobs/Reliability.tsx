@@ -44,6 +44,7 @@ interface Feature {
   id: IllustrationId;
   title: string;
   body: string;
+  href: string;
 }
 
 const FEATURES: Feature[] = [
@@ -51,41 +52,49 @@ const FEATURES: Feature[] = [
     id: "retries",
     title: "Automatic retries",
     body: "Failed steps retry with configurable exponential backoff. Set max attempts per function or per individual step — no boilerplate required.",
+    href: "https://www.inngest.com/docs/guides/error-handling",
   },
   {
     id: "checkpointing",
     title: "Step-level checkpointing",
     body: "When a step fails, only that step retries. Completed steps are memoized — no duplicate side effects from work that already succeeded.",
+    href: "https://www.inngest.com/docs/setup/checkpointing",
   },
   {
     id: "traces",
     title: "Full run traces and logs",
     body: "Every run has a complete trace. See inputs, outputs, timing, and error details for every step — without a separate logging service.",
+    href: "https://www.inngest.com/docs/platform/monitor/traces",
   },
   {
     id: "concurrency",
     title: "Concurrency and throttling",
     body: "Cap parallel executions globally or per-user/tenant with one line of config. Prevent thundering herds and protect downstream services.",
+    href: "https://www.inngest.com/docs/guides/concurrency",
   },
   {
     id: "priority",
     title: "Priority queuing",
     body: "High-priority jobs run first. Assign dynamic priority based on user tier, plan, or any attribute in the event payload.",
+    href: "https://www.inngest.com/docs/guides/priority#configuration-reference",
   },
   {
     id: "replay",
     title: "Bulk replay",
     body: "Deployed a bug? Re-run failed functions in bulk from the dashboard. No dead-letter queues to drain. No scripts to write.",
+    href: "https://www.inngest.com/docs/platform/replay",
   },
   {
     id: "devServer",
     title: "Local dev server",
     body: "Run npx inngest-cli dev for a local UI with real-time traces, event payloads, and step outputs. No cloud account needed.",
+    href: "https://www.inngest.com/docs/local-development",
   },
   {
     id: "typescript",
     title: "TypeScript-native",
     body: "Define event payload types once. End-to-end type safety from the event sender all the way into your function body.",
+    href: "https://www.inngest.com/docs/guides/singleton",
   },
 ];
 
@@ -236,7 +245,7 @@ export default function Reliability() {
         {FEATURES.map((feature) => {
           const isActive = feature.id === active;
           return (
-            <li key={feature.id} className="flex">
+            <li key={feature.id} className="flex flex-col">
               <button
                 type="button"
                 role="tab"
@@ -244,7 +253,7 @@ export default function Reliability() {
                 onClick={() => advance(feature.id)}
                 onPointerMove={onCursorSpotlightMove}
                 style={CURSOR_SPOTLIGHT_SEED}
-                className="group/row relative isolate flex h-full w-full items-start gap-[10px] rounded-md px-[22px] py-[10px] text-left motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-v1-out hover:bg-v1-frost/[0.035] focus-visible:bg-v1-frost/[0.035]"
+                className="group/row relative isolate flex w-full items-start gap-[10px] rounded-md px-[22px] py-[10px] text-left motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-v1-out hover:bg-v1-frost/[0.035] focus-visible:bg-v1-frost/[0.035]"
               >
                 <span
                   aria-hidden="true"
@@ -279,6 +288,14 @@ export default function Reliability() {
                   </span>
                 </span>
               </button>
+              <a
+                href={feature.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="pl-[40px] pr-[22px] pb-2 pt-1 font-v1Label text-[12px] text-v1-frost/40 hover:text-v1-accent-salmon motion-safe:transition-colors motion-safe:duration-200"
+              >
+                Read the docs →
+              </a>
             </li>
           );
         })}

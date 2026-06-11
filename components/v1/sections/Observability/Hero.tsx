@@ -25,7 +25,7 @@ export default function Hero() {
         "provides deep insight into context at the step level—",
         "so you can fix fast.",
       ]}
-      docsHref="/docs?ref=observability"
+      docsHref="/docs/platform/monitor/observability-metrics?ref=observability"
       signupHref="/sign-up?ref=observability"
       canvas={({ isDesktop }) =>
         isDesktop && (
