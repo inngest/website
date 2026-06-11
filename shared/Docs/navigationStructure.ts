@@ -1180,6 +1180,10 @@ const sectionLearn: (NavGroup | NavLink)[] = [
     title: "Resources",
     links: [
       {
+        title: "Architecture",
+        href: `/docs/architecture`,
+      },
+      {
         title: "Security",
         href: "/docs/learn/security",
       },
