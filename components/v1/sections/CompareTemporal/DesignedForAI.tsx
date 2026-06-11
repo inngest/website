@@ -1,7 +1,11 @@
 "use client";
 
+import Link from "next/link";
+import { motion } from "motion/react";
 import { cn } from "@/utils/v1/cn";
+import { reveals } from "@/utils/v1/reveals";
 import ReelCarousel from "@/components/v1/sections/shared/ReelCarousel";
+import ReelDirectoryRow from "@/components/v1/sections/shared/ReelDirectoryRow";
 import { useReelCarousel } from "@/components/v1/sections/shared/useReelCarousel";
 import Section from "@/components/v1/sections/shared/Section";
 import SectionHeader from "@/components/v1/sections/shared/SectionHeader";
@@ -25,6 +29,7 @@ interface Slide {
   id: string;
   title: string;
   blurb: string;
+  href?: string;
   code?: string;
   /** Render the per-user "Queued Runs" bar chart instead of a code box. */
   chart?: boolean;
@@ -38,6 +43,7 @@ const SLIDES: Slide[] = [
     title: "Step memoization",
     blurb:
       "Completed steps aren’t re-executed on retry. Temporal retries the whole activity — there’s no per-step cache.",
+    href: "https://www.inngest.com/docs/learn/versioning#step-based-memoization",
     code: `const summary = await
 step.run('summarize', async () => {
 return llm.complete(transcript) })
@@ -49,6 +55,7 @@ return llm.complete(transcript) })
     title: "Human-in-the-loop",
     blurb:
       "A native primitive in Inngest. In Temporal, its an assembly of Signals, channels, and Slectors – pattern, not platform.",
+    href: "https://www.inngest.com/docs/ai-patterns/human-in-the-loop",
     code: `const decision
 = await step.waitForEvent('review', {
 event: 'agent/reviewed',
@@ -61,6 +68,7 @@ Selector, and handler — all manual.`,
     title: "Per-user concurrency and rate limiting",
     blurb:
       "Temporal has no built-in rate limiting. Concurrency is worker-level, not per-user. Both require custom code.",
+    href: "https://www.inngest.com/docs/guides/concurrency",
     chart: true,
   },
   {
@@ -68,6 +76,7 @@ Selector, and handler — all manual.`,
     title: "Step-level observability",
     blurb:
       "— queue delay, step timing, flow control — so you know exactly what happened, and why.",
+    href: "https://www.inngest.com/docs/platform/monitor/observability-metrics",
     segments: true,
   },
 ];
@@ -340,36 +349,62 @@ export default function DesignedForAI() {
           >
             {(slide) => <SlideVisual slide={slide} />}
           </ReelCarousel.Panel>
-          {/* 2×2 feature grid / slide selectors. */}
-          <ReelCarousel.Directory<Slide>
-            className="mt-[44px]"
-            columnsClass="grid-cols-1 sm:grid-cols-2"
-            gapClass="gap-x-4 gap-y-8"
-            dotAnchorClassName=""
-          >
-            {({ item, isActive }) => (
-              <span className="flex flex-1 flex-col gap-2">
-                <span
-                  className={cn(
-                    "flex min-h-[40px] items-center text-v1-heading-sm motion-safe:transition-colors",
-                    isActive
-                      ? "text-v1-frost"
-                      : "text-v1-frost/70 group-hover/row:text-v1-frost",
-                  )}
+          {/* 2×2 feature grid / slide selectors. Custom grid (instead of
+              ReelCarousel.Directory) so each cell can hold both the
+              interactive button and a "Read the docs →" anchor as
+              siblings — anchors cannot be nested inside buttons. */}
+          <ul className="mt-[44px] grid list-none grid-cols-1 items-stretch gap-x-4 gap-y-8 pl-0 sm:grid-cols-2">
+            {SLIDES.map((slide, i) => {
+              const isActive = i === controller.active;
+              return (
+                <motion.li
+                  key={slide.id}
+                  {...reveals.item(i)}
+                  className="flex list-none flex-col"
                 >
-                  {item.title}
-                </span>
-                <span
-                  className={cn(
-                    "text-v1-body-sm motion-safe:transition-colors",
-                    isActive ? "text-v1-frost" : "text-v1-frost/80",
+                  <ReelDirectoryRow
+                    isActive={isActive}
+                    cycling={controller.cycling}
+                    onSelect={() => controller.select(i)}
+                    onHoverEnter={controller.pause}
+                    onHoverLeave={controller.resume}
+                    dotAnchorClassName=""
+                  >
+                    <span className="flex flex-1 flex-col gap-2">
+                      <span
+                        className={cn(
+                          "flex min-h-[40px] items-center text-v1-heading-sm motion-safe:transition-colors",
+                          isActive
+                            ? "text-v1-frost"
+                            : "text-v1-frost/70 group-hover/row:text-v1-frost",
+                        )}
+                      >
+                        {slide.title}
+                      </span>
+                      <span
+                        className={cn(
+                          "text-v1-body-sm motion-safe:transition-colors",
+                          isActive ? "text-v1-frost" : "text-v1-frost/80",
+                        )}
+                      >
+                        {slide.blurb}
+                      </span>
+                    </span>
+                  </ReelDirectoryRow>
+                  {slide.href && (
+                    <Link
+                      href={slide.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-[22px] pb-2 pt-1 font-v1Label text-[13px] text-v1-frost/50 hover:text-v1-accent-salmon motion-safe:transition-colors motion-safe:duration-200"
+                    >
+                      Read the docs →
+                    </Link>
                   )}
-                >
-                  {item.blurb}
-                </span>
-              </span>
-            )}
-          </ReelCarousel.Directory>
+                </motion.li>
+              );
+            })}
+          </ul>
         </ReelCarousel>
       </div>
     </Section>

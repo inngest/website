@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { motion } from "motion/react";
 import ButtonLink from "@/components/v1/ButtonLink";
 import GradientFrame from "@/components/v1/sections/shared/GradientFrame";
@@ -18,28 +19,34 @@ import { reveals } from "@/utils/v1/reveals";
 interface Feature {
   title: string;
   body: string;
+  href: string;
 }
 
 const FEATURES: Feature[] = [
   {
     title: "Waterfall Traces",
     body: "Functions traced automatically, in parallel",
+    href: "/docs/platform/monitor/traces",
   },
   {
     title: "Metrics dashboard",
     body: "System health at the environment level",
+    href: "/docs/platform/monitor/observability-metrics#function-metrics",
   },
   {
     title: "Run search",
     body: "Find the exact run for any user, org,\nor error pattern",
+    href: "/docs/platform/monitor/inspecting-function-runs#searching-function-runs",
   },
   {
     title: "Replay",
     body: "Deploy a fix and re-run in bulk—\nno dead-letter queues",
+    href: "/docs/platform/replay",
   },
   {
     title: "Insights",
     body: "Query event and run data with SQL.\nNo ETL needed",
+    href: "/docs/platform/monitor/insights",
   },
 ];
 
@@ -96,14 +103,17 @@ export default function Observability() {
             <motion.div key={f.title} {...reveals.item(i)} className="h-full">
               {/* Static row — no button/hover/selection and no bullet;
                   white title so every feature reads "active". */}
-              <div className="flex h-full flex-col gap-2 px-[22px] py-[18px]">
-                <span className="flex min-h-10 items-center text-v1-heading-sm text-v1-frost">
+              <Link
+                href={f.href}
+                className="group flex h-full flex-col gap-2 px-[22px] py-[18px]"
+              >
+                <span className="flex min-h-10 items-center text-v1-heading-sm text-v1-frost group-hover:text-v1-accent-salmon motion-safe:transition-colors motion-safe:duration-200">
                   {f.title}
                 </span>
                 <span className="whitespace-pre-line text-v1-body-sm text-v1-frost/80">
                   {f.body}
                 </span>
-              </div>
+              </Link>
             </motion.div>
           ))}
         </div>

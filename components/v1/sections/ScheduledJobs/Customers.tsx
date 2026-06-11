@@ -43,7 +43,7 @@ const STUDIES: CaseStudyItem[] = [
       </>
     ),
     logo: { src: "/assets/customers/tripadvisor.svg", alt: "Tripadvisor", width: 157, height: 24 },
-    cta: { label: "Read the pattern", href: TODO_HREF },
+    cta: { label: "Read the pattern", href: "/docs/guides/clerk-webhook-events#creating-a-function-to-sync-a-new-user-to-a-database" },
   },
   {
     id: "user-reminders",
@@ -81,7 +81,7 @@ const STUDIES: CaseStudyItem[] = [
       </>
     ),
     logo: { src: "/assets/customers/zamp-logo.svg", alt: "Zamp", width: 157, height: 24 },
-    cta: { label: "See the example", href: TODO_HREF },
+    cta: { label: "See the example", href: "/docs/patterns/schedule/running-at-specific-times" },
   },
 ];
 
