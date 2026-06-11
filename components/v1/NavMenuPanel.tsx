@@ -188,7 +188,7 @@ function NavPromoCard({ promo }: { promo: NavPromo }) {
   const card = (
     <div
       className={cn(
-        "flex h-[350px] w-[38%] max-w-[400px] min-w-[220px] flex-none flex-col overflow-clip rounded-[6px] motion-safe:transition-colors motion-safe:duration-300",
+        "flex h-[350px] w-full flex-col overflow-clip rounded-[6px] motion-safe:transition-colors motion-safe:duration-300",
         PANEL_BORDER,
         promo.href && "hover:border-v1-frost/30"
       )}
@@ -216,12 +216,13 @@ function NavPromoCard({ promo }: { promo: NavPromo }) {
     </div>
   );
 
-  if (!promo.href) return card;
+  const wrapperCls = "w-[38%] max-w-[400px] min-w-[220px] flex-none";
+  if (!promo.href) return <div className={wrapperCls}>{card}</div>;
   return (
     <Link
       href={appendRef(promo.href, "nav")}
       underline={false}
-      className="w-[38%] max-w-[400px] min-w-[220px] flex-none"
+      className={wrapperCls}
     >
       {card}
     </Link>
