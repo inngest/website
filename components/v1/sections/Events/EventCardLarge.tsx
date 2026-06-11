@@ -25,9 +25,9 @@ export default function EventCardLarge({ ev, newTab }: { ev: EventItem; newTab?:
           when the columns stack. */}
       <div
         aria-hidden="true"
-        className="aspect-[16/9] w-full shrink-0 opacity-10 sm:aspect-auto sm:w-[32.513%]"
+        className={`aspect-[16/9] w-full shrink-0 sm:aspect-auto sm:w-[32.513%]${ev.image ? "" : " opacity-10"}`}
         style={{
-          backgroundImage: "url(/assets/v1/events/event-placeholder.png)",
+          backgroundImage: `url(${ev.image ?? "/assets/v1/events/event-placeholder.png"})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",

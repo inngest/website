@@ -31,6 +31,7 @@ export interface EventItem {
   excerpt: string;
   href: string;
   recording?: boolean;
+  image?: string;
 }
 
 export const UPCOMING: EventItem[] = [

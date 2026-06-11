@@ -27,6 +27,7 @@ const OTHER_EVENTS: EventItem[] = [
     excerpt:
       "Grab-and-go from Señor Sisig, matcha & coffee, swag, and a rooftop DJ just steps away from Moscone West. Co-hosted with E2B.",
     href: "https://luma.com/umyvwvek?utm_source=inngest",
+    image: "/assets/v1/events/innhouse-card.png",
   },
   {
     id: "aiewf-afterparty",
@@ -37,6 +38,18 @@ const OTHER_EVENTS: EventItem[] = [
     excerpt:
       "The expo floor is closing, your brain is full of vector databases, and it's time to trade the keyboard for some competitive throwing. Join Tailscale, Docker, Aikido Security, Inngest and Rootly for an evening of digital darts, custom cocktails, and networking.",
     href: "https://luma.com/2avil0ni",
+    image: "/assets/v1/events/june-sf-engineer.png",
+  },
+  {
+    id: "aiewf-ai-in-prod",
+    title: "{AI} in Production",
+    date: "Thursday, July 2 · 6–8 PM PDT",
+    location: "San Francisco, CA",
+    topics: ["meetup", "ai", "production"],
+    excerpt:
+      "Join Cursor, Arcade, Vapi, and Inngest at Inngest HQ for an evening of AI in production war stories, demos, and networking. Free with RSVP.",
+    href: "https://luma.com/5kvakl4z",
+    image: "/assets/v1/events/ai-in-prod-meetup.png",
   },
 ];
 
@@ -47,15 +60,15 @@ export default function AIEngineerWorldsFair() {
         aria-labelledby="event-hero-heading"
         className="relative w-full overflow-hidden text-v1-frost"
       >
-        {/* Right panel — muted placeholder (no cover image for this event) */}
+        {/* Right panel — hero cover image */}
         <div
           aria-hidden="true"
           className="absolute bottom-0 right-0 top-[80px] hidden w-1/2 overflow-hidden bg-v1-surfaceElevated lg:block"
         >
           <div
-            className="absolute inset-0 opacity-10"
+            className="absolute inset-0"
             style={{
-              backgroundImage: "url(/assets/v1/events/event-placeholder.png)",
+              backgroundImage: "url(/assets/v1/events/social-card-v2.png)",
               backgroundSize: "cover",
               backgroundPosition: "center",
             }}
@@ -107,10 +120,9 @@ export default function AIEngineerWorldsFair() {
           <div className="relative min-h-[300px] overflow-hidden bg-v1-surfaceElevated lg:hidden">
             <div
               aria-hidden="true"
-              className="absolute inset-0 opacity-10"
+              className="absolute inset-0"
               style={{
-                backgroundImage:
-                  "url(/assets/v1/events/event-placeholder.png)",
+                backgroundImage: "url(/assets/v1/events/social-card-v2.png)",
                 backgroundSize: "cover",
                 backgroundPosition: "center",
               }}
