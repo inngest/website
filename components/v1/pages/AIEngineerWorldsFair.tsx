@@ -63,7 +63,7 @@ export default function AIEngineerWorldsFair() {
         {/* Right panel — hero cover image */}
         <div
           aria-hidden="true"
-          className="absolute bottom-0 right-0 top-[80px] hidden w-1/2 overflow-hidden bg-black lg:block"
+          className="absolute bottom-0 right-0 top-[80px] hidden w-1/2 overflow-hidden lg:block"
         >
           <div
             className="absolute inset-0"
