@@ -1,4 +1,5 @@
 ---
+tags: ["Company & Product News"]
 focus: false
 heading: "Introducing CLI Replays"
 subtitle: Battle-test your local code with real production events.

@@ -1,4 +1,5 @@
 ---
+tags: ["Observability & Debugging", "Engineering"]
 focus: false
 heading: Building Metrics with TimescaleDB
 subtitle: How we built better observability into Inngest
