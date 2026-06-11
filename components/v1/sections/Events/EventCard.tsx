@@ -8,9 +8,9 @@ import type { EventItem } from "@/components/v1/sections/Events/data";
 // "Get Started" cards: cursor spotlight + 4px lift + soft shadow + a
 // subtle 3D tilt (these grid cards are small enough for tilt to read
 // well).
-export default function EventCard({ ev }: { ev: EventItem }) {
+export default function EventCard({ ev, newTab }: { ev: EventItem; newTab?: boolean }) {
   return (
-    <Link href={ev.href} className="block h-full rounded-lg">
+    <Link href={ev.href} className="block h-full rounded-lg" {...(newTab ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
       <SpotlightFrame
         tilt
         className="h-full"
@@ -24,9 +24,9 @@ export default function EventCard({ ev }: { ev: EventItem }) {
       >
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 opacity-10"
+          className={`pointer-events-none absolute inset-0${ev.image ? "" : " opacity-10"}`}
           style={{
-            backgroundImage: "url(/assets/v1/events/event-placeholder.png)",
+            backgroundImage: `url(${ev.image ?? "/assets/v1/events/event-placeholder.png"})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
             backgroundRepeat: "no-repeat",

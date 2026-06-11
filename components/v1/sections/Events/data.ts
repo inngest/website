@@ -5,6 +5,7 @@
 
 export const LOCATIONS = [
   "ONLINE",
+  "SAN FRANCISCO, CA",
   "LOS ANGELES, CA",
   "DENVER, CO",
   "AUSTIN, TX",
@@ -36,10 +37,24 @@ export interface EventItem {
 
 export const UPCOMING: EventItem[] = [
   {
+    id: "aiewf-2026",
+    title: "Meet Inngest at AI Engineer World's Fair",
+    date: "June 29 – July 2, 2026",
+    location: "San Francisco, CA",
+    topics: ["conference", "booth", "ai engineer"],
+    excerpt:
+      "Find us at booth #U-G26 all week at Moscone West. Schedule time with the team or come by to see Inngest in action.",
+    href: "/events/ai-engineer-worlds-fair-2026",
+    image: "/assets/v1/events/social-card-v2.png",
+  },
+];
+
+export const ALL_EVENTS: EventItem[] = [
+  {
     id: "aiewf-lunch",
     title: "innhouse lunch with E2B",
     date: "Wednesday, July 1 · 12–2 PM PDT",
-    location: "San Francisco, CA",
+    location: "SAN FRANCISCO, CA",
     topics: ["free lunch", "rooftop dj", "senor sisig"],
     excerpt:
       "Grab-and-go from Señor Sisig, matcha & coffee, swag, and a rooftop DJ just steps away from Moscone West. Co-hosted with E2B.",
@@ -50,10 +65,10 @@ export const UPCOMING: EventItem[] = [
     id: "aiewf-afterparty",
     title: "AI World's Fair Afterparty",
     date: "Wednesday, July 1 · 6–9 PM PDT",
-    location: "San Francisco, CA",
+    location: "SAN FRANCISCO, CA",
     topics: ["happy hour", "networking", "digital darts"],
     excerpt:
-      "The expo floor is closing, your brain is full of vector databases, and it's time to trade the keyboard for some competitive throwing. Join Tailscale, Docker, Aikido Security, Inngest and Rootly for an evening of digital darts, custom cocktails, and networking.",
+      "Join Tailscale, Docker, Aikido Security, Inngest and Rootly for an evening of digital darts, custom cocktails, and networking.",
     href: "https://luma.com/2avil0ni",
     image: "/assets/v1/events/june-sf-engineer.png",
   },
@@ -61,22 +76,13 @@ export const UPCOMING: EventItem[] = [
     id: "aiewf-ai-in-prod",
     title: "{AI} in Production",
     date: "Thursday, July 2 · 6–8 PM PDT",
-    location: "San Francisco, CA",
+    location: "SAN FRANCISCO, CA",
     topics: ["meetup", "ai", "production"],
     excerpt:
       "Join Cursor, Arcade, Vapi, and Inngest at Inngest HQ for an evening of AI in production war stories, demos, and networking. Free with RSVP.",
     href: "https://luma.com/5kvakl4z",
     image: "/assets/v1/events/ai-in-prod-meetup.png",
   },
-];
-
-export const ALL_EVENTS: EventItem[] = [
-  { id: "e1", title: "Event title goes here", date: "MM/DD/YYYY", location: "ONLINE", topics: ["TOPIC GOES HERE"], excerpt: "Diam quam dolor sed mus venenatis est vitae.", href: "/events/sample" },
-  { id: "e2", title: "Event title goes here", date: "MM/DD/YYYY", location: "LOS ANGELES, CA", topics: ["TOPIC GOES HERE"], excerpt: "Diam quam dolor sed mus venenatis est vitae.", href: "/events/sample" },
-  { id: "e3", title: "Event title goes here", date: "MM/DD/YYYY", location: "DENVER, CO", topics: ["TOPIC GOES HERE"], excerpt: "Diam quam dolor sed mus venenatis est vitae.", href: "/events/sample", recording: true },
-  { id: "e4", title: "Event title goes here", date: "MM/DD/YYYY", location: "AUSTIN, TX", topics: ["TOPIC GOES HERE"], excerpt: "Diam quam dolor sed mus venenatis est vitae.", href: "/events/sample", recording: true },
-  { id: "e5", title: "Event title goes here", date: "MM/DD/YYYY", location: "NEW YORK, NY", topics: ["TOPIC GOES HERE"], excerpt: "Diam quam dolor sed mus venenatis est vitae.", href: "/events/sample" },
-  { id: "e6", title: "Event title goes here", date: "MM/DD/YYYY", location: "ONLINE", topics: ["TOPIC GOES HERE"], excerpt: "Diam quam dolor sed mus venenatis est vitae.", href: "/events/sample" },
 ];
 
 // ─── Event detail page (/events/sample) ────────────────────────
