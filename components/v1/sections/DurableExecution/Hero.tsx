@@ -26,7 +26,7 @@ export default function Hero() {
         "Inngest lets you make every function durable without",
         "leaving your codebase."
       ]}
-      docsHref="/docs?ref=durable-execution"
+      docsHref="/docs/learn/how-functions-are-executed?ref=durable-execution"
       signupHref="/sign-up?ref=durable-execution"
       canvas={({ isDesktop }) =>
         isDesktop && (

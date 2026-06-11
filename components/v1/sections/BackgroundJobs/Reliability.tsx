@@ -292,7 +292,7 @@ export default function Reliability() {
                 href={feature.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-[22px] pb-2 pt-1 font-v1Label text-[12px] text-v1-frost/40 hover:text-v1-accent-salmon motion-safe:transition-colors motion-safe:duration-200"
+                className="pl-[40px] pr-[22px] pb-2 pt-1 font-v1Label text-[12px] text-v1-frost/40 hover:text-v1-accent-salmon motion-safe:transition-colors motion-safe:duration-200"
               >
                 Read the docs →
               </a>

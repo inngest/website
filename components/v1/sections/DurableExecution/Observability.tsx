@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { motion } from "motion/react";
 import ButtonLink from "@/components/v1/ButtonLink";
 import GradientFrame from "@/components/v1/sections/shared/GradientFrame";
@@ -100,20 +99,23 @@ export default function Observability() {
             background bleeds outward. */}
         <div className="-mx-[22px] mt-20 grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
           {FEATURES.map((f, i) => (
-            <motion.div key={f.title} {...reveals.item(i)} className="h-full">
+            <motion.div key={f.title} {...reveals.item(i)} className="flex h-full flex-col">
               {/* Static row — no button/hover/selection and no bullet;
                   white title so every feature reads "active". */}
-              <Link
-                href={f.href}
-                className="group flex h-full flex-col gap-2 px-[22px] py-[18px]"
-              >
-                <span className="flex min-h-10 items-center text-v1-heading-sm text-v1-frost group-hover:text-v1-accent-salmon motion-safe:transition-colors motion-safe:duration-200">
+              <div className="flex flex-1 flex-col gap-2 px-[22px] py-[18px]">
+                <span className="flex min-h-10 items-center text-v1-heading-sm text-v1-frost">
                   {f.title}
                 </span>
                 <span className="whitespace-pre-line text-v1-body-sm text-v1-frost/80">
                   {f.body}
                 </span>
-              </Link>
+              </div>
+              <a
+                href={f.href}
+                className="px-[22px] pb-[18px] font-v1Label text-[13px] text-v1-frost/40 hover:text-v1-accent-salmon motion-safe:transition-colors motion-safe:duration-200"
+              >
+                Read the docs →
+              </a>
             </motion.div>
           ))}
         </div>
