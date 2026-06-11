@@ -1,0 +1,98 @@
+---
+heading: "Debug functions from the terminal with new CLI commands and v2 REST API"
+subtitle: "New `api` subcommands for the Inngest CLI let you inspect runs, pull step traces, and invoke functions from the terminal, CI, or a coding agent—backed by the v2 REST API and a new API key type."
+image: /assets/blog/debug-functions-terminal-cli-v2-rest-api/featured-image.png
+date: 2026-06-11
+author: Lauren Craigie
+category: product-updates
+showSubtitle: false
+---
+
+The Inngest CLI has always been how you run the [dev server](/docs/local-development?ref=blog-debug-functions-terminal-cli-v2-rest-api). Today we're adding something new to it: an `api` subcommand that gives you programmatic access to your function runs, traces, and invocations—from your terminal, your CI pipeline, or a [coding agent](/docs/ai-dev-tools/agent-skills?ref=blog-debug-functions-terminal-cli-v2-rest-api).
+
+This ships alongside the Inngest v2 REST API and a new API key type to authenticate both.
+
+## New CLI commands
+
+The new commands live under `inngest-cli api`. Set your API key with `INNGEST_API_KEY`, and you can start pulling real execution data from your local dev server or Inngest Cloud.
+
+```bash
+# Get a run summary
+npx inngest-cli@latest api --prod get-run 01KTCTWT8XDEGWDMVX3Q9M69ND
+
+# Pull the full step trace
+npx inngest-cli@latest api --prod get-function-trace 01KTCTWT8XDEGWDMVX3Q9M69ND --include-output
+
+# Find runs triggered by an event
+npx inngest-cli@latest api --prod get-event-runs 01KTCTWSZJEKAFEDA4F9GYHFQW --limit 5
+
+# Invoke a function directly
+npx inngest-cli@latest api invoke-function-by-slug my-app-my-function --data '{"message": "hello"}'
+```
+
+The CLI targets your local dev server by default. Add `--prod` to hit Inngest Cloud. Output is compact JSON, pipeable to `jq`.
+
+Some debugging workflows don't fit a UI—you're already in the terminal, you need a status check in a script, or you just want to stay in flow. A run fails. You have a run ID from a log or an alert. You pull the trace, find the step that broke, read the error output, fix the code, invoke locally to verify.
+
+```bash
+# Find the failing step
+npx inngest-cli@latest api --prod get-function-trace 01KTCTWT8XDEGWDMVX3Q9M69ND --include-output \
+  | jq '[.data.rootSpan.children[] | select(.status == "FAILED")]'
+
+# Test your fix locally
+npx inngest-cli@latest api invoke-function-by-slug my-app-process-order \
+  --data '{"orderId": "test-123"}'
+```
+
+See the [debug guide](/docs/examples/fetch-run-status-and-output?ref=blog-debug-functions-terminal-cli-v2-rest-api) for a full walkthrough.
+
+## For coding agents
+
+[Coding agents](/blog/inngest-ai-dev-tools?ref=blog-debug-functions-terminal-cli-v2-rest-api) are increasingly writing and iterating on Inngest functions. The new CLI commands give them the same programmatic access a developer gets in the terminal—run status, step traces, local invocation—as part of their natural development loop.
+
+Add a block to your `CLAUDE.md` or `.cursorrules`:
+
+```markdown
+## Inngest debugging
+
+Use the Inngest CLI to inspect function runs and traces:
+
+- Get a run: `npx inngest-cli@latest api --prod get-run <run_id>`
+- Get a trace: `npx inngest-cli@latest api --prod get-function-trace <run_id> --include-output`
+- Get runs from an event: `npx inngest-cli@latest api --prod get-event-runs <event_id> --include-output`
+- Invoke locally: `npx inngest-cli@latest api invoke-function-by-slug <slug> --data '{...}'`
+
+Output is JSON. Use jq to filter.
+```
+
+Point your agent at a run ID when something breaks. It reads the actual trace—which steps ran, which failed, what the error was—and works from real execution data rather than guessing from code alone. Then it can invoke locally to verify the fix before you ship anything.
+
+See the [coding agents guide](/docs/ai-dev-tools/agent-skills?ref=blog-debug-functions-terminal-cli-v2-rest-api) for setup details.
+
+## The v2 REST API
+
+The CLI commands are built on top of the Inngest v2 REST API, now publicly documented at [api-docs.inngest.com](https://api-docs.inngest.com). If you'd rather hit the API directly—from a script, a CI pipeline, or your own tooling—every endpoint is there with a full OpenAPI spec.
+
+The docs are also available in LLM-friendly format at [`api-docs.inngest.com/llms.txt`](https://api-docs.inngest.com/llms.txt), which pairs well with the `CLAUDE.md` snippet above.
+
+## API keys
+
+The CLI commands and v2 API authenticate with [API keys](/docs/platform/api-keys?ref=blog-debug-functions-terminal-cli-v2-rest-api)—a new key type, separate from your [signing key](/docs/platform/signing-keys?ref=blog-debug-functions-terminal-cli-v2-rest-api) and [event keys](/docs/events/creating-an-event-key?ref=blog-debug-functions-terminal-cli-v2-rest-api). Where signing keys are used by your app to communicate with Inngest, API keys are for programmatic access from outside your app: scripts, pipelines, tooling, agents.
+
+Create one in the dashboard under Settings → API Keys, scoped to the environment you want to target. Then:
+
+```bash
+export INNGEST_API_KEY=sk-inn-api-...
+```
+
+The CLI picks it up automatically. No extra configuration needed. See the [API key docs](/docs/platform/api-keys?ref=blog-debug-functions-terminal-cli-v2-rest-api) for details.
+
+## Get started
+
+- [CLI reference](/docs/local-development?ref=blog-debug-functions-terminal-cli-v2-rest-api)
+- [Debug a function run from your terminal](/docs/examples/fetch-run-status-and-output?ref=blog-debug-functions-terminal-cli-v2-rest-api)
+- [Use the CLI with coding agents](/docs/ai-dev-tools/agent-skills?ref=blog-debug-functions-terminal-cli-v2-rest-api)
+- [REST API docs](https://api-docs.inngest.com)
+- [API keys](/docs/platform/api-keys?ref=blog-debug-functions-terminal-cli-v2-rest-api)
+
+More commands are coming soon, including `get-functions` and `get-app` to improve agent experience. Stay tuned!
