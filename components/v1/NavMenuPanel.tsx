@@ -49,7 +49,7 @@ export default function NavMenuPanel({
         "relative isolate w-full overflow-clip rounded-[6px] bg-carbon-1000",
         PANEL_BORDER,
         hasPromo
-          ? "flex gap-14 px-8 py-8"
+          ? "flex gap-6 xl:gap-14 px-8 py-8"
           : compact
             ? "px-8 py-5"
             : "px-8 pt-8 pb-10",
@@ -188,7 +188,7 @@ function NavPromoCard({ promo }: { promo: NavPromo }) {
   const card = (
     <div
       className={cn(
-        "flex h-[350px] w-[400px] min-w-[240px] shrink flex-col overflow-clip rounded-[6px] motion-safe:transition-colors motion-safe:duration-300",
+        "flex h-[350px] w-[min(400px,38%)] min-w-[220px] shrink flex-col overflow-clip rounded-[6px] motion-safe:transition-colors motion-safe:duration-300",
         PANEL_BORDER,
         promo.href && "hover:border-v1-frost/30"
       )}
