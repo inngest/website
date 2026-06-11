@@ -51,6 +51,17 @@ export const UPCOMING: EventItem[] = [
 
 export const ALL_EVENTS: EventItem[] = [
   {
+    id: "aiewf-2026",
+    title: "Meet Inngest at AI Engineer World's Fair",
+    date: "June 29 – July 2, 2026",
+    location: "SAN FRANCISCO, CA",
+    topics: ["conference", "booth", "ai engineer"],
+    excerpt:
+      "Find us at booth #U-G26 all week at Moscone West. Schedule time with the team or come by to see Inngest in action.",
+    href: "/events/ai-engineer-worlds-fair-2026",
+    image: "/assets/v1/events/social-card-v2.png",
+  },
+  {
     id: "aiewf-lunch",
     title: "innhouse lunch with E2B",
     date: "Wednesday, July 1 · 12–2 PM PDT",
