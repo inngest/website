@@ -4,12 +4,7 @@
 // TODO: source UPCOMING / ALL_EVENTS from CMS; keep EventItem as the shape.
 
 export const LOCATIONS = [
-  "ONLINE",
   "SAN FRANCISCO, CA",
-  "LOS ANGELES, CA",
-  "DENVER, CO",
-  "AUSTIN, TX",
-  "NEW YORK, NY",
 ] as const;
 
 export const TOPICS = [
