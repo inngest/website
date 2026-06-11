@@ -900,6 +900,11 @@ const sectionLearn: (NavGroup | NavLink)[] = [
             href: `/docs/features/events-triggers/event-format`,
           },
           {
+            title: "Sessions",
+            href: `/docs/features/events-triggers/sessions`,
+            tag: "new",
+          },
+          {
             title: "Writing expressions",
             href: `/docs/guides/writing-expressions`,
           },

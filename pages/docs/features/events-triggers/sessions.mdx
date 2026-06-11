@@ -1,0 +1,127 @@
+import { Callout } from "src/shared/Docs/mdx";
+
+export const description = "Group related function runs by adding session metadata to events.";
+
+# Sessions
+
+Sessions group function runs that belong to the same user flow, conversation, or job.
+
+Add a `sessions` object to an event when you want the Inngest dashboard to show all runs related to the same external ID. For example, all runs started by messages in the same AI conversation can share a `conversation_id` session.
+
+Sessions do not change which functions run. They add metadata that makes related runs easier to find and inspect.
+
+## Add sessions to an event
+
+Add `sessions` as a top-level field on the event payload, next to `name` and `data`.
+
+```ts
+import { inngest } from "./client";
+
+await inngest.send({
+  name: "app/message.created",
+  data: {
+    messageId: "msg_01JYY8R9C5R6VAW5EJ0P4K7V90",
+    conversationId: "conv_1234",
+  },
+  sessions: {
+    conversation_id: "conv_1234",
+  },
+});
+```
+
+The object key is the session identifier. The value is the specific session value.
+
+In the example above:
+
+- `conversation_id` is the identifier
+- `conv_1234` is the value
+
+You can use the same identifier across many events. Each unique value becomes a session in the dashboard.
+
+## Supported values
+
+Session values can be strings, numbers, or booleans. Values are stored as strings.
+
+```ts
+await inngest.send({
+  name: "app/agent.step.completed",
+  data: {
+    stepId: "step_1",
+  },
+  sessions: {
+    conversation_id: "conv_1234",
+    attempt: 2,
+    human_reviewed: false,
+  },
+});
+```
+
+Use stable IDs that are safe to show in the dashboard. Do not store secrets or sensitive personal data in session values.
+
+## Limits
+
+Each event can include up to 5 sessions.
+
+| Field | Limit |
+| --- | --- |
+| Session identifier | 128 characters |
+| Session value | 512 characters |
+
+Identifiers and values cannot be empty.
+
+## Choose a good session identifier
+
+Use an identifier for the kind of thing you want to inspect later.
+
+Good examples:
+
+- `conversation_id`
+- `agent_run_id`
+- `ticket_id`
+- `workflow_id`
+- `import_id`
+
+Avoid putting the value in the identifier. For example, use this:
+
+```ts
+sessions: {
+  conversation_id: "conv_1234",
+}
+```
+
+Not this:
+
+```ts
+sessions: {
+  "conversation_id:conv_1234": "true",
+}
+```
+
+Session values are treated as opaque strings. They can contain characters like `:` or `/`, and the dashboard will keep the identifier and value separate.
+
+## View sessions in the dashboard
+
+Open the Inngest dashboard and select an environment.
+
+Go to **Monitor > Sessions**. Search for a session identifier, such as `conversation_id`.
+
+The results page shows each session value for that identifier, along with:
+
+- number of runs
+- failed runs and failure rate
+- last active time
+- functions seen in that session
+
+Click a session row to open the detail page. The detail page shows the runs for that specific identifier and value.
+
+<Callout>
+  Sessions are scoped to the selected environment. If you do not see a session, check that you are in the environment where the event was sent.
+</Callout>
+
+## When to use sessions
+
+Use sessions when you already have a domain ID that ties multiple function runs together.
+
+Common examples include AI conversations, agent runs, support tickets, imports, customer workflows, and long-running business processes.
+
+For one-off filtering, use [Insights](/docs/platform/monitor/insights) or the normal runs search instead. Sessions are best for IDs you expect to search and inspect repeatedly.
