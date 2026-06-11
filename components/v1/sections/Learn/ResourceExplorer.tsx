@@ -23,8 +23,8 @@ export default function ResourceExplorer({ posts }: { posts: PostCard[] }) {
     setSearch,
     resourceTypes,
     setResourceTypes,
-    topic,
-    setTopic,
+    topics,
+    setTopics,
     sort,
     setSort,
     allTopics,
@@ -78,13 +78,14 @@ export default function ResourceExplorer({ posts }: { posts: PostCard[] }) {
             }))}
           />
           <div className="hidden min-[380px]:block">
-            <SingleSelectDropdown
+            <MultiSelectDropdown
               label="Topics"
               trailing="filter"
               triggerClassName={FILTER_TRIGGER}
               iconVariant="large"
-              value={topic}
-              onChange={setTopic}
+              values={topics}
+              onChange={setTopics}
+              allValue="ALL"
               options={allTopics.map((t) => ({
                 value: t,
                 label: t === "ALL" ? "All" : t,
