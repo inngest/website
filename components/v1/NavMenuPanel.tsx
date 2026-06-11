@@ -188,7 +188,7 @@ function NavPromoCard({ promo }: { promo: NavPromo }) {
   const card = (
     <div
       className={cn(
-        "flex h-[350px] w-[min(400px,38%)] min-w-[220px] shrink flex-col overflow-clip rounded-[6px] motion-safe:transition-colors motion-safe:duration-300",
+        "flex h-[350px] w-[38%] max-w-[400px] min-w-[220px] flex-none flex-col overflow-clip rounded-[6px] motion-safe:transition-colors motion-safe:duration-300",
         PANEL_BORDER,
         promo.href && "hover:border-v1-frost/30"
       )}
@@ -221,7 +221,7 @@ function NavPromoCard({ promo }: { promo: NavPromo }) {
     <Link
       href={appendRef(promo.href, "nav")}
       underline={false}
-      className="min-w-0 shrink"
+      className="w-[38%] max-w-[400px] min-w-[220px] flex-none"
     >
       {card}
     </Link>
