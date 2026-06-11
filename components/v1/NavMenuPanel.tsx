@@ -216,7 +216,7 @@ function NavPromoCard({ promo }: { promo: NavPromo }) {
     </div>
   );
 
-  const wrapperCls = "w-full xl:w-[400px] xl:shrink-0";
+  const wrapperCls = "w-full max-w-[400px] xl:shrink-0";
   if (!promo.href) return <div className={wrapperCls}>{card}</div>;
   return (
     <Link
