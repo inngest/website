@@ -188,7 +188,7 @@ function NavPromoCard({ promo }: { promo: NavPromo }) {
   const card = (
     <div
       className={cn(
-        "flex h-[350px] w-[400px] shrink-0 flex-col overflow-clip rounded-[6px] motion-safe:transition-colors motion-safe:duration-300",
+        "flex h-[350px] w-[400px] min-w-[240px] shrink flex-col overflow-clip rounded-[6px] motion-safe:transition-colors motion-safe:duration-300",
         PANEL_BORDER,
         promo.href && "hover:border-v1-frost/30"
       )}
@@ -203,7 +203,7 @@ function NavPromoCard({ promo }: { promo: NavPromo }) {
           src={promo.image}
           alt=""
           fill
-          sizes="400px"
+          sizes="(max-width: 1280px) 30vw, 400px"
           className={cn(contain ? "object-contain" : "object-cover")}
         />
       </div>
@@ -221,7 +221,7 @@ function NavPromoCard({ promo }: { promo: NavPromo }) {
     <Link
       href={appendRef(promo.href, "nav")}
       underline={false}
-      className="shrink-0"
+      className="min-w-0 shrink"
     >
       {card}
     </Link>
