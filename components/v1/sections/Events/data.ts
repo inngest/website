@@ -13,11 +13,10 @@ export const LOCATIONS = [
 ] as const;
 
 export const TOPICS = [
-  "TOPIC GOES HERE",
-  "TOPIC GOES HERE",
-  "TOPIC GOES HERE",
-  "TOPIC GOES HERE",
-  "TOPIC GOES HERE",
+  "Events",
+  "Meetups",
+  "Innhouse",
+  "Happy Hours",
 ] as const;
 
 export const SORTS = ["DATE", "ALPHABETICAL"] as const;
@@ -41,7 +40,7 @@ export const UPCOMING: EventItem[] = [
     title: "Meet Inngest at AI Engineer World's Fair",
     date: "June 29 – July 2, 2026",
     location: "San Francisco, CA",
-    topics: ["conference", "booth", "ai engineer"],
+    topics: ["Events"],
     excerpt:
       "Find us at booth #U-G26 all week at Moscone West. Schedule time with the team or come by to see Inngest in action.",
     href: "/events/ai-engineer-worlds-fair-2026",
@@ -55,7 +54,7 @@ export const ALL_EVENTS: EventItem[] = [
     title: "Meet Inngest at AI Engineer World's Fair",
     date: "June 29 – July 2, 2026",
     location: "SAN FRANCISCO, CA",
-    topics: ["conference", "booth", "ai engineer"],
+    topics: ["Events"],
     excerpt:
       "Find us at booth #U-G26 all week at Moscone West. Schedule time with the team or come by to see Inngest in action.",
     href: "/events/ai-engineer-worlds-fair-2026",
@@ -66,7 +65,7 @@ export const ALL_EVENTS: EventItem[] = [
     title: "innhouse lunch with E2B",
     date: "Wednesday, July 1 · 12–2 PM PDT",
     location: "SAN FRANCISCO, CA",
-    topics: ["free lunch", "rooftop dj", "senor sisig"],
+    topics: ["Innhouse"],
     excerpt:
       "Grab-and-go from Señor Sisig, matcha & coffee, swag, and a rooftop DJ just steps away from Moscone West. Co-hosted with E2B.",
     href: "https://luma.com/umyvwvek?utm_source=inngest",
@@ -77,7 +76,7 @@ export const ALL_EVENTS: EventItem[] = [
     title: "AI World's Fair Afterparty",
     date: "Wednesday, July 1 · 6–9 PM PDT",
     location: "SAN FRANCISCO, CA",
-    topics: ["happy hour", "networking", "digital darts"],
+    topics: ["Happy Hours"],
     excerpt:
       "Join Tailscale, Docker, Aikido Security, Inngest and Rootly for an evening of digital darts, custom cocktails, and networking.",
     href: "https://luma.com/2avil0ni",
@@ -88,7 +87,7 @@ export const ALL_EVENTS: EventItem[] = [
     title: "{AI} in Production",
     date: "Thursday, July 2 · 6–8 PM PDT",
     location: "SAN FRANCISCO, CA",
-    topics: ["meetup", "ai", "production"],
+    topics: ["Meetups"],
     excerpt:
       "Join Cursor, Arcade, Vapi, and Inngest at Inngest HQ for an evening of AI in production war stories, demos, and networking. Free with RSVP.",
     href: "https://luma.com/5kvakl4z",
