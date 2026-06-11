@@ -69,8 +69,9 @@ export default function AIEngineerWorldsFair() {
             className="absolute inset-0"
             style={{
               backgroundImage: "url(/assets/v1/events/social-card-v2.png)",
-              backgroundSize: "cover",
+              backgroundSize: "contain",
               backgroundPosition: "center",
+              backgroundRepeat: "no-repeat",
             }}
           />
         </div>
