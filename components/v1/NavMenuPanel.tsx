@@ -90,7 +90,7 @@ function MenuItemList({
   compact?: boolean;
 }) {
   return (
-    <ul className={cn("flex flex-col", compact ? "gap-4" : "gap-8", fill && "w-full")}>
+    <ul className={cn("flex flex-col shrink-0", compact ? "gap-4" : "gap-8", fill && "w-full")}>
       {items.map((item) => (
         <li key={item.label} className={cn(fill && "w-full")}>
           <MenuRow item={item} fill={fill} compact={compact} />
@@ -102,7 +102,7 @@ function MenuItemList({
 
 function MenuColumns({ columns }: { columns: NavMenuColumn[] }) {
   return (
-    <div className="flex flex-1 items-start justify-center gap-6">
+    <div className="flex flex-1 shrink-0 items-start justify-center gap-6">
       {columns.map((column) => (
         <div
           key={column.heading}
@@ -216,7 +216,7 @@ function NavPromoCard({ promo }: { promo: NavPromo }) {
     </div>
   );
 
-  const wrapperCls = "w-[38%] max-w-[400px] min-w-[220px] flex-none";
+  const wrapperCls = "w-[400px] min-w-[220px] shrink";
   if (!promo.href) return <div className={wrapperCls}>{card}</div>;
   return (
     <Link
