@@ -49,7 +49,7 @@ export default function NavMenuPanel({
         "relative isolate w-full overflow-clip rounded-[6px] bg-carbon-1000",
         PANEL_BORDER,
         hasPromo
-          ? "flex gap-6 xl:gap-14 px-6 xl:px-8 py-8"
+          ? "flex flex-col xl:flex-row gap-6 xl:gap-14 px-6 xl:px-8 py-8"
           : compact
             ? "px-8 py-5"
             : "px-8 pt-8 pb-10",
@@ -216,7 +216,7 @@ function NavPromoCard({ promo }: { promo: NavPromo }) {
     </div>
   );
 
-  const wrapperCls = "hidden xl:block w-[400px] shrink";
+  const wrapperCls = "w-full xl:w-[400px] xl:shrink-0";
   if (!promo.href) return <div className={wrapperCls}>{card}</div>;
   return (
     <Link
