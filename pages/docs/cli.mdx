@@ -30,13 +30,13 @@ export INNGEST_API_KEY=sk-inn-api-...
 
 ```bash
 # Get a function run
-npx inngest-cli@latest api get-run 01KTCTWT8XDEGWDMVX3Q9M69ND
+npx inngest-cli@latest api get-function-run 01KTCTWT8XDEGWDMVX3Q9M69ND
 
 # Get runs triggered by an event
 npx inngest-cli@latest api get-event-runs 01KTCTWSZJEKAFEDA4F9GYHFQW --include-output --limit 5
 
-# Invoke a function by slug
-npx inngest-cli@latest api invoke-function-by-slug my-app-my-function --data '{"message": "hello"}'
+# Invoke a function
+npx inngest-cli@latest api invoke-function my-app my-function --data '{"message": "hello"}'
 
 # Fetch a full trace
 npx inngest-cli@latest api get-function-trace 01KTCTWT8XDEGWDMVX3Q9M69ND --include-output
@@ -67,21 +67,20 @@ The CLI targets your local dev server by default. Use `--prod` to hit Inngest Cl
 
 ```bash
 # Local dev server (default)
-npx inngest-cli@latest api get-run 01ABC123
+npx inngest-cli@latest api get-function-run 01ABC123
 
 # Inngest Cloud
-npx inngest-cli@latest api --prod get-run 01ABC123
+npx inngest-cli@latest api --prod get-function-run 01ABC123
 
-# Explicit URL
-npx inngest-cli@latest api --api-url http://localhost:8288 get-run 01ABC123
+# Custom API host
+npx inngest-cli@latest api --api-host http://localhost:8288 get-function-run 01ABC123
 ```
 
 Target resolution:
 
-1. `--api-url` flag
-2. `INNGEST_API_URL` environment variable
-3. `INNGEST_DEV=1` (implies `http://localhost:8288`)
-4. Default: local dev server
+1. `--api-host` or `--api-port` flags
+2. `--prod` flag
+3. Default: local dev server
 
 ---
 
@@ -91,14 +90,14 @@ All commands live under `inngest-cli api`. Run `--help` on any command to see it
 
 ```bash
 npx inngest-cli@latest api --help
-npx inngest-cli@latest api get-run --help
+npx inngest-cli@latest api get-function-run --help
 ```
 
 ### Runs
 
 | Command | Description |
 |---------|-------------|
-| `get-run <run_id>` | Get a function run summary |
+| `get-function-run <run_id>` | Get a function run summary |
 | `get-function-trace <run_id>` | Get the full trace with step spans |
 | `get-event-runs <event_id>` | List runs triggered by a specific event |
 
@@ -106,7 +105,7 @@ npx inngest-cli@latest api get-run --help
 
 | Command | Description |
 |---------|-------------|
-| `invoke-function-by-slug <slug>` | Invoke a function with a JSON payload |
+| `invoke-function <app_id> <function_id>` | Invoke a function with a JSON payload |
 
 Common flags:
 
@@ -122,10 +121,10 @@ The CLI outputs compact JSON by default. Pipe to jq or other tools:
 
 ```bash
 # Get just the status
-npx inngest-cli@latest api --prod get-run 01ABC123 | jq '.data.status'
+npx inngest-cli@latest api --prod get-function-run 01ABC123 | jq '.data.status'
 
 # Pretty print
-npx inngest-cli@latest api --prod get-run 01ABC123 | jq .
+npx inngest-cli@latest api --prod get-function-run 01ABC123 | jq .
 ```
 
 ---

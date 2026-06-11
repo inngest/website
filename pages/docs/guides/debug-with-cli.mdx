@@ -16,7 +16,7 @@ This guide walks you through finding a failed run, pulling its trace, and identi
 You have a run ID from a log, alert, or the dashboard. Fetch the summary:
 
 ```bash
-npx inngest-cli@latest api --prod get-run 01KTCTWT8XDEGWDMVX3Q9M69ND
+npx inngest-cli@latest api --prod get-function-run 01KTCTWT8XDEGWDMVX3Q9M69ND
 ```
 
 The response shows the run's status, function, timing, and trigger:
@@ -107,7 +107,7 @@ Once you identify the issue, fix the code and test against your local dev server
 
 ```bash
 # Invoke the function locally
-npx inngest-cli@latest api invoke-function-by-slug my-app-process-order \
+npx inngest-cli@latest api invoke-function my-app process-order \
   --data '{"orderId": "test-123", "address": "123 Main St"}'
 
 # Check the run

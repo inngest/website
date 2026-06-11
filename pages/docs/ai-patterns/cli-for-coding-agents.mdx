@@ -33,10 +33,10 @@ Tell the agent how to use the CLI. Add this to your project's `CLAUDE.md`, `.cur
 
 Use the Inngest CLI to inspect function runs and traces:
 
-- Get a run: `npx inngest-cli@latest api --prod get-run <run_id>`
+- Get a run: `npx inngest-cli@latest api --prod get-function-run <run_id>`
 - Get a trace: `npx inngest-cli@latest api --prod get-function-trace <run_id> --include-output`
 - Get runs from an event: `npx inngest-cli@latest api --prod get-event-runs <event_id> --include-output --limit 5`
-- Invoke locally: `npx inngest-cli@latest api invoke-function-by-slug <function_slug> --data '{...}'`
+- Invoke locally: `npx inngest-cli@latest api invoke-function <app_id> <function_id> --data '{...}'`
 
 Output is JSON. Use jq to filter.
 ```
@@ -66,7 +66,7 @@ It reads the trace, identifies the failing step, sees the error output, and prop
 After the agent makes a code change, it can invoke the function locally against the dev server:
 
 ```bash
-npx inngest-cli@latest api invoke-function-by-slug my-app-process-order \
+npx inngest-cli@latest api invoke-function my-app process-order \
   --data '{"orderId": "test-123"}'
 ```
 
