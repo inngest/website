@@ -1,4 +1,5 @@
 ---
+tags: ["AI & Agents", "Workflows & Orchestration", "Background Jobs & Scheduling", "Tutorials & Guides"]
 heading: Background agents are here. Your orchestration isn't ready.
 subtitle: Every six months, the "right" way to build an AI agent changes. How can you design for the next rewrite?
 image: /assets/blog/background-agents-are-here/featured-image-gold.png

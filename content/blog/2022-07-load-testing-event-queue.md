@@ -1,4 +1,5 @@
 ---
+tags: ["Queues & Flow Control", "Workflows & Orchestration", "Tutorials & Guides", "Engineering"]
 focus: false
 heading: "Load testing an event-driven message queue"
 subtitle: How to quickly run load tests on event-driven queues via K6
