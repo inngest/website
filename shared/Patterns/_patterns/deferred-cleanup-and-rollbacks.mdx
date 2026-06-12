@@ -1,0 +1,117 @@
+---
+title: Deferred cleanup and rollbacks
+subtitle: Register background cleanup when you create the mess, cancel it if everything succeeds, and keep your critical path fast.
+pattern: durable
+tags: [Durability, Error Handling]
+---
+
+Multi-step functions create resources along the way. An order gets placed, a payment gets charged, inventory gets allocated. If a later step fails, the earlier resources need to be cleaned up.
+
+The traditional approach is `onFailure`, but that handler only sees the original input and the error. It doesn't know which steps succeeded or what state they left behind. You end up querying external systems to figure out what to undo.
+
+With deferred functions, you register cleanup at the point where you know what needs cleaning up. The deferred run fires after the parent completes. If everything succeeds, you cancel the cleanup before it runs.
+
+## How this works
+
+Define a deferred function for each type of cleanup. Register it right after the step that creates the thing you might need to undo.
+
+```typescript
+import { createDefer } from "inngest/experimental";
+import { z } from "zod";
+
+const refundPayment = createDefer(inngest, {
+  id: "refund-payment",
+  schema: z.object({ chargeId: z.string(), amount: z.number() }),
+}, async ({ event, step }) => {
+  await step.run("issue-refund", async () => {
+    await stripe.refunds.create({
+      charge: event.data.chargeId,
+      amount: event.data.amount,
+    });
+  });
+});
+
+const releaseInventory = createDefer(inngest, {
+  id: "release-inventory",
+  schema: z.object({ sku: z.string(), quantity: z.number() }),
+}, async ({ event, step }) => {
+  await step.run("release-stock", async () => {
+    await inventory.release(event.data.sku, event.data.quantity);
+  });
+});
+```
+
+Register them alongside your functions:
+
+```typescript
+serve({
+  client: inngest,
+  functions: [processOrder, refundPayment, releaseInventory],
+});
+```
+
+In your main function, register cleanup after each step. Cancel all of them at the end if the order succeeds.
+
+```typescript
+const processOrder = inngest.createFunction(
+  { id: "process-order", triggers: { event: "order/placed" } },
+  async ({ event, step, defer }) => {
+    const charge = await step.run("charge-card", async () => {
+      return await stripe.charges.create({
+        amount: event.data.total,
+        currency: "usd",
+        source: event.data.paymentSource,
+      });
+    });
+
+    // Register refund cleanup. Fires after the parent run ends.
+    const refundHandle = defer("refund-if-failed", {
+      function: refundPayment,
+      data: { chargeId: charge.id, amount: charge.amount },
+    });
+
+    const allocation = await step.run("allocate-inventory", async () => {
+      return await inventory.allocate(
+        event.data.sku,
+        event.data.quantity,
+      );
+    });
+
+    // Register inventory cleanup.
+    const inventoryHandle = defer("release-if-failed", {
+      function: releaseInventory,
+      data: { sku: event.data.sku, quantity: event.data.quantity },
+    });
+
+    await step.run("create-shipment", async () => {
+      return await shipping.createLabel(event.data.address, allocation);
+    });
+
+    // Everything succeeded. Cancel both cleanups.
+    refundHandle.cancel();
+    inventoryHandle.cancel();
+
+    return { status: "shipped", chargeId: charge.id };
+  }
+);
+```
+
+If `create-shipment` fails after retries are exhausted, the parent run ends in a failed state. Both deferred functions fire: the refund goes out and the inventory is released. If everything succeeds, both are cancelled and never run.
+
+Each deferred function is its own independent run with its own retries. A failed refund doesn't block the inventory release. You see both in the trace view linked to the parent run.
+
+## Alternative approaches
+
+Without deferred functions, you have a few options:
+
+- **`onFailure` handler.** Receives the error and the original event, but not intermediate step outputs. You have to re-derive what was charged and what was allocated from external systems.
+- **Try/catch/finally in the function.** Works, but the cleanup runs in the same function execution. If the cleanup itself fails, the whole run fails and retries from the beginning.
+- **Send events to separate functions.** Achieves the same decoupling, but you lose the typed schema and the automatic parent/child linking in the UI. You also have to manually track which events to send on failure.
+
+Deferred functions give you the decoupling of separate functions with the co-location and typed data of inline code. The cleanup logic lives next to the code that created the resource, and each cleanup run is independently retried.
+
+## Additional resources
+
+- [Deferred Functions reference](/docs/reference/typescript/v4/functions/deferred-functions)
+- [Error handling](/docs/guides/error-handling)
+- [Handling failures](/docs/reference/typescript/v4/functions/handling-failures)

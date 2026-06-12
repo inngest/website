@@ -1,0 +1,181 @@
+---
+title: Post-completion side effects for AI agents
+subtitle: Score model output, log token costs, and notify your team after an agent run finishes without blocking the response or losing context.
+pattern: durable
+tags: [Durability, AI, Architecture]
+---
+
+AI agent functions do expensive, latency-sensitive work: calling models, executing tool loops, generating responses. After the agent finishes, you need to do secondary things that the user should never wait for: score the output quality, log token costs to track spend per customer, send a summary to Slack, update a CRM record.
+
+If you add those as steps at the end of the function, the parent run stays open while secondary work completes. A failure in your analytics step marks the entire run as failed and triggers retries of a run that already did its job. The parent's success status ends up depending on work the user doesn't care about.
+
+If you send events to separate functions, you lose the typed connection to the data the agent just produced.
+
+Deferred functions solve this. Register side effects inline with typed payloads. The agent returns immediately. Each side effect runs as its own function after the parent finalizes, with independent retries and no impact on the parent's success status.
+
+## How this works
+
+Define deferred functions for each post-completion task. Each receives a typed payload containing the AI-specific data it needs.
+
+```typescript
+import { createDefer } from "inngest/experimental";
+import { z } from "zod";
+
+const scoreOutput = createDefer(inngest, {
+  id: "score-agent-output",
+  schema: z.object({
+    response: z.string(),
+    model: z.string(),
+    ticketId: z.string(),
+  }),
+}, async ({ event, step }) => {
+  // Use a second model as a judge
+  const evaluation = await step.run("llm-as-judge", async () => {
+    return await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content: "Rate this support response 1-5 for helpfulness, accuracy, and tone. Return JSON: { helpfulness: number, accuracy: number, tone: number }",
+        },
+        { role: "user", content: event.data.response },
+      ],
+    });
+  });
+
+  await step.run("persist-scores", async () => {
+    const scores = JSON.parse(evaluation.choices[0].message.content);
+    await inngest.score({ name: "helpfulness", value: scores.helpfulness / 5, runId: event.data.ticketId });
+    await inngest.score({ name: "accuracy", value: scores.accuracy / 5, runId: event.data.ticketId });
+  });
+});
+
+const trackCosts = createDefer(inngest, {
+  id: "track-ai-costs",
+  schema: z.object({
+    model: z.string(),
+    promptTokens: z.number(),
+    completionTokens: z.number(),
+    customerId: z.string(),
+  }),
+}, async ({ event, step }) => {
+  await step.run("log-usage", async () => {
+    const costPer1k = event.data.model === "gpt-4o" ? 0.005 : 0.00015;
+    const totalTokens = event.data.promptTokens + event.data.completionTokens;
+    const cost = (totalTokens / 1000) * costPer1k;
+
+    await analytics.track("ai.cost.incurred", {
+      model: event.data.model,
+      tokens: totalTokens,
+      cost_usd: cost,
+      customer_id: event.data.customerId,
+    });
+  });
+});
+
+const notifyTeam = createDefer(inngest, {
+  id: "notify-agent-completion",
+  schema: z.object({
+    channel: z.string(),
+    summary: z.string(),
+    ticketId: z.string(),
+    model: z.string(),
+  }),
+}, async ({ event, step }) => {
+  await step.run("post-to-slack", async () => {
+    await slack.chat.postMessage({
+      channel: event.data.channel,
+      text: `Agent resolved ticket ${event.data.ticketId} using ${event.data.model}:\n>${event.data.summary}`,
+    });
+  });
+});
+```
+
+Register them alongside your agent function:
+
+```typescript
+serve({
+  client: inngest,
+  functions: [handleTicket, scoreOutput, trackCosts, notifyTeam],
+});
+```
+
+In the agent function, call `defer()` after the work is done. The agent returns the response to the user. Scoring, cost tracking, and notifications happen in the background.
+
+```typescript
+const handleTicket = inngest.createFunction(
+  { id: "handle-support-ticket", triggers: { event: "support/ticket.created" } },
+  async ({ event, step, defer }) => {
+    const response = await step.run("generate-response", async () => {
+      return await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          { role: "system", content: "You are a support agent. Be concise and helpful." },
+          { role: "user", content: event.data.content },
+        ],
+      });
+    });
+
+    const reply = response.choices[0].message.content;
+
+    await step.run("send-reply", async () => {
+      await supportPlatform.reply(event.data.ticketId, reply);
+    });
+
+    // Score the response with LLM-as-judge. Runs after the parent finishes.
+    defer("score-quality", {
+      function: scoreOutput,
+      data: {
+        response: reply,
+        model: "gpt-4o",
+        ticketId: event.data.ticketId,
+      },
+    });
+
+    // Track token costs per customer.
+    defer("track-spend", {
+      function: trackCosts,
+      data: {
+        model: "gpt-4o",
+        promptTokens: response.usage.prompt_tokens,
+        completionTokens: response.usage.completion_tokens,
+        customerId: event.data.customerId,
+      },
+    });
+
+    // Notify the team.
+    defer("notify-slack", {
+      function: notifyTeam,
+      data: {
+        channel: "#support-resolved",
+        summary: reply.slice(0, 200),
+        ticketId: event.data.ticketId,
+        model: "gpt-4o",
+      },
+    });
+
+    return { ticketId: event.data.ticketId, status: "resolved" };
+  }
+);
+```
+
+The agent responds to the customer in under a second. Three deferred functions fire after the parent finalizes: one scores the output with a cheaper model, one logs token costs per customer, one posts to Slack. Each has its own retries. If Slack is down, scoring and cost tracking still succeed. If the scoring model is slow, the customer already has their answer.
+
+## Why not just add more steps?
+
+Adding `step.run("log-usage", ...)` at the end of the function works, and completed steps are memoized so retries skip them. But the parent run stays open while secondary work completes. If the analytics step fails, the entire run is marked as failed even though the agent already delivered the response. The parent's success status ends up reflecting work the user doesn't care about.
+
+Deferred functions keep the parent run clean. It succeeds or fails based on the agent work alone. The side effects run on their own timeline with their own success/failure status.
+
+## Alternative approaches
+
+- **Send events to trigger separate functions.** Works, but you lose the typed schema and the parent/child linking in traces. You serialize data into event payloads manually.
+- **External eval platforms (Braintrust, LangSmith, Arize).** Scoring and cost tracking live in a separate system. Tightening the feedback loop between your agent code and its evaluation requires maintaining two platforms.
+- **Fire-and-forget HTTP calls.** No retries, no observability, no connection to the run that produced the data.
+
+## Additional resources
+
+- [Deferred Functions reference](/docs/reference/typescript/v4/functions/deferred-functions)
+- [Build a deferred scorer](/docs/features/inngest-functions/steps-workflows/deferred-scoring)
+- [Score a function run](/docs/features/inngest-functions/steps-workflows/scoring)
+- [Keeping your API fast](/patterns/keeping-your-api-fast)
