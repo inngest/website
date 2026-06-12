@@ -94,7 +94,7 @@ const FEATURES: Feature[] = [
     id: "typescript",
     title: "TypeScript-native",
     body: "Define event payload types once. End-to-end type safety from the event sender all the way into your function body.",
-    href: "https://www.inngest.com/docs/guides/singleton",
+    href: "https://www.inngest.com/docs/reference/typescript/v4/intro",
   },
 ];
 
