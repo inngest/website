@@ -18,7 +18,7 @@ The new commands live under `inngest-cli api`. Set your API key with `INNGEST_AP
 
 ```bash
 # Get a run summary
-npx inngest-cli@latest api --prod get-run 01KTCTWT8XDEGWDMVX3Q9M69ND
+npx inngest-cli@latest api --prod get-function-run 01KTCTWT8XDEGWDMVX3Q9M69ND
 
 # Pull the full step trace
 npx inngest-cli@latest api --prod get-function-trace 01KTCTWT8XDEGWDMVX3Q9M69ND --include-output
@@ -27,7 +27,7 @@ npx inngest-cli@latest api --prod get-function-trace 01KTCTWT8XDEGWDMVX3Q9M69ND 
 npx inngest-cli@latest api --prod get-event-runs 01KTCTWSZJEKAFEDA4F9GYHFQW --limit 5
 
 # Invoke a function directly
-npx inngest-cli@latest api invoke-function-by-slug my-app-my-function --data '{"message": "hello"}'
+npx inngest-cli@latest api invoke-function my-app my-app-my-function --data '{"message": "hello"}'
 ```
 
 The CLI targets your local dev server by default. Add `--prod` to hit Inngest Cloud. Output is compact JSON, pipeable to `jq`.
@@ -40,7 +40,7 @@ npx inngest-cli@latest api --prod get-function-trace 01KTCTWT8XDEGWDMVX3Q9M69ND 
   | jq '[.data.rootSpan.children[] | select(.status == "FAILED")]'
 
 # Test your fix locally
-npx inngest-cli@latest api invoke-function-by-slug my-app-process-order \
+npx inngest-cli@latest api invoke-function my-app my-app-process-order \
   --data '{"orderId": "test-123"}'
 ```
 
@@ -57,10 +57,10 @@ Add a block to your `CLAUDE.md` or `.cursorrules`:
 
 Use the Inngest CLI to inspect function runs and traces:
 
-- Get a run: `npx inngest-cli@latest api --prod get-run <run_id>`
+- Get a run: `npx inngest-cli@latest api --prod get-function-run <run_id>`
 - Get a trace: `npx inngest-cli@latest api --prod get-function-trace <run_id> --include-output`
 - Get runs from an event: `npx inngest-cli@latest api --prod get-event-runs <event_id> --include-output`
-- Invoke locally: `npx inngest-cli@latest api invoke-function-by-slug <slug> --data '{...}'`
+- Invoke locally: `npx inngest-cli@latest api invoke-function <app_id> <function_id> --data '{...}'`
 
 Output is JSON. Use jq to filter.
 ```
