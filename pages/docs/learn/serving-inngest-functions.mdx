@@ -5,7 +5,7 @@ export const hidePageSidebar = true;
 
 # Setting up your Inngest app
 
-With Inngest, you define functions or workflows using the SDK and deploy them to whatever platform or cloud provider you want including including serverless and container runtimes.
+Inngest executes your functions by calling them directly. You don't poll a queue or manage separate job infrastructure. Instead, you expose your functions to Inngest through a connection from your app, and Inngest's execution engine handles invoking them, retrying failures, and managing state. With `serve()`, your app exposes an HTTP endpoint that Inngest calls to run your functions—no long-running worker required. With `connect()`, your app runs as a worker, opening a persistent outbound WebSocket connection that Inngest uses to invoke your functions directly.
 
 For Inngest to remotely execute your functions, you will need to set up a connection between your app and Inngest. This can be done in one of two ways:
 
@@ -50,6 +50,8 @@ serve({
   /* Optional extra configuration */
 });
 ```
+
+<Callout variant="info">When developing locally, set the `INNGEST_DEV=1` environment variable to test with the Inngest dev server. By default, the SDK will run in production mode when this variable is not set. [Learn more about local development](/docs/local-development).</Callout>
 
 ## Supported frameworks and platforms
 
@@ -1058,10 +1060,9 @@ inngest.fast_api.serve(
 
 ### Signing key
 
-You'll need to assign your [signing key](/docs/platform/signing-keys) to an [`INNGEST_SIGNING_KEY`](/docs/sdk/environment-variables#inngest-signing-key) environment variable in your hosting
-provider or `.env` file locally, which lets the SDK securely communicate with Inngest. If you can't
-use an environment variable, you can pass the signing key directly to the Inngest client constructor via the `signingKey` option. [Read
-the reference for more information](/docs/sdk/reference/serve#reference).
+You'll need to assign your [signing key](/docs/platform/signing-keys) to an [`INNGEST_SIGNING_KEY`](/docs/sdk/environment-variables#inngest-signing-key) environment variable in your hosting provider, which lets the SDK securely communicate with Inngest. If you can't use an environment variable, in SDK v4+ you can pass the signing key directly to the Inngest client constructor via the `signingKey` option. [Read the reference for more information](/docs/sdk/reference/serve#reference).
+
+<Callout variant="info">You don't need a signing key for local development. The SDK automatically skips signature verification when running with the [Inngest dev server](/docs/local-development).</Callout>
 
 ### Other configuration
 
