@@ -1,21 +1,51 @@
 import { Callout, CodeGroup } from "src/shared/Docs/mdx";
 
-export const description = `Run experiments inside durable functions to compare AI models, prompt strategies, and pipeline approaches`
+export const description = `Run experiments inside durable functions to compare AI models and prompt strategies, watch them in your traces, and promote the winner.`
 
 # Run experiments in AI pipelines
 
-When you're building AI features with durable functions, you often need to compare approaches: which model produces better results, whether a refined prompt outperforms a simpler one, or how a RAG pipeline stacks up against a single-shot call. `group.experiment()` lets you run these comparisons inside your function, with durable memoization so the same variant is always selected on retries and replays.
+When you build AI features, you're constantly making bets: GPT-4o or Claude, a terse prompt or a detailed one, a single-shot call or a full RAG pipeline. Most teams test these by hand with `if/else` blocks, a random number generator, and some logging they'll later regret.
+
+`group.experiment()` replaces that with a durable primitive. You declare named variants, pick one per run with a selection strategy, and every choice is recorded in your traces automatically. The selection is memoized like any other step, so retries and replays always run the same variant. No external feature-flag service, no A/B infrastructure, and no inconsistent results when a function replays.
+
+The rest of this guide follows one experiment end to end: comparing two models for document summarization, watching it run, comparing the variants, and promoting the winner.
+
+## Before you start
+
+Experiments run inside Inngest functions, so you need an Inngest client and a serve handler. If you already have a working Inngest app, skip ahead. If not, the [quick start](/docs/getting-started/nextjs-quick-start) walks through the full setup; here's the minimum:
 
 ```ts
-import { experiment } from "inngest";
+npm install inngest
 ```
 
-## Compare AI models
+```ts {{ filename: "inngest/client.ts" }}
+import { Inngest } from "inngest";
 
-The simplest case: you want to test two models against each other. Define each model call as a variant and use `weighted` selection to control the traffic split.
+export const inngest = new Inngest({ id: "my-app" });
+```
 
-```ts
+Serve your functions over an HTTP endpoint (Next.js shown; other frameworks in the [serving guide](/docs/learn/serving-inngest-functions)):
+
+```ts {{ filename: "app/api/inngest/route.ts" }}
+import { serve } from "inngest/next";
+import { inngest } from "../../../inngest/client";
+import summarizeDocument from "../../../inngest/summarize-document";
+
+export const { GET, POST, PUT } = serve({
+  client: inngest,
+  functions: [summarizeDocument],
+});
+```
+
+Every example below imports that `inngest` client. The `experiment` helper is a separate named import from the `inngest` package.
+
+## Split traffic between two models
+
+Start with the bet you want to make. Here we send half the traffic to GPT-4o and half to Claude. Each model call is a variant, and `experiment.weighted()` controls the split.
+
+```ts {{ filename: "inngest/summarize-document.ts" }}
 import { experiment } from "inngest";
+import { inngest } from "./client";
 
 export default inngest.createFunction(
   {
@@ -46,11 +76,83 @@ export default inngest.createFunction(
 );
 ```
 
-The variant selection is wrapped in a memoized step. If the function retries or replays, the same model is used every time.
+`group.experiment()` returns the result of whichever variant ran, so `summary` is just the summary. The selection happens inside a memoized step: if the function retries or replays, the same model is used every time. Weights are relative proportions, so `{ gpt4o: 50, claude: 50 }` and `{ gpt4o: 1, claude: 1 }` behave identically.
 
-## Bucket users to a consistent model
+`group` is a handler argument Inngest injects alongside `event` and `step` — it's where `.experiment()` lives, and there's nothing to enable to use it. The helper functions in these examples (`fetchDocument`, `callOpenAI`, `callAnthropic`, and later `searchVectorStore`, `trackExperiment`, `launchDarkly`, and friends) are your own code, shown as placeholders for whatever your function actually does.
 
-When users interact with your AI features repeatedly, you usually want them to get consistent behavior. Use `experiment.bucket()` with the user ID so the same user always hits the same variant.
+## Watch the experiment run
+
+Every experiment shows up in the run trace without any extra instrumentation. The experiment appears as its own bar; expanding it shows the selected variant, the strategy that picked it, and the available alternatives. The variant's own steps render nested underneath, so you can see exactly what executed.
+
+{/* TODO(sterling): screenshot — the run trace with the "model-comparison" experiment bar expanded, showing selected variant (claude), strategy (weighted), and the nested summarize-claude step. Capture once experiments are verified end-to-end. */}
+
+<Callout>
+  📸 **Screenshot pending:** run trace with the experiment bar expanded. Holding until experiments are verified end-to-end so the image matches real output.
+</Callout>
+
+A single run only tells you what happened once. To decide between the variants, you need them side by side across many runs.
+
+## Compare the variants
+
+The **Experiments** view in the dashboard aggregates every run of a given experiment and compares the variants directly: run counts, p99 latency, and error rates for each. When your variants use `step.ai`, you also get AI token usage per variant.
+
+{/* TODO(sterling — confirm with Andy before publish): exactly which metrics the Experiments view surfaces, whether output *quality* is shown anywhere (it likely isn't — judging quality is on you), and whether token/cost data can be backfilled for an experiment that started with plain step.run() instead of step.ai.wrap(). The AX eval flagged that implying a built-in quality metric would overclaim. */}
+
+{/* TODO(sterling): screenshot — Experiments dashboard for "model-comparison", gpt4o vs claude rows with run count, p99 latency, error rate, token usage columns. */}
+
+<Callout>
+  📸 **Screenshot pending:** the Experiments comparison view (gpt4o vs claude across latency, error rate, and token usage).
+</Callout>
+
+To capture AI metrics, wrap the model call with `step.ai.wrap()` instead of a plain `step.run()`. You get experiment metadata and AI metadata (tokens, latency) on the same trace:
+
+```ts
+const result = await group.experiment("model-comparison", {
+  variants: {
+    gpt4o: () =>
+      step.ai.wrap("summarize-gpt4o", generateText, {
+        model: openai("gpt-4o"),
+        prompt: `Summarize: ${doc.text}`,
+      }),
+    claude: () =>
+      step.ai.wrap("summarize-claude", generateText, {
+        model: anthropic("claude-sonnet-4-20250514"),
+        prompt: `Summarize: ${doc.text}`,
+      }),
+  },
+  select: experiment.weighted({ gpt4o: 50, claude: 50 }),
+});
+```
+
+## Promote the winner
+
+Once the data favors one variant, you don't have to rip the experiment out of your code. Switch the strategy to `experiment.fixed()` to send all traffic to the winner while keeping the structure in place. That way you can re-open the experiment later, or add a new challenger, without rewriting the function.
+
+```ts
+const summary = await group.experiment("model-comparison", {
+  variants: {
+    gpt4o: () =>
+      step.run("summarize-gpt4o", () =>
+        callOpenAI({ model: "gpt-4o", prompt: `Summarize: ${doc.text}` })
+      ),
+    claude: () =>
+      step.run("summarize-claude", () =>
+        callAnthropic({ model: "claude-sonnet-4-20250514", prompt: `Summarize: ${doc.text}` })
+      ),
+  },
+  select: experiment.fixed("claude"),
+});
+```
+
+When you're ready to delete the losing variant entirely, you can. Until then, `fixed()` is the clean way to declare a winner.
+
+---
+
+That's the full loop: split, observe, compare, promote. The patterns below cover the other ways teams reach for experiments.
+
+## Keep users on a consistent variant
+
+Splitting traffic randomly is fine for stateless work, but when users interact with an AI feature repeatedly you usually want them to get consistent behavior. `experiment.bucket()` hashes a value you provide — a user ID, an account ID, any stable key — so the same value always maps to the same variant, even across different runs.
 
 ```ts
 const response = await group.experiment("assistant-model", {
@@ -70,11 +172,11 @@ const response = await group.experiment("assistant-model", {
 });
 ```
 
-The same user ID always maps to the same variant, even across different function runs. This prevents users from experiencing inconsistent quality between requests.
+Here 10% of users get routed to the candidate model and stay there. This prevents the jarring experience of quality shifting between requests for the same person.
 
-## Test prompt strategies with multi-step variants
+## Compare multi-step strategies
 
-Variant callbacks can contain multiple sequential steps. Each step is individually retried and memoized. This is useful when one approach involves more work than another, like comparing a single-shot prompt against a retrieval-augmented pipeline.
+A variant isn't limited to a single call. Variant callbacks can contain multiple sequential steps, each individually retried and memoized. This is how you compare approaches that involve different amounts of work, like a single-shot prompt versus a retrieval-augmented pipeline.
 
 ```ts
 const answer = await group.experiment("prompt-strategy", {
@@ -99,9 +201,11 @@ const answer = await group.experiment("prompt-strategy", {
 });
 ```
 
-## Get the selected variant name
+Only the selected variant's steps execute. The unselected variant never runs.
 
-Set `withVariant: true` to receive both the result and which variant was selected. This is useful for logging, analytics, or downstream decisions.
+## Act on which variant was selected
+
+By default you get the variant's result. Pass `withVariant: true` to get both the result and the name of the variant that ran, which you need for logging, analytics, or a downstream decision.
 
 ```ts
 const outcome = await group.experiment("tone-test", {
@@ -128,9 +232,11 @@ await step.run("log-experiment", () =>
 );
 ```
 
+With `withVariant: true`, `group.experiment()` returns `{ result, variant }`: `result` is the return value of the variant that ran (typed as the union of your variants' return types), and `variant` is the selected variant's name as a string-literal union of your variant keys (here `"concise" | "detailed"`). This shape is the same for every selection strategy — `weighted`, `bucket`, `fixed`, and `custom`. Without `withVariant`, you get `result` on its own.
+
 ## Run multiple experiments in one pipeline
 
-You can run independent experiments in a single function. Use `experiment.bucket()` with a composite key so each experiment assigns variants independently.
+You can run independent experiments in a single function. Use `experiment.bucket()` with a composite key so each experiment assigns variants on its own.
 
 ```ts
 export default inngest.createFunction(
@@ -183,10 +289,65 @@ export default inngest.createFunction(
 );
 ```
 
-By appending a feature-specific suffix to the bucket key (`userId:extraction` vs `userId:summary`), the same user can be independently assigned to different variants in each experiment.
+Appending a feature-specific suffix to the bucket key (`userId:extraction` vs `userId:summary`) lets the same user land on different variants in each experiment independently.
+
+## Plug in your own selection logic
+
+When the choice depends on something Inngest doesn't know about — a feature flag, an entitlement, an external service — use `experiment.custom()`. The function runs inside a memoized step, so the result is still deterministic across retries. It must return a string matching one of your variant names.
+
+```ts
+const recommendations = await group.experiment("recommendation-model", {
+  variants: {
+    collaborative: () =>
+      step.run("collaborative", () => collaborativeFilter(userId)),
+    mlBased: () =>
+      step.run("ml-based", () => mlRecommend(userId)),
+  },
+  select: experiment.custom(async () => {
+    const flag = await launchDarkly.variation("recommendation-model", { key: userId });
+    return flag === "ml" ? "mlBased" : "collaborative";
+  }),
+});
+```
+
+## Gradually roll out a change
+
+Experiments aren't only for model comparisons. Use `weighted` to roll out a rewritten implementation from 1% to 100%, watching for regressions in the dashboard at each stage. To change the rollout, deploy new weights: in-progress runs keep the variant they already selected, and only new runs use the updated split.
+
+```ts
+const invoice = await group.experiment("invoice-generation", {
+  variants: {
+    v1: () => step.run("generate", () => generateInvoiceV1(event.data)),
+    v2: async () => {
+      const lineItems = await step.run("fetch-items", () =>
+        fetchLineItems(event.data.accountId)
+      );
+      const tax = await step.run("calculate-tax", () =>
+        calculateTax(lineItems, event.data.region)
+      );
+      return await step.run("render", () => renderInvoiceV2(lineItems, tax));
+    },
+  },
+  // Start at 1%, raise as confidence grows.
+  select: experiment.weighted({ v1: 99, v2: 1 }),
+});
+```
+
+Weights are relative and work for any number of variants. A `0` weight is valid and excludes a variant from new runs, which is how you finish a rollout (`{ v1: 0, v2: 100 }`). Weights that are all zero, negative, or non-finite throw when you create the strategy.
 
 <Callout>
-  Every variant callback must invoke at least one `step.run()` call. The SDK throws a `NonRetriableError` if a variant completes without calling any step tools.
+  With `experiment.weighted()`, selection happens over the weights map you pass — not the full variant list. Every variant you want eligible **must appear in the weights map**; a variant defined in `variants` but missing from `weights` is silently never selected. (`experiment.bucket()` differs: omit its weights and it splits evenly across all variant names.)
 </Callout>
 
-For the full API surface, parameters, and selection strategy details, see the [`group.experiment()` reference](/docs/reference/typescript/v4/functions/group-experiment).
+<Callout>
+  Every variant callback must invoke at least one `step.run()` (or other `step.*`) call. The SDK throws a `NonRetriableError` if a variant completes without calling any step tools — code without steps isn't durable and would silently re-execute on every replay.
+</Callout>
+
+## Limitations
+
+- **One variant per run.** Each run executes exactly one variant. Running all variants simultaneously (dual-running) is planned but not available yet. If you need to run every variant on the same input today — for example to diff their outputs directly — call the steps yourself outside `group.experiment()`. You lose the per-variant dashboard aggregation, but you get every result in one run.
+- **Defined in code.** There's no UI for creating or editing experiments — you change configuration by deploying new code.
+- **No automatic promotion.** You decide the winner and update the strategy yourself; Inngest won't promote a variant for you.
+- **TypeScript only.** Python and Go SDK support is coming. If you're on the Python or Go SDK today, track support on the [roadmap](https://roadmap.inngest.com/roadmap?ref=docs) — there's no `group.experiment()` equivalent to fall back on yet.
+
+For the full API surface, parameters, and selection-strategy details, see the [`group.experiment()` reference](/docs/reference/typescript/v4/functions/group-experiment).
