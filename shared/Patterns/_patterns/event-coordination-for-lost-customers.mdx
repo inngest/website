@@ -138,6 +138,7 @@ FROM
 WHERE
   runs.function_id = 'your-app-cart-abandonment-flow-fn-id'
   AND runs.queued_at > now() - INTERVAL 7 DAY;
+```
 
 This gives you a direct read on how many carts needed a nudge versus converted without one — useful signal for tuning your reminder timing or copy.
 
