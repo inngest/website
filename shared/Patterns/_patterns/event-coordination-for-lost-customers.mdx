@@ -126,14 +126,18 @@ Once your cart abandonment flow is in production, you'll want to know how often 
 
 ```sql
 SELECT
-  countIf(steps.name = 'send-reminder' AND steps.status = 'Completed') AS reminders_sent,
-  countIf(runs.status = 'Completed') AS total_runs,
+  countIf (
+    steps.name = 'send-reminder'
+    AND steps.status = 'Completed'
+  ) AS reminders_sent,
+  countIf (runs.status = 'Completed') AS total_runs,
   round(reminders_sent / total_runs * 100, 2) AS reminder_rate_pct
-FROM runs
-LEFT JOIN steps ON steps.run_id = runs.id
-WHERE runs.function_id = 'your-app-cart-abandonment-flow'
-  AND runs.queued_at > now() - INTERVAL 7 DAY
-```
+FROM
+  runs
+  LEFT JOIN steps ON steps.run_id = runs.id
+WHERE
+  runs.function_id = 'your-app-cart-abandonment-flow-fn-id'
+  AND runs.queued_at > now() - INTERVAL 7 DAY;
 
 This gives you a direct read on how many carts needed a nudge versus converted without one — useful signal for tuning your reminder timing or copy.
 
