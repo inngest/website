@@ -1,4 +1,5 @@
 ---
+tags: ["Queues & Flow Control", "Workflows & Orchestration", "Tutorials & Guides"]
 focus: false
 heading: "Building an event-driven queue based on common standards"
 subtitle: The design decisions and architecture for a next-gen queuing platform

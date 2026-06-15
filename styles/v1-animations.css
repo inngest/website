@@ -1,0 +1,629 @@
+/* ============================================================
+ * v1 keyframes + reusable animation helper classes.
+ *
+ * Imported once from `components/v1/PageShell.tsx` so every v1 page
+ * picks the stylesheet up; the legacy site never imports this file
+ * and is unaffected.
+ *
+ * Animations that previously needed a JS-interpolated duration use a
+ * CSS custom property (e.g. `--cycle-ms`) so consumers can set it
+ * via inline style on the element.
+ * ============================================================ */
+
+/* ---------- Home / StartBuilding ---------- */
+@keyframes v1QuickstartIn {
+  from { opacity: 0; transform: translateY(10px) scale(0.985); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .v1-quickstart-in {
+    animation: v1QuickstartIn 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+}
+
+/* ---------- Home / TrustedInBigLeagues ---------- */
+@keyframes v1TrustedProgress {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+@keyframes v1TrustedVizIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes v1ChartDraw {
+  from { stroke-dashoffset: var(--len, 4000); }
+  to   { stroke-dashoffset: 0; }
+}
+@keyframes v1SqlCaret {
+  0%, 49%   { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .v1-trusted-progress {
+    transform-origin: left center;
+    animation: v1TrustedProgress var(--cycle-ms, 7000ms) linear forwards;
+  }
+  .v1-trusted-viz-in {
+    animation: v1TrustedVizIn 360ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+  .v1-chart-line {
+    stroke-dasharray: var(--len, 4000);
+    animation: v1ChartDraw 2400ms cubic-bezier(0.22, 0.61, 0.27, 1) both;
+  }
+}
+
+.v1-sql-caret {
+  display: inline-block;
+  width: 0.5ch;
+  margin-left: 1px;
+  background: currentColor;
+  color: transparent;
+  animation: v1SqlCaret 900ms steps(1) infinite;
+}
+
+/* ---------- Shared / TestimonialsCarousel ---------- */
+@keyframes v1TPortraitIn {
+  from { opacity: 0; transform: scale(1.05); filter: blur(4px); }
+  to   { opacity: 1; transform: scale(1);    filter: blur(0); }
+}
+@keyframes v1TQuoteIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes v1TBylineIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .v1-t-portrait-in {
+    animation: v1TPortraitIn 900ms cubic-bezier(0.22, 0.61, 0.27, 1) both;
+  }
+  .v1-t-quote-in {
+    animation: v1TQuoteIn 750ms cubic-bezier(0.22, 0.61, 0.27, 1) both;
+    animation-delay: 120ms;
+  }
+  .v1-t-byline-in {
+    animation: v1TBylineIn 700ms cubic-bezier(0.22, 0.61, 0.27, 1) both;
+    animation-delay: 260ms;
+  }
+}
+
+/* ---------- Home / ScaleInstantly dashboard reveal ----------
+ * Black curtain pinned over the dashboard image scales X from
+ * 1 → 0 with `origin: left`, wiping off left-to-right to expose
+ * the dashboard underneath. A thin salmon edge child sits at the
+ * curtain's right edge so the wipe front reads as a flashing line
+ * sweeping across the image rather than a dull black retreat.
+ * Snappy accelerate-decelerate ease keeps it under 600 ms — feels
+ * like a flash, not a slow slide.
+ */
+@keyframes v1ScaleDashCurtain {
+  from { transform: scaleX(1); }
+  to   { transform: scaleX(0); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .v1-scale-dash-curtain {
+    transform-origin: left center;
+    animation: v1ScaleDashCurtain 560ms cubic-bezier(0.7, 0, 0.15, 1) both;
+  }
+}
+
+/* (NavLink hover slide is implemented inline in components/v1/Header.tsx
+ *  via paired text spans + group-hover translate utilities.) */
+
+/* ---------- AI Hero + Home Hero ----------
+ * Hero word reveals + overlay slides are now driven by `motion/react`
+ * on each component (Hero.tsx files). Reduced-motion is handled
+ * centrally by <MotionConfig reducedMotion="user"> at the page shell,
+ * so the per-keyframe `@media (prefers-reduced-motion)` gates are no
+ * longer needed for these.
+ */
+
+/* ---------- AI / Lifecycle (tab fade + tab progress bar) ---------- */
+@keyframes v1LifecycleFade {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes v1LifecycleProgress {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+@keyframes v1LifecycleHeadingIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .v1-lifecycle-fade {
+    animation: v1LifecycleFade 320ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .v1-lifecycle-progress {
+    transform-origin: left center;
+    animation: v1LifecycleProgress var(--cycle-ms, 7000ms) linear forwards;
+  }
+  .v1-lifecycle-word[data-revealed="false"] {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  .v1-lifecycle-word[data-revealed="true"] {
+    /* `both` fill-mode holds the from-state (opacity:0, translated)
+     * during animation-delay AND the to-state after — without it
+     * the element flashed to opacity:1 for one frame between the
+     * inline style being dropped and the animation firing. */
+    animation: v1LifecycleHeadingIn 700ms cubic-bezier(0.22, 0.61, 0.27, 1) both;
+  }
+}
+
+/* ---------- AI / Lifecycle graphics (Setup / Reliability / Scale / Observe) ---------- */
+@keyframes v1LifecycleBlink {
+  0%, 49%   { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+@keyframes v1LifecycleBarFill {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+@keyframes v1LifecycleFadeUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes v1LifecyclePulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.45; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .v1-lc-blink    { animation: none !important; opacity: 1 !important; }
+  .v1-lc-bar-fill { animation: none !important; transform: scaleX(1) !important; }
+  .v1-lc-fade-up  { animation: none !important; opacity: 1 !important; transform: none !important; }
+  .v1-lc-pulse    { animation: none !important; }
+}
+
+/* ---------- Home / FeatureCards — sibling hover dim ----------
+ * When any feature card is hovered or keyboard-focused, dim the
+ * other cards so the active one reads as the focal point.
+ *
+ * Uses filter: brightness() instead of opacity. Opacity made the
+ * dimmed cards translucent, which let the Quote section's dots
+ * (which bleed -35vh below their section) show through the cards
+ * on initial-load hover. brightness() keeps the cards fully opaque
+ * — they just render darker — so the dots stay hidden behind.
+ */
+@media (hover: hover) {
+  .has-hover-dim:has([data-feature-card]:hover) [data-feature-card]:not(:hover),
+  .has-hover-dim:has([data-feature-card]:focus-visible) [data-feature-card]:not(:focus-visible) {
+    filter: brightness(0.55);
+  }
+  .has-hover-dim [data-feature-card] {
+    transition: filter 500ms cubic-bezier(0.22, 0.61, 0.27, 1);
+  }
+}
+
+/* ---------- AI / Primitives — sibling hover dim ---------- */
+@media (hover: hover) {
+  .has-primitive-dim:has([data-primitive-card]:hover) [data-primitive-card]:not(:hover) {
+    opacity: 0.5;
+  }
+  .has-primitive-dim [data-primitive-card] {
+    transition: opacity 320ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+}
+
+/* ---------- AI / UseCases CodeBlock (typewriter caret) ---------- */
+@keyframes v1UcCaretBlink {
+  0%, 49%   { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+/* ---------- v1 hero text fade-in ----------
+ * Hero text container fades from opacity 0 → 1 after a delay so
+ * the dot scatter establishes itself before the titles paint in.
+ */
+@keyframes v1-hero-text-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ---------- v1 hero ambient dots (mobile only) ----------
+ * Light replacement for HeroCodeScene on phones — each dot drifts
+ * within a small radius and pulses opacity on its own offset. Lives
+ * on the GPU (transform + opacity only) so a few dozen dots cost
+ * effectively nothing. Desktop still uses the full canvas scene.
+ */
+@keyframes v1-hero-dot-drift {
+  0%   { transform: translate3d(0, 0, 0);            opacity: var(--dot-min, 0.25); }
+  25%  { transform: translate3d(6px, -8px, 0);       opacity: var(--dot-max, 0.7);  }
+  50%  { transform: translate3d(-4px, 4px, 0);       opacity: var(--dot-min, 0.25); }
+  75%  { transform: translate3d(-8px, -4px, 0);      opacity: var(--dot-max, 0.7);  }
+  100% { transform: translate3d(0, 0, 0);            opacity: var(--dot-min, 0.25); }
+}
+
+/* ---------- v1 testimonial text slide-in ----------
+ * The quote `<p>` and each byline (`<p>`) wrap in an overflow-hidden
+ * container; on slide change the text translates in from ±100% width
+ * with opacity 0 → 1. Direction is chosen by the consumer to match
+ * the portrait's own slide-in.
+ */
+@keyframes v1TextSlideInLeft {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+@keyframes v1TextSlideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* ---------- v1 testimonial portrait slide-in ----------
+ * On every rotation (except the initial paint-collapse) the new
+ * portrait slides in to overtake the previous one. Direction is
+ * picked at the consumer based on which logo was clicked relative
+ * to the current — clicking a logo to the right slides the new
+ * image in from the right, clicking left slides from the left.
+ */
+@keyframes v1PortraitSlideInLeft {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+@keyframes v1PortraitSlideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* Reduced motion — the quote, byline, and portrait slide-ins are applied
+ * via inline `style={{ animation }}` in TestimonialsCarousel, so Tailwind's
+ * `motion-safe:` / `motion-reduce:` can't reach them. Following the
+ * documented convention (see v1.css), neutralise the keyframes themselves
+ * to their end state: content lands in place with no translate/fade and
+ * the component stays untouched. */
+@media (prefers-reduced-motion: reduce) {
+  @keyframes v1TextSlideInLeft {
+    from, to { transform: translateX(0); opacity: 1; }
+  }
+  @keyframes v1TextSlideInRight {
+    from, to { transform: translateX(0); opacity: 1; }
+  }
+  @keyframes v1PortraitSlideInLeft {
+    from, to { transform: translateX(0); }
+  }
+  @keyframes v1PortraitSlideInRight {
+    from, to { transform: translateX(0); }
+  }
+}
+
+/* ---------- v1 testimonial quote line reveal ----------
+ * Two-phase per-line wipe: bars paint in from the left (scaleX 0 → 1
+ * over the first 30 % of the keyframe), then collapse off to the
+ * right (translateX 0 → 101 % over the remaining 70 %). Each line
+ * runs the same keyframe with a 100 ms stagger so the lines cascade.
+ * `animation-fill-mode: both` holds the 0 % state during the delay
+ * so the bars stay hidden until their turn.
+ */
+@keyframes v1QuoteLineReveal {
+  0% {
+    transform: scaleX(0) translateX(0);
+  }
+  50% {
+    transform: scaleX(1) translateX(0);
+  }
+  100% {
+    transform: scaleX(1) translateX(101%);
+  }
+}
+
+/* Sibling text keyframe — pinned at opacity 0 through the bar's
+ * paint-in phase (0–50 %) so the line stays hidden underneath the
+ * bar, then snaps to opacity 1 at 50 % so it's already there when
+ * the bar starts collapsing off to the right.
+ */
+@keyframes v1QuoteLineTextShow {
+  0%,
+  49.99% {
+    opacity: 0;
+  }
+  50%,
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Per-line cascade for testimonial quote SWAPS (slide changes after
+ * the initial paint-collapse reveal). Each line slides up 16 px, fades
+ * in from opacity 0, and clears a 4 px blur in lockstep — staggered
+ * 80 ms between lines so the new quote unfurls top-to-bottom rather
+ * than landing as a slab. Same long expo-out ease as the home hero
+ * word reveals so the settle reads as deliberate, premium. Initial
+ * reveals (`!hasRevealed`) bypass this in favour of the paint bars.
+ */
+@keyframes v1QuoteLineSwap {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+/* Subtle byline cascade for slide changes — name + role each get an
+ * 8 px lift + opacity fade + a 2 px blur clearing. Smaller motion
+ * than the quote so it reads as a supporting beat, not competing
+ * with the main quote reveal. Stagger applied via inline animation-
+ * delay (80 ms between name and role).
+ */
+@keyframes v1BylineSwap {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+    filter: blur(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+/* ---------- StartBuilding language-picker icon hovers ----------
+ * Each icon gets its own per-language playful hover animation, all
+ * scoped to `.v1-lang-button:hover .v1-lang-icon[data-lang=…]` so
+ * they only fire when the user is hovering THAT language's tab.
+ *
+ *   nextjs  → slides up with a soft overshoot landing
+ *   node    → two fast rotateY spins decelerating like a coin
+ *   go      → darts right, snaps back past start, settles on left
+ *   python  → spins half-way around (180°) and stops
+ */
+@keyframes v1IconCoinSpin {
+  0% { transform: rotateY(0deg); }
+  100% { transform: rotateY(720deg); }
+}
+@keyframes v1IconDart {
+  0% { transform: translateX(0); }
+  40% { transform: translateX(16px); }
+  70% { transform: translateX(-14px); }
+  100% { transform: translateX(-2px); }
+}
+@keyframes v1IconFlip {
+  /* Phase 1 — fast spin with a slight over-rotation, then ease back
+     to 180°. No hard stall; the slow-out at the end of phase 1 paired
+     with the slow-in at the start of phase 2 reads as "barely
+     stopping" before reversing. */
+  0% {
+    transform: rotate(0deg);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1);
+  }
+  30% {
+    transform: rotate(195deg);
+    animation-timing-function: cubic-bezier(0.34, 1.30, 0.64, 1);
+  }
+  45% {
+    transform: rotate(180deg);
+    /* Slow start to phase 2 so the reverse spin creeps before
+       accelerating — the icon almost stops but never quite. */
+    animation-timing-function: cubic-bezier(0.65, 0, 0.2, 1);
+  }
+  92% {
+    transform: rotate(-12deg);
+    animation-timing-function: cubic-bezier(0.34, 1.40, 0.64, 1);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+@keyframes v1IconBounce {
+  0% { transform: translateY(0); }
+  35% { transform: translateY(-16px); }
+  60% { transform: translateY(3px); }
+  80% { transform: translateY(-4px); }
+  100% { transform: translateY(0); }
+}
+
+/* Per-language hover animations (coin spin / dart / flip / bounce)
+ * intentionally disabled — the language icons sit static on hover.
+ * Keyframes (`v1IconCoinSpin`, `v1IconDart`, `v1IconFlip`,
+ * `v1IconBounce`) kept above so re-enabling is a single
+ * `@media (prefers-reduced-motion: no-preference)` block. */
+
+/* ---------- v1 nav text wipe ----------
+ * Used by `WipeLabel`. Two stacked gradients on a single span: salmon
+ * fill on top (0 % wide at rest, animates to 100 % on hover) and a
+ * frost base underneath (100 % wide always). `background-clip: text`
+ * paints both into the letterforms. Curve matches `EASE_V1_WIPE` so
+ * the text wipe reads in the same physical grammar as BlackReveal /
+ * the page transition.
+ *
+ * Fires on hover / focus-visible of the nearest anchor or button
+ * ancestor so the wipe triggers across the whole nav cell, not just
+ * over the glyphs themselves.
+ */
+.v1-wipe-label {
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  /* Cap-trimmed labels (text-v1-heading-*) shrink the box to the
+   * baseline, but `background-clip: text` only paints within that box —
+   * so descenders (g, p, y) fall outside the paint area and vanish.
+   * Extend the background (padding-box) down past the baseline to cover
+   * them; the matching negative margin keeps the layout footprint (and
+   * the cap-trim centring) unchanged. */
+  padding-bottom: 0.4em;
+  margin-bottom: -0.4em;
+  /* `--v1-wipe-fill` overrides the default salmon hover paint;
+   * `--v1-wipe-base` overrides the resting frost base. Pages set either
+   * on an ancestor (or inline) to retint the wipe — e.g. the AI page
+   * sets jet-black fill for a darker hover against its dark hero, and
+   * the ink-nav header sets an ink base over the ivory band. */
+  background-image:
+    linear-gradient(var(--v1-wipe-fill, rgb(var(--color-v1-salmon-200))), var(--v1-wipe-fill, rgb(var(--color-v1-salmon-200)))),
+    linear-gradient(var(--v1-wipe-base, rgb(var(--color-v1-bleed-base))), var(--v1-wipe-base, rgb(var(--color-v1-bleed-base))));
+  background-size: 0% 100%, 100% 100%;
+  background-position: 0 0, 0 0;
+  background-repeat: no-repeat, no-repeat;
+  background-clip: text;
+  -webkit-background-clip: text;
+  transition: background-size 360ms cubic-bezier(0.7, 0, 0.15, 1);
+}
+a:hover .v1-wipe-label,
+a:focus-visible .v1-wipe-label,
+button:hover .v1-wipe-label,
+button:focus-visible .v1-wipe-label,
+.v1-wipe-label:hover {
+  background-size: 100% 100%, 100% 100%;
+}
+@media (prefers-reduced-motion: reduce) {
+  .v1-wipe-label {
+    transition: none;
+  }
+}
+
+/* ---------- v1 nav reveal wipe ----------
+ * Sibling of `.v1-wipe-label` for triggers whose label includes non-text
+ * (the Open Source GitHub mark): a salmon copy stacked over the frost base,
+ * clipped away at rest and revealed left-to-right on hover so the whole
+ * group — text + icon — wipes as one continuous front. Same curve as the
+ * text wipe. Fires on the nearest anchor/button ancestor's hover/focus. */
+.v1-wipe-reveal {
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path 360ms cubic-bezier(0.7, 0, 0.15, 1);
+}
+a:hover .v1-wipe-reveal,
+a:focus-visible .v1-wipe-reveal,
+button:hover .v1-wipe-reveal,
+button:focus-visible .v1-wipe-reveal {
+  clip-path: inset(0 0 0 0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .v1-wipe-reveal {
+    transition: none;
+  }
+}
+
+/* ---------- v1 hyperlink underline ----------
+ * Two stacked background-image gradients render the underline:
+ *   1. salmon line, 0 % wide at rest, animates to 100 % on hover
+ *      (the "re-drawing" cue)
+ *   2. frost line, 100 % wide always (the visible "rest" underline)
+ * Salmon overdraws the frost left-to-right on hover, salmon retracts
+ * back to 0 % on leave. Same 420 ms curve as the text bleed so the
+ * line and the colour change land together.
+ *
+ * Class is applied by `@/components/v1/Link` when it auto-wraps text
+ * children — nav-style links opt out via the component's `underline`
+ * prop.
+ */
+.v1-hyperlink {
+  text-decoration: none;
+  background-image:
+    linear-gradient(#FB5536, #FB5536),
+    linear-gradient(#E8EAED, #E8EAED);
+  background-size: 0% 1px, 100% 1px;
+  background-position: 0 100%, 0 100%;
+  background-repeat: no-repeat, no-repeat;
+  padding-bottom: 3px;
+  transition: background-size 420ms cubic-bezier(0.65, 0, 0.35, 1);
+}
+.v1-hyperlink:hover,
+.v1-hyperlink:focus-visible {
+  background-size: 100% 1px, 100% 1px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .v1-hyperlink {
+    transition: none;
+  }
+}
+
+/* ---------- v1 text selection — salmon brand colour ----------
+ * Highlight stays salmon; text inverts to near-black so the selected
+ * copy reads as a deliberate inversion rather than white-on-orange.
+ */
+.v1-page ::selection {
+  background-color: #FB5536;
+  color: #0A0A0A;
+}
+.v1-page ::-moz-selection {
+  background-color: #FB5536;
+  color: #0A0A0A;
+}
+
+/* ---------- CTA frost ring (Button.tsx primary/secondary/pill) ----
+ * The white inset shadow that frames frost-bg buttons at rest gets
+ * dropped on hover when the bg flips salmon. The catch: a naive
+ * `transition: box-shadow 300ms` interpolates the ring through
+ * intermediate alpha values, producing a faint gray ring rendered
+ * over a half-salmon bg mid-transition — reads as a flashing white
+ * border on mouseout. Solution: on hover IN the ring snaps off
+ * fast (120 ms, no delay); on hover OUT the ring is delayed until
+ * AFTER the bg has fully transitioned back to frost, then snaps
+ * in. Directionally-asymmetric `transition` rules — possible
+ * because the property is read off the resting state for
+ * hover-out and off the :hover state for hover-in.
+ */
+.v1-cta-frost-ring {
+  box-shadow: inset 0 0 0 2px rgb(255 255 255);
+  transition:
+    background-color 300ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    color 300ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 200ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.v1-cta-frost-ring:hover {
+  box-shadow: none;
+  transition:
+    background-color 300ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    color 300ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 120ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .v1-cta-frost-ring,
+  .v1-cta-frost-ring:hover {
+    transition: none;
+  }
+}
+
+/*
+ * Ink ring — the dark-on-light twin of `.v1-cta-frost-ring`, for
+ * outline CTAs that sit on a light surface (e.g. the ivory
+ * compare-to-temporal hero) where the white frost ring is invisible.
+ * Identical mechanism and timing; only the ring colour changes.
+ */
+.v1-cta-ink-ring {
+  box-shadow: inset 0 0 0 2px rgb(var(--color-v1-carbon-400));
+  transition:
+    background-color 300ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    color 300ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 200ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.v1-cta-ink-ring:hover {
+  box-shadow: none;
+  transition:
+    background-color 300ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    color 300ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 120ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .v1-cta-ink-ring,
+  .v1-cta-ink-ring:hover {
+    transition: none;
+  }
+}

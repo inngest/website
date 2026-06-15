@@ -39,7 +39,6 @@ export const getStaticProps: GetStaticProps = async (ctx) => {
       meta: {
         title: `${section.name} patterns | Inngest`,
         description: section.description,
-        image: "/assets/homepage/open-graph-june-2025.png",
       },
     },
   };

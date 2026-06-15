@@ -1,4 +1,5 @@
 ---
+tags: ["Queues & Flow Control"]
 heading: "Understanding the Differences Between Rate Limiting, Debouncing, and Throttling"
 image: /assets/blog/rate-limit-debouncing-throttling-explained/featured-image.png
 showSubtitle: true
@@ -139,7 +140,7 @@ Please find below a takeaway cheatsheet that will help you evaluate the best way
 
 ### Singleton Functions: Exclusive execution control (June 2025)
 
-Since this article was published, Inngest has added **Singleton Functions**—another flow control mechanism that ensures exclusive execution. While rate limiting, throttling, and debouncing control frequency and timing, Singleton Functions ensure mutual exclusion—only one run per key executes at a time:
+Since this article was published, Inngest has added **Singleton Functions**—another [flow control](/platform/flow-control) mechanism that ensures exclusive execution. While rate limiting, throttling, and debouncing control frequency and timing, Singleton Functions ensure mutual exclusion—only one run per key executes at a time:
 
 ```typescript
 const latestDataSync = inngest.createFunction({

@@ -1,0 +1,95 @@
+export const description = "Give your coding agent access to Inngest runs, traces, and function invocation using the CLI and REST API."
+
+# Use the CLI with coding agents
+
+Coding agents like Claude Code, Cursor, and Codex can use the Inngest CLI to pull real execution data when debugging or iterating on your functions. Instead of guessing what happened, the agent reads the actual trace.
+
+## Prerequisites
+
+- Inngest CLI: `npx inngest-cli@latest`
+- An environment-scoped API key set as `INNGEST_API_KEY`
+- A coding agent that can run shell commands
+
+---
+
+## 1. Give the agent your API key
+
+Set the API key in your environment so the agent's shell commands can access it:
+
+```bash
+export INNGEST_API_KEY=sk-inn-api-...
+```
+
+For Claude Code, add it to your project's `.env` or pass it in your shell profile. The agent inherits the environment.
+
+---
+
+## 2. Add Inngest context to your agent
+
+Tell the agent how to use the CLI. Add this to your project's `CLAUDE.md`, `.cursorrules`, or equivalent:
+
+```markdown
+## Inngest debugging
+
+Use the Inngest CLI to inspect function runs and traces:
+
+- Get a run: `npx inngest-cli@latest api --prod get-function-run <run_id>`
+- Get a trace: `npx inngest-cli@latest api --prod get-function-trace <run_id> --include-output`
+- Get runs from an event: `npx inngest-cli@latest api --prod get-event-runs <event_id> --include-output --limit 5`
+- Invoke locally: `npx inngest-cli@latest api invoke-function <app_id> <function_id> --data '{...}'`
+
+Output is JSON. Use jq to filter.
+```
+
+The agent now knows to reach for the CLI when it needs execution context.
+
+---
+
+## 3. Debug a failing function
+
+When a function fails, point the agent at the run ID:
+
+> "The run 01ABC123 is failing in production. Use the Inngest CLI to get the trace and figure out which step is broken."
+
+The agent runs:
+
+```bash
+npx inngest-cli@latest api --prod get-function-trace 01ABC123 --include-output
+```
+
+It reads the trace, identifies the failing step, sees the error output, and proposes a fix with real context instead of guessing.
+
+---
+
+## 4. Test the fix
+
+After the agent makes a code change, it can invoke the function locally against the dev server:
+
+```bash
+npx inngest-cli@latest api invoke-function my-app process-order \
+  --data '{"orderId": "test-123"}'
+```
+
+Then check the result:
+
+```bash
+npx inngest-cli@latest api get-event-runs <event_id> --include-output
+```
+
+The agent verifies its own fix without leaving the terminal.
+
+---
+
+## Why this matters
+
+Without the CLI, an agent debugging an Inngest function has to guess what happened based on code alone. With the CLI, it reads the actual execution trace: which steps ran, which failed, what the error was, and what the output looked like. The feedback loop gets tighter.
+
+This also means the agent can pull production data to reproduce issues locally, compare expected vs actual output, and verify fixes before pushing.
+
+---
+
+## Next steps
+
+- [Inngest CLI reference](/docs/cli) for all commands and options
+- [Debug a function run from your terminal](/docs/guides/debug-with-cli) for the manual workflow
+- [REST API documentation](https://api-docs.inngest.com) for direct HTTP access

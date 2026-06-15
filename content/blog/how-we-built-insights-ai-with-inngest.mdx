@@ -1,4 +1,5 @@
 ---
+tags: ["AI & Agents", "Observability & Debugging", "Engineering"]
 heading: "How we built Insights AI with Inngest"
 subtitle: "How we shipped Insights AI, what we learned about building agentic features, and why dogfooding your own infrastructure actually works."
 image: /assets/blog/how-we-built-insights-ai-with-inngest/featured-image.png
@@ -139,7 +140,7 @@ If we were starting over, a few things would change.
 
 **Test model providers earlier.** We assumed OpenAI was the default choice because it's what everyone uses. We should have prototyped with multiple providers from the start. The quality difference between models matters more than we expected.
 
-**Build observability first.** We added detailed logging and tracing partway through. Should have been there from the beginning. When agent responses are bad, you need to see exactly what prompts went in, what came back, and where things went wrong.
+**Build [observability](/platform/observability) first.** We added detailed logging and tracing partway through. Should have been there from the beginning. When agent responses are bad, you need to see exactly what prompts went in, what came back, and where things went wrong.
 
 ## The tools we used
 

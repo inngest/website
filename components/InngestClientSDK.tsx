@@ -20,11 +20,13 @@ export function PageViews() {
       // @ts-ignore this should inherit base html props
       src="/inngest-sdk.js"
       onLoad={() => {
-        if (typeof window.Inngest === "undefined") {
-          console.warn("Inngest is not initialized");
-          return;
-        }
-        window.Inngest.init(process.env.NEXT_PUBLIC_INNGEST_KEY);
+        // No-op on previews / forks that don't carry the prod
+        // tracking key, or if the SDK script hasn't attached yet.
+        // Silent — these aren't actionable for any user.
+        if (typeof window.Inngest === "undefined") return;
+        const inngestKey = process.env.NEXT_PUBLIC_INNGEST_KEY;
+        if (!inngestKey) return;
+        window.Inngest.init(inngestKey);
         window.Inngest.identify({ anonymous_id: anonymousID });
         // The hook should tell us if the anon id is an existing one, or it's just been set
         const firstTouch = !existing;

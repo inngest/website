@@ -25,7 +25,6 @@ export async function getStaticProps() {
       meta: {
         title: "Patterns: How to build with Inngest",
         description: META_DESCRIPTION,
-        image: "/assets/homepage/open-graph-june-2025.png",
       },
     },
   };

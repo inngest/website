@@ -21,7 +21,7 @@ export default function TrustFeaturesSection() {
       description: "Single sign-on and SAML support for enterprise customers.",
     },
     {
-      title: "100K+ EXECUTIONS PER SECOND",
+      title: "100K+ EXECUTIONS PER SECONDS",
       description:
         "Designed for your heavy workloads with capacity for bursting.",
     },

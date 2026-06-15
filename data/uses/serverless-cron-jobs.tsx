@@ -1,4 +1,4 @@
-import type { UseCase } from "src/app/uses/[case]/page";
+import type { UseCase } from "src/app/(v0)/uses/[case]/page";
 
 export const data: UseCase = {
   title: "Serverless scheduled & cron jobs",
