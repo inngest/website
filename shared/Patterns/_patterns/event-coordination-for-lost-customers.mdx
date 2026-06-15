@@ -118,6 +118,29 @@ export const generateAndPublish = inngest.createFunction(
 
 The function generates content, sends it for review, and pauses. When the reviewer clicks "approve" or "reject" in your app, your app sends the corresponding event. Inngest resumes the function and continues with the publish or archive step. No polling, no state table, no cron job checking for pending reviews.
 
+## Measuring your flow with Insights
+
+Once your cart abandonment flow is in production, you'll want to know how often it's actually sending reminders — and what share of carts are converting on their own.
+
+[Inngest Insights](/docs/platform/monitor/insights?ref=patterns) lets you query your run and step data directly with SQL. To see what percentage of cart abandonment flows ended in a reminder email versus a completed purchase:
+
+```sql
+SELECT
+  countIf(steps.name = 'send-reminder' AND steps.status = 'Completed') AS reminders_sent,
+  countIf(runs.status = 'Completed') AS total_runs,
+  round(reminders_sent / total_runs * 100, 2) AS reminder_rate_pct
+FROM runs
+LEFT JOIN steps ON steps.run_id = runs.id
+WHERE runs.function_id = 'your-app-cart-abandonment-flow'
+  AND runs.queued_at > now() - INTERVAL 7 DAY
+```
+
+This gives you a direct read on how many carts needed a nudge versus converted without one — useful signal for tuning your reminder timing or copy.
+
+You can also use Insights AI to generate queries in plain English: open Insights in the dashboard and describe what you want to measure.
+
+→ [Insights documentation](/docs/platform/monitor/insights?ref=patterns)
+
 ## Alternative approaches
 
 You can handle these flows within standard applications by:
