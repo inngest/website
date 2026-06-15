@@ -2,25 +2,25 @@
 heading: "Node.js worker threads in production"
 subtitle: "Spawning a worker is easy. Making it reliable means designing a protocol, packaging the worker file, proxying callbacks, handling crashes, and shutting down cleanly."
 showSubtitle: true
-date: 2026-06-10
+date: 2026-06-17
 author: Aaron Harper
 category: "engineering"
 image: /assets/blog/node-worker-threads-production/cover.png
 ---
 
-In a [previous post](/blog/node-worker-threads?ref=blog-node-worker-threads-production), I wrote about why we moved [Inngest Connect](/docs/setup/connect?ref=blog-node-worker-threads-production) internals into a Node.js worker thread.
+In a [previous post](/blog/node-worker-threads?ref=blog-node-worker-threads-production), we wrote about why we moved [Inngest Connect](/docs/setup/connect?ref=blog-node-worker-threads-production) internals into a Node.js worker thread.
 
 The short version: Connect maintains a persistent WebSocket connection between a user's app and Inngest. That connection sends heartbeats so the server knows the worker is alive. If user code monopolizes the main thread, the heartbeat timer can't fire. The server assumes the worker died, even though the process is still running.
 
 Worker threads fixed that connection-health failure mode. The WebSocket connection, heartbeat timer, reconnect logic, and lease extension logic moved into a separate event loop. User code stayed on the main thread.
 
-But the first version of that sentence hides most of the work.
+Starting a worker thread is simple:
 
 ```ts
 new Worker("./runner.js");
 ```
 
-That line isn't the hard part. The hard part is everything around it: deciding what crosses the thread boundary, designing the message protocol, making logs work, packaging the worker file, respawning after crashes, exposing debug state, and shutting down without dropping in-flight work.
+But that line isn't the hard part. The hard part is everything around it: deciding what crosses the thread boundary, designing the message protocol, making logs work, packaging the worker file, respawning after crashes, exposing debug state, and shutting down without dropping in-flight work.
 
 This is what worker threads look like when they become production infrastructure instead of a demo.
 
@@ -28,9 +28,20 @@ This is what worker threads look like when they become production infrastructure
   This post is intentionally specific to our use case. It isn't a generic worker-threads tutorial or a complete survey of the API. The point is to show what it looked like to add worker threads to a production SDK, including the awkward details that don't show up in small examples.
 </Callout>
 
-If you want the TL;DR before reading the full walkthrough, skip to the [production checklist](#production-checklist).
+For our Connect worker-thread implementation, these were the production details that mattered most:
 
-## Start with the boundary
+- [Decide what crosses the thread boundary](#decide-what-crosses-the-thread-boundary)
+- [Treat `postMessage` as an API boundary](#treat-postmessage-as-an-api-boundary)
+- [Turn callbacks into a request-response protocol](#turn-callbacks-into-a-request-response-protocol)
+- [Send boring data, not rich objects](#send-boring-data-not-rich-objects)
+- [Proxy anything that can't cross the boundary](#proxy-anything-that-cant-cross-the-boundary)
+- [Ship the worker as a real build artifact](#ship-the-worker-as-a-real-build-artifact)
+- [Respawn workers, but cap the crash loop](#respawn-workers-but-cap-the-crash-loop)
+- [Mirror worker health back to the parent](#mirror-worker-health-back-to-the-parent)
+- [Treat shutdown as a drain protocol](#treat-shutdown-as-a-drain-protocol)
+- [Test the lifecycle, not just the thread](#test-the-lifecycle-not-just-the-thread)
+
+## Decide what crosses the thread boundary
 
 A worker thread isn't a function you run in parallel. It's a separate JavaScript program with its own entrypoint, imports, heap, and event loop.
 
@@ -61,7 +72,7 @@ Those handlers close over application state. They call user services. They use l
 
 So the worker thread owns connection health, but execution stays on the main thread. That one decision shapes the rest of the system.
 
-## Build a protocol, not a pile of messages
+## Treat `postMessage` as an API boundary
 
 Once two threads need to coordinate, `postMessage()` becomes your transport. It shouldn't become your API design.
 
@@ -123,7 +134,7 @@ interface SerializableConfig {
 
 If a value can't be represented as boring structured data, the worker doesn't get it directly. It has to ask the main thread to use it on the worker's behalf.
 
-## Callbacks become request-response
+## Turn callbacks into a request-response protocol
 
 The most important callback in Connect is the user's function handler. The Gateway sends an execution request over the WebSocket. The SDK needs to run the matching user function and send the response back to the Gateway.
 
@@ -200,7 +211,7 @@ It does not make user code interruptible. If the main thread is busy, the execut
   Pending request maps also need cleanup. Add timeouts, reject anything still waiting when either side closes, and delete entries after both success and failure paths. Otherwise a missed response can become an unbounded memory leak.
 </Callout>
 
-## Prefer boring payloads
+## Send boring data, not rich objects
 
 Worker messages are serialized using the structured clone algorithm. That gives you more than JSON, but it doesn't mean arbitrary JavaScript objects are a good message format.
 
@@ -229,7 +240,7 @@ function isUnsharedArrayBuffer(
 
 This isn't glamorous code. Production worker-thread systems are full of not-glamorous code.
 
-## Proxy user-provided objects
+## Proxy anything that can't cross the boundary
 
 The SDK lets users pass custom loggers. In practice, that might be Pino, Winston, a wrapper around OpenTelemetry, or a homegrown logger with the same shape.
 
@@ -285,7 +296,7 @@ This same pattern applies to any user-provided capability:
 
 Don't try to pass those objects into the worker. Keep them on the main thread and expose the smallest message protocol the worker needs.
 
-## Make startup work in every runtime you support
+## Ship the worker as a real build artifact
 
 The worker file is a real file. That sounds simple until your library has to work in development, tests, published ESM, published CJS, TypeScript source, and user apps with their own bundlers.
 
@@ -339,7 +350,7 @@ export default defineConfig({
 
 If you forget this, everything can pass locally and fail only after publishing, because the worker file simply isn't in the package output.
 
-## Treat crashes as normal
+## Respawn workers, but cap the crash loop
 
 Worker threads can crash. An unhandled exception can kill the worker. A bug in startup can kill it immediately. An out-of-memory failure can kill it. If the main thread doesn't notice, the user's app silently loses the connection.
 
@@ -380,7 +391,7 @@ We cap consecutive crashes and reset the counter only after the worker reaches `
   A crash cap should have a visible failure mode. In Connect, if the worker exceeds the crash threshold, we stop respawning it and emit an error log on the main thread instead of silently retrying forever. At that point, the connection is not healthy and the host process needs to know.
 </Callout>
 
-## Expose worker health to the parent
+## Mirror worker health back to the parent
 
 Once the connection manager lives in a worker, the main thread can no longer directly inspect its health.
 
@@ -409,7 +420,7 @@ This is an easy feature to skip in the first implementation. It's also the featu
 
 Worker threads make isolation better, but they can make visibility worse. Plan for that explicitly.
 
-## Shutdown is a protocol too
+## Treat shutdown as a drain protocol
 
 The tempting way to stop a worker is `worker.terminate()`. That's fine if the worker is disposable. It isn't fine if the worker owns a WebSocket connection, in-flight executions, leases, and buffered responses.
 
@@ -461,7 +472,7 @@ await new Promise<void>((resolve) => {
 
 The important part is that `close()` doesn't mean "kill the thread." It means "begin the shutdown protocol."
 
-## Test the uncomfortable cases
+## Test the lifecycle, not just the thread
 
 The bugs in worker-thread systems rarely show up in the happy path. They show up during process shutdown, when the Gateway connection drops, when a response is waiting for acknowledgment, or when a worker crashes while the parent thinks it's connected.
 
@@ -472,20 +483,6 @@ One test starts a long-running function, calls `connection.close()`, and verifie
 These tests aren't just testing worker threads. They're testing the lifecycle around worker threads.
 
 That's the production lesson: the thread is only one component. The lifecycle is the system.
-
-## Production checklist
-
-If you're using worker threads for production infrastructure, make sure you've handled the lifecycle around the thread:
-
-- Define the thread boundary.
-- Design typed messages for both directions.
-- Keep behaviorful objects on the parent thread.
-- Add correlation IDs, timeouts, and cleanup for in-flight request-response messages.
-- Handle worker crash and restart with capped backoff.
-- Send worker health, connection state, and in-flight counts back to the parent thread.
-- Package the worker file explicitly.
-- Treat shutdown as a drain protocol.
-- Test crash, reconnect, shutdown, and late-response cases.
 
 ## Wrapping up
 
