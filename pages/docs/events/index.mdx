@@ -3,6 +3,30 @@ import { CodeGroup, Callout, LanguageSelector, LanguageSection, Note } from "src
 export const metaTitle = "Sending Events to Inngest | SDK & HTTP Reference"
 export const description = "Send events to Inngest using the TypeScript, Python, or Go SDK, or via HTTP from any language. Learn payload format, batching, and environment routing."
 
+export const structuredData = {
+  "@type": "HowTo",
+  name: "Send events to Inngest",
+  description:
+    "Create an Inngest client, send one or more events, and configure an Event Key for production environments.",
+  step: [
+    {
+      "@type": "HowToStep",
+      name: "Create an Inngest client",
+      text: "Instantiate the Inngest client in a shared file so it can be imported anywhere in your application.",
+    },
+    {
+      "@type": "HowToStep",
+      name: "Send an event",
+      text: "Call send() with an event name and data payload, then await the returned promise so the event is delivered before the process exits.",
+    },
+    {
+      "@type": "HowToStep",
+      name: "Set an Event Key in production",
+      text: "Set the INNGEST_EVENT_KEY environment variable with your Event Key so your application can send events to the correct Inngest environment.",
+    },
+  ],
+};
+
 # Sending events to Inngest
 
 Send events to Inngest from the TypeScript, Python, or Go SDK, or use the Event API to send events over HTTP from any language or service.
