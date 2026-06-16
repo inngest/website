@@ -2,6 +2,30 @@ import { CodeGroup, Callout, LanguageSelector, LanguageSection, Note } from "src
 
 export const description = 'Learn how to send events with the Inngest SDK, set the Event Key, and send events from other languages via HTTP.';
 
+export const structuredData = {
+  "@type": "HowTo",
+  name: "Send events to Inngest",
+  description:
+    "Create an Inngest client, send one or more events, and configure an Event Key for production environments.",
+  step: [
+    {
+      "@type": "HowToStep",
+      name: "Create an Inngest client",
+      text: "Instantiate the Inngest client in a shared file so it can be imported anywhere in your application.",
+    },
+    {
+      "@type": "HowToStep",
+      name: "Send an event",
+      text: "Call send() with an event name and data payload, then await the returned promise so the event is delivered before the process exits.",
+    },
+    {
+      "@type": "HowToStep",
+      name: "Set an Event Key in production",
+      text: "Set the INNGEST_EVENT_KEY environment variable with your Event Key so your application can send events to the correct Inngest environment.",
+    },
+  ],
+};
+
 # Sending events
 
 To start, make sure you have [installed the Inngest SDK](/docs/sdk/overview).
@@ -430,4 +454,3 @@ For example, for two events like `storefront/item.imported` and `storefront/item
 * [TypeScript SDK Reference: Send events](/docs/reference/events/send)
 * [Python SDK Reference: Send events](/docs/reference/python/client/send)
 * [Go SDK Reference: Send events](https://pkg.go.dev/github.com/inngest/inngestgo#Client)
-
