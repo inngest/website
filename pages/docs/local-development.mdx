@@ -9,6 +9,8 @@ import TypeScriptIcon from 'src/shared/Icons/TypeScript';
 import PythonIcon from 'src/shared/Icons/Python';
 import GoIcon from 'src/shared/Icons/Go';
 
+export const description = "Run Inngest functions locally with one command. Full observability, event replay, and the same execution model as production. No Redis or workers required.";
+
 # Local development
 
 Testing background jobs, durable workflows, and event-driven functions locally is notoriously painful. Most solutions require running a full Redis stack, managing separate worker processes, or writing mocks that don't reflect how your code behaves in production. The Inngest Dev Server eliminates all of that with a single command, giving you a complete local environment with the same execution model, flow control, and observability you get in production.
@@ -44,6 +46,10 @@ You can now open the dev server's browser interface on [`http://localhost:8288`]
 <Callout variant="info">
   Set the `INNGEST_DEV=1` environment variable when starting your app so it connects to the local Dev Server instead of Inngest Cloud. You can add this to your `.env` file or pass it inline: `INNGEST_DEV=1 npm run dev`. [Learn more about local development environment variables](/docs/sdk/environment-variables#inngest-dev).
 </Callout>
+
+## AI-assisted local development
+
+The Dev Server also exposes a local [Model Context Protocol (MCP) integration](/docs/ai-dev-tools/mcp) at `http://127.0.0.1:8288/mcp`. Connect Claude Code, Cursor, or another MCP-compatible coding agent to list registered functions, send test events, invoke functions, and inspect run status while your app is running locally.
 
 ## Connecting apps to the Dev Server
 
