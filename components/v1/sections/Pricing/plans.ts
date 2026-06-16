@@ -80,6 +80,8 @@ export const PLANS: Plan[] = [
     features: [
       { value: "50k", text: "executions" },
       { value: "5", text: "concurrent executions" },
+      { value: "500k", text: "events" },
+      { value: "100k", text: "queue depth" },
       { value: "50", text: "realtime connections" },
       { text: "Basic tracing, metrics, and alerts" },
     ],
@@ -116,6 +118,8 @@ export const PLANS: Plan[] = [
     features: [
       { value: "1M+", text: "executions" },
       { value: "100+", text: "concurrent executions" },
+      { value: "5M+", text: "events" },
+      { value: "1M+", text: "queue depth" },
       { value: "1000", text: "realtime connections" },
       { text: "Granular tracing, metrics, alerts + 7 day trace retention" },
       { text: "Increased throughput" },
@@ -152,6 +156,8 @@ export const PLANS: Plan[] = [
     features: [
       { value: "Custom", text: "executions" },
       { value: "Custom", text: "concurrent executions" },
+      { value: "Custom", text: "events" },
+      { value: "Custom", text: "queue depth" },
       { value: "Custom", text: "realtime connections" },
       { text: "Advanced tracing, metrics, alerts + 90 day trace retention" },
       { text: "Dedicated Slack channel" },
@@ -288,11 +294,21 @@ export const FEATURES: Feature[] = [
     section: "events",
     infoUrl: "/docs/guides/sending-events-from-functions?ref=pricing-comparison-table",
     plans: {
-      [PLAN_NAMES.hobby]: "100k/mo included",
+      [PLAN_NAMES.hobby]: "500k/mo included",
       [PLAN_NAMES.pro]: {
         value: "5m/mo included",
         description: "then $0.5 per 1m",
       },
+      [PLAN_NAMES.enterprise]: "Custom",
+    },
+  },
+  {
+    name: "Queue depth",
+    description: "Maximum events queued awaiting execution",
+    section: "events",
+    plans: {
+      [PLAN_NAMES.hobby]: "100k included",
+      [PLAN_NAMES.pro]: "1m included",
       [PLAN_NAMES.enterprise]: "Custom",
     },
   },
