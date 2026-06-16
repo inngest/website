@@ -6,6 +6,36 @@ import ReplayIcon from 'src/shared/Icons/Replay';
 export const metaTitle = "Error Handling & Retries in Inngest | Docs"
 export const description = "Inngest functions automatically retry on failure. Customize retry counts, handle per-step errors, define onFailure handlers, and implement step-level rollbacks."
 
+export const structuredData = {
+  "@type": "FAQPage",
+  mainEntity: [
+    {
+      "@type": "Question",
+      name: "What causes an Inngest step to retry?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "An error causes an Inngest step to retry. If the step exhausts all retry attempts, that step fails and will not be attempted again for that run.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "What happens when an Inngest function fails?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "An unhandled error causes the function to fail. The run is marked as failed in the Inngest UI and future executions are cancelled.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Why should retried steps be idempotent?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Retries re-run step code, so retried steps should be idempotent and safe to execute multiple times without unintended side effects.",
+      },
+    },
+  ],
+};
+
 # Error handling and retries in Inngest
 
 Inngest functions automatically retry failed work, persist step state, and let you decide what should happen when a retry cannot recover. This means transient errors like network timeouts, API outages, database locks, and deploy interruptions can be retried without re-running work that already completed.
