@@ -14,6 +14,30 @@ import {
 export const metaTitle = "Inngest Realtime | Stream Updates from Functions";
 export const description = "Stream real-time updates from Inngest functions to your UI using typed channels and topics. Built into TypeScript SDK v4 with no extra infrastructure needed.";
 
+export const structuredData = {
+  "@type": "HowTo",
+  name: "Stream realtime updates from an Inngest function",
+  description:
+    "Define a typed realtime channel, publish updates from a function, then mint a token and subscribe from the client.",
+  step: [
+    {
+      "@type": "HowToStep",
+      name: "Define a shared channel",
+      text: "Use realtime.channel() to define a channel and its typed topics for the updates your UI should receive.",
+    },
+    {
+      "@type": "HowToStep",
+      name: "Publish from a function",
+      text: "Publish messages with publish() for transient updates or step.realtime.publish() for durable, memoized updates inside a function.",
+    },
+    {
+      "@type": "HowToStep",
+      name: "Mint a token and subscribe from the client",
+      text: "Mint a subscription token on the server, then pass it to useRealtime() or subscribe() so the client can receive channel updates.",
+    },
+  ],
+};
+
 # Realtime <VersionBadge version="TypeScript SDK v4" />
 
 <Info>
