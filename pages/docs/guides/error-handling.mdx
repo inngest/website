@@ -3,43 +3,81 @@ import { RiArrowGoBackLine, RiErrorWarningLine } from "@remixicon/react";
 
 import ReplayIcon from 'src/shared/Icons/Replay';
 
-export const description = 'Learn how to handle errors and failures in your Inngest functions.'
+export const metaTitle = "Error Handling & Retries in Inngest | Docs"
+export const description = "Inngest functions automatically retry on failure. Customize retry counts, handle per-step errors, define onFailure handlers, and implement step-level rollbacks."
 
-# Errors & Retries
+# Error handling and retries in Inngest
 
-Inngest Functions are designed to handle errors or exceptions gracefully and will automatically retry after an error or exception. This adds an immediate layer of durability to your code, ensuring it survives transient issues like network timeouts, outages, or database locks.
+Inngest functions automatically retry failed work, persist step state, and let you decide what should happen when a retry cannot recover. This means transient errors like network timeouts, API outages, database locks, and deploy interruptions can be retried without re-running work that already completed.
 
-Inngest Functions come with:
+Use Inngest error handling in four layers:
+
+- **Automatic retries** retry failed functions and steps with backoff.
+- **Step-level error handling** lets you catch failed steps with native language features such as `try`/`catch`.
+- **Failure handlers** run after a function exhausts all retries.
+- **Rollbacks and idempotency** keep side effects safe when work is retried.
+
+<Callout>
+  Each `step.run()` has its own retry counter. When a step succeeds, its result is saved and reused on later executions, so retries continue from the failed step instead of replaying every completed operation.
+</Callout>
+
+## Error handling options
 
 <CardGroup cols={1}>
-  <Card title="Automatic Retries" icon={<ReplayIcon className="text-basis h-4 w-4" />} href={'/docs/features/inngest-functions/error-retries/retries'}>
-    Configurable with a custom retry policies to suit your specific use case.
+  <Card title="Automatic retries" icon={<ReplayIcon className="text-basis h-4 w-4" />} href={'/docs/features/inngest-functions/error-retries/retries'}>
+    Configure how many times Inngest retries a function or step after it throws.
   </Card>
   <Card title="Failure handlers" icon={<RiErrorWarningLine className="text-basis h-4 w-4"/>} href={'/docs/features/inngest-functions/error-retries/failure-handlers'}>
-    Utilize callbacks to handle all failing retries.
+    Run cleanup, alerts, or compensating logic after all retries are exhausted.
   </Card>
-  <Card title="Rollbacks support" icon={<RiArrowGoBackLine className="text-basis h-4 w-4"/>} href={'/docs/features/inngest-functions/error-retries/rollbacks'}>
-    Each step within a function can have its own retry logic and be handled individually.
+  <Card title="Step-level rollbacks" icon={<RiArrowGoBackLine className="text-basis h-4 w-4"/>} href={'/docs/features/inngest-functions/error-retries/rollbacks'}>
+    Catch a failed step and run fallback or rollback logic without failing the entire workflow.
   </Card>
 </CardGroup>
 
+## How retries work
 
-## Types of failure
+By default, Inngest retries a function or step up to four times in addition to the initial attempt. You can customize this with the `retries` option on your function, or set `retries: 0` when a function should not retry.
 
-Inngest helps you handle both **errors** and **failures**, which are defined differently.
+Retries happen at the step boundary:
 
-An **error** causes a step to retry. Exhausting all retry attempts will cause that step to **fail**, which means the step will never be attempted again this run.
+- If code inside a `step.run()` throws, Inngest retries that step.
+- If the retry succeeds, the function continues from that point.
+- If the step exhausts retries, it fails and throws back into your function.
+- If previous steps already succeeded, their saved results are reused and not re-run.
 
-A **failed** step can be handled with native language features such as `try`/`catch`, but unhandled errors will cause the function to **fail**, meaning the run is marked as "Failed" in the Inngest UI and all future executions are cancelled.
+Throw a [non-retriable error](/docs/reference/typescript/functions/errors#non-retriable-error) when an error is permanent and should bypass remaining retries, such as invalid user input or a missing record that will not become available later.
 
-See how to handle step failure by [performing rollbacks](/docs/features/inngest-functions/error-retries/rollbacks).
+## Errors vs. failures
 
+Inngest helps you handle both **errors** and **failures**:
 
-## Failures, Retries and Idempotency
+- An **error** is an exception thrown by your function or step. Errors cause retries while attempts remain.
+- A **failed step** is a step that has exhausted all retry attempts. You can catch it with native language error handling.
+- A **failed function** is a function run that has exhausted retries or received an unhandled failed step. It is marked as failed in the Inngest UI.
 
-Re-running a step upon error requires its code to be idempotent, which means that running the same code multiple times won't have any side effect.
+Use [failure handlers](/docs/features/inngest-functions/error-retries/failure-handlers) when you need a final callback after every retry is exhausted. Use [rollbacks](/docs/features/inngest-functions/error-retries/rollbacks) when you want to handle one failed step and continue or compensate inside the same workflow.
 
-For example, a step inserting a new user to the database is not idempotent while a step [upserting a user](https://www.cockroachlabs.com/blog/sql-upsert/) is.
+## Keep retried work idempotent
 
+Retried code should be idempotent, which means running it more than once does not create duplicate or inconsistent side effects. For example, inserting a new user can create duplicates if the first write succeeded but the response timed out. [Upserting a user](https://www.cockroachlabs.com/blog/sql-upsert/), using deterministic IDs, or checking for existing records before writing are safer retry patterns.
 
-Learn how to write idempotent steps that can be retried safely by reading ["Handling idempotency"](/docs/guides/handling-idempotency).
+Learn how to write retriable steps safely in the [handling idempotency guide](/docs/guides/handling-idempotency).
+
+## FAQ
+
+### Does Inngest retry functions automatically?
+
+Yes. Inngest retries failed functions and steps by default. The default is four retries after the first attempt, and you can change the retry count in the function configuration.
+
+### Are retries applied to the whole function or each step?
+
+Retries are applied to each step independently. A failed `step.run()` can retry without re-running earlier successful steps because Inngest persists each completed step result.
+
+### How do I handle a step that fails after all retries?
+
+Wrap the step in native language error handling such as `try`/`catch`, then run fallback logic, a rollback step, or a different provider. See [step-level rollbacks](/docs/features/inngest-functions/error-retries/rollbacks).
+
+### How do I run code after a function fails permanently?
+
+Use a function-level `onFailure` handler, or listen for the [`inngest/function.failed`](/docs/reference/system-events/inngest-function-failed) system event to centralize failure handling across an environment.
