@@ -1,5 +1,8 @@
 import { Info, Tip, Warning, CodeGroup, LanguageSelector, LanguageSection } from "shared/Docs/mdx";
 
+export const metaTitle = "Checkpointing | Inngest Docs"
+export const description = "Learn how Inngest checkpointing saves function execution state between steps so runs can recover from failures without re-executing completed work."
+
 # Checkpointing
 
 Checkpointing is a performance optimization for Inngest functions that executes steps eagerly rather than waiting on internal orchestration. The result is dramatically lower latency — ideal for real-time AI workflows.

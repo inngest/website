@@ -13,17 +13,18 @@ import { indexMarkdown } from "../../../shared/Patterns/markdown";
 import "../../../shared/Patterns/patterns-docs.css";
 
 const META_DESCRIPTION =
-  "Patterns for building on Inngest: AI agents, durable workflows, scheduling, flow control, and background jobs. Each explains a recurring problem, the tradeoffs, and how to solve it with Inngest's primitives.";
+  "Architectural patterns for Inngest: AI agents, durable workflows, fan-out, scheduling, flow control, and background jobs, with tradeoffs and code examples.";
 
 export async function getStaticProps() {
   return {
     props: {
       title: "Patterns",
+      metaTitle: "Inngest Patterns | Workflow Architecture Guides",
       description: META_DESCRIPTION,
       hidePageSidebar: true,
       designVersion: "2",
       meta: {
-        title: "Patterns: How to build with Inngest",
+        title: "Inngest Patterns | Workflow Architecture Guides",
         description: META_DESCRIPTION,
       },
     },
@@ -33,7 +34,11 @@ export async function getStaticProps() {
 function Arrow({ s = 14 }: { s?: number }) {
   return (
     <svg width={s} height={s} viewBox="0 0 14 14" fill="none" aria-hidden>
-      <path d="M3 7 L11 7 M7 3 L11 7 L7 11" stroke="currentColor" strokeWidth="1.4" />
+      <path
+        d="M3 7 L11 7 M7 3 L11 7 L7 11"
+        stroke="currentColor"
+        strokeWidth="1.4"
+      />
     </svg>
   );
 }
@@ -59,7 +64,9 @@ export default function PatternsLanding() {
     );
   }
 
-  const featuredSection = sections.find((s) => s.id === FEATURED_PATTERN.category);
+  const featuredSection = sections.find(
+    (s) => s.id === FEATURED_PATTERN.category
+  );
   const featuredPattern = featuredSection?.patterns.find(
     (p) => p.slug === FEATURED_PATTERN.slug
   );
@@ -100,7 +107,10 @@ export default function PatternsLanding() {
               // eslint-disable-next-line @next/next/no-img-element
               <img src={FEATURED_PATTERN.image} alt="" className="feat-img" />
             ) : (
-              <Viz id={featuredSection.viz} accent={featuredSection.accent.hex} />
+              <Viz
+                id={featuredSection.viz}
+                accent={featuredSection.accent.hex}
+              />
             )}
           </div>
         </Link>
@@ -128,7 +138,8 @@ export default function PatternsLanding() {
             <span className="cat-card-name">{s.name}</span>
             <span className="cat-card-kicker">{s.kicker}</span>
             <span className="cat-card-meta mono">
-              {s.patterns.length} {s.patterns.length === 1 ? "pattern" : "patterns"}{" "}
+              {s.patterns.length}{" "}
+              {s.patterns.length === 1 ? "pattern" : "patterns"}{" "}
               <Arrow s={12} />
             </span>
           </Link>
