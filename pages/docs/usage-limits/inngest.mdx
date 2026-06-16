@@ -1,44 +1,6 @@
 import { Callout, CodeGroup } from "src/shared/Docs/mdx";
 import { Tag } from "src/shared/Docs/Tag";
 
-export const structuredData = {
-  "@type": "FAQPage",
-  mainEntity: [
-    {
-      "@type": "Question",
-      name: "How long can an Inngest function sleep?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Inngest supports sleeps up to one year. Free plan sleeps are limited to up to seven days.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "How many steps can an Inngest function have?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "The maximum number of steps allowed per function is 1000.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "What is the default event payload size limit?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "The default event payload size on the Free Tier is 256KB and can be upgraded to 3MB.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "How many events can I send in one request?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "You can send a maximum of 5000 events in one request.",
-      },
-    },
-  ],
-};
-
 # Usage Limits
 
 We have put some limits on the service to make sure we provide you a good default to start with, while also keeping it a good experience for all other users using Inngest.

@@ -5,36 +5,6 @@ import ReplayIcon from 'src/shared/Icons/Replay';
 
 export const description = 'Learn how to handle errors and failures in your Inngest functions.'
 
-export const structuredData = {
-  "@type": "FAQPage",
-  mainEntity: [
-    {
-      "@type": "Question",
-      name: "What causes an Inngest step to retry?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "An error causes an Inngest step to retry. If the step exhausts all retry attempts, that step fails and will not be attempted again for that run.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "What happens when an Inngest function fails?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "An unhandled error causes the function to fail. The run is marked as failed in the Inngest UI and future executions are cancelled.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "Why should retried steps be idempotent?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Retries re-run step code, so retried steps should be idempotent and safe to execute multiple times without unintended side effects.",
-      },
-    },
-  ],
-};
-
 # Errors & Retries
 
 Inngest Functions are designed to handle errors or exceptions gracefully and will automatically retry after an error or exception. This adds an immediate layer of durability to your code, ensuring it survives transient issues like network timeouts, outages, or database locks.
