@@ -48,10 +48,11 @@ export default function EventCard({ ev, newTab }: { ev: EventItem; newTab?: bool
           {/* Heading/Sm token — 26/31.2 Whyte, -0.01em, margin-based capsize. */}
           <h3
             className={cn(
-              "text-white tracking-[-0.01em]",
-              ev.id === "aiewf-breakfast-nebius"
-                ? "text-[25px] leading-[29px]"
-                : "text-v1-heading-sm",
+              "text-v1-heading-sm text-white",
+              // Slightly smaller than heading-sm so the long title fits two
+              // lines; keep the token for cap-trim so the top edge aligns
+              // with neighboring cards.
+              ev.id === "aiewf-breakfast-nebius" && "text-[24px] leading-[1.2]",
             )}
           >
             {ev.title}

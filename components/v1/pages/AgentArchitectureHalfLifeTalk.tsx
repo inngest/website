@@ -5,7 +5,7 @@ import LogoMarquee from "@/components/v1/sections/Home/LogoMarquee";
 import Button from "@/components/v1/Button";
 import EventCardLarge from "@/components/v1/sections/Events/EventCardLarge";
 import SpotlightFrame from "@/components/v1/sections/Events/SpotlightFrame";
-import type { EventItem } from "@/components/v1/sections/Events/data";
+import { sortEventsByDate } from "@/components/v1/sections/Events/data";
 
 const COVER_IMAGE = "/assets/v1/events/agent-architecture-half-life.png";
 
@@ -21,11 +21,12 @@ const SPEAKER = {
   linkedin: "https://www.linkedin.com/in/djfarrelly",
 };
 
-const OTHER_EVENTS: EventItem[] = [
+const OTHER_EVENTS = sortEventsByDate([
   {
     id: "aiewf-2026",
     title: "Meet Inngest at AI Engineer World's Fair",
     date: "June 29 – July 2, 2026",
+    startsAt: "2026-06-29",
     location: "San Francisco, CA",
     topics: ["events", "booth", "conference"],
     excerpt:
@@ -34,20 +35,10 @@ const OTHER_EVENTS: EventItem[] = [
     image: "/assets/v1/events/social-card-v2.png",
   },
   {
-    id: "aiewf-breakfast-nebius",
-    title: "No Half-Baked Agents: Breakfast with Inngest & Nebius",
-    date: "Thursday, July 2 · 8–9:30 AM PT",
-    location: "San Francisco, CA",
-    topics: ["breakfast", "nebius", "innhouse"],
-    excerpt:
-      "Breakfast tacos, coffee & matcha with the teams building the GPU infrastructure and reliability layer your agents depend on — just steps from Moscone West.",
-    href: "/events/no-half-baked-agents-breakfast",
-    image: "/assets/v1/events/no-half-baked-agents-breakfast.png",
-  },
-  {
     id: "aiewf-lunch",
-    title: "innhouse lunch with E2B",
+    title: "Innhouse lunch with E2B",
     date: "Wednesday, July 1 · 12–2 PM",
+    startsAt: "2026-07-01T12:00:00-07:00",
     location: "San Francisco, CA",
     topics: ["free lunch", "rooftop dj", "senor sisig"],
     excerpt:
@@ -59,6 +50,7 @@ const OTHER_EVENTS: EventItem[] = [
     id: "aiewf-afterparty",
     title: "AI World's Fair Afterparty",
     date: "Wednesday, July 1 · 6–9 PM",
+    startsAt: "2026-07-01T18:00:00-07:00",
     location: "San Francisco, CA",
     topics: ["happy hour", "networking", "digital darts"],
     excerpt:
@@ -66,7 +58,19 @@ const OTHER_EVENTS: EventItem[] = [
     href: "https://luma.com/2avil0ni",
     image: "/assets/v1/events/june-sf-engineer.png",
   },
-];
+  {
+    id: "aiewf-breakfast-nebius",
+    title: "No Half-Baked Agents: Breakfast w/ Inngest & Nebius",
+    date: "Thursday, July 2 · 8–9:30 AM PT",
+    startsAt: "2026-07-02T08:00:00-07:00",
+    location: "San Francisco, CA",
+    topics: ["breakfast", "nebius", "Innhouse"],
+    excerpt:
+      "Breakfast tacos, coffee & matcha with the teams building the GPU infrastructure and reliability layer your agents depend on — just steps from Moscone West.",
+    href: "/events/no-half-baked-agents-breakfast",
+    image: "/assets/v1/events/no-half-baked-agents-breakfast.png",
+  },
+]);
 
 export default function AgentArchitectureHalfLifeTalk() {
   return (
