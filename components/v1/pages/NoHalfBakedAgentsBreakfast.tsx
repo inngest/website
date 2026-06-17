@@ -6,28 +6,29 @@ import Button from "@/components/v1/Button";
 import EventCardLarge from "@/components/v1/sections/Events/EventCardLarge";
 import type { EventItem } from "@/components/v1/sections/Events/data";
 
+const COVER_IMAGE = "/assets/v1/events/no-half-baked-agents-breakfast.png";
+
 const EVENT = {
-  title: "Meet Inngest at AI Engineer World's Fair",
-  date: "June 29 – July 2, 2026",
-  location: "Moscone West, San Francisco, CA 94103 | Booth #U-G26",
+  title: "No Half-Baked Agents: Breakfast with Inngest & Nebius",
+  date: "Thursday, July 2, 2026 · 8–9:30 AM PT",
+  location: "Inngest Office, San Francisco, CA",
   description:
-    "Inngest is agent infrastructure that lives in your codebase—write your logic as functions and get retries, flow control, and full observability with zero extra infra. If you're building agents or tired of babysitting background jobs, come see it in practice at booth #U-G26 all week.\n\nWant dedicated time? Book a slot with the team below.",
+    "The last day of AI Engineer World's Fair calls for a proper breakfast 🌮\n\nBreakfast tacos, coffee & matcha, good music, and the people building the GPU infrastructure and reliability layer your agents depend on — just steps away from Moscone West.\n\nNo agenda, just food and good company before the final day!",
 };
 
-const GCAL_URL =
-  "https://calendar.google.com/calendar/appointments/schedules/AcZssZ3G2ScOpUcmeFwEPSbRH3BdtK8fY627O4WX8dOeVA3s7Lzt17qKiIxu_4VgEHXJZ_Fgdj7EpB67?gv=true";
+const REGISTER_URL = "https://luma.com/3hhkw292?utm_source=inngest";
 
 const OTHER_EVENTS: EventItem[] = [
   {
-    id: "aiewf-breakfast-nebius",
-    title: "No Half-Baked Agents: Breakfast with Inngest & Nebius",
-    date: "Thursday, July 2 · 8–9:30 AM PT",
+    id: "aiewf-2026",
+    title: "Meet Inngest at AI Engineer World's Fair",
+    date: "June 29 – July 2, 2026",
     location: "San Francisco, CA",
-    topics: ["breakfast", "nebius", "innhouse"],
+    topics: ["events", "booth", "conference"],
     excerpt:
-      "Breakfast tacos, coffee & matcha with the teams building the GPU infrastructure and reliability layer your agents depend on — just steps from Moscone West.",
-    href: "/events/no-half-baked-agents-breakfast",
-    image: "/assets/v1/events/no-half-baked-agents-breakfast.png",
+      "Find us at booth #U-G26 all week at Moscone West. Schedule time with the team or come by to see Inngest in action.",
+    href: "/events/ai-engineer-worlds-fair-2026",
+    image: "/assets/v1/events/social-card-v2.png",
   },
   {
     id: "aiewf-lunch",
@@ -47,7 +48,7 @@ const OTHER_EVENTS: EventItem[] = [
     location: "San Francisco, CA",
     topics: ["happy hour", "networking", "digital darts"],
     excerpt:
-      "The expo floor is closing, your brain is full of vector databases, and it's time to trade the keyboard for some competitive throwing. Join Tailscale, Docker, Aikido Security, Inngest and Rootly for an evening of digital darts, custom cocktails, and networking.",
+      "Join Tailscale, Docker, Aikido Security, Inngest and Rootly for an evening of digital darts, custom cocktails, and networking.",
     href: "https://luma.com/2avil0ni",
     image: "/assets/v1/events/june-sf-engineer.png",
   },
@@ -64,14 +65,13 @@ const OTHER_EVENTS: EventItem[] = [
   },
 ];
 
-export default function AIEngineerWorldsFair() {
+export default function NoHalfBakedAgentsBreakfast() {
   return (
     <PageShell>
       <section
         aria-labelledby="event-hero-heading"
         className="relative w-full overflow-hidden text-v1-frost"
       >
-        {/* Right panel — hero cover image */}
         <div
           aria-hidden="true"
           className="absolute bottom-0 right-0 top-[80px] hidden w-1/2 overflow-hidden lg:block"
@@ -79,7 +79,7 @@ export default function AIEngineerWorldsFair() {
           <div
             className="absolute inset-0"
             style={{
-              backgroundImage: "url(/assets/v1/events/social-card-v2.png)",
+              backgroundImage: `url(${COVER_IMAGE})`,
               backgroundSize: "contain",
               backgroundPosition: "center",
               backgroundRepeat: "no-repeat",
@@ -90,7 +90,6 @@ export default function AIEngineerWorldsFair() {
         <div className="relative mx-auto grid w-full max-w-[1440px] grid-cols-1 lg:grid-cols-2">
           <div className="flex flex-col px-6 pb-16 pt-[104px] sm:px-9 lg:pb-[72px] lg:pl-[70px] lg:pr-8 lg:pt-[152px]">
             <div className="flex w-full flex-col gap-10 lg:gap-[51px] lg:pr-8">
-              {/* Title + date */}
               <div className="flex flex-col gap-6">
                 <h1
                   id="event-hero-heading"
@@ -103,13 +102,11 @@ export default function AIEngineerWorldsFair() {
                 </p>
               </div>
 
-              {/* Location */}
               <div className="flex flex-col gap-4">
                 <p className="text-v1-label-md uppercase">Location</p>
                 <p className="text-v1-body-sm">{EVENT.location}</p>
               </div>
 
-              {/* Description */}
               <div className="flex flex-col gap-4">
                 <p className="text-v1-label-md uppercase">Description</p>
                 {EVENT.description.split("\n\n").map((para, i) => (
@@ -119,22 +116,20 @@ export default function AIEngineerWorldsFair() {
                 ))}
               </div>
 
-              {/* Schedule time CTA — styled to match sample event page */}
               <Button asChild variant="accent" className="self-start">
-                <a href={GCAL_URL} target="_blank" rel="noopener noreferrer">
-                  Schedule time with us →
+                <a href={REGISTER_URL} target="_blank" rel="noopener noreferrer">
+                  Register here →
                 </a>
               </Button>
             </div>
           </div>
 
-          {/* Mobile cover */}
           <div className="relative min-h-[300px] overflow-hidden bg-v1-surfaceElevated lg:hidden">
             <div
               aria-hidden="true"
               className="absolute inset-0"
               style={{
-                backgroundImage: "url(/assets/v1/events/social-card-v2.png)",
+                backgroundImage: `url(${COVER_IMAGE})`,
                 backgroundSize: "cover",
                 backgroundPosition: "center",
               }}
@@ -145,7 +140,6 @@ export default function AIEngineerWorldsFair() {
 
       <LogoMarquee />
 
-      {/* Other upcoming events */}
       <section
         aria-labelledby="event-other-heading"
         className="relative mx-auto flex w-full max-w-[1440px] flex-col gap-8 px-6 py-8 text-v1-frost sm:px-9 lg:gap-10 lg:px-[70px]"
@@ -159,7 +153,7 @@ export default function AIEngineerWorldsFair() {
         <ul className="flex list-none flex-col gap-8 pl-0 lg:gap-10">
           {OTHER_EVENTS.map((ev) => (
             <li key={ev.id} className="list-none">
-              <EventCardLarge ev={ev} newTab />
+              <EventCardLarge ev={ev} newTab={ev.href.startsWith("http")} />
             </li>
           ))}
         </ul>
