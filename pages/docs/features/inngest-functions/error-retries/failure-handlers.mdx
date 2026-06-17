@@ -1,5 +1,8 @@
 import { CardGroup, Card, Callout, VersionBadge, LanguageSelector, LanguageSection } from "src/shared/Docs/mdx";
 
+export const metaTitle = "Failure Handlers | Run Code After All Retries Fail"
+export const description = "Define an onFailure handler that runs when an Inngest function exhausts all retries. Use it to alert, log, compensate, or trigger downstream recovery logic."
+
 # Failure handlers
 
 If your function exhausts all of its retries, it will be marked as "Failed." You can handle this circumstance by either providing an [`onFailure/on_failure`](/docs/reference/functions/handling-failures) handler when defining your function, or by listening for the [`inngest/function.failed`](/docs/reference/system-events/inngest-function-failed) system event.

@@ -1,5 +1,8 @@
 import { Callout, Properties, Property } from "src/shared/Docs/mdx";
 
+export const metaTitle = "Referencing Inngest Functions | inngest.getFunction()"
+export const description = "Reference other Inngest functions by ID using inngest.getFunction() to invoke them directly or retrieve metadata without hard-coding function identifiers."
+
 # Referencing functions
 
 Using [`step.invoke()`](/docs/reference/functions/step-invoke), you can directly call one Inngest function from another and handle the result. You can use this with `referenceFunction` to call Inngest functions located in other apps, or to avoid importing dependencies of functions within the same app.
