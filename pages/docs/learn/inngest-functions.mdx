@@ -11,10 +11,20 @@ import TypeScriptIcon from 'src/shared/Icons/TypeScript';
 import PythonIcon from 'src/shared/Icons/Python';
 import GoIcon from 'src/shared/Icons/Go';
 
+export const metaTitle = "Inngest Functions | Durable Background Logic";
+export const description = "Inngest functions are durable, retriable units of background logic triggered by events or cron schedules. Write standard TypeScript, Python, or Go functions.";
+
 # Inngest Functions
 
-Inngest functions enable developers to run reliable background logic, from background jobs to complex workflows.
-An Inngest Function is composed of 3 main parts that provide robust tools for retrying, scheduling, and coordinating complex sequences of operations:
+Inngest functions are durable, retriable units of background logic that run on your own compute and are triggered by events, cron schedules, or webhooks. Use them for background jobs, scheduled work, and multi-step workflows that need automatic retries, step-level state, and observability without adding a queue or workflow engine.
+
+You write standard TypeScript, Python, or Go code, then expose functions with [`serve()`](/docs/learn/serving-inngest-functions) or [Connect](/docs/setup/connect) so Inngest can invoke and coordinate runs from the platform.
+
+## What are Inngest functions?
+
+An Inngest function is a regular function wrapped with Inngest trigger and execution metadata. Inngest starts a run when a matching event, schedule, or webhook arrives, then records each step so failed work can retry from the last successful checkpoint instead of restarting from scratch.
+
+At a high level, an Inngest function has three core parts:
 
 <CardGroup cols={3}>
   <Card title="Triggers" icon={<EventIcon className="text-basis h-4 w-4"/>} href={'/docs/features/events-triggers'}>
