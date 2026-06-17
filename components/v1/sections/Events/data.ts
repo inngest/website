@@ -45,6 +45,17 @@ export const UPCOMING: EventItem[] = [
 
 export const ALL_EVENTS: EventItem[] = [
   {
+    id: "aiewf-breakfast-nebius",
+    title: "No Half-Baked Agents: Breakfast with Inngest & Nebius",
+    date: "Thursday, July 2 · 8–9:30 AM PT",
+    location: "SAN FRANCISCO, CA",
+    topics: ["Innhouse"],
+    excerpt:
+      "Breakfast tacos, coffee & matcha with the teams building the GPU infrastructure and reliability layer your agents depend on — just steps from Moscone West.",
+    href: "/events/no-half-baked-agents-breakfast",
+    image: "/assets/v1/events/no-half-baked-agents-breakfast.png",
+  },
+  {
     id: "aiewf-2026",
     title: "Meet Inngest at AI Engineer World's Fair",
     date: "June 29 – July 2, 2026",
