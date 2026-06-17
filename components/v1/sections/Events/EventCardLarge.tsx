@@ -25,10 +25,10 @@ export default function EventCardLarge({ ev, newTab }: { ev: EventItem; newTab?:
           when the columns stack. */}
       <div
         aria-hidden="true"
-        className={`aspect-[16/9] w-full shrink-0 sm:aspect-auto sm:w-[32.513%]${ev.image ? "" : " opacity-10"}`}
+        className={`aspect-[16/9] w-full shrink-0 sm:aspect-auto sm:w-[32.513%]${ev.image ? "" : " opacity-10"}${ev.imageFit === "contain" ? " bg-black" : ""}`}
         style={{
           backgroundImage: `url(${ev.image ?? "/assets/v1/events/event-placeholder.png"})`,
-          backgroundSize: "cover",
+          backgroundSize: ev.imageFit ?? "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
         }}

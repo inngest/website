@@ -20,6 +20,18 @@ const REGISTER_URL = "https://luma.com/3hhkw292?utm_source=inngest";
 
 const OTHER_EVENTS: EventItem[] = [
   {
+    id: "aiewf-dan-talk",
+    title: "Your agent architecture has a half-life of 6 months",
+    date: "Wednesday, July 1 · 12:05–12:25 PM PT",
+    location: "San Francisco, CA",
+    topics: ["talk", "agents", "architecture"],
+    excerpt:
+      "Dan Farrelly on building agent architecture that survives the next trend cycle — Expo Stage 1 at AI Engineer World's Fair.",
+    href: "/events/your-agent-architecture-half-life",
+    image: "/assets/v1/events/agent-architecture-half-life.png",
+    imageFit: "contain",
+  },
+  {
     id: "aiewf-2026",
     title: "Meet Inngest at AI Engineer World's Fair",
     date: "June 29 – July 2, 2026",

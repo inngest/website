@@ -27,6 +27,8 @@ export interface EventItem {
   href: string;
   recording?: boolean;
   image?: string;
+  /** Tile/card image fit. Use `contain` for text-heavy graphics. */
+  imageFit?: "cover" | "contain";
 }
 
 export const UPCOMING: EventItem[] = [
@@ -44,6 +46,18 @@ export const UPCOMING: EventItem[] = [
 ];
 
 export const ALL_EVENTS: EventItem[] = [
+  {
+    id: "aiewf-dan-talk",
+    title: "Your agent architecture has a half-life of 6 months",
+    date: "Wednesday, July 1 · 12:05–12:25 PM PT",
+    location: "SAN FRANCISCO, CA",
+    topics: ["Events"],
+    excerpt:
+      "Dan Farrelly on building agent architecture that survives the next trend cycle — Expo Stage 1 at AI Engineer World's Fair.",
+    href: "/events/your-agent-architecture-half-life",
+    image: "/assets/v1/events/agent-architecture-half-life.png",
+    imageFit: "contain",
+  },
   {
     id: "aiewf-breakfast-nebius",
     title: "No Half-Baked Agents: Breakfast with Inngest & Nebius",
