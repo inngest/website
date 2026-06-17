@@ -49,7 +49,7 @@ export default function NavMenuPanel({
         "relative isolate w-full overflow-clip rounded-[6px] bg-carbon-1000",
         PANEL_BORDER,
         hasPromo
-          ? "flex gap-14 px-8 py-8"
+          ? "flex gap-6 xl:gap-14 px-6 xl:px-8 py-8"
           : compact
             ? "px-8 py-5"
             : "px-8 pt-8 pb-10",
@@ -90,7 +90,7 @@ function MenuItemList({
   compact?: boolean;
 }) {
   return (
-    <ul className={cn("flex flex-col", compact ? "gap-4" : "gap-8", fill && "w-full")}>
+    <ul className={cn("flex flex-col shrink-0", compact ? "gap-4" : "gap-8", fill && "w-full")}>
       {items.map((item) => (
         <li key={item.label} className={cn(fill && "w-full")}>
           <MenuRow item={item} fill={fill} compact={compact} />
@@ -102,7 +102,7 @@ function MenuItemList({
 
 function MenuColumns({ columns }: { columns: NavMenuColumn[] }) {
   return (
-    <div className="flex flex-1 items-start justify-center gap-6">
+    <div className="flex flex-1 shrink-0 items-start justify-center gap-6">
       {columns.map((column) => (
         <div
           key={column.heading}
@@ -188,7 +188,7 @@ function NavPromoCard({ promo }: { promo: NavPromo }) {
   const card = (
     <div
       className={cn(
-        "flex h-[350px] w-[400px] shrink-0 flex-col overflow-clip rounded-[6px] motion-safe:transition-colors motion-safe:duration-300",
+        "flex h-[350px] w-full flex-col overflow-clip rounded-[6px] motion-safe:transition-colors motion-safe:duration-300",
         PANEL_BORDER,
         promo.href && "hover:border-v1-frost/30"
       )}
@@ -203,7 +203,7 @@ function NavPromoCard({ promo }: { promo: NavPromo }) {
           src={promo.image}
           alt=""
           fill
-          sizes="400px"
+          sizes="(max-width: 1280px) 30vw, 400px"
           className={cn(contain ? "object-contain" : "object-cover")}
         />
       </div>
@@ -216,12 +216,13 @@ function NavPromoCard({ promo }: { promo: NavPromo }) {
     </div>
   );
 
-  if (!promo.href) return card;
+  const wrapperCls = "hidden xl:block w-[400px] shrink";
+  if (!promo.href) return <div className={wrapperCls}>{card}</div>;
   return (
     <Link
       href={appendRef(promo.href, "nav")}
       underline={false}
-      className="shrink-0"
+      className={wrapperCls}
     >
       {card}
     </Link>

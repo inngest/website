@@ -151,7 +151,7 @@ const RESOURCES_MENU: NavMenu = {
         },
         {
           label: "Event Schedule",
-          href: "https://luma.com/user/inngest",
+          href: "/events",
           description: "Stay updated on events & workshops",
         },
         {

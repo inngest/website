@@ -99,13 +99,17 @@ export async function GET(
     const markdownBody = await convertMdxToMarkdown(content);
     const output = `${frontmatterLines.join("\n")}\n\n${markdownBody}`;
 
-    return new Response(output, {
-      headers: {
-        "Content-Type": "text/markdown;charset=UTF-8",
-        "Cache-Control": "s-maxage=3600, stale-while-revalidate",
-        "Link": `<${HOST}/blog/${sanitizedSlug}>; rel="canonical"`,
-      },
+    const headers = new Headers({
+      "Content-Type": "text/markdown;charset=UTF-8",
+      "Cache-Control": "s-maxage=3600, stale-while-revalidate",
+      "Link": `<${HOST}/blog/${sanitizedSlug}>; rel="canonical"`,
     });
+    // Block traditional search engines from indexing the LLM markdown mirror pages
+    // to prevent duplicate content issues. AI crawlers are still welcome.
+    headers.append("X-Robots-Tag", "googlebot: noindex, nofollow");
+    headers.append("X-Robots-Tag", "bingbot: noindex, nofollow");
+
+    return new Response(output, { headers });
   } catch (error) {
     console.error(`[blog-markdown] Failed to process post "${sanitizedSlug}":`, error);
     return new Response("Failed to read post", {

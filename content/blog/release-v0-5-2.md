@@ -3,7 +3,7 @@ heading: "Inngest: OS v0.5.2 released"
 subtitle: Our next release improving rollbacks and developer UX
 date: 2022-08-09
 image: "/assets/blog/release-v0.5.0.jpg"
-tags: release-notes
+tags: ["Company & Product News"]
 ---
 
 [Inngest v0.5.2 is here](https://github.com/inngest/inngest/releases)! This patch introduces a few new pieces of functionality, as well as various fixes and improvements. The key pieces are:

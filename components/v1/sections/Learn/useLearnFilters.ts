@@ -10,7 +10,7 @@ export function useLearnFilters(posts: PostCard[]) {
   const [search, setSearch] = useState("");
   // Empty array = "All". Otherwise the set of specific types to show.
   const [resourceTypes, setResourceTypes] = useState<PostCard["type"][]>([]);
-  const [topic, setTopic] = useState<"ALL" | string>("ALL");
+  const [topics, setTopics] = useState<string[]>([]);
   const [sort, setSort] = useState<SortKey>("date-desc");
 
   const allTopics = useMemo(() => {
@@ -25,7 +25,7 @@ export function useLearnFilters(posts: PostCard[]) {
       .filter((p) => {
         if (resourceTypes.length > 0 && !resourceTypes.includes(p.type))
           return false;
-        if (topic !== "ALL" && !p.tags.includes(topic)) return false;
+        if (topics.length > 0 && !topics.some((t) => p.tags.includes(t))) return false;
         if (q) {
           const haystack = `${p.title} ${p.subtitle} ${p.tags.join(" ")}`.toLowerCase();
           if (!haystack.includes(q)) return false;
@@ -38,15 +38,15 @@ export function useLearnFilters(posts: PostCard[]) {
         const bT = b.date ? new Date(b.date).getTime() : 0;
         return sort === "date-asc" ? aT - bT : bT - aT;
       });
-  }, [posts, search, resourceTypes, topic, sort]);
+  }, [posts, search, resourceTypes, topics, sort]);
 
   return {
     search,
     setSearch,
     resourceTypes,
     setResourceTypes,
-    topic,
-    setTopic,
+    topics,
+    setTopics,
     sort,
     setSort,
     allTopics,

@@ -1,5 +1,8 @@
 import { Info, Tip, Warning, CodeGroup, LanguageSelector, LanguageSection } from "shared/Docs/mdx";
 
+export const metaTitle = "Checkpointing | Inngest Docs"
+export const description = "Learn how Inngest checkpointing saves function execution state between steps so runs can recover from failures without re-executing completed work."
+
 # Checkpointing
 
 Checkpointing is a performance optimization for Inngest functions that executes steps eagerly rather than waiting on internal orchestration. The result is dramatically lower latency — ideal for real-time AI workflows.
@@ -132,7 +135,7 @@ What happens when something goes wrong? If a step fails and needs to retry, the 
 
 ## Notes and limitations
 
-- **Parallel step execution** — When a function branches into parallel steps, execution switches to standard orchestration for the remainder of the run. Checkpointing does not resume after parallel execution.
+- **Parallel step execution** — When a function branches into parallel steps, execution switches to standard orchestration. In most cases, when the executor signals that it is finished with parallelization, the SDK is able to switch back into checkpointing mode. The deprecated `optimizeParallelism: false` configuration option prevents this, so if `optimizeParallelism` is set to false, checkpointing does _not_ resume after parallel execution.
 
 | Feature | Supported |
 |---------|-----------|

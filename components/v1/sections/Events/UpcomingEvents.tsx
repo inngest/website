@@ -21,7 +21,7 @@ export default function UpcomingEvents() {
       <ul className="flex list-none flex-col gap-6 pl-0">
         {UPCOMING.map((ev) => (
           <li key={ev.id} className="list-none">
-            <EventCardLarge ev={ev} />
+            <EventCardLarge ev={ev} newTab />
           </li>
         ))}
       </ul>

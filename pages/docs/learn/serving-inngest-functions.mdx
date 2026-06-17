@@ -1,13 +1,18 @@
 import { Callout, Card, CardGroup, CodeGroup, Col, LanguageSection, LanguageSelector, Info, Row, Tip, VersionBadge } from "shared/Docs/mdx";
 
-export const description = `Serve the Inngest API as an HTTP endpoint in your application.`
+export const metaTitle = "Serve Inngest Functions via HTTP | Framework Setup"
+export const description = `Set up the Inngest serve handler in Next.js, Express, Python, or any supported framework to expose your functions as an HTTP endpoint Inngest can call remotely.`
 export const hidePageSidebar = true;
 
-# Setting up your Inngest app
+# Serving Inngest functions
 
-With Inngest, you define functions or workflows using the SDK and deploy them to whatever platform or cloud provider you want including including serverless and container runtimes.
+To let Inngest invoke your functions, your application needs a secure connection back to Inngest. Most web apps do this by serving an HTTP endpoint, usually at `/api/inngest`, that exposes the functions defined with the SDK.
 
-For Inngest to remotely execute your functions, you will need to set up a connection between your app and Inngest. This can be done in one of two ways:
+Use this page to choose between `serve()` and `connect()`, set up the right framework handler, and confirm the deployment requirements for your app.
+
+_Last updated: June 16, 2026._
+
+There are two ways to connect your app to Inngest:
 
 <CardGroup>
   <Card title="serve()" href="#serving-inngest-functions">
@@ -17,11 +22,11 @@ For Inngest to remotely execute your functions, you will need to set up a connec
     <ul className="list-disc list-inside">
       <li>Serverless platforms like Vercel, Lambda, etc.</li>
       <li>Adding Inngest to an existing API.</li>
-      <li>Zero changes to your CI/CD pipeline</li>
+      <li>Deploying with your existing CI/CD pipeline.</li>
     </ul>
   </Card>
   <Card title="connect()" href="/docs/setup/connect">
-    <p className="my-4">Connect to Inngest's servers using out-bound WebSocket connection.</p>
+    <p className="my-4">Connect to Inngest's servers using an outbound WebSocket connection.</p>
 
     <p className="my-2">**Ideal for**:</p>
     <ul className="list-disc list-inside">
@@ -1065,7 +1070,16 @@ the reference for more information](/docs/sdk/reference/serve#reference).
 
 ### Other configuration
 
-When using `serve`, allow requests up to 4 MB in size. This is the maximum request size that Inngest will send to your app. Configurating maximum request size is framework-specific, so check the documentation for your framework for more information.
+When using `serve`, allow requests up to 4 MB in size. This is the maximum request size that Inngest will send to your app. Configuring maximum request size is framework-specific, so check the documentation for your framework for more information.
+
+## Next steps
+
+After your app serves Inngest functions, choose the next step that matches where you are in the setup:
+
+* Start from a framework guide, such as the [Next.js quick start](/docs/getting-started/nextjs-quick-start?ref=docs-serving-inngest-functions), [Express quick start](/docs/getting-started/express-quick-start?ref=docs-serving-inngest-functions), or [Python quick start](/docs/getting-started/python-quick-start?ref=docs-serving-inngest-functions).
+* Configure production secrets with [signing keys](/docs/platform/signing-keys?ref=docs-serving-inngest-functions) and [event keys](/docs/events/creating-an-event-key?ref=docs-serving-inngest-functions).
+* Deploy on Vercel with the [Vercel deployment guide](/docs/deploy/vercel?ref=docs-serving-inngest-functions), including `maxDuration` and streaming guidance for long-running work.
+* Use [Connect](/docs/setup/connect?ref=docs-serving-inngest-functions) instead of `serve()` when you want worker-style execution over an outbound WebSocket connection.
 
 ## Reference
 

@@ -133,7 +133,7 @@ export const STORIES: StoryCard[] = [
   {
     id: "fey",
     brand: "Fey",
-    logo: "/assets/customers/fey/fey-icon.svg",
+    logo: "/assets/customers/fey/fey-icon-name.svg",
     tags: ["AI"],
     title: "Orchestrating complex financial data pipelines",
     body: "50x faster and 50x cheaper. How Fey leverages Inngest in data-intensive processes.",

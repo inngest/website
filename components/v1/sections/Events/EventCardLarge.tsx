@@ -8,9 +8,9 @@ import type { EventItem } from "@/components/v1/sections/Events/data";
 // home "Get Started" cards: cursor spotlight + 4px lift + soft shadow
 // (no tilt — the card is ~1300px wide, where perspective rotation reads
 // as distortion).
-export default function EventCardLarge({ ev }: { ev: EventItem }) {
+export default function EventCardLarge({ ev, newTab }: { ev: EventItem; newTab?: boolean }) {
   return (
-    <Link href={ev.href} className="block rounded-lg">
+    <Link href={ev.href} className="block rounded-lg" {...(newTab ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
       <SpotlightFrame
         // The card is a flex row at desktop with image at 422.667 of
         // 1300 (≈ 32.51%) and content filling the remainder. Height is
@@ -25,10 +25,10 @@ export default function EventCardLarge({ ev }: { ev: EventItem }) {
           when the columns stack. */}
       <div
         aria-hidden="true"
-        className="aspect-[16/9] w-full shrink-0 opacity-10 sm:aspect-auto sm:w-[32.513%]"
+        className={`aspect-[16/9] w-full shrink-0 sm:aspect-auto sm:w-[32.513%]${ev.image ? "" : " opacity-10"}${ev.imageFit === "contain" ? " bg-black" : ""}`}
         style={{
-          backgroundImage: "url(/assets/v1/events/event-placeholder.png)",
-          backgroundSize: "cover",
+          backgroundImage: `url(${ev.image ?? "/assets/v1/events/event-placeholder.png"})`,
+          backgroundSize: ev.imageFit ?? "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
         }}

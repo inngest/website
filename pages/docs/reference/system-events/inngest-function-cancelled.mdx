@@ -1,5 +1,8 @@
 import { Callout, CodeGroup, Properties, Property, Row, Col, VersionBadge } from "src/shared/Docs/mdx";
 
+export const metaTitle = "inngest/function.cancelled | System Event Reference"
+export const description = "inngest/function.cancelled fires when a function run is cancelled. Use it to run cleanup logic or notify downstream systems."
+
 # `inngest/function.cancelled` {{ className: "not-prose" }}
 
 The `inngest/function.cancelled` event is sent whenever any single function is cancelled in your [Inngest environment](/docs/platform/environments). The event will be sent if the event is cancelled via [`cancelOn` event](/docs/features/inngest-functions/cancellation/cancel-on-events), [function timeouts](/docs/features/inngest-functions/cancellation/cancel-on-timeouts),  [REST API](/docs/guides/cancel-running-functions) or [bulk cancellation](/docs/platform/manage/bulk-cancellation).

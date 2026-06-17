@@ -105,12 +105,16 @@ export async function GET(
 
     // Return as plain text for easy copying. Disable caching so this always runs
     // dynamically and returns fresh content from the docs.
-    return new Response(processedContent, {
-      headers: {
-        "Content-Type": "text/markdown;charset=UTF-8",
-        "Link": `<${canonicalUrl}>; rel="canonical"`,
-      },
+    const headers = new Headers({
+      "Content-Type": "text/markdown;charset=UTF-8",
+      "Link": `<${canonicalUrl}>; rel="canonical"`,
     });
+    // Block traditional search engines from indexing the LLM markdown mirror pages
+    // to prevent duplicate content issues. AI crawlers are still welcome.
+    headers.append("X-Robots-Tag", "googlebot: noindex, nofollow");
+    headers.append("X-Robots-Tag", "bingbot: noindex, nofollow");
+
+    return new Response(processedContent, { headers });
   } catch (error) {
     console.error("Failed to process document:", error);
     return new Response("Failed to read document", { status: 500, statusText: "Failed to read document" });
