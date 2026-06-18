@@ -11,7 +11,7 @@ export const description = "Use the ExtendedTracesMiddleware in TypeScript SDK v
 
 Inngest supports OpenTelemetry for distributed tracing and observability across your functions. The `extendedTracesMiddleware` exports OpenTelemetry spans from your functions to Inngest Traces, giving you deep insights into function execution, step timing, and performance.
 
-If you want Inngest to set up OpenTelemetry for you, use [`@inngest/otel`](https://www.npmjs.com/package/@inngest/otel) for a Node.js provider and common instrumentation. If your app already configures OpenTelemetry, keep that setup and add the Extended Traces middleware so spans are exported to Inngest.
+If you want Inngest to set up OpenTelemetry for you, use [`@inngest/otel`](https://www.npmjs.com/package/@inngest/otel) for a Node.js OpenTelemetry provider and common instrumentation. If your app already configures OpenTelemetry, keep that setup and add the Extended Traces middleware so spans are exported to Inngest.
 
 ## Basic Usage
 
@@ -168,7 +168,7 @@ If you configure OpenTelemetry yourself, continue to manage your own instrumenta
 
 ### Custom instrumentation
 
-If you need instrumentations that are not covered by your OpenTelemetry setup, configure them yourself and add `InngestSpanProcessor` to your provider.
+If you need instrumentations that are not covered by `@inngest/otel`, configure them yourself and add `InngestSpanProcessor` to your provider.
 
 For example, here's an example of adding [Prisma
 OpenTelemetry](https://www.prisma.io/docs/orm/prisma-client/observability-and-logging/opentelemetry-tracing):
