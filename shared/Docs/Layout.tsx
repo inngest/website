@@ -87,12 +87,12 @@ export function Layout({
   const sdkLanguage = getLanguageFromPath(router.asPath) || SDK_ALL;
   const sdkVersion = getSdkVersionFromPath(router.asPath) || SDK_ALL;
 
-  const siteTitle = `Inngest Documentation`;
+  const siteTitle = `Inngest Docs`;
   const preferredTitle: string = metaTitle || title || siteTitle;
   const pageTitle =
     preferredTitle === siteTitle
       ? preferredTitle
-      : `${preferredTitle} - ${siteTitle}`;
+      : `${preferredTitle} | ${siteTitle}`;
   const metaDescription =
     description || `Inngest documentation for ${preferredTitle}`;
   const metaImage = getOpenGraphImageURL({ title: preferredTitle });
