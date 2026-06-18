@@ -1,18 +1,18 @@
 import { Callout } from "src/shared/Docs/mdx";
 
-export const description = "Group related function runs by adding session metadata to events.";
+export const description = "Group related function runs by adding meta sessions to events.";
 
 # Sessions
 
 Sessions group function runs that belong to the same user flow, conversation, or job.
 
-Add a `sessions` object to an event when you want the Inngest dashboard to show all runs related to the same external ID. For example, all runs started by messages in the same AI conversation can share a `conversation_id` session.
+Add `meta.sessions` to an event when you want the Inngest dashboard to show all runs related to the same external ID. For example, all runs started by messages in the same AI conversation can share a `conversation_id` session.
 
-Sessions do not change which functions run. They add metadata that makes related runs easier to find and inspect.
+Sessions do not change which functions run. They add event meta that makes related runs easier to find and inspect.
 
 ## Add sessions to an event
 
-Add `sessions` as a top-level field on the event payload, next to `name` and `data`.
+Add `sessions` inside the event's top-level `meta` object.
 
 ```ts
 import { inngest } from "./client";
@@ -23,8 +23,10 @@ await inngest.send({
     messageId: "msg_01JYY8R9C5R6VAW5EJ0P4K7V90",
     conversationId: "conv_1234",
   },
-  sessions: {
-    conversation_id: "conv_1234",
+  meta: {
+    sessions: {
+      conversation_id: "conv_1234",
+    },
   },
 });
 ```
@@ -42,14 +44,14 @@ You can use the same session key across many events. Each unique session ID beco
 
 Sessions follow events, not runs:
 
-- **`step.sendEvent()`** attaches sessions the same way as `inngest.send()`.
-- **`step.invoke()`** accepts an explicit `sessions` option. Sessions are **not** inherited from the calling run — the invoked function only joins a session if you pass one.
-- **`step.waitForEvent()`** does not match on sessions; the matched event's sessions are returned on the result.
-- **Failure and lifecycle events** (`inngest/function.finished`, `.failed`, `.cancelled`) carry the sessions of the event they report on, so an `onFailure` handler stays in the same session as the run that failed.
+- **`step.sendEvent()`** attaches `meta.sessions` the same way as `inngest.send()`.
+- **`step.invoke()`** accepts explicit `meta.sessions`. Sessions are **not** inherited from the calling run — the invoked function only joins a session if you pass one.
+- **`step.waitForEvent()`** does not match on sessions; the matched event's sessions are returned on `result.meta?.sessions`.
+- **Failure and lifecycle events** (`inngest/function.finished`, `.failed`, `.cancelled`) carry the `meta.sessions` of the event they report on, so an `onFailure` handler stays in the same session as the run that failed.
 
 ## Supported values
 
-Session IDs can be strings or numbers. Numbers are stored as strings.
+Session IDs can be strings or finite numbers. Numbers are stored as strings. Other value types, including booleans, `null`, objects, and arrays, are rejected.
 
 ```ts
 await inngest.send({
@@ -57,9 +59,11 @@ await inngest.send({
   data: {
     stepId: "step_1",
   },
-  sessions: {
-    conversation_id: "conv_1234",
-    thread_id: 29563,
+  meta: {
+    sessions: {
+      conversation_id: "conv_1234",
+      thread_id: 29563,
+    },
   },
 });
 ```
@@ -72,14 +76,18 @@ Use stable IDs that are safe to show in the dashboard. Do not store secrets or s
 
 ## Limits
 
-Each event can include up to 5 sessions.
+- Each event can include up to 5 entries in `meta.sessions`.
+- For non-batched functions, that means the run can be associated with up to 5 sessions.
+- For batched functions, one run can be triggered by multiple events. In that case, Inngest combines the sessions from every event in the batch and keeps up to 25 unique session key/ID pairs for the run.
+- Session keys and IDs cannot be empty.
+- Session IDs must be strings or finite numbers. Numbers are normalized to strings.
 
 | Field | Limit |
 | --- | --- |
-| Session key | 128 characters |
-| Session ID | 512 characters |
+| Session key | 128 bytes |
+| Session ID | 512 bytes |
 
-Session keys and IDs cannot be empty.
+Session ID limits apply after numbers are normalized to strings.
 
 ## Choose a good session key
 
@@ -96,16 +104,20 @@ Good examples:
 Avoid putting the session ID in the session key. For example, use this:
 
 ```ts
-sessions: {
-  conversation_id: "conv_1234",
+meta: {
+  sessions: {
+    conversation_id: "conv_1234",
+  },
 }
 ```
 
 Not this:
 
 ```ts
-sessions: {
-  "conversation_id:conv_1234": "true",
+meta: {
+  sessions: {
+    "conversation_id:conv_1234": "true",
+  },
 }
 ```
 
