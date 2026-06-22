@@ -142,6 +142,12 @@ Click a session row to open the detail page. The detail page shows the runs for 
   Sessions are scoped to the selected environment. If you do not see a session, check that you are in the environment where the event was sent.
 </Callout>
 
+## Use sessions for historical search
+
+Sessions use the same indexed event and run data that powers [Insights](/docs/platform/monitor/insights). This index is designed for search, filtering, and investigation across activity that Inngest has recorded.
+
+Because the index is updated asynchronously, newly sent events, recently started runs, and status changes may take a short time to appear in Sessions. Treat Sessions as a historical view for finding and inspecting related runs, not as a realtime source of truth for the current state of an active workflow.
+
 ## When to use sessions
 
 Use sessions when you already have a domain ID that ties multiple function runs together.
