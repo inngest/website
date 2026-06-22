@@ -78,7 +78,7 @@ Use stable IDs that are safe to show in the dashboard. Do not store secrets or s
 
 - Each event can include up to 5 entries in `meta.sessions`.
 - For non-batched functions, that means the run can be associated with up to 5 sessions.
-- For batched functions, one run can be triggered by multiple events. In that case, Inngest combines the sessions from every event in the batch and keeps up to 25 unique session key/ID pairs for the run.
+- For batched functions, one run can be triggered by multiple events. In that case, Inngest combines the sessions from every event in the batch, orders them alphanumerically, and keeps the first 25 unique session key/ID pairs for the run.
 - Session keys and IDs cannot be empty.
 - Session IDs must be strings or finite numbers. Numbers are normalized to strings.
 
