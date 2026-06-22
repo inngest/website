@@ -1,0 +1,15 @@
+export const title = "Experiments: safely test code changes against live production traffic";
+export const date = "2026-06-22";
+
+Experiments let you compare versions of a step on live production traffic, judged on the execution data only Inngest can see. Call `group.experiment("your-id", { variants, select })` with the implementations you want to compare and a selection strategy, and Inngest runs exactly one variant per run, memoized as a durable step so retries and replays never switch mid-execution.
+
+Reach for them when you're rolling out a rewrite, migrating a vendor or database, swapping an implementation, or comparing models and prompts: anywhere you want to know which version actually performed better against real traffic, not just whether it breaks.
+
+- **Judged on execution data** — Variants are compared on the timing, retries, failures, and cost Inngest already records for every run. The same data that keeps your code durable tells you which version is faster, cheaper, or more effective, with no extra pipeline to wire up.
+- **Durable selection** — One variant runs per run, memoized as a step. Change weights between deploys and in-flight runs keep the variant they already picked, so a ramp never disturbs work already underway.
+- **Strategies for the whole lifecycle** — Ramp with `experiment.weighted()`, keep a user or whole organization consistent with `experiment.bucket()`, drive selection from a feature flag with `experiment.custom()` for a no-deploy kill switch, then lock the winner with `experiment.fixed()`.
+- **The function stays put** — Evolve an experiment by changing weights, bucketing, or the fixed winner, never by rewriting the workflow. Pin a winner and the structure stays in place for the next challenger.
+
+Experiments are available now in the Inngest TypeScript SDK (v4). Import `experiment` from `inngest` and call `group.experiment()` inside any function.
+
+See the [Running experiments guide](/docs/features/inngest-functions/steps-workflows/running-experiments?ref=changelog-experiments) for rollout patterns, and the [`group.experiment()` reference](/docs/reference/typescript/v4/functions/group-experiment?ref=changelog-experiments) for the full API.
