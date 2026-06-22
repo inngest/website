@@ -1,6 +1,7 @@
 import { Callout } from "src/shared/Docs/mdx";
 
-export const description = "Group related function runs by adding meta sessions to events.";
+export const metaTitle = "Inngest Sessions: Group Related Function Runs";
+export const description = "Group related function runs with sessions so they are easier to find and inspect in the dashboard.";
 
 # Sessions
 
@@ -8,7 +9,19 @@ Sessions group function runs that belong to the same user flow, conversation, or
 
 Add `meta.sessions` to an event when you want the Inngest dashboard to show all runs related to the same external ID. For example, all runs started by messages in the same AI conversation can share a `conversation_id` session.
 
-Sessions do not change which functions run. They add event meta that makes related runs easier to find and inspect.
+Sessions do not change which functions run. They add event metadata that makes related runs easier to find and inspect.
+
+## When to use sessions
+
+Use sessions when you already have a domain ID that ties multiple function runs together.
+
+Common examples include AI conversations, agent runs, support tickets, imports, customer workflows, and long-running business processes.
+
+For one-off filtering, use [Insights](/docs/platform/monitor/insights?ref=docs-sessions) or the normal runs search instead. Sessions are best for IDs you expect to search and inspect repeatedly.
+
+<Callout>
+  Sessions are for high-cardinality identifiers — one ID per conversation, ticket, or job. They are not for low-cardinality labels like `environment: prod`. For label-style filtering, use [Insights](/docs/platform/monitor/insights?ref=docs-sessions) instead.
+</Callout>
 
 ## Add sessions to an event
 
@@ -49,6 +62,20 @@ Sessions follow events, not runs:
 - **`step.waitForEvent()`** does not match on sessions; the matched event's sessions are returned on `result.meta?.sessions`.
 - **Failure and lifecycle events** (`inngest/function.finished`, `.failed`, `.cancelled`) carry the `meta.sessions` of the event they report on, so an `onFailure` handler stays in the same session as the run that failed.
 
+For example, pass sessions explicitly when invoking another function:
+
+```ts
+await step.invoke("summarize-conversation", {
+  function: summarizeConversation,
+  data: { conversationId: event.data.conversationId },
+  meta: {
+    sessions: {
+      conversation_id: event.data.conversationId,
+    },
+  },
+});
+```
+
 ## Supported values
 
 Session IDs can be strings or finite numbers. Numbers are stored as strings. Other value types, including booleans, `null`, objects, and arrays, are rejected.
@@ -69,10 +96,6 @@ await inngest.send({
 ```
 
 Use stable IDs that are safe to show in the dashboard. Do not store secrets or sensitive personal data in session IDs.
-
-<Callout>
-  Sessions are for high-cardinality identifiers — one ID per conversation, ticket, or job. They are not for low-cardinality labels like `environment: prod`. For label-style filtering, use [Insights](/docs/platform/monitor/insights) instead.
-</Callout>
 
 ## Limits
 
@@ -129,6 +152,8 @@ Open the Inngest dashboard and select an environment.
 
 Go to **AI > Sessions**.
 
+If you do not see **Sessions** in the navigation, check that sessions are enabled for your account.
+
 <figure className="not-prose my-6 flex justify-center">
   <img
     src="/assets/docs/features/events-triggers/sessions/sidebar.png"
@@ -157,14 +182,6 @@ Click a session row to open the detail page. The detail page shows the runs for 
 
 ## Use sessions for historical search
 
-Sessions use the same indexed event and run data that powers [Insights](/docs/platform/monitor/insights). This index is designed for search, filtering, and investigation across activity that Inngest has recorded.
+Sessions use the same indexed event and run data that powers [Insights](/docs/platform/monitor/insights?ref=docs-sessions). This index is designed for search, filtering, and investigation across activity that Inngest has recorded.
 
 Because the index is updated asynchronously, newly sent events, recently started runs, and status changes may take a short time to appear in Sessions. Treat Sessions as a historical view for finding and inspecting related runs, not as a realtime source of truth for the current state of an active workflow.
-
-## When to use sessions
-
-Use sessions when you already have a domain ID that ties multiple function runs together.
-
-Common examples include AI conversations, agent runs, support tickets, imports, customer workflows, and long-running business processes.
-
-For one-off filtering, use [Insights](/docs/platform/monitor/insights) or the normal runs search instead. Sessions are best for IDs you expect to search and inspect repeatedly.
