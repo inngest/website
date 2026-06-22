@@ -90,7 +90,7 @@ There's another angle here that's easy to miss: [teams with strong orchestration
 
 This isn't theoretical. Here's how it maps to real infrastructure decisions.
 
-**The orchestration layer (stable).** Durable execution, step primitives, event system, state management, observability, scheduling. This is your multi-year decision. It doesn't change when agent patterns change.
+**The [orchestration layer](/blog/agent-loop-architecture?ref=blog-background-agents-are-here-your-orchestration-isnt-ready) (stable).** Durable execution, step primitives, event system, state management, observability, scheduling. This is your multi-year decision. It doesn't change when agent patterns change.
 
 **The agent layer (fluid).** How you structure LLM calls, tool use, reasoning, delegation. This changes every 3-6 months. It should be easy to change because it's just application code running on durable primitives.
 
