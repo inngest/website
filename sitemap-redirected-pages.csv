@@ -1,0 +1,10 @@
+URL,Page File,Redirects To
+/uses/durable-workflows,app/(v0)/uses/durable-workflows/page.tsx,/platform/durable-execution
+/uses/workflow-engine,app/(v0)/uses/workflow-engine/page.tsx,/uses/webhooks
+/uses/serverless-cron-jobs,data/uses/serverless-cron-jobs.tsx (dynamic route),/uses/scheduled-jobs
+/compare-to-legacy-queues,app/(v0)/compare-to-legacy-queues/page.tsx,/platform/flow-control
+/durable-endpoints,app/(v0)/durable-endpoints/page.tsx,/platform/durable-execution
+/platform,app/(v0)/platform/page.tsx,/platform/durable-execution
+/careers,app/(v0)/careers/page.tsx,/about
+/launch-week,pages/launch-week/1/index.tsx,/
+/ai-personalized-documentation,pages/ai-personalized-documentation.tsx,/docs/ai-dev-tools/agent-skills
