@@ -51,6 +51,45 @@ await inngest.score({
 
 ---
 
+## `inngest.score.experiment(options)`
+
+Attach a score to an experiment variant selected by [`group.experiment()`](/docs/reference/typescript/v4/functions/group-experiment). Takes the same options as `inngest.score()`, plus the experiment reference.
+
+<Properties>
+  <Property name="experiment" type="ExperimentRef" required>
+    The `experimentRef` returned by `group.experiment()`.
+  </Property>
+  <Property name="name" type="string" required>
+    A label for the score.
+  </Property>
+  <Property name="value" type="number" required>
+    The score value.
+  </Property>
+  <Property name="runId" type="string">
+    The run to score. Omit when scoring the current run from inside a function.
+  </Property>
+  <Property name="stepId" type="string">
+    The step to score.
+  </Property>
+</Properties>
+
+```ts
+const { result, experimentRef } = await group.experiment("summary-model", {
+  variants: { /* ... */ },
+  select: experiment.weighted({ gpt4o: 50, claude: 50 }),
+});
+
+await inngest.score.experiment({
+  experiment: experimentRef,
+  name: "quality",
+  value: 0.9,
+});
+```
+
+Call it at the function-body level, outside `step.run()` (or pass an explicit `runId`), so the score is recorded against the run and attaches to the experiment.
+
+---
+
 ## `step.score(options)`
 
 Score the current run from within a step context. Same options as `inngest.score()` but `runId` is automatically set to the current run.
@@ -126,6 +165,9 @@ Trigger a deferred scorer from inside a function. Available as a handler argumen
       </Property>
       <Property name="data" type="object" required>
         Input data matching the scorer's schema.
+      </Property>
+      <Property name="experiment" type="ExperimentRef">
+        An `experimentRef` from `group.experiment()`. When set, the scorer's returned score is attached to that experiment variant.
       </Property>
     </Properties>
   </Property>

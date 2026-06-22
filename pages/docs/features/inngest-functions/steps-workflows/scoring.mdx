@@ -88,6 +88,35 @@ This is how you score based on signals that arrive after the function finishes: 
 
 ---
 
+## Score an experiment variant
+
+When you compare approaches with [`group.experiment()`](/docs/features/inngest-functions/steps-workflows/running-experiments), use `inngest.score.experiment()` with the returned `experimentRef` to attach a score to the variant that ran. Inngest records it against the experiment so you can compare variants side by side.
+
+```ts
+const { result, experimentRef } = await group.experiment("summary-model", {
+  variants: {
+    gpt4o: () => step.run("gpt4o", () => summarize({ model: "gpt-4o" })),
+    claude: () =>
+      step.run("claude", () =>
+        summarize({ model: "claude-sonnet-4-20250514" })
+      ),
+  },
+  select: experiment.weighted({ gpt4o: 50, claude: 50 }),
+});
+
+const quality = await step.run("grade-summary", () => gradeSummary(result));
+
+await inngest.score.experiment({
+  experiment: experimentRef,
+  name: "quality",
+  value: quality,
+});
+```
+
+Call `inngest.score.experiment()` at the function-body level, outside any `step.run()`, so the score attaches to the run and its experiment.
+
+---
+
 ## Where scores appear
 
 Scores show up in two places:

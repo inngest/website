@@ -27,9 +27,6 @@ Selects and executes a single variant from a set of options. The selection is me
           <Property name="select" type="ExperimentSelectFn" required>
             A selection strategy that determines which variant to run. Use one of the built-in strategies: `experiment.fixed()`, `experiment.weighted()`, `experiment.bucket()`, or `experiment.custom()`.
           </Property>
-          <Property name="withVariant" type="boolean">
-            When `true`, the return value includes the selected variant name alongside the result. Defaults to `false`.
-          </Property>
         </Properties>
       </Property>
     </Properties>
@@ -37,7 +34,7 @@ Selects and executes a single variant from a set of options. The selection is me
   <Col>
     <CodeGroup title="Basic usage">
     ```ts
-    const result = await group.experiment("my-experiment", {
+    const { result } = await group.experiment("my-experiment", {
       variants: {
         a: () => step.run("variant-a", () => doA()),
         b: () => step.run("variant-b", () => doB()),
@@ -46,21 +43,36 @@ Selects and executes a single variant from a set of options. The selection is me
     });
     ```
     </CodeGroup>
-    <CodeGroup title="With variant name returned">
+    <CodeGroup title="Variant name and reference">
     ```ts
-    const { result, variant } = await group.experiment("my-experiment", {
+    const { result, variant, experimentRef } = await group.experiment("my-experiment", {
       variants: {
         a: () => step.run("variant-a", () => doA()),
         b: () => step.run("variant-b", () => doB()),
       },
       select: experiment.fixed("a"),
-      withVariant: true,
     });
     // variant === "a"
     ```
     </CodeGroup>
   </Col>
 </Row>
+
+## Return value
+
+Resolves to an object with the selected variant's output and a reference for scoring:
+
+<Properties>
+  <Property name="result" type="unknown">
+    The value returned by the selected variant's callback.
+  </Property>
+  <Property name="variant" type="string">
+    The name of the variant that was selected and run.
+  </Property>
+  <Property name="experimentRef" type="ExperimentRef">
+    A stable handle to the selected variant (`{ experimentName, variant }`). Pass it to [`inngest.score.experiment()`](/docs/reference/typescript/v4/functions/scoring) or [`defer()`](/docs/reference/typescript/v4/functions/scoring) to attach a score to this experiment.
+  </Property>
+</Properties>
 
 <Callout>
   Every variant callback **must** invoke at least one `step.*` tool (e.g., `step.run()`). Code that runs outside of a step is not memoized and will re-execute on every replay. The SDK throws a `NonRetriableError` if a variant completes without calling any step tools.

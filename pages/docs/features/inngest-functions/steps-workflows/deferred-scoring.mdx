@@ -88,6 +88,41 @@ export default inngest.createFunction(
 );
 ```
 
+## Score an experiment
+
+To score an [experiment](/docs/features/inngest-functions/steps-workflows/running-experiments) from a deferred scorer, pass the `experimentRef` from `group.experiment()` to `defer()`. The scorer's returned `{ name, value }` is attached to the variant that ran, with no extra call inside the scorer.
+
+```ts
+export default inngest.createFunction(
+  { id: "summarize-document", triggers: { event: "document/uploaded" } },
+  async ({ event, step, group, defer }) => {
+    const { result, experimentRef } = await group.experiment("summary-model", {
+      variants: {
+        gpt4o: () => step.run("gpt4o", () => summarize({ model: "gpt-4o" })),
+        claude: () =>
+          step.run("claude", () =>
+            summarize({ model: "claude-sonnet-4-20250514" })
+          ),
+      },
+      select: experiment.weighted({ gpt4o: 50, claude: 50 }),
+    });
+
+    // The scorer's result is recorded against the selected variant
+    defer("score-summary", {
+      function: summaryScorer,
+      experiment: experimentRef,
+      data: { summary: result },
+    });
+
+    return { result };
+  }
+);
+```
+
+The scorer is defined with `createScorer` like any other and just returns `{ name, value }`. Passing `experimentRef` on the `defer()` call is what routes that score to the experiment.
+
+---
+
 ## How deferred scoring works
 
 The scorer is a completely separate function run. It is enqueued when the parent run finalizes, not when the signal arrives. The scorer starts running on its own, and if it includes a `step.waitForEvent()`, it pauses and waits for that signal independently.
