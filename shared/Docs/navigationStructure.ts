@@ -269,6 +269,7 @@ const sectionLearn: (NavGroup | NavLink)[] = [
         { title: "Wait for event", href: "/docs/features/inngest-functions/steps-workflows/wait-for-event" },
         { title: "Wait for signal", href: "/docs/features/inngest-functions/steps-workflows/wait-for-signal" },
         { title: "Invoke other functions", href: `/docs/guides/invoking-functions-directly` },
+        { title: "Step experiments", href: "/docs/features/inngest-functions/steps-workflows/step-experiments", tag: "new" },
         { title: "AI steps (LLM calls)", href: "/docs/features/inngest-functions/steps-workflows/step-ai-orchestration" },
         { title: "Durable Fetch", href: tsRef("v4", "functions/fetch") },
       ]},
