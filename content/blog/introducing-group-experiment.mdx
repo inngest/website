@@ -1,0 +1,96 @@
+---
+heading: "Introducing group.experiment(): Safely test changes to production code"
+subtitle: "Compare production variants on latency, retries, and cost—the execution data feature flags and eval tools can't reach."
+image: /assets/blog/introducing-group-experiment/featured-image.png
+showSubtitle: true
+date: 2026-06-23
+author: Lauren Craigie
+category: product-updates
+---
+
+The data you need to actually judge a workflow experiment has never been reachable from where you run experiments today.
+
+When you compare two implementations—a workflow step, a data transformation, or even an entire platform or tool—it's not just the input or the output that tells you which was better. It's what happens between. _How long did the call actually take? How much did that model actually cost? How many times did that step retry before it succeeded?_ The answers to these questions don't live in experimentation tools—they live in the execution layer. They live in Inngest.
+
+Today we're introducing a new SDK primitive to fill that gap. `group.experiment()` lets you compare variants on live production traffic, using the execution data Inngest already records for every run: which variant ran, how long each step took, how often it retried, where it failed, and what it returned. The same data that keeps your code durable now tells you which variant is faster, more reliable, cheaper, or any other metric of success you care about. No rewrites. No pre-wired data pipelines.
+
+## The answer was always in execution
+
+**Execution data is expensive to keep—unless you're putting it to work.** Comparing variants on how they run means retaining a per-step record—timing, status, retries, output—and keeping that data queryable after the run is over. APM tools don't retain that granularity by default, and building it yourself is weeks of work. Only one kind of system keeps this data by default—because it needs it for something else. Durable execution must persist each step's state to survive a crash and resume. That's a much harder problem to solve.
+
+And it's why existing experimentation solutions fall short:
+
+| Approach | Built for | Gaps |
+| --- | --- | --- |
+| **Feature flags** (LaunchDarkly, etc.) | Controlling who has access to what | Splits traffic, but has no concept of execution data or workflows. It knows 1% hit the new path; it can't tell you that path ran slower or errored more. |
+| **AI eval platforms** (Braintrust, etc.) | Scoring prompt and model output | Built for AI alone, and they evaluate from outside—against sandbox data or boundary inputs and outputs, not real production execution. |
+| **DIY** (custom metrics, logging) | Whatever you build | Works, but it's weeks of engineering, the data lives outside your functions, and every comparison is yours to assemble by hand. |
+
+Keep experimentation outside the execution layer and you spend weeks rebuilding a thinner version of data Inngest already has by default.
+
+## How experiments work
+
+`group.experiment()` is the bridge between "split traffic just to make sure something doesn't implode" and "compare how it _actually_ ran." You name the implementations you care about, choose a selection strategy, and Inngest picks one variant per run—memoized like any other step, so retries and replays never switch mid-execution. The function stays put; you evolve the experiment by changing weights, bucketing, flags, or a fixed winner—not by rewriting the workflow.
+
+Say you're migrating payment processors. You're on Adyen today and want to prove out Stripe before you cut over. You keep most traffic on the incumbent and route a small slice to the new provider:
+
+```tsx
+import { experiment } from "inngest";
+import { inngest } from "./client";
+
+export default inngest.createFunction(
+  { id: "process-order", triggers: { event: "orders/created" } },
+  async ({ event, step, group }) => {
+    const charge = await group.experiment("payments-provider", {
+      variants: {
+        adyen: () => step.run("charge-adyen", () => chargeAdyen(event.data)),
+        stripe: () => step.run("charge-stripe", () => chargeStripe(event.data)),
+      },
+      select: experiment.weighted({ adyen: 99, stripe: 1 }),
+    });
+
+    return charge;
+  }
+);
+```
+
+Each order runs exactly one variant—it's charged by Adyen or Stripe, never both. As confidence grows you raise Stripe's weight over successive deploys, and in-flight runs keep the variant they already selected, so changing weights never disturbs work already underway. When you're ready, you pin the winner with `experiment.fixed("stripe")` and leave the structure in place for the next migration.
+
+The four selection strategies cover the lifecycle:
+
+**`experiment.weighted`** does a weighted random split seeded by run ID—deterministic for a given run, but across runs it produces the distribution you specified. Weights are relative, not percentages: `{ adyen: 99, stripe: 1 }` and `{ adyen: 990, stripe: 10 }` behave identically.
+
+**`experiment.bucket`** hashes a stable value—a user ID, an account ID—to a variant, so the same value always lands on the same variant across runs. Use it when consistency matters more than a global traffic split: a customer who gets charged through Stripe today should still get Stripe tomorrow.
+
+```tsx
+select: experiment.bucket(event.data.customerId, {
+  weights: { adyen: 90, stripe: 10 },
+}),
+```
+
+**`experiment.custom`** takes a function that returns a variant name, runs it inside a memoized step, and hands you full control. This is where a feature flag earns its place: drive selection from one and you get a no-deploy kill switch—flip the flag off and new runs fall back to Adyen without a code deploy. Return values must match keys in `variants`.
+
+```tsx
+select: experiment.custom(async () => {
+  const enabled = await flags.isOn("stripe-payments");
+  return enabled ? "stripe" : "adyen";
+}),
+```
+
+**`experiment.fixed`** always selects one variant. Once you've decided, pin the winner without tearing down the experiment—`experiment.fixed("stripe")`—so you can add the next challenger later without rewiring the function. Especially handy when you know something better is coming soon!
+
+## When to use experiments
+
+Experiments fit anywhere you want to know which implementation performed better against real production traffic, not just whether something breaks.
+
+**Migrate a vendor or database.** Route a slice of traffic to the new provider, compare error rates and latency against the old one, and ramp it up as confidence grows before cutting over.
+
+**Roll out a rewrite.** Canary a new version of a step at 1%, compare it against the old version on live traffic, and raise the weight over successive deploys. Roll back the moment the comparison turns.
+
+**Swap an implementation.** Put a new API call, a different batch size, or a reworked data transformation up against the existing one—measured on production traffic, not a synthetic benchmark.
+
+**Track outcomes**.
+
+## Get started
+
+`group.experiment()` is available in the Inngest TypeScript SDK today. See the [Step Experiments docs](/docs/reference/typescript/v4/functions/group-experiment?ref=blog-introducing-group-experiment) for the full API reference, and [Run experiments in production](/docs/features/inngest-functions/steps-workflows/running-experiments?ref=blog-introducing-group-experiment) for patterns covering the full rollout lifecycle.
