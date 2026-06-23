@@ -63,7 +63,7 @@ Instead of blocking on each write, let the SDK orchestrate steps locally and exe
 
 You get speed on the happy path and safety on the failure path.
 
-This is the same insight behind write-ahead logging in databases. The log is the source of truth, but you don't block reads on every fsync. The difference is that here, the "log" is the checkpoint stream and the "reads" are step executions. Jay Kreps' [The Log: What Every Software Engineer Should Know](https://engineering.linkedin.com/distributed-systems/log-what-every-software-engineer-should-know-about-real-time-datas-unifying) is the canonical reference on why this pattern works at scale.
+This is the same insight behind write-ahead logging in databases. The log is the source of truth, but you don't block reads on every fsync. The difference is that here, the "log" is the checkpoint stream and the "reads" are step executions. Jay Kreps' [The Log: What Every Software Engineer Should Know](https://web.archive.org/web/20131217183346/http://engineering.linkedin.com/distributed-systems/log-what-every-software-engineer-should-know-about-real-time-datas-unifying) is the canonical reference on why this pattern works at scale.
 
 If you're building on Temporal, the closest equivalent is local activities. Local activities execute in-process on the workflow worker, avoiding the round-trip to the Temporal server. They do support retries and timeouts, but they're constrained by the workflow task timeout (default 10s), can't heartbeat, and if they run long or retry aggressively, they can delay signal delivery and query processing. You're fitting your activities into a box that works for short, fast operations.
 

@@ -3,6 +3,7 @@
 ^http://(localhost|127\.0\.0\.1)(:\d+)?
 
 ^https://(www\.)?linkedin\.com/
+^https://engineering\.linkedin\.com/
 ^https://(www\.)?x\.com/
 ^https://twitter\.com/
 ^https://t\.co/
