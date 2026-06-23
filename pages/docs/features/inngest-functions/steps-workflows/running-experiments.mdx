@@ -29,7 +29,7 @@ export default inngest.createFunction(
       fetchDocument(event.data.documentId)
     );
 
-    const summary = await group.experiment("model-comparison", {
+    const { result: summary } = await group.experiment("model-comparison", {
       variants: {
         gpt4o: () =>
           step.run("summarize-gpt4o", () =>
@@ -55,7 +55,7 @@ The variant selection is wrapped in a memoized step. If the function retries or 
 When users interact with your AI features repeatedly, you usually want them to get consistent behavior. Use `experiment.bucket()` with the user ID so the same user always hits the same variant.
 
 ```ts
-const response = await group.experiment("assistant-model", {
+const { result: response } = await group.experiment("assistant-model", {
   variants: {
     current: () =>
       step.run("current-model", () =>
@@ -79,7 +79,7 @@ The same user ID always maps to the same variant, even across different function
 Variant callbacks can contain multiple sequential steps. Each step is individually retried and memoized. This is useful when one approach involves more work than another, like comparing a single-shot prompt against a retrieval-augmented pipeline.
 
 ```ts
-const answer = await group.experiment("prompt-strategy", {
+const { result: answer } = await group.experiment("prompt-strategy", {
   variants: {
     single_shot: () =>
       step.run("single-shot", () =>
