@@ -83,13 +83,13 @@ select: experiment.custom(async () => {
 
 Experiments fit anywhere you want to know which implementation performed better against real production traffic, not just whether something breaks.
 
-**Migrate a vendor or database.** Route a slice of traffic to the new provider, compare error rates and latency against the old one, and ramp it up as confidence grows before cutting over.
+**[Migrate a vendor or database](/docs/patterns/ai-evals/run-experiments-in-production#bucket-keep-a-cohort-stable?ref=blog-introducing-group-experiment).** Route a slice of traffic to the new provider, compare error rates and latency against the old one, and ramp it up as confidence grows before cutting over.
 
-**Roll out a rewrite.** Canary a new version of a step at 1%, compare it against the old version on live traffic, and raise the weight over successive deploys. Roll back the moment the comparison turns.
+**[Roll out a rewrite](/docs/patterns/ai-evals/run-experiments-in-production#weighted-canary-a-rewrite?ref=blog-introducing-group-experiment).** Canary a new version of a step at 1%, compare it against the old version on live traffic, and raise the weight over successive deploys. Roll back the moment the comparison turns.
 
-**Swap an implementation.** Put a new API call, a different batch size, or a reworked data transformation up against the existing one—measured on production traffic, not a synthetic benchmark.
+**[Swap an implementation](/docs/patterns/ai-evals/run-experiments-in-production#weighted-canary-a-rewrite?ref=blog-introducing-group-experiment).** Put a new API call, a different batch size, or a reworked data transformation up against the existing one—measured on production traffic, not a synthetic benchmark.
 
-**Track outcomes**.
+**[Track outcomes](/docs/patterns/ai-evals/run-experiments-in-production#track-outcomes?ref=blog-introducing-group-experiment).** Experiments tell you which variant ran—to decide which is better, you still need an outcome signal. Use run traces, step latency, and errors for technical outcomes, or attach your own scores and analytics for product and AI-quality comparisons.
 
 ## Get started
 
