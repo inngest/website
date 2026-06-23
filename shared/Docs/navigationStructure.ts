@@ -128,7 +128,12 @@ const sectionReference: (NavGroup | NavLink)[] = [
       { title: "Testing", href: tsRef("v4", "testing") },
       { title: "Durable Endpoints", href: tsRef("v4", "durable-endpoints") },
       { title: "Deferred Functions", href: tsRef("v4", "functions/deferred-functions"), tag: "beta" },
-      { title: "group.experiment()", href: tsRef("v4", "functions/group-experiment"), className: "font-mono", tag: "beta" },
+      {
+        title: "Group",
+        links: [
+          { title: "group.experiment()", href: tsRef("v4", "functions/group-experiment"), className: "font-mono", tag: "beta" },
+        ],
+      },
       {
         title: "Steps",
         links: [
@@ -147,7 +152,7 @@ const sectionReference: (NavGroup | NavLink)[] = [
         { title: "Configuration", href: tsRef("v4", "serve") },
         { title: "Streaming", href: tsRef("v4", "serve/streaming") },
       ]},
-      { title: "Realtime", tag: "new", links: [
+      { title: "Realtime", links: [
         { title: "Overview", href: tsRef("v4", "realtime") },
         { title: "Channels & topics", href: tsRef("v4", "realtime/channels") },
         { title: "Publishing", href: tsRef("v4", "realtime/publishing") },
