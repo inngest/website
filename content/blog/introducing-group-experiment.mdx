@@ -81,16 +81,18 @@ select: experiment.custom(async () => {
 
 ## When to use experiments
 
-Experiments fit anywhere you want to know which implementation performed better against real production traffic, not just whether something breaks.
+Experiments fit anywhere you want to know which implementation performed better against real production traffic, not just whether something breaks. Each scenario maps to a selection strategy in the [Run experiments in production](/docs/patterns/ai-evals/run-experiments-in-production?ref=blog-introducing-group-experiment) pattern:
 
-**Migrate a vendor or database.** Route a slice of traffic to the new provider, compare error rates and latency against the old one, and ramp it up as confidence grows before cutting over.
+**[Roll out a change gradually](/docs/patterns/ai-evals/run-experiments-in-production?ref=blog-introducing-group-experiment#weighted-canary-a-rewrite).** Canary a rewrite at 1%, compare two models on live traffic, or test a different batch size—assign each new run by weight and ramp the split across deploys. In-flight runs keep the variant they already picked.
 
-**Roll out a rewrite.** Canary a new version of a step at 1%, compare it against the old version on live traffic, and raise the weight over successive deploys. Roll back the moment the comparison turns.
+**[Migrate a vendor or database](/docs/patterns/ai-evals/run-experiments-in-production?ref=blog-introducing-group-experiment#bucket-keep-a-cohort-stable).** Route a slice of accounts to the new provider while the rest stay put. Each customer gets a consistent experience across runs, so you can compare error rates and latency before cutting over.
 
-**Swap an implementation.** Put a new API call, a different batch size, or a reworked data transformation up against the existing one—measured on production traffic, not a synthetic benchmark.
+**[Drive rollout from a feature flag](/docs/patterns/ai-evals/run-experiments-in-production?ref=blog-introducing-group-experiment#custom-use-your-own-assignment-logic).** Read assignment from your flag service, a rollout table, or a per-account migration record—and flip a kill switch without a deploy when something goes wrong.
 
-**Track outcomes**.
+**[Lock in the winner](/docs/patterns/ai-evals/run-experiments-in-production?ref=blog-introducing-group-experiment#fixed-force-one-variant).** Once you've decided, pin the production variant and leave the experiment structure in place for the next challenger.
+
+**[Track outcomes](/docs/patterns/ai-evals/run-experiments-in-production?ref=blog-introducing-group-experiment#track-outcomes).** Experiments tell you which variant ran—to decide which is better, you still need an outcome signal. Use run traces, step latency, and errors for technical outcomes, or attach your own scores and analytics for product and AI-quality comparisons.
 
 ## Get started
 
-`group.experiment()` is available in the Inngest TypeScript SDK today. See the [Step Experiments docs](/docs/reference/typescript/v4/functions/group-experiment?ref=blog-introducing-group-experiment) for the full API reference, and [Run experiments in production](/docs/features/inngest-functions/steps-workflows/running-experiments?ref=blog-introducing-group-experiment) for patterns covering the full rollout lifecycle.
+`group.experiment()` is available in the Inngest TypeScript SDK `4.8.0` and later—upgrade if you're on an earlier release. See the [Step Experiments docs](/docs/features/inngest-functions/steps-workflows/running-experiments?ref=blog-introducing-group-experiment) to get started, and the [`group.experiment()` API reference](/docs/reference/typescript/v4/functions/group-experiment?ref=blog-introducing-group-experiment) for the full reference.
