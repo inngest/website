@@ -303,7 +303,7 @@ const sectionLearn: (NavGroup | NavLink)[] = [
         { title: "Cancel on events", href: `/docs/features/inngest-functions/cancellation/cancel-on-events` },
         { title: "Bulk cancellation", href: `/docs/guides/cancel-running-functions` },
       ]},
-      { title: "Realtime", tag: "new", links: [
+      { title: "Realtime", links: [
         { title: "Overview", href: "/docs/features/realtime" },
         { title: "React hooks / Next.js", href: "/docs/features/realtime/react-hooks" },
       ]},
