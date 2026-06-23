@@ -128,6 +128,7 @@ const sectionReference: (NavGroup | NavLink)[] = [
       { title: "Testing", href: tsRef("v4", "testing") },
       { title: "Durable Endpoints", href: tsRef("v4", "durable-endpoints") },
       { title: "Deferred Functions", href: tsRef("v4", "functions/deferred-functions"), tag: "beta" },
+      { title: "group.experiment()", href: tsRef("v4", "functions/group-experiment"), className: "font-mono", tag: "beta" },
       {
         title: "Steps",
         links: [
@@ -269,7 +270,8 @@ const sectionLearn: (NavGroup | NavLink)[] = [
         { title: "Wait for event", href: "/docs/features/inngest-functions/steps-workflows/wait-for-event" },
         { title: "Wait for signal", href: "/docs/features/inngest-functions/steps-workflows/wait-for-signal" },
         { title: "Invoke other functions", href: `/docs/guides/invoking-functions-directly` },
-        { title: "Step experiments", href: "/docs/features/inngest-functions/steps-workflows/step-experiments" },
+        { title: "Step experiments", href: "/docs/features/inngest-functions/steps-workflows/step-experiments", tag: "new" },
+        { title: "Run experiments in AI pipelines", href: "/docs/features/inngest-functions/steps-workflows/running-experiments", tag: "beta" },
         { title: "AI steps (LLM calls)", href: "/docs/features/inngest-functions/steps-workflows/step-ai-orchestration" },
         { title: "Durable Fetch", href: tsRef("v4", "functions/fetch") },
       ]},
