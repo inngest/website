@@ -207,6 +207,7 @@ const permanentRedirects = [
   ["/ai-personalized-documentation", "/docs/ai-dev-tools/agent-skills"],
   ["/ai/early-access", "/ai"],
   ["/launch-week", "/"],
+  ["/product/how-inngest-works", "/"],
   // The scheduled-jobs page moved under /uses; preserve the old URL.
   ["/scheduled-jobs", "/uses/scheduled-jobs"],
 ];
