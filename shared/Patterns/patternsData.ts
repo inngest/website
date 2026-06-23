@@ -127,6 +127,28 @@ const PATTERN_SECTIONS: PatternSectionMeta[] = [
       rgb: "249 62 106",
     },
   },
+  {
+    // AI Evals: experiments today; scoring + evals patterns to follow.
+    // TODO(design): accent + viz below reuse the purplehaze palette and the
+    // "events" diagram as placeholders. Assign a dedicated AI Evals accent and
+    // visualization before the evals launch.
+    id: "ai-evals",
+    number: "05",
+    name: "AI Evals",
+    kicker: "Experiment, score, pick winners",
+    description:
+      "Run experiments on live traffic, keep cohorts stable, and compare variants against real outcome signals. The substrate for evaluating models, prompts, and rewrites in production.",
+    viz: "events",
+    accentDeep: "#7147F1",
+    accent: {
+      text: "text-purplehaze-500",
+      border: "border-purplehaze-500",
+      bg: "bg-purplehaze-500/[0.08]",
+      gradient: "from-purplehaze-500 to-transparent",
+      hex: "#8B74F9",
+      rgb: "139 116 249",
+    },
+  },
 ];
 
 // Static pattern index. `category` matches a section id above; `slug` matches a
@@ -145,7 +167,7 @@ export const PATTERNS: PatternIndexItem[] = [
       "Break multi-step AI pipelines and complex business logic into durable, independently retried steps.",
   },
   {
-    category: "durable",
+    category: "ai-evals",
     slug: "run-experiments-in-production",
     title: "Run experiments in production",
     subtitle:
