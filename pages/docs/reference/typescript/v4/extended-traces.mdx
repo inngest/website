@@ -49,6 +49,10 @@ Because `@inngest/otel` is preloaded, the middleware's default behavior extends 
   Load `@inngest/otel/node` before importing code that uses libraries you want OpenTelemetry to instrument. Loading it later can miss instrumentation patches for modules that were already imported.
 </Callout>
 
+<Note>
+  AI metadata extraction is configured separately from Extended Traces. To stop the TypeScript SDK from extracting AI metadata from OpenTelemetry spans, set `aiMetadata: false` on the [Inngest client](/docs/reference/typescript/v4/client/create#aiMetadata). Extended Traces will continue to export spans when configured.
+</Note>
+
 ## Advanced Usage
 
 
