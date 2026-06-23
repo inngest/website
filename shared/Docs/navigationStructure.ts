@@ -67,7 +67,7 @@ const sectionReference: (NavGroup | NavLink)[] = [
       { title: "Extended Traces", href: tsRef("v3", "extended-traces") },
       { title: "Referencing functions", href: `/docs/functions/references` },
       { title: "Testing", href: tsRef("v3", "testing") },
-      { title: "Durable Endpoints", href: tsRef("v3", "durable-endpoints"), tag: "new" },
+      { title: "Durable Endpoints", href: tsRef("v3", "durable-endpoints") },
       {
         title: "Steps",
         links: [
@@ -126,7 +126,7 @@ const sectionReference: (NavGroup | NavLink)[] = [
       { title: "Extended Traces", href: tsRef("v4", "extended-traces") },
       { title: "Referencing functions", href: tsRef("v4", "functions/references") },
       { title: "Testing", href: tsRef("v4", "testing") },
-      { title: "Durable Endpoints", href: tsRef("v4", "durable-endpoints"), tag: "new" },
+      { title: "Durable Endpoints", href: tsRef("v4", "durable-endpoints") },
       { title: "Deferred Functions", href: tsRef("v4", "functions/deferred-functions"), tag: "beta" },
       {
         title: "Steps",
@@ -259,7 +259,7 @@ const sectionLearn: (NavGroup | NavLink)[] = [
         { title: "Idempotency", href: `/docs/guides/handling-idempotency` },
         { title: "Logging", href: "/docs/guides/logging" },
       ]},
-      { title: "Durable Endpoints", tag: "new", links: [
+      { title: "Durable Endpoints", links: [
         { title: "Overview", href: `/docs/learn/durable-endpoints` },
         { title: "Streaming", href: "/docs/learn/durable-endpoints/streaming" },
       ]},

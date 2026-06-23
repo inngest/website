@@ -38,8 +38,30 @@ export interface PatternSection extends PatternSectionMeta {
 
 const PATTERN_SECTIONS: PatternSectionMeta[] = [
   {
-    id: "durable",
+    // AI Evals: experiments today; scoring + evals patterns to follow.
+    // TODO(design): accent + viz below reuse the purplehaze palette and the
+    // "events" diagram as placeholders. Assign a dedicated AI Evals accent and
+    // visualization before the evals launch.
+    id: "ai-evals",
     number: "00",
+    name: "AI Evals",
+    kicker: "Experiment, score, pick winners",
+    description:
+      "Run experiments on live traffic, keep cohorts stable, and compare variants against real outcome signals. The substrate for evaluating models, prompts, and rewrites in production.",
+    viz: "events",
+    accentDeep: "#7147F1",
+    accent: {
+      text: "text-purplehaze-500",
+      border: "border-purplehaze-500",
+      bg: "bg-purplehaze-500/[0.08]",
+      gradient: "from-purplehaze-500 to-transparent",
+      hex: "#8B74F9",
+      rgb: "139 116 249",
+    },
+  },
+  {
+    id: "durable",
+    number: "01",
     name: "Durable Workflows",
     kicker: "Steps that don't lose state",
     description:
@@ -57,7 +79,7 @@ const PATTERN_SECTIONS: PatternSectionMeta[] = [
   },
   {
     id: "flow",
-    number: "01",
+    number: "02",
     name: "Flow Control",
     kicker: "Spike-proof the boring stuff",
     description:
@@ -75,7 +97,7 @@ const PATTERN_SECTIONS: PatternSectionMeta[] = [
   },
   {
     id: "events",
-    number: "02",
+    number: "03",
     name: "Event Coordination",
     kicker: "Choreograph the chaos",
     description:
@@ -93,7 +115,7 @@ const PATTERN_SECTIONS: PatternSectionMeta[] = [
   },
   {
     id: "schedule",
-    number: "03",
+    number: "04",
     name: "Scheduling",
     kicker: "Time as a first-class input",
     description:
@@ -111,7 +133,7 @@ const PATTERN_SECTIONS: PatternSectionMeta[] = [
   },
   {
     id: "jobs",
-    number: "04",
+    number: "05",
     name: "Background Jobs",
     kicker: "Off the request path",
     description:
@@ -125,28 +147,6 @@ const PATTERN_SECTIONS: PatternSectionMeta[] = [
       gradient: "from-blush-500 to-transparent",
       hex: "#F93E6A",
       rgb: "249 62 106",
-    },
-  },
-  {
-    // AI Evals: experiments today; scoring + evals patterns to follow.
-    // TODO(design): accent + viz below reuse the purplehaze palette and the
-    // "events" diagram as placeholders. Assign a dedicated AI Evals accent and
-    // visualization before the evals launch.
-    id: "ai-evals",
-    number: "05",
-    name: "AI Evals",
-    kicker: "Experiment, score, pick winners",
-    description:
-      "Run experiments on live traffic, keep cohorts stable, and compare variants against real outcome signals. The substrate for evaluating models, prompts, and rewrites in production.",
-    viz: "events",
-    accentDeep: "#7147F1",
-    accent: {
-      text: "text-purplehaze-500",
-      border: "border-purplehaze-500",
-      bg: "bg-purplehaze-500/[0.08]",
-      gradient: "from-purplehaze-500 to-transparent",
-      hex: "#8B74F9",
-      rgb: "139 116 249",
     },
   },
 ];
