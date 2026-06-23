@@ -29,7 +29,7 @@ export default inngest.createFunction(
       fetchDocument(event.data.documentId)
     );
 
-    const summary = await group.experiment("model-comparison", {
+    const { result: summary } = await group.experiment("model-comparison", {
       variants: {
         gpt4o: () =>
           step.run("summarize-gpt4o", () =>
@@ -55,7 +55,7 @@ The variant selection is wrapped in a memoized step. If the function retries or 
 When users interact with your AI features repeatedly, you usually want them to get consistent behavior. Use `experiment.bucket()` with the user ID so the same user always hits the same variant.
 
 ```ts
-const response = await group.experiment("assistant-model", {
+const { result: response } = await group.experiment("assistant-model", {
   variants: {
     current: () =>
       step.run("current-model", () =>
@@ -79,7 +79,7 @@ The same user ID always maps to the same variant, even across different function
 Variant callbacks can contain multiple sequential steps. Each step is individually retried and memoized. This is useful when one approach involves more work than another, like comparing a single-shot prompt against a retrieval-augmented pipeline.
 
 ```ts
-const answer = await group.experiment("prompt-strategy", {
+const { result: answer } = await group.experiment("prompt-strategy", {
   variants: {
     single_shot: () =>
       step.run("single-shot", () =>
@@ -101,12 +101,12 @@ const answer = await group.experiment("prompt-strategy", {
 });
 ```
 
-## Get the selected variant name
+## Get the result, variant, and a reference
 
-Set `withVariant: true` to receive both the result and which variant was selected. This is useful for logging, analytics, or downstream decisions.
+`group.experiment()` returns the variant's `result`, the selected `variant` name, and an `experimentRef`. Destructure what you need for logging, analytics, or downstream decisions.
 
 ```ts
-const outcome = await group.experiment("tone-test", {
+const { result, variant, experimentRef } = await group.experiment("tone-test", {
   variants: {
     concise: () =>
       step.run("concise-prompt", () =>
@@ -118,17 +118,18 @@ const outcome = await group.experiment("tone-test", {
       ),
   },
   select: experiment.weighted({ concise: 50, detailed: 50 }),
-  withVariant: true,
 });
 
 await step.run("log-experiment", () =>
   trackExperiment({
     experiment: "tone-test",
-    variant: outcome.variant,
-    responseLength: outcome.result.length,
+    variant,
+    responseLength: result.length,
   })
 );
 ```
+
+The `experimentRef` is a stable handle to the selected variant. Pass it to [`inngest.score.experiment()`](/docs/features/inngest-functions/steps-workflows/scoring) or a [deferred scorer](/docs/features/inngest-functions/steps-workflows/deferred-scoring) to attach a score to this experiment after the variant runs.
 
 ## Run multiple experiments in one pipeline
 
@@ -155,7 +156,6 @@ export default inngest.createFunction(
           ),
       },
       select: experiment.bucket(`${userId}:extraction`),
-      withVariant: true,
     });
 
     const summary = await group.experiment("summary-approach", {
@@ -177,7 +177,6 @@ export default inngest.createFunction(
           ),
       },
       select: experiment.bucket(`${userId}:summary`),
-      withVariant: true,
     });
 
     return { extraction, summary };

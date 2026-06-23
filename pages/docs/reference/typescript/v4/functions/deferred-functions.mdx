@@ -125,6 +125,9 @@ await step.run("notify", async () => {
       <Property name="data" type="object" required>
         Payload to send to the deferred function. Typed from `function.schema` when present.
       </Property>
+      <Property name="experiment" type="ExperimentRef">
+        An [`experimentRef`](/docs/reference/typescript/v4/functions/group-experiment) returned by `group.experiment()`. When the deferred function is a scorer, its returned score is attributed to the selected experiment variant.
+      </Property>
     </Properties>
   </Property>
 </Properties>
