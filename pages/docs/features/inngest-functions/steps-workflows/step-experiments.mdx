@@ -173,6 +173,25 @@ For AI model or prompt experiments, `withVariant: true` is often the simplest wa
 - Use `custom()` when assignment must be controlled outside code or changed without a deploy.
 - Keep selectors simple. Put the behavior you are comparing inside the variant callbacks.
 
+## Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| **Setup** | |
+| Experiments and scoring are not available. | Your SDK version must be at least `4.8.0`. |
+| **Variant selection** | |
+| The same user sees different variants across runs. | `experiment.weighted()` is seeded by run ID, not user ID. Use `experiment.bucket(userId, { weights })` for sticky user-level assignment. |
+| `select()` returns a variant that does not exist. | Make sure `experiment.fixed()`, `experiment.custom()`, or custom selector output exactly matches a key in `variants`. Typos fail the run. |
+| `experiment.bucket()` gives surprising skew. | Confirm the bucket value is not `null` or `undefined`. Missing values hash as an empty string, so they all collapse into the same deterministic bucket. |
+| **Scoring** | |
+| `step.score()` is missing or throws. | Register `scoreMiddleware()` on the Inngest client: `middleware: [scoreMiddleware()]`. |
+| Scores run, but do not attach to the experiment. | For in-callback scoring, call `step.score()` inside the selected variant callback. For outside-callback scoring, use `inngest.score.experiment()` with the returned `experimentRef`. |
+| Score values are rejected. | Score value must be a finite number or boolean. Do not pass strings, objects, `NaN`, or `Infinity`. |
+| Boolean scores look like numbers in aggregate views. | Boolean scores are valid and aggregate numerically. Treat `true` as `1` and `false` as `0` when interpreting averages. |
+| **Reading results** | |
+| A 50/50 split looks uneven. | Small samples are noisy. Fire more events before assuming selection is wrong. |
+| Two functions use the same experiment name and the dashboard feels confusing. | This is allowed, and the backend scopes detail views by function. Still, prefer distinct experiment names when humans will compare them in the list or docs. |
+
 ## Related docs
 
 - [Run experiments in AI pipelines](/docs/features/inngest-functions/steps-workflows/running-experiments?ref=docs-step-experiments)
