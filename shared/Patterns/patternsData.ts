@@ -145,6 +145,13 @@ export const PATTERNS: PatternIndexItem[] = [
       "Break multi-step AI pipelines and complex business logic into durable, independently retried steps.",
   },
   {
+    category: "durable",
+    slug: "run-experiments-in-production",
+    title: "Run experiments in production",
+    subtitle:
+      "Use group.experiment() to split traffic, keep cohorts stable, compare variants, and roll changes forward safely.",
+  },
+  {
     category: "flow",
     slug: "flash-sales-and-bursty-workflows",
     title: "Flash sales and bursty workflows",

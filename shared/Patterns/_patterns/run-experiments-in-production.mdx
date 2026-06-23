@@ -1,0 +1,161 @@
+---
+title: Run experiments in production
+subtitle: Use group.experiment() to split traffic, keep cohorts stable, compare variants, and roll changes forward safely.
+pattern: durable
+tags: [Durability, Experiments, Architecture]
+---
+
+Production experiments let you compare two versions of logic on real traffic without building a separate A/B testing system. With `group.experiment()`, you declare the variants inside an Inngest function, choose a selection strategy, and Inngest records which variant ran in the trace.
+
+This pattern is useful when you need to canary a rewrite, compare model or prompt choices, tune a costly operation, or route a stable customer cohort through a migration.
+
+## Which strategy do you need?
+
+| Goal | Strategy | Why |
+|---|---|---|
+| Roll out a rewrite gradually | `experiment.weighted()` | Split new runs by relative weights. |
+| Keep a user or account on one experience | `experiment.bucket()` | Hash a stable key to a variant. |
+| Read a flag or assignment from your own system | `experiment.custom()` | Delegate selection to your database or flag service. |
+| Pin one variant for a manual override | `experiment.fixed()` | Always choose the same variant. |
+
+Every strategy returns one variant for the run. The selected variant is memoized, so retries and replays run the same variant again.
+
+## Weighted: canary a rewrite
+
+Use `experiment.weighted()` when each new run can be assigned independently. Weights are relative, not percentages: `{ v1: 99, v2: 1 }` gives `v2` about one out of every hundred new runs, and `{ v1: 1, v2: 1 }` gives an even split.
+
+```typescript
+import { experiment } from "inngest";
+import { inngest } from "./client";
+
+export default inngest.createFunction(
+  {
+    id: "generate-invoice",
+    triggers: { event: "billing/invoice.requested" },
+  },
+  async ({ event, step, group }) => {
+    return await group.experiment("invoice-engine", {
+      variants: {
+        current: () =>
+          step.run("generate-current", () =>
+            generateInvoiceV1(event.data)
+          ),
+        rewrite: () =>
+          step.run("generate-rewrite", () =>
+            generateInvoiceV2(event.data)
+          ),
+      },
+      select: experiment.weighted({ current: 99, rewrite: 1 }),
+    });
+  }
+);
+```
+
+To ramp the rewrite, deploy new weights over time: `{ current: 90, rewrite: 10 }`, then `{ current: 50, rewrite: 50 }`, then `{ current: 0, rewrite: 100 }`. Runs that already selected a variant keep that memoized choice. New runs use the new weights.
+
+Use the same strategy to tune configuration, such as batch size or model temperature, when each run can safely receive a fresh assignment.
+
+## Bucket: keep a cohort stable
+
+Use `experiment.bucket()` when a user, account, or tenant should get the same variant across runs. Pass a stable key, such as `event.data.accountId`, and optionally pass weights for the eligible variants.
+
+```typescript
+const charge = await group.experiment("payments-provider", {
+  variants: {
+    stripe: () =>
+      step.run("charge-stripe", () =>
+        chargeStripe(event.data.order)
+      ),
+    adyen: () =>
+      step.run("charge-adyen", () =>
+        chargeAdyen(event.data.order)
+      ),
+  },
+  select: experiment.bucket(event.data.accountId, {
+    weights: { stripe: 90, adyen: 10 },
+  }),
+});
+```
+
+This is the right shape for an A/B test where users should not bounce between experiences on every request. It can also help with migrations where each account should usually stay with one provider while the rollout is active.
+
+Changing bucket weights can change future assignments for a key. If a migration requires a strict "once moved, never move back" guarantee, store the account assignment in your own database and select it with `experiment.custom()` instead.
+
+## Custom: use your own assignment logic
+
+Use `experiment.custom()` when the selection comes from a system outside Inngest: a feature flag, a rollout table, an entitlement, or a per-account migration record. The custom selector is still memoized for the run.
+
+```typescript
+const invoice = await group.experiment("invoice-engine", {
+  variants: {
+    current: () =>
+      step.run("generate-current", () =>
+        generateInvoiceV1(event.data)
+      ),
+    rewrite: () =>
+      step.run("generate-rewrite", () =>
+        generateInvoiceV2(event.data)
+      ),
+  },
+  select: experiment.custom(async () => {
+    const assignment = await rolloutAssignments.get(event.data.accountId);
+    return assignment ?? "current";
+  }),
+});
+```
+
+The selector must return one of the variant names. Use this for no-deploy kill switches too: read a flag in the selector and return the safe variant when the flag is off.
+
+## Fixed: force one variant
+
+Use `experiment.fixed()` when you want one variant every time. It is useful for manual overrides, testing a single code path, or temporarily pinning a winner while you decide whether to remove the experiment.
+
+```typescript
+select: experiment.fixed("rewrite")
+```
+
+Keeping the experiment wrapper in place lets you add another challenger later without rebuilding the function shape. When the old variant is no longer useful, remove it and simplify the function.
+
+## Track outcomes
+
+Experiments tell you which variant ran. To decide which variant is better, you still need an outcome signal. For simple technical outcomes, use the run trace, step latency, errors, and logs. For product or AI-quality outcomes, attach your own score or analytics event from inside the selected variant.
+
+```typescript
+const outcome = await group.experiment("email-copy", {
+  variants: {
+    short: () => step.run("short-copy", () => generateShortCopy(event.data)),
+    detailed: () =>
+      step.run("detailed-copy", () => generateDetailedCopy(event.data)),
+  },
+  select: experiment.bucket(event.data.userId, {
+    weights: { short: 50, detailed: 50 },
+  }),
+  withVariant: true,
+});
+
+await step.run("track-selected-variant", () =>
+  analytics.track("experiment.variant_selected", {
+    experiment: "email-copy",
+    variant: outcome.variant,
+    userId: event.data.userId,
+  })
+);
+```
+
+If the outcome is available during the run, pair the experiment with [scoring](/docs/features/inngest-functions/steps-workflows/scoring?ref=docs-patterns-run-experiments-in-production). If the outcome arrives later, use a deferred scorer or your analytics system.
+
+## Best practices
+
+- Give every experiment in a function a unique ID.
+- Keep variant names stable. Variant names appear in traces and in any analytics you emit.
+- Put real work inside `step.*` calls. Variant callbacks must call at least one `step.*` tool so the selected work is durable.
+- Use `weighted()` for independent run-level assignment and `bucket()` for stable user or account assignment.
+- Use `custom()` when changing assignment must not require a deploy, or when you need stronger migration stickiness than bucket weights provide.
+- Keep the selection strategy small. Put the behavior you are comparing in the variants, not in the selector.
+
+## Related docs
+
+- [`group.experiment()` reference](/docs/reference/typescript/v4/functions/group-experiment?ref=docs-patterns-run-experiments-in-production)
+- [Run experiments in AI pipelines](/docs/features/inngest-functions/steps-workflows/running-experiments?ref=docs-patterns-run-experiments-in-production)
+- [Score a function run](/docs/features/inngest-functions/steps-workflows/scoring?ref=docs-patterns-run-experiments-in-production)
+- [Function versioning](/docs/learn/versioning?ref=docs-patterns-run-experiments-in-production)
