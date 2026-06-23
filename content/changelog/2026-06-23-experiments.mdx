@@ -1,5 +1,5 @@
 export const title = "Experiments: safely test code changes against live production traffic";
-export const date = "2026-06-22";
+export const date = "2026-06-23";
 
 Experiments let you compare versions of a step on live production traffic, judged on the execution data only Inngest can see. Call `group.experiment("your-id", { variants, select })` with the implementations you want to compare and a selection strategy, and Inngest runs exactly one variant per run, memoized as a durable step so retries and replays never switch mid-execution.
 
