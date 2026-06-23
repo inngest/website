@@ -3,7 +3,8 @@ import { Callout, CodeGroup } from "shared/Docs/mdx";
 
 import { BookOpenIcon, CodeBracketIcon, ComputerDesktopIcon, WrenchScrewdriverIcon } from "@heroicons/react/24/outline";
 
-export const description = "Integrate AI development tools with Inngest using Model Context Protocol (MCP). Test functions, monitor execution, and debug workflows with Claude Code, Cursor, and other AI assistants."
+export const metaTitle = "Model Context Protocol (MCP) Integration";
+export const description = "Connect AI coding agents to your Inngest Dev Server via MCP. List functions, send events, and inspect runs from Claude Code, Cursor, or any MCP-compatible tool."
 
 # Model Context Protocol (MCP) Integration
 
@@ -21,6 +22,10 @@ The Inngest dev server includes a comprehensive Model Context Protocol (MCP) ser
 
 <Callout>
 The Inngest MCP server runs locally with your dev server and requires no external dependencies, API keys, or internet connection to function.
+</Callout>
+
+<Callout variant="info">
+Pair Dev Server MCP with [Inngest agent plugins and skills](/docs/ai-dev-tools/agent-skills) for the complete AI development loop. Start from the [AI development tools hub](/docs/ai-dev-tools) to choose the right resources for your coding agent.
 </Callout>
 
 ## Quick Start
@@ -306,7 +311,23 @@ Search docs for 'step\\.run.*retry' to find step retry examples
 
 ## Resources
 
-<ResourceGrid cols={2}>
+<ResourceGrid cols={3}>
+
+<Resource resource={{
+href: "/docs/ai-dev-tools",
+name: "AI Development Tools",
+icon: ComputerDesktopIcon,
+description: "Start here for Inngest MCP, agent plugins and skills, CLI workflows, and LLM-ready docs.",
+pattern: 1,
+}}/>
+
+<Resource resource={{
+href: "/docs/ai-dev-tools/agent-skills",
+name: "Agent Plugins and Skills",
+icon: CodeBracketIcon,
+description: "Install Inngest plugins and skills for Claude Code, Codex, Cursor, Windsurf, and other agents.",
+pattern: 1,
+}}/>
 
 <Resource resource={{
 href: "https://modelcontextprotocol.io/introduction",
@@ -317,7 +338,7 @@ pattern: 1,
 }}/>
 
 <Resource resource={{
-href: "/docs/dev-server",
+href: "/docs/local-development",
 name: "Inngest Dev Server Documentation",
 icon: ComputerDesktopIcon,
 description: "Comprehensive guide to the Inngest dev server and local development.",
@@ -344,9 +365,10 @@ pattern: 1,
 
 ## Related Concepts
 
+- [AI Development Tools](/docs/ai-dev-tools): Hub for MCP, agent skills, CLI workflows, and LLM-ready docs
+- [Agent Plugins and Skills](/docs/ai-dev-tools/agent-skills): Install current Inngest guidance for AI coding agents
 - [Inngest Functions](/docs/features/inngest-functions): Learn how to create and configure functions
 - [Event Triggers](/docs/features/events-triggers): Understanding event-driven architectures
 - [Local Development](/docs/local-development): Setting up your development environment
-- [Testing Functions](/docs/reference/testing): Comprehensive testing strategies
-- [Dev Server](/docs/dev-server): Complete dev server documentation
+- [Testing Functions](/docs/reference/typescript/v4/testing): Comprehensive testing strategies
 - [Error Handling](/docs/guides/error-handling): Debugging and error recovery patterns

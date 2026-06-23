@@ -269,6 +269,7 @@ const sectionLearn: (NavGroup | NavLink)[] = [
         { title: "Wait for event", href: "/docs/features/inngest-functions/steps-workflows/wait-for-event" },
         { title: "Wait for signal", href: "/docs/features/inngest-functions/steps-workflows/wait-for-signal" },
         { title: "Invoke other functions", href: `/docs/guides/invoking-functions-directly` },
+        { title: "Step experiments", href: "/docs/features/inngest-functions/steps-workflows/step-experiments", tag: "new" },
         { title: "AI steps (LLM calls)", href: "/docs/features/inngest-functions/steps-workflows/step-ai-orchestration" },
         { title: "Durable Fetch", href: tsRef("v4", "functions/fetch") },
       ]},
@@ -355,6 +356,7 @@ const sectionLearn: (NavGroup | NavLink)[] = [
         { title: "Sync your app", href: `/docs/apps/cloud` },
         { title: "Connect (workers)", href: `/docs/setup/connect`, tag: "beta" },
         { title: "Checkpointing", href: `/docs/setup/checkpointing`, tag: "new" },
+        { title: "Self-hosting", href: `/docs/self-hosting` },
         { title: "Cloud providers", links: [
           { title: "Vercel", href: "/docs/deploy/vercel" },
           { title: "DigitalOcean", href: "/docs/deploy/digital-ocean", tag: "new" },
@@ -403,6 +405,7 @@ const sectionLearn: (NavGroup | NavLink)[] = [
   {
     title: "AI",
     links: [
+      { title: "AI development tools", href: "/docs/ai-dev-tools" },
       { title: "Agent Plugins and Skills", href: "/docs/ai-dev-tools/agent-skills" },
       { title: "Dev Server MCP", href: "/docs/ai-dev-tools/mcp" },
       { title: "AgentKit", href: "https://agentkit.inngest.com", target: "_blank" },

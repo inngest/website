@@ -1,5 +1,8 @@
 import { Callout, CodeGroup } from "src/shared/Docs/mdx";
 
+export const metaTitle = "Custom Serialization Middleware | TypeScript SDK v4"
+export const description = "Control how step inputs and outputs are serialized and deserialized for custom data types."
+
 # Custom serialization
 
 Inngest sends step output, function output, and event data as JSON. This means non-JSON types like `Date`, `Map`, `Set`, or custom classes are lost during serialization. Custom serializer middleware lets you preserve these types by converting them to a JSON-safe format on the way out and restoring them on the way in.

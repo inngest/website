@@ -7,6 +7,7 @@ import {
   LOCATIONS,
   SORTS,
   TOPICS,
+  sortEventsByDate,
   type Sort,
 } from "@/components/v1/sections/Events/data";
 import {
@@ -32,8 +33,9 @@ export default function AllEvents() {
     const sorted = [...filteredByTopic];
     if (sort === "ALPHABETICAL") {
       sorted.sort((a, b) => a.title.localeCompare(b.title));
+      return sorted;
     }
-    return sorted;
+    return sortEventsByDate(sorted);
   }, [locations, topics, sort]);
 
   // Filter triggers render at Body/Lg (18px CircularXX regular, mixed

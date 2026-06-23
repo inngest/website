@@ -1,25 +1,27 @@
-import { CodeGroup, CardGroup, Card, VersionBadge, Callout } from "src/shared/Docs/mdx";
+import { VersionBadge, Callout } from "src/shared/Docs/mdx";
 
 
-export const description = "Enrich your Inngest Traces with your application's OpenTelemetry traces";
+
+export const metaTitle = "OpenTelemetry Integration with Inngest"
+export const description = "Enrich Inngest function traces with your application's OpenTelemetry spans. Set up the ExtendedTraces middleware for end-to-end distributed tracing."
 
 # Set up OpenTelemetry with Inngest <VersionBadge version="TypeScript only" />
 
-Inngest's [Extended Traces](/docs/platform/monitor/traces#extended-traces) enables you to forward your application OpenTelemetry traces into
+Inngest's [Extended Traces](/docs/platform/monitor/traces#extended-traces) enables you to export your application OpenTelemetry traces into
 Inngest's Traces for a unified observability and debugging experience, both in the DevServer and Platform.
 
-This guide covers how to **set up OpenTelemetry with Inngest Traces** and how to **create custom spans**.
+This guide covers how to **connect OpenTelemetry with Inngest Traces** and how to **create custom spans**.
 
 ## Set up Inngest Extended Traces with an existing OpenTelemetry client
 
-If your application already uses an OpenTelemetry client, the Inngest `extendedTracesMiddleware()` should be configured properly to
-capture your application traces while not registering the Node.js instrumentations twice.
+If your application already uses an OpenTelemetry client, use your existing provider, exporters, resources, sampling, and instrumentations, then add Inngest's span processor to export spans to Inngest Traces.
 
-Here's a Node.js application OpenTelemetry setup (_exporting traces via OTLP_) using Inngest Extended Traces:
+Here's a Node.js application OpenTelemetry setup (_exporting traces via OTLP_) using Inngest Extended Traces. This example uses `@opentelemetry/auto-instrumentations-node`; if your application already has an instrumentation list, keep using that list instead.
 
 ```ts tracing.ts
 import { NodeSDK } from "@opentelemetry/sdk-node";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
+import { getNodeAutoInstrumentations } from "@opentelemetry/auto-instrumentations-node";
 
 import { Inngest } from "inngest";
 import { InngestSpanProcessor, extendedTracesMiddleware } from "inngest/experimental";
@@ -28,8 +30,9 @@ import { InngestSpanProcessor, extendedTracesMiddleware } from "inngest/experime
 export const inngest = new Inngest({
   id: "nodejs-open-telemetry-example",
   name: "NodeJS Open Telemetry Example",
-  // set to "off" if your OTel client has some `instrumentations` configured
-  middleware: [extendedTracesMiddleware({ behaviour: "auto" })],
+
+  // We'll create the provider and instrumentation later, so use "off" to prevent middleware from doing it.
+  middleware: [extendedTracesMiddleware({ behaviour: "off" })],
 });
 
 // Configure OTLP endpoint for Jaeger using the HTTP exporter
@@ -45,7 +48,10 @@ const traceExporter = new OTLPTraceExporter({
 const sdk = new NodeSDK({
   traceExporter: traceExporter,
   spanProcessors: [new InngestSpanProcessor(inngest)],
-  // Set service name for Jaeger
+
+  // Add the instrumentation your app needs. The getNodeAutoInstrumentations function captures common Node.js libraries; some libraries require their own instrumentation package.
+  instrumentations: [getNodeAutoInstrumentations()],
+
   serviceName: "nodejs-open-telemetry-example",
 });
 
@@ -61,38 +67,52 @@ console.log(
 );
 ```
 
-This setup is the most robust as it won't force you to follow a strict import order to get your OTel and Inngest Tracing to work together.
-With this setup, your application OTel traces (e.g., Express API) will continue to be exported to your OTLP compatible ingestor (e.g., Jaeger) while
-the Inngest Extended Traces will be forwarded to the Inngest DevServer or Platform.
+With this setup, your application OTel traces (e.g., Express API) continue to be exported to your OTLP compatible ingestor (e.g., Jaeger), while Inngest Extended Traces are exported to the Inngest server.
 
 <Callout>
 
 **Which Extended Traces `behaviour` mode should I use?**
 
-If your current OpenTelemetry setup includes some auto instrumentations (e.g., `@opentelemetry/auto-instrumentations-node`), set the `behaviour` mode to `"off"` to avoid duplicated traces.
+If you create the OpenTelemetry provider yourself and add `InngestSpanProcessor`, set `behaviour` to `"off"`.
 
-If you'd like to benefit from database queries and HTTP request traces in your Inngest Traces, set `behaviour` to `"auto"`.
+If you want the middleware to attach to an already-registered provider, set `behaviour` to `"extendProvider"`.
+
+Avoid `behaviour: "createProvider"` for new setups. That path is deprecated in favor of `@inngest/otel`.
 
 </Callout>
 
 
-## Set up Inngest Extended Traces WITHOUT an existing OpenTelemetry client
+## Set up Inngest Extended Traces without an existing OpenTelemetry client
 
-Setting up Inngest Extended Traces without an existing OpenTelemetry client only requires adding the `extendedTracesMiddleware()`
-to your Inngest client as follows:
+If your application does not already configure OpenTelemetry, use [`@inngest/otel`](https://www.npmjs.com/package/@inngest/otel) to install the Node.js provider and common instrumentations.
 
- ```ts client.ts
-// Create your client the same as you would normally
+Preload it before your application:
+
+```shell
+node --import @inngest/otel/node ./app.js
+```
+
+If `--import` is not available, use a small bootstrap file as your process entrypoint. Because ESM static imports are evaluated before the importing module runs, keep the dynamic `await import("./app.js")`; a static `import "./app.js"` in the same file can load app modules before instrumentation is registered.
+
+```ts bootstrap.ts
+import "@inngest/otel/node";
+
+await import("./app.js");
+```
+
+Then configure your Inngest client to use the Extended Traces middleware:
+
+```ts client.ts
 import { Inngest } from "inngest";
 import { extendedTracesMiddleware } from "inngest/experimental";
 
 export const inngest = new Inngest({
   id: "my-app",
-  middleware: [extendedTracesMiddleware()]
+  middleware: [extendedTracesMiddleware()],
 });
 ```
 
-This configuration will enrich your Inngest Traces with database queries and HTTP request spans.
+Because `@inngest/otel` is preloaded, the middleware's default behavior extends the existing provider. This configuration enriches your Inngest Traces with database queries, HTTP request spans, and other spans from the instrumentation included in `@inngest/otel`.
 
 
 ## How to create custom spans with Inngest Extended Traces

@@ -4,7 +4,7 @@ import PageShell from "@/components/v1/PageShell";
 import LogoMarquee from "@/components/v1/sections/Home/LogoMarquee";
 import Button from "@/components/v1/Button";
 import EventCardLarge from "@/components/v1/sections/Events/EventCardLarge";
-import type { EventItem } from "@/components/v1/sections/Events/data";
+import { sortEventsByDate } from "@/components/v1/sections/Events/data";
 
 const EVENT = {
   title: "Meet Inngest at AI Engineer World's Fair",
@@ -17,11 +17,12 @@ const EVENT = {
 const GCAL_URL =
   "https://calendar.google.com/calendar/appointments/schedules/AcZssZ3G2ScOpUcmeFwEPSbRH3BdtK8fY627O4WX8dOeVA3s7Lzt17qKiIxu_4VgEHXJZ_Fgdj7EpB67?gv=true";
 
-const OTHER_EVENTS: EventItem[] = [
+const OTHER_EVENTS = sortEventsByDate([
   {
     id: "aiewf-lunch",
-    title: "innhouse lunch with E2B",
+    title: "Innhouse lunch with E2B",
     date: "Wednesday, July 1 · 12–2 PM",
+    startsAt: "2026-07-01T12:00:00-07:00",
     location: "San Francisco, CA",
     topics: ["free lunch", "rooftop dj", "senor sisig"],
     excerpt:
@@ -30,9 +31,23 @@ const OTHER_EVENTS: EventItem[] = [
     image: "/assets/v1/events/innhouse-card.png",
   },
   {
+    id: "aiewf-dan-talk",
+    title: "Your agent architecture has a half-life of 6 months",
+    date: "Wednesday, July 1 · 12:05–12:25 PM PT",
+    startsAt: "2026-07-01T12:05:00-07:00",
+    location: "San Francisco, CA",
+    topics: ["talk", "agents", "architecture"],
+    excerpt:
+      "Dan Farrelly on building agent architecture that survives the next trend cycle — Expo Stage 1 at AI Engineer World's Fair.",
+    href: "/events/your-agent-architecture-half-life",
+    image: "/assets/v1/events/agent-architecture-half-life.png",
+    imageFit: "contain",
+  },
+  {
     id: "aiewf-afterparty",
     title: "AI World's Fair Afterparty",
     date: "Wednesday, July 1 · 6–9 PM",
+    startsAt: "2026-07-01T18:00:00-07:00",
     location: "San Francisco, CA",
     topics: ["happy hour", "networking", "digital darts"],
     excerpt:
@@ -41,9 +56,22 @@ const OTHER_EVENTS: EventItem[] = [
     image: "/assets/v1/events/june-sf-engineer.png",
   },
   {
+    id: "aiewf-breakfast-nebius",
+    title: "No Half-Baked Agents: Breakfast w/ Inngest & Nebius",
+    date: "Thursday, July 2 · 8–9:30 AM PT",
+    startsAt: "2026-07-02T08:00:00-07:00",
+    location: "San Francisco, CA",
+    topics: ["breakfast", "nebius", "Innhouse"],
+    excerpt:
+      "Breakfast tacos, coffee & matcha with the teams building the GPU infrastructure and reliability layer your agents depend on — just steps from Moscone West.",
+    href: "/events/no-half-baked-agents-breakfast",
+    image: "/assets/v1/events/no-half-baked-agents-breakfast.png",
+  },
+  {
     id: "aiewf-ai-in-prod",
     title: "{AI} in Production",
     date: "Thursday, July 2 · 6–8 PM PDT",
+    startsAt: "2026-07-02T18:00:00-07:00",
     location: "San Francisco, CA",
     topics: ["meetup", "ai", "production"],
     excerpt:
@@ -51,7 +79,7 @@ const OTHER_EVENTS: EventItem[] = [
     href: "https://luma.com/5kvakl4z",
     image: "/assets/v1/events/ai-in-prod-meetup.png",
   },
-];
+]);
 
 export default function AIEngineerWorldsFair() {
   return (

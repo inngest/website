@@ -1,5 +1,8 @@
 import { CodeGroup, Callout, Properties, Property } from "src/shared/Docs/mdx";
 
+export const metaTitle = "Concurrency Configuration Reference"
+export const description = "Set limits, keys, and scopes to control step-level parallelism across function runs."
+
 # Managing concurrency
 
 Limit the number of concurrently running steps for your function with the [`concurrency`](/docs/reference/functions/create#configuration) configuration options. Setting an optional `key` parameter limits the concurrency for each unique value of the expression.
