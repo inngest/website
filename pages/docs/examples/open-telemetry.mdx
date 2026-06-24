@@ -11,7 +11,7 @@ OpenTelemetry lets Inngest connect what happens inside a function run to the lib
 
 Inngest uses OpenTelemetry for two separate features:
 
-- **AI metadata extraction:** Extract AI metadata from OpenTelemetry spans instrumented with Open Inference and attach it to the step where the model call happened. This is enabled by default with `aiMetadata: true`.
+- **AI metadata extraction:** Extract AI metadata from OpenTelemetry spans with OpenTelemetry GenAI attributes and attach it to the step where the model call happened. This is enabled by default with `aiMetadata: true`.
 - **Extended Traces:** Export spans from inside your function run into [Inngest Traces](/docs/platform/monitor/traces#extended-traces), so database queries, HTTP calls, AI requests, and custom spans appear in the run timeline.
 
 This guide first shows how to set up OpenTelemetry in your process. After that, it shows how to use that setup for AI metadata extraction and Extended Traces.
@@ -22,7 +22,7 @@ Use [`@inngest/otel`](https://www.npmjs.com/package/@inngest/otel) if you want I
 
 ### Automatic setup with `@inngest/otel`
 
-If your application does not already configure OpenTelemetry, use [`@inngest/otel`](https://www.npmjs.com/package/@inngest/otel) to install the Node.js provider and common instrumentations.
+If your application does not already configure OpenTelemetry, install and use [`@inngest/otel`](https://www.npmjs.com/package/@inngest/otel) to setup a Node.js provider and common instrumentations.
 
 Preload it before your application:
 
