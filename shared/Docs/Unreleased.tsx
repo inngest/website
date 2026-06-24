@@ -35,11 +35,15 @@ export function useUnreleasedLabels(): Set<string> {
 export function Unreleased({
   label,
   children,
+  fallback = null,
 }: {
   label: string;
   children: React.ReactNode;
+  // Rendered instead of `children` when the label isn't visible. Defaults to
+  // nothing (inline use); pass a "not found" placeholder when gating a whole page.
+  fallback?: React.ReactNode;
 }) {
-  return useUnreleasedLabels().has(label) ? <>{children}</> : null;
+  return useUnreleasedLabels().has(label) ? <>{children}</> : <>{fallback}</>;
 }
 
 // Recursively drop nav entries whose `unreleased` label isn't visible. Nav is a

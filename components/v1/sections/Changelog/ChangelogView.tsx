@@ -2,6 +2,7 @@ import ContentMenu, {
   type ContentMenuGroup,
 } from "@/components/v1/ContentMenu";
 import { SectionProvider } from "shared/Docs/SectionProvider";
+import { Unreleased } from "shared/Docs/Unreleased";
 import TrackChangelogView from "@/app/_changelog/TrackChangelogView";
 import EntryArticle from "@/components/v1/sections/Changelog/EntryArticle";
 import { type ChangelogItem } from "@/components/v1/sections/Changelog/data";
@@ -36,9 +37,18 @@ export default function ChangelogView({
         {/* Entry column — 44px between entries (left column, row 2). */}
         <SectionProvider sections={[]}>
           <div className="flex flex-col gap-11 lg:col-start-1 lg:row-start-2">
-            {entries.map((item, idx) => (
-              <EntryArticle key={`${idx}-${item.slug}`} item={item} />
-            ))}
+            {entries.map((item, idx) => {
+              const key = `${idx}-${item.slug}`;
+              // A gated entry is hidden on the server and revealed client-side
+              // only when ?unreleased includes its label.
+              return item.metadata.unreleased ? (
+                <Unreleased key={key} label={item.metadata.unreleased}>
+                  <EntryArticle item={item} />
+                </Unreleased>
+              ) : (
+                <EntryArticle key={key} item={item} />
+              );
+            })}
           </div>
         </SectionProvider>
 
