@@ -49,6 +49,7 @@ export {
   LanguageTitle,
 } from "./Code";
 export { DownloadLink } from "./DownloadLink";
+export { Beta } from "./Beta";
 
 import { PageActions } from "./PageActions";
 

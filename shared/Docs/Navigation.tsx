@@ -32,6 +32,7 @@ import {
   NavLinkGroup,
   isNavLink,
 } from "./navigationStructure";
+import { useBetaVisible, filterBetaNav } from "./Beta";
 import * as Accordion from "@radix-ui/react-accordion";
 import { ChevronDownIcon, CheckIcon } from "@heroicons/react/24/outline";
 import { MobileSearch } from "./Search";
@@ -847,6 +848,9 @@ export function Navigation(props) {
   const { effectiveLanguage, effectiveTsVersion, setLanguage, setTsVersion } =
     useHydratedLanguageState(pathname);
 
+  const betaVisible = useBetaVisible();
+  const visibleMenuTabs = filterBetaNav(menuTabs, betaVisible);
+
   // Find the section based on the active tab (Learn/Reference)
   const nestedSection =
     getAllSections(topLevelNav).find(
@@ -859,8 +863,11 @@ export function Navigation(props) {
   // This way crawlers can still see all the links
   const nestedNavigation = useMemo(() => {
     if (!nestedSection) return null;
-    return nestedSection;
-  }, [nestedSection]);
+    return {
+      ...nestedSection,
+      sectionLinks: filterBetaNav(nestedSection.sectionLinks ?? [], betaVisible),
+    };
+  }, [nestedSection, betaVisible]);
 
   const activeGroup = useMemo(
     () =>
@@ -890,7 +897,7 @@ export function Navigation(props) {
         <MobileSearch />
 
         <ul role="list" className="flex flex-col lg:hidden">
-          {menuTabs.map((tab, idx) => (
+          {visibleMenuTabs.map((tab, idx) => (
             <li key={idx}>
               <TopLevelNavItem
                 href={tab.href}
@@ -977,8 +984,9 @@ export function Navigation(props) {
             <>
               <Accordion.Root
                 key={
-                  // re-mount on page navigation
-                  pathname
+                  // re-mount on page navigation, and after the beta reveal so a
+                  // beta page's own group auto-opens once its nav link appears
+                  `${pathname}:${betaVisible}`
                 }
                 type="multiple"
                 defaultValue={defaultOpenGroupTitles}

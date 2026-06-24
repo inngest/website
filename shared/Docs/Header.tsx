@@ -19,6 +19,7 @@ import { ModeToggle } from "./ModeToggle";
 import { HeaderSearchIcon, Search } from "./Search";
 import { menuTabs } from "./navigationStructure";
 import { TabItem } from "./Navigation";
+import { useBetaVisible, filterBetaNav } from "./Beta";
 
 function Separator() {
   return (
@@ -44,6 +45,8 @@ export const Header = forwardRef<HTMLDivElement>(function Header(
   let { scrollY } = useScroll();
   let bgOpacityLight = useTransform(scrollY, [0, 72], [0.5, 0.9]);
   let bgOpacityDark = useTransform(scrollY, [0, 72], [0.2, 0.8]);
+
+  const visibleMenuTabs = filterBetaNav(menuTabs, useBetaVisible());
 
   return (
     // @ts-ignore
@@ -77,7 +80,7 @@ export const Header = forwardRef<HTMLDivElement>(function Header(
 
         <nav className="ml-4 hidden lg:block">
           <ul role="list" className="flex items-center">
-            {menuTabs.map((tab) => (
+            {visibleMenuTabs.map((tab) => (
               <TabItem key={tab.title} href={tab.href} matcher={tab.matcher} title={tab.title}>
                 {tab.title}
               </TabItem>

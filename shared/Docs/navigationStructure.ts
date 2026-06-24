@@ -20,6 +20,7 @@ export type NavLink = {
   className?: string;
   tag?: string;
   target?: string;
+  beta?: boolean;
 };
 
 export type NavLinkGroup = {
@@ -35,6 +36,7 @@ export type NavGroup = {
   defaultOpen?: boolean;
   tag?: string;
   target?: string;
+  beta?: boolean;
 };
 
 export type NavSection = NavLink & {
@@ -42,6 +44,7 @@ export type NavSection = NavLink & {
   matcher?: RegExp | Function;
   tag?: string;
   target?: string;
+  beta?: boolean;
   sectionLinks: {
     title: string;
     links: NavLink[];
@@ -134,6 +137,7 @@ const sectionReference: (NavGroup | NavLink)[] = [
       { title: "Testing", href: tsRef("v4", "testing") },
       { title: "Durable Endpoints", href: tsRef("v4", "durable-endpoints") },
       { title: "Deferred Functions", href: tsRef("v4", "functions/deferred-functions"), tag: "beta" },
+      { title: "Scoring", href: tsRef("v4", "functions/scoring"), tag: "beta", beta: true },
       {
         title: "Group",
         links: [
@@ -307,6 +311,8 @@ const sectionLearn: (NavGroup | NavLink)[] = [
           { title: "Wait for signal", href: "/docs/features/inngest-functions/steps-workflows/wait-for-signal" },
           { title: "Invoke other functions", href: `/docs/guides/invoking-functions-directly` },
           { title: "Step experiments", href: "/docs/features/inngest-functions/steps-workflows/step-experiments", tag: "new" },
+          { title: "Scoring", href: "/docs/features/inngest-functions/steps-workflows/scoring", tag: "beta", beta: true },
+          { title: "Deferred scoring", href: "/docs/features/inngest-functions/steps-workflows/deferred-scoring", tag: "beta", beta: true },
           { title: "AI steps (LLM calls)", href: "/docs/features/inngest-functions/steps-workflows/step-ai-orchestration" },
           { title: "Durable Fetch", href: tsRef("v4", "functions/fetch") },
         ]
