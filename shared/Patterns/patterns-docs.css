@@ -375,6 +375,40 @@ html.dark .pattern-scope {
   margin-top: 6px;
 }
 
+/* ─── Category filter chips (in-page browse, no per-category route) ────────── */
+.pattern-scope .cat-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 2px 0 18px;
+  max-width: 760px;
+}
+.pattern-scope .cat-filter {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+  padding: 7px 13px;
+  border-radius: 999px;
+  border: 1px solid rgb(var(--border-subtle));
+  background: transparent;
+  color: rgb(var(--fg-muted));
+  cursor: pointer;
+  transition: color 0.12s ease, border-color 0.12s ease, background 0.12s ease;
+}
+.pattern-scope .cat-filter:hover {
+  color: rgb(var(--fg-base));
+  border-color: rgb(var(--border-muted));
+}
+.pattern-scope .cat-filter.is-active {
+  color: var(--accent-text, rgb(var(--info)));
+  border-color: var(--accent-text, rgb(var(--info)));
+  background: color-mix(
+    in srgb,
+    var(--accent-text, rgb(var(--info))) 9%,
+    transparent
+  );
+}
+
 /* ─── Category rows (pattern list) ────────────────────────────────────────── */
 .pattern-scope .cat-rows { display: flex; flex-direction: column; margin-top: 4px; max-width: 760px; }
 .pattern-scope .cat-row {

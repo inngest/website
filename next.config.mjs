@@ -196,6 +196,17 @@ const permanentRedirects = [
     "/docs/patterns/ai-evals/run-experiments-in-production",
   ],
 
+  // Per-category pattern pages were removed; browsing by primitive is now
+  // in-page state on the hub. Redirect the old category index URLs to the hub.
+  // (Slug pages /docs/patterns/<category>/<slug> are unaffected — these only
+  // match the single-segment category index.)
+  ["/docs/patterns/durable", "/docs/patterns"],
+  ["/docs/patterns/ai-evals", "/docs/patterns"],
+  ["/docs/patterns/flow", "/docs/patterns"],
+  ["/docs/patterns/events", "/docs/patterns"],
+  ["/docs/patterns/schedule", "/docs/patterns"],
+  ["/docs/patterns/jobs", "/docs/patterns"],
+
   // New IA: platform + use-case pages replacing legacy landing pages, plus
   // a few standalone LPs being retired.
   ["/uses/durable-workflows", "/platform/durable-execution"],
@@ -425,15 +436,11 @@ async function rewrites() {
     // beforeFiles run before page/filesystem matching, so these intercept the
     // raw-markdown URLs before the dynamic /docs/patterns/[category]/[slug]
     // pages would 404 on them. Segment counts don't collide: index (3) /
-    // category (4) / pattern (5).
+    // pattern (5).
     beforeFiles: [
       {
         source: "/docs/patterns/md",
         destination: "/api/patterns/md",
-      },
-      {
-        source: "/docs/patterns/:category/md",
-        destination: "/api/patterns/category/:category/md",
       },
       {
         source: "/docs/patterns/:category/:slug/md",

@@ -10,6 +10,7 @@ import {
 import Viz from "../../../shared/Patterns/Viz";
 import AgentView from "../../../shared/Patterns/AgentView";
 import { indexMarkdown } from "../../../shared/Patterns/markdown";
+import { usePatternFilterStore } from "../../../shared/Patterns/patternsFilterStore";
 import "../../../shared/Patterns/patterns-docs.css";
 
 const META_DESCRIPTION =
@@ -53,6 +54,17 @@ function scope(s: { accent: { hex: string }; accentDeep: string }) {
 export default function PatternsLanding() {
   const router = useRouter();
   const sections = getPatternSections();
+  const activeCategory = usePatternFilterStore((s) => s.category);
+  const setCategory = usePatternFilterStore((s) => s.setCategory);
+
+  // Flatten patterns (with their section) so the hub can list and filter them
+  // in place, instead of routing through per-category pages.
+  const allPatterns = sections.flatMap((s) =>
+    s.patterns.map((p) => ({ pattern: p, section: s }))
+  );
+  const visiblePatterns = activeCategory
+    ? allPatterns.filter(({ section }) => section.id === activeCategory)
+    : allPatterns;
 
   if (router.query.view === "agent") {
     return (
@@ -118,29 +130,56 @@ export default function PatternsLanding() {
 
       <div className="md-prose">
         <h2 className="md-h2" id="browse">
-          Browse by primitive
+          Browse patterns
         </h2>
-        <p className="md-p">Pick a category to see its patterns.</p>
+        <p className="md-p">Filter by primitive, or browse them all.</p>
       </div>
 
-      <div className="cat-grid">
+      <div
+        className="cat-filters"
+        role="tablist"
+        aria-label="Filter patterns by primitive"
+      >
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeCategory === null}
+          className={`cat-filter${activeCategory === null ? " is-active" : ""}`}
+          onClick={() => setCategory(null)}
+        >
+          All
+        </button>
         {sections.map((s: PatternSection) => (
-          <Link
+          <button
             key={s.id}
-            className="cat-card"
-            href={`/docs/patterns/${s.id}`}
+            type="button"
+            role="tab"
+            aria-selected={activeCategory === s.id}
+            className={`cat-filter${
+              activeCategory === s.id ? " is-active" : ""
+            }`}
+            style={scope(s)}
+            onClick={() => setCategory(s.id)}
+          >
+            {s.name}
+          </button>
+        ))}
+      </div>
+
+      <div className="cat-rows">
+        {visiblePatterns.map(({ pattern: p, section: s }) => (
+          <Link
+            key={`${s.id}/${p.slug}`}
+            className="cat-row"
+            href={`/docs/patterns/${s.id}/${p.slug}`}
             style={scope(s)}
           >
-            <div className="cat-card-head">
-              <span className="cat-card-num mono">{s.number}</span>
-              <span className="cat-card-dot" />
-            </div>
-            <span className="cat-card-name">{s.name}</span>
-            <span className="cat-card-kicker">{s.kicker}</span>
-            <span className="cat-card-meta mono">
-              {s.patterns.length}{" "}
-              {s.patterns.length === 1 ? "pattern" : "patterns"}{" "}
-              <Arrow s={12} />
+            <span className="cat-row-body">
+              <span className="cat-row-title">{p.title}</span>
+              <span className="cat-row-sub">{p.subtitle}</span>
+            </span>
+            <span className="cat-row-arrow">
+              <Arrow s={14} />
             </span>
           </Link>
         ))}

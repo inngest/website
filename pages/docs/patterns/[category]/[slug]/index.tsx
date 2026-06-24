@@ -132,7 +132,7 @@ export default function PatternPage({
       <div className="md-prose">
         <span className="cat-eyebrow mono">
           <span className="cat-eyebrow-dot" />
-          <Link href={`/docs/patterns/${category}`} className="md-link" style={{ border: 0 }}>
+          <Link href="/docs/patterns" className="md-link" style={{ border: 0 }}>
             {sectionName}
           </Link>
         </span>
