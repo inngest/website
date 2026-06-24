@@ -65,6 +65,8 @@ Only the selected variant runs. The other variant callbacks are skipped.
 
 The experiment selection is itself a durable, memoized step. When a function run reaches `group.experiment()` for the first time, Inngest evaluates the `select` strategy and stores the selected variant. If the run retries or replays later, it uses the same selected variant again.
 
+Because the selection is a single step, each `group.experiment()` counts as one step toward your function run and billing metrics. Any steps you run inside the selected variant are metered separately, like any other step.
+
 Variant callbacks can contain normal step tools, including `step.run()`, `step.invoke()`, `step.waitForEvent()`, and `step.sendEvent()`. Each step inside the selected variant is retried and memoized like any other step.
 
 <Callout>
