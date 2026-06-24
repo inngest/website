@@ -19,7 +19,7 @@ import { ModeToggle } from "./ModeToggle";
 import { HeaderSearchIcon, Search } from "./Search";
 import { menuTabs } from "./navigationStructure";
 import { TabItem } from "./Navigation";
-import { useBetaVisible, filterBetaNav } from "./Beta";
+import { useUnreleasedLabels, filterUnreleasedNav } from "./Unreleased";
 
 function Separator() {
   return (
@@ -46,7 +46,7 @@ export const Header = forwardRef<HTMLDivElement>(function Header(
   let bgOpacityLight = useTransform(scrollY, [0, 72], [0.5, 0.9]);
   let bgOpacityDark = useTransform(scrollY, [0, 72], [0.2, 0.8]);
 
-  const visibleMenuTabs = filterBetaNav(menuTabs, useBetaVisible());
+  const visibleMenuTabs = filterUnreleasedNav(menuTabs, useUnreleasedLabels());
 
   return (
     // @ts-ignore

@@ -10,7 +10,7 @@ import { Home } from "./Home";
 import { Header } from "./Header";
 import Logo from "../Icons/Logo";
 import { Navigation, PageSidebar, ActiveSectionProvider } from "./Navigation";
-import { useBetaVisible } from "./Beta";
+import { useUnreleasedLabels } from "./Unreleased";
 import { Prose } from "./Prose";
 import { SectionProvider } from "./SectionProvider";
 import { useMobileNavigationStore } from "./MobileNavigation";
@@ -72,8 +72,9 @@ export type Props = {
   hidePageSidebar?: boolean;
   /* Optional Schema.org object(s) exported from MDX as structuredData */
   structuredData?: DocsStructuredData;
-  /* Set via `export const beta = true` to gate the whole page behind ?beta */
-  beta?: boolean;
+  /* Set via `export const unreleased = "label"` to gate the whole page until
+     ?unreleased includes that label */
+  unreleased?: string;
 };
 
 export function Layout({
@@ -85,12 +86,13 @@ export function Layout({
   sourceFilePath,
   hidePageSidebar,
   structuredData: pageStructuredData,
-  beta,
+  unreleased,
 }: Props) {
   const router = useRouter();
-  // A beta page is hidden (body, TOC, prev/next) until ?beta is present.
-  const betaVisible = useBetaVisible();
-  const gated = !!beta && !betaVisible;
+  // An unreleased page is hidden (body, TOC, prev/next) until ?unreleased
+  // includes its label.
+  const unreleasedLabels = useUnreleasedLabels();
+  const gated = !!unreleased && !unreleasedLabels.has(unreleased);
   const noRightSidebar = hidePageSidebar || gated;
   const sdkLanguage = getLanguageFromPath(router.asPath) || SDK_ALL;
   const sdkVersion = getSdkVersionFromPath(router.asPath) || SDK_ALL;

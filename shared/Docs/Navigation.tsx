@@ -32,7 +32,7 @@ import {
   NavLinkGroup,
   isNavLink,
 } from "./navigationStructure";
-import { useBetaVisible, filterBetaNav } from "./Beta";
+import { useUnreleasedLabels, filterUnreleasedNav } from "./Unreleased";
 import * as Accordion from "@radix-ui/react-accordion";
 import { ChevronDownIcon, CheckIcon } from "@heroicons/react/24/outline";
 import { MobileSearch } from "./Search";
@@ -848,8 +848,10 @@ export function Navigation(props) {
   const { effectiveLanguage, effectiveTsVersion, setLanguage, setTsVersion } =
     useHydratedLanguageState(pathname);
 
-  const betaVisible = useBetaVisible();
-  const visibleMenuTabs = filterBetaNav(menuTabs, betaVisible);
+  const unreleasedLabels = useUnreleasedLabels();
+  const visibleMenuTabs = filterUnreleasedNav(menuTabs, unreleasedLabels);
+  // Stable string for the accordion remount key below.
+  const unreleasedKey = Array.from(unreleasedLabels).sort().join(",");
 
   // Find the section based on the active tab (Learn/Reference)
   const nestedSection =
@@ -865,9 +867,12 @@ export function Navigation(props) {
     if (!nestedSection) return null;
     return {
       ...nestedSection,
-      sectionLinks: filterBetaNav(nestedSection.sectionLinks ?? [], betaVisible),
+      sectionLinks: filterUnreleasedNav(
+        nestedSection.sectionLinks ?? [],
+        unreleasedLabels
+      ),
     };
-  }, [nestedSection, betaVisible]);
+  }, [nestedSection, unreleasedLabels]);
 
   const activeGroup = useMemo(
     () =>
@@ -984,9 +989,9 @@ export function Navigation(props) {
             <>
               <Accordion.Root
                 key={
-                  // re-mount on page navigation, and after the beta reveal so a
-                  // beta page's own group auto-opens once its nav link appears
-                  `${pathname}:${betaVisible}`
+                  // re-mount on page navigation, and after an unreleased reveal so
+                  // a gated page's own group auto-opens once its nav link appears
+                  `${pathname}:${unreleasedKey}`
                 }
                 type="multiple"
                 defaultValue={defaultOpenGroupTitles}
