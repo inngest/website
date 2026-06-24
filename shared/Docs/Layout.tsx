@@ -179,6 +179,7 @@ export function Layout({
       <MDXProvider components={mdxComponents as any}>
         <Head>
           <title>{pageTitle}</title>
+          {gated && <meta name="robots" content="noindex, nofollow" />}
           <meta name="description" content={metaDescription}></meta>
           <meta property="og:title" content={pageTitle} />
           <meta property="og:description" content={metaDescription} />

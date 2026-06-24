@@ -25,7 +25,9 @@ export function useUnreleasedLabels(): Set<string> {
     const merged = new Set([...fromStore, ...fromUrl]);
     if (fromUrl.length)
       sessionStorage.setItem(PARAM, Array.from(merged).join(","));
-    setLabels(merged);
+    // No labels anywhere (the common case) → leave state untouched so public
+    // pages do zero extra re-renders.
+    if (merged.size) setLabels(merged);
   }, []);
   return labels;
 }
