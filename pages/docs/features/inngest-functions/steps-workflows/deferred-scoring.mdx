@@ -1,10 +1,9 @@
-import { Callout, CodeGroup, Beta } from "src/shared/Docs/mdx";
+import { Callout, CodeGroup } from "src/shared/Docs/mdx";
 
 
 export const metaTitle = "Deferred Scoring | Run Evaluators After Completion"
 export const description = "Build reusable background scorers that evaluate AI outputs after a function completes, triggered by events that arrive asynchronously."
-
-<Beta>
+export const beta = true
 
 # Build a deferred scorer
 
@@ -129,5 +128,3 @@ Inngest matches this event to any waiting scorer by the `ticketId` field. The sc
 
 - [Score a function run](/docs/features/inngest-functions/steps-workflows/scoring) for inline scoring
 - [Run experiments](/docs/patterns/ai-evals/run-experiments-in-production) to compare variants using scores
-
-</Beta>

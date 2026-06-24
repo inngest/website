@@ -12,6 +12,7 @@ import {
   topLevelNav,
 } from "./navigationStructure";
 import SocialBadges from "./SocialBadges";
+import { useBetaVisible } from "./Beta";
 
 function CheckIcon(props) {
   return (
@@ -162,7 +163,11 @@ function flattenNav(nav: any): NavLink[] {
 
 function PageNavigation() {
   let router = useRouter();
-  let allPages = flattenNav(topLevelNav);
+  const betaVisible = useBetaVisible();
+  // Drop beta pages from prev/next so they don't leak from adjacent public pages.
+  let allPages = flattenNav(topLevelNav).filter(
+    (page) => betaVisible || !page.beta
+  );
   let currentPageIndex = allPages.findIndex(
     (page) => page.href === router.pathname
   );
