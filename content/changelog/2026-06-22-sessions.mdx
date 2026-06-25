@@ -1,0 +1,10 @@
+export const title = "Sessions: investigate related runs";
+export const date = "2026-06-22";
+
+We've added Sessions to make it easier to investigate related work across your environment.
+
+When sending events, attach a stable session key and ID with `meta.sessions`, then use the Sessions page to jump from a domain concept like a conversation, support ticket, or import to the runs it produced.
+
+This is especially useful for AI agents and long-running workflows where one user action can fan out into multiple functions. Sessions show run counts, failures, recent activity, and the functions involved for each session.
+
+Read the [Sessions docs](/docs/features/events-triggers/sessions?ref=changelog-sessions) to start sending sessions with your events.
