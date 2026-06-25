@@ -10,6 +10,7 @@ import { Home } from "./Home";
 import { Header } from "./Header";
 import Logo from "../Icons/Logo";
 import { Navigation, PageSidebar, ActiveSectionProvider } from "./Navigation";
+import { useUnreleasedLabels } from "./Unreleased";
 import { Prose } from "./Prose";
 import { SectionProvider } from "./SectionProvider";
 import { useMobileNavigationStore } from "./MobileNavigation";
@@ -71,6 +72,9 @@ export type Props = {
   hidePageSidebar?: boolean;
   /* Optional Schema.org object(s) exported from MDX as structuredData */
   structuredData?: DocsStructuredData;
+  /* Set via `export const unreleased = "label"` to gate the whole page until
+     ?unreleased includes that label */
+  unreleased?: string;
 };
 
 export function Layout({
@@ -82,8 +86,14 @@ export function Layout({
   sourceFilePath,
   hidePageSidebar,
   structuredData: pageStructuredData,
+  unreleased,
 }: Props) {
   const router = useRouter();
+  // An unreleased page is hidden (body, TOC, prev/next) until ?unreleased
+  // includes its label.
+  const unreleasedLabels = useUnreleasedLabels();
+  const gated = !!unreleased && !unreleasedLabels.has(unreleased);
+  const noRightSidebar = hidePageSidebar || gated;
   const sdkLanguage = getLanguageFromPath(router.asPath) || SDK_ALL;
   const sdkVersion = getSdkVersionFromPath(router.asPath) || SDK_ALL;
 
@@ -169,6 +179,7 @@ export function Layout({
       <MDXProvider components={mdxComponents as any}>
         <Head>
           <title>{pageTitle}</title>
+          {gated && <meta name="robots" content="noindex, nofollow" />}
           <meta name="description" content={metaDescription}></meta>
           <meta property="og:title" content={pageTitle} />
           <meta property="og:description" content={metaDescription} />
@@ -245,7 +256,7 @@ export function Layout({
                 <Navigation className="hidden lg:block" />
               </motion.header>
 
-              {hidePageSidebar ? null : (
+              {noRightSidebar ? null : (
                 // @ts-ignore
                 <motion.nav
                   layoutScroll
@@ -257,27 +268,44 @@ export function Layout({
                 </motion.nav>
               )}
 
-              {tsV4Banner}
+              {!gated && tsV4Banner}
 
               <div
                 className={clsx(
                   "relative px-4 pt-14 sm:px-6 lg:px-8 xl:pl-8 xl:pr-16",
-                  hidePageSidebar && "xl:mr-32 2xl:mr-10",
-                  !hidePageSidebar && "xl:mr-40 2xl:mr-80"
+                  noRightSidebar && "xl:mr-32 2xl:mr-10",
+                  !noRightSidebar && "xl:mr-40 2xl:mr-80"
                 )}
               >
                 <main className="pt-6 lg:pt-8 xl:pr-8">
-                  <Prose as="article">
-                    <Breadcrumb />
-                    {children}
-                    <div
-                      className={
-                        hidePageSidebar ? "py-10" : "pb-12 pt-10 xl:pr-0"
-                      }
-                    >
-                      <Footer editPageURL={editPageURL} />
+                  {gated ? (
+                    <div className="py-24 text-center">
+                      <h1 className="text-2xl font-semibold text-basis">
+                        Page not found
+                      </h1>
+                      <p className="mt-3 text-subtle">
+                        This page is not available.
+                      </p>
+                      <Link
+                        href="/docs"
+                        className="mt-6 inline-block font-medium text-breeze-600 hover:text-breeze-500 dark:text-breeze-300 dark:hover:text-breeze-400"
+                      >
+                        Back to documentation
+                      </Link>
                     </div>
-                  </Prose>
+                  ) : (
+                    <Prose as="article">
+                      <Breadcrumb />
+                      {children}
+                      <div
+                        className={
+                          noRightSidebar ? "py-10" : "pb-12 pt-10 xl:pr-0"
+                        }
+                      >
+                        <Footer editPageURL={editPageURL} />
+                      </div>
+                    </Prose>
+                  )}
                 </main>
               </div>
             </div>
