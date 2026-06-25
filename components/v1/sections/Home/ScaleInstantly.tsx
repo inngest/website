@@ -26,8 +26,8 @@ interface Capability {
 }
 
 interface TabContent {
-  /** Lead-in sentence (large frost heading-style paragraph). */
-  intro: string;
+  /** Per-tab headline, rendered as the section H2. */
+  heading: string;
   /** Supporting paragraphs (each rendered as its own block). */
   body: string[];
   /** Dashboard video shown to the right of the intro copy. */
@@ -39,7 +39,7 @@ interface TabContent {
 // ── Retries & Reliability ──────────────────────────────────────────────
 // Real content (the original "Durability belongs in code" copy).
 const RETRIES_CONTENT: TabContent = {
-  intro: "Inngest collapses event-driven complexity into APIs in your codebase.",
+  heading: "Durability belongs in code",
   body: [
     "Because durability lives in code—not tied to any specific infrastructure pattern—the same primitives that power your background jobs also power agents and apps. And because Inngest handles execution, you get full observability by default.",
     "No new infrastructure. No new instrumentation. No new architecture when there’s a new ‘right way’ to build in 6 weeks’ time.",
@@ -109,7 +109,7 @@ const icon = (i: number) => {
 
 // ── Flow Control ────────────────────────────────────────────────────────
 const FLOW_CONTROL_CONTENT: TabContent = {
-  intro: "The control layer queues are missing",
+  heading: "The control layer queues are missing",
   body: [
     "Basic queues have no idea what to do when you’ve got multiple users competing for the same resource. Noisy neighbors, hand-rolled rate limits, priority queue sprawl, wasted compute… Inngest’s flow control features ensure every user gets their fair share, without extra work.",
   ],
@@ -150,7 +150,7 @@ const FLOW_CONTROL_CONTENT: TabContent = {
 
 // ── Agent Observability ─────────────────────────────────────────────────
 const OBSERVABILITY_CONTENT: TabContent = {
-  intro: "Judge on outcomes, not output",
+  heading: "Judge on outcomes, not output",
   body: [
     "How do you know if your agent works? If you want to know which variant actually performed better, you used to have to stitch together data from multiple systems, implement human reviews, and build a layer of instrumentation on top. Inngest captures all of this data by default, so you can add scoring the same way you add retries.",
   ],
@@ -229,7 +229,7 @@ export default function ScaleInstantly({
             change so the new copy fades in rather than swapping in place. */}
         <div className="px-4 pt-11 lg:px-11 lg:pt-16">
           <motion.h2 {...reveals.heading} className={V1_SECTION_TITLE}>
-            Durability belongs in code
+            {content.heading}
           </motion.h2>
 
           <div
@@ -257,12 +257,6 @@ function Header({ content }: { content: TabContent }) {
       "
     >
         <div className="flex flex-col gap-6 lg:pr-8 lg:pt-11">
-          <motion.p
-            {...reveals.body}
-            className="text-v1-heading-sm !text-[clamp(1.25rem,4vw,1.625rem)] !leading-[1.2] text-v1-frost"
-          >
-            {content.intro}
-          </motion.p>
           <motion.p
             {...reveals.body}
             className="text-v1-body-lg-loose !text-[clamp(1rem,3vw,1.125rem)] !leading-[1.45] text-v1-frost"
