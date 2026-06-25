@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { formatSnippetFileContent } from "@/mdx/utils/snippet.mjs";
 import { convertMdxToMarkdown } from "@/mdx/utils/mdx-to-markdown";
+import { isUnreleasedMdx } from "../../utils";
 
 /**
  * Recursively finds all markdown files in the pages/docs directory
@@ -24,6 +25,10 @@ function getAllDocPaths(): string[] {
       } else if (entry.isFile()) {
         // Check if it's a markdown file
         if (entry.name.endsWith(".mdx") || entry.name.endsWith(".md")) {
+          // Skip pages gated behind ?unreleased=<label>.
+          if (isUnreleasedMdx(fs.readFileSync(fullPath, "utf-8"))) {
+            continue;
+          }
           // Handle index files - use the directory path
           if (entry.name === "index.mdx" || entry.name === "index.md") {
             const docPath = relativePath || "";
@@ -97,6 +102,13 @@ export async function GET(
 
   try {
     const content = fs.readFileSync(filePath, "utf-8");
+    // Don't serve the markdown mirror for gated (unreleased) pages.
+    if (isUnreleasedMdx(content)) {
+      return new Response("Document not found", {
+        status: 404,
+        statusText: "Document not found",
+      });
+    }
     const contentWithSnippets = inlineSnippets(content);
     const contentWithMarkdownURLs = convertDocsURLsToMarkdownURLs(contentWithSnippets);
     const processedContent = await convertMdxToMarkdown(contentWithMarkdownURLs);

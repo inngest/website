@@ -57,6 +57,8 @@ function recursiveLinks(
   depth: number = 0
 ) {
   return links
+    // Skip items gated behind ?unreleased=<label> so they don't leak here.
+    .filter((link) => !(link as { unreleased?: string }).unreleased)
     .map((link) => {
       const indent = "  ".repeat(depth); // Create indentation based on depth
       if ("links" in link) {

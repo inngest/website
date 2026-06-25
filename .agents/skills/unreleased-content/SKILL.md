@@ -76,6 +76,7 @@ Delete the gate — that's the entire "ship it" step:
 - Gated content is **not in the visible DOM** and gated pages/entries are **`noindex`**, so it stays out of search.
 - **Known residual:** the gated content's data still ends up in the page's serialized payload (`__NEXT_DATA__` for docs section titles; the RSC Flight `<script>` for a changelog entry body). It is not in the rendered DOM and not in Algolia's content index, but it is present in the HTML source. This is the cost of revealing server-rendered content client-side without a hard 404.
 - This is a **soft gate**: the URL still returns `200` (no middleware/404). Fine for "not yet public," not for secrets.
+- **Agent surfaces:** the server-rendered docs outputs (`docs-markdown`, `llms.txt`, `llms-full.txt`) have no client param, so gated docs pages are excluded from them server-side (the `.md` mirror 404s). They detect the gate via `isUnreleasedMdx()` in `app/(llms)/utils.ts`.
 
 ## Gotchas
 
