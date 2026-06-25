@@ -64,7 +64,11 @@ export interface NavItem {
 }
 
 const PLATFORM_MENU: NavMenu = {
-  width: 900,
+  // Sized to the (short) item labels + the 400px promo card. 900 was tuned
+  // for the older long descriptions; with the current copy the column is
+  // ~200px, so a narrower panel keeps the promo flush right (matches the
+  // Use Cases menu's tightness) instead of leaving dead space.
+  width: 724,
   items: [
     {
       label: "Durable Execution",
