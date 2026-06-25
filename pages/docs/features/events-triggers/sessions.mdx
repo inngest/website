@@ -12,7 +12,7 @@ Add `meta.sessions` to an event when you want the Inngest dashboard to show all 
 Sessions do not change which functions run. They add event metadata that makes related runs easier to find and inspect.
 
 <Callout variant="info">
-  Sending `meta.sessions` is supported in the TypeScript SDK v4.7.0 and later.
+  When sending events with the TypeScript SDK, `meta.sessions` is supported in v4.7.0 and later.
 </Callout>
 
 ## When to use sessions
@@ -56,6 +56,10 @@ In the example above:
 - `conv_1234` is the session ID
 
 You can use the same session key across many events. Each unique session ID becomes a session in the dashboard.
+
+<Callout variant="info">
+  Webhook transforms can also add sessions by returning `meta.sessions` in the transformed event. See [webhook transforms](/docs/platform/webhooks?ref=docs-sessions#defining-a-transform-function) for more details.
+</Callout>
 
 ## Sessions and steps
 
