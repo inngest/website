@@ -4,20 +4,31 @@ import { useEffect, useRef } from "react";
 
 /**
  * Inlines the evals-dashboard SVG and animates it in once when it scrolls
- * into view, matching the feel of the home "Traces, metrics, evals"
- * visuals: stroked structure + chart lines DRAW ON (stroke-dashoffset),
- * while the filled content (text, swatches) STAGGERS in top-to-bottom.
+ * into view, matching the home "Traces, metrics, evals" feel: stroked
+ * structure + chart lines DRAW ON (stroke-dashoffset) while filled content
+ * (text, swatches) RISES + fades in. Everything cascades top-to-bottom by
+ * vertical position. Plays once; respects reduced-motion.
  *
- * The SVG is a flat list of paths with no layer ids, so elements are
- * classified at runtime by attribute (stroke vs fill) and the fade is
- * staggered by each path's vertical position. Plays once; respects
- * reduced-motion (renders the final state immediately).
+ * Uses CSS @keyframes (not transitions) so the start state lives in the
+ * `from` frame — the draw-on can't snap to the end if timing is off, which
+ * is exactly what was happening before. The export has no layer ids, so
+ * paths are classified at runtime by attribute and staggered by bbox Y.
  */
 const SVG_SRC = "/assets/v1/agent-evals/evals.svg";
-
-// SVG intrinsic aspect (785 × 425) — reserve the box so there's no shift
-// before the markup loads.
 const ASPECT = "785 / 425";
+const EASE = "cubic-bezier(0.16, 0.84, 0.3, 1)";
+const STYLE_ID = "ae-anim-keyframes";
+
+function ensureKeyframes() {
+  if (document.getElementById(STYLE_ID)) return;
+  const st = document.createElement("style");
+  st.id = STYLE_ID;
+  st.textContent = `
+@keyframes ae-draw { from { stroke-dashoffset: var(--ae-len); opacity: 0 } to { stroke-dashoffset: 0; opacity: 1 } }
+@keyframes ae-rise { from { opacity: 0; transform: translateY(14px) } to { opacity: 1; transform: translateY(0) } }
+@keyframes ae-fade { from { opacity: 0 } to { opacity: 1 } }`;
+  document.head.appendChild(st);
+}
 
 export default function AnimatedEvals() {
   const hostRef = useRef<HTMLDivElement>(null);
@@ -31,14 +42,22 @@ export default function AnimatedEvals() {
       "(prefers-reduced-motion: reduce)"
     ).matches;
 
+    const yOf = (p: SVGGraphicsElement) => {
+      try {
+        return p.getBBox().y;
+      } catch {
+        return 0;
+      }
+    };
+
     fetch(SVG_SRC)
       .then((r) => r.text())
       .then((markup) => {
         if (cancelled || !host) return;
+        ensureKeyframes();
         host.innerHTML = markup;
         const svg = host.querySelector("svg");
         if (!svg) return;
-        // Make the inlined SVG fluid inside its frame.
         svg.removeAttribute("width");
         svg.removeAttribute("height");
         svg.setAttribute("class", "block h-full w-full");
@@ -52,73 +71,66 @@ export default function AnimatedEvals() {
         const fills = paths.filter(
           (p) => !isStroke(p) && (p.getAttribute("fill") ?? "none") !== "none"
         );
+        if (reduce) return; // leave fully visible
 
-        // Reduced motion: leave everything visible, no animation.
-        if (reduce) return;
-
-        // Initial hidden state.
-        strokes.forEach((p) => {
+        // ── Hidden start state (matches each keyframe's `from`) ────────
+        type Item = { p: SVGPathElement; y: number; kind: "draw" | "fade" | "rise" };
+        const items: Item[] = [];
+        for (const p of strokes) {
           let len = 0;
           try {
             len = p.getTotalLength();
           } catch {
             /* non-pathable */
           }
-          if (!len) return;
-          p.style.strokeDasharray = `${len}`;
-          p.style.strokeDashoffset = `${len}`;
-          p.style.transition = "none";
-        });
-        const fillBands = fills.map((p) => {
-          let y = 0;
-          try {
-            y = p.getBBox().y;
-          } catch {
-            /* ignore */
-          }
           p.style.opacity = "0";
-          p.style.transform = "translateY(8px)";
-          p.style.transition = "none";
-          return { p, y };
-        });
-        // Force the initial styles to commit before transitioning.
-        void svg.getBoundingClientRect();
+          if (len) {
+            p.style.setProperty("--ae-len", `${len}`);
+            p.style.strokeDasharray = `${len}`;
+            p.style.strokeDashoffset = `${len}`;
+            items.push({ p, y: yOf(p), kind: "draw" });
+          } else {
+            items.push({ p, y: yOf(p), kind: "fade" });
+          }
+        }
+        for (const p of fills) {
+          p.style.opacity = "0";
+          p.style.transform = "translateY(14px)";
+          items.push({ p, y: yOf(p), kind: "rise" });
+        }
 
-        const ys = fillBands.map((b) => b.y);
+        const ys = items.map((i) => i.y);
         const minY = Math.min(...ys, 0);
-        const maxY = Math.max(...ys, 1);
-        const span = Math.max(1, maxY - minY);
+        const span = Math.max(1, Math.max(...ys, 1) - minY);
 
-        const run = () => {
-          strokes.forEach((p, i) => {
-            if (!p.style.strokeDasharray) return;
-            p.style.transition = `stroke-dashoffset 1100ms cubic-bezier(0.22,0.61,0.27,1) ${Math.min(
-              i * 12,
-              360
-            )}ms`;
-            p.style.strokeDashoffset = "0";
-          });
-          fillBands.forEach(({ p, y }) => {
-            const band = (y - minY) / span; // 0 (top) → 1 (bottom)
-            const delay = Math.round(220 + band * 720);
-            p.style.transition = `opacity 460ms ease-out ${delay}ms, transform 460ms cubic-bezier(0.22,0.61,0.27,1) ${delay}ms`;
-            p.style.opacity = "1";
-            p.style.transform = "translateY(0)";
-          });
+        const play = () => {
+          for (const { p, y, kind } of items) {
+            const band = (y - minY) / span; // 0 top → 1 bottom
+            if (kind === "draw") {
+              const delay = Math.round(band * 700);
+              p.style.animation = `ae-draw 1300ms ${EASE} ${delay}ms forwards`;
+            } else if (kind === "fade") {
+              const delay = Math.round(band * 700);
+              p.style.animation = `ae-fade 420ms ease-out ${delay}ms forwards`;
+            } else {
+              const delay = Math.round(260 + band * 900);
+              p.style.animation = `ae-rise 520ms ${EASE} ${delay}ms forwards`;
+            }
+          }
         };
 
         io = new IntersectionObserver(
           (entries) => {
             for (const e of entries) {
               if (e.isIntersecting) {
-                run();
                 io?.disconnect();
                 io = null;
+                play();
                 return;
               }
             }
           },
-          { rootMargin: "0px 0px -10% 0px", threshold: 0.2 }
+          { rootMargin: "0px 0px -15% 0px", threshold: 0.15 }
         );
         io.observe(host);
       })
