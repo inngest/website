@@ -22,8 +22,8 @@ Score a run or step. Can be called inside or outside a function.
   <Property name="name" type="string" required>
     A label for the score. Use consistent names across runs for aggregation. Examples: `"accuracy"`, `"user-feedback"`, `"guardrail-pass"`.
   </Property>
-  <Property name="value" type="number" required>
-    The score value. Numeric. Use 0-1 for percentages, integers for counts, or any range that fits your use case.
+  <Property name="value" type="number | boolean" required>
+    The score value. Use 0-1 for percentages, integers for counts, or any range that fits your use case. Booleans are recorded as 1/0.
   </Property>
   <Property name="runId" type="string">
     The run to score. Required when scoring from outside a function. Omit when scoring the current run from inside a function.
@@ -62,8 +62,8 @@ Write a durable, memoized score from within a function. The score write is wrapp
   <Property name="name" type="string" required>
     Score label.
   </Property>
-  <Property name="value" type="number" required>
-    Score value.
+  <Property name="value" type="number | boolean" required>
+    Score value. Booleans are recorded as 1/0.
   </Property>
 </Properties>
 

@@ -121,6 +121,20 @@ See the [TypeScript reference](/docs/reference/typescript/v4/functions/scoring) 
 
 ---
 
+## Score values
+
+A score's `value` can be a `number` or a `boolean`:
+
+- **Numbers** can use any range that fits your use case — `0`–`1` for percentages or pass rates, integers for counts (tokens, tool calls), or raw measurements (latency in ms). Use a consistent range per `name` so the dashboard aggregates cleanly.
+- **Booleans** are convenient for pass/fail outcomes; `true`/`false` are recorded as `1`/`0`.
+
+```ts
+await step.score("guardrail-pass", { name: "guardrail-pass", value: true });
+await step.score("latency", { name: "latency_ms", value: 920 });
+```
+
+---
+
 ## Where scores appear
 
 Scores show up in two places:
