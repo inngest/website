@@ -107,6 +107,20 @@ This is how you score based on signals that arrive after the function finishes: 
 
 ---
 
+## Parameters
+
+| Parameter | Where | Type | Required | Notes |
+| --- | --- | --- | --- | --- |
+| `memoizationId` | 1st arg of `step.score` | `string` | Yes (`step.score` only) | Durable step ID; unique within the run. Not used by `inngest.score`. |
+| `name` | options | `string` | Yes | Score label. Use consistent names across runs so they aggregate. |
+| `value` | options | `number \| boolean` | Yes | See [Score values](#score-values) below. |
+| `runId` | options | `string` | No | Required when scoring from outside a function; inferred from context otherwise. |
+| `stepId` | options | `string` | No | Omit to attach the score to the run; set to attach it to that step's trace. |
+
+See the [TypeScript reference](/docs/reference/typescript/v4/functions/scoring) for full type signatures.
+
+---
+
 ## Where scores appear
 
 Scores show up in two places:
