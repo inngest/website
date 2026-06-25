@@ -33,7 +33,7 @@ export default inngest.createFunction(
     });
 
     // Score this run based on whether guardrails passed
-    await step.score({ name: "guardrail-pass", value: passed ? 1 : 0 });
+    await step.score("guardrail-pass", { name: "guardrail-pass", value: passed ? 1 : 0 });
 
     return { summary, passed };
   }

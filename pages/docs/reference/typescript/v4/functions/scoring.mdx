@@ -51,11 +51,14 @@ await inngest.score({
 
 ---
 
-## `step.score(options)`
+## `step.score(memoizationId, options)`
 
-Score the current run from within a step context. Same options as `inngest.score()` but `runId` is automatically set to the current run.
+Write a durable, memoized score from within a function. The score write is wrapped in a step, so it executes exactly once and is not re-sent on replays or retries. Same options as `inngest.score()` but `runId` is automatically set to the current run.
 
 <Properties>
+  <Property name="memoizationId" type="string" required>
+    The durable step ID used to memoize this score write. Like the ID passed to `step.run()`, it must be unique within the run.
+  </Property>
   <Property name="name" type="string" required>
     Score label.
   </Property>
@@ -65,7 +68,7 @@ Score the current run from within a step context. Same options as `inngest.score
 </Properties>
 
 ```ts
-await step.score({ name: "guardrail-pass", value: 1 });
+await step.score("guardrail-pass", { name: "guardrail-pass", value: 1 });
 ```
 
 ---
