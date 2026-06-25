@@ -28,6 +28,10 @@ export type BlogPost = {
   focusCta?: string;
   // When hidden, the post will be available on at the URL, but not in any blog feed of RSS
   hide?: boolean;
+  // When set, the post is gated behind ?unreleased=<label>: hidden from the blog
+  // index, related cards, RSS, blog.txt, and the .md mirror, and its page 404s
+  // (noindex) until the label is present. See shared/Docs/Unreleased.
+  unreleased?: string;
   /** Hides default hero image/title; use Report* MDX components instead. */
   reportLayout?: boolean;
   // When featured is false, post will be hidden from main feed, but available on category pages
