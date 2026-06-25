@@ -26,7 +26,8 @@ function ensureKeyframes() {
   st.textContent = `
 @keyframes ae-draw { from { stroke-dashoffset: var(--ae-len); opacity: 0 } to { stroke-dashoffset: 0; opacity: 1 } }
 @keyframes ae-rise { from { opacity: 0; transform: translateY(14px) } to { opacity: 1; transform: translateY(0) } }
-@keyframes ae-fade { from { opacity: 0 } to { opacity: 1 } }`;
+@keyframes ae-fade { from { opacity: 0 } to { opacity: 1 } }
+@keyframes ae-pop { from { opacity: 0; transform: scale(0.4) } to { opacity: 1; transform: scale(1) } }`;
   document.head.appendChild(st);
 }
 
@@ -74,7 +75,11 @@ export default function AnimatedEvals() {
         if (reduce) return; // leave fully visible
 
         // ── Hidden start state (matches each keyframe's `from`) ────────
-        type Item = { p: SVGPathElement; y: number; kind: "draw" | "fade" | "rise" };
+        type Item = {
+          p: SVGGraphicsElement;
+          y: number;
+          kind: "draw" | "fade" | "rise" | "pop";
+        };
         const items: Item[] = [];
         for (const p of strokes) {
           let len = 0;
@@ -98,23 +103,42 @@ export default function AnimatedEvals() {
           p.style.transform = "translateY(14px)";
           items.push({ p, y: yOf(p), kind: "rise" });
         }
+        // Dots (the lollipop markers) are <circle>s — pop them in AFTER
+        // the lines have drawn. scale() needs fill-box so it grows from
+        // each dot's own centre rather than the SVG origin.
+        const dots = Array.from(
+          svg.querySelectorAll<SVGCircleElement>("circle")
+        );
+        for (const c of dots) {
+          c.style.transformBox = "fill-box";
+          c.style.transformOrigin = "center";
+          c.style.opacity = "0";
+          c.style.transform = "scale(0.4)";
+          items.push({ p: c, y: yOf(c), kind: "pop" });
+        }
 
         const ys = items.map((i) => i.y);
         const minY = Math.min(...ys, 0);
         const span = Math.max(1, Math.max(...ys, 1) - minY);
 
+        // Lines finish drawing at ~LINE_END ms; dots start just after.
+        const LINE_END = 1450;
         const play = () => {
           for (const { p, y, kind } of items) {
             const band = (y - minY) / span; // 0 top → 1 bottom
             if (kind === "draw") {
-              const delay = Math.round(band * 700);
-              p.style.animation = `ae-draw 1300ms ${EASE} ${delay}ms forwards`;
+              const delay = Math.round(band * 450);
+              p.style.animation = `ae-draw 1000ms ${EASE} ${delay}ms forwards`;
             } else if (kind === "fade") {
-              const delay = Math.round(band * 700);
-              p.style.animation = `ae-fade 420ms ease-out ${delay}ms forwards`;
+              const delay = Math.round(band * 450);
+              p.style.animation = `ae-fade 360ms ease-out ${delay}ms forwards`;
+            } else if (kind === "rise") {
+              const delay = Math.round(200 + band * 700);
+              p.style.animation = `ae-rise 480ms ${EASE} ${delay}ms forwards`;
             } else {
-              const delay = Math.round(260 + band * 900);
-              p.style.animation = `ae-rise 520ms ${EASE} ${delay}ms forwards`;
+              // dots — pop in after the lines have come in
+              const delay = Math.round(LINE_END + band * 320);
+              p.style.animation = `ae-pop 420ms ${EASE} ${delay}ms forwards`;
             }
           }
         };
