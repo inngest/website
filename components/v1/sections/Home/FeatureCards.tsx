@@ -53,7 +53,7 @@ export interface FeatureCard {
 export const CARDS: FeatureCard[] = [
   {
     id: "retries",
-    label: "Retries & Reliability",
+    label: "Durable execution",
     vector: "/assets/v1/feature-cards/retries.svg",
     vectorWidth: 85,
     vectorHeight: 70.51, // viewBox 208.397 × 172.823
@@ -82,9 +82,10 @@ export const CARDS: FeatureCard[] = [
     vectorWidth: 85,
     vectorHeight: 69.7, // viewBox 205.848 × 168.771
     bodyLines: [
-      "Your APM is missing context. Trace everything,",
-      "and replay anything, so you know exactly what",
-      "failed and why."
+      "Observability that lives outside the execution",
+      "chain misses context. Trace everything, replay",
+      "anything, and eval variants based on real",
+      "product outcomes."
     ],
   },
 ];
