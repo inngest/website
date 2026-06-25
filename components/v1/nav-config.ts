@@ -69,20 +69,26 @@ const PLATFORM_MENU: NavMenu = {
     {
       label: "Durable Execution",
       href: "/platform/durable-execution",
-      description: "Learn about durable workflows, retries, and more",
+      description: "Run code reliably",
       icon: "durable-execution",
     },
     {
       label: "Queues & Flow Control",
       href: "/platform/flow-control",
-      description: "Compare Inngest to legacy queues",
+      description: "Scale apps efficiently",
       icon: "queues",
     },
     {
       label: "Observability",
       href: "/platform/observability",
-      description: "Monitor every function run in real time",
+      description: "Troubleshoot quickly",
       icon: "observability",
+    },
+    {
+      label: "Agent Evals",
+      href: "/platform/agent-evals",
+      description: "Choose the best variant",
+      icon: "agent-evals",
     },
   ],
   promo: {
