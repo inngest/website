@@ -25,6 +25,7 @@ Read the migration guide at https://www.inngest.com/docs-markdown/reference/type
 
 - Triggers moving into the options object (1st arg of createFunction)
 - EventSchemas being replaced with eventType() and staticSchema()
+- `event.user` being removed; move required fields into `event.data`
 - Serve options (signingKey, baseUrl, etc.) moving to the client constructor
 - step.invoke() no longer accepting string function IDs
 - Set `maxRuntime` option for `checkpointing` if running on serverless.
@@ -171,6 +172,43 @@ await inngest.send(userCreated.create({ userId: "1", email: "a@b.com" }));
 <Tip>
   Please note: `staticSchema` expects a `type`, not an `interface`. You may need to convert existing interfaces to types.
 </Tip>
+
+### Remove `event.user`
+
+The deprecated `event.user` field has been removed. If you previously sent user information on the top-level `user` field or read it from `event.user` inside a function, move the data your function needs into `event.data` instead.
+
+```ts
+// Old (v3)
+await inngest.send({
+  name: "user/created",
+  user: { id: "user_123" },
+});
+
+inngest.createFunction(
+  { id: "sync-user-profile" },
+  { event: "user/created" },
+  async ({ event }) => {
+    await syncUserProfile(event.user.id);
+  }
+);
+
+// New (v4)
+await inngest.send({
+  name: "user/created",
+  data: { userId: "user_123" },
+});
+
+inngest.createFunction(
+  { id: "sync-user-profile", triggers: { event: "user/created" } },
+  async ({ event }) => {
+    await syncUserProfile(event.data.userId);
+  }
+);
+```
+
+`event.user` was left over from a deprecated feature and is not saved in the event store. This made it incompatible with features that reload stored event payloads, such as function run replay, where `event.user` was always an empty object.
+
+If you used `event.user` to keep sensitive values encrypted, use [encryption middleware](/docs/reference/typescript/v4/middleware/encryption) instead.
 
 ### Rename `serveHost` to `serveOrigin`
 
