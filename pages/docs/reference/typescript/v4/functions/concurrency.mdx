@@ -1,5 +1,8 @@
 import { CodeGroup, Callout, Properties, Property } from "src/shared/Docs/mdx";
 
+export const metaTitle = "Concurrency | TypeScript SDK v4 Reference"
+export const description = "Set step-level concurrency limits with key expressions for per-user or per-tenant scoping."
+
 # Managing concurrency
 
 Limit the number of concurrently running steps for your function with the [`concurrency`](/docs/reference/typescript/v4/functions/create#configuration) configuration options. Setting an optional `key` parameter limits the concurrency for each unique value of the expression.

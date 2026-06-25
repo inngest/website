@@ -314,7 +314,7 @@ The key principle: specialization should be driven by **measured necessity**, no
 
 The approach that we're using today to build our systems is generic and works for all three modes: sync, async, and scheduled. These are some things that we'll be exploring next as these primitives:
 
-- **Self-iterating agents**. With scheduled sub-agents, why couldn't the agents keep iterating on themselves and the systems. Cost and budgets will naturally come into consideration.
+- [**Self-iterating agents**](/blog/agent-loop-architecture?ref=blog-three-patterns-you-need-for-agentic-systems). With scheduled sub-agents, why couldn't the agents keep iterating on themselves and the systems. Cost and budgets will naturally come into consideration.
 - **Orchestration-awareness**. Async and scheduled sub-agents return their event ID. With APIs and context, the any agent or sub-agent in the system could be aware of what's running, where, go fetch status, results. It becomes less of a loop + fan-out and more of a web.
 - **Callbacks and other patterns**. The current reference example uses the channel as the callback mechanism when work is done, but what could a generic sub-agent system look like with different types of callbacks, e.g. update a Linear task, store a reference of the research or report in a database. Tools can be used for this, but callbacks provide some level of guarantee.
 

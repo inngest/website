@@ -1,5 +1,8 @@
 import { Info, Callout, Properties, Property, Row, Col, CodeGroup, VersionBadge } from "src/shared/Docs/mdx";
 
+export const metaTitle = "Create the Inngest Client | TypeScript SDK v4 Reference"
+export const description = "Configure your app ID, event schemas, signing key, logger, and middleware for the Inngest client instance."
+
 # Create the Inngest Client
 
 
@@ -67,6 +70,11 @@ const inngest = new Inngest({
   </Property>
   <Property name="middleware" type="array">
     A stack of [middleware](/docs/features/middleware) to add to the client.
+  </Property>
+  <Property name="aiMetadata" type="boolean">
+    Automatically extract AI metadata from OpenTelemetry spans instrumented with Open Inference in step runs. Metadata is attached to its step. Defaults to `true`.
+
+    Set this to `false` to opt out of the SDK's built-in AI metadata extraction. This does not affect [Extended Traces](/docs/reference/typescript/v4/extended-traces).
   </Property>
   <Property name="endpointAdapter" type="InngestEndpointAdapter.Like">
     An endpoint adapter that enables [Durable Endpoints](/docs/reference/typescript/v4/durable-endpoints).  When provided, `inngest.endpoint()` and `inngest.endpointProxy()` become available.

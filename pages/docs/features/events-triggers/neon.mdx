@@ -1,6 +1,8 @@
 import { Callout, Info, ImageTheme } from "src/shared/Docs/mdx";
 
-export const description = `Trigger functions from your Neon Postgres database updates.`;
+
+export const metaTitle = "Trigger Inngest Functions from Neon Postgres"
+export const description = "Use Neon database change events to trigger Inngest functions. Set up the Neon integration to react to row inserts, updates, and deletes with durable workflows."
 
 # Neon
 
@@ -50,6 +52,11 @@ Inngest doesn’t store your credentials. Make sure you don’t refresh the page
 </Callout>
 
 Insert your postgres credentials and hit the “Verify” button to start the validation process:
+
+<Callout variant="warning">
+Your connection string must not use connection pooling and thus should not contain `-pooler` in the host. When getting the connection string from the Neon dashboard, ensure that the Connection pooling is disabled. 
+</Callout>
+
 <ImageTheme
   light={'/assets/docs/features/events-triggers/neon/neon-authorize-step.png'}
   className="my-0"

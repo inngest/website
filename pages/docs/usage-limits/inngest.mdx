@@ -1,11 +1,79 @@
 import { Callout, CodeGroup } from "src/shared/Docs/mdx";
 import { Tag } from "src/shared/Docs/Tag";
 
-# Usage Limits
+export const metaTitle = "Inngest Usage Limits | Runs, Events & Retention"
+export const description = "Inngest platform limits by plan: max concurrency, event size, step count, function run timeout, log retention, and event history."
 
-We have put some limits on the service to make sure we provide you a good default to start with, while also keeping it a good experience for all other users using Inngest.
+export const structuredData = {
+  "@type": "FAQPage",
+  mainEntity: [
+    {
+      "@type": "Question",
+      name: "How long can an Inngest function sleep?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Inngest supports sleeps up to one year. Free plan sleeps are limited to up to seven days.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "How many steps can an Inngest function have?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "The maximum number of steps allowed per function is 1000.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "What is the default event payload size limit?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "The default event payload size on the Free Tier is 256KB and can be upgraded to 3MB.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "How many events can I send in one request?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "You can send a maximum of 5000 events in one request.",
+      },
+    },
+  ],
+};
+
+# Inngest usage limits
+
+Inngest usage limits keep function runs, steps, events, and history predictable for every account. Use these tables to check plan limits, rate-limit related controls, event payload limits, retention windows, and hard platform limits.
+
+If you're looking for function-level rate limiting, use the [rate limiting guide](/docs/guides/rate-limiting?ref=docs-usage-limits) or [throttling guide](/docs/guides/throttling?ref=docs-usage-limits).
 
 Some of these limits are customizable, so if you need more than what the current limits provide, please [contact us][contact] and we can update the limits for you.
+
+## Plan limits
+
+| Limit | Free | Basic | Pro | Enterprise |
+| --- | --- | --- | --- | --- |
+| Max concurrent steps | 5 | 25 | 200+ | Custom |
+| Single event size | 256KiB | 512KiB | 3MiB | Custom |
+| Trace and log history | 24 hours | 7 days | 14 days | 90 days |
+| Event lookback period | 1 hour | 1 hour | 3 days | Custom |
+| Maximum function run length | 30 days | 90 days | 366 days | Custom |
+
+See the [pricing page](/pricing?ref=docs-usage-limits) for plan packaging, included usage, and paid upgrade details.
+
+## Platform limits
+
+| Limit | Current value | Notes |
+| --- | --- | --- |
+| Step sleep duration | Up to 1 year | Free plan supports sleeps up to 7 days. |
+| Step timeout | Up to 2 hours | Also depends on your hosting provider's timeout. |
+| Step-returned payload size | 4MiB | Applies to data returned by a step. |
+| Function run state size | 32MiB | Includes event data, step data, function return data, and internal metadata. |
+| Steps per function | 1000 | Loops that create one step per item can hit this quickly. |
+| Event name length | 256 characters | Applies to the event `name`. |
+| Events per request | 5000 | Applies to `step.sendEvent(events)` and `inngest.send(events)`. |
+| Batch size | 10MiB | Hard cap regardless of `timeout` or `maxSize`. |
 
 ## Functions
 
@@ -13,7 +81,7 @@ The following applies to `step` usage.
 
 ### Sleep duration
 
-Sleep (with `step.sleep()` and `step.sleepUntil()`) up to a year, and for free plan up to seven days. Check the [pricing page](/pricing) for more information.
+Sleep (with `step.sleep()` and `step.sleepUntil()`) up to a year, and for free plan up to seven days. Check the [pricing page](/pricing?ref=docs-usage-limits) for more information.
 
 ### Timeout
 
@@ -21,7 +89,7 @@ Each step has a timeout depending on the hosting provider of your choice ([see m
 
 ### Concurrency <Tag>Upgradable</Tag>
 
-Check your concurrency limits on the [billing page](https://app.inngest.com/billing). See the [pricing page](https://www.inngest.com/pricing) for more info about the concurrency limits in all plans.
+Check your concurrency limits on the [billing page](https://app.inngest.com/billing). See the [pricing page](/pricing?ref=docs-usage-limits) for more info about the concurrency limits in all plans.
 
 ### Payload Size
 
@@ -55,7 +123,7 @@ The maximum length allowed for an event name is `256` characters.
 
 ### Request Body Size <Tag>Upgradable</Tag>
 
-The maximum event payload size is dependent on your billing plan. The default on the Free Tier is `256KB` and is upgradable to `3MB`. See [the pricing page](/pricing?ref=docs-usage-limits) for additional detail.
+The maximum event payload size is dependent on your billing plan. The Free plan supports `256KiB`, Basic supports `512KiB`, Pro supports `3MiB`, and Enterprise plans can use custom limits. See [the pricing page](/pricing?ref=docs-usage-limits) for additional detail.
 
 ### Number of events per request <Tag>Customizable</Tag>
 

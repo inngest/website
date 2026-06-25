@@ -9,6 +9,9 @@ import {
   RiServerLine
 } from "@remixicon/react";
 
+export const metaTitle = "Deploying Inngest Functions | Platform Overview";
+export const description = "Overview of Inngest deployment options: the serve() HTTP handler for serverless platforms and the connect() persistent worker model for long-running compute.";
+
 # Deployment
 
 Moving to production requires deploying your Inngest Functions on your favorite Cloud Provider and configuring it to allow the Inngest Platform to orchestrate runs: 
@@ -30,10 +33,18 @@ Moving to production requires deploying your Inngest Functions on your favorite 
   <Card title="Deploy with Render" icon={<RenderIcon className="text-basis"/>} href={'/docs/deploy/render'}>
     Deploy your Inngest Functions on Render.
   </Card>
+  <Card title="Connect workers to Inngest" icon={<RiServerLine className="text-basis h-5 w-5" />} href={'/docs/setup/connect'}>
+    Use Connect for persistent worker-style deployments on long-running compute.
+  </Card>
+  <Card title="Use checkpointing in production" icon={<RiCloudLine className="text-basis h-5 w-5" />} href={'/docs/setup/checkpointing'}>
+    Resume durable functions quickly across steps, retries, and deploys.
+  </Card>
   <Card title="Self-host Inngest" icon={<RiServerLine className="text-basis h-5 w-5" />} href={'/docs/self-hosting'}>
     Self-host Inngest on your own infrastructure.
   </Card>
 </CardGroup>
+
+Most serverless and API-route deployments use the `serve()` HTTP handler. Long-running worker or container deployments can use [Connect](/docs/setup/connect), which keeps a persistent connection open to Inngest. If you need to run the execution engine on your own infrastructure, see [Self-hosting](/docs/self-hosting).
 
 ## How Inngest handles Function Runs
 

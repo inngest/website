@@ -105,83 +105,96 @@ const permanentRedirects = [
     "/docs/reference/typescript/functions/metadata",
   ],
 
-  // TypeScript SDK versioned docs - landing page redirect
+  // TypeScript SDK versioned docs - landing page redirects (301 permanent)
+  ["/docs/reference/typescript", "/docs/reference/typescript/intro"],
+  ["/docs/reference/typescript/v4", "/docs/reference/typescript/v4/intro"],
+  ["/docs/reference/typescript/v3", "/docs/reference/typescript/v3/intro"],
+  // Legacy short paths - redirect directly to v4 TypeScript docs (collapsed from two-hop chain)
   [
-    "/docs/reference/typescript/v4",
+    "/docs/reference/client/create",
     "/docs/reference/typescript/v4/client/create",
   ],
-  // Legacy short paths - redirect to versionless TypeScript docs
-  ["/docs/reference/client/create", "/docs/reference/typescript/client/create"],
-  ["/docs/reference/events/send", "/docs/reference/typescript/events/send"],
+  ["/docs/reference/events/send", "/docs/reference/typescript/v4/events/send"],
   [
     "/docs/reference/functions/create",
-    "/docs/reference/typescript/functions/create",
+    "/docs/reference/typescript/v4/functions/create",
   ],
   [
     "/docs/reference/functions/debounce",
-    "/docs/reference/typescript/functions/debounce",
+    "/docs/reference/typescript/v4/functions/debounce",
   ],
   [
     "/docs/reference/functions/handling-failures",
-    "/docs/reference/typescript/functions/handling-failures",
+    "/docs/reference/typescript/v4/functions/handling-failures",
   ],
   [
     "/docs/reference/functions/rate-limit",
-    "/docs/reference/typescript/functions/rate-limit",
+    "/docs/reference/typescript/v4/functions/rate-limit",
   ],
   [
     "/docs/reference/functions/run-priority",
-    "/docs/reference/typescript/functions/run-priority",
+    "/docs/reference/typescript/v4/functions/run-priority",
   ],
   [
     "/docs/reference/functions/singleton",
-    "/docs/reference/typescript/functions/singleton",
+    "/docs/reference/typescript/v4/functions/singleton",
   ],
   [
     "/docs/reference/functions/step-invoke",
-    "/docs/reference/typescript/functions/step-invoke",
+    "/docs/reference/typescript/v4/functions/step-invoke",
   ],
   [
     "/docs/reference/functions/step-run",
-    "/docs/reference/typescript/functions/step-run",
+    "/docs/reference/typescript/v4/functions/step-run",
   ],
   [
     "/docs/reference/functions/step-send-event",
-    "/docs/reference/typescript/functions/step-send-event",
+    "/docs/reference/typescript/v4/functions/step-send-event",
   ],
   [
     "/docs/reference/functions/step-sleep-until",
-    "/docs/reference/typescript/functions/step-sleep-until",
+    "/docs/reference/typescript/v4/functions/step-sleep-until",
   ],
   [
     "/docs/reference/functions/step-sleep",
-    "/docs/reference/typescript/functions/step-sleep",
+    "/docs/reference/typescript/v4/functions/step-sleep",
   ],
   [
     "/docs/reference/functions/step-wait-for-event",
-    "/docs/reference/typescript/functions/step-wait-for-event",
+    "/docs/reference/typescript/v4/functions/step-wait-for-event",
   ],
   [
     "/docs/reference/functions/step-wait-for-signal",
-    "/docs/reference/typescript/functions/step-wait-for-signal",
+    "/docs/reference/typescript/v4/functions/step-wait-for-signal",
   ],
-  ["/docs/reference/serve", "/docs/reference/typescript/serve"],
-  ["/docs/reference/testing", "/docs/reference/typescript/testing"],
+  ["/docs/reference/serve", "/docs/reference/typescript/v4/serve"],
+  ["/docs/reference/testing", "/docs/reference/typescript/v4/testing"],
   [
     "/docs/reference/middleware/lifecycle",
-    "/docs/reference/typescript/middleware/lifecycle",
+    "/docs/reference/typescript/v4/middleware/lifecycle",
   ],
   [
     "/docs/reference/middleware/examples",
-    "/docs/reference/typescript/middleware/examples",
+    "/docs/reference/typescript/v4/middleware/examples",
   ],
   [
     "/docs/reference/typescript/migrations/v3-to-v4",
     "/docs/reference/typescript/v4/migrations/v3-to-v4",
   ],
   ["/docs/sdk/migration", "/docs/reference/typescript/v3/migrations/v2-to-v3"],
-  ["/patterns/cancelling-scheduled-functions", "/docs/guides/cancel-running-functions"],
+  [
+    "/patterns/cancelling-scheduled-functions",
+    "/docs/guides/cancel-running-functions",
+  ],
   ["/patterns/running-code-on-a-schedule", "/docs/guides/scheduled-functions"],
+
+  // run-experiments-in-production moved from the Durable Workflows category to
+  // the new AI Evals category (per Lauren's IA feedback). Old category URL is
+  // shared in Slack and linked from the experiments doc, so redirect it.
+  [
+    "/docs/patterns/durable/run-experiments-in-production",
+    "/docs/patterns/ai-evals/run-experiments-in-production",
+  ],
 
   // New IA: platform + use-case pages replacing legacy landing pages, plus
   // a few standalone LPs being retired.
@@ -194,6 +207,7 @@ const permanentRedirects = [
   ["/ai-personalized-documentation", "/docs/ai-dev-tools/agent-skills"],
   ["/ai/early-access", "/ai"],
   ["/launch-week", "/"],
+  ["/product/how-inngest-works", "/"],
   // The scheduled-jobs page moved under /uses; preserve the old URL.
   ["/scheduled-jobs", "/uses/scheduled-jobs"],
 ];
@@ -290,129 +304,6 @@ async function redirects() {
       permanent: true,
     },
 
-    // Reference intros
-    {
-      source: "/docs/reference/typescript",
-      destination: "/docs/reference/typescript/intro",
-      permanent: false,
-    },
-    {
-      source: "/docs/reference/typescript/v4",
-      destination: "/docs/reference/typescript/v4/intro",
-      permanent: false,
-    },
-    {
-      source: "/docs/reference/typescript/v3",
-      destination: "/docs/reference/typescript/v3/intro",
-      permanent: false,
-    },
-
-    // Legacy short paths - redirect to versionless TypeScript docs
-    {
-      source: "/docs/reference/client/create",
-      destination: "/docs/reference/typescript/client/create",
-      permanent: false,
-    },
-    {
-      source: "/docs/reference/events/send",
-      destination: "/docs/reference/typescript/events/send",
-      permanent: false,
-    },
-    {
-      source: "/docs/reference/functions/create",
-      destination: "/docs/reference/typescript/functions/create",
-      permanent: false,
-    },
-    {
-      source: "/docs/reference/functions/debounce",
-      destination: "/docs/reference/typescript/functions/debounce",
-      permanent: false,
-    },
-    {
-      source: "/docs/reference/functions/handling-failures",
-      destination: "/docs/reference/typescript/functions/handling-failures",
-      permanent: false,
-    },
-    {
-      source: "/docs/reference/functions/rate-limit",
-      destination: "/docs/reference/typescript/functions/rate-limit",
-      permanent: false,
-    },
-    {
-      source: "/docs/reference/functions/run-priority",
-      destination: "/docs/reference/typescript/functions/run-priority",
-      permanent: false,
-    },
-    {
-      source: "/docs/reference/functions/singleton",
-      destination: "/docs/reference/typescript/functions/singleton",
-      permanent: false,
-    },
-    {
-      source: "/docs/reference/functions/step-invoke",
-      destination: "/docs/reference/typescript/functions/step-invoke",
-      permanent: false,
-    },
-    {
-      source: "/docs/reference/functions/step-run",
-      destination: "/docs/reference/typescript/functions/step-run",
-      permanent: false,
-    },
-    {
-      source: "/docs/reference/functions/step-send-event",
-      destination: "/docs/reference/typescript/functions/step-send-event",
-      permanent: false,
-    },
-    {
-      source: "/docs/reference/functions/step-sleep-until",
-      destination: "/docs/reference/typescript/functions/step-sleep-until",
-      permanent: false,
-    },
-    {
-      source: "/docs/reference/functions/step-sleep",
-      destination: "/docs/reference/typescript/functions/step-sleep",
-      permanent: false,
-    },
-    {
-      source: "/docs/reference/functions/step-wait-for-event",
-      destination: "/docs/reference/typescript/functions/step-wait-for-event",
-      permanent: false,
-    },
-    {
-      source: "/docs/reference/functions/step-wait-for-signal",
-      destination: "/docs/reference/typescript/functions/step-wait-for-signal",
-      permanent: false,
-    },
-    {
-      source: "/docs/reference/serve",
-      destination: "/docs/reference/typescript/serve",
-      permanent: false,
-    },
-    {
-      source: "/docs/reference/testing",
-      destination: "/docs/reference/typescript/testing",
-      permanent: false,
-    },
-    {
-      source: "/docs/reference/middleware/lifecycle",
-      destination: "/docs/reference/typescript/middleware/lifecycle",
-      permanent: false,
-    },
-    {
-      source: "/docs/reference/middleware/examples",
-      destination: "/docs/reference/typescript/middleware/examples",
-      permanent: false,
-    },
-    {
-      source: "/docs/reference/typescript/migrations/v3-to-v4",
-      destination: "/docs/reference/typescript/v4/migrations/v3-to-v4",
-      permanent: false,
-    },
-    {
-      source: "/docs/sdk/migration",
-      destination: "/docs/reference/typescript/v3/migrations/v2-to-v3",
-      permanent: false,
-    },
     ...permanentRedirects.map(([source, destination]) => ({
       source,
       destination,
@@ -465,7 +356,8 @@ async function redirects() {
     // OOH campaign - SF car wrap (AI Engineer World's Fair 2026)
     {
       source: "/sf",
-      destination: "/?utm_medium=ooh&utm_source=car-wrap-sf&utm_campaign=aiewf-2026",
+      destination:
+        "/?utm_medium=ooh&utm_source=car-wrap-sf&utm_campaign=aiewf-2026",
       permanent: false,
     },
   ];
