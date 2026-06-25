@@ -88,7 +88,7 @@ Delete the gate — that's the entire "ship it" step:
 ## SEO & performance
 
 - **No page-load impact.** Public pages are unchanged (no `unreleased` → no gating, no extra render). The only added code is a tiny client hook reading the URL + `sessionStorage` once.
-- Gated content is **not in the visible DOM** and gated pages/entries are **`noindex`**, so it stays out of search.
+- Gated content is **not in the visible DOM**, gated pages/entries are **`noindex`**, and they're **excluded from `sitemap.xml`** (a `transform` in `next-sitemap.config.js` drops any page whose source is `unreleased`) — so they stay fully out of search.
 - **Known residual:** the gated content's data still ends up in the page's serialized payload (`__NEXT_DATA__` for docs section titles; the RSC Flight `<script>` for a changelog entry body). It is not in the rendered DOM and not in Algolia's content index, but it is present in the HTML source. This is the cost of revealing server-rendered content client-side without a hard 404.
 - This is a **soft gate**: the URL still returns `200` (no middleware/404). Fine for "not yet public," not for secrets.
 
