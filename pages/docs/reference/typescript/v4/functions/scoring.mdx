@@ -51,7 +51,7 @@ await inngest.score({
 
 ---
 
-## `step.score(memoizationId, options)`
+## `step.score(id, options)`
 
 Write a durable, memoized score from within a function. The score write is wrapped in a step, so it executes exactly once and is not re-sent on replays or retries. Same options as `inngest.score()` but `runId` is automatically set to the current run.
 
@@ -60,8 +60,8 @@ Write a durable, memoized score from within a function. The score write is wrapp
 </Callout>
 
 <Properties>
-  <Property name="memoizationId" type="string" required>
-    The durable step ID used to memoize this score write. Like the ID passed to `step.run()`, it must be unique within the run.
+  <Property name="id" type="string" required>
+    The ID of the step. This is used to memoize the score write so it is not re-sent on replays or retries. Like the ID passed to `step.run()`, it must be unique within the run.
   </Property>
   <Property name="name" type="string" required>
     Score label.

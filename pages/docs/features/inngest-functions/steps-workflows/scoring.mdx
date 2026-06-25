@@ -38,14 +38,14 @@ Without the middleware, `step.score()` is unavailable on the `step` object.
 
 There are two methods, and the difference matters:
 
-- **`step.score(memoizationId, options)`** writes a *durable* score. The write is wrapped in a step, so it runs exactly once and is not re-sent when the function replays or retries. It requires a `memoizationId` (like `step.run()`) and can only be used inside a function with `scoreMiddleware()` enabled. Reach for this for standalone score writes in your function body.
+- **`step.score(id, options)`** writes a *durable* score. The write is wrapped in a step, so it runs exactly once and is not re-sent when the function replays or retries. It takes a step `id` (like `step.run()`) and can only be used inside a function with `scoreMiddleware()` enabled. Reach for this for standalone score writes in your function body.
 - **`inngest.score(options)`** writes a *live* score. It is not memoized, so call it from inside a `step.run()` callback (where the enclosing step already handles idempotency) or from outside the function entirely by passing a `runId`. The target is inferred from the execution context unless you set `runId`/`stepId` explicitly.
 
 ---
 
 ## Score the current run
 
-Inside a function, call `step.score()` with a memoization ID, a name, and a value.
+Inside a function, call `step.score()` with a step ID, a name, and a value.
 
 ```ts
 export default inngest.createFunction(
@@ -129,7 +129,7 @@ This is how you score based on signals that arrive after the function finishes: 
 
 | Parameter | Where | Type | Required | Notes |
 | --- | --- | --- | --- | --- |
-| `memoizationId` | 1st arg of `step.score` | `string` | Yes (`step.score` only) | Durable step ID; unique within the run. Not used by `inngest.score`. |
+| `id` | 1st arg of `step.score` | `string` | Yes (`step.score` only) | Step ID; unique within the run. Memoizes the score write. Not used by `inngest.score`. |
 | `name` | options | `string` | Yes | Score label. Use consistent names across runs so they aggregate. |
 | `value` | options | `number \| boolean` | Yes | See [Score values](#score-values) below. |
 | `runId` | options | `string` | No | Required when scoring from outside a function; inferred from context otherwise. |
