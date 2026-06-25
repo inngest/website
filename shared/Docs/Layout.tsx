@@ -87,7 +87,7 @@ export function Layout({
   const sdkLanguage = getLanguageFromPath(router.asPath) || SDK_ALL;
   const sdkVersion = getSdkVersionFromPath(router.asPath) || SDK_ALL;
 
-  const siteTitle = `Inngest Documentation`;
+  const siteTitle = `Inngest Docs`;
   const preferredTitle: string = metaTitle || title || siteTitle;
   const pageTitle =
     preferredTitle === siteTitle
