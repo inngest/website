@@ -2,10 +2,10 @@
 
 import { motion } from "motion/react";
 import { reveals } from "@/utils/v1/reveals";
-import { BlackReveal } from "@/components/v1/sections/shared/BlackReveal";
 import GradientFrame from "@/components/v1/sections/shared/GradientFrame";
 import Section from "@/components/v1/sections/shared/Section";
 import { V1_SECTION_TITLE } from "@/components/v1/sections/shared/sectionTitle";
+import AnimatedEvals from "@/components/v1/sections/AgentEvals/AnimatedEvals";
 
 /**
  * "Everything you need to safely test in production" — same layout as the
@@ -62,9 +62,6 @@ const FEATURES: Feature[] = [
   },
 ];
 
-const DASHBOARD_VIDEO =
-  "https://cdn.inngest.com/homepage/june-2026-redesign-dashboard-tour-v2.mp4";
-
 export default function Features() {
   return (
     <Section
@@ -95,15 +92,12 @@ export default function Features() {
                 No added infrastructure or instrumentation.
               </motion.p>
             </div>
-            <GradientFrame className="relative rounded-md" variant="charcoal">
-              <BlackReveal block>
-                <div
-                  className="relative w-full overflow-hidden bg-v1-jetBlack"
-                  style={{ aspectRatio: "1980 / 1080" }}
-                >
-                  <video controls autoPlay loop muted src={DASHBOARD_VIDEO} />
-                </div>
-              </BlackReveal>
+            <GradientFrame
+              className="relative overflow-hidden rounded-md"
+              variant="charcoal"
+              innerClassName="p-4 lg:p-6"
+            >
+              <AnimatedEvals />
             </GradientFrame>
           </div>
         </div>
