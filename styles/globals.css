@@ -713,6 +713,18 @@ ul.check li {
   }
 }
 
+/* Pull quotes: salmon border marks the block — no decorative curly quotes. */
+.blog-content blockquote {
+  quotes: none;
+}
+.blog-content blockquote::before,
+.blog-content blockquote::after,
+.blog-content blockquote p::before,
+.blog-content blockquote p::after,
+.blog-content blockquote p:first-of-type::before,
+.blog-content blockquote p:last-of-type::after {
+  content: none !important;
+}
 
 /** SDK Code snippet */
 .transform-iso,

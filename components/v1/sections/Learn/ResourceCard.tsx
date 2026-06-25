@@ -9,15 +9,18 @@ export default function ResourceCard({ post }: { post: PostCard }) {
     post.type === "VIDEO"
       ? "Watch video"
       : post.type === "DEMO"
-        ? "View demo"
-        : post.type === "REPORT"
-          ? "Read report"
-          : "Read article";
+      ? "View demo"
+      : post.type === "REPORT"
+      ? "Read report"
+      : "Read article";
   return (
     // TODO(blog-migration): all cards are currently BLOG posts routed to
     // /blog/[slug]. Add per-type routing once REPORT/VIDEO/DEMO content
     // sources exist.
-    <Link href={`/blog/${post.slug}`} className="block h-full rounded-lg">
+    <Link
+      href={post.href ?? `/blog/${post.slug}`}
+      className="block h-full rounded-lg"
+    >
       {/* Black gradient frame + cursor spotlight / lift / tilt hover —
           identical chrome to the Events grid card. */}
       <SpotlightFrame
@@ -40,9 +43,7 @@ export default function ResourceCard({ post }: { post: PostCard }) {
           </div>
           {/* Title — Heading/Sm (Whyte 26/31.2, -0.26px). Reserve two
               lines so descriptions align across cards. */}
-          <h3 className="text-v1-heading-sm text-white">
-            {post.title}
-          </h3>
+          <h3 className="text-v1-heading-sm text-white">{post.title}</h3>
           {/* Description + CTA. The CTA is the shared RegisterCue
               (Label/Md, reacts to the card's group/card hover with a
               salmon + arrow nudge). */}
