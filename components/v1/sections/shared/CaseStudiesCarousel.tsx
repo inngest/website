@@ -38,7 +38,9 @@ export interface CaseStudyItem {
   title: string;
   body: ReactNode;
   logo?: { src: string; alt: string; width: number; height: number };
-  cta: { label: string; href: string };
+  /** Optional. When set, the whole card becomes a link to `href` and the
+   *  CTA pill renders. Omit for a non-clickable, text-only card. */
+  cta?: { label: string; href: string };
 }
 
 interface CaseStudiesCarouselProps {
@@ -234,22 +236,28 @@ function CaseStudyCard({
       card while the row is hovered, otherwise the carousel's current card. */
   lit?: boolean;
 }) {
-  return (
-    <Link
-      href={study.cta.href}
-      aria-label={`${study.title}: ${study.cta.label}`}
-      onPointerMove={onCursorSpotlightMove}
-      style={CURSOR_SPOTLIGHT_SEED}
-      className={cn(
-        // Mobile: tighter padding + an explicit 44px rhythm between the
-        // header, body, and footer (button). lg restores the fixed-height
-        // row where justify-between anchors the three slots top/mid/bottom.
-        "group/card relative flex h-full w-full flex-col gap-[44px] overflow-hidden border-r border-v1-strong p-[28px] lg:h-[520px] lg:justify-between lg:gap-0 lg:p-16",
-        "motion-safe:transition-colors motion-safe:duration-700 motion-safe:ease-v1-out",
-        lit ? "bg-v1-surfaceElevated" : "bg-transparent",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-v1-frost/60 focus-visible:ring-offset-2 focus-visible:ring-offset-v1-canvasBase"
-      )}
-    >
+  const { cta, logo } = study;
+  // The bottom slot (logo + CTA pill) only renders when there's something
+  // to put in it. Without it, text-only cards stack title→body from the
+  // top instead of spreading to the card's full height.
+  const hasFooter = Boolean(cta || logo);
+  const className = cn(
+    // Mobile: tighter padding + an explicit 44px rhythm between the
+    // header, body, and footer. At lg, cards with a footer restore the
+    // fixed-height row where justify-between anchors the slots top/mid/
+    // bottom; text-only cards keep the 44px stack from the top.
+    "group/card relative flex h-full w-full flex-col gap-[44px] overflow-hidden border-r border-v1-strong p-[28px] lg:p-16",
+    // Footer cards keep the tall fixed-height row (logo+CTA anchored to the
+    // bottom). Text-only cards size to their content instead, so they're
+    // not padded out with empty space.
+    hasFooter ? "lg:h-[520px] lg:justify-between lg:gap-0" : "lg:gap-[44px]",
+    "motion-safe:transition-colors motion-safe:duration-700 motion-safe:ease-v1-out",
+    lit ? "bg-v1-surfaceElevated" : "bg-transparent",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-v1-frost/60 focus-visible:ring-offset-2 focus-visible:ring-offset-v1-canvasBase"
+  );
+
+  const content = (
+    <>
       {/* Texture cross-fades + zooms onto whichever card is lit (hovered
           card, else the carousel's current card). Always mounted so the
           800 ms fade isn't gated on first paint. */}
@@ -279,45 +287,84 @@ function CaseStudyCard({
         }}
       />
 
-      <div className="relative flex flex-col gap-3">
+      {/* Text-only cards reserve a fixed title height (3 lines @ 40px) at
+          lg+ so every card's body starts at the same Y regardless of how
+          many lines its title wraps to. Footer cards keep their natural
+          title height (their footer anchors the bottom slot instead). */}
+      <div
+        className={cn(
+          "relative flex flex-col gap-3",
+          !hasFooter && "lg:min-h-[120px]"
+        )}
+      >
         <h3 className="font-v1Heading text-[32px] leading-[40px] tracking-[-0.01em] text-v1-frost">
           {study.title}
         </h3>
       </div>
 
-      <p className="relative font-v1Heading text-[18px] leading-[1.5] tracking-[-0.01em] text-v1-frost">
+      <p
+        className={cn(
+          "relative font-v1Heading text-[18px] leading-[1.5] tracking-[-0.01em]",
+          // Footer cards keep the frost body; text-only cards use the
+          // site's lighter grey body tone.
+          hasFooter ? "text-v1-frost" : "text-[#B3B3B3]"
+        )}
+      >
         {study.body}
       </p>
 
       {/* Logo + CTA share the card's bottom slot so the logo sits at a
-          fixed height above the CTA on every card — keeping the customer
-          logos vertically aligned across the row regardless of body
-          length. Logos are sized by height (width auto from the artwork's
-          true aspect ratio); `max-w-full` clamps very wide marks to the
-          card. The CTA is visual only — the parent Link owns the click
-          target; its salmon-flood hover is driven by `group-hover/card`
-          so it activates from anywhere on the card. */}
-      <div className="relative mt-auto flex flex-col gap-10 lg:mt-0">
-        {study.logo && (
-          <Image
-            src={study.logo.src}
-            alt={study.logo.alt}
-            width={study.logo.width}
-            height={study.logo.height}
-            style={{ height: study.logo.height, width: "auto" }}
-            className="block max-w-full object-contain object-left opacity-90"
-          />
-        )}
-        <span
-          className={cn(
-            "relative inline-flex h-10 min-w-[144px] shrink-0 items-center justify-center self-start whitespace-nowrap rounded-md px-5 font-v1Label text-[12px] font-semibold uppercase text-v1-frost",
-            "shadow-[inset_0_0_0_2px_rgb(255_255_255)] motion-safe:transition-[background-color,box-shadow,color] motion-safe:duration-300 motion-safe:ease-v1-out",
-            "group-hover/card:bg-v1-accent-salmon group-hover/card:text-v1-frost group-hover/card:shadow-none"
+          fixed height above the CTA on every card. The CTA is visual only
+          — the parent Link owns the click target; its salmon-flood hover
+          is driven by `group-hover/card` so it activates from anywhere on
+          the card. */}
+      {hasFooter && (
+        <div className="relative mt-auto flex flex-col gap-10 lg:mt-0">
+          {logo && (
+            <Image
+              src={logo.src}
+              alt={logo.alt}
+              width={logo.width}
+              height={logo.height}
+              style={{ height: logo.height, width: "auto" }}
+              className="block max-w-full object-contain object-left opacity-90"
+            />
           )}
-        >
-          {study.cta.label}
-        </span>
-      </div>
+          {cta && (
+            <span
+              className={cn(
+                "relative inline-flex h-10 min-w-[144px] shrink-0 items-center justify-center self-start whitespace-nowrap rounded-md px-5 font-v1Label text-[12px] font-semibold uppercase text-v1-frost",
+                "shadow-[inset_0_0_0_2px_rgb(255_255_255)] motion-safe:transition-[background-color,box-shadow,color] motion-safe:duration-300 motion-safe:ease-v1-out",
+                "group-hover/card:bg-v1-accent-salmon group-hover/card:text-v1-frost group-hover/card:shadow-none"
+              )}
+            >
+              {cta.label}
+            </span>
+          )}
+        </div>
+      )}
+    </>
+  );
+
+  // With a CTA the whole card is a link to its href; without one it's a
+  // plain, non-interactive card.
+  return cta ? (
+    <Link
+      href={cta.href}
+      aria-label={`${study.title}: ${cta.label}`}
+      onPointerMove={onCursorSpotlightMove}
+      style={CURSOR_SPOTLIGHT_SEED}
+      className={className}
+    >
+      {content}
     </Link>
+  ) : (
+    <div
+      onPointerMove={onCursorSpotlightMove}
+      style={CURSOR_SPOTLIGHT_SEED}
+      className={className}
+    >
+      {content}
+    </div>
   );
 }
