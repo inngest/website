@@ -95,7 +95,6 @@ export default function Features() {
             <GradientFrame
               className="relative overflow-hidden rounded-md"
               variant="charcoal"
-              innerClassName="p-4 lg:p-6"
             >
               <AnimatedEvals />
             </GradientFrame>

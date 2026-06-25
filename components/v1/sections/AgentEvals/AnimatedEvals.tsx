@@ -173,7 +173,7 @@ export default function AnimatedEvals() {
       ref={hostRef}
       role="img"
       aria-label="Inngest dashboard showing run traces, scores, and eval metrics."
-      className="block w-full overflow-hidden rounded"
+      className="block w-full overflow-hidden"
       style={{ aspectRatio: ASPECT, backgroundColor: "#020202" }}
     />
   );
