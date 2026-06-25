@@ -30,7 +30,7 @@ export default async function BlogIndex() {
   const posts = await loadMarkdownFilesMetadata<MDXBlogPost>("content/blog");
 
   const cards: PostCard[] = posts
-    .filter((p) => !p.hide && p.heading)
+    .filter((p) => !p.hide && !p.unreleased && p.heading)
     .map((p) => {
       const tags = Array.isArray(p.tags)
         ? p.tags

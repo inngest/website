@@ -21,6 +21,7 @@ import StippleCtaSection from "@/components/v1/sections/shared/StippleCtaSection
 import ArticleBody from "./ArticleBody";
 import BlogToc, { type BlogTocItem } from "./BlogToc";
 import Prose from "@/components/v1/Prose";
+import { Unreleased } from "shared/Docs/Unreleased";
 
 const ARTICLE_BODY_ID = "blog-article-body";
 
@@ -70,6 +71,8 @@ type Scope = {
   floatingCTA?: boolean;
   // Syndicated posts point canonical at the original source.
   canonical_url?: string;
+  // When set, the post is gated behind ?unreleased=<label>.
+  unreleased?: string;
 };
 
 type RelatedPost = {
@@ -139,6 +142,7 @@ function loadRelated(currentSlug: string): RelatedPost[] {
     .map((p): RelatedPost | null => {
       const fm = p.data;
       if (fm.redirect) return null;
+      if (fm.unreleased) return null;
       if (!fm.heading) return null;
       const date =
         fm.date instanceof Date
@@ -247,6 +251,8 @@ export async function generateMetadata({
   return {
     title: { absolute: title },
     description,
+    // Keep unreleased posts out of search; they 200 but are gated client-side.
+    robots: scope.unreleased ? { index: false, follow: false } : undefined,
     // Match the legacy blog: external canonical for syndicated posts,
     // otherwise an absolute self-canonical to the post URL.
     alternates: { canonical: scope.canonical_url ?? url },
@@ -311,8 +317,8 @@ export default async function BlogPostPage({
           ],
   };
 
-  return (
-    <PageShell>
+  const body = (
+    <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
@@ -332,7 +338,37 @@ export default async function BlogPostPage({
           <BuildBetterAgentsCta />
         </article>
       </div>
+    </>
+  );
+
+  return (
+    <PageShell>
+      {scope.unreleased ? (
+        <Unreleased label={scope.unreleased} fallback={<BlogNotFound />}>
+          {body}
+        </Unreleased>
+      ) : (
+        body
+      )}
     </PageShell>
+  );
+}
+
+function BlogNotFound() {
+  return (
+    <section className="mx-auto w-full max-w-[1440px] px-6 pb-[160px] pt-[120px] text-center text-v1-frost sm:px-9 lg:px-8">
+      <h1 className="font-v1Heading text-[28px] leading-[1.15] tracking-[-0.01em] text-v1-frost sm:text-[36px] lg:text-[44px]">
+        Post not found
+      </h1>
+      <p className="mt-5">
+        <Link
+          href="/blog"
+          className="text-v1-frost/70 underline motion-safe:transition-colors hover:text-v1-accent-salmon-light"
+        >
+          Back to the blog
+        </Link>
+      </p>
+    </section>
   );
 }
 

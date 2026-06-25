@@ -23,7 +23,7 @@ export async function GET() {
   );
 
   const blogPostsTransformed = blogPosts
-    .filter((post) => !post.hide)
+    .filter((post) => !post.hide && !post.unreleased)
     .map((post) => ({
       title: post.heading,
       description: post.subtitle,
