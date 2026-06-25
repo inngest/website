@@ -55,14 +55,14 @@ export default inngest.createFunction(
 
 ## Score a specific step
 
-Score within a step to attach the measurement directly to that step's trace.
+To attach a score to a step's trace rather than the run, call `inngest.score()` from *inside* that step's callback. The target step is inferred from the execution context, so you don't pass a `stepId`:
 
 ```ts
 await step.run("call-model", async () => {
   const result = await callModel(prompt);
   const confidence = result.metadata.confidence;
 
-  // Score this specific step
+  // Inferred from context: attaches to the "call-model" step
   await inngest.score({ name: "model-confidence", value: confidence });
 
   return result;
@@ -70,6 +70,16 @@ await step.run("call-model", async () => {
 ```
 
 The score appears on the step in the trace view, not just the run.
+
+If you want a *durable* step-scoped write — or you're writing it from the function body rather than inside the callback — use `step.score()` and name the step explicitly with `stepId`:
+
+```ts
+await step.score("score-confidence", {
+  name: "model-confidence",
+  value: confidence,
+  stepId: "call-model",
+});
+```
 
 ---
 
