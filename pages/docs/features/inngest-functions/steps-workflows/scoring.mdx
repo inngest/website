@@ -16,9 +16,18 @@ This is useful for anything where "did it work?" isn't a binary answer: AI accur
 
 ---
 
+## Two ways to write a score
+
+There are two methods, and the difference matters:
+
+- **`step.score(memoizationId, options)`** writes a *durable* score. The write is wrapped in a step, so it runs exactly once and is not re-sent when the function replays or retries. It requires a `memoizationId` (like `step.run()`) and can only be used inside a function with `scoreMiddleware()` enabled. Reach for this for standalone score writes in your function body.
+- **`inngest.score(options)`** writes a *live* score. It is not memoized, so call it from inside a `step.run()` callback (where the enclosing step already handles idempotency) or from outside the function entirely by passing a `runId`. The target is inferred from the execution context unless you set `runId`/`stepId` explicitly.
+
+---
+
 ## Score the current run
 
-Inside a function, call `inngest.score()` or `step.score()` with a name and a numeric value.
+Inside a function, call `step.score()` with a memoization ID, a name, and a value.
 
 ```ts
 export default inngest.createFunction(
