@@ -64,11 +64,10 @@ export interface NavItem {
 }
 
 const PLATFORM_MENU: NavMenu = {
-  // Sized to the (short) item labels + the 400px promo card. 900 was tuned
-  // for the older long descriptions; with the current copy the column is
-  // ~200px, so a narrower panel keeps the promo flush right (matches the
-  // Use Cases menu's tightness) instead of leaving dead space.
-  width: 724,
+  // 808 = px-8 (32) + 288px text column + 56px gap + 400px promo + 32. The
+  // fixed 288 column (see NavMenuPanel) + this width keep Platform and Use
+  // Cases identical: columns aligned, promo flush right in both.
+  width: 808,
   items: [
     {
       label: "Durable Execution",
@@ -106,7 +105,10 @@ const PLATFORM_MENU: NavMenu = {
 };
 
 const USE_CASES_MENU: NavMenu = {
-  width: 851,
+  // 808 — matches PLATFORM_MENU so the two promo menus share the same
+  // text-column width + flush-right promo (no dead space). Was 851, which
+  // left ~43px of dead margin to the right of the fixed 400px promo.
+  width: 808,
   items: [
     {
       label: "AI Workflows & Agents",
