@@ -149,16 +149,16 @@ module.exports = ({ theme }) => ({
         color: "var(--tw-prose-quotes)",
         borderLeftWidth: "0.25rem",
         borderLeftColor: "var(--tw-prose-quote-borders)",
-        quotes: '"\\201C""\\201D""\\2018""\\2019"',
+        quotes: "none",
         marginTop: theme("spacing.8"),
         marginBottom: theme("spacing.8"),
         paddingLeft: theme("spacing.5"),
       },
       "blockquote p:first-of-type::before": {
-        content: "open-quote",
+        content: "none",
       },
       "blockquote p:last-of-type::after": {
-        content: "close-quote",
+        content: "none",
       },
 
       // Headings
