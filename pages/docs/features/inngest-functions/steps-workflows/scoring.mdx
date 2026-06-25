@@ -16,6 +16,24 @@ This is useful for anything where "did it work?" isn't a binary answer: AI accur
 
 ---
 
+## Setup
+
+`inngest.score()` works out of the box. To use the durable `step.score()` method, register `scoreMiddleware()` on your client:
+
+```ts
+import { Inngest } from "inngest";
+import { scoreMiddleware } from "inngest/experimental";
+
+export const inngest = new Inngest({
+  id: "my-app",
+  middleware: [scoreMiddleware()],
+});
+```
+
+Without the middleware, `step.score()` is unavailable on the `step` object.
+
+---
+
 ## Two ways to write a score
 
 There are two methods, and the difference matters:

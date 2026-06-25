@@ -55,6 +55,10 @@ await inngest.score({
 
 Write a durable, memoized score from within a function. The score write is wrapped in a step, so it executes exactly once and is not re-sent on replays or retries. Same options as `inngest.score()` but `runId` is automatically set to the current run.
 
+<Callout variant="info">
+  `step.score()` is gated by `scoreMiddleware()` from `inngest/experimental`. Register it on your client (`middleware: [scoreMiddleware()]`) or `step.score` will be unavailable. `inngest.score()` requires no middleware.
+</Callout>
+
 <Properties>
   <Property name="memoizationId" type="string" required>
     The durable step ID used to memoize this score write. Like the ID passed to `step.run()`, it must be unique within the run.
