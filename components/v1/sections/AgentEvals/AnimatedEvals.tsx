@@ -122,7 +122,7 @@ export default function AnimatedEvals() {
         const span = Math.max(1, Math.max(...ys, 1) - minY);
 
         // Lines finish drawing at ~LINE_END ms; dots start just after.
-        const LINE_END = 1450;
+        const LINE_END = 1100;
         const play = () => {
           for (const { p, y, kind } of items) {
             const band = (y - minY) / span; // 0 top → 1 bottom
@@ -137,8 +137,8 @@ export default function AnimatedEvals() {
               p.style.animation = `ae-rise 480ms ${EASE} ${delay}ms forwards`;
             } else {
               // dots — pop in after the lines have come in
-              const delay = Math.round(LINE_END + band * 320);
-              p.style.animation = `ae-pop 420ms ${EASE} ${delay}ms forwards`;
+              const delay = Math.round(LINE_END + band * 150);
+              p.style.animation = `ae-pop 260ms ${EASE} ${delay}ms forwards`;
             }
           }
         };
