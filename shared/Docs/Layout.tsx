@@ -92,7 +92,7 @@ export function Layout({
   const pageTitle =
     preferredTitle === siteTitle
       ? preferredTitle
-      : `${preferredTitle} | ${siteTitle}`;
+      : `${preferredTitle} - ${siteTitle}`;
   const metaDescription =
     description || `Inngest documentation for ${preferredTitle}`;
   const metaImage = getOpenGraphImageURL({ title: preferredTitle });
