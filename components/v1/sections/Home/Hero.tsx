@@ -41,12 +41,12 @@ const HERO_CODE = [
   "      },",
   "    );|",
   "",
-  "■ step.invoke()",
+  "■ step.score()",
   "",
-  '    const result = await step.invoke("call-another-fn", {',
-  "      function: otherFunction,",
-  "      data: { userId: event.data.userId },",
-  "    });|",
+  '    await inngest.score({ name: "model-confidence",',
+  "      value: confidence });",
+  "",
+  "    return result;|",
 ].join("\n");
 
 export default function Hero() {

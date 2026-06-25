@@ -13,7 +13,7 @@ import { appendRef } from "@/utils/v1/ref";
 import { useIsDesktop } from "@/utils/v1/hooks/useIsDesktop";
 
 /**
- * "Scale instantly, fix fast" + "Stuff your CISO needs to see"
+ * "Scale instantly, improve constantly" + "Stuff your CISO needs to see"
  * share one charcoal outer card.
  */
 
@@ -37,18 +37,18 @@ const TOPICS: Topic[] = [
     docsHref: "/docs/guides/flow-control",
   },
   {
-    id: "traces",
-    title: "Full traces and metrics",
-    body: "Replay failures in bulk for step-level insight into what went wrong. No spans required.",
-    visualization: <TraceWaterfall />,
-    docsHref: "/docs/platform/monitor/inspecting-function-runs",
-  },
-  {
     id: "troubleshoot",
     title: "Faster troubleshooting",
     body: "Store and track everything that happens in your product inside your own OLAP environment.",
     visualization: <SqlBlock />,
     docsHref: "/docs/platform/replay",
+  },
+  {
+    id: "traces",
+    title: "Traces, metrics, evals",
+    body: "Step-level insights and scores for every run and session.",
+    visualization: <TraceWaterfall />,
+    docsHref: "/docs/platform/monitor/inspecting-function-runs",
   },
 ];
 
@@ -113,7 +113,7 @@ export default function TrustedInBigLeagues() {
   return (
     <Section
       ref={sectionRef}
-      aria-label="Scale instantly, fix fast"
+      aria-label="Scale instantly, improve constantly"
       className="relative"
     >
       <GradientFrame
@@ -153,7 +153,7 @@ function TrustedBlock({
         {...reveals.heading}
         className={cn("text-balance", V1_SECTION_TITLE)}
       >
-        Scale instantly, fix fast
+        Scale instantly, improve constantly
       </motion.h2>
 
       <div className="flex flex-col gap-[28px] lg:pb-[19px]">
