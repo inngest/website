@@ -34,7 +34,7 @@ export default inngest.createFunction(
       fetchDocument(event.data.documentId)
     );
 
-    const summary = await group.experiment("model-comparison", {
+    const { result: summary } = await group.experiment("model-comparison", {
       variants: {
         gpt4o: () =>
           step.run("summarize-gpt4o", () =>
@@ -126,12 +126,16 @@ Use `experiment.fixed()` when you want one variant every time. This is useful fo
 select: experiment.fixed("candidate")
 ```
 
-## Return the selected variant
+## The return value
 
-By default, `group.experiment()` returns the selected variant's result. Set `withVariant: true` when you also need the selected variant name for logging, analytics, scoring, or downstream decisions.
+`group.experiment()` always returns `{ result, variant, experimentRef }`:
+
+- **`result`**: the value returned by the selected variant's callback.
+- **`variant`**: the name of the selected variant, as a string. Useful for logging, analytics, or downstream decisions.
+- **`experimentRef`**: a replay-stable handle of shape `{ experimentName, variant }`. Pass it to [`inngest.score.experiment()`](/docs/reference/typescript/v4/functions/scoring?ref=docs-step-experiments#inngest-score-experiment-options) to attribute a score to the variant that produced this result, even later and from a separate run.
 
 ```typescript
-const outcome = await group.experiment("copy-style", {
+const { result, variant, experimentRef } = await group.experiment("copy-style", {
   variants: {
     short: () => step.run("short-copy", () => generateShortCopy(event.data)),
     detailed: () =>
@@ -140,21 +144,37 @@ const outcome = await group.experiment("copy-style", {
   select: experiment.bucket(event.data.userId, {
     weights: { short: 50, detailed: 50 },
   }),
-  withVariant: true,
 });
 
 await step.run("track-experiment", () =>
   analytics.track("experiment.variant_selected", {
     experiment: "copy-style",
-    variant: outcome.variant,
+    variant,
     userId: event.data.userId,
   })
 );
 
-return outcome.result;
+return result;
 ```
 
-With `withVariant: true`, the returned shape is `{ result, variant }`.
+### Scoring a variant with `experimentRef`
+
+`experimentRef` is how a score gets credited to the variant that produced a result. Because you hold the ref, you can score the variant right away, or save it and score much later when the real signal lands: a click, a rating, or an LLM-judge verdict, often from a different run entirely.
+
+```typescript
+const { result, experimentRef } = await group.experiment("summary-strategy", {
+  variants: { /* ... */ },
+  select: experiment.weighted({ questionLed: 50, factLed: 50 }),
+});
+
+// Score now, from the same run that served the variant
+await inngest.score.experiment({ name: "length-ok", value: true, experiment: experimentRef });
+
+// ...or persist experimentRef (and this run's ID) and score it later from a separate run:
+// await inngest.score.experiment({ name: "clickthrough", value: 1, experiment: ref, runId });
+```
+
+See the [scoring reference](/docs/reference/typescript/v4/functions/scoring?ref=docs-step-experiments) for the full attribution rules, including when you must pass `runId`.
 
 ## Track outcomes
 
@@ -164,7 +184,7 @@ An experiment tells you which variant ran. It does not decide which variant is b
 - Use [deferred scoring](/docs/features/inngest-functions/steps-workflows/deferred-scoring?ref=docs-step-experiments) when the outcome arrives later.
 - Emit analytics events from a `step.run()` when your team already uses an external analytics warehouse.
 
-For AI model or prompt experiments, `withVariant: true` is often the simplest way to include the selected variant in your scoring or analytics payload.
+For AI model or prompt experiments, the `experimentRef` returned by `group.experiment()` is the cleanest way to attribute a score back to the variant that produced the result, since it works even when the score arrives from a later run.
 
 ## Notes and best practices
 
