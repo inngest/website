@@ -56,6 +56,8 @@ await inngest.score({
 
 Score the current run from within a step context. Same options as `inngest.score()` but `runId` is automatically set to the current run.
 
+`step.score` requires setting up `scoreMiddleware`.
+
 <Properties>
   <Property name="id" type="string" required>
     The ID of the step that scores the current run. Similar to `step.run`, this ID is used to memoize step state across function versions.
@@ -72,8 +74,40 @@ Score the current run from within a step context. Same options as `inngest.score
   </Property>
 </Properties>
 
+First setup `scoreMiddleware`:
+
+```ts
+import { Inngest } from "inngest";
+import { scoreMiddleware } from "inngest/experimental";
+
+export const inngest = new Inngest({
+  id: "my-app",
+  middleware: [scoreMiddleware()],
+});
+```
+
+Then, call `step.score` within a function:
+
 ```ts
 await step.score("score-guardrail-pass", { name: "guardrail-pass", value: 1 });
+```
+
+---
+
+## `scoreMiddleware()`
+
+Enables `step.score()` on your functions. Register it on your Inngest client. Without it, `step.score()` will throw.
+
+Imported from `inngest/experimental`. Takes no arguments.
+
+```ts
+import { Inngest } from "inngest";
+import { scoreMiddleware } from "inngest/experimental";
+
+export const inngest = new Inngest({
+  id: "my-app",
+  middleware: [scoreMiddleware()],
+});
 ```
 
 ---

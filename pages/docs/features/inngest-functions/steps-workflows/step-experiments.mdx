@@ -186,7 +186,7 @@ For AI model or prompt experiments, `withVariant: true` is often the simplest wa
 | `select()` returns a variant that does not exist. | Make sure `experiment.fixed()`, `experiment.custom()`, or custom selector output exactly matches a key in `variants`. Typos fail the run. |
 | `experiment.bucket()` gives surprising skew. | Confirm the bucket value is not `null` or `undefined`. Missing values hash as an empty string, so they all collapse into the same deterministic bucket. |
 | **Scoring** | |
-| `step.score()` is missing or throws. | Register `scoreMiddleware()` on the Inngest client: `middleware: [scoreMiddleware()]`. |
+| `step.score()` is missing or throws. | Register [`scoreMiddleware()`](/docs/reference/typescript/v4/functions/scoring#score-middleware) on the Inngest client: `middleware: [scoreMiddleware()]`. |
 | Scores run, but do not attach to the experiment. | For in-callback scoring, call `step.score()` inside the selected variant callback. For outside-callback scoring, use `inngest.score.experiment()` with the returned `experimentRef`. |
 | Score values are rejected. | Score value must be a finite number or boolean. Do not pass strings, objects, `NaN`, or `Infinity`. |
 | Boolean scores look like numbers in aggregate views. | Boolean scores are valid and aggregate numerically. Treat `true` as `1` and `false` as `0` when interpreting averages. |

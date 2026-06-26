@@ -19,7 +19,10 @@ This is useful for anything where "did it work?" isn't a binary answer: AI accur
 
 ## Score the current run
 
-Inside a function, call `inngest.score()` or `step.score()` with a name and a numeric value.
+Inside a function, call `step.score()` to score the current run durably within a step or `inngest.score()` to score without a step.
+Use these when you know the outcome of a run before before the runs finishes.
+
+### `inngest.score`
 
 ```ts
 export default inngest.createFunction(
@@ -34,14 +37,49 @@ export default inngest.createFunction(
     });
 
     // Score this run based on whether guardrails passed
-    await step.score("score-guardrail-pass", { name: "guardrail-pass", value: passed ? 1 : 0 });
+    await inngest.score({ name: "guardrail-pass", value: passed ? 1 : 0 });
 
     return { summary, passed };
   }
 );
 ```
 
-`step.score()` attaches the score to the current run. Use it when you know the outcome before the function finishes.
+### `step.score`
+
+First, add `scoreMiddleware()` on your Inngest client. Without it, `step.score()` will throw.
+
+```ts
+import { Inngest } from "inngest";
+import { scoreMiddleware } from "inngest/experimental";
+
+export const inngest = new Inngest({
+  id: "my-app",
+  middleware: [scoreMiddleware()],
+});
+```
+
+Then, call `step.score` within a function with an ID for the step, score name, and value.
+
+
+```ts
+export default inngest.createFunction(
+  { id: "summarize-ticket", triggers: { event: "support/ticket.created" } },
+  async ({ event, step }) => {
+    const summary = await step.run("generate-summary", async () => {
+      return await generateSummary(event.data.content);
+    });
+
+    const passed = await step.run("check-guardrails", async () => {
+      return validateOutput(summary);
+    });
+
+    // Score this run durably based on whether guardrails passed
+    await step.score("score-guardrail-pass", { name: "guardrail-pass", value: passed ? 1 : 0 });
+
+    return { summary, passed };
+  }
+);
+```
 
 ---
 
