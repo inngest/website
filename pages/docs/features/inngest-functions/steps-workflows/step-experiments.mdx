@@ -160,8 +160,8 @@ With `withVariant: true`, the returned shape is `{ result, variant }`.
 
 An experiment tells you which variant ran. It does not decide which variant is best for you. Attach your own outcome signal:
 
-- Use [scoring](/docs/features/inngest-functions/steps-workflows/scoring?ref=docs-step-experiments) when the score is known during the run.
-- Use [deferred scoring](/docs/features/inngest-functions/steps-workflows/deferred-scoring?ref=docs-step-experiments) when the outcome arrives later.
+- Use [scoring](/docs/features/inngest-functions/steps-workflows/scoring?ref=docs-step-experiments&unreleased=score) when the score is known during the run.
+- Use [deferred scoring](/docs/features/inngest-functions/steps-workflows/deferred-scoring?ref=docs-step-experiments&unreleased=score) when the outcome arrives later.
 - Emit analytics events from a `step.run()` when your team already uses an external analytics warehouse.
 
 For AI model or prompt experiments, `withVariant: true` is often the simplest way to include the selected variant in your scoring or analytics payload.
