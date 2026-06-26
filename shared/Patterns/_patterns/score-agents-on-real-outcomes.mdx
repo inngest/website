@@ -54,46 +54,71 @@ export default inngest.createFunction(
 
 ## Defer the score until the real outcome lands
 
-This is the common case for agents in production: the run finishes, and the outcome is only known later. Let the run complete, then score it from a second function triggered by the outcome event, referencing the original `runId`.
+This is the common case for agents in production: the run finishes, and the outcome only arrives later. Define a scorer with `createScorer()` and kick it off from the agent run with `defer()`. The scorer runs as its own function: it waits for the outcome signal, then returns a `{ name, value }` score that attaches to the run that deferred it. The agent run is never blocked, and there's no glue table mapping runs to outcomes.
 
-In the incident-triage example, the agent posts a root-cause analysis and cites the files it believes are responsible. When the fix actually ships, you compare the cited files to the files the fix touched, and attach that score to the original run.
+In the incident-triage example, the agent posts a root-cause analysis and cites the files it believes are responsible. The score can't be computed yet (it depends on the files the eventual fix touches), so the scorer waits for `incident/fix.shipped`, then grades the cited files against what the fix actually changed.
 
 ```typescript
-// 1. The agent run records the run ID where the outcome can find it later.
-export default inngest.createFunction(
-  { id: "triage-incident", triggers: { event: "incident/opened" } },
-  async ({ event, step, runId }) => {
-    const rca = await step.run("investigate", () => investigate(event.data));
-    await step.run("post-rca", () => postRca(event.data.incidentId, rca));
-    await step.run("link-run", () =>
-      incidents.attachRunId(event.data.incidentId, runId)
-    );
-    return rca;
-  }
-);
+import { createScorer } from "inngest/experimental";
+import { z } from "zod";
+import { inngest } from "./client";
 
-// 2. When the fix ships, grade the original run against ground truth.
-export const scoreTriage = inngest.createFunction(
-  { id: "score-triage", triggers: { event: "incident/fix.shipped" } },
+// The scorer is its own function. It waits for the fix to ship,
+// then grades the agent's cited files against ground truth.
+export const triageScorer = createScorer(
+  inngest,
+  {
+    id: "triage-localization-scorer",
+    schema: z.object({
+      incidentId: z.string(),
+      cited: z.array(z.string()),
+    }),
+  },
   async ({ event, step }) => {
-    const { runId, citedFiles } = await step.run("load", () =>
-      incidents.load(event.data.incidentId)
-    );
-
-    await inngest.score({
-      name: "localization",
-      runId,
-      value: jaccard(citedFiles, event.data.fixFiles), // overlap, clamped 0–1
+    const fix = await step.waitForEvent("wait-for-fix", {
+      event: "incident/fix.shipped",
+      timeout: "30d",
+      if: `async.data.incidentId == '${event.data.input.incidentId}'`,
     });
+
+    // No fix shipped inside the window: record a zero rather than nothing.
+    if (!fix) {
+      return { name: "localization", value: 0 };
+    }
+
+    return {
+      name: "localization",
+      value: jaccard(event.data.input.cited, fix.data.fixFiles), // overlap, 0–1
+    };
   }
 );
 ```
 
-The score now sits on the triage run, so the run's trace, cost, and quality are all in one place. If no outcome event is coming and you need to grade after a delay, schedule the scoring work with `defer()` instead of waiting on an event.
+Trigger the scorer from the agent run with `defer()`. It's enqueued when the run finalizes, so the agent returns immediately and the grading happens in the background.
+
+```typescript
+export default inngest.createFunction(
+  { id: "triage-incident", triggers: { event: "incident/opened" } },
+  async ({ event, step, defer }) => {
+    const rca = await step.run("investigate", () => investigate(event.data));
+    await step.run("post-rca", () => postRca(event.data.incidentId, rca));
+
+    // Score this run once the fix ships, in the background.
+    defer("score-localization", {
+      function: triageScorer,
+      data: { incidentId: event.data.incidentId, cited: rca.citedFiles },
+    });
+
+    return rca;
+  }
+);
+```
+
+The returned score attaches to the triage run, so its trace, cost, and quality live in one place. Because the scorer is defined once, the same logic can grade any run that defers to it, including each variant of a `group.experiment()`.
 
 ## Capture human feedback as a score
 
-A thumbs-up/down on an agent's output is an outcome signal. Send it as an event from your UI and score the run it refers to.
+When the outcome already arrives as an event that carries the run's ID, you don't need a scorer; score the run directly from a normal function. A thumbs-up/down from your UI is the typical case: send it as an event and score the run it refers to.
 
 ```typescript
 export const scoreFeedback = inngest.createFunction(
@@ -120,49 +145,19 @@ await inngest.score("goal-completed", {
 });
 ```
 
-## Reuse scoring logic with a scorer
-
-When the same grading logic shows up in more than one place, define it once with `createScorer()` (imported from `inngest/experimental`) and reuse it. A scorer runs as its own function: it takes input matching its schema and returns a `{ name, value }` score.
-
-```typescript
-import { createScorer } from "inngest/experimental";
-import { z } from "zod";
-
-export const localizationScorer = createScorer(
-  inngest,
-  {
-    id: "localization-scorer",
-    schema: z.object({ cited: z.array(z.string()), fix: z.array(z.string()) }),
-  },
-  async ({ event }) => {
-    const { cited, fix } = event.data.input;
-    return { name: "localization", value: jaccard(cited, fix) };
-  }
-);
-```
-
-Trigger it from any function with `defer()`, passing data that matches the scorer's schema:
-
-```typescript
-defer("score-localization", {
-  function: localizationScorer,
-  data: { cited: citedFiles, fix: event.data.fixFiles },
-});
-```
-
 ## Best practices
 
 - Score the outcome you care about, not a proxy for it. Prefer "did the ticket resolve" over "did the answer look good."
 - Use a stable score name. Names appear in the dashboard and in Insights, and renaming splits your history.
 - Keep `value` in `[0, 1]`. Map pass/fail to `1`/`0` and graded results to a fraction.
-- Record the `runId` somewhere durable if the outcome arrives later, so the deferred scorer can find the run it belongs to.
+- When you score directly from an outcome event, put the run's ID on that event so the handler knows which run to score. Deferred scorers don't need this: the score attaches to the run that deferred them.
 - Reach for a deferred score before an LLM-as-judge score. A real outcome is a better signal than a model's opinion of the output.
 
 ## Related docs
 
-- [Score a function run](/docs/features/inngest-functions/steps-workflows/scoring?ref=docs-patterns-score-agents-on-real-outcomes) — how-to for inline and external scoring
-- [Build a deferred scorer](/docs/features/inngest-functions/steps-workflows/deferred-scoring?ref=docs-patterns-score-agents-on-real-outcomes) — score outcomes that resolve later
-- [Scoring reference](/docs/reference/typescript/v4/functions/scoring?ref=docs-patterns-score-agents-on-real-outcomes) — `inngest.score()`, `step.score()`, `createScorer()`, `defer()`
-- [Deferred functions reference](/docs/reference/typescript/v4/functions/deferred-functions?ref=docs-patterns-score-agents-on-real-outcomes) — `defer()` for fire-and-forget background work
-- [Patterns: Run experiments in production](/docs/patterns/ai-evals/run-experiments-in-production?ref=docs-patterns-score-agents-on-real-outcomes) — split traffic and compare variants
-- [`group.experiment()` reference](/docs/reference/typescript/v4/functions/group-experiment?ref=docs-patterns-score-agents-on-real-outcomes) — score each variant in an experiment
+- [Score a function run](/docs/features/inngest-functions/steps-workflows/scoring?ref=docs-patterns-score-agents-on-real-outcomes): how-to for inline and external scoring
+- [Build a deferred scorer](/docs/features/inngest-functions/steps-workflows/deferred-scoring?ref=docs-patterns-score-agents-on-real-outcomes): score outcomes that resolve later
+- [Scoring reference](/docs/reference/typescript/v4/functions/scoring?ref=docs-patterns-score-agents-on-real-outcomes): `inngest.score()`, `step.score()`, `createScorer()`, `defer()`
+- [Deferred functions reference](/docs/reference/typescript/v4/functions/deferred-functions?ref=docs-patterns-score-agents-on-real-outcomes): `defer()` for fire-and-forget background work
+- [Patterns: Run experiments in production](/docs/patterns/ai-evals/run-experiments-in-production?ref=docs-patterns-score-agents-on-real-outcomes): split traffic and compare variants
+- [`group.experiment()` reference](/docs/reference/typescript/v4/functions/group-experiment?ref=docs-patterns-score-agents-on-real-outcomes): score each variant in an experiment
