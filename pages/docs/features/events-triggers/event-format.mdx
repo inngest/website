@@ -1,7 +1,8 @@
 import { CodeGroup, Callout, Info } from "src/shared/Docs/mdx";
+import { Unreleased } from "src/shared/Docs/mdx";
 
 export const metaTitle = "Inngest Event Payload Format"
-export const description = "Learn the required and optional fields in an Inngest event payload, including name, data, id, ts, v, and meta.sessions. Includes examples and validation rules for well-formed events."
+export const description = "Learn the required and optional fields in an Inngest event payload, including name, data, id, ts, v. Includes examples and validation rules for well-formed events."
 
 ## Event payload format
 
@@ -17,7 +18,18 @@ The event payload is a JSON object that must contain a `name` and `data` propert
 * `id` is a unique identifier for the event used to prevent duplicate events. Learn more about [deduplication](/docs/events#deduplication).
 * `ts` is the timestamp of the event in milliseconds since the Unix epoch. If not provided, the timestamp will be set to the time the event was received by Inngest.
 * `v` is the event payload version. This is useful to track changes in the event payload shape over time. For example, `"2024-01-14.1"`
+<Unreleased label="score">
 * `meta.sessions` groups related function runs in the dashboard. For example, `"meta": { "sessions": { "conversation_id": "conv_1234" } }`. Learn more about [sessions](/docs/features/events-triggers/sessions).
+</Unreleased>
+
+  {/*
+  Add this one to the bottom of EventPayload 
+  <Unreleased label="score">
+  meta?: {
+    sessions?: Record<string, string | number>;
+  };
+  </Unreleased>
+  */}
 
 <CodeGroup>
 ```json {{ title: "Basic JSON event example" }}
@@ -42,9 +54,6 @@ type EventPayload = {
   id?: string;
   ts?: number;
   v?: string;
-  meta?: {
-    sessions?: Record<string, string | number>;
-  };
 }
 ```
 

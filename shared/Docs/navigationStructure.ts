@@ -379,7 +379,7 @@ const sectionLearn: (NavGroup | NavLink)[] = [
           { title: "Overview", href: `/docs/features/events-triggers` },
           { title: "Sending events", href: `/docs/events` },
           { title: "Event payload format", href: `/docs/features/events-triggers/event-format` },
-          { title: "Sessions", href: `/docs/features/events-triggers/sessions`, tag: "new" },
+          { title: "Sessions", href: `/docs/features/events-triggers/sessions`, tag: "new", unreleased: "score" },
           { title: "Writing expressions", href: `/docs/guides/writing-expressions` },
           { title: "Consuming webhook events", href: `/docs/platform/webhooks` },
           { title: "Parallel steps", href: "/docs/guides/step-parallelism" },
