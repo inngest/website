@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image, { type ImageProps } from "next/image";
 import { type MDXComponents } from "mdx/types";
+import { Unreleased } from "shared/Docs/Unreleased";
 
 // Cloud (#eaeaea) is the body colour for this page; there is no v1
 // token for it, so it's used as a literal here and on the entry date.
@@ -33,6 +34,9 @@ export const mdxComponents: MDXComponents = {
       {...(props as ImageProps)}
     />
   ),
+  // Gate inline content behind ?unreleased=<label> (e.g. scoring references in
+  // an otherwise-public entry). Whole-entry gating uses the `unreleased` export.
+  Unreleased,
 };
 
 // Body wrapper. CircularXX 16/24 cloud, 16px between top-level blocks.
