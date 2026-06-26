@@ -30,22 +30,23 @@ export default async function BlogIndex() {
   const posts = await loadMarkdownFilesMetadata<MDXBlogPost>("content/blog");
 
   const cards: PostCard[] = posts
-    .filter((p) => !p.hide && !p.redirect && p.heading)
+    .filter((p) => !p.hide && !p.unreleased && p.heading)
     .map((p) => {
       const tags = Array.isArray(p.tags)
         ? p.tags
         : typeof p.tags === "string"
-          ? (p.tags as string)
-              .split(",")
-              .map((t) => t.trim())
-              .filter(Boolean)
-          : [];
+        ? (p.tags as string)
+            .split(",")
+            .map((t) => t.trim())
+            .filter(Boolean)
+        : [];
       const dateISO =
         typeof p.date === "string"
           ? p.date
-          : p.date && typeof (p.date as unknown as Date).toISOString === "function"
-            ? (p.date as unknown as Date).toISOString()
-            : null;
+          : p.date &&
+            typeof (p.date as unknown as Date).toISOString === "function"
+          ? (p.date as unknown as Date).toISOString()
+          : null;
       return {
         slug: p.slug,
         type: "BLOG" as const,
@@ -54,6 +55,7 @@ export default async function BlogIndex() {
         date: dateISO,
         tags,
         image: p.image ? String(p.image) : null,
+        href: p.redirect ? String(p.redirect) : undefined,
         prettyDate: formatMDY(dateISO ?? undefined),
       };
     })
