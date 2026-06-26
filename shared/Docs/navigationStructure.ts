@@ -460,9 +460,9 @@ const sectionLearn: (NavGroup | NavLink)[] = [
       {
         title: "Monitor", links: [
           { title: "Inspecting runs", href: "/docs/platform/monitor/inspecting-function-runs" },
-          { title: "Traces", href: "/docs/platform/monitor/traces", tag: "new" },
+          { title: "Traces", href: "/docs/platform/monitor/traces"},
           { title: "Observability and metrics", href: "/docs/platform/monitor/observability-metrics" },
-          { title: "Insights", href: "/docs/platform/monitor/insights", tag: "new" },
+          { title: "Insights", href: "/docs/platform/monitor/insights" },
           { title: "Events", href: "/docs/platform/monitor/inspecting-events" },
         ]
       },
