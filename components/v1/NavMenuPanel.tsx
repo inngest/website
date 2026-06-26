@@ -90,7 +90,17 @@ function MenuItemList({
   compact?: boolean;
 }) {
   return (
-    <ul className={cn("flex flex-col shrink-0", compact ? "gap-4" : "gap-8", fill && "w-full")}>
+    <ul
+      className={cn(
+        "flex flex-col shrink-0",
+        compact ? "gap-4" : "gap-8",
+        fill && "w-full",
+        // Promo menus (Platform, Use Cases): pin the text column to a
+        // fixed width at xl+ so both menus' columns line up regardless of
+        // copy length (otherwise it auto-sizes to the longest label/desc).
+        !fill && "xl:w-[288px]"
+      )}
+    >
       {items.map((item) => (
         <li key={item.label} className={cn(fill && "w-full")}>
           <MenuRow item={item} fill={fill} compact={compact} />
