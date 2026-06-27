@@ -22,8 +22,8 @@ interface Step {
 const STEPS: Step[] = [
   {
     number: "01",
-    title: "Start locally",
-    body: "Start locally in one command. Install the SDK, define a function, and deploy alongside your existing app.",
+    title: "Install the SDK",
+    body: "Write functions that know when to run, wait, fan-out, and throttle—during any event, at any scale.",
     iconSrc: "/assets/v1/how-it-works/icon-1.svg",
     iconWidth: 192,
     iconHeight: 232,
@@ -31,8 +31,8 @@ const STEPS: Step[] = [
   },
   {
     number: "02",
-    title: "Run anywhere",
-    body: "Deploy to your favorite cloud provider — serverless platforms, traditional servers, or anywhere else. If your app runs there, your Inngest functions can too.",
+    title: "Deploy alongside your app",
+    body: "Deploy within your existing app, on your favorite cloud provider—serverless, traditional, or anywhere.",
     iconSrc: "/assets/v1/how-it-works/icon-2.svg",
     iconWidth: 338,
     iconHeight: 136,
@@ -40,8 +40,8 @@ const STEPS: Step[] = [
   },
   {
     number: "03",
-    title: "Ship unbreakable code",
-    body: "Write functions that know when to run, wait, fan-out, and throttle during any event, at any scale, anywhere.",
+    title: "Observe and optimize",
+    body: "The data that makes code durable is the same used to make it better. Fix fast, and continuously improve.",
     iconSrc: "/assets/v1/how-it-works/icon-3.svg",
     iconWidth: 220,
     iconHeight: 247,
