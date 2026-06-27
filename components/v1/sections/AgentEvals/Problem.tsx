@@ -45,6 +45,7 @@ export default function Problem() {
     <Section aria-labelledby="agent-evals-problem-heading" className="relative">
       <SectionHeader
         id="agent-evals-problem-heading"
+        eyebrow="The problem"
         title={<>Your eval tool can’t see business outcomes</>}
         body="How do you know if your agent works? LLM as a judge? User ratings? If you want to know which variant actually performed better, you used to have to stitch together data from multiple systems, implement human reviews, and build a layer of instrumentation on top."
         bodyClassName="max-w-[655px]"
