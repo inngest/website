@@ -293,6 +293,7 @@ const sectionLearn: (NavGroup | NavLink)[] = [
           { title: "Overview", href: `/docs/learn/inngest-functions` },
           { title: "Serve Inngest Functions", href: "/docs/learn/serving-inngest-functions" },
           { title: "Triggering functions", href: `/docs/features/events-triggers` },
+          { title: "Deferred functions", href: "/docs/features/inngest-functions/deferred-functions", tag: "beta" },
           { title: "Idempotency", href: `/docs/guides/handling-idempotency` },
           { title: "Logging", href: "/docs/guides/logging" },
         ]
