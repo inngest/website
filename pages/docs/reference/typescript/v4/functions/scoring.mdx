@@ -1,6 +1,6 @@
 import { Callout, Properties, Property, Row, Col } from "src/shared/Docs/mdx";
 
-export const metaTitle = "Scoring | Score AI Outputs (TypeScript SDK v4)"
+export const metaTitle = "inngest.score() | Score AI Outputs (TypeScript SDK v4)"
 export const description = "Attach numeric or boolean quality scores to AI function runs, steps, and experiment variants to track LLM-as-a-judge evals and performance across model versions."
 export const unreleased = "score"
 
@@ -69,9 +69,6 @@ The signal you want to score often arrives much later, from somewhere else entir
   </Property>
   <Property name="runId" type="string">
     The run to attach the score to. Required when scoring from outside the run that produced the result; omit to use the current run.
-  </Property>
-  <Property name="stepId" type="string">
-    The step to score. Optional. When provided, the score attaches to that specific step in the trace view.
   </Property>
 </Properties>
 
