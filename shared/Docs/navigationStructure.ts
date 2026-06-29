@@ -379,6 +379,7 @@ const sectionLearn: (NavGroup | NavLink)[] = [
           { title: "Overview", href: `/docs/features/events-triggers` },
           { title: "Sending events", href: `/docs/events` },
           { title: "Event payload format", href: `/docs/features/events-triggers/event-format` },
+          { title: "Sessions", href: `/docs/features/events-triggers/sessions`, tag: "new", unreleased: "score" },
           { title: "Writing expressions", href: `/docs/guides/writing-expressions` },
           { title: "Consuming webhook events", href: `/docs/platform/webhooks` },
           { title: "Parallel steps", href: "/docs/guides/step-parallelism" },
@@ -459,9 +460,9 @@ const sectionLearn: (NavGroup | NavLink)[] = [
       {
         title: "Monitor", links: [
           { title: "Inspecting runs", href: "/docs/platform/monitor/inspecting-function-runs" },
-          { title: "Traces", href: "/docs/platform/monitor/traces", tag: "new" },
+          { title: "Traces", href: "/docs/platform/monitor/traces"},
           { title: "Observability and metrics", href: "/docs/platform/monitor/observability-metrics" },
-          { title: "Insights", href: "/docs/platform/monitor/insights", tag: "new" },
+          { title: "Insights", href: "/docs/platform/monitor/insights" },
           { title: "Events", href: "/docs/platform/monitor/inspecting-events" },
         ]
       },

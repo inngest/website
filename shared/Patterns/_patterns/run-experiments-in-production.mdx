@@ -34,7 +34,7 @@ export default inngest.createFunction(
     triggers: { event: "billing/invoice.requested" },
   },
   async ({ event, step, group }) => {
-    return await group.experiment("invoice-engine", {
+    const { result } = await group.experiment("invoice-engine", {
       variants: {
         current: () =>
           step.run("generate-current", () =>
@@ -47,6 +47,8 @@ export default inngest.createFunction(
       },
       select: experiment.weighted({ current: 99, rewrite: 1 }),
     });
+
+    return result;
   }
 );
 ```
@@ -60,7 +62,7 @@ Use the same strategy to tune configuration, such as batch size or model tempera
 Use `experiment.bucket()` when a user, account, or tenant should get the same variant across runs. Pass a stable key, such as `event.data.accountId`, and optionally pass weights for the eligible variants.
 
 ```typescript
-const charge = await group.experiment("payments-provider", {
+const { result: charge } = await group.experiment("payments-provider", {
   variants: {
     stripe: () =>
       step.run("charge-stripe", () =>
@@ -86,7 +88,7 @@ Changing bucket weights can change future assignments for a key. If a migration 
 Use `experiment.custom()` when the selection comes from a system outside Inngest: a feature flag, a rollout table, an entitlement, or a per-account migration record. The custom selector is still memoized for the run.
 
 ```typescript
-const invoice = await group.experiment("invoice-engine", {
+const { result: invoice } = await group.experiment("invoice-engine", {
   variants: {
     current: () =>
       step.run("generate-current", () =>
@@ -121,7 +123,7 @@ Keeping the experiment wrapper in place lets you add another challenger later wi
 Experiments tell you which variant ran. To decide which variant is better, you still need an outcome signal. For simple technical outcomes, use the run trace, step latency, errors, and logs. For product or AI-quality outcomes, attach your own score or analytics event from inside the selected variant.
 
 ```typescript
-const outcome = await group.experiment("email-copy", {
+const { variant, experimentRef } = await group.experiment("email-copy", {
   variants: {
     short: () => step.run("short-copy", () => generateShortCopy(event.data)),
     detailed: () =>
@@ -130,19 +132,20 @@ const outcome = await group.experiment("email-copy", {
   select: experiment.bucket(event.data.userId, {
     weights: { short: 50, detailed: 50 },
   }),
-  withVariant: true,
 });
 
 await step.run("track-selected-variant", () =>
   analytics.track("experiment.variant_selected", {
     experiment: "email-copy",
-    variant: outcome.variant,
+    variant,
     userId: event.data.userId,
   })
 );
 ```
 
-If the outcome is available during the run, pair the experiment with [scoring](/docs/features/inngest-functions/steps-workflows/scoring?ref=docs-patterns-run-experiments-in-production). If the outcome arrives later, use a deferred scorer or your analytics system.
+`group.experiment()` returns the variant's `result`, the selected `variant` name, and an `experimentRef`. Destructure whichever you need.
+
+If the outcome is available during the run, pair the experiment with [scoring](/docs/features/inngest-functions/steps-workflows/scoring?ref=docs-patterns-run-experiments-in-production): pass the `experimentRef` to [`inngest.score.experiment()`](/docs/reference/typescript/v4/functions/scoring?ref=docs-patterns-run-experiments-in-production) to attach a score to the variant that ran. If the outcome arrives later, use a deferred scorer or your analytics system.
 
 ## Best practices
 

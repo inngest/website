@@ -15,7 +15,7 @@ If you want Inngest to set up OpenTelemetry for you, use [`@inngest/otel`](https
 
 ## Basic Usage
 
-Use this path when your application does not already configure OpenTelemetry. `@inngest/otel` installs a Node.js OpenTelemetry provider and common instrumentations before your application code starts, and `extendedTracesMiddleware()` attaches to that provider.
+Use this path when your application does not already configure OpenTelemetry. Install and use `@inngest/otel` to set up a Node.js OpenTelemetry provider and common instrumentations before your application code starts, and `extendedTracesMiddleware()` attaches to that provider.
 
 Preload it before your application:
 
@@ -166,7 +166,7 @@ provider.register();
 
 ## Instrumentation
 
-`@inngest/otel` automatically instruments common Node.js libraries when it is loaded before your application code. It registers the default instrumentations from [`@opentelemetry/auto-instrumentations-node`](https://www.npmjs.com/package/@opentelemetry/auto-instrumentations-node) and adds [Anthropic instrumentation](https://www.npmjs.com/package/@traceloop/instrumentation-anthropic).
+`@inngest/otel` automatically instruments common Node.js libraries when it is loaded before your application code. It instruments common Node packages, OpenAI, Anthropic, and Google Generative AI.
 
 If you configure OpenTelemetry yourself, continue to manage your own instrumentation list. Check the `@opentelemetry/auto-instrumentations-node` docs for the current supported instrumentation list and default-disabled entries. See the [OpenTelemetry setup guide](/docs/examples/open-telemetry) for general setup, AI metadata extraction, and CommonJS and ESM preload examples.
 
