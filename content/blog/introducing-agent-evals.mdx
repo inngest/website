@@ -1,0 +1,74 @@
+---
+heading: "Introducing Agent Evals: Score your agents on real outcomes"
+subtitle: "Experiments, Scoring, and Defer—outcome-based evals in the execution layer your agents already run on."
+image: /assets/blog/introducing-agent-evals/featured-image.png
+showSubtitle: true
+date: 2026-06-30
+author: Lauren Craigie
+category: product-updates
+---
+
+An agent returns a perfect answer. The user doesn't convert, the ticket reopens, the customer churns. The output scored well on every metric you have, and none of it mattered to your bottom line.
+
+That's the agent observability gap. Every tool on the market measures whether the output looked right; none can tell you whether the outcome was what you wanted, because none of them own the runtime where that outcome lands. Did the customer buy the thing, keep the thing, come back?
+
+That's **outcome-based scoring**, and it's the heart of what Inngest is launching today as **Agent Evals**—a series of APIs that live in your codebase, not in yet another tool.
+
+- **[Experiments](/blog/introducing-group-experiment?ref=blog-introducing-agent-evals)** — run variants of a prompt, model, or strategy against live production traffic and compare them on the execution data Inngest already records.
+- **[Scoring](/blog/introducing-scoring?ref=blog-introducing-agent-evals)** — attach a metric, numeric or boolean, to any run or step, from inside or outside a function, including outcomes that don't arrive until long after the run finishes.
+- **[Defer](/blog/announcing-defer?ref=blog-introducing-agent-evals)** — launch typed, durable follow-up work from inside a function, the primitive that lets a scorer run after a run completes and wait for what happens next.
+- **[Traces for AI](/blog/introducing-enhanced-traces?ref=blog-introducing-agent-evals)** — capture model calls, token counts, and latency as span-level metadata on every agent run.
+
+Together, Experiments, Scoring, and Defer make up Agent Evals, and they sit alongside the observability you already use to understand your functions: insights, metrics, and traces—now extended with Traces for AI. You've been able to see how a run behaved. Now you can know whether it did what you wanted.
+
+## The problem: You can't see what's actually working
+
+For a long time, "is it working?" just meant, did the code finish running?
+
+AI changed that. Agents fail like humans fail—unexpectedly, non-deterministically, _confidently_. And it doesn't always happen as errors, but as well-formed, categorically incorrect output. A run can return a clean 200, and still be completely inappropriate given surrounding context. The market feels this gap: in Inngest's recent study of engineers building AI in production, 35% aren't using evals at all, and 28% say it's just too hard to write evals that actually matter.
+
+So teams reach for other scores—faithfulness, correctness, a rubric graded by an LLM judge. These measure a proxy: whether the output _looks_ right, judged in the moment. What really matters is what happens next. Did the user accept the suggestion? Did the recommended product get bought, kept, returned? An answer can score well on quality and fail the only test that matters—and one that reads as mediocre can be the one that converts.
+
+That outcome is exactly what today's eval tooling can't reach, for one structural reason. The standard approach is a platform that sits beside your application and reads the traces you ship it—if you built the pipeline and knew in advance what you wanted to ship. To score on a conversion that lands three days later, _you_ build the part that waits, fires the score, and threads the run ID back. The eval tool can accept a late score; it can't be the thing that durably waits for it.
+
+## Agent Evals in Inngest: How it works
+
+It all starts with durable execution. Because Inngest runs your code, every step is already captured as it happens. Of course, the outcomes that matter _most_ tend not to arrive in the moment. That's what [Defer](/blog/announcing-defer?ref=blog-introducing-agent-evals) handles. A scorer runs as durable follow-up work, then writes the score back to the run that earned it.
+
+With outcomes captured as scores, [Experiments](/blog/introducing-group-experiment?ref=blog-introducing-agent-evals) turn them into decisions: run two variants of a prompt or model against live production traffic and compare them on the outcome itself, not a hunch about which reads better. And underneath all of it, [Traces for AI](/blog/introducing-enhanced-traces?ref=blog-introducing-agent-evals) gives you the span-level record of what each run actually did—so when a score comes back low, you can see where the run went wrong.
+
+It all lands in your run data, queryable in [Insights](/docs/platform/monitor/insights?ref=blog-introducing-agent-evals) with SQL. So the questions you didn't know to ask up front—which model wins for a given customer segment, how a score moves with latency, what the slow runs have in common—are still there to answer later.
+
+## Observability belongs in the execution layer
+
+Inngest's entire ethos is to take what used to live in separate infrastructure and bring it into your code. We did it for durable execution—translating retries, state, and recovery into functions. We've done it again for AI observability. The scorer isn't a rule in yet another tool—it's in code you've already written. Stated plainly:
+
+You can't score on a real-world outcome that lands days later without durable execution.
+
+You can't A/B test a prompt or a model against live production traffic without owning execution.
+
+You can't replay an agent's steps from a known point without owning execution.
+
+You can't alert on a bad outcome in real time without owning execution.
+
+Each is gated on the same thing—being the system that _runs_ the code, not the system watching it from outside. The data evaluation needs is already there, because the steps ran on Inngest in the first place. That's what makes Agent Evals work together:
+
+**Experiments** route live traffic between variants because Inngest makes the routing decision as part of the run — not by replaying a static dataset afterward.
+
+**Scoring** attaches a metric to the run that produced it, and because a scorer can run as deferred work, it can wait, durably, for an outcome that doesn't exist yet when the run finishes.
+
+**Defer** is the primitive underneath that wait: typed, durable follow-up work launched from inside a function, surviving deploys and crashes for as long as the outcome takes to arrive.
+
+You write the scorer. Inngest holds it open across the gap, fires it when the event lands, and attaches the result to the run—conversion, resolution, retention, whatever the outcome is. No queue to maintain, no IDs to reconcile.
+
+## Get started
+
+You already have the two things you need: an agent running on Inngest, and an outcome you care about. Wiring them together takes three steps.
+
+1. **Pick the outcome that defines success.** The merged PR that passed CI, the extracted data a human didn't have to correct, the research brief the analyst actually used, the support thread that ended without a human stepping in. Whatever you'd point to and say "that's the agent working," and which already shows up somewhere as an event.
+2. **Write a scorer that waits for it.** Use `createScorer` to run a scorer as deferred work after the run finishes, and `step.waitForEvent` to pause until the outcome lands. When it does, score the run. Minutes or weeks later, it's the same few lines.
+3. **Run a variant against it.** Once you can measure the outcome, `group.experiment()` lets you split live traffic between two prompts or models and compare them on that score, and ship the winner with evidence instead of a hunch.
+
+That's the loop: define what good means, measure it on real outcomes, change something, measure again. All in the layer your agent already runs on.
+
+Everything you need for agent evals is now available in v4.8.0 of the TS SDK. Happy scoring!
