@@ -113,7 +113,7 @@ const FLOW_CONTROL_CONTENT: TabContent = {
   body: [
     "Basic queues have no idea what to do when you’ve got multiple users competing for the same resource. Noisy neighbors, hand-rolled rate limits, priority queue sprawl, wasted compute… Inngest’s flow control features ensure every user gets their fair share, without extra work.",
   ],
-  videoSrc: RETRIES_CONTENT.videoSrc,
+  videoSrc: "https://cdn.inngest.com/homepage/june-2026-flow-control-website.mp4",
   capabilities: [
     {
       title: "Concurrency Control",
@@ -154,7 +154,7 @@ const OBSERVABILITY_CONTENT: TabContent = {
   body: [
     "How do you know if your agent works? If you want to know which variant actually performed better, you used to have to stitch together data from multiple systems, implement human reviews, and build a layer of instrumentation on top. Inngest captures all of this data by default, so you can add scoring the same way you add retries.",
   ],
-  videoSrc: RETRIES_CONTENT.videoSrc,
+  videoSrc: "https://cdn.inngest.com/homepage/june-2026-score-website.mp4",
   capabilities: [
     {
       title: "Scoring",
