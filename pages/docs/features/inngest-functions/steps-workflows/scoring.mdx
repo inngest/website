@@ -3,6 +3,7 @@ import { Callout, CodeGroup } from "src/shared/Docs/mdx";
 
 export const metaTitle = "Score Inngest Function Runs | AI Evaluation Docs"
 export const description = "Attach quality scores to Inngest function runs and individual steps to measure AI workflow performance in production using the step metadata API."
+export const unreleased = "score"
 
 # Score a function run
 
@@ -18,9 +19,15 @@ This is useful for anything where "did it work?" isn't a binary answer: AI accur
 
 ## Score the current run
 
-Inside a function, call `inngest.score()` or `step.score()` with a name and a numeric value.
+Inside a function, call `inngest.score()` or `step.score()` with a name and a value. The value can be a number or a boolean.
+
+`step.score()` is a durable, memoized step, so it takes a step ID as its first argument and requires `scoreMiddleware()` (from `inngest/experimental`) on the client:
 
 ```ts
+import { scoreMiddleware } from "inngest/experimental";
+
+const inngest = new Inngest({ id: "my-app", middleware: [scoreMiddleware()] });
+
 export default inngest.createFunction(
   { id: "summarize-ticket", triggers: { event: "support/ticket.created" } },
   async ({ event, step }) => {
@@ -33,14 +40,14 @@ export default inngest.createFunction(
     });
 
     // Score this run based on whether guardrails passed
-    await step.score({ name: "guardrail-pass", value: passed ? 1 : 0 });
+    await step.score("score-guardrail-pass", { name: "guardrail-pass", value: passed });
 
     return { summary, passed };
   }
 );
 ```
 
-`step.score()` attaches the score to the current run. Use it when you know the outcome before the function finishes.
+`step.score()` attaches the score to the current run. Its first argument is a durable step ID that memoizes the write, so a retry or replay can't record it twice. Use it when you know the outcome before the function finishes.
 
 ---
 
@@ -90,7 +97,7 @@ This is how you score based on signals that arrive after the function finishes: 
 
 ## Score an experiment variant
 
-When you compare approaches with [`group.experiment()`](/docs/features/inngest-functions/steps-workflows/running-experiments), use `inngest.score.experiment()` with the returned `experimentRef` to attach a score to the variant that ran. Inngest records it against the experiment so you can compare variants side by side.
+When you compare approaches with [`group.experiment()`](/docs/patterns/ai-evals/run-experiments-in-production), use `inngest.score.experiment()` with the returned `experimentRef` to attach a score to the variant that ran. Inngest records it against the experiment so you can compare variants side by side.
 
 ```ts
 const { result, experimentRef } = await group.experiment("summary-model", {
@@ -130,4 +137,4 @@ Scores show up in two places:
 ## Next steps
 
 - [Build a deferred scorer](/docs/features/inngest-functions/steps-workflows/deferred-scoring) for outcomes that take time to resolve
-- [Run experiments](/docs/features/inngest-functions/steps-workflows/running-experiments) to compare models or prompts with traffic splits
+- [Run experiments](/docs/patterns/ai-evals/run-experiments-in-production) to compare models or prompts with traffic splits

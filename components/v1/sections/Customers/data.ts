@@ -56,6 +56,14 @@ export const STORIES: StoryCard[] = [
     body: "Outtake's approach demonstrates that effective AI agents require a robust architecture to handle large datasets, manage rate limits, and ensure reliability.",
   },
   {
+    id: "analogue",
+    brand: "Analogue",
+    logo: "/assets/customers/analogue-logo-white.svg",
+    tags: ["Ecommerce"],
+    title: "Why Analogue Never Drops an Order, Even During Flash Sales",
+    body: "Analogue uses Inngest to power order fulfillment, multi-warehouse shipping, repairs, and analytics through bursty flash-sale traffic.",
+  },
+  {
     id: "baerskin-tactical",
     brand: "BÆRSkin Tactical Supply Co.",
     logo: "/assets/customers/baerskintactical-logo-white.svg",

@@ -1,4 +1,4 @@
-import { Callout, Properties, Property, Row, Col, CodeGroup, VersionBadge } from "src/shared/Docs/mdx";
+import { Callout, Properties, Property, Row, Col, CodeGroup, VersionBadge, Unreleased } from "src/shared/Docs/mdx";
 
 
 export const metaTitle = "Deferred Functions | Fire-and-Forget Background Tasks"
@@ -22,7 +22,11 @@ Use deferred functions for work that should happen *because of* a run, not *as p
 | `step.sendEvent(...)`           | No                  | Yes (any matching fn)     |
 | `defer(id, { function, data })` | No                  | Yes (single typed target) |
 
+<Unreleased label="score">
+
 A common use case is an [LLM scorer](/docs/features/inngest-functions/steps-workflows/deferred-scoring) that runs against the output of an agent run.
+
+</Unreleased>
 
 ---
 
@@ -125,9 +129,11 @@ await step.run("notify", async () => {
       <Property name="data" type="object" required>
         Payload to send to the deferred function. Typed from `function.schema` when present.
       </Property>
+      <Unreleased label="score">
       <Property name="experiment" type="ExperimentRef">
         An [`experimentRef`](/docs/reference/typescript/v4/functions/group-experiment) returned by `group.experiment()`. When the deferred function is a scorer, its returned score is attributed to the selected experiment variant.
       </Property>
+      </Unreleased>
     </Properties>
   </Property>
 </Properties>

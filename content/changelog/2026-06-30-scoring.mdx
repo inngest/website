@@ -1,0 +1,17 @@
+export const title = "Scoring: judge how well your AI actually performed";
+export const date = "2026-06-30";
+export const unreleased = "score";
+
+Scoring lets you attach a named quality signal to a function run, a step, or an experiment variant. It shines for AI evals: run an LLM-as-a-judge over a result and write the verdict back as a score with `inngest.score({ name, value })`, or defer the judge entirely so a slow model call never blocks the run that produced the output. A score is just a named number or boolean, so it tracks ordinary product signals too, from click-through and saves to conversions and error rates.
+
+Reach for it whenever you need to judge _how well_ code ran, not just whether it succeeded: LLM-as-a-judge evals, deterministic guardrails (length, format, refusal checks), engagement signals, and human ratings. Scores are how you turn an [experiment](/docs/patterns/ai-evals/run-experiments-in-production?ref=changelog-scoring) into a _winner_.
+
+- **Score right at the execution layer.** Scores land on the run itself, alongside the rest of the execution metadata Inngest already captures, not in a separate metrics pipeline. `inngest.score()` writes immediately, and `step.score("id", { name, value })` records the score as a durable, memoized step.
+- **Defer expensive scorers.** `createScorer()` turns an LLM-as-a-judge, or any other eval, into a deferred function. Trigger it with `defer()` from your run and the score is written for you, off the critical path, without blocking the result a user sees.
+- **Score variants from anywhere.** `inngest.score.experiment()` credits a score to the experiment variant that produced a result, even when the signal arrives much later in a separate run: a click, a rating, or a judge's verdict.
+
+Scoring is available now in beta in the Inngest TypeScript SDK. Install the latest with `npm install inngest@latest`. `inngest.score()` lives on the client. `step.score()` needs `scoreMiddleware()`, which, along with `createScorer`, is imported from `inngest/experimental`.
+
+- [Score a function run](/docs/features/inngest-functions/steps-workflows/scoring?ref=changelog-scoring)
+- [Build a deferred scorer](/docs/features/inngest-functions/steps-workflows/deferred-scoring?ref=changelog-scoring)
+- [`inngest.score()` reference](/docs/reference/typescript/v4/functions/scoring?ref=changelog-scoring)

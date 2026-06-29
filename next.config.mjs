@@ -188,6 +188,14 @@ const permanentRedirects = [
   ],
   ["/patterns/running-code-on-a-schedule", "/docs/guides/scheduled-functions"],
 
+  // run-experiments-in-production moved from the Durable Workflows category to
+  // the new AI Evals category (per Lauren's IA feedback). Old category URL is
+  // shared in Slack and linked from the experiments doc, so redirect it.
+  [
+    "/docs/patterns/durable/run-experiments-in-production",
+    "/docs/patterns/ai-evals/run-experiments-in-production",
+  ],
+
   // New IA: platform + use-case pages replacing legacy landing pages, plus
   // a few standalone LPs being retired.
   ["/uses/durable-workflows", "/platform/durable-execution"],
@@ -199,6 +207,7 @@ const permanentRedirects = [
   ["/ai-personalized-documentation", "/docs/ai-dev-tools/agent-skills"],
   ["/ai/early-access", "/ai"],
   ["/launch-week", "/"],
+  ["/product/how-inngest-works", "/"],
   // The scheduled-jobs page moved under /uses; preserve the old URL.
   ["/scheduled-jobs", "/uses/scheduled-jobs"],
 ];

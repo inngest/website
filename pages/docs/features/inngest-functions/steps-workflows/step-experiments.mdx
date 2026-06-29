@@ -1,0 +1,243 @@
+import { Callout, Unreleased } from "src/shared/Docs/mdx";
+
+export const metaTitle = "Step Experiments | Run Variants in Durable Functions"
+export const description = "Use group.experiment() to run one of several durable workflow variants, choose traffic with weighted, bucket, custom, or fixed selection, and track outcomes."
+
+# Step experiments
+
+Step experiments let you test more than one version of function logic in production. You define named variants inside `group.experiment()`, choose a selection strategy, and Inngest executes one variant for each run.
+
+They are useful when you want to:
+
+- Roll out a risky rewrite to a small slice of traffic.
+- Compare models, prompts, providers, or workflow strategies.
+- Keep users or accounts on a consistent experience while you evaluate a change.
+- Tune operational settings, such as batch size, concurrency, or retry behavior.
+
+Experiments are part of the TypeScript SDK v4. You do not need a separate package or feature-flag service to start using them.
+
+## Basic example
+
+Import the `experiment` helper from `inngest`, then call `group.experiment()` from inside a function handler. The `group` argument is injected alongside `event` and `step`.
+
+```typescript
+import { experiment } from "inngest";
+import { inngest } from "./client";
+
+export default inngest.createFunction(
+  {
+    id: "summarize-document",
+    triggers: { event: "document/uploaded" },
+  },
+  async ({ event, step, group }) => {
+    const doc = await step.run("fetch-document", () =>
+      fetchDocument(event.data.documentId)
+    );
+
+    const { result: summary } = await group.experiment("model-comparison", {
+      variants: {
+        gpt4o: () =>
+          step.run("summarize-gpt4o", () =>
+            callOpenAI({
+              model: "gpt-4o",
+              prompt: `Summarize: ${doc.text}`,
+            })
+          ),
+        claude: () =>
+          step.run("summarize-claude", () =>
+            callAnthropic({
+              model: "claude-sonnet-4-20250514",
+              prompt: `Summarize: ${doc.text}`,
+            })
+          ),
+      },
+      select: experiment.weighted({ gpt4o: 50, claude: 50 }),
+    });
+
+    return summary;
+  }
+);
+```
+
+Only the selected variant runs. The other variant callbacks are skipped.
+
+## How selection works
+
+The experiment selection is itself a durable, memoized step. When a function run reaches `group.experiment()` for the first time, Inngest evaluates the `select` strategy and stores the selected variant. If the run retries or replays later, it uses the same selected variant again.
+
+Because the selection is a single step, each `group.experiment()` counts as one step toward your function run and billing metrics. Any steps you run inside the selected variant are metered separately, like any other step.
+
+Variant callbacks can contain normal step tools, including `step.run()`, `step.invoke()`, `step.waitForEvent()`, and `step.sendEvent()`. Each step inside the selected variant is retried and memoized like any other step.
+
+<Callout>
+  Every variant callback must call at least one `step.*` tool. Code that runs outside of steps is not durable and can re-execute on replay.
+</Callout>
+
+## Selection strategies
+
+Choose the strategy that matches the behavior you need.
+
+### Weighted
+
+Use `experiment.weighted()` for run-level splits where each new run can receive a fresh assignment.
+
+```typescript
+select: experiment.weighted({ control: 90, candidate: 10 })
+```
+
+Weights are relative. `{ control: 9, candidate: 1 }` and `{ control: 90, candidate: 10 }` produce the same split.
+
+Weighted selection is seeded by the run, so the same run keeps its selected variant on retries. Changing weights in a later deploy only affects new selections.
+
+### Bucket
+
+Use `experiment.bucket()` when the same user, account, or tenant should usually get the same variant across runs.
+
+```typescript
+select: experiment.bucket(event.data.userId, {
+  weights: { control: 80, candidate: 20 },
+})
+```
+
+The stable value you pass, such as `event.data.userId`, is hashed into a variant. This prevents a user from seeing a different experience every time they trigger the function.
+
+<Callout>
+  Changing bucket weights can change future assignments for a key. If you need strict migration stickiness, store the assignment in your own database and use `experiment.custom()`.
+</Callout>
+
+### Custom
+
+Use `experiment.custom()` when the selection should come from your own system, such as a feature flag, rollout table, entitlement, or database-backed migration assignment.
+
+```typescript
+select: experiment.custom(async () => {
+  const assignment = await rolloutTable.get(event.data.accountId);
+  return assignment ?? "control";
+})
+```
+
+The custom selector must return one of the variant names. The returned value is memoized for the run.
+
+### Fixed
+
+Use `experiment.fixed()` when you want one variant every time. This is useful for manual overrides, testing a single path, or pinning one variant while you remove the experiment.
+
+```typescript
+select: experiment.fixed("candidate")
+```
+
+## The return value
+
+`group.experiment()` always returns `{ result, variant, experimentRef }`:
+
+- **`result`**: the value returned by the selected variant's callback.
+- **`variant`**: the name of the selected variant, as a string. Useful for logging, analytics, or downstream decisions.
+- **`experimentRef`**: a replay-stable handle of shape `{ experimentName, variant }`.<Unreleased label="score"> Pass it to [`inngest.score.experiment()`](/docs/reference/typescript/v4/functions/scoring?ref=docs-step-experiments#inngest-score-experiment-options) to attribute a score to the variant that produced this result, even later and from a separate run.</Unreleased>
+
+```typescript
+const { result, variant, experimentRef } = await group.experiment("copy-style", {
+  variants: {
+    short: () => step.run("short-copy", () => generateShortCopy(event.data)),
+    detailed: () =>
+      step.run("detailed-copy", () => generateDetailedCopy(event.data)),
+  },
+  select: experiment.bucket(event.data.userId, {
+    weights: { short: 50, detailed: 50 },
+  }),
+});
+
+await step.run("track-experiment", () =>
+  analytics.track("experiment.variant_selected", {
+    experiment: "copy-style",
+    variant,
+    userId: event.data.userId,
+  })
+);
+
+return result;
+```
+
+<Unreleased label="score">
+
+### Scoring a variant with `experimentRef`
+
+`experimentRef` is how a score gets credited to the variant that produced a result. Because you hold the ref, you can score the variant right away, or save it and score much later when the real signal lands: a click, a rating, or an LLM-judge verdict, often from a different run entirely.
+
+```typescript
+const { result, experimentRef } = await group.experiment("summary-strategy", {
+  variants: { /* ... */ },
+  select: experiment.weighted({ questionLed: 50, factLed: 50 }),
+});
+
+// Score now, from the same run that served the variant
+await inngest.score.experiment({ name: "length-ok", value: true, experiment: experimentRef });
+
+// ...or persist experimentRef (and this run's ID) and score it later from a separate run:
+// await inngest.score.experiment({ name: "clickthrough", value: 1, experiment: ref, runId });
+```
+
+See the [scoring reference](/docs/reference/typescript/v4/functions/scoring?ref=docs-step-experiments) for the full attribution rules, including when you must pass `runId`.
+
+</Unreleased>
+
+## Track outcomes
+
+An experiment tells you which variant ran. It does not decide which variant is best for you. Attach your own outcome signal:
+
+<Unreleased label="score">
+
+- Use [scoring](/docs/features/inngest-functions/steps-workflows/scoring?ref=docs-step-experiments) when the score is known during the run.
+- Use [deferred scoring](/docs/features/inngest-functions/steps-workflows/deferred-scoring?ref=docs-step-experiments) when the outcome arrives later.
+
+</Unreleased>
+
+- Emit analytics events from a `step.run()` when your team already uses an external analytics warehouse.
+
+<Unreleased label="score">
+
+For AI model or prompt experiments, the `experimentRef` returned by `group.experiment()` is the cleanest way to attribute a score back to the variant that produced the result, since it works even when the score arrives from a later run.
+
+</Unreleased>
+
+## Notes and best practices
+
+- Give every experiment in a function a unique ID.
+- Keep variant names stable because they show up in traces and analytics.
+- Use `weighted()` when each run can receive a fresh assignment.
+- Use `bucket()` when a stable user or account experience matters.
+- Use `custom()` when assignment must be controlled outside code or changed without a deploy.
+- Keep selectors simple. Put the behavior you are comparing inside the variant callbacks.
+
+## Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| **Setup** | |
+| Experiments are not available. | Your SDK version must be at least `4.8.0`. |
+| **Variant selection** | |
+| The same user sees different variants across runs. | `experiment.weighted()` is seeded by run ID, not user ID. Use `experiment.bucket(userId, { weights })` for sticky user-level assignment. |
+| `select()` returns a variant that does not exist. | Make sure `experiment.fixed()`, `experiment.custom()`, or custom selector output exactly matches a key in `variants`. Typos fail the run. |
+| `experiment.bucket()` gives surprising skew. | Confirm the bucket value is not `null` or `undefined`. Missing values hash as an empty string, so they all collapse into the same deterministic bucket. |
+| **Reading results** | |
+| A 50/50 split looks uneven. | Small samples are noisy. Fire more events before assuming selection is wrong. |
+| Two functions use the same experiment name and the dashboard feels confusing. | This is allowed, and the backend scopes detail views by function. Still, prefer distinct experiment names when humans will compare them in the list or docs. |
+
+<Unreleased label="score">
+
+### Scoring
+
+| Issue | Solution |
+|-------|----------|
+| Scoring is not available. | Your SDK version must be at least `4.8.0`. |
+| `step.score()` is missing or throws. | Register `scoreMiddleware()` on the Inngest client: `middleware: [scoreMiddleware()]`. |
+| Scores run, but do not attach to the experiment. | For in-callback scoring, call `step.score()` inside the selected variant callback. For outside-callback scoring, use `inngest.score.experiment()` with the returned `experimentRef`. |
+| Score values are rejected. | Score value must be a finite number or boolean. Do not pass strings, objects, `NaN`, or `Infinity`. |
+| Boolean scores look like numbers in aggregate views. | Boolean scores are valid and aggregate numerically. Treat `true` as `1` and `false` as `0` when interpreting averages. |
+
+</Unreleased>
+
+## Related docs
+
+- [Run experiments in production](/docs/patterns/ai-evals/run-experiments-in-production?ref=docs-step-experiments)
+- [`group.experiment()` reference](/docs/reference/typescript/v4/functions/group-experiment?ref=docs-step-experiments)
+- [Function versioning](/docs/learn/versioning?ref=docs-step-experiments)

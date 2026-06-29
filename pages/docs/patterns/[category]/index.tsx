@@ -81,7 +81,7 @@ export default function CategoryPage({ category }: { category: string }) {
       </div>
 
       <figure className="figure" style={{ marginTop: 28, marginBottom: 8 }}>
-        <Viz id={section.viz} accent={section.accent.hex} />
+        <Viz id={section.viz} accent={section.vizHex ?? section.accent.hex} />
       </figure>
 
       <div className="md-prose">
