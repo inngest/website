@@ -18,10 +18,12 @@ export default function Hero() {
       leftHeadlineLines={["Stop", "guessing."]}
       rightHeadline={<>Prove it in production.</>}
       bodyLines={[
-        "Comparing code, tools, or models in a sandbox might tell",
-        "you whether something works, but it won’t tell you what",
-        "works better. Only Inngest lets you safely experiment on",
-        "production traffic, using data already collected at execution.",
+        "Comparing code, tools, or models in a sandbox",
+        "might tell you whether something works, but",
+        "it won’t tell you what works better. Only",
+        "Inngest lets you safely experiment on",
+        "production traffic, using data already",
+        "collected at execution.",
       ]}
       canvas={({ isDesktop }) =>
         isDesktop ? (
