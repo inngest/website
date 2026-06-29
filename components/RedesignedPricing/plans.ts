@@ -130,7 +130,7 @@ export const PLANS: Plan[] = [
       additionalWorkersPrice: 10,
       additionalWorkersRate: 1,
       //   between: true,
-      //   endPrice: 75,
+      //   endPrice: 99,
     },
     description: "Pay only for what you use with no upfront commitment",
     cta: {
@@ -156,7 +156,7 @@ export const PLANS: Plan[] = [
     name: PLAN_NAMES.pro,
     cost: {
       startsAt: true,
-      basePrice: 75,
+      basePrice: 99,
       includedRuns: 1_000_000,
       additionalRunsPrice: 10, // $50 per 1 m (10 per 200 k)
       additionalRunsRate: 200_000,
@@ -257,7 +257,7 @@ export const FEATURES: Feature[] = [
     name: "Base price",
     plans: {
       [PLAN_NAMES.basicFree]: "$0",
-      [PLAN_NAMES.pro]: "$75 /mo",
+      [PLAN_NAMES.pro]: "$99 /mo",
       [PLAN_NAMES.enterprise]: "Contact us",
     },
     section: "platform",

@@ -92,7 +92,7 @@ export const PLANS: Plan[] = [
       "For growing teams building production-ready workflows with increased scale and reliability.",
     cost: {
       startsAt: true,
-      basePrice: 75,
+      basePrice: 99,
       period: "mo",
       includedRuns: 1_000_000,
       additionalRunsPrice: 50,
@@ -206,7 +206,7 @@ export const FEATURES: Feature[] = [
     section: "comparison",
     plans: {
       [PLAN_NAMES.hobby]: "$0",
-      [PLAN_NAMES.pro]: "$75 /mo",
+      [PLAN_NAMES.pro]: "$99 /mo",
       [PLAN_NAMES.enterprise]: "Contact us",
     },
   },

@@ -86,8 +86,8 @@ function planCost(plan: Plan, inputs: Inputs): number {
     included = num(HOBBY_PLAN.cost.includedRuns);
     exec = executionsCost(total, included, "pro");
   } else if (plan.name === PLAN_NAMES.pro) {
-    base = 75;
-    included = 1_000_000;
+    base = num(plan.cost.basePrice);
+    included = num(plan.cost.includedRuns);
     exec = executionsCost(total, included, "pro");
   } else {
     base = total <= 10_000_000 ? 1000 : 2500;
