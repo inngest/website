@@ -300,8 +300,23 @@ const sectionLearn: (NavGroup | NavLink)[] = [
       {
         title: "Durable Endpoints", links: [
           { title: "Overview", href: `/docs/learn/durable-endpoints` },
-          { title: "Streaming", href: "/docs/learn/durable-endpoints/streaming" },
-        ]
+          {
+            title: "Streaming",
+            href: "/docs/learn/durable-endpoints/streaming",
+          },
+        ],
+      },
+      {
+        title: "Durable Agents",
+        href: `/docs/learn/durable-agents`,
+        // links: [
+        //   { title: "Overview", href: `/docs/learn/durable-agents` },
+        //   // Future "AI Observability" guide
+        //   // {
+        //   //   title: "AI Observability",
+        //   //   href: `/docs/learn/tbd`,
+        //   // },
+        // ],
       },
       {
         title: "Steps", links: [
