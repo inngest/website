@@ -54,6 +54,9 @@ export function buildMenuGroups(
 
   const menuGroups: ContentMenuGroup[] = [];
   for (const item of entries) {
+    // Gated entries never appear in the menu, so their titles can't leak to
+    // the crawler. (They still show in the feed once revealed via ?unreleased.)
+    if (item.metadata.unreleased) continue;
     const label = monthLabel(item.metadata.date);
     const entry = { id: entryId(item.slug), text: item.metadata.title };
     const last = menuGroups[menuGroups.length - 1];

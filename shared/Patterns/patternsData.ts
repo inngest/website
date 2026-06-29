@@ -21,13 +21,17 @@ export interface PatternSectionMeta {
   kicker: string;
   description: string;
   viz: string; // visualization id (see shared/Patterns/Viz.tsx)
-  accentDeep: string; // deeper accent hex, readable as text on a light canvas
+  accentDeep: string; // deeper accent color (CSS color value), readable as text on a light canvas
+  // Raw hex for the Viz SVG only. SVG presentation attributes (fill/stroke)
+  // can't resolve CSS var(), so sections whose `accent.hex` is a token
+  // reference must supply a literal hex here. Falls back to `accent.hex`.
+  vizHex?: string;
   accent: {
     text: string; // Tailwind text color class
     border: string; // Tailwind border color class
     bg: string; // Tailwind bg tint class
     gradient: string; // CSS gradient for rule line
-    hex: string; // bright/structural accent
+    hex: string; // bright/structural accent (CSS color value, used for --accent)
     rgb: string; // "R G B" for rgba mixing
   };
 }
@@ -38,8 +42,33 @@ export interface PatternSection extends PatternSectionMeta {
 
 const PATTERN_SECTIONS: PatternSectionMeta[] = [
   {
-    id: "durable",
+    // AI Evals: experiments today; scoring + evals patterns to follow.
+    // Accent uses the purplehaze design token (var(--color-purplehaze-*)) so the
+    // chart/header/code-chip purple is token-driven, not a hardcoded hex.
+    // `vizHex` carries the literal hex for the SVG since var() can't resolve in
+    // SVG attributes. TODO(design): swap purplehaze + the "events" diagram for a
+    // dedicated AI Evals accent/visualization before the evals launch.
+    id: "ai-evals",
     number: "00",
+    name: "AI Evals",
+    kicker: "Experiment, score, pick winners",
+    description:
+      "Run experiments on live traffic, keep cohorts stable, and compare variants against real outcome signals. The substrate for evaluating models, prompts, and rewrites in production.",
+    viz: "events",
+    accentDeep: "rgb(var(--color-purplehaze-600))",
+    vizHex: "#8B74F9", // = purplehaze-500
+    accent: {
+      text: "text-purplehaze-500",
+      border: "border-purplehaze-500",
+      bg: "bg-purplehaze-500/[0.08]",
+      gradient: "from-purplehaze-500 to-transparent",
+      hex: "rgb(var(--color-purplehaze-500))",
+      rgb: "var(--color-purplehaze-500)",
+    },
+  },
+  {
+    id: "durable",
+    number: "01",
     name: "Durable Workflows",
     kicker: "Steps that don't lose state",
     description:
@@ -57,7 +86,7 @@ const PATTERN_SECTIONS: PatternSectionMeta[] = [
   },
   {
     id: "flow",
-    number: "01",
+    number: "02",
     name: "Flow Control",
     kicker: "Spike-proof the boring stuff",
     description:
@@ -75,7 +104,7 @@ const PATTERN_SECTIONS: PatternSectionMeta[] = [
   },
   {
     id: "events",
-    number: "02",
+    number: "03",
     name: "Event Coordination",
     kicker: "Choreograph the chaos",
     description:
@@ -93,7 +122,7 @@ const PATTERN_SECTIONS: PatternSectionMeta[] = [
   },
   {
     id: "schedule",
-    number: "03",
+    number: "04",
     name: "Scheduling",
     kicker: "Time as a first-class input",
     description:
@@ -111,7 +140,7 @@ const PATTERN_SECTIONS: PatternSectionMeta[] = [
   },
   {
     id: "jobs",
-    number: "04",
+    number: "05",
     name: "Background Jobs",
     kicker: "Off the request path",
     description:
@@ -143,6 +172,13 @@ export const PATTERNS: PatternIndexItem[] = [
     title: "Reliably run critical workflows",
     subtitle:
       "Break multi-step AI pipelines and complex business logic into durable, independently retried steps.",
+  },
+  {
+    category: "ai-evals",
+    slug: "run-experiments-in-production",
+    title: "Run experiments in production",
+    subtitle:
+      "Use group.experiment() to split traffic, keep cohorts stable, compare variants, and roll changes forward safely.",
   },
   {
     category: "flow",

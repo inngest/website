@@ -29,7 +29,7 @@ function loadBlogIndex(): PostMeta[] {
     const { data } = matter(source);
 
     // Skip redirects and hidden posts
-    if (data.redirect || data.hide) continue;
+    if (data.redirect || data.hide || data.unreleased) continue;
 
     const slug = file.replace(/\.(mdx|md)$/, "");
 

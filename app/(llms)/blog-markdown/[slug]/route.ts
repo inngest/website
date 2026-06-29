@@ -11,10 +11,10 @@ export const generateStaticParams = async () => {
     .readdirSync(BLOG_DIR)
     .filter((f) => f.endsWith(".mdx") || f.endsWith(".md"))
     .filter((f) => {
-      // Skip posts that define a redirect
+      // Skip posts that define a redirect or are gated (unreleased)
       const source = fs.readFileSync(path.join(BLOG_DIR, f), "utf-8");
       const { data } = matter(source);
-      return !data.redirect;
+      return !data.redirect && !data.unreleased;
     });
 
   return files.map((f) => ({ slug: f.replace(/\.(mdx|md)$/, "") }));
@@ -62,6 +62,14 @@ export async function GET(
   try {
     const source = fs.readFileSync(filePath, "utf-8");
     const { content, data } = matter(source);
+
+    // Don't serve the markdown mirror for gated (unreleased) posts.
+    if (data.unreleased) {
+      return new Response("Post not found", {
+        status: 404,
+        statusText: "Post not found",
+      });
+    }
 
     // Build a clean YAML frontmatter block so agents get full metadata
     const authors = Array.isArray(data.author)

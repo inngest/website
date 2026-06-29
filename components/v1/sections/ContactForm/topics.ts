@@ -15,7 +15,7 @@ export const GENERAL_TOPICS: Topic[] = [
     body: "Hit a bug or need help with your integration? Open a support ticket and our team will get back.",
     action: {
       label: "Create a support ticket",
-      href: "/support?ref=contact",
+      href: "https://support.inngest.com",
     },
   },
   {
@@ -69,7 +69,7 @@ export const SALES_TOPICS: Topic[] = [
     title: "Talk to sales",
     body: "Pricing, procurement, security reviews, and Enterprise plans — connect with our Sales Engineering team.",
     action: {
-      label: "Open the sales form",
+      label: "Book a demo",
       href: "/contact?ref=contact",
     },
   },
@@ -85,8 +85,8 @@ export const SALES_TOPICS: Topic[] = [
     title: "Product Questions",
     body: "Question about how Inngest fits your stack? The sales team can route product questions to the right engineer.",
     action: {
-      label: "sales@inngest.com",
-      href: "mailto:sales@inngest.com",
+      label: "Talk to sales",
+      href: "/contact",
     },
   },
 ];

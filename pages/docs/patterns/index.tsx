@@ -109,7 +109,7 @@ export default function PatternsLanding() {
             ) : (
               <Viz
                 id={featuredSection.viz}
-                accent={featuredSection.accent.hex}
+                accent={featuredSection.vizHex ?? featuredSection.accent.hex}
               />
             )}
           </div>

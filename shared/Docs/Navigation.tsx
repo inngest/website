@@ -32,6 +32,7 @@ import {
   NavLinkGroup,
   isNavLink,
 } from "./navigationStructure";
+import { useUnreleasedLabels, filterUnreleasedNav } from "./Unreleased";
 import * as Accordion from "@radix-ui/react-accordion";
 import { ChevronDownIcon, CheckIcon } from "@heroicons/react/24/outline";
 import { MobileSearch } from "./Search";
@@ -847,6 +848,11 @@ export function Navigation(props) {
   const { effectiveLanguage, effectiveTsVersion, setLanguage, setTsVersion } =
     useHydratedLanguageState(pathname);
 
+  const unreleasedLabels = useUnreleasedLabels();
+  const visibleMenuTabs = filterUnreleasedNav(menuTabs, unreleasedLabels);
+  // Stable string for the accordion remount key below.
+  const unreleasedKey = Array.from(unreleasedLabels).sort().join(",");
+
   // Find the section based on the active tab (Learn/Reference)
   const nestedSection =
     getAllSections(topLevelNav).find(
@@ -859,8 +865,14 @@ export function Navigation(props) {
   // This way crawlers can still see all the links
   const nestedNavigation = useMemo(() => {
     if (!nestedSection) return null;
-    return nestedSection;
-  }, [nestedSection]);
+    return {
+      ...nestedSection,
+      sectionLinks: filterUnreleasedNav(
+        nestedSection.sectionLinks ?? [],
+        unreleasedLabels
+      ),
+    };
+  }, [nestedSection, unreleasedLabels]);
 
   const activeGroup = useMemo(
     () =>
@@ -890,7 +902,7 @@ export function Navigation(props) {
         <MobileSearch />
 
         <ul role="list" className="flex flex-col lg:hidden">
-          {menuTabs.map((tab, idx) => (
+          {visibleMenuTabs.map((tab, idx) => (
             <li key={idx}>
               <TopLevelNavItem
                 href={tab.href}
@@ -977,8 +989,9 @@ export function Navigation(props) {
             <>
               <Accordion.Root
                 key={
-                  // re-mount on page navigation
-                  pathname
+                  // re-mount on page navigation, and after an unreleased reveal so
+                  // a gated page's own group auto-opens once its nav link appears
+                  `${pathname}:${unreleasedKey}`
                 }
                 type="multiple"
                 defaultValue={defaultOpenGroupTitles}

@@ -1,0 +1,495 @@
+---
+heading: "Node.js worker threads in production"
+subtitle: "Spawning a worker is easy. Making it reliable means designing a protocol, packaging the worker file, proxying callbacks, handling crashes, and shutting down cleanly."
+showSubtitle: true
+date: 2026-06-22
+author: Aaron Harper
+category: "engineering"
+image: /assets/blog/node-worker-threads-production/cover.png
+---
+
+In a [previous post](/blog/node-worker-threads?ref=blog-node-worker-threads-production), we wrote about why we moved [Inngest Connect](/docs/setup/connect?ref=blog-node-worker-threads-production) internals into a Node.js worker thread.
+
+The short version: Connect maintains a persistent WebSocket connection between a user's app and Inngest. That connection sends heartbeats so the server knows the worker is alive. If user code monopolizes the main thread, the heartbeat timer can't fire. The server assumes the worker died, even though the process is still running.
+
+Worker threads fixed that connection-health failure mode. The WebSocket connection, heartbeat timer, reconnect logic, and lease extension logic moved into a separate event loop. User code stayed on the main thread.
+
+Starting a worker thread is simple:
+
+```ts
+new Worker("./runner.js");
+```
+
+But that line isn't the hard part. The hard part is everything around it: deciding what crosses the thread boundary, designing the message protocol, making logs work, packaging the worker file, respawning after crashes, exposing debug state, and shutting down without dropping in-flight work.
+
+This is what worker threads look like when they become production infrastructure instead of a demo.
+
+<Callout>
+  This post is intentionally specific to our use case. It isn't a generic worker-threads tutorial or a complete survey of the API. The point is to show what it looked like to add worker threads to a production SDK, including the awkward details that don't show up in small examples.
+</Callout>
+
+For our Connect worker-thread implementation, these were the production details that mattered most:
+
+- [Decide what crosses the thread boundary](#decide-what-crosses-the-thread-boundary)
+- [Treat `postMessage` as an API boundary](#treat-postmessage-as-an-api-boundary)
+- [Turn callbacks into a request-response protocol](#turn-callbacks-into-a-request-response-protocol)
+- [Send boring data, not rich objects](#send-boring-data-not-rich-objects)
+- [Proxy anything that can't cross the boundary](#proxy-anything-that-cant-cross-the-boundary)
+- [Ship the worker as a real build artifact](#ship-the-worker-as-a-real-build-artifact)
+- [Respawn workers, but cap the crash loop](#respawn-workers-but-cap-the-crash-loop)
+- [Mirror worker health back to the parent](#mirror-worker-health-back-to-the-parent)
+- [Treat shutdown as a drain protocol](#treat-shutdown-as-a-drain-protocol)
+- [Test the lifecycle, not just the thread](#test-the-lifecycle-not-just-the-thread)
+
+## Decide what crosses the thread boundary
+
+A worker thread isn't a function you run in parallel. It's a separate JavaScript program with its own entrypoint, imports, heap, and event loop.
+
+That means your first design decision isn't "how do I spawn the worker?" It's "what lives on each side of the boundary?"
+
+For Connect, the split looks like this:
+
+- **Worker thread:** WebSocket connection, heartbeats, reconnects, lease extensions, response buffering
+- **Main thread:** User function execution, user-provided loggers, registered request handlers
+
+We couldn't move "just the heartbeat." The heartbeat depends on the WebSocket connection state. Lease extensions depend on in-flight request state. Reconnects need to re-establish the Gateway handshake. Once those pieces are coupled, the clean boundary is the whole connection manager.
+
+But user code couldn't move with it. Connect users register normal Inngest functions in their app:
+
+```ts
+const fn = inngest.createFunction(
+  { id: "import-data" },
+  { event: "data/import.requested" },
+  async ({ event, step }) => {
+    await step.run("process rows", async () => {
+      // User code runs here
+    });
+  },
+);
+```
+
+Those handlers close over application state. They call user services. They use local database clients, loggers, metrics clients, caches, and whatever else the app has initialized. You can't safely serialize any of that across a worker-thread boundary.
+
+So the worker thread owns connection health, but execution stays on the main thread. That one decision shapes the rest of the system.
+
+## Treat `postMessage` as an API boundary
+
+Once two threads need to coordinate, `postMessage()` becomes your transport. It shouldn't become your API design.
+
+We define an explicit protocol for messages sent in both directions:
+
+```ts
+// Abbreviated to show the shape of the boundary.
+type MainToWorkerMessage =
+  | { type: "INIT"; config: SerializableConfig }
+  | { type: "CONNECT"; attempt: number }
+  | { type: "CLOSE" }
+  | { type: "EXECUTION_RESPONSE"; requestId: string; response: Uint8Array }
+  | { type: "EXECUTION_ERROR"; requestId: string; error: string };
+
+type WorkerToMainMessage =
+  | { type: "STATE_CHANGE"; state: ConnectionState }
+  | { type: "CONNECTION_READY"; connectionId: string }
+  | { type: "ERROR"; error: string; fatal: boolean }
+  | { type: "EXECUTION_REQUEST"; requestId: string; request: Uint8Array }
+  | { type: "DEBUG_STATE"; state: ConnectDebugState }
+  | { type: "CLOSED" }
+  | {
+      type: "LOG";
+      level: "debug" | "info" | "warn" | "error";
+      message: string;
+      data?: Record<string, unknown>;
+    };
+```
+
+This looks obvious in hindsight, but it's an important line to draw. A worker-thread boundary is an API boundary. Treat it like one.
+
+Every message should answer a few questions:
+
+- Which direction does it travel?
+- Is it a command, an event, or a response?
+- Does it need a correlation ID?
+- Is its payload structured-clone safe?
+- What happens if it arrives after shutdown starts?
+- What happens if the other side crashes while waiting for the response?
+
+The protocol also keeps us honest about what can cross the boundary. `SerializableConfig` is structured-clone-safe, behavior-free data. It can contain things like strings, numbers, booleans, arrays, plain objects, and typed arrays, but it doesn't contain request handlers, logger instances, database clients, or anything else with behavior. Those stay on the main thread because they have to.
+
+```ts
+// Abbreviated to show the fields that matter for the worker boundary.
+interface SerializableConfig {
+  apiBaseUrl?: string;
+  appIds: string[];
+  connectionData: ConnectionEstablishData;
+  envName?: string;
+  gatewayUrl?: string;
+  handleShutdownSignals?: string[];
+  hashedSigningKey?: string;
+  hashedFallbackKey?: string;
+  instanceId?: string;
+  maxWorkerConcurrency?: number;
+  mode: "dev" | "cloud";
+}
+```
+
+If a value can't be represented as boring structured data, the worker doesn't get it directly. It has to ask the main thread to use it on the worker's behalf.
+
+## Turn callbacks into a request-response protocol
+
+The most important callback in Connect is the user's function handler. The Gateway sends an execution request over the WebSocket. The SDK needs to run the matching user function and send the response back to the Gateway.
+
+In the same-thread implementation, this is straightforward:
+
+```ts
+const handler = requestHandlers[request.appName];
+const response = await handler(request);
+const responseBytes = SDKResponse.encode(response).finish();
+```
+
+In the worker-thread implementation, the worker can't call `handler()` because the handler lives on the main thread. So execution becomes a request-response flow over `postMessage()`.
+
+The worker receives a Gateway request, encodes it, and asks the main thread to execute it:
+
+```ts
+const responsePromise = new Promise<Uint8Array>((resolve, reject) => {
+  pendingExecutions.set(request.requestId, { resolve, reject });
+});
+
+parentPort.postMessage({
+  type: "EXECUTION_REQUEST",
+  requestId: request.requestId,
+  request: GatewayExecutorRequestData.encode(request).finish(),
+});
+
+const responseBytes = await responsePromise;
+```
+
+The main thread decodes the request, finds the handler, executes user code, encodes the response, and sends it back:
+
+```ts
+const request = GatewayExecutorRequestData.decode(requestBytes);
+const handler = requestHandlers[request.appName];
+
+if (!handler) {
+  worker.postMessage({
+    type: "EXECUTION_ERROR",
+    requestId,
+    error: `No handler for app: ${request.appName}`,
+  });
+  return;
+}
+
+const response = await handler(request);
+
+worker.postMessage({
+  type: "EXECUTION_RESPONSE",
+  requestId,
+  response: SDKResponse.encode(response).finish(),
+});
+```
+
+The worker resolves the original promise when the response arrives:
+
+```ts
+case "EXECUTION_RESPONSE": {
+  const pending = pendingExecutions.get(msg.requestId);
+  if (pending) {
+    pending.resolve(msg.response);
+    pendingExecutions.delete(msg.requestId);
+  }
+  break;
+}
+```
+
+This is one of the biggest mindset shifts with worker threads. You started with a callback. You ended with a tiny RPC system.
+
+That sounds like extra ceremony, and it's real work. But it also makes failure modes explicit. You can decide what happens if the handler is missing, if the handler throws, if the worker's closing, or if a response arrives late.
+
+It does not make user code interruptible. If the main thread is busy, the execution response is still delayed. The point is narrower: while that response is delayed, the worker can continue doing connection management work around it. Heartbeats can still fire, leases can still be extended, and shutdown can become a drain protocol instead of a forced kill.
+
+<Callout>
+  Pending request maps also need cleanup. Add timeouts, reject anything still waiting when either side closes, and delete entries after both success and failure paths. Otherwise a missed response can become an unbounded memory leak.
+</Callout>
+
+## Send boring data, not rich objects
+
+Worker messages are serialized using the structured clone algorithm. That gives you more than JSON, but it doesn't mean arbitrary JavaScript objects are a good message format.
+
+For Connect execution requests and responses, we use protobuf-encoded `Uint8Array` payloads. The worker doesn't send a rich class instance to the main thread. The main thread doesn't send one back. Both sides exchange bytes and decode them where needed.
+
+That has a few advantages:
+
+- The protocol is explicit about what data is crossing the boundary.
+- Payloads are independent of object prototypes and runtime-specific classes.
+- The same encoded message can be sent over the WebSocket or flushed over HTTP later.
+- It keeps the worker-thread protocol close to the Gateway protocol.
+
+It also surfaces annoying details you've got to handle. For example, TypeScript may type protobuf output as `Uint8Array<ArrayBufferLike>`, which includes `SharedArrayBuffer`. But TypeScript's `fetch()` body types expect bytes backed by a normal `ArrayBuffer`. Our buffer code has a guard for that before flushing responses over HTTP.
+
+```ts
+function isUnsharedArrayBuffer(
+  value: Uint8Array<ArrayBufferLike>,
+): value is Uint8Array<ArrayBuffer> {
+  if (typeof SharedArrayBuffer === "undefined") {
+    return true;
+  }
+
+  return value.buffer instanceof ArrayBuffer;
+}
+```
+
+This isn't glamorous code. Production worker-thread systems are full of not-glamorous code.
+
+## Proxy anything that can't cross the boundary
+
+The SDK lets users pass custom loggers. In practice, that might be Pino, Winston, a wrapper around OpenTelemetry, or a homegrown logger with the same shape.
+
+The worker thread can't use that logger directly. A logger is an object with methods. It may hold file handles, sockets, closures, internal buffers, or process-local state. It isn't structured-clone safe.
+
+So the worker creates a logger-shaped object that sends log messages to the main thread:
+
+```ts
+function createMessageLogger(): Logger {
+  const sendLog = (
+    level: "debug" | "info" | "warn" | "error",
+    ...args: unknown[]
+  ) => {
+    const { message, data } = parseLogArgs(args);
+
+    parentPort.postMessage({
+      type: "LOG",
+      level,
+      message,
+      data,
+    });
+  };
+
+  return {
+    debug: (...args) => sendLog("debug", ...args),
+    info: (...args) => sendLog("info", ...args),
+    warn: (...args) => sendLog("warn", ...args),
+    error: (...args) => sendLog("error", ...args),
+  };
+}
+```
+
+The main thread receives the message and calls the real logger:
+
+```ts
+case "LOG":
+  if (msg.data) {
+    internalLogger[msg.level](msg.data, msg.message);
+  } else {
+    internalLogger[msg.level](msg.message);
+  }
+  break;
+```
+
+This same pattern applies to any user-provided capability:
+
+- Logger instances
+- Metrics clients
+- Tracing APIs
+- Callback functions
+- Request handlers
+- Database clients
+
+Don't try to pass those objects into the worker. Keep them on the main thread and expose the smallest message protocol the worker needs.
+
+## Ship the worker as a real build artifact
+
+The worker file is a real file. That sounds simple until your library has to work in development, tests, published ESM, published CJS, TypeScript source, and user apps with their own bundlers.
+
+In development, our worker runner is `runner.ts`. In the published package, it's `runner.js` or `runner.cjs`. So the main-thread strategy derives the runner path from the current module path:
+
+```ts
+const currentFilePath = fileURLToPath(import.meta.url);
+const ext = extname(currentFilePath);
+const runnerPath = join(dirname(currentFilePath), `runner${ext}`);
+```
+
+Then there's TypeScript. Node's built-in TypeScript support is strip-only: it can erase types, but it can't transform TypeScript syntax that needs runtime JavaScript output. Enums are the example we hit in the SDK. Parameter properties and namespaces with runtime code fall into the same bucket, so the worker gets `tsx` when it's running from `.ts` source:
+
+```ts
+// Current SDK code, abbreviated.
+let execArgv: string[] = [];
+
+if (ext === ".ts") {
+  const require = createRequire(import.meta.url);
+  const tsxPath = require.resolve("tsx");
+  execArgv = ["--no-experimental-strip-types", "--loader", tsxPath];
+}
+
+const worker = new Worker(runnerPath, {
+  env: process.env,
+  execArgv,
+  stdout: true,
+  stderr: true,
+});
+```
+
+These exact loader flags are not the main lesson here. Node's ESM loader guidance has changed over time, and `tsx` has changed with it. The important production requirement is that the worker uses the same TypeScript runtime support as the parent when tests or development run directly from `.ts` source.
+
+Capturing `stdout` and `stderr` also matters. Loader warnings or worker output shouldn't leak into the user's process as surprising console noise. If a worker can produce meaningful or high-volume output, drain or forward those streams so captured output doesn't become backpressure. In our case, the worker is expected to communicate through messages, and its logs go through the logger protocol.
+
+If you're building an app, you may be able to get away with `new Worker(new URL("./worker.js", import.meta.url))`. If you're building a library, you need to think harder. Your worker file must exist in the published package, and your consumer's bundler may never see it as a normal import.
+
+For the Inngest SDK, the worker runner is an explicit build entrypoint:
+
+```ts
+export default defineConfig({
+  entry: [
+    "src/index.ts",
+    "src/connect.ts",
+
+    // Connect worker thread runner. Must be an entrypoint so that it compiles.
+    "src/components/connect/strategies/workerThread/runner.ts",
+  ],
+});
+```
+
+If you forget this, everything can pass locally and fail only after publishing, because the worker file simply isn't in the package output.
+
+## Respawn workers, but cap the crash loop
+
+Worker threads can crash. An unhandled exception can kill the worker. A bug in startup can kill it immediately. An out-of-memory failure can kill it. If the main thread doesn't notice, the user's app silently loses the connection.
+
+So the parent watches the worker's `exit` event:
+
+```ts
+worker.on("exit", (code) => {
+  if (state === "CLOSING" || state === "CLOSED") {
+    return;
+  }
+
+  consecutiveCrashes++;
+  state = "RECONNECTING";
+
+  const backoff = Math.min(
+    baseBackoffMs * 2 ** (consecutiveCrashes - 1),
+    maxBackoffMs,
+  );
+
+  setTimeout(() => {
+    createWorker()
+      .then(() => {
+        sendToWorker({ type: "INIT", config });
+        sendToWorker({ type: "CONNECT", attempt: 0 });
+      })
+      .catch((err) => {
+        logger.debug({ err }, "Failed to recreate worker");
+      });
+  }, backoff);
+});
+```
+
+The backoff matters. Without it, a bad configuration or deterministic startup bug can put the parent process into a tight respawn loop. That burns CPU and floods logs without making progress.
+
+We cap consecutive crashes and reset the counter only after the worker reaches `CONNECTION_READY`. A worker that starts and immediately dies has not recovered. A worker that reaches a healthy connection has.
+
+<Callout>
+  A crash cap should have a visible failure mode. In Connect, if the worker exceeds the crash threshold, we stop respawning it and emit an error log on the main thread instead of silently retrying forever. At that point, the connection is not healthy and the host process needs to know.
+</Callout>
+
+## Mirror worker health back to the parent
+
+Once the connection manager lives in a worker, the main thread can no longer directly inspect its health.
+
+That matters for debugging. Users still expect to inspect the connection. The parent still needs to know whether the connection is active, closing, reconnecting, or closed. It needs in-flight request counts, heartbeat timestamps, shutdown status, and enough detail to explain why a worker is stuck.
+
+So the worker periodically mirrors a health and debug snapshot back to the main thread:
+
+```ts
+debugStateInterval = setInterval(() => {
+  parentPort.postMessage({
+    type: "DEBUG_STATE",
+    state: core.getDebugState(),
+  });
+}, 5_000);
+```
+
+The main thread caches the latest value:
+
+```ts
+case "DEBUG_STATE":
+  cachedDebugState = msg.state;
+  break;
+```
+
+This is an easy feature to skip in the first implementation. It's also the feature you want as soon as something weird happens in production.
+
+Worker threads make isolation better, but they can make visibility worse. Plan for that explicitly.
+
+## Treat shutdown as a drain protocol
+
+The tempting way to stop a worker is `worker.terminate()`. That's fine if the worker is disposable. It isn't fine if the worker owns a WebSocket connection, in-flight executions, leases, and buffered responses.
+
+Connect shutdown has to be graceful:
+
+1. The main thread receives `close()`.
+2. It sends `CLOSE` to the worker.
+3. The worker enters `CLOSING`.
+4. The worker tells the Gateway it's pausing so no new work is routed to it.
+5. Existing in-flight work is allowed to finish.
+6. Heartbeats and lease extensions continue while shutdown is waiting.
+7. Buffered responses are flushed.
+8. The worker sends `CLOSED` to the main thread.
+9. The worker exits.
+
+The worker-side close path looks roughly like this:
+
+```ts
+async function close() {
+  clearInterval(debugStateInterval);
+  setState("CLOSING");
+
+  await core.close();
+
+  try {
+    await messageBuffer.flush(hashedSigningKey);
+  } catch {
+    await messageBuffer.flush(hashedFallbackKey);
+  }
+
+  setState("CLOSED");
+  parentPort.postMessage({ type: "CLOSED" });
+
+  process.exit(0);
+}
+```
+
+That last line is intentional. The `parentPort` message listener keeps the worker event loop alive. If the worker has finished closing but is still listening for parent messages, it may not exit on its own.
+
+The main thread waits for the worker to exit:
+
+```ts
+worker.postMessage({ type: "CLOSE" });
+
+await new Promise<void>((resolve) => {
+  worker.once("exit", () => resolve());
+});
+```
+
+The important part is that `close()` doesn't mean "kill the thread." It means "begin the shutdown protocol."
+
+## Test the lifecycle, not just the thread
+
+The bugs in worker-thread systems rarely show up in the happy path. They show up during process shutdown, when the Gateway connection drops, when a response is waiting for acknowledgment, or when a worker crashes while the parent thinks it's connected.
+
+Some of the most useful Connect tests use a transparent WebSocket proxy. The proxy lets us inspect messages sent between the SDK and Gateway.
+
+One test starts a long-running function, calls `connection.close()`, and verifies that heartbeats and lease extensions continue while shutdown waits for the in-flight request. Another starts shutdown, drops the TCP connection, restarts the proxy on the same port, and verifies that reconnecting during shutdown sends `WORKER_PAUSE`, not `WORKER_READY`. That prevents new work from being routed to a worker that's trying to drain.
+
+These tests aren't just testing worker threads. They're testing the lifecycle around worker threads.
+
+That's the production lesson: the thread is only one component. The lifecycle is the system.
+
+## Wrapping up
+
+Worker threads solved a real problem for Inngest Connect: they kept connection health independent from user code that might block the main event loop.
+
+But the worker thread itself was only the isolation primitive. To make it production-ready, we had to build the system around it: protocol messages, serialized execution requests, logger proxying, packaging rules, crash recovery, debug-state mirroring, response buffering, and graceful shutdown.
+
+If your problem is "I need to run CPU-heavy work faster," you may need a worker pool. If your problem is "I need critical timers, sockets, or control-plane logic to survive main-thread starvation," a long-lived worker thread can be the right tool.
+
+And if you're using Inngest Connect, this is handled for you.

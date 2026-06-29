@@ -1,4 +1,5 @@
 import { analytics } from "@/utils/segment";
+import { readFirstTouch } from "src/shared/firstTouch";
 
 export const CONTACT_EVENT_NAME = "contact.form.sent";
 export const CONTACT_EVENT_VERSION = "2023-12-12.1";
@@ -131,8 +132,14 @@ export async function submitContactForm(
     console.warn("[contactSubmit] Inngest event failed", err);
   }
 
+  const firstTouch = readFirstTouch();
+
   try {
-    analytics.track("Form Submitted", {
+    const isSalesLead = formType === FORM_TYPE.SALES_LEAD_FORM;
+    const segmentEventName = isSalesLead
+      ? "Contact Sales Form Submitted"
+      : "Form Submitted";
+    analytics.track(segmentEventName, {
       email,
       name,
       form_type: formType,
@@ -140,10 +147,18 @@ export async function submitContactForm(
       what_can_we_help_you_with: message,
       form_source: "website",
       ref,
+      // Sales-lead-specific fields for Attio / CIO destination mappings.
+      ...(isSalesLead
+        ? {
+            lead_source: "contact_form",
+            submitted_company_name: company,
+          }
+        : {}),
+      ...(firstTouch || {}),
     });
     const gtmName = GTM_EVENT_NAMES[formType];
     if (gtmName && typeof window !== "undefined") {
-      window.dataLayer?.push({ event: gtmName, ref, survey });
+      window.dataLayer?.push({ event: gtmName, ref, survey, ...(firstTouch || {}) });
     }
   } catch (err) {
     console.warn("[contactSubmit] analytics failed", err);
